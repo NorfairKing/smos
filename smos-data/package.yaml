@@ -1,0 +1,32 @@
+name: smos-data
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  exposed-modules:
+  - Smos.Data
+  - Smos.Data.Types
+  dependencies:
+  - aeson
+  - base
+  - bytestring
+  - containers
+  - hashable  
+  - path
+  - path-io
+  - text
+  - time
+  - validity
+  - validity-containers
+  - validity-path
+  - validity-text
+  - validity-time
+  - validity-unordered-containers
+  - yaml
