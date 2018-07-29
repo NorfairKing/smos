@@ -1,0 +1,38 @@
+language: nix
+sudo: true
+
+cache:
+  directories:
+  - $HOME/.stack
+
+matrix:
+  include:
+  - env:
+      - BUILD_KIND="stack"
+      - RESOLVER_FLAG="--stack-yaml stack.yaml"
+    addons: {apt: {packages: [libgmp-dev]}}
+
+  - env:
+      - BUILD_KIND="stack"
+      - RESOLVER_FLAG="--stack-yaml lts-12.yaml"
+    addons: {apt: {packages: [libgmp-dev]}}
+    
+  - env:
+      - BUILD_KIND="nix"
+
+  # Nightly builds are allowed to fail
+  - env: 
+      - BUILD_KIND="stack"
+      - RESOLVER_FLAG="--resolver nightly"
+    addons: {apt: {packages: [libgmp-dev]}}
+
+  allow_failures:
+    - env:
+      - BUILD_KIND="stack"
+      - RESOLVER_FLAG="--resolver nightly"
+
+before_install: ./scripts/ci/before_install.sh
+
+install: ./scripts/ci/install.sh
+
+script: ./scripts/ci/script.sh
