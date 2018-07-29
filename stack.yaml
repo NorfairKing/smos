@@ -1,4 +1,4 @@
-resolver: lts-12.2
+resolver: nightly-2018-07-28
 packages:
 - smos-data
 - smos-data-gen

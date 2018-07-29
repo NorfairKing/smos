@@ -1,0 +1,8 @@
+resolver: lts-12.2
+packages:
+- smos-data
+- smos-data-gen
+extra-deps:
+  - genvalidity-hspec-optics-0.0.0.0
+nix:
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/17784ef3d6daa99e71852640c4aa1eb22aa839cf.tar.gz" ]
