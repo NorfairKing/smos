@@ -20,7 +20,7 @@ import Smos.Types
 mkSmosApp :: SmosConfig -> App SmosState () ResourceName
 mkSmosApp sc@SmosConfig {..} =
     App
-        { appDraw = smosDraw
+        { appDraw = smosDraw sc
         , appChooseCursor = smosChooseCursor
         , appHandleEvent = smosHandleEvent sc
         , appStartEvent = smosStartEvent
