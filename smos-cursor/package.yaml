@@ -17,6 +17,7 @@ library:
   - Smos.Cursor.Entry
   - Smos.Cursor.Header
   - Smos.Cursor.Properties
+  - Smos.Cursor.StateHistory
   - Smos.Cursor.Tags
   - Smos.Cursor.Timestamps
   dependencies:

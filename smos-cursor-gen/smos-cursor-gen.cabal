@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8aed7c7bb84be6d1affa83c226682f5cbac8223696a429be2a8e24939cabbb93
+-- hash: a595926d4584334061f8eae624381868d73f8faed5585fbc37447be9616d1e62
 
 name:           smos-cursor-gen
 version:        0.0.0.0
@@ -28,6 +28,7 @@ library
       Smos.Cursor.Entry.Gen
       Smos.Cursor.Header.Gen
       Smos.Cursor.Properties.Gen
+      Smos.Cursor.StateHistory.Gen
       Smos.Cursor.Tags.Gen
       Smos.Cursor.Timestamps.Gen
   other-modules:
@@ -53,6 +54,7 @@ test-suite smos-cursor-test
       Smos.Cursor.EntrySpec
       Smos.Cursor.HeaderSpec
       Smos.Cursor.PropertiesSpec
+      Smos.Cursor.StateHistorySpec
       Smos.Cursor.TagsSpec
       Smos.Cursor.TimestampsSpec
       Paths_smos_cursor_gen
