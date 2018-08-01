@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81ff02591618df3bf32d0f99c9b4a0c2ceb4beae1bb056e02947859a07a6713d
+-- hash: 8aed7c7bb84be6d1affa83c226682f5cbac8223696a429be2a8e24939cabbb93
 
 name:           smos-cursor-gen
 version:        0.0.0.0
@@ -52,7 +52,9 @@ test-suite smos-cursor-test
       Smos.Cursor.ContentsSpec
       Smos.Cursor.EntrySpec
       Smos.Cursor.HeaderSpec
+      Smos.Cursor.PropertiesSpec
       Smos.Cursor.TagsSpec
+      Smos.Cursor.TimestampsSpec
       Paths_smos_cursor_gen
   hs-source-dirs:
       test
