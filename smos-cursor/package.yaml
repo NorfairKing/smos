@@ -16,8 +16,12 @@ library:
   - Smos.Cursor.Contents
   - Smos.Cursor.Entry
   - Smos.Cursor.Header
+  - Smos.Cursor.Properties
+  - Smos.Cursor.Tags
+  - Smos.Cursor.Timestamps
   dependencies:
   - base
+  - containers
   - cursor
   - smos-data
   - validity
