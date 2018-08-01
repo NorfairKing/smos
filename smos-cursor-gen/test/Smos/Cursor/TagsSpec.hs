@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Smos.Cursor.TagsSpec where
 
 import Test.Hspec
@@ -10,6 +11,8 @@ import Smos.Cursor.Tags.Gen ()
 
 spec :: Spec
 spec = do
+    eqSpec @TagsCursor
+    genValidSpec @TagsCursor
     describe "makeTagsCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeTagsCursor
     describe "rebuildTagsCursor" $ do

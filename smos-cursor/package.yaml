@@ -15,6 +15,7 @@ library:
   exposed-modules:
   - Smos.Cursor.Contents
   - Smos.Cursor.Entry
+  - Smos.Cursor.File
   - Smos.Cursor.Header
   - Smos.Cursor.Logbook
   - Smos.Cursor.Properties
@@ -26,4 +27,6 @@ library:
   - containers
   - cursor
   - smos-data
+  - time
   - validity
+  - validity-time

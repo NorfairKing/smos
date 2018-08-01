@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Smos.Cursor.StateHistorySpec where
 
 import Test.Hspec
@@ -10,6 +11,8 @@ import Smos.Cursor.StateHistory.Gen ()
 
 spec :: Spec
 spec = do
+    eqSpec @StateHistoryCursor
+    genValidSpec @StateHistoryCursor
     describe "makeStateHistoryCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeStateHistoryCursor
     describe "rebuildStateHistoryCursor" $ do

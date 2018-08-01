@@ -11,11 +11,13 @@ import Smos.Data
 
 instance GenUnchecked SmosFile
 
-instance GenValid SmosFile
+instance GenValid SmosFile where
+    genValid = SmosFile <$> genValid
 
 instance GenUnchecked a => GenUnchecked (ForYaml a)
 
-instance GenValid a => GenValid (ForYaml a)
+instance GenValid a => GenValid (ForYaml a) where
+    genValid = ForYaml <$> genValid
 
 instance GenUnchecked Entry
 

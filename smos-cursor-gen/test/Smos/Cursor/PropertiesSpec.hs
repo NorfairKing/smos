@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Smos.Cursor.PropertiesSpec where
 
 import Test.Hspec
@@ -10,6 +11,8 @@ import Smos.Cursor.Properties.Gen ()
 
 spec :: Spec
 spec = do
+    eqSpec @PropertiesCursor
+    genValidSpec @PropertiesCursor
     describe "makePropertiesCursor" $
         it "produces valid cursors" $
         producesValidsOnValids makePropertiesCursor

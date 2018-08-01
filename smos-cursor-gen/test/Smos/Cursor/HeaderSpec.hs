@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Smos.Cursor.HeaderSpec where
 
 import Test.Hspec
@@ -10,6 +11,8 @@ import Smos.Cursor.Header.Gen ()
 
 spec :: Spec
 spec = do
+    eqSpec @HeaderCursor
+    genValidSpec @HeaderCursor
     describe "makeHeaderCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeHeaderCursor
     describe "rebuildHeaderCursor" $ do

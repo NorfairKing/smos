@@ -21,6 +21,7 @@ library:
   - cursor
   - cursor-gen
   - genvalidity
+  - genvalidity-time
   - smos-cursor
   - smos-data
   - smos-data-gen

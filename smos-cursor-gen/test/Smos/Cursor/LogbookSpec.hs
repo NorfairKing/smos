@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Smos.Cursor.LogbookSpec where
 
 import Test.Hspec
@@ -10,6 +11,8 @@ import Smos.Cursor.Logbook.Gen ()
 
 spec :: Spec
 spec = do
+    eqSpec @LogbookCursor
+    genValidSpec @LogbookCursor
     describe "makeLogbookCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeLogbookCursor
     describe "rebuildLogbookCursor" $ do
