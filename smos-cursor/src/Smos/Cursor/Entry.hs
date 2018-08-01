@@ -19,6 +19,7 @@ import Smos.Data.Types
 
 import Smos.Cursor.Contents
 import Smos.Cursor.Header
+import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
@@ -32,6 +33,7 @@ data EntryCursor = EntryCursor
     , entryCursorPropertiesCursor :: Maybe PropertiesCursor
     , entryCursorStateHistoryCursor :: Maybe StateHistoryCursor
     , entryCursorTagsCursor :: Maybe TagsCursor
+    , entryCursorLogbookCursor :: LogbookCursor
     } deriving (Show, Eq, Generic)
 
 instance Validity EntryCursor
@@ -49,6 +51,7 @@ makeEntryCursor Entry {..} =
     , entryCursorStateHistoryCursor =
           makeStateHistoryCursor <$>
           NE.nonEmpty (unStateHistory entryStateHistory)
+    , entryCursorLogbookCursor = makeLogbookCursor entryLogbook
     , entryCursorSelected = WholeEntrySelected
     }
 
@@ -69,6 +72,7 @@ rebuildEntryCursor EntryCursor {..} =
           rebuildStateHistoryCursor <$> entryCursorStateHistoryCursor
     , entryTags =
           maybe [] NE.toList $ rebuildTagsCursor <$> entryCursorTagsCursor
+    , entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
     }
 
 data EntryCursorSelection
@@ -78,6 +82,7 @@ data EntryCursorSelection
     | TimestampsSelected
     | PropertiesSelected
     | TagsSelected
+    | LogbookSelected
     deriving (Show, Eq, Generic)
 
 instance Validity EntryCursorSelection

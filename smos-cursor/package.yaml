@@ -16,6 +16,7 @@ library:
   - Smos.Cursor.Contents
   - Smos.Cursor.Entry
   - Smos.Cursor.Header
+  - Smos.Cursor.Logbook
   - Smos.Cursor.Properties
   - Smos.Cursor.StateHistory
   - Smos.Cursor.Tags
