@@ -1,5 +1,6 @@
 resolver: nightly-2018-07-28
 packages:
+- smos
 - smos-data
 - smos-data-gen
 - smos-cursor

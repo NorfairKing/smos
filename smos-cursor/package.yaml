@@ -15,10 +15,10 @@ library:
   exposed-modules:
   - Smos.Cursor.Contents
   - Smos.Cursor.Entry
-  - Smos.Cursor.File
   - Smos.Cursor.Header
   - Smos.Cursor.Logbook
   - Smos.Cursor.Properties
+  - Smos.Cursor.SmosFile
   - Smos.Cursor.StateHistory
   - Smos.Cursor.Tags
   - Smos.Cursor.Timestamps

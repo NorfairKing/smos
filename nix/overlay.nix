@@ -8,6 +8,7 @@ final:
             let smosPkg = name:
                 (self.callCabal2nix name (../. + "/${name}") {});
             in final.lib.genAttrs [
+              "smos"
               "smos-data"
               "smos-data-gen"
               "smos-cursor"

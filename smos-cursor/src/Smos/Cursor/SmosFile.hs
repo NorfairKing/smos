@@ -1,4 +1,8 @@
-module Smos.Cursor.File where
+module Smos.Cursor.SmosFile
+    ( SmosFileCursor
+    , makeSmosFileCursor
+    , rebuildSmosFileCursor
+    ) where
 
 import Data.Validity
 
@@ -11,10 +15,10 @@ import Smos.Data.Types
 
 import Smos.Cursor.Entry
 
-type FileCursor = ForestCursor EntryCursor
+type SmosFileCursor = ForestCursor EntryCursor
 
-makeSmosFileCursor :: NonEmpty (Tree Entry) -> FileCursor
+makeSmosFileCursor :: NonEmpty (Tree Entry) -> SmosFileCursor
 makeSmosFileCursor = makeForestCursor . NE.map (fmap makeEntryCursor)
 
-rebuildSmosFileCursor :: FileCursor -> NonEmpty (Tree Entry)
+rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor = NE.map (fmap rebuildEntryCursor) . rebuildForestCursor

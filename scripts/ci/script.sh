@@ -10,6 +10,7 @@ case $BUILD_KIND in
     nix-build -A haskellPackages.cursor-gen
     nix-build -A haskellPackages.smos-data
     nix-build -A haskellPackages.smos-data-gen
+    nix-build -A haskellPackages.smos
     ;;
   *)
     echo "Unknown build kind."

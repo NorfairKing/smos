@@ -1,7 +1,10 @@
 resolver: lts-12.2
 packages:
+- smos
 - smos-cursor
 - smos-cursor-gen
+- smos-data
+- smos-data-gen
 extra-deps:
   - genvalidity-hspec-optics-0.0.0.0
 nix:
