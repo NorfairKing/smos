@@ -1,0 +1,32 @@
+name:                smos-cursor
+version:             0.0.0.0
+github:              "NorfairKing/smos"
+author:              "Tom Sydney Kerckhove"
+maintainer:          "sydcs-syd.eu"
+copyright:           "Copyright: (c) 2018 Tom Sydney Kerckhove"
+
+extra-source-files:
+- README.md
+
+description:         Please see the README on GitHub at <https://github.com/NorfairKing/smos#readme>
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - Smos.Cursor.Contents
+  - Smos.Cursor.Entry
+  - Smos.Cursor.File
+  - Smos.Cursor.Header
+  - Smos.Cursor.Logbook
+  - Smos.Cursor.Properties
+  - Smos.Cursor.StateHistory
+  - Smos.Cursor.Tags
+  - Smos.Cursor.Timestamps
+  dependencies:
+  - base
+  - containers
+  - cursor
+  - smos-data
+  - time
+  - validity
+  - validity-time
