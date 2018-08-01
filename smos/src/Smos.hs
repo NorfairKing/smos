@@ -1,9 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos
-    ( SmosConfig(..)
-    , SmosState(..)
-    , smos
+    ( smos
+    , module Smos.Config
     ) where
 
 import Import
@@ -17,6 +16,7 @@ import Brick.Main as B
 import Smos.Cursor.SmosFile
 import Smos.Data
 
+import Smos.Config
 import Smos.App
 import Smos.OptParse
 import Smos.Types

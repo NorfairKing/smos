@@ -6,6 +6,8 @@ module Smos.App
 
 import Import
 
+import qualified Data.Map as M
+
 import Brick.Main as B
 import Brick.Types as B
 
@@ -34,7 +36,46 @@ smosHandleEvent ::
     -> SmosState
     -> BrickEvent ResourceName ()
     -> EventM ResourceName (Next SmosState)
-smosHandleEvent cf s e = B.halt s
+smosHandleEvent cf s e = do
+    let func =
+            case keyMapFunc s e $ configKeyMap cf of
+                Nothing ->
+                    case e of
+                        B.VtyEvent (V.EvKey ek mods) ->
+                            let kp = KeyPress ek mods
+                             in recordKeyPress kp
+                        _ -> pure ()
+                Just func_ -> do
+                    func_
+                    clearKeyHistory
+    (mkHalt, s') <- runSmosM cf s func
+    case mkHalt of
+        Stop -> B.halt s'
+        Continue () -> B.continue s'
+  where
+    recordKeyPress :: KeyPress -> SmosM ()
+    recordKeyPress kp =
+        modify $ \ss -> ss {smosStateKeyHistory = kp : smosStateKeyHistory ss}
+    clearKeyHistory :: SmosM ()
+    clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = []}
+
+keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
+keyMapFunc s e KeyMap {..} =
+    case smosStateCursor s of
+        Nothing -> handleWith keyMapEmptyMatchers
+        Just _ -> Nothing
+  where
+    handleWith :: Map KeyMatch Action -> Maybe (SmosM ())
+    handleWith m =
+        case e of
+            VtyEvent vtye ->
+                case vtye of
+                    V.EvKey k mods ->
+                        case M.lookup (MatchExactly k mods) m of
+                            Nothing -> Nothing
+                            Just a -> Just $ actionFunc a
+                    _ -> Nothing
+            _ -> Nothing
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure

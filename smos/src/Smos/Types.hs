@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -8,6 +9,8 @@
 module Smos.Types
     ( SmosConfig(..)
     , KeyMap(..)
+    , KeyMatch(..)
+    , Action(..)
     , SmosEvent
     , SmosM
     , runSmosM
@@ -27,7 +30,6 @@ import Control.Monad.State
 
 import Graphics.Vty.Input.Events
 
-import Brick.AttrMap as B
 import Brick.Types as B hiding (Next)
 
 import Smos.Cursor.SmosFile
@@ -40,9 +42,30 @@ data SmosConfig = SmosConfig
 -- - Be show-able for help text, not necessarily 'Show'.
 -- - Should be able to deal with things like 'send any writeable character to the text field'
 -- - Should be able to deal with multi-character mathes
-data KeyMap =
-    KeyMap
-    deriving (Show, Eq, Generic)
+-- - Be easy to overwrite
+data KeyMap = KeyMap
+    { keyMapEmptyMatchers :: Map KeyMatch Action
+    } deriving (Generic)
+
+instance Semigroup KeyMap where
+    (<>) km1 km2 =
+        KeyMap
+            { keyMapEmptyMatchers =
+                  keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
+            }
+
+instance Monoid KeyMap where
+    mempty = KeyMap {keyMapEmptyMatchers = mempty}
+
+data KeyMatch =
+    MatchExactly Key
+                 [Modifier]
+    deriving (Show, Eq, Ord, Generic)
+
+data Action = Action
+    { actionName :: Text
+    , actionFunc :: SmosM ()
+    } deriving (Generic)
 
 type SmosEvent = BrickEvent ResourceName ()
 
@@ -139,5 +162,6 @@ instance MonadReader s m => MonadReader s (NextT m) where
     ask = NextT $ Continue <$> ask
     local func (NextT m) = NextT $ local func m
 
-stop :: SmosM a
-stop = MkSmosM $ NextT $ pure Stop
+stop :: Action
+stop =
+    Action {actionName = "Stop Smos", actionFunc = MkSmosM $ NextT $ pure Stop}
