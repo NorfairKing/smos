@@ -18,6 +18,10 @@ import Brick.Widgets.Core as B
 import Brick.Widgets.Core ((<+>))
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
+import Cursor.Forest
+import Cursor.NonEmpty
+import Cursor.Tree
+
 import Smos.Cursor.SmosFile
 
 -- import Smos.Data
@@ -71,7 +75,8 @@ smosDraw SmosConfig {..} SmosState {..} =
                 str $ showKeypress (KeyPress k mods)
 
 drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
-drawSmosFileCursor _ = txt "hello"
+drawSmosFileCursor =
+    drawVerticalForestCursor (strWrap . show) (withAttr selectedAttr . strWrap . show) (strWrap . show)
 
 drawHistory :: [KeyPress] -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . reverse
@@ -96,3 +101,67 @@ showMod MShift = "S"
 showMod MCtrl = "C"
 showMod MMeta = "M"
 showMod MAlt = "A"
+
+drawVerticalForestCursor ::
+       (TreeCursor a -> Widget n)
+    -> (TreeCursor a -> Widget n)
+    -> (TreeCursor a -> Widget n)
+    -> ForestCursor a
+    -> Widget n
+drawVerticalForestCursor prevFunc curFunc nextFunc =
+    drawForestCursor
+        prevFunc
+        curFunc
+        nextFunc
+        B.vBox
+        B.vBox
+        (\a b c -> a <=> b <=> c)
+
+drawForestCursor ::
+       (TreeCursor a -> Widget n)
+    -> (TreeCursor a -> Widget n)
+    -> (TreeCursor a -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> (Widget n -> Widget n -> Widget n -> Widget n)
+    -> ForestCursor a
+    -> Widget n
+drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc =
+    drawNonEmptyCursor
+        prevFunc
+        curFunc
+        nextFunc
+        prevCombFunc
+        nextCombFunc
+        combFunc $
+    forestCursorListCursor fc
+
+drawVerticalNonEmptyCursor ::
+       (a -> Widget n)
+    -> (a -> Widget n)
+    -> (a -> Widget n)
+    -> NonEmptyCursor a
+    -> Widget n
+drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
+    drawNonEmptyCursor
+        prevFunc
+        curFunc
+        nextFunc
+        B.vBox
+        B.vBox
+        (\a b c -> a <=> b <=> c)
+
+drawNonEmptyCursor ::
+       (a -> Widget n)
+    -> (a -> Widget n)
+    -> (a -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> (Widget n -> Widget n -> Widget n -> Widget n)
+    -> NonEmptyCursor a
+    -> Widget n
+drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} =
+    let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev
+        cur = curFunc nonEmptyCursorCurrent
+        next = nextCombFunc $ map nextFunc nonEmptyCursorNext
+     in combFunc prev cur next
