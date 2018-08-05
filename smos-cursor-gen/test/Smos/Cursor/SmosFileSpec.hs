@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
-module Smos.Cursor.FileSpec where
+
+module Smos.Cursor.SmosFileSpec where
 
 import Test.Hspec
 import Test.Validity
@@ -16,6 +17,8 @@ spec = do
     describe "makeSmosFileCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeSmosFileCursor
     describe "rebuildSmosFileCursor" $ do
-        it "produces valid cursors" $ producesValidsOnValids rebuildSmosFileCursor
+        it "produces valid cursors" $
+            producesValidsOnValids rebuildSmosFileCursor
         it "is the inverse of makeFileCursor" $
             inverseFunctionsOnValid makeSmosFileCursor rebuildSmosFileCursor
+    describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile

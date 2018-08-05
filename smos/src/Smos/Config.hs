@@ -1,7 +1,10 @@
 module Smos.Config
-    ( SmosConfig(..),
-    Map
+    ( SmosConfig(..)
+    , module Smos.Actions
+    , Map
     , listMatchers
+    , exact
+    , exactChar
     , KeyMap(..)
     , KeyMatch(..)
     , Action(..)
@@ -14,7 +17,12 @@ import Data.Map (Map)
 
 import Graphics.Vty.Input.Events (Key(..))
 
+import Smos.Actions
 import Smos.Types
 
 listMatchers :: [(KeyMatch, Action)] -> Map KeyMatch Action
 listMatchers = M.fromList
+
+exact k a = (MatchExactly k [], a)
+
+exactChar c a = exact (KChar c) a

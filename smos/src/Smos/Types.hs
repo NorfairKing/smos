@@ -11,6 +11,7 @@ module Smos.Types
     , KeyMap(..)
     , KeyMatch(..)
     , Action(..)
+    , action
     , SmosEvent
     , SmosM
     , runSmosM
@@ -50,9 +51,9 @@ data KeyMap = KeyMap
 instance Semigroup KeyMap where
     (<>) km1 km2 =
         KeyMap
-            { keyMapEmptyMatchers =
-                  keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
-            }
+        { keyMapEmptyMatchers =
+              keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
+        }
 
 instance Monoid KeyMap where
     mempty = KeyMap {keyMapEmptyMatchers = mempty}
@@ -66,6 +67,9 @@ data Action = Action
     { actionName :: Text
     , actionFunc :: SmosM ()
     } deriving (Generic)
+
+action :: Text -> SmosM () -> Action
+action = Action
 
 type SmosEvent = BrickEvent ResourceName ()
 
