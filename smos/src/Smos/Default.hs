@@ -13,10 +13,17 @@ defaultConfig = SmosConfig {configKeyMap = defaultKeyMap}
 defaultKeyMap :: KeyMap
 defaultKeyMap =
     KeyMap
-    { keyMapEmptyMatchers =
-          listMatchers
-              [ exactChar 'q' stop
-              , exact KEsc stop
-              , exactChar 'h' startHeaderFromEmpty
-              ]
-    }
+        { keyMapEmptyMatchers =
+              listMatchers
+                  [ exactChar 'q' stop
+                  , exact KEsc stop
+                  , exactChar 'h' startHeaderFromEmpty
+                  ]
+        , keyMapEntryMatchers =
+              listMatchers
+                  [ exactChar 'q' stop
+                  , exact KEsc stop
+                  , exactChar 'h' insertEntryAbove
+                  , exactChar 'H' insertEntryBelow
+                  ]
+        }

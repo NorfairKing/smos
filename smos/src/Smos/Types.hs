@@ -46,17 +46,20 @@ data SmosConfig = SmosConfig
 -- - Be easy to overwrite
 data KeyMap = KeyMap
     { keyMapEmptyMatchers :: Map KeyMatch Action
+    , keyMapEntryMatchers :: Map KeyMatch Action
     } deriving (Generic)
 
 instance Semigroup KeyMap where
     (<>) km1 km2 =
         KeyMap
-        { keyMapEmptyMatchers =
-              keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
-        }
+            { keyMapEmptyMatchers =
+                  keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
+            , keyMapEntryMatchers =
+                  keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
+            }
 
 instance Monoid KeyMap where
-    mempty = KeyMap {keyMapEmptyMatchers = mempty}
+    mempty = KeyMap {keyMapEmptyMatchers = mempty, keyMapEntryMatchers=mempty}
 
 data KeyMatch =
     MatchExactly Key

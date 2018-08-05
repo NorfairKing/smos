@@ -4,6 +4,7 @@ module Smos.Cursor.EntrySpec where
 
 import Test.Hspec
 import Test.Validity
+import Test.Validity.Optics
 
 import Smos.Data.Gen ()
 
@@ -18,7 +19,9 @@ spec = do
     genValidSpec @EntryCursorSelection
     describe "makeEntryCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeEntryCursor
+    describe "emptyEntryCursor" $ it "is valid" $ shouldBeValid emptyEntryCursor
     describe "rebuildEntryCursor" $ do
         it "produces valid entries" $ producesValidsOnValids rebuildEntryCursor
         it "is the inverse of makeEntryCursor" $
             inverseFunctionsOnValid makeEntryCursor rebuildEntryCursor
+    describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL

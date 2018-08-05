@@ -7,5 +7,10 @@ packages:
 - smos-data-gen
 extra-deps:
   - genvalidity-hspec-optics-0.0.0.0
+  - git: git@github.com:NorfairKing/cursor.git
+    commit: 3206fd7cc1c4dc885358287bf9a4e53aecdc1106
+    subdirs:
+      - cursor
+      - cursor-gen
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/17784ef3d6daa99e71852640c4aa1eb22aa839cf.tar.gz" ]

@@ -23,6 +23,8 @@ import Smos.Types
 listMatchers :: [(KeyMatch, Action)] -> Map KeyMatch Action
 listMatchers = M.fromList
 
+exact :: Key -> Action -> (KeyMatch, Action)
 exact k a = (MatchExactly k [], a)
 
+exactChar :: Char -> Action -> (KeyMatch, Action)
 exactChar c a = exact (KChar c) a

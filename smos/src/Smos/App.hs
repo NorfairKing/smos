@@ -11,7 +11,12 @@ import qualified Data.Map as M
 import Brick.Main as B
 import Brick.Types as B
 
+import Lens.Micro
+
 import qualified Graphics.Vty as V
+
+import Smos.Cursor.Entry
+import Smos.Cursor.SmosFile
 
 import Smos.Draw
 import Smos.Style
@@ -63,7 +68,10 @@ keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} =
     case smosStateCursor s of
         Nothing -> handleWith keyMapEmptyMatchers
-        Just _ -> Nothing
+        Just sfc ->
+            case sfc ^. smosFileCursorEntrySelectionL of
+                WholeEntrySelected -> handleWith keyMapEntryMatchers
+                _ -> Nothing
   where
     handleWith :: Map KeyMatch Action -> Maybe (SmosM ())
     handleWith m =
