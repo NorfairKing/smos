@@ -11,3 +11,5 @@ extra-deps:
   subdirs:
     - cursor
     - cursor-gen
+nix:
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/886871538c15681575925a990a3f1b68ed9d5477.tar.gz" ]
