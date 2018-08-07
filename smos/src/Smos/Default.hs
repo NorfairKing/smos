@@ -29,5 +29,6 @@ defaultKeyMap =
                   , exactChar 'd' deleteCurrentTree
                   , exact KUp moveUpInEntryForest
                   , exact KDown moveDownInEntryForest
+                  , exactChar '?' toggleHelp
                   ]
         }

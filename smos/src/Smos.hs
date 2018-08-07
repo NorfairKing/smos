@@ -16,8 +16,8 @@ import Brick.Main as B
 import Smos.Cursor.SmosFile
 import Smos.Data
 
-import Smos.Config
 import Smos.App
+import Smos.Config
 import Smos.OptParse
 import Smos.Types
 
@@ -41,6 +41,7 @@ initState p sf =
         { smosStateFilePath = p
         , smosStateCursor = makeEntireSmosFileCursor sf
         , smosStateKeyHistory = []
+        , smosStateShowHelp = False
         , smosStateShowDebug = False
         }
 

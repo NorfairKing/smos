@@ -89,6 +89,7 @@ data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
     , smosStateCursor :: Maybe SmosFileCursor
     , smosStateKeyHistory :: [KeyPress]
+    , smosStateShowHelp :: Bool
     , smosStateShowDebug :: Bool
     } deriving (Generic)
 

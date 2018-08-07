@@ -42,3 +42,8 @@ moveDownInEntryForest =
     action
         "Move the current cursor down to the previous entry in the entry forest" $
     modifyFileCursorM smosFileCursorSelectNextTree
+
+toggleHelp :: Action
+toggleHelp =
+    action "Toggle the help page to be shown" $
+    modify (\ss -> ss {smosStateShowHelp = not $ smosStateShowHelp ss})

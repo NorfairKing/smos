@@ -66,12 +66,15 @@ smosHandleEvent cf s e = do
 
 keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} =
-    case smosStateCursor s of
-        Nothing -> handleWith keyMapEmptyMatchers
-        Just sfc ->
-            case sfc ^. smosFileCursorEntrySelectionL of
-                WholeEntrySelected -> handleWith keyMapEntryMatchers
-                _ -> Nothing
+    if smosStateShowHelp s
+        then Just $     modify (\ss -> ss {smosStateShowHelp = False})
+
+        else case smosStateCursor s of
+                 Nothing -> handleWith keyMapEmptyMatchers
+                 Just sfc ->
+                     case sfc ^. smosFileCursorEntrySelectionL of
+                         WholeEntrySelected -> handleWith keyMapEntryMatchers
+                         _ -> Nothing
   where
     handleWith :: Map KeyMatch Action -> Maybe (SmosM ())
     handleWith m =

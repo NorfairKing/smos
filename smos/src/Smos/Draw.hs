@@ -7,30 +7,27 @@ module Smos.Draw
 
 import Import hiding ((<+>))
 
--- import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 
--- import qualified Data.Text as T
--- import Data.Time
 import Brick.Types as B
+import Brick.Widgets.Border as B
 import Brick.Widgets.Center as B
 import Brick.Widgets.Core as B
 import Brick.Widgets.Core ((<+>))
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
-import Cursor.Forest
-import Cursor.NonEmpty
-import Cursor.Tree
+import Lens.Micro
 
+import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
--- import Smos.Data
--- import Smos.Style
+import Smos.Draw.Cursor
 import Smos.Style
 import Smos.Types
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} SmosState {..} =
+    [centerLayer drawContextualHelpPage | smosStateShowHelp] ++
     [maybe drawNoContent renderCursor smosStateCursor]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
@@ -40,43 +37,63 @@ smosDraw SmosConfig {..} SmosState {..} =
             then B.vBox [drawHistory smosStateKeyHistory, strWrap $ show cur]
             else emptyWidget
     drawNoContent :: Widget n
-    drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawHelpPage]
+    drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
-        drawInfo :: Widget n
-        drawInfo =
-            withAttr selectedAttr $
+        drawEmptyHelpPage :: Widget n
+        drawEmptyHelpPage =
             vBox $
             map
-                B.hCenterLayer
-                [ str "SMOS"
-                , str " "
-                , str "version 0.0.0"
-                , str "by Tom Sydney Kerckhove"
-                , str "Smos is open source and freely distributable"
-                , str " "
-                , str " "
-                ]
-        drawHelpPage :: Widget n
-        drawHelpPage =
-            vBox $
-            flip map maps $ \(n, m) ->
-                vBox
-                    [ withAttr selectedAttr $ hCenter $ str n
-                    , hCenter $
-                      drawTable $
-                      flip map (M.toList $ m configKeyMap) $ \(km, a) ->
-                          (drawKeyMatch km, txt (actionName a))
-                    ]
-          where
-            maps :: [(String, KeyMap -> Map KeyMatch Action)]
-            maps = [("Empty file", keyMapEmptyMatchers)]
-            drawKeyMatch :: KeyMatch -> Widget n
-            drawKeyMatch (MatchExactly k mods) =
-                str $ showKeypress (KeyPress k mods)
+                (\(n, km) ->
+                     vBox
+                         [ hCenterLayer $ withAttr selectedAttr $ str n
+                         , drawKeyMapHelp km
+                         ])
+                keyMaps
+    drawContextualHelpPage :: Widget n
+    drawContextualHelpPage =
+        case smosStateCursor of
+            Nothing ->
+                borderWithLabel (withAttr selectedAttr $ str "[Empty file]") $
+                padAll 1 $ drawKeyMapHelp keyMapEmptyMatchers
+            Just sfc ->
+                case sfc ^. smosFileCursorEntrySelectionL of
+                    WholeEntrySelected ->
+                        borderWithLabel (withAttr selectedAttr $ str "[Entry]") $
+                        padAll 1 $ drawKeyMapHelp keyMapEntryMatchers
+                    _ -> str "NO HELP TEXT AVAILABLE YET"
+    drawKeyMapHelp :: (KeyMap -> Map KeyMatch Action) -> Widget n
+    drawKeyMapHelp m =
+        drawTable $
+        flip map (M.toList $ m configKeyMap) $ \(km, a) ->
+            (drawKeyMatch km, txt (actionName a))
+      where
+        drawKeyMatch :: KeyMatch -> Widget n
+        drawKeyMatch (MatchExactly k mods) =
+            str $ showKeypress (KeyPress k mods)
+    keyMaps :: [(String, KeyMap -> Map KeyMatch Action)]
+    keyMaps =
+        [("Empty file", keyMapEmptyMatchers), ("Entry", keyMapEntryMatchers)]
+    drawInfo :: Widget n
+    drawInfo =
+        withAttr selectedAttr $
+        vBox $
+        map
+            B.hCenterLayer
+            [ str "SMOS"
+            , str " "
+            , str "version 0.0.0"
+            , str "by Tom Sydney Kerckhove"
+            , str "Smos is open source and freely distributable"
+            , str " "
+            , str " "
+            ]
 
 drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
 drawSmosFileCursor =
-    drawVerticalForestCursor (strWrap . show) (withAttr selectedAttr . strWrap . show) (strWrap . show)
+    drawVerticalForestCursor
+        (strWrap . show)
+        (withAttr selectedAttr . strWrap . show)
+        (strWrap . show)
 
 drawHistory :: [KeyPress] -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . reverse
@@ -101,67 +118,3 @@ showMod MShift = "S"
 showMod MCtrl = "C"
 showMod MMeta = "M"
 showMod MAlt = "A"
-
-drawVerticalForestCursor ::
-       (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> ForestCursor a
-    -> Widget n
-drawVerticalForestCursor prevFunc curFunc nextFunc =
-    drawForestCursor
-        prevFunc
-        curFunc
-        nextFunc
-        B.vBox
-        B.vBox
-        (\a b c -> a <=> b <=> c)
-
-drawForestCursor ::
-       (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> (Widget n -> Widget n -> Widget n -> Widget n)
-    -> ForestCursor a
-    -> Widget n
-drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc =
-    drawNonEmptyCursor
-        prevFunc
-        curFunc
-        nextFunc
-        prevCombFunc
-        nextCombFunc
-        combFunc $
-    forestCursorListCursor fc
-
-drawVerticalNonEmptyCursor ::
-       (a -> Widget n)
-    -> (a -> Widget n)
-    -> (a -> Widget n)
-    -> NonEmptyCursor a
-    -> Widget n
-drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
-    drawNonEmptyCursor
-        prevFunc
-        curFunc
-        nextFunc
-        B.vBox
-        B.vBox
-        (\a b c -> a <=> b <=> c)
-
-drawNonEmptyCursor ::
-       (a -> Widget n)
-    -> (a -> Widget n)
-    -> (a -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> (Widget n -> Widget n -> Widget n -> Widget n)
-    -> NonEmptyCursor a
-    -> Widget n
-drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} =
-    let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev
-        cur = curFunc nonEmptyCursorCurrent
-        next = nextCombFunc $ map nextFunc nonEmptyCursorNext
-     in combFunc prev cur next
