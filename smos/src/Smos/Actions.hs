@@ -25,3 +25,8 @@ insertEntryBelow =
     action
         "Insert an entry after the currently selected header, on the same level" $
     modifyFileCursor smosFileCursorInsertEntryBelow
+
+deleteCurrentTree :: Action
+deleteCurrentTree =
+    action "Delete the current entry and all entries below" $
+    modifyFileCursorM smosFileCursorDeleteTree

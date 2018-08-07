@@ -7,6 +7,11 @@ module Smos.Cursor.SmosFile
     , smosFileCursorEntrySelectionL
     , smosFileCursorInsertEntryAbove
     , smosFileCursorInsertEntryBelow
+    , smosFileCursorRemoveTreeAndSelectPrev
+    , smosFileCursorDeleteTreeAndSelectNext
+    , smosFileCursorRemoveTree
+    , smosFileCursorDeleteTree
+
     ) where
 
 import Data.Validity
@@ -48,3 +53,9 @@ smosFileCursorInsertEntryAbove sfc =
 smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelow sfc=
     forestCursorAppend sfc $ singletonTreeCursor emptyEntryCursor
+
+smosFileCursorRemoveTreeAndSelectPrev = forestCursorRemoveTreeAndSelectPrev
+smosFileCursorDeleteTreeAndSelectNext = forestCursorDeleteTreeAndSelectNext
+smosFileCursorRemoveTree = forestCursorRemoveTree
+smosFileCursorDeleteTree = forestCursorDeleteTree
+

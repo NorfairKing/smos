@@ -5,6 +5,8 @@ module Smos.Actions.Utils
     , module Smos.Cursor.SmosFile
     ) where
 
+import Data.Maybe
+
 import Smos.Cursor.SmosFile
 
 import Smos.Types
@@ -17,6 +19,9 @@ modifyEmptyFileS func =
     modifyMFileCursorS $ \case
         Nothing -> Just <$> func
         _ -> pure Nothing
+
+modifyFileCursorM :: (SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
+modifyFileCursorM func = modifyFileCursor $ \sfc -> fromMaybe sfc $ func sfc
 
 modifyFileCursor :: (SmosFileCursor -> SmosFileCursor) -> SmosM ()
 modifyFileCursor func = modifyMFileCursor $ \mc -> func <$> mc

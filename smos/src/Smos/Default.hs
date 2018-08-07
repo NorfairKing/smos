@@ -18,6 +18,7 @@ defaultKeyMap =
                   [ exactChar 'q' stop
                   , exact KEsc stop
                   , exactChar 'h' startHeaderFromEmpty
+                  , exactChar 'H' startHeaderFromEmpty
                   ]
         , keyMapEntryMatchers =
               listMatchers
@@ -25,5 +26,6 @@ defaultKeyMap =
                   , exact KEsc stop
                   , exactChar 'h' insertEntryAbove
                   , exactChar 'H' insertEntryBelow
+                  , exactChar 'd' deleteCurrentTree
                   ]
         }
