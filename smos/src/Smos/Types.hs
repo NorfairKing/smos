@@ -47,6 +47,12 @@ data SmosConfig = SmosConfig
 data KeyMap = KeyMap
     { keyMapEmptyMatchers :: Map KeyMatch Action
     , keyMapEntryMatchers :: Map KeyMatch Action
+    , keyMapHeaderMatchers :: Map KeyMatch Action
+    , keyMapContentsMatchers :: Map KeyMatch Action
+    , keyMapTimestampsMatchers :: Map KeyMatch Action
+    , keyMapPropertiesMatchers :: Map KeyMatch Action
+    , keyMapTagsMatchers :: Map KeyMatch Action
+    , keyMapLogbookMatchers :: Map KeyMatch Action
     } deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -56,10 +62,29 @@ instance Semigroup KeyMap where
                   keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
             , keyMapEntryMatchers =
                   keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
+            , keyMapHeaderMatchers =
+                  keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
+            , keyMapContentsMatchers =
+                  keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
+            , keyMapTimestampsMatchers =
+                  keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
+            , keyMapPropertiesMatchers =
+                  keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
+            , keyMapTagsMatchers =
+                  keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
+            , keyMapLogbookMatchers =
+                  keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
             }
 
 instance Monoid KeyMap where
-    mempty = KeyMap {keyMapEmptyMatchers = mempty, keyMapEntryMatchers=mempty}
+    mempty = KeyMap {keyMapEmptyMatchers = mempty, keyMapEntryMatchers = mempty
+    , keyMapHeaderMatchers     = mempty
+    , keyMapContentsMatchers = mempty
+    , keyMapTimestampsMatchers = mempty
+    , keyMapPropertiesMatchers = mempty
+    , keyMapTagsMatchers = mempty
+    , keyMapLogbookMatchers = mempty
+    }
 
 data KeyMatch =
     MatchExactly Key

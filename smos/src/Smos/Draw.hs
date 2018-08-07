@@ -52,17 +52,27 @@ smosDraw SmosConfig {..} SmosState {..} =
     drawContextualHelpPage :: Widget n
     drawContextualHelpPage =
         case smosStateCursor of
-            Nothing ->
-                borderWithLabel (withAttr selectedAttr $ str "[Empty file]") $
-                padAll 1 $ drawKeyMapHelp keyMapEmptyMatchers
+            Nothing -> pageFor "Empty file" keyMapEmptyMatchers
             Just sfc ->
                 case sfc ^. smosFileCursorEntrySelectionL of
-                    WholeEntrySelected ->
-                        borderWithLabel (withAttr selectedAttr $ str "[Entry]") $
-                        padAll 1 $ drawKeyMapHelp keyMapEntryMatchers
-                    _ -> str "NO HELP TEXT AVAILABLE YET"
+                    WholeEntrySelected -> pageFor "Entry" keyMapEntryMatchers
+                    HeaderSelected -> pageFor "Header" keyMapHeaderMatchers
+                    ContentsSelected ->
+                        pageFor "Contents" keyMapContentsMatchers
+                    TimestampsSelected ->
+                        pageFor "Timestamps" keyMapTimestampsMatchers
+                    PropertiesSelected ->
+                        pageFor "Properties" keyMapPropertiesMatchers
+                    TagsSelected -> pageFor "Tags" keyMapTagsMatchers
+                    LogbookSelected -> pageFor "Logbook" keyMapLogbookMatchers
+      where
+        pageFor s bindings =
+            borderWithLabel (withAttr selectedAttr $ str ("[" ++ s ++ "]")) $
+            padAll 1 $ drawKeyMapHelp bindings
     drawKeyMapHelp :: (KeyMap -> Map KeyMatch Action) -> Widget n
     drawKeyMapHelp m =
+        padBottom (Pad 1) $
+        hCenterLayer $
         drawTable $
         flip map (M.toList $ m configKeyMap) $ \(km, a) ->
             (drawKeyMatch km, txt (actionName a))
@@ -72,7 +82,15 @@ smosDraw SmosConfig {..} SmosState {..} =
             str $ showKeypress (KeyPress k mods)
     keyMaps :: [(String, KeyMap -> Map KeyMatch Action)]
     keyMaps =
-        [("Empty file", keyMapEmptyMatchers), ("Entry", keyMapEntryMatchers)]
+        [ ("Empty file", keyMapEmptyMatchers)
+        , ("Entry", keyMapEntryMatchers)
+        , ("Header", keyMapHeaderMatchers)
+        , ("Contents", keyMapContentsMatchers)
+        , ("Timestamps", keyMapTimestampsMatchers)
+        , ("Properties", keyMapPropertiesMatchers)
+        , ("Tags", keyMapTagsMatchers)
+        , ("Logbook", keyMapLogbookMatchers)
+        ]
     drawInfo :: Widget n
     drawInfo =
         withAttr selectedAttr $
