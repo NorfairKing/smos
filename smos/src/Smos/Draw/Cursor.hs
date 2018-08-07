@@ -1,9 +1,11 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Draw.Cursor
     ( drawVerticalForestCursor
     , drawForestCursor
+    , drawTreeCursor
     , drawVerticalNonEmptyCursor
     , drawNonEmptyCursor
     ) where
@@ -14,6 +16,8 @@ import Brick.Widgets.Core as B
 import Cursor.Forest
 import Cursor.NonEmpty
 import Cursor.Tree
+
+import Smos.Data
 
 drawVerticalForestCursor ::
        (TreeCursor a -> Widget n)
@@ -43,6 +47,25 @@ drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc
         nextCombFunc
         combFunc $
     forestCursorListCursor fc
+
+drawTreeCursor ::
+       forall a n.
+       ([Tree a] -> a -> [Tree a] -> Widget n -> Widget n)
+    -> (a -> Forest a -> Widget n)
+    -> TreeCursor a
+    -> Widget n
+drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
+    (case treeAbove of
+         Nothing -> id
+         Just ta -> goAbove ta)
+        (currentFunc treeCurrent treeBelow)
+  where
+    goAbove :: TreeAbove a -> Widget n -> Widget n
+    goAbove TreeAbove {..} =
+        (case treeAboveAbove of
+             Nothing -> id
+             Just ta -> goAbove ta) .
+        wrapAboveFunc treeAboveLefts treeAboveNode treeAboveRights
 
 drawVerticalNonEmptyCursor ::
        (a -> Widget n)

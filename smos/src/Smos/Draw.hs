@@ -18,6 +18,10 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Lens.Micro
 
+import Data.Tree
+
+import Cursor.Tree
+
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
@@ -74,7 +78,7 @@ smosDraw SmosConfig {..} SmosState {..} =
         padBottom (Pad 1) $
         hCenterLayer $
         drawTable $
-        flip map (M.toList $ m configKeyMap) $ \(km, a) ->
+        flip map (M.toAscList $ m configKeyMap) $ \(km, a) ->
             (drawKeyMatch km, txt (actionName a))
       where
         drawKeyMatch :: KeyMatch -> Widget n
@@ -106,13 +110,6 @@ smosDraw SmosConfig {..} SmosState {..} =
             , str " "
             ]
 
-drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
-drawSmosFileCursor =
-    drawVerticalForestCursor
-        (strWrap . show)
-        (withAttr selectedAttr . strWrap . show)
-        (strWrap . show)
-
 drawHistory :: [KeyPress] -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . reverse
 
@@ -136,3 +133,43 @@ showMod MShift = "S"
 showMod MCtrl = "C"
 showMod MMeta = "M"
 showMod MAlt = "A"
+
+data Select
+    = MaybeSelected
+    | NotSelected
+
+drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
+drawSmosFileCursor =
+    drawVerticalForestCursor
+        (drawSmosTreeCursor NotSelected)
+        (withAttr selectedAttr . drawSmosTreeCursor MaybeSelected)
+        (drawSmosTreeCursor NotSelected)
+
+drawSmosTreeCursor :: Select -> TreeCursor EntryCursor -> Widget ResourceName
+drawSmosTreeCursor s = drawTreeCursor wrap cur
+  where
+    cur :: EntryCursor -> Forest EntryCursor -> Widget ResourceName
+    cur ec ts =
+        drawEntryCursor s ec <=>
+        padLeft defaultPadding (vBox $ map drawEntryTree ts)
+    wrap ::
+           [Tree EntryCursor]
+        -> EntryCursor
+        -> [Tree EntryCursor]
+        -> Widget ResourceName
+        -> Widget ResourceName
+    wrap tsl e tsr w =
+        drawEntryCursor NotSelected e <=>
+        padLeft
+            defaultPadding
+            (vBox $ concat [map drawEntryTree tsl , [w] , map drawEntryTree tsr])
+    drawEntryTree :: Tree EntryCursor -> Widget ResourceName
+    drawEntryTree (Node t ts) =
+        drawEntryCursor NotSelected t <=>
+        padLeft defaultPadding (vBox $ map drawEntryTree ts)
+
+drawEntryCursor :: Select -> EntryCursor -> Widget ResourceName
+drawEntryCursor _ = strWrap . show
+
+defaultPadding :: Padding
+defaultPadding = Pad 2
