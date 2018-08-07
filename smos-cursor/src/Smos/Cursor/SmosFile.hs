@@ -5,13 +5,16 @@ module Smos.Cursor.SmosFile
     , startSmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
+    , smosFileCursorSelectPrevTree
+    , smosFileCursorSelectNextTree
+    , smosFileCursorSelectFirstTree
+    , smosFileCursorSelectLastTree
     , smosFileCursorInsertEntryAbove
     , smosFileCursorInsertEntryBelow
     , smosFileCursorRemoveTreeAndSelectPrev
     , smosFileCursorDeleteTreeAndSelectNext
     , smosFileCursorRemoveTree
     , smosFileCursorDeleteTree
-
     ) where
 
 import Data.Validity
@@ -46,16 +49,34 @@ smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL =
     smosFileCursorSelectedEntryL . entryCursorSelectionL
 
+smosFileCursorSelectPrevTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectPrevTree = forestCursorSelectPrevTree
+
+smosFileCursorSelectNextTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectNextTree = forestCursorSelectNextTree
+
+smosFileCursorSelectFirstTree :: SmosFileCursor -> SmosFileCursor
+smosFileCursorSelectFirstTree = forestCursorSelectFirstTree
+
+smosFileCursorSelectLastTree :: SmosFileCursor -> SmosFileCursor
+smosFileCursorSelectLastTree = forestCursorSelectLastTree
+
 smosFileCursorInsertEntryAbove :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryAbove sfc =
     forestCursorInsert sfc $ singletonTreeCursor emptyEntryCursor
 
 smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBelow sfc=
+smosFileCursorInsertEntryBelow sfc =
     forestCursorAppend sfc $ singletonTreeCursor emptyEntryCursor
 
+smosFileCursorRemoveTreeAndSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorRemoveTreeAndSelectPrev = forestCursorRemoveTreeAndSelectPrev
-smosFileCursorDeleteTreeAndSelectNext = forestCursorDeleteTreeAndSelectNext
-smosFileCursorRemoveTree = forestCursorRemoveTree
-smosFileCursorDeleteTree = forestCursorDeleteTree
 
+smosFileCursorDeleteTreeAndSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDeleteTreeAndSelectNext = forestCursorDeleteTreeAndSelectNext
+
+smosFileCursorRemoveTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorRemoveTree = forestCursorRemoveTree
+
+smosFileCursorDeleteTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDeleteTree = forestCursorDeleteTree

@@ -30,3 +30,15 @@ deleteCurrentTree :: Action
 deleteCurrentTree =
     action "Delete the current entry and all entries below" $
     modifyFileCursorM smosFileCursorDeleteTree
+
+moveUpInEntryForest :: Action
+moveUpInEntryForest =
+    action
+        "Move the current cursor up to the previous entry in the entry forest" $
+    modifyFileCursorM smosFileCursorSelectPrevTree
+
+moveDownInEntryForest :: Action
+moveDownInEntryForest =
+    action
+        "Move the current cursor down to the previous entry in the entry forest" $
+    modifyFileCursorM smosFileCursorSelectNextTree

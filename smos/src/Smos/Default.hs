@@ -27,5 +27,7 @@ defaultKeyMap =
                   , exactChar 'h' insertEntryAbove
                   , exactChar 'H' insertEntryBelow
                   , exactChar 'd' deleteCurrentTree
+                  , exact KUp moveUpInEntryForest
+                  , exact KDown moveDownInEntryForest
                   ]
         }
