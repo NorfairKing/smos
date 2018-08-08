@@ -31,11 +31,11 @@ defaultKeyMap =
                   , exact KDown moveDownInEntryForest
                   , exactChar '?' toggleHelp
                   ]
-            , keyMapHeaderMatchers = mempty
-            , keyMapContentsMatchers = mempty
-            , keyMapTimestampsMatchers = mempty
-            , keyMapPropertiesMatchers = mempty
-            , keyMapTagsMatchers = mempty
-            , keyMapLogbookMatchers = mempty
-
+        , keyMapHeaderMatchers = mempty
+        , keyMapContentsMatchers = mempty
+        , keyMapTimestampsMatchers = mempty
+        , keyMapPropertiesMatchers = mempty
+        , keyMapStateHistoryMatchers = mempty
+        , keyMapTagsMatchers = mempty
+        , keyMapLogbookMatchers = mempty
         }

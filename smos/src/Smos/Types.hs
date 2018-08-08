@@ -51,6 +51,7 @@ data KeyMap = KeyMap
     , keyMapContentsMatchers :: Map KeyMatch Action
     , keyMapTimestampsMatchers :: Map KeyMatch Action
     , keyMapPropertiesMatchers :: Map KeyMatch Action
+    , keyMapStateHistoryMatchers :: Map KeyMatch Action
     , keyMapTagsMatchers :: Map KeyMatch Action
     , keyMapLogbookMatchers :: Map KeyMatch Action
     } deriving (Generic)
@@ -70,6 +71,9 @@ instance Semigroup KeyMap where
                   keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
             , keyMapPropertiesMatchers =
                   keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
+            , keyMapStateHistoryMatchers =
+                  keyMapStateHistoryMatchers km1 <>
+                  keyMapStateHistoryMatchers km2
             , keyMapTagsMatchers =
                   keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
             , keyMapLogbookMatchers =
@@ -77,14 +81,18 @@ instance Semigroup KeyMap where
             }
 
 instance Monoid KeyMap where
-    mempty = KeyMap {keyMapEmptyMatchers = mempty, keyMapEntryMatchers = mempty
-    , keyMapHeaderMatchers     = mempty
-    , keyMapContentsMatchers = mempty
-    , keyMapTimestampsMatchers = mempty
-    , keyMapPropertiesMatchers = mempty
-    , keyMapTagsMatchers = mempty
-    , keyMapLogbookMatchers = mempty
-    }
+    mempty =
+        KeyMap
+            { keyMapEmptyMatchers = mempty
+            , keyMapEntryMatchers = mempty
+            , keyMapHeaderMatchers = mempty
+            , keyMapContentsMatchers = mempty
+            , keyMapTimestampsMatchers = mempty
+            , keyMapPropertiesMatchers = mempty
+            , keyMapStateHistoryMatchers = mempty
+            , keyMapTagsMatchers = mempty
+            , keyMapLogbookMatchers = mempty
+            }
 
 data KeyMatch =
     MatchExactly Key

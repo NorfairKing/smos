@@ -20,10 +20,19 @@ import Lens.Micro
 
 import Data.Tree
 
+import Cursor.Text
+import Cursor.TextField
 import Cursor.Tree
 
+import Smos.Cursor.Contents
 import Smos.Cursor.Entry
+import Smos.Cursor.Header
+import Smos.Cursor.Logbook
+import Smos.Cursor.Properties
 import Smos.Cursor.SmosFile
+import Smos.Cursor.StateHistory
+import Smos.Cursor.Tags
+import Smos.Cursor.Timestamps
 
 import Smos.Draw.Cursor
 import Smos.Style
@@ -67,6 +76,8 @@ smosDraw SmosConfig {..} SmosState {..} =
                         pageFor "Timestamps" keyMapTimestampsMatchers
                     PropertiesSelected ->
                         pageFor "Properties" keyMapPropertiesMatchers
+                    StateHistorySelected ->
+                        pageFor "State History" keyMapStateHistoryMatchers
                     TagsSelected -> pageFor "Tags" keyMapTagsMatchers
                     LogbookSelected -> pageFor "Logbook" keyMapLogbookMatchers
       where
@@ -92,6 +103,7 @@ smosDraw SmosConfig {..} SmosState {..} =
         , ("Contents", keyMapContentsMatchers)
         , ("Timestamps", keyMapTimestampsMatchers)
         , ("Properties", keyMapPropertiesMatchers)
+        , ("State History", keyMapStateHistoryMatchers)
         , ("Tags", keyMapTagsMatchers)
         , ("Logbook", keyMapLogbookMatchers)
         ]
@@ -138,11 +150,14 @@ data Select
     = MaybeSelected
     | NotSelected
 
+defaultPadding :: Padding
+defaultPadding = Pad 2
+
 drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
 drawSmosFileCursor =
     drawVerticalForestCursor
         (drawSmosTreeCursor NotSelected)
-        (withAttr selectedAttr . drawSmosTreeCursor MaybeSelected)
+        (drawSmosTreeCursor MaybeSelected)
         (drawSmosTreeCursor NotSelected)
 
 drawSmosTreeCursor :: Select -> TreeCursor EntryCursor -> Widget ResourceName
@@ -162,14 +177,75 @@ drawSmosTreeCursor s = drawTreeCursor wrap cur
         drawEntryCursor NotSelected e <=>
         padLeft
             defaultPadding
-            (vBox $ concat [map drawEntryTree tsl , [w] , map drawEntryTree tsr])
+            (vBox $ concat [map drawEntryTree tsl, [w], map drawEntryTree tsr])
     drawEntryTree :: Tree EntryCursor -> Widget ResourceName
     drawEntryTree (Node t ts) =
         drawEntryCursor NotSelected t <=>
         padLeft defaultPadding (vBox $ map drawEntryTree ts)
 
 drawEntryCursor :: Select -> EntryCursor -> Widget ResourceName
-drawEntryCursor _ = strWrap . show
+drawEntryCursor s EntryCursor {..} =
+    (case (s, entryCursorSelected) of
+         (MaybeSelected, WholeEntrySelected) -> withAttr selectedAttr
+         _ -> id) $
+    vBox
+        [ drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor
+        , maybe
+              emptyWidget
+              (drawContentsCursor $ selectWhen ContentsSelected)
+              entryCursorContentsCursor
+        , maybe
+              emptyWidget
+              (drawTimestampsCursor $ selectWhen TimestampsSelected)
+              entryCursorTimestampsCursor
+        , maybe
+              emptyWidget
+              (drawPropertiesCursor $ selectWhen PropertiesSelected)
+              entryCursorPropertiesCursor
+        , maybe
+              emptyWidget
+              (drawStateHistoryCursor $ selectWhen StateHistorySelected)
+              entryCursorStateHistoryCursor
+        , maybe
+              emptyWidget
+              (drawTagsCursor $ selectWhen TagsSelected)
+              entryCursorTagsCursor
+        , drawLogbookCursor
+              (selectWhen LogbookSelected)
+              entryCursorLogbookCursor
+        ]
+  where
+    selectWhen :: EntryCursorSelection -> Select
+    selectWhen ecs =
+        if ecs == entryCursorSelected
+            then s
+            else NotSelected
 
-defaultPadding :: Padding
-defaultPadding = Pad 2
+drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
+drawHeaderCursor = drawTextCursor
+
+drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
+drawContentsCursor = drawTextFieldCursor
+
+drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
+drawTimestampsCursor _ = strWrap . show
+
+drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
+drawPropertiesCursor _ = strWrap . show
+
+drawStateHistoryCursor :: Select -> StateHistoryCursor -> Widget ResourceName
+drawStateHistoryCursor _ = strWrap . show
+
+drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
+drawTagsCursor _ = strWrap . show
+
+drawLogbookCursor :: Select -> LogbookCursor -> Widget ResourceName
+drawLogbookCursor _ lbc = case lbc of
+    LogbookCursorClosed Nothing -> emptyWidget
+    _ -> strWrap $ show lbc
+
+drawTextCursor :: Select -> TextCursor -> Widget ResourceName
+drawTextCursor _ = strWrap . show
+
+drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
+drawTextFieldCursor _ = strWrap . show

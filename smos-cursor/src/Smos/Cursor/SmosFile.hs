@@ -17,8 +17,6 @@ module Smos.Cursor.SmosFile
     , smosFileCursorDeleteTree
     ) where
 
-import Data.Validity
-
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 

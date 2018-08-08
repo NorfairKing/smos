@@ -32,12 +32,12 @@ import Smos.Cursor.Timestamps
 data EntryCursor = EntryCursor
     { entryCursorHeaderCursor :: HeaderCursor
     , entryCursorContentsCursor :: Maybe ContentsCursor
-    , entryCursorSelected :: EntryCursorSelection
     , entryCursorTimestampsCursor :: Maybe TimestampsCursor
     , entryCursorPropertiesCursor :: Maybe PropertiesCursor
     , entryCursorStateHistoryCursor :: Maybe StateHistoryCursor
     , entryCursorTagsCursor :: Maybe TagsCursor
     , entryCursorLogbookCursor :: LogbookCursor
+    , entryCursorSelected :: EntryCursorSelection
     } deriving (Show, Eq, Generic)
 
 instance Validity EntryCursor
@@ -92,6 +92,7 @@ data EntryCursorSelection
     | ContentsSelected
     | TimestampsSelected
     | PropertiesSelected
+    | StateHistorySelected
     | TagsSelected
     | LogbookSelected
     deriving (Show, Eq, Generic)

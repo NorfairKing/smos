@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Smos.Cursor.Logbook.Gen where
 
 import Data.GenValidity
