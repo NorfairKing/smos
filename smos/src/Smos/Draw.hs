@@ -185,11 +185,16 @@ drawSmosTreeCursor s = drawTreeCursor wrap cur
 
 drawEntryCursor :: Select -> EntryCursor -> Widget ResourceName
 drawEntryCursor s EntryCursor {..} =
-    (case (s, entryCursorSelected) of
-         (MaybeSelected, WholeEntrySelected) -> withAttr selectedAttr
-         _ -> id) $
     vBox
-        [ drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor
+        [ hBox
+              [ (case s of
+                     MaybeSelected -> withAttr selectedAttr
+                     NotSelected -> id) $
+                str "> "
+              , drawHeaderCursor
+                    (selectWhen HeaderSelected)
+                    entryCursorHeaderCursor
+              ]
         , maybe
               emptyWidget
               (drawContentsCursor $ selectWhen ContentsSelected)
@@ -240,12 +245,18 @@ drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor _ = strWrap . show
 
 drawLogbookCursor :: Select -> LogbookCursor -> Widget ResourceName
-drawLogbookCursor _ lbc = case lbc of
-    LogbookCursorClosed Nothing -> emptyWidget
-    _ -> strWrap $ show lbc
+drawLogbookCursor _ lbc =
+    case lbc of
+        LogbookCursorClosed Nothing -> emptyWidget
+        _ -> strWrap $ show lbc
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
-drawTextCursor _ = strWrap . show
+drawTextCursor s tc =
+    (case s of
+         MaybeSelected ->
+             showCursor textCursorName (B.Location (textCursorIndex tc, 0))
+         _ -> id) $
+    txt (rebuildTextCursor tc)
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
 drawTextFieldCursor _ = strWrap . show
