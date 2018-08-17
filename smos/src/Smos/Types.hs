@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -100,14 +99,20 @@ instance Monoid KeyMap where
 
 type KeyMappings = [KeyMapping]
 
-data KeyMapping where
-    MapVtyExactly :: Vty.Key -> [Vty.Modifier] -> Action -> KeyMapping
-    MapAnyTypeableChar :: ActionUsing Char -> KeyMapping
+data KeyMapping
+    = MapVtyExactly KeyPress
+                    Action
+    | MapAnyTypeableChar (ActionUsing Char)
+    | MapCombination KeyPress
+                     KeyMapping
 
 data ActionUsing a = Action
     { actionName :: Text
     , actionFunc :: a -> SmosM ()
     } deriving (Generic)
+
+instance Contravariant ActionUsing where
+    contramap func a = a {actionFunc = \b -> actionFunc a $ func b}
 
 type Action = ActionUsing ()
 
@@ -131,7 +136,7 @@ runSmosM = runMkSmosM
 data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
     , smosStateCursor :: Maybe SmosFileCursor
-    , smosStateKeyHistory :: [KeyPress]
+    , smosStateKeyHistory :: [KeyPress] -- In reverse order
     , smosStateShowHelp :: Bool
     , smosStateShowDebug :: Bool
     } deriving (Generic)

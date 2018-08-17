@@ -90,10 +90,8 @@ smosDraw SmosConfig {..} SmosState {..} =
     drawKeyMapHelp :: (KeyMap -> KeyMappings) -> Widget n
     drawKeyMapHelp m =
         drawTable $
-        flip map (m configKeyMap) $ \case
-            MapVtyExactly k mods a ->
-                (str $ showKeypress (KeyPress k mods), txt (actionName a))
-            MapAnyTypeableChar a -> (str "<any char>", txt (actionName a))
+        flip map (m configKeyMap) $ \km ->
+            (drawKeyMappingEvent km, txt (keyMappingActionName km))
     keyMaps :: [(String, KeyMap -> KeyMappings)]
     keyMaps =
         [ ("Empty file", keyMapEmptyMatchers)
@@ -120,6 +118,17 @@ smosDraw SmosConfig {..} SmosState {..} =
             , str " "
             , str " "
             ]
+
+drawKeyMappingEvent :: KeyMapping -> Widget n
+drawKeyMappingEvent (MapVtyExactly kp _) = str $ showKeypress kp
+drawKeyMappingEvent (MapAnyTypeableChar _) = str "<any char>"
+drawKeyMappingEvent (MapCombination kp km) =
+    hBox [str $ showKeypress kp, drawKeyMappingEvent km]
+
+keyMappingActionName :: KeyMapping -> Text
+keyMappingActionName (MapVtyExactly _ a) = actionName a
+keyMappingActionName (MapAnyTypeableChar a) = actionName a
+keyMappingActionName (MapCombination _ km) = keyMappingActionName km
 
 drawHistory :: [KeyPress] -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . reverse

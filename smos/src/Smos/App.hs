@@ -90,26 +90,60 @@ keyMapFunc s e KeyMap {..} =
         case e of
             VtyEvent vtye ->
                 case vtye of
-                    Vty.EvKey k mods -> findBestMatch k mods m
+                    Vty.EvKey k mods ->
+                        findBestMatch
+                            (smosStateKeyHistory s)
+                            (KeyPress k mods)
+                            m
                     _ -> Nothing
             _ -> Nothing
 
-findBestMatch :: Vty.Key -> [Vty.Modifier] -> KeyMappings -> Maybe (SmosM ())
-findBestMatch k mods mappings =
+findBestMatch :: [KeyPress] -> KeyPress -> KeyMappings -> Maybe (SmosM ())
+findBestMatch history kp@(KeyPress k _) mappings =
     let ls =
             flip mapMaybe mappings $ \case
-                MapVtyExactly k_ mods_ a ->
-                    if k == k_ && sort mods == sort mods_
+                MapVtyExactly kp_ a ->
+                    if keyPressMatch kp kp_
                         then Just (High, actionFunc a ())
                         else Nothing
                 MapAnyTypeableChar a ->
                     case k of
                         Vty.KChar c -> Just (Low, actionFunc a c)
                         _ -> Nothing
+                mc@(MapCombination _ _)
+                    -- Remember, the history is in reverse, so newest presses first
+                 ->
+                    let go :: [KeyPress]
+                           -> KeyMapping
+                           -> Maybe (Priority, SmosM ())
+                        go hs km =
+                            case (hs, km) of
+                                ([], _) -> Nothing
+                                ([hkp], MapVtyExactly kp_ a) ->
+                                    if keyPressMatch hkp kp_
+                                        then Just (Highest, actionFunc a ())
+                                        else Nothing
+                                ([(KeyPress hk _)], MapAnyTypeableChar a) ->
+                                    case hk of
+                                        Vty.KChar c ->
+                                            Just (Higher, actionFunc a c)
+                                        _ -> Nothing
+                                (hkp:hkps, MapCombination kp_ km_) ->
+                                    if keyPressMatch hkp kp_
+                                        then go hkps km_
+                                        else Nothing
+                                (_, _) -> Nothing
+                     in go (kp : history) mc
      in (snd . NE.head) <$> NE.nonEmpty (sortOn fst ls)
 
+keyPressMatch :: KeyPress -> KeyPress -> Bool
+keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) =
+    k1 == k2 && sort mods1 == sort mods2
+
 data Priority
-    = High
+    = Highest
+    | Higher
+    | High
     | Low
     deriving (Eq, Ord)
 

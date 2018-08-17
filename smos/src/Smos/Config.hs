@@ -3,9 +3,12 @@ module Smos.Config
     , module Smos.Actions
     , Map
     , listMatchers
+    , exactString
+    , combo
     , exactChar
     , exactKey
-    , exactKeyWithMods
+    , exactKeyPress
+    , KeyPress(..)
     , anyChar
     , KeyMap(..)
     , KeyMapping(..)
@@ -27,14 +30,28 @@ import Smos.Types
 listMatchers :: [KeyMapping] -> KeyMappings
 listMatchers = id
 
+exactString :: [Char] -> Action -> KeyMapping
+exactString cs a =
+    case cs of
+        [] -> error "Cannot have an empty key combination"
+        [c] -> exactChar c a
+        (c:cs_) -> MapCombination (KeyPress (KChar c) []) $ exactString cs_ a
+
+combo :: [KeyPress] -> Action -> KeyMapping
+combo kps a =
+    case kps of
+        [] -> error "Cannot have an empty key combination"
+        [kp] -> exactKeyPress kp a
+        (kp:kps_) -> MapCombination kp $ combo kps_ a
+
 exactChar :: Char -> Action -> KeyMapping
 exactChar c a = exactKey (KChar c) a
 
 exactKey :: Key -> Action -> KeyMapping
-exactKey k a = exactKeyWithMods k [] a
+exactKey k a = exactKeyPress (KeyPress k []) a
 
-exactKeyWithMods :: Key -> [Modifier] -> Action -> KeyMapping
-exactKeyWithMods = MapVtyExactly
+exactKeyPress :: KeyPress -> Action -> KeyMapping
+exactKeyPress = MapVtyExactly
 
 anyChar :: ActionUsing Char -> KeyMapping
 anyChar = MapAnyTypeableChar

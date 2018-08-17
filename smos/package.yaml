@@ -15,6 +15,7 @@ library:
   - brick
   - bytestring
   - containers
+  - contravariant
   - cursor
   - megaparsec
   - microlens
