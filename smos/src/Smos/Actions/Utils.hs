@@ -2,14 +2,22 @@
 
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
+    , module Smos.Cursor.Entry
     , module Smos.Cursor.SmosFile
     ) where
 
 import Data.Maybe
 
+import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Lens.Micro
+
 import Smos.Types
+
+modifyEntryCursor :: (EntryCursor -> EntryCursor) -> SmosM ()
+modifyEntryCursor func =
+    modifyFileCursor $ \sfc -> sfc & smosFileCursorSelectedEntryL %~ func
 
 modifyEmptyFile :: SmosFileCursor -> SmosM ()
 modifyEmptyFile = modifyEmptyFileS . pure

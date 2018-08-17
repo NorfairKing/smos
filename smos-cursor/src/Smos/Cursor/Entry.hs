@@ -8,14 +8,15 @@ module Smos.Cursor.Entry
     , rebuildEntryCursor
     , entryCursorSelectionL
     , EntryCursorSelection(..)
-, entryCursorSelect
-, entryCursorSelectHeader
-, entryCursorSelectContents
-, entryCursorSelectTimestamps
-, entryCursorSelectProperties
-, entryCursorSelectStateHistory
-, entryCursorSelectTags
-, entryCursorSelectLogbook
+    , entryCursorSelect
+    , entryCursorSelectWhole
+    , entryCursorSelectHeader
+    , entryCursorSelectContents
+    , entryCursorSelectTimestamps
+    , entryCursorSelectProperties
+    , entryCursorSelectStateHistory
+    , entryCursorSelectTags
+    , entryCursorSelectLogbook
     ) where
 
 import GHC.Generics (Generic)
@@ -96,6 +97,9 @@ entryCursorSelectionL =
 
 entryCursorSelect :: EntryCursorSelection -> EntryCursor -> EntryCursor
 entryCursorSelect ecl ec = ec & entryCursorSelectionL .~ ecl
+
+entryCursorSelectWhole :: EntryCursor -> EntryCursor
+entryCursorSelectWhole = entryCursorSelect WholeEntrySelected
 
 entryCursorSelectHeader :: EntryCursor -> EntryCursor
 entryCursorSelectHeader = entryCursorSelect HeaderSelected

@@ -25,9 +25,15 @@ defaultKeyMap =
               listMatchers
                   [ exactChar 'q' stop
                   , exact KEsc stop
-                  , exactChar 'h' insertEntryAbove
-                  , exactChar 'H' insertEntryBelow
-                  , exactChar 'd' deleteCurrentTree
+                  -- Selections
+                  , exactChar 'a' entrySelectHeader
+                  , exactChar 'c' entrySelectContents
+                  , exactChar 't' entrySelectTimestamps
+                  , exactChar 'p' entrySelectProperties
+                  , exactChar 's' entrySelectStateHistory
+                  , exactChar 'o' entrySelectTags
+                  , exactChar 'l' entrySelectLogbook
+                  -- Movements
                   , exact KUp moveUpInEntryForest
                   , exactChar 'k' moveUpInEntryForest
                   , exact KDown moveDownInEntryForest
@@ -36,14 +42,33 @@ defaultKeyMap =
                   , exactChar 'g' moveToFirstEntryForest
                   , exact KEnd moveToLastEntryForest
                   , exactChar 'G' moveToLastEntryForest
+                  -- Forest manipulation
+                  , exactChar 'h' insertEntryAbove
+                  , exactChar 'H' insertEntryBelow
+                  , exactChar 'd' deleteCurrentTree
+                  -- Extras
                   , exactChar '?' toggleHelp
                   , (MatchExactly KEnter [MMeta], toggleDebug)
                   ]
-        , keyMapHeaderMatchers = mempty
-        , keyMapContentsMatchers = mempty
-        , keyMapTimestampsMatchers = mempty
-        , keyMapPropertiesMatchers = mempty
-        , keyMapStateHistoryMatchers = mempty
-        , keyMapTagsMatchers = mempty
-        , keyMapLogbookMatchers = mempty
+        , keyMapHeaderMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapContentsMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapTimestampsMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapPropertiesMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapStateHistoryMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapTagsMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+        , keyMapLogbookMatchers =
+              listMatchers
+                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
         }

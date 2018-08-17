@@ -63,3 +63,43 @@ toggleDebug :: Action
 toggleDebug =
     action "Toggle the debug info" $
     modify (\ss -> ss {smosStateShowDebug = not $ smosStateShowDebug ss})
+
+entrySelectWhole :: Action
+entrySelectWhole =
+    action "Select the whole current Entry" $
+    modifyEntryCursor entryCursorSelectWhole
+
+entrySelectHeader :: Action
+entrySelectHeader =
+    action "Select the current Entry's header" $
+    modifyEntryCursor entryCursorSelectHeader
+
+entrySelectContents :: Action
+entrySelectContents =
+    action "Select the current Entry's contents" $
+    modifyEntryCursor entryCursorSelectContents
+
+entrySelectTimestamps :: Action
+entrySelectTimestamps =
+    action "Select the current Entry's timestamps" $
+    modifyEntryCursor entryCursorSelectTimestamps
+
+entrySelectProperties :: Action
+entrySelectProperties =
+    action "Select the current Entry's properties" $
+    modifyEntryCursor entryCursorSelectProperties
+
+entrySelectStateHistory :: Action
+entrySelectStateHistory =
+    action "Select the current Entry's state history" $
+    modifyEntryCursor entryCursorSelectStateHistory
+
+entrySelectTags :: Action
+entrySelectTags =
+    action "Select the current Entry's tags" $
+    modifyEntryCursor entryCursorSelectTags
+
+entrySelectLogbook :: Action
+entrySelectLogbook =
+    action "Select the current Entry's logbook" $
+    modifyEntryCursor entryCursorSelectLogbook
