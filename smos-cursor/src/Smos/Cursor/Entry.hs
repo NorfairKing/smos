@@ -8,6 +8,14 @@ module Smos.Cursor.Entry
     , rebuildEntryCursor
     , entryCursorSelectionL
     , EntryCursorSelection(..)
+, entryCursorSelect
+, entryCursorSelectHeader
+, entryCursorSelectContents
+, entryCursorSelectTimestamps
+, entryCursorSelectProperties
+, entryCursorSelectStateHistory
+, entryCursorSelectTags
+, entryCursorSelectLogbook
     ) where
 
 import GHC.Generics (Generic)
@@ -85,6 +93,30 @@ rebuildEntryCursor EntryCursor {..} =
 entryCursorSelectionL :: Lens' EntryCursor EntryCursorSelection
 entryCursorSelectionL =
     lens entryCursorSelected $ \ec s -> ec {entryCursorSelected = s}
+
+entryCursorSelect :: EntryCursorSelection -> EntryCursor -> EntryCursor
+entryCursorSelect ecl ec = ec & entryCursorSelectionL .~ ecl
+
+entryCursorSelectHeader :: EntryCursor -> EntryCursor
+entryCursorSelectHeader = entryCursorSelect HeaderSelected
+
+entryCursorSelectContents :: EntryCursor -> EntryCursor
+entryCursorSelectContents = entryCursorSelect ContentsSelected
+
+entryCursorSelectTimestamps :: EntryCursor -> EntryCursor
+entryCursorSelectTimestamps = entryCursorSelect TimestampsSelected
+
+entryCursorSelectProperties :: EntryCursor -> EntryCursor
+entryCursorSelectProperties = entryCursorSelect PropertiesSelected
+
+entryCursorSelectStateHistory :: EntryCursor -> EntryCursor
+entryCursorSelectStateHistory = entryCursorSelect StateHistorySelected
+
+entryCursorSelectTags :: EntryCursor -> EntryCursor
+entryCursorSelectTags = entryCursorSelect TagsSelected
+
+entryCursorSelectLogbook :: EntryCursor -> EntryCursor
+entryCursorSelectLogbook = entryCursorSelect LogbookSelected
 
 data EntryCursorSelection
     = WholeEntrySelected
