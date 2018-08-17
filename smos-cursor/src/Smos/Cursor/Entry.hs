@@ -6,6 +6,7 @@ module Smos.Cursor.Entry
     , makeEntryCursor
     , emptyEntryCursor
     , rebuildEntryCursor
+    , entryCursorHeaderCursorL
     , entryCursorSelectionL
     , EntryCursorSelection(..)
     , entryCursorSelect
@@ -94,6 +95,10 @@ rebuildEntryCursor EntryCursor {..} =
 entryCursorSelectionL :: Lens' EntryCursor EntryCursorSelection
 entryCursorSelectionL =
     lens entryCursorSelected $ \ec s -> ec {entryCursorSelected = s}
+
+entryCursorHeaderCursorL :: Lens' EntryCursor HeaderCursor
+entryCursorHeaderCursorL =
+    lens entryCursorHeaderCursor $ \ec hc -> ec {entryCursorHeaderCursor = hc}
 
 entryCursorSelect :: EntryCursorSelection -> EntryCursor -> EntryCursor
 entryCursorSelect ecl ec = ec & entryCursorSelectionL .~ ecl

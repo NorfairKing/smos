@@ -24,6 +24,7 @@ spec = do
         it "produces valid entries" $ producesValidsOnValids rebuildEntryCursor
         it "is the inverse of makeEntryCursor" $
             inverseFunctionsOnValid makeEntryCursor rebuildEntryCursor
+    describe "entryCursorHeaderCursorL" $ lensSpecOnValid entryCursorHeaderCursorL
     describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL
     describe "entryCursorSelect" $
         it "produces valid cursors" $ producesValidsOnValids2 entryCursorSelect

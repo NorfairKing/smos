@@ -19,3 +19,5 @@ spec = do
         it "produces valid cursors" $ producesValidsOnValids rebuildHeaderCursor
         it "is the inverse of makeHeaderCursor" $
             inverseFunctionsOnValid makeHeaderCursor rebuildHeaderCursor
+    describe "headerCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 headerCursorInsert
+    describe "headerCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 headerCursorAppend
