@@ -6,7 +6,7 @@ final:
         overrides = final.lib.composeExtensions (old.overrides or (_: _: {})) (
           self: super:
             let smosPkg = name:
-                (buildStrictly (self.callCabal2nix name (../. + "/${name}") {}));
+                (failOnAllWarnings (self.callCabal2nix name (../. + "/${name}") {}));
             in final.lib.genAttrs [
               "smos"
               "smos-data"
