@@ -15,7 +15,7 @@ module Smos.Config
 import qualified Data.Map as M
 import Data.Map (Map)
 
-import Graphics.Vty.Input.Events (Key(..))
+import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Smos.Actions
 import Smos.Types

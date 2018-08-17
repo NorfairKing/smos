@@ -47,3 +47,8 @@ toggleHelp :: Action
 toggleHelp =
     action "Toggle the help page to be shown" $
     modify (\ss -> ss {smosStateShowHelp = not $ smosStateShowHelp ss})
+
+toggleDebug :: Action
+toggleDebug =
+    action "Toggle the debug info" $
+    modify (\ss -> ss {smosStateShowDebug = not $ smosStateShowDebug ss})

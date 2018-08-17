@@ -41,14 +41,16 @@ import Smos.Types
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} SmosState {..} =
     [centerLayer drawContextualHelpPage | smosStateShowHelp] ++
-    [maybe drawNoContent renderCursor smosStateCursor]
+    [ vBox $
+      concat
+          [ [maybe drawNoContent renderCursor smosStateCursor]
+          , [drawHistory smosStateKeyHistory | smosStateShowDebug]
+          , [drawDebug smosStateCursor | smosStateShowDebug]
+          ]
+    ]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor cur =
-        drawSmosFileCursor cur <=>
-        if smosStateShowDebug
-            then B.vBox [drawHistory smosStateKeyHistory, strWrap $ show cur]
-            else emptyWidget
+    renderCursor = drawSmosFileCursor
     drawNoContent :: Widget n
     drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
@@ -57,9 +59,10 @@ smosDraw SmosConfig {..} SmosState {..} =
             vBox $
             map
                 (\(n, km) ->
+                     padBottom (Pad 1) $
                      vBox
                          [ hCenterLayer $ withAttr selectedAttr $ str n
-                         , drawKeyMapHelp km
+                         , hCenterLayer $ drawKeyMapHelp km
                          ])
                 keyMaps
     drawContextualHelpPage :: Widget n
@@ -86,8 +89,6 @@ smosDraw SmosConfig {..} SmosState {..} =
             padAll 1 $ drawKeyMapHelp bindings
     drawKeyMapHelp :: (KeyMap -> Map KeyMatch Action) -> Widget n
     drawKeyMapHelp m =
-        padBottom (Pad 1) $
-        hCenterLayer $
         drawTable $
         flip map (M.toAscList $ m configKeyMap) $ \(km, a) ->
             (drawKeyMatch km, txt (actionName a))
@@ -145,6 +146,9 @@ showMod MShift = "S"
 showMod MCtrl = "C"
 showMod MMeta = "M"
 showMod MAlt = "A"
+
+drawDebug :: Maybe SmosFileCursor -> Widget ResourceName
+drawDebug = strWrap . show
 
 data Select
     = MaybeSelected

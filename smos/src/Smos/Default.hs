@@ -19,6 +19,7 @@ defaultKeyMap =
                   , exact KEsc stop
                   , exactChar 'h' startHeaderFromEmpty
                   , exactChar 'H' startHeaderFromEmpty
+                  , (MatchExactly KEnter [MMeta], toggleDebug)
                   ]
         , keyMapEntryMatchers =
               listMatchers
@@ -30,6 +31,7 @@ defaultKeyMap =
                   , exact KUp moveUpInEntryForest
                   , exact KDown moveDownInEntryForest
                   , exactChar '?' toggleHelp
+                  , (MatchExactly KEnter [MMeta], toggleDebug)
                   ]
         , keyMapHeaderMatchers = mempty
         , keyMapContentsMatchers = mempty
