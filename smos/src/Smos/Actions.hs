@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions
     ( module Smos.Actions
@@ -29,7 +30,10 @@ insertEntryBelow =
 deleteCurrentTree :: Action
 deleteCurrentTree =
     action "Delete the current entry and all entries below" $
-    modifyFileCursorM smosFileCursorDeleteTree
+    modifyMFileCursor
+        (\case
+             Nothing -> Nothing
+             Just sfc -> smosFileCursorDeleteTree sfc)
 
 moveUpInEntryForest :: Action
 moveUpInEntryForest =
