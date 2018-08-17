@@ -30,8 +30,7 @@ insertEntryBelow =
 deleteCurrentTree :: Action
 deleteCurrentTree =
     action "Delete the current entry and all entries below" $
-    modifyMFileCursor
-             smosFileCursorDeleteTree
+    modifyMFileCursor smosFileCursorDeleteTree
 
 moveUpInEntryForest :: Action
 moveUpInEntryForest =
@@ -44,6 +43,16 @@ moveDownInEntryForest =
     action
         "Move the current cursor down to the previous entry in the entry forest" $
     modifyFileCursorM smosFileCursorSelectNextTree
+
+moveToFirstEntryForest :: Action
+moveToFirstEntryForest =
+    action "Move the current cursor up to the first entry in the entry forest" $
+    modifyFileCursor smosFileCursorSelectFirstTree
+
+moveToLastEntryForest :: Action
+moveToLastEntryForest =
+    action "Move the current cursor down to the last entry in the entry forest" $
+    modifyFileCursor smosFileCursorSelectLastTree
 
 toggleHelp :: Action
 toggleHelp =

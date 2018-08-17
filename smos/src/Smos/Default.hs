@@ -29,7 +29,13 @@ defaultKeyMap =
                   , exactChar 'H' insertEntryBelow
                   , exactChar 'd' deleteCurrentTree
                   , exact KUp moveUpInEntryForest
+                  , exactChar 'k' moveUpInEntryForest
                   , exact KDown moveDownInEntryForest
+                  , exactChar 'j' moveDownInEntryForest
+                  , exact KHome moveToFirstEntryForest
+                  , exactChar 'g' moveToFirstEntryForest
+                  , exact KEnd moveToLastEntryForest
+                  , exactChar 'G' moveToLastEntryForest
                   , exactChar '?' toggleHelp
                   , (MatchExactly KEnter [MMeta], toggleDebug)
                   ]
