@@ -6,6 +6,10 @@ module Smos.Cursor.Header
     , headerCursorAppend
     , headerCursorRemove
     , headerCursorDelete
+, headerCursorSelectPrev
+, headerCursorSelectNext
+, headerCursorSelectStart
+, headerCursorSelectEnd
     ) where
 
 import Cursor.Text
@@ -31,3 +35,15 @@ headerCursorRemove = textCursorRemove
 
 headerCursorDelete :: HeaderCursor -> Maybe HeaderCursor
 headerCursorDelete = textCursorDelete
+
+headerCursorSelectPrev :: HeaderCursor -> Maybe HeaderCursor
+headerCursorSelectPrev = textCursorSelectPrev
+
+headerCursorSelectNext :: HeaderCursor -> Maybe HeaderCursor
+headerCursorSelectNext = textCursorSelectNext
+
+headerCursorSelectStart :: HeaderCursor -> HeaderCursor
+headerCursorSelectStart = textCursorSelectStart
+
+headerCursorSelectEnd :: HeaderCursor -> HeaderCursor
+headerCursorSelectEnd = textCursorSelectEnd

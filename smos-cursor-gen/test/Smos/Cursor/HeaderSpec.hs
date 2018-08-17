@@ -28,3 +28,8 @@ spec = do
         it "produces valid cursors" $ producesValidsOnValids headerCursorRemove
     describe "headerCursorDelete" $
         it "produces valid cursors" $ producesValidsOnValids headerCursorDelete
+    describe "headerCursorSelectPrev" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectPrev
+    describe "headerCursorSelectNext" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectNext
+    describe "headerCursorSelectStart" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectStart
+    describe "headerCursorSelectEnd" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectEnd
+

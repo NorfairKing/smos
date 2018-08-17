@@ -56,6 +56,10 @@ defaultKeyMap =
                   , anyChar headerInsert
                   , exactKey KBS headerRemove
                   , exactKey KDel headerDelete
+                  , exactKey KLeft headerMoveLeft
+                  , exactKey KRight headerMoveRight
+                  , exactKey KHome headerMoveToStart
+                  , exactKey KEnd headerMoveToEnd
                   , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
                   , exactKeyWithMods KEnter [MMeta] toggleDebug
                   ]

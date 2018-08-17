@@ -123,3 +123,23 @@ headerDelete :: Action
 headerDelete =
     action "Remove a character from the header" $
     modifyHeaderCursorWhenSelectedM headerCursorDelete
+
+headerMoveLeft :: Action
+headerMoveLeft =
+    action "Move left in the header" $
+    modifyHeaderCursorWhenSelectedM headerCursorSelectPrev
+
+headerMoveRight :: Action
+headerMoveRight =
+    action "Move right in the header" $
+    modifyHeaderCursorWhenSelectedM headerCursorSelectNext
+
+headerMoveToStart :: Action
+headerMoveToStart =
+    action "Move to the start of the header" $
+    modifyHeaderCursorWhenSelected headerCursorSelectStart
+
+headerMoveToEnd :: Action
+headerMoveToEnd =
+    action "Move to the end of the header" $
+    modifyHeaderCursorWhenSelected headerCursorSelectEnd
