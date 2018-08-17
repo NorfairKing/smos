@@ -155,7 +155,7 @@ showMod MMeta = "M"
 showMod MAlt = "A"
 
 drawDebug :: Maybe SmosFileCursor -> Widget ResourceName
-drawDebug = strWrap . show
+drawDebug = strWrap . ppShow
 
 data Select
     = MaybeSelected

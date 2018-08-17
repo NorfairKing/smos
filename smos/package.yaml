@@ -23,6 +23,7 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - pretty-show
   - process
   - safe
   - smos-cursor

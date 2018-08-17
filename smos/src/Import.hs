@@ -27,6 +27,8 @@ import Control.Arrow as X
 import Control.Monad as X
 import Control.Monad.IO.Class as X
 
+import Text.Show.Pretty as X (ppShow)
+
 import Path as X
 import Path.IO as X
 
