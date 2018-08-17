@@ -152,6 +152,10 @@ data Select
     = MaybeSelected
     | NotSelected
 
+instance Semigroup Select where
+    MaybeSelected <> MaybeSelected = MaybeSelected
+    _ <> _ = NotSelected
+
 defaultPadding :: Padding
 defaultPadding = Pad 2
 
@@ -189,7 +193,7 @@ drawEntryCursor :: Select -> EntryCursor -> Widget ResourceName
 drawEntryCursor s EntryCursor {..} =
     vBox
         [ hBox
-              [ (case s of
+              [ (case s <> selectWhen WholeEntrySelected of
                      MaybeSelected -> withAttr selectedAttr
                      NotSelected -> id) $
                 str "> "
