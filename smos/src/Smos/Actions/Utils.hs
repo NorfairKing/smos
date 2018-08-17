@@ -1,19 +1,39 @@
 {-# LANGUAGE LambdaCase #-}
 
+{-
+ - Cheatsheet:
+ -
+ - modifyXXX :: (X -> X) -> SmosM ()         -- Modify purely
+ - modifyXXXM :: (X -> Maybe X) -> SmosM ()  -- Modify purely, don't do anything if 'Nothing'
+ -}
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
     , module Smos.Cursor.Entry
+    , module Smos.Cursor.Header
     , module Smos.Cursor.SmosFile
     ) where
 
 import Data.Maybe
 
 import Smos.Cursor.Entry
+import Smos.Cursor.Header
 import Smos.Cursor.SmosFile
 
 import Lens.Micro
 
 import Smos.Types
+
+modifyHeaderCursorWhenSelectedM ::
+       (HeaderCursor -> Maybe HeaderCursor) -> SmosM ()
+modifyHeaderCursorWhenSelectedM func =
+    modifyHeaderCursorWhenSelected $ \hc -> fromMaybe hc $ func hc
+
+modifyHeaderCursorWhenSelected :: (HeaderCursor -> HeaderCursor) -> SmosM ()
+modifyHeaderCursorWhenSelected func =
+    modifyEntryCursor $ \ec ->
+        case entryCursorSelected ec of
+            HeaderSelected -> ec & entryCursorHeaderCursorL %~ func
+            _ -> ec
 
 modifyEntryCursor :: (EntryCursor -> EntryCursor) -> SmosM ()
 modifyEntryCursor func =

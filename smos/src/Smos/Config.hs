@@ -3,16 +3,20 @@ module Smos.Config
     , module Smos.Actions
     , Map
     , listMatchers
-    , exact
     , exactChar
+    , exactKey
+    , exactKeyWithMods
+    , anyChar
     , KeyMap(..)
-    , KeyMatch(..)
-    , Action(..)
+    , KeyMapping(..)
+    , KeyMappings
+    , Action
+    , action
+    , ActionUsing(..)
     , stop
     , module Graphics.Vty.Input.Events
     ) where
 
-import qualified Data.Map as M
 import Data.Map (Map)
 
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
@@ -20,11 +24,17 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 import Smos.Actions
 import Smos.Types
 
-listMatchers :: [(KeyMatch, Action)] -> Map KeyMatch Action
-listMatchers = M.fromList
+listMatchers :: [KeyMapping] -> KeyMappings
+listMatchers = id
 
-exact :: Key -> Action -> (KeyMatch, Action)
-exact k a = (MatchExactly k [], a)
+exactChar :: Char -> Action -> KeyMapping
+exactChar c a = exactKey (KChar c) a
 
-exactChar :: Char -> Action -> (KeyMatch, Action)
-exactChar c a = exact (KChar c) a
+exactKey :: Key -> Action -> KeyMapping
+exactKey k a = exactKeyWithMods k [] a
+
+exactKeyWithMods :: Key -> [Modifier] -> Action -> KeyMapping
+exactKeyWithMods = MapVtyExactly
+
+anyChar :: ActionUsing Char -> KeyMapping
+anyChar = MapAnyTypeableChar

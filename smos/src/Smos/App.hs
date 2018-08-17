@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.App
     ( mkSmosApp
@@ -6,14 +7,14 @@ module Smos.App
 
 import Import
 
-import qualified Data.Map as M
+import qualified Data.List.NonEmpty as NE
 
 import Brick.Main as B
 import Brick.Types as B
 
 import Lens.Micro
 
-import qualified Graphics.Vty as V
+import qualified Graphics.Vty as Vty
 
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
@@ -46,7 +47,7 @@ smosHandleEvent cf s e = do
             case keyMapFunc s e $ configKeyMap cf of
                 Nothing ->
                     case e of
-                        B.VtyEvent (V.EvKey ek mods) ->
+                        B.VtyEvent (Vty.EvKey ek mods) ->
                             let kp = KeyPress ek mods
                              in recordKeyPress kp
                         _ -> pure ()
@@ -84,17 +85,33 @@ keyMapFunc s e KeyMap {..} =
                          TagsSelected -> handleWith keyMapTagsMatchers
                          LogbookSelected -> handleWith keyMapLogbookMatchers
   where
-    handleWith :: Map KeyMatch Action -> Maybe (SmosM ())
+    handleWith :: KeyMappings -> Maybe (SmosM ())
     handleWith m =
         case e of
             VtyEvent vtye ->
                 case vtye of
-                    V.EvKey k mods ->
-                        case M.lookup (MatchExactly k mods) m of
-                            Nothing -> Nothing
-                            Just a -> Just $ actionFunc a
+                    Vty.EvKey k mods -> findBestMatch k mods m
                     _ -> Nothing
             _ -> Nothing
+
+findBestMatch :: Vty.Key -> [Vty.Modifier] -> KeyMappings -> Maybe (SmosM ())
+findBestMatch k mods mappings =
+    let ls =
+            flip mapMaybe mappings $ \case
+                MapVtyExactly k_ mods_ a ->
+                    if k == k_ && sort mods == sort mods_
+                        then Just (High, actionFunc a ())
+                        else Nothing
+                MapAnyTypeableChar a ->
+                    case k of
+                        Vty.KChar c -> Just (Low, actionFunc a c)
+                        _ -> Nothing
+     in (snd . NE.head) <$> NE.nonEmpty (sortOn fst ls)
+
+data Priority
+    = High
+    | Low
+    deriving (Eq, Ord)
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure

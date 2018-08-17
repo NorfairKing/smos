@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Draw
@@ -6,8 +7,6 @@ module Smos.Draw
     ) where
 
 import Import hiding ((<+>))
-
-import qualified Data.Map as M
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
@@ -84,19 +83,18 @@ smosDraw SmosConfig {..} SmosState {..} =
                     TagsSelected -> pageFor "Tags" keyMapTagsMatchers
                     LogbookSelected -> pageFor "Logbook" keyMapLogbookMatchers
       where
+        pageFor :: String -> (KeyMap -> KeyMappings) -> Widget n
         pageFor s bindings =
             borderWithLabel (withAttr selectedAttr $ str ("[" ++ s ++ "]")) $
             padAll 1 $ drawKeyMapHelp bindings
-    drawKeyMapHelp :: (KeyMap -> Map KeyMatch Action) -> Widget n
+    drawKeyMapHelp :: (KeyMap -> KeyMappings) -> Widget n
     drawKeyMapHelp m =
         drawTable $
-        flip map (M.toAscList $ m configKeyMap) $ \(km, a) ->
-            (drawKeyMatch km, txt (actionName a))
-      where
-        drawKeyMatch :: KeyMatch -> Widget n
-        drawKeyMatch (MatchExactly k mods) =
-            str $ showKeypress (KeyPress k mods)
-    keyMaps :: [(String, KeyMap -> Map KeyMatch Action)]
+        flip map (m configKeyMap) $ \case
+            MapVtyExactly k mods a ->
+                (str $ showKeypress (KeyPress k mods), txt (actionName a))
+            MapAnyTypeableChar a -> (str "<any char>", txt (actionName a))
+    keyMaps :: [(String, KeyMap -> KeyMappings)]
     keyMaps =
         [ ("Empty file", keyMapEmptyMatchers)
         , ("Entry", keyMapEntryMatchers)

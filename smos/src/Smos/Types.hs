@@ -1,17 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Types
     ( SmosConfig(..)
     , KeyMap(..)
-    , KeyMatch(..)
-    , Action(..)
+    , KeyMappings
+    , KeyMapping(..)
+    , Action
     , action
+    , actionUsing
+    , ActionUsing(..)
     , SmosEvent
     , SmosM
     , runSmosM
@@ -29,7 +33,7 @@ import Import
 import Control.Monad.Reader
 import Control.Monad.State
 
-import Graphics.Vty.Input.Events
+import Graphics.Vty.Input.Events as Vty
 
 import Brick.Types as B hiding (Next)
 
@@ -45,15 +49,15 @@ data SmosConfig = SmosConfig
 -- - Should be able to deal with multi-character mathes
 -- - Be easy to overwrite
 data KeyMap = KeyMap
-    { keyMapEmptyMatchers :: Map KeyMatch Action
-    , keyMapEntryMatchers :: Map KeyMatch Action
-    , keyMapHeaderMatchers :: Map KeyMatch Action
-    , keyMapContentsMatchers :: Map KeyMatch Action
-    , keyMapTimestampsMatchers :: Map KeyMatch Action
-    , keyMapPropertiesMatchers :: Map KeyMatch Action
-    , keyMapStateHistoryMatchers :: Map KeyMatch Action
-    , keyMapTagsMatchers :: Map KeyMatch Action
-    , keyMapLogbookMatchers :: Map KeyMatch Action
+    { keyMapEmptyMatchers :: KeyMappings
+    , keyMapEntryMatchers :: KeyMappings
+    , keyMapHeaderMatchers :: KeyMappings
+    , keyMapContentsMatchers :: KeyMappings
+    , keyMapTimestampsMatchers :: KeyMappings
+    , keyMapPropertiesMatchers :: KeyMappings
+    , keyMapStateHistoryMatchers :: KeyMappings
+    , keyMapTagsMatchers :: KeyMappings
+    , keyMapLogbookMatchers :: KeyMappings
     } deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -94,18 +98,24 @@ instance Monoid KeyMap where
             , keyMapLogbookMatchers = mempty
             }
 
-data KeyMatch =
-    MatchExactly Key
-                 [Modifier]
-    deriving (Show, Eq, Ord, Generic)
+type KeyMappings = [KeyMapping]
 
-data Action = Action
+data KeyMapping where
+    MapVtyExactly :: Vty.Key -> [Vty.Modifier] -> Action -> KeyMapping
+    MapAnyTypeableChar :: ActionUsing Char -> KeyMapping
+
+data ActionUsing a = Action
     { actionName :: Text
-    , actionFunc :: SmosM ()
+    , actionFunc :: a -> SmosM ()
     } deriving (Generic)
 
+type Action = ActionUsing ()
+
 action :: Text -> SmosM () -> Action
-action = Action
+action name func = Action {actionName = name, actionFunc = const func}
+
+actionUsing :: Text -> (a -> SmosM ()) -> ActionUsing a
+actionUsing name func = Action {actionName = name, actionFunc = func}
 
 type SmosEvent = BrickEvent ResourceName ()
 
@@ -204,5 +214,4 @@ instance MonadReader s m => MonadReader s (NextT m) where
     local func (NextT m) = NextT $ local func m
 
 stop :: Action
-stop =
-    Action {actionName = "Stop Smos", actionFunc = MkSmosM $ NextT $ pure Stop}
+stop = action "Stop Smos" $ MkSmosM $ NextT $ pure Stop

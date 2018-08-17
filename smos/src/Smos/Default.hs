@@ -16,15 +16,15 @@ defaultKeyMap =
         { keyMapEmptyMatchers =
               listMatchers
                   [ exactChar 'q' stop
-                  , exact KEsc stop
+                  , exactKey KEsc stop
                   , exactChar 'h' startHeaderFromEmpty
                   , exactChar 'H' startHeaderFromEmpty
-                  , (MatchExactly KEnter [MMeta], toggleDebug)
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
                   ]
         , keyMapEntryMatchers =
               listMatchers
                   [ exactChar 'q' stop
-                  , exact KEsc stop
+                  , exactKey KEsc stop
                   -- Selections
                   , exactChar 'a' entrySelectHeader
                   , exactChar 'c' entrySelectContents
@@ -34,41 +34,65 @@ defaultKeyMap =
                   , exactChar 'o' entrySelectTags
                   , exactChar 'l' entrySelectLogbook
                   -- Movements
-                  , exact KUp moveUpInEntryForest
+                  , exactKey KUp moveUpInEntryForest
                   , exactChar 'k' moveUpInEntryForest
-                  , exact KDown moveDownInEntryForest
+                  , exactKey KDown moveDownInEntryForest
                   , exactChar 'j' moveDownInEntryForest
-                  , exact KHome moveToFirstEntryForest
+                  , exactKey KHome moveToFirstEntryForest
                   , exactChar 'g' moveToFirstEntryForest
-                  , exact KEnd moveToLastEntryForest
+                  , exactKey KEnd moveToLastEntryForest
                   , exactChar 'G' moveToLastEntryForest
                   -- Forest manipulation
                   , exactChar 'h' insertEntryAbove
                   , exactChar 'H' insertEntryBelow
                   , exactChar 'd' deleteCurrentTree
                   -- Extras
-                  , exactChar '?' toggleHelp
-                  , (MatchExactly KEnter [MMeta], toggleDebug)
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
                   ]
         , keyMapHeaderMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , anyChar headerInsert
+                  , exactKey KBS headerRemove
+                  , exactKey KDel headerDelete
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapContentsMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapTimestampsMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapPropertiesMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapStateHistoryMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapTagsMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         , keyMapLogbookMatchers =
               listMatchers
-                  [exact KEsc entrySelectWhole, exactChar '?' toggleHelp]
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKeyWithMods (KChar '?') [MMeta] toggleDebug
+                  , exactKeyWithMods KEnter [MMeta] toggleDebug
+                  ]
         }

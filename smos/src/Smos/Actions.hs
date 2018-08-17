@@ -103,3 +103,23 @@ entrySelectLogbook :: Action
 entrySelectLogbook =
     action "Select the current Entry's logbook" $
     modifyEntryCursor entryCursorSelectLogbook
+
+headerInsert :: ActionUsing Char
+headerInsert =
+    actionUsing "Insert a character into the header in front of the cursor" $ \c ->
+        modifyHeaderCursorWhenSelected (headerCursorInsert c)
+
+headerAppend :: ActionUsing Char
+headerAppend =
+    actionUsing "Append a character onto the header behind the cursor" $ \c ->
+        modifyHeaderCursorWhenSelected (headerCursorAppend c)
+
+headerRemove :: Action
+headerRemove =
+    action "Remove a character from the header" $
+    modifyHeaderCursorWhenSelectedM headerCursorRemove
+
+headerDelete :: Action
+headerDelete =
+    action "Remove a character from the header" $
+    modifyHeaderCursorWhenSelectedM headerCursorDelete

@@ -4,6 +4,8 @@ module Smos.Cursor.Header
     , rebuildHeaderCursor
     , headerCursorInsert
     , headerCursorAppend
+    , headerCursorRemove
+    , headerCursorDelete
     ) where
 
 import Cursor.Text
@@ -20,5 +22,12 @@ rebuildHeaderCursor = Header . rebuildTextCursor
 
 headerCursorInsert :: Char -> HeaderCursor -> HeaderCursor
 headerCursorInsert = textCursorInsert
+
 headerCursorAppend :: Char -> HeaderCursor -> HeaderCursor
 headerCursorAppend = textCursorAppend
+
+headerCursorRemove :: HeaderCursor -> Maybe HeaderCursor
+headerCursorRemove = textCursorRemove
+
+headerCursorDelete :: HeaderCursor -> Maybe HeaderCursor
+headerCursorDelete = textCursorDelete
