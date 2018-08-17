@@ -31,9 +31,7 @@ deleteCurrentTree :: Action
 deleteCurrentTree =
     action "Delete the current entry and all entries below" $
     modifyMFileCursor
-        (\case
-             Nothing -> Nothing
-             Just sfc -> smosFileCursorDeleteTree sfc)
+             smosFileCursorDeleteTree
 
 moveUpInEntryForest :: Action
 moveUpInEntryForest =

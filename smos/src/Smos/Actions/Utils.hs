@@ -24,7 +24,7 @@ modifyFileCursorM :: (SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
 modifyFileCursorM func = modifyFileCursor $ \sfc -> fromMaybe sfc $ func sfc
 
 modifyFileCursor :: (SmosFileCursor -> SmosFileCursor) -> SmosM ()
-modifyFileCursor func = modifyMFileCursor $ \mc -> func <$> mc
+modifyFileCursor func = modifyMFileCursor $ Just . func
 
 modifyFileCursorS :: (SmosFileCursor -> SmosM SmosFileCursor) -> SmosM ()
 modifyFileCursorS func =
@@ -33,8 +33,14 @@ modifyFileCursorS func =
             Nothing -> pure Nothing
             Just c -> Just <$> func c
 
-modifyMFileCursor :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
-modifyMFileCursor func = modifyMFileCursorS $ pure . func
+modifyMFileCursor :: (SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
+modifyMFileCursor func =
+    modifyMFileCursorM $ \case
+        Nothing -> Nothing
+        Just sfc -> func sfc
+
+modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
+modifyMFileCursorM func = modifyMFileCursorS $ pure . func
 
 modifyMFileCursorS ::
        (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
