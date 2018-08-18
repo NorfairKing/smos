@@ -131,8 +131,8 @@ keyMappingActionName (MapVtyExactly _ a) = actionName a
 keyMappingActionName (MapAnyTypeableChar a) = actionName a
 keyMappingActionName (MapCombination _ km) = keyMappingActionName km
 
-drawHistory :: [KeyPress] -> Widget n
-drawHistory = strWrap . unwords . map showKeypress . reverse
+drawHistory :: Seq KeyPress -> Widget n
+drawHistory = strWrap . unwords . map showKeypress . toList
 
 drawTable :: [(Widget n, Widget n)] -> Widget n
 drawTable ls = vBox (map fst ls) <+> str "   " <+> vBox (map snd ls)
@@ -164,7 +164,7 @@ drawDebug SmosState {..} =
         , strWrap $ ppShow smosStateCursor
         ]
 
-drawLastMatches :: Maybe (NonEmpty (Priority, [KeyPress], Text)) -> Widget n
+drawLastMatches :: Maybe (NonEmpty (Priority, Seq KeyPress, Text)) -> Widget n
 drawLastMatches Nothing = emptyWidget
 drawLastMatches (Just ts) = vBox $ map (str . show) $ NE.toList ts
 

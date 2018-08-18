@@ -10,6 +10,7 @@ import Import
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Ord as Ord
+import qualified Data.Sequence as Seq
 
 import Brick.Main as B
 import Brick.Types as B
@@ -63,9 +64,9 @@ smosHandleEvent cf s e = do
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp =
-        modify $ \ss -> ss {smosStateKeyHistory = kp : smosStateKeyHistory ss}
+        modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
     clearKeyHistory :: SmosM ()
-    clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = []}
+    clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
 keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} =
@@ -121,20 +122,21 @@ keyMapFunc s e KeyMap {..} =
             _ -> Nothing
 
 findBestMatch ::
-       [KeyPress]
+       Seq KeyPress
     -> KeyPress
     -> KeyMappings
-    -> [(Priority, [KeyPress], Text, SmosM ())]
-findBestMatch history kp@(KeyPress k _) mappings =
+    -> [(Priority, Seq KeyPress, Text, SmosM ())]
+findBestMatch history kp@(KeyPress k _) mappings
     -- Remember, the history is in reverse, so newest presses first
-    let toMatch = reverse $ kp : history
+ =
+    let toMatch = kp <| history
         ls =
             flip mapMaybe mappings $ \case
                 MapVtyExactly kp_ a ->
                     if keyPressMatch kp kp_
                         then Just
                                  ( MatchExact
-                                 , [kp]
+                                 , Seq.singleton kp
                                  , actionName a
                                  , actionFunc a ())
                         else Nothing
@@ -143,40 +145,40 @@ findBestMatch history kp@(KeyPress k _) mappings =
                         Vty.KChar c ->
                             Just
                                 ( MatchAnyChar
-                                , [kp]
+                                , Seq.singleton kp
                                 , actionName a
                                 , actionFunc a c)
                         _ -> Nothing
                 mc@(MapCombination _ _) ->
-                    let go :: [KeyPress]
+                    let go :: Seq KeyPress -- History
                            -> KeyMapping
-                           -> [KeyPress]
-                           -> Maybe (Priority, [KeyPress], Text, SmosM ())
+                           -> Seq KeyPress -- Match
+                           -> Maybe (Priority, Seq KeyPress, Text, SmosM ())
                         go hs km acc =
                             case (hs, km) of
-                                ([], _) -> Nothing
-                                (hkp:_, MapVtyExactly kp_ a) ->
+                                (Empty, _) -> Nothing
+                                (hkp :<| _, MapVtyExactly kp_ a) ->
                                     if keyPressMatch hkp kp_
                                         then Just
-                                                 ( ComboMatchExact
-                                                 , acc ++ [hkp]
+                                                 ( MatchExact
+                                                 , acc |> hkp
                                                  , actionName a
                                                  , actionFunc a ())
                                         else Nothing
-                                (hkp@(KeyPress hk _):_, MapAnyTypeableChar a) ->
+                                (hkp@(KeyPress hk _) :<| _, MapAnyTypeableChar a) ->
                                     case hk of
                                         Vty.KChar c ->
                                             Just
-                                                ( ComboMatchAnyChar
-                                                , acc ++ [hkp]
+                                                ( MatchAnyChar
+                                                , acc |> hkp
                                                 , actionName a
                                                 , actionFunc a c)
                                         _ -> Nothing
-                                (hkp:hkps, MapCombination kp_ km_) ->
+                                (hkp :<| hkps, MapCombination kp_ km_) ->
                                     if keyPressMatch hkp kp_
-                                        then go hkps km_ (acc ++ [hkp])
+                                        then go hkps km_ (acc |> hkp)
                                         else Nothing
-                     in go toMatch mc []
+                     in go toMatch mc Seq.empty
      in sortOn (\(p, match, _, _) -> Ord.Down (p, length match)) ls
 
 keyPressMatch :: KeyPress -> KeyPress -> Bool

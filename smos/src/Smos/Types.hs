@@ -138,7 +138,7 @@ runSmosM = runMkSmosM
 data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
     , smosStateCursor :: Maybe SmosFileCursor
-    , smosStateKeyHistory :: [KeyPress] -- In reverse order
+    , smosStateKeyHistory :: Seq KeyPress
     , smosStateDebugInfo :: DebugInfo
     , smosStateShowHelp :: Bool
     , smosStateShowDebug :: Bool
@@ -150,14 +150,12 @@ data KeyPress =
     deriving (Show, Eq, Ord)
 
 data DebugInfo = DebugInfo
-    { debugInfoLastMatches :: Maybe (NonEmpty (Priority, [KeyPress], Text))
+    { debugInfoLastMatches :: Maybe (NonEmpty (Priority, Seq KeyPress, Text))
     } deriving (Show, Eq, Generic)
 
 data Priority
     = MatchAnyChar
     | MatchExact
-    | ComboMatchAnyChar
-    | ComboMatchExact
     deriving (Show, Eq, Ord)
 
 newtype ResourceName =

@@ -40,7 +40,7 @@ initState p sf =
     SmosState
         { smosStateFilePath = p
         , smosStateCursor = makeEntireSmosFileCursor sf
-        , smosStateKeyHistory = []
+        , smosStateKeyHistory = Empty
         , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
         , smosStateShowHelp = False
         , smosStateShowDebug = False
