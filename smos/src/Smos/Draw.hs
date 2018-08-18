@@ -8,6 +8,8 @@ module Smos.Draw
 
 import Import hiding ((<+>))
 
+import qualified Data.List.NonEmpty as NE
+
 import Brick.Types as B
 import Brick.Widgets.Border as B
 import Brick.Widgets.Center as B
@@ -38,13 +40,12 @@ import Smos.Style
 import Smos.Types
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw SmosConfig {..} SmosState {..} =
+smosDraw SmosConfig {..} ss@SmosState {..} =
     [centerLayer drawContextualHelpPage | smosStateShowHelp] ++
     [ vBox $
       concat
           [ [maybe drawNoContent renderCursor smosStateCursor]
-          , [drawHistory smosStateKeyHistory | smosStateShowDebug]
-          , [drawDebug smosStateCursor | smosStateShowDebug]
+          , [drawDebug ss | smosStateShowDebug]
           ]
     ]
   where
@@ -154,8 +155,18 @@ showMod MCtrl = "C"
 showMod MMeta = "M"
 showMod MAlt = "A"
 
-drawDebug :: Maybe SmosFileCursor -> Widget ResourceName
-drawDebug = strWrap . ppShow
+drawDebug :: SmosState -> Widget n
+drawDebug SmosState {..} =
+    vBox
+        [ str "Key history: " <+> drawHistory smosStateKeyHistory
+        , str "Last match: " <+>
+          drawLastMatches (debugInfoLastMatches smosStateDebugInfo)
+        , strWrap $ ppShow smosStateCursor
+        ]
+
+drawLastMatches :: Maybe (NonEmpty (Priority, [KeyPress], Text)) -> Widget n
+drawLastMatches Nothing = emptyWidget
+drawLastMatches (Just ts) = vBox $ map (str . show) $ NE.toList ts
 
 data Select
     = MaybeSelected

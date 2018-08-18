@@ -7,7 +7,9 @@ module Smos.App
 
 import Import
 
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
+import Data.Ord as Ord
 
 import Brick.Main as B
 import Brick.Types as B
@@ -91,61 +93,95 @@ keyMapFunc s e KeyMap {..} =
             VtyEvent vtye ->
                 case vtye of
                     Vty.EvKey k mods ->
-                        findBestMatch
-                            (smosStateKeyHistory s)
-                            (KeyPress k mods)
-                            m
+                        case NE.nonEmpty $
+                             findBestMatch
+                                 (smosStateKeyHistory s)
+                                 (KeyPress k mods)
+                                 m of
+                            Nothing -> Nothing
+                            Just nems@((_, _, _, func) :| _) ->
+                                Just $ do
+                                    modify
+                                        (\ss ->
+                                             let dbi = smosStateDebugInfo ss
+                                                 dbi' =
+                                                     dbi
+                                                         { debugInfoLastMatches =
+                                                               Just $
+                                                               NE.map
+                                                                   (\(a, b, c, _) ->
+                                                                        ( a
+                                                                        , b
+                                                                        , c))
+                                                                   nems
+                                                         }
+                                              in ss {smosStateDebugInfo = dbi'})
+                                    func
                     _ -> Nothing
             _ -> Nothing
 
-findBestMatch :: [KeyPress] -> KeyPress -> KeyMappings -> Maybe (SmosM ())
+findBestMatch ::
+       [KeyPress]
+    -> KeyPress
+    -> KeyMappings
+    -> [(Priority, [KeyPress], Text, SmosM ())]
 findBestMatch history kp@(KeyPress k _) mappings =
-    let ls =
+    -- Remember, the history is in reverse, so newest presses first
+    let toMatch = reverse $ kp : history
+        ls =
             flip mapMaybe mappings $ \case
                 MapVtyExactly kp_ a ->
                     if keyPressMatch kp kp_
-                        then Just (High, actionFunc a ())
+                        then Just
+                                 ( MatchExact
+                                 , [kp]
+                                 , actionName a
+                                 , actionFunc a ())
                         else Nothing
                 MapAnyTypeableChar a ->
                     case k of
-                        Vty.KChar c -> Just (Low, actionFunc a c)
+                        Vty.KChar c ->
+                            Just
+                                ( MatchAnyChar
+                                , [kp]
+                                , actionName a
+                                , actionFunc a c)
                         _ -> Nothing
-                mc@(MapCombination _ _)
-                    -- Remember, the history is in reverse, so newest presses first
-                 ->
+                mc@(MapCombination _ _) ->
                     let go :: [KeyPress]
                            -> KeyMapping
-                           -> Maybe (Priority, SmosM ())
-                        go hs km =
+                           -> [KeyPress]
+                           -> Maybe (Priority, [KeyPress], Text, SmosM ())
+                        go hs km acc =
                             case (hs, km) of
                                 ([], _) -> Nothing
-                                ([hkp], MapVtyExactly kp_ a) ->
+                                (hkp:_, MapVtyExactly kp_ a) ->
                                     if keyPressMatch hkp kp_
-                                        then Just (Highest, actionFunc a ())
+                                        then Just
+                                                 ( ComboMatchExact
+                                                 , acc ++ [hkp]
+                                                 , actionName a
+                                                 , actionFunc a ())
                                         else Nothing
-                                ([(KeyPress hk _)], MapAnyTypeableChar a) ->
+                                (hkp@(KeyPress hk _):_, MapAnyTypeableChar a) ->
                                     case hk of
                                         Vty.KChar c ->
-                                            Just (Higher, actionFunc a c)
+                                            Just
+                                                ( ComboMatchAnyChar
+                                                , acc ++ [hkp]
+                                                , actionName a
+                                                , actionFunc a c)
                                         _ -> Nothing
                                 (hkp:hkps, MapCombination kp_ km_) ->
                                     if keyPressMatch hkp kp_
-                                        then go hkps km_
+                                        then go hkps km_ (acc ++ [hkp])
                                         else Nothing
-                                (_, _) -> Nothing
-                     in go (kp : history) mc
-     in (snd . NE.head) <$> NE.nonEmpty (sortOn fst ls)
+                     in go toMatch mc []
+     in sortOn (\(p, match, _, _) -> Ord.Down (p, length match)) ls
 
 keyPressMatch :: KeyPress -> KeyPress -> Bool
 keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) =
     k1 == k2 && sort mods1 == sort mods2
-
-data Priority
-    = Highest
-    | Higher
-    | High
-    | Low
-    deriving (Eq, Ord)
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure

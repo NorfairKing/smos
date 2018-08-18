@@ -17,8 +17,8 @@ defaultKeyMap =
               listMatchers
                   [ exactChar 'q' stop
                   , exactKey KEsc stop
-                  , exactChar 'h' startHeaderFromEmpty
-                  , exactChar 'H' startHeaderFromEmpty
+                  , exactChar 'e' startHeaderFromEmpty
+                  , exactChar 'E' startHeaderFromEmpty
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapEntryMatchers =
@@ -26,13 +26,7 @@ defaultKeyMap =
                   [ exactChar 'q' stop
                   , exactKey KEsc stop
                   -- Selections
-                  , exactChar 'a' entrySelectHeader
-                  , exactChar 'c' entrySelectContents
-                  , exactChar 't' entrySelectTimestamps
-                  , exactChar 'p' entrySelectProperties
-                  , exactChar 's' entrySelectStateHistory
-                  , exactChar 'o' entrySelectTags
-                  , exactChar 'l' entrySelectLogbook
+                  , exactString "ha" entrySelectHeader
                   -- Movements
                   , exactKey KUp moveUpInEntryForest
                   , exactChar 'k' moveUpInEntryForest
@@ -43,8 +37,14 @@ defaultKeyMap =
                   , exactKey KEnd moveToLastEntryForest
                   , exactChar 'G' moveToLastEntryForest
                   -- Forest manipulation
-                  , exactChar 'h' insertEntryAbove
-                  , exactChar 'H' insertEntryBelow
+                  , exactString "ek" insertEntryAbove
+                  , combo
+                        [(KeyPress (KChar 'e') []), (KeyPress KUp [])]
+                        insertEntryAbove
+                  , exactString "ej" insertEntryBelow
+                  , combo
+                        [(KeyPress (KChar 'e') []), (KeyPress KDown [])]
+                        insertEntryBelow
                   , exactChar 'd' deleteCurrentTree
                   -- Extras
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleDebug

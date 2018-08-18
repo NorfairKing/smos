@@ -20,6 +20,8 @@ module Smos.Types
     , runSmosM
     , SmosState(..)
     , KeyPress(..)
+    , DebugInfo(..)
+    , Priority(..)
     , ResourceName
     , MStop(..)
     , stop
@@ -137,6 +139,7 @@ data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
     , smosStateCursor :: Maybe SmosFileCursor
     , smosStateKeyHistory :: [KeyPress] -- In reverse order
+    , smosStateDebugInfo :: DebugInfo
     , smosStateShowHelp :: Bool
     , smosStateShowDebug :: Bool
     } deriving (Generic)
@@ -144,6 +147,17 @@ data SmosState = SmosState
 data KeyPress =
     KeyPress Key
              [Modifier]
+    deriving (Show, Eq, Ord)
+
+data DebugInfo = DebugInfo
+    { debugInfoLastMatches :: Maybe (NonEmpty (Priority, [KeyPress], Text))
+    } deriving (Show, Eq, Generic)
+
+data Priority
+    = MatchAnyChar
+    | MatchExact
+    | ComboMatchAnyChar
+    | ComboMatchExact
     deriving (Show, Eq, Ord)
 
 newtype ResourceName =

@@ -12,6 +12,7 @@ import Data.ByteString as X (ByteString)
 import Data.Function as X
 import Data.Functor.Contravariant as X
 import Data.List as X
+import Data.List.NonEmpty as X (NonEmpty(..))
 import Data.Map as X (Map)
 import Data.Maybe as X
 import Data.Monoid as X
