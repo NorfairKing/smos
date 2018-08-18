@@ -164,9 +164,9 @@ drawDebug SmosState {..} =
         , strWrap $ ppShow smosStateCursor
         ]
 
-drawLastMatches :: Maybe (NonEmpty (Priority, Seq KeyPress, Text)) -> Widget n
+drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Widget n
 drawLastMatches Nothing = emptyWidget
-drawLastMatches (Just ts) = vBox $ map (str . show) $ NE.toList ts
+drawLastMatches (Just ts) = vBox $ map (strWrap . ppShow) $ NE.toList ts
 
 data Select
     = MaybeSelected

@@ -100,7 +100,7 @@ keyMapFunc s e KeyMap {..} =
                                  (KeyPress k mods)
                                  m of
                             Nothing -> Nothing
-                            Just nems@((_, _, _, func) :| _) ->
+                            Just nems@(a :| _) ->
                                 Just $ do
                                     modify
                                         (\ss ->
@@ -109,17 +109,21 @@ keyMapFunc s e KeyMap {..} =
                                                      dbi
                                                          { debugInfoLastMatches =
                                                                Just $
-                                                               NE.map
-                                                                   (\(a, b, c, _) ->
-                                                                        ( a
-                                                                        , b
-                                                                        , c))
+                                                               NE.map activationDebug
                                                                    nems
                                                          }
                                               in ss {smosStateDebugInfo = dbi'})
-                                    func
+                                    activationFunc a
                     _ -> Nothing
             _ -> Nothing
+
+activationDebug :: Activation -> ActivationDebug
+activationDebug Activation {..} =
+    ActivationDebug
+        { activationDebugPriority = activationPriority
+        , activationDebugMatch = activationMatch
+        , activationDebugName = activationName
+        }
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure

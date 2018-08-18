@@ -21,6 +21,7 @@ module Smos.Types
     , SmosState(..)
     , KeyPress(..)
     , DebugInfo(..)
+    , ActivationDebug(..)
     , Priority(..)
     , ResourceName
     , MStop(..)
@@ -150,7 +151,13 @@ data KeyPress =
     deriving (Show, Eq, Ord)
 
 data DebugInfo = DebugInfo
-    { debugInfoLastMatches :: Maybe (NonEmpty (Priority, Seq KeyPress, Text))
+    { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
+    } deriving (Show, Eq, Generic)
+
+data ActivationDebug = ActivationDebug
+    { activationDebugPriority :: Priority
+    , activationDebugMatch :: Seq KeyPress
+    , activationDebugName :: Text
     } deriving (Show, Eq, Generic)
 
 data Priority
