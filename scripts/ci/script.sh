@@ -6,11 +6,7 @@ case $BUILD_KIND in
     stack --no-terminal $RESOLVER_FLAG test --pedantic
     ;;
   nix)
-    nix-build -A haskellPackages.cursor
-    nix-build -A haskellPackages.cursor-gen
-    nix-build -A haskellPackages.smos-data
-    nix-build -A haskellPackages.smos-data-gen
-    nix-build -A haskellPackages.smos
+    nix-build nix/release.nix --no-out-link
     ;;
   *)
     echo "Unknown build kind."

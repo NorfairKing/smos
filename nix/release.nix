@@ -1,16 +1,10 @@
-let pkgs = import (../overlay.nix);
-in fix {
-  smos-static = justStaticExecutables final.haskellPackages.smos;
-  release-target = final.stdenv.mkDerivation {
+let pkgs = import (../default.nix);
+in rec {
+  smos-static = pkgs.haskell.lib.justStaticExecutables pkgs.haskellPackages.smos;
+  release-target = pkgs.stdenv.mkDerivation {
       name = "smos-release";
-      buildInputs = [ final.regtool-static ];
-      nativeBuildInputs = [ 
-        final.haskellPackages.smos
-        final.haskellPackages.smos-data
-        final.haskellPackages.smos-data-gen
-        final.haskellPackages.smos-cursor
-        final.haskellPackages.smos-cursor-gen
-      ];
+      buildInputs = [ smos-static ];
+      nativeBuildInputs = pkgs.lib.attrsets.attrValues pkgs.smosPackages;
       buildCommand = ''
         cp -r ${smos-static} $out
       '';
