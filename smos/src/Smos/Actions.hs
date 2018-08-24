@@ -80,26 +80,6 @@ moveToLastEntryForest =
               "Move the current cursor down to the last entry in the entry forest"
         }
 
-toggleHelp :: Action
-toggleHelp =
-    Action
-        { actionName = "toggleHelp"
-        , actionFunc =
-              modify
-                  (\ss -> ss {smosStateShowHelp = not $ smosStateShowHelp ss})
-        , actionDescription = "Toggle the help page to be shown"
-        }
-
-toggleDebug :: Action
-toggleDebug =
-    Action
-        { actionName = "toggleDebug"
-        , actionFunc =
-              modify
-                  (\ss -> ss {smosStateShowDebug = not $ smosStateShowDebug ss})
-        , actionDescription = "Toggle the debug info"
-        }
-
 entrySelectWhole :: Action
 entrySelectWhole =
     Action
@@ -230,4 +210,52 @@ headerMoveToEnd =
         { actionName = "headerMoveToEnd"
         , actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectEnd
         , actionDescription = "Move to the end of the header"
+        }
+
+showHelp :: Action
+showHelp =
+    Action
+        { actionName = "showHelp"
+        , actionFunc = modifyEditorCursor editorCursorShowHelp
+        , actionDescription = "Show the (contextual) help screen"
+        }
+
+hideHelp :: Action
+hideHelp =
+    Action
+        { actionName = "hideHelp"
+        , actionFunc = modifyEditorCursor editorCursorHideHelp
+        , actionDescription = "Hide the help screen"
+        }
+
+toggleHelp :: Action
+toggleHelp =
+    Action
+        { actionName = "toggleHelp"
+        , actionFunc = modifyEditorCursor editorCursorToggleHelp
+        , actionDescription = "Toggle the help page to be shown"
+        }
+
+showDebug :: Action
+showDebug =
+    Action
+        { actionName = "showDebug"
+        , actionFunc = modifyEditorCursor editorCursorShowDebug
+        , actionDescription = "Show the debug screen"
+        }
+
+hideDebug :: Action
+hideDebug =
+    Action
+        { actionName = "hideDebug"
+        , actionFunc = modifyEditorCursor editorCursorHideDebug
+        , actionDescription = "Hide the debug screen"
+        }
+
+toggleDebug :: Action
+toggleDebug =
+    Action
+        { actionName = "toggleDebug"
+        , actionFunc = modifyEditorCursor editorCursorToggleDebug
+        , actionDescription = "Toggle the debug page to be shown"
         }

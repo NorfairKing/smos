@@ -99,4 +99,9 @@ defaultKeyMap =
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
+        , keyMapHelpMatchers =
+              listMatchers
+                  [ exactKey KEsc toggleHelp
+                  , exactKey KEnter toggleHelp
+                  ]
         }

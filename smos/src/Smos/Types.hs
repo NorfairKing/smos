@@ -39,19 +39,15 @@ import Graphics.Vty.Input.Events as Vty
 
 import Brick.Types as B hiding (Next)
 
-import Smos.Cursor.SmosFile
+import Smos.Cursor.Editor
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
     } deriving (Generic)
 
--- It should:
--- - Be show-able for help text, not necessarily 'Show'.
--- - Should be able to deal with things like 'send any writeable character to the text field'
--- - Should be able to deal with multi-character mathes
--- - Be easy to overwrite
 data KeyMap = KeyMap
-    { keyMapEmptyMatchers :: KeyMappings
+    { keyMapHelpMatchers :: KeyMappings
+    , keyMapEmptyMatchers :: KeyMappings
     , keyMapEntryMatchers :: KeyMappings
     , keyMapHeaderMatchers :: KeyMappings
     , keyMapContentsMatchers :: KeyMappings
@@ -65,7 +61,9 @@ data KeyMap = KeyMap
 instance Semigroup KeyMap where
     (<>) km1 km2 =
         KeyMap
-            { keyMapEmptyMatchers =
+            { keyMapHelpMatchers =
+                  keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
+            , keyMapEmptyMatchers =
                   keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
             , keyMapEntryMatchers =
                   keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
@@ -89,7 +87,8 @@ instance Semigroup KeyMap where
 instance Monoid KeyMap where
     mempty =
         KeyMap
-            { keyMapEmptyMatchers = mempty
+            { keyMapHelpMatchers = mempty
+            , keyMapEmptyMatchers = mempty
             , keyMapEntryMatchers = mempty
             , keyMapHeaderMatchers = mempty
             , keyMapContentsMatchers = mempty
@@ -149,11 +148,9 @@ runSmosM = runMkSmosM
 
 data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
-    , smosStateCursor :: Maybe SmosFileCursor
+    , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
     , smosStateDebugInfo :: DebugInfo
-    , smosStateShowHelp :: Bool
-    , smosStateShowDebug :: Bool
     } deriving (Generic)
 
 data KeyPress =
@@ -173,7 +170,7 @@ data ActivationDebug = ActivationDebug
 
 data Priority
     = MatchAnyChar
-    | MatchExact
+    | MatchExact -- Has higher priority.
     deriving (Show, Eq, Ord)
 
 newtype ResourceName =

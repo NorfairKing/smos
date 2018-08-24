@@ -9,11 +9,9 @@ import Import
 
 import System.Exit
 
-import qualified Data.List.NonEmpty as NE
-
 import Brick.Main as B
 
-import Smos.Cursor.SmosFile
+import Smos.Cursor.Editor
 import Smos.Data
 
 import Smos.App
@@ -32,24 +30,14 @@ smos sc@SmosConfig {..} = do
             Just (Right sf) -> pure $ Just sf
     let s = initState p $ fromMaybe emptySmosFile startF
     s' <- defaultMain (mkSmosApp sc) s
-    let sf' = rebuildEntireSmosFileCursor $ smosStateCursor s'
+    let sf' = rebuildEditorCursor $ smosStateCursor s'
     when (startF /= Just sf') $ writeSmosFile p sf'
 
 initState :: Path Abs File -> SmosFile -> SmosState
 initState p sf =
     SmosState
         { smosStateFilePath = p
-        , smosStateCursor = makeEntireSmosFileCursor sf
+        , smosStateCursor = makeEditorCursor sf
         , smosStateKeyHistory = Empty
         , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
-        , smosStateShowHelp = False
-        , smosStateShowDebug = False
         }
-
-makeEntireSmosFileCursor :: SmosFile -> Maybe SmosFileCursor
-makeEntireSmosFileCursor =
-    fmap makeSmosFileCursor . NE.nonEmpty . smosFileForest
-
-rebuildEntireSmosFileCursor :: Maybe SmosFileCursor -> SmosFile
-rebuildEntireSmosFileCursor =
-    SmosFile . maybe [] NE.toList . fmap rebuildSmosFileCursor

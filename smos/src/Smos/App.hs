@@ -18,6 +18,7 @@ import Lens.Micro
 
 import qualified Graphics.Vty as Vty
 
+import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
@@ -70,9 +71,9 @@ smosHandleEvent cf s e = do
 
 keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} =
-    if smosStateShowHelp s
-        then Just $ modify (\ss -> ss {smosStateShowHelp = False})
-        else case smosStateCursor s of
+    if editorCursorHelp $ smosStateCursor s
+        then handleWith keyMapHelpMatchers
+        else case editorCursorFileCursor $ smosStateCursor s of
                  Nothing -> handleWith keyMapEmptyMatchers
                  Just sfc ->
                      case sfc ^. smosFileCursorEntrySelectionL of
@@ -109,7 +110,8 @@ keyMapFunc s e KeyMap {..} =
                                                      dbi
                                                          { debugInfoLastMatches =
                                                                Just $
-                                                               NE.map activationDebug
+                                                               NE.map
+                                                                   activationDebug
                                                                    nems
                                                          }
                                               in ss {smosStateDebugInfo = dbi'})

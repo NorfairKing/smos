@@ -3,11 +3,13 @@
 {-
  - Cheatsheet:
  -
- - modifyXXX :: (X -> X) -> SmosM ()         -- Modify purely
  - modifyXXXM :: (X -> Maybe X) -> SmosM ()  -- Modify purely, don't do anything if 'Nothing'
+ - modifyXXX :: (X -> X) -> SmosM ()         -- Modify purely
+ - modifyXXXS :: (X -> S X) -> SmosM ()      -- Modify in SmosM
  -}
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
+    , module Smos.Cursor.Editor
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.SmosFile
@@ -15,6 +17,7 @@ module Smos.Actions.Utils
 
 import Data.Maybe
 
+import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.SmosFile
@@ -72,7 +75,16 @@ modifyMFileCursorM func = modifyMFileCursorS $ pure . func
 
 modifyMFileCursorS ::
        (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorS func = do
+modifyMFileCursorS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
+
+modifyEditorCursorM :: (EditorCursor -> Maybe EditorCursor) -> SmosM ()
+modifyEditorCursorM func = modifyEditorCursor $ \ec -> fromMaybe ec $ func ec
+
+modifyEditorCursor :: (EditorCursor -> EditorCursor) -> SmosM ()
+modifyEditorCursor func = modifyEditorCursorS $ pure . func
+
+modifyEditorCursorS :: (EditorCursor -> SmosM EditorCursor) -> SmosM ()
+modifyEditorCursorS func = do
     ss <- get
     let msc = smosStateCursor ss
     msc' <- func msc

@@ -26,6 +26,7 @@ import Cursor.TextField
 import Cursor.Tree
 
 import Smos.Cursor.Contents
+import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
@@ -41,11 +42,13 @@ import Smos.Types
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
-    [centerLayer drawContextualHelpPage | smosStateShowHelp] ++
+    [centerLayer drawContextualHelpPage | editorCursorHelp smosStateCursor] ++
     [ vBox $
       concat
-          [ [maybe drawNoContent renderCursor smosStateCursor]
-          , [drawDebug ss | smosStateShowDebug]
+          [ [ maybe drawNoContent renderCursor $
+              editorCursorFileCursor smosStateCursor
+            ]
+          , [drawDebug ss | editorCursorDebug smosStateCursor]
           ]
     ]
   where
@@ -67,7 +70,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
                 keyMaps
     drawContextualHelpPage :: Widget n
     drawContextualHelpPage =
-        case smosStateCursor of
+        case smosStateCursor ^. editorCursorSmosFileCursorL of
             Nothing -> pageFor "Empty file" keyMapEmptyMatchers
             Just sfc ->
                 case sfc ^. smosFileCursorEntrySelectionL of
@@ -104,6 +107,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
         , ("State History", keyMapStateHistoryMatchers)
         , ("Tags", keyMapTagsMatchers)
         , ("Logbook", keyMapLogbookMatchers)
+        , ("Help", keyMapHelpMatchers)
         ]
     drawInfo :: Widget n
     drawInfo =
