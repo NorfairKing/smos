@@ -9,9 +9,9 @@ module Smos.Data.Types
     , Forest
     , Tree(..)
     , Entry(..)
-    , newEntry
+    , newEntry, emptyEntry
     , TodoState(..)
-    , Header(..)
+    , Header(..),emptyHeader
     , Contents(..)
     , PropertyName(..)
     , PropertyValue(..)
@@ -105,14 +105,17 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-        { entryHeader = h
-        , entryContents = Nothing
-        , entryTimestamps = M.empty
-        , entryProperties = M.empty
-        , entryStateHistory = StateHistory []
-        , entryTags = []
-        , entryLogbook = emptyLogbook
-        }
+    { entryHeader = h
+    , entryContents = Nothing
+    , entryTimestamps = M.empty
+    , entryProperties = M.empty
+    , entryStateHistory = StateHistory []
+    , entryTags = []
+    , entryLogbook = emptyLogbook
+    }
+
+emptyEntry :: Entry
+emptyEntry = newEntry emptyHeader
 
 instance Validity Entry
 
@@ -159,6 +162,9 @@ newtype Header = Header
     } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON)
 
 instance Validity Header
+
+emptyHeader :: Header
+emptyHeader = Header ""
 
 newtype Contents = Contents
     { contentsText :: Text
@@ -260,7 +266,7 @@ instance ToJSON Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-         in object ["precision" .= p, "value" .= v]
+        in object ["precision" .= p, "value" .= v]
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"

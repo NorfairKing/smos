@@ -1,4 +1,4 @@
-module Smos.Cursor.File.Gen where
+module Smos.Cursor.SmosFile.Gen where
 
 import Cursor.Forest.Gen ()
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeApplications #-}
+
 module Smos.Cursor.HeaderSpec where
 
 import Test.Hspec
@@ -19,3 +20,16 @@ spec = do
         it "produces valid cursors" $ producesValidsOnValids rebuildHeaderCursor
         it "is the inverse of makeHeaderCursor" $
             inverseFunctionsOnValid makeHeaderCursor rebuildHeaderCursor
+    describe "headerCursorInsert" $
+        it "produces valid cursors" $ producesValidsOnValids2 headerCursorInsert
+    describe "headerCursorAppend" $
+        it "produces valid cursors" $ producesValidsOnValids2 headerCursorAppend
+    describe "headerCursorRemove" $
+        it "produces valid cursors" $ producesValidsOnValids headerCursorRemove
+    describe "headerCursorDelete" $
+        it "produces valid cursors" $ producesValidsOnValids headerCursorDelete
+    describe "headerCursorSelectPrev" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectPrev
+    describe "headerCursorSelectNext" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectNext
+    describe "headerCursorSelectStart" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectStart
+    describe "headerCursorSelectEnd" $ it "produces valid cursors" $ producesValidsOnValids headerCursorSelectEnd
+
