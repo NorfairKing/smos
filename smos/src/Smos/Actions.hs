@@ -12,134 +12,222 @@ import Smos.Actions.Utils
 
 startHeaderFromEmpty :: Action
 startHeaderFromEmpty =
-    action "Start a first header in an empty Smos File" $
-    modifyEmptyFile startSmosFile
+    Action
+        { actionName = "startHeaderFromEmpty"
+        , actionFunc = modifyEmptyFile startSmosFile
+        , actionDescription = "Start a first header in an empty Smos File"
+        }
 
 insertEntryAbove :: Action
 insertEntryAbove =
-    action
-        "Insert an entry before the currently selected header, on the same level" $
-    modifyFileCursor smosFileCursorInsertEntryAbove
+    Action
+        { actionName = "insertEntryAbove"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryAbove
+        , actionDescription =
+              "Insert an entry before the currently selected header, on the same level"
+        }
 
 insertEntryBelow :: Action
 insertEntryBelow =
-    action
-        "Insert an entry after the currently selected header, on the same level" $
-    modifyFileCursor smosFileCursorInsertEntryBelow
+    Action
+        { actionName = "insertEntryBelow"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryBelow
+        , actionDescription =
+              "Insert an entry after the currently selected header, on the same level"
+        }
 
 deleteCurrentTree :: Action
 deleteCurrentTree =
-    action "Delete the current entry and all entries below" $
-    modifyMFileCursor smosFileCursorDeleteTree
+    Action
+        { actionName = "deleteCurrentTree"
+        , actionFunc = modifyMFileCursor smosFileCursorDeleteTree
+        , actionDescription = "Delete the current entry and all entries below"
+        }
 
 moveUpInEntryForest :: Action
 moveUpInEntryForest =
-    action
-        "Move the current cursor up to the previous entry in the entry forest" $
-    modifyFileCursorM smosFileCursorSelectPrevTree
+    Action
+        { actionName = "moveUpInEntryForest"
+        , actionFunc = modifyFileCursorM smosFileCursorSelectPrevTree
+        , actionDescription =
+              "Move the current cursor up to the previous entry in the entry forest"
+        }
 
 moveDownInEntryForest :: Action
 moveDownInEntryForest =
-    action
-        "Move the current cursor down to the previous entry in the entry forest" $
-    modifyFileCursorM smosFileCursorSelectNextTree
+    Action
+        { actionName = "moveDownInEntryForest"
+        , actionFunc = modifyFileCursorM smosFileCursorSelectNextTree
+        , actionDescription =
+              "Move the current cursor down to the previous entry in the entry forest"
+        }
 
 moveToFirstEntryForest :: Action
 moveToFirstEntryForest =
-    action "Move the current cursor up to the first entry in the entry forest" $
-    modifyFileCursor smosFileCursorSelectFirstTree
+    Action
+        { actionName = "moveToFirstEntryForest"
+        , actionFunc = modifyFileCursor smosFileCursorSelectFirstTree
+        , actionDescription =
+              "Move the current cursor up to the first entry in the entry forest"
+        }
 
 moveToLastEntryForest :: Action
 moveToLastEntryForest =
-    action "Move the current cursor down to the last entry in the entry forest" $
-    modifyFileCursor smosFileCursorSelectLastTree
+    Action
+        { actionName = "moveToLastEntryForest"
+        , actionFunc = modifyFileCursor smosFileCursorSelectLastTree
+        , actionDescription =
+              "Move the current cursor down to the last entry in the entry forest"
+        }
 
 toggleHelp :: Action
 toggleHelp =
-    action "Toggle the help page to be shown" $
-    modify (\ss -> ss {smosStateShowHelp = not $ smosStateShowHelp ss})
+    Action
+        { actionName = "toggleHelp"
+        , actionFunc =
+              modify
+                  (\ss -> ss {smosStateShowHelp = not $ smosStateShowHelp ss})
+        , actionDescription = "Toggle the help page to be shown"
+        }
 
 toggleDebug :: Action
 toggleDebug =
-    action "Toggle the debug info" $
-    modify (\ss -> ss {smosStateShowDebug = not $ smosStateShowDebug ss})
+    Action
+        { actionName = "toggleDebug"
+        , actionFunc =
+              modify
+                  (\ss -> ss {smosStateShowDebug = not $ smosStateShowDebug ss})
+        , actionDescription = "Toggle the debug info"
+        }
 
 entrySelectWhole :: Action
 entrySelectWhole =
-    action "Select the whole current Entry" $
-    modifyEntryCursor entryCursorSelectWhole
+    Action
+        { actionName = "entrySelectWhole"
+        , actionFunc = modifyEntryCursor entryCursorSelectWhole
+        , actionDescription = "Select the whole current Entry"
+        }
 
 entrySelectHeader :: Action
 entrySelectHeader =
-    action "Select the current Entry's header" $
-    modifyEntryCursor entryCursorSelectHeader
+    Action
+        { actionName = "entrySelectHeader"
+        , actionFunc = modifyEntryCursor entryCursorSelectHeader
+        , actionDescription = "Select the current Entry's header"
+        }
 
 entrySelectContents :: Action
 entrySelectContents =
-    action "Select the current Entry's contents" $
-    modifyEntryCursor entryCursorSelectContents
+    Action
+        { actionName = "entrySelectContents"
+        , actionFunc = modifyEntryCursor entryCursorSelectContents
+        , actionDescription = "Select the current Entry's contents"
+        }
 
 entrySelectTimestamps :: Action
 entrySelectTimestamps =
-    action "Select the current Entry's timestamps" $
-    modifyEntryCursor entryCursorSelectTimestamps
+    Action
+        { actionName = "entrySelectTimestamps"
+        , actionFunc = modifyEntryCursor entryCursorSelectTimestamps
+        , actionDescription = "Select the current Entry's timestamps"
+        }
 
 entrySelectProperties :: Action
 entrySelectProperties =
-    action "Select the current Entry's properties" $
-    modifyEntryCursor entryCursorSelectProperties
+    Action
+        { actionName = "entrySelectProperties"
+        , actionFunc = modifyEntryCursor entryCursorSelectProperties
+        , actionDescription = "Select the current Entry's properties"
+        }
 
 entrySelectStateHistory :: Action
 entrySelectStateHistory =
-    action "Select the current Entry's state history" $
-    modifyEntryCursor entryCursorSelectStateHistory
+    Action
+        { actionName = "entrySelectStateHistory"
+        , actionFunc = modifyEntryCursor entryCursorSelectStateHistory
+        , actionDescription = "Select the current Entry's state history"
+        }
 
 entrySelectTags :: Action
 entrySelectTags =
-    action "Select the current Entry's tags" $
-    modifyEntryCursor entryCursorSelectTags
+    Action
+        { actionName = "entrySelectTags"
+        , actionFunc = modifyEntryCursor entryCursorSelectTags
+        , actionDescription = "Select the current Entry's tags"
+        }
 
 entrySelectLogbook :: Action
 entrySelectLogbook =
-    action "Select the current Entry's logbook" $
-    modifyEntryCursor entryCursorSelectLogbook
+    Action
+        { actionName = "entrySelectLogbook"
+        , actionFunc = modifyEntryCursor entryCursorSelectLogbook
+        , actionDescription = "Select the current Entry's logbook"
+        }
 
 headerInsert :: ActionUsing Char
 headerInsert =
-    actionUsing "Insert a character into the header in front of the cursor" $ \c ->
-        modifyHeaderCursorWhenSelected (headerCursorInsert c)
+    ActionUsing
+        { actionUsingName = "headerInsert"
+        , actionUsingFunc =
+              \c -> modifyHeaderCursorWhenSelected (headerCursorInsert c)
+        , actionUsingDescription =
+              "Insert a character into the header in front of the cursor"
+        }
 
 headerAppend :: ActionUsing Char
 headerAppend =
-    actionUsing "Append a character onto the header behind the cursor" $ \c ->
-        modifyHeaderCursorWhenSelected (headerCursorAppend c)
+    ActionUsing
+        { actionUsingName = "headerAppend"
+        , actionUsingFunc =
+              \c -> modifyHeaderCursorWhenSelected (headerCursorAppend c)
+        , actionUsingDescription =
+              "Append a character into the header in front of the cursor"
+        }
 
 headerRemove :: Action
 headerRemove =
-    action "Remove a character from the header" $
-    modifyHeaderCursorWhenSelectedM headerCursorRemove
+    Action
+        { actionName = "headerRemove"
+        , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorRemove
+        , actionDescription = "Remove a character from the header"
+        }
 
 headerDelete :: Action
 headerDelete =
-    action "Remove a character from the header" $
-    modifyHeaderCursorWhenSelectedM headerCursorDelete
+    Action
+        { actionName = "headerDelete"
+        , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorDelete
+        , actionDescription = "Remove a character from the header"
+        }
 
 headerMoveLeft :: Action
 headerMoveLeft =
-    action "Move left in the header" $
-    modifyHeaderCursorWhenSelectedM headerCursorSelectPrev
+    Action
+        { actionName = "headerMoveLeft"
+        , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorSelectPrev
+        , actionDescription = "Move left in the header"
+        }
 
 headerMoveRight :: Action
 headerMoveRight =
-    action "Move right in the header" $
-    modifyHeaderCursorWhenSelectedM headerCursorSelectNext
+    Action
+        { actionName = "headerMoveRight"
+        , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorSelectNext
+        , actionDescription = "Move right in the header"
+        }
 
 headerMoveToStart :: Action
 headerMoveToStart =
-    action "Move to the start of the header" $
-    modifyHeaderCursorWhenSelected headerCursorSelectStart
+    Action
+        { actionName = "headerMoveToStart"
+        , actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectStart
+        , actionDescription = "Move to the start of the header"
+        }
 
 headerMoveToEnd :: Action
 headerMoveToEnd =
-    action "Move to the end of the header" $
-    modifyHeaderCursorWhenSelected headerCursorSelectEnd
+    Action
+        { actionName = "headerMoveToEnd"
+        , actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectEnd
+        , actionDescription = "Move to the end of the header"
+        }

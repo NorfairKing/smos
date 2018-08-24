@@ -128,7 +128,7 @@ drawKeyMappingEvent (MapCombination kp km) =
 
 keyMappingActionName :: KeyMapping -> Text
 keyMappingActionName (MapVtyExactly _ a) = actionName a
-keyMappingActionName (MapAnyTypeableChar a) = actionName a
+keyMappingActionName (MapAnyTypeableChar a) = actionUsingName a
 keyMappingActionName (MapCombination _ km) = keyMappingActionName km
 
 drawHistory :: Seq KeyPress -> Widget n

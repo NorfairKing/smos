@@ -11,10 +11,10 @@ module Smos.Types
     , KeyMap(..)
     , KeyMappings
     , KeyMapping(..)
-    , Action
+    , Action(..)
     , action
-    , actionUsing
     , ActionUsing(..)
+    , actionUsing
     , SmosEvent
     , SmosM
     , runSmosM
@@ -109,21 +109,32 @@ data KeyMapping
     | MapCombination KeyPress
                      KeyMapping
 
-data ActionUsing a = Action
+data Action = Action
     { actionName :: Text
-    , actionFunc :: a -> SmosM ()
+    , actionFunc :: SmosM ()
+    , actionDescription :: Text
+    } deriving (Generic)
+
+action :: Text -> SmosM () -> Action
+action name func =
+    Action {actionName = name, actionFunc = func, actionDescription = ""}
+
+data ActionUsing a = ActionUsing
+    { actionUsingName :: Text
+    , actionUsingFunc :: a -> SmosM ()
+    , actionUsingDescription :: Text
     } deriving (Generic)
 
 instance Contravariant ActionUsing where
-    contramap func a = a {actionFunc = \b -> actionFunc a $ func b}
-
-type Action = ActionUsing ()
-
-action :: Text -> SmosM () -> Action
-action name func = Action {actionName = name, actionFunc = const func}
+    contramap func a = a {actionUsingFunc = \b -> actionUsingFunc a $ func b}
 
 actionUsing :: Text -> (a -> SmosM ()) -> ActionUsing a
-actionUsing name func = Action {actionName = name, actionFunc = func}
+actionUsing name func =
+    ActionUsing
+        { actionUsingName = name
+        , actionUsingFunc = func
+        , actionUsingDescription = ""
+        }
 
 type SmosEvent = BrickEvent ResourceName ()
 

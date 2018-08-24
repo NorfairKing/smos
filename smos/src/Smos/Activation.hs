@@ -32,7 +32,7 @@ findExactActivations history mappings =
                                      { activationPriority = MatchExact
                                      , activationMatch = Seq.singleton kp
                                      , activationName = actionName a
-                                     , activationFunc = actionFunc a ()
+                                     , activationFunc = actionFunc a
                                      }
                         else Nothing
                 _ -> Nothing
@@ -45,8 +45,8 @@ findExactActivations history mappings =
                                 Activation
                                     { activationPriority = MatchAnyChar
                                     , activationMatch = Seq.singleton kp
-                                    , activationName = actionName a
-                                    , activationFunc = actionFunc a c
+                                    , activationName = actionUsingName a
+                                    , activationFunc = actionUsingFunc a c
                                     }
                         _ -> Nothing
                 _ -> Nothing
@@ -65,7 +65,7 @@ findExactActivations history mappings =
                                              { activationPriority = MatchExact
                                              , activationMatch = acc |> hkp
                                              , activationName = actionName a
-                                             , activationFunc = actionFunc a ()
+                                             , activationFunc = actionFunc a
                                              }
                                 else Nothing
                         ([hkp@(KeyPress hk _)], MapAnyTypeableChar a) ->
@@ -75,8 +75,9 @@ findExactActivations history mappings =
                                         Activation
                                             { activationPriority = MatchAnyChar
                                             , activationMatch = acc |> hkp
-                                            , activationName = actionName a
-                                            , activationFunc = actionFunc a c
+                                            , activationName = actionUsingName a
+                                            , activationFunc =
+                                                  actionUsingFunc a c
                                             }
                                 _ -> Nothing
                         (hkp:hkps, MapCombination kp_ km_) ->
