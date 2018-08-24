@@ -105,6 +105,7 @@ data KeyMapping
     = MapVtyExactly KeyPress
                     Action
     | MapAnyTypeableChar (ActionUsing Char)
+    | MapCatchAll Action
     | MapCombination KeyPress
                      KeyMapping
 
@@ -169,7 +170,7 @@ data ActivationDebug = ActivationDebug
     } deriving (Show, Eq, Generic)
 
 data Priority
-    = MatchAnyChar
+    = CatchAll | MatchAnyChar
     | MatchExact -- Has higher priority.
     deriving (Show, Eq, Ord)
 

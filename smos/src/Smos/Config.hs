@@ -10,6 +10,7 @@ module Smos.Config
     , exactKeyPress
     , KeyPress(..)
     , anyChar
+    , catchAll
     , KeyMap(..)
     , KeyMapping(..)
     , KeyMappings
@@ -55,3 +56,6 @@ exactKeyPress = MapVtyExactly
 
 anyChar :: ActionUsing Char -> KeyMapping
 anyChar = MapAnyTypeableChar
+
+catchAll :: Action -> KeyMapping
+catchAll = MapCatchAll

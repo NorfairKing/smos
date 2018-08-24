@@ -50,6 +50,17 @@ findExactActivations history mappings =
                                     }
                         _ -> Nothing
                 _ -> Nothing
+        MapCatchAll a ->
+            case history of
+                [] -> Nothing
+                (kp:_) ->
+                    Just
+                        Activation
+                            { activationPriority = CatchAll
+                            , activationMatch = Seq.singleton kp
+                            , activationName = actionName a
+                            , activationFunc = actionFunc a
+                            }
         mc@(MapCombination _ _) ->
             let go :: [KeyPress] -- History
                    -> KeyMapping
@@ -58,6 +69,14 @@ findExactActivations history mappings =
                 go hs km acc =
                     case (hs, km) of
                         ([], _) -> Nothing
+                        (hkp:_, MapCatchAll a) ->
+                            Just
+                                Activation
+                                    { activationPriority = CatchAll
+                                    , activationMatch = acc |> hkp
+                                    , activationName = actionName a
+                                    , activationFunc = actionFunc a
+                                    }
                         ([hkp], MapVtyExactly kp_ a) ->
                             if keyPressMatch hkp kp_
                                 then Just

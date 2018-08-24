@@ -126,12 +126,14 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
 
 drawKeyMappingEvent :: KeyMapping -> Widget n
 drawKeyMappingEvent (MapVtyExactly kp _) = str $ showKeypress kp
+drawKeyMappingEvent (MapCatchAll _) = str "<any key>"
 drawKeyMappingEvent (MapAnyTypeableChar _) = str "<any char>"
 drawKeyMappingEvent (MapCombination kp km) =
     hBox [str $ showKeypress kp, drawKeyMappingEvent km]
 
 keyMappingActionName :: KeyMapping -> Text
 keyMappingActionName (MapVtyExactly _ a) = actionName a
+keyMappingActionName (MapCatchAll a) = actionName a
 keyMappingActionName (MapAnyTypeableChar a) = actionUsingName a
 keyMappingActionName (MapCombination _ km) = keyMappingActionName km
 

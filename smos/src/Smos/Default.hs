@@ -101,7 +101,6 @@ defaultKeyMap =
                   ]
         , keyMapHelpMatchers =
               listMatchers
-                  [ exactKey KEsc toggleHelp
-                  , exactKey KEnter toggleHelp
+                  [ catchAll toggleHelp
                   ]
         }
