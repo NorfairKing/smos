@@ -2,13 +2,14 @@
 
 module Smos.Cursor.Editor
     ( EditorCursor(..)
+    , EditorSelection(..)
     , makeEditorCursor
     , rebuildEditorCursor
     , editorCursorSmosFileCursorL
-    , editorCursorHelpL
-    , editorCursorShowHelp
-    , editorCursorHideHelp
-    , editorCursorToggleHelp
+    , editorCursorSelectionL
+    , editorCursorSelectEditor
+    , editorCursorSelectHelp
+    , editorCursorDebugL
     , editorCursorShowDebug
     , editorCursorHideDebug
     , editorCursorToggleDebug
@@ -29,16 +30,25 @@ import Smos.Cursor.SmosFile
 
 data EditorCursor = EditorCursor
     { editorCursorFileCursor :: Maybe SmosFileCursor
-    , editorCursorHelp :: Bool
+    , editorCursorSelection :: EditorSelection
     , editorCursorDebug :: Bool
     } deriving (Show, Eq, Generic)
+
+instance Validity EditorCursor
+
+data EditorSelection
+    = EditorSelected
+    | HelpSelected
+    deriving (Show, Eq, Generic)
+
+instance Validity EditorSelection
 
 makeEditorCursor :: SmosFile -> EditorCursor
 makeEditorCursor sf =
     EditorCursor
         { editorCursorFileCursor =
               fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
-        , editorCursorHelp = False
+        , editorCursorSelection = EditorSelected
         , editorCursorDebug = False
         }
 
@@ -51,17 +61,15 @@ editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =
     lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
 
-editorCursorHelpL :: Lens' EditorCursor Bool
-editorCursorHelpL = lens editorCursorHelp $ \ec sh -> ec {editorCursorHelp = sh}
+editorCursorSelectionL :: Lens' EditorCursor EditorSelection
+editorCursorSelectionL =
+    lens editorCursorSelection $ \ec es -> ec {editorCursorSelection = es}
 
-editorCursorShowHelp :: EditorCursor -> EditorCursor
-editorCursorShowHelp = editorCursorHelpL .~ True
+editorCursorSelectEditor :: EditorCursor -> EditorCursor
+editorCursorSelectEditor = editorCursorSelectionL .~ EditorSelected
 
-editorCursorHideHelp :: EditorCursor -> EditorCursor
-editorCursorHideHelp = editorCursorHelpL .~ False
-
-editorCursorToggleHelp :: EditorCursor -> EditorCursor
-editorCursorToggleHelp = editorCursorHelpL %~ not
+editorCursorSelectHelp :: EditorCursor -> EditorCursor
+editorCursorSelectHelp = editorCursorSelectionL .~ HelpSelected
 
 editorCursorDebugL :: Lens' EditorCursor Bool
 editorCursorDebugL =
