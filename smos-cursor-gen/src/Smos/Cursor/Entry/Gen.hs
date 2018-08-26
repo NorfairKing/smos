@@ -4,8 +4,6 @@ module Smos.Cursor.Entry.Gen where
 
 import Data.GenValidity
 
-import Test.QuickCheck
-
 import Smos.Cursor.Entry
 
 import Smos.Cursor.Contents.Gen ()
