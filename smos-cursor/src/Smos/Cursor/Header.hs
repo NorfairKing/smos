@@ -6,10 +6,10 @@ module Smos.Cursor.Header
     , headerCursorAppend
     , headerCursorRemove
     , headerCursorDelete
-, headerCursorSelectPrev
-, headerCursorSelectNext
-, headerCursorSelectStart
-, headerCursorSelectEnd
+    , headerCursorSelectPrev
+    , headerCursorSelectNext
+    , headerCursorSelectStart
+    , headerCursorSelectEnd
     ) where
 
 import Cursor.Text

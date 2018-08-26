@@ -11,7 +11,8 @@ module Smos.Cursor.Entry
     , EntryCursorSelection(..)
     , entryCursorSelect
     , entryCursorSelectWhole
-    , entryCursorSelectHeader
+    , entryCursorSelectHeaderAtStart
+    , entryCursorSelectHeaderAtEnd
     , entryCursorSelectContents
     , entryCursorSelectTimestamps
     , entryCursorSelectProperties
@@ -106,8 +107,15 @@ entryCursorSelect ecl ec = ec & entryCursorSelectionL .~ ecl
 entryCursorSelectWhole :: EntryCursor -> EntryCursor
 entryCursorSelectWhole = entryCursorSelect WholeEntrySelected
 
-entryCursorSelectHeader :: EntryCursor -> EntryCursor
-entryCursorSelectHeader = entryCursorSelect HeaderSelected
+entryCursorSelectHeaderAtStart :: EntryCursor -> EntryCursor
+entryCursorSelectHeaderAtStart =
+    (entryCursorHeaderCursorL %~ headerCursorSelectStart) .
+    entryCursorSelect HeaderSelected
+
+entryCursorSelectHeaderAtEnd :: EntryCursor -> EntryCursor
+entryCursorSelectHeaderAtEnd =
+    (entryCursorHeaderCursorL %~ headerCursorSelectEnd) .
+    entryCursorSelect HeaderSelected
 
 entryCursorSelectContents :: EntryCursor -> EntryCursor
 entryCursorSelectContents = entryCursorSelect ContentsSelected

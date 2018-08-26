@@ -3,7 +3,8 @@
 
 module Smos.Actions.Entry
     ( entrySelectWhole
-    , entrySelectHeader
+    , entrySelectHeaderAtStart
+    , entrySelectHeaderAtEnd
     , entrySelectContents
     , entrySelectProperties
     , entrySelectTimestamps
@@ -24,12 +25,22 @@ entrySelectWhole =
         , actionDescription = "Select the whole current Entry"
         }
 
-entrySelectHeader :: Action
-entrySelectHeader =
+entrySelectHeaderAtStart :: Action
+entrySelectHeaderAtStart =
     Action
-        { actionName = "entrySelectHeader"
-        , actionFunc = modifyEntryCursor entryCursorSelectHeader
-        , actionDescription = "Select the current Entry's header"
+        { actionName = "entrySelectHeaderAtStart"
+        , actionFunc = modifyEntryCursor entryCursorSelectHeaderAtStart
+        , actionDescription =
+              "Select the current Entry's header and select the start"
+        }
+
+entrySelectHeaderAtEnd :: Action
+entrySelectHeaderAtEnd =
+    Action
+        { actionName = "entrySelectHeaderAtEnd"
+        , actionFunc = modifyEntryCursor entryCursorSelectHeaderAtEnd
+        , actionDescription =
+              "Select the current Entry's header and select the end"
         }
 
 entrySelectContents :: Action

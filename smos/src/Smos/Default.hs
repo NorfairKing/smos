@@ -26,7 +26,8 @@ defaultKeyMap =
                   [ exactChar 'q' stop
                   , exactKey KEsc stop
                   -- Selections
-                  , exactString "ha" entrySelectHeader
+                  , exactChar 'a' entrySelectHeaderAtStart
+                  , exactChar 'i' entrySelectHeaderAtEnd
                   -- Movements
                   , exactKey KUp forestMoveUp
                   , exactChar 'k' forestMoveUp
