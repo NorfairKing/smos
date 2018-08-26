@@ -41,7 +41,7 @@ defaultKeyMap =
                   , exactChar 'h' forestInsertEntryAfterAndSelectHeader
                   , exactChar 'd' forestDeleteCurrentTree
                   -- Extras
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapHeaderMatchers =
@@ -54,44 +54,44 @@ defaultKeyMap =
                   , exactKey KRight headerMoveRight
                   , exactKey KHome headerMoveToStart
                   , exactKey KEnd headerMoveToEnd
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapContentsMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapTimestampsMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapPropertiesMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapStateHistoryMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapTagsMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         , keyMapLogbookMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
-        , keyMapHelpMatchers = listMatchers [catchAll toggleHelp]
+        , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
         }

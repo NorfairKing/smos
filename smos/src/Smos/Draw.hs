@@ -42,7 +42,9 @@ import Smos.Types
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
-    [centerLayer drawContextualHelpPage | editorCursorHelp smosStateCursor] ++
+    [ centerLayer drawContextualHelpPage
+    | editorCursorSelection smosStateCursor == HelpSelected
+    ] ++
     [ vBox $
       concat
           [ [ maybe drawNoContent renderCursor $

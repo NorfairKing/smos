@@ -24,28 +24,20 @@ startHeaderFromEmpty =
         , actionDescription = "Start a first header in an empty Smos File"
         }
 
-showHelp :: Action
-showHelp =
+selectHelp :: Action
+selectHelp =
     Action
-        { actionName = "showHelp"
-        , actionFunc = modifyEditorCursor editorCursorShowHelp
+        { actionName = "selectHelp"
+        , actionFunc = modifyEditorCursor editorCursorSelectHelp
         , actionDescription = "Show the (contextual) help screen"
         }
 
-hideHelp :: Action
-hideHelp =
+selectEditor :: Action
+selectEditor =
     Action
-        { actionName = "hideHelp"
-        , actionFunc = modifyEditorCursor editorCursorHideHelp
+        { actionName = "selectEditor"
+        , actionFunc = modifyEditorCursor editorCursorSelectEditor
         , actionDescription = "Hide the help screen"
-        }
-
-toggleHelp :: Action
-toggleHelp =
-    Action
-        { actionName = "toggleHelp"
-        , actionFunc = modifyEditorCursor editorCursorToggleHelp
-        , actionDescription = "Toggle the help page to be shown"
         }
 
 showDebug :: Action

@@ -71,23 +71,24 @@ smosHandleEvent cf s e = do
 
 keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} =
-    if editorCursorHelp $ smosStateCursor s
-        then handleWith keyMapHelpMatchers
-        else case editorCursorFileCursor $ smosStateCursor s of
-                 Nothing -> handleWith keyMapEmptyMatchers
-                 Just sfc ->
-                     case sfc ^. smosFileCursorEntrySelectionL of
-                         WholeEntrySelected -> handleWith keyMapEntryMatchers
-                         HeaderSelected -> handleWith keyMapHeaderMatchers
-                         ContentsSelected -> handleWith keyMapContentsMatchers
-                         TimestampsSelected ->
-                             handleWith keyMapTimestampsMatchers
-                         PropertiesSelected ->
-                             handleWith keyMapPropertiesMatchers
-                         StateHistorySelected ->
-                             handleWith keyMapStateHistoryMatchers
-                         TagsSelected -> handleWith keyMapTagsMatchers
-                         LogbookSelected -> handleWith keyMapLogbookMatchers
+    case editorCursorSelection $ smosStateCursor s of
+        HelpSelected -> handleWith keyMapHelpMatchers
+        EditorSelected ->
+            case editorCursorFileCursor $ smosStateCursor s of
+                Nothing -> handleWith keyMapEmptyMatchers
+                Just sfc ->
+                    case sfc ^. smosFileCursorEntrySelectionL of
+                        WholeEntrySelected -> handleWith keyMapEntryMatchers
+                        HeaderSelected -> handleWith keyMapHeaderMatchers
+                        ContentsSelected -> handleWith keyMapContentsMatchers
+                        TimestampsSelected ->
+                            handleWith keyMapTimestampsMatchers
+                        PropertiesSelected ->
+                            handleWith keyMapPropertiesMatchers
+                        StateHistorySelected ->
+                            handleWith keyMapStateHistoryMatchers
+                        TagsSelected -> handleWith keyMapTagsMatchers
+                        LogbookSelected -> handleWith keyMapLogbookMatchers
   where
     handleWith :: KeyMappings -> Maybe (SmosM ())
     handleWith m =
