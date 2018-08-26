@@ -12,4 +12,5 @@ import Smos.Cursor.Logbook
 
 instance GenUnchecked LogbookCursor
 
-instance GenValid LogbookCursor
+instance GenValid LogbookCursor where
+    genValid = genValidStructurally

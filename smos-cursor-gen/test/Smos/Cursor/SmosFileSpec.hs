@@ -22,17 +22,19 @@ spec = do
         it "is the inverse of makeFileCursor" $
             inverseFunctionsOnValid makeSmosFileCursor rebuildSmosFileCursor
     describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
-    describe "smosFileCursorInsertEntryAbove" $ do
+    describe "smosFileCursorInsertEntryAfter" $ do
         it "produces valid cursors" $
-         producesValidsOnValids
-            smosFileCursorInsertEntryAbove
-        it
-            "inserts an entry above the currently selected entry"
-            pending
-    describe "smosFileCursorInsertEntryBelow" $ do
+            producesValidsOnValids smosFileCursorInsertEntryAfter
+        it "inserts an entry above the currently selected entry" pending
+    describe "smosFileCursorInsertEntryAfterAndSelectHeader" $ do
         it "produces valid cursors" $
-         producesValidsOnValids
-            smosFileCursorInsertEntryAbove
-        it
-            "inserts an entry below the currently selected entry"
-            pending
+            producesValidsOnValids smosFileCursorInsertEntryAfterAndSelectHeader
+        it "inserts an entry above the currently selected entry" pending
+    describe "smosFileCursorInsertEntryBefore" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids smosFileCursorInsertEntryBefore
+        it "inserts an entry below the currently selected entry" pending
+    describe "smosFileCursorInsertEntryBeforeAndSelectHeader" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelectHeader
+        it "inserts an entry below the currently selected entry" pending

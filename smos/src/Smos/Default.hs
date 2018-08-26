@@ -38,14 +38,7 @@ defaultKeyMap =
                   , exactKey KEnd forestMoveToLastTree
                   , exactChar 'G' forestMoveToLastTree
                   -- Forest manipulation
-                  , exactString "ek" forestInsertEntryAbove
-                  , combo
-                        [(KeyPress (KChar 'e') []), (KeyPress KUp [])]
-                        forestInsertEntryAbove
-                  , exactString "ej" forestInsertEntryBelow
-                  , combo
-                        [(KeyPress (KChar 'e') []), (KeyPress KDown [])]
-                        forestInsertEntryBelow
+                  , exactChar 'h' forestInsertEntryAfterAndSelectHeader
                   , exactChar 'd' forestDeleteCurrentTree
                   -- Extras
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp

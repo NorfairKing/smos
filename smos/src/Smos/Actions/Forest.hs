@@ -2,8 +2,10 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Forest
-    ( forestInsertEntryAbove
-    , forestInsertEntryBelow
+    ( forestInsertEntryBefore
+    , forestInsertEntryBeforeAndSelectHeader
+    , forestInsertEntryAfter
+    , forestInsertEntryAfterAndSelectHeader
     , forestDeleteCurrentTree
     , forestMoveUp
     , forestMoveDown
@@ -15,22 +17,42 @@ import Smos.Types
 
 import Smos.Actions.Utils
 
-forestInsertEntryAbove :: Action
-forestInsertEntryAbove =
+forestInsertEntryBefore :: Action
+forestInsertEntryBefore =
     Action
-        { actionName = "forestInsertEntryAbove"
-        , actionFunc = modifyFileCursor smosFileCursorInsertEntryAbove
+        { actionName = "forestInsertEntryBefore"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
         , actionDescription =
               "Insert an entry before the currently selected header, on the same level"
         }
 
-forestInsertEntryBelow :: Action
-forestInsertEntryBelow =
+forestInsertEntryBeforeAndSelectHeader :: Action
+forestInsertEntryBeforeAndSelectHeader =
     Action
-        { actionName = "forestInsertEntryBelow"
-        , actionFunc = modifyFileCursor smosFileCursorInsertEntryBelow
+        { actionName = "forestInsertEntryBeforeAndSelectHeader"
+        , actionFunc =
+              modifyFileCursor smosFileCursorInsertEntryBeforeAndSelectHeader
         , actionDescription =
-              "Insert an entry after the currently selected header, on the same level"
+              "Insert an entry before the currently selected entry, on the same level, and select its header"
+        }
+
+forestInsertEntryAfter :: Action
+forestInsertEntryAfter =
+    Action
+        { actionName = "forestInsertEntryAfter"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore
+        , actionDescription =
+              "Insert an entry after the currently selected entry, on the same level"
+        }
+
+forestInsertEntryAfterAndSelectHeader :: Action
+forestInsertEntryAfterAndSelectHeader =
+    Action
+        { actionName = "forestInsertEntryAfterAndSelectHeader"
+        , actionFunc =
+              modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
+        , actionDescription =
+              "Insert an entry after the currently selected entry, on the same level, and select its header"
         }
 
 forestDeleteCurrentTree :: Action

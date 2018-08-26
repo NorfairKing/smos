@@ -18,13 +18,9 @@ import Smos.Cursor.Timestamps.Gen ()
 instance GenUnchecked EntryCursor
 
 instance GenValid EntryCursor where
-    genValid =
-        (EntryCursor <$> genValid <*> genValid <*> genValid <*> genValid <*> genValid <*>
-         genValid <*>
-         genValid <*>
-         genValid) `suchThat`
-        isValid
+    genValid = genValidStructurally
 
 instance GenUnchecked EntryCursorSelection
 
-instance GenValid EntryCursorSelection
+instance GenValid EntryCursorSelection where
+    genValid = genValidStructurally
