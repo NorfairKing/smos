@@ -28,24 +28,24 @@ defaultKeyMap =
                   -- Selections
                   , exactString "ha" entrySelectHeader
                   -- Movements
-                  , exactKey KUp moveUpInEntryForest
-                  , exactChar 'k' moveUpInEntryForest
-                  , exactKey KDown moveDownInEntryForest
-                  , exactChar 'j' moveDownInEntryForest
-                  , exactKey KHome moveToFirstEntryForest
-                  , exactString "gg" moveToFirstEntryForest
-                  , exactKey KEnd moveToLastEntryForest
-                  , exactChar 'G' moveToLastEntryForest
+                  , exactKey KUp forestMoveUp
+                  , exactChar 'k' forestMoveUp
+                  , exactKey KDown forestMoveDown
+                  , exactChar 'j' forestMoveDown
+                  , exactKey KHome forestMoveToFirstTree
+                  , exactString "gg" forestMoveToFirstTree
+                  , exactKey KEnd forestMoveToLastTree
+                  , exactChar 'G' forestMoveToLastTree
                   -- Forest manipulation
-                  , exactString "ek" insertEntryAbove
+                  , exactString "ek" forestInsertEntryAbove
                   , combo
                         [(KeyPress (KChar 'e') []), (KeyPress KUp [])]
-                        insertEntryAbove
-                  , exactString "ej" insertEntryBelow
+                        forestInsertEntryAbove
+                  , exactString "ej" forestInsertEntryBelow
                   , combo
                         [(KeyPress (KChar 'e') []), (KeyPress KDown [])]
-                        insertEntryBelow
-                  , exactChar 'd' deleteCurrentTree
+                        forestInsertEntryBelow
+                  , exactChar 'd' forestDeleteCurrentTree
                   -- Extras
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
@@ -99,8 +99,5 @@ defaultKeyMap =
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
-        , keyMapHelpMatchers =
-              listMatchers
-                  [ catchAll toggleHelp
-                  ]
+        , keyMapHelpMatchers = listMatchers [catchAll toggleHelp]
         }
