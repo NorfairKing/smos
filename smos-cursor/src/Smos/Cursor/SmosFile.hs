@@ -74,6 +74,7 @@ smosFileCursorInsertEntryBelow =
 smosFileCursorInsertEntryBelowAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelowAndSelectHeader =
+    (smosFileCursorEntrySelectionL .~ HeaderSelected) .
     fromJust . forestCursorSelectBelow . smosFileCursorInsertEntryBelow
 
 smosFileCursorInsertEntryAfter :: SmosFileCursor -> SmosFileCursor
