@@ -5,12 +5,12 @@ module Smos.Cursor.SmosFile
     , startSmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
-    , smosFileCursorSelectPrevTree
-    , smosFileCursorSelectNextTree
-    , smosFileCursorSelectFirstTree
-    , smosFileCursorSelectLastTree
+    , smosFileCursorSelectPrev
+    , smosFileCursorSelectNext
     , smosFileCursorInsertEntryBefore
     , smosFileCursorInsertEntryBeforeAndSelectHeader
+    , smosFileCursorInsertEntryBelow
+    , smosFileCursorInsertEntryBelowAndSelectHeader
     , smosFileCursorInsertEntryAfter
     , smosFileCursorInsertEntryAfterAndSelectHeader
     , smosFileCursorRemoveTreeAndSelectPrev
@@ -41,7 +41,9 @@ rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor = NE.map (fmap rebuildEntryCursor) . rebuildForestCursor
 
 startSmosFile :: SmosFileCursor
-startSmosFile = makeSmosFileCursor $ Node emptyEntry [] :| []
+startSmosFile =
+    (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) $
+    makeSmosFileCursor $ Node emptyEntry [] :| []
 
 smosFileCursorSelectedEntryL :: Lens' SmosFileCursor EntryCursor
 smosFileCursorSelectedEntryL = forestCursorSelectedTreeL . treeCursorCurrentL
@@ -50,39 +52,38 @@ smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL =
     smosFileCursorSelectedEntryL . entryCursorSelectionL
 
-smosFileCursorSelectPrevTree :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectPrevTree = forestCursorSelectPrevTree
+smosFileCursorSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectPrev = forestCursorSelectPrev
 
-smosFileCursorSelectNextTree :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectNextTree = forestCursorSelectNextTree
-
-smosFileCursorSelectFirstTree :: SmosFileCursor -> SmosFileCursor
-smosFileCursorSelectFirstTree = forestCursorSelectFirstTree
-
-smosFileCursorSelectLastTree :: SmosFileCursor -> SmosFileCursor
-smosFileCursorSelectLastTree = forestCursorSelectLastTree
+smosFileCursorSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectNext = forestCursorSelectNext
 
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBefore sfc =
-    forestCursorInsert sfc $ singletonTreeCursor emptyEntryCursor
+smosFileCursorInsertEntryBefore = forestCursorInsert emptyEntryCursor
 
 smosFileCursorInsertEntryBeforeAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBeforeAndSelectHeader =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) .
-    fromJust .
-    smosFileCursorSelectPrevTree . smosFileCursorInsertEntryBefore
+    fromJust . smosFileCursorSelectPrev . smosFileCursorInsertEntryBefore
+
+smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
+smosFileCursorInsertEntryBelow =
+    forestCursorAddChildToNodeAtStart emptyEntryCursor
+
+smosFileCursorInsertEntryBelowAndSelectHeader ::
+       SmosFileCursor -> SmosFileCursor
+smosFileCursorInsertEntryBelowAndSelectHeader =
+    fromJust . forestCursorSelectBelow . smosFileCursorInsertEntryBelow
 
 smosFileCursorInsertEntryAfter :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryAfter sfc =
-    forestCursorAppend sfc $ singletonTreeCursor emptyEntryCursor
+smosFileCursorInsertEntryAfter = forestCursorAppend emptyEntryCursor
 
 smosFileCursorInsertEntryAfterAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryAfterAndSelectHeader =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) .
-    fromJust .
-    smosFileCursorSelectNextTree . smosFileCursorInsertEntryAfter
+    fromJust . smosFileCursorSelectNext . smosFileCursorInsertEntryAfter
 
 smosFileCursorRemoveTreeAndSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorRemoveTreeAndSelectPrev = forestCursorRemoveTreeAndSelectPrev
