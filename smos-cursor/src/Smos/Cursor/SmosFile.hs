@@ -7,6 +7,8 @@ module Smos.Cursor.SmosFile
     , smosFileCursorEntrySelectionL
     , smosFileCursorSelectPrev
     , smosFileCursorSelectNext
+    , smosFileCursorSelectPrevOnSameLevel
+    , smosFileCursorSelectNextOnSameLevel
     , smosFileCursorInsertEntryBefore
     , smosFileCursorInsertEntryBeforeAndSelectHeader
     , smosFileCursorInsertEntryBelow
@@ -59,6 +61,12 @@ smosFileCursorSelectPrev = forestCursorSelectPrev
 smosFileCursorSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectNext = forestCursorSelectNext
 
+smosFileCursorSelectPrevOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectPrevOnSameLevel = forestCursorSelectPrevOnSameLevel
+
+smosFileCursorSelectNextOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectNextOnSameLevel = forestCursorSelectNextOnSameLevel
+
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBefore = forestCursorInsert emptyEntryCursor
 
@@ -66,7 +74,8 @@ smosFileCursorInsertEntryBeforeAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBeforeAndSelectHeader =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) .
-    fromJust . smosFileCursorSelectPrev . smosFileCursorInsertEntryBefore
+    fromJust .
+    smosFileCursorSelectPrevOnSameLevel . smosFileCursorInsertEntryBefore
 
 smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelow =
@@ -85,7 +94,8 @@ smosFileCursorInsertEntryAfterAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryAfterAndSelectHeader =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) .
-    fromJust . smosFileCursorSelectNext . smosFileCursorInsertEntryAfter
+    fromJust .
+    smosFileCursorSelectNextOnSameLevel . smosFileCursorInsertEntryAfter
 
 smosFileCursorRemoveTreeAndSelectPrev ::
        SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
