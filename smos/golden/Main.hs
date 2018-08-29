@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Smos.GoldenSpec where
+module Main where
 
 import System.Exit
 
@@ -27,6 +27,11 @@ import Smos.Data
 import Smos
 import Smos.App
 import Smos.Types
+
+import Text.Show.Pretty
+
+main :: IO ()
+main = hspec spec
 
 spec :: Spec
 spec = do
@@ -168,8 +173,8 @@ makeTestcases tfs =
                     bf <- readSmosfileForTest beforeFile
                     cs <- readCommandsFileForTest commandsFile
                     af <- readSmosfileForTest afterFile
-                    af' <- runCommandsOn bf cs
-                    af' `shouldBe` af
+                    run <- runCommandsOn bf cs
+                    expectResults af run
 
 readSmosfileForTest :: Path Abs File -> IO SmosFile
 readSmosfileForTest fp = do
@@ -194,7 +199,7 @@ readCommandsFileForTest f = do
 
 data Command where
     CommandPlain :: Action -> Command
-    CommandUsing :: ActionUsing a -> a -> Command
+    CommandUsing :: Show a => ActionUsing a -> a -> Command
 
 parseCommand :: Text -> Either String Command
 parseCommand t =
@@ -215,14 +220,26 @@ parseCommand t =
                 _ -> Left "Multichar operand"
         _ -> Left "Unable to parse command: more than two words"
 
-runCommandsOn :: SmosFile -> [Command] -> IO SmosFile
-runCommandsOn start =
-    fmap (rebuildEditorCursor . smosStateCursor) . foldM go startState
+data CommandsRun = CommandsRun
+    { intermidiaryResults :: [(Command, SmosFile)]
+    , finalResult :: SmosFile
+    }
+
+runCommandsOn :: SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn start commands = do
+    (fs, rs) <- foldM go (startState, []) commands
+    pure
+        CommandsRun
+        { intermidiaryResults = reverse rs
+        , finalResult = rebuildEditorCursor $ smosStateCursor fs
+        }
   where
     startState = initState $(mkAbsFile "/pretend/test/file") start
     testConf = SmosConfig {configKeyMap = mempty}
-    go :: SmosState -> Command -> IO SmosState
-    go ss c = do
+    go :: (SmosState, [(Command, SmosFile)])
+       -> Command
+       -> IO (SmosState, [(Command, SmosFile)])
+    go (ss, rs) c = do
         let func =
                 case c of
                     CommandPlain a -> actionFunc a
@@ -236,4 +253,29 @@ runCommandsOn start =
                 (error "Tried to access the brick state")
         case s of
             Stop -> failure "Premature stop"
-            Continue () -> pure ss'
+            Continue () ->
+                pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
+
+expectResults :: SmosFile -> CommandsRun -> IO ()
+expectResults sf CommandsRun {..} =
+    unless (finalResult == sf) $
+    failure $
+    unlines $
+    [ "The expected result did not match the actual result."
+    , "The expected result was the following:"
+    , ppShow sf
+    , "The actual result was the following:"
+    , ppShow finalResult
+    , "The intermediary steps built up to the result as follows:"
+    ] ++
+    concatMap (uncurry go) intermidiaryResults
+  where
+    go :: Command -> SmosFile -> [String]
+    go c isf =
+        [ "After running the following command:"
+        , case c of
+              CommandPlain a -> T.unpack $ actionName a
+              CommandUsing a arg -> unwords [T.unpack $ actionUsingName a, show arg]
+        , "The file looked as follows:"
+        , ppShow isf
+        ]

@@ -75,7 +75,7 @@ forestInsertEntryAfter :: Action
 forestInsertEntryAfter =
     Action
     { actionName = "forestInsertEntryAfter"
-    , actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore
+    , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
     , actionDescription =
           "Insert an entry after the currently selected entry, on the same level"
     }

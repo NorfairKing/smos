@@ -80,3 +80,33 @@ tests:
     - smos-data
     - smos-data-gen
     - text
+
+  smos-golden-test:
+    main: Main.hs
+    source-dirs: golden/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - base
+    - brick
+    - cursor
+    - cursor-gen
+    - genvalidity
+    - genvalidity-containers
+    - genvalidity-hspec
+    - genvalidity-hspec-aeson
+    - genvalidity-text
+    - genvalidity-time
+    - genvalidity-unordered-containers
+    - hspec
+    - path
+    - path-io
+    - pretty-show
+    - smos
+    - smos-data
+    - smos-data-gen
+    - text

@@ -14,7 +14,6 @@ module Smos.Config
     , KeyMap(..)
     , KeyMapping(..)
     , KeyMappings
-    , Action
     , action
     , ActionUsing(..)
     , stop
