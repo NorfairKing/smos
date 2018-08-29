@@ -3,9 +3,10 @@
 {-
  - Cheatsheet:
  -
- - modifyXXXM :: (X -> Maybe X) -> SmosM ()  -- Modify purely, don't do anything if 'Nothing'
- - modifyXXX :: (X -> X) -> SmosM ()         -- Modify purely
- - modifyXXXS :: (X -> S X) -> SmosM ()      -- Modify in SmosM
+ - modifyXXXM :: (X -> Maybe X) -> SmosM ()           -- Modify purely, don't do anything if 'Nothing'
+ - modifyXXXD :: (X -> DeleteOrUpdate X) -> SmosM ()  -- Modify purely, possibly delete
+ - modifyXXX :: (X -> X) -> SmosM ()                  -- Modify purely
+ - modifyXXXS :: (X -> S X) -> SmosM ()               -- Modify in SmosM
  -}
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
@@ -16,6 +17,8 @@ module Smos.Actions.Utils
     ) where
 
 import Data.Maybe
+
+import Cursor.Types
 
 import Smos.Cursor.Editor
 import Smos.Cursor.Entry
@@ -69,6 +72,15 @@ modifyMFileCursor func =
     modifyMFileCursorM $ \case
         Nothing -> Nothing
         Just sfc -> func sfc
+
+modifyFileCursorD ::
+       (SmosFileCursor -> DeleteOrUpdate SmosFileCursor) -> SmosM ()
+modifyFileCursorD func =
+    modifyMFileCursorM $ \msfc -> do
+        sfc <- msfc
+        case func sfc of
+            Deleted -> Nothing
+            Updated sfc' -> pure sfc'
 
 modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
 modifyMFileCursorM func = modifyMFileCursorS $ pure . func

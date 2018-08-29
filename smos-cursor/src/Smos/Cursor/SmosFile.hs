@@ -27,6 +27,7 @@ import Lens.Micro
 
 import Cursor.Forest
 import Cursor.Tree
+import Cursor.Types
 
 import Smos.Data.Types
 
@@ -86,14 +87,16 @@ smosFileCursorInsertEntryAfterAndSelectHeader =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) .
     fromJust . smosFileCursorSelectNext . smosFileCursorInsertEntryAfter
 
-smosFileCursorRemoveTreeAndSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorRemoveTreeAndSelectPrev ::
+       SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
 smosFileCursorRemoveTreeAndSelectPrev = forestCursorRemoveTreeAndSelectPrev
 
-smosFileCursorDeleteTreeAndSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDeleteTreeAndSelectNext ::
+       SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
 smosFileCursorDeleteTreeAndSelectNext = forestCursorDeleteTreeAndSelectNext
 
-smosFileCursorRemoveTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorRemoveTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
 smosFileCursorRemoveTree = forestCursorRemoveTree
 
-smosFileCursorDeleteTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDeleteTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
 smosFileCursorDeleteTree = forestCursorDeleteTree

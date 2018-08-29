@@ -76,7 +76,7 @@ forestDeleteCurrentTree :: Action
 forestDeleteCurrentTree =
     Action
     { actionName = "forestDeleteCurrentTree"
-    , actionFunc = modifyMFileCursor smosFileCursorDeleteTree
+    , actionFunc = modifyFileCursorD smosFileCursorDeleteTree
     , actionDescription = "Delete the current entry and all entries below"
     }
 
