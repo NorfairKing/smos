@@ -65,7 +65,7 @@ drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
         (case treeAboveAbove of
              Nothing -> id
              Just ta -> goAbove ta) .
-        wrapAboveFunc treeAboveLefts treeAboveNode treeAboveRights
+        wrapAboveFunc (reverse treeAboveLefts) treeAboveNode treeAboveRights
 
 drawVerticalNonEmptyCursor ::
        (a -> Widget n)
@@ -95,4 +95,4 @@ drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc 
     let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev
         cur = curFunc nonEmptyCursorCurrent
         next = nextCombFunc $ map nextFunc nonEmptyCursorNext
-     in combFunc prev cur next
+    in combFunc prev cur next
