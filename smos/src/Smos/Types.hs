@@ -15,6 +15,7 @@ module Smos.Types
     , action
     , ActionUsing(..)
     , actionUsing
+    , AnyAction(..)
     , SmosEvent
     , SmosM
     , runSmosM
@@ -61,43 +62,40 @@ data KeyMap = KeyMap
 instance Semigroup KeyMap where
     (<>) km1 km2 =
         KeyMap
-            { keyMapHelpMatchers =
-                  keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
-            , keyMapEmptyMatchers =
-                  keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
-            , keyMapEntryMatchers =
-                  keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
-            , keyMapHeaderMatchers =
-                  keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
-            , keyMapContentsMatchers =
-                  keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
-            , keyMapTimestampsMatchers =
-                  keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
-            , keyMapPropertiesMatchers =
-                  keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
-            , keyMapStateHistoryMatchers =
-                  keyMapStateHistoryMatchers km1 <>
-                  keyMapStateHistoryMatchers km2
-            , keyMapTagsMatchers =
-                  keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
-            , keyMapLogbookMatchers =
-                  keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
-            }
+        { keyMapHelpMatchers = keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
+        , keyMapEmptyMatchers =
+              keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
+        , keyMapEntryMatchers =
+              keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
+        , keyMapHeaderMatchers =
+              keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
+        , keyMapContentsMatchers =
+              keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
+        , keyMapTimestampsMatchers =
+              keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
+        , keyMapPropertiesMatchers =
+              keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
+        , keyMapStateHistoryMatchers =
+              keyMapStateHistoryMatchers km1 <> keyMapStateHistoryMatchers km2
+        , keyMapTagsMatchers = keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
+        , keyMapLogbookMatchers =
+              keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
+        }
 
 instance Monoid KeyMap where
     mempty =
         KeyMap
-            { keyMapHelpMatchers = mempty
-            , keyMapEmptyMatchers = mempty
-            , keyMapEntryMatchers = mempty
-            , keyMapHeaderMatchers = mempty
-            , keyMapContentsMatchers = mempty
-            , keyMapTimestampsMatchers = mempty
-            , keyMapPropertiesMatchers = mempty
-            , keyMapStateHistoryMatchers = mempty
-            , keyMapTagsMatchers = mempty
-            , keyMapLogbookMatchers = mempty
-            }
+        { keyMapHelpMatchers = mempty
+        , keyMapEmptyMatchers = mempty
+        , keyMapEntryMatchers = mempty
+        , keyMapHeaderMatchers = mempty
+        , keyMapContentsMatchers = mempty
+        , keyMapTimestampsMatchers = mempty
+        , keyMapPropertiesMatchers = mempty
+        , keyMapStateHistoryMatchers = mempty
+        , keyMapTagsMatchers = mempty
+        , keyMapLogbookMatchers = mempty
+        }
 
 type KeyMappings = [KeyMapping]
 
@@ -131,10 +129,14 @@ instance Contravariant ActionUsing where
 actionUsing :: Text -> (a -> SmosM ()) -> ActionUsing a
 actionUsing name func =
     ActionUsing
-        { actionUsingName = name
-        , actionUsingFunc = func
-        , actionUsingDescription = ""
-        }
+    { actionUsingName = name
+    , actionUsingFunc = func
+    , actionUsingDescription = ""
+    }
+
+data AnyAction
+    = PlainAction Action
+    | UsingCharAction (ActionUsing Char)
 
 type SmosEvent = BrickEvent ResourceName ()
 
@@ -170,7 +172,8 @@ data ActivationDebug = ActivationDebug
     } deriving (Show, Eq, Generic)
 
 data Priority
-    = CatchAll | MatchAnyChar
+    = CatchAll
+    | MatchAnyChar
     | MatchExact -- Has higher priority.
     deriving (Show, Eq, Ord)
 

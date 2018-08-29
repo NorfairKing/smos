@@ -2,7 +2,10 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions
-    ( module Smos.Actions
+    ( Action(..)
+    , ActionUsing(..)
+    , AnyAction(..)
+    , module Smos.Actions
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
@@ -15,6 +18,26 @@ import Smos.Actions.Entry
 import Smos.Actions.Forest
 import Smos.Actions.Header
 import Smos.Actions.Utils
+
+allActions :: [AnyAction]
+allActions =
+    map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
+
+allPlainActions :: [Action]
+allPlainActions =
+    [ startHeaderFromEmptyAndSelectHeader
+    , selectHelp
+    , selectEditor
+    , showDebug
+    , hideDebug
+    , toggleDebug
+    ] ++
+    allHeaderPlainActions ++ allEntryPlainActions ++ allForestPlainActions
+
+allUsingCharActions :: [ActionUsing Char]
+allUsingCharActions =
+    allHeaderUsingCharActions ++
+    allEntryUsingCharActions ++ allForestUsingCharActions
 
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =

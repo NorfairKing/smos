@@ -3,6 +3,7 @@
 
 module Smos.App
     ( mkSmosApp
+    , initState
     ) where
 
 import Import
@@ -22,6 +23,8 @@ import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Smos.Data
+
 import Smos.Activation
 import Smos.Draw
 import Smos.Style
@@ -30,12 +33,12 @@ import Smos.Types
 mkSmosApp :: SmosConfig -> App SmosState () ResourceName
 mkSmosApp sc@SmosConfig {..} =
     App
-        { appDraw = smosDraw sc
-        , appChooseCursor = smosChooseCursor
-        , appHandleEvent = smosHandleEvent sc
-        , appStartEvent = smosStartEvent
-        , appAttrMap = defaultAttrMap
-        }
+    { appDraw = smosDraw sc
+    , appChooseCursor = smosChooseCursor
+    , appHandleEvent = smosHandleEvent sc
+    , appStartEvent = smosStartEvent
+    , appAttrMap = defaultAttrMap
+    }
 
 smosChooseCursor ::
        s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
@@ -53,7 +56,7 @@ smosHandleEvent cf s e = do
                     case e of
                         B.VtyEvent (Vty.EvKey ek mods) ->
                             let kp = KeyPress ek mods
-                             in recordKeyPress kp
+                            in recordKeyPress kp
                         _ -> pure ()
                 Just func_ -> do
                     func_
@@ -109,13 +112,13 @@ keyMapFunc s e KeyMap {..} =
                                              let dbi = smosStateDebugInfo ss
                                                  dbi' =
                                                      dbi
-                                                         { debugInfoLastMatches =
-                                                               Just $
-                                                               NE.map
-                                                                   activationDebug
-                                                                   nems
-                                                         }
-                                              in ss {smosStateDebugInfo = dbi'})
+                                                     { debugInfoLastMatches =
+                                                           Just $
+                                                           NE.map
+                                                               activationDebug
+                                                               nems
+                                                     }
+                                             in ss {smosStateDebugInfo = dbi'})
                                     activationFunc a
                     _ -> Nothing
             _ -> Nothing
@@ -123,10 +126,19 @@ keyMapFunc s e KeyMap {..} =
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =
     ActivationDebug
-        { activationDebugPriority = activationPriority
-        , activationDebugMatch = activationMatch
-        , activationDebugName = activationName
-        }
+    { activationDebugPriority = activationPriority
+    , activationDebugMatch = activationMatch
+    , activationDebugName = activationName
+    }
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
+
+initState :: Path Abs File -> SmosFile -> SmosState
+initState p sf =
+    SmosState
+    { smosStateFilePath = p
+    , smosStateCursor = makeEditorCursor sf
+    , smosStateKeyHistory = Empty
+    , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
+    }

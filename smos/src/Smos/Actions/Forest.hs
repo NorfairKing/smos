@@ -2,7 +2,9 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Forest
-    ( forestInsertEntryBefore
+    ( allForestPlainActions
+    , allForestUsingCharActions
+    , forestInsertEntryBefore
     , forestInsertEntryBeforeAndSelectHeader
     , forestInsertEntryBelow
     , forestInsertEntryBelowAndSelectHeader
@@ -16,6 +18,22 @@ module Smos.Actions.Forest
 import Smos.Types
 
 import Smos.Actions.Utils
+
+allForestPlainActions :: [Action]
+allForestPlainActions =
+    [ forestInsertEntryBefore
+    , forestInsertEntryBeforeAndSelectHeader
+    , forestInsertEntryBelow
+    , forestInsertEntryBelowAndSelectHeader
+    , forestInsertEntryAfter
+    , forestInsertEntryAfterAndSelectHeader
+    , forestDeleteCurrentTree
+    , forestMoveUp
+    , forestMoveDown
+    ]
+
+allForestUsingCharActions :: [ActionUsing Char]
+allForestUsingCharActions = []
 
 forestInsertEntryBefore :: Action
 forestInsertEntryBefore =

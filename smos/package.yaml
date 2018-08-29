@@ -63,6 +63,7 @@ tests:
     dependencies:
     - QuickCheck
     - base
+    - brick
     - cursor
     - cursor-gen
     - genvalidity
@@ -73,6 +74,9 @@ tests:
     - genvalidity-time
     - genvalidity-unordered-containers
     - hspec
+    - path
+    - path-io
     - smos
     - smos-data
     - smos-data-gen
+    - text

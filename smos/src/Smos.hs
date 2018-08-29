@@ -32,12 +32,3 @@ smos sc@SmosConfig {..} = do
     s' <- defaultMain (mkSmosApp sc) s
     let sf' = rebuildEditorCursor $ smosStateCursor s'
     when (startF /= Just sf') $ writeSmosFile p sf'
-
-initState :: Path Abs File -> SmosFile -> SmosState
-initState p sf =
-    SmosState
-        { smosStateFilePath = p
-        , smosStateCursor = makeEditorCursor sf
-        , smosStateKeyHistory = Empty
-        , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
-        }
