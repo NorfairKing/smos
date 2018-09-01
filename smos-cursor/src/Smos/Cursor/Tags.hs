@@ -6,7 +6,7 @@ module Smos.Cursor.Tags
 
 import Data.List.NonEmpty (NonEmpty)
 
-import Cursor.NonEmpty
+import Cursor.Simple.List.NonEmpty
 
 import Smos.Data.Types
 

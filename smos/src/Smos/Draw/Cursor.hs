@@ -13,30 +13,30 @@ module Smos.Draw.Cursor
 import Brick.Types as B
 import Brick.Widgets.Core as B
 
-import Cursor.Forest
-import Cursor.NonEmpty
-import Cursor.Tree
+import Cursor.Forest hiding (drawForestCursor)
+import Cursor.List.NonEmpty
+import Cursor.Tree hiding (drawTreeCursor)
 
 import Smos.Data
 
 drawVerticalForestCursor ::
-       (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> ForestCursor a
+       (Tree b -> Widget n)
+    -> (TreeCursor a b -> Widget n)
+    -> (Tree b -> Widget n)
+    -> ForestCursor a b
     -> Widget n
 drawVerticalForestCursor prevFunc curFunc nextFunc fc =
     drawVerticalNonEmptyCursor prevFunc curFunc nextFunc $
     forestCursorListCursor fc
 
 drawForestCursor ::
-       (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
-    -> (TreeCursor a -> Widget n)
+       (Tree b -> Widget n)
+    -> (TreeCursor a b -> Widget n)
+    -> (Tree b -> Widget n)
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
-    -> ForestCursor a
+    -> ForestCursor a b
     -> Widget n
 drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc =
     drawNonEmptyCursor
@@ -49,10 +49,10 @@ drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc
     forestCursorListCursor fc
 
 drawTreeCursor ::
-       forall a n.
-       ([Tree a] -> a -> [Tree a] -> Widget n -> Widget n)
-    -> (a -> Forest a -> Widget n)
-    -> TreeCursor a
+       forall a b n.
+       ([Tree b] -> b -> [Tree b] -> Widget n -> Widget n)
+    -> (a -> Forest b -> Widget n)
+    -> TreeCursor a b
     -> Widget n
 drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
     (case treeAbove of
@@ -60,7 +60,7 @@ drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
          Just ta -> goAbove ta)
         (currentFunc treeCurrent treeBelow)
   where
-    goAbove :: TreeAbove a -> Widget n -> Widget n
+    goAbove :: TreeAbove b -> Widget n -> Widget n
     goAbove TreeAbove {..} =
         (case treeAboveAbove of
              Nothing -> id
@@ -68,10 +68,10 @@ drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
         wrapAboveFunc (reverse treeAboveLefts) treeAboveNode treeAboveRights
 
 drawVerticalNonEmptyCursor ::
-       (a -> Widget n)
+       (b -> Widget n)
     -> (a -> Widget n)
-    -> (a -> Widget n)
-    -> NonEmptyCursor a
+    -> (b -> Widget n)
+    -> NonEmptyCursor a b
     -> Widget n
 drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
     drawNonEmptyCursor
@@ -83,13 +83,13 @@ drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
         (\a b c -> a <=> b <=> c)
 
 drawNonEmptyCursor ::
-       (a -> Widget n)
+       (b -> Widget n)
     -> (a -> Widget n)
-    -> (a -> Widget n)
+    -> (b -> Widget n)
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
-    -> NonEmptyCursor a
+    -> NonEmptyCursor a b
     -> Widget n
 drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} =
     let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev

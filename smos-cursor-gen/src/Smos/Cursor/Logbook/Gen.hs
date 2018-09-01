@@ -6,7 +6,7 @@ import Data.GenValidity
 
 import Smos.Data.Gen ()
 
-import Cursor.NonEmpty.Gen ()
+import Cursor.Simple.List.NonEmpty.Gen ()
 
 import Smos.Cursor.Logbook
 

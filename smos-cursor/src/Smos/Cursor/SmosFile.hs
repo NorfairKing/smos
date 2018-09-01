@@ -22,7 +22,6 @@ module Smos.Cursor.SmosFile
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
-import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 
 import Lens.Micro
@@ -35,13 +34,13 @@ import Smos.Data.Types
 
 import Smos.Cursor.Entry
 
-type SmosFileCursor = ForestCursor EntryCursor
+type SmosFileCursor = ForestCursor EntryCursor Entry
 
 makeSmosFileCursor :: NonEmpty (Tree Entry) -> SmosFileCursor
-makeSmosFileCursor = makeForestCursor . NE.map (fmap makeEntryCursor)
+makeSmosFileCursor = makeForestCursor makeEntryCursor
 
 rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
-rebuildSmosFileCursor = NE.map (fmap rebuildEntryCursor) . rebuildForestCursor
+rebuildSmosFileCursor = rebuildForestCursor rebuildEntryCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
@@ -56,19 +55,23 @@ smosFileCursorEntrySelectionL =
     smosFileCursorSelectedEntryL . entryCursorSelectionL
 
 smosFileCursorSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectPrev = forestCursorSelectPrev
+smosFileCursorSelectPrev =
+    forestCursorSelectPrev rebuildEntryCursor makeEntryCursor
 
 smosFileCursorSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectNext = forestCursorSelectNext
+smosFileCursorSelectNext =
+    forestCursorSelectNext rebuildEntryCursor makeEntryCursor
 
 smosFileCursorSelectPrevOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectPrevOnSameLevel = forestCursorSelectPrevOnSameLevel
+smosFileCursorSelectPrevOnSameLevel =
+    forestCursorSelectPrevOnSameLevel rebuildEntryCursor makeEntryCursor
 
 smosFileCursorSelectNextOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectNextOnSameLevel = forestCursorSelectNextOnSameLevel
+smosFileCursorSelectNextOnSameLevel =
+    forestCursorSelectNextOnSameLevel rebuildEntryCursor makeEntryCursor
 
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBefore = forestCursorInsert emptyEntryCursor
+smosFileCursorInsertEntryBefore = forestCursorInsert emptyEntry
 
 smosFileCursorInsertEntryBeforeAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
@@ -78,17 +81,18 @@ smosFileCursorInsertEntryBeforeAndSelectHeader =
     smosFileCursorSelectPrevOnSameLevel . smosFileCursorInsertEntryBefore
 
 smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBelow =
-    forestCursorAddChildToNodeAtStart emptyEntryCursor
+smosFileCursorInsertEntryBelow = forestCursorAddChildToNodeAtStart emptyEntry
 
 smosFileCursorInsertEntryBelowAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelowAndSelectHeader =
     (smosFileCursorEntrySelectionL .~ HeaderSelected) .
-    fromJust . forestCursorSelectBelowAtStart . smosFileCursorInsertEntryBelow
+    fromJust .
+    forestCursorSelectBelowAtStart rebuildEntryCursor makeEntryCursor .
+    smosFileCursorInsertEntryBelow
 
 smosFileCursorInsertEntryAfter :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryAfter = forestCursorAppend emptyEntryCursor
+smosFileCursorInsertEntryAfter = forestCursorAppend emptyEntry
 
 smosFileCursorInsertEntryAfterAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
@@ -99,14 +103,16 @@ smosFileCursorInsertEntryAfterAndSelectHeader =
 
 smosFileCursorRemoveTreeAndSelectPrev ::
        SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
-smosFileCursorRemoveTreeAndSelectPrev = forestCursorRemoveTreeAndSelectPrev
+smosFileCursorRemoveTreeAndSelectPrev =
+    forestCursorRemoveTreeAndSelectPrev makeEntryCursor
 
 smosFileCursorDeleteTreeAndSelectNext ::
        SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
-smosFileCursorDeleteTreeAndSelectNext = forestCursorDeleteTreeAndSelectNext
+smosFileCursorDeleteTreeAndSelectNext =
+    forestCursorDeleteTreeAndSelectNext makeEntryCursor
 
 smosFileCursorRemoveTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorRemoveTree = forestCursorRemoveTree
+smosFileCursorRemoveTree = forestCursorRemoveTree makeEntryCursor
 
 smosFileCursorDeleteTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorDeleteTree = forestCursorDeleteTree
+smosFileCursorDeleteTree = forestCursorDeleteTree makeEntryCursor
