@@ -4,7 +4,7 @@
 module Smos.Actions.Entry
     ( allEntryPlainActions
     , allEntryUsingCharActions
-    ,entrySelectWhole
+    , entrySelectWhole
     , entrySelectHeaderAtStart
     , entrySelectHeaderAtEnd
     , entrySelectContents
@@ -13,11 +13,14 @@ module Smos.Actions.Entry
     , entrySelectStateHistory
     , entrySelectTags
     , entrySelectLogbook
+    , module Smos.Actions.Entry.TodoState
     ) where
 
 import Smos.Types
 
 import Smos.Actions.Utils
+
+import Smos.Actions.Entry.TodoState
 
 allEntryPlainActions :: [Action]
 allEntryPlainActions =
@@ -30,10 +33,11 @@ allEntryPlainActions =
     , entrySelectStateHistory
     , entrySelectTags
     , entrySelectLogbook
-    ]
+    ] ++
+    allTodoStatePlainActions
 
 allEntryUsingCharActions :: [ActionUsing Char]
-allEntryUsingCharActions = []
+allEntryUsingCharActions = [] ++ allTodoStateUsingCharActions
 
 entrySelectWhole :: Action
 entrySelectWhole =

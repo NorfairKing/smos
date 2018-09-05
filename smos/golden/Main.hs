@@ -9,18 +9,22 @@ import System.Exit
 
 import Test.Hspec
 
+import qualified Data.ByteString.Char8 as SB8
+import Data.Function
 import Data.List
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import Data.Time
+import Data.Yaml as Yaml
 
 import Control.Monad
 
 import Path
 import Path.IO
 
-import Brick
+import Brick hiding (on)
 
 import Smos.Data
 
@@ -258,24 +262,71 @@ runCommandsOn start commands = do
 
 expectResults :: SmosFile -> CommandsRun -> IO ()
 expectResults sf CommandsRun {..} =
-    unless (finalResult == sf) $
+    unless (finalResult `eqForTest` sf) $
     failure $
     unlines $
-    [ "The expected result did not match the actual result."
-    , "The expected result was the following:"
-    , ppShow sf
-    , "The actual result was the following:"
-    , ppShow finalResult
-    , "The intermediary steps built up to the result as follows:"
-    ] ++
-    concatMap (uncurry go) intermidiaryResults
+    concat
+        [ [ "The expected result did not match the actual result."
+          , "The expected result was the following:"
+          , ppShow sf
+          , "The actual result was the following:"
+          , ppShow finalResult
+          , "The intermediary steps built up to the result as follows:"
+          ]
+        , concatMap (uncurry go) intermidiaryResults
+        , [ "If this was intentional, you can replace the contents of the expected results file by the following:"
+          , SB8.unpack $ Yaml.encode finalResult
+          ]
+        ]
   where
     go :: Command -> SmosFile -> [String]
     go c isf =
         [ "After running the following command:"
         , case c of
               CommandPlain a -> T.unpack $ actionName a
-              CommandUsing a arg -> unwords [T.unpack $ actionUsingName a, show arg]
+              CommandUsing a arg ->
+                  unwords [T.unpack $ actionUsingName a, show arg]
         , "The file looked as follows:"
         , ppShow isf
         ]
+
+eqForTest :: SmosFile -> SmosFile -> Bool
+eqForTest = forestEqForTest `on` smosFileForest
+  where
+    forestEqForTest :: Forest Entry -> Forest Entry -> Bool
+    forestEqForTest fs1 fs2 =
+        all
+            (\(t1, mt2) ->
+                 case mt2 of
+                     Nothing -> False
+                     Just t2 -> treeEqForTest t1 t2) $
+        zip fs1 (map Just fs2 ++ repeat Nothing)
+    treeEqForTest :: Tree Entry -> Tree Entry -> Bool
+    treeEqForTest (Node n1 fs1) (Node n2 fs2) =
+        (n1 `entryEqForTest` n2) && (fs1 `forestEqForTest` fs2)
+    entryEqForTest :: Entry -> Entry -> Bool
+    entryEqForTest =
+        ((==) `on` entryHeader) &&&
+        ((==) `on` entryContents) &&&
+        ((==) `on` entryTimestamps) &&&
+        ((==) `on` entryProperties) &&&
+        (stateHistoryEqForTest `on` entryStateHistory) &&&
+        ((==) `on` entryTags) &&& ((==) `on` entryLogbook)
+    stateHistoryEqForTest :: StateHistory -> StateHistory -> Bool
+    stateHistoryEqForTest sh1 sh2 =
+        all
+            (\(she1, mshe2) ->
+                 case mshe2 of
+                     Nothing -> False
+                     Just she2 -> stateHistoryEntryEqForTest she1 she2) $
+        zip
+            (unStateHistory sh1)
+            (map Just (unStateHistory sh2) ++ repeat Nothing)
+    stateHistoryEntryEqForTest :: StateHistoryEntry -> StateHistoryEntry -> Bool
+    stateHistoryEntryEqForTest =
+        ((==) `on` stateHistoryEntryNewState) &&&
+        (dateTimeEqForTest `on` stateHistoryEntryTimestamp)
+    dateTimeEqForTest :: UTCTime -> UTCTime -> Bool
+    dateTimeEqForTest _ _ = True
+    (&&&) :: (a -> b -> Bool) -> (a -> b -> Bool) -> (a -> b -> Bool)
+    (&&&) f g a b = f a b && g a b

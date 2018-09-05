@@ -39,6 +39,14 @@ defaultKeyMap =
               , exactChar 'h' forestInsertEntryAfterAndSelectHeader
               , exactChar 'H' forestInsertEntryBelowAndSelectHeader
               , exactChar 'd' forestDeleteCurrentTree
+                -- Fast todo state manipulation
+              , exactString "tt" $ entrySetTodoState "TODO"
+              , exactString "tn" $ entrySetTodoState "NEXT"
+              , exactString "tw" $ entrySetTodoState "STARTED"
+              , exactString "tw" $ entrySetTodoState "READY"
+              , exactString "tw" $ entrySetTodoState "WAITING"
+              , exactString "td" $ entrySetTodoState "DONE"
+              , exactString "tc" $ entrySetTodoState "CANCELLED"
                 -- Extras
               , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
               , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug

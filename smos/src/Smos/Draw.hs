@@ -225,6 +225,10 @@ drawEntryCursor EntryCursor {..} =
                      MaybeSelected -> withAttr selectedAttr
                      NotSelected -> id) $
                 str "> "
+              , maybe
+                    emptyWidget
+                    drawCurrentStateFromCursor
+                    entryCursorStateHistoryCursor
               , drawHeaderCursor
                     (selectWhen HeaderSelected)
                     entryCursorHeaderCursor
@@ -263,7 +267,11 @@ drawEntryCursor EntryCursor {..} =
 drawEntry :: Entry -> Widget ResourceName
 drawEntry Entry {..} =
     vBox
-        [ hBox [str "> ", drawHeader entryHeader]
+        [ hBox
+              [ str "> "
+              , drawCurrentState entryStateHistory
+              , drawHeader entryHeader
+              ]
         , maybe emptyWidget drawContents entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
@@ -277,6 +285,21 @@ drawHeaderCursor = drawTextCursor
 
 drawHeader :: Header -> Widget ResourceName
 drawHeader = txt . headerText
+
+drawCurrentStateFromCursor :: StateHistoryCursor -> Widget ResourceName
+drawCurrentStateFromCursor =
+    drawCurrentState . StateHistory . NE.toList . rebuildStateHistoryCursor
+
+drawCurrentState :: StateHistory -> Widget ResourceName
+drawCurrentState (StateHistory ls)
+    | null ls = emptyWidget
+    | otherwise = withAttr todoStateAttr $
+        case reverse ls of
+            (she:_) ->
+                case stateHistoryEntryNewState she of
+                    Nothing -> emptyWidget
+                    Just ts -> drawTodoState ts <+> str " "
+            _ -> emptyWidget
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
@@ -301,12 +324,23 @@ drawProperties m
     | otherwise = strWrap $ show m
 
 drawStateHistoryCursor :: Select -> StateHistoryCursor -> Widget ResourceName
-drawStateHistoryCursor _ = strWrap . show
+drawStateHistoryCursor _ =
+    drawStateHistory . StateHistory . NE.toList . rebuildStateHistoryCursor
 
 drawStateHistory :: StateHistory -> Widget ResourceName
 drawStateHistory (StateHistory ls)
     | null ls = emptyWidget
-    | otherwise = strWrap $ show ls
+    | otherwise =
+        withAttr todoStateHistoryAttr $
+        vBox $
+        flip map ls $ \StateHistoryEntry {..} ->
+            hBox
+                [ strWrap $ show stateHistoryEntryTimestamp
+                , maybe
+                      emptyWidget
+                      ((str " " <+>) . drawTodoState)
+                      stateHistoryEntryNewState
+                ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor _ = strWrap . show
@@ -323,7 +357,8 @@ drawLogbookCursor _ lbc =
         _ -> strWrap $ show lbc
 
 drawLogbook :: Logbook -> Widget ResourceName
-drawLogbook (LogClosed ls) | null ls = emptyWidget
+drawLogbook (LogClosed ls)
+    | null ls = emptyWidget
     | otherwise = strWrap $ show ls
 drawLogbook lb = strWrap $ show lb
 
@@ -337,3 +372,8 @@ drawTextCursor s tc =
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
 drawTextFieldCursor _ = strWrap . show
+
+drawTodoState :: TodoState -> Widget ResourceName
+drawTodoState ts =
+    withAttr (todoStateSpecificAttr ts) . withAttr todoStateAttr . txtWrap $
+    todoStateText ts

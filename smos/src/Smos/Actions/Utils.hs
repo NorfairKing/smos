@@ -3,6 +3,8 @@
 {-
  - Cheatsheet:
  -
+ - modifyMXXXM :: (Maybe X -> Maybe X) -> SmosM ()         -- Modify a Maybe field in SmosM
+ - modifyMXXXSM :: (Maybe X -> SmosM (Maybe X)) -> SmosM () -- Modify a Maybe field in SmosM
  - modifyXXXM :: (X -> Maybe X) -> SmosM ()           -- Modify purely, don't do anything if 'Nothing'
  - modifyXXXD :: (X -> DeleteOrUpdate X) -> SmosM ()  -- Modify purely, possibly delete
  - modifyXXX :: (X -> X) -> SmosM ()                  -- Modify purely
@@ -14,16 +16,21 @@ module Smos.Actions.Utils
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.SmosFile
+    , module Smos.Cursor.StateHistory
     ) where
 
 import Data.Maybe
+import Data.Time
 
 import Cursor.Types
+
+import Smos.Data
 
 import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.SmosFile
+import Smos.Cursor.StateHistory
 
 import Lens.Micro
 
@@ -41,9 +48,23 @@ modifyHeaderCursorWhenSelected func =
             HeaderSelected -> ec & entryCursorHeaderCursorL %~ func
             _ -> ec
 
+modifyMTodoStateM :: (Maybe TodoState -> Maybe TodoState) -> SmosM ()
+modifyMTodoStateM func =
+    modifyMStateHistoryCursorSM $ \mshc -> do
+        now <- liftIO getCurrentTime
+        pure $ Just $ stateHistoryCursorModTodoState now func mshc
+
+modifyMStateHistoryCursorSM ::
+       (Maybe StateHistoryCursor -> SmosM (Maybe StateHistoryCursor))
+    -> SmosM ()
+modifyMStateHistoryCursorSM func =
+    modifyEntryCursorS $ entryCursorStateHistoryCursorL func
+
 modifyEntryCursor :: (EntryCursor -> EntryCursor) -> SmosM ()
-modifyEntryCursor func =
-    modifyFileCursor $ \sfc -> sfc & smosFileCursorSelectedEntryL %~ func
+modifyEntryCursor func = modifyEntryCursorS $ pure . func
+
+modifyEntryCursorS :: (EntryCursor -> SmosM EntryCursor) -> SmosM ()
+modifyEntryCursorS func = modifyFileCursorS $ smosFileCursorSelectedEntryL func
 
 modifyEmptyFile :: SmosFileCursor -> SmosM ()
 modifyEmptyFile = modifyEmptyFileS . pure
