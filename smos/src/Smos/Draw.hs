@@ -375,5 +375,5 @@ drawTextFieldCursor _ = strWrap . show
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =
-    withAttr (todoStateSpecificAttr ts) . withAttr todoStateAttr . txtWrap $
+    withAttr (todoStateSpecificAttr ts <> todoStateAttr)  . txtWrap $
     todoStateText ts

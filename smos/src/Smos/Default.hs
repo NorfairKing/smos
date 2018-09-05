@@ -42,8 +42,8 @@ defaultKeyMap =
                 -- Fast todo state manipulation
               , exactString "tt" $ entrySetTodoState "TODO"
               , exactString "tn" $ entrySetTodoState "NEXT"
-              , exactString "tw" $ entrySetTodoState "STARTED"
-              , exactString "tw" $ entrySetTodoState "READY"
+              , exactString "ts" $ entrySetTodoState "STARTED"
+              , exactString "tr" $ entrySetTodoState "READY"
               , exactString "tw" $ entrySetTodoState "WAITING"
               , exactString "td" $ entrySetTodoState "DONE"
               , exactString "tc" $ entrySetTodoState "CANCELLED"
