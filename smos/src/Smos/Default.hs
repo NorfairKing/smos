@@ -47,6 +47,7 @@ defaultKeyMap =
               , exactString "tw" $ entrySetTodoState "WAITING"
               , exactString "td" $ entrySetTodoState "DONE"
               , exactString "tc" $ entrySetTodoState "CANCELLED"
+              , exactString "t " entryUnsetTodoState
                 -- Extras
               , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
               , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
