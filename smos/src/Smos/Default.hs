@@ -19,7 +19,6 @@ defaultKeyMap =
               , exactKey KEsc stop
               , exactChar 'h' startHeaderFromEmptyAndSelectHeader
               , exactChar 'H' startHeaderFromEmptyAndSelectHeader
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
               ]
     , keyMapEntryMatchers =
           listMatchers
@@ -48,9 +47,6 @@ defaultKeyMap =
               , exactString "td" $ entrySetTodoState "DONE"
               , exactString "tc" $ entrySetTodoState "CANCELLED"
               , exactString "t " entryUnsetTodoState
-                -- Extras
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
               ]
     , keyMapHeaderMatchers =
           listMatchers
@@ -63,44 +59,17 @@ defaultKeyMap =
               , exactKey KRight headerMoveRight
               , exactKey KHome headerMoveToStart
               , exactKey KEnd headerMoveToEnd
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
               ]
-    , keyMapContentsMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
-    , keyMapTimestampsMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
-    , keyMapPropertiesMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
-    , keyMapStateHistoryMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
-    , keyMapTagsMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
-    , keyMapLogbookMatchers =
-          listMatchers
-              [ exactKey KEsc entrySelectWhole
-              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
-              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-              ]
+    , keyMapContentsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , keyMapTimestampsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , keyMapPropertiesMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , keyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , keyMapTagsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
+    , keyMapAnyMatchers =
+          listMatchers
+              [ exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+              , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+              ]
     }

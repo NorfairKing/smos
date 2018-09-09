@@ -27,6 +27,7 @@ module Smos.Types
     , ResourceName
     , MStop(..)
     , stop
+    , undo
     , module Control.Monad.Reader
     , module Control.Monad.State
     ) where
@@ -57,6 +58,7 @@ data KeyMap = KeyMap
     , keyMapStateHistoryMatchers :: KeyMappings
     , keyMapTagsMatchers :: KeyMappings
     , keyMapLogbookMatchers :: KeyMappings
+    , keyMapAnyMatchers :: KeyMappings
     } deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -80,6 +82,7 @@ instance Semigroup KeyMap where
         , keyMapTagsMatchers = keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
         , keyMapLogbookMatchers =
               keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
+        , keyMapAnyMatchers = keyMapAnyMatchers km1 <> keyMapAnyMatchers km2
         }
 
 instance Monoid KeyMap where
@@ -95,6 +98,7 @@ instance Monoid KeyMap where
         , keyMapStateHistoryMatchers = mempty
         , keyMapTagsMatchers = mempty
         , keyMapLogbookMatchers = mempty
+        , keyMapAnyMatchers = mempty
         }
 
 type KeyMappings = [KeyMapping]
@@ -250,4 +254,17 @@ instance MonadReader s m => MonadReader s (NextT m) where
     local func (NextT m) = NextT $ local func m
 
 stop :: Action
-stop = action "Stop Smos" $ MkSmosM $ NextT $ pure Stop
+stop =
+    Action
+    { actionName = "stop"
+    , actionDescription = "Stop Smos"
+    , actionFunc = MkSmosM $ NextT $ pure Stop
+    }
+
+undo :: Action
+undo =
+    Action
+    { actionName = "undo"
+    , actionDescription = "Undo the last action"
+    , actionFunc = undefined
+    }

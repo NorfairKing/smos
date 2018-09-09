@@ -94,8 +94,9 @@ keyMapFunc s e KeyMap {..} =
                         LogbookSelected -> handleWith keyMapLogbookMatchers
   where
     handleWith :: KeyMappings -> Maybe (SmosM ())
-    handleWith m =
-        case e of
+    handleWith specificMappings =
+        let m = specificMappings ++ keyMapAnyMatchers
+        in case e of
             VtyEvent vtye ->
                 case vtye of
                     Vty.EvKey k mods ->
