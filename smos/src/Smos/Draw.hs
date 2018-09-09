@@ -170,10 +170,16 @@ drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
     vBox
         [ str "Key history: " <+> drawHistory smosStateKeyHistory
+        , str "Previous in history: " <+>
+          drawCursorHistory smosStateCursorHistory
         , str "Last match: " <+>
           drawLastMatches (debugInfoLastMatches smosStateDebugInfo)
         , strWrap $ ppShow smosStateCursor
         ]
+
+drawCursorHistory :: [EditorCursor] -> Widget n
+drawCursorHistory [] = emptyWidget
+drawCursorHistory ec = strWrap $ ppShow ec
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Widget n
 drawLastMatches Nothing = emptyWidget
@@ -293,7 +299,8 @@ drawCurrentStateFromCursor =
 drawCurrentState :: StateHistory -> Widget ResourceName
 drawCurrentState (StateHistory ls)
     | null ls = emptyWidget
-    | otherwise = withAttr todoStateAttr $
+    | otherwise =
+        withAttr todoStateAttr $
         case reverse ls of
             (she:_) ->
                 case stateHistoryEntryNewState she of
@@ -375,5 +382,5 @@ drawTextFieldCursor _ = strWrap . show
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =
-    withAttr (todoStateSpecificAttr ts <> todoStateAttr)  . txtWrap $
+    withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txtWrap $
     todoStateText ts

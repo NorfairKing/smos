@@ -9,6 +9,7 @@ module Smos.Actions
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
+    , module Smos.Actions.Undo
     , module Smos.Actions.Utils
     ) where
 
@@ -17,6 +18,7 @@ import Smos.Types
 import Smos.Actions.Entry
 import Smos.Actions.Forest
 import Smos.Actions.Header
+import Smos.Actions.Undo
 import Smos.Actions.Utils
 
 allActions :: [AnyAction]
@@ -25,19 +27,28 @@ allActions =
 
 allPlainActions :: [Action]
 allPlainActions =
-    [ startHeaderFromEmptyAndSelectHeader
-    , selectHelp
-    , selectEditor
-    , showDebug
-    , hideDebug
-    , toggleDebug
-    ] ++
-    allHeaderPlainActions ++ allEntryPlainActions ++ allForestPlainActions
+    concat
+        [ [ startHeaderFromEmptyAndSelectHeader
+          , selectHelp
+          , selectEditor
+          , showDebug
+          , hideDebug
+          , toggleDebug
+          ]
+        , allHeaderPlainActions
+        , allEntryPlainActions
+        , allForestPlainActions
+        , allUndoPlainActions
+        ]
 
 allUsingCharActions :: [ActionUsing Char]
 allUsingCharActions =
-    allHeaderUsingCharActions ++
-    allEntryUsingCharActions ++ allForestUsingCharActions
+    concat
+        [ allHeaderUsingCharActions
+        , allEntryUsingCharActions
+        , allForestUsingCharActions
+        , allUndoUsingCharActions
+        ]
 
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =

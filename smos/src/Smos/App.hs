@@ -59,6 +59,7 @@ smosHandleEvent cf s e = do
                             in recordKeyPress kp
                         _ -> pure ()
                 Just func_ -> do
+                    recordCursorHistory
                     func_
                     clearKeyHistory
     (mkHalt, s') <- runSmosM cf s func
@@ -69,6 +70,13 @@ smosHandleEvent cf s e = do
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp =
         modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
+    recordCursorHistory :: SmosM ()
+    recordCursorHistory =
+        modify $ \ss ->
+            ss
+            { smosStateCursorHistory =
+                  smosStateCursor ss : smosStateCursorHistory ss
+            }
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
@@ -97,32 +105,33 @@ keyMapFunc s e KeyMap {..} =
     handleWith specificMappings =
         let m = specificMappings ++ keyMapAnyMatchers
         in case e of
-            VtyEvent vtye ->
-                case vtye of
-                    Vty.EvKey k mods ->
-                        case NE.nonEmpty $
-                             findActivations
-                                 (smosStateKeyHistory s)
-                                 (KeyPress k mods)
-                                 m of
-                            Nothing -> Nothing
-                            Just nems@(a :| _) ->
-                                Just $ do
-                                    modify
-                                        (\ss ->
-                                             let dbi = smosStateDebugInfo ss
-                                                 dbi' =
-                                                     dbi
-                                                     { debugInfoLastMatches =
-                                                           Just $
-                                                           NE.map
-                                                               activationDebug
-                                                               nems
-                                                     }
-                                             in ss {smosStateDebugInfo = dbi'})
-                                    activationFunc a
-                    _ -> Nothing
-            _ -> Nothing
+               VtyEvent vtye ->
+                   case vtye of
+                       Vty.EvKey k mods ->
+                           case NE.nonEmpty $
+                                findActivations
+                                    (smosStateKeyHistory s)
+                                    (KeyPress k mods)
+                                    m of
+                               Nothing -> Nothing
+                               Just nems@(a :| _) ->
+                                   Just $ do
+                                       modify
+                                           (\ss ->
+                                                let dbi = smosStateDebugInfo ss
+                                                    dbi' =
+                                                        dbi
+                                                        { debugInfoLastMatches =
+                                                              Just $
+                                                              NE.map
+                                                                  activationDebug
+                                                                  nems
+                                                        }
+                                                in ss
+                                                   {smosStateDebugInfo = dbi'})
+                                       activationFunc a
+                       _ -> Nothing
+               _ -> Nothing
 
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =
@@ -141,5 +150,6 @@ initState p sf =
     { smosStateFilePath = p
     , smosStateCursor = makeEditorCursor sf
     , smosStateKeyHistory = Empty
+    , smosStateCursorHistory = []
     , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }

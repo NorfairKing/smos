@@ -27,7 +27,6 @@ module Smos.Types
     , ResourceName
     , MStop(..)
     , stop
-    , undo
     , module Control.Monad.Reader
     , module Control.Monad.State
     ) where
@@ -157,6 +156,7 @@ data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
     , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
+    , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest
     , smosStateDebugInfo :: DebugInfo
     } deriving (Generic)
 
@@ -259,12 +259,4 @@ stop =
     { actionName = "stop"
     , actionDescription = "Stop Smos"
     , actionFunc = MkSmosM $ NextT $ pure Stop
-    }
-
-undo :: Action
-undo =
-    Action
-    { actionName = "undo"
-    , actionDescription = "Undo the last action"
-    , actionFunc = undefined
     }

@@ -69,7 +69,8 @@ defaultKeyMap =
     , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
     , keyMapAnyMatchers =
           listMatchers
-              [ exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+              [exactChar 'u' undo
+            , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
               , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
               ]
     }
