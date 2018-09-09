@@ -4,7 +4,9 @@ in rec {
   release-target = pkgs.stdenv.mkDerivation {
       name = "smos-release";
       buildInputs = [ smos-static ];
-      nativeBuildInputs = pkgs.lib.attrsets.attrValues pkgs.smosPackages;
+      nativeBuildInputs =
+           pkgs.lib.attrsets.attrValues pkgs.smosPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages;
       buildCommand = ''
         cp -r ${smos-static} $out
       '';
