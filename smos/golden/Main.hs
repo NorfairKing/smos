@@ -309,16 +309,19 @@ eqForTest :: SmosFile -> SmosFile -> Bool
 eqForTest = forestEqForTest `on` smosFileForest
   where
     forestEqForTest :: Forest Entry -> Forest Entry -> Bool
-    forestEqForTest fs1 fs2 =
-        all
-            (\(t1, mt2) ->
-                 case mt2 of
-                     Nothing -> False
-                     Just t2 -> treeEqForTest t1 t2) $
-        zip fs1 (map Just fs2 ++ repeat Nothing)
-    treeEqForTest :: Tree Entry -> Tree Entry -> Bool
-    treeEqForTest (Node n1 fs1) (Node n2 fs2) =
-        (n1 `entryEqForTest` n2) && (fs1 `forestEqForTest` fs2)
+    forestEqForTest = forestEq1 entryEqForTest
+    forestEq1 :: (a -> a -> Bool) -> Forest a -> Forest a -> Bool
+    forestEq1 eq fs1 fs2 =
+        flip
+            all
+            (zip (map Just fs1 ++ repeat Nothing)
+                 (map Just fs2 ++ repeat Nothing)) $ \(mt1, mt2) ->
+            case (,) <$> mt1 <*> mt2 of
+                Nothing -> False
+                Just (t1, t2) -> treeEq1 eq t1 t2
+    treeEq1 :: (a -> a -> Bool) -> Tree a -> Tree a -> Bool
+    treeEq1 eq (Node n1 fs1) (Node n2 fs2) =
+        (n1 `eq` n2) && (forestEq1 eq fs1 fs2)
     entryEqForTest :: Entry -> Entry -> Bool
     entryEqForTest =
         ((==) `on` entryHeader) &&&

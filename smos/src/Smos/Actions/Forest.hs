@@ -10,7 +10,8 @@ module Smos.Actions.Forest
     , forestInsertEntryBelowAndSelectHeader
     , forestInsertEntryAfter
     , forestInsertEntryAfterAndSelectHeader
-    , forestDeleteCurrentTree
+    , forestDeleteCurrentEntry
+    , forestDeleteCurrentSubTree
     , forestMoveUp
     , forestMoveDown
     ) where
@@ -27,7 +28,8 @@ allForestPlainActions =
     , forestInsertEntryBelowAndSelectHeader
     , forestInsertEntryAfter
     , forestInsertEntryAfterAndSelectHeader
-    , forestDeleteCurrentTree
+    , forestDeleteCurrentEntry
+    , forestDeleteCurrentSubTree
     , forestMoveUp
     , forestMoveDown
     ]
@@ -90,11 +92,19 @@ forestInsertEntryAfterAndSelectHeader =
           "Insert an entry after the currently selected entry, on the same level, and select its header"
     }
 
-forestDeleteCurrentTree :: Action
-forestDeleteCurrentTree =
+forestDeleteCurrentEntry :: Action
+forestDeleteCurrentEntry =
     Action
-    { actionName = "forestDeleteCurrentTree"
-    , actionFunc = modifyFileCursorD smosFileCursorDeleteTree
+    { actionName = "forestDeleteCurrentEntry"
+    , actionFunc = modifyFileCursorD smosFileCursorDeleteElem
+    , actionDescription = "Delete the current entry"
+    }
+
+forestDeleteCurrentSubTree :: Action
+forestDeleteCurrentSubTree =
+    Action
+    { actionName = "forestDeleteCurrentSubTree"
+    , actionFunc = modifyFileCursorD smosFileCursorDeleteSubTree
     , actionDescription = "Delete the current entry and all entries below"
     }
 

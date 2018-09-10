@@ -37,7 +37,9 @@ defaultKeyMap =
                 -- Forest manipulation
               , exactChar 'h' forestInsertEntryAfterAndSelectHeader
               , exactChar 'H' forestInsertEntryBelowAndSelectHeader
-              , exactChar 'd' forestDeleteCurrentTree
+                -- Deletion
+              , exactChar 'd' forestDeleteCurrentEntry
+              , exactChar 'D' forestDeleteCurrentSubTree
                 -- Fast todo state manipulation
               , exactString "tt" $ entrySetTodoState "TODO"
               , exactString "tn" $ entrySetTodoState "NEXT"
@@ -69,8 +71,8 @@ defaultKeyMap =
     , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
     , keyMapAnyMatchers =
           listMatchers
-              [exactChar 'u' undo
-            , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+              [ exactChar 'u' undo
+              , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
               , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
               ]
     }

@@ -15,10 +15,8 @@ module Smos.Cursor.SmosFile
     , smosFileCursorInsertEntryBelowAndSelectHeader
     , smosFileCursorInsertEntryAfter
     , smosFileCursorInsertEntryAfterAndSelectHeader
-    , smosFileCursorRemoveTreeAndSelectPrev
-    , smosFileCursorDeleteTreeAndSelectNext
-    , smosFileCursorRemoveTree
-    , smosFileCursorDeleteTree
+    , smosFileCursorDeleteElem
+    , smosFileCursorDeleteSubTree
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
@@ -101,18 +99,8 @@ smosFileCursorInsertEntryAfterAndSelectHeader =
     fromJust .
     smosFileCursorSelectNextOnSameLevel . smosFileCursorInsertEntryAfter
 
-smosFileCursorRemoveTreeAndSelectPrev ::
-       SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
-smosFileCursorRemoveTreeAndSelectPrev =
-    forestCursorRemoveTreeAndSelectPrev makeEntryCursor
+smosFileCursorDeleteSubTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
+smosFileCursorDeleteSubTree = forestCursorDeleteSubTree makeEntryCursor
 
-smosFileCursorDeleteTreeAndSelectNext ::
-       SmosFileCursor -> Maybe (DeleteOrUpdate SmosFileCursor)
-smosFileCursorDeleteTreeAndSelectNext =
-    forestCursorDeleteTreeAndSelectNext makeEntryCursor
-
-smosFileCursorRemoveTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorRemoveTree = forestCursorRemoveTree makeEntryCursor
-
-smosFileCursorDeleteTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorDeleteTree = forestCursorDeleteTree makeEntryCursor
+smosFileCursorDeleteElem :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
+smosFileCursorDeleteElem = forestCursorDeleteElem makeEntryCursor

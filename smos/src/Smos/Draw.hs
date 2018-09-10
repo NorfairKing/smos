@@ -170,16 +170,10 @@ drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
     vBox
         [ str "Key history: " <+> drawHistory smosStateKeyHistory
-        , str "Previous in history: " <+>
-          drawCursorHistory smosStateCursorHistory
         , str "Last match: " <+>
           drawLastMatches (debugInfoLastMatches smosStateDebugInfo)
         , strWrap $ ppShow smosStateCursor
         ]
-
-drawCursorHistory :: [EditorCursor] -> Widget n
-drawCursorHistory [] = emptyWidget
-drawCursorHistory ec = strWrap $ ppShow ec
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Widget n
 drawLastMatches Nothing = emptyWidget
