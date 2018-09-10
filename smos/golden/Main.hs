@@ -210,17 +210,24 @@ parseCommand t =
     case T.words t of
         [] -> Left "Should never happen."
         [n] ->
-            case find ((== n) . actionName) allPlainActions of
-                Nothing -> Left $ unwords ["No action found with name", show n]
-                Just a -> pure $ CommandPlain a
+            case filter ((== n) . actionName) allPlainActions of
+                [] -> Left $ unwords ["No action found with name", show n]
+                [a] -> pure $ CommandPlain a
+                _ ->
+                    Left $
+                    unwords ["More than one action found with name", show n]
         [n, arg] ->
             case T.unpack arg of
                 [] -> Left "Should never happen."
                 [c] ->
-                    case find ((== n) . actionUsingName) allUsingCharActions of
-                        Nothing ->
+                    case filter ((== n) . actionUsingName) allUsingCharActions of
+                        [] ->
                             Left $ unwords ["No action found with name", show n]
-                        Just a -> pure $ CommandUsing a c
+                        [a] -> pure $ CommandUsing a c
+                        _ ->
+                            Left $
+                            unwords
+                                ["More than one action found with name", show n]
                 _ -> Left "Multichar operand"
         _ -> Left "Unable to parse command: more than two words"
 
