@@ -4,6 +4,10 @@ module Smos.Data
     ( module Smos.Data.Types
     , readSmosFile
     , writeSmosFile
+    , parseSmosFile
+    , smosFileYamlBS
+    , smosFileJSONBS
+    , smosFileJSONPrettyBS
     , emptySmosFile
     , prettySmosForest
     , clockInAt
@@ -14,11 +18,18 @@ module Smos.Data
     , entrySetState
     ) where
 
+import Data.Aeson as JSON
+import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Tree
 import Data.Yaml as Yaml
+import Data.Yaml.Builder as Yaml
+import Text.Libyaml as Yaml
 
 import Path
 import Path.IO
@@ -30,12 +41,24 @@ readSmosFile fp = do
     mContents <- forgivingAbsence $ SB.readFile $ toFilePath fp
     case mContents of
         Nothing -> pure Nothing
-        Just contents -> pure $ Just $ Yaml.decodeEither' contents
+        Just contents -> pure $ Just $ parseSmosFile contents
 
 writeSmosFile :: Path Abs File -> SmosFile -> IO ()
 writeSmosFile fp sf = do
     ensureDir $ parent fp
-    SB.writeFile (toFilePath fp) (Yaml.encode sf)
+    SB.writeFile (toFilePath fp) (smosFileYamlBS sf)
+
+parseSmosFile :: ByteString -> Either ParseException SmosFile
+parseSmosFile = Yaml.decodeEither'
+
+smosFileYamlBS :: SmosFile -> ByteString
+smosFileYamlBS sf = Yaml.toByteString sf
+
+smosFileJSONBS :: SmosFile -> LB.ByteString
+smosFileJSONBS = JSON.encode
+
+smosFileJSONPrettyBS :: SmosFile -> LB.ByteString
+smosFileJSONPrettyBS = JSON.encodePretty
 
 emptySmosFile :: SmosFile
 emptySmosFile = SmosFile []

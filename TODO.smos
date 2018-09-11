@@ -3,25 +3,31 @@
     state-history:
     - timestamp: 2018-09-11T09:44:58.256421972Z
       new-state: TODO
+  - header: Detect conflicting keymappings
+    state-history:
+    - timestamp: 2018-09-11T10:15:06.14136568Z
+      new-state: TODO
+  - header: Scrolling
+    state-history:
+    - timestamp: 2018-09-11T10:15:16.762233163Z
+      new-state: TODO
+  - header: Forest manipulations
+    state-history:
+    - timestamp: 2018-09-11T10:15:24.420049458Z
+      new-state: TODO
   - forest:
-    - forest:
-      - header: up
-        state-history:
-        - timestamp: 2018-09-11T09:45:27.072933588Z
-          new-state: TODO
-      - header: down
-        state-history:
-        - timestamp: 2018-09-11T09:45:26.619410659Z
-          new-state: TODO
-      entry:
-        header: Shift an entire tree
-        state-history:
-        - timestamp: 2018-09-11T09:45:27.459143263Z
-          new-state: TODO
-    entry:
-      header: Forest manipulations
+    - header: up
       state-history:
-      - timestamp: 2018-09-11T09:44:57.832264736Z
+      - timestamp: 2018-09-11T09:45:27.072933588Z
+        new-state: TODO
+    - header: down
+      state-history:
+      - timestamp: 2018-09-11T09:45:26.619410659Z
+        new-state: TODO
+    entry:
+      header: Shift an entire tree
+      state-history:
+      - timestamp: 2018-09-11T09:45:27.459143263Z
         new-state: TODO
   - forest:
     - header: Collapse trees

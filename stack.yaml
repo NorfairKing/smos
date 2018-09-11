@@ -7,44 +7,74 @@ packages:
 - smos-cursor-gen
 - /home/syd/cs-syd/code/open-source/cursor/cursor
 - /home/syd/cs-syd/code/open-source/cursor/cursor-gen
+- /home/syd/cs-syd/code/open-source/validity/genvalidity
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-aeson
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-bytestring
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-containers
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec-aeson
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec-binary
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec-cereal
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec-hashable
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-hspec-optics
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-path
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-property
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-scientific
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-text
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-time
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-unordered-containers
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-uuid
+- /home/syd/cs-syd/code/open-source/validity/genvalidity-vector
+- /home/syd/cs-syd/code/open-source/validity/validity
+- /home/syd/cs-syd/code/open-source/validity/validity-aeson
+- /home/syd/cs-syd/code/open-source/validity/validity-bytestring
+- /home/syd/cs-syd/code/open-source/validity/validity-containers
+- /home/syd/cs-syd/code/open-source/validity/validity-path
+- /home/syd/cs-syd/code/open-source/validity/validity-primitive
+- /home/syd/cs-syd/code/open-source/validity/validity-scientific
+- /home/syd/cs-syd/code/open-source/validity/validity-text
+- /home/syd/cs-syd/code/open-source/validity/validity-time
+- /home/syd/cs-syd/code/open-source/validity/validity-unordered-containers
+- /home/syd/cs-syd/code/open-source/validity/validity-uuid
+- /home/syd/cs-syd/code/open-source/validity/validity-vector
 extra-deps:
   # - git: https://github.com/NorfairKing/cursor.git
   #   commit: 0c2008c8b2145b72eeeb40917fd3e00fcc6d1875
   #   subdirs:
   #     - cursor
   #     - cursor-gen
-- git: https://github.com/NorfairKing/validity.git
-  commit: cdb0ab0a23d88e8d7256e17cc3bc1f6da7fa0588
-  subdirs:
-  - genvalidity
-  - genvalidity-aeson
-  - genvalidity-bytestring
-  - genvalidity-containers
-  - genvalidity-hspec
-  - genvalidity-hspec-aeson
-  - genvalidity-hspec-binary
-  - genvalidity-hspec-cereal
-  - genvalidity-hspec-hashable
-  - genvalidity-hspec-optics
-  - genvalidity-path
-  - genvalidity-property
-  - genvalidity-scientific
-  - genvalidity-text
-  - genvalidity-time
-  - genvalidity-unordered-containers
-  - genvalidity-uuid
-  - genvalidity-vector
-  - validity
-  - validity-aeson
-  - validity-bytestring
-  - validity-containers
-  - validity-path
-  - validity-primitive
-  - validity-scientific
-  - validity-text
-  - validity-time
-  - validity-unordered-containers
-  - validity-uuid
-  - validity-vector
+  # - git: https://github.com/NorfairKing/validity.git
+  #   commit: cdb0ab0a23d88e8d7256e17cc3bc1f6da7fa0588
+  #   subdirs:
+  #   - genvalidity
+  #   - genvalidity-aeson
+  #   - genvalidity-bytestring
+  #   - genvalidity-containers
+  #   - genvalidity-hspec
+  #   - genvalidity-hspec-aeson
+  #   - genvalidity-hspec-binary
+  #   - genvalidity-hspec-cereal
+  #   - genvalidity-hspec-hashable
+  #   - genvalidity-hspec-optics
+  #   - genvalidity-path
+  #   - genvalidity-property
+  #   - genvalidity-scientific
+  #   - genvalidity-text
+  #   - genvalidity-time
+  #   - genvalidity-unordered-containers
+  #   - genvalidity-uuid
+  #   - genvalidity-vector
+  #   - validity
+  #   - validity-aeson
+  #   - validity-bytestring
+  #   - validity-containers
+  #   - validity-path
+  #   - validity-primitive
+  #   - validity-scientific
+  #   - validity-text
+  #   - validity-time
+  #   - validity-unordered-containers
+  #   - validity-uuid
+  #   - validity-vector
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/886871538c15681575925a990a3f1b68ed9d5477.tar.gz" ]
