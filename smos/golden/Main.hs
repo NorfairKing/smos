@@ -76,31 +76,31 @@ matchUp tfs =
                 a <- findAfter b
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
             Commands c -> do
                 b <- findBefore c
                 a <- findAfter c
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
             After a -> do
                 b <- findBefore a
                 c <- findCommands a
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
   where
     findBefore :: Path Abs File -> Either String (Path Abs File)
     findBefore p =
@@ -113,15 +113,16 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] -> Left $ unwords ["Before file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple Before files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] ->
+                    Left $ unwords ["Before file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple Before files found:"
+                        , show $ map fromAbsFile fs
+                        ]
     findCommands :: Path Abs File -> Either String (Path Abs File)
     findCommands p =
         let fs =
@@ -133,16 +134,17 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] ->
-                   Left $ unwords ["Commands file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple Commands files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] ->
+                    Left $
+                    unwords ["Commands file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple Commands files found:"
+                        , show $ map fromAbsFile fs
+                        ]
     findAfter :: Path Abs File -> Either String (Path Abs File)
     findAfter p =
         let fs =
@@ -154,15 +156,15 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] -> Left $ unwords ["After file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple After files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] -> Left $ unwords ["After file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple After files found:"
+                        , show $ map fromAbsFile fs
+                        ]
 
 stripFileExtension :: Path b File -> Path b File
 stripFileExtension = fromJust . setFileExtension ""
@@ -241,9 +243,9 @@ runCommandsOn start commands = do
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
-        { intermidiaryResults = reverse rs
-        , finalResult = rebuildEditorCursor $ smosStateCursor fs
-        }
+            { intermidiaryResults = reverse rs
+            , finalResult = rebuildEditorCursor $ smosStateCursor fs
+            }
   where
     startState = initState $(mkAbsFile "/pretend/test/file") start
     testConf = SmosConfig {configKeyMap = mempty}
@@ -255,9 +257,9 @@ runCommandsOn start commands = do
             recordCursorHistory =
                 modify $ \ss_ ->
                     ss_
-                    { smosStateCursorHistory =
-                          smosStateCursor ss_ : smosStateCursorHistory ss_
-                    }
+                        { smosStateCursorHistory =
+                              smosStateCursor ss_ : smosStateCursorHistory ss_
+                        }
         let func = do
                 recordCursorHistory
                 case c of
@@ -282,15 +284,18 @@ expectResults sf CommandsRun {..} =
     unlines $
     concat
         [ [ "The expected result did not match the actual result."
-          , "The expected result was the following:"
-          , ppShow sf
-          , "The actual result was the following:"
-          , ppShow finalResult
           , "The intermediary steps built up to the result as follows:"
           ]
         , concatMap (uncurry go) intermidiaryResults
+        , [ "The expected result was the following:"
+          , ppShow sf
+          , "The actual result was the following:"
+          , ppShow finalResult
+          ]
         , [ "If this was intentional, you can replace the contents of the expected results file by the following:"
+          , "---[START]---"
           , SB8.unpack $ Yaml.encode finalResult
+          , "---[END]---"
           ]
         ]
   where
@@ -311,17 +316,21 @@ eqForTest = forestEqForTest `on` smosFileForest
     forestEqForTest :: Forest Entry -> Forest Entry -> Bool
     forestEqForTest = forestEq1 entryEqForTest
     forestEq1 :: (a -> a -> Bool) -> Forest a -> Forest a -> Bool
-    forestEq1 eq fs1 fs2 =
-        flip
-            all
-            (zip (map Just fs1 ++ repeat Nothing)
-                 (map Just fs2 ++ repeat Nothing)) $ \(mt1, mt2) ->
-            case (,) <$> mt1 <*> mt2 of
-                Nothing -> False
-                Just (t1, t2) -> treeEq1 eq t1 t2
+    forestEq1 eq = listEq1 (treeEq1 eq)
     treeEq1 :: (a -> a -> Bool) -> Tree a -> Tree a -> Bool
     treeEq1 eq (Node n1 fs1) (Node n2 fs2) =
         (n1 `eq` n2) && (forestEq1 eq fs1 fs2)
+    listEq1 :: (a -> a -> Bool) -> [a] -> [a] -> Bool
+    listEq1 eq as bs =
+        go $ zip (map Just as ++ repeat Nothing) (map Just bs ++ repeat Nothing)
+      where
+        go [] = True
+        go (a:rest) =
+            case a of
+                (Nothing, Nothing) -> True
+                (Just _, Nothing) -> False
+                (Nothing, Just _) -> False
+                (Just t1, Just t2) -> eq t1 t2 && go rest
     entryEqForTest :: Entry -> Entry -> Bool
     entryEqForTest =
         ((==) `on` entryHeader) &&&

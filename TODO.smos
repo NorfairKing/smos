@@ -16,6 +16,16 @@
     - timestamp: 2018-09-11T10:15:24.420049458Z
       new-state: TODO
   - forest:
+    - header: combine keybings per key in help page
+      state-history:
+      - timestamp: 2018-09-11T19:40:01.436108571Z
+        new-state: TODO
+    entry:
+      header: Help page
+      state-history:
+      - timestamp: 2018-09-11T19:39:53.356426165Z
+        new-state: TODO
+  - forest:
     - header: up
       state-history:
       - timestamp: 2018-09-11T09:45:27.072933588Z

@@ -130,14 +130,14 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = StateHistory []
-    , entryTags = []
-    , entryLogbook = emptyLogbook
-    }
+        { entryHeader = h
+        , entryContents = Nothing
+        , entryTimestamps = M.empty
+        , entryProperties = M.empty
+        , entryStateHistory = StateHistory []
+        , entryTags = []
+        , entryLogbook = emptyLogbook
+        }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
@@ -149,7 +149,7 @@ instance FromJSON Entry where
         (do h <- parseJSON v
             pure $ newEntry h) <|>
         (withObject "Entry" $ \o ->
-             Entry <$> o .: "header" <*> o .:? "contents" <*>
+             Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents" <*>
              o .:? "timestamps" .!= M.empty <*>
              o .:? "properties" .!= M.empty <*>
              o .:? "state-history" .!= StateHistory [] <*>
@@ -168,7 +168,8 @@ instance ToJSON Entry where
                ]
             then toJSON entryHeader
             else object $
-                 ["header" .= entryHeader] ++
+                 [ "header" .= entryHeader
+                 ] ++
                  ["contents" .= entryContents | isJust entryContents] ++
                  [ "timestamps" .= entryTimestamps
                  | not $ M.null entryTimestamps
@@ -335,7 +336,7 @@ instance ToJSON Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-        in object ["precision" .= p, "value" .= v]
+         in object ["precision" .= p, "value" .= v]
 
 instance ToYaml Timestamp where
     toYaml ts =
@@ -356,7 +357,7 @@ instance ToYaml Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-        in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
+         in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
@@ -477,7 +478,7 @@ instance ToYaml LogbookEntry where
 
 instance ToYaml UTCTime where
     toYaml =
-        toYaml . T.pack . formatTime defaultTimeLocale timestampTimeFormat
+        Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
 
 instance (ToYaml a) => ToYaml (Maybe a) where
     toYaml Nothing = Yaml.null

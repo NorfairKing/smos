@@ -3,6 +3,7 @@
 module Smos.Data.Gen where
 
 import qualified Data.Map as M
+import Data.List
 
 import Data.GenValidity
 import Data.GenValidity.Containers ()
@@ -25,26 +26,31 @@ instance GenValid a => GenValid (ForYaml a) where
 
 instance GenUnchecked Entry where
     shrinkUnchecked entry =
-        let funcs =
-                [ (\e -> e {entryHeader = emptyHeader})
-                , (\e -> e {entryContents = Nothing})
-                , (\e -> e {entryTimestamps = M.empty})
-                , (\e -> e {entryProperties = M.empty})
-                , (\e -> e {entryStateHistory = StateHistory []})
-                , (\e -> e {entryTags = []})
-                , (\e -> e {entryLogbook = LogClosed []})
-                ]
-            funcss = map (foldl (.) id) $ partitions funcs
-        in emptyEntry : map ($ entry) funcss ++ genericShrinkUnchecked entry
+        filter (/= entry) . nub $
+        emptyEntry :
+        map ($ entry) entryResetFuncs ++ genericShrinkUnchecked entry
+
+instance GenValid Entry where
+    genValid = genValidStructurally
+
+entryResetFuncs :: [(Entry -> Entry)]
+entryResetFuncs =
+    map (foldl (.) id) $
+    partitions
+        [ (\e -> e {entryHeader = emptyHeader})
+        , (\e -> e {entryContents = Nothing})
+        , (\e -> e {entryTimestamps = M.empty})
+        , (\e -> e {entryProperties = M.empty})
+        , (\e -> e {entryStateHistory = StateHistory []})
+        , (\e -> e {entryTags = []})
+        , (\e -> e {entryLogbook = LogClosed []})
+        ]
 
 partitions :: [a] -> [[a]]
 partitions [] = [[]]
 partitions (a:as) = do
     p <- partitions as
-    [a : p, p]
-
-instance GenValid Entry where
-    genValid = genValidStructurally
+    [p, a : p]
 
 instance GenUnchecked Header
 
