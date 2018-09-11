@@ -103,7 +103,9 @@ keyMapFunc s e KeyMap {..} =
   where
     handleWith :: KeyMappings -> Maybe (SmosM ())
     handleWith specificMappings =
-        let m = specificMappings ++ keyMapAnyMatchers
+        let m =
+                map ((,) SpecificMatcher) specificMappings ++
+                map ((,) AnyMatcher) keyMapAnyMatchers
         in case e of
                VtyEvent vtye ->
                    case vtye of
@@ -136,7 +138,8 @@ keyMapFunc s e KeyMap {..} =
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =
     ActivationDebug
-    { activationDebugPriority = activationPriority
+    { activationDebugPrecedence = activationPrecedence
+    , activationDebugPriority = activationPriority
     , activationDebugMatch = activationMatch
     , activationDebugName = activationName
     }

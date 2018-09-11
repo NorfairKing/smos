@@ -24,6 +24,7 @@ module Smos.Types
     , DebugInfo(..)
     , ActivationDebug(..)
     , Priority(..)
+    , Precedence(..)
     , ResourceName
     , MStop(..)
     , stop
@@ -170,7 +171,8 @@ data DebugInfo = DebugInfo
     } deriving (Show, Eq, Generic)
 
 data ActivationDebug = ActivationDebug
-    { activationDebugPriority :: Priority
+    { activationDebugPrecedence :: Precedence
+    , activationDebugPriority :: Priority
     , activationDebugMatch :: Seq KeyPress
     , activationDebugName :: Text
     } deriving (Show, Eq, Generic)
@@ -179,6 +181,11 @@ data Priority
     = CatchAll
     | MatchAnyChar
     | MatchExact -- Has higher priority.
+    deriving (Show, Eq, Ord)
+
+data Precedence
+    = AnyMatcher -- Has higher priority.
+    | SpecificMatcher
     deriving (Show, Eq, Ord)
 
 newtype ResourceName =
