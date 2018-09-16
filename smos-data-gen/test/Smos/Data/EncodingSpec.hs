@@ -30,7 +30,7 @@ roundtripSpec name func =
     describe name $
     it "produces bytestrings that can be roundtripped with parseSmosFile" $
     forAllValid $ \sf ->
-        let bs = smosFileYamlBS sf
+        let bs = func sf
             prettyBs = T.unpack $ TE.decodeUtf8 bs
          in case parseSmosFile bs of
                 Left pe ->

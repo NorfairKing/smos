@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Types
     ( SmosFile(..)
@@ -26,7 +27,7 @@ module Smos.Data.Types
     , Logbook(..)
     , emptyLogbook
     , LogbookEntry(..)
-    , TimestampName(..)
+    , TimestampName(..), emptyTimestampName
     , Timestamp(..)
     , timestampDayFormat
     , timestampTimeFormat
@@ -54,7 +55,6 @@ import Data.Tree
 import Data.Yaml.Builder (ToYaml(..))
 import qualified Data.Yaml.Builder as Yaml
 import Data.Yaml.Builder (YamlBuilder)
-import qualified Text.Libyaml as Yaml
 
 import Control.Applicative
 import Control.Arrow
