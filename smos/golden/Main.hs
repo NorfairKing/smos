@@ -180,7 +180,7 @@ makeTestcases tfs =
                     cs <- readCommandsFileForTest commandsFile
                     af <- readSmosfileForTest afterFile
                     run <- runCommandsOn bf cs
-                    expectResults af run
+                    expectResults bf af run
 
 readSmosfileForTest :: Path Abs File -> IO SmosFile
 readSmosfileForTest fp = do
@@ -277,18 +277,20 @@ runCommandsOn start commands = do
             Continue () ->
                 pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
 
-expectResults :: SmosFile -> CommandsRun -> IO ()
-expectResults sf CommandsRun {..} =
-    unless (finalResult `eqForTest` sf) $
+expectResults :: SmosFile -> SmosFile -> CommandsRun -> IO ()
+expectResults bf af CommandsRun {..} =
+    unless (finalResult `eqForTest` af) $
     failure $
     unlines $
     concat
         [ [ "The expected result did not match the actual result."
+          , "The starting file looked os follows"
+          , ppShow bf
           , "The intermediary steps built up to the result as follows:"
           ]
         , concatMap (uncurry go) intermidiaryResults
         , [ "The expected result was the following:"
-          , ppShow sf
+          , ppShow af
           , "The actual result was the following:"
           , ppShow finalResult
           ]
