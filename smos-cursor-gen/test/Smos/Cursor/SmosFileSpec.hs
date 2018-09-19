@@ -59,32 +59,20 @@ spec = do
             producesValidsOnValids smosFileCursorInsertEntryAfterAndSelectHeader
         it "inserts an entry above the currently selected entry" pending
     describe "smosFileCursorSwapPrev" $
-        it
-           "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorSwapPrev
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorSwapPrev
     describe "smosFileCursorSwapNext" $
-        it
-            "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorSwapNext
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorSwapNext
     describe "smosFileCursorPromoteElem" $
-        it
-            "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorPromoteElem
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorPromoteEntry
     describe "smosFileCursorPromoteSubTree" $
-        it
-            "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorPromoteSubTree
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorPromoteSubTree
     describe "smosFileCursorDemoteElem" $
-        it
-            "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorDemoteElem
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorDemoteEntry
     describe "smosFileCursorDemoteSubTree" $
-        it
-            "produces valid cursors" $
-            producesValidsOnValids
-            smosFileCursorDemoteSubTree
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorDemoteSubTree

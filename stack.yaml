@@ -7,7 +7,7 @@ packages:
 - smos-cursor-gen
 extra-deps:
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 198a6530cffd1aaba1c8af4abb468a278477cec5
+  commit: 3bb53a0815e58c62a8b23d777dafa5a77a9bd0ee
   subdirs:
     - cursor
     - cursor-gen
