@@ -14,6 +14,8 @@ module Smos.Actions.Forest
     , forestDeleteCurrentSubTree
     , forestMoveUp
     , forestMoveDown
+    , forestSwapUp
+    , forestSwapDown
     ) where
 
 import Smos.Types
@@ -32,6 +34,8 @@ allForestPlainActions =
     , forestDeleteCurrentSubTree
     , forestMoveUp
     , forestMoveDown
+    , forestSwapUp
+    , forestSwapDown
     ]
 
 allForestUsingCharActions :: [ActionUsing Char]
@@ -40,88 +44,108 @@ allForestUsingCharActions = []
 forestInsertEntryBefore :: Action
 forestInsertEntryBefore =
     Action
-    { actionName = "forestInsertEntryBefore"
-    , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
-    , actionDescription =
-          "Insert an entry before the currently selected header, on the same level"
-    }
+        { actionName = "forestInsertEntryBefore"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
+        , actionDescription =
+              "Insert an entry before the currently selected header, on the same level"
+        }
 
 forestInsertEntryBeforeAndSelectHeader :: Action
 forestInsertEntryBeforeAndSelectHeader =
     Action
-    { actionName = "forestInsertEntryBeforeAndSelectHeader"
-    , actionFunc =
-          modifyFileCursor smosFileCursorInsertEntryBeforeAndSelectHeader
-    , actionDescription =
-          "Insert an entry before the currently selected entry, on the same level, and select its header"
-    }
+        { actionName = "forestInsertEntryBeforeAndSelectHeader"
+        , actionFunc =
+              modifyFileCursor smosFileCursorInsertEntryBeforeAndSelectHeader
+        , actionDescription =
+              "Insert an entry before the currently selected entry, on the same level, and select its header"
+        }
 
 forestInsertEntryBelow :: Action
 forestInsertEntryBelow =
     Action
-    { actionName = "forestInsertEntryBelow"
-    , actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore
-    , actionDescription = "Insert an entry below the currently selected entry"
-    }
+        { actionName = "forestInsertEntryBelow"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore
+        , actionDescription =
+              "Insert an entry below the currently selected entry"
+        }
 
 forestInsertEntryBelowAndSelectHeader :: Action
 forestInsertEntryBelowAndSelectHeader =
     Action
-    { actionName = "forestInsertEntryBelowAndSelectHeader"
-    , actionFunc =
-          modifyFileCursor smosFileCursorInsertEntryBelowAndSelectHeader
-    , actionDescription = "Insert an entry below the currently selected entry"
-    }
+        { actionName = "forestInsertEntryBelowAndSelectHeader"
+        , actionFunc =
+              modifyFileCursor smosFileCursorInsertEntryBelowAndSelectHeader
+        , actionDescription =
+              "Insert an entry below the currently selected entry"
+        }
 
 forestInsertEntryAfter :: Action
 forestInsertEntryAfter =
     Action
-    { actionName = "forestInsertEntryAfter"
-    , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
-    , actionDescription =
-          "Insert an entry after the currently selected entry, on the same level"
-    }
+        { actionName = "forestInsertEntryAfter"
+        , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
+        , actionDescription =
+              "Insert an entry after the currently selected entry, on the same level"
+        }
 
 forestInsertEntryAfterAndSelectHeader :: Action
 forestInsertEntryAfterAndSelectHeader =
     Action
-    { actionName = "forestInsertEntryAfterAndSelectHeader"
-    , actionFunc =
-          modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
-    , actionDescription =
-          "Insert an entry after the currently selected entry, on the same level, and select its header"
-    }
+        { actionName = "forestInsertEntryAfterAndSelectHeader"
+        , actionFunc =
+              modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
+        , actionDescription =
+              "Insert an entry after the currently selected entry, on the same level, and select its header"
+        }
 
 forestDeleteCurrentEntry :: Action
 forestDeleteCurrentEntry =
     Action
-    { actionName = "forestDeleteCurrentEntry"
-    , actionFunc = modifyFileCursorD smosFileCursorDeleteElem
-    , actionDescription = "Delete the current entry"
-    }
+        { actionName = "forestDeleteCurrentEntry"
+        , actionFunc = modifyFileCursorD smosFileCursorDeleteElem
+        , actionDescription = "Delete the current entry"
+        }
 
 forestDeleteCurrentSubTree :: Action
 forestDeleteCurrentSubTree =
     Action
-    { actionName = "forestDeleteCurrentSubTree"
-    , actionFunc = modifyFileCursorD smosFileCursorDeleteSubTree
-    , actionDescription = "Delete the current entry and all entries below"
-    }
+        { actionName = "forestDeleteCurrentSubTree"
+        , actionFunc = modifyFileCursorD smosFileCursorDeleteSubTree
+        , actionDescription = "Delete the current entry and all entries below"
+        }
 
 forestMoveUp :: Action
 forestMoveUp =
     Action
-    { actionName = "forestMoveUp"
-    , actionFunc = modifyFileCursorM smosFileCursorSelectPrev
-    , actionDescription =
-          "Move the current cursor up to the previous entry in the entry forest"
-    }
+        { actionName = "forestMoveUp"
+        , actionFunc = modifyFileCursorM smosFileCursorSelectPrev
+        , actionDescription =
+              "Move the current cursor up to the previous entry in the entry forest"
+        }
 
 forestMoveDown :: Action
 forestMoveDown =
     Action
-    { actionName = "forestMoveDown"
-    , actionFunc = modifyFileCursorM smosFileCursorSelectNext
-    , actionDescription =
-          "Move the current cursor down to the previous entry in the entry forest"
-    }
+        { actionName = "forestMoveDown"
+        , actionFunc = modifyFileCursorM smosFileCursorSelectNext
+        , actionDescription =
+              "Move the current cursor down to the previous entry in the entry forest"
+        }
+
+forestSwapUp :: Action
+forestSwapUp =
+    Action
+        { actionName = "forestSwapUp"
+        , actionFunc = modifyFileCursorM smosFileCursorSwapPrev
+        , actionDescription =
+              "Swap the current and the previous entry on the same level."
+        }
+
+forestSwapDown :: Action
+forestSwapDown =
+    Action
+        { actionName = "forestSwapDown"
+        , actionFunc = modifyFileCursorM smosFileCursorSwapNext
+        , actionDescription =
+              "Swap the current and the next entry on the same level."
+        }
