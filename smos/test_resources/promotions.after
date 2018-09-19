@@ -1,0 +1,8 @@
+- forest:
+  - forest:
+    - c
+    - d
+    - e
+    entry: b
+  - f
+  entry: a

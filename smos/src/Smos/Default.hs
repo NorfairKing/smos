@@ -37,6 +37,10 @@ defaultKeyMap =
                   -- Swaps
                   , exactKeyPress (KeyPress KUp [MShift]) forestSwapUp
                   , exactKeyPress (KeyPress KDown [MShift]) forestSwapDown
+                  , exactKey KLeft forestPromoteEntry
+                  , exactKeyPress (KeyPress KLeft [MShift]) forestPromoteSubTree
+                  , exactKey KRight forestDemoteEntry
+                  , exactKeyPress (KeyPress KRight [MShift]) forestDemoteSubTree
                   -- Forest manipulation
                   , exactChar 'h' forestInsertEntryAfterAndSelectHeader
                   , exactChar 'H' forestInsertEntryBelowAndSelectHeader

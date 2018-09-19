@@ -16,6 +16,10 @@ module Smos.Actions.Forest
     , forestMoveDown
     , forestSwapUp
     , forestSwapDown
+    , forestPromoteEntry
+    , forestPromoteSubTree
+    , forestDemoteEntry
+    , forestDemoteSubTree
     ) where
 
 import Smos.Types
@@ -36,6 +40,10 @@ allForestPlainActions =
     , forestMoveDown
     , forestSwapUp
     , forestSwapDown
+    , forestPromoteEntry
+    , forestPromoteSubTree
+    , forestDemoteEntry
+    , forestDemoteSubTree
     ]
 
 allForestUsingCharActions :: [ActionUsing Char]
@@ -148,4 +156,36 @@ forestSwapDown =
         , actionFunc = modifyFileCursorM smosFileCursorSwapNext
         , actionDescription =
               "Swap the current and the next entry on the same level."
+        }
+
+forestPromoteEntry :: Action
+forestPromoteEntry =
+    Action
+        { actionName = "forestPromoteEntry"
+        , actionFunc = modifyFileCursorM smosFileCursorPromoteEntry
+        , actionDescription = "Promotes the current entry"
+        }
+
+forestPromoteSubTree :: Action
+forestPromoteSubTree =
+    Action
+        { actionName = "forestPromoteSubTree"
+        , actionFunc = modifyFileCursorM smosFileCursorPromoteSubTree
+        , actionDescription = "Promotes the current sub tree"
+        }
+
+forestDemoteEntry :: Action
+forestDemoteEntry =
+    Action
+        { actionName = "forestDemoteEntry"
+        , actionFunc = modifyFileCursorM smosFileCursorDemoteEntry
+        , actionDescription = "Demotes the current entry"
+        }
+
+forestDemoteSubTree :: Action
+forestDemoteSubTree =
+    Action
+        { actionName = "forestDemoteSubTree"
+        , actionFunc = modifyFileCursorM smosFileCursorDemoteSubTree
+        , actionDescription = "Demotes the current sub tree"
         }

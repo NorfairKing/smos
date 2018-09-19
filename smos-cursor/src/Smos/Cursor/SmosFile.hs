@@ -19,6 +19,10 @@ module Smos.Cursor.SmosFile
     , smosFileCursorDeleteSubTree
     , smosFileCursorSwapPrev
     , smosFileCursorSwapNext
+    , smosFileCursorPromoteEntry
+    , smosFileCursorPromoteSubTree
+    , smosFileCursorDemoteEntry
+    , smosFileCursorDemoteSubTree
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
@@ -112,3 +116,19 @@ smosFileCursorSwapPrev = forestCursorSwapPrev
 
 smosFileCursorSwapNext :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSwapNext = forestCursorSwapNext
+
+smosFileCursorPromoteEntry :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorPromoteEntry =
+    forestCursorPromoteElem rebuildEntryCursor makeEntryCursor
+
+smosFileCursorPromoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorPromoteSubTree =
+    forestCursorPromoteSubTree rebuildEntryCursor makeEntryCursor
+
+smosFileCursorDemoteEntry :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDemoteEntry =
+    forestCursorDemoteElem rebuildEntryCursor makeEntryCursor
+
+smosFileCursorDemoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorDemoteSubTree =
+    forestCursorDemoteSubTree rebuildEntryCursor makeEntryCursor

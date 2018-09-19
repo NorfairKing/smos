@@ -44,7 +44,7 @@ spec = do
             resourcesDir <- resolveDir' "test_resources"
             fs <- snd <$> listDirRecur resourcesDir
             pure $ mapMaybe classify fs
-    makeTestcases tfs
+    describe "Golden" $ makeTestcases tfs
 
 data TestFile
     = Before (Path Abs File)
