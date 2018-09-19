@@ -28,6 +28,7 @@ import Cursor.Tree hiding (drawTreeCursor)
 
 import Smos.Data
 
+import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
 import Smos.Cursor.Editor
 import Smos.Cursor.Entry
@@ -194,31 +195,46 @@ drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
 drawSmosFileCursor =
     drawVerticalForestCursor drawEntryTree drawSmosTreeCursor drawEntryTree
 
-drawSmosTreeCursor :: TreeCursor EntryCursor Entry -> Widget ResourceName
+drawSmosTreeCursor ::
+       TreeCursor (Collapse EntryCursor) (Collapse Entry) -> Widget ResourceName
 drawSmosTreeCursor = drawTreeCursor wrap cur
   where
-    cur :: EntryCursor -> Forest Entry -> Widget ResourceName
+    cur :: Collapse EntryCursor
+        -> Forest (Collapse Entry)
+        -> Widget ResourceName
     cur ec ts =
-        drawEntryCursor ec <=>
-        padLeft defaultPadding (vBox $ map drawEntryTree ts)
+        drawEntryCursor (collapseTreeValue ec) &
+        (if collapseTreeShowSubForest ec
+             then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
+             else id)
     wrap ::
-           [Tree Entry]
-        -> Entry
-        -> [Tree Entry]
+           [Tree (Collapse Entry)]
+        -> Collapse Entry
+        -> [Tree (Collapse Entry)]
         -> Widget ResourceName
         -> Widget ResourceName
     wrap tsl e tsr w =
-        drawEntry e <=>
-        padLeft
-            defaultPadding
-            (vBox $ concat [map drawEntryTree tsl, [w], map drawEntryTree tsr])
+        drawEntry (collapseTreeValue e) &
+        if collapseTreeShowSubForest e
+            then (<=> padLeft
+                          defaultPadding
+                          (vBox $
+                           concat
+                               [ map drawEntryTree tsl
+                               , [w]
+                               , map drawEntryTree tsr
+                               ]))
+            else id
 
-drawEntryTree :: Tree Entry -> Widget ResourceName
+drawEntryTree :: Tree (Collapse Entry) -> Widget ResourceName
 drawEntryTree (Node t ts) =
-    drawEntry t <=> padLeft defaultPadding (vBox $ map drawEntryTree ts)
+    drawEntry (collapseTreeValue t) &
+    if collapseTreeShowSubForest t
+        then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
+        else id
 
-drawEntryCursor :: EntryCursor -> Widget ResourceName
-drawEntryCursor EntryCursor {..} =
+drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
+drawEntryCursor e =
     vBox
         [ hBox
               [ (case selectWhen WholeEntrySelected of
@@ -233,7 +249,8 @@ drawEntryCursor EntryCursor {..} =
                     (selectWhen HeaderSelected)
                     entryCursorHeaderCursor
               ]
-        , maybe
+        , drawIf collapseEntryShowContents $
+          maybe
               emptyWidget
               (drawContentsCursor $ selectWhen ContentsSelected)
               entryCursorContentsCursor
@@ -258,27 +275,38 @@ drawEntryCursor EntryCursor {..} =
               entryCursorLogbookCursor
         ]
   where
+    EntryCursor {..} = collapseEntryValue e
+    drawIf bf w =
+        if bf e
+            then w
+            else emptyWidget
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
         if ecs == entryCursorSelected
             then MaybeSelected
             else NotSelected
 
-drawEntry :: Entry -> Widget ResourceName
-drawEntry Entry {..} =
+drawEntry :: CollapseEntry Entry -> Widget ResourceName
+drawEntry  e =
     vBox
         [ hBox
               [ str "> "
               , drawCurrentState entryStateHistory
               , drawHeader entryHeader
               ]
-        , maybe emptyWidget drawContents entryContents
+        , drawIf collapseEntryShowContents $ maybe emptyWidget drawContents entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
         , drawStateHistory entryStateHistory
         , drawTags entryTags
         , drawLogbook entryLogbook
         ]
+  where
+    Entry {..} = collapseEntryValue e
+    drawIf bf w =
+        if bf e
+            then w
+            else emptyWidget
 
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor = drawTextCursor

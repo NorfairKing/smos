@@ -57,6 +57,8 @@ spec = do
                 (makeCollapse @Double)
                 (rebuildCollapse @Double)
     describe "collapseValueL" $ lensSpecOnValid (collapseValueL @Double)
+    describe "collapseCollapseTreeL" $
+        lensSpecOnValid (collapseCollapseTreeL @Double)
     describe "collapseCollapseEntryL" $
         lensSpecOnValid (collapseCollapseEntryL @Double)
     describe "collapseShowSubForestL" $

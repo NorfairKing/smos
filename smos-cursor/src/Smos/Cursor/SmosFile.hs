@@ -5,6 +5,7 @@ module Smos.Cursor.SmosFile
     , startSmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
+    , smosFileCursorToggleHideSubForest
     , smosFileCursorSelectPrev
     , smosFileCursorSelectNext
     , smosFileCursorSelectPrevOnSameLevel
@@ -26,6 +27,7 @@ module Smos.Cursor.SmosFile
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 
 import Lens.Micro
@@ -39,44 +41,53 @@ import Smos.Data.Types
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 
-type SmosFileCursor = ForestCursor EntryCursor Entry
+type SmosFileCursor = ForestCursor (Collapse EntryCursor) (Collapse Entry)
 
 makeSmosFileCursor :: NonEmpty (Tree Entry) -> SmosFileCursor
-makeSmosFileCursor = makeForestCursor makeEntryCursor
+makeSmosFileCursor =
+    makeForestCursor (collapseValueL %~ makeEntryCursor) .
+    NE.map (fmap makeCollapse)
 
 rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
-rebuildSmosFileCursor = rebuildForestCursor rebuildEntryCursor
+rebuildSmosFileCursor =
+    NE.map (fmap rebuildCollapse) .
+    rebuildForestCursor (collapseValueL %~ rebuildEntryCursor)
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
     (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) $
     makeSmosFileCursor $ Node emptyEntry [] :| []
 
+smosFileCursorSelectedEntireL :: Lens' SmosFileCursor (Collapse EntryCursor)
+smosFileCursorSelectedEntireL = forestCursorSelectedTreeL . treeCursorCurrentL
+
 smosFileCursorSelectedEntryL :: Lens' SmosFileCursor EntryCursor
-smosFileCursorSelectedEntryL = forestCursorSelectedTreeL . treeCursorCurrentL
+smosFileCursorSelectedEntryL = smosFileCursorSelectedEntireL . collapseValueL
 
 smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL =
     smosFileCursorSelectedEntryL . entryCursorSelectionL
 
+smosFileCursorToggleHideSubForest :: SmosFileCursor -> SmosFileCursor
+smosFileCursorToggleHideSubForest =
+    (smosFileCursorSelectedEntireL . collapseShowSubForestL) %~ not
+
 smosFileCursorSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectPrev =
-    forestCursorSelectPrev rebuildEntryCursor makeEntryCursor
+smosFileCursorSelectPrev = forestCursorSelectPrev rebuild make
 
 smosFileCursorSelectNext :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectNext =
-    forestCursorSelectNext rebuildEntryCursor makeEntryCursor
+smosFileCursorSelectNext = forestCursorSelectNext rebuild make
 
 smosFileCursorSelectPrevOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectPrevOnSameLevel =
-    forestCursorSelectPrevOnSameLevel rebuildEntryCursor makeEntryCursor
+    forestCursorSelectPrevOnSameLevel rebuild make
 
 smosFileCursorSelectNextOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectNextOnSameLevel =
-    forestCursorSelectNextOnSameLevel rebuildEntryCursor makeEntryCursor
+    forestCursorSelectNextOnSameLevel rebuild make
 
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBefore = forestCursorInsert emptyEntry
+smosFileCursorInsertEntryBefore = forestCursorInsert (makeCollapse emptyEntry)
 
 smosFileCursorInsertEntryBeforeAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
@@ -86,18 +97,18 @@ smosFileCursorInsertEntryBeforeAndSelectHeader =
     smosFileCursorSelectPrevOnSameLevel . smosFileCursorInsertEntryBefore
 
 smosFileCursorInsertEntryBelow :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBelow = forestCursorAddChildToNodeAtStart emptyEntry
+smosFileCursorInsertEntryBelow =
+    forestCursorAddChildToNodeAtStart (makeCollapse emptyEntry)
 
 smosFileCursorInsertEntryBelowAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelowAndSelectHeader =
     (smosFileCursorEntrySelectionL .~ HeaderSelected) .
     fromJust .
-    forestCursorSelectBelowAtStart rebuildEntryCursor makeEntryCursor .
-    smosFileCursorInsertEntryBelow
+    forestCursorSelectBelowAtStart rebuild make . smosFileCursorInsertEntryBelow
 
 smosFileCursorInsertEntryAfter :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryAfter = forestCursorAppend emptyEntry
+smosFileCursorInsertEntryAfter = forestCursorAppend (makeCollapse emptyEntry)
 
 smosFileCursorInsertEntryAfterAndSelectHeader ::
        SmosFileCursor -> SmosFileCursor
@@ -107,10 +118,10 @@ smosFileCursorInsertEntryAfterAndSelectHeader =
     smosFileCursorSelectNextOnSameLevel . smosFileCursorInsertEntryAfter
 
 smosFileCursorDeleteSubTree :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorDeleteSubTree = forestCursorDeleteSubTree makeEntryCursor
+smosFileCursorDeleteSubTree = forestCursorDeleteSubTree make
 
 smosFileCursorDeleteElem :: SmosFileCursor -> DeleteOrUpdate SmosFileCursor
-smosFileCursorDeleteElem = forestCursorDeleteElem makeEntryCursor
+smosFileCursorDeleteElem = forestCursorDeleteElem make
 
 smosFileCursorSwapPrev :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSwapPrev = forestCursorSwapPrev
@@ -119,17 +130,17 @@ smosFileCursorSwapNext :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSwapNext = forestCursorSwapNext
 
 smosFileCursorPromoteEntry :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorPromoteEntry =
-    forestCursorPromoteElem rebuildEntryCursor makeEntryCursor
+smosFileCursorPromoteEntry = forestCursorPromoteElem rebuild make
 
 smosFileCursorPromoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorPromoteSubTree =
-    forestCursorPromoteSubTree rebuildEntryCursor makeEntryCursor
+smosFileCursorPromoteSubTree = forestCursorPromoteSubTree rebuild make
 
 smosFileCursorDemoteEntry :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorDemoteEntry =
-    forestCursorDemoteElem rebuildEntryCursor makeEntryCursor
+smosFileCursorDemoteEntry = forestCursorDemoteElem rebuild make
 
 smosFileCursorDemoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorDemoteSubTree =
-    forestCursorDemoteSubTree rebuildEntryCursor makeEntryCursor
+smosFileCursorDemoteSubTree = forestCursorDemoteSubTree rebuild make
+
+rebuild = collapseValueL %~ rebuildEntryCursor
+
+make = collapseValueL %~ makeEntryCursor

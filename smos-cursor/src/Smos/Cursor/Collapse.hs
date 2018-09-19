@@ -5,11 +5,16 @@ module Smos.Cursor.Collapse
     ( Collapse
     , makeCollapse
     , rebuildCollapse
-    , collapseValueL,collapseCollapseEntryL,collapseShowSubForestL,collapseShowContentsL
+    , collapseValueL
+    , collapseCollapseTreeL
+    , collapseCollapseEntryL
+    , collapseShowSubForestL
+    , collapseShowContentsL
     , CollapseTree(..)
     , makeCollapseTree
     , rebuildCollapseTree
-    , collapseTreeValueL,collapseTreeShowSubForestL
+    , collapseTreeValueL
+    , collapseTreeShowSubForestL
     , CollapseEntry(..)
     , makeCollapseEntry
     , rebuildCollapseEntry
@@ -41,10 +46,15 @@ makeCollapse = makeCollapseTree . makeCollapseEntry
 rebuildCollapse :: Collapse a -> a
 rebuildCollapse = rebuildCollapseEntry . rebuildCollapseTree
 
-collapseValueL :: Lens' (Collapse a) a
+collapseValueL :: Lens (Collapse a) (Collapse b) a b
 collapseValueL = collapseTreeValueL . collapseEntryValueL
 
-collapseCollapseEntryL :: Lens' (Collapse a) (CollapseEntry a)
+collapseCollapseTreeL ::
+       Lens (Collapse a) (Collapse b) (CollapseTree (CollapseEntry a)) (CollapseTree (CollapseEntry b))
+collapseCollapseTreeL = id
+
+collapseCollapseEntryL ::
+       Lens (Collapse a) (Collapse b) (CollapseEntry a) (CollapseEntry b)
 collapseCollapseEntryL = collapseTreeValueL
 
 collapseShowSubForestL :: Lens' (Collapse a) Bool
@@ -67,7 +77,7 @@ makeCollapseTree a =
 rebuildCollapseTree :: CollapseTree a -> a
 rebuildCollapseTree = collapseTreeValue
 
-collapseTreeValueL :: Lens' (CollapseTree a) a
+collapseTreeValueL :: Lens (CollapseTree a) (CollapseTree b) a b
 collapseTreeValueL =
     lens collapseTreeValue $ \ct v -> ct {collapseTreeValue = v}
 
@@ -89,7 +99,7 @@ makeCollapseEntry a =
 rebuildCollapseEntry :: CollapseEntry a -> a
 rebuildCollapseEntry = collapseEntryValue
 
-collapseEntryValueL :: Lens' (CollapseEntry a) a
+collapseEntryValueL :: Lens (CollapseEntry a) (CollapseEntry b) a b
 collapseEntryValueL =
     lens collapseEntryValue $ \ct v -> ct {collapseEntryValue = v}
 
