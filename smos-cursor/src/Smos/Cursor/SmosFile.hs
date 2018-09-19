@@ -36,6 +36,7 @@ import Cursor.Types
 
 import Smos.Data.Types
 
+import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 
 type SmosFileCursor = ForestCursor EntryCursor Entry

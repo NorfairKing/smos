@@ -13,6 +13,7 @@ description:         Please see the README on GitHub at <https://github.com/Norf
 library:
   source-dirs: src
   exposed-modules:
+  - Smos.Cursor.Collapse
   - Smos.Cursor.Contents
   - Smos.Cursor.Editor
   - Smos.Cursor.Entry
