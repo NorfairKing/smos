@@ -5,15 +5,16 @@ module Smos.Cursor.Collapse
     ( Collapse
     , makeCollapse
     , rebuildCollapse
-    , collapseValueL
+    , collapseValueL,collapseCollapseEntryL,collapseShowSubForestL,collapseShowContentsL
     , CollapseTree(..)
     , makeCollapseTree
     , rebuildCollapseTree
-    , collapseTreeValueL
+    , collapseTreeValueL,collapseTreeShowSubForestL
     , CollapseEntry(..)
     , makeCollapseEntry
     , rebuildCollapseEntry
     , collapseEntryValueL
+    , collapseEntryShowContentsL
     ) where
 
 import GHC.Generics (Generic)
@@ -39,8 +40,18 @@ makeCollapse = makeCollapseTree . makeCollapseEntry
 
 rebuildCollapse :: Collapse a -> a
 rebuildCollapse = rebuildCollapseEntry . rebuildCollapseTree
+
 collapseValueL :: Lens' (Collapse a) a
-collapseValueL = collapseTreeValueL.collapseEntryValueL
+collapseValueL = collapseTreeValueL . collapseEntryValueL
+
+collapseCollapseEntryL :: Lens' (Collapse a) (CollapseEntry a)
+collapseCollapseEntryL = collapseTreeValueL
+
+collapseShowSubForestL :: Lens' (Collapse a) Bool
+collapseShowSubForestL = collapseTreeShowSubForestL
+
+collapseShowContentsL :: Lens' (Collapse a) Bool
+collapseShowContentsL = collapseCollapseEntryL . collapseEntryShowContentsL
 
 data CollapseTree a = CollapseTree
     { collapseTreeValue :: a
@@ -60,6 +71,10 @@ collapseTreeValueL :: Lens' (CollapseTree a) a
 collapseTreeValueL =
     lens collapseTreeValue $ \ct v -> ct {collapseTreeValue = v}
 
+collapseTreeShowSubForestL :: Lens' (CollapseTree a) Bool
+collapseTreeShowSubForestL =
+    lens collapseTreeShowSubForest $ \ct b -> ct {collapseTreeShowSubForest = b}
+
 data CollapseEntry a = CollapseEntry
     { collapseEntryValue :: a
     , collapseEntryShowContents :: Bool
@@ -77,3 +92,7 @@ rebuildCollapseEntry = collapseEntryValue
 collapseEntryValueL :: Lens' (CollapseEntry a) a
 collapseEntryValueL =
     lens collapseEntryValue $ \ct v -> ct {collapseEntryValue = v}
+
+collapseEntryShowContentsL :: Lens' (CollapseEntry a) Bool
+collapseEntryShowContentsL =
+    lens collapseEntryShowContents $ \ct b -> ct {collapseEntryShowContents = b}
