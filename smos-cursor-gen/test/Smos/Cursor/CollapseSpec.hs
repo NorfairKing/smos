@@ -29,6 +29,7 @@ spec = do
             inverseFunctionsOnValid
                 (makeCollapseEntry @Double)
                 (rebuildCollapseEntry @Double)
+    describe "collapseEntryValueL" $ lensSpecOnValid (collapseEntryValueL @Double)
     describe "makeCollapseTree" $
         it "produces valid collapse's" $
         producesValidsOnValids (makeCollapseTree @Double)
@@ -39,6 +40,7 @@ spec = do
             inverseFunctionsOnValid
                 (makeCollapseTree @Double)
                 (rebuildCollapseTree @Double)
+    describe "collapseTreeValueL" $ lensSpecOnValid (collapseTreeValueL @Double)
     describe "makeCollapse" $
         it "produces valid collapse's" $
         producesValidsOnValids (makeCollapse @Double)
@@ -49,3 +51,4 @@ spec = do
             inverseFunctionsOnValid
                 (makeCollapse @Double)
                 (rebuildCollapse @Double)
+    describe "collapseValueL" $ lensSpecOnValid (collapseValueL @Double)

@@ -5,12 +5,15 @@ module Smos.Cursor.Collapse
     ( Collapse
     , makeCollapse
     , rebuildCollapse
+    , collapseValueL
     , CollapseTree(..)
     , makeCollapseTree
     , rebuildCollapseTree
+    , collapseTreeValueL
     , CollapseEntry(..)
     , makeCollapseEntry
     , rebuildCollapseEntry
+    , collapseEntryValueL
     ) where
 
 import GHC.Generics (Generic)
@@ -36,6 +39,8 @@ makeCollapse = makeCollapseTree . makeCollapseEntry
 
 rebuildCollapse :: Collapse a -> a
 rebuildCollapse = rebuildCollapseEntry . rebuildCollapseTree
+collapseValueL :: Lens' (Collapse a) a
+collapseValueL = collapseTreeValueL.collapseEntryValueL
 
 data CollapseTree a = CollapseTree
     { collapseTreeValue :: a
@@ -51,6 +56,10 @@ makeCollapseTree a =
 rebuildCollapseTree :: CollapseTree a -> a
 rebuildCollapseTree = collapseTreeValue
 
+collapseTreeValueL :: Lens' (CollapseTree a) a
+collapseTreeValueL =
+    lens collapseTreeValue $ \ct v -> ct {collapseTreeValue = v}
+
 data CollapseEntry a = CollapseEntry
     { collapseEntryValue :: a
     , collapseEntryShowContents :: Bool
@@ -64,3 +73,7 @@ makeCollapseEntry a =
 
 rebuildCollapseEntry :: CollapseEntry a -> a
 rebuildCollapseEntry = collapseEntryValue
+
+collapseEntryValueL :: Lens' (CollapseEntry a) a
+collapseEntryValueL =
+    lens collapseEntryValue $ \ct v -> ct {collapseEntryValue = v}
