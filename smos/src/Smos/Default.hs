@@ -30,17 +30,15 @@ defaultKeyMap =
                   , exactChar 'i' entrySelectHeaderAtStart
                   , exactChar 'I' entrySelectHeaderAtStart
                   -- Movements
-                  , exactKey KUp forestMoveUp
                   , exactChar 'k' forestMoveUp
-                  , exactKey KDown forestMoveDown
                   , exactChar 'j' forestMoveDown
                   -- Swaps
-                  , exactKeyPress (KeyPress KUp [MShift]) forestSwapUp
-                  , exactKeyPress (KeyPress KDown [MShift]) forestSwapDown
-                  , exactKey KLeft forestPromoteEntry
-                  , exactKeyPress (KeyPress KLeft [MShift]) forestPromoteSubTree
-                  , exactKey KRight forestDemoteEntry
-                  , exactKeyPress (KeyPress KRight [MShift]) forestDemoteSubTree
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   -- Forest manipulation
                   , exactChar 'h' forestInsertEntryAfterAndSelectHeader
                   , exactChar 'H' forestInsertEntryBelowAndSelectHeader

@@ -6,6 +6,7 @@ module Smos.Config
     , exactString
     , combo
     , exactChar
+    , modifiedChar
     , exactKey
     , exactKeyPress
     , KeyPress(..)
@@ -45,10 +46,13 @@ combo kps a =
         (kp:kps_) -> MapCombination kp $ combo kps_ a
 
 exactChar :: Char -> Action -> KeyMapping
-exactChar c a = exactKey (KChar c) a
+exactChar c = exactKey (KChar c)
+
+modifiedChar :: Char -> [Modifier] -> Action -> KeyMapping
+modifiedChar c mods = exactKeyPress (KeyPress (KChar c) mods)
 
 exactKey :: Key -> Action -> KeyMapping
-exactKey k a = exactKeyPress (KeyPress k []) a
+exactKey k = exactKeyPress (KeyPress k [])
 
 exactKeyPress :: KeyPress -> Action -> KeyMapping
 exactKeyPress = MapVtyExactly
