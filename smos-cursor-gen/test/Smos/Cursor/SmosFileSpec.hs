@@ -27,6 +27,15 @@ spec = do
         lensSpecOnValid smosFileCursorSelectedEntryL
     describe "smosFileCursorEntrySelectionL" $
         lensSpecOnValid smosFileCursorEntrySelectionL
+    describe "smosFileCursorToggleHideSubForest" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorToggleHideSubForest
+    describe "smosFileCursorToggleHideEntireEntry" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorToggleHideEntireEntry
+    describe "smosFileCursorRunCollapseCycle" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorRunCollapseCycle
     describe "smosFileCursorSelectPrev" $
         it "produces valid cursors" $
         producesValidsOnValids smosFileCursorSelectPrev

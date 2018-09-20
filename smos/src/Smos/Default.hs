@@ -54,6 +54,9 @@ defaultKeyMap =
                   , exactString "td" $ entrySetTodoState "DONE"
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
+                  -- Collapsing
+                  , exactChar '\t' forestToggleHideSubForest
+                  , exactKey KBackTab forestToggleHideEntireEntry
                   ]
         , keyMapHeaderMatchers =
               listMatchers
