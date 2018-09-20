@@ -6,6 +6,7 @@ module Smos.Cursor.SmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
     , smosFileCursorToggleHideSubForest
+    , smosFileCursorToggleHideEntireEntry
     , smosFileCursorRunCollapseCycle
     , smosFileCursorSelectPrev
     , smosFileCursorSelectNext
@@ -72,6 +73,11 @@ smosFileCursorEntrySelectionL =
 smosFileCursorToggleHideSubForest :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleHideSubForest =
     (smosFileCursorSelectedEntireL . collapseShowSubForestL) %~ not
+
+smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
+smosFileCursorToggleHideEntireEntry =
+    smosFileCursorSelectedEntireL %~
+    (\c -> collapseSetShowEntireEntry (not $ c ^. collapseShowContentsL &&  c ^. collapseShowHistoryL) c)
 
 smosFileCursorRunCollapseCycle :: SmosFileCursor -> SmosFileCursor
 smosFileCursorRunCollapseCycle =

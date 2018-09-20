@@ -63,6 +63,8 @@
       state-history:
       - new-state: TODO
         timestamp: 2018-09-11 09:44:57.448943370000+0000
+      - new-state: DONE
+        timestamp: 2018-09-20 06:20:28.814922142000+0000
     forest:
     - header: Collapse trees
       state-history:
@@ -82,10 +84,14 @@
         timestamp: 2018-09-19 23:46:00.835344728000+0000
       - new-state: DONE
         timestamp: 2018-09-20 06:01:48.414516507000+0000
+      - new-state: DONE
+        timestamp: 2018-09-20 06:20:22.062931487000+0000
     - header: Distinct ways to collapse trees and entries seperately
       state-history:
       - new-state: TODO
         timestamp: 2018-09-20 06:02:19.854832787000+0000
+      - new-state: DONE
+        timestamp: 2018-09-20 06:20:25.023021451000+0000
   - entry:
       header: Entry
       state-history:

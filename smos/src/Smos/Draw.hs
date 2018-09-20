@@ -206,7 +206,9 @@ drawSmosTreeCursor = drawTreeCursor wrap cur
         drawEntryCursor (collapseTreeValue ec) &
         (if collapseTreeShowSubForest ec
              then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
-             else id)
+             else if null ts
+                      then id
+                      else (<+> str " +++"))
     wrap ::
            [Tree (Collapse Entry)]
         -> Collapse Entry
@@ -231,7 +233,9 @@ drawEntryTree (Node t ts) =
     drawEntry (collapseTreeValue t) &
     if collapseTreeShowSubForest t
         then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
-        else id
+        else if null ts
+                 then id
+                 else (<+> str "+++")
 
 drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
 drawEntryCursor e =
@@ -310,7 +314,7 @@ drawEntry e =
                             [ not (collapseEntryShowContents e) &&
                               not (maybe False nullContents entryContents)
                             , not (collapseEntryShowHistory e) &&
-                              not (nullStateHistory  entryStateHistory)
+                              not (nullStateHistory entryStateHistory)
                             ]
                  in if anythingHiddenBelow
                         then str " ..."

@@ -15,6 +15,7 @@ module Smos.Cursor.Collapse
     , collapseCycle
     , setCollapseCycle
     , runCollapseCycle
+    , collapseSetShowEntireEntry
     , CollapseTree(..)
     , makeCollapseTree
     , rebuildCollapseTree
@@ -26,6 +27,7 @@ module Smos.Cursor.Collapse
     , collapseEntryValueL
     , collapseEntryShowContentsL
     , collapseEntryShowHistoryL
+    , collapseEntrySetShowAll
     ) where
 
 import GHC.Generics (Generic)
@@ -115,6 +117,10 @@ runCollapseCycle c =
         cc' = succ cc
      in setCollapseCycle c cc'
 
+collapseSetShowEntireEntry :: Bool -> Collapse a -> Collapse a
+collapseSetShowEntireEntry b =
+    collapseCollapseEntryL %~ collapseEntrySetShowAll b
+
 data CollapseTree a = CollapseTree
     { collapseTreeValue :: a
     , collapseTreeShowSubForest :: Bool
@@ -167,3 +173,7 @@ collapseEntryShowContentsL =
 collapseEntryShowHistoryL :: Lens' (CollapseEntry a) Bool
 collapseEntryShowHistoryL =
     lens collapseEntryShowHistory $ \ct b -> ct {collapseEntryShowHistory = b}
+
+collapseEntrySetShowAll :: Bool -> CollapseEntry a -> CollapseEntry a
+collapseEntrySetShowAll b e  =
+    e & collapseEntryShowContentsL .~ b & collapseEntryShowHistoryL .~ b

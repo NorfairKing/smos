@@ -35,6 +35,9 @@ spec = do
         lensSpecOnValid (collapseEntryShowContentsL @Double)
     describe "collapseEntryShowHistoryL" $
         lensSpecOnValid (collapseEntryShowHistoryL @Double)
+    describe "collapseEntrySetShowAll" $
+        it "produces valid collapses" $
+        producesValidsOnValids2 (collapseEntrySetShowAll @Double)
     describe "makeCollapseTree" $
         it "produces valid collapse's" $
         producesValidsOnValids (makeCollapseTree @Double)
@@ -80,4 +83,4 @@ spec = do
     describe "runCollapseCycle" $
         it "produces valid collapse" $
         producesValidsOnValids (runCollapseCycle @Double)
-
+    describe "collapseSetShowEntireEntry" $ it "produces valid collapse" $ producesValidsOnValids2 (collapseSetShowEntireEntry @Double)
