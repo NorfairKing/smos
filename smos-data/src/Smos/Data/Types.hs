@@ -17,17 +17,21 @@ module Smos.Data.Types
     , emptyHeader
     , Contents(..)
     , emptyContents
+    , nullContents
     , PropertyName(..)
     , emptyPropertyName
     , PropertyValue(..)
     , emptyPropertyValue
     , StateHistory(..)
     , StateHistoryEntry(..)
+    , emptyStateHistory
+    , nullStateHistory
     , Tag(..)
     , Logbook(..)
     , emptyLogbook
     , LogbookEntry(..)
-    , TimestampName(..), emptyTimestampName
+    , TimestampName(..)
+    , emptyTimestampName
     , Timestamp(..)
     , timestampDayFormat
     , timestampTimeFormat
@@ -168,8 +172,7 @@ instance ToJSON Entry where
                ]
             then toJSON entryHeader
             else object $
-                 [ "header" .= entryHeader
-                 ] ++
+                 ["header" .= entryHeader] ++
                  ["contents" .= entryContents | isJust entryContents] ++
                  [ "timestamps" .= entryTimestamps
                  | not $ M.null entryTimestamps
@@ -229,6 +232,9 @@ instance Validity Contents
 
 emptyContents :: Contents
 emptyContents = Contents ""
+
+nullContents :: Contents -> Bool
+nullContents = (== emptyContents)
 
 newtype PropertyName = PropertyName
     { propertyNameText :: Text
@@ -379,6 +385,12 @@ newtype StateHistory = StateHistory
     } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
 
 instance Validity StateHistory
+
+emptyStateHistory :: StateHistory
+emptyStateHistory = StateHistory []
+
+nullStateHistory :: StateHistory -> Bool
+nullStateHistory = (== emptyStateHistory)
 
 data StateHistoryEntry = StateHistoryEntry
     { stateHistoryEntryNewState :: Maybe TodoState

@@ -55,7 +55,7 @@ defaultKeyMap =
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
                   -- Collapsing
-                  , exactChar '\t' forestToggleHideSubForest
+                  , exactChar '\t' forestRunCollapseCycle
                   ]
         , keyMapHeaderMatchers =
               listMatchers

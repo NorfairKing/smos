@@ -10,6 +10,11 @@ module Smos.Cursor.Collapse
     , collapseCollapseEntryL
     , collapseShowSubForestL
     , collapseShowContentsL
+    , collapseShowHistoryL
+    , CollapseCycle(..)
+    , collapseCycle
+    , setCollapseCycle
+    , runCollapseCycle
     , CollapseTree(..)
     , makeCollapseTree
     , rebuildCollapseTree
@@ -20,6 +25,7 @@ module Smos.Cursor.Collapse
     , rebuildCollapseEntry
     , collapseEntryValueL
     , collapseEntryShowContentsL
+    , collapseEntryShowHistoryL
     ) where
 
 import GHC.Generics (Generic)
@@ -63,6 +69,52 @@ collapseShowSubForestL = collapseTreeShowSubForestL
 collapseShowContentsL :: Lens' (Collapse a) Bool
 collapseShowContentsL = collapseCollapseEntryL . collapseEntryShowContentsL
 
+collapseShowHistoryL :: Lens' (Collapse a) Bool
+collapseShowHistoryL = collapseCollapseEntryL . collapseEntryShowHistoryL
+
+data CollapseCycle
+    = ShowOnlyHeader
+    | ShowHeaderAndChildren
+    | ShowAll
+    deriving (Show, Eq, Generic)
+
+instance Validity CollapseCycle
+
+-- | Circular, because it's a cycle
+instance Enum CollapseCycle where
+    toEnum n =
+        case n `rem` 3 of
+            0 -> ShowOnlyHeader
+            1 -> ShowHeaderAndChildren
+            2 -> ShowAll
+    fromEnum ShowOnlyHeader = 0
+    fromEnum ShowHeaderAndChildren = 1
+    fromEnum ShowAll = 2
+
+collapseCycle :: Collapse a -> CollapseCycle
+collapseCycle c
+    | c ^. collapseShowSubForestL &&
+          c ^. collapseShowContentsL && c ^. collapseShowHistoryL = ShowAll
+    | c ^. collapseShowSubForestL = ShowHeaderAndChildren
+    | otherwise = ShowOnlyHeader
+
+setCollapseCycle :: Collapse a -> CollapseCycle -> Collapse a
+setCollapseCycle c ShowAll =
+    c & collapseShowSubForestL .~ True & collapseShowContentsL .~ True &
+    collapseShowHistoryL .~ True
+setCollapseCycle c ShowHeaderAndChildren =
+    c & collapseShowSubForestL .~ True & collapseShowContentsL .~ False &
+    collapseShowHistoryL .~ False
+setCollapseCycle c ShowOnlyHeader =
+    c & collapseShowSubForestL .~ False & collapseShowContentsL .~ False &
+    collapseShowHistoryL .~ False
+
+runCollapseCycle :: Collapse a -> Collapse a
+runCollapseCycle c =
+    let cc = collapseCycle c
+        cc' = succ cc
+     in setCollapseCycle c cc'
+
 data CollapseTree a = CollapseTree
     { collapseTreeValue :: a
     , collapseTreeShowSubForest :: Bool
@@ -88,13 +140,18 @@ collapseTreeShowSubForestL =
 data CollapseEntry a = CollapseEntry
     { collapseEntryValue :: a
     , collapseEntryShowContents :: Bool
+    , collapseEntryShowHistory :: Bool
     } deriving (Show, Eq, Generic, Functor)
 
 instance Validity a => Validity (CollapseEntry a)
 
 makeCollapseEntry :: a -> CollapseEntry a
 makeCollapseEntry a =
-    CollapseEntry {collapseEntryValue = a, collapseEntryShowContents = True}
+    CollapseEntry
+        { collapseEntryValue = a
+        , collapseEntryShowContents = True
+        , collapseEntryShowHistory = False
+        }
 
 rebuildCollapseEntry :: CollapseEntry a -> a
 rebuildCollapseEntry = collapseEntryValue
@@ -106,3 +163,7 @@ collapseEntryValueL =
 collapseEntryShowContentsL :: Lens' (CollapseEntry a) Bool
 collapseEntryShowContentsL =
     lens collapseEntryShowContents $ \ct b -> ct {collapseEntryShowContents = b}
+
+collapseEntryShowHistoryL :: Lens' (CollapseEntry a) Bool
+collapseEntryShowHistoryL =
+    lens collapseEntryShowHistory $ \ct b -> ct {collapseEntryShowHistory = b}

@@ -248,6 +248,17 @@ drawEntryCursor e =
               , drawHeaderCursor
                     (selectWhen HeaderSelected)
                     entryCursorHeaderCursor
+              , let e_ = rebuildEntryCursor ec
+                    anythingHiddenBelow =
+                        or
+                            [ not (collapseEntryShowContents e) &&
+                              not (maybe False nullContents $ entryContents e_)
+                            , not (collapseEntryShowHistory e) &&
+                              not (nullStateHistory $ entryStateHistory e_)
+                            ]
+                 in if anythingHiddenBelow
+                        then str " ..."
+                        else emptyWidget
               ]
         , drawIf collapseEntryShowContents $
           maybe
@@ -262,7 +273,8 @@ drawEntryCursor e =
               emptyWidget
               (drawPropertiesCursor $ selectWhen PropertiesSelected)
               entryCursorPropertiesCursor
-        , maybe
+        , drawIf collapseEntryShowHistory $
+          maybe
               emptyWidget
               (drawStateHistoryCursor $ selectWhen StateHistorySelected)
               entryCursorStateHistoryCursor
@@ -275,7 +287,7 @@ drawEntryCursor e =
               entryCursorLogbookCursor
         ]
   where
-    EntryCursor {..} = collapseEntryValue e
+    ec@EntryCursor {..} = collapseEntryValue e
     drawIf bf w =
         if bf e
             then w
@@ -287,17 +299,28 @@ drawEntryCursor e =
             else NotSelected
 
 drawEntry :: CollapseEntry Entry -> Widget ResourceName
-drawEntry  e =
+drawEntry e =
     vBox
         [ hBox
               [ str "> "
               , drawCurrentState entryStateHistory
               , drawHeader entryHeader
+              , let anythingHiddenBelow =
+                        or
+                            [ not (collapseEntryShowContents e) &&
+                              not (maybe False nullContents entryContents)
+                            , not (collapseEntryShowHistory e) &&
+                              not (nullStateHistory  entryStateHistory)
+                            ]
+                 in if anythingHiddenBelow
+                        then str " ..."
+                        else emptyWidget
               ]
-        , drawIf collapseEntryShowContents $ maybe emptyWidget drawContents entryContents
+        , drawIf collapseEntryShowContents $
+          maybe emptyWidget drawContents entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
-        , drawStateHistory entryStateHistory
+        , drawIf collapseEntryShowHistory $ drawStateHistory entryStateHistory
         , drawTags entryTags
         , drawLogbook entryLogbook
         ]

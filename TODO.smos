@@ -74,10 +74,18 @@
       state-history:
       - new-state: TODO
         timestamp: 2018-09-19 23:45:57.123320044000+0000
+      - new-state: DONE
+        timestamp: 2018-09-20 06:01:47.822779718000+0000
     - header: Collapse todo histories
       state-history:
       - new-state: TODO
         timestamp: 2018-09-19 23:46:00.835344728000+0000
+      - new-state: DONE
+        timestamp: 2018-09-20 06:01:48.414516507000+0000
+    - header: Distinct ways to collapse trees and entries seperately
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-20 06:02:19.854832787000+0000
   - entry:
       header: Entry
       state-history:

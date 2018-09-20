@@ -15,3 +15,6 @@ instance GenUnchecked a => GenUnchecked (CollapseEntry a)
 
 instance GenValid a => GenValid (CollapseEntry a) where
     genValid = genValidStructurally
+
+instance GenUnchecked CollapseCycle
+instance GenValid CollapseCycle

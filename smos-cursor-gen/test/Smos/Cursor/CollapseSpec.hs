@@ -33,6 +33,8 @@ spec = do
         lensSpecOnValid (collapseEntryValueL @Double)
     describe "collapseEntryShowContentsL" $
         lensSpecOnValid (collapseEntryShowContentsL @Double)
+    describe "collapseEntryShowHistoryL" $
+        lensSpecOnValid (collapseEntryShowHistoryL @Double)
     describe "makeCollapseTree" $
         it "produces valid collapse's" $
         producesValidsOnValids (makeCollapseTree @Double)
@@ -65,3 +67,17 @@ spec = do
         lensSpecOnValid (collapseShowSubForestL @Double)
     describe "collapseShowContentsL" $
         lensSpecOnValid (collapseShowContentsL @Double)
+    describe "collapseShowHistoryL" $
+        lensSpecOnValid (collapseShowHistoryL @Double)
+    eqSpec @CollapseCycle
+    genValidSpec @CollapseCycle
+    describe "collapseCycle" $
+        it "produces valid collapse cycles" $
+        producesValidsOnValids (collapseCycle @Double)
+    describe "setCollapseCycle" $
+        it "produces valid collapse" $
+        producesValidsOnValids2 (setCollapseCycle @Double)
+    describe "runCollapseCycle" $
+        it "produces valid collapse" $
+        producesValidsOnValids (runCollapseCycle @Double)
+

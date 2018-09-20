@@ -21,6 +21,7 @@ module Smos.Actions.Forest
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideSubForest
+    , forestRunCollapseCycle
     ) where
 
 import Smos.Types
@@ -46,6 +47,7 @@ allForestPlainActions =
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideSubForest
+    , forestRunCollapseCycle
     ]
 
 allForestUsingCharActions :: [ActionUsing Char]
@@ -198,4 +200,13 @@ forestToggleHideSubForest =
         { actionName = "forestToggleHideSubForest"
         , actionFunc = modifyFileCursor smosFileCursorToggleHideSubForest
         , actionDescription = "Toggle the hiding of the current sub forest"
+        }
+
+forestRunCollapseCycle :: Action
+forestRunCollapseCycle =
+    Action
+        { actionName = "forestRunCollapseCycle"
+        , actionFunc = modifyFileCursor smosFileCursorRunCollapseCycle
+        , actionDescription =
+              "Cycle through the different levels of collapsing the current sub tree."
         }
