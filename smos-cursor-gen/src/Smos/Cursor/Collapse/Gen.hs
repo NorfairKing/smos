@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Smos.Cursor.Collapse.Gen where
 
 import Data.GenValidity
@@ -17,4 +19,5 @@ instance GenValid a => GenValid (CollapseEntry a) where
     genValid = genValidStructurally
 
 instance GenUnchecked CollapseCycle
+
 instance GenValid CollapseCycle

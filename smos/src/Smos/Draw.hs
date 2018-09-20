@@ -235,7 +235,7 @@ drawEntryTree (Node t ts) =
         then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
         else if null ts
                  then id
-                 else (<+> str "+++")
+                 else (<+> str " +++")
 
 drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
 drawEntryCursor e =

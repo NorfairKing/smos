@@ -77,7 +77,10 @@ smosFileCursorToggleHideSubForest =
 smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleHideEntireEntry =
     smosFileCursorSelectedEntireL %~
-    (\c -> collapseSetShowEntireEntry (not $ c ^. collapseShowContentsL &&  c ^. collapseShowHistoryL) c)
+    (\c ->
+         collapseSetShowEntireEntry
+             (not $ c ^. collapseShowContentsL && c ^. collapseShowHistoryL)
+             c)
 
 smosFileCursorRunCollapseCycle :: SmosFileCursor -> SmosFileCursor
 smosFileCursorRunCollapseCycle =
@@ -152,6 +155,8 @@ smosFileCursorDemoteEntry = forestCursorDemoteElem rebuild make
 smosFileCursorDemoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorDemoteSubTree = forestCursorDemoteSubTree rebuild make
 
+rebuild :: Collapse EntryCursor -> Collapse Entry
 rebuild = collapseValueL %~ rebuildEntryCursor
 
+make :: Collapse Entry -> Collapse EntryCursor
 make = collapseValueL %~ makeEntryCursor

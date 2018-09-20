@@ -32,19 +32,9 @@ module Smos.Cursor.Collapse
 
 import GHC.Generics (Generic)
 
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.Maybe
 import Data.Validity
 
 import Lens.Micro
-
-import Cursor.Forest
-import Cursor.Tree
-import Cursor.Types
-
-import Smos.Data.Types
-
-import Smos.Cursor.Entry
 
 type Collapse a = CollapseTree (CollapseEntry a)
 
@@ -89,6 +79,7 @@ instance Enum CollapseCycle where
             0 -> ShowOnlyHeader
             1 -> ShowHeaderAndChildren
             2 -> ShowAll
+            _ -> ShowAll -- Should not happen.
     fromEnum ShowOnlyHeader = 0
     fromEnum ShowHeaderAndChildren = 1
     fromEnum ShowAll = 2
@@ -175,5 +166,5 @@ collapseEntryShowHistoryL =
     lens collapseEntryShowHistory $ \ct b -> ct {collapseEntryShowHistory = b}
 
 collapseEntrySetShowAll :: Bool -> CollapseEntry a -> CollapseEntry a
-collapseEntrySetShowAll b e  =
+collapseEntrySetShowAll b e =
     e & collapseEntryShowContentsL .~ b & collapseEntryShowHistoryL .~ b
