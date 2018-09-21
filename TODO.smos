@@ -22,10 +22,13 @@
           timestamp: 2018-09-11 10:15:16.762233163000+0000
       forest:
       - header: ! 'Scrolling header: should be drawn on next line if necessary, and
-          the ''TODO'' part should never not be drawn if there isn''t enough spac.'
+          the ''TODO'' part should never not be drawn if there isn''t enough space.'
         state-history:
         - new-state: TODO
           timestamp: 2018-09-21 08:03:29.287387859000+0000
+        - new-state: TODO
+          timestamp: 2018-09-21 18:18:36.048529427000+0000
+      - hello
   - entry:
       header: Quality of life
       state-history:
@@ -135,12 +138,6 @@
         - new-state: DONE
           timestamp: 2018-09-20 06:20:28.814922142000+0000
       forest:
-      - header: Collapse trees
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 09:44:56.996272743000+0000
-        - new-state: DONE
-          timestamp: 2018-09-19 23:45:48.066936165000+0000
       - header: Collapse entry contents
         state-history:
         - new-state: TODO
@@ -155,12 +152,22 @@
           timestamp: 2018-09-20 06:01:48.414516507000+0000
         - new-state: DONE
           timestamp: 2018-09-20 06:20:22.062931487000+0000
+      - header: Collapse trees
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 09:44:56.996272743000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 23:45:48.066936165000+0000
+        - new-state: TODO
+          timestamp: 2018-09-21 17:47:32.272318452000+0000
       - header: Distinct ways to collapse trees and entries seperately
         state-history:
         - new-state: TODO
           timestamp: 2018-09-20 06:02:19.854832787000+0000
         - new-state: DONE
           timestamp: 2018-09-20 06:20:25.023021451000+0000
+        - new-state: TODO
+          timestamp: 2018-09-21 17:47:33.192321621000+0000
     - entry:
         header: Entry
         state-history:

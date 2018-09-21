@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -59,7 +60,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
     ]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor = drawSmosFileCursor
+    renderCursor = border . drawSmosFileCursor
     drawNoContent :: Widget n
     drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
@@ -172,13 +173,15 @@ drawDebug SmosState {..} =
     vBox
         [ str "Key history: " <+> drawHistory smosStateKeyHistory
         , str "Last match: " <+>
-          drawLastMatches (debugInfoLastMatches smosStateDebugInfo)
+          fromMaybe
+              emptyWidget
+              (drawLastMatches (debugInfoLastMatches smosStateDebugInfo))
         , strWrap $ ppShow smosStateCursor
         ]
 
-drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Widget n
-drawLastMatches Nothing = emptyWidget
-drawLastMatches (Just ts) = vBox $ map (strWrap . ppShow) $ NE.toList ts
+drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
+drawLastMatches Nothing = Nothing
+drawLastMatches (Just ts) = Just $ vBox $ map (strWrap . ppShow) $ NE.toList ts
 
 data Select
     = MaybeSelected
@@ -224,63 +227,51 @@ drawEntryTree (Node t ts) =
 
 drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
 drawEntryCursor e =
-    vBox
-        [ hBox
-              [ (case selectWhen WholeEntrySelected of
-                     MaybeSelected -> withAttr selectedAttr
-                     NotSelected -> id) $
-                str "> "
-              , maybe
-                    emptyWidget
-                    drawCurrentStateFromCursor
-                    entryCursorStateHistoryCursor
-              , drawHeaderCursor
-                    (selectWhen HeaderSelected)
-                    entryCursorHeaderCursor
-              , let e_ = rebuildEntryCursor ec
-                    anythingHiddenBelow =
-                        or
-                            [ not (collapseEntryShowContents e) &&
-                              not (maybe False nullContents $ entryContents e_)
-                            , not (collapseEntryShowHistory e) &&
-                              not (nullStateHistory $ entryStateHistory e_)
-                            ]
-                 in if anythingHiddenBelow
-                        then str " ..."
-                        else emptyWidget
-              ]
-        , drawIf collapseEntryShowContents $
-          maybe
-              emptyWidget
-              (drawContentsCursor $ selectWhen ContentsSelected)
-              entryCursorContentsCursor
-        , maybe
-              emptyWidget
-              (drawTimestampsCursor $ selectWhen TimestampsSelected)
-              entryCursorTimestampsCursor
-        , maybe
-              emptyWidget
-              (drawPropertiesCursor $ selectWhen PropertiesSelected)
-              entryCursorPropertiesCursor
-        , drawIf collapseEntryShowHistory $
-          maybe
-              emptyWidget
-              (drawStateHistoryCursor $ selectWhen StateHistorySelected)
-              entryCursorStateHistoryCursor
-        , maybe
-              emptyWidget
-              (drawTagsCursor $ selectWhen TagsSelected)
-              entryCursorTagsCursor
+    vBox $
+    catMaybes
+        [ Just $
+          hBox $
+          [selelectIfSelected $ str "> "] ++
+          maybeToList
+              (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor) ++
+          [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor] ++
+          [ str " ..."
+          | let e_ = rebuildEntryCursor ec
+             in or [ not (collapseEntryShowContents e) &&
+                     not (maybe False nullContents $ entryContents e_)
+                   , not (collapseEntryShowHistory e) &&
+                     not (nullStateHistory $ entryStateHistory e_)
+                    ]
+          ]
+        , drawIfM collapseEntryShowContents $
+          drawContentsCursor (selectWhen ContentsSelected) <$>
+          entryCursorContentsCursor
+        , drawTimestampsCursor (selectWhen TimestampsSelected) <$>
+          entryCursorTimestampsCursor
+        , drawPropertiesCursor (selectWhen PropertiesSelected) <$>
+          entryCursorPropertiesCursor
+        , drawIfM collapseEntryShowHistory $
+          entryCursorStateHistoryCursor >>=
+          drawStateHistoryCursor (selectWhen StateHistorySelected)
+        , drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
         , drawLogbookCursor
               (selectWhen LogbookSelected)
               entryCursorLogbookCursor
         ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
+    drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
+    drawIfM bf mw = mw >>= drawIf bf
+    drawIf :: (forall e. CollapseEntry e -> Bool) -> a -> Maybe a
     drawIf bf w =
         if bf e
-            then w
-            else emptyWidget
+            then Just w
+            else Nothing
+    selelectIfSelected :: Widget n -> Widget n
+    selelectIfSelected =
+        case selectWhen WholeEntrySelected of
+            MaybeSelected -> withAttr selectedAttr
+            NotSelected -> id
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
         if ecs == entryCursorSelected
@@ -289,58 +280,59 @@ drawEntryCursor e =
 
 drawEntry :: CollapseEntry Entry -> Widget ResourceName
 drawEntry e =
-    vBox
-        [ hBox
-              [ str "> "
-              , drawCurrentState entryStateHistory
-              , drawHeader entryHeader
-              , let anythingHiddenBelow =
-                        or
-                            [ not (collapseEntryShowContents e) &&
-                              not (maybe False nullContents entryContents)
-                            , not (collapseEntryShowHistory e) &&
-                              not (nullStateHistory entryStateHistory)
-                            ]
-                 in if anythingHiddenBelow
-                        then str " ..."
-                        else emptyWidget
-              ]
-        , drawIf collapseEntryShowContents $
-          maybe emptyWidget drawContents entryContents
+    vBox $
+    catMaybes
+        [ Just $
+          hBox $
+          [str "> "] ++
+          maybeToList (drawCurrentState entryStateHistory) ++
+          [drawHeader entryHeader] ++
+          [ str " ..."
+          | or [ not (collapseEntryShowContents e) &&
+                 not (maybe False nullContents entryContents)
+               , not (collapseEntryShowHistory e) &&
+                 not (nullStateHistory entryStateHistory)
+                ]
+          ]
+        , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
-        , drawIf collapseEntryShowHistory $ drawStateHistory entryStateHistory
+        , drawIfM collapseEntryShowHistory $ drawStateHistory entryStateHistory
         , drawTags entryTags
         , drawLogbook entryLogbook
         ]
   where
     Entry {..} = collapseEntryValue e
+    drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
+    drawIfM bf mw = mw >>= drawIf bf
+    drawIf :: (forall e. CollapseEntry e -> Bool) -> a -> Maybe a
     drawIf bf w =
         if bf e
-            then w
-            else emptyWidget
+            then Just w
+            else Nothing
 
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor = drawTextCursor
 
 drawHeader :: Header -> Widget ResourceName
-drawHeader = txt . headerText
+drawHeader = txtWrap . headerText
 
-drawCurrentStateFromCursor :: StateHistoryCursor -> Widget ResourceName
+drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
 drawCurrentStateFromCursor =
     drawCurrentState . StateHistory . NE.toList . rebuildStateHistoryCursor
 
-drawCurrentState :: StateHistory -> Widget ResourceName
+drawCurrentState :: StateHistory -> Maybe (Widget ResourceName)
 drawCurrentState (StateHistory ls)
-    | null ls = emptyWidget
+    | null ls = Nothing
     | otherwise =
-        withAttr todoStateAttr $
         case reverse ls of
             (she:_) ->
                 case stateHistoryEntryNewState she of
-                    Nothing -> emptyWidget
-                    Just ts -> drawTodoState ts <+> str " "
-            _ -> emptyWidget
+                    Nothing -> Nothing
+                    Just ts ->
+                        Just $
+                        withAttr todoStateAttr $ drawTodoState ts <+> str " "
+            _ -> Nothing
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
@@ -351,57 +343,57 @@ drawContents = txt . contentsText
 drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
 drawTimestampsCursor _ = strWrap . show
 
-drawTimestamps :: Map TimestampName Timestamp -> Widget ResourceName
+drawTimestamps :: Map TimestampName Timestamp -> Maybe (Widget ResourceName)
 drawTimestamps m
-    | M.null m = emptyWidget
-    | otherwise = strWrap $ show m
+    | M.null m = Nothing
+    | otherwise = Just $ strWrap $ show m
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
 drawPropertiesCursor _ = strWrap . show
 
-drawProperties :: Map PropertyName PropertyValue -> Widget ResourceName
+drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
-    | M.null m = emptyWidget
-    | otherwise = strWrap $ show m
+    | M.null m = Nothing
+    | otherwise = Just $ strWrap $ show m
 
-drawStateHistoryCursor :: Select -> StateHistoryCursor -> Widget ResourceName
+drawStateHistoryCursor ::
+       Select -> StateHistoryCursor -> Maybe (Widget ResourceName)
 drawStateHistoryCursor _ =
     drawStateHistory . StateHistory . NE.toList . rebuildStateHistoryCursor
 
-drawStateHistory :: StateHistory -> Widget ResourceName
+drawStateHistory :: StateHistory -> Maybe (Widget ResourceName)
 drawStateHistory (StateHistory ls)
-    | null ls = emptyWidget
+    | null ls = Nothing
     | otherwise =
+        Just $
         withAttr todoStateHistoryAttr $
         vBox $
         flip map ls $ \StateHistoryEntry {..} ->
-            hBox
-                [ strWrap $ show stateHistoryEntryTimestamp
-                , maybe
-                      emptyWidget
-                      ((str " " <+>) . drawTodoState)
-                      stateHistoryEntryNewState
+            hBox $
+            catMaybes
+                [ Just $ strWrap $ show stateHistoryEntryTimestamp
+                , ((str " " <+>) . drawTodoState) <$> stateHistoryEntryNewState
                 ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor _ = strWrap . show
 
-drawTags :: [Tag] -> Widget ResourceName
+drawTags :: [Tag] -> Maybe (Widget ResourceName)
 drawTags ts
-    | null ts = emptyWidget
-    | otherwise = strWrap $ show ts
+    | null ts = Nothing
+    | otherwise = Just $ strWrap $ show ts
 
-drawLogbookCursor :: Select -> LogbookCursor -> Widget ResourceName
+drawLogbookCursor :: Select -> LogbookCursor -> Maybe (Widget ResourceName)
 drawLogbookCursor _ lbc =
     case lbc of
-        LogbookCursorClosed Nothing -> emptyWidget
-        _ -> strWrap $ show lbc
+        LogbookCursorClosed Nothing -> Nothing
+        _ -> Just $ strWrap $ show lbc
 
-drawLogbook :: Logbook -> Widget ResourceName
+drawLogbook :: Logbook -> Maybe (Widget ResourceName)
 drawLogbook (LogClosed ls)
-    | null ls = emptyWidget
-    | otherwise = strWrap $ show ls
-drawLogbook lb = strWrap $ show lb
+    | null ls = Nothing
+    | otherwise = Just $ strWrap $ show ls
+drawLogbook lb = Just $ strWrap $ show lb
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =
@@ -409,12 +401,12 @@ drawTextCursor s tc =
          MaybeSelected ->
              showCursor textCursorName (B.Location (textCursorIndex tc, 0))
          _ -> id) $
-    txt (rebuildTextCursor tc)
+    txtWrap (rebuildTextCursor tc)
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
 drawTextFieldCursor _ = strWrap . show
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =
-    withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txtWrap $
+    withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txt $
     todoStateText ts
