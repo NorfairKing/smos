@@ -196,46 +196,31 @@ drawSmosFileCursor =
     drawVerticalForestCursor drawEntryTree drawSmosTreeCursor drawEntryTree
 
 drawSmosTreeCursor ::
-       TreeCursor (Collapse EntryCursor) (Collapse Entry) -> Widget ResourceName
+       TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
+    -> Widget ResourceName
 drawSmosTreeCursor = drawTreeCursor wrap cur
   where
-    cur :: Collapse EntryCursor
-        -> Forest (Collapse Entry)
+    cur :: CollapseEntry EntryCursor
+        -> Forest (CollapseEntry Entry)
         -> Widget ResourceName
     cur ec ts =
-        drawEntryCursor (collapseTreeValue ec) &
-        (if collapseTreeShowSubForest ec
-             then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
-             else if null ts
-                      then id
-                      else (<+> str " +++"))
+        drawEntryCursor ec <=>
+        padLeft defaultPadding (vBox $ map drawEntryTree ts)
     wrap ::
-           [Tree (Collapse Entry)]
-        -> Collapse Entry
-        -> [Tree (Collapse Entry)]
+           [Tree (CollapseEntry Entry)]
+        -> CollapseEntry Entry
+        -> [Tree (CollapseEntry Entry)]
         -> Widget ResourceName
         -> Widget ResourceName
     wrap tsl e tsr w =
-        drawEntry (collapseTreeValue e) &
-        if collapseTreeShowSubForest e
-            then (<=> padLeft
-                          defaultPadding
-                          (vBox $
-                           concat
-                               [ map drawEntryTree tsl
-                               , [w]
-                               , map drawEntryTree tsr
-                               ]))
-            else id
+        drawEntry e <=>
+        padLeft
+            defaultPadding
+            (vBox $ concat [map drawEntryTree tsl, [w], map drawEntryTree tsr])
 
-drawEntryTree :: Tree (Collapse Entry) -> Widget ResourceName
+drawEntryTree :: Tree (CollapseEntry Entry) -> Widget ResourceName
 drawEntryTree (Node t ts) =
-    drawEntry (collapseTreeValue t) &
-    if collapseTreeShowSubForest t
-        then (<=> padLeft defaultPadding (vBox $ map drawEntryTree ts))
-        else if null ts
-                 then id
-                 else (<+> str " +++")
+    drawEntry t <=> padLeft defaultPadding (vBox $ map drawEntryTree ts)
 
 drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
 drawEntryCursor e =
