@@ -14,6 +14,8 @@ module Smos.Actions.Forest
     , forestDeleteCurrentSubTree
     , forestMoveUp
     , forestMoveDown
+    , forestMoveToFirst
+    , forestMoveToLast
     , forestSwapUp
     , forestSwapDown
     , forestPromoteEntry
@@ -140,6 +142,24 @@ forestMoveDown =
         , actionFunc = modifyFileCursorM smosFileCursorSelectNext
         , actionDescription =
               "Move the current cursor down to the previous entry in the entry forest"
+        }
+
+forestMoveToFirst :: Action
+forestMoveToFirst =
+    Action
+        { actionName = "forestMoveToFirst"
+        , actionFunc = modifyFileCursor smosFileCursorSelectFirst
+        , actionDescription =
+              "Move the current cursor up to the first entry in the entry forest"
+        }
+
+forestMoveToLast :: Action
+forestMoveToLast =
+    Action
+        { actionName = "forestMoveToLast"
+        , actionFunc = modifyFileCursor smosFileCursorSelectLast
+        , actionDescription =
+              "Move the current cursor down to the last entry in the entry forest"
         }
 
 forestSwapUp :: Action

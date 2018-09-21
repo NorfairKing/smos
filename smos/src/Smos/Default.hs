@@ -32,6 +32,8 @@ defaultKeyMap =
                   -- Movements
                   , exactChar 'k' forestMoveUp
                   , exactChar 'j' forestMoveDown
+                  , exactString "gg" forestMoveToFirst
+                  , exactChar 'G' forestMoveToLast
                   -- Swaps
                   , modifiedChar 'k' [MMeta] forestSwapUp
                   , modifiedChar 'j' [MMeta] forestSwapDown

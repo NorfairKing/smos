@@ -10,6 +10,8 @@ module Smos.Cursor.SmosFile
     , smosFileCursorSelectNext
     , smosFileCursorSelectPrevOnSameLevel
     , smosFileCursorSelectNextOnSameLevel
+    , smosFileCursorSelectFirst
+    , smosFileCursorSelectLast
     , smosFileCursorInsertEntryBefore
     , smosFileCursorInsertEntryBeforeAndSelectHeader
     , smosFileCursorInsertEntryBelow
@@ -93,6 +95,12 @@ smosFileCursorSelectPrevOnSameLevel =
 smosFileCursorSelectNextOnSameLevel :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectNextOnSameLevel =
     forestCursorSelectNextOnSameLevel rebuild make
+
+smosFileCursorSelectFirst :: SmosFileCursor -> SmosFileCursor
+smosFileCursorSelectFirst = forestCursorSelectFirst rebuild make
+
+smosFileCursorSelectLast :: SmosFileCursor -> SmosFileCursor
+smosFileCursorSelectLast = forestCursorSelectLast rebuild make
 
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBefore =

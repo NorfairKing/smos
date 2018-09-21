@@ -1,6 +1,6 @@
 {
   owner = "NorfairKing";
   repo = "cursor";
-  rev = "3bb53a0815e58c62a8b23d777dafa5a77a9bd0ee";
-  sha256 = "1ciblzzk2pfv0krb6qx26nv2wz8hr9yl9c2a3cb6gq8hyk9vd63i";
+  rev = "212e74da54d50666d0d48bb048979db8989f8b41";
+  sha256 = "0qzwhqd153hlamw605g75rds503h44klglqh8l4kdiycgfx9nvia";
 }
