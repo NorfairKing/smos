@@ -1,158 +1,291 @@
-- entry: Smos Features to build
+- entry:
+    header: Smos Features to build
+    state-history:
+    - new-state: TODO
+      timestamp: 2018-09-21 08:04:59.815408341000+0000
   forest:
-  - header: Movements
-    state-history:
-    - new-state: TODO
-      timestamp: 2018-09-11 09:44:58.256421972000+0000
-  - header: Detect conflicting keymappings
-    state-history:
-    - new-state: TODO
-      timestamp: 2018-09-11 10:15:06.141365680000+0000
-  - header: Scrolling
-    state-history:
-    - new-state: TODO
-      timestamp: 2018-09-11 10:15:16.762233163000+0000
-  - header: Forest manipulations
-    state-history:
-    - new-state: TODO
-      timestamp: 2018-09-11 10:15:24.420049458000+0000
   - entry:
-      header: Help page
+      header: Drawing
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 19:39:53.356426165000+0000
+        timestamp: 2018-09-21 08:02:11.903422606000+0000
     forest:
-    - header: combine keybings per key in help page
+    - header: There are no '+++' when within a subtree of a collapsed tree. (well
+        we shouldn't be able to be there anyway)
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 19:40:01.436108571000+0000
+        timestamp: 2018-09-21 08:03:29.879362604000+0000
+    - entry:
+        header: Scrolling
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 10:15:16.762233163000+0000
+      forest:
+      - header: ! 'Scrolling header: should be drawn on next line if necessary, and
+          the ''TODO'' part should never not be drawn if there isn''t enough spac.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-21 08:03:29.287387859000+0000
   - entry:
-      header: Shift an entire tree
+      header: Quality of life
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 09:45:27.459143263000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 22:56:13.466505158000+0000
+        timestamp: 2018-09-21 08:06:22.847469325000+0000
     forest:
-    - header: up
+    - header: Detect conflicting keymappings
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 09:45:27.072933588000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 22:56:03.682717832000+0000
-    - header: down
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-11 09:45:26.619410659000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 22:56:04.370736658000+0000
-    - header: Left
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-19 22:56:11.122991277000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 22:56:11.603038887000+0000
-    - header: Right
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-19 22:56:10.683017377000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 22:56:12.122562746000+0000
+        timestamp: 2018-09-11 10:15:06.141365680000+0000
+    - entry:
+        header: Help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:39:53.356426165000+0000
+      forest:
+      - header: combine keybings per key in help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:40:01.436108571000+0000
   - entry:
-      header: Display manipulations
+      header: Editing
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 09:44:57.448943370000+0000
-      - new-state: DONE
-        timestamp: 2018-09-20 06:20:28.814922142000+0000
-    forest:
-    - header: Collapse trees
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-11 09:44:56.996272743000+0000
-      - new-state: DONE
-        timestamp: 2018-09-19 23:45:48.066936165000+0000
-    - header: Collapse entry contents
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-19 23:45:57.123320044000+0000
-      - new-state: DONE
-        timestamp: 2018-09-20 06:01:47.822779718000+0000
-    - header: Collapse todo histories
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-19 23:46:00.835344728000+0000
-      - new-state: DONE
-        timestamp: 2018-09-20 06:01:48.414516507000+0000
-      - new-state: DONE
-        timestamp: 2018-09-20 06:20:22.062931487000+0000
-    - header: Distinct ways to collapse trees and entries seperately
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-20 06:02:19.854832787000+0000
-      - new-state: DONE
-        timestamp: 2018-09-20 06:20:25.023021451000+0000
-  - entry:
-      header: Entry
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-11 09:44:56.130831172000+0000
+        timestamp: 2018-09-21 08:05:18.103452887000+0000
     forest:
     - entry:
-        header: Contents
+        header: Forest
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:55.617389568000+0000
+          timestamp: 2018-09-21 08:06:45.239417753000+0000
       forest:
-      - header: left
+      - entry:
+          header: Movements
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 08:06:58.111482492000+0000
+        forest:
+        - header: To top of file
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 08:06:57.783465730000+0000
+        - header: To bottom of file
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 08:07:01.855437435000+0000
+      - entry:
+          header: Manipulations
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-11 10:15:24.420049458000+0000
+        forest:
+        - header: Insert an entry (and start editing the header) on a level above
+            the current level corresponding to the next entry
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:17.263438122000+0000
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:18.231422200000+0000
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:19.999335245000+0000
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:24.447503940000+0000
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:27.791401297000+0000
+          - new-state: DONE
+            timestamp: 2018-09-21 08:01:29.455398662000+0000
+          - new-state: TODO
+            timestamp: 2018-09-21 08:01:34.439407216000+0000
+    - entry:
+        header: Shift an entire tree
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:55.087730687000+0000
-      - header: right
+          timestamp: 2018-09-11 09:45:27.459143263000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 22:56:13.466505158000+0000
+      forest:
+      - header: up
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:54.587396709000+0000
-      - header: previous line
+          timestamp: 2018-09-11 09:45:27.072933588000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 22:56:03.682717832000+0000
+      - header: down
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:54.211573854000+0000
-      - header: next line
+          timestamp: 2018-09-11 09:45:26.619410659000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 22:56:04.370736658000+0000
+      - header: Left
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:53.816617116000+0000
-      - header: start of line
+          timestamp: 2018-09-19 22:56:11.122991277000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 22:56:11.603038887000+0000
+      - header: Right
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:53.438963895000+0000
-      - header: end of line
+          timestamp: 2018-09-19 22:56:10.683017377000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 22:56:12.122562746000+0000
+    - entry:
+        header: Display manipulations
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:53.041159332000+0000
-      - header: to first line
+          timestamp: 2018-09-11 09:44:57.448943370000+0000
+        - new-state: DONE
+          timestamp: 2018-09-20 06:20:28.814922142000+0000
+      forest:
+      - header: Collapse trees
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:52.648917052000+0000
-      - header: to last line
+          timestamp: 2018-09-11 09:44:56.996272743000+0000
+        - new-state: DONE
+          timestamp: 2018-09-19 23:45:48.066936165000+0000
+      - header: Collapse entry contents
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:52.240744706000+0000
-      - header: insert character
+          timestamp: 2018-09-19 23:45:57.123320044000+0000
+        - new-state: DONE
+          timestamp: 2018-09-20 06:01:47.822779718000+0000
+      - header: Collapse todo histories
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:51.802217980000+0000
-      - header: append character
+          timestamp: 2018-09-19 23:46:00.835344728000+0000
+        - new-state: DONE
+          timestamp: 2018-09-20 06:01:48.414516507000+0000
+        - new-state: DONE
+          timestamp: 2018-09-20 06:20:22.062931487000+0000
+      - header: Distinct ways to collapse trees and entries seperately
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:51.421604784000+0000
-      - header: open with vim
+          timestamp: 2018-09-20 06:02:19.854832787000+0000
+        - new-state: DONE
+          timestamp: 2018-09-20 06:20:25.023021451000+0000
+    - entry:
+        header: Entry
         state-history:
         - new-state: TODO
-          timestamp: 2018-09-11 09:44:50.869426333000+0000
-      - header: delete line
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 09:44:50.471026225000+0000
-    - header: Timestamps
+          timestamp: 2018-09-11 09:44:56.130831172000+0000
+      forest:
+      - entry:
+          header: Contents
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-11 09:44:55.617389568000+0000
+        forest:
+        - entry:
+            header: Movements
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-21 07:59:54.319364042000+0000
+          forest:
+          - header: left
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:55.087730687000+0000
+          - header: right
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:54.587396709000+0000
+          - header: previous line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:54.211573854000+0000
+          - header: next line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:53.816617116000+0000
+          - header: start of line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:53.438963895000+0000
+          - header: end of line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:53.041159332000+0000
+          - header: to first line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:52.648917052000+0000
+          - header: to last line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:52.240744706000+0000
+        - entry:
+            header: Manipulations
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-21 08:03:44.095450569000+0000
+          forest:
+          - header: insert character
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:51.802217980000+0000
+          - header: append character
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:51.421604784000+0000
+          - header: open with vim
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:50.869426333000+0000
+          - header: delete line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:50.471026225000+0000
+      - entry:
+          header: Timestamps
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-11 09:44:49.927229877000+0000
+        forest:
+        - header: Set predefined timestamp like deadline or scheduled
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:07.063611985000+0000
+      - entry:
+          header: Tags
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:22.327406503000+0000
+        forest:
+        - header: Set predefined tags
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:27.911398593000+0000
+        - header: Edit tags in a freeform manner
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:33.639419606000+0000
+  - entry:
+      header: Reports
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-11 09:44:49.927229877000+0000
+        timestamp: 2018-09-21 07:58:42.391344004000+0000
+    forest:
+    - entry:
+        header: Clock Reports
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-21 07:58:43.103344640000+0000
+      forest:
+      - header: Weekly Total
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-21 07:58:43.527440633000+0000
+      - header: Weekly per-day
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-21 07:58:43.871348159000+0000
+      - header: Single-day
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-21 07:58:44.215350860000+0000
+    - header: Next actions
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-21 07:58:44.631167732000+0000
+    - header: Waiting-for
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-21 07:58:45.031446661000+0000
