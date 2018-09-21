@@ -60,7 +60,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
     ]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor = border . drawSmosFileCursor
+    renderCursor = border . viewport "viewport" Vertical . drawSmosFileCursor
     drawNoContent :: Widget n
     drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
@@ -124,7 +124,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
             B.hCenterLayer
             [ str "SMOS"
             , str " "
-            , str "version 0.0.0"
+            , str "version 0.0.0.0"
             , str "by Tom Sydney Kerckhove"
             , str "Smos is open source and freely distributable"
             , str " "
@@ -270,7 +270,7 @@ drawEntryCursor e =
     selelectIfSelected :: Widget n -> Widget n
     selelectIfSelected =
         case selectWhen WholeEntrySelected of
-            MaybeSelected -> withAttr selectedAttr
+            MaybeSelected -> withAttr selectedAttr . visible
             NotSelected -> id
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
@@ -399,6 +399,7 @@ drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =
     (case s of
          MaybeSelected ->
+             visible .
              showCursor textCursorName (B.Location (textCursorIndex tc, 0))
          _ -> id) $
     txtWrap (rebuildTextCursor tc)

@@ -9,26 +9,15 @@
       state-history:
       - new-state: TODO
         timestamp: 2018-09-21 08:02:11.903422606000+0000
+      - new-state: DONE
+        timestamp: 2018-09-21 18:50:30.008674521000+0000
     forest:
-    - header: There are no '+++' when within a subtree of a collapsed tree. (well
-        we shouldn't be able to be there anyway)
+    - header: Scrolling
       state-history:
       - new-state: TODO
-        timestamp: 2018-09-21 08:03:29.879362604000+0000
-    - entry:
-        header: Scrolling
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 10:15:16.762233163000+0000
-      forest:
-      - header: ! 'Scrolling header: should be drawn on next line if necessary, and
-          the ''TODO'' part should never not be drawn if there isn''t enough space.'
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-21 08:03:29.287387859000+0000
-        - new-state: TODO
-          timestamp: 2018-09-21 18:18:36.048529427000+0000
-      - hello
+        timestamp: 2018-09-11 10:15:16.762233163000+0000
+      - new-state: DONE
+        timestamp: 2018-09-21 18:50:26.872542773000+0000
   - entry:
       header: Quality of life
       state-history:
