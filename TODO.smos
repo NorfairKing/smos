@@ -42,7 +42,7 @@
         - new-state: TODO
           timestamp: 2018-09-11 19:39:53.356426165000+0000
       forest:
-      - header: combine keybings per key in help page
+      - header: combine keybindings per key in help page
         state-history:
         - new-state: TODO
           timestamp: 2018-09-11 19:40:01.436108571000+0000
