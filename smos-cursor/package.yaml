@@ -2,7 +2,7 @@ name:                smos-cursor
 version:             0.0.0.0
 github:              "NorfairKing/smos"
 author:              "Tom Sydney Kerckhove"
-maintainer:          "sydcs-syd.eu"
+maintainer:          "syd@cs-syd.eu"
 copyright:           "Copyright: (c) 2018 Tom Sydney Kerckhove"
 
 extra-source-files:
@@ -13,7 +13,9 @@ description:         Please see the README on GitHub at <https://github.com/Norf
 library:
   source-dirs: src
   exposed-modules:
+  - Smos.Cursor.Collapse
   - Smos.Cursor.Contents
+  - Smos.Cursor.Editor
   - Smos.Cursor.Entry
   - Smos.Cursor.Header
   - Smos.Cursor.Logbook

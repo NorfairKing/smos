@@ -17,42 +17,52 @@ defaultKeyMap =
               listMatchers
                   [ exactChar 'q' stop
                   , exactKey KEsc stop
-                  , exactChar 'e' startHeaderFromEmpty
-                  , exactChar 'E' startHeaderFromEmpty
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+                  , exactChar 'h' startHeaderFromEmptyAndSelectHeader
+                  , exactChar 'H' startHeaderFromEmptyAndSelectHeader
                   ]
         , keyMapEntryMatchers =
               listMatchers
                   [ exactChar 'q' stop
                   , exactKey KEsc stop
                   -- Selections
-                  , exactString "ha" entrySelectHeader
+                  , exactChar 'a' entrySelectHeaderAtEnd
+                  , exactChar 'A' entrySelectHeaderAtEnd
+                  , exactChar 'i' entrySelectHeaderAtStart
+                  , exactChar 'I' entrySelectHeaderAtStart
                   -- Movements
-                  , exactKey KUp moveUpInEntryForest
-                  , exactChar 'k' moveUpInEntryForest
-                  , exactKey KDown moveDownInEntryForest
-                  , exactChar 'j' moveDownInEntryForest
-                  , exactKey KHome moveToFirstEntryForest
-                  , exactString "gg" moveToFirstEntryForest
-                  , exactKey KEnd moveToLastEntryForest
-                  , exactChar 'G' moveToLastEntryForest
+                  , exactChar 'k' forestMoveUp
+                  , exactChar 'j' forestMoveDown
+                  , exactString "gg" forestMoveToFirst
+                  , exactChar 'G' forestMoveToLast
+                  -- Swaps
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   -- Forest manipulation
-                  , exactString "ek" insertEntryAbove
-                  , combo
-                        [(KeyPress (KChar 'e') []), (KeyPress KUp [])]
-                        insertEntryAbove
-                  , exactString "ej" insertEntryBelow
-                  , combo
-                        [(KeyPress (KChar 'e') []), (KeyPress KDown [])]
-                        insertEntryBelow
-                  , exactChar 'd' deleteCurrentTree
-                  -- Extras
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+                  , exactChar 'h' forestInsertEntryAfterAndSelectHeader
+                  , exactChar 'H' forestInsertEntryBelowAndSelectHeader
+                  -- Deletion
+                  , exactChar 'd' forestDeleteCurrentEntry
+                  , exactChar 'D' forestDeleteCurrentSubTree
+                  -- Fast todo state manipulation
+                  , exactString "tt" $ entrySetTodoState "TODO"
+                  , exactString "tn" $ entrySetTodoState "NEXT"
+                  , exactString "ts" $ entrySetTodoState "STARTED"
+                  , exactString "tr" $ entrySetTodoState "READY"
+                  , exactString "tw" $ entrySetTodoState "WAITING"
+                  , exactString "td" $ entrySetTodoState "DONE"
+                  , exactString "tc" $ entrySetTodoState "CANCELLED"
+                  , exactString "t " entryUnsetTodoState
+                  -- Collapsing
+                  , exactChar '\t' forestToggleHideEntireEntry
                   ]
         , keyMapHeaderMatchers =
               listMatchers
                   [ exactKey KEsc entrySelectWhole
+                  , exactKey KEnter entrySelectWhole
                   , anyChar headerInsert
                   , exactKey KBS headerRemove
                   , exactKey KDel headerDelete
@@ -60,43 +70,21 @@ defaultKeyMap =
                   , exactKey KRight headerMoveRight
                   , exactKey KHome headerMoveToStart
                   , exactKey KEnd headerMoveToEnd
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
-        , keyMapContentsMatchers =
-              listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-                  ]
+        , keyMapContentsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapTimestampsMatchers =
-              listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-                  ]
+              listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapPropertiesMatchers =
-              listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-                  ]
+              listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapStateHistoryMatchers =
+              listMatchers [exactKey KEsc entrySelectWhole]
+        , keyMapTagsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+        , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+        , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
+        , keyMapAnyMatchers =
               listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-                  ]
-        , keyMapTagsMatchers =
-              listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
-                  , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
-                  ]
-        , keyMapLogbookMatchers =
-              listMatchers
-                  [ exactKey KEsc entrySelectWhole
-                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) toggleHelp
+                  [ exactChar 'u' undo
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
         }

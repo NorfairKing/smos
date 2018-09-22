@@ -11,10 +11,11 @@ module Smos.Types
     , KeyMap(..)
     , KeyMappings
     , KeyMapping(..)
-    , Action
+    , Action(..)
     , action
-    , actionUsing
     , ActionUsing(..)
+    , actionUsing
+    , AnyAction(..)
     , SmosEvent
     , SmosM
     , runSmosM
@@ -23,6 +24,7 @@ module Smos.Types
     , DebugInfo(..)
     , ActivationDebug(..)
     , Priority(..)
+    , Precedence(..)
     , ResourceName
     , MStop(..)
     , stop
@@ -39,19 +41,15 @@ import Graphics.Vty.Input.Events as Vty
 
 import Brick.Types as B hiding (Next)
 
-import Smos.Cursor.SmosFile
+import Smos.Cursor.Editor
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
     } deriving (Generic)
 
--- It should:
--- - Be show-able for help text, not necessarily 'Show'.
--- - Should be able to deal with things like 'send any writeable character to the text field'
--- - Should be able to deal with multi-character mathes
--- - Be easy to overwrite
 data KeyMap = KeyMap
-    { keyMapEmptyMatchers :: KeyMappings
+    { keyMapHelpMatchers :: KeyMappings
+    , keyMapEmptyMatchers :: KeyMappings
     , keyMapEntryMatchers :: KeyMappings
     , keyMapHeaderMatchers :: KeyMappings
     , keyMapContentsMatchers :: KeyMappings
@@ -60,45 +58,48 @@ data KeyMap = KeyMap
     , keyMapStateHistoryMatchers :: KeyMappings
     , keyMapTagsMatchers :: KeyMappings
     , keyMapLogbookMatchers :: KeyMappings
+    , keyMapAnyMatchers :: KeyMappings
     } deriving (Generic)
 
 instance Semigroup KeyMap where
     (<>) km1 km2 =
         KeyMap
-            { keyMapEmptyMatchers =
-                  keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
-            , keyMapEntryMatchers =
-                  keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
-            , keyMapHeaderMatchers =
-                  keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
-            , keyMapContentsMatchers =
-                  keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
-            , keyMapTimestampsMatchers =
-                  keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
-            , keyMapPropertiesMatchers =
-                  keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
-            , keyMapStateHistoryMatchers =
-                  keyMapStateHistoryMatchers km1 <>
-                  keyMapStateHistoryMatchers km2
-            , keyMapTagsMatchers =
-                  keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
-            , keyMapLogbookMatchers =
-                  keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
-            }
+        { keyMapHelpMatchers = keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
+        , keyMapEmptyMatchers =
+              keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
+        , keyMapEntryMatchers =
+              keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
+        , keyMapHeaderMatchers =
+              keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
+        , keyMapContentsMatchers =
+              keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
+        , keyMapTimestampsMatchers =
+              keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
+        , keyMapPropertiesMatchers =
+              keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
+        , keyMapStateHistoryMatchers =
+              keyMapStateHistoryMatchers km1 <> keyMapStateHistoryMatchers km2
+        , keyMapTagsMatchers = keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
+        , keyMapLogbookMatchers =
+              keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
+        , keyMapAnyMatchers = keyMapAnyMatchers km1 <> keyMapAnyMatchers km2
+        }
 
 instance Monoid KeyMap where
     mempty =
         KeyMap
-            { keyMapEmptyMatchers = mempty
-            , keyMapEntryMatchers = mempty
-            , keyMapHeaderMatchers = mempty
-            , keyMapContentsMatchers = mempty
-            , keyMapTimestampsMatchers = mempty
-            , keyMapPropertiesMatchers = mempty
-            , keyMapStateHistoryMatchers = mempty
-            , keyMapTagsMatchers = mempty
-            , keyMapLogbookMatchers = mempty
-            }
+        { keyMapHelpMatchers = mempty
+        , keyMapEmptyMatchers = mempty
+        , keyMapEntryMatchers = mempty
+        , keyMapHeaderMatchers = mempty
+        , keyMapContentsMatchers = mempty
+        , keyMapTimestampsMatchers = mempty
+        , keyMapPropertiesMatchers = mempty
+        , keyMapStateHistoryMatchers = mempty
+        , keyMapTagsMatchers = mempty
+        , keyMapLogbookMatchers = mempty
+        , keyMapAnyMatchers = mempty
+        }
 
 type KeyMappings = [KeyMapping]
 
@@ -106,24 +107,40 @@ data KeyMapping
     = MapVtyExactly KeyPress
                     Action
     | MapAnyTypeableChar (ActionUsing Char)
+    | MapCatchAll Action
     | MapCombination KeyPress
                      KeyMapping
 
-data ActionUsing a = Action
+data Action = Action
     { actionName :: Text
-    , actionFunc :: a -> SmosM ()
+    , actionFunc :: SmosM ()
+    , actionDescription :: Text
+    } deriving (Generic)
+
+action :: Text -> SmosM () -> Action
+action name func =
+    Action {actionName = name, actionFunc = func, actionDescription = ""}
+
+data ActionUsing a = ActionUsing
+    { actionUsingName :: Text
+    , actionUsingFunc :: a -> SmosM ()
+    , actionUsingDescription :: Text
     } deriving (Generic)
 
 instance Contravariant ActionUsing where
-    contramap func a = a {actionFunc = \b -> actionFunc a $ func b}
-
-type Action = ActionUsing ()
-
-action :: Text -> SmosM () -> Action
-action name func = Action {actionName = name, actionFunc = const func}
+    contramap func a = a {actionUsingFunc = \b -> actionUsingFunc a $ func b}
 
 actionUsing :: Text -> (a -> SmosM ()) -> ActionUsing a
-actionUsing name func = Action {actionName = name, actionFunc = func}
+actionUsing name func =
+    ActionUsing
+    { actionUsingName = name
+    , actionUsingFunc = func
+    , actionUsingDescription = ""
+    }
+
+data AnyAction
+    = PlainAction Action
+    | UsingCharAction (ActionUsing Char)
 
 type SmosEvent = BrickEvent ResourceName ()
 
@@ -138,11 +155,10 @@ runSmosM = runMkSmosM
 
 data SmosState = SmosState
     { smosStateFilePath :: Path Abs File
-    , smosStateCursor :: Maybe SmosFileCursor
+    , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
+    , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest
     , smosStateDebugInfo :: DebugInfo
-    , smosStateShowHelp :: Bool
-    , smosStateShowDebug :: Bool
     } deriving (Generic)
 
 data KeyPress =
@@ -155,14 +171,21 @@ data DebugInfo = DebugInfo
     } deriving (Show, Eq, Generic)
 
 data ActivationDebug = ActivationDebug
-    { activationDebugPriority :: Priority
+    { activationDebugPrecedence :: Precedence
+    , activationDebugPriority :: Priority
     , activationDebugMatch :: Seq KeyPress
     , activationDebugName :: Text
     } deriving (Show, Eq, Generic)
 
 data Priority
-    = MatchAnyChar
-    | MatchExact
+    = CatchAll
+    | MatchAnyChar
+    | MatchExact -- Has higher priority.
+    deriving (Show, Eq, Ord)
+
+data Precedence
+    = AnyMatcher -- Has higher priority.
+    | SpecificMatcher
     deriving (Show, Eq, Ord)
 
 newtype ResourceName =
@@ -238,4 +261,9 @@ instance MonadReader s m => MonadReader s (NextT m) where
     local func (NextT m) = NextT $ local func m
 
 stop :: Action
-stop = action "Stop Smos" $ MkSmosM $ NextT $ pure Stop
+stop =
+    Action
+    { actionName = "stop"
+    , actionDescription = "Stop Smos"
+    , actionFunc = MkSmosM $ NextT $ pure Stop
+    }

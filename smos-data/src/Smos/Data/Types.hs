@@ -3,25 +3,35 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Types
     ( SmosFile(..)
     , Forest
     , Tree(..)
     , Entry(..)
-    , newEntry, emptyEntry
+    , newEntry
+    , emptyEntry
     , TodoState(..)
-    , Header(..),emptyHeader
+    , Header(..)
+    , emptyHeader
     , Contents(..)
+    , emptyContents
+    , nullContents
     , PropertyName(..)
+    , emptyPropertyName
     , PropertyValue(..)
+    , emptyPropertyValue
     , StateHistory(..)
     , StateHistoryEntry(..)
+    , emptyStateHistory
+    , nullStateHistory
     , Tag(..)
     , Logbook(..)
     , emptyLogbook
     , LogbookEntry(..)
     , TimestampName(..)
+    , emptyTimestampName
     , Timestamp(..)
     , timestampDayFormat
     , timestampTimeFormat
@@ -43,10 +53,15 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.String
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.Tree
+import Data.Yaml.Builder (ToYaml(..))
+import qualified Data.Yaml.Builder as Yaml
+import Data.Yaml.Builder (YamlBuilder)
 
 import Control.Applicative
+import Control.Arrow
 
 newtype SmosFile = SmosFile
     { smosFileForest :: Forest Entry
@@ -59,6 +74,9 @@ instance FromJSON SmosFile where
 
 instance ToJSON SmosFile where
     toJSON = toJSON . ForYaml . smosFileForest
+
+instance ToYaml SmosFile where
+    toYaml = toYaml . ForYaml . smosFileForest
 
 newtype ForYaml a = ForYaml
     { unForYaml :: a
@@ -73,24 +91,35 @@ instance FromJSON (ForYaml (Forest Entry)) where
         pure $ ForYaml ts
 
 instance ToJSON (ForYaml (Forest Entry)) where
-    toJSON (ForYaml ts) = toJSON $ map ForYaml ts
+    toJSON = toJSON . map ForYaml . unForYaml
+
+instance ToYaml (ForYaml (Forest Entry)) where
+    toYaml = toYaml . map ForYaml . unForYaml
 
 instance FromJSON (ForYaml (Tree Entry)) where
     parseJSON v =
         ForYaml <$>
-        ((Node <$> parseJSON v <*> pure []) <|>
-         (withObject "Tree Entry" $ \o ->
-              Node <$> o .: "entry" <*>
-              (unForYaml <$> o .:? "forest" .!= ForYaml []))
-             v)
+        (((withObject "Tree Entry" $ \o ->
+               Node <$> o .: "entry" <*>
+               (unForYaml <$> o .:? "forest" .!= ForYaml []))
+              v) <|>
+         (Node <$> parseJSON v <*> pure []))
 
 instance ToJSON (ForYaml (Tree Entry)) where
     toJSON (ForYaml Node {..}) =
         if null subForest
             then toJSON rootLabel
             else object $
-                 ("entry" .= rootLabel) :
-                 ["forest" .= ForYaml subForest | not (null subForest)]
+                 [("entry" .= rootLabel), ("forest" .= ForYaml subForest)]
+
+instance ToYaml (ForYaml (Tree Entry)) where
+    toYaml (ForYaml Node {..}) =
+        if null subForest
+            then toYaml rootLabel
+            else Yaml.mapping $
+                 [ ("entry", toYaml rootLabel)
+                 , ("forest", toYaml (ForYaml subForest))
+                 ]
 
 data Entry = Entry
     { entryHeader :: Header
@@ -105,14 +134,14 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = StateHistory []
-    , entryTags = []
-    , entryLogbook = emptyLogbook
-    }
+        { entryHeader = h
+        , entryContents = Nothing
+        , entryTimestamps = M.empty
+        , entryProperties = M.empty
+        , entryStateHistory = StateHistory []
+        , entryTags = []
+        , entryLogbook = emptyLogbook
+        }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
@@ -124,7 +153,7 @@ instance FromJSON Entry where
         (do h <- parseJSON v
             pure $ newEntry h) <|>
         (withObject "Entry" $ \o ->
-             Entry <$> o .: "header" <*> o .:? "contents" <*>
+             Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents" <*>
              o .:? "timestamps" .!= M.empty <*>
              o .:? "properties" .!= M.empty <*>
              o .:? "state-history" .!= StateHistory [] <*>
@@ -157,9 +186,38 @@ instance ToJSON Entry where
                  ["tags" .= entryTags | not $ null entryTags] ++
                  ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
 
+instance ToYaml Entry where
+    toYaml Entry {..} =
+        if and [ isNothing entryContents
+               , M.null entryTimestamps
+               , M.null entryProperties
+               , null $ unStateHistory entryStateHistory
+               , null entryTags
+               , entryLogbook == emptyLogbook
+               ]
+            then toYaml entryHeader
+            else Yaml.mapping $
+                 [("header", toYaml entryHeader)] ++
+                 [("contents", toYaml entryContents) | isJust entryContents] ++
+                 [ ( "timestamps"
+                   , toYaml $ M.mapKeys timestampNameText entryTimestamps)
+                 | not $ M.null entryTimestamps
+                 ] ++
+                 [ ( "properties"
+                   , toYaml $ M.mapKeys propertyNameText entryProperties)
+                 | not $ M.null entryProperties
+                 ] ++
+                 [ ("state-history", toYaml entryStateHistory)
+                 | not $ null $ unStateHistory entryStateHistory
+                 ] ++
+                 [("tags", toYaml entryTags) | not $ null entryTags] ++
+                 [ ("logbook", toYaml entryLogbook)
+                 | entryLogbook /= emptyLogbook
+                 ]
+
 newtype Header = Header
     { headerText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON)
+    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
 
 instance Validity Header
 
@@ -168,9 +226,15 @@ emptyHeader = Header ""
 
 newtype Contents = Contents
     { contentsText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON)
+    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
 
 instance Validity Contents
+
+emptyContents :: Contents
+emptyContents = Contents ""
+
+nullContents :: Contents -> Bool
+nullContents = (== emptyContents)
 
 newtype PropertyName = PropertyName
     { propertyNameText :: Text
@@ -183,9 +247,13 @@ newtype PropertyName = PropertyName
                , ToJSON
                , FromJSONKey
                , ToJSONKey
+               , ToYaml
                )
 
 instance Validity PropertyName
+
+emptyPropertyName :: PropertyName
+emptyPropertyName = PropertyName ""
 
 newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
@@ -198,9 +266,13 @@ newtype PropertyValue = PropertyValue
                , ToJSON
                , FromJSONKey
                , ToJSONKey
+               , ToYaml
                )
 
 instance Validity PropertyValue
+
+emptyPropertyValue :: PropertyValue
+emptyPropertyValue = PropertyValue ""
 
 newtype TimestampName = TimestampName
     { timestampNameText :: Text
@@ -213,9 +285,13 @@ newtype TimestampName = TimestampName
                , ToJSON
                , FromJSONKey
                , ToJSONKey
+               , ToYaml
                )
 
 instance Validity TimestampName
+
+emptyTimestampName :: TimestampName
+emptyTimestampName = TimestampName ""
 
 data Timestamp
     = TimestampDay Day
@@ -266,7 +342,28 @@ instance ToJSON Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-        in object ["precision" .= p, "value" .= v]
+         in object ["precision" .= p, "value" .= v]
+
+instance ToYaml Timestamp where
+    toYaml ts =
+        let p :: Text
+            v :: YamlBuilder
+            (p, v) =
+                case ts of
+                    TimestampDay d ->
+                        ( "day"
+                        , toYaml $
+                          T.pack $
+                          formatTime defaultTimeLocale timestampDayFormat d)
+                    TimestampTime lt ->
+                        ( "time"
+                        , toYaml $
+                          T.pack $
+                          formatTime
+                              defaultTimeLocale
+                              timestampTimeExactFormat
+                              lt)
+         in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
@@ -279,15 +376,21 @@ timestampTimeExactFormat = "%F %R %q"
 
 newtype TodoState = TodoState
     { todoStateText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON)
+    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
 
 instance Validity TodoState
 
 newtype StateHistory = StateHistory
     { unStateHistory :: [StateHistoryEntry]
-    } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+    } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
 
 instance Validity StateHistory
+
+emptyStateHistory :: StateHistory
+emptyStateHistory = StateHistory []
+
+nullStateHistory :: StateHistory -> Bool
+nullStateHistory = (== emptyStateHistory)
 
 data StateHistoryEntry = StateHistoryEntry
     { stateHistoryEntryNewState :: Maybe TodoState
@@ -308,9 +411,16 @@ instance ToJSON StateHistoryEntry where
             , "timestamp" .= stateHistoryEntryTimestamp
             ]
 
+instance ToYaml StateHistoryEntry where
+    toYaml StateHistoryEntry {..} =
+        Yaml.mapping
+            [ ("new-state", toYaml stateHistoryEntryNewState)
+            , ("timestamp", toYaml stateHistoryEntryTimestamp)
+            ]
+
 newtype Tag = Tag
     { tagText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON)
+    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
 
 instance Validity Tag
 
@@ -345,6 +455,13 @@ instance ToJSON Logbook where
         go (LogOpen start rest) = object ["start" .= start] : map toJSON rest
         go (LogClosed rest) = map toJSON rest
 
+instance ToYaml Logbook where
+    toYaml = toYaml . go
+      where
+        go (LogOpen start rest) =
+            Yaml.mapping [("start", toYaml start)] : map toYaml rest
+        go (LogClosed rest) = map toYaml rest
+
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []
 
@@ -363,3 +480,21 @@ instance FromJSON LogbookEntry where
 instance ToJSON LogbookEntry where
     toJSON LogbookEntry {..} =
         object ["start" .= logbookEntryStart, "end" .= logbookEntryEnd]
+
+instance ToYaml LogbookEntry where
+    toYaml LogbookEntry {..} =
+        Yaml.mapping
+            [ ("start", toYaml logbookEntryStart)
+            , ("end", toYaml logbookEntryEnd)
+            ]
+
+instance ToYaml UTCTime where
+    toYaml =
+        Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
+
+instance (ToYaml a) => ToYaml (Maybe a) where
+    toYaml Nothing = Yaml.null
+    toYaml (Just v) = toYaml v
+
+instance (ToYaml a) => ToYaml (Map Text a) where
+    toYaml = Yaml.mapping . map (second toYaml) . M.toList

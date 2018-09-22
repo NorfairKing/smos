@@ -15,6 +15,7 @@ library:
   - Smos.Data.Gen
   dependencies:
   - base >=4.9 && <=5
+  - containers
   - QuickCheck
   - genvalidity
   - genvalidity-containers
@@ -35,8 +36,11 @@ tests:
     - -Wall
     dependencies:
     - base
+    - bytestring
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - hspec
+    - pretty-show
     - smos-data
     - smos-data-gen
+    - text

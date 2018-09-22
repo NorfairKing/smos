@@ -36,16 +36,17 @@ defaultAttrMap _ =
     let col = rgbColor :: Int -> Int -> Int -> Color
         orange = col 255 165 0
         brown = col 205 133 63
-    in applyAttrMappings
-                      [ (todoStateSpecificAttr "TODO", fg red)
-                      , (todoStateSpecificAttr "NEXT", fg orange)
-                      , (todoStateSpecificAttr "STARTED", fg orange)
-                      , (todoStateSpecificAttr "WAITING", fg blue)
-                      , (todoStateSpecificAttr "READY", fg brown)
-                      , (todoStateSpecificAttr "DONE", fg green)
-                      , (todoStateSpecificAttr "CANCELLED", fg green)
-                      , (selectedAttr <> tagAttr, fg brightWhite)
-                      ] $ attrMap defAttr [(selectedAttr, fg V.white), (headerAttr, fg V.yellow)]
+     in applyAttrMappings
+            [ (todoStateSpecificAttr "TODO", fg red)
+            , (todoStateSpecificAttr "NEXT", fg orange)
+            , (todoStateSpecificAttr "STARTED", fg orange)
+            , (todoStateSpecificAttr "WAITING", fg blue)
+            , (todoStateSpecificAttr "READY", fg brown)
+            , (todoStateSpecificAttr "DONE", fg green)
+            , (todoStateSpecificAttr "CANCELLED", fg green)
+            , (selectedAttr <> tagAttr, fg brightWhite)
+            ] $
+        attrMap defAttr [(selectedAttr, fg V.white), (headerAttr, fg V.yellow)]
 
 selectedAttr :: AttrName
 selectedAttr = "selected"

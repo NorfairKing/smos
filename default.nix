@@ -3,7 +3,7 @@ let
   pkgs = pkgsv {};
   validity-overlay = import (
     (pkgs.fetchFromGitHub (import ./nix/validity-version.nix)
-    + "/overlay.nix")
+    + "/nix/overlay.nix")
   );
   cursor-overlay = import (
     (pkgs.fetchFromGitHub (import ./nix/cursor-version.nix)

@@ -1,0 +1,5 @@
+entrySetTodoState_TODO
+entryUnsetTodoState
+entryToggleTodoState_DONE
+undo
+undo

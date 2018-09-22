@@ -1,5 +1,5 @@
 module Smos.Cursor.StateHistory.Gen where
 
-import Cursor.NonEmpty.Gen ()
+import Cursor.Simple.List.NonEmpty.Gen ()
 
 import Smos.Data.Gen()

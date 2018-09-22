@@ -7,12 +7,12 @@ packages:
 - smos-cursor-gen
 extra-deps:
 - git: https://github.com/NorfairKing/cursor.git
-  commit: adbbcdafdae430f0cd7412be0b614b09d749f805
+  commit: 212e74da54d50666d0d48bb048979db8989f8b41
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: cdb0ab0a23d88e8d7256e17cc3bc1f6da7fa0588
+  commit: b9449de1466abc7c862b7e54b9bb18d6e4a02c81
   subdirs:
   - genvalidity
   - genvalidity-aeson

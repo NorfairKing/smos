@@ -15,6 +15,7 @@ library:
   - Smos.Data.Types
   dependencies:
   - aeson
+  - aeson-pretty
   - base
   - bytestring
   - containers

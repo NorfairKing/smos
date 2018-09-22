@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Cursor.Entry.Gen where
@@ -19,12 +20,21 @@ instance GenUnchecked EntryCursor
 
 instance GenValid EntryCursor where
     genValid =
-        (EntryCursor <$> genValid <*> genValid <*> genValid <*> genValid <*> genValid <*>
-         genValid <*>
-         genValid <*>
-         genValid) `suchThat`
-        isValid
+        sized $ \n -> do
+            (x, y) <- genSplit n
+            (a, b, c, d) <- genSplit4 x
+            (e, f, g, h) <- genSplit4 y
+            entryCursorHeaderCursor <- resize a genValid
+            entryCursorContentsCursor <- resize b genValid
+            entryCursorTimestampsCursor <- resize c genValid
+            entryCursorPropertiesCursor <- resize d genValid
+            entryCursorStateHistoryCursor <- resize e genValid
+            entryCursorTagsCursor <- resize f genValid
+            entryCursorLogbookCursor <- resize g genValid
+            entryCursorSelected <- resize h genValid
+            pure EntryCursor {..}
 
 instance GenUnchecked EntryCursorSelection
 
-instance GenValid EntryCursorSelection
+instance GenValid EntryCursorSelection where
+    genValid = genValidStructurally
