@@ -253,6 +253,32 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 07:59:33.639419606000+0000
+      - entry:
+          header: Clocking
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:27:52.465568347000+0000
+        forest:
+        - header: Clock-in here
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:28:52.409628490000+0000
+        - header: Clock-out here
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:28:52.937717945000+0000
+        - header: Clock-out anywhere
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:29:01.481656831000+0000
+        - header: Clock-out anywhere and then clock-in here
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:29:09.929562928000+0000
+        - header: Also clock-out anywhere also in other files
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-22 08:29:23.945647335000+0000
   - entry:
       header: Reports
       state-history:
