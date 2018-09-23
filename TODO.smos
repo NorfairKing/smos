@@ -55,15 +55,21 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 08:06:58.111482492000+0000
+          - new-state: DONE
+            timestamp: 2018-09-23 07:03:09.831287705000+0000
         forest:
         - header: To top of file
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 08:06:57.783465730000+0000
+          - new-state: DONE
+            timestamp: 2018-09-23 07:03:05.704402928000+0000
         - header: To bottom of file
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 08:07:01.855437435000+0000
+          - new-state: DONE
+            timestamp: 2018-09-23 07:03:06.589021394000+0000
       - entry:
           header: Manipulations
           state-history:

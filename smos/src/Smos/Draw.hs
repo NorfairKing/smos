@@ -60,7 +60,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
     ]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor = border . viewport "viewport" Vertical . drawSmosFileCursor
+    renderCursor = viewport "viewport" Vertical . drawSmosFileCursor
     drawNoContent :: Widget n
     drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
