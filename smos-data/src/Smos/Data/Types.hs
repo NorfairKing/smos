@@ -13,8 +13,10 @@ module Smos.Data.Types
     , newEntry
     , emptyEntry
     , TodoState(..)
-    , Header(..)
+    , Header
+    , headerText
     , emptyHeader
+    , header
     , Contents(..)
     , emptyContents
     , nullContents
@@ -134,14 +136,14 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-        { entryHeader = h
-        , entryContents = Nothing
-        , entryTimestamps = M.empty
-        , entryProperties = M.empty
-        , entryStateHistory = StateHistory []
-        , entryTags = []
-        , entryLogbook = emptyLogbook
-        }
+    { entryHeader = h
+    , entryContents = Nothing
+    , entryTimestamps = M.empty
+    , entryProperties = M.empty
+    , entryStateHistory = StateHistory []
+    , entryTags = []
+    , entryLogbook = emptyLogbook
+    }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
@@ -217,12 +219,28 @@ instance ToYaml Entry where
 
 newtype Header = Header
     { headerText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
-instance Validity Header
+instance Validity Header where
+    validate (Header t) =
+        mconcat
+            [ delve "headerText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare "The character is not a newline character" $ c /= '\n'
+            ]
+
+instance FromJSON Header where
+    parseJSON =
+        withText "Header" $ \t ->
+            case header t of
+                Nothing -> fail $ "Invalid header: " <> T.unpack t
+                Just h -> pure h
 
 emptyHeader :: Header
 emptyHeader = Header ""
+
+header :: Text -> Maybe Header
+header = constructValid . Header
 
 newtype Contents = Contents
     { contentsText :: Text
@@ -342,7 +360,7 @@ instance ToJSON Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-         in object ["precision" .= p, "value" .= v]
+        in object ["precision" .= p, "value" .= v]
 
 instance ToYaml Timestamp where
     toYaml ts =
@@ -363,7 +381,7 @@ instance ToYaml Timestamp where
                               defaultTimeLocale
                               timestampTimeExactFormat
                               lt)
-         in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
+        in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"

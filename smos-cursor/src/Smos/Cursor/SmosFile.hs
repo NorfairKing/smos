@@ -12,6 +12,7 @@ module Smos.Cursor.SmosFile
     , smosFileCursorSelectNextOnSameLevel
     , smosFileCursorSelectFirst
     , smosFileCursorSelectLast
+    , smosFileCursorToggleCollapse
     , smosFileCursorInsertEntryBefore
     , smosFileCursorInsertEntryBeforeAndSelectHeader
     , smosFileCursorInsertEntryBelow
@@ -49,11 +50,11 @@ type SmosFileCursor
 makeSmosFileCursor :: NonEmpty (Tree Entry) -> SmosFileCursor
 makeSmosFileCursor =
     makeForestCursor (collapseEntryValueL %~ makeEntryCursor) .
-    NE.map (fmap makeCollapseEntry)
+    NE.map (fmap makeCollapseEntry . makeCTree)
 
 rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor =
-    NE.map (fmap rebuildCollapseEntry) .
+    NE.map (rebuildCTree . fmap rebuildCollapseEntry) .
     rebuildForestCursor (collapseEntryValueL %~ rebuildEntryCursor)
 
 startSmosFile :: SmosFileCursor
@@ -101,6 +102,9 @@ smosFileCursorSelectFirst = forestCursorSelectFirst rebuild make
 
 smosFileCursorSelectLast :: SmosFileCursor -> SmosFileCursor
 smosFileCursorSelectLast = forestCursorSelectLast rebuild make
+
+smosFileCursorToggleCollapse :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorToggleCollapse = forestCursorToggleCurrentForest
 
 smosFileCursorInsertEntryBefore :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBefore =

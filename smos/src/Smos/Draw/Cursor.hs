@@ -17,12 +17,10 @@ import Cursor.Forest hiding (drawForestCursor)
 import Cursor.List.NonEmpty
 import Cursor.Tree hiding (drawTreeCursor)
 
-import Smos.Data
-
 drawVerticalForestCursor ::
-       (Tree b -> Widget n)
+       (CTree b -> Widget n)
     -> (TreeCursor a b -> Widget n)
-    -> (Tree b -> Widget n)
+    -> (CTree b -> Widget n)
     -> ForestCursor a b
     -> Widget n
 drawVerticalForestCursor prevFunc curFunc nextFunc fc =
@@ -30,9 +28,9 @@ drawVerticalForestCursor prevFunc curFunc nextFunc fc =
     forestCursorListCursor fc
 
 drawForestCursor ::
-       (Tree b -> Widget n)
+       (CTree b -> Widget n)
     -> (TreeCursor a b -> Widget n)
-    -> (Tree b -> Widget n)
+    -> (CTree b -> Widget n)
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
@@ -50,21 +48,19 @@ drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc
 
 drawTreeCursor ::
        forall a b n.
-       ([Tree b] -> b -> [Tree b] -> Widget n -> Widget n)
-    -> (a -> Forest b -> Widget n)
+       ([CTree b] -> b -> [CTree b] -> Widget n -> Widget n)
+    -> (a -> CForest b -> Widget n)
     -> TreeCursor a b
     -> Widget n
 drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
-    (case treeAbove of
-         Nothing -> id
-         Just ta -> goAbove ta)
-        (currentFunc treeCurrent treeBelow)
+    wrapAbove treeAbove $ currentFunc treeCurrent treeBelow
   where
+    wrapAbove :: Maybe (TreeAbove b) -> Widget n -> Widget n
+    wrapAbove Nothing = id
+    wrapAbove (Just ta) = goAbove ta
     goAbove :: TreeAbove b -> Widget n -> Widget n
     goAbove TreeAbove {..} =
-        (case treeAboveAbove of
-             Nothing -> id
-             Just ta -> goAbove ta) .
+        wrapAbove treeAboveAbove .
         wrapAboveFunc (reverse treeAboveLefts) treeAboveNode treeAboveRights
 
 drawVerticalNonEmptyCursor ::

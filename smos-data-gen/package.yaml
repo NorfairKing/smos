@@ -35,6 +35,7 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - aeson
     - base
     - bytestring
     - genvalidity-hspec

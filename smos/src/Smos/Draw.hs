@@ -21,8 +21,6 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Lens.Micro
 
-import Data.Tree
-
 import Cursor.Text
 import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
@@ -196,7 +194,7 @@ defaultPadding = Pad 2
 
 drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
 drawSmosFileCursor =
-    drawVerticalForestCursor drawEntryTree drawSmosTreeCursor drawEntryTree
+    drawVerticalForestCursor drawEntryCTree drawSmosTreeCursor drawEntryCTree
 
 drawSmosTreeCursor ::
        TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
@@ -204,29 +202,46 @@ drawSmosTreeCursor ::
 drawSmosTreeCursor = drawTreeCursor wrap cur
   where
     cur :: CollapseEntry EntryCursor
-        -> Forest (CollapseEntry Entry)
+        -> CForest (CollapseEntry Entry)
         -> Widget ResourceName
-    cur ec ts =
-        drawEntryCursor ec <=>
-        padLeft defaultPadding (vBox $ map drawEntryTree ts)
+    cur ec cf =
+        case cf of
+            EmptyCForest -> drawEntryCursor TreeIsNotCollapsed ec
+            ClosedForest _ -> drawEntryCursor TreeIsCollapsed ec
+            OpenForest ts ->
+                drawEntryCursor TreeIsNotCollapsed ec <=>
+                padLeft
+                    defaultPadding
+                    (vBox (map drawEntryCTree $ NE.toList ts))
     wrap ::
-           [Tree (CollapseEntry Entry)]
+           [CTree (CollapseEntry Entry)]
         -> CollapseEntry Entry
-        -> [Tree (CollapseEntry Entry)]
+        -> [CTree (CollapseEntry Entry)]
         -> Widget ResourceName
         -> Widget ResourceName
     wrap tsl e tsr w =
-        drawEntry e <=>
+        drawEntry TreeIsNotCollapsed e <=>
         padLeft
             defaultPadding
-            (vBox $ concat [map drawEntryTree tsl, [w], map drawEntryTree tsr])
+            (vBox $ concat [map drawEntryCTree tsl, [w], map drawEntryCTree tsr])
 
-drawEntryTree :: Tree (CollapseEntry Entry) -> Widget ResourceName
-drawEntryTree (Node t ts) =
-    drawEntry t <=> padLeft defaultPadding (vBox $ map drawEntryTree ts)
+drawEntryCTree :: CTree (CollapseEntry Entry) -> Widget ResourceName
+drawEntryCTree (CNode t cf) =
+    case cf of
+        EmptyCForest -> drawEntry TreeIsNotCollapsed t
+        ClosedForest _ -> drawEntry TreeIsCollapsed t
+        OpenForest ts ->
+            drawEntry TreeIsNotCollapsed t <=>
+            padLeft defaultPadding (vBox (map drawEntryCTree $ NE.toList ts))
 
-drawEntryCursor :: CollapseEntry EntryCursor -> Widget ResourceName
-drawEntryCursor e =
+data TreeCollapsing
+    = TreeIsNotCollapsed
+    | TreeIsCollapsed
+    deriving (Show, Eq)
+
+drawEntryCursor ::
+       TreeCollapsing -> CollapseEntry EntryCursor -> Widget ResourceName
+drawEntryCursor tc e =
     vBox $
     catMaybes
         [ Just $
@@ -237,12 +252,13 @@ drawEntryCursor e =
           [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor] ++
           [ str " ..."
           | let e_ = rebuildEntryCursor ec
-             in or [ not (collapseEntryShowContents e) &&
-                     not (maybe False nullContents $ entryContents e_)
-                   , not (collapseEntryShowHistory e) &&
-                     not (nullStateHistory $ entryStateHistory e_)
-                    ]
-          ]
+            in or [ not (collapseEntryShowContents e) &&
+                    not (maybe False nullContents $ entryContents e_)
+                  , not (collapseEntryShowHistory e) &&
+                    not (nullStateHistory $ entryStateHistory e_)
+                   ]
+          ] ++
+          [str " +++" | tc == TreeIsCollapsed]
         , drawIfM collapseEntryShowContents $
           drawContentsCursor (selectWhen ContentsSelected) <$>
           entryCursorContentsCursor
@@ -278,8 +294,8 @@ drawEntryCursor e =
             then MaybeSelected
             else NotSelected
 
-drawEntry :: CollapseEntry Entry -> Widget ResourceName
-drawEntry e =
+drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Widget ResourceName
+drawEntry tc e =
     vBox $
     catMaybes
         [ Just $
@@ -293,7 +309,8 @@ drawEntry e =
                , not (collapseEntryShowHistory e) &&
                  not (nullStateHistory entryStateHistory)
                 ]
-          ]
+          ] ++
+          [str " +++" | tc == TreeIsCollapsed]
         , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
