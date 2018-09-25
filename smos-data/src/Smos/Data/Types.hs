@@ -28,7 +28,10 @@ module Smos.Data.Types
     , StateHistoryEntry(..)
     , emptyStateHistory
     , nullStateHistory
-    , Tag(..)
+    , Tag
+    , tagText
+    , emptyTag
+    , tag
     , Logbook(..)
     , emptyLogbook
     , LogbookEntry(..)
@@ -438,9 +441,28 @@ instance ToYaml StateHistoryEntry where
 
 newtype Tag = Tag
     { tagText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
-instance Validity Tag
+instance Validity Tag where
+    validate (Tag t) =
+        mconcat
+            [ delve "tagText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare "The character is not a newline character" $ c /= '\n'
+            ]
+
+instance FromJSON Tag where
+    parseJSON =
+        withText "Tag" $ \t ->
+            case tag t of
+                Nothing -> fail $ "Invalid tag: " <> T.unpack t
+                Just h -> pure h
+
+emptyTag :: Tag
+emptyTag = Tag ""
+
+tag :: Text -> Maybe Tag
+tag = constructValid . Tag
 
 data Logbook
     = LogOpen UTCTime

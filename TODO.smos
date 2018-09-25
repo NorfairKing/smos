@@ -259,6 +259,8 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 07:59:27.911398593000+0000
+          - new-state: DONE
+            timestamp: 2018-09-25 19:10:09.492953549000+0000
         - header: Edit tags in a freeform manner
           state-history:
           - new-state: TODO

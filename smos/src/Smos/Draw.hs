@@ -246,19 +246,27 @@ drawEntryCursor tc e =
     catMaybes
         [ Just $
           hBox $
-          [selelectIfSelected $ str "> "] ++
-          maybeToList
-              (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor) ++
-          [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor] ++
-          [ str " ..."
-          | let e_ = rebuildEntryCursor ec
-            in or [ not (collapseEntryShowContents e) &&
-                    not (maybe False nullContents $ entryContents e_)
-                  , not (collapseEntryShowHistory e) &&
-                    not (nullStateHistory $ entryStateHistory e_)
-                   ]
-          ] ++
-          [str " +++" | tc == TreeIsCollapsed]
+          intersperse (str " ") $
+          concat $
+          [ [selelectIfSelected $ str ">"]
+          , maybeToList
+                (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
+          , [ drawHeaderCursor
+                  (selectWhen HeaderSelected)
+                  entryCursorHeaderCursor
+            ]
+          , maybeToList $
+            drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
+          , [ str "..."
+            | let e_ = rebuildEntryCursor ec
+              in or [ not (collapseEntryShowContents e) &&
+                      not (maybe False nullContents $ entryContents e_)
+                    , not (collapseEntryShowHistory e) &&
+                      not (nullStateHistory $ entryStateHistory e_)
+                     ]
+            ]
+          , [str "+++" | tc == TreeIsCollapsed]
+          ]
         , drawIfM collapseEntryShowContents $
           drawContentsCursor (selectWhen ContentsSelected) <$>
           entryCursorContentsCursor
@@ -269,7 +277,6 @@ drawEntryCursor tc e =
         , drawIfM collapseEntryShowHistory $
           entryCursorStateHistoryCursor >>=
           drawStateHistoryCursor (selectWhen StateHistorySelected)
-        , drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
         , drawLogbookCursor
               (selectWhen LogbookSelected)
               entryCursorLogbookCursor
@@ -300,22 +307,25 @@ drawEntry tc e =
     catMaybes
         [ Just $
           hBox $
-          [str "> "] ++
-          maybeToList (drawCurrentState entryStateHistory) ++
-          [drawHeader entryHeader] ++
-          [ str " ..."
-          | or [ not (collapseEntryShowContents e) &&
-                 not (maybe False nullContents entryContents)
-               , not (collapseEntryShowHistory e) &&
-                 not (nullStateHistory entryStateHistory)
+          intersperse (str " ") $
+          concat
+              [ [str ">"]
+              , maybeToList (drawCurrentState entryStateHistory)
+              , [drawHeader entryHeader]
+              , maybeToList (drawTags entryTags)
+              , [ str "..."
+                | or [ not (collapseEntryShowContents e) &&
+                       not (maybe False nullContents entryContents)
+                     , not (collapseEntryShowHistory e) &&
+                       not (nullStateHistory entryStateHistory)
+                      ]
                 ]
-          ] ++
-          [str " +++" | tc == TreeIsCollapsed]
+              , [str "+++" | tc == TreeIsCollapsed]
+              ]
         , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
         , drawIfM collapseEntryShowHistory $ drawStateHistory entryStateHistory
-        , drawTags entryTags
         , drawLogbook entryLogbook
         ]
   where
@@ -393,12 +403,21 @@ drawStateHistory (StateHistory ls)
                 ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
-drawTagsCursor _ = strWrap . show
+drawTagsCursor _ tc =
+    str ":" <+>
+    hBox
+        (intersperse (str ":") (map drawTag $ NE.toList $ rebuildTagsCursor tc)) <+>
+    str ":"
 
 drawTags :: [Tag] -> Maybe (Widget ResourceName)
 drawTags ts
     | null ts = Nothing
-    | otherwise = Just $ strWrap $ show ts
+    | otherwise =
+        Just $
+        str ":" <+> hBox (intersperse (str ":") (map drawTag ts)) <+> str ":"
+
+drawTag :: Tag -> Widget n
+drawTag = txt . tagText
 
 drawLogbookCursor :: Select -> LogbookCursor -> Maybe (Widget ResourceName)
 drawLogbookCursor _ lbc =

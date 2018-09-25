@@ -9,6 +9,7 @@ module Smos.Actions
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
+    , module Smos.Actions.Tags
     , module Smos.Actions.Undo
     , module Smos.Actions.Utils
     ) where
@@ -16,6 +17,7 @@ module Smos.Actions
 import Smos.Types
 
 import Smos.Actions.Entry
+import Smos.Actions.Tags
 import Smos.Actions.Forest
 import Smos.Actions.Header
 import Smos.Actions.Undo
@@ -37,6 +39,7 @@ allPlainActions =
           ]
         , allHeaderPlainActions
         , allEntryPlainActions
+        , allTagsPlainActions
         , allForestPlainActions
         , allUndoPlainActions
         ]

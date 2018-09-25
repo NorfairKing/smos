@@ -26,6 +26,9 @@ spec = do
             inverseFunctionsOnValid makeEntryCursor rebuildEntryCursor
     describe "entryCursorHeaderCursorL" $
         lensSpecOnValid entryCursorHeaderCursorL
+    describe "entryCursorStateHistoryCursorL" $
+        lensSpecOnValid entryCursorStateHistoryCursorL
+    describe "entryCursorTagsCursorL" $ lensSpecOnValid entryCursorTagsCursorL
     describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL
     describe "entryCursorSelect" $
         it "produces valid cursors" $ producesValidsOnValids2 entryCursorSelect

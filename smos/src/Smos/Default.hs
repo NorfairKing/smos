@@ -56,6 +56,9 @@ defaultKeyMap =
               , exactString "td" $ entrySetTodoState "DONE"
               , exactString "tc" $ entrySetTodoState "CANCELLED"
               , exactString "t " entryUnsetTodoState
+                  -- Fast tag manipulation
+              , exactString "gw" $ tagsToggle "work"
+              , exactString "go" $ tagsToggle "online"
                   -- Collapsing
               , exactChar '\t' forestToggleCollapse
               , exactKey KBackTab forestToggleHideEntireEntry
