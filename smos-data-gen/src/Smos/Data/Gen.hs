@@ -109,8 +109,8 @@ instance GenUnchecked Logbook
 
 instance GenValid Logbook where
     genValid =
-        let genPositiveNominalDiffTime = (realToFrac . abs) <$>
-                                            (genValid :: Gen Rational)
+        let genPositiveNominalDiffTime =
+                (realToFrac . abs) <$> (genValid :: Gen Rational)
             listOfLogbookEntries =
                 sized $ \n -> do
                     ss <- arbPartition n
@@ -121,36 +121,47 @@ instance GenValid Logbook where
                                 resize s $
                                 case lbes of
                                     [] -> genValid
-                                    (p:_) -> do
-                                        ndt1 <- genPositiveNominalDiffTime
-                                        ndt2 <- genPositiveNominalDiffTime
-                                        let start =
-                                                addUTCTime
-                                                    ndt1
-                                                    (logbookEntryEnd p)
-                                            end = addUTCTime ndt2 start
-                                        pure $
-                                            LogbookEntry
-                                            { logbookEntryStart = start
-                                            , logbookEntryEnd = end
-                                            }
+                                    (p:_) ->
+                                        sized $ \m -> do
+                                            (a, b) <- genSplit m
+                                            ndt1 <-
+                                                resize
+                                                    a
+                                                    genPositiveNominalDiffTime
+                                            ndt2 <-
+                                                resize
+                                                    b
+                                                    genPositiveNominalDiffTime
+                                            let start =
+                                                    addUTCTime
+                                                        ndt1
+                                                        (logbookEntryEnd p)
+                                                end = addUTCTime ndt2 start
+                                            pure $
+                                                LogbookEntry
+                                                { logbookEntryStart = start
+                                                , logbookEntryEnd = end
+                                                }
                             pure $ cur : lbes
                     go ss
-        in oneof [LogClosed <$> listOfLogbookEntries, do
-            lbes <- listOfLogbookEntries
-            l <- case lbes of
-                [] -> genValid
-                (lbe:_) -> do
-                    ndt <-genPositiveNominalDiffTime
-                    pure $ addUTCTime ndt $ logbookEntryEnd lbe
-            pure $ LogOpen l lbes
-            ]
+        in oneof
+               [ LogClosed <$> listOfLogbookEntries
+               , do lbes <- listOfLogbookEntries
+                    l <-
+                        case lbes of
+                            [] -> genValid
+                            (lbe:_) -> do
+                                ndt <- genPositiveNominalDiffTime
+                                pure $ addUTCTime ndt $ logbookEntryEnd lbe
+                    pure $ LogOpen l lbes
+               ]
 
 instance GenUnchecked LogbookEntry
 
 instance GenValid LogbookEntry where
-    genValid = do
-        start <- genValid
-        ndt <- (realToFrac . abs) <$> (genValid :: Gen Rational)
+    genValid = sized $ \n -> do
+        (a,b) <- genSplit n
+        start <-resize a  genValid
+        ndt <- resize b $ (realToFrac . abs) <$> (genValid :: Gen Rational)
         let end = addUTCTime ndt start
         pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
