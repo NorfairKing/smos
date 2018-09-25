@@ -1,0 +1,40 @@
+name: smos-report
+version: '0.0.0.0'
+category: Smos
+author: Nick Van den Broeck
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - base
+  - configurator
+  - optparse-applicative
+  - path
+  - path-io
+  - smos-data
+  - text
+  exposed-modules:
+  - Smos.Report
+  - Smos.Report.Next
+  - Smos.Report.OptParse
+  - Smos.Report.OptParse.Types
+  - Smos.Report.Wait
+  other-modules:
+  - Import
+
+executables:
+  smos-report:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - smos-report

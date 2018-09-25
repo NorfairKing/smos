@@ -5,6 +5,7 @@ packages:
 - smos-data-gen
 - smos-cursor
 - smos-cursor-gen
+- smos-report
 extra-deps:
 - git: https://github.com/NorfairKing/cursor.git
   commit: 985e8fe0d62a7645aebffda3a486b70ca784b4d9
