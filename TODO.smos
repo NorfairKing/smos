@@ -19,26 +19,6 @@
       - new-state: DONE
         timestamp: 2018-09-21 18:50:26.872542773000+0000
   - entry:
-      header: Quality of life
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-21 08:06:22.847469325000+0000
-    forest:
-    - header: Detect conflicting keymappings
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-11 10:15:06.141365680000+0000
-    - entry:
-        header: Help page
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 19:39:53.356426165000+0000
-      forest:
-      - header: combine keybindings per key in help page
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 19:40:01.436108571000+0000
-  - entry:
       header: Editing
       state-history:
       - new-state: TODO
@@ -240,32 +220,6 @@
             - new-state: TODO
               timestamp: 2018-09-11 09:44:50.471026225000+0000
       - entry:
-          header: Timestamps
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-11 09:44:49.927229877000+0000
-        forest:
-        - header: Set predefined timestamp like deadline or scheduled
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-21 07:59:07.063611985000+0000
-      - entry:
-          header: Tags
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-21 07:59:22.327406503000+0000
-        forest:
-        - header: Set predefined tags
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-21 07:59:27.911398593000+0000
-          - new-state: DONE
-            timestamp: 2018-09-25 19:10:09.492953549000+0000
-        - header: Edit tags in a freeform manner
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-21 07:59:33.639419606000+0000
-      - entry:
           header: Clocking
           state-history:
           - new-state: TODO
@@ -291,6 +245,32 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-22 08:29:23.945647335000+0000
+      - entry:
+          header: Tags
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:22.327406503000+0000
+        forest:
+        - header: Set predefined tags
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:27.911398593000+0000
+          - new-state: DONE
+            timestamp: 2018-09-25 19:10:09.492953549000+0000
+        - header: Edit tags in a freeform manner
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:33.639419606000+0000
+      - entry:
+          header: Timestamps
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-11 09:44:49.927229877000+0000
+        forest:
+        - header: Set predefined timestamp like deadline or scheduled
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-21 07:59:07.063611985000+0000
   - entry:
       header: Reports
       state-history:
@@ -323,3 +303,23 @@
       state-history:
       - new-state: TODO
         timestamp: 2018-09-21 07:58:45.031446661000+0000
+  - entry:
+      header: Quality of life
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-21 08:06:22.847469325000+0000
+    forest:
+    - header: Detect conflicting keymappings
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-11 10:15:06.141365680000+0000
+    - entry:
+        header: Help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:39:53.356426165000+0000
+      forest:
+      - header: combine keybindings per key in help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:40:01.436108571000+0000

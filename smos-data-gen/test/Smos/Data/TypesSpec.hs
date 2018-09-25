@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -8,8 +9,12 @@ module Smos.Data.TypesSpec
 
 import Data.Aeson as JSON
 import Data.Data
+import Data.Time
+
+import Control.Monad
 
 import Test.Hspec
+import Test.QuickCheck
 import Test.Validity
 import Test.Validity.Aeson
 import Test.Validity.Utils
@@ -56,14 +61,41 @@ spec = do
     genValidSpec @Tag
     jsonSpecOnValid @Tag
     textLikeJSONValid @Tag
+    let genLogbookEntryJSON =
+            object <$>
+            sequence
+                [ ("start" .=) <$> (toJSON <$> (genValid :: Gen UTCTime))
+                , ("end" .=) <$> (toJSON <$> (genValid :: Gen UTCTime))
+                ]
     eqSpec @Logbook
     ordSpec @Logbook
     genValidSpec @Logbook
     jsonSpecOnValid @Logbook
+    genJSONValid @Logbook $
+        let withGen lbGen =
+                sized $ \n -> do
+                    l <- choose (1, n)
+                    rest <- replicateM l lbGen
+                    first <-
+                        object <$>
+                        sequence
+                            [ ("start" .=) <$>
+                              (toJSON <$> (genValid :: Gen UTCTime))
+                            , ("end" .=) <$>
+                              (toJSON <$> (genValid :: Gen (Maybe UTCTime)))
+                            ]
+                    pure $ toJSON $ first : rest
+            genOrderedLogbookEntryJSON = do
+                start <- genValid :: Gen UTCTime
+                end <- genValid `suchThat` (>= start) :: Gen UTCTime
+                pure $ object ["start" .= start, "end" .= end]
+        in oneof
+               [withGen genLogbookEntryJSON, withGen genOrderedLogbookEntryJSON]
     eqSpec @LogbookEntry
     ordSpec @LogbookEntry
     genValidSpec @LogbookEntry
     jsonSpecOnValid @LogbookEntry
+    genJSONValid @LogbookEntry genLogbookEntryJSON
     eqSpec @Entry
     ordSpec @Entry
     genValidSpec @Entry
@@ -81,10 +113,16 @@ spec = do
 textLikeJSONValid ::
        forall a. (Validity a, Show a, Typeable a, FromJSON a)
     => Spec
-textLikeJSONValid =
+textLikeJSONValid = genJSONValid @a $ JSON.String <$> genValid
+
+genJSONValid ::
+       forall a. (Validity a, Show a, Typeable a, FromJSON a)
+    => Gen JSON.Value
+    -> Spec
+genJSONValid gen =
     describe (unwords ["JSON", nameOf @a]) $
-    it "parses every text value into a valid value" $
-    forAllValid $ \j ->
-        case fromJSON (JSON.String j) of
-            Error _ -> pure ()
-            Success h -> shouldBeValid (h :: a)
+    it "parses every value into a valid value" $
+    forAll gen $ \j ->
+        case fromJSON j of
+            JSON.Error _ -> pure ()
+            JSON.Success h -> shouldBeValid (h :: a)

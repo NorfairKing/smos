@@ -470,7 +470,32 @@ data Logbook
     | LogClosed [LogbookEntry]
     deriving (Show, Eq, Ord, Generic)
 
-instance Validity Logbook
+instance Validity Logbook where
+    validate lo@(LogOpen utct lbes) =
+        mconcat
+            [ genericValidate lo
+            , declare "The open time occurred after the last entry ended" $
+              case lbes of
+                  [] -> True
+                  (lbe:_) -> utct >= logbookEntryEnd lbe
+            , decorate "The consecutive logbook entries happen after each other" $
+              decorateList (conseqs lbes) $ \(lbe1, lbe2) ->
+                  declare "The former happens after the latter" $
+                  logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+            ]
+    validate lc@(LogClosed lbes) =
+        mconcat
+            [ genericValidate lc
+            , decorate "The consecutive logbook entries happen after each other" $
+              decorateList (conseqs lbes) $ \(lbe1, lbe2) ->
+                  declare "The former happens after the latter" $
+                  logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+            ]
+
+conseqs :: [a] -> [(a, a)]
+conseqs [] = []
+conseqs [a] = []
+conseqs (a:b:as) = (a, b) : conseqs (b : as)
 
 instance FromJSON Logbook where
     parseJSON v = do
@@ -484,10 +509,16 @@ instance FromJSON Logbook where
                         (\o -> (,) <$> o .: "start" <*> o .:? "end")
                         e
                 rest <- mapM parseJSON es
-                pure $
-                    case mend of
-                        Nothing -> LogOpen start rest
-                        Just end -> LogClosed $ LogbookEntry start end : rest
+                let candidate =
+                        case mend of
+                            Nothing -> LogOpen start rest
+                            Just end ->
+                                LogClosed $ LogbookEntry start end : rest
+                case prettyValidation candidate of
+                    Left err ->
+                        fail $
+                        unlines ["JSON represented an invalid logbook:", err]
+                    Right r -> pure r
 
 instance ToJSON Logbook where
     toJSON = toJSON . go
@@ -510,12 +541,23 @@ data LogbookEntry = LogbookEntry
     , logbookEntryEnd :: UTCTime
     } deriving (Show, Eq, Ord, Generic)
 
-instance Validity LogbookEntry
+instance Validity LogbookEntry where
+    validate lbe@LogbookEntry {..} =
+        mconcat
+            [ genericValidate lbe
+            , declare "The start time occurred before the end time" $
+              logbookEntryStart <= logbookEntryEnd
+            ]
 
 instance FromJSON LogbookEntry where
     parseJSON =
-        withObject "LogbookEntry" $ \o ->
-            LogbookEntry <$> o .: "start" <*> o .: "end"
+        withObject "LogbookEntry" $ \o -> do
+            candidate <- LogbookEntry <$> o .: "start" <*> o .: "end"
+            case prettyValidation candidate of
+                Left err ->
+                    fail $
+                    unlines ["JSON represented an invalid logbook entry:", err]
+                Right r -> pure r
 
 instance ToJSON LogbookEntry where
     toJSON LogbookEntry {..} =
