@@ -12,7 +12,9 @@ library:
   ghc-options: -Wall
   dependencies:
   - base
+  - boxes
   - configurator
+  - containers
   - optparse-applicative
   - path
   - path-io
@@ -20,9 +22,12 @@ library:
   - text
   exposed-modules:
   - Smos.Report
+  - Smos.Report.Formatting
   - Smos.Report.Next
   - Smos.Report.OptParse
   - Smos.Report.OptParse.Types
+  - Smos.Report.Parse
+  - Smos.Report.ShouldPrint
   - Smos.Report.Wait
   other-modules:
   - Import
@@ -31,10 +36,6 @@ executables:
   smos-report:
     main: Main.hs
     source-dirs: app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
     dependencies:
     - base
     - smos-report
