@@ -29,6 +29,8 @@ spec = do
     describe "entryCursorStateHistoryCursorL" $
         lensSpecOnValid entryCursorStateHistoryCursorL
     describe "entryCursorTagsCursorL" $ lensSpecOnValid entryCursorTagsCursorL
+    describe "entryCursorLogbookCursorL" $
+        lensSpecOnValid entryCursorLogbookCursorL
     describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL
     describe "entryCursorSelect" $
         it "produces valid cursors" $ producesValidsOnValids2 entryCursorSelect

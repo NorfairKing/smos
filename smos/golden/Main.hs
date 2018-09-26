@@ -17,7 +17,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Time
-import Data.Yaml as Yaml
+import Data.Yaml.Builder as Yaml
 
 import Control.Monad
 
@@ -76,31 +76,31 @@ matchUp tfs =
                 a <- findAfter b
                 pure $
                     GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
+                    { testCaseName = stripFileExtension b
+                    , beforeFile = b
+                    , commandsFile = c
+                    , afterFile = a
+                    }
             Commands c -> do
                 b <- findBefore c
                 a <- findAfter c
                 pure $
                     GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
+                    { testCaseName = stripFileExtension b
+                    , beforeFile = b
+                    , commandsFile = c
+                    , afterFile = a
+                    }
             After a -> do
                 b <- findBefore a
                 c <- findCommands a
                 pure $
                     GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
+                    { testCaseName = stripFileExtension b
+                    , beforeFile = b
+                    , commandsFile = c
+                    , afterFile = a
+                    }
   where
     findBefore :: Path Abs File -> Either String (Path Abs File)
     findBefore p =
@@ -113,16 +113,15 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-         in case fs of
-                [] ->
-                    Left $ unwords ["Before file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple Before files found:"
-                        , show $ map fromAbsFile fs
-                        ]
+        in case fs of
+               [] -> Left $ unwords ["Before file not found for", fromAbsFile p]
+               [f] -> Right f
+               _ ->
+                   Left $
+                   unwords
+                       [ "Multiple Before files found:"
+                       , show $ map fromAbsFile fs
+                       ]
     findCommands :: Path Abs File -> Either String (Path Abs File)
     findCommands p =
         let fs =
@@ -134,17 +133,16 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-         in case fs of
-                [] ->
-                    Left $
-                    unwords ["Commands file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple Commands files found:"
-                        , show $ map fromAbsFile fs
-                        ]
+        in case fs of
+               [] ->
+                   Left $ unwords ["Commands file not found for", fromAbsFile p]
+               [f] -> Right f
+               _ ->
+                   Left $
+                   unwords
+                       [ "Multiple Commands files found:"
+                       , show $ map fromAbsFile fs
+                       ]
     findAfter :: Path Abs File -> Either String (Path Abs File)
     findAfter p =
         let fs =
@@ -156,15 +154,15 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-         in case fs of
-                [] -> Left $ unwords ["After file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple After files found:"
-                        , show $ map fromAbsFile fs
-                        ]
+        in case fs of
+               [] -> Left $ unwords ["After file not found for", fromAbsFile p]
+               [f] -> Right f
+               _ ->
+                   Left $
+                   unwords
+                       [ "Multiple After files found:"
+                       , show $ map fromAbsFile fs
+                       ]
 
 stripFileExtension :: Path b File -> Path b File
 stripFileExtension = fromJust . setFileExtension ""
@@ -243,9 +241,9 @@ runCommandsOn start commands = do
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
-            { intermidiaryResults = reverse rs
-            , finalResult = rebuildEditorCursor $ smosStateCursor fs
-            }
+        { intermidiaryResults = reverse rs
+        , finalResult = rebuildEditorCursor $ smosStateCursor fs
+        }
   where
     startState = initState $(mkAbsFile "/pretend/test/file") start
     testConf = SmosConfig {configKeyMap = mempty}
@@ -257,9 +255,9 @@ runCommandsOn start commands = do
             recordCursorHistory =
                 modify $ \ss_ ->
                     ss_
-                        { smosStateCursorHistory =
-                              smosStateCursor ss_ : smosStateCursorHistory ss_
-                        }
+                    { smosStateCursorHistory =
+                          smosStateCursor ss_ : smosStateCursorHistory ss_
+                    }
         let func = do
                 recordCursorHistory
                 case c of
@@ -296,8 +294,7 @@ expectResults bf af CommandsRun {..} =
           ]
         , [ "If this was intentional, you can replace the contents of the expected results file by the following:"
           , "---[START]---"
-          , SB8.unpack $ Yaml.encode finalResult
-          , "---[END]---"
+          , SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
           ]
         ]
   where
@@ -340,21 +337,29 @@ eqForTest = forestEqForTest `on` smosFileForest
         ((==) `on` entryTimestamps) &&&
         ((==) `on` entryProperties) &&&
         (stateHistoryEqForTest `on` entryStateHistory) &&&
-        ((==) `on` entryTags) &&& ((==) `on` entryLogbook)
+        ((==) `on` entryTags) &&& (logbookEqForTest `on` entryLogbook)
     stateHistoryEqForTest :: StateHistory -> StateHistory -> Bool
     stateHistoryEqForTest sh1 sh2 =
-        all
-            (\(she1, mshe2) ->
-                 case mshe2 of
-                     Nothing -> False
-                     Just she2 -> stateHistoryEntryEqForTest she1 she2) $
-        zip
+        listEq1
+            stateHistoryEntryEqForTest
             (unStateHistory sh1)
-            (map Just (unStateHistory sh2) ++ repeat Nothing)
+            (unStateHistory sh2)
     stateHistoryEntryEqForTest :: StateHistoryEntry -> StateHistoryEntry -> Bool
     stateHistoryEntryEqForTest =
         ((==) `on` stateHistoryEntryNewState) &&&
         (dateTimeEqForTest `on` stateHistoryEntryTimestamp)
+    logbookEqForTest :: Logbook -> Logbook -> Bool
+    logbookEqForTest lb1 lb2 =
+        case (lb1, lb2) of
+            (LogOpen ut1 lbes1, LogOpen ut2 lbes2) ->
+                dateTimeEqForTest ut1 ut2 &&
+                listEq1 logbookEntryEqForTest lbes1 lbes2
+            (LogClosed lbes1, LogClosed lbes2) ->
+                listEq1 logbookEntryEqForTest lbes1 lbes2
+            (_, _) -> False
+    logbookEntryEqForTest :: LogbookEntry -> LogbookEntry -> Bool
+    logbookEntryEqForTest (LogbookEntry s1 e1) (LogbookEntry s2 e2) =
+        dateTimeEqForTest s1 s2 && dateTimeEqForTest e1 e2
     dateTimeEqForTest :: UTCTime -> UTCTime -> Bool
     dateTimeEqForTest _ _ = True
     (&&&) :: (a -> b -> Bool) -> (a -> b -> Bool) -> (a -> b -> Bool)

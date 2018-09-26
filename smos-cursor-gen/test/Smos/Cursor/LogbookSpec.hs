@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeApplications #-}
+
 module Smos.Cursor.LogbookSpec where
 
 import Test.Hspec
@@ -20,3 +21,6 @@ spec = do
             producesValidsOnValids rebuildLogbookCursor
         it "is the inverse of makeLogbookCursor" $
             inverseFunctionsOnValid makeLogbookCursor rebuildLogbookCursor
+    describe "logbookCursorClockIn" $
+        it "produces valid cursors" $
+        producesValidsOnValids2 logbookCursorClockIn

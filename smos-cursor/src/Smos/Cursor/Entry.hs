@@ -9,6 +9,7 @@ module Smos.Cursor.Entry
     , entryCursorHeaderCursorL
     , entryCursorStateHistoryCursorL
     , entryCursorTagsCursorL
+    , entryCursorLogbookCursorL
     , entryCursorSelectionL
     , EntryCursorSelection(..)
     , entryCursorSelect
@@ -110,8 +111,12 @@ entryCursorStateHistoryCursorL =
 
 entryCursorTagsCursorL :: Lens' EntryCursor (Maybe TagsCursor)
 entryCursorTagsCursorL =
-    lens entryCursorTagsCursor $ \ec shc ->
-        ec {entryCursorTagsCursor = shc}
+    lens entryCursorTagsCursor $ \ec shc -> ec {entryCursorTagsCursor = shc}
+
+entryCursorLogbookCursorL :: Lens' EntryCursor LogbookCursor
+entryCursorLogbookCursorL =
+    lens entryCursorLogbookCursor $ \ec shc ->
+        ec {entryCursorLogbookCursor = shc}
 
 entryCursorSelect :: EntryCursorSelection -> EntryCursor -> EntryCursor
 entryCursorSelect ecl ec = ec & entryCursorSelectionL .~ ecl

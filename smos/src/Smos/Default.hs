@@ -59,6 +59,8 @@ defaultKeyMap =
                   -- Fast tag manipulation
               , exactString "gw" $ tagsToggle "work"
               , exactString "go" $ tagsToggle "online"
+                  -- Clocking
+              , exactString "ci" logbookClockIn
                   -- Collapsing
               , exactChar '\t' forestToggleCollapse
               , exactKey KBackTab forestToggleHideEntireEntry
