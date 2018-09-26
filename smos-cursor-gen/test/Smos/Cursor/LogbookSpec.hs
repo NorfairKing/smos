@@ -24,3 +24,6 @@ spec = do
     describe "logbookCursorClockIn" $
         it "produces valid cursors" $
         producesValidsOnValids2 logbookCursorClockIn
+    describe "logbookCursorClockOut" $
+        it "produces valid cursors" $
+        producesValidsOnValids2 logbookCursorClockOut

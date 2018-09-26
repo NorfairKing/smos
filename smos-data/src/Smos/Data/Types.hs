@@ -34,6 +34,7 @@ module Smos.Data.Types
     , tag
     , Logbook(..)
     , emptyLogbook
+    , nullLogbook
     , LogbookEntry(..)
     , TimestampName(..)
     , emptyTimestampName
@@ -143,7 +144,7 @@ newEntry h =
     , entryContents = Nothing
     , entryTimestamps = M.empty
     , entryProperties = M.empty
-    , entryStateHistory = StateHistory []
+    , entryStateHistory = emptyStateHistory
     , entryTags = []
     , entryLogbook = emptyLogbook
     }
@@ -535,6 +536,9 @@ instance ToYaml Logbook where
 
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []
+
+nullLogbook :: Logbook -> Bool
+nullLogbook = (== emptyLogbook)
 
 data LogbookEntry = LogbookEntry
     { logbookEntryStart :: UTCTime

@@ -61,6 +61,7 @@ defaultKeyMap =
               , exactString "go" $ tagsToggle "online"
                   -- Clocking
               , exactString "ci" logbookClockIn
+              , exactString "co" logbookClockOut
                   -- Collapsing
               , exactChar '\t' forestToggleCollapse
               , exactKey KBackTab forestToggleHideEntireEntry

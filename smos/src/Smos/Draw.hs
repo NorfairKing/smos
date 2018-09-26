@@ -265,6 +265,8 @@ drawEntryCursor tc e =
                       not (maybe False nullContents $ entryContents e_)
                     , not (collapseEntryShowHistory e) &&
                       not (nullStateHistory $ entryStateHistory e_)
+                    , not (collapseEntryShowLogbook e) &&
+                      not (nullLogbook $ entryLogbook e_)
                      ]
             ]
           , [str "+++" | tc == TreeIsCollapsed]
@@ -279,7 +281,7 @@ drawEntryCursor tc e =
         , drawIfM collapseEntryShowHistory $
           entryCursorStateHistoryCursor >>=
           drawStateHistoryCursor (selectWhen StateHistorySelected)
-        , drawLogbookCursor
+        , drawIfM collapseEntryShowLogbook $ drawLogbookCursor
               (selectWhen LogbookSelected)
               entryCursorLogbookCursor
         ]
@@ -320,6 +322,8 @@ drawEntry tc e =
                        not (maybe False nullContents entryContents)
                      , not (collapseEntryShowHistory e) &&
                        not (nullStateHistory entryStateHistory)
+                     , not (collapseEntryShowLogbook e) &&
+                       not (nullLogbook entryLogbook)
                       ]
                 ]
               , [str "+++" | tc == TreeIsCollapsed]
@@ -328,7 +332,7 @@ drawEntry tc e =
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
         , drawIfM collapseEntryShowHistory $ drawStateHistory entryStateHistory
-        , drawLogbook entryLogbook
+        , drawIfM collapseEntryShowLogbook $ drawLogbook entryLogbook
         ]
   where
     Entry {..} = collapseEntryValue e
@@ -424,8 +428,8 @@ drawLogbookCursor _ lbc =
     case lbc of
         LogbookCursorClosed Nothing -> Nothing
         LogbookCursorClosed (Just ne) ->
-            Just$  vBox $
-            map drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
+            Just $
+            vBox $ map drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
         LogbookCursorOpen u ne ->
             Just $
             vBox $
@@ -453,7 +457,9 @@ drawLogbookEntry LogbookEntry {..} =
         ]
 
 drawLogbookTimestamp :: UTCTime -> Widget n
-drawLogbookTimestamp utct = str "[" <+> str (show utct) <+> str "]"
+drawLogbookTimestamp utct =
+    str "[" <+>
+    str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" utct) <+> str "]"
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =

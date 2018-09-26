@@ -5,6 +5,7 @@ module Smos.Cursor.Logbook
     , makeLogbookCursor
     , rebuildLogbookCursor
     , logbookCursorClockIn
+    , logbookCursorClockOut
     ) where
 
 import GHC.Generics (Generic)
@@ -13,6 +14,7 @@ import Data.Validity
 import Data.Validity.Time ()
 
 import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty ((<|))
 
 import Data.Time
 
@@ -52,3 +54,16 @@ logbookCursorClockIn utct lbc =
     case lbc of
         LogbookCursorClosed lbes -> constructValid $ LogbookCursorOpen utct lbes
         LogbookCursorOpen _ _ -> Nothing
+
+logbookCursorClockOut :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
+logbookCursorClockOut utct lbc =
+    case lbc of
+        LogbookCursorOpen u lbes ->
+            constructValid $
+            LogbookCursorClosed $
+            let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
+            in Just $
+               case lbes of
+                   Nothing -> singletonNonEmptyCursor e
+                   Just ne -> nonEmptyCursorInsertAtStart e ne
+        LogbookCursorClosed _ -> Nothing
