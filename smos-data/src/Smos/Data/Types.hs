@@ -495,7 +495,7 @@ instance Validity Logbook where
 
 conseqs :: [a] -> [(a, a)]
 conseqs [] = []
-conseqs [a] = []
+conseqs [_] = []
 conseqs (a:b:as) = (a, b) : conseqs (b : as)
 
 instance FromJSON Logbook where

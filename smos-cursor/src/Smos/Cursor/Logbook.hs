@@ -14,7 +14,6 @@ import Data.Validity
 import Data.Validity.Time ()
 
 import qualified Data.List.NonEmpty as NE
-import Data.List.NonEmpty ((<|))
 
 import Data.Time
 
