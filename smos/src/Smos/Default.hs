@@ -60,7 +60,7 @@ defaultKeyMap =
               , exactString "gw" $ tagsToggle "work"
               , exactString "go" $ tagsToggle "online"
                   -- Clocking
-              , exactString "ci" logbookClockIn
+              , exactString "ci" forestClockOutEverywhereAndClockInHere
               , exactString "co" forestClockOutEverywhere
                   -- Collapsing
               , exactChar '\t' forestToggleCollapse

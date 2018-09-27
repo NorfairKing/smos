@@ -25,6 +25,7 @@ module Smos.Actions.Forest
     , forestDemoteSubTree
     , forestToggleHideEntireEntry
     , forestClockOutEverywhere
+    , forestClockOutEverywhereAndClockInHere
     ) where
 
 import Data.Time
@@ -241,4 +242,14 @@ forestClockOutEverywhere =
               now <- liftIO getCurrentTime
               pure $ smosFileCursorClockOutEverywhere now sfc
     , actionDescription = "Clock out everywhere"
+    }
+forestClockOutEverywhereAndClockInHere :: Action
+forestClockOutEverywhereAndClockInHere =
+    Action
+    { actionName = "forestClockOutEverywhereAndClockInHere"
+    , actionFunc =
+          modifyFileCursorS $ \sfc -> do
+              now <- liftIO getCurrentTime
+              pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
+    , actionDescription = "Clock out everywhere and clock in at the current entry"
     }

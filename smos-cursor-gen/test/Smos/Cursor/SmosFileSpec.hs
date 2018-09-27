@@ -82,3 +82,6 @@ spec = do
     describe "smosFileCursorClockOutEverywhere" $
         it "produces valid cursors" $
         producesValidsOnValids2 smosFileCursorClockOutEverywhere
+    describe "smosFileCursorClockOutEverywhereAndClockInHere" $
+        it "produces valid cursors" $
+        producesValidsOnValids2 smosFileCursorClockOutEverywhereAndClockInHere

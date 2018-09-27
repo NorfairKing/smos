@@ -28,6 +28,7 @@ module Smos.Cursor.SmosFile
     , smosFileCursorDemoteEntry
     , smosFileCursorDemoteSubTree
     , smosFileCursorClockOutEverywhere
+    , smosFileCursorClockOutEverywhereAndClockInHere
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
@@ -187,6 +188,13 @@ smosFileCursorClockOutEverywhere now =
     goE e =
         let lb = entryLogbook e
         in e {entryLogbook = fromMaybe lb $ logbookClockOut now lb}
+
+smosFileCursorClockOutEverywhereAndClockInHere ::
+       UTCTime -> SmosFileCursor -> SmosFileCursor
+smosFileCursorClockOutEverywhereAndClockInHere now sfc =
+    let sfc' = smosFileCursorClockOutEverywhere now sfc
+    in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL) %~
+       (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
 
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry
 rebuild = collapseEntryValueL %~ rebuildEntryCursor
