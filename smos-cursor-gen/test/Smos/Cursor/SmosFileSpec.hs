@@ -79,3 +79,6 @@ spec = do
     describe "smosFileCursorDemoteSubTree" $
         it "produces valid cursors" $
         producesValidsOnValids smosFileCursorDemoteSubTree
+    describe "smosFileCursorClockOutEverywhere" $
+        it "produces valid cursors" $
+        producesValidsOnValids2 smosFileCursorClockOutEverywhere

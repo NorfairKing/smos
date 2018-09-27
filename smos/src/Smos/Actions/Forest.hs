@@ -24,7 +24,10 @@ module Smos.Actions.Forest
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideEntireEntry
+    , forestClockOutEverywhere
     ) where
+
+import Data.Time
 
 import Smos.Types
 
@@ -50,6 +53,7 @@ allForestPlainActions =
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideEntireEntry
+    , forestClockOutEverywhere
     ]
 
 allForestUsingCharActions :: [ActionUsing Char]
@@ -226,4 +230,15 @@ forestToggleHideEntireEntry =
     { actionName = "forestToggleHideEntireEntry"
     , actionFunc = modifyFileCursor smosFileCursorToggleHideEntireEntry
     , actionDescription = "Toggle the hiding of the current entire entry"
+    }
+
+forestClockOutEverywhere :: Action
+forestClockOutEverywhere =
+    Action
+    { actionName = "forestClockOutEverywhere"
+    , actionFunc =
+          modifyFileCursorS $ \sfc -> do
+              now <- liftIO getCurrentTime
+              pure $ smosFileCursorClockOutEverywhere now sfc
+    , actionDescription = "Clock out everywhere"
     }
