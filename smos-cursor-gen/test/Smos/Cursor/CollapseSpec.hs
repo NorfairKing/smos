@@ -31,6 +31,8 @@ spec = do
         lensSpecOnValid (collapseEntryShowContentsL @Double)
     describe "collapseEntryShowHistoryL" $
         lensSpecOnValid (collapseEntryShowHistoryL @Double)
+    describe "collapseEntryShowLogbookL" $
+        lensSpecOnValid (collapseEntryShowLogbookL @Double)
     describe "collapseEntrySetShowAll" $
         it "produces valid collapses" $
         producesValidsOnValids2 (collapseEntrySetShowAll @Double)

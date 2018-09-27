@@ -27,11 +27,14 @@ module Smos.Cursor.SmosFile
     , smosFileCursorPromoteSubTree
     , smosFileCursorDemoteEntry
     , smosFileCursorDemoteSubTree
+    , smosFileCursorClockOutEverywhere
+    , smosFileCursorClockOutEverywhereAndClockInHere
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
+import Data.Time
 
 import Lens.Micro
 
@@ -43,6 +46,7 @@ import Smos.Data.Types
 
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
+import Smos.Cursor.Logbook
 
 type SmosFileCursor
      = ForestCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
@@ -162,6 +166,35 @@ smosFileCursorDemoteEntry = forestCursorDemoteElem rebuild make
 
 smosFileCursorDemoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorDemoteSubTree = forestCursorDemoteSubTree rebuild make
+
+smosFileCursorClockOutEverywhere :: UTCTime -> SmosFileCursor -> SmosFileCursor
+smosFileCursorClockOutEverywhere now =
+    mapForestCursor
+        (mapAndUncollapseIfChanged goEC)
+        (mapAndUncollapseIfChanged goE)
+  where
+    mapAndUncollapseIfChanged ::
+           Eq a => (a -> a) -> CollapseEntry a -> CollapseEntry a
+    mapAndUncollapseIfChanged func ce =
+        let ce' = func <$> ce
+        in if ce' == ce
+               then ce'
+               else ce' {collapseEntryShowLogbook = True}
+    goEC :: EntryCursor -> EntryCursor
+    goEC =
+        entryCursorLogbookCursorL %~
+        (\lbc -> fromMaybe lbc $ logbookCursorClockOut now lbc)
+    goE :: Entry -> Entry
+    goE e =
+        let lb = entryLogbook e
+        in e {entryLogbook = fromMaybe lb $ logbookClockOut now lb}
+
+smosFileCursorClockOutEverywhereAndClockInHere ::
+       UTCTime -> SmosFileCursor -> SmosFileCursor
+smosFileCursorClockOutEverywhereAndClockInHere now sfc =
+    let sfc' = smosFileCursorClockOutEverywhere now sfc
+    in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL) %~
+       (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
 
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry
 rebuild = collapseEntryValueL %~ rebuildEntryCursor

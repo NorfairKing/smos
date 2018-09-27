@@ -9,6 +9,7 @@ module Smos.Actions
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
+    , module Smos.Actions.Logbook
     , module Smos.Actions.Tags
     , module Smos.Actions.Undo
     , module Smos.Actions.Utils
@@ -17,9 +18,10 @@ module Smos.Actions
 import Smos.Types
 
 import Smos.Actions.Entry
-import Smos.Actions.Tags
 import Smos.Actions.Forest
 import Smos.Actions.Header
+import Smos.Actions.Logbook
+import Smos.Actions.Tags
 import Smos.Actions.Undo
 import Smos.Actions.Utils
 
@@ -38,6 +40,7 @@ allPlainActions =
           , toggleDebug
           ]
         , allHeaderPlainActions
+        , allLogbookPlainActions
         , allEntryPlainActions
         , allTagsPlainActions
         , allForestPlainActions

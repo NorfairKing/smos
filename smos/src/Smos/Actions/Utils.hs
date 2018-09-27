@@ -18,6 +18,7 @@ module Smos.Actions.Utils
     , module Smos.Cursor.Editor
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
+    , module Smos.Cursor.Logbook
     , module Smos.Cursor.SmosFile
     , module Smos.Cursor.StateHistory
     , module Smos.Cursor.Tags
@@ -33,6 +34,7 @@ import Smos.Data
 import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
+import Smos.Cursor.Logbook
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
@@ -99,6 +101,16 @@ modifyMStateHistoryCursorSM ::
     -> SmosM ()
 modifyMStateHistoryCursorSM func =
     modifyEntryCursorS $ entryCursorStateHistoryCursorL func
+
+modifyLogbookCursorSM ::
+       (LogbookCursor -> SmosM (Maybe LogbookCursor)) -> SmosM ()
+modifyLogbookCursorSM func =
+    modifyLogbookCursorS $ \lbc -> do
+        mlbc <- func lbc
+        pure $ fromMaybe lbc mlbc
+
+modifyLogbookCursorS :: (LogbookCursor -> SmosM LogbookCursor) -> SmosM ()
+modifyLogbookCursorS func = modifyEntryCursorS $ entryCursorLogbookCursorL func
 
 modifyEntryCursor :: (EntryCursor -> EntryCursor) -> SmosM ()
 modifyEntryCursor func = modifyEntryCursorS $ pure . func

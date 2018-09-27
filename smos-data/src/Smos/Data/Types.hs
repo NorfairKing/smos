@@ -34,6 +34,9 @@ module Smos.Data.Types
     , tag
     , Logbook(..)
     , emptyLogbook
+    , nullLogbook
+    , logbookClockIn
+    , logbookClockOut
     , LogbookEntry(..)
     , TimestampName(..)
     , emptyTimestampName
@@ -143,7 +146,7 @@ newEntry h =
     , entryContents = Nothing
     , entryTimestamps = M.empty
     , entryProperties = M.empty
-    , entryStateHistory = StateHistory []
+    , entryStateHistory = emptyStateHistory
     , entryTags = []
     , entryLogbook = emptyLogbook
     }
@@ -494,7 +497,7 @@ instance Validity Logbook where
 
 conseqs :: [a] -> [(a, a)]
 conseqs [] = []
-conseqs [a] = []
+conseqs [_] = []
 conseqs (a:b:as) = (a, b) : conseqs (b : as)
 
 instance FromJSON Logbook where
@@ -535,6 +538,24 @@ instance ToYaml Logbook where
 
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []
+
+nullLogbook :: Logbook -> Bool
+nullLogbook = (== emptyLogbook)
+
+logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
+logbookClockIn now lb =
+    case lb of
+        LogOpen _ _ -> Nothing
+        LogClosed ls -> constructValid $ LogOpen now ls
+
+logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook
+logbookClockOut now lb =
+    case lb of
+        LogClosed _ -> Nothing
+        LogOpen u ls ->
+            constructValid $
+            LogClosed $
+            LogbookEntry {logbookEntryStart = u, logbookEntryEnd = now} : ls
 
 data LogbookEntry = LogbookEntry
     { logbookEntryStart :: UTCTime

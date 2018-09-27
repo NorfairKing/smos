@@ -11,6 +11,7 @@ import Import hiding ((<+>))
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
+import Data.Time
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
@@ -21,6 +22,7 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Lens.Micro
 
+import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
@@ -263,6 +265,8 @@ drawEntryCursor tc e =
                       not (maybe False nullContents $ entryContents e_)
                     , not (collapseEntryShowHistory e) &&
                       not (nullStateHistory $ entryStateHistory e_)
+                    , not (collapseEntryShowLogbook e) &&
+                      not (nullLogbook $ entryLogbook e_)
                      ]
             ]
           , [str "+++" | tc == TreeIsCollapsed]
@@ -277,7 +281,7 @@ drawEntryCursor tc e =
         , drawIfM collapseEntryShowHistory $
           entryCursorStateHistoryCursor >>=
           drawStateHistoryCursor (selectWhen StateHistorySelected)
-        , drawLogbookCursor
+        , drawIfM collapseEntryShowLogbook $ drawLogbookCursor
               (selectWhen LogbookSelected)
               entryCursorLogbookCursor
         ]
@@ -318,6 +322,8 @@ drawEntry tc e =
                        not (maybe False nullContents entryContents)
                      , not (collapseEntryShowHistory e) &&
                        not (nullStateHistory entryStateHistory)
+                     , not (collapseEntryShowLogbook e) &&
+                       not (nullLogbook entryLogbook)
                       ]
                 ]
               , [str "+++" | tc == TreeIsCollapsed]
@@ -326,7 +332,7 @@ drawEntry tc e =
         , drawTimestamps entryTimestamps
         , drawProperties entryProperties
         , drawIfM collapseEntryShowHistory $ drawStateHistory entryStateHistory
-        , drawLogbook entryLogbook
+        , drawIfM collapseEntryShowLogbook $ drawLogbook entryLogbook
         ]
   where
     Entry {..} = collapseEntryValue e
@@ -356,9 +362,7 @@ drawCurrentState (StateHistory ls)
             (she:_) ->
                 case stateHistoryEntryNewState she of
                     Nothing -> Nothing
-                    Just ts ->
-                        Just $
-                        withAttr todoStateAttr $ drawTodoState ts <+> str " "
+                    Just ts -> Just $ withAttr todoStateAttr $ drawTodoState ts
             _ -> Nothing
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
@@ -423,13 +427,39 @@ drawLogbookCursor :: Select -> LogbookCursor -> Maybe (Widget ResourceName)
 drawLogbookCursor _ lbc =
     case lbc of
         LogbookCursorClosed Nothing -> Nothing
-        _ -> Just $ strWrap $ show lbc
+        LogbookCursorClosed (Just ne) ->
+            Just $
+            vBox $ map drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
+        LogbookCursorOpen u ne ->
+            Just $
+            vBox $
+            hBox [str "CLOCK: ", drawLogbookTimestamp u] :
+            map
+                drawLogbookEntry
+                (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
 
-drawLogbook :: Logbook -> Maybe (Widget ResourceName)
+drawLogbook :: Logbook -> Maybe (Widget n)
 drawLogbook (LogClosed ls)
     | null ls = Nothing
-    | otherwise = Just $ strWrap $ show ls
-drawLogbook lb = Just $ strWrap $ show lb
+    | otherwise = Just $ vBox $ map drawLogbookEntry ls
+drawLogbook (LogOpen u ls) =
+    Just $
+    vBox $
+    hBox [str "CLOCK: ", drawLogbookTimestamp u] : map drawLogbookEntry ls
+
+drawLogbookEntry :: LogbookEntry -> Widget n
+drawLogbookEntry LogbookEntry {..} =
+    hBox
+        [ str "CLOCK: "
+        , drawLogbookTimestamp logbookEntryStart
+        , str "--"
+        , drawLogbookTimestamp logbookEntryEnd
+        ]
+
+drawLogbookTimestamp :: UTCTime -> Widget n
+drawLogbookTimestamp utct =
+    str "[" <+>
+    str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" utct) <+> str "]"
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =

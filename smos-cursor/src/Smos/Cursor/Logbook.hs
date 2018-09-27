@@ -4,6 +4,8 @@ module Smos.Cursor.Logbook
     ( LogbookCursor(..)
     , makeLogbookCursor
     , rebuildLogbookCursor
+    , logbookCursorClockIn
+    , logbookCursorClockOut
     ) where
 
 import GHC.Generics (Generic)
@@ -25,7 +27,10 @@ data LogbookCursor
     | LogbookCursorClosed (Maybe (NonEmptyCursor LogbookEntry))
     deriving (Show, Eq, Generic)
 
-instance Validity LogbookCursor
+instance Validity LogbookCursor where
+    validate lbc =
+        decorate "It rebuilds to a valid logbook" $
+        validate $ rebuildLogbookCursor lbc
 
 makeLogbookCursor :: Logbook -> LogbookCursor
 makeLogbookCursor l =
@@ -42,3 +47,22 @@ rebuildLogbookCursor lc =
             LogOpen ut $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
         LogbookCursorClosed mnec ->
             LogClosed $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
+
+logbookCursorClockIn :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
+logbookCursorClockIn utct lbc =
+    case lbc of
+        LogbookCursorClosed lbes -> constructValid $ LogbookCursorOpen utct lbes
+        LogbookCursorOpen _ _ -> Nothing
+
+logbookCursorClockOut :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
+logbookCursorClockOut utct lbc =
+    case lbc of
+        LogbookCursorOpen u lbes ->
+            constructValid $
+            LogbookCursorClosed $
+            let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
+            in Just $
+               case lbes of
+                   Nothing -> singletonNonEmptyCursor e
+                   Just ne -> nonEmptyCursorInsertAtStart e ne
+        LogbookCursorClosed _ -> Nothing
