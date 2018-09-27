@@ -167,8 +167,18 @@ smosFileCursorDemoteSubTree :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorDemoteSubTree = forestCursorDemoteSubTree rebuild make
 
 smosFileCursorClockOutEverywhere :: UTCTime -> SmosFileCursor -> SmosFileCursor
-smosFileCursorClockOutEverywhere now = mapForestCursor (fmap goEC) (fmap goE)
+smosFileCursorClockOutEverywhere now =
+    mapForestCursor
+        (mapAndUncollapseIfChanged goEC)
+        (mapAndUncollapseIfChanged goE)
   where
+    mapAndUncollapseIfChanged ::
+           Eq a => (a -> a) -> CollapseEntry a -> CollapseEntry a
+    mapAndUncollapseIfChanged func ce =
+        let ce' = func <$> ce
+        in if ce' == ce
+               then ce'
+               else ce' {collapseEntryShowLogbook = True}
     goEC :: EntryCursor -> EntryCursor
     goEC =
         entryCursorLogbookCursorL %~
