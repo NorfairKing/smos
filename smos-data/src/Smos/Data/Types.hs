@@ -56,6 +56,8 @@ import Data.Validity.Text ()
 import Data.Validity.Time ()
 
 import Data.Aeson as JSON
+import Data.List
+import Data.Ord
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -408,7 +410,8 @@ newtype StateHistory = StateHistory
     { unStateHistory :: [StateHistoryEntry]
     } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
 
-instance Validity StateHistory
+instance Validity StateHistory where
+    validate st@(StateHistory hs) = genericValidate st <> declare "The entries are stored in reverse chronological order" (hs <= sort hs)
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -419,7 +422,10 @@ nullStateHistory = (== emptyStateHistory)
 data StateHistoryEntry = StateHistoryEntry
     { stateHistoryEntryNewState :: Maybe TodoState
     , stateHistoryEntryTimestamp :: UTCTime
-    } deriving (Show, Eq, Ord, Generic)
+    } deriving (Show, Eq, Generic)
+
+instance Ord StateHistoryEntry where
+    compare = mconcat [comparing stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
 
 instance Validity StateHistoryEntry
 

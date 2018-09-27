@@ -355,15 +355,8 @@ drawCurrentStateFromCursor =
     drawCurrentState . StateHistory . NE.toList . rebuildStateHistoryCursor
 
 drawCurrentState :: StateHistory -> Maybe (Widget ResourceName)
-drawCurrentState (StateHistory ls)
-    | null ls = Nothing
-    | otherwise =
-        case reverse ls of
-            (she:_) ->
-                case stateHistoryEntryNewState she of
-                    Nothing -> Nothing
-                    Just ts -> Just $ withAttr todoStateAttr $ drawTodoState ts
-            _ -> Nothing
+drawCurrentState stateHistory = stateHistoryState stateHistory <&>
+    \ts -> withAttr todoStateAttr $ drawTodoState ts <+> str " "
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
