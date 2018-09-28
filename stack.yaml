@@ -7,6 +7,16 @@ packages:
 - smos-cursor-gen
 - smos-report
 extra-deps:
+- git: https://github.com/NorfairKing/cursor-fuzzy-time.git
+  commit: cf74eb27fb785a3c0bc69234f6d248937fa65df1
+  subdirs:
+    - cursor-fuzzy-time
+    - cursor-fuzzy-time-gen
+- git: https://github.com/NorfairKing/fuzzy-time.git
+  commit: 765afdf9a18566007f26499398a04f3fac6435cd
+  subdirs:
+    - fuzzy-time
+    - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
   commit: 5ca82015227043a5fb6110082701b11c926fc0ce
   subdirs:
