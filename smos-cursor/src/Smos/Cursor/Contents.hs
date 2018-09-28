@@ -1,5 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Smos.Cursor.Contents
-    ( ContentsCursor(..)
+    ( ContentsCursor
     , emptyContentsCursor
     , makeContentsCursor
     , makeContentsCursorWithSelection
@@ -23,10 +25,7 @@ module Smos.Cursor.Contents
     , contentsCursorSelectEndOfLine
     ) where
 
-import Data.List.NonEmpty (NonEmpty)
-import Data.Text (Text)
-
-import Lens.Micro
+import qualified Data.Text as T
 
 import Cursor.TextField
 
@@ -42,7 +41,8 @@ makeContentsCursor = makeTextFieldCursor . contentsText
 
 makeContentsCursorWithSelection ::
        Int -> Int -> Contents -> Maybe ContentsCursor
-makeContentsCursorWithSelection x y = makeTextFieldCursorWithSelection x y . contentsText
+makeContentsCursorWithSelection x y =
+    makeTextFieldCursorWithSelection x y . contentsText
 
 rebuildContentsCursor :: ContentsCursor -> Contents
 rebuildContentsCursor = Contents . rebuildTextFieldCursor
@@ -74,17 +74,29 @@ contentsCursorIndexOnLine = textFieldCursorIndexOnLine
 contentsCursorSelectIndexOnLine :: Int -> ContentsCursor -> ContentsCursor
 contentsCursorSelectIndexOnLine = textFieldCursorSelectIndexOnLine
 
-contentsCursorInsertChar :: Char -> ContentsCursor -> ContentsCursor
-contentsCursorInsertChar = textFieldCursorInsertChar
+contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> ContentsCursor
+contentsCursorInsertChar c mcc =
+    case mcc of
+        Nothing -> makeTextFieldCursor (T.pack [c])
+        Just cc -> textFieldCursorInsertChar c cc
 
-contentsCursorAppendChar :: Char -> ContentsCursor -> ContentsCursor
-contentsCursorAppendChar = textFieldCursorAppendChar
+contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> ContentsCursor
+contentsCursorAppendChar c mcc =
+    case mcc of
+        Nothing -> makeTextFieldCursor (T.pack [c])
+        Just cc -> textFieldCursorAppendChar c cc
 
-contentsCursorInsertNewline :: ContentsCursor -> ContentsCursor
-contentsCursorInsertNewline = textFieldCursorInsertNewline
+contentsCursorInsertNewline :: Maybe ContentsCursor -> ContentsCursor
+contentsCursorInsertNewline mcc =
+    case mcc of
+        Nothing -> makeTextFieldCursor "\n"
+        Just cc -> textFieldCursorInsertNewline cc
 
-contentsCursorAppendNewline :: ContentsCursor -> ContentsCursor
-contentsCursorAppendNewline = textFieldCursorAppendNewline
+contentsCursorAppendNewline :: Maybe ContentsCursor -> ContentsCursor
+contentsCursorAppendNewline mcc =
+    case mcc of
+        Nothing -> makeTextFieldCursor "\n"
+        Just cc -> textFieldCursorAppendNewline cc
 
 contentsCursorRemove :: ContentsCursor -> Maybe ContentsCursor
 contentsCursorRemove = textFieldCursorRemove

@@ -169,10 +169,14 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:55.087730687000+0000
+            - new-state: DONE
+              timestamp: 2018-09-28 22:23:35.672950217000+0000
           - header: right
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:54.587396709000+0000
+            - new-state: DONE
+              timestamp: 2018-09-28 22:23:36.400978298000+0000
           - header: previous line
             state-history:
             - new-state: TODO
@@ -207,10 +211,14 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:51.802217980000+0000
+            - new-state: DONE
+              timestamp: 2018-09-28 22:23:40.000935374000+0000
           - header: append character
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:51.421604784000+0000
+            - new-state: DONE
+              timestamp: 2018-09-28 22:23:40.552513152000+0000
           - header: open with vim
             state-history:
             - new-state: TODO
@@ -219,6 +227,10 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:50.471026225000+0000
+          - header: Delete contents when contents are empty and user presses backspace
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-28 22:23:58.273038969000+0000
       - entry:
           header: Clocking
           state-history:

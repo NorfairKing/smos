@@ -12,6 +12,7 @@ import Import hiding ((<+>))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Time
+import Data.Tuple
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
@@ -261,13 +262,13 @@ drawEntryCursor tc e =
             drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
           , [ str "..."
             | let e_ = rebuildEntryCursor ec
-              in or [ not (collapseEntryShowContents e) &&
-                      not (maybe False nullContents $ entryContents e_)
-                    , not (collapseEntryShowHistory e) &&
-                      not (nullStateHistory $ entryStateHistory e_)
-                    , not (collapseEntryShowLogbook e) &&
-                      not (nullLogbook $ entryLogbook e_)
-                     ]
+               in or [ not (collapseEntryShowContents e) &&
+                       not (isNothing $ entryContents e_)
+                     , not (collapseEntryShowHistory e) &&
+                       not (nullStateHistory $ entryStateHistory e_)
+                     , not (collapseEntryShowLogbook e) &&
+                       not (nullLogbook $ entryLogbook e_)
+                      ]
             ]
           , [str "+++" | tc == TreeIsCollapsed]
           ]
@@ -281,7 +282,8 @@ drawEntryCursor tc e =
         , drawIfM collapseEntryShowHistory $
           entryCursorStateHistoryCursor >>=
           drawStateHistoryCursor (selectWhen StateHistorySelected)
-        , drawIfM collapseEntryShowLogbook $ drawLogbookCursor
+        , drawIfM collapseEntryShowLogbook $
+          drawLogbookCursor
               (selectWhen LogbookSelected)
               entryCursorLogbookCursor
         ]
@@ -319,7 +321,7 @@ drawEntry tc e =
               , maybeToList (drawTags entryTags)
               , [ str "..."
                 | or [ not (collapseEntryShowContents e) &&
-                       not (maybe False nullContents entryContents)
+                       not (isNothing entryContents)
                      , not (collapseEntryShowHistory e) &&
                        not (nullStateHistory entryStateHistory)
                      , not (collapseEntryShowLogbook e) &&
@@ -471,7 +473,15 @@ drawTextCursor s tc =
     txtWrap (rebuildTextCursor tc)
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
-drawTextFieldCursor _ = strWrap . show
+drawTextFieldCursor s tfc =
+    (case s of
+         MaybeSelected ->
+             visible .
+             showCursor
+                 textCursorName
+                 (B.Location (swap (textFieldCursorSelection tfc)))
+         _ -> id) $
+    txtWrap (rebuildTextFieldCursor tfc)
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =

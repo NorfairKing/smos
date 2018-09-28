@@ -15,6 +15,7 @@
  -}
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
+    , module Smos.Cursor.Contents
     , module Smos.Cursor.Editor
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
@@ -31,6 +32,7 @@ import Cursor.Types
 
 import Smos.Data
 
+import Smos.Cursor.Contents
 import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
@@ -53,6 +55,24 @@ modifyHeaderCursorWhenSelected func =
     modifyEntryCursor $ \ec ->
         case entryCursorSelected ec of
             HeaderSelected -> ec & entryCursorHeaderCursorL %~ func
+            _ -> ec
+
+modifyContentsCursorWhenSelectedM ::
+       (ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
+modifyContentsCursorWhenSelectedM func = modifyContentsCursorWhenSelected  $ \cc -> fromMaybe cc $ func cc
+modifyContentsCursorWhenSelected ::
+       (ContentsCursor -> ContentsCursor) -> SmosM ()
+modifyContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ fmap func
+modifyMContentsCursorWhenSelected ::
+       (Maybe ContentsCursor -> ContentsCursor) -> SmosM ()
+modifyMContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ Just .  func
+
+modifyMContentsCursorWhenSelectedM ::
+       (Maybe ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
+modifyMContentsCursorWhenSelectedM func =
+    modifyEntryCursor $ \ec ->
+        case entryCursorSelected ec of
+            ContentsSelected -> ec & entryCursorContentsCursorL %~ func
             _ -> ec
 
 modifyTagsCursorMD ::

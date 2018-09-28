@@ -6,6 +6,7 @@ module Smos.Actions
     , ActionUsing(..)
     , AnyAction(..)
     , module Smos.Actions
+    , module Smos.Actions.Contents
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
@@ -18,6 +19,7 @@ module Smos.Actions
 import Smos.Types
 
 import Smos.Actions.Entry
+import Smos.Actions.Contents
 import Smos.Actions.Forest
 import Smos.Actions.Header
 import Smos.Actions.Logbook
@@ -39,6 +41,7 @@ allPlainActions =
           , hideDebug
           , toggleDebug
           ]
+        , allContentsPlainActions
         , allHeaderPlainActions
         , allLogbookPlainActions
         , allEntryPlainActions
@@ -51,6 +54,7 @@ allUsingCharActions :: [ActionUsing Char]
 allUsingCharActions =
     concat
         [ allHeaderUsingCharActions
+        , allContentsUsingCharActions
         , allEntryUsingCharActions
         , allForestUsingCharActions
         , allUndoUsingCharActions
