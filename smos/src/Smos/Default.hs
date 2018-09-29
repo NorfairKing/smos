@@ -31,7 +31,9 @@ defaultKeyMap =
                   , exactChar 'I' entrySelectHeaderAtStart
                   -- Movements
                   , exactChar 'k' forestMoveUp
+                  , exactKey KUp forestMoveUp
                   , exactChar 'j' forestMoveDown
+                  , exactKey KUp forestMoveDown
                   , exactString "gg" forestMoveToFirst
                   , exactChar 'G' forestMoveToLast
                   -- Swaps

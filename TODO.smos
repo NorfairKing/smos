@@ -31,6 +31,8 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-21 08:06:45.239417753000+0000
+        - new-state: DONE
+          timestamp: 2018-09-29 10:41:28.649369118000+0000
       forest:
       - entry:
           header: Movements
@@ -57,6 +59,8 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-11 10:15:24.420049458000+0000
+          - new-state: DONE
+            timestamp: 2018-09-29 10:41:28.073756503000+0000
         forest:
         - header: Insert an entry (and start editing the header) on a level above
             the current level corresponding to the next entry
@@ -75,6 +79,8 @@
             timestamp: 2018-09-21 08:01:29.455398662000+0000
           - new-state: TODO
             timestamp: 2018-09-21 08:01:34.439407216000+0000
+          - new-state: DONE
+            timestamp: 2018-09-29 10:41:27.641412552000+0000
     - entry:
         header: Shift an entire tree
         state-history:
@@ -166,6 +172,8 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-21 07:59:54.319364042000+0000
+            - new-state: DONE
+              timestamp: 2018-09-29 10:45:31.209763026000+0000
           forest:
           - header: left
             state-history:
@@ -203,14 +211,6 @@
               timestamp: 2018-09-11 09:44:53.041159332000+0000
             - new-state: DONE
               timestamp: 2018-09-29 10:34:30.561531668000+0000
-          - header: to first line
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-09-11 09:44:52.648917052000+0000
-          - header: to last line
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-09-11 09:44:52.240744706000+0000
         - entry:
             header: Manipulations
             state-history:
@@ -241,20 +241,39 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-28 22:23:58.273038969000+0000
+        - entry:
+            header: Bugs
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:43:16.953794655000+0000
+          forest:
+          - header: Drawing empty contents should draw an empty line with a cursor
+              on
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:34:26.497331080000+0000
+          - header: When a line wraps, the cursor is still on the previous line, even
+              though that's no longer where the user is typing
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:43:55.881352062000+0000
+          - header: The contents use line-wrapping when selected, but not otherwise,
+              this should be the same behaviour
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:44:27.705758253000+0000
           - header: Starting to type in contents should put the cursor behind the
               first character, not in front
             state-history:
             - new-state: TODO
               timestamp: 2018-09-29 10:34:08.193680958000+0000
-        - header: Drawing empty contents should draw an empty line with a cursor on
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-29 10:34:26.497331080000+0000
       - entry:
           header: Clocking
           state-history:
           - new-state: TODO
             timestamp: 2018-09-22 08:27:52.465568347000+0000
+          - new-state: DONE
+            timestamp: 2018-09-29 10:47:38.953367955000+0000
         forest:
         - header: Clock-in here
           state-history:
@@ -280,15 +299,13 @@
             timestamp: 2018-09-22 08:29:09.929562928000+0000
           - new-state: DONE
             timestamp: 2018-09-27 12:07:48.621767523000+0000
-        - header: Also clock-out anywhere also in other files
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-22 08:29:23.945647335000+0000
       - entry:
           header: Tags
           state-history:
           - new-state: TODO
             timestamp: 2018-09-21 07:59:22.327406503000+0000
+          - new-state: DONE
+            timestamp: 2018-09-29 10:48:00.049800660000+0000
         forest:
         - header: Set predefined tags
           state-history:
@@ -296,10 +313,6 @@
             timestamp: 2018-09-21 07:59:27.911398593000+0000
           - new-state: DONE
             timestamp: 2018-09-25 19:10:09.492953549000+0000
-        - header: Edit tags in a freeform manner
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-09-21 07:59:33.639419606000+0000
       - entry:
           header: Timestamps
           state-history:
@@ -362,3 +375,75 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-11 19:40:01.436108571000+0000
+  - entry:
+      header: Non-critical, but probably useful at some point
+      contents: ''
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-29 10:41:16.337481922000+0000
+    forest:
+    - header: Inserting an entry below the current one, but above the current level
+      contents: ! 'This is not critical because the user can user can just start a
+        new heading
+
+        with ''h'' or so, and then promote it until the desired level.'
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-29 10:41:15.921361869000+0000
+    - header: Copy-pasting
+      contents: ! 'also not critical, because the user can just use swapping and promoting/demoting
+        to move the entry to the desired place.
+
+        When it comes to multiple entries to move, that''s a bit cumbersome, but still
+        not critical.
+
+'
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-29 10:42:19.961781171000+0000
+    - entry:
+        header: Editing
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-29 10:45:28.601753945000+0000
+      forest:
+      - entry:
+          header: Entry
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-29 10:45:28.153760546000+0000
+        forest:
+        - entry:
+            header: Contents
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:45:27.801710608000+0000
+          forest:
+          - header: to first line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:52.648917052000+0000
+          - header: to last line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-11 09:44:52.240744706000+0000
+        - entry:
+            header: Clocking
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:47:34.849786330000+0000
+          forest:
+          - header: Also clock-out anywhere also in other files
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-22 08:29:23.945647335000+0000
+        - entry:
+            header: Tags
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 10:47:58.465782880000+0000
+          forest:
+          - header: Edit tags in a freeform manner
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-21 07:59:33.639419606000+0000
