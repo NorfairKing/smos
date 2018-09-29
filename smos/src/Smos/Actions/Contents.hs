@@ -81,7 +81,7 @@ contentsRemove :: Action
 contentsRemove =
     Action
         { actionName = "contentsRemove"
-        , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorRemove
+        , actionFunc = modifyContentsCursorWhenSelectedDM contentsCursorRemove
         , actionDescription = "Remove a character from the contents"
         }
 
@@ -89,7 +89,7 @@ contentsDelete :: Action
 contentsDelete =
     Action
         { actionName = "contentsDelete"
-        , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorDelete
+        , actionFunc = modifyContentsCursorWhenSelectedDM contentsCursorDelete
         , actionDescription = "Remove a character from the contents"
         }
 

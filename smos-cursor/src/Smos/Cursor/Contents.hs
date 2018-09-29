@@ -2,10 +2,11 @@
 
 module Smos.Cursor.Contents
     ( ContentsCursor
-    , emptyContentsCursor
     , makeContentsCursor
     , makeContentsCursorWithSelection
     , rebuildContentsCursor
+    , emptyContentsCursor
+    , nullContentsCursor
     , contentsCursorSelection
     , contentsCursorSelectPrevLine
     , contentsCursorSelectNextLine
@@ -28,13 +29,11 @@ module Smos.Cursor.Contents
 import qualified Data.Text as T
 
 import Cursor.TextField
+import Cursor.Types
 
 import Smos.Data.Types
 
 type ContentsCursor = TextFieldCursor
-
-emptyContentsCursor :: ContentsCursor
-emptyContentsCursor = emptyTextFieldCursor
 
 makeContentsCursor :: Contents -> ContentsCursor
 makeContentsCursor = makeTextFieldCursor . contentsText
@@ -46,6 +45,12 @@ makeContentsCursorWithSelection x y =
 
 rebuildContentsCursor :: ContentsCursor -> Contents
 rebuildContentsCursor = Contents . rebuildTextFieldCursor
+
+emptyContentsCursor :: ContentsCursor
+emptyContentsCursor = emptyTextFieldCursor
+
+nullContentsCursor :: ContentsCursor -> Bool
+nullContentsCursor = nullTextFieldCursor
 
 contentsCursorSelection :: ContentsCursor -> (Int, Int)
 contentsCursorSelection = textFieldCursorSelection
@@ -98,10 +103,10 @@ contentsCursorAppendNewline mcc =
         Nothing -> makeTextFieldCursor "\n"
         Just cc -> textFieldCursorAppendNewline cc
 
-contentsCursorRemove :: ContentsCursor -> Maybe ContentsCursor
+contentsCursorRemove :: ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)
 contentsCursorRemove = textFieldCursorRemove
 
-contentsCursorDelete :: ContentsCursor -> Maybe ContentsCursor
+contentsCursorDelete :: ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)
 contentsCursorDelete = textFieldCursorDelete
 
 contentsCursorSelectStartOfLine :: ContentsCursor -> ContentsCursor

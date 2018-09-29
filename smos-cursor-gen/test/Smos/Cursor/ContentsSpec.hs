@@ -5,6 +5,8 @@ module Smos.Cursor.ContentsSpec where
 import Test.Hspec
 import Test.Validity
 
+import Cursor.Types
+
 import Smos.Data.Gen ()
 
 import Smos.Cursor.Contents
@@ -27,11 +29,11 @@ spec = do
         it "rebuilds the current cursor when given the current selection" $
             forAllValid $ \cc ->
                 let (x, y) = contentsCursorSelection cc
-                in makeContentsCursorWithSelection
-                       x
-                       y
-                       (rebuildContentsCursor cc) `shouldBe`
-                   Just cc
+                 in makeContentsCursorWithSelection
+                        x
+                        y
+                        (rebuildContentsCursor cc) `shouldBe`
+                    Just cc
     describe "contentsCursorSelection" $
         it "produces valid cursors" $
         producesValidsOnValids contentsCursorSelection
@@ -71,12 +73,16 @@ spec = do
     describe "contentsCursorAppendNewline" $
         it "produces valid cursors" $
         producesValidsOnValids contentsCursorAppendNewline
-    describe "contentsCursorRemove" $
+    describe "contentsCursorRemove" $ do
         it "produces valid cursors" $
-        producesValidsOnValids contentsCursorRemove
-    describe "contentsCursorDelete" $
+            producesValidsOnValids contentsCursorRemove
+        it "removes the contents cursor if the contents cursor was empty" $
+            contentsCursorRemove emptyContentsCursor `shouldBe` Just Deleted
+    describe "contentsCursorDelete" $ do
         it "produces valid cursors" $
-        producesValidsOnValids contentsCursorDelete
+            producesValidsOnValids contentsCursorDelete
+        it "removes the contents cursor if the contents cursor was empty" $
+            contentsCursorDelete emptyContentsCursor `shouldBe` Just Deleted
     describe "contentsCursorSelectStartOfLine" $
         it "produces valid cursors" $
         producesValidsOnValids contentsCursorSelectStartOfLine

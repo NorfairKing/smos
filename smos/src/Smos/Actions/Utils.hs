@@ -5,7 +5,7 @@
  -
  - modifyMXXXM :: (Maybe X -> Maybe X) -> SmosM ()                   -- Modify a Maybe field in SmosM
  - modifyMXXXSM :: (Maybe X -> SmosM (Maybe X)) -> SmosM ()          -- Modify a Maybe field in SmosM
- - modifyMXXXMD :: (Maybe X -> DeleteOrUpdate X) -> SmosM ()         -- Modify a Maybe field purely,  possibly delete
+ - modifyMXXXD :: (Maybe X -> DeleteOrUpdate X) -> SmosM ()          -- Modify a Maybe field purely,  possibly delete
  - modifyMXXXMD :: (Maybe X -> Maybe (DeleteOrUpdate X)) -> SmosM () -- Modify a Maybe field purely, don't do anything if 'Nothing', possibly delete
  - modifyXXXMD :: (X -> Maybe (DeleteOrUpdate X)) -> SmosM ()        -- Modify purely, don't do anything if 'Nothing', possibly delete
  - modifyXXXM :: (X -> Maybe X) -> SmosM ()                          -- Modify purely, don't do anything if 'Nothing'
@@ -57,22 +57,43 @@ modifyHeaderCursorWhenSelected func =
             HeaderSelected -> ec & entryCursorHeaderCursorL %~ func
             _ -> ec
 
+modifyContentsCursorWhenSelectedDM ::
+       (ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)) -> SmosM ()
+modifyContentsCursorWhenSelectedDM func =
+    modifyMContentsCursorWhenSelectedM $ \mcc -> do
+        cc <- mcc
+        case func cc of
+            Nothing -> Just cc
+            Just doucc ->
+                case doucc of
+                    Deleted -> Nothing
+                    Updated cc' -> Just cc'
+
 modifyContentsCursorWhenSelectedM ::
        (ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
-modifyContentsCursorWhenSelectedM func = modifyContentsCursorWhenSelected  $ \cc -> fromMaybe cc $ func cc
+modifyContentsCursorWhenSelectedM func =
+    modifyContentsCursorWhenSelected $ \cc -> fromMaybe cc $ func cc
+
 modifyContentsCursorWhenSelected ::
        (ContentsCursor -> ContentsCursor) -> SmosM ()
-modifyContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ fmap func
+modifyContentsCursorWhenSelected func =
+    modifyMContentsCursorWhenSelectedM $ fmap func
+
 modifyMContentsCursorWhenSelected ::
        (Maybe ContentsCursor -> ContentsCursor) -> SmosM ()
-modifyMContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ Just .  func
+modifyMContentsCursorWhenSelected func =
+    modifyMContentsCursorWhenSelectedM $ Just . func
 
 modifyMContentsCursorWhenSelectedM ::
        (Maybe ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
 modifyMContentsCursorWhenSelectedM func =
     modifyEntryCursor $ \ec ->
         case entryCursorSelected ec of
-            ContentsSelected -> ec & entryCursorContentsCursorL %~ func
+            ContentsSelected ->
+                let ec' = ec & entryCursorContentsCursorL %~ func
+                 in if isNothing $ entryCursorContentsCursor ec'
+                        then ec' {entryCursorSelected = WholeEntrySelected}
+                        else ec'
             _ -> ec
 
 modifyTagsCursorMD ::

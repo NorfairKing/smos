@@ -33,7 +33,7 @@ defaultKeyMap =
                   , exactChar 'k' forestMoveUp
                   , exactKey KUp forestMoveUp
                   , exactChar 'j' forestMoveDown
-                  , exactKey KUp forestMoveDown
+                  , exactKey KDown forestMoveDown
                   , exactString "gg" forestMoveToFirst
                   , exactChar 'G' forestMoveToLast
                   -- Swaps
