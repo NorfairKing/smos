@@ -66,7 +66,9 @@ defaultKeyMap =
                   , exactChar '\t' forestToggleCollapse
                   , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
-                  , combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents
+                  , combo
+                        [KeyPress KEnter [], KeyPress KEnter []]
+                        entrySelectContents
                   ]
         , keyMapHeaderMatchers =
               listMatchers
@@ -89,6 +91,10 @@ defaultKeyMap =
                   , exactKey KDel contentsDelete
                   , exactKey KLeft contentsMoveLeft
                   , exactKey KRight contentsMoveRight
+                  , exactKey KUp contentsMoveUp
+                  , exactKey KDown contentsMoveDown
+                  , exactKey KHome contentsMoveToStartOfLine
+                  , exactKey KEnd contentsMoveToEndOfLine
                   ]
         , keyMapTimestampsMatchers =
               listMatchers [exactKey KEsc entrySelectWhole]
