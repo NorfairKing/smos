@@ -1,27 +1,13 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Smos.Report.OptParse.Types where
+module Smos.Report.OptParse.Types
+    ( module Smos.Report.OptParse.Types
+    , module Smos.Report.ShouldPrint
+    ) where
 
 import Import
 
-import Data.Configurator.Types
-import qualified Data.Text as T
-
-data ShouldPrint
-    = PrintError
-    | PrintWarning
-    | DontPrint
-    deriving (Show, Eq)
-
-parseShouldPrint :: String -> Maybe ShouldPrint
-parseShouldPrint "error" = Just PrintError
-parseShouldPrint "warning" = Just PrintWarning
-parseShouldPrint "nothing" = Just DontPrint
-parseShouldPrint _ = Nothing
-
-instance Configured ShouldPrint where
-    convert (String t) = parseShouldPrint $ T.unpack t
-    convert _ = Nothing
+import Smos.Report.ShouldPrint
 
 type Arguments = (Command, Flags)
 

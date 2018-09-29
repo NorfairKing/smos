@@ -35,7 +35,7 @@ stateHistoryCursorModTodoState now func mshc =
         Just shc ->
             case rebuildNonEmptyCursor shc of
                 StateHistoryEntry mts _ :| _ ->
-                    nonEmptyCursorAppendAtEnd
+                    nonEmptyCursorInsertAtStart
                         (StateHistoryEntry (func mts) now)
                         shc
 
