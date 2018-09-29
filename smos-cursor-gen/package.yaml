@@ -35,10 +35,11 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - hspec
-    - smos-data
-    - smos-data-gen
-    - smos-cursor
-    - smos-cursor-gen
+    - cursor
     - genvalidity-hspec
     - genvalidity-hspec-optics
+    - hspec
+    - smos-cursor
+    - smos-cursor-gen
+    - smos-data
+    - smos-data-gen

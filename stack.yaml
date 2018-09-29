@@ -8,7 +8,7 @@ packages:
 - smos-report
 extra-deps:
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 985e8fe0d62a7645aebffda3a486b70ca784b4d9
+  commit: 5ca82015227043a5fb6110082701b11c926fc0ce
   subdirs:
     - cursor
     - cursor-gen
