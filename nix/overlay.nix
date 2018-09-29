@@ -11,6 +11,7 @@ final:
               "smos-data-gen"
               "smos-cursor"
               "smos-cursor-gen"
+              "smos-report"
             ] smosPkg;
       haskellPackages = previous.haskellPackages.override (old: {
         overrides = final.lib.composeExtensions (old.overrides or (_: _: {})) (
