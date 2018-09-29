@@ -82,6 +82,12 @@ defaultKeyMap =
                   , exactKey KRight headerMoveRight
                   , exactKey KHome headerMoveToStart
                   , exactKey KEnd headerMoveToEnd
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   ]
         , keyMapContentsMatchers =
               listMatchers
@@ -96,6 +102,12 @@ defaultKeyMap =
                   , exactKey KDown contentsMoveDown
                   , exactKey KHome contentsMoveToStartOfLine
                   , exactKey KEnd contentsMoveToEndOfLine
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   ]
         , keyMapTimestampsMatchers =
               listMatchers [exactKey KEsc entrySelectWhole]
