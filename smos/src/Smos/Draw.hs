@@ -371,7 +371,11 @@ drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
 
 drawContents :: Contents -> Widget ResourceName
-drawContents = txt . contentsText
+drawContents c =
+    txtWrap $
+    case contentsText c of
+        "" -> " "
+        t -> t
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
 drawTimestampsCursor _ = strWrap . show
@@ -470,7 +474,10 @@ drawTextCursor s tc =
              visible .
              showCursor textCursorName (B.Location (textCursorIndex tc, 0))
          _ -> id) $
-    txtWrap (rebuildTextCursor tc)
+    txtWrap $
+    case rebuildTextCursor tc of
+        "" -> " "
+        t -> t
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
 drawTextFieldCursor s tfc =
@@ -481,7 +488,10 @@ drawTextFieldCursor s tfc =
                  textCursorName
                  (B.Location (swap (textFieldCursorSelection tfc)))
          _ -> id) $
-    txtWrap (rebuildTextFieldCursor tfc)
+    txtWrap $
+    case rebuildTextFieldCursor tfc of
+        "" -> " "
+        t -> t
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =

@@ -23,7 +23,6 @@ defaultKeyMap =
         , keyMapEntryMatchers =
               listMatchers
                   [ exactChar 'q' stop
-                  , exactKey KEsc stop
                   -- Selections
                   , exactChar 'a' entrySelectHeaderAtEnd
                   , exactChar 'A' entrySelectHeaderAtEnd

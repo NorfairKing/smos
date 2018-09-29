@@ -141,7 +141,9 @@ entryCursorSelectHeaderAtEnd =
     entryCursorSelect HeaderSelected
 
 entryCursorSelectContents :: EntryCursor -> EntryCursor
-entryCursorSelectContents = entryCursorSelect ContentsSelected
+entryCursorSelectContents =
+    (entryCursorContentsCursorL %~ (maybe (Just emptyContentsCursor) Just)) .
+    entryCursorSelect ContentsSelected
 
 entryCursorSelectTimestamps :: EntryCursor -> EntryCursor
 entryCursorSelectTimestamps = entryCursorSelect TimestampsSelected

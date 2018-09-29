@@ -26,8 +26,6 @@ module Smos.Cursor.Contents
     , contentsCursorSelectEndOfLine
     ) where
 
-import qualified Data.Text as T
-
 import Cursor.TextField
 import Cursor.Types
 
@@ -80,28 +78,16 @@ contentsCursorSelectIndexOnLine :: Int -> ContentsCursor -> ContentsCursor
 contentsCursorSelectIndexOnLine = textFieldCursorSelectIndexOnLine
 
 contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> ContentsCursor
-contentsCursorInsertChar c mcc =
-    case mcc of
-        Nothing -> makeTextFieldCursor (T.pack [c])
-        Just cc -> textFieldCursorInsertChar c cc
+contentsCursorInsertChar = textFieldCursorInsertChar
 
 contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> ContentsCursor
-contentsCursorAppendChar c mcc =
-    case mcc of
-        Nothing -> makeTextFieldCursor (T.pack [c])
-        Just cc -> textFieldCursorAppendChar c cc
+contentsCursorAppendChar = textFieldCursorAppendChar
 
 contentsCursorInsertNewline :: Maybe ContentsCursor -> ContentsCursor
-contentsCursorInsertNewline mcc =
-    case mcc of
-        Nothing -> makeTextFieldCursor "\n"
-        Just cc -> textFieldCursorInsertNewline cc
+contentsCursorInsertNewline = textFieldCursorInsertNewline
 
 contentsCursorAppendNewline :: Maybe ContentsCursor -> ContentsCursor
-contentsCursorAppendNewline mcc =
-    case mcc of
-        Nothing -> makeTextFieldCursor "\n"
-        Just cc -> textFieldCursorAppendNewline cc
+contentsCursorAppendNewline = textFieldCursorAppendNewline
 
 contentsCursorRemove :: ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)
 contentsCursorRemove = textFieldCursorRemove
