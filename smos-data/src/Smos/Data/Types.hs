@@ -425,7 +425,7 @@ data StateHistoryEntry = StateHistoryEntry
     } deriving (Show, Eq, Generic)
 
 instance Ord StateHistoryEntry where
-    compare = mconcat [comparing stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
+    compare = mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
 
 instance Validity StateHistoryEntry
 

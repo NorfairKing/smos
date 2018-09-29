@@ -13,6 +13,7 @@ import Smos.Cursor.Contents.Gen ()
 import Smos.Cursor.Header.Gen ()
 import Smos.Cursor.Logbook.Gen ()
 import Smos.Cursor.Properties.Gen ()
+import Smos.Cursor.StateHistory.Gen ()
 import Smos.Cursor.Tags.Gen ()
 import Smos.Cursor.Timestamps.Gen ()
 

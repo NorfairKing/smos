@@ -353,12 +353,12 @@ drawHeader :: Header -> Widget ResourceName
 drawHeader = txtWrap . headerText
 
 drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
-drawCurrentStateFromCursor =
-    drawCurrentState . StateHistory . NE.toList . rebuildStateHistoryCursor
+drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
 
 drawCurrentState :: StateHistory -> Maybe (Widget ResourceName)
-drawCurrentState stateHistory = stateHistoryState stateHistory <&>
-    \ts -> withAttr todoStateAttr $ drawTodoState ts <+> str " "
+drawCurrentState stateHistory =
+    stateHistoryState stateHistory <&> \ts ->
+        withAttr todoStateAttr $ drawTodoState ts <+> str " "
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
@@ -389,7 +389,7 @@ drawProperties m
 drawStateHistoryCursor ::
        Select -> StateHistoryCursor -> Maybe (Widget ResourceName)
 drawStateHistoryCursor _ =
-    drawStateHistory . StateHistory . NE.toList . rebuildStateHistoryCursor
+    drawStateHistory . rebuildStateHistoryCursor . Just
 
 drawStateHistory :: StateHistory -> Maybe (Widget ResourceName)
 drawStateHistory (StateHistory ls)

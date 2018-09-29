@@ -135,7 +135,10 @@ modifyMTodoStateM :: (Maybe TodoState -> Maybe TodoState) -> SmosM ()
 modifyMTodoStateM func =
     modifyMStateHistoryCursorSM $ \mshc -> do
         now <- liftIO getCurrentTime
-        pure $ Just $ stateHistoryCursorModTodoState now func mshc
+        pure $
+            case stateHistoryCursorModTodoState now func mshc of
+                Nothing -> mshc
+                Just mshc' -> Just mshc'
 
 modifyMStateHistoryCursorSM ::
        (Maybe StateHistoryCursor -> SmosM (Maybe StateHistoryCursor))

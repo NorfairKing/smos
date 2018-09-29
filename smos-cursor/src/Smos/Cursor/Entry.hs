@@ -68,8 +68,7 @@ makeEntryCursor Entry {..} =
               makePropertiesCursor <$> NE.nonEmpty (M.toList entryProperties)
         , entryCursorTagsCursor = makeTagsCursor <$> NE.nonEmpty entryTags
         , entryCursorStateHistoryCursor =
-              makeStateHistoryCursor <$>
-              NE.nonEmpty (unStateHistory entryStateHistory)
+              makeStateHistoryCursor entryStateHistory
         , entryCursorLogbookCursor = makeLogbookCursor entryLogbook
         , entryCursorSelected = WholeEntrySelected
         }
@@ -89,9 +88,7 @@ rebuildEntryCursor EntryCursor {..} =
               maybe M.empty (M.fromList . NE.toList) $
               rebuildPropertiesCursor <$> entryCursorPropertiesCursor
         , entryStateHistory =
-              StateHistory $
-              maybe [] NE.toList $
-              rebuildStateHistoryCursor <$> entryCursorStateHistoryCursor
+              rebuildStateHistoryCursor entryCursorStateHistoryCursor
         , entryTags =
               maybe [] NE.toList $ rebuildTagsCursor <$> entryCursorTagsCursor
         , entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
