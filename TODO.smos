@@ -432,6 +432,15 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-11 09:44:50.869426333000+0000
+          - header: pressing up on the first line should jump to the start of the
+              line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 15:05:13.563201669000+0000
+          - header: pressing down on the last line should jump to the end of the line
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-29 15:05:03.251638722000+0000
         - entry:
             header: Clocking
             state-history:
@@ -458,20 +467,22 @@
         - new-state: TODO
           timestamp: 2018-09-29 13:12:58.362708848000+0000
       forest:
-      - header: Line wrapping cursor placement bug
-        contents: ! 'Both for headers and for cursors: when the line wraps, then the
-          cursor is still shown on the previous cursor'
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-29 14:41:16.667140383000+0000
       - header: contents newline
         contents: ! 'When contents end with a newline, the newline doesn''t take up
           a new line on screen.
 
           However, the blinking cursor is still in the right place.'
         state-history:
+        - new-state: DONE
+          timestamp: 2018-09-29 15:05:22.835248279000+0000
         - new-state: TODO
           timestamp: 2018-09-29 14:41:34.427187264000+0000
+      - header: Line wrapping cursor placement bug
+        contents: ! 'Both for headers and for cursors: when the line wraps, then the
+          cursor is still shown on the previous cursor'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-29 14:41:16.667140383000+0000
     - entry:
         header: Debugging
         state-history:

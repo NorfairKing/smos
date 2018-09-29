@@ -11,6 +11,7 @@ import Import hiding ((<+>))
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Data.Time
 import Data.Tuple
 
@@ -350,7 +351,7 @@ drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor = drawTextCursor
 
 drawHeader :: Header -> Widget ResourceName
-drawHeader = txtWrap . headerText
+drawHeader = drawText . headerText
 
 drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
 drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
@@ -358,17 +359,13 @@ drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
 drawCurrentState :: StateHistory -> Maybe (Widget ResourceName)
 drawCurrentState stateHistory =
     stateHistoryState stateHistory <&> \ts ->
-        withAttr todoStateAttr $ drawTodoState ts <+> str " "
+        withAttr todoStateAttr $ drawTodoState ts
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
 drawContentsCursor = drawTextFieldCursor
 
 drawContents :: Contents -> Widget ResourceName
-drawContents c =
-    txtWrap $
-    case contentsText c of
-        "" -> " "
-        t -> t
+drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
 drawTimestampsCursor _ = strWrap . show
@@ -388,8 +385,7 @@ drawProperties m
 
 drawStateHistoryCursor ::
        Select -> StateHistoryCursor -> Maybe (Widget ResourceName)
-drawStateHistoryCursor _ =
-    drawStateHistory . rebuildStateHistoryCursor . Just
+drawStateHistoryCursor _ = drawStateHistory . rebuildStateHistoryCursor . Just
 
 drawStateHistory :: StateHistory -> Maybe (Widget ResourceName)
 drawStateHistory (StateHistory ls)
@@ -467,10 +463,7 @@ drawTextCursor s tc =
              visible .
              showCursor textCursorName (B.Location (textCursorIndex tc, 0))
          _ -> id) $
-    txtWrap $
-    case rebuildTextCursor tc of
-        "" -> " "
-        t -> t
+    drawText $ rebuildTextCursor tc
 
 drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
 drawTextFieldCursor s tfc =
@@ -481,12 +474,18 @@ drawTextFieldCursor s tfc =
                  textCursorName
                  (B.Location (swap (textFieldCursorSelection tfc)))
          _ -> id) $
-    txtWrap $
-    case rebuildTextFieldCursor tfc of
-        "" -> " "
-        t -> t
+    drawText $ rebuildTextFieldCursor tfc
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =
     withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txt $
     todoStateText ts
+
+drawText :: Text -> Widget n
+drawText t = vBox $ map go $ T.splitOn "\n" t
+  where
+    go t =
+        txtWrap $
+        case t of
+            "" -> " "
+            _ -> t
