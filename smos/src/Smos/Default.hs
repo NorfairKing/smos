@@ -77,6 +77,8 @@ defaultKeyMap =
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"
                   -- Fast timestamps manipulation
+                  , exactString "sb" $ timestampsSelect "BEGIN"
+                  , exactString "se" $ timestampsSelect "END"
                   , exactString "sd" $ timestampsSelect "DEADLINE"
                   , exactString "ss" $ timestampsSelect "SCHEDULED"
                   -- Clocking

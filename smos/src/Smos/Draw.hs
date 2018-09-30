@@ -350,10 +350,10 @@ drawEntry tc e =
             else Nothing
 
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
-drawHeaderCursor = drawTextCursor
+drawHeaderCursor s = withAttr headerAttr . drawTextCursor s
 
 drawHeader :: Header -> Widget ResourceName
-drawHeader = drawText . headerText
+drawHeader = withAttr headerAttr . drawText . headerText
 
 drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
 drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
