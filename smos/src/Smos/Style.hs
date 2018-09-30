@@ -8,6 +8,8 @@ module Smos.Style
     , todoStateAttr
     , todoStateSpecificAttr
     , todoStateHistoryAttr
+    , timestampNameAttr
+    , timestampNameSpecificAttr
     , tagAttr
     , tagSpecificAttr
     -- * Names of widgets
@@ -44,6 +46,8 @@ defaultAttrMap _ =
             , (todoStateSpecificAttr "READY", fg brown)
             , (todoStateSpecificAttr "DONE", fg green)
             , (todoStateSpecificAttr "CANCELLED", fg green)
+            , (timestampNameSpecificAttr "SCHEDULED", fg orange)
+            , (timestampNameSpecificAttr "DEADLINE", fg red)
             , (selectedAttr <> tagAttr, fg brightWhite)
             ] $
         attrMap defAttr [(selectedAttr, fg V.white), (headerAttr, fg V.yellow)]
@@ -66,6 +70,13 @@ todoStateSpecificAttr tss =
 
 todoStateHistoryAttr :: AttrName
 todoStateHistoryAttr = "todostatehistory"
+
+timestampNameAttr :: AttrName
+timestampNameAttr = "timestampname"
+
+timestampNameSpecificAttr :: TimestampName -> AttrName
+timestampNameSpecificAttr tsn =
+    fromString $ "timestampname-" ++ T.unpack (timestampNameText tsn)
 
 tagAttr :: AttrName
 tagAttr = "tag"

@@ -6,7 +6,7 @@ module Smos.Cursor.Properties
 
 import Data.List.NonEmpty (NonEmpty)
 
-import Cursor.Map
+import Cursor.Simple.Map
 
 import Smos.Data.Types
 

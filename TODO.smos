@@ -21,6 +21,8 @@
   - entry:
       header: Editing
       state-history:
+      - new-state: DONE
+        timestamp: 2018-09-30 02:08:16.726347583000+0000
       - new-state: TODO
         timestamp: 2018-09-21 08:05:18.103452887000+0000
     forest:
@@ -146,6 +148,8 @@
     - entry:
         header: Entry
         state-history:
+        - new-state: DONE
+          timestamp: 2018-09-30 02:08:15.742296736000+0000
         - new-state: TODO
           timestamp: 2018-09-11 09:44:56.130831172000+0000
       forest:
@@ -312,11 +316,15 @@
       - entry:
           header: Timestamps
           state-history:
+          - new-state: DONE
+            timestamp: 2018-09-30 02:08:14.814300640000+0000
           - new-state: TODO
             timestamp: 2018-09-11 09:44:49.927229877000+0000
         forest:
         - header: Set predefined timestamp like deadline or scheduled
           state-history:
+          - new-state: DONE
+            timestamp: 2018-09-30 02:08:13.366326653000+0000
           - new-state: TODO
             timestamp: 2018-09-21 07:59:07.063611985000+0000
   - entry:
@@ -461,6 +469,16 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-21 07:59:33.639419606000+0000
+        - entry:
+            header: Timestamps
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-30 02:08:35.574873907000+0000
+          forest:
+          - header: Editing/adding non-predefined timestamps
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-09-30 02:08:48.814851189000+0000
     - entry:
         header: Display
         state-history:

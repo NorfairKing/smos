@@ -17,6 +17,8 @@ library:
   - containers
   - contravariant
   - cursor
+  - cursor-fuzzy-time
+  - fuzzy-time
   - megaparsec
   - microlens
   - mtl

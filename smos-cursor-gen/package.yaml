@@ -25,6 +25,8 @@ library:
   - smos-cursor
   - smos-data
   - smos-data-gen
+  - cursor-fuzzy-time
+  - cursor-fuzzy-time-gen
 
 tests:
   smos-cursor-test:
@@ -43,3 +45,5 @@ tests:
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - cursor-fuzzy-time
+    - cursor-fuzzy-time-gen
