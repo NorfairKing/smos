@@ -57,6 +57,22 @@ defaultKeyMap =
                   , exactString "td" $ entrySetTodoState "DONE"
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
+                  , exactString "Tt" $
+                    subtreeSetTodoState "TODO"
+                  , exactString "Tn" $
+                    subtreeSetTodoState "NEXT"
+                  , exactString "Ts" $
+                    subtreeSetTodoState "STARTED"
+                  , exactString "Tr" $
+                    subtreeSetTodoState "READY"
+                  , exactString "Tw" $
+                    subtreeSetTodoState "WAITING"
+                  , exactString "Td" $
+                    subtreeSetTodoState "DONE"
+                  , exactString "Tc" $
+                    subtreeSetTodoState "CANCELLED"
+                  , exactString "T "
+                        subtreeUnsetTodoState
                   -- Fast tag manipulation
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"

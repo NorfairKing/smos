@@ -54,3 +54,4 @@ instance GenUnchecked EntryCursorSelection
 
 instance GenValid EntryCursorSelection where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

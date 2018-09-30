@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Cursor.StateHistory
-    ( StateHistoryCursor
+    ( StateHistoryCursor(..)
     , makeStateHistoryCursor
     , rebuildStateHistoryCursor
     , stateHistoryCursorModTodoState

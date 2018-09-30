@@ -40,7 +40,9 @@ main = hspec spec
 spec :: Spec
 spec = do
     tfs <-
-        runIO $ do
+        runIO $
+            -- TODO verify that all plain actions and using char actions are unique
+         do
             resourcesDir <- resolveDir' "test_resources"
             fs <- snd <$> listDirRecur resourcesDir
             pure $ mapMaybe classify fs
@@ -76,31 +78,31 @@ matchUp tfs =
                 a <- findAfter b
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
             Commands c -> do
                 b <- findBefore c
                 a <- findAfter c
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
             After a -> do
                 b <- findBefore a
                 c <- findCommands a
                 pure $
                     GoldenTestCase
-                    { testCaseName = stripFileExtension b
-                    , beforeFile = b
-                    , commandsFile = c
-                    , afterFile = a
-                    }
+                        { testCaseName = stripFileExtension b
+                        , beforeFile = b
+                        , commandsFile = c
+                        , afterFile = a
+                        }
   where
     findBefore :: Path Abs File -> Either String (Path Abs File)
     findBefore p =
@@ -113,15 +115,16 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] -> Left $ unwords ["Before file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple Before files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] ->
+                    Left $ unwords ["Before file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple Before files found:"
+                        , show $ map fromAbsFile fs
+                        ]
     findCommands :: Path Abs File -> Either String (Path Abs File)
     findCommands p =
         let fs =
@@ -133,16 +136,17 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] ->
-                   Left $ unwords ["Commands file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple Commands files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] ->
+                    Left $
+                    unwords ["Commands file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple Commands files found:"
+                        , show $ map fromAbsFile fs
+                        ]
     findAfter :: Path Abs File -> Either String (Path Abs File)
     findAfter p =
         let fs =
@@ -154,15 +158,15 @@ matchUp tfs =
                                  else Nothing
                          _ -> Nothing)
                     tfs
-        in case fs of
-               [] -> Left $ unwords ["After file not found for", fromAbsFile p]
-               [f] -> Right f
-               _ ->
-                   Left $
-                   unwords
-                       [ "Multiple After files found:"
-                       , show $ map fromAbsFile fs
-                       ]
+         in case fs of
+                [] -> Left $ unwords ["After file not found for", fromAbsFile p]
+                [f] -> Right f
+                _ ->
+                    Left $
+                    unwords
+                        [ "Multiple After files found:"
+                        , show $ map fromAbsFile fs
+                        ]
 
 stripFileExtension :: Path b File -> Path b File
 stripFileExtension = fromJust . setFileExtension ""
@@ -241,9 +245,9 @@ runCommandsOn start commands = do
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
-        { intermidiaryResults = reverse rs
-        , finalResult = rebuildEditorCursor $ smosStateCursor fs
-        }
+            { intermidiaryResults = reverse rs
+            , finalResult = rebuildEditorCursor $ smosStateCursor fs
+            }
   where
     startState = initState $(mkAbsFile "/pretend/test/file") start
     testConf = SmosConfig {configKeyMap = mempty}
@@ -255,9 +259,9 @@ runCommandsOn start commands = do
             recordCursorHistory =
                 modify $ \ss_ ->
                     ss_
-                    { smosStateCursorHistory =
-                          smosStateCursor ss_ : smosStateCursorHistory ss_
-                    }
+                        { smosStateCursorHistory =
+                              smosStateCursor ss_ : smosStateCursorHistory ss_
+                        }
         let func = do
                 recordCursorHistory
                 case c of

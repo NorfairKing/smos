@@ -16,6 +16,7 @@ spec :: Spec
 spec = do
     eqSpec @ContentsCursor
     genValidSpec @ContentsCursor
+    shrinkValidSpecWithLimit @ContentsCursor 100
     describe "makeContentsCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeContentsCursor
     describe "rebuildContentsCursor" $ do

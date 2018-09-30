@@ -21,6 +21,7 @@ module Smos.Data
     ) where
 
 import Data.Aeson as JSON
+import Data.Validity
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
@@ -101,13 +102,15 @@ stateHistoryState (StateHistory tups) =
         (StateHistoryEntry mts _:_) -> mts
 
 stateHistorySetState ::
-       UTCTime -> Maybe TodoState -> StateHistory -> StateHistory
+       UTCTime -> Maybe TodoState -> StateHistory -> Maybe StateHistory
 stateHistorySetState now mts sh =
+    constructValid $
     sh {unStateHistory = StateHistoryEntry mts now : unStateHistory sh}
 
 entryState :: Entry -> Maybe TodoState
 entryState = stateHistoryState . entryStateHistory
 
-entrySetState :: UTCTime -> Maybe TodoState -> Entry -> Entry
-entrySetState now mts e =
-    e {entryStateHistory = stateHistorySetState now mts $ entryStateHistory e}
+entrySetState :: UTCTime -> Maybe TodoState -> Entry -> Maybe Entry
+entrySetState now mts e = do
+    sh' <- stateHistorySetState now mts $ entryStateHistory e
+    pure $ e {entryStateHistory = sh'}

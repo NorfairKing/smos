@@ -2,8 +2,6 @@
 
 module Smos.Data.Gen where
 
-import Data.List
-import qualified Data.Map as M
 import Data.Time
 
 import Test.QuickCheck
@@ -15,95 +13,85 @@ import Data.GenValidity.Time ()
 
 import Smos.Data
 
-instance GenUnchecked SmosFile where
-    shrinkUnchecked (SmosFile a) = SmosFile <$> shrinkUnchecked a
+instance GenUnchecked SmosFile
 
 instance GenValid SmosFile where
-    genValid = SmosFile <$> genValid
+    genValid = genValidStructurallyWithoutExtraChecking
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenUnchecked a => GenUnchecked (ForYaml a) where
-    shrinkUnchecked (ForYaml a) = ForYaml <$> shrinkUnchecked a
+instance GenUnchecked a => GenUnchecked (ForYaml a)
 
 instance GenValid a => GenValid (ForYaml a) where
-    genValid = ForYaml <$> genValid
+    genValid = genValidStructurallyWithoutExtraChecking
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenUnchecked Entry where
-    shrinkUnchecked entry =
-        filter (/= entry) . nub $
-        emptyEntry :
-        map ($ entry) entryResetFuncs ++ genericShrinkUnchecked entry
+instance GenUnchecked Entry
 
 instance GenValid Entry where
     genValid = genValidStructurally
-
-entryResetFuncs :: [(Entry -> Entry)]
-entryResetFuncs =
-    map (foldl (.) id) $
-    partitions
-        [ (\e -> e {entryHeader = emptyHeader})
-        , (\e -> e {entryContents = Nothing})
-        , (\e -> e {entryTimestamps = M.empty})
-        , (\e -> e {entryProperties = M.empty})
-        , (\e -> e {entryStateHistory = StateHistory []})
-        , (\e -> e {entryTags = []})
-        , (\e -> e {entryLogbook = LogClosed []})
-        ]
-
-partitions :: [a] -> [[a]]
-partitions [] = [[]]
-partitions (a:as) = do
-    p <- partitions as
-    [p, a : p]
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked Header
 
 instance GenValid Header where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Contents
 
 instance GenValid Contents where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked PropertyName
 
 instance GenValid PropertyName where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked PropertyValue
 
 instance GenValid PropertyValue where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked TimestampName
 
 instance GenValid TimestampName where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Timestamp
 
 instance GenValid Timestamp where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked TodoState
 
 instance GenValid TodoState where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked StateHistory
 
 instance GenValid StateHistory where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurally
 
-instance GenUnchecked StateHistoryEntry
+instance GenUnchecked StateHistoryEntry where
+    shrinkUnchecked (StateHistoryEntry mts ts) =
+        StateHistoryEntry <$> shrinkValid mts <*> pure ts
 
 instance GenValid StateHistoryEntry where
     genValid = genValidStructurally
+    shrinkValid = shrinkUnchecked
 
 instance GenUnchecked Tag
 
 instance GenValid Tag where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Logbook
 
@@ -139,29 +127,31 @@ instance GenValid Logbook where
                                                 end = addUTCTime ndt2 start
                                             pure $
                                                 LogbookEntry
-                                                { logbookEntryStart = start
-                                                , logbookEntryEnd = end
-                                                }
+                                                    { logbookEntryStart = start
+                                                    , logbookEntryEnd = end
+                                                    }
                             pure $ cur : lbes
                     go ss
-        in oneof
-               [ LogClosed <$> listOfLogbookEntries
-               , do lbes <- listOfLogbookEntries
-                    l <-
-                        case lbes of
-                            [] -> genValid
-                            (lbe:_) -> do
-                                ndt <- genPositiveNominalDiffTime
-                                pure $ addUTCTime ndt $ logbookEntryEnd lbe
-                    pure $ LogOpen l lbes
-               ]
+         in oneof
+                [ LogClosed <$> listOfLogbookEntries
+                , do lbes <- listOfLogbookEntries
+                     l <-
+                         case lbes of
+                             [] -> genValid
+                             (lbe:_) -> do
+                                 ndt <- genPositiveNominalDiffTime
+                                 pure $ addUTCTime ndt $ logbookEntryEnd lbe
+                     pure $ LogOpen l lbes
+                ]
 
-instance GenUnchecked LogbookEntry
+instance GenUnchecked LogbookEntry where
+    shrinkUnchecked _ = [] -- There's no point.
 
 instance GenValid LogbookEntry where
-    genValid = sized $ \n -> do
-        (a,b) <- genSplit n
-        start <-resize a  genValid
-        ndt <- resize b $ (realToFrac . abs) <$> (genValid :: Gen Rational)
-        let end = addUTCTime ndt start
-        pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+    genValid =
+        sized $ \n -> do
+            (a, b) <- genSplit n
+            start <- resize a genValid
+            ndt <- resize b $ (realToFrac . abs) <$> (genValid :: Gen Rational)
+            let end = addUTCTime ndt start
+            pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}

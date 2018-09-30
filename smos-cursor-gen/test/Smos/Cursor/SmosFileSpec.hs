@@ -85,3 +85,8 @@ spec = do
     describe "smosFileCursorClockOutEverywhereAndClockInHere" $
         it "produces valid cursors" $
         producesValidsOnValids2 smosFileCursorClockOutEverywhereAndClockInHere
+    describe "smosFileSubtreeSetTodoState" $ do
+        it "produces valid cursors when unsetting todo states" $
+            forAllValid $ \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
+        it "produces valid cursors" $
+            producesValidsOnValids3 smosFileSubtreeSetTodoState
