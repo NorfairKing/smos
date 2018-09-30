@@ -38,12 +38,12 @@ module Smos.Data.Types
     , logbookClockIn
     , logbookClockOut
     , LogbookEntry(..)
-    , TimestampName(..)
+    , TimestampName
+    , timestampNameText
+    , timestampName
     , emptyTimestampName
     , Timestamp(..)
     , timestampDayFormat
-    , timestampTimeFormat
-    , timestampTimeExactFormat
     -- Utils
     , ForYaml(..)
     ) where
@@ -57,10 +57,10 @@ import Data.Validity.Time ()
 
 import Data.Aeson as JSON
 import Data.List
-import Data.Ord
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Ord
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -144,14 +144,14 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = emptyStateHistory
-    , entryTags = []
-    , entryLogbook = emptyLogbook
-    }
+        { entryHeader = h
+        , entryContents = Nothing
+        , entryTimestamps = M.empty
+        , entryProperties = M.empty
+        , entryStateHistory = emptyStateHistory
+        , entryTags = []
+        , entryLogbook = emptyLogbook
+        }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
@@ -276,7 +276,13 @@ newtype PropertyName = PropertyName
                , ToYaml
                )
 
-instance Validity PropertyName
+instance Validity PropertyName where
+    validate (PropertyName t) =
+        mconcat
+            [ delve "propertyNameText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare "The character is not a newline character" $ c /= '\n'
+            ]
 
 emptyPropertyName :: PropertyName
 emptyPropertyName = PropertyName ""
@@ -314,91 +320,44 @@ newtype TimestampName = TimestampName
                , ToYaml
                )
 
-instance Validity TimestampName
+instance Validity TimestampName where
+    validate (TimestampName t) =
+        mconcat
+            [ delve "timestampNameText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare "The character is not a newline character" $ c /= '\n'
+            ]
 
 emptyTimestampName :: TimestampName
 emptyTimestampName = TimestampName ""
 
-data Timestamp
-    = TimestampDay Day
-    | TimestampTime UTCTime
-    deriving (Show, Eq, Ord, Generic)
+timestampName :: Text -> Maybe TimestampName
+timestampName = constructValid . TimestampName
+
+data Timestamp = Timestamp
+    { timestampDay :: Day
+    } deriving (Show, Eq, Ord, Generic)
 
 instance Validity Timestamp
 
 instance FromJSON Timestamp where
-    parseJSON =
-        withObject "Timestamp" $ \o -> do
-            p <- o .: "precision"
-            case (p :: Text) of
-                "day" -> do
-                    s <- o .: "value"
-                    TimestampDay <$>
-                        parseTimeM False defaultTimeLocale timestampDayFormat s
-                "time" -> do
-                    s <- o .: "value"
-                    (TimestampTime <$>
-                     parseTimeM
-                         False
-                         defaultTimeLocale
-                         timestampTimeExactFormat
-                         s) <|>
-                        (TimestampTime <$>
-                         parseTimeM
-                             False
-                             defaultTimeLocale
-                             timestampTimeFormat
-                             s)
-                _ -> fail "unknown precision"
+    parseJSON v = do
+        s <- parseJSON v
+        Timestamp <$> parseTimeM False defaultTimeLocale timestampDayFormat s
 
 instance ToJSON Timestamp where
-    toJSON ts =
-        let p :: Text
-            v :: Value
-            (p, v) =
-                case ts of
-                    TimestampDay d ->
-                        ( "day"
-                        , toJSON $
-                          formatTime defaultTimeLocale timestampDayFormat d)
-                    TimestampTime lt ->
-                        ( "time"
-                        , toJSON $
-                          formatTime
-                              defaultTimeLocale
-                              timestampTimeExactFormat
-                              lt)
-        in object ["precision" .= p, "value" .= v]
+    toJSON (Timestamp d) =
+        toJSON $ T.pack $ formatTime defaultTimeLocale timestampDayFormat d
 
 instance ToYaml Timestamp where
-    toYaml ts =
-        let p :: Text
-            v :: YamlBuilder
-            (p, v) =
-                case ts of
-                    TimestampDay d ->
-                        ( "day"
-                        , toYaml $
-                          T.pack $
-                          formatTime defaultTimeLocale timestampDayFormat d)
-                    TimestampTime lt ->
-                        ( "time"
-                        , toYaml $
-                          T.pack $
-                          formatTime
-                              defaultTimeLocale
-                              timestampTimeExactFormat
-                              lt)
-        in Yaml.mapping [("precision", toYaml p), ("value", toYaml v)]
+    toYaml =
+        toYaml .
+        T.pack . formatTime defaultTimeLocale timestampDayFormat . timestampDay
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
 
-timestampTimeFormat :: String
-timestampTimeFormat = "%F %R"
 
-timestampTimeExactFormat :: String
-timestampTimeExactFormat = "%F %R %q"
 
 newtype TodoState = TodoState
     { todoStateText :: Text
@@ -411,7 +370,11 @@ newtype StateHistory = StateHistory
     } deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
 
 instance Validity StateHistory where
-    validate st@(StateHistory hs) = genericValidate st <> declare "The entries are stored in reverse chronological order" (hs <= sort hs)
+    validate st@(StateHistory hs) =
+        genericValidate st <>
+        declare
+            "The entries are stored in reverse chronological order"
+            (hs <= sort hs)
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -425,7 +388,11 @@ data StateHistoryEntry = StateHistoryEntry
     } deriving (Show, Eq, Generic)
 
 instance Ord StateHistoryEntry where
-    compare = mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
+    compare =
+        mconcat
+            [ comparing $ Down . stateHistoryEntryTimestamp
+            , comparing stateHistoryEntryNewState
+            ]
 
 instance Validity StateHistoryEntry
 

@@ -23,6 +23,7 @@ module Smos.Actions.Utils
     , module Smos.Cursor.SmosFile
     , module Smos.Cursor.StateHistory
     , module Smos.Cursor.Tags
+    , module Smos.Cursor.Timestamps
     ) where
 
 import Data.Maybe
@@ -40,6 +41,7 @@ import Smos.Cursor.Logbook
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
+import Smos.Cursor.Timestamps
 
 import Lens.Micro
 
@@ -130,6 +132,23 @@ modifyMTagsCursorMD func =
 
 modifyMTagsCursorM :: (Maybe TagsCursor -> Maybe TagsCursor) -> SmosM ()
 modifyMTagsCursorM func = modifyEntryCursor $ entryCursorTagsCursorL %~ func
+
+modifyTimestampsCursorM ::
+       (TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()
+modifyTimestampsCursorM func =
+    modifyTimestampsCursor $ \tsc -> fromMaybe tsc $ func tsc
+
+modifyTimestampsCursor :: (TimestampsCursor -> TimestampsCursor) -> SmosM ()
+modifyTimestampsCursor func = modifyMTimestampsCursorM $ fmap func
+
+modifyMTimestampsCursorM ::
+       (Maybe TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()
+modifyMTimestampsCursorM func = modifyMTimestampsCursorSM $ pure . func
+
+modifyMTimestampsCursorSM ::
+       (Maybe TimestampsCursor -> SmosM (Maybe TimestampsCursor)) -> SmosM ()
+modifyMTimestampsCursorSM func =
+    modifyEntryCursorS $ entryCursorTimestampsCursorL func
 
 modifyMTodoStateM :: (Maybe TodoState -> Maybe TodoState) -> SmosM ()
 modifyMTodoStateM func =

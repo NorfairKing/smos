@@ -60,6 +60,9 @@ defaultKeyMap =
                   -- Fast tag manipulation
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"
+                  -- Fast timestamps manipulation
+                  , exactString "sd" $ timestampsSelect "DEADLINE"
+                  , exactString "ss" $ timestampsSelect "SCHEDULED"
                   -- Clocking
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
@@ -110,7 +113,16 @@ defaultKeyMap =
                   , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   ]
         , keyMapTimestampsMatchers =
-              listMatchers [exactKey KEsc entrySelectWhole]
+              listMatchers
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKey KEnter entrySelectWhole
+                  , anyChar timestampsInsert
+                  , exactKey KLeft timestampsMoveLeft
+                  , exactKey KRight timestampsMoveRight
+                  , exactKey KBS timestampsRemove
+                  , exactKey KDel timestampsDelete
+                  , exactChar '\t' timestampsToggle
+                  ]
         , keyMapPropertiesMatchers =
               listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapStateHistoryMatchers =

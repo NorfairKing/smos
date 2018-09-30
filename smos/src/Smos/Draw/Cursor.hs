@@ -3,7 +3,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Draw.Cursor
-    ( drawVerticalForestCursor
+    ( drawVerticalMapCursor
+    , drawMapCursor
+    , drawVerticalForestCursor
     , drawForestCursor
     , drawTreeCursor
     , drawVerticalNonEmptyCursor
@@ -15,7 +17,42 @@ import Brick.Widgets.Core as B
 
 import Cursor.Forest hiding (drawForestCursor)
 import Cursor.List.NonEmpty
+import Cursor.Map
 import Cursor.Tree hiding (drawTreeCursor)
+
+drawVerticalMapCursor ::
+       (k -> v -> Widget n)
+    -> (KeyValueCursor k v -> Widget n)
+    -> (k -> v -> Widget n)
+    -> MapCursor k v
+    -> Widget n
+drawVerticalMapCursor prevFunc curFunc nextFunc =
+    drawMapCursor
+        prevFunc
+        curFunc
+        nextFunc
+        B.vBox
+        B.vBox
+        (\a b c -> a <=> b <=> c)
+
+drawMapCursor ::
+       (k -> v -> Widget n)
+    -> (KeyValueCursor k v -> Widget n)
+    -> (k -> v -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> (Widget n -> Widget n -> Widget n -> Widget n)
+    -> MapCursor k v
+    -> Widget n
+drawMapCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc =
+    drawNonEmptyCursor
+        (uncurry prevFunc)
+        curFunc
+        (uncurry nextFunc)
+        prevCombFunc
+        nextCombFunc
+        combFunc .
+    mapCursorList
 
 drawVerticalForestCursor ::
        (CTree b -> Widget n)
@@ -91,4 +128,4 @@ drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc 
     let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev
         cur = curFunc nonEmptyCursorCurrent
         next = nextCombFunc $ map nextFunc nonEmptyCursorNext
-    in combFunc prev cur next
+     in combFunc prev cur next

@@ -31,6 +31,8 @@ spec = do
     describe "entryCursorStateHistoryCursorL" $
         lensSpecOnValid entryCursorStateHistoryCursorL
     describe "entryCursorTagsCursorL" $ lensSpecOnValid entryCursorTagsCursorL
+    describe "entryCursorTimestampsCursorL" $
+        lensSpecOnValid entryCursorTimestampsCursorL
     describe "entryCursorLogbookCursorL" $
         lensSpecOnValid entryCursorLogbookCursorL
     describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL

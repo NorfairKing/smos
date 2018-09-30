@@ -24,6 +24,9 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Lens.Micro
 
+import Cursor.FuzzyDay
+import Cursor.Map
+import Cursor.Map.KeyValue
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.TextField
@@ -368,12 +371,58 @@ drawContents :: Contents -> Widget ResourceName
 drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
-drawTimestampsCursor _ = strWrap . show
+drawTimestampsCursor s =
+    drawVerticalMapCursor
+        drawTimestampCursor
+        (drawTimestampKVCursor s)
+        drawTimestampCursor
 
-drawTimestamps :: Map TimestampName Timestamp -> Maybe (Widget ResourceName)
+drawTimestamps :: Map TimestampName Timestamp -> Maybe (Widget n)
 drawTimestamps m
     | M.null m = Nothing
-    | otherwise = Just $ strWrap $ show m
+    | otherwise = Just $ vBox $ map (uncurry drawTimestamp) $ M.toList m
+
+drawTimestampKVCursor ::
+       Select -> KeyValueCursor TextCursor FuzzyDayCursor -> Widget ResourceName
+drawTimestampKVCursor s KeyValueCursor {..} =
+    hBox
+        [ drawTextCursor (selectWhen KeySelected) keyValueCursorKey
+        , str ": "
+        , drawFuzzyDayCursor (selectWhen ValueSelected) keyValueCursorValue
+        ]
+  where
+    selectWhen :: KeyValueToggle -> Select
+    selectWhen kvt =
+        s <>
+        if kvt == keyValueCursorToggle
+            then MaybeSelected
+            else NotSelected
+
+drawTimestampCursor :: TextCursor -> FuzzyDayCursor -> Widget ResourceName
+drawTimestampCursor tc fdc =
+    hBox
+        [ drawTextCursor NotSelected tc
+        , str ": "
+        , drawFuzzyDayCursor NotSelected fdc
+        ]
+
+drawTimestamp :: TimestampName -> Timestamp -> Widget n
+drawTimestamp tsn d =
+    hBox [drawTimestampName tsn, str ": ", str $ show $ timestampDay d]
+
+drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Widget ResourceName
+drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} =
+    hBox $
+    intersperse (str " ") $
+    [drawTextCursor s fuzzyDayCursorTextCursor] ++
+    [ str "(" <+> str (show $ rebuildFuzzyDayCursor fdc) <+> str ")"
+    | MaybeSelected <- [s]
+    ]
+
+drawTimestampName :: TimestampName -> Widget n
+drawTimestampName tsn =
+    withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . txt $
+    timestampNameText tsn
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
 drawPropertiesCursor _ = strWrap . show
@@ -482,7 +531,7 @@ drawTodoState ts =
     todoStateText ts
 
 drawText :: Text -> Widget n
-drawText t = vBox $ map go $ T.splitOn "\n" t
+drawText = vBox . map go . T.splitOn "\n"
   where
     go t =
         txtWrap $

@@ -43,6 +43,7 @@ spec = do
     ordSpec @Timestamp
     genValidSpec @Timestamp
     jsonSpecOnValid @Timestamp
+    textLikeJSONValid @Timestamp
     eqSpec @TodoState
     ordSpec @TodoState
     genValidSpec @TodoState
@@ -94,8 +95,10 @@ spec = do
                 start <- genValid :: Gen UTCTime
                 end <- genValid `suchThat` (>= start) :: Gen UTCTime
                 pure $ object ["start" .= start, "end" .= end]
-        in oneof
-               [withGen genLogbookEntryJSON, withGen genOrderedLogbookEntryJSON]
+         in oneof
+                [ withGen genLogbookEntryJSON
+                , withGen genOrderedLogbookEntryJSON
+                ]
     eqSpec @LogbookEntry
     ordSpec @LogbookEntry
     genValidSpec @LogbookEntry
