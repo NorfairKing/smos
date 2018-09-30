@@ -20,10 +20,14 @@ module Smos.Data.Types
     , Contents(..)
     , emptyContents
     , nullContents
-    , PropertyName(..)
+    , PropertyName
+    , propertyNameText
     , emptyPropertyName
-    , PropertyValue(..)
+    , propertyName
+    , PropertyValue
+    , propertyValueText
     , emptyPropertyValue
+    , propertyValue
     , StateHistory(..)
     , StateHistoryEntry(..)
     , emptyStateHistory
@@ -68,7 +72,6 @@ import Data.Time
 import Data.Tree
 import Data.Yaml.Builder (ToYaml(..))
 import qualified Data.Yaml.Builder as Yaml
-import Data.Yaml.Builder (YamlBuilder)
 
 import Control.Applicative
 import Control.Arrow
@@ -264,17 +267,7 @@ nullContents = (== emptyContents)
 
 newtype PropertyName = PropertyName
     { propertyNameText :: Text
-    } deriving ( Show
-               , Eq
-               , Ord
-               , Generic
-               , IsString
-               , FromJSON
-               , ToJSON
-               , FromJSONKey
-               , ToJSONKey
-               , ToYaml
-               )
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyName where
     validate (PropertyName t) =
@@ -284,41 +277,50 @@ instance Validity PropertyName where
                   declare "The character is not a newline character" $ c /= '\n'
             ]
 
+instance FromJSON PropertyName where
+    parseJSON = withText "PropertyName" parsePropertyName
+
+instance FromJSONKey PropertyName where
+    fromJSONKey = FromJSONKeyTextParser parsePropertyName
+
+parsePropertyName :: Monad m => Text -> m PropertyName
+parsePropertyName t =
+    case propertyName t of
+        Nothing -> fail $ "Invalid property name: " <> T.unpack t
+        Just h -> pure h
+
 emptyPropertyName :: PropertyName
 emptyPropertyName = PropertyName ""
 
+propertyName :: Text -> Maybe PropertyName
+propertyName = constructValid . PropertyName
+
 newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
-    } deriving ( Show
-               , Eq
-               , Ord
-               , Generic
-               , IsString
-               , FromJSON
-               , ToJSON
-               , FromJSONKey
-               , ToJSONKey
-               , ToYaml
-               )
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyValue
+
+instance FromJSON PropertyValue where
+    parseJSON = withText "PropertyValue" parsePropertyValue
+
+instance FromJSONKey PropertyValue where
+    fromJSONKey = FromJSONKeyTextParser parsePropertyValue
+parsePropertyValue :: Monad m => Text -> m PropertyValue
+parsePropertyValue t =
+    case propertyValue t of
+        Nothing -> fail $ "Invalid property value: " <> T.unpack t
+        Just h -> pure h
 
 emptyPropertyValue :: PropertyValue
 emptyPropertyValue = PropertyValue ""
 
+propertyValue :: Text -> Maybe PropertyValue
+propertyValue = constructValid . PropertyValue
+
 newtype TimestampName = TimestampName
     { timestampNameText :: Text
-    } deriving ( Show
-               , Eq
-               , Ord
-               , Generic
-               , IsString
-               , FromJSON
-               , ToJSON
-               , FromJSONKey
-               , ToJSONKey
-               , ToYaml
-               )
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity TimestampName where
     validate (TimestampName t) =
@@ -327,6 +329,17 @@ instance Validity TimestampName where
             , decorateList (T.unpack t) $ \c ->
                   declare "The character is not a newline character" $ c /= '\n'
             ]
+
+instance FromJSON TimestampName where
+    parseJSON = withText "TimestampName" parseTimestampName
+
+instance FromJSONKey TimestampName where
+    fromJSONKey = FromJSONKeyTextParser parseTimestampName
+parseTimestampName :: Monad m => Text -> m TimestampName
+parseTimestampName t =
+    case timestampName t of
+        Nothing -> fail $ "Invalid timestamp name: " <> T.unpack t
+        Just h -> pure h
 
 emptyTimestampName :: TimestampName
 emptyTimestampName = TimestampName ""
@@ -356,8 +369,6 @@ instance ToYaml Timestamp where
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
-
-
 
 newtype TodoState = TodoState
     { todoStateText :: Text

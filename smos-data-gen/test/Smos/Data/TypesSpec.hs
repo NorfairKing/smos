@@ -34,6 +34,16 @@ spec = do
     genValidSpec @Contents
     jsonSpecOnValid @Contents
     textLikeJSONValid @Contents
+    eqSpec @PropertyName
+    ordSpec @PropertyName
+    genValidSpec @PropertyName
+    jsonSpecOnValid @PropertyName
+    textLikeJSONValid @PropertyName
+    eqSpec @PropertyValue
+    ordSpec @PropertyValue
+    genValidSpec @PropertyValue
+    jsonSpecOnValid @PropertyValue
+    textLikeJSONValid @PropertyValue
     eqSpec @TimestampName
     ordSpec @TimestampName
     genValidSpec @TimestampName

@@ -22,9 +22,9 @@ import Cursor.Tree hiding (drawTreeCursor)
 
 drawVerticalMapCursor ::
        (k -> v -> Widget n)
-    -> (KeyValueCursor k v -> Widget n)
+    -> (KeyValueCursor kc vc k v -> Widget n)
     -> (k -> v -> Widget n)
-    -> MapCursor k v
+    -> MapCursor kc vc k v
     -> Widget n
 drawVerticalMapCursor prevFunc curFunc nextFunc =
     drawMapCursor
@@ -37,12 +37,12 @@ drawVerticalMapCursor prevFunc curFunc nextFunc =
 
 drawMapCursor ::
        (k -> v -> Widget n)
-    -> (KeyValueCursor k v -> Widget n)
+    -> (KeyValueCursor kc vc k v -> Widget n)
     -> (k -> v -> Widget n)
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
-    -> MapCursor k v
+    -> MapCursor kc vc k v
     -> Widget n
 drawMapCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc =
     drawNonEmptyCursor

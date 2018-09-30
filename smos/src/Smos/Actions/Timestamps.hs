@@ -15,14 +15,12 @@ module Smos.Actions.Timestamps
     ) where
 
 import Data.Maybe
-import qualified Data.Text as T
 import Data.Time
 
 import Smos.Data.Types
 
 import Smos.Types
 
-import Smos.Actions.Entry
 import Smos.Actions.Utils
 
 allTimestampsPlainActions :: [Action]

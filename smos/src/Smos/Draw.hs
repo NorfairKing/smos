@@ -26,7 +26,6 @@ import Lens.Micro
 
 import Cursor.FuzzyDay
 import Cursor.Map
-import Cursor.Map.KeyValue
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.TextField
@@ -372,10 +371,7 @@ drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
 drawTimestampsCursor s =
-    drawVerticalMapCursor
-        drawTimestampCursor
-        (drawTimestampKVCursor s)
-        drawTimestampCursor
+    drawVerticalMapCursor drawTimestamp (drawTimestampKVCursor s) drawTimestamp
 
 drawTimestamps :: Map TimestampName Timestamp -> Maybe (Widget n)
 drawTimestamps m
@@ -383,28 +379,29 @@ drawTimestamps m
     | otherwise = Just $ vBox $ map (uncurry drawTimestamp) $ M.toList m
 
 drawTimestampKVCursor ::
-       Select -> KeyValueCursor TextCursor FuzzyDayCursor -> Widget ResourceName
-drawTimestampKVCursor s KeyValueCursor {..} =
-    hBox
-        [ drawTextCursor (selectWhen KeySelected) keyValueCursorKey
-        , str ": "
-        , drawFuzzyDayCursor (selectWhen ValueSelected) keyValueCursorValue
-        ]
-  where
-    selectWhen :: KeyValueToggle -> Select
-    selectWhen kvt =
-        s <>
-        if kvt == keyValueCursorToggle
-            then MaybeSelected
-            else NotSelected
-
-drawTimestampCursor :: TextCursor -> FuzzyDayCursor -> Widget ResourceName
-drawTimestampCursor tc fdc =
-    hBox
-        [ drawTextCursor NotSelected tc
-        , str ": "
-        , drawFuzzyDayCursor NotSelected fdc
-        ]
+       Select
+    -> KeyValueCursor TextCursor FuzzyDayCursor TimestampName Timestamp
+    -> Widget ResourceName
+drawTimestampKVCursor s kvc =
+    case kvc of
+        KeyValueCursorKey tc ts ->
+            hBox
+                [ case s of
+                      NotSelected ->
+                          drawTimestampName $ rebuildTimestampNameCursor tc
+                      MaybeSelected -> drawTextCursor s tc
+                , str ": "
+                , str $ show $ timestampDay ts
+                ]
+        KeyValueCursorValue tsn fdc ->
+            hBox
+                [ drawTimestampName tsn
+                , str ": "
+                , case s of
+                      NotSelected ->
+                          str $ show $ timestampDay $ rebuildTimestampCursor fdc
+                      MaybeSelected -> drawFuzzyDayCursor s fdc
+                ]
 
 drawTimestamp :: TimestampName -> Timestamp -> Widget n
 drawTimestamp tsn d =
