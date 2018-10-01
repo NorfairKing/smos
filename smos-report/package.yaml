@@ -21,17 +21,6 @@ library:
   - smos-data
   - text
   - time
-  exposed-modules:
-  - Smos.Report
-  - Smos.Report.Formatting
-  - Smos.Report.Next
-  - Smos.Report.OptParse
-  - Smos.Report.OptParse.Types
-  - Smos.Report.Parse
-  - Smos.Report.ShouldPrint
-  - Smos.Report.Wait
-  other-modules:
-  - Import
 
 executables:
   smos-report:

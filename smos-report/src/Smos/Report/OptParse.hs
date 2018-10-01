@@ -1,30 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Report.OptParse
     ( module Smos.Report.OptParse
     , module Smos.Report.OptParse.Types
     ) where
 
-import Data.Configurator
-import Import hiding (lookup)
-import Options.Applicative
-import Smos.Report.OptParse.Types
+import Data.Maybe
+
 import System.Environment
+
+import Data.Configurator as Configurator
+import Path
+import Path.IO
+
+import Options.Applicative
+
+import Smos.Report.OptParse.Types
 
 getInstructions :: IO Instructions
 getInstructions = do
     (cmd, flags) <- getArguments
     config <- getConfig flags
-    (getDispatch cmd, ) <$> getSettings flags config
+    (,) (getDispatch cmd) <$> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
 getConfig Flags {..} = do
     configPath <- fromMaybe defaultConfigFile $ resolveFile' <$> flagConfigFile
     config <- load [Optional $ toFilePath configPath]
-    Configuration <$> lookup config "workDir" <*> lookup config "shouldPrint"
+    Configuration <$> Configurator.lookup config "workDir" <*>
+        Configurator.lookup config "shouldPrint"
   where
     defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".wfrc"
 

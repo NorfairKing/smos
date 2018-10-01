@@ -1,12 +1,13 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Next where
 
-import Import
-
+import Data.Maybe
 import qualified Data.Text as T
+import Data.Tree
+
+import Path
 
 import Smos.Data
 import Smos.Report.Formatting
@@ -32,7 +33,7 @@ getNextTasks ::
     -> SmosFile
     -> IO (Either ProcessSmosFileException [NextTaskInfo])
 getNextTasks file SmosFile {..} =
-    case filter isNextAction $ concat $ toList <$> smosFileForest of
+    case filter isNextAction $ concat $ flatten <$> smosFileForest of
         [] -> pure . Left $ NoNextActions file
         xs -> pure . Right . catMaybes $ getNextTask <$> xs
   where

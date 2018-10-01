@@ -1,9 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Report.ShouldPrint where
-
-import Import
 
 import Data.Configurator.Types
 

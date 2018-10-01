@@ -1,6 +1,6 @@
 module Smos.Report.Formatting where
 
-import Import
+import Data.List
 
 import Text.PrettyPrint.Boxes
 

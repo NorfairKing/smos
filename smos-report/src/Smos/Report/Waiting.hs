@@ -1,23 +1,24 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.Wait
-    ( wait
+module Smos.Report.Waiting
+    ( waiting
     ) where
 
-import Import
-
+import Data.Function
+import Data.List
 import qualified Data.Text as T
 import Data.Time.Clock
+
+import Path
 
 import Smos.Data
 import Smos.Report.Formatting
 import Smos.Report.OptParse
 import Smos.Report.Parse
 
-wait :: Settings -> IO ()
-wait set@Settings {..} = do
+waiting :: Settings -> IO ()
+waiting set@Settings {..} = do
     waitingTaskInfos <-
         applyToAllSmosFiles set $ \file smosfile ->
             pure . Right $ getWaitingTasks file smosfile
@@ -27,7 +28,7 @@ wait set@Settings {..} = do
 
 getWaitingTasks :: Path Abs File -> SmosFile -> [WaitingTaskInfo]
 getWaitingTasks file smosfile =
-    waitingTasks <&> \Entry {..} ->
+    flip map waitingTasks $ \Entry {..} ->
         let time =
                 case unStateHistory entryStateHistory of
                     [] -> Nothing
@@ -41,7 +42,7 @@ getWaitingTasks file smosfile =
     waitingTasks = filter isWaitingTask $ entries smosfile :: [Entry]
 
 isWaitingTask :: Entry -> Bool
-isWaitingTask entry = entryState entry == Just (TodoState "WAITING")
+isWaitingTask entry = entryState entry == Just "WAITING"
 
 data WaitingTaskInfo = WaitingTaskInfo
     { wtFile :: Path Rel File

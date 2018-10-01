@@ -1,11 +1,9 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module Smos.Report.OptParse.Types
     ( module Smos.Report.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
-import Import
+import Path
 
 import Smos.Report.ShouldPrint
 

@@ -1,9 +1,15 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Parse where
 
-import Import
+import Data.Either
+import Data.Tree
+
+import Control.Exception
+import Control.Monad
+
+import Path
+import Path.IO
 
 import Smos.Data
 import Smos.Report.OptParse.Types
@@ -17,7 +23,7 @@ applyToAllSmosFiles Settings {..} action = do
     let smosFiles = filter isSmosFile files
     (exceptions, as) <-
         fmap partitionEithers $
-        for smosFiles $ \file -> processSmosFile file $ action file
+        forM smosFiles $ \file -> processSmosFile file $ action file
     printErrorMessages setShouldPrint $ displayErrMess exceptions
     pure as
 
@@ -60,4 +66,4 @@ instance Exception ProcessSmosFileException where
         "The file " <> fromAbsFile file <> " doesn't have any next actions."
 
 entries :: SmosFile -> [Entry]
-entries SmosFile {..} = concat $ toList <$> smosFileForest
+entries SmosFile {..} = concat $ flatten <$> smosFileForest
