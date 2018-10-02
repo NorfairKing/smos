@@ -1,11 +1,9 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module Smos.Report.OptParse.Types
     ( module Smos.Report.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
-import Import
+import Path
 
 import Smos.Report.ShouldPrint
 
@@ -16,6 +14,7 @@ type Instructions = (Dispatch, Settings)
 data Command
     = CommandWaiting
     | CommandNext
+    | CommandClock
     deriving (Show, Eq)
 
 data Flags = Flags
@@ -36,5 +35,6 @@ data Settings = Settings
 
 data Dispatch
     = DispatchWaiting
+    | DispatchClock
     | DispatchNext
     deriving (Show, Eq)

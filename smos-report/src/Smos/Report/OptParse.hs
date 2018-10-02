@@ -1,39 +1,44 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Report.OptParse
     ( module Smos.Report.OptParse
     , module Smos.Report.OptParse.Types
     ) where
 
-import Data.Configurator
-import Import hiding (lookup)
-import Options.Applicative
-import Smos.Report.OptParse.Types
+import Data.Maybe
+
 import System.Environment
+
+import Data.Configurator as Configurator
+import Path
+import Path.IO
+
+import Options.Applicative
+
+import Smos.Report.OptParse.Types
 
 getInstructions :: IO Instructions
 getInstructions = do
     (cmd, flags) <- getArguments
     config <- getConfig flags
-    (getDispatch cmd, ) <$> getSettings flags config
+    (,) (getDispatch cmd) <$> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
 getConfig Flags {..} = do
     configPath <- fromMaybe defaultConfigFile $ resolveFile' <$> flagConfigFile
     config <- load [Optional $ toFilePath configPath]
-    Configuration <$> lookup config "workDir" <*> lookup config "shouldPrint"
+    Configuration <$> Configurator.lookup config "workDir" <*>
+        Configurator.lookup config "shouldPrint"
   where
-    defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".wfrc"
+    defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".smosrc"
 
 getSettings :: Flags -> Configuration -> IO Settings
 getSettings Flags {..} Configuration {..} = do
     setWorkDir <-
         case flagWorkDir <|> configWorkDir of
             Nothing -> error "No work directory was provided."
-            Just dir -> parseAbsDir dir
+            Just dir -> resolveDir' dir
     let setShouldPrint =
             fromMaybe defaultShouldPrint $ flagShouldPrint <|> configShouldPrint
     pure Settings {..}
@@ -43,6 +48,7 @@ getSettings Flags {..} Configuration {..} = do
 getDispatch :: Command -> Dispatch
 getDispatch CommandWaiting = DispatchWaiting
 getDispatch CommandNext = DispatchNext
+getDispatch CommandClock = DispatchClock
 
 getArguments :: IO Arguments
 getArguments = do
@@ -76,7 +82,7 @@ parseCommand :: Parser Command
 parseCommand =
     hsubparser $
     mconcat
-        [command "waiting" parseCommandWaiting, command "next" parseCommandNext]
+        [command "waiting" parseCommandWaiting, command "next" parseCommandNext, command "clock" parseCommandClock]
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -91,6 +97,12 @@ parseCommandNext = info parser modifier
         fullDesc <>
         progDesc "Print the next actions and warn if a file does not have one."
     parser = pure CommandNext
+
+parseCommandClock :: ParserInfo Command
+parseCommandClock = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print the clock table"
+    parser = pure CommandClock
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser
