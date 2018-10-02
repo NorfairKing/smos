@@ -48,6 +48,7 @@ getSettings Flags {..} Configuration {..} = do
 getDispatch :: Command -> Dispatch
 getDispatch CommandWaiting = DispatchWaiting
 getDispatch CommandNext = DispatchNext
+getDispatch CommandClock = DispatchClock
 
 getArguments :: IO Arguments
 getArguments = do
@@ -81,7 +82,7 @@ parseCommand :: Parser Command
 parseCommand =
     hsubparser $
     mconcat
-        [command "waiting" parseCommandWaiting, command "next" parseCommandNext]
+        [command "waiting" parseCommandWaiting, command "next" parseCommandNext, command "clock" parseCommandClock]
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -96,6 +97,12 @@ parseCommandNext = info parser modifier
         fullDesc <>
         progDesc "Print the next actions and warn if a file does not have one."
     parser = pure CommandNext
+
+parseCommandClock :: ParserInfo Command
+parseCommandClock = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print the clock table"
+    parser = pure CommandClock
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser

@@ -14,6 +14,7 @@ type Instructions = (Dispatch, Settings)
 data Command
     = CommandWaiting
     | CommandNext
+    | CommandClock
     deriving (Show, Eq)
 
 data Flags = Flags
@@ -34,5 +35,6 @@ data Settings = Settings
 
 data Dispatch
     = DispatchWaiting
+    | DispatchClock
     | DispatchNext
     deriving (Show, Eq)

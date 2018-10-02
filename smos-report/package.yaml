@@ -13,12 +13,14 @@ library:
   dependencies:
   - base
   - boxes
+  - conduit
   - configurator
   - containers
   - filepath
   - optparse-applicative
   - path
   - path-io
+  - pretty-show
   - smos-data
   - text
   - time

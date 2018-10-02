@@ -5,6 +5,7 @@ module Smos.Report
 import Smos.Report.Next
 import Smos.Report.OptParse
 import Smos.Report.Waiting
+import Smos.Report.Clock
 
 report :: IO ()
 report = do
@@ -14,3 +15,4 @@ report = do
 execute :: Dispatch -> Settings -> IO ()
 execute DispatchWaiting set = waiting set
 execute DispatchNext set = next set
+execute DispatchClock set = clock set
