@@ -39,7 +39,7 @@ isNextAction entry =
 makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
     NextActionEntry
-        { nextActionEntryTodoState = stateHistoryState $ entryStateHistory e
+        { nextActionEntryTodoState = entryState e
         , nextActionEntryHeader = entryHeader e
         , nextActionEntryFilePath = rf
         }
