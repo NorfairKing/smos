@@ -6,6 +6,8 @@ module Smos.Report.Streaming where
 import Data.List
 import Data.Maybe
 
+import Data.Tree
+
 import Path
 import Path.IO
 
@@ -62,3 +64,10 @@ parseSmosFiles dir sp = loop
                                 displayErrMess [SmosFileParseError ap err]
                             Right sf -> yield (p, sf)
                 loop
+
+smosFileEntries ::
+       Monad m => ConduitT (Path Rel File, SmosFile) (Path Rel File, Entry) m ()
+smosFileEntries = C.concatMap $ uncurry go
+  where
+    go :: Path Rel File -> SmosFile -> [(Path Rel File, Entry)]
+    go rf = map ((,) rf) . concatMap flatten . smosFileForest

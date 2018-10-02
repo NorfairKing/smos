@@ -13,6 +13,7 @@ module Smos.Data.Types
     , newEntry
     , emptyEntry
     , TodoState(..)
+    , todoState
     , Header
     , headerText
     , emptyHeader
@@ -306,6 +307,7 @@ instance FromJSON PropertyValue where
 
 instance FromJSONKey PropertyValue where
     fromJSONKey = FromJSONKeyTextParser parsePropertyValue
+
 parsePropertyValue :: Monad m => Text -> m PropertyValue
 parsePropertyValue t =
     case propertyValue t of
@@ -335,6 +337,7 @@ instance FromJSON TimestampName where
 
 instance FromJSONKey TimestampName where
     fromJSONKey = FromJSONKeyTextParser parseTimestampName
+
 parseTimestampName :: Monad m => Text -> m TimestampName
 parseTimestampName t =
     case timestampName t of
@@ -373,6 +376,9 @@ timestampDayFormat = "%F"
 newtype TodoState = TodoState
     { todoStateText :: Text
     } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+
+todoState :: Text -> Maybe TodoState
+todoState = constructValid . TodoState
 
 instance Validity TodoState
 
