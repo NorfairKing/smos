@@ -27,8 +27,9 @@ clock :: Settings -> IO ()
 clock Settings {..} = do
     tups <-
         sourceToList $
-        sourceNonhiddenFiles setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir setShouldPrint
+        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
+        parseSmosFiles setWorkDir .|
+        printShouldPrint setShouldPrint
     T.putStrLn $ renderClockTable $ makeClockTable tups
 
 data ClockTableEntry = ClockTableEntry

@@ -23,8 +23,9 @@ next :: Settings -> IO ()
 next Settings {..} = do
     tups <-
         sourceToList $
-        sourceNonhiddenFiles setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir setShouldPrint .|
+        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
+        parseSmosFiles setWorkDir .|
+        printShouldPrint setShouldPrint .|
         smosFileEntries .|
         C.filter (isNextAction . snd) .|
         C.map (uncurry makeNextActionEntry)

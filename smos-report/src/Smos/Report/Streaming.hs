@@ -20,8 +20,9 @@ import Smos.Data
 
 import Smos.Report.OptParse
 
-sourceNonhiddenFiles :: Path Abs Dir -> ConduitT i (Path Rel File) IO ()
-sourceNonhiddenFiles dir = walkDir go dir
+sourceFilesInNonHiddenDirsRecursively ::
+       Path Abs Dir -> ConduitT i (Path Rel File) IO ()
+sourceFilesInNonHiddenDirsRecursively dir = walkDir go dir
   where
     go :: Path Abs Dir
        -> [Path Abs Dir]
@@ -41,30 +42,30 @@ filterSmosFiles = C.filter $ (== ".smos") . fileExtension
 
 parseSmosFiles ::
        Path Abs Dir
-    -> ShouldPrint
-    -> ConduitT (Path Rel File) (Path Rel File, SmosFile) IO ()
-parseSmosFiles dir sp = loop
-  where
-    loop = do
-        mp <- await
-        case mp of
-            Nothing -> pure ()
-            Just p -> do
-                let ap = dir </> p
-                mErrOrSmosFile <- lift $ readSmosFile ap
+    -> ConduitT (Path Rel File) ( Path Rel File
+                                , Either ParseSmosFileException SmosFile) IO ()
+parseSmosFiles dir =
+    C.mapM $ \p -> do
+        let ap = dir </> p
+        mErrOrSmosFile <- liftIO $ readSmosFile ap
+        let ei =
                 case mErrOrSmosFile of
-                    Nothing ->
-                        lift $
-                        printErrorMessage sp $
-                        displayException $ FileDoesntExist ap
+                    Nothing -> Left $ FileDoesntExist ap
                     Just errOrSmosFile ->
                         case errOrSmosFile of
-                            Left err ->
-                                lift $
-                                printErrorMessage sp $
-                                displayException $ SmosFileParseError ap err
-                            Right sf -> yield (p, sf)
-                loop
+                            Left err -> Left $ SmosFileParseError ap err
+                            Right sf -> Right sf
+        pure (p, ei)
+
+printShouldPrint ::
+       ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) IO ()
+printShouldPrint sp =
+    C.concatMapM $ \(a, errOrB) ->
+        case errOrB of
+            Left err -> do
+                printErrorMessage sp $ displayException err
+                pure Nothing
+            Right b -> pure $ Just (a, b)
 
 data ParseSmosFileException
     = FileDoesntExist (Path Abs File)

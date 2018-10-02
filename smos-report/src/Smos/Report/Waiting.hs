@@ -8,7 +8,6 @@ module Smos.Report.Waiting
 
 import GHC.Generics
 
-
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.IO as T
@@ -27,8 +26,9 @@ waiting :: Settings -> IO ()
 waiting Settings {..} = do
     tups <-
         sourceToList $
-        sourceNonhiddenFiles setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir setShouldPrint .|
+        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
+        parseSmosFiles setWorkDir .|
+        printShouldPrint setShouldPrint .|
         smosFileEntries .|
         C.filter (isWaitingAction . snd) .|
         C.map (uncurry makeWaitingActionEntry)
