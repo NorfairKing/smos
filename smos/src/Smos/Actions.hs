@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions
@@ -16,6 +17,8 @@ module Smos.Actions
     , module Smos.Actions.Undo
     , module Smos.Actions.Utils
     ) where
+
+import Smos.Data
 
 import Smos.Types
 
@@ -63,6 +66,18 @@ allUsingCharActions =
         , allTimestampsUsingCharActions
         , allUndoUsingCharActions
         ]
+
+saveFile :: Action
+saveFile =
+    Action
+        { actionName = "saveFile"
+        , actionFunc =
+              do SmosState {..} <- get
+                 let sf' = rebuildEditorCursor smosStateCursor
+                 when (smosStateStartSmosFile /= Just sf') $
+                     liftIO $ writeSmosFile smosStateFilePath sf'
+        , actionDescription = "Save the current file"
+        }
 
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =

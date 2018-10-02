@@ -23,6 +23,7 @@ defaultKeyMap =
         , keyMapEntryMatchers =
               listMatchers
                   [ exactChar 'q' stop
+                  , exactChar 'w' saveFile
                   -- Selections
                   , exactChar 'a' entrySelectHeaderAtEnd
                   , exactChar 'A' entrySelectHeaderAtEnd
