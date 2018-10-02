@@ -333,6 +333,18 @@
       - new-state: TODO
         timestamp: 2018-09-21 07:58:42.391344004000+0000
     forest:
+    - header: Next actions
+      state-history:
+      - new-state: DONE
+        timestamp: 2018-10-02 12:49:04.572946509000+0000
+      - new-state: TODO
+        timestamp: 2018-09-21 07:58:44.631167732000+0000
+    - header: Waiting-for
+      state-history:
+      - new-state: DONE
+        timestamp: 2018-10-02 12:49:04.940924914000+0000
+      - new-state: TODO
+        timestamp: 2018-09-21 07:58:45.031446661000+0000
     - entry:
         header: Clock Reports
         state-history:
@@ -351,14 +363,6 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-21 07:58:44.215350860000+0000
-    - header: Next actions
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-21 07:58:44.631167732000+0000
-    - header: Waiting-for
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-21 07:58:45.031446661000+0000
   - entry:
       header: Quality of life
       state-history:
