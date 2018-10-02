@@ -3,6 +3,8 @@
 
 module Smos.Report.Streaming where
 
+import Control.Exception
+
 import Data.List
 import Data.Maybe
 
@@ -17,7 +19,6 @@ import qualified Data.Conduit.Combinators as C
 import Smos.Data
 
 import Smos.Report.OptParse
-import Smos.Report.Parse
 
 sourceNonhiddenFiles :: Path Abs Dir -> ConduitT i (Path Rel File) IO ()
 sourceNonhiddenFiles dir = walkDir go dir
@@ -54,16 +55,28 @@ parseSmosFiles dir sp = loop
                 case mErrOrSmosFile of
                     Nothing ->
                         lift $
-                        printErrorMessages sp $
-                        displayErrMess [FileDoesntExist ap]
+                        printErrorMessage sp $
+                        displayException $ FileDoesntExist ap
                     Just errOrSmosFile ->
                         case errOrSmosFile of
                             Left err ->
                                 lift $
-                                printErrorMessages sp $
-                                displayErrMess [SmosFileParseError ap err]
+                                printErrorMessage sp $
+                                displayException $ SmosFileParseError ap err
                             Right sf -> yield (p, sf)
                 loop
+
+data ParseSmosFileException
+    = FileDoesntExist (Path Abs File)
+    | SmosFileParseError (Path Abs File)
+                         String
+    deriving (Show, Eq)
+
+instance Exception ParseSmosFileException where
+    displayException (FileDoesntExist file) =
+        "The file " <> fromAbsFile file <> " does not exist."
+    displayException (SmosFileParseError file errMess) =
+        "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
 smosFileEntries ::
        Monad m => ConduitT (Path Rel File, SmosFile) (Path Rel File, Entry) m ()

@@ -22,7 +22,7 @@ instance Configured ShouldPrint where
     convert (String t) = parseShouldPrint $ T.unpack t
     convert _ = Nothing
 
-printErrorMessages :: ShouldPrint -> String -> IO ()
-printErrorMessages DontPrint = const $ pure ()
-printErrorMessages PrintWarning = putStr
-printErrorMessages PrintError = error
+printErrorMessage :: ShouldPrint -> String -> IO ()
+printErrorMessage DontPrint = const $ pure ()
+printErrorMessage PrintWarning = putStrLn
+printErrorMessage PrintError = error
