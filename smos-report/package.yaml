@@ -15,6 +15,7 @@ library:
   - boxes
   - configurator
   - containers
+  - filepath
   - optparse-applicative
   - path
   - path-io

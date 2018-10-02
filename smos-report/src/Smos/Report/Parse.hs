@@ -3,10 +3,13 @@
 module Smos.Report.Parse where
 
 import Data.Either
+import Data.List
 import Data.Tree
 
 import Control.Exception
 import Control.Monad
+
+import System.FilePath
 
 import Path
 import Path.IO
@@ -19,7 +22,7 @@ applyToAllSmosFiles ::
     -> (Path Abs File -> SmosFile -> IO (Either ProcessSmosFileException a))
     -> IO [a]
 applyToAllSmosFiles Settings {..} action = do
-    (_, files) <- listDir setWorkDir
+    (_, files) <- listDirRecur setWorkDir
     let smosFiles = filter isSmosFile files
     (exceptions, as) <-
         fmap partitionEithers $
@@ -42,10 +45,7 @@ isSmosFile :: Path Abs File -> Bool
 isSmosFile file = fileExtension file == ".smos" && not (isHidden file)
 
 isHidden :: Path Abs File -> Bool
-isHidden file =
-    case toFilePath $ filename file of
-        '.':_ -> True
-        _ -> False
+isHidden = any ("." `isPrefixOf`) . splitDirectories . fromAbsFile
 
 displayErrMess :: [ProcessSmosFileException] -> String
 displayErrMess = unlines . fmap displayException

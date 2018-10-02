@@ -31,14 +31,14 @@ getConfig Flags {..} = do
     Configuration <$> Configurator.lookup config "workDir" <*>
         Configurator.lookup config "shouldPrint"
   where
-    defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".wfrc"
+    defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".smosrc"
 
 getSettings :: Flags -> Configuration -> IO Settings
 getSettings Flags {..} Configuration {..} = do
     setWorkDir <-
         case flagWorkDir <|> configWorkDir of
             Nothing -> error "No work directory was provided."
-            Just dir -> parseAbsDir dir
+            Just dir -> resolveDir' dir
     let setShouldPrint =
             fromMaybe defaultShouldPrint $ flagShouldPrint <|> configShouldPrint
     pure Settings {..}
