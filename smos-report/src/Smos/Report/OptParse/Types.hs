@@ -1,11 +1,13 @@
 module Smos.Report.OptParse.Types
     ( module Smos.Report.Clock.Types
+    , module Smos.Report.Agenda.Types
     , module Smos.Report.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
 import Path
 
+import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.ShouldPrint
 
@@ -17,7 +19,7 @@ data Command
     = CommandWaiting
     | CommandNext
     | CommandClock ClockFlags
-    | CommandAgenda
+    | CommandAgenda AgendaFlags
     deriving (Show, Eq)
 
 data Flags = Flags
@@ -30,6 +32,10 @@ data ClockFlags = ClockFlags
     { clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe ClockBlock
+    } deriving (Show, Eq)
+
+data AgendaFlags = AgendaFlags
+    { agendaFlagHistoricity :: Maybe AgendaHistoricity
     } deriving (Show, Eq)
 
 data Configuration = Configuration
@@ -46,11 +52,15 @@ data Dispatch
     = DispatchWaiting
     | DispatchNext
     | DispatchClock ClockSettings
-    | DispatchAgenda
+    | DispatchAgenda AgendaSettings
     deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
     { clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: ClockBlock
+    } deriving (Show, Eq)
+
+data AgendaSettings = AgendaSettings
+    { agendaSetHistoricity :: AgendaHistoricity
     } deriving (Show, Eq)

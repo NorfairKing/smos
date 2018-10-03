@@ -56,7 +56,12 @@ getDispatch (CommandClock ClockFlags {..}) =
                   fromMaybe MinutesResolution clockFlagResolutionFlags
             , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
             }
-getDispatch CommandAgenda = DispatchAgenda
+getDispatch (CommandAgenda AgendaFlags {..}) =
+    DispatchAgenda
+        AgendaSettings
+            { agendaSetHistoricity =
+                  fromMaybe FutureAgenda agendaFlagHistoricity
+            }
 
 getArguments :: IO Arguments
 getArguments = do
@@ -135,7 +140,13 @@ parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the agenda"
-    parser = pure CommandAgenda
+    parser =
+        CommandAgenda <$>
+        (AgendaFlags <$>
+         (Just <$>
+          (flag' HistoricalAgenda (long "historical") <|>
+           flag' FutureAgenda (long "future")) <|>
+          pure Nothing))
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser

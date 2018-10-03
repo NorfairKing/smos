@@ -17,4 +17,4 @@ execute :: Dispatch -> Settings -> IO ()
 execute DispatchWaiting set = waiting set
 execute DispatchNext set = next set
 execute (DispatchClock cs) set = clock cs set
-execute DispatchAgenda set = agenda set
+execute (DispatchAgenda as) set = agenda as set

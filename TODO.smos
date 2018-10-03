@@ -393,8 +393,69 @@
       forest:
       - header: Complete
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 23:26:54.024170692000+0000
         - new-state: TODO
           timestamp: 2018-10-03 22:55:07.516372914000+0000
+      - header: Historical
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 23:26:57.384212862000+0000
+        - new-state: TODO
+          timestamp: 2018-10-03 23:26:56.832181999000+0000
+      - entry:
+          header: TODO state options
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:36:29.304259983000+0000
+        forest:
+        - header: Only show TODO items
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:36:22.896264365000+0000
+        - header: Don't show DONE items
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:36:23.488277355000+0000
+      - entry:
+          header: Period
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:36:37.616233040000+0000
+        forest:
+        - header: Day
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:27:01.472236138000+0000
+        - header: This week
+          contents: monday - sunday
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:26:59.360230704000+0000
+        - header: Week to date
+          contents: today - 6, today -5, ... today
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:27:31.616171810000+0000
+        - header: The week to come, starting from today
+          contents: today, today +1, ... today + 6
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:27:48.064242054000+0000
+        - header: Week centered around today
+          contents: today - 3, today - 2, today - 1, today, today + 1, today + 2,
+            today + 3
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:27:36.480229176000+0000
+      - header: Something aware of 'SCHEDULED' and 'DEADLINE'?
+        contents: ! 'This should show scheduled for today, and anything in the past
+
+          This should show deadlined for anything up to some number of days into the
+          future'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 23:37:10.832190042000+0000
   - entry:
       header: Quality of life
       state-history:
@@ -421,31 +482,56 @@
       - new-state: TODO
         timestamp: 2018-09-29 10:41:16.337481922000+0000
     forest:
-    - header: Inserting an entry below the current one, but above the current level
-      contents: ! 'This is not critical because the user can user can just start a
-        new heading
+    - entry:
+        header: Concept
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 23:25:30.776212621000+0000
+      forest:
+      - header: Copy-pasting
+        contents: ! 'also not critical, because the user can just use swapping and
+          promoting/demoting to move the entry to the desired place.
 
-        with ''h'' or so, and then promote it until the desired level.'
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-29 10:41:15.921361869000+0000
-    - header: Copy-pasting
-      contents: ! 'also not critical, because the user can just use swapping and promoting/demoting
-        to move the entry to the desired place.
+          When it comes to multiple entries to move, that''s a bit cumbersome, but
+          still not critical.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-29 10:42:19.961781171000+0000
+      - header: The archive
+        contents: ! 'The idea here is that you should never have to remove data to
+          have a clear overview.
 
-        When it comes to multiple entries to move, that''s a bit cumbersome, but still
-        not critical.
+          One idea is to allow for archive files.
 
-'
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-29 10:42:19.961781171000+0000
+          Something like a .smos_archive file for each .smos file, where data that
+          can be removed can be stored.
+
+          Maybe we don''t want this file in the same directory, so there are a lot
+          of details to work out there.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 23:25:44.736092452000+0000
     - entry:
         header: Editing
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 10:45:28.601753945000+0000
       forest:
+      - entry:
+          header: Forest
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-03 23:25:11.248238318000+0000
+        forest:
+        - header: Inserting an entry below the current one, but above the current
+            level
+          contents: ! 'This is not critical because the user can user can just start
+            a new heading
+
+            with ''h'' or so, and then promote it until the desired level.'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-09-29 10:41:15.921361869000+0000
       - entry:
           header: Entry
           state-history:

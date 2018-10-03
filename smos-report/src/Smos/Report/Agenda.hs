@@ -11,8 +11,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.IO as T
-
-import Text.Show.Pretty
+import Data.Time
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
@@ -24,17 +23,17 @@ import Smos.Report.Formatting
 import Smos.Report.OptParse
 import Smos.Report.Streaming
 
-import Smos.Report.Agenda.Types
-
-agenda :: Settings -> IO ()
-agenda Settings {..} = do
+agenda :: AgendaSettings -> Settings -> IO ()
+agenda AgendaSettings {..} Settings {..} = do
+    now <- getZonedTime
     tups <-
         sourceToList $
         sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
         parseSmosFiles setWorkDir .|
         printShouldPrint setShouldPrint .|
         smosFileEntries .|
-        C.concatMap (uncurry makeAgendaEntry)
+        C.concatMap (uncurry makeAgendaEntry) .|
+        C.filter (fitsHistoricity now agendaSetHistoricity)
     T.putStr $ renderAgendaReport $ sortOn agendaEntryTimestamp tups
 
 data AgendaEntry = AgendaEntry
@@ -53,6 +52,14 @@ makeAgendaEntry rf e =
             , agendaEntryTimestampName = tsn
             , agendaEntryTimestamp = ts
             }
+
+fitsHistoricity :: ZonedTime -> AgendaHistoricity -> AgendaEntry -> Bool
+fitsHistoricity zt ah ae =
+    case ah of
+        HistoricalAgenda -> True
+        FutureAgenda ->
+            LocalTime (timestampDay (agendaEntryTimestamp ae)) midnight >=
+            zonedTimeToLocalTime zt
 
 renderAgendaReport :: [AgendaEntry] -> Text
 renderAgendaReport = T.pack . formatAsTable . map formatAgendaEntry
