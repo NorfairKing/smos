@@ -48,7 +48,14 @@ getSettings Flags {..} Configuration {..} = do
 getDispatch :: Command -> Dispatch
 getDispatch CommandWaiting = DispatchWaiting
 getDispatch CommandNext = DispatchNext
-getDispatch CommandClock = DispatchClock
+getDispatch (CommandClock ClockFlags {..}) =
+    DispatchClock
+        ClockSettings
+            { clockSetPeriod =
+                  if clockFlagToday
+                      then Today
+                      else AllTime
+            }
 
 getArguments :: IO Arguments
 getArguments = do
@@ -82,7 +89,10 @@ parseCommand :: Parser Command
 parseCommand =
     hsubparser $
     mconcat
-        [command "waiting" parseCommandWaiting, command "next" parseCommandNext, command "clock" parseCommandClock]
+        [ command "waiting" parseCommandWaiting
+        , command "next" parseCommandNext
+        , command "clock" parseCommandClock
+        ]
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -102,7 +112,7 @@ parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the clock table"
-    parser = pure CommandClock
+    parser = CommandClock <$> (ClockFlags <$> switch (long "today"))
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser

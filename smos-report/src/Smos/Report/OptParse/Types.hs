@@ -14,13 +14,17 @@ type Instructions = (Dispatch, Settings)
 data Command
     = CommandWaiting
     | CommandNext
-    | CommandClock
+    | CommandClock ClockFlags
     deriving (Show, Eq)
 
 data Flags = Flags
     { flagConfigFile :: Maybe FilePath
     , flagWorkDir :: Maybe FilePath
     , flagShouldPrint :: Maybe ShouldPrint
+    } deriving (Show, Eq)
+
+data ClockFlags = ClockFlags
+    { clockFlagToday :: Bool
     } deriving (Show, Eq)
 
 data Configuration = Configuration
@@ -35,6 +39,15 @@ data Settings = Settings
 
 data Dispatch
     = DispatchWaiting
-    | DispatchClock
     | DispatchNext
+    | DispatchClock ClockSettings
+    deriving (Show, Eq)
+
+data ClockSettings = ClockSettings
+    { clockSetPeriod :: ClockPeriod
+    } deriving (Show, Eq)
+
+data ClockPeriod
+    = Today
+    | AllTime
     deriving (Show, Eq)

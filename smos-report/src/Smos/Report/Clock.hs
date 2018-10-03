@@ -13,6 +13,7 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Data.Time
 import Data.Tree
+import Data.Validity
 import Text.Printf
 
 import Path
@@ -25,14 +26,15 @@ import Smos.Report.Formatting
 import Smos.Report.OptParse
 import Smos.Report.Streaming
 
-clock :: Settings -> IO ()
-clock Settings {..} = do
+clock :: ClockSettings -> Settings -> IO ()
+clock ClockSettings {..} Settings {..} = do
     tups <-
         sourceToList $
         sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
         parseSmosFiles setWorkDir .|
         printShouldPrint setShouldPrint
-    T.putStrLn $ renderClockTable $ makeClockTable tups
+    now <- getZonedTime
+    T.putStrLn $ renderClockTable $ makeClockTable now clockSetPeriod tups
 
 data ClockTableEntry = ClockTableEntry
     { clockTableEntryFile :: Path Rel File
@@ -40,15 +42,19 @@ data ClockTableEntry = ClockTableEntry
     , clockTableEntryTime :: NominalDiffTime
     } deriving (Show, Eq, Generic)
 
-makeClockTable :: [(Path Rel File, SmosFile)] -> [ClockTableEntry]
-makeClockTable = concatMap $ uncurry go
+makeClockTable ::
+       ZonedTime
+    -> ClockPeriod
+    -> [(Path Rel File, SmosFile)]
+    -> [ClockTableEntry]
+makeClockTable zt cp = concatMap $ uncurry go
   where
     go :: Path Rel File -> SmosFile -> [ClockTableEntry]
     go rf = mapMaybe go' . concatMap flatten . smosFileForest
       where
         go' :: Entry -> Maybe ClockTableEntry
         go' Entry {..} =
-            let t = sumLogbookTime entryLogbook
+            let t = sumLogbookTime $ trimLogbook zt cp entryLogbook
              in if t > 0
                     then Just
                              ClockTableEntry
@@ -57,6 +63,44 @@ makeClockTable = concatMap $ uncurry go
                                  , clockTableEntryTime = t
                                  }
                     else Nothing
+
+trimLogbook :: ZonedTime -> ClockPeriod -> Logbook -> Logbook
+trimLogbook now cp lb =
+    case cp of
+        AllTime -> lb
+        Today -> trimEntries trimToToday lb
+  where
+    trimEntries :: (LogbookEntry -> Maybe LogbookEntry) -> Logbook -> Logbook
+    trimEntries func lb_ =
+        case lb_ of
+            LogOpen ut les -> LogOpen ut $ mapMaybe func les
+            LogClosed les -> LogClosed $ mapMaybe func les
+    tz :: TimeZone
+    tz = zonedTimeZone now
+    today :: LocalTime
+    today = zonedTimeToLocalTime now
+    toLocal :: UTCTime -> LocalTime
+    toLocal = utcToLocalTime tz
+    fromLocal :: LocalTime -> UTCTime
+    fromLocal = localTimeToUTC tz
+    todayStart :: LocalTime
+    todayStart = today {localTimeOfDay = midnight}
+    todayEnd :: LocalTime
+    todayEnd =
+        today {localDay = addDays 1 $ localDay today, localTimeOfDay = midnight}
+    trimToToday :: LogbookEntry -> Maybe LogbookEntry
+    trimToToday LogbookEntry {..} =
+        constructValid $
+        LogbookEntry
+            { logbookEntryStart =
+                  if toLocal logbookEntryStart >= todayStart
+                      then logbookEntryStart
+                      else fromLocal todayStart
+            , logbookEntryEnd =
+                  if toLocal logbookEntryEnd < todayEnd
+                      then logbookEntryEnd
+                      else fromLocal todayEnd
+            }
 
 sumLogbookTime :: Logbook -> NominalDiffTime
 sumLogbookTime lb =

@@ -34,6 +34,8 @@ module Smos.Types
 
 import Import
 
+import Data.Time
+
 import Control.Monad.Reader
 import Control.Monad.State
 
@@ -160,6 +162,7 @@ runSmosM = runMkSmosM
 
 data SmosState = SmosState
     { smosStateStartSmosFile :: Maybe SmosFile
+    , smosStateTimeZone :: TimeZone
     , smosStateFilePath :: Path Abs File
     , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress

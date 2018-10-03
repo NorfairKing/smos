@@ -11,6 +11,7 @@ import Import
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Sequence as Seq
+import Data.Time
 
 import Brick.Main as B
 import Brick.Types as B
@@ -149,10 +150,11 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-initState :: Path Abs File -> Maybe SmosFile -> SmosState
-initState p msf =
+initState :: Path Abs File -> Maybe SmosFile -> TimeZone -> SmosState
+initState p msf tz =
     SmosState
         { smosStateStartSmosFile = msf
+        , smosStateTimeZone = tz
         , smosStateFilePath = p
         , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
         , smosStateKeyHistory = Empty

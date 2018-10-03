@@ -15,4 +15,4 @@ report = do
 execute :: Dispatch -> Settings -> IO ()
 execute DispatchWaiting set = waiting set
 execute DispatchNext set = next set
-execute DispatchClock set = clock set
+execute (DispatchClock cs ) set = clock cs set

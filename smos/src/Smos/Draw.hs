@@ -64,7 +64,9 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
     ]
   where
     renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor = viewport "viewport" Vertical . drawSmosFileCursor
+    renderCursor =
+        viewport "viewport" Vertical .
+        flip runReader smosStateTimeZone . drawSmosFileCursor
     drawNoContent :: Widget n
     drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
       where
@@ -135,6 +137,10 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
             , str " "
             ]
 
+type MDrawer = Reader TimeZone (Maybe (Widget ResourceName))
+
+type Drawer = Reader TimeZone (Widget ResourceName)
+
 drawKeyMappingEvent :: KeyMapping -> Widget n
 drawKeyMappingEvent (MapVtyExactly kp _) = str $ showKeypress kp
 drawKeyMappingEvent (MapCatchAll _) = str "<any key>"
@@ -198,98 +204,98 @@ instance Semigroup Select where
 defaultPadding :: Padding
 defaultPadding = Pad 2
 
-drawSmosFileCursor :: SmosFileCursor -> Widget ResourceName
+drawSmosFileCursor :: SmosFileCursor -> Drawer
 drawSmosFileCursor =
     drawVerticalForestCursor drawEntryCTree drawSmosTreeCursor drawEntryCTree
 
 drawSmosTreeCursor ::
-       TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
-    -> Widget ResourceName
+       TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
 drawSmosTreeCursor = drawTreeCursor wrap cur
   where
-    cur :: CollapseEntry EntryCursor
-        -> CForest (CollapseEntry Entry)
-        -> Widget ResourceName
+    cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
     cur ec cf =
         case cf of
             EmptyCForest -> drawEntryCursor TreeIsNotCollapsed ec
             ClosedForest _ -> drawEntryCursor TreeIsCollapsed ec
-            OpenForest ts ->
-                drawEntryCursor TreeIsNotCollapsed ec <=>
-                padLeft
-                    defaultPadding
-                    (vBox (map drawEntryCTree $ NE.toList ts))
+            OpenForest ts -> do
+                ecw <- drawEntryCursor TreeIsNotCollapsed ec
+                etws <- mapM drawEntryCTree $ NE.toList ts
+                pure $ ecw <=> padLeft defaultPadding (vBox etws)
     wrap ::
            [CTree (CollapseEntry Entry)]
         -> CollapseEntry Entry
         -> [CTree (CollapseEntry Entry)]
         -> Widget ResourceName
-        -> Widget ResourceName
-    wrap tsl e tsr w =
-        drawEntry TreeIsNotCollapsed e <=>
-        padLeft
-            defaultPadding
-            (vBox $ concat [map drawEntryCTree tsl, [w], map drawEntryCTree tsr])
+        -> Drawer
+    wrap tsl e tsr w = do
+        befores <- mapM drawEntryCTree tsl
+        ew <- drawEntry TreeIsNotCollapsed e
+        afters <- mapM drawEntryCTree tsr
+        pure $ padLeft defaultPadding (vBox $ concat [befores, [ew], afters])
 
-drawEntryCTree :: CTree (CollapseEntry Entry) -> Widget ResourceName
+drawEntryCTree :: CTree (CollapseEntry Entry) -> Drawer
 drawEntryCTree (CNode t cf) =
     case cf of
         EmptyCForest -> drawEntry TreeIsNotCollapsed t
         ClosedForest _ -> drawEntry TreeIsCollapsed t
-        OpenForest ts ->
-            drawEntry TreeIsNotCollapsed t <=>
-            padLeft defaultPadding (vBox (map drawEntryCTree $ NE.toList ts))
+        OpenForest ts -> do
+            ew <- drawEntry TreeIsNotCollapsed t
+            etws <- mapM drawEntryCTree $ NE.toList ts
+            pure $ ew <=> padLeft defaultPadding (vBox etws)
 
 data TreeCollapsing
     = TreeIsNotCollapsed
     | TreeIsCollapsed
     deriving (Show, Eq)
 
-drawEntryCursor ::
-       TreeCollapsing -> CollapseEntry EntryCursor -> Widget ResourceName
-drawEntryCursor tc e =
-    vBox $
-    catMaybes
-        [ Just $
-          hBox $
-          intersperse (str " ") $
-          concat $
-          [ [selelectIfSelected $ str ">"]
-          , maybeToList
-                (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
-          , [ drawHeaderCursor
-                  (selectWhen HeaderSelected)
-                  entryCursorHeaderCursor
+drawEntryCursor :: TreeCollapsing -> CollapseEntry EntryCursor -> Drawer
+drawEntryCursor tc e = do
+    tscw <-
+        forM entryCursorTimestampsCursor $
+        drawTimestampsCursor (selectWhen TimestampsSelected)
+    lbcw <-
+        drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
+    pure $
+        vBox $
+        catMaybes
+            [ Just $
+              hBox $
+              intersperse (str " ") $
+              concat $
+              [ [selelectIfSelected $ str ">"]
+              , maybeToList
+                    (entryCursorStateHistoryCursor >>=
+                     drawCurrentStateFromCursor)
+              , [ drawHeaderCursor
+                      (selectWhen HeaderSelected)
+                      entryCursorHeaderCursor
+                ]
+              , maybeToList $
+                drawTagsCursor (selectWhen TagsSelected) <$>
+                entryCursorTagsCursor
+              , [ str "..."
+                | let e_ = rebuildEntryCursor ec
+                   in or [ not (collapseEntryShowContents e) &&
+                           not (isNothing $ entryContents e_)
+                         , not (collapseEntryShowHistory e) &&
+                           not (nullStateHistory $ entryStateHistory e_)
+                         , not (collapseEntryShowLogbook e) &&
+                           not (nullLogbook $ entryLogbook e_)
+                          ]
+                ]
+              , [str "+++" | tc == TreeIsCollapsed]
+              ]
+            , drawIfM collapseEntryShowContents $
+              drawContentsCursor (selectWhen ContentsSelected) <$>
+              entryCursorContentsCursor
+            , tscw
+            , drawPropertiesCursor (selectWhen PropertiesSelected) <$>
+              entryCursorPropertiesCursor
+            , drawIfM collapseEntryShowHistory $
+              entryCursorStateHistoryCursor >>=
+              drawStateHistoryCursor (selectWhen StateHistorySelected)
+            , drawIfM collapseEntryShowLogbook lbcw
             ]
-          , maybeToList $
-            drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
-          , [ str "..."
-            | let e_ = rebuildEntryCursor ec
-               in or [ not (collapseEntryShowContents e) &&
-                       not (isNothing $ entryContents e_)
-                     , not (collapseEntryShowHistory e) &&
-                       not (nullStateHistory $ entryStateHistory e_)
-                     , not (collapseEntryShowLogbook e) &&
-                       not (nullLogbook $ entryLogbook e_)
-                      ]
-            ]
-          , [str "+++" | tc == TreeIsCollapsed]
-          ]
-        , drawIfM collapseEntryShowContents $
-          drawContentsCursor (selectWhen ContentsSelected) <$>
-          entryCursorContentsCursor
-        , drawTimestampsCursor (selectWhen TimestampsSelected) <$>
-          entryCursorTimestampsCursor
-        , drawPropertiesCursor (selectWhen PropertiesSelected) <$>
-          entryCursorPropertiesCursor
-        , drawIfM collapseEntryShowHistory $
-          entryCursorStateHistoryCursor >>=
-          drawStateHistoryCursor (selectWhen StateHistorySelected)
-        , drawIfM collapseEntryShowLogbook $
-          drawLogbookCursor
-              (selectWhen LogbookSelected)
-              entryCursorLogbookCursor
-        ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
     drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
@@ -310,35 +316,39 @@ drawEntryCursor tc e =
             then MaybeSelected
             else NotSelected
 
-drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Widget ResourceName
-drawEntry tc e =
-    vBox $
-    catMaybes
-        [ Just $
-          hBox $
-          intersperse (str " ") $
-          concat
-              [ [str ">"]
-              , maybeToList (drawCurrentState entryStateHistory)
-              , [drawHeader entryHeader]
-              , maybeToList (drawTags entryTags)
-              , [ str "..."
-                | or [ not (collapseEntryShowContents e) &&
-                       not (isNothing entryContents)
-                     , not (collapseEntryShowHistory e) &&
-                       not (nullStateHistory entryStateHistory)
-                     , not (collapseEntryShowLogbook e) &&
-                       not (nullLogbook entryLogbook)
-                      ]
-                ]
-              , [str "+++" | tc == TreeIsCollapsed]
-              ]
-        , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
-        , drawTimestamps entryTimestamps
-        , drawProperties entryProperties
-        , drawIfM collapseEntryShowHistory $ drawStateHistory entryStateHistory
-        , drawIfM collapseEntryShowLogbook $ drawLogbook entryLogbook
-        ]
+drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Drawer
+drawEntry tc e = do
+    tsw <- drawTimestamps entryTimestamps
+    lbw <- drawLogbook entryLogbook
+    pure $
+        vBox $
+        catMaybes
+            [ Just $
+              hBox $
+              intersperse (str " ") $
+              concat
+                  [ [str ">"]
+                  , maybeToList (drawCurrentState entryStateHistory)
+                  , [drawHeader entryHeader]
+                  , maybeToList (drawTags entryTags)
+                  , [ str "..."
+                    | or [ not (collapseEntryShowContents e) &&
+                           not (isNothing entryContents)
+                         , not (collapseEntryShowHistory e) &&
+                           not (nullStateHistory entryStateHistory)
+                         , not (collapseEntryShowLogbook e) &&
+                           not (nullLogbook entryLogbook)
+                          ]
+                    ]
+                  , [str "+++" | tc == TreeIsCollapsed]
+                  ]
+            , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
+            , tsw
+            , drawProperties entryProperties
+            , drawIfM collapseEntryShowHistory $
+              drawStateHistory entryStateHistory
+            , drawIfM collapseEntryShowLogbook lbw
+            ]
   where
     Entry {..} = collapseEntryValue e
     drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
@@ -369,20 +379,21 @@ drawContentsCursor = drawTextFieldCursor
 drawContents :: Contents -> Widget ResourceName
 drawContents = drawText . contentsText
 
-drawTimestampsCursor :: Select -> TimestampsCursor -> Widget ResourceName
+drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
     drawVerticalMapCursor drawTimestamp (drawTimestampKVCursor s) drawTimestamp
 
-drawTimestamps :: Map TimestampName Timestamp -> Maybe (Widget n)
+drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
-    | M.null m = Nothing
-    | otherwise = Just $ vBox $ map (uncurry drawTimestamp) $ M.toList m
+    | M.null m = pure Nothing
+    | otherwise = fmap (Just . vBox) $ mapM (uncurry drawTimestamp) (M.toList m)
 
 drawTimestampKVCursor ::
        Select
     -> KeyValueCursor TextCursor FuzzyDayCursor TimestampName Timestamp
-    -> Widget ResourceName
+    -> Drawer
 drawTimestampKVCursor s kvc =
+    pure $
     case kvc of
         KeyValueCursorKey tc ts ->
             hBox
@@ -403,9 +414,9 @@ drawTimestampKVCursor s kvc =
                       MaybeSelected -> drawFuzzyDayCursor s fdc
                 ]
 
-drawTimestamp :: TimestampName -> Timestamp -> Widget n
+drawTimestamp :: TimestampName -> Timestamp -> Drawer
 drawTimestamp tsn d =
-    hBox [drawTimestampName tsn, str ": ", str $ show $ timestampDay d]
+    pure $ hBox [drawTimestampName tsn, str ": ", str $ show $ timestampDay d]
 
 drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Widget ResourceName
 drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} =
@@ -464,43 +475,46 @@ drawTags ts
 drawTag :: Tag -> Widget n
 drawTag = txt . tagText
 
-drawLogbookCursor :: Select -> LogbookCursor -> Maybe (Widget ResourceName)
+drawLogbookCursor :: Select -> LogbookCursor -> MDrawer
 drawLogbookCursor _ lbc =
     case lbc of
-        LogbookCursorClosed Nothing -> Nothing
+        LogbookCursorClosed Nothing -> pure Nothing
         LogbookCursorClosed (Just ne) ->
-            Just $
-            vBox $ map drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
-        LogbookCursorOpen u ne ->
-            Just $
-            vBox $
-            hBox [str "CLOCK: ", drawLogbookTimestamp u] :
-            map
-                drawLogbookEntry
-                (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
+            fmap (Just . vBox) $
+            mapM drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
+        LogbookCursorOpen u ne -> do
+            ews <-
+                mapM
+                    drawLogbookEntry
+                    (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
+            ow <- drawLogbookTimestamp u
+            pure $ Just $ vBox $ hBox [str "CLOCK: ", ow] : ews
 
-drawLogbook :: Logbook -> Maybe (Widget n)
+drawLogbook :: Logbook -> MDrawer
 drawLogbook (LogClosed ls)
-    | null ls = Nothing
-    | otherwise = Just $ vBox $ map drawLogbookEntry ls
-drawLogbook (LogOpen u ls) =
-    Just $
-    vBox $
-    hBox [str "CLOCK: ", drawLogbookTimestamp u] : map drawLogbookEntry ls
+    | null ls = pure Nothing
+    | otherwise = fmap (Just . vBox) $ mapM drawLogbookEntry ls
+drawLogbook (LogOpen u ls) = do
+    ews <- mapM drawLogbookEntry ls
+    ow <- drawLogbookTimestamp u
+    pure $ Just $ vBox $ hBox [str "CLOCK: ", ow] : ews
 
-drawLogbookEntry :: LogbookEntry -> Widget n
-drawLogbookEntry LogbookEntry {..} =
-    hBox
-        [ str "CLOCK: "
-        , drawLogbookTimestamp logbookEntryStart
-        , str "--"
-        , drawLogbookTimestamp logbookEntryEnd
-        ]
+drawLogbookEntry :: LogbookEntry -> Drawer
+drawLogbookEntry LogbookEntry {..} = do
+    sw <- drawLogbookTimestamp logbookEntryStart
+    ew <- drawLogbookTimestamp logbookEntryEnd
+    pure $ hBox [str "CLOCK: ", sw, str "--", ew]
 
-drawLogbookTimestamp :: UTCTime -> Widget n
-drawLogbookTimestamp utct =
-    str "[" <+>
-    str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" utct) <+> str "]"
+drawLogbookTimestamp :: UTCTime -> Drawer
+drawLogbookTimestamp utct = do
+    tw <- drawUTCLocal utct
+    pure $ str "[" <+> tw <+> str "]"
+
+drawUTCLocal :: UTCTime -> Drawer
+drawUTCLocal utct = do
+    tz <- asks id
+    let local = utcToLocalTime tz utct
+    pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" local)
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =
