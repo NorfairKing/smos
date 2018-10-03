@@ -56,7 +56,7 @@ data NextActionEntry = NextActionEntry
 
 formatNextActionEntry :: NextActionEntry -> [String]
 formatNextActionEntry NextActionEntry {..} =
-    [ maybe "" (T.unpack . todoStateText) nextActionEntryTodoState
+    [ fromRelFile nextActionEntryFilePath
+    , maybe "" (T.unpack . todoStateText) nextActionEntryTodoState
     , T.unpack $ headerText nextActionEntryHeader
-    , fromRelFile nextActionEntryFilePath
     ]
