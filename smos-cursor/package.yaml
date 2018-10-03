@@ -12,24 +12,14 @@ description:         Please see the README on GitHub at <https://github.com/Norf
 
 library:
   source-dirs: src
-  exposed-modules:
-  - Smos.Cursor.Collapse
-  - Smos.Cursor.Contents
-  - Smos.Cursor.Editor
-  - Smos.Cursor.Entry
-  - Smos.Cursor.Header
-  - Smos.Cursor.Logbook
-  - Smos.Cursor.Properties
-  - Smos.Cursor.SmosFile
-  - Smos.Cursor.StateHistory
-  - Smos.Cursor.Tags
-  - Smos.Cursor.Timestamps
   dependencies:
   - base
   - containers
   - cursor
   - microlens
   - smos-data
+  - text
   - time
   - validity
   - validity-time
+  - cursor-fuzzy-time

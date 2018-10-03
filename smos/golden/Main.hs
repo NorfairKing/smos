@@ -17,7 +17,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Time
-import Data.Yaml as Yaml
+import Data.Yaml.Builder as Yaml
 
 import Control.Monad
 
@@ -40,7 +40,9 @@ main = hspec spec
 spec :: Spec
 spec = do
     tfs <-
-        runIO $ do
+        runIO $
+            -- TODO verify that all plain actions and using char actions are unique
+         do
             resourcesDir <- resolveDir' "test_resources"
             fs <- snd <$> listDirRecur resourcesDir
             pure $ mapMaybe classify fs
@@ -179,7 +181,7 @@ makeTestcases tfs =
                     bf <- readSmosfileForTest beforeFile
                     cs <- readCommandsFileForTest commandsFile
                     af <- readSmosfileForTest afterFile
-                    run <- runCommandsOn bf cs
+                    run <- runCommandsOn (Just bf) cs
                     expectResults bf af run
 
 readSmosfileForTest :: Path Abs File -> IO SmosFile
@@ -238,8 +240,10 @@ data CommandsRun = CommandsRun
     , finalResult :: SmosFile
     }
 
-runCommandsOn :: SmosFile -> [Command] -> IO CommandsRun
-runCommandsOn start commands = do
+runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn mstart commands = do
+    tz <- getCurrentTimeZone
+    let startState = initState $(mkAbsFile "/pretend/test/file") mstart tz
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
@@ -247,7 +251,6 @@ runCommandsOn start commands = do
             , finalResult = rebuildEditorCursor $ smosStateCursor fs
             }
   where
-    startState = initState $(mkAbsFile "/pretend/test/file") start
     testConf = SmosConfig {configKeyMap = mempty}
     go :: (SmosState, [(Command, SmosFile)])
        -> Command
@@ -296,8 +299,7 @@ expectResults bf af CommandsRun {..} =
           ]
         , [ "If this was intentional, you can replace the contents of the expected results file by the following:"
           , "---[START]---"
-          , SB8.unpack $ Yaml.encode finalResult
-          , "---[END]---"
+          , SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
           ]
         ]
   where
@@ -340,21 +342,29 @@ eqForTest = forestEqForTest `on` smosFileForest
         ((==) `on` entryTimestamps) &&&
         ((==) `on` entryProperties) &&&
         (stateHistoryEqForTest `on` entryStateHistory) &&&
-        ((==) `on` entryTags) &&& ((==) `on` entryLogbook)
+        ((==) `on` entryTags) &&& (logbookEqForTest `on` entryLogbook)
     stateHistoryEqForTest :: StateHistory -> StateHistory -> Bool
     stateHistoryEqForTest sh1 sh2 =
-        all
-            (\(she1, mshe2) ->
-                 case mshe2 of
-                     Nothing -> False
-                     Just she2 -> stateHistoryEntryEqForTest she1 she2) $
-        zip
+        listEq1
+            stateHistoryEntryEqForTest
             (unStateHistory sh1)
-            (map Just (unStateHistory sh2) ++ repeat Nothing)
+            (unStateHistory sh2)
     stateHistoryEntryEqForTest :: StateHistoryEntry -> StateHistoryEntry -> Bool
     stateHistoryEntryEqForTest =
         ((==) `on` stateHistoryEntryNewState) &&&
         (dateTimeEqForTest `on` stateHistoryEntryTimestamp)
+    logbookEqForTest :: Logbook -> Logbook -> Bool
+    logbookEqForTest lb1 lb2 =
+        case (lb1, lb2) of
+            (LogOpen ut1 lbes1, LogOpen ut2 lbes2) ->
+                dateTimeEqForTest ut1 ut2 &&
+                listEq1 logbookEntryEqForTest lbes1 lbes2
+            (LogClosed lbes1, LogClosed lbes2) ->
+                listEq1 logbookEntryEqForTest lbes1 lbes2
+            (_, _) -> False
+    logbookEntryEqForTest :: LogbookEntry -> LogbookEntry -> Bool
+    logbookEntryEqForTest (LogbookEntry s1 e1) (LogbookEntry s2 e2) =
+        dateTimeEqForTest s1 s2 && dateTimeEqForTest e1 e2
     dateTimeEqForTest :: UTCTime -> UTCTime -> Bool
     dateTimeEqForTest _ _ = True
     (&&&) :: (a -> b -> Bool) -> (a -> b -> Bool) -> (a -> b -> Bool)

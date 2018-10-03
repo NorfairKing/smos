@@ -7,6 +7,8 @@ module Smos
 
 import Import
 
+import Data.Time
+
 import System.Exit
 
 import Brick.Main as B
@@ -28,7 +30,8 @@ smos sc@SmosConfig {..} = do
             Nothing -> pure Nothing
             Just (Left err) -> die $ show err
             Just (Right sf) -> pure $ Just sf
-    let s = initState p $ fromMaybe emptySmosFile startF
+    tz <- getCurrentTimeZone
+    let s = initState p startF tz
     s' <- defaultMain (mkSmosApp sc) s
     let sf' = rebuildEditorCursor $ smosStateCursor s'
     when (startF /= Just sf') $ writeSmosFile p sf'

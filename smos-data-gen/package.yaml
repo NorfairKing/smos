@@ -14,9 +14,9 @@ library:
   exposed-modules:
   - Smos.Data.Gen
   dependencies:
+  - QuickCheck
   - base >=4.9 && <=5
   - containers
-  - QuickCheck
   - genvalidity
   - genvalidity-containers
   - genvalidity-path
@@ -24,6 +24,7 @@ library:
   - genvalidity-time
   - genvalidity-unordered-containers
   - smos-data
+  - time
 
 tests:
   smos-data-test:
@@ -35,6 +36,8 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - QuickCheck
+    - aeson
     - base
     - bytestring
     - genvalidity-hspec
@@ -44,3 +47,4 @@ tests:
     - smos-data
     - smos-data-gen
     - text
+    - time

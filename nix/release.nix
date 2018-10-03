@@ -6,7 +6,9 @@ in rec {
       buildInputs = [ smos-static ];
       nativeBuildInputs =
            pkgs.lib.attrsets.attrValues pkgs.smosPackages
-        ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages;
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.fuzzyTimePackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorFuzzyTimePackages;
       buildCommand = ''
         cp -r ${smos-static} $out
       '';

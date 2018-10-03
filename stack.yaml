@@ -1,18 +1,29 @@
-resolver: nightly-2018-07-28
+resolver: lts-12.10
 packages:
 - smos
 - smos-data
 - smos-data-gen
 - smos-cursor
 - smos-cursor-gen
+- smos-report
 extra-deps:
+- git: https://github.com/NorfairKing/cursor-fuzzy-time.git
+  commit: 13f7585d0b18403b5d78f0c0bbef608d8fad0b40
+  subdirs:
+    - cursor-fuzzy-time
+    - cursor-fuzzy-time-gen
+- git: https://github.com/NorfairKing/fuzzy-time.git
+  commit: 765afdf9a18566007f26499398a04f3fac6435cd
+  subdirs:
+    - fuzzy-time
+    - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 212e74da54d50666d0d48bb048979db8989f8b41
+  commit: 50fad900ce14c82db4b18eb3767df3d82e1f4939
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: b9449de1466abc7c862b7e54b9bb18d6e4a02c81
+  commit: 550327539d84d72ba8be8412025b0074d14c4188
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -45,4 +56,4 @@ extra-deps:
   - validity-uuid
   - validity-vector
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/886871538c15681575925a990a3f1b68ed9d5477.tar.gz" ]
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/a0248a0b6819153e3fdbc62ce32d7f4e61695c99.tar.gz" ]

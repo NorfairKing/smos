@@ -13,11 +13,6 @@ matrix:
     addons: {apt: {packages: [libgmp-dev]}}
 
   - env:
-      - BUILD_KIND="stack"
-      - RESOLVER_FLAG="--stack-yaml lts-12.yaml"
-    addons: {apt: {packages: [libgmp-dev]}}
-    
-  - env:
       - BUILD_KIND="nix"
 
   # Nightly builds are allowed to fail

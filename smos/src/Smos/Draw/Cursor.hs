@@ -3,41 +3,82 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Draw.Cursor
-    ( drawVerticalForestCursor
+    ( drawVerticalMapCursor
+    , drawMapCursor
+    , drawVerticalForestCursor
     , drawForestCursor
     , drawTreeCursor
     , drawVerticalNonEmptyCursor
     , drawNonEmptyCursor
     ) where
 
+import Control.Monad
+
 import Brick.Types as B
 import Brick.Widgets.Core as B
 
 import Cursor.Forest hiding (drawForestCursor)
 import Cursor.List.NonEmpty
+import Cursor.Map
 import Cursor.Tree hiding (drawTreeCursor)
 
-import Smos.Data
+drawVerticalMapCursor ::
+       Monad m
+    => (k -> v -> m (Widget n))
+    -> (KeyValueCursor kc vc k v -> m (Widget n))
+    -> (k -> v -> m (Widget n))
+    -> MapCursor kc vc k v
+    -> m (Widget n)
+drawVerticalMapCursor prevFunc curFunc nextFunc =
+    drawMapCursor
+        prevFunc
+        curFunc
+        nextFunc
+        B.vBox
+        B.vBox
+        (\a b c -> a <=> b <=> c)
+
+drawMapCursor ::
+       Monad m
+    => (k -> v -> m (Widget n))
+    -> (KeyValueCursor kc vc k v -> m (Widget n))
+    -> (k -> v -> m (Widget n))
+    -> ([Widget n] -> Widget n)
+    -> ([Widget n] -> Widget n)
+    -> (Widget n -> Widget n -> Widget n -> Widget n)
+    -> MapCursor kc vc k v
+    -> m (Widget n)
+drawMapCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc =
+    drawNonEmptyCursor
+        (uncurry prevFunc)
+        curFunc
+        (uncurry nextFunc)
+        prevCombFunc
+        nextCombFunc
+        combFunc .
+    mapCursorList
 
 drawVerticalForestCursor ::
-       (Tree b -> Widget n)
-    -> (TreeCursor a b -> Widget n)
-    -> (Tree b -> Widget n)
+       Monad m
+    => (CTree b -> m (Widget n))
+    -> (TreeCursor a b -> m (Widget n))
+    -> (CTree b -> m (Widget n))
     -> ForestCursor a b
-    -> Widget n
+    -> m (Widget n)
 drawVerticalForestCursor prevFunc curFunc nextFunc fc =
     drawVerticalNonEmptyCursor prevFunc curFunc nextFunc $
     forestCursorListCursor fc
 
 drawForestCursor ::
-       (Tree b -> Widget n)
-    -> (TreeCursor a b -> Widget n)
-    -> (Tree b -> Widget n)
+       Monad m
+    => (CTree b -> m (Widget n))
+    -> (TreeCursor a b -> m (Widget n))
+    -> (CTree b -> m (Widget n))
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
     -> ForestCursor a b
-    -> Widget n
+    -> m (Widget n)
 drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc =
     drawNonEmptyCursor
         prevFunc
@@ -49,30 +90,29 @@ drawForestCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc fc
     forestCursorListCursor fc
 
 drawTreeCursor ::
-       forall a b n.
-       ([Tree b] -> b -> [Tree b] -> Widget n -> Widget n)
-    -> (a -> Forest b -> Widget n)
+       forall a b n m. Monad m
+    => ([CTree b] -> b -> [CTree b] -> Widget n -> m (Widget n))
+    -> (a -> CForest b -> m (Widget n))
     -> TreeCursor a b
-    -> Widget n
+    -> m (Widget n)
 drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
-    (case treeAbove of
-         Nothing -> id
-         Just ta -> goAbove ta)
-        (currentFunc treeCurrent treeBelow)
+    currentFunc treeCurrent treeBelow >>= wrapAbove treeAbove
   where
-    goAbove :: TreeAbove b -> Widget n -> Widget n
+    wrapAbove :: Maybe (TreeAbove b) -> Widget n -> m (Widget n)
+    wrapAbove Nothing = pure
+    wrapAbove (Just ta) = goAbove ta
+    goAbove :: TreeAbove b -> Widget n -> m (Widget n)
     goAbove TreeAbove {..} =
-        (case treeAboveAbove of
-             Nothing -> id
-             Just ta -> goAbove ta) .
-        wrapAboveFunc (reverse treeAboveLefts) treeAboveNode treeAboveRights
+        wrapAboveFunc (reverse treeAboveLefts) treeAboveNode treeAboveRights >=>
+        wrapAbove treeAboveAbove
 
 drawVerticalNonEmptyCursor ::
-       (b -> Widget n)
-    -> (a -> Widget n)
-    -> (b -> Widget n)
+       Monad m
+    => (b -> m (Widget n))
+    -> (a -> m (Widget n))
+    -> (b -> m (Widget n))
     -> NonEmptyCursor a b
-    -> Widget n
+    -> m (Widget n)
 drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
     drawNonEmptyCursor
         prevFunc
@@ -83,16 +123,17 @@ drawVerticalNonEmptyCursor prevFunc curFunc nextFunc =
         (\a b c -> a <=> b <=> c)
 
 drawNonEmptyCursor ::
-       (b -> Widget n)
-    -> (a -> Widget n)
-    -> (b -> Widget n)
+       Monad m
+    => (b -> m (Widget n))
+    -> (a -> m (Widget n))
+    -> (b -> m (Widget n))
     -> ([Widget n] -> Widget n)
     -> ([Widget n] -> Widget n)
     -> (Widget n -> Widget n -> Widget n -> Widget n)
     -> NonEmptyCursor a b
-    -> Widget n
-drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} =
-    let prev = prevCombFunc $ map prevFunc $ reverse nonEmptyCursorPrev
-        cur = curFunc nonEmptyCursorCurrent
-        next = nextCombFunc $ map nextFunc nonEmptyCursorNext
-    in combFunc prev cur next
+    -> m (Widget n)
+drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} = do
+    prev <- fmap prevCombFunc $ mapM prevFunc $ reverse nonEmptyCursorPrev
+    cur <- curFunc nonEmptyCursorCurrent
+    next <- fmap nextCombFunc $ mapM nextFunc nonEmptyCursorNext
+    pure $ combFunc prev cur next

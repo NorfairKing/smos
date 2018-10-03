@@ -25,20 +25,27 @@ library:
   - smos-cursor
   - smos-data
   - smos-data-gen
+  - cursor-fuzzy-time
+  - cursor-fuzzy-time-gen
 
 tests:
   smos-cursor-test:
-    main:                Spec.hs
+    main:                Main.hs
     source-dirs:         test
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - hspec
-    - smos-data
-    - smos-data-gen
-    - smos-cursor
-    - smos-cursor-gen
+    - QuickCheck
+    - cursor
+    - cursor-fuzzy-time
+    - cursor-fuzzy-time-gen
     - genvalidity-hspec
     - genvalidity-hspec-optics
+    - hspec
+    - hspec-core
+    - smos-cursor
+    - smos-cursor-gen
+    - smos-data
+    - smos-data-gen

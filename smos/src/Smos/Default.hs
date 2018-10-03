@@ -23,7 +23,7 @@ defaultKeyMap =
         , keyMapEntryMatchers =
               listMatchers
                   [ exactChar 'q' stop
-                  , exactKey KEsc stop
+                  , exactChar 'w' saveFile
                   -- Selections
                   , exactChar 'a' entrySelectHeaderAtEnd
                   , exactChar 'A' entrySelectHeaderAtEnd
@@ -31,7 +31,9 @@ defaultKeyMap =
                   , exactChar 'I' entrySelectHeaderAtStart
                   -- Movements
                   , exactChar 'k' forestMoveUp
+                  , exactKey KUp forestMoveUp
                   , exactChar 'j' forestMoveDown
+                  , exactKey KDown forestMoveDown
                   , exactString "gg" forestMoveToFirst
                   , exactChar 'G' forestMoveToLast
                   -- Swaps
@@ -56,8 +58,40 @@ defaultKeyMap =
                   , exactString "td" $ entrySetTodoState "DONE"
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
+                  , exactString "Tt" $
+                    subtreeSetTodoState "TODO"
+                  , exactString "Tn" $
+                    subtreeSetTodoState "NEXT"
+                  , exactString "Ts" $
+                    subtreeSetTodoState "STARTED"
+                  , exactString "Tr" $
+                    subtreeSetTodoState "READY"
+                  , exactString "Tw" $
+                    subtreeSetTodoState "WAITING"
+                  , exactString "Td" $
+                    subtreeSetTodoState "DONE"
+                  , exactString "Tc" $
+                    subtreeSetTodoState "CANCELLED"
+                  , exactString "T "
+                        subtreeUnsetTodoState
+                  -- Fast tag manipulation
+                  , exactString "gw" $ tagsToggle "work"
+                  , exactString "go" $ tagsToggle "online"
+                  -- Fast timestamps manipulation
+                  , exactString "sb" $ timestampsSelect "BEGIN"
+                  , exactString "se" $ timestampsSelect "END"
+                  , exactString "sd" $ timestampsSelect "DEADLINE"
+                  , exactString "ss" $ timestampsSelect "SCHEDULED"
+                  -- Clocking
+                  , exactString "ci" forestClockOutEverywhereAndClockInHere
+                  , exactString "co" forestClockOutEverywhere
                   -- Collapsing
-                  , exactChar '\t' forestToggleHideEntireEntry
+                  , exactChar '\t' forestToggleCollapse
+                  , exactKey KBackTab forestToggleHideEntireEntry
+                  -- Entering contents
+                  , combo
+                        [KeyPress KEnter [], KeyPress KEnter []]
+                        entrySelectContents
                   ]
         , keyMapHeaderMatchers =
               listMatchers
@@ -70,10 +104,44 @@ defaultKeyMap =
                   , exactKey KRight headerMoveRight
                   , exactKey KHome headerMoveToStart
                   , exactKey KEnd headerMoveToEnd
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   ]
-        , keyMapContentsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+        , keyMapContentsMatchers =
+              listMatchers
+                  [ exactKey KEsc entrySelectWhole
+                  , anyChar contentsInsert
+                  , exactKey KEnter contentsInsertNewline
+                  , exactKey KBS contentsRemove
+                  , exactKey KDel contentsDelete
+                  , exactKey KLeft contentsMoveLeft
+                  , exactKey KRight contentsMoveRight
+                  , exactKey KUp contentsMoveUp
+                  , exactKey KDown contentsMoveDown
+                  , exactKey KHome contentsMoveToStartOfLine
+                  , exactKey KEnd contentsMoveToEndOfLine
+                  , modifiedChar 'k' [MMeta] forestSwapUp
+                  , modifiedChar 'j' [MMeta] forestSwapDown
+                  , modifiedChar 'h' [MMeta] forestPromoteEntry
+                  , modifiedChar 'H' [MMeta] forestPromoteSubTree
+                  , modifiedChar 'l' [MMeta] forestDemoteEntry
+                  , modifiedChar 'L' [MMeta] forestDemoteSubTree
+                  ]
         , keyMapTimestampsMatchers =
-              listMatchers [exactKey KEsc entrySelectWhole]
+              listMatchers
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKey KEnter entrySelectWhole
+                  , anyChar timestampsInsert
+                  , exactKey KLeft timestampsMoveLeft
+                  , exactKey KRight timestampsMoveRight
+                  , exactKey KBS timestampsRemove
+                  , exactKey KDel timestampsDelete
+                  , exactChar '\t' timestampsToggle
+                  ]
         , keyMapPropertiesMatchers =
               listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapStateHistoryMatchers =

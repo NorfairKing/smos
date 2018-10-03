@@ -36,7 +36,7 @@ headerInsert =
     ActionUsing
     { actionUsingName = "headerInsert"
     , actionUsingFunc =
-          \c -> modifyHeaderCursorWhenSelected (headerCursorInsert c)
+          \c -> modifyHeaderCursorWhenSelectedM (headerCursorInsert c)
     , actionUsingDescription =
           "Insert a character into the header in front of the cursor"
     }
@@ -46,7 +46,7 @@ headerAppend =
     ActionUsing
     { actionUsingName = "headerAppend"
     , actionUsingFunc =
-          \c -> modifyHeaderCursorWhenSelected (headerCursorAppend c)
+          \c -> modifyHeaderCursorWhenSelectedM (headerCursorAppend c)
     , actionUsingDescription =
           "Append a character into the header in front of the cursor"
     }

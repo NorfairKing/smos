@@ -12,8 +12,10 @@ instance GenUnchecked EditorCursor
 
 instance GenValid EditorCursor where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenUnchecked EditorSelection
 
 instance GenValid EditorSelection where
     genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
