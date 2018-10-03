@@ -181,7 +181,7 @@ makeTestcases tfs =
                     bf <- readSmosfileForTest beforeFile
                     cs <- readCommandsFileForTest commandsFile
                     af <- readSmosfileForTest afterFile
-                    run <- runCommandsOn bf cs
+                    run <- runCommandsOn (Just bf) cs
                     expectResults bf af run
 
 readSmosfileForTest :: Path Abs File -> IO SmosFile
@@ -240,8 +240,8 @@ data CommandsRun = CommandsRun
     , finalResult :: SmosFile
     }
 
-runCommandsOn :: SmosFile -> [Command] -> IO CommandsRun
-runCommandsOn start commands = do
+runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn mstart commands = do
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
@@ -249,7 +249,7 @@ runCommandsOn start commands = do
             , finalResult = rebuildEditorCursor $ smosStateCursor fs
             }
   where
-    startState = initState $(mkAbsFile "/pretend/test/file") start
+    startState = initState $(mkAbsFile "/pretend/test/file") mstart
     testConf = SmosConfig {configKeyMap = mempty}
     go :: (SmosState, [(Command, SmosFile)])
        -> Command
