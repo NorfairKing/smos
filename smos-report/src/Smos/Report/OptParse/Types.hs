@@ -26,6 +26,7 @@ data Flags = Flags
 data ClockFlags = ClockFlags
     { clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
+    , clockFlagBlockFlags :: Maybe ClockBlock
     } deriving (Show, Eq)
 
 data Configuration = Configuration
@@ -47,6 +48,7 @@ data Dispatch
 data ClockSettings = ClockSettings
     { clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
+    , clockSetBlock :: ClockBlock
     } deriving (Show, Eq)
 
 data ClockPeriod
@@ -61,3 +63,8 @@ data ClockResolution
     | MinutesResolution
     | HoursResolution
     deriving (Show, Eq, Ord)
+
+data ClockBlock
+    = OneBlock
+    | DailyBlock
+    deriving (Show, Eq)

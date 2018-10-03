@@ -8,6 +8,8 @@ import GHC.Generics (Generic)
 
 import Data.Maybe
 
+import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.IO as T
@@ -16,6 +18,7 @@ import Data.Time.Calendar.WeekDate
 import Data.Tree
 import Data.Validity
 import Text.Printf
+import Text.Show.Pretty
 
 import Path
 
@@ -35,51 +38,54 @@ clock ClockSettings {..} Settings {..} = do
         parseSmosFiles setWorkDir .|
         printShouldPrint setShouldPrint
     now <- getZonedTime
-    print clockSetPeriod
-    T.putStrLn $
+    T.putStr $
         renderClockTable clockSetResolution $
-        makeClockTable now clockSetPeriod tups
+        makeClockTable $
+        divideIntoBlocks clockSetBlock $
+        concatMap
+            (mapMaybe (trimClockTime now clockSetPeriod) .
+             uncurry findClockTimes)
+            tups
 
-data ClockTableEntry = ClockTableEntry
-    { clockTableEntryFile :: Path Rel File
-    , clockTableEntryHeader :: Header
-    , clockTableEntryTime :: NominalDiffTime
+data ClockTime = ClockTime
+    { clockTimeFile :: Path Rel File
+    , clockTimeHeader :: Header
+    , clockTimeEntries :: NonEmpty LogbookEntry
     } deriving (Show, Eq, Generic)
 
-makeClockTable ::
-       ZonedTime
-    -> ClockPeriod
-    -> [(Path Rel File, SmosFile)]
-    -> [ClockTableEntry]
-makeClockTable zt cp = concatMap $ uncurry go
+findClockTimes :: Path Rel File -> SmosFile -> [ClockTime]
+findClockTimes rf = mapMaybe go . concatMap flatten . smosFileForest
   where
-    go :: Path Rel File -> SmosFile -> [ClockTableEntry]
-    go rf = mapMaybe go' . concatMap flatten . smosFileForest
+    go :: Entry -> Maybe ClockTime
+    go Entry {..} =
+        case entryLogbook of
+            LogOpen _ es -> go' es
+            LogClosed es -> go' es
       where
-        go' :: Entry -> Maybe ClockTableEntry
-        go' Entry {..} =
-            let t = sumLogbookTime $ trimLogbook zt cp entryLogbook
-             in if t > 0
-                    then Just
-                             ClockTableEntry
-                                 { clockTableEntryFile = rf
-                                 , clockTableEntryHeader = entryHeader
-                                 , clockTableEntryTime = t
-                                 }
-                    else Nothing
+        go' es = do
+            ne <- NE.nonEmpty es
+            pure $
+                ClockTime
+                    { clockTimeFile = rf
+                    , clockTimeHeader = entryHeader
+                    , clockTimeEntries = ne
+                    }
 
-trimLogbook :: ZonedTime -> ClockPeriod -> Logbook -> Logbook
-trimLogbook now cp lb =
+trimClockTime :: ZonedTime -> ClockPeriod -> ClockTime -> Maybe ClockTime
+trimClockTime zt cp ct = do
+    let entries =
+            mapMaybe (trimLogbookEntry zt cp) $ NE.toList $ clockTimeEntries ct
+    ne <- NE.nonEmpty entries
+    pure ct {clockTimeEntries = ne}
+
+trimLogbookEntry ::
+       ZonedTime -> ClockPeriod -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntry now cp =
     case cp of
-        AllTime -> lb
-        Today -> trimEntries trimToToday lb
-        ThisWeek -> trimEntries trimToThisWeek lb
+        AllTime -> pure
+        Today -> trimToToday
+        ThisWeek -> trimToThisWeek
   where
-    trimEntries :: (LogbookEntry -> Maybe LogbookEntry) -> Logbook -> Logbook
-    trimEntries func lb_ =
-        case lb_ of
-            LogOpen ut les -> LogOpen ut $ mapMaybe func les
-            LogClosed les -> LogClosed $ mapMaybe func les
     tz :: TimeZone
     tz = zonedTimeZone now
     nowLocal :: LocalTime
@@ -120,19 +126,62 @@ trimLogbook now cp lb =
                       else fromLocal end
             }
 
-sumLogbookTime :: Logbook -> NominalDiffTime
-sumLogbookTime lb =
-    sum $
-    case lb of
-        (LogOpen _ es) -> map go es
-        (LogClosed es) -> map go es
+data ClockTimeBlock = ClockTimeBlock
+    { clockTimeBlockName :: Text
+    , clockTimeBlockEntries :: [ClockTime]
+    } deriving (Show, Eq, Generic)
+
+divideIntoBlocks :: ClockBlock -> [ClockTime] -> [ClockTimeBlock]
+divideIntoBlocks cb cts =
+    case cb of
+        OneBlock ->
+            [ ClockTimeBlock
+                  {clockTimeBlockName = "All Time", clockTimeBlockEntries = cts}
+            ]
+
+type ClockTable = [ClockTableBlock]
+
+data ClockTableBlock = ClockTableBlock
+    { clockTableBlockName :: Text
+    , clockTableBlockEntries :: [ClockTableEntry]
+    } deriving (Show, Eq, Generic)
+
+makeClockTable :: [ClockTimeBlock] -> [ClockTableBlock]
+makeClockTable = map makeClockTableBlock
+
+makeClockTableBlock :: ClockTimeBlock -> ClockTableBlock
+makeClockTableBlock ClockTimeBlock {..} =
+    ClockTableBlock
+        { clockTableBlockName = clockTimeBlockName
+        , clockTableBlockEntries = map makeClockTableEntry clockTimeBlockEntries
+        }
+
+data ClockTableEntry = ClockTableEntry
+    { clockTableEntryFile :: Path Rel File
+    , clockTableEntryHeader :: Header
+    , clockTableEntryTime :: NominalDiffTime
+    } deriving (Show, Eq, Generic)
+
+makeClockTableEntry :: ClockTime -> ClockTableEntry
+makeClockTableEntry ClockTime {..} =
+    ClockTableEntry
+        { clockTableEntryFile = clockTimeFile
+        , clockTableEntryHeader = clockTimeHeader
+        , clockTableEntryTime = sumLogbookEntryTime $ NE.toList clockTimeEntries
+        }
+
+sumLogbookEntryTime :: [LogbookEntry] -> NominalDiffTime
+sumLogbookEntryTime = sum . map go
   where
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-renderClockTable :: ClockResolution -> [ClockTableEntry] -> Text
-renderClockTable res = T.pack . formatAsTable . map go
+renderClockTable :: ClockResolution -> [ClockTableBlock] -> Text
+renderClockTable res = T.pack . formatAsTable . concatMap goB
   where
+    goB :: ClockTableBlock -> [[String]]
+    goB ClockTableBlock {..} =
+        [T.unpack clockTableBlockName, "", ""] : map go clockTableBlockEntries
     go :: ClockTableEntry -> [String]
     go ClockTableEntry {..} =
         [ fromRelFile clockTableEntryFile

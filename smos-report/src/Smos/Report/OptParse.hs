@@ -52,7 +52,9 @@ getDispatch (CommandClock ClockFlags {..}) =
     DispatchClock
         ClockSettings
             { clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-            , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
+            , clockSetResolution =
+                  fromMaybe MinutesResolution clockFlagResolutionFlags
+            , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
             }
 
 getArguments :: IO Arguments
@@ -121,6 +123,10 @@ parseCommandClock = info parser modifier
           (flag' SecondsResolution (long "seconds-resolution") <|>
            flag' MinutesResolution (long "minutes-resolution") <|>
            flag' HoursResolution (long "hours-resolution")) <|>
+          pure Nothing) <*>
+         (Just <$>
+          (flag' DailyBlock (long "daily-block") <|>
+           flag' OneBlock (long "one-block")) <|>
           pure Nothing))
 
 parseFlags :: Parser Flags
