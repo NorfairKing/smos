@@ -3,7 +3,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Report.Clock where
+module Smos.Report.Clock
+    ( module Smos.Report.Clock
+    , module Smos.Report.Clock.Types
+    ) where
 
 import GHC.Generics (Generic)
 
@@ -20,6 +23,7 @@ import Data.Time
 import Data.Time.Calendar.WeekDate
 import Data.Tree
 import Data.Validity
+import Data.Validity.Path ()
 import Text.Printf
 
 import Path
@@ -31,6 +35,8 @@ import Smos.Data
 import Smos.Report.Formatting
 import Smos.Report.OptParse
 import Smos.Report.Streaming
+
+import Smos.Report.Clock.Types
 
 clock :: ClockSettings -> Settings -> IO ()
 clock ClockSettings {..} Settings {..} = do
@@ -48,6 +54,14 @@ clock ClockSettings {..} Settings {..} = do
             (mapMaybe (trimClockTime now clockSetPeriod) .
              uncurry findClockTimes)
             tups
+
+data ClockTime = ClockTime
+    { clockTimeFile :: Path Rel File
+    , clockTimeHeader :: Header
+    , clockTimeEntries :: NonEmpty LogbookEntry
+    } deriving (Show, Eq, Generic)
+
+instance Validity ClockTime
 
 findClockTimes :: Path Rel File -> SmosFile -> [ClockTime]
 findClockTimes rf = mapMaybe go . concatMap flatten . smosFileForest
@@ -73,12 +87,6 @@ trimClockTime zt cp ct = do
             mapMaybe (trimLogbookEntry zt cp) $ NE.toList $ clockTimeEntries ct
     ne <- NE.nonEmpty entries
     pure ct {clockTimeEntries = ne}
-
-data ClockTime = ClockTime
-    { clockTimeFile :: Path Rel File
-    , clockTimeHeader :: Header
-    , clockTimeEntries :: NonEmpty LogbookEntry
-    } deriving (Show, Eq, Generic)
 
 trimLogbookEntry ::
        ZonedTime -> ClockPeriod -> LogbookEntry -> Maybe LogbookEntry
@@ -136,6 +144,8 @@ data ClockTimeBlock a = ClockTimeBlock
     , clockTimeBlockEntries :: [ClockTime]
     } deriving (Show, Eq, Generic, Functor)
 
+instance Validity a => Validity (ClockTimeBlock a)
+
 divideIntoBlocks ::
        TimeZone -> ClockBlock -> [ClockTime] -> [ClockTimeBlock Text]
 divideIntoBlocks tz cb cts =
@@ -159,7 +169,8 @@ combineBlocksByName =
         (clockTimeBlockName, clockTimeBlockEntries)
     makeClockTimeBlock :: a -> [[ClockTime]] -> ClockTimeBlock a
     makeClockTimeBlock n cts =
-        ClockTimeBlock {clockTimeBlockName = n, clockTimeBlockEntries =concat cts}
+        ClockTimeBlock
+            {clockTimeBlockName = n, clockTimeBlockEntries = concat cts}
 
 divideClockTimeIntoDailyBlocks :: TimeZone -> ClockTime -> [ClockTimeBlock Day]
 divideClockTimeIntoDailyBlocks tz =
@@ -210,6 +221,8 @@ data ClockTableBlock = ClockTableBlock
     , clockTableBlockEntries :: [ClockTableEntry]
     } deriving (Show, Eq, Generic)
 
+instance Validity ClockTableBlock
+
 makeClockTable :: [ClockTimeBlock Text] -> [ClockTableBlock]
 makeClockTable = map makeClockTableBlock
 
@@ -225,6 +238,8 @@ data ClockTableEntry = ClockTableEntry
     , clockTableEntryHeader :: Header
     , clockTableEntryTime :: NominalDiffTime
     } deriving (Show, Eq, Generic)
+
+instance Validity ClockTableEntry
 
 makeClockTableEntry :: ClockTime -> ClockTableEntry
 makeClockTableEntry ClockTime {..} =

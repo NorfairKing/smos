@@ -1,10 +1,12 @@
 module Smos.Report.OptParse.Types
-    ( module Smos.Report.OptParse.Types
+    ( module Smos.Report.Clock.Types
+    , module Smos.Report.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
 import Path
 
+import Smos.Report.Clock.Types
 import Smos.Report.ShouldPrint
 
 type Arguments = (Command, Flags)
@@ -50,21 +52,3 @@ data ClockSettings = ClockSettings
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: ClockBlock
     } deriving (Show, Eq)
-
-data ClockPeriod
-    = Today
-    | ThisWeek
-    | AllTime
-    deriving (Show, Eq)
-
--- Note: the order of these constructors
-data ClockResolution
-    = SecondsResolution
-    | MinutesResolution
-    | HoursResolution
-    deriving (Show, Eq, Ord)
-
-data ClockBlock
-    = OneBlock
-    | DailyBlock
-    deriving (Show, Eq)

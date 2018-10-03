@@ -25,6 +25,7 @@ library:
   - text
   - time
   - validity
+  - validity-path
 
 executables:
   smos-report:
