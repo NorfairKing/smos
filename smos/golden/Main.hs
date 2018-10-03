@@ -242,6 +242,8 @@ data CommandsRun = CommandsRun
 
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands = do
+    tz <- getCurrentTimeZone
+    let startState = initState $(mkAbsFile "/pretend/test/file") mstart tz
     (fs, rs) <- foldM go (startState, []) commands
     pure
         CommandsRun
@@ -249,7 +251,6 @@ runCommandsOn mstart commands = do
             , finalResult = rebuildEditorCursor $ smosStateCursor fs
             }
   where
-    startState = initState $(mkAbsFile "/pretend/test/file") mstart
     testConf = SmosConfig {configKeyMap = mempty}
     go :: (SmosState, [(Command, SmosFile)])
        -> Command

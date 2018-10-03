@@ -231,7 +231,8 @@ drawSmosTreeCursor = drawTreeCursor wrap cur
         befores <- mapM drawEntryCTree tsl
         ew <- drawEntry TreeIsNotCollapsed e
         afters <- mapM drawEntryCTree tsr
-        pure $ padLeft defaultPadding (vBox $ concat [befores, [ew], afters])
+        pure $
+            w <=> padLeft defaultPadding (vBox $ concat [befores, [ew], afters])
 
 drawEntryCTree :: CTree (CollapseEntry Entry) -> Drawer
 drawEntryCTree (CNode t cf) =
@@ -513,8 +514,8 @@ drawLogbookTimestamp utct = do
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
     tz <- asks id
-    let local = utcToLocalTime tz utct
-    pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" local)
+    let localTime = utcToLocalTime tz utct
+    pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =

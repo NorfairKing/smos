@@ -89,17 +89,19 @@ trimLogbook now cp lb =
     todayEnd =
         today {localDay = addDays 1 $ localDay today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
-    trimToToday LogbookEntry {..} =
+    trimToToday = trimTo todayStart todayEnd
+    trimTo :: LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
+    trimTo begin end LogbookEntry {..} =
         constructValid $
         LogbookEntry
             { logbookEntryStart =
-                  if toLocal logbookEntryStart >= todayStart
+                  if toLocal logbookEntryStart >= begin
                       then logbookEntryStart
-                      else fromLocal todayStart
+                      else fromLocal begin
             , logbookEntryEnd =
-                  if toLocal logbookEntryEnd < todayEnd
+                  if toLocal logbookEntryEnd < end
                       then logbookEntryEnd
-                      else fromLocal todayEnd
+                      else fromLocal end
             }
 
 sumLogbookTime :: Logbook -> NominalDiffTime
