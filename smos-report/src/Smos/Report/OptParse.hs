@@ -52,9 +52,10 @@ getDispatch (CommandClock ClockFlags {..}) =
     DispatchClock
         ClockSettings
             { clockSetPeriod =
-                  if clockFlagToday
-                      then Today
-                      else AllTime
+                  case clockFlagPeriodFlags of
+                      Nothing -> AllTime
+                      Just TodayFlag -> Today
+                      Just ThisWeekFlag -> ThisWeek
             }
 
 getArguments :: IO Arguments
@@ -112,7 +113,12 @@ parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the clock table"
-    parser = CommandClock <$> (ClockFlags <$> switch (long "today"))
+    parser =
+        CommandClock <$>
+        (ClockFlags <$>
+         (Just <$>(flag' TodayFlag (long "today") <|>
+          flag' ThisWeekFlag (long "this-week")) <|>
+          pure Nothing))
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser

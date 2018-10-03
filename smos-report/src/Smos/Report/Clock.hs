@@ -12,6 +12,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Data.Time
+import Data.Time.Calendar.WeekDate
 import Data.Tree
 import Data.Validity
 import Text.Printf
@@ -34,6 +35,7 @@ clock ClockSettings {..} Settings {..} = do
         parseSmosFiles setWorkDir .|
         printShouldPrint setShouldPrint
     now <- getZonedTime
+    print clockSetPeriod
     T.putStrLn $ renderClockTable $ makeClockTable now clockSetPeriod tups
 
 data ClockTableEntry = ClockTableEntry
@@ -69,6 +71,7 @@ trimLogbook now cp lb =
     case cp of
         AllTime -> lb
         Today -> trimEntries trimToToday lb
+        ThisWeek -> trimEntries trimToThisWeek lb
   where
     trimEntries :: (LogbookEntry -> Maybe LogbookEntry) -> Logbook -> Logbook
     trimEntries func lb_ =
@@ -77,19 +80,32 @@ trimLogbook now cp lb =
             LogClosed les -> LogClosed $ mapMaybe func les
     tz :: TimeZone
     tz = zonedTimeZone now
-    today :: LocalTime
-    today = zonedTimeToLocalTime now
+    nowLocal :: LocalTime
+    nowLocal = zonedTimeToLocalTime now
+    today :: Day
+    today = localDay nowLocal
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
     fromLocal :: LocalTime -> UTCTime
     fromLocal = localTimeToUTC tz
     todayStart :: LocalTime
-    todayStart = today {localTimeOfDay = midnight}
+    todayStart = nowLocal {localTimeOfDay = midnight}
     todayEnd :: LocalTime
     todayEnd =
-        today {localDay = addDays 1 $ localDay today, localTimeOfDay = midnight}
+        nowLocal
+            {localDay = addDays 1  today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
     trimToToday = trimTo todayStart todayEnd
+    thisWeekStart :: LocalTime
+    thisWeekStart =
+        let (y, wn, _) = toWeekDate today
+         in LocalTime (fromWeekDate y wn 1) midnight
+    thisWeekEnd :: LocalTime
+    thisWeekEnd =
+        let (y, wn, _) = toWeekDate today
+         in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+    trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
+    trimToThisWeek = trimTo thisWeekStart thisWeekEnd
     trimTo :: LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
     trimTo begin end LogbookEntry {..} =
         constructValid $

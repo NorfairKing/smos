@@ -24,8 +24,13 @@ data Flags = Flags
     } deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
-    { clockFlagToday :: Bool
+    { clockFlagPeriodFlags :: Maybe ClockPeriodFlags
     } deriving (Show, Eq)
+
+data ClockPeriodFlags
+    = TodayFlag
+    | ThisWeekFlag
+    deriving (Show, Eq)
 
 data Configuration = Configuration
     { configWorkDir :: Maybe FilePath
@@ -49,5 +54,6 @@ data ClockSettings = ClockSettings
 
 data ClockPeriod
     = Today
+    | ThisWeek
     | AllTime
     deriving (Show, Eq)
