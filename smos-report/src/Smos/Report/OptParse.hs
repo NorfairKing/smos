@@ -51,11 +51,8 @@ getDispatch CommandNext = DispatchNext
 getDispatch (CommandClock ClockFlags {..}) =
     DispatchClock
         ClockSettings
-            { clockSetPeriod =
-                  case clockFlagPeriodFlags of
-                      Nothing -> AllTime
-                      Just TodayFlag -> Today
-                      Just ThisWeekFlag -> ThisWeek
+            { clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+            , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
             }
 
 getArguments :: IO Arguments
@@ -116,8 +113,14 @@ parseCommandClock = info parser modifier
     parser =
         CommandClock <$>
         (ClockFlags <$>
-         (Just <$>(flag' TodayFlag (long "today") <|>
-          flag' ThisWeekFlag (long "this-week")) <|>
+         (Just <$>
+          (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
+           flag' AllTime (long "all-time")) <|>
+          pure Nothing) <*>
+         (Just <$>
+          (flag' SecondsResolution (long "seconds-resolution") <|>
+           flag' MinutesResolution (long "minutes-resolution") <|>
+           flag' HoursResolution (long "hours-resolution")) <|>
           pure Nothing))
 
 parseFlags :: Parser Flags

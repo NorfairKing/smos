@@ -36,7 +36,9 @@ clock ClockSettings {..} Settings {..} = do
         printShouldPrint setShouldPrint
     now <- getZonedTime
     print clockSetPeriod
-    T.putStrLn $ renderClockTable $ makeClockTable now clockSetPeriod tups
+    T.putStrLn $
+        renderClockTable clockSetResolution $
+        makeClockTable now clockSetPeriod tups
 
 data ClockTableEntry = ClockTableEntry
     { clockTableEntryFile :: Path Rel File
@@ -91,9 +93,7 @@ trimLogbook now cp lb =
     todayStart :: LocalTime
     todayStart = nowLocal {localTimeOfDay = midnight}
     todayEnd :: LocalTime
-    todayEnd =
-        nowLocal
-            {localDay = addDays 1  today, localTimeOfDay = midnight}
+    todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
     trimToToday = trimTo todayStart todayEnd
     thisWeekStart :: LocalTime
@@ -130,23 +130,23 @@ sumLogbookTime lb =
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-renderClockTable :: [ClockTableEntry] -> Text
-renderClockTable = T.pack . formatAsTable . map go
+renderClockTable :: ClockResolution -> [ClockTableEntry] -> Text
+renderClockTable res = T.pack . formatAsTable . map go
   where
     go :: ClockTableEntry -> [String]
     go ClockTableEntry {..} =
         [ fromRelFile clockTableEntryFile
         , T.unpack $ headerText clockTableEntryHeader
-        , T.unpack $ renderNominalDiffTime clockTableEntryTime
+        , T.unpack $ renderNominalDiffTime res clockTableEntryTime
         ]
 
-renderNominalDiffTime :: NominalDiffTime -> Text
-renderNominalDiffTime ndt =
-    T.intercalate
-        ":"
-        [ T.pack $ printf "%5.2d" hours
-        , T.pack $ printf "%.2d" minutes
-        , T.pack $ printf "%.2d" seconds
+renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text
+renderNominalDiffTime res ndt =
+    T.intercalate ":" $
+    concat
+        [ [T.pack $ printf "%5.2d" hours | res <= HoursResolution]
+        , [T.pack $ printf "%.2d" minutes | res <= MinutesResolution]
+        , [T.pack $ printf "%.2d" seconds | res <= SecondsResolution]
         ]
   where
     totalSeconds = round ndt :: Int

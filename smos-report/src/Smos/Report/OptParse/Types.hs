@@ -24,13 +24,9 @@ data Flags = Flags
     } deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
-    { clockFlagPeriodFlags :: Maybe ClockPeriodFlags
+    { clockFlagPeriodFlags :: Maybe ClockPeriod
+    , clockFlagResolutionFlags :: Maybe ClockResolution
     } deriving (Show, Eq)
-
-data ClockPeriodFlags
-    = TodayFlag
-    | ThisWeekFlag
-    deriving (Show, Eq)
 
 data Configuration = Configuration
     { configWorkDir :: Maybe FilePath
@@ -50,6 +46,7 @@ data Dispatch
 
 data ClockSettings = ClockSettings
     { clockSetPeriod :: ClockPeriod
+    , clockSetResolution :: ClockResolution
     } deriving (Show, Eq)
 
 data ClockPeriod
@@ -57,3 +54,10 @@ data ClockPeriod
     | ThisWeek
     | AllTime
     deriving (Show, Eq)
+
+-- Note: the order of these constructors
+data ClockResolution
+    = SecondsResolution
+    | MinutesResolution
+    | HoursResolution
+    deriving (Show, Eq, Ord)
