@@ -1,6 +1,7 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Clock where
 
@@ -8,6 +9,8 @@ import GHC.Generics (Generic)
 
 import Data.Maybe
 
+import Data.Function
+import Data.List
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
@@ -18,7 +21,6 @@ import Data.Time.Calendar.WeekDate
 import Data.Tree
 import Data.Validity
 import Text.Printf
-import Text.Show.Pretty
 
 import Path
 
@@ -41,17 +43,11 @@ clock ClockSettings {..} Settings {..} = do
     T.putStr $
         renderClockTable clockSetResolution $
         makeClockTable $
-        divideIntoBlocks clockSetBlock $
+        divideIntoBlocks (zonedTimeZone now) clockSetBlock $
         concatMap
             (mapMaybe (trimClockTime now clockSetPeriod) .
              uncurry findClockTimes)
             tups
-
-data ClockTime = ClockTime
-    { clockTimeFile :: Path Rel File
-    , clockTimeHeader :: Header
-    , clockTimeEntries :: NonEmpty LogbookEntry
-    } deriving (Show, Eq, Generic)
 
 findClockTimes :: Path Rel File -> SmosFile -> [ClockTime]
 findClockTimes rf = mapMaybe go . concatMap flatten . smosFileForest
@@ -78,6 +74,12 @@ trimClockTime zt cp ct = do
     ne <- NE.nonEmpty entries
     pure ct {clockTimeEntries = ne}
 
+data ClockTime = ClockTime
+    { clockTimeFile :: Path Rel File
+    , clockTimeHeader :: Header
+    , clockTimeEntries :: NonEmpty LogbookEntry
+    } deriving (Show, Eq, Generic)
+
 trimLogbookEntry ::
        ZonedTime -> ClockPeriod -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
@@ -92,16 +94,12 @@ trimLogbookEntry now cp =
     nowLocal = zonedTimeToLocalTime now
     today :: Day
     today = localDay nowLocal
-    toLocal :: UTCTime -> LocalTime
-    toLocal = utcToLocalTime tz
-    fromLocal :: LocalTime -> UTCTime
-    fromLocal = localTimeToUTC tz
     todayStart :: LocalTime
     todayStart = nowLocal {localTimeOfDay = midnight}
     todayEnd :: LocalTime
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
-    trimToToday = trimTo todayStart todayEnd
+    trimToToday = trimLogbookEntryTo tz todayStart todayEnd
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today
@@ -111,33 +109,97 @@ trimLogbookEntry now cp =
         let (y, wn, _) = toWeekDate today
          in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
-    trimToThisWeek = trimTo thisWeekStart thisWeekEnd
-    trimTo :: LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
-    trimTo begin end LogbookEntry {..} =
-        constructValid $
-        LogbookEntry
-            { logbookEntryStart =
-                  if toLocal logbookEntryStart >= begin
-                      then logbookEntryStart
-                      else fromLocal begin
-            , logbookEntryEnd =
-                  if toLocal logbookEntryEnd < end
-                      then logbookEntryEnd
-                      else fromLocal end
-            }
+    trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
 
-data ClockTimeBlock = ClockTimeBlock
-    { clockTimeBlockName :: Text
+trimLogbookEntryTo ::
+       TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryTo tz begin end LogbookEntry {..} =
+    constructValid $
+    LogbookEntry
+        { logbookEntryStart =
+              if toLocal logbookEntryStart >= begin
+                  then logbookEntryStart
+                  else fromLocal begin
+        , logbookEntryEnd =
+              if toLocal logbookEntryEnd < end
+                  then logbookEntryEnd
+                  else fromLocal end
+        }
+  where
+    toLocal :: UTCTime -> LocalTime
+    toLocal = utcToLocalTime tz
+    fromLocal :: LocalTime -> UTCTime
+    fromLocal = localTimeToUTC tz
+
+data ClockTimeBlock a = ClockTimeBlock
+    { clockTimeBlockName :: a
     , clockTimeBlockEntries :: [ClockTime]
-    } deriving (Show, Eq, Generic)
+    } deriving (Show, Eq, Generic, Functor)
 
-divideIntoBlocks :: ClockBlock -> [ClockTime] -> [ClockTimeBlock]
-divideIntoBlocks cb cts =
+divideIntoBlocks ::
+       TimeZone -> ClockBlock -> [ClockTime] -> [ClockTimeBlock Text]
+divideIntoBlocks tz cb cts =
     case cb of
         OneBlock ->
             [ ClockTimeBlock
                   {clockTimeBlockName = "All Time", clockTimeBlockEntries = cts}
             ]
+        DailyBlock ->
+            map (fmap (T.pack . show)) $
+            combineBlocksByName $
+            concatMap (divideClockTimeIntoDailyBlocks tz) cts
+
+combineBlocksByName :: Ord a => [ClockTimeBlock a] -> [ClockTimeBlock a]
+combineBlocksByName =
+    map combine .
+    groupBy ((==) `on` clockTimeBlockName) . sortOn clockTimeBlockName
+  where
+    combine :: [ClockTimeBlock a] -> ClockTimeBlock a
+    combine [] = error "cannot happen due to groupBy above"
+    combine bs@(h:_) =
+        ClockTimeBlock
+            { clockTimeBlockName = clockTimeBlockName h
+            , clockTimeBlockEntries = concatMap clockTimeBlockEntries bs
+            }
+
+divideClockTimeIntoDailyBlocks :: TimeZone -> ClockTime -> [ClockTimeBlock Day]
+divideClockTimeIntoDailyBlocks tz = combineByDay . divideClockTime
+  where
+    combineByDay :: [(Day, ClockTime)] -> [ClockTimeBlock Day]
+    combineByDay = map combine . groupBy ((==) `on` fst) . sortOn fst
+      where
+        combine [] = error "cannot happen due to groupBy above"
+        combine ts@((d, _):_) =
+            ClockTimeBlock
+                {clockTimeBlockName = d, clockTimeBlockEntries = map snd ts}
+    toLocal :: UTCTime -> LocalTime
+    toLocal = utcToLocalTime tz
+    divideClockTime :: ClockTime -> [(Day, ClockTime)]
+    divideClockTime ct =
+        mapMaybe
+            (\(d, es) ->
+                 (,) d <$>
+                 ((\ne -> ct {clockTimeEntries = ne}) <$> NE.nonEmpty es)) $
+        combineEntriesByDay . concatMap divideLogbookEntry $ clockTimeEntries ct
+      where
+        combineEntriesByDay :: [(Day, LogbookEntry)] -> [(Day, [LogbookEntry])]
+        combineEntriesByDay = map combine . groupBy ((==) `on` fst) . sortOn fst
+          where
+            combine [] = error "cannot happen due to groupBy above"
+            combine ts@((d, _):_) = (d, map snd ts)
+    divideLogbookEntry :: LogbookEntry -> [(Day, LogbookEntry)]
+    divideLogbookEntry lbe@LogbookEntry {..} =
+        flip mapMaybe dayRange $ \d ->
+            (,) d <$>
+            trimLogbookEntryTo
+                tz
+                (LocalTime d midnight)
+                (LocalTime (addDays 1 d) midnight)
+                lbe
+      where
+        startDay = localDay $ toLocal logbookEntryStart
+        endDay = localDay $ toLocal logbookEntryEnd
+        dayRange = [startDay .. endDay]
 
 type ClockTable = [ClockTableBlock]
 
@@ -146,10 +208,10 @@ data ClockTableBlock = ClockTableBlock
     , clockTableBlockEntries :: [ClockTableEntry]
     } deriving (Show, Eq, Generic)
 
-makeClockTable :: [ClockTimeBlock] -> [ClockTableBlock]
+makeClockTable :: [ClockTimeBlock Text] -> [ClockTableBlock]
 makeClockTable = map makeClockTableBlock
 
-makeClockTableBlock :: ClockTimeBlock -> ClockTableBlock
+makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
 makeClockTableBlock ClockTimeBlock {..} =
     ClockTableBlock
         { clockTableBlockName = clockTimeBlockName

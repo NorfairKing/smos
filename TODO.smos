@@ -330,6 +330,8 @@
   - entry:
       header: Reports
       state-history:
+      - new-state: DONE
+        timestamp: 2018-10-03 05:36:15.650400591000+0000
       - new-state: TODO
         timestamp: 2018-09-21 07:58:42.391344004000+0000
     forest:
@@ -348,6 +350,8 @@
     - entry:
         header: Clock Reports
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 05:36:13.882346506000+0000
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.103344640000+0000
       forest:
@@ -365,6 +369,8 @@
           timestamp: 2018-09-21 07:58:43.527440633000+0000
       - header: Weekly per-day
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 05:36:13.210389775000+0000
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.871348159000+0000
   - entry:
