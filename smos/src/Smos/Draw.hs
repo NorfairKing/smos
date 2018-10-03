@@ -232,7 +232,7 @@ drawSmosTreeCursor = drawTreeCursor wrap cur
         ew <- drawEntry TreeIsNotCollapsed e
         afters <- mapM drawEntryCTree tsr
         pure $
-            w <=> padLeft defaultPadding (vBox $ concat [befores, [ew], afters])
+            ew <=> padLeft defaultPadding (vBox $ concat [befores, [w], afters])
 
 drawEntryCTree :: CTree (CollapseEntry Entry) -> Drawer
 drawEntryCTree (CNode t cf) =

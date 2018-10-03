@@ -351,18 +351,22 @@
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.103344640000+0000
       forest:
+      - header: Single-day
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 04:32:29.978038703000+0000
+        - new-state: TODO
+          timestamp: 2018-09-21 07:58:44.215350860000+0000
       - header: Weekly Total
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-03 04:32:28.954568651000+0000
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.527440633000+0000
       - header: Weekly per-day
         state-history:
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.871348159000+0000
-      - header: Single-day
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-21 07:58:44.215350860000+0000
   - entry:
       header: Quality of life
       state-history:
