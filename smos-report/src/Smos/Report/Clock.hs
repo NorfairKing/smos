@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Report.Clock where
@@ -12,6 +13,7 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Data.Time
 import Data.Tree
+import Text.Printf
 
 import Path
 
@@ -73,5 +75,23 @@ renderClockTable = T.pack . formatAsTable . map go
     go ClockTableEntry {..} =
         [ fromRelFile clockTableEntryFile
         , T.unpack $ headerText clockTableEntryHeader
-        , show clockTableEntryTime
+        , T.unpack $ renderNominalDiffTime clockTableEntryTime
         ]
+
+renderNominalDiffTime :: NominalDiffTime -> Text
+renderNominalDiffTime ndt =
+    T.intercalate
+        ":"
+        [ T.pack $ printf "%5.2d" hours
+        , T.pack $ printf "%.2d" minutes
+        , T.pack $ printf "%.2d" seconds
+        ]
+  where
+    totalSeconds = round ndt :: Int
+    totalMinutes = totalSeconds `div` secondsInAMinute
+    totalHours = totalMinutes `div` minutesInAnHour
+    secondsInAMinute = 60
+    minutesInAnHour = 60
+    hours = totalHours
+    minutes = totalMinutes - minutesInAnHour * totalHours
+    seconds = totalSeconds - secondsInAMinute * totalMinutes
