@@ -352,6 +352,8 @@
     - entry:
         header: Clock Reports
         state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 22:57:48.840019070000+0000
         - new-state: DONE
           timestamp: 2018-10-03 05:36:13.882346506000+0000
         - new-state: TODO
@@ -375,6 +377,14 @@
           timestamp: 2018-10-03 05:36:13.210389775000+0000
         - new-state: TODO
           timestamp: 2018-09-21 07:58:43.871348159000+0000
+      - header: Filtered by tag
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 22:57:54.176027649000+0000
+      - header: For just one file
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-03 22:58:33.296109223000+0000
     - entry:
         header: Agenda reports
         state-history:

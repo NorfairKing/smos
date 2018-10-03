@@ -48,6 +48,8 @@ module Smos.Data.Types
     , timestampName
     , emptyTimestampName
     , Timestamp(..)
+    , timestampString
+    , timestampText
     , timestampDayFormat
     -- Utils
     , ForYaml(..)
@@ -372,6 +374,12 @@ instance ToYaml Timestamp where
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
+
+timestampString :: Timestamp -> String
+timestampString = formatTime defaultTimeLocale timestampDayFormat . timestampDay
+
+timestampText :: Timestamp -> Text
+timestampText = T.pack . timestampString
 
 newtype TodoState = TodoState
     { todoStateText :: Text

@@ -56,6 +56,7 @@ getDispatch (CommandClock ClockFlags {..}) =
                   fromMaybe MinutesResolution clockFlagResolutionFlags
             , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
             }
+getDispatch CommandAgenda = DispatchAgenda
 
 getArguments :: IO Arguments
 getArguments = do
@@ -92,6 +93,7 @@ parseCommand =
         [ command "waiting" parseCommandWaiting
         , command "next" parseCommandNext
         , command "clock" parseCommandClock
+        , command "agenda" parseCommandAgenda
         ]
 
 parseCommandWaiting :: ParserInfo Command
@@ -128,6 +130,12 @@ parseCommandClock = info parser modifier
           (flag' DailyBlock (long "daily-block") <|>
            flag' OneBlock (long "one-block")) <|>
           pure Nothing))
+
+parseCommandAgenda :: ParserInfo Command
+parseCommandAgenda = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print the agenda"
+    parser = pure CommandAgenda
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser

@@ -17,6 +17,7 @@ data Command
     = CommandWaiting
     | CommandNext
     | CommandClock ClockFlags
+    | CommandAgenda
     deriving (Show, Eq)
 
 data Flags = Flags
@@ -45,6 +46,7 @@ data Dispatch
     = DispatchWaiting
     | DispatchNext
     | DispatchClock ClockSettings
+    | DispatchAgenda
     deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
