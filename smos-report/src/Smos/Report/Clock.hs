@@ -151,27 +151,23 @@ divideIntoBlocks tz cb cts =
 
 combineBlocksByName :: Ord a => [ClockTimeBlock a] -> [ClockTimeBlock a]
 combineBlocksByName =
-    map combine .
-    groupBy ((==) `on` clockTimeBlockName) . sortOn clockTimeBlockName
+    map (uncurry makeClockTimeBlock) .
+    sortAndGroupCombineOrd . map unClockTimeBlock
   where
-    combine :: [ClockTimeBlock a] -> ClockTimeBlock a
-    combine [] = error "cannot happen due to groupBy above"
-    combine bs@(h:_) =
-        ClockTimeBlock
-            { clockTimeBlockName = clockTimeBlockName h
-            , clockTimeBlockEntries = concatMap clockTimeBlockEntries bs
-            }
+    unClockTimeBlock :: ClockTimeBlock a -> (a, [ClockTime])
+    unClockTimeBlock ClockTimeBlock {..} =
+        (clockTimeBlockName, clockTimeBlockEntries)
+    makeClockTimeBlock :: a -> [[ClockTime]] -> ClockTimeBlock a
+    makeClockTimeBlock n cts =
+        ClockTimeBlock {clockTimeBlockName = n, clockTimeBlockEntries =concat cts}
 
 divideClockTimeIntoDailyBlocks :: TimeZone -> ClockTime -> [ClockTimeBlock Day]
-divideClockTimeIntoDailyBlocks tz = combineByDay . divideClockTime
+divideClockTimeIntoDailyBlocks tz =
+    map (uncurry makeClockTimeBlock) . sortAndGroupCombineOrd . divideClockTime
   where
-    combineByDay :: [(Day, ClockTime)] -> [ClockTimeBlock Day]
-    combineByDay = map combine . groupBy ((==) `on` fst) . sortOn fst
-      where
-        combine [] = error "cannot happen due to groupBy above"
-        combine ts@((d, _):_) =
-            ClockTimeBlock
-                {clockTimeBlockName = d, clockTimeBlockEntries = map snd ts}
+    makeClockTimeBlock :: a -> [ClockTime] -> ClockTimeBlock a
+    makeClockTimeBlock n cts =
+        ClockTimeBlock {clockTimeBlockName = n, clockTimeBlockEntries = cts}
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
     divideClockTime :: ClockTime -> [(Day, ClockTime)]
@@ -180,13 +176,8 @@ divideClockTimeIntoDailyBlocks tz = combineByDay . divideClockTime
             (\(d, es) ->
                  (,) d <$>
                  ((\ne -> ct {clockTimeEntries = ne}) <$> NE.nonEmpty es)) $
-        combineEntriesByDay . concatMap divideLogbookEntry $ clockTimeEntries ct
-      where
-        combineEntriesByDay :: [(Day, LogbookEntry)] -> [(Day, [LogbookEntry])]
-        combineEntriesByDay = map combine . groupBy ((==) `on` fst) . sortOn fst
-          where
-            combine [] = error "cannot happen due to groupBy above"
-            combine ts@((d, _):_) = (d, map snd ts)
+        sortAndGroupCombineOrd . concatMap divideLogbookEntry $
+        clockTimeEntries ct
     divideLogbookEntry :: LogbookEntry -> [(Day, LogbookEntry)]
     divideLogbookEntry lbe@LogbookEntry {..} =
         flip mapMaybe dayRange $ \d ->
@@ -200,6 +191,17 @@ divideClockTimeIntoDailyBlocks tz = combineByDay . divideClockTime
         startDay = localDay $ toLocal logbookEntryStart
         endDay = localDay $ toLocal logbookEntryEnd
         dayRange = [startDay .. endDay]
+
+sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
+sortAndGroupCombineOrd = sortGroupCombine compare
+
+sortGroupCombine :: (a -> a -> Ordering) -> [(a, b)] -> [(a, [b])]
+sortGroupCombine func =
+    map combine .
+    groupBy ((\a1 a2 -> func a1 a2 == EQ) `on` fst) . sortBy (func `on` fst)
+  where
+    combine [] = error "cannot happen due to groupBy above"
+    combine ts@((a, _):_) = (a, map snd ts)
 
 type ClockTable = [ClockTableBlock]
 
