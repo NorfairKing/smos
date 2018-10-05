@@ -7,6 +7,7 @@ packages:
 - smos-cursor-gen
 - smos-report
 - smos-report-gen
+- smos-convert-org
 extra-deps:
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
   commit: 13f7585d0b18403b5d78f0c0bbef608d8fad0b40
