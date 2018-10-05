@@ -7,6 +7,8 @@ module Smos.Report.OptParse.Types
 
 import Path
 
+import Smos.Data
+
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.ShouldPrint
@@ -32,6 +34,7 @@ data ClockFlags = ClockFlags
     { clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe ClockBlock
+    , clockFlagTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
@@ -59,6 +62,7 @@ data ClockSettings = ClockSettings
     { clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: ClockBlock
+    , clockSetTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings

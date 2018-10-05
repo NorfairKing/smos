@@ -7,6 +7,7 @@ module Smos.Report.OptParse
     ) where
 
 import Data.Maybe
+import qualified Data.Text as T
 
 import System.Environment
 
@@ -16,6 +17,7 @@ import Path.IO
 
 import Options.Applicative
 
+import Smos.Data
 import Smos.Report.OptParse.Types
 
 getInstructions :: IO Instructions
@@ -55,6 +57,7 @@ getDispatch (CommandClock ClockFlags {..}) =
             , clockSetResolution =
                   fromMaybe MinutesResolution clockFlagResolutionFlags
             , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+            , clockSetTags = clockFlagTags
             }
 getDispatch (CommandAgenda AgendaFlags {..}) =
     DispatchAgenda
@@ -134,7 +137,11 @@ parseCommandClock = info parser modifier
          (Just <$>
           (flag' DailyBlock (long "daily-block") <|>
            flag' OneBlock (long "one-block")) <|>
-          pure Nothing))
+          pure Nothing) <*>
+         many
+             (option
+                  (eitherReader (parseTag . T.pack))
+                  (mconcat [long "tag", help "filter by this tag"])))
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier

@@ -12,6 +12,7 @@ import GHC.Generics (Generic)
 
 import Data.Maybe
 
+import qualified Data.Conduit.Combinators as C
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty(..))
@@ -44,7 +45,8 @@ clock ClockSettings {..} Settings {..} = do
         sourceToList $
         sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
         parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint
+        printShouldPrint setShouldPrint .|
+        trimByTags clockSetTags
     now <- getZonedTime
     T.putStr $
         renderClockTable clockSetResolution $
@@ -54,6 +56,24 @@ clock ClockSettings {..} Settings {..} = do
             (mapMaybe (trimClockTime now clockSetPeriod) .
              uncurry findClockTimes)
             tups
+
+trimByTags ::
+       Monad m
+    => [Tag]
+    -> ConduitT (Path Rel File, SmosFile) (Path Rel File, SmosFile) m ()
+trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
+  where
+    goF :: Forest Entry -> Forest Entry
+    goF =
+        concatMap $ \t ->
+            case goT t of
+                Left t_ -> [t_]
+                Right fs -> fs
+    goT :: Tree Entry -> Either (Tree Entry) (Forest Entry)
+    goT t@(Node e fs) =
+        if all (`elem` entryTags e) ts
+            then Left t
+            else Right $ goF fs
 
 data ClockTime = ClockTime
     { clockTimeFile :: Path Rel File
