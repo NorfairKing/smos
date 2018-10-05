@@ -385,6 +385,8 @@
           timestamp: 2018-09-21 07:58:43.871348159000+0000
       - header: Filtered by tag
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-05 15:49:00.724578907000+0000
         - new-state: TODO
           timestamp: 2018-10-03 22:57:54.176027649000+0000
       - header: For just one file
