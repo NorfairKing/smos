@@ -7,7 +7,6 @@ module Smos.Convert.Org.OptParse
 
 import System.Environment
 
-import Path
 import Path.IO
 
 import Options.Applicative
@@ -26,10 +25,7 @@ getConfig Flags {..} = pure Configuration
 deriveSettings :: Flags -> Configuration -> IO Settings
 deriveSettings Flags {..} Configuration = do
     setFromFile <- resolveFile' flagFromFile
-    setToFile <-
-        case flagToFile of
-            Nothing -> setFileExtension "smos" setFromFile
-            Just fp -> resolveFile' fp
+    setToFile <- mapM resolveFile' flagToFile
     pure Settings {..}
 
 getFlags :: IO Flags

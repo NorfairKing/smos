@@ -11,16 +11,20 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - attoparsec
   - base
+  - bytestring
   - containers
   - filepath
   - optparse-applicative
+  - orgmode-parse
   - path
   - path-io
   - pretty-show
   - smos-data
   - text
   - time
+  - unordered-containers
   - validity
   - validity-path
 

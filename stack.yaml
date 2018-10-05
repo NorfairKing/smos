@@ -9,6 +9,9 @@ packages:
 - smos-report-gen
 - smos-convert-org
 extra-deps:
+- git: https://github.com/ixmatus/orgmode-parse
+  commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
+- thyme-0.3.5.5
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
   commit: 13f7585d0b18403b5d78f0c0bbef608d8fad0b40
   subdirs:

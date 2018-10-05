@@ -13,5 +13,5 @@ data Configuration =
 
 data Settings = Settings
     { setFromFile :: Path Abs File
-    , setToFile :: Path Abs File
+    , setToFile :: Maybe (Path Abs File)
     } deriving (Show, Eq)
