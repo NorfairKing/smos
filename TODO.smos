@@ -4,6 +4,12 @@
     - new-state: TODO
       timestamp: 2018-09-21 08:04:59.815408341000+0000
   forest:
+  - header: Converter from org-mode to smos file
+    state-history:
+    - new-state: DONE
+      timestamp: 2018-10-05 08:11:12.801817661000+0000
+    - new-state: TODO
+      timestamp: 2018-10-05 08:11:12.433931600000+0000
   - entry:
       header: Drawing
       state-history:
@@ -457,26 +463,6 @@
         - new-state: TODO
           timestamp: 2018-10-03 23:37:10.832190042000+0000
   - entry:
-      header: Quality of life
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-21 08:06:22.847469325000+0000
-    forest:
-    - header: Detect conflicting keymappings
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-11 10:15:06.141365680000+0000
-    - entry:
-        header: Help page
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 19:39:53.356426165000+0000
-      forest:
-      - header: combine keybindings per key in help page
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-11 19:40:01.436108571000+0000
-  - entry:
       header: Non-critical, but probably useful at some point
       state-history:
       - new-state: TODO
@@ -641,3 +627,23 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 13:16:04.618559342000+0000
+  - entry:
+      header: Quality of life
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-21 08:06:22.847469325000+0000
+    forest:
+    - header: Detect conflicting keymappings
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-09-11 10:15:06.141365680000+0000
+    - entry:
+        header: Help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:39:53.356426165000+0000
+      forest:
+      - header: combine keybindings per key in help page
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-11 19:40:01.436108571000+0000

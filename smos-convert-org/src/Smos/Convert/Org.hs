@@ -34,8 +34,7 @@ import Smos.Convert.Org.OptParse.Types
 
 convertOrg :: IO ()
 convertOrg = do
-    sets@Settings {..} <- getSettings
-    print sets
+    Settings {..} <- getSettings
     t <- T.readFile $ fromAbsFile setFromFile
     let errOrDocument =
             Attoparsec.parseOnly
