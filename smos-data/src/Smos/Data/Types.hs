@@ -14,21 +14,27 @@ module Smos.Data.Types
     , emptyEntry
     , TodoState(..)
     , todoState
+    , parseTodoState
     , Header
     , headerText
     , emptyHeader
     , header
+    , parseHeader
     , Contents(..)
     , emptyContents
     , nullContents
+    , contents
+    , parseContents
     , PropertyName
     , propertyNameText
     , emptyPropertyName
     , propertyName
+    , parsePropertyName
     , PropertyValue
     , propertyValueText
     , emptyPropertyValue
     , propertyValue
+    , parsePropertyValue
     , StateHistory(..)
     , StateHistoryEntry(..)
     , emptyStateHistory
@@ -37,6 +43,7 @@ module Smos.Data.Types
     , tagText
     , emptyTag
     , tag
+    , parseTag
     , Logbook(..)
     , emptyLogbook
     , nullLogbook
@@ -46,6 +53,7 @@ module Smos.Data.Types
     , TimestampName
     , timestampNameText
     , timestampName
+    , parseTimestampName
     , emptyTimestampName
     , Timestamp(..)
     , timestampString
@@ -256,6 +264,9 @@ emptyHeader = Header ""
 header :: Text -> Maybe Header
 header = constructValid . Header
 
+parseHeader :: Text -> Either String Header
+parseHeader = prettyValidation . Header
+
 newtype Contents = Contents
     { contentsText :: Text
     } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
@@ -267,6 +278,12 @@ emptyContents = Contents ""
 
 nullContents :: Contents -> Bool
 nullContents = (== emptyContents)
+
+contents :: Text -> Maybe Contents
+contents = constructValid . Contents
+
+parseContents :: Text -> Either String Contents
+parseContents = prettyValidation . Contents
 
 newtype PropertyName = PropertyName
     { propertyNameText :: Text
@@ -281,13 +298,13 @@ instance Validity PropertyName where
             ]
 
 instance FromJSON PropertyName where
-    parseJSON = withText "PropertyName" parsePropertyName
+    parseJSON = withText "PropertyName" parseJSONPropertyName
 
 instance FromJSONKey PropertyName where
-    fromJSONKey = FromJSONKeyTextParser parsePropertyName
+    fromJSONKey = FromJSONKeyTextParser parseJSONPropertyName
 
-parsePropertyName :: Monad m => Text -> m PropertyName
-parsePropertyName t =
+parseJSONPropertyName :: Monad m => Text -> m PropertyName
+parseJSONPropertyName t =
     case propertyName t of
         Nothing -> fail $ "Invalid property name: " <> T.unpack t
         Just h -> pure h
@@ -298,6 +315,9 @@ emptyPropertyName = PropertyName ""
 propertyName :: Text -> Maybe PropertyName
 propertyName = constructValid . PropertyName
 
+parsePropertyName :: Text -> Either String PropertyName
+parsePropertyName = prettyValidation . PropertyName
+
 newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
     } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
@@ -305,13 +325,13 @@ newtype PropertyValue = PropertyValue
 instance Validity PropertyValue
 
 instance FromJSON PropertyValue where
-    parseJSON = withText "PropertyValue" parsePropertyValue
+    parseJSON = withText "PropertyValue" parseJSONPropertyValue
 
 instance FromJSONKey PropertyValue where
-    fromJSONKey = FromJSONKeyTextParser parsePropertyValue
+    fromJSONKey = FromJSONKeyTextParser parseJSONPropertyValue
 
-parsePropertyValue :: Monad m => Text -> m PropertyValue
-parsePropertyValue t =
+parseJSONPropertyValue :: Monad m => Text -> m PropertyValue
+parseJSONPropertyValue t =
     case propertyValue t of
         Nothing -> fail $ "Invalid property value: " <> T.unpack t
         Just h -> pure h
@@ -321,6 +341,9 @@ emptyPropertyValue = PropertyValue ""
 
 propertyValue :: Text -> Maybe PropertyValue
 propertyValue = constructValid . PropertyValue
+
+parsePropertyValue :: Text -> Either String PropertyValue
+parsePropertyValue = prettyValidation . PropertyValue
 
 newtype TimestampName = TimestampName
     { timestampNameText :: Text
@@ -335,13 +358,13 @@ instance Validity TimestampName where
             ]
 
 instance FromJSON TimestampName where
-    parseJSON = withText "TimestampName" parseTimestampName
+    parseJSON = withText "TimestampName" parseJSONTimestampName
 
 instance FromJSONKey TimestampName where
-    fromJSONKey = FromJSONKeyTextParser parseTimestampName
+    fromJSONKey = FromJSONKeyTextParser parseJSONTimestampName
 
-parseTimestampName :: Monad m => Text -> m TimestampName
-parseTimestampName t =
+parseJSONTimestampName :: Monad m => Text -> m TimestampName
+parseJSONTimestampName t =
     case timestampName t of
         Nothing -> fail $ "Invalid timestamp name: " <> T.unpack t
         Just h -> pure h
@@ -351,6 +374,9 @@ emptyTimestampName = TimestampName ""
 
 timestampName :: Text -> Maybe TimestampName
 timestampName = constructValid . TimestampName
+
+parseTimestampName :: Text -> Either String TimestampName
+parseTimestampName = prettyValidation . TimestampName
 
 data Timestamp = Timestamp
     { timestampDay :: Day
@@ -387,6 +413,9 @@ newtype TodoState = TodoState
 
 todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
+
+parseTodoState :: Text -> Either String TodoState
+parseTodoState = prettyValidation . TodoState
 
 instance Validity TodoState
 
@@ -464,6 +493,9 @@ emptyTag = Tag ""
 
 tag :: Text -> Maybe Tag
 tag = constructValid . Tag
+
+parseTag :: Text -> Either String Tag
+parseTag = prettyValidation . Tag
 
 data Logbook
     = LogOpen UTCTime

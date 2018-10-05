@@ -1,4 +1,4 @@
-name: smos-report
+name: smos-convert-org
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -11,26 +11,27 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - attoparsec
   - base
-  - boxes
-  - conduit
-  - configurator
+  - bytestring
   - containers
   - filepath
   - optparse-applicative
+  - orgmode-parse
   - path
   - path-io
   - pretty-show
   - smos-data
   - text
   - time
+  - unordered-containers
   - validity
   - validity-path
 
 executables:
-  smos-report:
+  smos-convert-org:
     main: Main.hs
     source-dirs: app
     dependencies:
     - base
-    - smos-report
+    - smos-convert-org
