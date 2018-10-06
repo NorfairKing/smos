@@ -34,8 +34,7 @@ next Settings {..} = do
 isNextAction :: Entry -> Bool
 isNextAction entry =
     or $
-    (==) (entryState entry) . Just <$>
-    mapMaybe todoState ["WAITING", "NEXT", "STARTED", "READY"]
+    (==) (entryState entry) . Just <$> mapMaybe todoState ["NEXT", "STARTED"]
 
 makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
