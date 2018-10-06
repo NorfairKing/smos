@@ -27,6 +27,7 @@ import Data.Validity.Path ()
 import Text.Printf
 
 import Path
+import Rainbow
 
 import Conduit
 
@@ -277,14 +278,14 @@ sumLogbookEntryTime = sum . map go
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
 renderClockTable res = formatAsTable . concatMap goB
   where
-    goB :: ClockTableBlock -> [[Text]]
+    goB :: ClockTableBlock -> [[Chunk Text]]
     goB ClockTableBlock {..} =
-        [clockTableBlockName, "", ""] : map go clockTableBlockEntries
-    go :: ClockTableEntry -> [Text]
+        [chunk clockTableBlockName] : map go clockTableBlockEntries
+    go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
-        [ T.pack $ fromRelFile clockTableEntryFile
-        , headerText clockTableEntryHeader
-        , renderNominalDiffTime res clockTableEntryTime
+        [ chunk $ T.pack $ fromRelFile clockTableEntryFile
+        , headerChunk clockTableEntryHeader
+        , chunk $ renderNominalDiffTime res clockTableEntryTime
         ]
 
 renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text

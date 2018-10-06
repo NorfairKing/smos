@@ -15,6 +15,7 @@ import Data.Time
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Path
+import Rainbow
 
 import Smos.Data
 
@@ -63,10 +64,10 @@ fitsHistoricity zt ah ae =
 renderAgendaReport :: [AgendaEntry] -> Table
 renderAgendaReport = formatAsTable . map formatAgendaEntry
 
-formatAgendaEntry :: AgendaEntry -> [Text]
+formatAgendaEntry :: AgendaEntry -> [Chunk Text]
 formatAgendaEntry AgendaEntry {..} =
-    [ T.pack $ fromRelFile agendaEntryFilePath
-    , timestampNameText $ agendaEntryTimestampName
-    , timestampText agendaEntryTimestamp
-    , headerText agendaEntryHeader
+    [ chunk $ T.pack $ fromRelFile agendaEntryFilePath
+    , chunk $ timestampNameText $ agendaEntryTimestampName
+    , chunk $ timestampText agendaEntryTimestamp
+    , headerChunk agendaEntryHeader
     ]

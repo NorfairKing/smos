@@ -11,6 +11,7 @@ import Data.Text (Text)
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Path
+import Rainbow
 
 import Smos.Data
 
@@ -53,9 +54,9 @@ data NextActionEntry = NextActionEntry
     , nextActionEntryFilePath :: Path Rel File
     } deriving (Show, Eq)
 
-formatNextActionEntry :: NextActionEntry -> [Text]
+formatNextActionEntry :: NextActionEntry -> [Chunk Text]
 formatNextActionEntry NextActionEntry {..} =
-    [ T.pack $ fromRelFile nextActionEntryFilePath
-    , maybe "" todoStateText nextActionEntryTodoState
-    , headerText nextActionEntryHeader
+    [ chunk $ T.pack $ fromRelFile nextActionEntryFilePath
+    , maybe (chunk "") todoStateChunk nextActionEntryTodoState
+    , headerChunk nextActionEntryHeader
     ]

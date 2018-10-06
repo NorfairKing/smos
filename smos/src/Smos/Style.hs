@@ -36,8 +36,8 @@ import Smos.Types
 defaultAttrMap :: s -> AttrMap
 defaultAttrMap _ =
     let col = rgbColor :: Int -> Int -> Int -> Color
-        orange = col 255 165 0
-        brown = col 205 133 63
+        orange = col 255 175 0 -- 214, #ffaf00
+        brown = col 215 95 0 -- 166, #d75f00
      in applyAttrMappings
             [ (todoStateSpecificAttr "TODO", fg red)
             , (todoStateSpecificAttr "NEXT", fg orange)

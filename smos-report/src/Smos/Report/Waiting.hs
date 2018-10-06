@@ -15,6 +15,7 @@ import Data.Time
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Path
+import Rainbow
 
 import Smos.Data
 import Smos.Report.Formatting
@@ -59,14 +60,21 @@ makeWaitingActionEntry rf Entry {..} =
             , waitingActionEntryFilePath = rf
             }
 
-formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Text]
+formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
-    [ T.pack $ fromRelFile waitingActionEntryFilePath
-    , headerText $ waitingActionEntryHeader
-    , maybe "" (T.pack . showDaysSince now) waitingActionEntryTimestamp
+    [ chunk $ T.pack $ fromRelFile waitingActionEntryFilePath
+    , headerChunk $ waitingActionEntryHeader
+    , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
     ]
 
-showDaysSince :: UTCTime -> UTCTime -> String
-showDaysSince now t = show (diffInDays now t :: Int) <> " days"
+showDaysSince :: UTCTime -> UTCTime -> Chunk Text
+showDaysSince now t = fore color $ chunk $ T.pack $ show i <> " days"
   where
+    color
+        | i > 21 = red
+        | i > 15 = yellow
+        | i > 5 = blue
+        | otherwise = mempty
+    i = diffInDays now t :: Int
+    diffInDays :: UTCTime -> UTCTime -> Int
     diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay
