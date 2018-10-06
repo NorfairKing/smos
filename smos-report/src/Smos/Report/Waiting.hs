@@ -10,12 +10,12 @@ import GHC.Generics
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 import Data.Time
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Path
+import Rainbow
 
 import Smos.Data
 import Smos.Report.Formatting
@@ -33,14 +33,14 @@ waiting Settings {..} = do
         C.filter (isWaitingAction . snd) .|
         C.map (uncurry makeWaitingActionEntry)
     now <- getCurrentTime
-    T.putStr $ renderWaitingActionReport now tups
+    putTableLn $ renderWaitingActionReport now tups
 
 isWaitingAction :: Entry -> Bool
 isWaitingAction entry = entryState entry == Just "WAITING"
 
-renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Text
+renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-    T.pack . formatAsTable . map (formatWaitingActionEntry now)
+    formatAsTable . map (formatWaitingActionEntry now)
 
 data WaitingActionEntry = WaitingActionEntry
     { waitingActionEntryHeader :: Header
@@ -60,14 +60,21 @@ makeWaitingActionEntry rf Entry {..} =
             , waitingActionEntryFilePath = rf
             }
 
-formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [String]
+formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
-    [ fromRelFile waitingActionEntryFilePath
-    , T.unpack $ headerText $ waitingActionEntryHeader
-    , maybe "" (showDaysSince now) waitingActionEntryTimestamp
+    [ chunk $ T.pack $ fromRelFile waitingActionEntryFilePath
+    , headerChunk $ waitingActionEntryHeader
+    , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
     ]
 
-showDaysSince :: UTCTime -> UTCTime -> String
-showDaysSince now t = show (diffInDays now t :: Int) <> " days"
+showDaysSince :: UTCTime -> UTCTime -> Chunk Text
+showDaysSince now t = fore color $ chunk $ T.pack $ show i <> " days"
   where
+    color
+        | i > 21 = red
+        | i > 15 = yellow
+        | i > 5 = blue
+        | otherwise = mempty
+    i = diffInDays now t :: Int
+    diffInDays :: UTCTime -> UTCTime -> Int
     diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay

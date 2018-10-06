@@ -19,7 +19,6 @@ import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 import Data.Time
 import Data.Time.Calendar.WeekDate
 import Data.Tree
@@ -28,6 +27,7 @@ import Data.Validity.Path ()
 import Text.Printf
 
 import Path
+import Rainbow
 
 import Conduit
 
@@ -48,7 +48,7 @@ clock ClockSettings {..} Settings {..} = do
         printShouldPrint setShouldPrint .|
         trimByTags clockSetTags
     now <- getZonedTime
-    T.putStr $
+    putTableLn $
         renderClockTable clockSetResolution $
         makeClockTable $
         divideIntoBlocks (zonedTimeZone now) clockSetBlock $
@@ -275,17 +275,17 @@ sumLogbookEntryTime = sum . map go
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-renderClockTable :: ClockResolution -> [ClockTableBlock] -> Text
-renderClockTable res = T.pack . formatAsTable . concatMap goB
+renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
+renderClockTable res = formatAsTable . concatMap goB
   where
-    goB :: ClockTableBlock -> [[String]]
+    goB :: ClockTableBlock -> [[Chunk Text]]
     goB ClockTableBlock {..} =
-        [T.unpack clockTableBlockName, "", ""] : map go clockTableBlockEntries
-    go :: ClockTableEntry -> [String]
+        [chunk clockTableBlockName] : map go clockTableBlockEntries
+    go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
-        [ fromRelFile clockTableEntryFile
-        , T.unpack $ headerText clockTableEntryHeader
-        , T.unpack $ renderNominalDiffTime res clockTableEntryTime
+        [ chunk $ T.pack $ fromRelFile clockTableEntryFile
+        , headerChunk clockTableEntryHeader
+        , chunk $ renderNominalDiffTime res clockTableEntryTime
         ]
 
 renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text
