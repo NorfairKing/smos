@@ -585,6 +585,14 @@
             - new-state: TODO
               timestamp: 2018-09-30 02:08:35.574873907000+0000
           forest:
+          - header: use day of the week (and prefixes) to define a timestamp
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-06 11:21:43.746944934000+0000
+          - header: deleting a timestamp
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-06 11:21:28.602822689000+0000
           - header: Editing/adding non-predefined timestamps
             state-history:
             - new-state: TODO
