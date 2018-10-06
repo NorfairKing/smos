@@ -220,14 +220,18 @@ smosFileSubtreeSetTodoState now mts =
     goCF :: CForest (CollapseEntry Entry) -> CForest (CollapseEntry Entry)
     goCF cf = openForest $ map goCT $ unpackCForest cf
     goCT :: CTree (CollapseEntry Entry) -> CTree (CollapseEntry Entry)
-    goCT =
-        fmap $ fmap $
-        (\e ->
-             e
-                 { entryStateHistory =
-                       let sh = entryStateHistory e
-                        in fromMaybe sh $ stateHistorySetState now mts sh
-                 })
+    goCT (CNode ce cf) = CNode ce' $ goCF cf
+      where
+        ce' =
+            fmap
+                (\e ->
+                     e
+                         { entryStateHistory =
+                               let sh = entryStateHistory e
+                                in fromMaybe sh $
+                                   stateHistorySetState now mts sh
+                         })
+                ce
 
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry
 rebuild = collapseEntryValueL %~ rebuildEntryCursor
