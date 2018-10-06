@@ -47,7 +47,5 @@ spec = do
     describe "sumLogbookEntryTime" $
         it "produces valid difftimes" $
         producesValidsOnValids sumLogbookEntryTime
-    describe "renderClockTable" $
-        it "produces valid Text" $ producesValidsOnValids2 renderClockTable
     describe "renderNominalDiffTime" $
         it "produces valid Text" $ producesValidsOnValids2 renderNominalDiffTime
