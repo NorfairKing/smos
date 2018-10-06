@@ -10,7 +10,6 @@ import Data.List
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 import Data.Time
 
 import Conduit
@@ -34,7 +33,7 @@ agenda AgendaSettings {..} Settings {..} = do
         smosFileEntries .|
         C.concatMap (uncurry makeAgendaEntry) .|
         C.filter (fitsHistoricity now agendaSetHistoricity)
-    T.putStr $ renderAgendaReport $ sortOn agendaEntryTimestamp tups
+    putTableLn $ renderAgendaReport $ sortOn agendaEntryTimestamp tups
 
 data AgendaEntry = AgendaEntry
     { agendaEntryFilePath :: Path Rel File
@@ -61,13 +60,13 @@ fitsHistoricity zt ah ae =
             LocalTime (timestampDay (agendaEntryTimestamp ae)) midnight >=
             zonedTimeToLocalTime zt
 
-renderAgendaReport :: [AgendaEntry] -> Text
-renderAgendaReport = T.pack . formatAsTable . map formatAgendaEntry
+renderAgendaReport :: [AgendaEntry] -> Table
+renderAgendaReport = formatAsTable . map formatAgendaEntry
 
-formatAgendaEntry :: AgendaEntry -> [String]
+formatAgendaEntry :: AgendaEntry -> [Text]
 formatAgendaEntry AgendaEntry {..} =
-    [ fromRelFile agendaEntryFilePath
-    , T.unpack $ timestampNameText $ agendaEntryTimestampName
-    , timestampString agendaEntryTimestamp
-    , T.unpack $ headerText agendaEntryHeader
+    [ T.pack $ fromRelFile agendaEntryFilePath
+    , timestampNameText $ agendaEntryTimestampName
+    , timestampText agendaEntryTimestamp
+    , headerText agendaEntryHeader
     ]

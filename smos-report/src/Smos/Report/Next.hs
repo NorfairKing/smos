@@ -7,7 +7,6 @@ import Data.Maybe
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
@@ -29,7 +28,7 @@ next Settings {..} = do
         smosFileEntries .|
         C.filter (isNextAction . snd) .|
         C.map (uncurry makeNextActionEntry)
-    T.putStr $ renderNextActionReport tups
+    putTableLn $ renderNextActionReport tups
 
 isNextAction :: Entry -> Bool
 isNextAction entry =
@@ -45,8 +44,8 @@ makeNextActionEntry rf e =
         , nextActionEntryFilePath = rf
         }
 
-renderNextActionReport :: [NextActionEntry] -> Text
-renderNextActionReport = T.pack . formatAsTable . map formatNextActionEntry
+renderNextActionReport :: [NextActionEntry] -> Table
+renderNextActionReport = formatAsTable . map formatNextActionEntry
 
 data NextActionEntry = NextActionEntry
     { nextActionEntryTodoState :: Maybe TodoState
@@ -54,9 +53,9 @@ data NextActionEntry = NextActionEntry
     , nextActionEntryFilePath :: Path Rel File
     } deriving (Show, Eq)
 
-formatNextActionEntry :: NextActionEntry -> [String]
+formatNextActionEntry :: NextActionEntry -> [Text]
 formatNextActionEntry NextActionEntry {..} =
-    [ fromRelFile nextActionEntryFilePath
-    , maybe "" (T.unpack . todoStateText) nextActionEntryTodoState
-    , T.unpack $ headerText nextActionEntryHeader
+    [ T.pack $ fromRelFile nextActionEntryFilePath
+    , maybe "" todoStateText nextActionEntryTodoState
+    , headerText nextActionEntryHeader
     ]

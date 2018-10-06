@@ -12,7 +12,7 @@ library:
   ghc-options: -Wall
   dependencies:
   - base
-  - boxes
+  - bytestring
   - conduit
   - configurator
   - containers
@@ -21,6 +21,8 @@ library:
   - path
   - path-io
   - pretty-show
+  - rainbow
+  - rainbox
   - smos-data
   - text
   - time

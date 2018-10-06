@@ -10,7 +10,6 @@ import GHC.Generics
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Text.IO as T
 import Data.Time
 
 import Conduit
@@ -33,14 +32,14 @@ waiting Settings {..} = do
         C.filter (isWaitingAction . snd) .|
         C.map (uncurry makeWaitingActionEntry)
     now <- getCurrentTime
-    T.putStr $ renderWaitingActionReport now tups
+    putTableLn $ renderWaitingActionReport now tups
 
 isWaitingAction :: Entry -> Bool
 isWaitingAction entry = entryState entry == Just "WAITING"
 
-renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Text
+renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-    T.pack . formatAsTable . map (formatWaitingActionEntry now)
+    formatAsTable . map (formatWaitingActionEntry now)
 
 data WaitingActionEntry = WaitingActionEntry
     { waitingActionEntryHeader :: Header
@@ -60,11 +59,11 @@ makeWaitingActionEntry rf Entry {..} =
             , waitingActionEntryFilePath = rf
             }
 
-formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [String]
+formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
-    [ fromRelFile waitingActionEntryFilePath
-    , T.unpack $ headerText $ waitingActionEntryHeader
-    , maybe "" (showDaysSince now) waitingActionEntryTimestamp
+    [ T.pack $ fromRelFile waitingActionEntryFilePath
+    , headerText $ waitingActionEntryHeader
+    , maybe "" (T.pack . showDaysSince now) waitingActionEntryTimestamp
     ]
 
 showDaysSince :: UTCTime -> UTCTime -> String
