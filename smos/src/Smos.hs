@@ -28,7 +28,14 @@ smos sc@SmosConfig {..} = do
     startF <-
         case errOrSF of
             Nothing -> pure Nothing
-            Just (Left err) -> die $ show err
+            Just (Left err) ->
+                die $
+                unlines
+                    [ "Failed to read smos file"
+                    , fromAbsFile p
+                    , "could not parse it:"
+                    , show err
+                    ]
             Just (Right sf) -> pure $ Just sf
     tz <- getCurrentTimeZone
     let s = initState p startF tz

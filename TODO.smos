@@ -629,6 +629,31 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 13:16:04.618559342000+0000
+    - entry:
+        header: Reports
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-06 08:54:15.666105284000+0000
+      forest:
+      - entry:
+          header: Machine-readable reports
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-06 08:54:31.730078624000+0000
+        forest:
+        - header: Library functions for reports where reports are a sensible data
+            structure
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-06 08:55:00.266111541000+0000
+        - header: JSON output using a flag
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-06 08:55:07.730115829000+0000
+        - header: CSV output using a flag
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-06 08:55:12.818114258000+0000
   - entry:
       header: Quality of life
       state-history:
