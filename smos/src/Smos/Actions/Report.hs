@@ -57,3 +57,36 @@ lastNextAction =
         , actionFunc = modifyNextActionReportCursor nextActionReportCursorLast
         , actionDescription = "Select the last next action"
         }
+
+enterNextActionFile :: Action
+enterNextActionFile =
+    Action
+        { actionName = "enterNextActionFile"
+        , actionFunc =
+              do ss <- get
+                 let ec = smosStateCursor ss
+                 case editorCursorSelection ec of
+                     ReportSelected ->
+                         case editorCursorReportCursor ec of
+                             Nothing -> pure ()
+                             Just (ReportNextActions narc) -> do
+                                 let sfc =
+                                         nextActionReportCursorBuildSmosFileCursor
+                                             narc
+                                 put $
+                                     ss
+                                         { smosStateStartSmosFile =
+                                               Just
+                                                   (rebuildSmosFileCursorEntirely
+                                                        sfc)
+                                         , smosStateFilePath =nextActionReportCursorBuildFilePath narc
+                                         , smosStateCursor =
+                                               editorCursorSwitchToFile
+                                                   ec
+                                                       { editorCursorFileCursor =
+                                                             Just sfc
+                                                       }
+                                         }
+                     _ -> pure ()
+        , actionDescription = "Enter the currently selected next action"
+        }

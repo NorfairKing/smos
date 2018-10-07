@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Report.Next where
 
@@ -8,7 +9,7 @@ import Data.Validity
 
 import qualified Data.List.NonEmpty as NE
 
-import Cursor.Simple.Forest
+import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Tree
 
@@ -19,6 +20,8 @@ import Path
 
 import Smos.Data
 
+import Smos.Cursor.Collapse
+import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
 import Smos.Report.Config
@@ -36,7 +39,7 @@ produceNextActionReportCursor src = do
         parseSmosFiles wd .|
         printShouldPrint DontPrint .|
         smosFileCursors .|
-        C.map (uncurry makeNextActionEntryCursor) .|
+        C.map (uncurry $ makeNextActionEntryCursor wd) .|
         C.filter cursorPointsToNextAction
     pure $ makeNextActionReportCursor naes
 
@@ -45,6 +48,19 @@ type NextActionReportCursor = NonEmptyCursor NextActionEntryCursor
 makeNextActionReportCursor ::
        [NextActionEntryCursor] -> Maybe NextActionReportCursor
 makeNextActionReportCursor = fmap makeNonEmptyCursor . NE.nonEmpty
+
+nextActionReportCursorBuildSmosFileCursor ::
+       NextActionReportCursor -> SmosFileCursor
+nextActionReportCursorBuildSmosFileCursor =
+    go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
+  where
+    go :: ForestCursor Entry Entry -> SmosFileCursor
+    go = mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+
+nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
+nextActionReportCursorBuildFilePath narc =
+    let NextActionEntryCursor {..} = nonEmptyCursorCurrent narc
+     in nextActionEntryCursorDirectory </> nextActionEntryCursorFilePath
 
 nextActionReportCursorNext ::
        NextActionReportCursor -> Maybe NextActionReportCursor
@@ -61,17 +77,22 @@ nextActionReportCursorLast :: NextActionReportCursor -> NextActionReportCursor
 nextActionReportCursorLast = nonEmptyCursorSelectLast
 
 data NextActionEntryCursor = NextActionEntryCursor
-    { nextActionEntryCursorFilePath :: Path Rel File
-    , nextActionEntryCursorForestCursor :: ForestCursor Entry
+    { nextActionEntryCursorDirectory :: Path Abs Dir
+    , nextActionEntryCursorFilePath :: Path Rel File
+    , nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
     } deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor
 
 makeNextActionEntryCursor ::
-       Path Rel File -> ForestCursor Entry -> NextActionEntryCursor
-makeNextActionEntryCursor rf fc =
+       Path Abs Dir
+    -> Path Rel File
+    -> ForestCursor Entry Entry
+    -> NextActionEntryCursor
+makeNextActionEntryCursor wd rf fc =
     NextActionEntryCursor
-        { nextActionEntryCursorFilePath = rf
+        { nextActionEntryCursorDirectory = wd
+        , nextActionEntryCursorFilePath = rf
         , nextActionEntryCursorForestCursor = fc
         }
 
@@ -81,7 +102,7 @@ cursorPointsToNextAction naec =
     naec ^. nextActionEntryCursorEntryL
 
 nextActionEntryCursorForestCursorL ::
-       Lens' NextActionEntryCursor (ForestCursor Entry)
+       Lens' NextActionEntryCursor (ForestCursor Entry Entry)
 nextActionEntryCursorForestCursorL =
     lens nextActionEntryCursorForestCursor $ \nac fc ->
         nac {nextActionEntryCursorForestCursor = fc}

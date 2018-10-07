@@ -342,8 +342,7 @@ makeEditorCursor sf =
 
 rebuildEditorCursor :: EditorCursor -> SmosFile
 rebuildEditorCursor =
-    SmosFile .
-    maybe [] NE.toList . fmap rebuildSmosFileCursor . editorCursorFileCursor
+    maybe emptySmosFile rebuildSmosFileCursorEntirely .editorCursorFileCursor
 
 editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =

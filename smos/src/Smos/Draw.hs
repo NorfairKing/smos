@@ -33,8 +33,6 @@ import Cursor.Tree hiding (drawTreeCursor)
 
 import Smos.Data
 
-import Smos.Report.Next
-
 import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
 import Smos.Cursor.Entry

@@ -184,6 +184,7 @@ defaultReportsKeymap =
                   , exactKey KEnd lastNextAction
                   , exactChar 'G' lastNextAction
                   , exactChar 'q' selectEditor
+                  , exactKey KEnter enterNextActionFile
                   , exactChar '?' selectHelp
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   ]

@@ -25,3 +25,4 @@ saveCurrentSmosFile = do
     let sf' = rebuildEditorCursor smosStateCursor
     when (smosStateStartSmosFile /= Just sf') $
         liftIO $ writeSmosFile smosStateFilePath sf'
+    modify (\ss -> ss {smosStateStartSmosFile = Just sf'})
