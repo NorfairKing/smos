@@ -12,6 +12,7 @@ module Smos.Draw.Cursor
     , drawVerticalNonEmptyCursor
     , drawNonEmptyCursor
     ) where
+import Data.List
 
 import Control.Monad
 import Control.Monad.Identity
@@ -140,9 +141,9 @@ drawVerticalNonEmptyCursorM prevFunc curFunc nextFunc =
         (\a b c -> a <=> b <=> c)
 
 drawVerticalNonEmptyCursorTable ::
-       (b -> (Widget n, Widget n))
-    -> (a -> (Widget n, Widget n))
-    -> (b -> (Widget n, Widget n))
+       (b -> [Widget n])
+    -> (a -> [Widget n])
+    -> (b -> [Widget n])
     -> NonEmptyCursor a b
     -> Widget n
 drawVerticalNonEmptyCursorTable prevFunc curFunc nextFunc =
@@ -154,8 +155,8 @@ drawVerticalNonEmptyCursorTable prevFunc curFunc nextFunc =
         id
         (\lsp c lsn -> drawTable $ lsp ++ [c] ++ lsn)
 
-drawTable :: [(Widget n, Widget n)] -> Widget n
-drawTable ls = vBox (map fst ls) <+> str " " <+> vBox (map snd ls)
+drawTable :: [[Widget n]] -> Widget n
+drawTable = hBox . intersperse (str " ") . map vBox . transpose
 
 drawNonEmptyCursor ::
        (b -> c)

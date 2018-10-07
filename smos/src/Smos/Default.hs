@@ -170,4 +170,17 @@ defaultKeyMap =
         }
 
 defaultReportsKeymap :: ReportsKeyMap
-defaultReportsKeymap = ReportsKeyMap{reportsKeymapNextActionReportMatchers= listMatchers []}
+defaultReportsKeymap =
+    ReportsKeyMap
+        { reportsKeymapNextActionReportMatchers =
+              listMatchers
+                  [ exactKey KUp prevNextAction
+                  , exactChar 'k' prevNextAction
+                  , exactKey KDown nextNextAction
+                  , exactChar 'j' nextNextAction
+                  , exactKey KEsc selectEditor
+                  , exactChar 'q' selectEditor
+                  , exactChar '?' selectHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+                  ]
+        }

@@ -33,12 +33,15 @@ import Cursor.Tree hiding (drawTreeCursor)
 
 import Smos.Data
 
+import Smos.Report.Next
+
 import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
+import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
@@ -51,17 +54,25 @@ import Smos.Types
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
     let helpCursorWidget =
-            [ centerLayer $ drawHelpCursor editorCursorHelpCursor
-            | editorCursorSelection == HelpSelected
-            ]
+            drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
         fileCursorWidget =
             maybe
                 drawInfo
-                (drawFileCursor $ selectWhen EditorSelected)
+                (drawFileCursor $ selectWhen FileSelected)
                 editorCursorFileCursor
+        reportCursorWidget =
+            maybe
+                (str "empty report")
+                (drawReportCursor (selectWhen ReportSelected))
+                editorCursorReportCursor
+        mainCursorWidget =
+            case editorCursorSelection of
+                FileSelected -> fileCursorWidget
+                ReportSelected -> reportCursorWidget
+                HelpSelected -> helpCursorWidget
         debugWidget = [drawDebug ss | editorCursorDebug]
-        baseWidget = [vBox $ [fileCursorWidget] ++ debugWidget]
-     in concat [helpCursorWidget, baseWidget]
+        baseWidget = [vBox $ [mainCursorWidget] ++ debugWidget]
+     in baseWidget
   where
     EditorCursor {..} = smosStateCursor
     selectWhen :: EditorSelection -> Select
@@ -85,9 +96,9 @@ drawInfo =
         , str "Smos is open source and freely distributable"
         ]
 
-drawHelpCursor :: Maybe HelpCursor -> Widget ResourceName
-drawHelpCursor Nothing = drawInfo
-drawHelpCursor (Just HelpCursor {..}) =
+drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
+drawHelpCursor _ Nothing = drawInfo
+drawHelpCursor s (Just HelpCursor {..}) =
     borderWithLabel
         (withAttr selectedAttr $ txt ("[" <> helpCursorTitle <> "]")) $
     hBox
@@ -95,7 +106,7 @@ drawHelpCursor (Just HelpCursor {..}) =
           viewport "viewport-help" Vertical $
           drawVerticalNonEmptyCursorTable
               (go NotSelected)
-              (go MaybeSelected)
+              (go s)
               (go NotSelected)
               helpCursorKeyHelpCursors
         , vBorder
@@ -114,15 +125,16 @@ drawHelpCursor (Just HelpCursor {..}) =
                   ]
         ]
   where
-    go :: Select -> KeyHelpCursor -> (Widget n, Widget n)
-    go s KeyHelpCursor {..} =
+    go :: Select -> KeyHelpCursor -> [Widget n]
+    go s_ KeyHelpCursor {..} =
         let msel =
-                (case s of
+                (case s_ of
                      MaybeSelected -> forceAttr selectedAttr . visible
                      NotSelected -> id)
-         in ( withAttr helpKeyCombinationAttr $
+         in [ withAttr helpKeyCombinationAttr $
               drawKeyCombination keyHelpCursorKeyBinding
-            , msel $ withAttr helpNameAttr $ txt keyHelpCursorName)
+            , msel $ withAttr helpNameAttr $ txt keyHelpCursorName
+            ]
 
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = str . go
@@ -190,6 +202,31 @@ instance Semigroup Select where
 
 defaultPadding :: Padding
 defaultPadding = Pad 2
+
+drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
+drawReportCursor s rc =
+    viewport "viewport-report" Vertical $
+    case rc of
+        ReportNextActions narc -> drawNextActionReportCursor s narc
+
+drawNextActionReportCursor ::
+       Select -> NextActionReportCursor -> Widget ResourceName
+drawNextActionReportCursor s =
+    drawVerticalNonEmptyCursorTable
+        (drawNextActionEntry NotSelected)
+        (drawNextActionEntry s)
+        (drawNextActionEntry NotSelected)
+
+drawNextActionEntry :: Select -> NextActionEntry -> [Widget ResourceName]
+drawNextActionEntry s NextActionEntry {..} =
+    let sel =
+            (case s of
+                 MaybeSelected -> forceAttr selectedAttr . visible
+                 NotSelected -> id)
+     in [ drawFilePath nextActionEntryFilePath
+        , maybe emptyWidget drawTodoState nextActionEntryTodoState
+        , sel $ drawHeader nextActionEntryHeader
+        ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
@@ -516,6 +553,9 @@ drawUTCLocal utct = do
     tz <- asks id
     let localTime = utcToLocalTime tz utct
     pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
+
+drawFilePath :: Path r d -> Widget n
+drawFilePath = str . toFilePath
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =

@@ -1,0 +1,28 @@
+name: smos-report-cursor
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - base
+  - bytestring
+  - conduit
+  - containers
+  - cursor
+  - filepath
+  - path
+  - path-io
+  - pretty-show
+  - smos-data
+  - smos-report
+  - text
+  - time
+  - validity
+  - validity-path

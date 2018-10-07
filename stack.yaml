@@ -7,6 +7,7 @@ packages:
 - smos-cursor-gen
 - smos-report
 - smos-report-gen
+- smos-report-cursor
 - smos-query
 - smos-convert-org
 extra-deps:

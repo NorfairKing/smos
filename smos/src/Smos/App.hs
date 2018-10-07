@@ -85,7 +85,7 @@ keyMapFunc ::
 keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
     case editorCursorSelection $ smosStateCursor s of
         HelpSelected -> handleWith keyMapHelpMatchers
-        EditorSelected ->
+        FileSelected ->
             case editorCursorFileCursor $ smosStateCursor s of
                 Nothing -> handleWith keyMapEmptyMatchers
                 Just sfc ->
