@@ -179,6 +179,10 @@ defaultReportsKeymap =
                   , exactKey KDown nextNextAction
                   , exactChar 'j' nextNextAction
                   , exactKey KEsc selectEditor
+                  , exactKey KHome firstNextAction
+                  , exactString "gg" firstNextAction
+                  , exactKey KEnd lastNextAction
+                  , exactChar 'G' lastNextAction
                   , exactChar 'q' selectEditor
                   , exactChar '?' selectHelp
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp

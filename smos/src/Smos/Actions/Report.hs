@@ -40,3 +40,19 @@ prevNextAction =
         , actionFunc = modifyNextActionReportCursorM nextActionReportCursorPrev
         , actionDescription = "Select the previous next action"
         }
+
+firstNextAction :: Action
+firstNextAction =
+    Action
+        { actionName = "firstNextAction"
+        , actionFunc = modifyNextActionReportCursor nextActionReportCursorFirst
+        , actionDescription = "Select the first next action"
+        }
+
+lastNextAction :: Action
+lastNextAction =
+    Action
+        { actionName = "lastNextAction"
+        , actionFunc = modifyNextActionReportCursor nextActionReportCursorLast
+        , actionDescription = "Select the last next action"
+        }

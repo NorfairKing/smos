@@ -20,3 +20,11 @@ nextActionReportCursorNext = nonEmptyCursorSelectNext
 nextActionReportCursorPrev ::
        NextActionReportCursor -> Maybe NextActionReportCursor
 nextActionReportCursorPrev = nonEmptyCursorSelectPrev
+
+nextActionReportCursorFirst ::
+       NextActionReportCursor -> NextActionReportCursor
+nextActionReportCursorFirst = nonEmptyCursorSelectFirst
+
+nextActionReportCursorLast ::
+       NextActionReportCursor -> NextActionReportCursor
+nextActionReportCursorLast = nonEmptyCursorSelectLast
