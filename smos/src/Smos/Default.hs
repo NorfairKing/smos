@@ -58,22 +58,14 @@ defaultKeyMap =
                   , exactString "td" $ entrySetTodoState "DONE"
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
-                  , exactString "Tt" $
-                    subtreeSetTodoState "TODO"
-                  , exactString "Tn" $
-                    subtreeSetTodoState "NEXT"
-                  , exactString "Ts" $
-                    subtreeSetTodoState "STARTED"
-                  , exactString "Tr" $
-                    subtreeSetTodoState "READY"
-                  , exactString "Tw" $
-                    subtreeSetTodoState "WAITING"
-                  , exactString "Td" $
-                    subtreeSetTodoState "DONE"
-                  , exactString "Tc" $
-                    subtreeSetTodoState "CANCELLED"
-                  , exactString "T "
-                        subtreeUnsetTodoState
+                  , exactString "Tt" $ subtreeSetTodoState "TODO"
+                  , exactString "Tn" $ subtreeSetTodoState "NEXT"
+                  , exactString "Ts" $ subtreeSetTodoState "STARTED"
+                  , exactString "Tr" $ subtreeSetTodoState "READY"
+                  , exactString "Tw" $ subtreeSetTodoState "WAITING"
+                  , exactString "Td" $ subtreeSetTodoState "DONE"
+                  , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
+                  , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"
@@ -86,6 +78,7 @@ defaultKeyMap =
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
                   -- Collapsing
+                  , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
                   , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
@@ -148,7 +141,19 @@ defaultKeyMap =
               listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapTagsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
-        , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
+        , keyMapHelpMatchers =
+              listMatchers
+                  [ exactKey KUp helpUp
+                  , exactChar 'k' helpUp
+                  , exactKey KDown helpDown
+                  , exactChar 'j' helpDown
+                  , exactKey KHome helpStart
+                  , exactString "gg" helpStart
+                  , exactKey KEnd helpEnd
+                  , exactChar 'G' helpEnd
+                  , exactKey KEsc selectEditor
+                  , exactChar 'q' selectEditor
+                  ]
         , keyMapAnyMatchers =
               listMatchers
                   [ exactChar 'u' undo

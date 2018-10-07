@@ -3,38 +3,22 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Types
-    ( SmosConfig(..)
-    , KeyMap(..)
-    , KeyMappings
-    , KeyMapping(..)
-    , Action(..)
-    , action
-    , ActionUsing(..)
-    , actionUsing
-    , AnyAction(..)
-    , SmosEvent
-    , SmosM
-    , runSmosM
-    , SmosState(..)
-    , KeyPress(..)
-    , DebugInfo(..)
-    , ActivationDebug(..)
-    , Priority(..)
-    , Precedence(..)
-    , ResourceName
-    , MStop(..)
-    , stop
-    , module Control.Monad.Reader
-    , module Control.Monad.State
+    ( module Smos.Types
+    , module Smos.Monad
     ) where
 
 import Import
 
+import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty (NonEmpty)
 import Data.Time
+
+import Lens.Micro
 
 import Control.Monad.Reader
 import Control.Monad.State
@@ -43,9 +27,14 @@ import Graphics.Vty.Input.Events as Vty
 
 import Brick.Types as B hiding (Next)
 
+import Cursor.Simple.List.NonEmpty
+
 import Smos.Data
 
-import Smos.Cursor.Editor
+import Smos.Cursor.Entry
+import Smos.Cursor.SmosFile
+
+import Smos.Monad
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
@@ -173,7 +162,10 @@ data SmosState = SmosState
 data KeyPress =
     KeyPress Key
              [Modifier]
-    deriving (Show, Eq, Ord)
+    deriving (Show, Eq, Ord, Generic)
+
+instance Validity KeyPress where
+    validate _ = valid -- TODO no validity instances for VTY types
 
 data DebugInfo = DebugInfo
     { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
@@ -201,74 +193,6 @@ newtype ResourceName =
     ResourceName Text
     deriving (Show, Eq, Ord, Generic, IsString)
 
-newtype MkSmosM c n s a = MkSmosM
-    { unMkSmosM :: NextT (StateT s (ReaderT c (EventM n))) a
-    } deriving ( Generic
-               , Functor
-               , Applicative
-               , Monad
-               , MonadState s
-               , MonadReader c
-               )
-
-instance MonadIO (MkSmosM c n s) where
-    liftIO = MkSmosM . liftIO
-
-runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n (MStop a, s)
-runMkSmosM conf initState act =
-    runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
-
-data MStop a
-    = Stop
-    | Continue a
-    deriving (Show, Eq, Generic)
-
-instance Validity a => Validity (MStop a)
-
-instance Functor MStop where
-    fmap _ Stop = Stop
-    fmap f (Continue a) = Continue $ f a
-
-newtype NextT m a = NextT
-    { runNextT :: m (MStop a)
-    }
-
-instance Functor m => Functor (NextT m) where
-    fmap f (NextT func) = NextT $ fmap (f <$>) func
-
-instance Monad m => Applicative (NextT m) where
-    pure = NextT . pure . Continue
-    (NextT f1) <*> (NextT f2) =
-        NextT $ do
-            n1 <- f1
-            case n1 of
-                Stop -> pure Stop
-                Continue f -> do
-                    n2 <- f2
-                    pure $ f <$> n2
-
-instance Monad m => Monad (NextT m) where
-    (NextT ma) >>= fm =
-        NextT $ do
-            na <- ma
-            case na of
-                Stop -> pure Stop
-                Continue a -> runNextT $ fm a
-
-instance MonadTrans NextT where
-    lift func = NextT $ Continue <$> func
-
-instance MonadIO m => MonadIO (NextT m) where
-    liftIO = lift . liftIO
-
-instance MonadState s m => MonadState s (NextT m) where
-    get = NextT $ Continue <$> get
-    put = NextT . fmap Continue . put
-
-instance MonadReader s m => MonadReader s (NextT m) where
-    ask = NextT $ Continue <$> ask
-    local func (NextT m) = NextT $ local func m
-
 stop :: Action
 stop =
     Action
@@ -276,3 +200,178 @@ stop =
         , actionDescription = "Stop Smos"
         , actionFunc = MkSmosM $ NextT $ pure Stop
         }
+
+-- [ Help Cursor ] --
+-- I cannot factor this out because of the following circular dependency:
+--
+-- HelpCursor -> KeyMapping
+--    ^             |
+--    |             v
+-- SmosState <- SmosM
+--
+-- and EditorCursor depends on HelpCursor, so that has the same problem
+data HelpCursor = HelpCursor
+    { helpCursorTitle :: Text
+    , helpCursorKeyHelpCursors :: NonEmptyCursor KeyHelpCursor
+    } deriving (Show, Eq, Generic)
+
+instance Validity HelpCursor
+
+makeHelpCursor :: Text -> KeyMappings -> Maybe HelpCursor
+makeHelpCursor title kms = do
+    ne <- NE.nonEmpty $ map go kms
+    pure $
+        HelpCursor
+            { helpCursorTitle = title
+            , helpCursorKeyHelpCursors = makeNonEmptyCursor ne
+            }
+  where
+    go :: KeyMapping -> KeyHelpCursor
+    go km =
+        case km of
+            MapVtyExactly kp a ->
+                KeyHelpCursor
+                    { keyHelpCursorKeyBinding = PressExactly kp
+                    , keyHelpCursorName = actionName a
+                    , keyHelpCursorDescription = actionDescription a
+                    }
+            MapAnyTypeableChar au ->
+                KeyHelpCursor
+                    { keyHelpCursorKeyBinding = PressAnyChar
+                    , keyHelpCursorName = actionUsingName au
+                    , keyHelpCursorDescription = actionUsingDescription au
+                    }
+            MapCatchAll a ->
+                KeyHelpCursor
+                    { keyHelpCursorKeyBinding = PressAny
+                    , keyHelpCursorName = actionName a
+                    , keyHelpCursorDescription = actionDescription a
+                    }
+            MapCombination kp km_ ->
+                let khc = go km_
+                 in khc
+                        { keyHelpCursorKeyBinding =
+                              PressCombination kp $ keyHelpCursorKeyBinding khc
+                        }
+
+helpCursorKeyHelpCursorsL :: Lens' HelpCursor (NonEmptyCursor KeyHelpCursor)
+helpCursorKeyHelpCursorsL =
+    lens helpCursorKeyHelpCursors $ \hc ne -> hc {helpCursorKeyHelpCursors = ne}
+
+helpCursorUp :: HelpCursor -> Maybe HelpCursor
+helpCursorUp = helpCursorKeyHelpCursorsL nonEmptyCursorSelectPrev
+
+helpCursorDown :: HelpCursor -> Maybe HelpCursor
+helpCursorDown = helpCursorKeyHelpCursorsL nonEmptyCursorSelectNext
+
+helpCursorStart :: HelpCursor -> HelpCursor
+helpCursorStart = helpCursorKeyHelpCursorsL %~ nonEmptyCursorSelectFirst
+
+helpCursorEnd :: HelpCursor -> HelpCursor
+helpCursorEnd = helpCursorKeyHelpCursorsL %~ nonEmptyCursorSelectLast
+
+data KeyHelpCursor = KeyHelpCursor
+    { keyHelpCursorKeyBinding :: KeyCombination
+    , keyHelpCursorName :: Text
+    , keyHelpCursorDescription :: Text
+    } deriving (Show, Eq, Generic)
+
+instance Validity KeyHelpCursor
+
+data KeyCombination
+    = PressExactly KeyPress
+    | PressAnyChar
+    | PressAny
+    | PressCombination KeyPress
+                       KeyCombination
+    deriving (Show, Eq, Generic)
+
+instance Validity KeyCombination
+
+data EditorCursor = EditorCursor
+    { editorCursorFileCursor :: Maybe SmosFileCursor
+    , editorCursorHelpCursor :: Maybe HelpCursor
+    , editorCursorSelection :: EditorSelection
+    , editorCursorDebug :: Bool
+    } deriving (Show, Eq, Generic)
+
+instance Validity EditorCursor
+
+-- [ Editor Cursor ] --
+--
+-- Cannot factor this out because of the problem with help cursor.
+data EditorSelection
+    = EditorSelected
+    | HelpSelected
+    deriving (Show, Eq, Generic)
+
+instance Validity EditorSelection
+
+makeEditorCursor :: SmosFile -> EditorCursor
+makeEditorCursor sf =
+    EditorCursor
+        { editorCursorFileCursor =
+              fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
+        , editorCursorHelpCursor = Nothing
+        , editorCursorSelection = EditorSelected
+        , editorCursorDebug = False
+        }
+
+rebuildEditorCursor :: EditorCursor -> SmosFile
+rebuildEditorCursor =
+    SmosFile .
+    maybe [] NE.toList . fmap rebuildSmosFileCursor . editorCursorFileCursor
+
+editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
+editorCursorSmosFileCursorL =
+    lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
+
+editorCursorHelpCursorL :: Lens' EditorCursor (Maybe HelpCursor)
+editorCursorHelpCursorL =
+    lens editorCursorHelpCursor $ \ec msfc -> ec {editorCursorHelpCursor = msfc}
+
+editorCursorSelectionL :: Lens' EditorCursor EditorSelection
+editorCursorSelectionL =
+    lens editorCursorSelection $ \ec es -> ec {editorCursorSelection = es}
+
+editorCursorSelectEditor :: EditorCursor -> EditorCursor
+editorCursorSelectEditor = editorCursorSelectionL .~ EditorSelected
+
+editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
+editorCursorSwitchToHelp KeyMap {..} ec =
+    ec
+        { editorCursorHelpCursor =
+              (\(t, ms) ->
+                   makeHelpCursor t $
+                   ms ++ keyMapAnyMatchers ++ keyMapHelpMatchers) $
+              case editorCursorFileCursor ec of
+                  Nothing -> ("Empty file", keyMapEmptyMatchers)
+                  Just sfc ->
+                      case sfc ^. smosFileCursorEntrySelectionL of
+                          WholeEntrySelected -> ("Entry", keyMapEntryMatchers)
+                          HeaderSelected -> ("Header", keyMapHeaderMatchers)
+                          ContentsSelected ->
+                              ("Contents", keyMapContentsMatchers)
+                          TimestampsSelected ->
+                              ("Timestamps", keyMapTimestampsMatchers)
+                          PropertiesSelected ->
+                              ("Properties", keyMapPropertiesMatchers)
+                          StateHistorySelected ->
+                              ("State History", keyMapStateHistoryMatchers)
+                          TagsSelected -> ("Tags", keyMapTagsMatchers)
+                          LogbookSelected -> ("Logbook", keyMapLogbookMatchers)
+        , editorCursorSelection = HelpSelected
+        }
+
+editorCursorDebugL :: Lens' EditorCursor Bool
+editorCursorDebugL =
+    lens editorCursorDebug $ \ec sh -> ec {editorCursorDebug = sh}
+
+editorCursorShowDebug :: EditorCursor -> EditorCursor
+editorCursorShowDebug = editorCursorDebugL .~ True
+
+editorCursorHideDebug :: EditorCursor -> EditorCursor
+editorCursorHideDebug = editorCursorDebugL .~ False
+
+editorCursorToggleDebug :: EditorCursor -> EditorCursor
+editorCursorToggleDebug = editorCursorDebugL %~ not

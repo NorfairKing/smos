@@ -11,6 +11,7 @@ module Smos.Actions
     , module Smos.Actions.Entry
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
+    , module Smos.Actions.Help
     , module Smos.Actions.Logbook
     , module Smos.Actions.Tags
     , module Smos.Actions.Timestamps
@@ -22,6 +23,7 @@ import Smos.Data
 
 import Smos.Types
 
+import Smos.Actions.Help
 import Smos.Actions.Contents
 import Smos.Actions.Entry
 import Smos.Actions.Forest
@@ -91,7 +93,9 @@ selectHelp :: Action
 selectHelp =
     Action
         { actionName = "selectHelp"
-        , actionFunc = modifyEditorCursor editorCursorSelectHelp
+        , actionFunc = modifyEditorCursorS $ \ec -> do
+            km <- asks configKeyMap
+            pure $ editorCursorSwitchToHelp km ec
         , actionDescription = "Show the (contextual) help screen"
         }
 

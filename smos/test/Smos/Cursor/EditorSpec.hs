@@ -8,7 +8,7 @@ import Test.Validity.Optics
 
 import Smos.Data.Gen ()
 
-import Smos.Cursor.Editor
+import Smos.Types
 import Smos.Cursor.Editor.Gen ()
 
 spec :: Spec
@@ -27,9 +27,6 @@ spec = do
     describe "editorCursorSelectEditor" $
         it "produces valid cursors" $
         producesValidsOnValids editorCursorSelectEditor
-    describe "editorCursorSelectHelp" $
-        it "produces valid cursors" $
-        producesValidsOnValids editorCursorSelectHelp
     describe "editorCursorDebugL" $ lensSpecOnValid editorCursorDebugL
     describe "editorCursorShowDebug" $
         it "produces valid cursors" $

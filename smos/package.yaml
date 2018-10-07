@@ -72,6 +72,7 @@ tests:
     - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-hspec-aeson
+    - genvalidity-hspec-optics
     - genvalidity-text
     - genvalidity-time
     - genvalidity-unordered-containers
@@ -79,9 +80,12 @@ tests:
     - path
     - path-io
     - smos
+    - smos-cursor
+    - smos-cursor-gen
     - smos-data
     - smos-data-gen
     - text
+    - vty
 
   smos-golden-test:
     main: Main.hs

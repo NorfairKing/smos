@@ -12,6 +12,9 @@ module Smos.Style
     , timestampNameSpecificAttr
     , tagAttr
     , tagSpecificAttr
+    , helpNameAttr
+    , helpKeyCombinationAttr
+    , helpDescriptionAttr
     -- * Names of widgets
     , textCursorName
     -- * Re-exports
@@ -52,7 +55,14 @@ defaultAttrMap _ =
             , (timestampNameSpecificAttr "DEADLINE", fg red)
             , (selectedAttr <> tagAttr, fg brightWhite)
             ] $
-        attrMap defAttr [(selectedAttr, fg V.white), (headerAttr, fg V.yellow)]
+        attrMap
+            defAttr
+            [ (selectedAttr, fg V.white)
+            , (headerAttr, fg V.yellow)
+            , (helpNameAttr, fg V.yellow)
+            , (helpKeyCombinationAttr, fg V.blue)
+            , (helpDescriptionAttr, fg V.yellow)
+            ]
 
 selectedAttr :: AttrName
 selectedAttr = "selected"
@@ -85,6 +95,15 @@ tagAttr = "tag"
 
 tagSpecificAttr :: Tag -> AttrName
 tagSpecificAttr t = fromString $ "tag-" ++ T.unpack (tagText t)
+
+helpNameAttr :: AttrName
+helpNameAttr = "helpdescription"
+
+helpKeyCombinationAttr :: AttrName
+helpKeyCombinationAttr = "helpkeycombination"
+
+helpDescriptionAttr :: AttrName
+helpDescriptionAttr = "helpdescription"
 
 textCursorName :: ResourceName
 textCursorName = "text-cursor"
