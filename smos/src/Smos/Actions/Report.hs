@@ -3,10 +3,10 @@
 module Smos.Actions.Report where
 
 import Smos.Cursor.Report.Next
-import Smos.Report.Next
 
 import Smos.Types
 
+import Smos.Actions.File
 import Smos.Actions.Utils
 
 reportNextActions :: Action
@@ -15,10 +15,11 @@ reportNextActions =
         { actionName = "reportNextActions"
         , actionFunc =
               modifyEditorCursorS $ \ec -> do
+                  saveCurrentSmosFile
                   rc <- asks configReportConfig
-                  naes <- liftIO $ produceNextActionReport rc
+                  mnarc <- liftIO $ produceNextActionReportCursor rc
                   pure $
-                      case makeNextActionReportCursor naes of
+                      case mnarc of
                           Nothing -> ec
                           Just narc ->
                               editorCursorSwitchToNextActionReport narc ec

@@ -213,19 +213,21 @@ drawNextActionReportCursor ::
        Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s =
     drawVerticalNonEmptyCursorTable
-        (drawNextActionEntry NotSelected)
-        (drawNextActionEntry s)
-        (drawNextActionEntry NotSelected)
+        (drawNextActionEntryCursor NotSelected)
+        (drawNextActionEntryCursor s)
+        (drawNextActionEntryCursor NotSelected)
 
-drawNextActionEntry :: Select -> NextActionEntry -> [Widget ResourceName]
-drawNextActionEntry s NextActionEntry {..} =
-    let sel =
+drawNextActionEntryCursor ::
+       Select -> NextActionEntryCursor -> [Widget ResourceName]
+drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
+    let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
+        sel =
             (case s of
                  MaybeSelected -> forceAttr selectedAttr . visible
                  NotSelected -> id)
-     in [ drawFilePath nextActionEntryFilePath
-        , maybe emptyWidget drawTodoState nextActionEntryTodoState
-        , sel $ drawHeader nextActionEntryHeader
+     in [ drawFilePath nextActionEntryCursorFilePath
+        , maybe emptyWidget drawTodoState $ entryState e
+        , sel $ drawHeader entryHeader
         ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer

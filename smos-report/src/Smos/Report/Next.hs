@@ -32,9 +32,10 @@ produceNextActionReport src = do
         C.map (uncurry makeNextActionEntry)
 
 isNextAction :: Entry -> Bool
-isNextAction entry =
-    or $
-    (==) (entryState entry) . Just <$> mapMaybe todoState ["NEXT", "STARTED"]
+isNextAction = maybe False isNextTodoState . entryState
+
+isNextTodoState :: TodoState -> Bool
+isNextTodoState = (`elem` (mapMaybe todoState ["NEXT", "STARTED"]))
 
 makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
 makeNextActionEntry rf e =

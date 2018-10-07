@@ -17,9 +17,11 @@ library:
   - containers
   - cursor
   - filepath
+  - microlens
   - path
   - path-io
   - pretty-show
+  - smos-cursor
   - smos-data
   - smos-report
   - text
