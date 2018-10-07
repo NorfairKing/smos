@@ -78,7 +78,7 @@ defaultKeyMap =
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
                   -- Collapsing
-                  , exactChar '?'selectHelp
+                  , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
                   , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
@@ -147,7 +147,12 @@ defaultKeyMap =
                   , exactChar 'k' helpUp
                   , exactKey KDown helpDown
                   , exactChar 'j' helpDown
-                  , catchAll selectEditor
+                  , exactKey KHome helpStart
+                  , exactString "gg" helpStart
+                  , exactKey KEnd helpEnd
+                  , exactChar 'G' helpEnd
+                  , exactKey KEsc selectEditor
+                  , exactChar 'q' selectEditor
                   ]
         , keyMapAnyMatchers =
               listMatchers

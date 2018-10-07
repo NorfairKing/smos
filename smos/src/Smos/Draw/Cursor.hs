@@ -8,6 +8,7 @@ module Smos.Draw.Cursor
     , drawVerticalForestCursor
     , drawForestCursor
     , drawTreeCursor
+    , drawVerticalNonEmptyCursorTable
     , drawVerticalNonEmptyCursor
     , drawNonEmptyCursor
     ) where
@@ -108,7 +109,7 @@ drawTreeCursor wrapAboveFunc currentFunc TreeCursor {..} =
         wrapAbove treeAboveAbove
 
 drawVerticalNonEmptyCursor ::
-     (b -> Widget n)
+       (b -> Widget n)
     -> (a -> Widget n)
     -> (b -> Widget n)
     -> NonEmptyCursor a b
@@ -138,13 +139,31 @@ drawVerticalNonEmptyCursorM prevFunc curFunc nextFunc =
         B.vBox
         (\a b c -> a <=> b <=> c)
 
+drawVerticalNonEmptyCursorTable ::
+       (b -> (Widget n, Widget n))
+    -> (a -> (Widget n, Widget n))
+    -> (b -> (Widget n, Widget n))
+    -> NonEmptyCursor a b
+    -> Widget n
+drawVerticalNonEmptyCursorTable prevFunc curFunc nextFunc =
+    drawNonEmptyCursor
+        prevFunc
+        curFunc
+        nextFunc
+        id
+        id
+        (\lsp c lsn -> drawTable $ lsp ++ [c] ++ lsn)
+
+drawTable :: [(Widget n, Widget n)] -> Widget n
+drawTable ls = vBox (map fst ls) <+> str " " <+> vBox (map snd ls)
+
 drawNonEmptyCursor ::
-       (b -> Widget n)
-    -> (a -> Widget n)
-    -> (b -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> (Widget n -> Widget n -> Widget n -> Widget n)
+       (b -> c)
+    -> (a -> d)
+    -> (b -> e)
+    -> ([c] -> f)
+    -> ([e] -> g)
+    -> (f -> d -> g -> Widget n)
     -> NonEmptyCursor a b
     -> Widget n
 drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc ne =
@@ -160,12 +179,12 @@ drawNonEmptyCursor prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc 
 
 drawNonEmptyCursorM ::
        Monad m
-    => (b -> m (Widget n))
-    -> (a -> m (Widget n))
-    -> (b -> m (Widget n))
-    -> ([Widget n] -> Widget n)
-    -> ([Widget n] -> Widget n)
-    -> (Widget n -> Widget n -> Widget n -> Widget n)
+    => (b -> m c)
+    -> (a -> m d)
+    -> (b -> m e)
+    -> ([c] -> f)
+    -> ([e] -> g)
+    -> (f -> d -> g -> Widget n)
     -> NonEmptyCursor a b
     -> m (Widget n)
 drawNonEmptyCursorM prevFunc curFunc nextFunc prevCombFunc nextCombFunc combFunc NonEmptyCursor {..} = do

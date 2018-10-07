@@ -220,7 +220,11 @@ instance Validity HelpCursor
 makeHelpCursor :: Text -> KeyMappings -> Maybe HelpCursor
 makeHelpCursor title kms = do
     ne <- NE.nonEmpty $ map go kms
-    pure $ HelpCursor {helpCursorTitle = title, helpCursorKeyHelpCursors = makeNonEmptyCursor ne}
+    pure $
+        HelpCursor
+            { helpCursorTitle = title
+            , helpCursorKeyHelpCursors = makeNonEmptyCursor ne
+            }
   where
     go :: KeyMapping -> KeyHelpCursor
     go km =
@@ -259,6 +263,12 @@ helpCursorUp = helpCursorKeyHelpCursorsL nonEmptyCursorSelectPrev
 
 helpCursorDown :: HelpCursor -> Maybe HelpCursor
 helpCursorDown = helpCursorKeyHelpCursorsL nonEmptyCursorSelectNext
+
+helpCursorStart :: HelpCursor -> HelpCursor
+helpCursorStart = helpCursorKeyHelpCursorsL %~ nonEmptyCursorSelectFirst
+
+helpCursorEnd :: HelpCursor -> HelpCursor
+helpCursorEnd = helpCursorKeyHelpCursorsL %~ nonEmptyCursorSelectLast
 
 data KeyHelpCursor = KeyHelpCursor
     { keyHelpCursorKeyBinding :: KeyCombination
@@ -331,32 +341,25 @@ editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
 editorCursorSwitchToHelp KeyMap {..} ec =
     ec
         { editorCursorHelpCursor =
+              (\(t, ms) ->
+                   makeHelpCursor t $
+                   ms ++ keyMapAnyMatchers ++ keyMapHelpMatchers) $
               case editorCursorFileCursor ec of
-                  Nothing -> makeHelpCursor "Empty file" keyMapEmptyMatchers
+                  Nothing -> ("Empty file", keyMapEmptyMatchers)
                   Just sfc ->
                       case sfc ^. smosFileCursorEntrySelectionL of
-                          WholeEntrySelected ->
-                              makeHelpCursor "Entry" keyMapEntryMatchers
-                          HeaderSelected ->
-                              makeHelpCursor "Header" keyMapHeaderMatchers
+                          WholeEntrySelected -> ("Entry", keyMapEntryMatchers)
+                          HeaderSelected -> ("Header", keyMapHeaderMatchers)
                           ContentsSelected ->
-                              makeHelpCursor "Contents" keyMapContentsMatchers
+                              ("Contents", keyMapContentsMatchers)
                           TimestampsSelected ->
-                              makeHelpCursor
-                                  "Timestamps"
-                                  keyMapTimestampsMatchers
+                              ("Timestamps", keyMapTimestampsMatchers)
                           PropertiesSelected ->
-                              makeHelpCursor
-                                  "Properties"
-                                  keyMapPropertiesMatchers
+                              ("Properties", keyMapPropertiesMatchers)
                           StateHistorySelected ->
-                              makeHelpCursor
-                                  "State History"
-                                  keyMapStateHistoryMatchers
-                          TagsSelected ->
-                              makeHelpCursor "Tags" keyMapTagsMatchers
-                          LogbookSelected ->
-                              makeHelpCursor "Logbook" keyMapLogbookMatchers
+                              ("State History", keyMapStateHistoryMatchers)
+                          TagsSelected -> ("Tags", keyMapTagsMatchers)
+                          LogbookSelected -> ("Logbook", keyMapLogbookMatchers)
         , editorCursorSelection = HelpSelected
         }
 
