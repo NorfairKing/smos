@@ -476,6 +476,28 @@
         - new-state: TODO
           timestamp: 2018-10-03 23:25:30.776212621000+0000
       forest:
+      - header: Lock files to make sure edits don't go missing
+        contents: ! 'Imagine this scenario:
+
+          Open file A (A1)
+
+          Open file A in a different instance of smos (A2)
+
+          edit A2
+
+          close A2 (and save)
+
+          edit A1
+
+          close A1
+
+
+          Now the edits of A2 are lost.
+
+          Opening file A the second time should not be possible'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-07 17:12:51.588908229000+0000
       - header: Copy-pasting
         contents: ! 'also not critical, because the user can just use swapping and
           promoting/demoting to move the entry to the desired place.
@@ -511,6 +533,17 @@
           - new-state: TODO
             timestamp: 2018-10-03 23:25:11.248238318000+0000
         forest:
+        - header: moving to the node above
+          contents: ! "Example start\n - a\n   - b\n   - c <-\n   - d\nExample end\n
+            - a <-\n   - b\n   - c\n   - d\n\nKeyboard shortcut: arrow left h"
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 17:16:29.612880939000+0000
+        - header: Moving to the node below, uncollapsing as necessary
+          contents: ! 'Keyboard shortcut: arrow right or l'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 17:17:49.037011535000+0000
         - header: Inserting an entry below the current one, but above the current
             level
           contents: ! 'This is not critical because the user can user can just start
