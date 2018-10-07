@@ -53,12 +53,24 @@ smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
     let helpCursorWidget =
             drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
+        withHeading hw w =
+            vBox
+                [ hBox
+                      [ str "──[ "
+                      , (withAttr selectedAttr hw)
+                      , str " ]──"
+                      , vLimit 1 $ fill '─'
+                      ]
+                , w
+                ]
         fileCursorWidget =
+            withHeading (drawFilePath smosStateFilePath) $
             maybe
                 drawInfo
                 (drawFileCursor $ selectWhen FileSelected)
                 editorCursorFileCursor
         reportCursorWidget =
+            withHeading (str "Next Action Report") $
             maybe
                 (str "empty report")
                 (drawReportCursor (selectWhen ReportSelected))
@@ -97,6 +109,7 @@ drawInfo =
 drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
 drawHelpCursor _ Nothing = drawInfo
 drawHelpCursor s (Just HelpCursor {..}) =
+    centerLayer $
     borderWithLabel
         (withAttr selectedAttr $ txt ("[" <> helpCursorTitle <> "]")) $
     hBox
@@ -210,20 +223,23 @@ drawReportCursor s rc =
 drawNextActionReportCursor ::
        Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s =
-    drawVerticalNonEmptyCursorTable
+    drawVerticalNonEmptyCursor
         (drawNextActionEntryCursor NotSelected)
         (drawNextActionEntryCursor s)
         (drawNextActionEntryCursor NotSelected)
 
 drawNextActionEntryCursor ::
-       Select -> NextActionEntryCursor -> [Widget ResourceName]
+       Select -> NextActionEntryCursor -> Widget ResourceName
 drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
     let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
         sel =
             (case s of
                  MaybeSelected -> forceAttr selectedAttr . visible
                  NotSelected -> id)
-     in [ drawFilePath nextActionEntryCursorFilePath
+     in hBox $
+        intersperse (str " ") $
+        [ hLimit 20 $
+          padRight Max $ drawFilePath $ filename nextActionEntryCursorFilePath
         , maybe emptyWidget drawTodoState $ entryState e
         , sel $ drawHeader entryHeader
         ]

@@ -24,6 +24,8 @@ defaultKeyMap =
                   , exactKey KEsc stop
                   , exactChar 'h' startHeaderFromEmptyAndSelectHeader
                   , exactChar 'H' startHeaderFromEmptyAndSelectHeader
+                  -- Reports
+                  , exactString "rn" reportNextActions
                   ]
         , keyMapEntryMatchers =
               listMatchers

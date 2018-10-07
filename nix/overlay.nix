@@ -13,6 +13,7 @@ final:
               "smos-cursor-gen"
               "smos-report"
               "smos-report-gen"
+              "smos-report-cursor"
               "smos-query"
               "smos-convert-org"
             ] smosPkg;
