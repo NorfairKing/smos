@@ -4,8 +4,9 @@ module Smos.Cursor.Editor.Gen where
 
 import Data.GenValidity
 
-import Smos.Cursor.Editor
+import Smos.Types
 
+import Smos.Cursor.Help.Gen ()
 import Smos.Cursor.SmosFile.Gen ()
 
 instance GenUnchecked EditorCursor

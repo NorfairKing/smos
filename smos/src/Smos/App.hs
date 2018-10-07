@@ -20,7 +20,6 @@ import Lens.Micro
 
 import qualified Graphics.Vty as Vty
 
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 

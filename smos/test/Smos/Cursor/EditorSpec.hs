@@ -8,7 +8,7 @@ import Test.Validity.Optics
 
 import Smos.Data.Gen ()
 
-import Smos.Cursor.Editor
+import Smos.Types
 import Smos.Cursor.Editor.Gen ()
 
 spec :: Spec

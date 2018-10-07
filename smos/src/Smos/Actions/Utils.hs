@@ -16,7 +16,6 @@
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
     , module Smos.Cursor.Contents
-    , module Smos.Cursor.Editor
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.Logbook
@@ -34,7 +33,6 @@ import Cursor.Types
 import Smos.Data
 
 import Smos.Cursor.Contents
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook

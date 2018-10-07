@@ -13,7 +13,6 @@ import System.Exit
 
 import Brick.Main as B
 
-import Smos.Cursor.Editor
 import Smos.Data
 
 import Smos.App

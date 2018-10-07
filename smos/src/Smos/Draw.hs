@@ -35,7 +35,6 @@ import Smos.Data
 
 import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
@@ -455,7 +454,12 @@ drawStateHistory (StateHistory ls)
         flip map ls $ \StateHistoryEntry {..} ->
             hBox $
             catMaybes
-                [ Just $ strWrap $ show stateHistoryEntryTimestamp
+                [ Just $
+                  strWrap $
+                  formatTime
+                      defaultTimeLocale
+                      "%Y-%m-%d %H:%M:%S"
+                      stateHistoryEntryTimestamp
                 , ((str " " <+>) . drawTodoState) <$> stateHistoryEntryNewState
                 ]
 
