@@ -14,6 +14,7 @@ module Smos.Config
     , anyChar
     , catchAll
     , KeyMap(..)
+    , ReportsKeyMap(..)
     , KeyMapping(..)
     , KeyMappings
     , action
@@ -27,7 +28,6 @@ module Smos.Config
 import Data.Map (Map)
 
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
-import Path.IO
 
 import Smos.Report.Config
 

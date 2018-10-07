@@ -8,7 +8,12 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
+defaultConfig =
+    SmosConfig
+        { configKeyMap = defaultKeyMap
+        , configReportsKeyMap = defaultReportsKeymap
+        , configReportConfig = defaultReportConfig
+        }
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -77,6 +82,8 @@ defaultKeyMap =
                   -- Clocking
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
+                  -- Reports
+                  , exactString "rn" reportNextActions
                   -- Collapsing
                   , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
@@ -160,5 +167,7 @@ defaultKeyMap =
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
-
         }
+
+defaultReportsKeymap :: ReportsKeyMap
+defaultReportsKeymap = ReportsKeyMap{reportsKeymapNextActionReportMatchers= listMatchers []}

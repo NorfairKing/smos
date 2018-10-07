@@ -40,6 +40,7 @@ import Smos.Monad
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
+    , configReportsKeyMap :: ReportsKeyMap
     , configReportConfig :: SmosReportConfig
     } deriving (Generic)
 
@@ -99,6 +100,17 @@ instance Monoid KeyMap where
             , keyMapLogbookMatchers = mempty
             , keyMapAnyMatchers = mempty
             }
+
+data ReportsKeyMap = ReportsKeyMap
+    { reportsKeymapNextActionReportMatchers :: KeyMappings
+    } deriving (Generic)
+
+instance Semigroup ReportsKeyMap where
+    rkm1 <> rkm2 =
+        ReportsKeyMap {reportsKeymapNextActionReportMatchers = reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2}
+
+instance Monoid ReportsKeyMap where
+    mempty = ReportsKeyMap {reportsKeymapNextActionReportMatchers = mempty}
 
 type KeyMappings = [KeyMapping]
 
@@ -293,6 +305,7 @@ instance Validity KeyCombination
 
 data EditorCursor = EditorCursor
     { editorCursorFileCursor :: Maybe SmosFileCursor
+    , editorCursorReportCursor :: Maybe ReportCursor
     , editorCursorHelpCursor :: Maybe HelpCursor
     , editorCursorSelection :: EditorSelection
     , editorCursorDebug :: Bool
@@ -305,6 +318,7 @@ instance Validity EditorCursor
 -- Cannot factor this out because of the problem with help cursor.
 data EditorSelection
     = EditorSelected
+    | ReportSelected
     | HelpSelected
     deriving (Show, Eq, Generic)
 
@@ -315,6 +329,7 @@ makeEditorCursor sf =
     EditorCursor
         { editorCursorFileCursor =
               fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
+        , editorCursorReportCursor = Nothing
         , editorCursorHelpCursor = Nothing
         , editorCursorSelection = EditorSelected
         , editorCursorDebug = False
@@ -378,3 +393,9 @@ editorCursorHideDebug = editorCursorDebugL .~ False
 
 editorCursorToggleDebug :: EditorCursor -> EditorCursor
 editorCursorToggleDebug = editorCursorDebugL %~ not
+
+newtype ReportCursor =
+    ReportCursor [Int]
+    deriving (Show, Eq, Generic)
+
+instance Validity ReportCursor

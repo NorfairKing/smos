@@ -130,3 +130,6 @@ toggleDebug =
         , actionFunc = modifyEditorCursor editorCursorToggleDebug
         , actionDescription = "Toggle the debug page to be shown"
         }
+
+reportNextActions :: Action
+reportNextActions = Action { actionName = "reportNextActions", actionFunc = undefined, actionDescription = "Next action report"}
