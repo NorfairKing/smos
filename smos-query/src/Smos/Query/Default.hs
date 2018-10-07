@@ -3,8 +3,8 @@ module Smos.Query.Default where
 import Smos.Query
 
 defaultSmosQuery :: IO ()
-defaultSmosQuery = smosQuery
+defaultSmosQuery = smosQuery defaultSmosQueryConfig
 
 defaultSmosQueryConfig :: SmosQueryConfig
-defaultSmosQueryConfig = SmosQueryConfig
-
+defaultSmosQueryConfig =
+    SmosQueryConfig {smosQueryConfigReportConfig = defaultReportConfig}

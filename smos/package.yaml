@@ -30,6 +30,7 @@ library:
   - safe
   - smos-cursor
   - smos-data
+  - smos-report
   - text
   - time
   - unordered-containers

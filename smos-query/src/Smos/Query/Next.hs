@@ -14,20 +14,23 @@ import Rainbow
 import Smos.Report.Next
 import Smos.Report.Streaming
 
+import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-next :: Settings -> IO ()
-next Settings {..} = do
-    tups <-
-        sourceToList $
-        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint .|
-        smosFileEntries .|
-        C.filter (isNextAction . snd) .|
-        C.map (uncurry makeNextActionEntry)
-    putTableLn $ renderNextActionReport tups
+next :: Q ()
+next = do
+    wd <- askWorkDir
+    liftIO $ do
+        tups <-
+            sourceToList $
+            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+            parseSmosFiles wd .|
+            printShouldPrint PrintWarning .|
+            smosFileEntries .|
+            C.filter (isNextAction . snd) .|
+            C.map (uncurry makeNextActionEntry)
+        putTableLn $ renderNextActionReport tups
 
 renderNextActionReport :: [NextActionEntry] -> Table
 renderNextActionReport = formatAsTable . map formatNextActionEntry

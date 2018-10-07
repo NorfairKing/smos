@@ -19,21 +19,24 @@ import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Streaming
 
+import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-agenda :: AgendaSettings -> Settings -> IO ()
-agenda AgendaSettings {..} Settings {..} = do
-    now <- getZonedTime
-    tups <-
-        sourceToList $
-        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint .|
-        smosFileEntries .|
-        C.concatMap (uncurry makeAgendaEntry) .|
-        C.filter (fitsHistoricity now agendaSetHistoricity)
-    putTableLn $ renderAgendaReport $ sortOn agendaEntryTimestamp tups
+agenda :: AgendaSettings -> Q ()
+agenda AgendaSettings {..} = do
+    wd <- askWorkDir
+    liftIO $ do
+        now <- getZonedTime
+        tups <-
+            sourceToList $
+            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+            parseSmosFiles wd .|
+            printShouldPrint PrintWarning .|
+            smosFileEntries .|
+            C.concatMap (uncurry makeAgendaEntry) .|
+            C.filter (fitsHistoricity now agendaSetHistoricity)
+        putTableLn $ renderAgendaReport $ sortOn agendaEntryTimestamp tups
 
 renderAgendaReport :: [AgendaEntry] -> Table
 renderAgendaReport = formatAsTable . map formatAgendaEntry

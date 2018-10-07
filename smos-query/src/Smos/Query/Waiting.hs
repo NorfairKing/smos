@@ -18,21 +18,24 @@ import Rainbow
 import Smos.Report.Streaming
 import Smos.Report.Waiting
 
+import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-waiting :: Settings -> IO ()
-waiting Settings {..} = do
-    tups <-
-        sourceToList $
-        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint .|
-        smosFileEntries .|
-        C.filter (isWaitingAction . snd) .|
-        C.map (uncurry makeWaitingActionEntry)
-    now <- getCurrentTime
-    putTableLn $ renderWaitingActionReport now tups
+waiting :: Q ()
+waiting = do
+    wd <- askWorkDir
+    liftIO $ do
+        tups <-
+            sourceToList $
+            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+            parseSmosFiles wd .|
+            printShouldPrint PrintWarning .|
+            smosFileEntries .|
+            C.filter (isWaitingAction . snd) .|
+            C.map (uncurry makeWaitingActionEntry)
+        now <- getCurrentTime
+        putTableLn $ renderWaitingActionReport now tups
 
 renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =

@@ -18,6 +18,7 @@ library:
   - containers
   - cursor
   - filepath
+  - mtl
   - optparse-applicative
   - path
   - path-io

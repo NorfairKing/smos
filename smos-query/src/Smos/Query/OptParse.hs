@@ -13,6 +13,7 @@ import Path.IO
 import Options.Applicative
 
 import Smos.Data
+import Smos.Query.Config
 import Smos.Query.OptParse.Types
 
 getInstructions :: IO Instructions
@@ -22,18 +23,10 @@ getInstructions = do
     (,) (getDispatch cmd) <$> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
-getConfig Flags {..} = pure Configuration
+getConfig Flags = pure Configuration
 
 getSettings :: Flags -> Configuration -> IO Settings
-getSettings Flags {..} Configuration = do
-    setWorkDir <-
-        case flagWorkDir of
-            Nothing -> error "No work directory was provided."
-            Just dir -> resolveDir' dir
-    let setShouldPrint = fromMaybe defaultShouldPrint flagShouldPrint
-    pure Settings {..}
-  where
-    defaultShouldPrint = PrintWarning
+getSettings Flags Configuration = pure Settings
 
 getDispatch :: Command -> Dispatch
 getDispatch CommandWaiting = DispatchWaiting
@@ -144,38 +137,4 @@ parseCommandAgenda = info parser modifier
           pure Nothing))
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> configFileParser <*> workDirParser <*> shouldPrintParser
-
-workDirParser :: Parser (Maybe FilePath)
-workDirParser =
-    option
-        (Just <$> str)
-        (mconcat
-             [ long "work-dir"
-             , help "Workflow directory"
-             , value Nothing
-             , metavar "FILEPATH"
-             ])
-
-configFileParser :: Parser (Maybe FilePath)
-configFileParser =
-    option
-        (Just <$> str)
-        (mconcat
-             [ long "config-file"
-             , help "Configuration file"
-             , value Nothing
-             , metavar "FILEPATH"
-             ])
-
-shouldPrintParser :: Parser (Maybe ShouldPrint)
-shouldPrintParser =
-    option
-        (Just <$> maybeReader parseShouldPrint)
-        (mconcat
-             [ long "should-print"
-             , help
-                   "This describes whether error messages should be handled as errors (\"error\"), warnings (\"warning\") or ignored (\"nothing\")."
-             , value Nothing
-             , metavar "shouldPrint"
-             ])
+parseFlags = pure Flags

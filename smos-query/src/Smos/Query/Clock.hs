@@ -23,26 +23,29 @@ import Conduit
 import Smos.Report.Clock
 import Smos.Report.Streaming
 
+import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-clock :: ClockSettings -> Settings -> IO ()
-clock ClockSettings {..} Settings {..} = do
-    tups <-
-        sourceToList $
-        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint .|
-        trimByTags clockSetTags
-    now <- getZonedTime
-    putTableLn $
-        renderClockTable clockSetResolution $
-        makeClockTable $
-        divideIntoBlocks (zonedTimeZone now) clockSetBlock $
-        concatMap
-            (mapMaybe (trimClockTime now clockSetPeriod) .
-             uncurry findClockTimes)
-            tups
+clock :: ClockSettings -> Q ()
+clock ClockSettings {..} = do
+    wd <- askWorkDir
+    liftIO $ do
+        tups <-
+            sourceToList $
+            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+            parseSmosFiles wd .|
+            printShouldPrint PrintWarning .|
+            trimByTags clockSetTags
+        now <- getZonedTime
+        putTableLn $
+            renderClockTable clockSetResolution $
+            makeClockTable $
+            divideIntoBlocks (zonedTimeZone now) clockSetBlock $
+            concatMap
+                (mapMaybe (trimClockTime now clockSetPeriod) .
+                 uncurry findClockTimes)
+                tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
 renderClockTable res = formatAsTable . concatMap goB

@@ -8,7 +8,7 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configAgendaFiles = inHomeDir "workflow"}
+defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =

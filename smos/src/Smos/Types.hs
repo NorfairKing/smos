@@ -34,11 +34,13 @@ import Smos.Data
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Smos.Report.Config
+
 import Smos.Monad
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
-    , configAgendaFiles :: AgendaFileSpec
+    , configReportConfig :: SmosReportConfig
     } deriving (Generic)
 
 data KeyMap = KeyMap
@@ -134,10 +136,6 @@ actionUsing name func =
         , actionUsingFunc = func
         , actionUsingDescription = ""
         }
-
-data AgendaFileSpec =
-    AgendaFileSpec (IO (Path Abs Dir))
-    deriving (Generic)
 
 data AnyAction
     = PlainAction Action
