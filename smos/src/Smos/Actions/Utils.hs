@@ -184,7 +184,7 @@ modifyEmptyFile = modifyEmptyFileS . pure
 
 modifyEmptyFileS :: SmosM SmosFileCursor -> SmosM ()
 modifyEmptyFileS func =
-    modifyMFileCursorS $ \case
+    modifyMFileCursorMS $ \case
         Nothing -> Just <$> func
         _ -> pure Nothing
 
@@ -196,7 +196,7 @@ modifyFileCursor func = modifyMFileCursor $ Just . func
 
 modifyFileCursorS :: (SmosFileCursor -> SmosM SmosFileCursor) -> SmosM ()
 modifyFileCursorS func =
-    modifyMFileCursorS $ \mc ->
+    modifyMFileCursorMS $ \mc ->
         case mc of
             Nothing -> pure Nothing
             Just c -> Just <$> func c
@@ -217,11 +217,25 @@ modifyFileCursorD func =
             Updated sfc' -> pure sfc'
 
 modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
-modifyMFileCursorM func = modifyMFileCursorS $ pure . func
+modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 
-modifyMFileCursorS ::
+modifyMFileCursorMS ::
        (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
+modifyMFileCursorMS func =
+    modifyEditorCursorS $ editorCursorSmosFileCursorL func
+
+modifyHelpCursorM :: (HelpCursor -> Maybe HelpCursor) -> SmosM ()
+modifyHelpCursorM func = modifyHelpCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyHelpCursor :: (HelpCursor -> HelpCursor) -> SmosM ()
+modifyHelpCursor func = modifyMHelpCursorM $ fmap func
+
+modifyMHelpCursorM :: (Maybe HelpCursor -> Maybe HelpCursor) -> SmosM ()
+modifyMHelpCursorM func = modifyMHelpCursorMS $ pure . func
+
+modifyMHelpCursorMS ::
+       (Maybe HelpCursor -> SmosM (Maybe HelpCursor)) -> SmosM ()
+modifyMHelpCursorMS func = modifyEditorCursorS $ editorCursorHelpCursorL func
 
 modifyEditorCursorM :: (EditorCursor -> Maybe EditorCursor) -> SmosM ()
 modifyEditorCursorM func = modifyEditorCursor $ \ec -> fromMaybe ec $ func ec

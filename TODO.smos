@@ -520,6 +520,11 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-09-29 10:41:15.921361869000+0000
+        - header: Deleting the root of a collapsed tree, should uncollapse the tree
+            or just delete the entire tree.
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 11:46:45.875138860000+0000
       - entry:
           header: Entry
           state-history:

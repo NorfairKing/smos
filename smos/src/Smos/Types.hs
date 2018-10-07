@@ -3,6 +3,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -30,6 +31,7 @@ import Cursor.Simple.List.NonEmpty
 
 import Smos.Data
 
+import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
 import Smos.Monad
@@ -160,7 +162,7 @@ data SmosState = SmosState
 data KeyPress =
     KeyPress Key
              [Modifier]
-    deriving (Show, Eq, Ord,Generic)
+    deriving (Show, Eq, Ord, Generic)
 
 instance Validity KeyPress where
     validate _ = valid -- TODO no validity instances for VTY types
@@ -208,10 +210,17 @@ stop =
 -- SmosState <- SmosM
 --
 -- and EditorCursor depends on HelpCursor, so that has the same problem
-type HelpCursor = NonEmptyCursor KeyHelpCursor
+data HelpCursor = HelpCursor
+    { helpCursorTitle :: Text
+    , helpCursorKeyHelpCursors :: NonEmptyCursor KeyHelpCursor
+    } deriving (Show, Eq, Generic)
 
-makeHelpCursor :: KeyMappings -> Maybe HelpCursor
-makeHelpCursor = fmap (makeNonEmptyCursor) . NE.nonEmpty . map go
+instance Validity HelpCursor
+
+makeHelpCursor :: Text -> KeyMappings -> Maybe HelpCursor
+makeHelpCursor title kms = do
+    ne <- NE.nonEmpty $ map go kms
+    pure $ HelpCursor {helpCursorTitle = title, helpCursorKeyHelpCursors = makeNonEmptyCursor ne}
   where
     go :: KeyMapping -> KeyHelpCursor
     go km =
@@ -240,6 +249,16 @@ makeHelpCursor = fmap (makeNonEmptyCursor) . NE.nonEmpty . map go
                         { keyHelpCursorKeyBinding =
                               PressCombination kp $ keyHelpCursorKeyBinding khc
                         }
+
+helpCursorKeyHelpCursorsL :: Lens' HelpCursor (NonEmptyCursor KeyHelpCursor)
+helpCursorKeyHelpCursorsL =
+    lens helpCursorKeyHelpCursors $ \hc ne -> hc {helpCursorKeyHelpCursors = ne}
+
+helpCursorUp :: HelpCursor -> Maybe HelpCursor
+helpCursorUp = helpCursorKeyHelpCursorsL nonEmptyCursorSelectPrev
+
+helpCursorDown :: HelpCursor -> Maybe HelpCursor
+helpCursorDown = helpCursorKeyHelpCursorsL nonEmptyCursorSelectNext
 
 data KeyHelpCursor = KeyHelpCursor
     { keyHelpCursorKeyBinding :: KeyCombination
@@ -297,6 +316,10 @@ editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =
     lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
 
+editorCursorHelpCursorL :: Lens' EditorCursor (Maybe HelpCursor)
+editorCursorHelpCursorL =
+    lens editorCursorHelpCursor $ \ec msfc -> ec {editorCursorHelpCursor = msfc}
+
 editorCursorSelectionL :: Lens' EditorCursor EditorSelection
 editorCursorSelectionL =
     lens editorCursorSelection $ \ec es -> ec {editorCursorSelection = es}
@@ -304,8 +327,38 @@ editorCursorSelectionL =
 editorCursorSelectEditor :: EditorCursor -> EditorCursor
 editorCursorSelectEditor = editorCursorSelectionL .~ EditorSelected
 
-editorCursorSelectHelp :: EditorCursor -> EditorCursor
-editorCursorSelectHelp = editorCursorSelectionL .~ HelpSelected
+editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
+editorCursorSwitchToHelp KeyMap {..} ec =
+    ec
+        { editorCursorHelpCursor =
+              case editorCursorFileCursor ec of
+                  Nothing -> makeHelpCursor "Empty file" keyMapEmptyMatchers
+                  Just sfc ->
+                      case sfc ^. smosFileCursorEntrySelectionL of
+                          WholeEntrySelected ->
+                              makeHelpCursor "Entry" keyMapEntryMatchers
+                          HeaderSelected ->
+                              makeHelpCursor "Header" keyMapHeaderMatchers
+                          ContentsSelected ->
+                              makeHelpCursor "Contents" keyMapContentsMatchers
+                          TimestampsSelected ->
+                              makeHelpCursor
+                                  "Timestamps"
+                                  keyMapTimestampsMatchers
+                          PropertiesSelected ->
+                              makeHelpCursor
+                                  "Properties"
+                                  keyMapPropertiesMatchers
+                          StateHistorySelected ->
+                              makeHelpCursor
+                                  "State History"
+                                  keyMapStateHistoryMatchers
+                          TagsSelected ->
+                              makeHelpCursor "Tags" keyMapTagsMatchers
+                          LogbookSelected ->
+                              makeHelpCursor "Logbook" keyMapLogbookMatchers
+        , editorCursorSelection = HelpSelected
+        }
 
 editorCursorDebugL :: Lens' EditorCursor Bool
 editorCursorDebugL =
