@@ -1,7 +1,7 @@
-module Smos.Report.OptParse.Types
+module Smos.Query.OptParse.Types
     ( module Smos.Report.Clock.Types
     , module Smos.Report.Agenda.Types
-    , module Smos.Report.OptParse.Types
+    , module Smos.Query.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
@@ -41,10 +41,9 @@ data AgendaFlags = AgendaFlags
     { agendaFlagHistoricity :: Maybe AgendaHistoricity
     } deriving (Show, Eq)
 
-data Configuration = Configuration
-    { configWorkDir :: Maybe FilePath
-    , configShouldPrint :: Maybe ShouldPrint
-    } deriving (Show, Eq)
+data Configuration =
+    Configuration
+    deriving (Show, Eq)
 
 data Settings = Settings
     { setWorkDir :: Path Abs Dir

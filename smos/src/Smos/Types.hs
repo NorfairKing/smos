@@ -38,6 +38,7 @@ import Smos.Monad
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
+    , configAgendaFiles :: AgendaFileSpec
     } deriving (Generic)
 
 data KeyMap = KeyMap
@@ -133,6 +134,10 @@ actionUsing name func =
         , actionUsingFunc = func
         , actionUsingDescription = ""
         }
+
+data AgendaFileSpec =
+    AgendaFileSpec (IO (Path Abs Dir))
+    deriving (Generic)
 
 data AnyAction
     = PlainAction Action

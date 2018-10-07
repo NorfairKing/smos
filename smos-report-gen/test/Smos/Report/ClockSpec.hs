@@ -47,5 +47,3 @@ spec = do
     describe "sumLogbookEntryTime" $
         it "produces valid difftimes" $
         producesValidsOnValids sumLogbookEntryTime
-    describe "renderNominalDiffTime" $
-        it "produces valid Text" $ producesValidsOnValids2 renderNominalDiffTime

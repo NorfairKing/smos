@@ -8,7 +8,7 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap}
+defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configAgendaFiles = inHomeDir "workflow"}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -160,4 +160,5 @@ defaultKeyMap =
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
                   ]
+
         }

@@ -1,4 +1,4 @@
-name: smos-report
+name: smos-query
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -14,14 +14,27 @@ library:
   - base
   - bytestring
   - conduit
+  - configurator
   - containers
   - cursor
   - filepath
+  - optparse-applicative
   - path
   - path-io
   - pretty-show
+  - rainbow
+  - rainbox
   - smos-data
+  - smos-report
   - text
   - time
   - validity
   - validity-path
+
+executables:
+  smos-query:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - base
+    - smos-query

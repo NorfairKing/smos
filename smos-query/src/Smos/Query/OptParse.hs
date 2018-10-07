@@ -1,24 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Report.OptParse
-    ( module Smos.Report.OptParse
-    , module Smos.Report.OptParse.Types
-    ) where
+module Smos.Query.OptParse where
 
 import Data.Maybe
 import qualified Data.Text as T
 
 import System.Environment
 
-import Data.Configurator as Configurator
-import Path
 import Path.IO
 
 import Options.Applicative
 
 import Smos.Data
-import Smos.Report.OptParse.Types
+import Smos.Query.OptParse.Types
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -27,22 +22,15 @@ getInstructions = do
     (,) (getDispatch cmd) <$> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
-getConfig Flags {..} = do
-    configPath <- fromMaybe defaultConfigFile $ resolveFile' <$> flagConfigFile
-    config <- load [Optional $ toFilePath configPath]
-    Configuration <$> Configurator.lookup config "workDir" <*>
-        Configurator.lookup config "shouldPrint"
-  where
-    defaultConfigFile = (</>) <$> getHomeDir <*> parseRelFile ".smosrc"
+getConfig Flags {..} = pure Configuration
 
 getSettings :: Flags -> Configuration -> IO Settings
-getSettings Flags {..} Configuration {..} = do
+getSettings Flags {..} Configuration = do
     setWorkDir <-
-        case flagWorkDir <|> configWorkDir of
+        case flagWorkDir of
             Nothing -> error "No work directory was provided."
             Just dir -> resolveDir' dir
-    let setShouldPrint =
-            fromMaybe defaultShouldPrint $ flagShouldPrint <|> configShouldPrint
+    let setShouldPrint = fromMaybe defaultShouldPrint flagShouldPrint
     pure Settings {..}
   where
     defaultShouldPrint = PrintWarning

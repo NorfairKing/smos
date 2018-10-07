@@ -2,6 +2,7 @@ module Smos.Config
     ( SmosConfig(..)
     , module Smos.Actions
     , Map
+    -- Matchers
     , listMatchers
     , exactString
     , combo
@@ -18,12 +19,15 @@ module Smos.Config
     , action
     , ActionUsing(..)
     , stop
+    -- Agenda file spec
+    , inHomeDir
     , module Graphics.Vty.Input.Events
     ) where
 
 import Data.Map (Map)
 
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
+import Path.IO
 
 import Smos.Actions
 import Smos.Types
@@ -62,3 +66,9 @@ anyChar = MapAnyTypeableChar
 
 catchAll :: Action -> KeyMapping
 catchAll = MapCatchAll
+
+inHomeDir :: FilePath -> AgendaFileSpec
+inHomeDir fp =
+    AgendaFileSpec $ do
+        home <- getHomeDir
+        resolveDir home fp

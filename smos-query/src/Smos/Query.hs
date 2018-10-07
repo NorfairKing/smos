@@ -1,15 +1,18 @@
-module Smos.Report
-    ( report
+module Smos.Query
+    ( smosQuery
+    , module Smos.Query.Config
     ) where
 
-import Smos.Report.Agenda
-import Smos.Report.Clock
-import Smos.Report.Next
-import Smos.Report.OptParse
-import Smos.Report.Waiting
+import Smos.Query.Agenda
+import Smos.Query.Clock
+import Smos.Query.Next
+import Smos.Query.OptParse
+import Smos.Query.Config
+import Smos.Query.OptParse.Types
+import Smos.Query.Waiting
 
-report :: IO ()
-report = do
+smosQuery :: IO ()
+smosQuery = do
     (disp, set) <- getInstructions
     execute disp set
 
