@@ -667,6 +667,30 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-10-06 08:55:12.818114258000+0000
+      - entry:
+          header: Interactive reports
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 16:50:32.020845922000+0000
+        forest:
+        - header: Next actions
+          state-history:
+          - new-state: DONE
+            timestamp: 2018-10-07 16:50:55.676424467000+0000
+          - new-state: TODO
+            timestamp: 2018-10-07 16:50:48.004747025000+0000
+        - header: waiting
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 16:50:47.652844947000+0000
+        - header: agenda
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 16:50:47.300739105000+0000
+        - header: clock?
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-07 16:50:46.972789664000+0000
   - entry:
       header: Quality of life
       state-history:

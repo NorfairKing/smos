@@ -14,6 +14,7 @@ final:
               "smos-report"
               "smos-report-gen"
               "smos-report-cursor"
+              "smos-report-cursor-gen"
               "smos-query"
               "smos-convert-org"
             ] smosPkg;

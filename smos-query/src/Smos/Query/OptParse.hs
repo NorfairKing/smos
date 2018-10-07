@@ -8,12 +8,9 @@ import qualified Data.Text as T
 
 import System.Environment
 
-import Path.IO
-
 import Options.Applicative
 
 import Smos.Data
-import Smos.Query.Config
 import Smos.Query.OptParse.Types
 
 getInstructions :: IO Instructions

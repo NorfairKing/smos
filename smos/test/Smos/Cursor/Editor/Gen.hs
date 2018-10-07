@@ -7,11 +7,18 @@ import Data.GenValidity
 import Smos.Types
 
 import Smos.Cursor.Help.Gen ()
+import Smos.Cursor.Report.Next.Gen ()
 import Smos.Cursor.SmosFile.Gen ()
 
 instance GenUnchecked EditorCursor
 
 instance GenValid EditorCursor where
+    genValid = genValidStructurally
+    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenUnchecked ReportCursor
+
+instance GenValid ReportCursor where
     genValid = genValidStructurally
     shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
