@@ -24,9 +24,6 @@ spec = do
     describe "editorCursorSmosFileCursorL" $
         lensSpecOnValid editorCursorSmosFileCursorL
     describe "editorCursorSelectionL" $ lensSpecOnValid editorCursorSelectionL
-    describe "editorCursorSelectEditor" $
-        it "produces valid cursors" $
-        producesValidsOnValids editorCursorSelectEditor
     describe "editorCursorDebugL" $ lensSpecOnValid editorCursorDebugL
     describe "editorCursorShowDebug" $
         it "produces valid cursors" $

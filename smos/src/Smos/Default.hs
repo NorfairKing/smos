@@ -8,7 +8,12 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap}
+defaultConfig =
+    SmosConfig
+        { configKeyMap = defaultKeyMap
+        , configReportsKeyMap = defaultReportsKeymap
+        , configReportConfig = defaultReportConfig
+        }
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -19,6 +24,8 @@ defaultKeyMap =
                   , exactKey KEsc stop
                   , exactChar 'h' startHeaderFromEmptyAndSelectHeader
                   , exactChar 'H' startHeaderFromEmptyAndSelectHeader
+                  -- Reports
+                  , exactString "rn" reportNextActions
                   ]
         , keyMapEntryMatchers =
               listMatchers
@@ -77,6 +84,8 @@ defaultKeyMap =
                   -- Clocking
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
+                  -- Reports
+                  , exactString "rn" reportNextActions
                   -- Collapsing
                   , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
@@ -159,5 +168,26 @@ defaultKeyMap =
                   [ exactChar 'u' undo
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+                  ]
+        }
+
+defaultReportsKeymap :: ReportsKeyMap
+defaultReportsKeymap =
+    ReportsKeyMap
+        { reportsKeymapNextActionReportMatchers =
+              listMatchers
+                  [ exactKey KUp prevNextAction
+                  , exactChar 'k' prevNextAction
+                  , exactKey KDown nextNextAction
+                  , exactChar 'j' nextNextAction
+                  , exactKey KEsc selectEditor
+                  , exactKey KHome firstNextAction
+                  , exactString "gg" firstNextAction
+                  , exactKey KEnd lastNextAction
+                  , exactChar 'G' lastNextAction
+                  , exactChar 'q' selectEditor
+                  , exactKey KEnter enterNextActionFile
+                  , exactChar '?' selectHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   ]
         }

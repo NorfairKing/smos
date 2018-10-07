@@ -19,6 +19,7 @@ module Smos.Actions.Utils
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.Logbook
+    , module Smos.Cursor.Report.Next
     , module Smos.Cursor.SmosFile
     , module Smos.Cursor.StateHistory
     , module Smos.Cursor.Tags
@@ -36,6 +37,7 @@ import Smos.Cursor.Contents
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
+import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
@@ -236,6 +238,43 @@ modifyMHelpCursorM func = modifyMHelpCursorMS $ pure . func
 modifyMHelpCursorMS ::
        (Maybe HelpCursor -> SmosM (Maybe HelpCursor)) -> SmosM ()
 modifyMHelpCursorMS func = modifyEditorCursorS $ editorCursorHelpCursorL func
+
+modifyNextActionReportCursorM ::
+       (NextActionReportCursor -> Maybe NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursorM func =
+    modifyNextActionReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyNextActionReportCursor ::
+       (NextActionReportCursor -> NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursor func = modifyNextActionReportCursorS $ pure. func
+
+modifyNextActionReportCursorS ::
+       (NextActionReportCursor -> SmosM NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursorS func =
+    modifyReportCursorS $ \rc ->
+        case rc of
+            ReportNextActions narc -> ReportNextActions <$> func narc
+
+modifyReportCursorM :: (ReportCursor -> Maybe ReportCursor) -> SmosM ()
+modifyReportCursorM func = modifyReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyReportCursor :: (ReportCursor -> ReportCursor) -> SmosM ()
+modifyReportCursor func = modifyMReportCursorM $ fmap func
+
+modifyMReportCursorM :: (Maybe ReportCursor -> Maybe ReportCursor) -> SmosM ()
+modifyMReportCursorM func = modifyMReportCursorMS $ pure . func
+
+modifyReportCursorS :: (ReportCursor -> SmosM ReportCursor) -> SmosM ()
+modifyReportCursorS func =
+    modifyMReportCursorMS $ \mrc ->
+        case mrc of
+            Nothing -> pure Nothing
+            Just rc -> Just <$> func rc
+
+modifyMReportCursorMS ::
+       (Maybe ReportCursor -> SmosM (Maybe ReportCursor)) -> SmosM ()
+modifyMReportCursorMS func =
+    modifyEditorCursorS $ editorCursorReportCursorL func
 
 modifyEditorCursorM :: (EditorCursor -> Maybe EditorCursor) -> SmosM ()
 modifyEditorCursorM func = modifyEditorCursor $ \ec -> fromMaybe ec $ func ec

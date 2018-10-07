@@ -1,0 +1,41 @@
+name: smos-query
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - base
+  - bytestring
+  - conduit
+  - configurator
+  - containers
+  - cursor
+  - filepath
+  - mtl
+  - optparse-applicative
+  - path
+  - path-io
+  - pretty-show
+  - rainbow
+  - rainbox
+  - smos-data
+  - smos-report
+  - text
+  - time
+  - validity
+  - validity-path
+
+executables:
+  smos-query:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - base
+    - smos-query

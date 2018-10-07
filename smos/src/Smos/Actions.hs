@@ -9,26 +9,29 @@ module Smos.Actions
     , module Smos.Actions
     , module Smos.Actions.Contents
     , module Smos.Actions.Entry
+    , module Smos.Actions.File
     , module Smos.Actions.Forest
     , module Smos.Actions.Header
     , module Smos.Actions.Help
     , module Smos.Actions.Logbook
+    , module Smos.Actions.Report
     , module Smos.Actions.Tags
     , module Smos.Actions.Timestamps
     , module Smos.Actions.Undo
     , module Smos.Actions.Utils
     ) where
 
-import Smos.Data
 
 import Smos.Types
 
-import Smos.Actions.Help
 import Smos.Actions.Contents
 import Smos.Actions.Entry
+import Smos.Actions.File
 import Smos.Actions.Forest
 import Smos.Actions.Header
+import Smos.Actions.Help
 import Smos.Actions.Logbook
+import Smos.Actions.Report
 import Smos.Actions.Tags
 import Smos.Actions.Timestamps
 import Smos.Actions.Undo
@@ -69,18 +72,6 @@ allUsingCharActions =
         , allUndoUsingCharActions
         ]
 
-saveFile :: Action
-saveFile =
-    Action
-        { actionName = "saveFile"
-        , actionFunc =
-              do SmosState {..} <- get
-                 let sf' = rebuildEditorCursor smosStateCursor
-                 when (smosStateStartSmosFile /= Just sf') $
-                     liftIO $ writeSmosFile smosStateFilePath sf'
-        , actionDescription = "Save the current file"
-        }
-
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =
     Action
@@ -93,9 +84,11 @@ selectHelp :: Action
 selectHelp =
     Action
         { actionName = "selectHelp"
-        , actionFunc = modifyEditorCursorS $ \ec -> do
-            km <- asks configKeyMap
-            pure $ editorCursorSwitchToHelp km ec
+        , actionFunc =
+              modifyEditorCursorS $ \ec -> do
+                  km <- asks configKeyMap
+                  rkm <- asks configReportsKeyMap
+                  pure $ editorCursorSwitchToHelp km rkm ec
         , actionDescription = "Show the (contextual) help screen"
         }
 
@@ -103,7 +96,7 @@ selectEditor :: Action
 selectEditor =
     Action
         { actionName = "selectEditor"
-        , actionFunc = modifyEditorCursor editorCursorSelectEditor
+        , actionFunc = modifyEditorCursor editorCursorSwitchToFile
         , actionDescription = "Hide the help screen"
         }
 

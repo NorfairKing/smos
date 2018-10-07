@@ -30,6 +30,8 @@ library:
   - safe
   - smos-cursor
   - smos-data
+  - smos-report
+  - smos-report-cursor
   - text
   - time
   - unordered-containers
@@ -84,6 +86,8 @@ tests:
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - smos-report-cursor
+    - smos-report-cursor-gen
     - text
     - vty
 

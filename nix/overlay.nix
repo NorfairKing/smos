@@ -13,6 +13,9 @@ final:
               "smos-cursor-gen"
               "smos-report"
               "smos-report-gen"
+              "smos-report-cursor"
+              "smos-report-cursor-gen"
+              "smos-query"
               "smos-convert-org"
             ] smosPkg;
       haskellPackages = previous.haskellPackages.override (old: {

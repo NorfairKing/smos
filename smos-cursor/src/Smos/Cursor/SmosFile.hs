@@ -2,6 +2,7 @@ module Smos.Cursor.SmosFile
     ( SmosFileCursor
     , makeSmosFileCursor
     , rebuildSmosFileCursor
+    , rebuildSmosFileCursorEntirely
     , startSmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
@@ -62,6 +63,10 @@ rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor =
     NE.map (rebuildCTree . fmap rebuildCollapseEntry) .
     rebuildForestCursor (collapseEntryValueL %~ rebuildEntryCursor)
+
+rebuildSmosFileCursorEntirely :: SmosFileCursor -> SmosFile
+rebuildSmosFileCursorEntirely =
+    SmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =

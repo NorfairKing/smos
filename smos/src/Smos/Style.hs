@@ -54,6 +54,7 @@ defaultAttrMap _ =
             , (timestampNameSpecificAttr "SCHEDULED", fg orange)
             , (timestampNameSpecificAttr "DEADLINE", fg red)
             , (selectedAttr <> tagAttr, fg brightWhite)
+            , (selectedAttr <> headerAttr, fg brightWhite)
             ] $
         attrMap
             defAttr

@@ -2,6 +2,7 @@ module Smos.Config
     ( SmosConfig(..)
     , module Smos.Actions
     , Map
+    -- Matchers
     , listMatchers
     , exactString
     , combo
@@ -13,17 +14,22 @@ module Smos.Config
     , anyChar
     , catchAll
     , KeyMap(..)
+    , ReportsKeyMap(..)
     , KeyMapping(..)
     , KeyMappings
     , action
     , ActionUsing(..)
     , stop
     , module Graphics.Vty.Input.Events
+    -- Report config
+    , module Smos.Report.Config
     ) where
 
 import Data.Map (Map)
 
 import Graphics.Vty.Input.Events (Key(..), Modifier(..))
+
+import Smos.Report.Config
 
 import Smos.Actions
 import Smos.Types

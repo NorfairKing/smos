@@ -34,10 +34,15 @@ import Smos.Data
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Smos.Cursor.Report.Next
+import Smos.Report.Config
+
 import Smos.Monad
 
 data SmosConfig = SmosConfig
     { configKeyMap :: KeyMap
+    , configReportsKeyMap :: ReportsKeyMap
+    , configReportConfig :: SmosReportConfig
     } deriving (Generic)
 
 data KeyMap = KeyMap
@@ -96,6 +101,21 @@ instance Monoid KeyMap where
             , keyMapLogbookMatchers = mempty
             , keyMapAnyMatchers = mempty
             }
+
+data ReportsKeyMap = ReportsKeyMap
+    { reportsKeymapNextActionReportMatchers :: KeyMappings
+    } deriving (Generic)
+
+instance Semigroup ReportsKeyMap where
+    rkm1 <> rkm2 =
+        ReportsKeyMap
+            { reportsKeymapNextActionReportMatchers =
+                  reportsKeymapNextActionReportMatchers rkm1 <>
+                  reportsKeymapNextActionReportMatchers rkm2
+            }
+
+instance Monoid ReportsKeyMap where
+    mempty = ReportsKeyMap {reportsKeymapNextActionReportMatchers = mempty}
 
 type KeyMappings = [KeyMapping]
 
@@ -290,6 +310,7 @@ instance Validity KeyCombination
 
 data EditorCursor = EditorCursor
     { editorCursorFileCursor :: Maybe SmosFileCursor
+    , editorCursorReportCursor :: Maybe ReportCursor
     , editorCursorHelpCursor :: Maybe HelpCursor
     , editorCursorSelection :: EditorSelection
     , editorCursorDebug :: Bool
@@ -301,7 +322,8 @@ instance Validity EditorCursor
 --
 -- Cannot factor this out because of the problem with help cursor.
 data EditorSelection
-    = EditorSelected
+    = FileSelected
+    | ReportSelected
     | HelpSelected
     deriving (Show, Eq, Generic)
 
@@ -312,15 +334,15 @@ makeEditorCursor sf =
     EditorCursor
         { editorCursorFileCursor =
               fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
+        , editorCursorReportCursor = Nothing
         , editorCursorHelpCursor = Nothing
-        , editorCursorSelection = EditorSelected
+        , editorCursorSelection = FileSelected
         , editorCursorDebug = False
         }
 
 rebuildEditorCursor :: EditorCursor -> SmosFile
 rebuildEditorCursor =
-    SmosFile .
-    maybe [] NE.toList . fmap rebuildSmosFileCursor . editorCursorFileCursor
+    maybe emptySmosFile rebuildSmosFileCursorEntirely .editorCursorFileCursor
 
 editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =
@@ -330,38 +352,14 @@ editorCursorHelpCursorL :: Lens' EditorCursor (Maybe HelpCursor)
 editorCursorHelpCursorL =
     lens editorCursorHelpCursor $ \ec msfc -> ec {editorCursorHelpCursor = msfc}
 
+editorCursorReportCursorL :: Lens' EditorCursor (Maybe ReportCursor)
+editorCursorReportCursorL =
+    lens editorCursorReportCursor $ \ec msfc ->
+        ec {editorCursorReportCursor = msfc}
+
 editorCursorSelectionL :: Lens' EditorCursor EditorSelection
 editorCursorSelectionL =
     lens editorCursorSelection $ \ec es -> ec {editorCursorSelection = es}
-
-editorCursorSelectEditor :: EditorCursor -> EditorCursor
-editorCursorSelectEditor = editorCursorSelectionL .~ EditorSelected
-
-editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
-editorCursorSwitchToHelp KeyMap {..} ec =
-    ec
-        { editorCursorHelpCursor =
-              (\(t, ms) ->
-                   makeHelpCursor t $
-                   ms ++ keyMapAnyMatchers ++ keyMapHelpMatchers) $
-              case editorCursorFileCursor ec of
-                  Nothing -> ("Empty file", keyMapEmptyMatchers)
-                  Just sfc ->
-                      case sfc ^. smosFileCursorEntrySelectionL of
-                          WholeEntrySelected -> ("Entry", keyMapEntryMatchers)
-                          HeaderSelected -> ("Header", keyMapHeaderMatchers)
-                          ContentsSelected ->
-                              ("Contents", keyMapContentsMatchers)
-                          TimestampsSelected ->
-                              ("Timestamps", keyMapTimestampsMatchers)
-                          PropertiesSelected ->
-                              ("Properties", keyMapPropertiesMatchers)
-                          StateHistorySelected ->
-                              ("State History", keyMapStateHistoryMatchers)
-                          TagsSelected -> ("Tags", keyMapTagsMatchers)
-                          LogbookSelected -> ("Logbook", keyMapLogbookMatchers)
-        , editorCursorSelection = HelpSelected
-        }
 
 editorCursorDebugL :: Lens' EditorCursor Bool
 editorCursorDebugL =
@@ -375,3 +373,62 @@ editorCursorHideDebug = editorCursorDebugL .~ False
 
 editorCursorToggleDebug :: EditorCursor -> EditorCursor
 editorCursorToggleDebug = editorCursorDebugL %~ not
+
+editorCursorSwitchToFile :: EditorCursor -> EditorCursor
+editorCursorSwitchToFile ec =
+    ec
+        { editorCursorHelpCursor = Nothing
+        , editorCursorReportCursor = Nothing
+        , editorCursorSelection = FileSelected
+        }
+
+editorCursorSwitchToHelp ::
+       KeyMap -> ReportsKeyMap -> EditorCursor -> EditorCursor
+editorCursorSwitchToHelp KeyMap {..} ReportsKeyMap {..} ec =
+    ec
+        { editorCursorHelpCursor =
+              case editorCursorSelection ec of
+                  FileSelected ->
+                      (\(t, ms) ->
+                           makeHelpCursor t $
+                           ms ++ keyMapAnyMatchers ++ keyMapHelpMatchers) $
+                      case editorCursorFileCursor ec of
+                          Nothing -> ("Empty file", keyMapEmptyMatchers)
+                          Just sfc ->
+                              case sfc ^. smosFileCursorEntrySelectionL of
+                                  WholeEntrySelected ->
+                                      ("Entry", keyMapEntryMatchers)
+                                  HeaderSelected ->
+                                      ("Header", keyMapHeaderMatchers)
+                                  ContentsSelected ->
+                                      ("Contents", keyMapContentsMatchers)
+                                  TimestampsSelected ->
+                                      ("Timestamps", keyMapTimestampsMatchers)
+                                  PropertiesSelected ->
+                                      ("Properties", keyMapPropertiesMatchers)
+                                  StateHistorySelected ->
+                                      ( "State History"
+                                      , keyMapStateHistoryMatchers)
+                                  TagsSelected -> ("Tags", keyMapTagsMatchers)
+                                  LogbookSelected ->
+                                      ("Logbook", keyMapLogbookMatchers)
+                  ReportSelected ->
+                      makeHelpCursor "Next Action Report" $
+                      reportsKeymapNextActionReportMatchers
+                  HelpSelected -> Nothing -- Should not happen
+        , editorCursorSelection = HelpSelected
+        }
+
+editorCursorSwitchToNextActionReport ::
+       NextActionReportCursor -> EditorCursor -> EditorCursor
+editorCursorSwitchToNextActionReport narc ec =
+    ec
+        { editorCursorReportCursor = Just $ ReportNextActions narc
+        , editorCursorSelection = ReportSelected
+        }
+
+newtype ReportCursor =
+    ReportNextActions NextActionReportCursor
+    deriving (Show, Eq, Generic)
+
+instance Validity ReportCursor

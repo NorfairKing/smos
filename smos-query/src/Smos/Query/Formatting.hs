@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.Formatting where
+module Smos.Query.Formatting where
 
 import qualified Data.ByteString as SB
 import Data.Foldable
@@ -49,4 +49,3 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
 
 headerChunk :: Header -> Chunk Text
 headerChunk = fore yellow . chunk . headerText
-

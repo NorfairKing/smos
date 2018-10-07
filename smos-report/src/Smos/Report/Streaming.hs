@@ -6,19 +6,20 @@ module Smos.Report.Streaming where
 import Control.Exception
 
 import Data.List
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
-
 import Data.Tree
 
 import Path
 import Path.IO
 
 import Conduit
+import Cursor.Simple.Forest
 import qualified Data.Conduit.Combinators as C
 
 import Smos.Data
 
-import Smos.Report.OptParse
+import Smos.Report.ShouldPrint
 
 sourceFilesInNonHiddenDirsRecursively ::
        Path Abs Dir -> ConduitT i (Path Rel File) IO ()
@@ -85,3 +86,22 @@ smosFileEntries = C.concatMap $ uncurry go
   where
     go :: Path Rel File -> SmosFile -> [(Path Rel File, Entry)]
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
+
+smosFileCursors ::
+       Monad m
+    => ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
+
+allCursors :: SmosFile -> [ForestCursor Entry]
+allCursors sf =
+    case NE.nonEmpty $ smosFileForest sf of
+        Nothing -> []
+        Just ne -> go (makeForestCursor $ NE.map (cTree True) ne)
+  where
+    go :: ForestCursor Entry -> [ForestCursor Entry]
+    go fc =
+        fc :
+        concat
+            [ maybeToList (forestCursorSelectNextOnSameLevel fc) >>= go
+            , maybeToList (forestCursorSelectBelowAtStart fc) >>= go
+            ]
