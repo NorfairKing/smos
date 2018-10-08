@@ -41,7 +41,7 @@ getDispatch (CommandAgenda AgendaFlags {..}) =
     DispatchAgenda
         AgendaSettings
             { agendaSetHistoricity =
-                  fromMaybe FutureAgenda agendaFlagHistoricity
+                  fromMaybe HistoricalAgenda agendaFlagHistoricity
             }
 
 getArguments :: IO Arguments

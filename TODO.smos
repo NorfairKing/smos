@@ -638,6 +638,10 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-09-30 02:08:48.814851189000+0000
+          - header: +3d should work like +3
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-08 16:47:36.613506648000+0000
     - entry:
         header: Display
         state-history:

@@ -47,5 +47,18 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
         orange = color256 214
         brown = color256 166
 
+timestampNameChunk :: TimestampName -> Chunk Text
+timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
+  where
+    color =
+        case timestampNameText tsn of
+            "BEGIN" -> brown
+            "END" -> brown
+            "SCHEDULED" -> orange
+            "DEADLINE" -> red
+            _ -> mempty
+    orange = color256 214
+    brown = color256 166
+
 headerChunk :: Header -> Chunk Text
 headerChunk = fore yellow . chunk . headerText
