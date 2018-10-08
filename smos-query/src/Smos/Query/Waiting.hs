@@ -8,6 +8,7 @@ module Smos.Query.Waiting
 
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.List
 import Data.Time
 
 import Conduit
@@ -39,7 +40,8 @@ waiting = do
 
 renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-    formatAsTable . map (formatWaitingActionEntry now)
+    formatAsTable .
+    map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
 
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
