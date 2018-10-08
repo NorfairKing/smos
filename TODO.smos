@@ -517,7 +517,10 @@
           can be removed can be stored.
 
           Maybe we don''t want this file in the same directory, so there are a lot
-          of details to work out there.'
+          of details to work out there.
+
+
+          The archive could house the done tasks in this file.'
         state-history:
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
@@ -724,12 +727,6 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-10-07 16:50:46.972789664000+0000
-  - entry:
-      header: Quality of life
-      state-history:
-      - new-state: TODO
-        timestamp: 2018-09-21 08:06:22.847469325000+0000
-    forest:
     - header: Detect conflicting keymappings
       state-history:
       - new-state: TODO

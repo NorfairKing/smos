@@ -8,6 +8,7 @@ module Smos.Actions
     , AnyAction(..)
     , module Smos.Actions
     , module Smos.Actions.Contents
+    , module Smos.Actions.Convenience
     , module Smos.Actions.Entry
     , module Smos.Actions.File
     , module Smos.Actions.Forest
@@ -25,6 +26,7 @@ module Smos.Actions
 import Smos.Types
 
 import Smos.Actions.Contents
+import Smos.Actions.Convenience
 import Smos.Actions.Entry
 import Smos.Actions.File
 import Smos.Actions.Forest

@@ -86,6 +86,8 @@ defaultKeyMap =
                   , exactString "co" forestClockOutEverywhere
                   -- Reports
                   , exactString "rn" reportNextActions
+                  -- Convenience
+                  , exactString " nw" convDoneAndWaitForResponse
                   -- Collapsing
                   , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
