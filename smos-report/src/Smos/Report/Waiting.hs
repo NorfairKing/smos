@@ -12,17 +12,19 @@ import Path
 
 import Smos.Data
 
+import Smos.Report.Streaming
+
 isWaitingAction :: Entry -> Bool
 isWaitingAction entry = entryState entry == Just "WAITING"
 
 data WaitingActionEntry = WaitingActionEntry
     { waitingActionEntryHeader :: Header
     , waitingActionEntryTimestamp :: Maybe UTCTime
-    , waitingActionEntryFilePath :: Path Rel File
+    , waitingActionEntryFilePath :: RootedPath
     } deriving (Show, Eq, Generic)
 
-makeWaitingActionEntry :: Path Rel File -> Entry -> WaitingActionEntry
-makeWaitingActionEntry rf Entry {..} =
+makeWaitingActionEntry :: RootedPath -> Entry -> WaitingActionEntry
+makeWaitingActionEntry rp Entry {..} =
     let time =
             case unStateHistory entryStateHistory of
                 [] -> Nothing
@@ -30,5 +32,5 @@ makeWaitingActionEntry rf Entry {..} =
      in WaitingActionEntry
             { waitingActionEntryHeader = entryHeader
             , waitingActionEntryTimestamp = time
-            , waitingActionEntryFilePath = rf
+            , waitingActionEntryFilePath = rp
             }

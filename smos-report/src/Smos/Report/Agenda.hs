@@ -15,9 +15,10 @@ import Path
 import Smos.Data
 
 import Smos.Report.Agenda.Types
+import Smos.Report.Streaming
 
 data AgendaEntry = AgendaEntry
-    { agendaEntryFilePath :: Path Rel File
+    { agendaEntryFilePath :: RootedPath
     , agendaEntryHeader :: Header
     , agendaEntryTodoState :: Maybe TodoState
     , agendaEntryTimestampName :: TimestampName
@@ -29,14 +30,14 @@ isDone (Just "DONE") = True
 isDone (Just "CANCELLED") = True
 isDone _ = False
 
-makeAgendaEntry :: Path Rel File -> Entry -> [AgendaEntry]
-makeAgendaEntry rf e =
+makeAgendaEntry :: RootedPath -> Entry -> [AgendaEntry]
+makeAgendaEntry rp e =
     flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
         if isDone (entryState e)
             then Nothing
             else Just
                      AgendaEntry
-                         { agendaEntryFilePath = rf
+                         { agendaEntryFilePath = rp
                          , agendaEntryHeader = entryHeader e
                          , agendaEntryTodoState = entryState e
                          , agendaEntryTimestampName = tsn

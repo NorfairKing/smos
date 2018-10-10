@@ -32,11 +32,9 @@ import Conduit
 import Smos.Data
 
 import Smos.Report.Clock.Types
+import Smos.Report.Streaming
 
-trimByTags ::
-       Monad m
-    => [Tag]
-    -> ConduitT (Path Rel File, SmosFile) (Path Rel File, SmosFile) m ()
+trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
 trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
   where
     goF :: Forest Entry -> Forest Entry
@@ -52,15 +50,15 @@ trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
             else Right $ goF fs
 
 data ClockTime = ClockTime
-    { clockTimeFile :: Path Rel File
+    { clockTimeFile :: RootedPath
     , clockTimeHeader :: Header
     , clockTimeEntries :: NonEmpty LogbookEntry
     } deriving (Show, Eq, Generic)
 
 instance Validity ClockTime
 
-findClockTimes :: Path Rel File -> SmosFile -> [ClockTime]
-findClockTimes rf = mapMaybe go . concatMap flatten . smosFileForest
+findClockTimes :: RootedPath -> SmosFile -> [ClockTime]
+findClockTimes rp = mapMaybe go . concatMap flatten . smosFileForest
   where
     go :: Entry -> Maybe ClockTime
     go Entry {..} =
@@ -72,7 +70,7 @@ findClockTimes rf = mapMaybe go . concatMap flatten . smosFileForest
             ne <- NE.nonEmpty es
             pure $
                 ClockTime
-                    { clockTimeFile = rf
+                    { clockTimeFile = rp
                     , clockTimeHeader = entryHeader
                     , clockTimeEntries = ne
                     }
@@ -230,7 +228,7 @@ makeClockTableBlock ClockTimeBlock {..} =
         }
 
 data ClockTableEntry = ClockTableEntry
-    { clockTableEntryFile :: Path Rel File
+    { clockTableEntryFile ::RootedPath
     , clockTableEntryHeader :: Header
     , clockTableEntryTime :: NominalDiffTime
     } deriving (Show, Eq, Generic)

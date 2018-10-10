@@ -4,11 +4,13 @@
 module Smos.Report.Streaming where
 
 import Control.Exception
-
 import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Tree
+import Data.Validity
+import Data.Validity.Path ()
+import GHC.Generics (Generic)
 
 import Path
 import Path.IO
@@ -21,16 +23,25 @@ import Smos.Data
 
 import Smos.Report.ShouldPrint
 
+data RootedPath
+    = Relative (Path Abs Dir)
+               (Path Rel File)
+    | Absolute (Path Abs File)
+    deriving (Show, Eq, Generic)
+
+instance Validity RootedPath
+
 sourceFilesInNonHiddenDirsRecursively ::
-       Path Abs Dir -> ConduitT i (Path Rel File) IO ()
+       Path Abs Dir -> ConduitT i RootedPath IO ()
 sourceFilesInNonHiddenDirsRecursively dir = walkDir go dir
   where
     go :: Path Abs Dir
        -> [Path Abs Dir]
        -> [Path Abs File]
-       -> ConduitT i (Path Rel File) IO WalkAction
+       -> ConduitT i RootedPath IO WalkAction
     go curdir subdirs files = do
-        C.yieldMany $ mapMaybe (stripProperPrefix dir) files
+        C.yieldMany $
+            map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
         pure $ WalkExclude $ filter hidden subdirs
       where
         hidden ad =
@@ -38,16 +49,22 @@ sourceFilesInNonHiddenDirsRecursively dir = walkDir go dir
                 Nothing -> True
                 Just rd -> ("." `isPrefixOf` fromRelDir rd)
 
-filterSmosFiles :: Monad m => ConduitT (Path r File) (Path r File) m ()
-filterSmosFiles = C.filter $ (== ".smos") . fileExtension
+filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
+filterSmosFiles =
+    C.filter $ \f ->
+        case f of
+            Relative _ prf -> fileExtension prf == ".smos"
+            Absolute paf -> fileExtension paf == ".smos"
 
 parseSmosFiles ::
        Path Abs Dir
-    -> ConduitT (Path Rel File) ( Path Rel File
-                                , Either ParseSmosFileException SmosFile) IO ()
+    -> ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
 parseSmosFiles dir =
     C.mapM $ \p -> do
-        let ap = dir </> p
+        let ap =
+                case p of
+                    Relative pad prf -> pad </> prf
+                    Absolute af -> af
         mErrOrSmosFile <- liftIO $ readSmosFile ap
         let ei =
                 case mErrOrSmosFile of
@@ -80,11 +97,10 @@ instance Exception ParseSmosFileException where
     displayException (SmosFileParseError file errMess) =
         "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
-smosFileEntries ::
-       Monad m => ConduitT (Path Rel File, SmosFile) (Path Rel File, Entry) m ()
+smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = C.concatMap $ uncurry go
   where
-    go :: Path Rel File -> SmosFile -> [(Path Rel File, Entry)]
+    go :: a -> SmosFile -> [(a, Entry)]
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
 
 smosFileCursors ::

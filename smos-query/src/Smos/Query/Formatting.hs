@@ -6,12 +6,16 @@ import qualified Data.ByteString as SB
 import Data.Foldable
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
+import qualified Data.Text as T
 import Data.Text (Text)
+import Path
 
 import Rainbow
 import Rainbox as Box
 
 import Smos.Data
+
+import Smos.Report.Streaming
 
 type Table = Seq (Chunk Text)
 
@@ -29,6 +33,14 @@ putTableLn :: Seq (Chunk Text) -> IO ()
 putTableLn myChunks = do
     printer <- byteStringMakerFromEnvironment
     mapM_ SB.putStr $ chunksToByteStrings printer $ toList myChunks
+
+rootedPathChunk :: RootedPath -> Chunk Text
+rootedPathChunk rp =
+    chunk $
+    T.pack $
+    case rp of
+        Relative _ rf -> fromRelFile rf
+        Absolute af -> fromAbsFile af
 
 todoStateChunk :: TodoState -> Chunk Text
 todoStateChunk ts = fore color . chunk . todoStateText $ ts

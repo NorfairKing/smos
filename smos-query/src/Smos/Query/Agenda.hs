@@ -51,12 +51,13 @@ formatAgendaEntry now AgendaEntry {..} =
                 (localDay $ zonedTimeToLocalTime now)
         func =
             if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+               | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore green
                | d <= 10 && agendaEntryTimestampName == "DEADLINE" ->
                    fore yellow
                | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
                | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
                | otherwise -> id
-     in [ func $ chunk $ T.pack $ fromRelFile agendaEntryFilePath
+     in [ func $ rootedPathChunk  agendaEntryFilePath
         , func $ chunk $ timestampText agendaEntryTimestamp
         , func $ chunk $ T.pack $ printf "%+3dd" d
         , timestampNameChunk $ agendaEntryTimestampName

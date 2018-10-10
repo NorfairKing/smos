@@ -5,6 +5,8 @@ module Smos.Query.OptParse.Types
     , module Smos.Report.ShouldPrint
     ) where
 
+import Path
+
 import Smos.Data
 
 import Smos.Report.Agenda.Types
@@ -22,11 +24,13 @@ data Command
     | CommandAgenda AgendaFlags
     deriving (Show, Eq)
 
-data Flags = Flags
+data Flags =
+    Flags
     deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
-    { clockFlagPeriodFlags :: Maybe ClockPeriod
+    { clockFlagFile :: Maybe FilePath
+    , clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe ClockBlock
     , clockFlagTags :: [Tag]
@@ -52,7 +56,8 @@ data Dispatch
     deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
-    { clockSetPeriod :: ClockPeriod
+    { clockSetFile :: Maybe (Path Abs File)
+    , clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: ClockBlock
     , clockSetTags :: [Tag]

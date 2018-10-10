@@ -3,8 +3,10 @@
 
 module Smos.Query.OptParse where
 
+import Control.Monad
 import Data.Maybe
 import qualified Data.Text as T
+import Path.IO
 
 import System.Environment
 
@@ -17,7 +19,7 @@ getInstructions :: IO Instructions
 getInstructions = do
     (cmd, flags) <- getArguments
     config <- getConfig flags
-    (,) (getDispatch cmd) <$> getSettings flags config
+    (,) <$> getDispatch cmd <*> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
 getConfig Flags = pure Configuration
@@ -25,19 +27,23 @@ getConfig Flags = pure Configuration
 getSettings :: Flags -> Configuration -> IO Settings
 getSettings Flags Configuration = pure Settings
 
-getDispatch :: Command -> Dispatch
-getDispatch CommandWaiting = DispatchWaiting
-getDispatch CommandNext = DispatchNext
-getDispatch (CommandClock ClockFlags {..}) =
-    DispatchClock
-        ClockSettings
-            { clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-            , clockSetResolution =
-                  fromMaybe MinutesResolution clockFlagResolutionFlags
-            , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-            , clockSetTags = clockFlagTags
-            }
+getDispatch :: Command -> IO Dispatch
+getDispatch CommandWaiting = pure DispatchWaiting
+getDispatch CommandNext = pure DispatchNext
+getDispatch (CommandClock ClockFlags {..}) = do
+    mf <- forM clockFlagFile resolveFile'
+    pure $
+        DispatchClock
+            ClockSettings
+                { clockSetFile = mf
+                , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+                , clockSetResolution =
+                      fromMaybe MinutesResolution clockFlagResolutionFlags
+                , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                , clockSetTags = clockFlagTags
+                }
 getDispatch (CommandAgenda AgendaFlags {..}) =
+    pure $
     DispatchAgenda
         AgendaSettings
             { agendaSetHistoricity =
@@ -103,6 +109,13 @@ parseCommandClock = info parser modifier
     parser =
         CommandClock <$>
         (ClockFlags <$>
+         (option
+              (Just <$> str)
+              (mconcat
+                   [ long "file"
+                   , help "A single file to gather clock info from"
+                   , value Nothing
+                   ])) <*>
          (Just <$>
           (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
            flag' AllTime (long "all-time")) <|>

@@ -6,14 +6,13 @@ module Smos.Query.Waiting
     ( waiting
     ) where
 
+import Data.List
 import qualified Data.Text as T
 import Data.Text (Text)
-import Data.List
 import Data.Time
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Path
 import Rainbow
 
 import Smos.Report.Streaming
@@ -45,7 +44,7 @@ renderWaitingActionReport now =
 
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
-    [ chunk $ T.pack $ fromRelFile waitingActionEntryFilePath
+    [ rootedPathChunk waitingActionEntryFilePath
     , headerChunk $ waitingActionEntryHeader
     , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
     ]

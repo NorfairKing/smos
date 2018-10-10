@@ -15,7 +15,6 @@ import Data.Time
 import Data.Validity.Path ()
 import Text.Printf
 
-import Path
 import Rainbow
 
 import Conduit
@@ -30,11 +29,14 @@ import Smos.Query.OptParse.Types
 clock :: ClockSettings -> Q ()
 clock ClockSettings {..} = do
     wd <- askWorkDir
+    let filesSource =
+            case clockSetFile of
+                Nothing -> sourceFilesInNonHiddenDirsRecursively wd
+                Just f -> yield $ Absolute f
     liftIO $ do
         tups <-
             sourceToList $
-            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles wd .|
+            filesSource .| filterSmosFiles .| parseSmosFiles wd .|
             printShouldPrint PrintWarning .|
             trimByTags clockSetTags
         now <- getZonedTime
@@ -55,7 +57,7 @@ renderClockTable res = formatAsTable . concatMap goB
         [chunk clockTableBlockName] : map go clockTableBlockEntries
     go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
-        [ chunk $ T.pack $ fromRelFile clockTableEntryFile
+        [ rootedPathChunk clockTableEntryFile
         , headerChunk clockTableEntryHeader
         , chunk $ renderNominalDiffTime res clockTableEntryTime
         ]

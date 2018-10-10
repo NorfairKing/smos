@@ -37,7 +37,7 @@ renderNextActionReport = formatAsTable . map formatNextActionEntry
 
 formatNextActionEntry :: NextActionEntry -> [Chunk Text]
 formatNextActionEntry NextActionEntry {..} =
-    [ chunk $ T.pack $ fromRelFile nextActionEntryFilePath
+    [ rootedPathChunk nextActionEntryFilePath
     , maybe (chunk "") todoStateChunk nextActionEntryTodoState
     , headerChunk nextActionEntryHeader
     ]
