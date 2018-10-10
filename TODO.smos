@@ -616,7 +616,8 @@
             - new-state: TODO
               timestamp: 2018-09-29 10:47:58.465782880000+0000
           forest:
-          - header: Edit tags in a freeform manner
+          - header: Edit tags in a freeform manner instead of just with predefined
+              tags
             state-history:
             - new-state: TODO
               timestamp: 2018-09-21 07:59:33.639419606000+0000
