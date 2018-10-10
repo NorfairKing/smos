@@ -24,10 +24,15 @@ data AgendaEntry = AgendaEntry
     , agendaEntryTimestamp :: Timestamp
     } deriving (Show, Eq, Generic)
 
+isDone :: Maybe TodoState -> Bool
+isDone (Just "DONE") = True
+isDone (Just "CANCELLED") = True
+isDone _ = False
+
 makeAgendaEntry :: Path Rel File -> Entry -> [AgendaEntry]
 makeAgendaEntry rf e =
     flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
-        if entryState e== Just "DONE"
+        if isDone (entryState e)
             then Nothing
             else Just
                      AgendaEntry
