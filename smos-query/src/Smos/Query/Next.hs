@@ -3,12 +3,10 @@
 
 module Smos.Query.Next where
 
-import qualified Data.Text as T
 import Data.Text (Text)
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Path
 import Rainbow
 
 import Smos.Report.Next
@@ -25,7 +23,7 @@ next = do
         tups <-
             sourceToList $
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles wd .|
+            parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileEntries .|
             C.filter (isNextAction . snd) .|

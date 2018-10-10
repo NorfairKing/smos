@@ -15,7 +15,7 @@ import Rainbox as Box
 
 import Smos.Data
 
-import Smos.Report.Streaming
+import Smos.Report.Path
 
 type Table = Seq (Chunk Text)
 

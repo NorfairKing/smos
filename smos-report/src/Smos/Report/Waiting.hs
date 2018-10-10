@@ -8,11 +8,9 @@ import GHC.Generics
 
 import Data.Time
 
-import Path
-
 import Smos.Data
 
-import Smos.Report.Streaming
+import Smos.Report.Path
 
 isWaitingAction :: Entry -> Bool
 isWaitingAction entry = entryState entry == Just "WAITING"

@@ -10,12 +10,10 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Time
 
-import Path
-
 import Smos.Data
 
 import Smos.Report.Agenda.Types
-import Smos.Report.Streaming
+import Smos.Report.Path
 
 data AgendaEntry = AgendaEntry
     { agendaEntryFilePath :: RootedPath

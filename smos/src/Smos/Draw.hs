@@ -44,6 +44,7 @@ import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
+import Smos.Report.Path
 
 import Smos.Draw.Cursor
 import Smos.Style
@@ -239,7 +240,9 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
      in hBox $
         intersperse (str " ") $
         [ hLimit 20 $
-          padRight Max $ drawFilePath $ filename nextActionEntryCursorFilePath
+          padRight Max $ drawFilePath $ case nextActionEntryCursorFilePath of
+            Relative _ rf -> filename rf
+            Absolute af -> filename af
         , maybe emptyWidget drawTodoState $ entryState e
         , sel $ drawHeader entryHeader
         ]

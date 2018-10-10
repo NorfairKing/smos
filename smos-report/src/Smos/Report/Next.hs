@@ -12,11 +12,10 @@ import Data.Maybe
 import Data.Validity
 import Data.Validity.Path ()
 
-import Path
-
 import Smos.Data
 
 import Smos.Report.Config
+import Smos.Report.Path
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
@@ -25,7 +24,7 @@ produceNextActionReport src = do
     wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
     sourceToList $
         sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-        parseSmosFiles wd .|
+        parseSmosFiles .|
         printShouldPrint PrintWarning .|
         smosFileEntries .|
         C.filter (isNextAction . snd) .|

@@ -24,10 +24,11 @@ import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Smos.Report.Streaming
 import Smos.Report.Config
 import Smos.Report.Next
 import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
+import Smos.Report.Path
 
 produceNextActionReportCursor ::
        SmosReportConfig -> IO (Maybe NextActionReportCursor)
@@ -36,10 +37,10 @@ produceNextActionReportCursor src = do
     naes <-
         sourceToList $
         sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-        parseSmosFiles wd .|
+        parseSmosFiles .|
         printShouldPrint DontPrint .|
         smosFileCursors .|
-        C.map (uncurry $ makeNextActionEntryCursor wd) .|
+        C.map (uncurry makeNextActionEntryCursor) .|
         C.filter cursorPointsToNextAction
     pure $ makeNextActionReportCursor naes
 
@@ -60,7 +61,9 @@ nextActionReportCursorBuildSmosFileCursor =
 nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath narc =
     let NextActionEntryCursor {..} = nonEmptyCursorCurrent narc
-     in nextActionEntryCursorDirectory </> nextActionEntryCursorFilePath
+     in case nextActionEntryCursorFilePath of
+            Relative pad prf -> pad </> prf
+            Absolute paf -> paf
 
 nextActionReportCursorNext ::
        NextActionReportCursor -> Maybe NextActionReportCursor
@@ -77,22 +80,17 @@ nextActionReportCursorLast :: NextActionReportCursor -> NextActionReportCursor
 nextActionReportCursorLast = nonEmptyCursorSelectLast
 
 data NextActionEntryCursor = NextActionEntryCursor
-    { nextActionEntryCursorDirectory :: Path Abs Dir
-    , nextActionEntryCursorFilePath :: Path Rel File
+    { nextActionEntryCursorFilePath :: RootedPath
     , nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
     } deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor
 
 makeNextActionEntryCursor ::
-       Path Abs Dir
-    -> Path Rel File
-    -> ForestCursor Entry Entry
-    -> NextActionEntryCursor
-makeNextActionEntryCursor wd rf fc =
+       RootedPath -> ForestCursor Entry Entry -> NextActionEntryCursor
+makeNextActionEntryCursor rp fc =
     NextActionEntryCursor
-        { nextActionEntryCursorDirectory = wd
-        , nextActionEntryCursorFilePath = rf
+        { nextActionEntryCursorFilePath = rp
         , nextActionEntryCursorForestCursor = fc
         }
 

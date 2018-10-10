@@ -29,7 +29,7 @@ waiting = do
         tups <-
             sourceToList $
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles wd .|
+            parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileEntries .|
             C.filter (isWaitingAction . snd) .|

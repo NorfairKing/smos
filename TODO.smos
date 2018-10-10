@@ -358,6 +358,8 @@
     - entry:
         header: Clock Reports
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-10 22:47:06.278964761000+0000
         - new-state: TODO
           timestamp: 2018-10-03 22:57:48.840019070000+0000
         - new-state: DONE
@@ -391,6 +393,8 @@
           timestamp: 2018-10-03 22:57:54.176027649000+0000
       - header: For just one file
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-10 22:47:04.855003182000+0000
         - new-state: TODO
           timestamp: 2018-10-03 22:58:33.296109223000+0000
     - entry:

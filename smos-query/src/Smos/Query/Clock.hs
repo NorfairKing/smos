@@ -20,6 +20,7 @@ import Rainbow
 import Conduit
 
 import Smos.Report.Clock
+import Smos.Report.Path
 import Smos.Report.Streaming
 
 import Smos.Query.Config
@@ -36,7 +37,7 @@ clock ClockSettings {..} = do
     liftIO $ do
         tups <-
             sourceToList $
-            filesSource .| filterSmosFiles .| parseSmosFiles wd .|
+            filesSource .| filterSmosFiles .| parseSmosFiles .|
             printShouldPrint PrintWarning .|
             trimByTags clockSetTags
         now <- getZonedTime

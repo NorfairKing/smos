@@ -12,7 +12,6 @@ import Text.Printf
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Path
 import Rainbow
 
 import Smos.Data
@@ -32,7 +31,7 @@ agenda AgendaSettings {..} = do
         tups <-
             sourceToList $
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles wd .|
+            parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileEntries .|
             C.concatMap (uncurry makeAgendaEntry) .|
@@ -57,7 +56,7 @@ formatAgendaEntry now AgendaEntry {..} =
                | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
                | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
                | otherwise -> id
-     in [ func $ rootedPathChunk  agendaEntryFilePath
+     in [ func $ rootedPathChunk agendaEntryFilePath
         , func $ chunk $ timestampText agendaEntryTimestamp
         , func $ chunk $ T.pack $ printf "%+3dd" d
         , timestampNameChunk $ agendaEntryTimestampName

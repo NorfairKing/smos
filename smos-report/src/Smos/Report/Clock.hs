@@ -25,14 +25,12 @@ import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
 
-import Path
-
 import Conduit
 
 import Smos.Data
 
 import Smos.Report.Clock.Types
-import Smos.Report.Streaming
+import Smos.Report.Path
 
 trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
 trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)

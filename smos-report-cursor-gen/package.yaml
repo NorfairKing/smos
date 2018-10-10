@@ -21,6 +21,7 @@ library:
   - smos-data-gen
   - smos-report
   - smos-report-cursor
+  - smos-report-gen
   - time
 
 tests:

@@ -8,9 +8,6 @@ import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Tree
-import Data.Validity
-import Data.Validity.Path ()
-import GHC.Generics (Generic)
 
 import Path
 import Path.IO
@@ -21,15 +18,8 @@ import qualified Data.Conduit.Combinators as C
 
 import Smos.Data
 
+import Smos.Report.Path
 import Smos.Report.ShouldPrint
-
-data RootedPath
-    = Relative (Path Abs Dir)
-               (Path Rel File)
-    | Absolute (Path Abs File)
-    deriving (Show, Eq, Generic)
-
-instance Validity RootedPath
 
 sourceFilesInNonHiddenDirsRecursively ::
        Path Abs Dir -> ConduitT i RootedPath IO ()
@@ -57,9 +47,8 @@ filterSmosFiles =
             Absolute paf -> fileExtension paf == ".smos"
 
 parseSmosFiles ::
-       Path Abs Dir
-    -> ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
-parseSmosFiles dir =
+       ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
+parseSmosFiles =
     C.mapM $ \p -> do
         let ap =
                 case p of
@@ -104,8 +93,7 @@ smosFileEntries = C.concatMap $ uncurry go
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
 
 smosFileCursors ::
-       Monad m
-    => ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+       Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
 allCursors :: SmosFile -> [ForestCursor Entry]
