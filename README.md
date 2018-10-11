@@ -24,26 +24,26 @@ a subset of YAML:
 
 ``` smos
 - entry:
-  header: Use Smos
-  timestamps:
-    DEADLINE: 2018-10-30
-    SCHEDULED: 2018-10-20
-  state-history:
-  - new-state: STARTED
-    timestamp: 2018-10-10 14:19:53.988042844000+0000
-  tags:
-  - online
-forest:
-- header: Don't mess it up
-  state-history:
-  - new-state: DONE
-    timestamp: 2018-10-10 14:19:54.388413954000+0000
-- header: Be smart about it
-  state-history:
-  - new-state: TODO
-    timestamp: 2018-10-10 14:19:54.796427564000+0000
-  tags:
-  - work
+    header: Use Smos
+    timestamps:
+      DEADLINE: 2018-10-30
+      SCHEDULED: 2018-10-20
+    state-history:
+    - new-state: STARTED
+      timestamp: 2018-10-10 14:19:53.988042844000+0000
+    tags:
+    - online
+  forest:
+  - header: Don't mess it up
+    state-history:
+    - new-state: DONE
+      timestamp: 2018-10-10 14:19:54.388413954000+0000
+  - header: Be smart about it
+    state-history:
+    - new-state: TODO
+      timestamp: 2018-10-10 14:19:54.796427564000+0000
+    tags:
+    - work
 ```
 
 This format is very easy to work with programmatically, and convenience
