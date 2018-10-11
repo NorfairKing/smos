@@ -36,11 +36,23 @@ agenda AgendaSettings {..} = do
             smosFileEntries .|
             C.concatMap (uncurry makeAgendaEntry) .|
             C.filter (fitsHistoricity now agendaSetHistoricity)
-        putTableLn $ renderAgendaReport now tups
+        putTableLn $
+            renderAgendaReport now $ divideIntoBlocks agendaSetBlock tups
 
-renderAgendaReport :: ZonedTime -> [AgendaEntry] -> Table
-renderAgendaReport now =
-    formatAsTable . map (formatAgendaEntry now) . sortOn agendaEntryTimestamp
+renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
+renderAgendaReport now atbs =
+    formatAsTable $
+    case atbs of
+        [] -> []
+        [atb] -> goEntries (agendaTableBlockEntries atb)
+        _ -> concatMap goEntriesWithTitle atbs
+  where
+    goEntriesWithTitle AgendaTableBlock {..} =
+        [chunk agendaTableBlockTitle] : goEntries agendaTableBlockEntries
+    goEntries es =
+        map
+            (formatAgendaEntry now)
+            (sortOn agendaEntryTimestamp es)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =

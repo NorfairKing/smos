@@ -51,7 +51,10 @@ clock ClockSettings {..} = do
                 tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
-renderClockTable res = formatAsTable . concatMap goB
+renderClockTable res ctbs = formatAsTable $ case ctbs of
+    [] -> []
+    [ctb] -> map go (clockTableBlockEntries ctb)
+    _ -> concatMap goB ctbs
   where
     goB :: ClockTableBlock -> [[Chunk Text]]
     goB ClockTableBlock {..} =

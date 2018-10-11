@@ -13,6 +13,9 @@ import System.Environment
 import Options.Applicative
 
 import Smos.Data
+
+import Smos.Report.TimeBlock
+
 import Smos.Query.OptParse.Types
 
 getInstructions :: IO Instructions
@@ -48,6 +51,7 @@ getDispatch (CommandAgenda AgendaFlags {..}) =
         AgendaSettings
             { agendaSetHistoricity =
                   fromMaybe HistoricalAgenda agendaFlagHistoricity
+            , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
             }
 
 getArguments :: IO Arguments
@@ -125,10 +129,7 @@ parseCommandClock = info parser modifier
            flag' MinutesResolution (long "minutes-resolution") <|>
            flag' HoursResolution (long "hours-resolution")) <|>
           pure Nothing) <*>
-         (Just <$>
-          (flag' DailyBlock (long "daily-block") <|>
-           flag' OneBlock (long "one-block")) <|>
-          pure Nothing) <*>
+         parseTimeBlock <*>
          many
              (option
                   (eitherReader (parseTag . T.pack))
@@ -144,7 +145,14 @@ parseCommandAgenda = info parser modifier
          (Just <$>
           (flag' HistoricalAgenda (long "historical") <|>
            flag' FutureAgenda (long "future")) <|>
-          pure Nothing))
+          pure Nothing) <*>
+         parseTimeBlock)
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
+
+parseTimeBlock :: Parser (Maybe TimeBlock)
+parseTimeBlock =
+    Just <$>
+    (flag' DayBlock (long "day-block") <|> flag' OneBlock (long "one-block")) <|>
+    pure Nothing

@@ -11,6 +11,7 @@ import Smos.Data
 
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
+import Smos.Report.TimeBlock
 import Smos.Report.ShouldPrint
 
 type Arguments = (Command, Flags)
@@ -32,12 +33,13 @@ data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
     , clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
-    , clockFlagBlockFlags :: Maybe ClockBlock
+    , clockFlagBlockFlags :: Maybe TimeBlock
     , clockFlagTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
     { agendaFlagHistoricity :: Maybe AgendaHistoricity
+    , agendaFlagBlock :: Maybe TimeBlock
     } deriving (Show, Eq)
 
 data Configuration =
@@ -59,10 +61,11 @@ data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)
     , clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
-    , clockSetBlock :: ClockBlock
+    , clockSetBlock :: TimeBlock
     , clockSetTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
     { agendaSetHistoricity :: AgendaHistoricity
+    , agendaSetBlock :: TimeBlock
     } deriving (Show, Eq)

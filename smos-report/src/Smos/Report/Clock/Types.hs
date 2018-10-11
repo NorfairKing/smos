@@ -21,10 +21,3 @@ data ClockResolution
     deriving (Show, Eq, Ord, Generic)
 
 instance Validity ClockResolution
-
-data ClockBlock
-    = OneBlock
-    | DailyBlock
-    deriving (Show, Eq, Generic)
-
-instance Validity ClockBlock

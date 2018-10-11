@@ -31,6 +31,7 @@ import Smos.Data
 
 import Smos.Report.Clock.Types
 import Smos.Report.Path
+import Smos.Report.TimeBlock
 
 trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
 trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
@@ -139,14 +140,14 @@ data ClockTimeBlock a = ClockTimeBlock
 instance Validity a => Validity (ClockTimeBlock a)
 
 divideIntoBlocks ::
-       TimeZone -> ClockBlock -> [ClockTime] -> [ClockTimeBlock Text]
+       TimeZone -> TimeBlock -> [ClockTime] -> [ClockTimeBlock Text]
 divideIntoBlocks tz cb cts =
     case cb of
         OneBlock ->
             [ ClockTimeBlock
                   {clockTimeBlockName = "All Time", clockTimeBlockEntries = cts}
             ]
-        DailyBlock ->
+        DayBlock ->
             map (fmap (T.pack . show)) $
             combineBlocksByName $
             concatMap (divideClockTimeIntoDailyBlocks tz) cts
@@ -226,7 +227,7 @@ makeClockTableBlock ClockTimeBlock {..} =
         }
 
 data ClockTableEntry = ClockTableEntry
-    { clockTableEntryFile ::RootedPath
+    { clockTableEntryFile :: RootedPath
     , clockTableEntryHeader :: Header
     , clockTableEntryTime :: NominalDiffTime
     } deriving (Show, Eq, Generic)
