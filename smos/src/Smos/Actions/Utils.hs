@@ -16,10 +16,10 @@
 module Smos.Actions.Utils
     ( module Smos.Actions.Utils
     , module Smos.Cursor.Contents
-    , module Smos.Cursor.Editor
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.Logbook
+    , module Smos.Cursor.Report.Next
     , module Smos.Cursor.SmosFile
     , module Smos.Cursor.StateHistory
     , module Smos.Cursor.Tags
@@ -34,10 +34,10 @@ import Cursor.Types
 import Smos.Data
 
 import Smos.Cursor.Contents
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
+import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
@@ -186,7 +186,7 @@ modifyEmptyFile = modifyEmptyFileS . pure
 
 modifyEmptyFileS :: SmosM SmosFileCursor -> SmosM ()
 modifyEmptyFileS func =
-    modifyMFileCursorS $ \case
+    modifyMFileCursorMS $ \case
         Nothing -> Just <$> func
         _ -> pure Nothing
 
@@ -198,7 +198,7 @@ modifyFileCursor func = modifyMFileCursor $ Just . func
 
 modifyFileCursorS :: (SmosFileCursor -> SmosM SmosFileCursor) -> SmosM ()
 modifyFileCursorS func =
-    modifyMFileCursorS $ \mc ->
+    modifyMFileCursorMS $ \mc ->
         case mc of
             Nothing -> pure Nothing
             Just c -> Just <$> func c
@@ -219,11 +219,62 @@ modifyFileCursorD func =
             Updated sfc' -> pure sfc'
 
 modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
-modifyMFileCursorM func = modifyMFileCursorS $ pure . func
+modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 
-modifyMFileCursorS ::
+modifyMFileCursorMS ::
        (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
+modifyMFileCursorMS func =
+    modifyEditorCursorS $ editorCursorSmosFileCursorL func
+
+modifyHelpCursorM :: (HelpCursor -> Maybe HelpCursor) -> SmosM ()
+modifyHelpCursorM func = modifyHelpCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyHelpCursor :: (HelpCursor -> HelpCursor) -> SmosM ()
+modifyHelpCursor func = modifyMHelpCursorM $ fmap func
+
+modifyMHelpCursorM :: (Maybe HelpCursor -> Maybe HelpCursor) -> SmosM ()
+modifyMHelpCursorM func = modifyMHelpCursorMS $ pure . func
+
+modifyMHelpCursorMS ::
+       (Maybe HelpCursor -> SmosM (Maybe HelpCursor)) -> SmosM ()
+modifyMHelpCursorMS func = modifyEditorCursorS $ editorCursorHelpCursorL func
+
+modifyNextActionReportCursorM ::
+       (NextActionReportCursor -> Maybe NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursorM func =
+    modifyNextActionReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyNextActionReportCursor ::
+       (NextActionReportCursor -> NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursor func = modifyNextActionReportCursorS $ pure. func
+
+modifyNextActionReportCursorS ::
+       (NextActionReportCursor -> SmosM NextActionReportCursor) -> SmosM ()
+modifyNextActionReportCursorS func =
+    modifyReportCursorS $ \rc ->
+        case rc of
+            ReportNextActions narc -> ReportNextActions <$> func narc
+
+modifyReportCursorM :: (ReportCursor -> Maybe ReportCursor) -> SmosM ()
+modifyReportCursorM func = modifyReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyReportCursor :: (ReportCursor -> ReportCursor) -> SmosM ()
+modifyReportCursor func = modifyMReportCursorM $ fmap func
+
+modifyMReportCursorM :: (Maybe ReportCursor -> Maybe ReportCursor) -> SmosM ()
+modifyMReportCursorM func = modifyMReportCursorMS $ pure . func
+
+modifyReportCursorS :: (ReportCursor -> SmosM ReportCursor) -> SmosM ()
+modifyReportCursorS func =
+    modifyMReportCursorMS $ \mrc ->
+        case mrc of
+            Nothing -> pure Nothing
+            Just rc -> Just <$> func rc
+
+modifyMReportCursorMS ::
+       (Maybe ReportCursor -> SmosM (Maybe ReportCursor)) -> SmosM ()
+modifyMReportCursorMS func =
+    modifyEditorCursorS $ editorCursorReportCursorL func
 
 modifyEditorCursorM :: (EditorCursor -> Maybe EditorCursor) -> SmosM ()
 modifyEditorCursorM func = modifyEditorCursor $ \ec -> fromMaybe ec $ func ec

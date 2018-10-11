@@ -20,7 +20,6 @@ import Lens.Micro
 
 import qualified Graphics.Vty as Vty
 
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
@@ -52,7 +51,7 @@ smosHandleEvent ::
     -> EventM ResourceName (Next SmosState)
 smosHandleEvent cf s e = do
     let func =
-            case keyMapFunc s e $ configKeyMap cf of
+            case keyMapFunc s e (configKeyMap cf) (configReportsKeyMap cf) of
                 Nothing ->
                     case e of
                         B.VtyEvent (Vty.EvKey ek mods) ->
@@ -81,11 +80,12 @@ smosHandleEvent cf s e = do
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
-keyMapFunc :: SmosState -> SmosEvent -> KeyMap -> Maybe (SmosM ())
-keyMapFunc s e KeyMap {..} =
+keyMapFunc ::
+       SmosState -> SmosEvent -> KeyMap -> ReportsKeyMap -> Maybe (SmosM ())
+keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
     case editorCursorSelection $ smosStateCursor s of
         HelpSelected -> handleWith keyMapHelpMatchers
-        EditorSelected ->
+        FileSelected ->
             case editorCursorFileCursor $ smosStateCursor s of
                 Nothing -> handleWith keyMapEmptyMatchers
                 Just sfc ->
@@ -101,6 +101,7 @@ keyMapFunc s e KeyMap {..} =
                             handleWith keyMapStateHistoryMatchers
                         TagsSelected -> handleWith keyMapTagsMatchers
                         LogbookSelected -> handleWith keyMapLogbookMatchers
+        ReportSelected -> handleWith reportsKeymapNextActionReportMatchers
   where
     handleWith :: KeyMappings -> Maybe (SmosM ())
     handleWith specificMappings =

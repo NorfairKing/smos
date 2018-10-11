@@ -251,7 +251,7 @@ runCommandsOn mstart commands = do
             , finalResult = rebuildEditorCursor $ smosStateCursor fs
             }
   where
-    testConf = SmosConfig {configKeyMap = mempty}
+    testConf = error "tried to access the config"
     go :: (SmosState, [(Command, SmosFile)])
        -> Command
        -> IO (SmosState, [(Command, SmosFile)])

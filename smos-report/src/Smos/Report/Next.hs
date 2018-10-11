@@ -1,43 +1,42 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Report.Next where
 
-import Data.Maybe
-
-import qualified Data.Text as T
-import Data.Text (Text)
-import qualified Data.Text.IO as T
+import GHC.Generics
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Path
+import Data.Maybe
+import Data.Validity
+import Data.Validity.Path ()
 
 import Smos.Data
 
-import Smos.Report.Formatting
-import Smos.Report.OptParse
+import Smos.Report.Config
+import Smos.Report.Path
+import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-next :: Settings -> IO ()
-next Settings {..} = do
-    tups <-
-        sourceToList $
-        sourceFilesInNonHiddenDirsRecursively setWorkDir .| filterSmosFiles .|
-        parseSmosFiles setWorkDir .|
-        printShouldPrint setShouldPrint .|
+produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
+produceNextActionReport src = do
+    wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
+    sourceToList $
+        sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+        parseSmosFiles .|
+        printShouldPrint PrintWarning .|
         smosFileEntries .|
         C.filter (isNextAction . snd) .|
         C.map (uncurry makeNextActionEntry)
-    T.putStr $ renderNextActionReport tups
 
 isNextAction :: Entry -> Bool
-isNextAction entry =
-    or $
-    (==) (entryState entry) . Just <$>
-    mapMaybe todoState ["WAITING", "NEXT", "STARTED", "READY"]
+isNextAction = maybe False isNextTodoState . entryState
 
-makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
+isNextTodoState :: TodoState -> Bool
+isNextTodoState = (`elem` (mapMaybe todoState ["NEXT", "STARTED"]))
+
+makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
     NextActionEntry
         { nextActionEntryTodoState = entryState e
@@ -45,18 +44,10 @@ makeNextActionEntry rf e =
         , nextActionEntryFilePath = rf
         }
 
-renderNextActionReport :: [NextActionEntry] -> Text
-renderNextActionReport = T.pack . formatAsTable . map formatNextActionEntry
-
 data NextActionEntry = NextActionEntry
     { nextActionEntryTodoState :: Maybe TodoState
     , nextActionEntryHeader :: Header
-    , nextActionEntryFilePath :: Path Rel File
-    } deriving (Show, Eq)
+    , nextActionEntryFilePath :: RootedPath
+    } deriving (Show, Eq, Generic)
 
-formatNextActionEntry :: NextActionEntry -> [String]
-formatNextActionEntry NextActionEntry {..} =
-    [ maybe "" (T.unpack . todoStateText) nextActionEntryTodoState
-    , T.unpack $ headerText nextActionEntryHeader
-    , fromRelFile nextActionEntryFilePath
-    ]
+instance Validity NextActionEntry

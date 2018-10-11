@@ -30,6 +30,8 @@ library:
   - safe
   - smos-cursor
   - smos-data
+  - smos-report
+  - smos-report-cursor
   - text
   - time
   - unordered-containers
@@ -55,7 +57,7 @@ executables:
 
 tests:
   smos-test:
-    main: Spec.hs
+    main: Main.hs
     source-dirs: test/
     ghc-options:
     - -threaded
@@ -72,6 +74,7 @@ tests:
     - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-hspec-aeson
+    - genvalidity-hspec-optics
     - genvalidity-text
     - genvalidity-time
     - genvalidity-unordered-containers
@@ -79,9 +82,14 @@ tests:
     - path
     - path-io
     - smos
+    - smos-cursor
+    - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - smos-report-cursor
+    - smos-report-cursor-gen
     - text
+    - vty
 
   smos-golden-test:
     main: Main.hs

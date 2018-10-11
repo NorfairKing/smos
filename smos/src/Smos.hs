@@ -13,7 +13,6 @@ import System.Exit
 
 import Brick.Main as B
 
-import Smos.Cursor.Editor
 import Smos.Data
 
 import Smos.App
@@ -28,10 +27,17 @@ smos sc@SmosConfig {..} = do
     startF <-
         case errOrSF of
             Nothing -> pure Nothing
-            Just (Left err) -> die $ show err
+            Just (Left err) ->
+                die $
+                unlines
+                    [ "Failed to read smos file"
+                    , fromAbsFile p
+                    , "could not parse it:"
+                    , show err
+                    ]
             Just (Right sf) -> pure $ Just sf
     tz <- getCurrentTimeZone
     let s = initState p startF tz
     s' <- defaultMain (mkSmosApp sc) s
     let sf' = rebuildEditorCursor $ smosStateCursor s'
-    when (startF /= Just sf') $ writeSmosFile p sf'
+    when (smosStateStartSmosFile s' /= Just sf') $ writeSmosFile (smosStateFilePath s') sf'

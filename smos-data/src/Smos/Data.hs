@@ -21,7 +21,6 @@ module Smos.Data
     ) where
 
 import Data.Aeson as JSON
-import Data.Validity
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
@@ -29,6 +28,7 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import Data.Time
 import Data.Tree
+import Data.Validity
 import Data.Yaml as Yaml
 import Data.Yaml.Builder as Yaml
 
@@ -45,7 +45,7 @@ readSmosFile fp = do
     mContents <- forgivingAbsence $ SB.readFile $ toFilePath fp
     case mContents of
         Nothing -> pure Nothing
-        Just contents -> pure $ Just $ parseSmosFile contents
+        Just contents_ -> pure $ Just $ parseSmosFile contents_
 
 writeSmosFile :: Path Abs File -> SmosFile -> IO ()
 writeSmosFile fp sf = do

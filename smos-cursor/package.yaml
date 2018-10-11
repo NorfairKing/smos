@@ -16,10 +16,11 @@ library:
   - base
   - containers
   - cursor
+  - cursor-fuzzy-time
   - microlens
   - smos-data
   - text
   - time
   - validity
+  - validity-text
   - validity-time
-  - cursor-fuzzy-time

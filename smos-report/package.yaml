@@ -1,7 +1,7 @@
 name: smos-report
 version: '0.0.0.0'
 category: Smos
-author: Nick Van den Broeck
+author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
 license: AllRightsReserved
@@ -12,12 +12,11 @@ library:
   ghc-options: -Wall
   dependencies:
   - base
-  - boxes
+  - bytestring
   - conduit
-  - configurator
   - containers
+  - cursor
   - filepath
-  - optparse-applicative
   - path
   - path-io
   - pretty-show
@@ -25,11 +24,4 @@ library:
   - text
   - time
   - validity
-
-executables:
-  smos-report:
-    main: Main.hs
-    source-dirs: app
-    dependencies:
-    - base
-    - smos-report
+  - validity-path

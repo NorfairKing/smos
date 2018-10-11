@@ -2,6 +2,7 @@ module Smos.Cursor.SmosFile
     ( SmosFileCursor
     , makeSmosFileCursor
     , rebuildSmosFileCursor
+    , rebuildSmosFileCursorEntirely
     , startSmosFile
     , smosFileCursorSelectedEntryL
     , smosFileCursorEntrySelectionL
@@ -62,6 +63,10 @@ rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor =
     NE.map (rebuildCTree . fmap rebuildCollapseEntry) .
     rebuildForestCursor (collapseEntryValueL %~ rebuildEntryCursor)
+
+rebuildSmosFileCursorEntirely :: SmosFileCursor -> SmosFile
+rebuildSmosFileCursorEntirely =
+    SmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
@@ -220,14 +225,18 @@ smosFileSubtreeSetTodoState now mts =
     goCF :: CForest (CollapseEntry Entry) -> CForest (CollapseEntry Entry)
     goCF cf = openForest $ map goCT $ unpackCForest cf
     goCT :: CTree (CollapseEntry Entry) -> CTree (CollapseEntry Entry)
-    goCT =
-        fmap $ fmap $
-        (\e ->
-             e
-                 { entryStateHistory =
-                       let sh = entryStateHistory e
-                        in fromMaybe sh $ stateHistorySetState now mts sh
-                 })
+    goCT (CNode ce cf) = CNode ce' $ goCF cf
+      where
+        ce' =
+            fmap
+                (\e ->
+                     e
+                         { entryStateHistory =
+                               let sh = entryStateHistory e
+                                in fromMaybe sh $
+                                   stateHistorySetState now mts sh
+                         })
+                ce
 
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry
 rebuild = collapseEntryValueL %~ rebuildEntryCursor

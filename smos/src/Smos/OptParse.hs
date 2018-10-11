@@ -58,7 +58,7 @@ parseArgs = Arguments <$> editParser <*> parseFlags
 editParser :: Parser FilePath
 editParser =
     strArgument
-        (mconcat [metavar "FILE", help "the file to edit",completer $ bashCompleter "file"])
+        (mconcat [metavar "FILE", help "the file to edit",completer $ bashCompleter "file",value "/tmp/example.smos"])
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags

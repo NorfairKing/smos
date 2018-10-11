@@ -8,7 +8,12 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap}
+defaultConfig =
+    SmosConfig
+        { configKeyMap = defaultKeyMap
+        , configReportsKeyMap = defaultReportsKeymap
+        , configReportConfig = defaultReportConfig
+        }
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -19,6 +24,8 @@ defaultKeyMap =
                   , exactKey KEsc stop
                   , exactChar 'h' startHeaderFromEmptyAndSelectHeader
                   , exactChar 'H' startHeaderFromEmptyAndSelectHeader
+                  -- Reports
+                  , exactString "rn" reportNextActions
                   ]
         , keyMapEntryMatchers =
               listMatchers
@@ -58,22 +65,14 @@ defaultKeyMap =
                   , exactString "td" $ entrySetTodoState "DONE"
                   , exactString "tc" $ entrySetTodoState "CANCELLED"
                   , exactString "t " entryUnsetTodoState
-                  , exactString "Tt" $
-                    subtreeSetTodoState "TODO"
-                  , exactString "Tn" $
-                    subtreeSetTodoState "NEXT"
-                  , exactString "Ts" $
-                    subtreeSetTodoState "STARTED"
-                  , exactString "Tr" $
-                    subtreeSetTodoState "READY"
-                  , exactString "Tw" $
-                    subtreeSetTodoState "WAITING"
-                  , exactString "Td" $
-                    subtreeSetTodoState "DONE"
-                  , exactString "Tc" $
-                    subtreeSetTodoState "CANCELLED"
-                  , exactString "T "
-                        subtreeUnsetTodoState
+                  , exactString "Tt" $ subtreeSetTodoState "TODO"
+                  , exactString "Tn" $ subtreeSetTodoState "NEXT"
+                  , exactString "Ts" $ subtreeSetTodoState "STARTED"
+                  , exactString "Tr" $ subtreeSetTodoState "READY"
+                  , exactString "Tw" $ subtreeSetTodoState "WAITING"
+                  , exactString "Td" $ subtreeSetTodoState "DONE"
+                  , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
+                  , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"
@@ -85,7 +84,12 @@ defaultKeyMap =
                   -- Clocking
                   , exactString "ci" forestClockOutEverywhereAndClockInHere
                   , exactString "co" forestClockOutEverywhere
+                  -- Reports
+                  , exactString "rn" reportNextActions
+                  -- Convenience
+                  , exactString " nw" convDoneAndWaitForResponse
                   -- Collapsing
+                  , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
                   , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
@@ -148,11 +152,44 @@ defaultKeyMap =
               listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapTagsMatchers = listMatchers [exactKey KEsc entrySelectWhole]
         , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
-        , keyMapHelpMatchers = listMatchers [catchAll selectEditor]
+        , keyMapHelpMatchers =
+              listMatchers
+                  [ exactKey KUp helpUp
+                  , exactChar 'k' helpUp
+                  , exactKey KDown helpDown
+                  , exactChar 'j' helpDown
+                  , exactKey KHome helpStart
+                  , exactString "gg" helpStart
+                  , exactKey KEnd helpEnd
+                  , exactChar 'G' helpEnd
+                  , exactKey KEsc selectEditor
+                  , exactChar 'q' selectEditor
+                  ]
         , keyMapAnyMatchers =
               listMatchers
                   [ exactChar 'u' undo
                   , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   , exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+                  ]
+        }
+
+defaultReportsKeymap :: ReportsKeyMap
+defaultReportsKeymap =
+    ReportsKeyMap
+        { reportsKeymapNextActionReportMatchers =
+              listMatchers
+                  [ exactKey KUp prevNextAction
+                  , exactChar 'k' prevNextAction
+                  , exactKey KDown nextNextAction
+                  , exactChar 'j' nextNextAction
+                  , exactKey KEsc selectEditor
+                  , exactKey KHome firstNextAction
+                  , exactString "gg" firstNextAction
+                  , exactKey KEnd lastNextAction
+                  , exactChar 'G' lastNextAction
+                  , exactChar 'q' selectEditor
+                  , exactKey KEnter enterNextActionFile
+                  , exactChar '?' selectHelp
+                  , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
                   ]
         }

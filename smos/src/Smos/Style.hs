@@ -12,6 +12,9 @@ module Smos.Style
     , timestampNameSpecificAttr
     , tagAttr
     , tagSpecificAttr
+    , helpNameAttr
+    , helpKeyCombinationAttr
+    , helpDescriptionAttr
     -- * Names of widgets
     , textCursorName
     -- * Re-exports
@@ -36,8 +39,8 @@ import Smos.Types
 defaultAttrMap :: s -> AttrMap
 defaultAttrMap _ =
     let col = rgbColor :: Int -> Int -> Int -> Color
-        orange = col 255 165 0
-        brown = col 205 133 63
+        orange = col 255 175 0 -- 214, #ffaf00
+        brown = col 215 95 0 -- 166, #d75f00
      in applyAttrMappings
             [ (todoStateSpecificAttr "TODO", fg red)
             , (todoStateSpecificAttr "NEXT", fg orange)
@@ -51,8 +54,16 @@ defaultAttrMap _ =
             , (timestampNameSpecificAttr "SCHEDULED", fg orange)
             , (timestampNameSpecificAttr "DEADLINE", fg red)
             , (selectedAttr <> tagAttr, fg brightWhite)
+            , (selectedAttr <> headerAttr, fg brightWhite)
             ] $
-        attrMap defAttr [(selectedAttr, fg V.white), (headerAttr, fg V.yellow)]
+        attrMap
+            defAttr
+            [ (selectedAttr, fg V.white)
+            , (headerAttr, fg V.yellow)
+            , (helpNameAttr, fg V.yellow)
+            , (helpKeyCombinationAttr, fg V.blue)
+            , (helpDescriptionAttr, fg V.yellow)
+            ]
 
 selectedAttr :: AttrName
 selectedAttr = "selected"
@@ -85,6 +96,15 @@ tagAttr = "tag"
 
 tagSpecificAttr :: Tag -> AttrName
 tagSpecificAttr t = fromString $ "tag-" ++ T.unpack (tagText t)
+
+helpNameAttr :: AttrName
+helpNameAttr = "helpdescription"
+
+helpKeyCombinationAttr :: AttrName
+helpKeyCombinationAttr = "helpkeycombination"
+
+helpDescriptionAttr :: AttrName
+helpDescriptionAttr = "helpdescription"
 
 textCursorName :: ResourceName
 textCursorName = "text-cursor"

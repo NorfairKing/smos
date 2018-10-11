@@ -35,15 +35,16 @@ import Smos.Data
 
 import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
-import Smos.Cursor.Editor
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
+import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
+import Smos.Report.Path
 
 import Smos.Draw.Cursor
 import Smos.Style
@@ -51,114 +52,117 @@ import Smos.Types
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
-    [ centerLayer drawContextualHelpPage
-    | editorCursorSelection smosStateCursor == HelpSelected
-    ] ++
-    [ vBox $
-      concat
-          [ [ maybe drawNoContent renderCursor $
-              editorCursorFileCursor smosStateCursor
-            ]
-          , [drawDebug ss | editorCursorDebug smosStateCursor]
-          ]
-    ]
+    let helpCursorWidget =
+            drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
+        withHeading hw w =
+            vBox
+                [ hBox
+                      [ str "──[ "
+                      , (withAttr selectedAttr hw)
+                      , str " ]──"
+                      , vLimit 1 $ fill '─'
+                      ]
+                , w
+                ]
+        fileCursorWidget =
+            withHeading (drawFilePath smosStateFilePath) $
+            maybe
+                drawInfo
+                (drawFileCursor $ selectWhen FileSelected)
+                editorCursorFileCursor
+        reportCursorWidget =
+            withHeading (str "Next Action Report") $
+            maybe
+                (str "empty report")
+                (drawReportCursor (selectWhen ReportSelected))
+                editorCursorReportCursor
+        mainCursorWidget =
+            case editorCursorSelection of
+                FileSelected -> fileCursorWidget
+                ReportSelected -> reportCursorWidget
+                HelpSelected -> helpCursorWidget
+        debugWidget = [drawDebug ss | editorCursorDebug]
+        baseWidget = [vBox $ [mainCursorWidget] ++ debugWidget]
+     in baseWidget
   where
-    renderCursor :: SmosFileCursor -> Widget ResourceName
-    renderCursor =
-        viewport "viewport" Vertical .
-        flip runReader smosStateTimeZone . drawSmosFileCursor
-    drawNoContent :: Widget n
-    drawNoContent = B.vCenterLayer $ B.vBox [drawInfo, drawEmptyHelpPage]
-      where
-        drawEmptyHelpPage :: Widget n
-        drawEmptyHelpPage =
-            vBox $
-            map
-                (\(n, km) ->
-                     padBottom (Pad 1) $
-                     vBox
-                         [ hCenterLayer $ withAttr selectedAttr $ str n
-                         , hCenterLayer $ drawKeyMapHelp km
-                         ])
-                keyMaps
-    drawContextualHelpPage :: Widget n
-    drawContextualHelpPage =
-        case smosStateCursor ^. editorCursorSmosFileCursorL of
-            Nothing -> pageFor "Empty file" keyMapEmptyMatchers
-            Just sfc ->
-                case sfc ^. smosFileCursorEntrySelectionL of
-                    WholeEntrySelected -> pageFor "Entry" keyMapEntryMatchers
-                    HeaderSelected -> pageFor "Header" keyMapHeaderMatchers
-                    ContentsSelected ->
-                        pageFor "Contents" keyMapContentsMatchers
-                    TimestampsSelected ->
-                        pageFor "Timestamps" keyMapTimestampsMatchers
-                    PropertiesSelected ->
-                        pageFor "Properties" keyMapPropertiesMatchers
-                    StateHistorySelected ->
-                        pageFor "State History" keyMapStateHistoryMatchers
-                    TagsSelected -> pageFor "Tags" keyMapTagsMatchers
-                    LogbookSelected -> pageFor "Logbook" keyMapLogbookMatchers
-      where
-        pageFor :: String -> (KeyMap -> KeyMappings) -> Widget n
-        pageFor s bindings =
-            borderWithLabel (withAttr selectedAttr $ str ("[" ++ s ++ "]")) $
-            padAll 1 $ drawKeyMapHelp bindings
-    drawKeyMapHelp :: (KeyMap -> KeyMappings) -> Widget n
-    drawKeyMapHelp m =
-        drawTable $
-        flip map (m configKeyMap) $ \km ->
-            (drawKeyMappingEvent km, txt (keyMappingActionName km))
-    keyMaps :: [(String, KeyMap -> KeyMappings)]
-    keyMaps =
-        [ ("Empty file", keyMapEmptyMatchers)
-        , ("Entry", keyMapEntryMatchers)
-        , ("Header", keyMapHeaderMatchers)
-        , ("Contents", keyMapContentsMatchers)
-        , ("Timestamps", keyMapTimestampsMatchers)
-        , ("Properties", keyMapPropertiesMatchers)
-        , ("State History", keyMapStateHistoryMatchers)
-        , ("Tags", keyMapTagsMatchers)
-        , ("Logbook", keyMapLogbookMatchers)
-        , ("Help", keyMapHelpMatchers)
+    EditorCursor {..} = smosStateCursor
+    selectWhen :: EditorSelection -> Select
+    selectWhen ecs =
+        if ecs == editorCursorSelection
+            then MaybeSelected
+            else NotSelected
+    drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
+    drawFileCursor s = flip runReader smosStateTimeZone . drawSmosFileCursor s
+
+drawInfo :: Widget n
+drawInfo =
+    withAttr selectedAttr $
+    B.vCenterLayer $
+    vBox $
+    map B.hCenterLayer
+        [ str "SMOS"
+        , str " "
+        , str "version 0.0.0.0"
+        , str "by Tom Sydney Kerckhove"
+        , str "Smos is open source and freely distributable"
         ]
-    drawInfo :: Widget n
-    drawInfo =
-        withAttr selectedAttr $
-        vBox $
-        map
-            B.hCenterLayer
-            [ str "SMOS"
-            , str " "
-            , str "version 0.0.0.0"
-            , str "by Tom Sydney Kerckhove"
-            , str "Smos is open source and freely distributable"
-            , str " "
-            , str " "
+
+drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
+drawHelpCursor _ Nothing = drawInfo
+drawHelpCursor s (Just HelpCursor {..}) =
+    centerLayer $
+    borderWithLabel
+        (withAttr selectedAttr $ txt ("[" <> helpCursorTitle <> "]")) $
+    hBox
+        [ padAll 1 $
+          viewport "viewport-help" Vertical $
+          drawVerticalNonEmptyCursorTable
+              (go NotSelected)
+              (go s)
+              (go NotSelected)
+              helpCursorKeyHelpCursors
+        , vBorder
+        , padAll 1 $
+          let KeyHelpCursor {..} =
+                  nonEmptyCursorCurrent helpCursorKeyHelpCursors
+           in vBox
+                  [ txt "Name: " <+>
+                    withAttr selectedAttr (txtWrap keyHelpCursorName)
+                  , txtWrap "Description:"
+                  , txt " "
+                  , hLimit 75 $
+                    padRight Max $
+                    withAttr helpDescriptionAttr $
+                    txtWrap keyHelpCursorDescription
+                  ]
+        ]
+  where
+    go :: Select -> KeyHelpCursor -> [Widget n]
+    go s_ KeyHelpCursor {..} =
+        let msel =
+                (case s_ of
+                     MaybeSelected -> forceAttr selectedAttr . visible
+                     NotSelected -> id)
+         in [ withAttr helpKeyCombinationAttr $
+              drawKeyCombination keyHelpCursorKeyBinding
+            , msel $ withAttr helpNameAttr $ txt keyHelpCursorName
             ]
+
+drawKeyCombination :: KeyCombination -> Widget n
+drawKeyCombination = str . go
+  where
+    go :: KeyCombination -> String
+    go (PressExactly kp) = showKeypress kp
+    go PressAnyChar = "<any char>"
+    go PressAny = "<any key>"
+    go (PressCombination kp km) = showKeypress kp ++ go km
 
 type MDrawer = Reader TimeZone (Maybe (Widget ResourceName))
 
 type Drawer = Reader TimeZone (Widget ResourceName)
 
-drawKeyMappingEvent :: KeyMapping -> Widget n
-drawKeyMappingEvent (MapVtyExactly kp _) = str $ showKeypress kp
-drawKeyMappingEvent (MapCatchAll _) = str "<any key>"
-drawKeyMappingEvent (MapAnyTypeableChar _) = str "<any char>"
-drawKeyMappingEvent (MapCombination kp km) =
-    hBox [str $ showKeypress kp, drawKeyMappingEvent km]
-
-keyMappingActionName :: KeyMapping -> Text
-keyMappingActionName (MapVtyExactly _ a) = actionName a
-keyMappingActionName (MapCatchAll a) = actionName a
-keyMappingActionName (MapAnyTypeableChar a) = actionUsingName a
-keyMappingActionName (MapCombination _ km) = keyMappingActionName km
-
 drawHistory :: Seq KeyPress -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . toList
-
-drawTable :: [(Widget n, Widget n)] -> Widget n
-drawTable ls = vBox (map fst ls) <+> str "   " <+> vBox (map snd ls)
 
 showKeypress :: KeyPress -> String
 showKeypress (KeyPress key mods) =
@@ -167,10 +171,16 @@ showKeypress (KeyPress key mods) =
         _ -> intercalate "-" $ map showMod mods ++ [showKey key]
 
 showKey :: Key -> String
+showKey (KChar '\t') = "<tab>"
 showKey (KChar c) = [c]
+showKey KBackTab = "S-<tab>"
 showKey (KFun i) = "F" ++ show i
-showKey (KEsc) = "Esc"
-showKey k = show k
+showKey k = go $ show k
+    -- Because these constructors all start with 'K'
+  where
+    go [] = []
+    go ('K':s) = s
+    go s = s
 
 showMod :: Modifier -> String
 showMod MShift = "S"
@@ -196,6 +206,7 @@ drawLastMatches (Just ts) = Just $ vBox $ map (strWrap . ppShow) $ NE.toList ts
 data Select
     = MaybeSelected
     | NotSelected
+    deriving (Show, Eq)
 
 instance Semigroup Select where
     MaybeSelected <> MaybeSelected = MaybeSelected
@@ -204,21 +215,59 @@ instance Semigroup Select where
 defaultPadding :: Padding
 defaultPadding = Pad 2
 
-drawSmosFileCursor :: SmosFileCursor -> Drawer
-drawSmosFileCursor =
-    drawVerticalForestCursor drawEntryCTree drawSmosTreeCursor drawEntryCTree
+drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
+drawReportCursor s rc =
+    viewport "viewport-report" Vertical $
+    case rc of
+        ReportNextActions narc -> drawNextActionReportCursor s narc
+
+drawNextActionReportCursor ::
+       Select -> NextActionReportCursor -> Widget ResourceName
+drawNextActionReportCursor s =
+    drawVerticalNonEmptyCursor
+        (drawNextActionEntryCursor NotSelected)
+        (drawNextActionEntryCursor s)
+        (drawNextActionEntryCursor NotSelected)
+
+drawNextActionEntryCursor ::
+       Select -> NextActionEntryCursor -> Widget ResourceName
+drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
+    let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
+        sel =
+            (case s of
+                 MaybeSelected -> forceAttr selectedAttr . visible
+                 NotSelected -> id)
+     in hBox $
+        intersperse (str " ") $
+        [ hLimit 20 $
+          padRight Max $ drawFilePath $ case nextActionEntryCursorFilePath of
+            Relative _ rf -> filename rf
+            Absolute af -> filename af
+        , maybe emptyWidget drawTodoState $ entryState e
+        , sel $ drawHeader entryHeader
+        ]
+
+drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
+drawSmosFileCursor s =
+    fmap (viewport "viewport-file" Vertical) .
+    drawVerticalForestCursor
+        drawEntryCTree
+        (drawSmosTreeCursor s)
+        drawEntryCTree
 
 drawSmosTreeCursor ::
-       TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
-drawSmosTreeCursor = drawTreeCursor wrap cur
+       Select
+    -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
+    -> Drawer
+drawSmosTreeCursor s = drawTreeCursor wrap cur
   where
     cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
     cur ec cf =
         case cf of
-            EmptyCForest -> drawEntryCursor TreeIsNotCollapsed ec
-            ClosedForest _ -> drawEntryCursor TreeIsCollapsed ec
+            EmptyCForest -> drawEntryCursor s TreeIsNotCollapsed ec
+            ClosedForest _ -> drawEntryCursor s TreeIsCollapsed ec
             OpenForest ts -> do
-                ecw <- drawEntryCursor TreeIsNotCollapsed ec
+                ecw <- drawEntryCursor s TreeIsNotCollapsed ec
                 etws <- mapM drawEntryCTree $ NE.toList ts
                 pure $ ecw <=> padLeft defaultPadding (vBox etws)
     wrap ::
@@ -249,8 +298,9 @@ data TreeCollapsing
     | TreeIsCollapsed
     deriving (Show, Eq)
 
-drawEntryCursor :: TreeCollapsing -> CollapseEntry EntryCursor -> Drawer
-drawEntryCursor tc e = do
+drawEntryCursor ::
+       Select -> TreeCollapsing -> CollapseEntry EntryCursor -> Drawer
+drawEntryCursor s tc e = do
     tscw <-
         forM entryCursorTimestampsCursor $
         drawTimestampsCursor (selectWhen TimestampsSelected)
@@ -313,9 +363,10 @@ drawEntryCursor tc e = do
             NotSelected -> id
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
-        if ecs == entryCursorSelected
-            then MaybeSelected
-            else NotSelected
+        s <>
+        (if ecs == entryCursorSelected
+             then MaybeSelected
+             else NotSelected)
 
 drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Drawer
 drawEntry tc e = do
@@ -455,7 +506,12 @@ drawStateHistory (StateHistory ls)
         flip map ls $ \StateHistoryEntry {..} ->
             hBox $
             catMaybes
-                [ Just $ strWrap $ show stateHistoryEntryTimestamp
+                [ Just $
+                  strWrap $
+                  formatTime
+                      defaultTimeLocale
+                      "%Y-%m-%d %H:%M:%S"
+                      stateHistoryEntryTimestamp
                 , ((str " " <+>) . drawTodoState) <$> stateHistoryEntryNewState
                 ]
 
@@ -516,6 +572,9 @@ drawUTCLocal utct = do
     tz <- asks id
     let localTime = utcToLocalTime tz utct
     pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
+
+drawFilePath :: Path r d -> Widget n
+drawFilePath = str . toFilePath
 
 drawTextCursor :: Select -> TextCursor -> Widget ResourceName
 drawTextCursor s tc =

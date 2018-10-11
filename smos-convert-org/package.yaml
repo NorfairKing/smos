@@ -1,0 +1,37 @@
+name: smos-convert-org
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - attoparsec
+  - base
+  - bytestring
+  - containers
+  - filepath
+  - optparse-applicative
+  - orgmode-parse
+  - path
+  - path-io
+  - pretty-show
+  - smos-data
+  - text
+  - time
+  - unordered-containers
+  - validity
+  - validity-path
+
+executables:
+  smos-convert-org:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - base
+    - smos-convert-org
