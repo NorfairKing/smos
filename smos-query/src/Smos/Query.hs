@@ -19,7 +19,7 @@ smosQuery sqc = do
 
 execute :: Dispatch -> Q ()
 execute (DispatchEntry es) = entry es
-execute DispatchWaiting = waiting
+execute (DispatchWaiting ws) = waiting ws
 execute (DispatchNext ns) = next ns
 execute (DispatchClock cs) = clock cs
 execute (DispatchAgenda as) = agenda as

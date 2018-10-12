@@ -21,7 +21,7 @@ type Instructions = (Dispatch, Settings)
 
 data Command
     = CommandEntry EntryFlags
-    | CommandWaiting
+    | CommandWaiting WaitingFlags
     | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
@@ -35,20 +35,25 @@ data EntryFlags = EntryFlags
     { entryFlagFilter :: Maybe Filter
     } deriving (Show, Eq)
 
+data WaitingFlags = WaitingFlags
+    { waitingFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
 data NextFlags = NextFlags
-    { nextFlagTags :: [Tag]
+    { nextFlagFilter :: Maybe Filter
     } deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
+    , clockFlagFilter :: Maybe Filter
     , clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
-    , clockFlagTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
-    { agendaFlagHistoricity :: Maybe AgendaHistoricity
+    { agendaFlagFilter :: Maybe Filter
+    , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
     } deriving (Show, Eq)
 
@@ -62,29 +67,34 @@ data Settings =
 
 data Dispatch
     = DispatchEntry EntrySettings
-    | DispatchWaiting
+    | DispatchWaiting WaitingSettings
     | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
     deriving (Show, Eq)
 
 data EntrySettings = EntrySettings
-    { entrySetFilter ::Maybe Filter
+    { entrySetFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data WaitingSettings = WaitingSettings
+    { waitingSetFilter :: Maybe Filter
     } deriving (Show, Eq)
 
 data NextSettings = NextSettings
-    { nextSetTags :: [Tag]
+    { nextSetFilter :: Maybe Filter
     } deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)
+    , clockSetFilter :: Maybe Filter
     , clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
-    , clockSetTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
-    { agendaSetHistoricity :: AgendaHistoricity
+    { agendaSetFilter :: Maybe Filter
+    , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
     } deriving (Show, Eq)

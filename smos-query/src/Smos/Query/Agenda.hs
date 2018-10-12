@@ -18,6 +18,7 @@ import Smos.Data
 
 import Smos.Report.Agenda
 import Smos.Report.Streaming
+import Smos.Report.Query
 
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -33,7 +34,9 @@ agenda AgendaSettings {..} = do
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            smosFileEntries .|
+            smosFileCursors .|
+            C.filter (maybe (const True) filterPredicate agendaSetFilter . snd) .|
+            smosCursorCurrents .|
             C.concatMap (uncurry makeAgendaEntry) .|
             C.filter (fitsHistoricity now agendaSetHistoricity)
         putTableLn $
@@ -48,11 +51,9 @@ renderAgendaReport now atbs =
         _ -> concatMap goEntriesWithTitle atbs
   where
     goEntriesWithTitle AgendaTableBlock {..} =
-        [fore blue $ chunk agendaTableBlockTitle] : goEntries agendaTableBlockEntries
-    goEntries es =
-        map
-            (formatAgendaEntry now)
-            (sortOn agendaEntryTimestamp es)
+        [fore blue $ chunk agendaTableBlockTitle] :
+        goEntries agendaTableBlockEntries
+    goEntries es = map (formatAgendaEntry now) (sortOn agendaEntryTimestamp es)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
