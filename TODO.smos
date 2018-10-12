@@ -650,16 +650,18 @@
           timestamp: 2018-09-29 15:05:22.835248279000+0000
         - new-state: TODO
           timestamp: 2018-09-29 14:41:34.427187264000+0000
+      - header: Show time elapsed per period and total time elapsed for clock times
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-10-12 16:27:36.268545305000+0000
+        - new-state: TODO
+          timestamp: 2018-10-12 14:32:11.548046181000+0000
       - header: Line wrapping cursor placement bug
         contents: ! 'Both for headers and for cursors: when the line wraps, then the
           cursor is still shown on the previous cursor'
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 14:41:16.667140383000+0000
-      - header: Show time elapsed per period and total time elapsed for clock times
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-10-12 14:32:11.548046181000+0000
     - entry:
         header: Debugging
         state-history:

@@ -50,6 +50,7 @@ module Smos.Data.Types
     , logbookClockIn
     , logbookClockOut
     , LogbookEntry(..)
+    , logbookEntryDiffTime
     , TimestampName
     , timestampNameText
     , timestampName
@@ -620,6 +621,10 @@ instance ToYaml LogbookEntry where
             [ ("start", toYaml logbookEntryStart)
             , ("end", toYaml logbookEntryEnd)
             ]
+
+logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
+logbookEntryDiffTime LogbookEntry {..} =
+    diffUTCTime logbookEntryEnd logbookEntryStart
 
 instance ToYaml UTCTime where
     toYaml =

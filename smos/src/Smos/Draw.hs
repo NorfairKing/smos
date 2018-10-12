@@ -14,6 +14,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
 import Data.Tuple
+import Text.Printf
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
@@ -240,9 +241,11 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
      in hBox $
         intersperse (str " ") $
         [ hLimit 20 $
-          padRight Max $ drawFilePath $ case nextActionEntryCursorFilePath of
-            Relative _ rf -> filename rf
-            Absolute af -> filename af
+          padRight Max $
+          drawFilePath $
+          case nextActionEntryCursorFilePath of
+              Relative _ rf -> filename rf
+              Absolute af -> filename af
         , maybe emptyWidget drawTodoState $ entryState e
         , sel $ drawHeader entryHeader
         ]
@@ -537,30 +540,72 @@ drawLogbookCursor _ lbc =
     case lbc of
         LogbookCursorClosed Nothing -> pure Nothing
         LogbookCursorClosed (Just ne) ->
-            fmap (Just . vBox) $
-            mapM drawLogbookEntry (NE.toList $ rebuildNonEmptyCursor ne)
+            drawLogbookEntries (NE.toList $ rebuildNonEmptyCursor ne)
         LogbookCursorOpen u ne -> do
-            ews <-
-                mapM
-                    drawLogbookEntry
-                    (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
             ow <- drawLogbookTimestamp u
-            pure $ Just $ vBox $ hBox [str "CLOCK: ", ow] : ews
+            md <-
+                drawLogbookEntries
+                    (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
+            pure $
+                Just $ vBox [hBox [str "CLOCK: ", ow], fromMaybe emptyWidget md]
 
 drawLogbook :: Logbook -> MDrawer
-drawLogbook (LogClosed ls)
-    | null ls = pure Nothing
-    | otherwise = fmap (Just . vBox) $ mapM drawLogbookEntry ls
+drawLogbook (LogClosed ls) = drawLogbookEntries ls
 drawLogbook (LogOpen u ls) = do
-    ews <- mapM drawLogbookEntry ls
     ow <- drawLogbookTimestamp u
-    pure $ Just $ vBox $ hBox [str "CLOCK: ", ow] : ews
+    md <- drawLogbookEntries ls
+    pure $ Just $ vBox [hBox [str "CLOCK: ", ow], fromMaybe emptyWidget md] -- TODO don't use empty widgets
+
+drawLogbookEntries :: [LogbookEntry] -> MDrawer
+drawLogbookEntries [] = pure Nothing
+drawLogbookEntries lbes = do
+    ews <- mapM drawLogbookEntry lbes
+    pure $
+        Just $
+        vBox
+            [ vBox ews
+            , hBox
+                  [ str "TOTAL: "
+                  , hLimit
+                        (length
+                             ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: [Char])) $
+                    vLimit 1 $ fill ' '
+                  , drawNominalDiffTime $ sum $ map logbookEntryDiffTime lbes
+                  ]
+            ]
 
 drawLogbookEntry :: LogbookEntry -> Drawer
-drawLogbookEntry LogbookEntry {..} = do
+drawLogbookEntry lbe@LogbookEntry {..} = do
     sw <- drawLogbookTimestamp logbookEntryStart
     ew <- drawLogbookTimestamp logbookEntryEnd
-    pure $ hBox [str "CLOCK: ", sw, str "--", ew]
+    pure $
+        hBox
+            [ str "CLOCK: "
+            , sw
+            , str "--"
+            , ew
+            , str " = "
+            , drawNominalDiffTime $ logbookEntryDiffTime lbe
+            ]
+
+drawNominalDiffTime :: NominalDiffTime -> Widget n
+drawNominalDiffTime ndt =
+    hBox
+        [ str $ printf "%.2d" hours
+        , str ":"
+        , str $ printf "%.2d" minutes
+        , str ":"
+        , str $ printf "%.2d" seconds
+        ]
+  where
+    totalSeconds = round ndt :: Int
+    totalMinutes = totalSeconds `div` secondsInAMinute
+    totalHours = totalMinutes `div` minutesInAnHour
+    secondsInAMinute = 60
+    minutesInAnHour = 60
+    hours = totalHours
+    minutes = totalMinutes - minutesInAnHour * totalHours
+    seconds = totalSeconds - secondsInAMinute * totalMinutes
 
 drawLogbookTimestamp :: UTCTime -> Drawer
 drawLogbookTimestamp utct = do
