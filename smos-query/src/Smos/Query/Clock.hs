@@ -51,14 +51,24 @@ clock ClockSettings {..} = do
                 tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
-renderClockTable res ctbs = formatAsTable $ case ctbs of
-    [] -> []
-    [ctb] -> map go (clockTableBlockEntries ctb)
-    _ -> concatMap goB ctbs
+renderClockTable res ctbs =
+    formatAsTable $
+    case ctbs of
+        [] -> []
+        [ctb] -> goEs $ clockTableBlockEntries ctb
+        _ -> concatMap goB ctbs
   where
     goB :: ClockTableBlock -> [[Chunk Text]]
     goB ClockTableBlock {..} =
-        [chunk clockTableBlockName] : map go clockTableBlockEntries
+        [fore blue $ chunk clockTableBlockName] : goEs clockTableBlockEntries
+    goEs es =
+        map go es ++
+        [ map (fore blue) $
+          [ chunk ""
+          , chunk "Total:"
+          , chunk $ renderNominalDiffTime res $ sum $ map clockTableEntryTime es
+          ]
+        ]
     go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
         [ rootedPathChunk clockTableEntryFile

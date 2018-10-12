@@ -491,8 +491,20 @@
           of details to work out there.
 
 
-          The archive could house the done tasks in this file.'
+          The archive could house the done tasks in this file.
+
+
+          It turns out we don''t need an archive at all. We just have to explain to
+          users how to archive their files.
+
+          You need a seperate directory where you archive done projects manually.
+
+          There''s no real need for an entry-granularity archive and as long as you
+          DONE every appropriately in the archives, then you don''t even need to change
+          the other commands. Genius!'
         state-history:
+        - new-state: CANCELLED
+          timestamp: 2018-10-12 14:23:06.004032690000+0000
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
       - header: Allow parsing an empty file as an empty smos file
@@ -644,6 +656,10 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 14:41:16.667140383000+0000
+      - header: Show time elapsed per period and total time elapsed for clock times
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-12 14:32:11.548046181000+0000
     - entry:
         header: Debugging
         state-history:

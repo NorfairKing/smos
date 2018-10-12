@@ -48,7 +48,7 @@ renderAgendaReport now atbs =
         _ -> concatMap goEntriesWithTitle atbs
   where
     goEntriesWithTitle AgendaTableBlock {..} =
-        [chunk agendaTableBlockTitle] : goEntries agendaTableBlockEntries
+        [fore blue $ chunk agendaTableBlockTitle] : goEntries agendaTableBlockEntries
     goEntries es =
         map
             (formatAgendaEntry now)
