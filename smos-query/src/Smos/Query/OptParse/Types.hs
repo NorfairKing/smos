@@ -20,7 +20,7 @@ type Instructions = (Dispatch, Settings)
 
 data Command
     = CommandWaiting
-    | CommandNext
+    | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
     deriving (Show, Eq)
@@ -28,6 +28,11 @@ data Command
 data Flags =
     Flags
     deriving (Show, Eq)
+
+
+data NextFlags = NextFlags
+    { nextFlagTags :: [Tag]
+    } deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
@@ -52,10 +57,14 @@ data Settings =
 
 data Dispatch
     = DispatchWaiting
-    | DispatchNext
+    | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
     deriving (Show, Eq)
+
+data NextSettings = NextSettings
+    { nextSetTags :: [Tag]
+    } deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)

@@ -16,8 +16,8 @@ import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-next :: Q ()
-next = do
+next :: NextSettings ->Q ()
+next NextSettings{..}= do
     wd <- askWorkDir
     liftIO $ do
         tups <-
@@ -25,6 +25,7 @@ next = do
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
+            trimByTags nextSetTags .|
             smosFileEntries .|
             C.filter (isNextAction . snd) .|
             C.map (uncurry makeNextActionEntry)

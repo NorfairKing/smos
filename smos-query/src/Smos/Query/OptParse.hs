@@ -32,7 +32,8 @@ getSettings Flags Configuration = pure Settings
 
 getDispatch :: Command -> IO Dispatch
 getDispatch CommandWaiting = pure DispatchWaiting
-getDispatch CommandNext = pure DispatchNext
+getDispatch (CommandNext NextFlags {..}) =
+    pure $ DispatchNext NextSettings {nextSetTags = nextFlagTags}
 getDispatch (CommandClock ClockFlags {..}) = do
     mf <- forM clockFlagFile resolveFile'
     pure $
@@ -104,7 +105,13 @@ parseCommandNext = info parser modifier
     modifier =
         fullDesc <>
         progDesc "Print the next actions and warn if a file does not have one."
-    parser = pure CommandNext
+    parser =
+        CommandNext <$>
+        (NextFlags <$>
+         many
+             (option
+                  (eitherReader (parseTag . T.pack))
+                  (mconcat [long "tag", help "filter by this tag"])))
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier

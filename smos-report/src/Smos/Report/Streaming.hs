@@ -86,6 +86,22 @@ instance Exception ParseSmosFileException where
     displayException (SmosFileParseError file errMess) =
         "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
+trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
+trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
+  where
+    goF :: Forest Entry -> Forest Entry
+    goF =
+        concatMap $ \t ->
+            case goT t of
+                Left t_ -> [t_]
+                Right fs -> fs
+    goT :: Tree Entry -> Either (Tree Entry) (Forest Entry)
+    goT t@(Node e fs) =
+        if all (`elem` entryTags e) ts
+            then Left t
+            else Right $ goF fs
+
+
 smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = C.concatMap $ uncurry go
   where
