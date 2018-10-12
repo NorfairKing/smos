@@ -7,8 +7,6 @@ module Smos.Query.OptParse.Types
 
 import Path
 
-import Smos.Data
-
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Query

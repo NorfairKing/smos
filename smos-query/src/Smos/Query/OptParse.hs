@@ -12,8 +12,6 @@ import System.Environment
 
 import Options.Applicative
 
-import Smos.Data
-
 import Smos.Report.Query
 import Smos.Report.TimeBlock
 

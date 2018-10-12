@@ -20,7 +20,6 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
-import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
 
