@@ -72,6 +72,7 @@ import Data.Validity.Text ()
 import Data.Validity.Time ()
 
 import Data.Aeson as JSON
+import Data.Char as Char
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -410,15 +411,34 @@ timestampText = T.pack . timestampString
 
 newtype TodoState = TodoState
     { todoStateText :: Text
-    } deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+    } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
+
+instance Validity TodoState where
+    validate (TodoState t) =
+        mconcat
+            [ delve "todoStateText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare
+                      "The character is printable but not a whitespace character or punctuation" $
+                  Char.isPrint c &&
+                  not (Char.isSpace c) && not (Char.isPunctuation c)
+            ]
+
+instance FromJSON TodoState where
+    parseJSON =
+        withText "TodoState" $ \t ->
+            case parseTodoState t of
+                Left err ->
+                    fail $
+                    unwords
+                        ["Invalid todo state: ", T.unpack t, "  error:", err]
+                Right h -> pure h
 
 todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
 
 parseTodoState :: Text -> Either String TodoState
 parseTodoState = prettyValidation . TodoState
-
-instance Validity TodoState
 
 newtype StateHistory = StateHistory
     { unStateHistory :: [StateHistoryEntry]
@@ -442,14 +462,14 @@ data StateHistoryEntry = StateHistoryEntry
     , stateHistoryEntryTimestamp :: UTCTime
     } deriving (Show, Eq, Generic)
 
+instance Validity StateHistoryEntry
+
 instance Ord StateHistoryEntry where
     compare =
         mconcat
             [ comparing $ Down . stateHistoryEntryTimestamp
             , comparing stateHistoryEntryNewState
             ]
-
-instance Validity StateHistoryEntry
 
 instance FromJSON StateHistoryEntry where
     parseJSON =
@@ -479,15 +499,20 @@ instance Validity Tag where
         mconcat
             [ delve "tagText" t
             , decorateList (T.unpack t) $ \c ->
-                  declare "The character is not a newline character" $ c /= '\n'
+                  declare
+                      "The character is printable but not a whitespace character or punctuation" $
+                  Char.isPrint c &&
+                  not (Char.isSpace c) && not (Char.isPunctuation c)
             ]
 
 instance FromJSON Tag where
     parseJSON =
         withText "Tag" $ \t ->
-            case tag t of
-                Nothing -> fail $ "Invalid tag: " <> T.unpack t
-                Just h -> pure h
+            case parseTag t of
+                Left err ->
+                    fail $
+                    unwords ["Invalid tag: ", T.unpack t, "  error:", err]
+                Right h -> pure h
 
 emptyTag :: Tag
 emptyTag = Tag ""

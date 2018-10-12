@@ -17,6 +17,7 @@ library:
   - containers
   - cursor
   - filepath
+  - megaparsec
   - microlens
   - path
   - path-io
