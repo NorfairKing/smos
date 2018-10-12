@@ -40,4 +40,8 @@ smos sc@SmosConfig {..} = do
     let s = initState p startF tz
     s' <- defaultMain (mkSmosApp sc) s
     let sf' = rebuildEditorCursor $ smosStateCursor s'
-    when (smosStateStartSmosFile s' /= Just sf') $ writeSmosFile (smosStateFilePath s') sf'
+    case smosStateStartSmosFile s of
+        Nothing ->
+            unless (sf' == emptySmosFile) $ writeSmosFile (smosStateFilePath s') sf'
+        Just sf'' ->
+            unless (sf'' == sf') $ writeSmosFile (smosStateFilePath s') sf'
