@@ -6,6 +6,7 @@ module Smos.Query
 import Smos.Query.Agenda
 import Smos.Query.Clock
 import Smos.Query.Config
+import Smos.Query.Entry
 import Smos.Query.Next
 import Smos.Query.OptParse
 import Smos.Query.OptParse.Types
@@ -17,6 +18,7 @@ smosQuery sqc = do
     runReaderT (execute disp) sqc
 
 execute :: Dispatch -> Q ()
+execute (DispatchEntry es) = entry es
 execute DispatchWaiting = waiting
 execute (DispatchNext ns) = next ns
 execute (DispatchClock cs) = clock cs

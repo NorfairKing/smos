@@ -11,15 +11,17 @@ import Smos.Data
 
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
-import Smos.Report.TimeBlock
+import Smos.Report.Query
 import Smos.Report.ShouldPrint
+import Smos.Report.TimeBlock
 
 type Arguments = (Command, Flags)
 
 type Instructions = (Dispatch, Settings)
 
 data Command
-    = CommandWaiting
+    = CommandEntry EntryFlags
+    | CommandWaiting
     | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
@@ -29,6 +31,9 @@ data Flags =
     Flags
     deriving (Show, Eq)
 
+data EntryFlags = EntryFlags
+    { entryFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
 
 data NextFlags = NextFlags
     { nextFlagTags :: [Tag]
@@ -56,11 +61,16 @@ data Settings =
     deriving (Show, Eq)
 
 data Dispatch
-    = DispatchWaiting
+    = DispatchEntry EntrySettings
+    | DispatchWaiting
     | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
     deriving (Show, Eq)
+
+data EntrySettings = EntrySettings
+    { entrySetFilter ::Maybe Filter
+    } deriving (Show, Eq)
 
 data NextSettings = NextSettings
     { nextSetTags :: [Tag]

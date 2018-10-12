@@ -14,6 +14,7 @@ import Options.Applicative
 
 import Smos.Data
 
+import Smos.Report.Query
 import Smos.Report.TimeBlock
 
 import Smos.Query.OptParse.Types
@@ -31,6 +32,8 @@ getSettings :: Flags -> Configuration -> IO Settings
 getSettings Flags Configuration = pure Settings
 
 getDispatch :: Command -> IO Dispatch
+getDispatch (CommandEntry EntryFlags {..}) =
+    pure $ DispatchEntry EntrySettings {entrySetFilter = entryFlagFilter}
 getDispatch CommandWaiting = pure DispatchWaiting
 getDispatch (CommandNext NextFlags {..}) =
     pure $ DispatchNext NextSettings {nextSetTags = nextFlagTags}
@@ -87,11 +90,18 @@ parseCommand :: Parser Command
 parseCommand =
     hsubparser $
     mconcat
-        [ command "waiting" parseCommandWaiting
+        [ command "entry" parseCommandEntry
+        , command "waiting" parseCommandWaiting
         , command "next" parseCommandNext
         , command "clock" parseCommandClock
         , command "agenda" parseCommandAgenda
         ]
+
+parseCommandEntry :: ParserInfo Command
+parseCommandEntry = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Select entries based on a given filter"
+    parser = CommandEntry <$> (EntryFlags <$>parseFilterArg)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -157,6 +167,12 @@ parseCommandAgenda = info parser modifier
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
+
+parseFilterArg :: Parser (Maybe Filter)
+parseFilterArg =
+    argument
+        (Just <$> (maybeReader (parseFilter . T.pack)))
+        (mconcat [value Nothing, help "A filter to filter entries by"])
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =

@@ -57,17 +57,20 @@ filterPredicate f fc =
     cur :: Entry
     cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
-type Parser = Parsec Void Text
+type P = Parsec Void Text
 
-parseFilter :: Parser Filter
-parseFilter =
-    try parseFilterHasTag <|> try parseFilterTodoState <|> try parseFilterParent <|>
-    try parseFilterAncestor <|>
-    try parseFilterNot <|>
-    parseFilterBinRel
+parseFilter :: Text -> Maybe Filter
+parseFilter = parseMaybe filterP
 
-parseFilterHasTag :: Parser Filter
-parseFilterHasTag = do
+filterP :: P Filter
+filterP =
+    try filterHasTagP <|> try filterTodoStateP <|> try filterParentP <|>
+    try filterAncestorP <|>
+    try filterNotP <|>
+    filterBinRelP
+
+filterHasTagP :: P Filter
+filterHasTagP = do
     void $ string' "tag:"
     s <-
         many
@@ -76,8 +79,8 @@ parseFilterHasTag = do
                  not (Char.isPunctuation c))
     either fail (pure . FilterHasTag) $ parseTag $ T.pack s
 
-parseFilterTodoState :: Parser Filter
-parseFilterTodoState = do
+filterTodoStateP :: P Filter
+filterTodoStateP = do
     void $ string' "state:"
     s <-
         many
@@ -86,40 +89,40 @@ parseFilterTodoState = do
                  not (Char.isPunctuation c))
     either fail (pure . FilterTodoState) $ parseTodoState $ T.pack s
 
-parseFilterParent :: Parser Filter
-parseFilterParent = do
+filterParentP :: P Filter
+filterParentP = do
     void $ string' "parent:"
-    FilterParent <$> parseFilter
+    FilterParent <$> filterP
 
-parseFilterAncestor :: Parser Filter
-parseFilterAncestor = do
+filterAncestorP :: P Filter
+filterAncestorP = do
     void $ string' "ancestor:"
-    FilterAncestor <$> parseFilter
+    FilterAncestor <$> filterP
 
-parseFilterNot :: Parser Filter
-parseFilterNot = do
+filterNotP :: P Filter
+filterNotP = do
     void $ string' "not:"
-    FilterNot <$> parseFilter
+    FilterNot <$> filterP
 
-parseFilterBinRel :: Parser Filter
-parseFilterBinRel = do
-    char '('
-    f <- try parseFilterOr <|> parseFilterAnd
-    char ')'
+filterBinRelP :: P Filter
+filterBinRelP = do
+    void $ char '('
+    f <- try filterOrP <|> filterAndP
+    void $ char ')'
     pure f
 
-parseFilterOr :: Parser Filter
-parseFilterOr = do
-    f1 <- parseFilter
-    string' " or "
-    f2 <- parseFilter
+filterOrP :: P Filter
+filterOrP = do
+    f1 <- filterP
+    void $ string' " or "
+    f2 <- filterP
     pure $ FilterOr f1 f2
 
-parseFilterAnd :: Parser Filter
-parseFilterAnd = do
-    f1 <- parseFilter
-    string' " and "
-    f2 <- parseFilter
+filterAndP :: P Filter
+filterAndP = do
+    f1 <- filterP
+    void $ string' " and "
+    f2 <- filterP
     pure $ FilterAnd f1 f2
 
 renderFilter :: Filter -> Text
@@ -127,9 +130,9 @@ renderFilter f =
     case f of
         FilterHasTag t -> "tag:" <> tagText t
         FilterTodoState ts -> "state:" <> todoStateText ts
-        FilterParent f -> "parent:" <> renderFilter f
-        FilterAncestor f -> "ancestor:" <> renderFilter f
-        FilterNot f -> "not:" <> renderFilter f
+        FilterParent f' -> "parent:" <> renderFilter f'
+        FilterAncestor f' -> "ancestor:" <> renderFilter f'
+        FilterNot f' -> "not:" <> renderFilter f'
         FilterOr f1 f2 ->
             T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
         FilterAnd f1 f2 ->
