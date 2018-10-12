@@ -12,8 +12,7 @@ import System.Environment
 
 import Options.Applicative
 
-import Smos.Data
-
+import Smos.Report.Query
 import Smos.Report.TimeBlock
 
 import Smos.Query.OptParse.Types
@@ -31,29 +30,41 @@ getSettings :: Flags -> Configuration -> IO Settings
 getSettings Flags Configuration = pure Settings
 
 getDispatch :: Command -> IO Dispatch
-getDispatch CommandWaiting = pure DispatchWaiting
-getDispatch (CommandNext NextFlags {..}) =
-    pure $ DispatchNext NextSettings {nextSetTags = nextFlagTags}
-getDispatch (CommandClock ClockFlags {..}) = do
-    mf <- forM clockFlagFile resolveFile'
-    pure $
-        DispatchClock
-            ClockSettings
-                { clockSetFile = mf
-                , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-                , clockSetResolution =
-                      fromMaybe MinutesResolution clockFlagResolutionFlags
-                , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-                , clockSetTags = clockFlagTags
-                }
-getDispatch (CommandAgenda AgendaFlags {..}) =
-    pure $
-    DispatchAgenda
-        AgendaSettings
-            { agendaSetHistoricity =
-                  fromMaybe HistoricalAgenda agendaFlagHistoricity
-            , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
-            }
+getDispatch c =
+    case c of
+        CommandEntry EntryFlags {..} ->
+            pure $
+            DispatchEntry EntrySettings {entrySetFilter = entryFlagFilter}
+        CommandWaiting WaitingFlags {..} ->
+            pure $
+            DispatchWaiting
+                WaitingSettings {waitingSetFilter = waitingFlagFilter}
+        CommandNext NextFlags {..} ->
+            pure $ DispatchNext NextSettings {nextSetFilter = nextFlagFilter}
+        CommandClock ClockFlags {..} -> do
+            mf <- forM clockFlagFile resolveFile'
+            pure $
+                DispatchClock
+                    ClockSettings
+                        { clockSetFile = mf
+                        , clockSetFilter = clockFlagFilter
+                        , clockSetPeriod =
+                              fromMaybe AllTime clockFlagPeriodFlags
+                        , clockSetResolution =
+                              fromMaybe
+                                  MinutesResolution
+                                  clockFlagResolutionFlags
+                        , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                        }
+        CommandAgenda AgendaFlags {..} ->
+            pure $
+            DispatchAgenda
+                AgendaSettings
+                    { agendaSetFilter = agendaFlagFilter
+                    , agendaSetHistoricity =
+                          fromMaybe HistoricalAgenda agendaFlagHistoricity
+                    , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
+                    }
 
 getArguments :: IO Arguments
 getArguments = do
@@ -87,17 +98,24 @@ parseCommand :: Parser Command
 parseCommand =
     hsubparser $
     mconcat
-        [ command "waiting" parseCommandWaiting
+        [ command "entry" parseCommandEntry
+        , command "waiting" parseCommandWaiting
         , command "next" parseCommandNext
         , command "clock" parseCommandClock
         , command "agenda" parseCommandAgenda
         ]
 
+parseCommandEntry :: ParserInfo Command
+parseCommandEntry = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Select entries based on a given filter"
+    parser = CommandEntry <$> (EntryFlags <$> parseFilterArg)
+
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the \"waiting\" tasks"
-    parser = pure CommandWaiting
+    parser = CommandWaiting <$> (WaitingFlags <$> parseFilterArg)
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
@@ -105,13 +123,7 @@ parseCommandNext = info parser modifier
     modifier =
         fullDesc <>
         progDesc "Print the next actions and warn if a file does not have one."
-    parser =
-        CommandNext <$>
-        (NextFlags <$>
-         many
-             (option
-                  (eitherReader (parseTag . T.pack))
-                  (mconcat [long "tag", help "filter by this tag"])))
+    parser = CommandNext <$> (NextFlags <$> parseFilterArg)
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
@@ -127,6 +139,7 @@ parseCommandClock = info parser modifier
                    , help "A single file to gather clock info from"
                    , value Nothing
                    ])) <*>
+         parseFilterArg <*>
          (Just <$>
           (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
            flag' AllTime (long "all-time")) <|>
@@ -136,11 +149,7 @@ parseCommandClock = info parser modifier
            flag' MinutesResolution (long "minutes-resolution") <|>
            flag' HoursResolution (long "hours-resolution")) <|>
           pure Nothing) <*>
-         parseTimeBlock <*>
-         many
-             (option
-                  (eitherReader (parseTag . T.pack))
-                  (mconcat [long "tag", help "filter by this tag"])))
+         parseTimeBlock)
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
@@ -148,7 +157,7 @@ parseCommandAgenda = info parser modifier
     modifier = fullDesc <> progDesc "Print the agenda"
     parser =
         CommandAgenda <$>
-        (AgendaFlags <$>
+        (AgendaFlags <$> parseFilterArg <*>
          (Just <$>
           (flag' HistoricalAgenda (long "historical") <|>
            flag' FutureAgenda (long "future")) <|>
@@ -157,6 +166,12 @@ parseCommandAgenda = info parser modifier
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
+
+parseFilterArg :: Parser (Maybe Filter)
+parseFilterArg =
+    argument
+        (Just <$> (maybeReader (parseFilter . T.pack)))
+        (mconcat [value Nothing, help "A filter to filter entries by"])
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =

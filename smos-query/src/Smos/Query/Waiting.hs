@@ -15,6 +15,7 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
+import Smos.Report.Query
 import Smos.Report.Streaming
 import Smos.Report.Waiting
 
@@ -22,8 +23,8 @@ import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-waiting :: Q ()
-waiting = do
+waiting :: WaitingSettings -> Q ()
+waiting WaitingSettings {..} = do
     wd <- askWorkDir
     liftIO $ do
         tups <-
@@ -31,7 +32,9 @@ waiting = do
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            smosFileEntries .|
+            smosFileCursors .|
+            C.filter (maybe (const True) filterPredicate waitingSetFilter . snd) .|
+            smosCursorCurrents .|
             C.filter (isWaitingAction . snd) .|
             C.map (uncurry makeWaitingActionEntry)
         now <- getCurrentTime

@@ -714,15 +714,21 @@
         - entry:
             header: TODO state options
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:57.054879514000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:29.304259983000+0000
           forest:
           - header: Only show TODO items
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:55.910917002000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:22.896264365000+0000
           - header: Don't show DONE items
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:56.382801567000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:23.488277355000+0000
         - entry:
@@ -762,12 +768,20 @@
           - new-state: TODO
             timestamp: 2018-10-07 16:50:32.020845922000+0000
         forest:
-        - header: Next actions
-          state-history:
-          - new-state: DONE
-            timestamp: 2018-10-07 16:50:55.676424467000+0000
-          - new-state: TODO
-            timestamp: 2018-10-07 16:50:48.004747025000+0000
+        - entry:
+            header: Next actions
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-12 23:32:11.887007456000+0000
+            - new-state: DONE
+              timestamp: 2018-10-07 16:50:55.676424467000+0000
+            - new-state: TODO
+              timestamp: 2018-10-07 16:50:48.004747025000+0000
+          forest:
+          - header: interactive filter
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-12 23:32:17.422403491000+0000
         - header: waiting
           state-history:
           - new-state: TODO

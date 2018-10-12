@@ -20,7 +20,6 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
-import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
 
@@ -38,23 +37,20 @@ data ClockTime = ClockTime
 
 instance Validity ClockTime
 
-findClockTimes :: RootedPath -> SmosFile -> [ClockTime]
-findClockTimes rp = mapMaybe go . concatMap flatten . smosFileForest
+findClockTimes :: RootedPath -> Entry -> Maybe ClockTime
+findClockTimes rp Entry {..} =
+    case entryLogbook of
+        LogOpen _ es -> go' es
+        LogClosed es -> go' es
   where
-    go :: Entry -> Maybe ClockTime
-    go Entry {..} =
-        case entryLogbook of
-            LogOpen _ es -> go' es
-            LogClosed es -> go' es
-      where
-        go' es = do
-            ne <- NE.nonEmpty es
-            pure $
-                ClockTime
-                    { clockTimeFile = rp
-                    , clockTimeHeader = entryHeader
-                    , clockTimeEntries = ne
-                    }
+    go' es = do
+        ne <- NE.nonEmpty es
+        pure $
+            ClockTime
+                { clockTimeFile = rp
+                , clockTimeHeader = entryHeader
+                , clockTimeEntries = ne
+                }
 
 trimClockTime :: ZonedTime -> ClockPeriod -> ClockTime -> Maybe ClockTime
 trimClockTime zt cp ct = do

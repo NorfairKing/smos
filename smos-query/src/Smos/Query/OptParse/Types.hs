@@ -7,19 +7,19 @@ module Smos.Query.OptParse.Types
 
 import Path
 
-import Smos.Data
-
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
-import Smos.Report.TimeBlock
+import Smos.Report.Query
 import Smos.Report.ShouldPrint
+import Smos.Report.TimeBlock
 
 type Arguments = (Command, Flags)
 
 type Instructions = (Dispatch, Settings)
 
 data Command
-    = CommandWaiting
+    = CommandEntry EntryFlags
+    | CommandWaiting WaitingFlags
     | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
@@ -29,21 +29,29 @@ data Flags =
     Flags
     deriving (Show, Eq)
 
+data EntryFlags = EntryFlags
+    { entryFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data WaitingFlags = WaitingFlags
+    { waitingFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
 
 data NextFlags = NextFlags
-    { nextFlagTags :: [Tag]
+    { nextFlagFilter :: Maybe Filter
     } deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
+    , clockFlagFilter :: Maybe Filter
     , clockFlagPeriodFlags :: Maybe ClockPeriod
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
-    , clockFlagTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
-    { agendaFlagHistoricity :: Maybe AgendaHistoricity
+    { agendaFlagFilter :: Maybe Filter
+    , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
     } deriving (Show, Eq)
 
@@ -56,25 +64,35 @@ data Settings =
     deriving (Show, Eq)
 
 data Dispatch
-    = DispatchWaiting
+    = DispatchEntry EntrySettings
+    | DispatchWaiting WaitingSettings
     | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
     deriving (Show, Eq)
 
+data EntrySettings = EntrySettings
+    { entrySetFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data WaitingSettings = WaitingSettings
+    { waitingSetFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
 data NextSettings = NextSettings
-    { nextSetTags :: [Tag]
+    { nextSetFilter :: Maybe Filter
     } deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)
+    , clockSetFilter :: Maybe Filter
     , clockSetPeriod :: ClockPeriod
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
-    , clockSetTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
-    { agendaSetHistoricity :: AgendaHistoricity
+    { agendaSetFilter :: Maybe Filter
+    , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
     } deriving (Show, Eq)

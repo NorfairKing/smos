@@ -18,9 +18,11 @@ import Text.Printf
 import Rainbow
 
 import Conduit
+import qualified Data.Conduit.Combinators as C
 
 import Smos.Report.Clock
 import Smos.Report.Path
+import Smos.Report.Query
 import Smos.Report.Streaming
 
 import Smos.Query.Config
@@ -39,16 +41,16 @@ clock ClockSettings {..} = do
             sourceToList $
             filesSource .| filterSmosFiles .| parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            trimByTags clockSetTags
+            smosFileCursors .|
+            C.filter (maybe (const True) filterPredicate clockSetFilter . snd) .|
+            smosCursorCurrents
         now <- getZonedTime
         putTableLn $
             renderClockTable clockSetResolution $
             makeClockTable $
             divideIntoBlocks (zonedTimeZone now) clockSetBlock $
-            concatMap
-                (mapMaybe (trimClockTime now clockSetPeriod) .
-                 uncurry findClockTimes)
-                tups
+            mapMaybe (trimClockTime now clockSetPeriod) $
+            mapMaybe (uncurry findClockTimes) tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
 renderClockTable res ctbs =

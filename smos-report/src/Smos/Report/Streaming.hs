@@ -9,11 +9,14 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Tree
 
+import Lens.Micro
+
 import Path
 import Path.IO
 
 import Conduit
 import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 import qualified Data.Conduit.Combinators as C
 
 import Smos.Data
@@ -30,8 +33,8 @@ sourceFilesInNonHiddenDirsRecursively dir = walkDir go dir
        -> [Path Abs File]
        -> ConduitT i RootedPath IO WalkAction
     go curdir subdirs files = do
-        C.yieldMany $
-            map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
+        C.yieldMany $ map (Relative dir) $
+            mapMaybe (stripProperPrefix dir) files
         pure $ WalkExclude $ filter hidden subdirs
       where
         hidden ad =
@@ -101,7 +104,6 @@ trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
             then Left t
             else Right $ goF fs
 
-
 smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = C.concatMap $ uncurry go
   where
@@ -111,6 +113,12 @@ smosFileEntries = C.concatMap $ uncurry go
 smosFileCursors ::
        Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
+
+smosCursorCurrents ::
+       Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
+smosCursorCurrents =
+    C.map $ \(rf, fc) ->
+        (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors sf =
