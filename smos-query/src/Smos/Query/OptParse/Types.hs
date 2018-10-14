@@ -23,6 +23,7 @@ data Command
     | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
+    | CommandStats StatsFlags
     deriving (Show, Eq)
 
 data Flags =
@@ -55,6 +56,10 @@ data AgendaFlags = AgendaFlags
     , agendaFlagBlock :: Maybe TimeBlock
     } deriving (Show, Eq)
 
+data StatsFlags = StatsFlags
+    { statsFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
 data Configuration =
     Configuration
     deriving (Show, Eq)
@@ -69,6 +74,7 @@ data Dispatch
     | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
+    | DispatchStats StatsSettings
     deriving (Show, Eq)
 
 data EntrySettings = EntrySettings
@@ -95,4 +101,8 @@ data AgendaSettings = AgendaSettings
     { agendaSetFilter :: Maybe Filter
     , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
+    } deriving (Show, Eq)
+
+data StatsSettings = StatsSettings
+    { statsSetFilter :: Maybe Filter
     } deriving (Show, Eq)

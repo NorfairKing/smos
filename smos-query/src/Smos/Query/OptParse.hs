@@ -65,6 +65,9 @@ getDispatch c =
                           fromMaybe HistoricalAgenda agendaFlagHistoricity
                     , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
                     }
+        CommandStats StatsFlags {..} ->
+            pure $
+            DispatchStats StatsSettings {statsSetFilter = statsFlagFilter}
 
 getArguments :: IO Arguments
 getArguments = do
@@ -103,6 +106,7 @@ parseCommand =
         , command "next" parseCommandNext
         , command "clock" parseCommandClock
         , command "agenda" parseCommandAgenda
+        , command "stats" parseCommandStats
         ]
 
 parseCommandEntry :: ParserInfo Command
@@ -163,6 +167,14 @@ parseCommandAgenda = info parser modifier
            flag' FutureAgenda (long "future")) <|>
           pure Nothing) <*>
          parseTimeBlock)
+
+parseCommandStats :: ParserInfo Command
+parseCommandStats = info parser modifier
+  where
+    modifier =
+        fullDesc <>
+        progDesc "Print the stats actions and warn if a file does not have one."
+    parser = CommandStats <$> (StatsFlags <$> parseFilterArg)
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
