@@ -507,6 +507,19 @@
           timestamp: 2018-10-12 14:23:06.004032690000+0000
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
+      - header: Archiving
+        contents: ! 'A way to put away an entire smos file such that it never conflicts
+          with another file.
+
+          If we have two projects (over a long timespan) that both were called p.smos
+          .
+
+          They should both somehow fit into the archive without conflicts.
+
+          Smos could have some tooling for that, something like smos-archive or so.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-14 13:51:46.383973186000+0000
       - header: Allow parsing an empty file as an empty smos file
         state-history:
         - new-state: TODO
@@ -597,6 +610,10 @@
             - new-state: TODO
               timestamp: 2018-09-29 10:47:34.849786330000+0000
           forest:
+          - header: Clocking in should display the currently running clock
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-14 11:24:48.759250459000+0000
           - header: Also clock-out anywhere also in other files
             state-history:
             - new-state: TODO
@@ -656,6 +673,10 @@
           timestamp: 2018-10-12 16:27:36.268545305000+0000
         - new-state: TODO
           timestamp: 2018-10-12 14:32:11.548046181000+0000
+      - header: No need to show total time elapsed if there is only one clock entry?
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-14 10:24:05.798875032000+0000
       - header: Line wrapping cursor placement bug
         contents: ! 'Both for headers and for cursors: when the line wraps, then the
           cursor is still shown on the previous cursor'
@@ -731,37 +752,18 @@
               timestamp: 2018-10-12 23:31:56.382801567000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:23.488277355000+0000
-        - entry:
-            header: Period
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:36:37.616233040000+0000
-          forest:
-          - header: Day
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:01.472236138000+0000
-          - header: This week
-            contents: monday - sunday
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:26:59.360230704000+0000
-          - header: Week to date
-            contents: today - 6, today -5, ... today
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:31.616171810000+0000
-          - header: The week to come, starting from today
-            contents: today, today +1, ... today + 6
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:48.064242054000+0000
-          - header: Week centered around today
-            contents: today - 3, today - 2, today - 1, today, today + 1, today + 2,
-              today + 3
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:36.480229176000+0000
+        - header: No need to show total clock time if there are no matching entries
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 10:24:30.190843122000+0000
+        - header: ! 'Clock: nicer day format for humans in reports'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 11:05:41.471081520000+0000
+        - header: ! 'Stats: how many new todos? How many did I finish?'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 13:51:39.072010385000+0000
       - entry:
           header: Interactive reports
           state-history:
