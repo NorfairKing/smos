@@ -764,6 +764,12 @@
               timestamp: 2018-10-12 23:31:56.382801567000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:23.488277355000+0000
+        - header: ! 'Stats: how many new todos? How many did I finish?'
+          state-history:
+          - new-state: DONE
+            timestamp: 2018-10-14 17:31:40.393000729000+0000
+          - new-state: TODO
+            timestamp: 2018-10-14 13:51:39.072010385000+0000
         - header: No need to show total clock time if there are no matching entries
           state-history:
           - new-state: TODO
@@ -772,10 +778,10 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-10-14 11:05:41.471081520000+0000
-        - header: ! 'Stats: how many new todos? How many did I finish?'
+        - header: ! 'Stats: perioud to filter'
           state-history:
           - new-state: TODO
-            timestamp: 2018-10-14 13:51:39.072010385000+0000
+            timestamp: 2018-10-14 17:31:48.569204767000+0000
         - header: ! 'Clock: mention open clocks'
           state-history:
           - new-state: TODO
