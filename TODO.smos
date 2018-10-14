@@ -651,6 +651,18 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-10-08 16:47:36.613506648000+0000
+      - entry:
+          header: Convenience
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 13:55:00.856012672000+0000
+        forest:
+        - header: ! 'Cancel the current waiting task, make a new task that is DONE:
+            ping about this, and open a new waiting task that is the same as the one
+            that was cancelled'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 13:55:24.759971424000+0000
     - entry:
         header: Display
         state-history:
@@ -764,6 +776,10 @@
           state-history:
           - new-state: TODO
             timestamp: 2018-10-14 13:51:39.072010385000+0000
+        - header: ! 'Clock: mention open clocks'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 14:04:37.552167601000+0000
       - entry:
           header: Interactive reports
           state-history:
