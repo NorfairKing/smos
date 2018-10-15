@@ -18,6 +18,7 @@ library:
   - contravariant
   - cursor
   - cursor-fuzzy-time
+  - filelock
   - fuzzy-time
   - megaparsec
   - microlens

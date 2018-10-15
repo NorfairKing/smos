@@ -23,25 +23,30 @@ import Smos.Types
 smos :: SmosConfig -> IO ()
 smos sc@SmosConfig {..} = do
     Instructions p Settings <- getInstructions sc
-    errOrSF <- readSmosFile p
-    startF <-
-        case errOrSF of
-            Nothing -> pure Nothing
-            Just (Left err) ->
-                die $
-                unlines
-                    [ "Failed to read smos file"
-                    , fromAbsFile p
-                    , "could not parse it:"
-                    , show err
-                    ]
-            Just (Right sf) -> pure $ Just sf
-    tz <- getCurrentTimeZone
-    let s = initState p startF tz
-    s' <- defaultMain (mkSmosApp sc) s
-    let sf' = rebuildEditorCursor $ smosStateCursor s'
-    case smosStateStartSmosFile s of
-        Nothing ->
-            unless (sf' == emptySmosFile) $ writeSmosFile (smosStateFilePath s') sf'
-        Just sf'' ->
-            unless (sf'' == sf') $ writeSmosFile (smosStateFilePath s') sf'
+    lock <- lockFile p
+    case lock of
+        Nothing -> die "Failed to lock."
+        Just fl -> do
+            errOrSF <- readSmosFile p
+            startF <-
+                case errOrSF of
+                    Nothing -> pure Nothing
+                    Just (Left err) ->
+                        die $
+                        unlines
+                            [ "Failed to read smos file"
+                            , fromAbsFile p
+                            , "could not parse it:"
+                            , show err
+                            ]
+                    Just (Right sf) -> pure $ Just sf
+            tz <- getCurrentTimeZone
+            let s = initState tz p fl startF
+            s' <- defaultMain (mkSmosApp sc) s
+            let sf' = rebuildEditorCursor $ smosStateCursor s'
+            let p' = smosStateFilePath s'
+            (case smosStateStartSmosFile s' of
+                 Nothing -> unless (sf' == emptySmosFile)
+                 Just sf'' -> unless (sf'' == sf')) $
+                writeSmosFile p' sf'
+            unlockFile $ smosStateFileLock s'

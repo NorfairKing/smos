@@ -14,6 +14,7 @@ module Smos.Types
 
 import Import
 
+import System.FileLock
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
 import Data.Time
@@ -170,9 +171,10 @@ runSmosM ::
 runSmosM = runMkSmosM
 
 data SmosState = SmosState
-    { smosStateStartSmosFile :: Maybe SmosFile
-    , smosStateTimeZone :: TimeZone
+    { smosStateTimeZone :: TimeZone
+    , smosStateStartSmosFile :: Maybe SmosFile
     , smosStateFilePath :: Path Abs File
+    , smosStateFileLock :: FileLock
     , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
     , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest

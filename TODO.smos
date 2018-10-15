@@ -467,17 +467,10 @@
 
           Opening file A the second time should not be possible'
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-15 21:30:18.365498544000+0000
         - new-state: TODO
           timestamp: 2018-10-07 17:12:51.588908229000+0000
-      - header: Copy-pasting
-        contents: ! 'also not critical, because the user can just use swapping and
-          promoting/demoting to move the entry to the desired place.
-
-          When it comes to multiple entries to move, that''s a bit cumbersome, but
-          still not critical.'
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-29 10:42:19.961781171000+0000
       - header: The archive
         contents: ! 'The idea here is that you should never have to remove data to
           have a clear overview.
@@ -507,6 +500,15 @@
           timestamp: 2018-10-12 14:23:06.004032690000+0000
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
+      - header: Copy-pasting
+        contents: ! 'also not critical, because the user can just use swapping and
+          promoting/demoting to move the entry to the desired place.
+
+          When it comes to multiple entries to move, that''s a bit cumbersome, but
+          still not critical.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-29 10:42:19.961781171000+0000
       - header: Archiving
         contents: ! 'A way to put away an entire smos file such that it never conflicts
           with another file.

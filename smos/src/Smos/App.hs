@@ -9,6 +9,7 @@ module Smos.App
 import Import
 
 import Data.List.NonEmpty (NonEmpty(..))
+import System.FileLock
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Sequence as Seq
 import Data.Time
@@ -151,12 +152,13 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-initState :: Path Abs File -> Maybe SmosFile -> TimeZone -> SmosState
-initState p msf tz =
+initState ::TimeZone ->  Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
+initState tz p fl msf =
     SmosState
-        { smosStateStartSmosFile = msf
-        , smosStateTimeZone = tz
+        { smosStateTimeZone = tz
+        , smosStateStartSmosFile = msf
         , smosStateFilePath = p
+        , smosStateFileLock = fl
         , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
         , smosStateKeyHistory = Empty
         , smosStateCursorHistory = []
