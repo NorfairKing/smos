@@ -51,6 +51,12 @@ renderStatsReport StatsReport {..} =
         , [[fore white $ chunk "State Transitions"]]
         , formatReportStateTransitions statsReportStateTransitions
         , [[chunk ""]]
+        , [[fore white $ chunk "State Transitions (from)"]]
+        , formatReportFromStateTransitions statsReportFromStateTransitions
+        , [[chunk ""]]
+        , [[fore white $ chunk "State Transitions (to)"]]
+        , formatReportToStateTransitions statsReportToStateTransitions
+        , [[chunk ""]]
         ]
 
 formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk Text]]
@@ -62,7 +68,14 @@ formatReportStateTransitions ::
        Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
 formatReportStateTransitions m =
     flip map (M.toList m) $ \((mts1, mts2), i) ->
-        [ mTodoStateChunk mts1
-        , mTodoStateChunk mts2
-        , chunk $ T.pack $ show i
-        ]
+        [mTodoStateChunk mts1, mTodoStateChunk mts2, chunk $ T.pack $ show i]
+
+formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
+formatReportFromStateTransitions m =
+    flip map (M.toList m) $ \(mts, i) ->
+        [mTodoStateChunk mts, chunk "(any)", chunk $ T.pack $ show i]
+
+formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
+formatReportToStateTransitions m =
+    flip map (M.toList m) $ \(mts, i) ->
+        [chunk "(any)", mTodoStateChunk mts, chunk $ T.pack $ show i]

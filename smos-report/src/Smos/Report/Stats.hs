@@ -13,27 +13,37 @@ data StatsReport = StatsReport
     { statsReportStates :: Map (Maybe TodoState) Int
     , statsReportHistoricalStates :: Map (Maybe TodoState) Int
     , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
+    , statsReportFromStateTransitions :: Map (Maybe TodoState) Int
+    , statsReportToStateTransitions :: Map (Maybe TodoState) Int
     } deriving (Show, Eq, Generic)
 
 makeStatsReport :: [Entry] -> StatsReport
 makeStatsReport es =
     StatsReport
         { statsReportStates = getCount $ map entryState es
-        , statsReportHistoricalStates =
-              getCount $
-              concatMap
-                  ((Nothing :) .
-                   map stateHistoryEntryNewState .
-                   unStateHistory . entryStateHistory)
-                  es
-        , statsReportStateTransitions =
-              getCount $
-              concatMap
-                  (conseqMs .
-                   map stateHistoryEntryNewState .
-                   unStateHistory . entryStateHistory)
-                  es
+        , statsReportHistoricalStates = getCount $ historicalStates es
+        , statsReportStateTransitions = getCount $ stateTransitions es
+        , statsReportFromStateTransitions = getCount $ fromStateTransitions es
+        , statsReportToStateTransitions = getCount $ toStateTransitions es
         }
+
+historicalStates :: [Entry] -> [Maybe TodoState]
+historicalStates =
+    concatMap
+        ((Nothing :) .
+         map stateHistoryEntryNewState . unStateHistory . entryStateHistory)
+
+fromStateTransitions :: [Entry] -> [Maybe TodoState]
+fromStateTransitions = map fst . stateTransitions
+
+toStateTransitions :: [Entry] -> [Maybe TodoState]
+toStateTransitions = map snd . stateTransitions
+
+stateTransitions :: [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+stateTransitions =
+    concatMap
+        (conseqMs .
+         map stateHistoryEntryNewState . unStateHistory . entryStateHistory)
   where
     conseqMs :: [Maybe a] -> [(Maybe a, Maybe a)]
     conseqMs [] = []
