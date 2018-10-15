@@ -12,6 +12,7 @@ import Smos.Data
 data StatsReport = StatsReport
     { statsReportStates :: Map (Maybe TodoState) Int
     , statsReportHistoricalStates :: Map (Maybe TodoState) Int
+    , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
     } deriving (Show, Eq, Generic)
 
 makeStatsReport :: [Entry] -> StatsReport
@@ -25,7 +26,19 @@ makeStatsReport es =
                    map stateHistoryEntryNewState .
                    unStateHistory . entryStateHistory)
                   es
+        , statsReportStateTransitions =
+              getCount $
+              concatMap
+                  (conseqMs .
+                   map stateHistoryEntryNewState .
+                   unStateHistory . entryStateHistory)
+                  es
         }
+  where
+    conseqMs :: [Maybe a] -> [(Maybe a, Maybe a)]
+    conseqMs [] = []
+    conseqMs [x] = [(Nothing, x)]
+    conseqMs (x:y:xs) = (y, x) : conseqMs (y : xs)
 
 getCount :: (Ord a, Foldable f) => f a -> Map a Int
 getCount = foldl (flip go) M.empty
