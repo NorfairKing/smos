@@ -82,8 +82,10 @@ defaultKeyMap =
                   , exactString "sd" $ timestampsSelect "DEADLINE"
                   , exactString "ss" $ timestampsSelect "SCHEDULED"
                   -- Clocking
-                  , exactString "ci" forestClockOutEverywhereAndClockInHere
-                  , exactString "co" forestClockOutEverywhere
+                  , exactString
+                        "ci"
+                        forestClockOutEverywhereInAllFilesAndClockInHere
+                  , exactString "co" forestClockOutEverywhereInAllFiles
                   -- Reports
                   , exactString "rn" reportNextActions
                   -- Convenience

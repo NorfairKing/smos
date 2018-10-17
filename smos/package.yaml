@@ -14,6 +14,7 @@ library:
   - base
   - brick
   - bytestring
+  - conduit
   - containers
   - contravariant
   - cursor

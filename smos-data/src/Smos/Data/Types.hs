@@ -47,8 +47,6 @@ module Smos.Data.Types
     , Logbook(..)
     , emptyLogbook
     , nullLogbook
-    , logbookClockIn
-    , logbookClockOut
     , LogbookEntry(..)
     , logbookEntryDiffTime
     , TimestampName
@@ -597,21 +595,6 @@ emptyLogbook = LogClosed []
 
 nullLogbook :: Logbook -> Bool
 nullLogbook = (== emptyLogbook)
-
-logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
-logbookClockIn now lb =
-    case lb of
-        LogOpen _ _ -> Nothing
-        LogClosed ls -> constructValid $ LogOpen now ls
-
-logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook
-logbookClockOut now lb =
-    case lb of
-        LogClosed _ -> Nothing
-        LogOpen u ls ->
-            constructValid $
-            LogClosed $
-            LogbookEntry {logbookEntryStart = u, logbookEntryEnd = now} : ls
 
 data LogbookEntry = LogbookEntry
     { logbookEntryStart :: UTCTime

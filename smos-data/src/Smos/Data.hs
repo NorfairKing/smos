@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Data
     ( module Smos.Data.Types
@@ -12,8 +13,11 @@ module Smos.Data
     , smosFileJSONPrettyBS
     , emptySmosFile
     , prettySmosForest
-    , clockInAt
-    , clockOutAt
+    , smosFileClockOutEverywhere
+    , entryClockIn
+    , entryClockOut
+    , logbookClockIn
+    , logbookClockOut
     , stateHistoryState
     , stateHistorySetState
     , entryState
@@ -25,6 +29,7 @@ import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Data.Tree
@@ -45,6 +50,7 @@ readSmosFile fp = do
     mContents <- forgivingAbsence $ SB.readFile $ toFilePath fp
     case mContents of
         Nothing -> pure Nothing
+        Just "" -> pure $ Just $ Right emptySmosFile
         Just contents_ -> pure $ Just $ parseSmosFile contents_
 
 writeSmosFile :: Path Abs File -> SmosFile -> IO ()
@@ -83,17 +89,34 @@ prettySmosTree Node {..} =
 prettySmosEntry :: Entry -> String
 prettySmosEntry Entry {..} = T.unpack $ headerText entryHeader
 
-clockInAt :: UTCTime -> Logbook -> Maybe Logbook
-clockInAt now lb =
+smosFileClockOutEverywhere :: UTCTime -> SmosFile -> SmosFile
+smosFileClockOutEverywhere now (SmosFile f) = SmosFile $ goF f
+  where
+    goT (Node e f) = Node (entryClockOut now e) (goF f)
+    goF = map goT
+
+entryClockIn :: UTCTime -> Entry -> Entry
+entryClockIn now e =
+    fromMaybe e $
+    (\lb -> e {entryLogbook = lb}) <$> logbookClockIn now (entryLogbook e)
+
+entryClockOut :: UTCTime -> Entry -> Entry
+entryClockOut now e =
+    fromMaybe e $
+    (\lb -> e {entryLogbook = lb}) <$> logbookClockOut now (entryLogbook e)
+
+logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
+logbookClockIn now lb =
     case lb of
-        LogClosed es -> Just $ LogOpen now es
+        LogClosed es -> constructValid $ LogOpen now es
         LogOpen {} -> Nothing
 
-clockOutAt :: UTCTime -> Logbook -> Maybe Logbook
-clockOutAt now lb =
+logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook
+logbookClockOut now lb =
     case lb of
         LogClosed {} -> Nothing
-        LogOpen start es -> Just $ LogClosed $ LogbookEntry start now : es
+        LogOpen start es ->
+            constructValid $ LogClosed $ LogbookEntry start now : es
 
 stateHistoryState :: StateHistory -> Maybe TodoState
 stateHistoryState (StateHistory tups) =

@@ -9,7 +9,6 @@ import GHC.Generics (Generic)
 
 import Path
 
-
 data RootedPath
     = Relative (Path Abs Dir)
                (Path Rel File)
@@ -17,3 +16,7 @@ data RootedPath
     deriving (Show, Eq, Generic)
 
 instance Validity RootedPath
+
+resolveRootedPath :: RootedPath -> Path Abs File
+resolveRootedPath (Relative ad rf) = ad </> rf
+resolveRootedPath (Absolute af) = af

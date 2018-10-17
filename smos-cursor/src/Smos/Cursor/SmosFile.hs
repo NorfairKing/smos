@@ -194,9 +194,7 @@ smosFileCursorClockOutEverywhere now =
         entryCursorLogbookCursorL %~
         (\lbc -> fromMaybe lbc $ logbookCursorClockOut now lbc)
     goE :: Entry -> Entry
-    goE e =
-        let lb = entryLogbook e
-         in e {entryLogbook = fromMaybe lb $ logbookClockOut now lb}
+    goE e = entryClockOut now e
 
 smosFileCursorClockOutEverywhereAndClockInHere ::
        UTCTime -> SmosFileCursor -> SmosFileCursor

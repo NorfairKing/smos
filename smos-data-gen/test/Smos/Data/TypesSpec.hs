@@ -83,10 +83,6 @@ spec = do
     genValidSpec @Logbook
     jsonSpecOnValid @Logbook
     describe "emptyLogbook" $ it "is valid" $ shouldBeValid emptyLogbook
-    describe "logbookClockIn" $
-        it "produces valid logbooks" $ producesValidsOnValids2 logbookClockIn
-    describe "logbookClockOut" $
-        it "produces valid logbooks" $ producesValidsOnValids2 logbookClockOut
     genJSONValid @Logbook $
         let withGen lbGen =
                 sized $ \n -> do

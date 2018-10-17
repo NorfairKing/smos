@@ -500,6 +500,10 @@
           timestamp: 2018-10-12 14:23:06.004032690000+0000
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
+      - header: save when quit with ctrl-c or closing the terminal
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-16 08:46:44.583579437000+0000
       - header: Copy-pasting
         contents: ! 'also not critical, because the user can just use swapping and
           promoting/demoting to move the entry to the desired place.
