@@ -53,10 +53,7 @@ parseSmosFiles ::
        ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
 parseSmosFiles =
     C.mapM $ \p -> do
-        let ap =
-                case p of
-                    Relative pad prf -> pad </> prf
-                    Absolute af -> af
+        let ap = resolveRootedPath p
         mErrOrSmosFile <- liftIO $ readSmosFile ap
         let ei =
                 case mErrOrSmosFile of

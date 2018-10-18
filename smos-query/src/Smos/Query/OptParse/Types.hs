@@ -23,6 +23,7 @@ data Command
     | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
+    | CommandProjects
     | CommandStats StatsFlags
     deriving (Show, Eq)
 
@@ -73,7 +74,7 @@ data Dispatch
     | DispatchWaiting WaitingSettings
     | DispatchNext NextSettings
     | DispatchClock ClockSettings
-    | DispatchAgenda AgendaSettings
+    | DispatchAgenda AgendaSettings  | DispatchProjects
     | DispatchStats StatsSettings
     deriving (Show, Eq)
 
