@@ -92,7 +92,7 @@ prettySmosEntry Entry {..} = T.unpack $ headerText entryHeader
 smosFileClockOutEverywhere :: UTCTime -> SmosFile -> SmosFile
 smosFileClockOutEverywhere now (SmosFile f) = SmosFile $ goF f
   where
-    goT (Node e f) = Node (entryClockOut now e) (goF f)
+    goT (Node e f_) = Node (entryClockOut now e) (goF f_)
     goF = map goT
 
 entryClockIn :: UTCTime -> Entry -> Entry
@@ -108,7 +108,14 @@ entryClockOut now e =
 logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
 logbookClockIn now lb =
     case lb of
-        LogClosed es -> constructValid $ LogOpen now es
+        LogClosed es ->
+            let d = constructValid $ LogOpen now es
+             in case es of
+                    [] -> d
+                    (LogbookEntry {..}:rest) ->
+                        if logbookEntryEnd == now
+                            then Just $ LogOpen logbookEntryStart rest
+                            else d
         LogOpen {} -> Nothing
 
 logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook
