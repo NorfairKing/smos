@@ -243,12 +243,12 @@ data CommandsRun = CommandsRun
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
     withSystemTempFile "smos-golden" $ \af _ -> do
-        tz <- getCurrentTimeZone
+        zt <- getZonedTime
         mfl <- lockFile af
         case mfl of
             Nothing -> die "Could not lock pretend file."
             Just fl -> do
-                let startState = initState tz af fl mstart
+                let startState = initState zt af fl mstart
                 (fs, rs) <- foldM go (startState, []) commands
                 let cr =
                         CommandsRun

@@ -12,6 +12,7 @@ import Import hiding ((<+>))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Time
+import Text.Time.Pretty
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
@@ -92,8 +93,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
             then MaybeSelected
             else NotSelected
     drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
-    drawFileCursor s =
-        flip runReader (zonedTimeZone smosStateTime) . drawSmosFileCursor s
+    drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
 
 drawInfo :: Widget n
 drawInfo =
@@ -278,6 +278,10 @@ drawEntryCursor s tc e = do
         drawTimestampsCursor (selectWhen TimestampsSelected)
     lbcw <-
         drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
+    shcw <-
+        fmap join $
+        forM entryCursorStateHistoryCursor $
+        drawStateHistoryCursor (selectWhen StateHistorySelected)
     pure $
         vBox $
         catMaybes
@@ -314,9 +318,7 @@ drawEntryCursor s tc e = do
             , tscw
             , drawPropertiesCursor (selectWhen PropertiesSelected) <$>
               entryCursorPropertiesCursor
-            , drawIfM collapseEntryShowHistory $
-              entryCursorStateHistoryCursor >>=
-              drawStateHistoryCursor (selectWhen StateHistorySelected)
+            , drawIfM collapseEntryShowHistory shcw
             , drawIfM collapseEntryShowLogbook lbcw
             ]
   where
@@ -344,6 +346,7 @@ drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Drawer
 drawEntry tc e = do
     tsw <- drawTimestamps entryTimestamps
     lbw <- drawLogbook entryLogbook
+    shw <- drawStateHistory entryStateHistory
     pure $
         vBox $
         catMaybes
@@ -369,8 +372,7 @@ drawEntry tc e = do
             , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
             , tsw
             , drawProperties entryProperties
-            , drawIfM collapseEntryShowHistory $
-              drawStateHistory entryStateHistory
+            , drawIfM collapseEntryShowHistory shw
             , drawIfM collapseEntryShowLogbook lbw
             ]
   where
@@ -417,28 +419,31 @@ drawTimestampKVCursor ::
     -> KeyValueCursor TextCursor FuzzyDayCursor TimestampName Timestamp
     -> Drawer
 drawTimestampKVCursor s kvc =
-    pure $
     case kvc of
-        KeyValueCursorKey tc ts ->
-            hBox
-                [ case s of
-                      NotSelected ->
-                          drawTimestampName $ rebuildTimestampNameCursor tc
-                      MaybeSelected -> drawTextCursor s tc
-                , str ": "
-                , str $ formatTimestampDay $ timestampDay ts
-                ]
-        KeyValueCursorValue tsn fdc ->
-            hBox
-                [ drawTimestampName tsn
-                , str ": "
-                , case s of
-                      NotSelected ->
-                          str $
-                          formatTimestampDay $
-                          timestampDay $ rebuildTimestampCursor fdc
-                      MaybeSelected -> drawFuzzyDayCursor s fdc
-                ]
+        KeyValueCursorKey tc ts -> do
+            dw <- drawDay $ timestampDay ts
+            pure $
+                hBox
+                    [ case s of
+                          NotSelected ->
+                              drawTimestampName $ rebuildTimestampNameCursor tc
+                          MaybeSelected -> drawTextCursor s tc
+                    , str ": "
+                    , dw
+                    ]
+        KeyValueCursorValue tsn fdc -> do
+            fdcw <- drawFuzzyDayCursor s fdc
+            pure $
+                hBox
+                    [ drawTimestampName tsn
+                    , str ": "
+                    , case s of
+                          NotSelected ->
+                              str $
+                              formatTimestampDay $
+                              timestampDay $ rebuildTimestampCursor fdc
+                          MaybeSelected -> fdcw
+                    ]
 
 drawTimestamp :: TimestampName -> Timestamp -> Drawer
 drawTimestamp tsn d =
@@ -449,23 +454,34 @@ drawTimestamp tsn d =
         , str $ formatTimestampDay $ timestampDay d
         ]
 
-drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Widget ResourceName
-drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} =
-    (case s of
-         NotSelected -> id
-         MaybeSelected -> withAttr selectedAttr) $
-    hBox $
-    intersperse (str " ") $
-    [drawTextCursor s fuzzyDayCursorTextCursor] ++
-    [ hBox
-        [str "(", str (formatTimestampDay $ rebuildFuzzyDayCursor fdc), str ")"]
-    | MaybeSelected <- [s]
-    ]
+drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Drawer
+drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} = do
+    dw <- drawDay (rebuildFuzzyDayCursor fdc)
+    pure $
+        (case s of
+             NotSelected -> id
+             MaybeSelected -> withAttr selectedAttr) $
+        hBox $
+        intersperse (str " ") $
+        [drawTextCursor s fuzzyDayCursorTextCursor] ++
+        [hBox [str "(", dw, str ")"] | MaybeSelected <- [s]]
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
     withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . txt $
     timestampNameText tsn
+
+drawDay :: Day -> Drawer
+drawDay d = do
+    zt@(ZonedTime _ tz) <- ask
+    pure $
+        hBox
+            [ str $ formatTimestampDay d
+            , str ", "
+            , str $
+              prettyTimeAuto (zonedTimeToUTC zt) $
+              localTimeToUTC tz $ LocalTime d midnight
+            ]
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
 drawPropertiesCursor _ = strWrap . show
@@ -475,28 +491,35 @@ drawProperties m
     | M.null m = Nothing
     | otherwise = Just $ strWrap $ show m
 
-drawStateHistoryCursor ::
-       Select -> StateHistoryCursor -> Maybe (Widget ResourceName)
+drawStateHistoryCursor :: Select -> StateHistoryCursor -> MDrawer
 drawStateHistoryCursor _ = drawStateHistory . rebuildStateHistoryCursor . Just
 
-drawStateHistory :: StateHistory -> Maybe (Widget ResourceName)
+drawStateHistory :: StateHistory -> MDrawer
 drawStateHistory (StateHistory ls)
-    | null ls = Nothing
-    | otherwise =
-        Just $
-        withAttr todoStateHistoryAttr $
-        vBox $
-        flip map ls $ \StateHistoryEntry {..} ->
-            hBox $
-            catMaybes
-                [ Just $
-                  strWrap $
-                  formatTime
-                      defaultTimeLocale
-                      "%Y-%m-%d %H:%M:%S"
-                      stateHistoryEntryTimestamp
-                , ((str " " <+>) . drawTodoState) <$> stateHistoryEntryNewState
-                ]
+    | null ls = pure Nothing
+    | otherwise = do
+        zt <- ask
+        pure $
+            Just $
+            withAttr todoStateHistoryAttr $
+            vBox $
+            flip map ls $ \StateHistoryEntry {..} ->
+                hBox $
+                catMaybes
+                    [ Just $
+                      strWrap $
+                      unwords
+                          [ formatTime
+                                defaultTimeLocale
+                                "%Y-%m-%d %H:%M:%S"
+                                stateHistoryEntryTimestamp
+                          , "("++(prettyTimeAuto
+                                 (zonedTimeToUTC zt)
+                                 stateHistoryEntryTimestamp)++")"
+                          ]
+                    , ((str " " <+>) . drawTodoState) <$>
+                      stateHistoryEntryNewState
+                    ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor _ tc =
@@ -580,11 +603,11 @@ drawTodoState ts =
 
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
-    tz <- asks id
+    tz <- asks zonedTimeZone
     let localTime = utcToLocalTime tz utct
     pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
 
-type DrawEnv = TimeZone
+type DrawEnv = ZonedTime
 
 type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
 
