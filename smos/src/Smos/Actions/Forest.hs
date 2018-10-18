@@ -309,7 +309,7 @@ clockOutInAllAgendaFiles now = do
             merrOrFile <- readSmosFile af
             case merrOrFile of
                 Nothing -> pure () -- Should not happen
-                Just (Left e) -> pure () -- Nothing we can do
+                Just (Left _) -> pure () -- Nothing we can do
                 Just (Right sf) -> do
                     let sf' = smosFileClockOutEverywhere now sf
                     unless (sf == sf') $ writeSmosFile af sf'

@@ -65,8 +65,7 @@ rebuildSmosFileCursor =
     rebuildForestCursor (collapseEntryValueL %~ rebuildEntryCursor)
 
 rebuildSmosFileCursorEntirely :: SmosFileCursor -> SmosFile
-rebuildSmosFileCursorEntirely =
-    SmosFile . NE.toList . rebuildSmosFileCursor
+rebuildSmosFileCursorEntirely = SmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
@@ -201,7 +200,8 @@ smosFileCursorClockOutEverywhereAndClockInHere ::
 smosFileCursorClockOutEverywhereAndClockInHere now sfc =
     let sfc' = smosFileCursorClockOutEverywhere now sfc
      in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL) %~
-        (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
+        (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc) &
+        (smosFileCursorSelectedEntireL . collapseEntryShowLogbookL .~ True)
 
 smosFileSubtreeSetTodoState ::
        UTCTime -> Maybe TodoState -> SmosFileCursor -> SmosFileCursor

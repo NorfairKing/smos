@@ -613,15 +613,21 @@
         - entry:
             header: Clocking
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:30.479144851000+0000
             - new-state: TODO
               timestamp: 2018-09-29 10:47:34.849786330000+0000
           forest:
           - header: Clocking in should display the currently running clock
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:28.415541549000+0000
             - new-state: TODO
               timestamp: 2018-10-14 11:24:48.759250459000+0000
           - header: Also clock-out anywhere also in other files
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:29.775495634000+0000
             - new-state: TODO
               timestamp: 2018-09-22 08:29:23.945647335000+0000
         - entry:
