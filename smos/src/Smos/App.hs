@@ -9,10 +9,10 @@ module Smos.App
 import Import
 
 import Data.List.NonEmpty (NonEmpty(..))
-import System.FileLock
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Sequence as Seq
 import Data.Time
+import System.FileLock
 
 import Brick.Main as B
 import Brick.Types as B
@@ -26,12 +26,14 @@ import Smos.Cursor.SmosFile
 
 import Smos.Data
 
+import Smos.Actions.File
+
 import Smos.Activation
 import Smos.Draw
 import Smos.Style
 import Smos.Types
 
-mkSmosApp :: SmosConfig -> App SmosState () ResourceName
+mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
 mkSmosApp sc@SmosConfig {..} =
     App
         { appDraw = smosDraw sc
@@ -46,10 +48,7 @@ smosChooseCursor ::
 smosChooseCursor _ = showCursorNamed textCursorName
 
 smosHandleEvent ::
-       SmosConfig
-    -> SmosState
-    -> BrickEvent ResourceName ()
-    -> EventM ResourceName (Next SmosState)
+       SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
 smosHandleEvent cf s e = do
     let func =
             case keyMapFunc s e (configKeyMap cf) (configReportsKeyMap cf) of
@@ -81,8 +80,7 @@ smosHandleEvent cf s e = do
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
-keyMapFunc ::
-       SmosState -> SmosEvent -> KeyMap -> ReportsKeyMap -> Maybe (SmosM ())
+keyMapFunc :: SmosState -> Event -> KeyMap -> ReportsKeyMap -> Maybe (SmosM ())
 keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
     case editorCursorSelection $ smosStateCursor s of
         HelpSelected -> handleWith keyMapHelpMatchers
@@ -138,6 +136,13 @@ keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
                                                          })
                                         activationFunc a
                         _ -> Nothing
+                AppEvent se ->
+                    case se of
+                        SmosUpdateTime ->
+                            Just $ do
+                                now <- liftIO getZonedTime
+                                modify (\s_ -> s_ {smosStateTime = now})
+                        SmosSaveFile -> Just saveCurrentSmosFile
                 _ -> Nothing
 
 activationDebug :: Activation -> ActivationDebug
@@ -152,10 +157,11 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-initState ::TimeZone ->  Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
-initState tz p fl msf =
+initState ::
+       ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
+initState zt p fl msf =
     SmosState
-        { smosStateTimeZone = tz
+        { smosStateTime = zt
         , smosStateStartSmosFile = msf
         , smosStateFilePath = p
         , smosStateFileLock = fl

@@ -14,10 +14,10 @@ module Smos.Types
 
 import Import
 
-import System.FileLock
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
 import Data.Time
+import System.FileLock
 
 import Lens.Micro
 
@@ -159,7 +159,10 @@ data AnyAction
     = PlainAction Action
     | UsingCharAction (ActionUsing Char)
 
-type SmosEvent = BrickEvent ResourceName ()
+type Event = BrickEvent ResourceName SmosEvent
+
+data SmosEvent =
+    SmosUpdateTime | SmosSaveFile
 
 type SmosM = MkSmosM SmosConfig ResourceName SmosState
 
@@ -171,7 +174,7 @@ runSmosM ::
 runSmosM = runMkSmosM
 
 data SmosState = SmosState
-    { smosStateTimeZone :: TimeZone
+    { smosStateTime :: ZonedTime
     , smosStateStartSmosFile :: Maybe SmosFile
     , smosStateFilePath :: Path Abs File
     , smosStateFileLock :: FileLock
@@ -344,7 +347,7 @@ makeEditorCursor sf =
 
 rebuildEditorCursor :: EditorCursor -> SmosFile
 rebuildEditorCursor =
-    maybe emptySmosFile rebuildSmosFileCursorEntirely .editorCursorFileCursor
+    maybe emptySmosFile rebuildSmosFileCursorEntirely . editorCursorFileCursor
 
 editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =

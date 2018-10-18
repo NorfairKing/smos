@@ -9,9 +9,13 @@ import Import
 
 import Data.Time
 
+import Control.Concurrent
+import Control.Concurrent.Async
 import System.Exit
 
-import Brick.Main as B
+import Brick.BChan as Brick
+import Brick.Main as Brick
+import Graphics.Vty as Vty (defaultConfig, mkVty)
 
 import Smos.Data
 
@@ -40,9 +44,17 @@ smos sc@SmosConfig {..} = do
                             , show err
                             ]
                     Just (Right sf) -> pure $ Just sf
-            tz <- getCurrentTimeZone
-            let s = initState tz p fl startF
-            s' <- defaultMain (mkSmosApp sc) s
+            zt <- getZonedTime
+            let s = initState zt p fl startF
+            chan <- Brick.newBChan maxBound
+            Left s' <-
+                race
+                    (Brick.customMain
+                         (Vty.mkVty Vty.defaultConfig)
+                         (Just chan)
+                         (mkSmosApp sc)
+                         s)
+                    (eventPusher chan)
             let sf' = rebuildEditorCursor $ smosStateCursor s'
             let p' = smosStateFilePath s'
             (case smosStateStartSmosFile s' of
@@ -50,3 +62,15 @@ smos sc@SmosConfig {..} = do
                  Just sf'' -> unless (sf'' == sf')) $
                 writeSmosFile p' sf'
             unlockFile $ smosStateFileLock s'
+
+eventPusher :: BChan SmosEvent -> IO ()
+eventPusher chan =
+    concurrently_
+        (loopEvery 1 (writeBChan chan SmosUpdateTime))
+        (loopEvery 2 (writeBChan chan SmosSaveFile))
+  where
+    loopEvery :: Int -> IO () -> IO ()
+    loopEvery i func = do
+        func
+        threadDelay $ i * 1000 * 1000
+        loopEvery i func

@@ -11,6 +11,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - async
   - base
   - brick
   - bytestring

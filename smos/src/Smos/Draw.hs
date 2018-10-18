@@ -92,7 +92,8 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
             then MaybeSelected
             else NotSelected
     drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
-    drawFileCursor s = flip runReader smosStateTimeZone . drawSmosFileCursor s
+    drawFileCursor s =
+        flip runReader (zonedTimeZone smosStateTime) . drawSmosFileCursor s
 
 drawInfo :: Widget n
 drawInfo =
