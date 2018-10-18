@@ -12,6 +12,7 @@ module Smos.Draw.Cursor
     , drawVerticalNonEmptyCursor
     , drawNonEmptyCursor
     ) where
+
 import Data.List
 
 import Control.Monad

@@ -11,17 +11,13 @@ import Import hiding ((<+>))
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Data.Time
-import Data.Tuple
-import Text.Printf
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
 import Brick.Widgets.Center as B
 import Brick.Widgets.Core as B
 import Brick.Widgets.Core ((<+>))
-import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 
 import Lens.Micro
 
@@ -29,7 +25,6 @@ import Cursor.FuzzyDay
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
-import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
 
 import Smos.Data
@@ -45,9 +40,13 @@ import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
+
 import Smos.Report.Path
 
+import Smos.Draw.Base
 import Smos.Draw.Cursor
+import Smos.Draw.Text
+
 import Smos.Style
 import Smos.Types
 
@@ -158,12 +157,6 @@ drawKeyCombination = str . go
     go PressAny = "<any key>"
     go (PressCombination kp km) = showKeypress kp ++ go km
 
-type DrawEnv = TimeZone
-
-type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
-
-type Drawer = Reader DrawEnv (Widget ResourceName)
-
 drawHistory :: Seq KeyPress -> Widget n
 drawHistory = strWrap . unwords . map showKeypress . toList
 
@@ -172,24 +165,6 @@ showKeypress (KeyPress key mods) =
     case mods of
         [] -> showKey key
         _ -> intercalate "-" $ map showMod mods ++ [showKey key]
-
-showKey :: Key -> String
-showKey (KChar '\t') = "<tab>"
-showKey (KChar c) = [c]
-showKey KBackTab = "S-<tab>"
-showKey (KFun i) = "F" ++ show i
-showKey k = go $ show k
-    -- Because these constructors all start with 'K'
-  where
-    go [] = []
-    go ('K':s) = s
-    go s = s
-
-showMod :: Modifier -> String
-showMod MShift = "S"
-showMod MCtrl = "C"
-showMod MMeta = "M"
-showMod MAlt = "A"
 
 drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
@@ -205,15 +180,6 @@ drawDebug SmosState {..} =
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
 drawLastMatches Nothing = Nothing
 drawLastMatches (Just ts) = Just $ vBox $ map (strWrap . ppShow) $ NE.toList ts
-
-data Select
-    = MaybeSelected
-    | NotSelected
-    deriving (Show, Eq)
-
-instance Semigroup Select where
-    MaybeSelected <> MaybeSelected = MaybeSelected
-    _ <> _ = NotSelected
 
 defaultPadding :: Padding
 defaultPadding = Pad 2
@@ -495,9 +461,6 @@ drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} =
     | MaybeSelected <- [s]
     ]
 
-formatTimestampDay :: Day -> String
-formatTimestampDay = formatTime defaultTimeLocale "%A %F"
-
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
     withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . txt $
@@ -604,29 +567,15 @@ drawLogbookEntry lbe@LogbookEntry {..} = do
             , drawNominalDiffTime $ logbookEntryDiffTime lbe
             ]
 
-drawNominalDiffTime :: NominalDiffTime -> Widget n
-drawNominalDiffTime ndt =
-    hBox
-        [ str $ printf "%.2d" hours
-        , str ":"
-        , str $ printf "%.2d" minutes
-        , str ":"
-        , str $ printf "%.2d" seconds
-        ]
-  where
-    totalSeconds = round ndt :: Int
-    totalMinutes = totalSeconds `div` secondsInAMinute
-    totalHours = totalMinutes `div` minutesInAnHour
-    secondsInAMinute = 60
-    minutesInAnHour = 60
-    hours = totalHours
-    minutes = totalMinutes - minutesInAnHour * totalHours
-    seconds = totalSeconds - secondsInAMinute * totalMinutes
-
 drawLogbookTimestamp :: UTCTime -> Drawer
 drawLogbookTimestamp utct = do
     tw <- drawUTCLocal utct
     pure $ str "[" <+> tw <+> str "]"
+
+drawTodoState :: TodoState -> Widget ResourceName
+drawTodoState ts =
+    withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txt $
+    todoStateText ts
 
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
@@ -634,39 +583,8 @@ drawUTCLocal utct = do
     let localTime = utcToLocalTime tz utct
     pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
 
-drawFilePath :: Path r d -> Widget n
-drawFilePath = str . toFilePath
+type DrawEnv = TimeZone
 
-drawTextCursor :: Select -> TextCursor -> Widget ResourceName
-drawTextCursor s tc =
-    (case s of
-         MaybeSelected ->
-             visible .
-             showCursor textCursorName (B.Location (textCursorIndex tc, 0))
-         _ -> id) $
-    drawText $ rebuildTextCursor tc
+type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
 
-drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
-drawTextFieldCursor s tfc =
-    (case s of
-         MaybeSelected ->
-             visible .
-             showCursor
-                 textCursorName
-                 (B.Location (swap (textFieldCursorSelection tfc)))
-         _ -> id) $
-    drawText $ rebuildTextFieldCursor tfc
-
-drawTodoState :: TodoState -> Widget ResourceName
-drawTodoState ts =
-    withAttr (todoStateSpecificAttr ts <> todoStateAttr) . txt $
-    todoStateText ts
-
-drawText :: Text -> Widget n
-drawText = vBox . map go . T.splitOn "\n"
-  where
-    go t =
-        txtWrap $
-        case t of
-            "" -> " "
-            _ -> t
+type Drawer = Reader DrawEnv (Widget ResourceName)
