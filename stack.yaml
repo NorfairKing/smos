@@ -26,12 +26,12 @@ extra-deps:
     - fuzzy-time
     - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 50fad900ce14c82db4b18eb3767df3d82e1f4939
+  commit: 6dcc879887476582a172b15d27d76361ade912fd
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 550327539d84d72ba8be8412025b0074d14c4188
+  commit: ea32886d29ed77e5a5516f00d75eddf0f696453f
   subdirs:
   - genvalidity
   - genvalidity-aeson

@@ -13,26 +13,26 @@ import Smos.Cursor.Collapse.Gen ()
 
 spec :: Spec
 spec = do
-    eqSpecOnValid @(CollapseEntry Double)
-    genValidSpec @(CollapseEntry Double)
+    eqSpecOnValid @(CollapseEntry Rational)
+    genValidSpec @(CollapseEntry Rational)
     describe "makeCollapseEntry" $
         it "produces valid collapse's" $
-        producesValidsOnValids (makeCollapseEntry @Double)
+        producesValidsOnValids (makeCollapseEntry @Rational)
     describe "rebuildCollapseEntry" $ do
         it "produces valid values" $
-            producesValidsOnValids (rebuildCollapseEntry @Double)
+            producesValidsOnValids (rebuildCollapseEntry @Rational)
         it "is the inverse of makeCollapseEntry" $
             inverseFunctionsOnValid
-                (makeCollapseEntry @Double)
-                (rebuildCollapseEntry @Double)
+                (makeCollapseEntry @Rational)
+                (rebuildCollapseEntry @Rational)
     describe "collapseEntryValueL" $
-        lensSpecOnValid (collapseEntryValueL @Double)
+        lensSpecOnValid (collapseEntryValueL @Rational)
     describe "collapseEntryShowContentsL" $
-        lensSpecOnValid (collapseEntryShowContentsL @Double)
+        lensSpecOnValid (collapseEntryShowContentsL @Rational)
     describe "collapseEntryShowHistoryL" $
-        lensSpecOnValid (collapseEntryShowHistoryL @Double)
+        lensSpecOnValid (collapseEntryShowHistoryL @Rational)
     describe "collapseEntryShowLogbookL" $
-        lensSpecOnValid (collapseEntryShowLogbookL @Double)
+        lensSpecOnValid (collapseEntryShowLogbookL @Rational)
     describe "collapseEntrySetShowAll" $
         it "produces valid collapses" $
-        producesValidsOnValids2 (collapseEntrySetShowAll @Double)
+        producesValidsOnValids2 (collapseEntrySetShowAll @Rational)
