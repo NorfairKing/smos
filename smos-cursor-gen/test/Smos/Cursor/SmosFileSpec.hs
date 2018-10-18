@@ -36,6 +36,18 @@ spec = do
     describe "smosFileCursorSelectNext" $
         it "produces valid cursors" $
         producesValidsOnValids smosFileCursorSelectNext
+    describe "smosFileCursorSelectFirst" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorSelectFirst
+    describe "smosFileCursorSelectLast" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorSelectLast
+    describe "smosFileCursorToggleCollapse" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorToggleCollapse
+    describe "smosFileCursorToggleCollapseRecursively" $
+        it "produces valid cursors" $
+        producesValidsOnValids smosFileCursorToggleCollapseRecursively
     describe "smosFileCursorInsertEntryBefore" $ do
         it "produces valid cursors" $
             producesValidsOnValids smosFileCursorInsertEntryBefore
@@ -87,6 +99,7 @@ spec = do
         producesValidsOnValids2 smosFileCursorClockOutEverywhereAndClockInHere
     describe "smosFileSubtreeSetTodoState" $ do
         it "produces valid cursors when unsetting todo states" $
-            forAllValid $ \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
+            forAllValid $ \now ->
+                producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
         it "produces valid cursors" $
             producesValidsOnValids3 smosFileSubtreeSetTodoState

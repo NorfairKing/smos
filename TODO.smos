@@ -544,6 +544,8 @@
         forest:
         - header: Un-collapsing an entire tree recursively
           state-history:
+          - new-state: DONE
+            timestamp: 2018-10-18 18:44:16.268081222000+0000
           - new-state: TODO
             timestamp: 2018-10-11 22:10:17.270628908000+0000
         - header: moving to the node above
@@ -649,6 +651,8 @@
           forest:
           - header: use day of the week (and prefixes) to define a timestamp
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 18:44:30.703808089000+0000
             - new-state: TODO
               timestamp: 2018-10-06 11:21:43.746944934000+0000
           - header: deleting a timestamp
@@ -699,6 +703,8 @@
           timestamp: 2018-10-12 14:32:11.548046181000+0000
       - header: No need to show total time elapsed if there is only one clock entry?
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-18 18:44:43.491477782000+0000
         - new-state: TODO
           timestamp: 2018-10-14 10:24:05.798875032000+0000
       - header: Line wrapping cursor placement bug

@@ -5,21 +5,15 @@
 
 module Smos.Query.Projects where
 
-import Data.List
-import qualified Data.Text as T
 import Data.Text (Text)
-import Data.Time
 import Path
-import Text.Printf
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Data
 
 import Smos.Report.Projects
-import Smos.Report.Query
 import Smos.Report.Streaming
 
 import Smos.Query.Config
@@ -30,7 +24,6 @@ projects :: Q ()
 projects = do
     wd <- askWorkDir
     liftIO $ do
-        now <- getZonedTime
         tups <-
             sourceToList $
             sourceFilesInNonHiddenDirsRecursively
