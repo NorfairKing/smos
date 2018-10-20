@@ -3,6 +3,7 @@
 
 module Smos.Query.Log where
 
+import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -12,9 +13,9 @@ import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Report.Log
-import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.Streaming
+import Smos.Report.TimeBlock
 
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -35,13 +36,19 @@ log LogSettings {..} = do
             smosCursorCurrents
         putTableLn $
             renderLogReport zt $
-            filter
-                (filterPeriod zt logSetPeriod .
-                 logEventTimestamp . logEntryEvent) $
-            makeLogReport (zonedTimeZone zt) es
+            makeLogReport zt logSetPeriod logSetBlock es
 
-renderLogReport :: ZonedTime -> [LogEntry] -> Table
-renderLogReport zt = formatAsTable . map (renderLogEntry zt)
+renderLogReport :: ZonedTime -> LogReport -> Table
+renderLogReport zt lrbs =
+    formatAsTable $
+    case lrbs of
+        [] -> []
+        [lrb] -> goEntries (blockEntries lrb)
+        _ -> concatMap goEntriesWithTitle lrbs
+  where
+    goEntriesWithTitle Block {..} =
+        [fore blue $ chunk blockTitle] : goEntries blockEntries
+    goEntries es = map (renderLogEntry zt) (sortOn logEntryEvent es)
 
 renderLogEntry :: ZonedTime -> LogEntry -> [Chunk Text]
 renderLogEntry zt LogEntry {..} =

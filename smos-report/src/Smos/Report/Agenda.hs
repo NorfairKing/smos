@@ -7,11 +7,8 @@ module Smos.Report.Agenda where
 
 import GHC.Generics (Generic)
 
-import Data.Function
-import Data.List
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
@@ -59,41 +56,9 @@ fitsHistoricity zt ah ae =
             LocalTime (timestampDay (agendaEntryTimestamp ae)) midnight >=
             zonedTimeToLocalTime zt
 
-data AgendaTableBlock a = AgendaTableBlock
-    { agendaTableBlockTitle :: a
-    , agendaTableBlockEntries :: [AgendaEntry]
-    } deriving (Show, Eq, Generic, Functor)
+type AgendaTableBlock a = Block a AgendaEntry
 
-instance Validity a => Validity (AgendaTableBlock a)
-
-divideIntoBlocks :: TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
-divideIntoBlocks tb aes =
-    case tb of
-        OneBlock ->
-            [ AgendaTableBlock
-                  { agendaTableBlockTitle = "All Time"
-                  , agendaTableBlockEntries = aes
-                  }
-            ]
-        DayBlock ->
-            map (fmap (T.pack . show)) $
-            sortOn agendaTableBlockTitle $
-            combineBlocksByName $ map turnIntoSingletonBlock aes
-
-turnIntoSingletonBlock :: AgendaEntry -> AgendaTableBlock Day
-turnIntoSingletonBlock ae =
-    AgendaTableBlock
-        { agendaTableBlockTitle = timestampDay $ agendaEntryTimestamp ae
-        , agendaTableBlockEntries = [ae]
-        }
-
-combineBlocksByName :: Ord a => [AgendaTableBlock a] -> [AgendaTableBlock a]
-combineBlocksByName = map comb . groupBy ((==) `on` agendaTableBlockTitle)
-  where
-    comb :: [AgendaTableBlock a] -> AgendaTableBlock a
-    comb [] = error "cannot happen due to 'groupBy' above"
-    comb atbs@(atb:_) =
-        AgendaTableBlock
-            { agendaTableBlockTitle = agendaTableBlockTitle atb
-            , agendaTableBlockEntries = concatMap agendaTableBlockEntries atbs
-            }
+divideIntoAgendaTableBlocks ::
+       TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
+divideIntoAgendaTableBlocks =
+    divideIntoBlocks (timestampDay . agendaEntryTimestamp)

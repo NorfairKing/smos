@@ -1,8 +1,4 @@
-{-# LANGUAGE TypeApplications #-}
-
 module Smos.Report.ClockSpec where
-
-import Data.Time
 
 import Test.Hspec
 import Test.Validity
@@ -27,12 +23,6 @@ spec = do
     describe "trimLogbookEntryTo" $
         it "produces valid logbook entries" $
         forAllValid $ \tz -> producesValidsOnValids3 $ trimLogbookEntryTo tz
-    describe "divideIntoBlocks" $
-        it "produces valid clock time blocks" $
-        producesValidsOnValids3 divideIntoBlocks
-    describe "combineBlocksByName" $
-        it "produces valid clock time blocks" $
-        producesValidsOnValids (combineBlocksByName @Day)
     describe "divideClockTimeIntoDailyBlocks" $
         it "produces valid clock time blocks" $
         producesValidsOnValids2 divideClockTimeIntoDailyBlocks

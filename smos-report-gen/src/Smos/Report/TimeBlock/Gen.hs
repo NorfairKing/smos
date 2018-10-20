@@ -10,3 +10,8 @@ instance GenUnchecked TimeBlock
 
 instance GenValid TimeBlock where
     genValid = genValidStructurally
+
+instance (GenUnchecked a, GenUnchecked b) => GenUnchecked (Block a b)
+
+instance (GenValid a, GenValid b) => GenValid (Block a b) where
+    genValid = genValidStructurally

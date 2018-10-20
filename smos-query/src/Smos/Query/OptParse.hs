@@ -73,6 +73,7 @@ getDispatch c =
                 LogSettings
                     { logSetFilter = logFlagFilter
                     , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
+                    , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
                     }
         CommandStats StatsFlags {..} ->
             pure $
@@ -186,7 +187,9 @@ parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print a log of what has happened."
-    parser = CommandLog <$> (LogFlags <$> parseFilterArg <*> parsePeriod)
+    parser =
+        CommandLog <$>
+        (LogFlags <$> parseFilterArg <*> parsePeriod <*> parseTimeBlock)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier

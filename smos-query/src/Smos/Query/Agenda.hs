@@ -17,8 +17,9 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Agenda
-import Smos.Report.Streaming
 import Smos.Report.Query
+import Smos.Report.Streaming
+import Smos.Report.TimeBlock
 
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -40,19 +41,18 @@ agenda AgendaSettings {..} = do
             C.concatMap (uncurry makeAgendaEntry) .|
             C.filter (fitsHistoricity now agendaSetHistoricity)
         putTableLn $
-            renderAgendaReport now $ divideIntoBlocks agendaSetBlock tups
+            renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
 renderAgendaReport now atbs =
     formatAsTable $
     case atbs of
         [] -> []
-        [atb] -> goEntries (agendaTableBlockEntries atb)
+        [atb] -> goEntries (blockEntries atb)
         _ -> concatMap goEntriesWithTitle atbs
   where
-    goEntriesWithTitle AgendaTableBlock {..} =
-        [fore blue $ chunk agendaTableBlockTitle] :
-        goEntries agendaTableBlockEntries
+    goEntriesWithTitle Block {..} =
+        [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es = map (formatAgendaEntry now) (sortOn agendaEntryTimestamp es)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]

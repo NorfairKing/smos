@@ -24,6 +24,7 @@ import Smos.Report.Clock
 import Smos.Report.Path
 import Smos.Report.Query
 import Smos.Report.Streaming
+import Smos.Report.TimeBlock
 
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -48,7 +49,7 @@ clock ClockSettings {..} = do
         putTableLn $
             renderClockTable clockSetResolution $
             makeClockTable $
-            divideIntoBlocks (zonedTimeZone now) clockSetBlock $
+            divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
             mapMaybe (trimClockTime now clockSetPeriod) $
             mapMaybe (uncurry findClockTimes) tups
 
@@ -57,12 +58,11 @@ renderClockTable res ctbs =
     formatAsTable $
     case ctbs of
         [] -> []
-        [ctb] -> goEs $ clockTableBlockEntries ctb
+        [ctb] -> goEs $ blockEntries ctb
         _ -> concatMap goB ctbs
   where
     goB :: ClockTableBlock -> [[Chunk Text]]
-    goB ClockTableBlock {..} =
-        [fore blue $ chunk clockTableBlockName] : goEs clockTableBlockEntries
+    goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
     goEs es =
         map go es ++
         [ map (fore blue) $

@@ -62,6 +62,7 @@ data AgendaFlags = AgendaFlags
 data LogFlags = LogFlags
     { logFlagFilter :: Maybe Filter
     , logFlagPeriodFlags :: Maybe Period
+    , logFlagBlockFlags :: Maybe TimeBlock
     } deriving (Show, Eq)
 
 data StatsFlags = StatsFlags
@@ -116,6 +117,7 @@ data AgendaSettings = AgendaSettings
 data LogSettings = LogSettings
     { logSetFilter :: Maybe Filter
     , logSetPeriod :: Period
+    , logSetBlock :: TimeBlock
     } deriving (Show, Eq)
 
 data StatsSettings = StatsSettings

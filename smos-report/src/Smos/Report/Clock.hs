@@ -60,8 +60,7 @@ trimClockTime zt cp ct = do
     ne <- NE.nonEmpty entries
     pure ct {clockTimeEntries = ne}
 
-trimLogbookEntry ::
-       ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
     case cp of
         AllTime -> pure
@@ -111,46 +110,24 @@ trimLogbookEntryTo tz begin end LogbookEntry {..} =
     fromLocal :: LocalTime -> UTCTime
     fromLocal = localTimeToUTC tz
 
-data ClockTimeBlock a = ClockTimeBlock
-    { clockTimeBlockName :: a
-    , clockTimeBlockEntries :: [ClockTime]
-    } deriving (Show, Eq, Generic, Functor)
+type ClockTimeBlock a = Block a ClockTime
 
-instance Validity a => Validity (ClockTimeBlock a)
-
-divideIntoBlocks ::
+divideIntoClockTimeBlocks ::
        TimeZone -> TimeBlock -> [ClockTime] -> [ClockTimeBlock Text]
-divideIntoBlocks tz cb cts =
+divideIntoClockTimeBlocks tz cb cts =
     case cb of
-        OneBlock ->
-            [ ClockTimeBlock
-                  {clockTimeBlockName = "All Time", clockTimeBlockEntries = cts}
-            ]
+        OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
         DayBlock ->
-            map (fmap (T.pack . show)) $
+            map (mapBlockTitle (T.pack . show)) $
             combineBlocksByName $
             concatMap (divideClockTimeIntoDailyBlocks tz) cts
-
-combineBlocksByName :: Ord a => [ClockTimeBlock a] -> [ClockTimeBlock a]
-combineBlocksByName =
-    map (uncurry makeClockTimeBlock) .
-    sortAndGroupCombineOrd . map unClockTimeBlock
-  where
-    unClockTimeBlock :: ClockTimeBlock a -> (a, [ClockTime])
-    unClockTimeBlock ClockTimeBlock {..} =
-        (clockTimeBlockName, clockTimeBlockEntries)
-    makeClockTimeBlock :: a -> [[ClockTime]] -> ClockTimeBlock a
-    makeClockTimeBlock n cts =
-        ClockTimeBlock
-            {clockTimeBlockName = n, clockTimeBlockEntries = concat cts}
 
 divideClockTimeIntoDailyBlocks :: TimeZone -> ClockTime -> [ClockTimeBlock Day]
 divideClockTimeIntoDailyBlocks tz =
     map (uncurry makeClockTimeBlock) . sortAndGroupCombineOrd . divideClockTime
   where
     makeClockTimeBlock :: a -> [ClockTime] -> ClockTimeBlock a
-    makeClockTimeBlock n cts =
-        ClockTimeBlock {clockTimeBlockName = n, clockTimeBlockEntries = cts}
+    makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
     divideClockTime :: ClockTime -> [(Day, ClockTime)]
@@ -188,21 +165,16 @@ sortGroupCombine func =
 
 type ClockTable = [ClockTableBlock]
 
-data ClockTableBlock = ClockTableBlock
-    { clockTableBlockName :: Text
-    , clockTableBlockEntries :: [ClockTableEntry]
-    } deriving (Show, Eq, Generic)
-
-instance Validity ClockTableBlock
+type ClockTableBlock = Block Text ClockTableEntry
 
 makeClockTable :: [ClockTimeBlock Text] -> [ClockTableBlock]
 makeClockTable = map makeClockTableBlock
 
 makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
-makeClockTableBlock ClockTimeBlock {..} =
-    ClockTableBlock
-        { clockTableBlockName = clockTimeBlockName
-        , clockTableBlockEntries = map makeClockTableEntry clockTimeBlockEntries
+makeClockTableBlock Block {..} =
+    Block
+        { blockTitle = blockTitle
+        , blockEntries = map makeClockTableEntry blockEntries
         }
 
 data ClockTableEntry = ClockTableEntry
