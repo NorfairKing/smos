@@ -446,13 +446,9 @@ drawTimestampKVCursor s kvc =
                     ]
 
 drawTimestamp :: TimestampName -> Timestamp -> Drawer
-drawTimestamp tsn d =
-    pure $
-    hBox
-        [ drawTimestampName tsn
-        , str ": "
-        , str $ formatTimestampDay $ timestampDay d
-        ]
+drawTimestamp tsn ts = do
+    dw <- drawDay $ timestampDay ts
+    pure $ hBox [drawTimestampName tsn, str ": ", dw]
 
 drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Drawer
 drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} = do
@@ -513,9 +509,11 @@ drawStateHistory (StateHistory ls)
                                 defaultTimeLocale
                                 "%Y-%m-%d %H:%M:%S"
                                 stateHistoryEntryTimestamp
-                          , "("++(prettyTimeAuto
+                          , "(" ++
+                            (prettyTimeAuto
                                  (zonedTimeToUTC zt)
-                                 stateHistoryEntryTimestamp)++")"
+                                 stateHistoryEntryTimestamp) ++
+                            ")"
                           ]
                     , ((str " " <+>) . drawTodoState) <$>
                       stateHistoryEntryNewState
