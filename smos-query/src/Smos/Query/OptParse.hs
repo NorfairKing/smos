@@ -66,6 +66,8 @@ getDispatch c =
                     , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
                     }
         CommandProjects -> pure DispatchProjects
+        CommandLog LogFlags {..} ->
+            pure $ DispatchLog LogSettings {logSetFilter = logFlagFilter}
         CommandStats StatsFlags {..} ->
             pure $
             DispatchStats StatsSettings {statsSetFilter = statsFlagFilter}
@@ -108,6 +110,7 @@ parseCommand =
         , command "clock" parseCommandClock
         , command "agenda" parseCommandAgenda
         , command "projects" parseCommandProjects
+        , command "log" parseCommandLog
         , command "stats" parseCommandStats
         ]
 
@@ -175,6 +178,12 @@ parseCommandProjects = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the projects overview"
     parser = pure CommandProjects
+
+parseCommandLog :: ParserInfo Command
+parseCommandLog = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print a log of what has happened."
+    parser = CommandLog <$> (LogFlags <$> parseFilterArg)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
