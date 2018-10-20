@@ -27,6 +27,7 @@ import Smos.Data
 
 import Smos.Report.Clock.Types
 import Smos.Report.Path
+import Smos.Report.Period
 import Smos.Report.TimeBlock
 
 data ClockTime = ClockTime
@@ -52,7 +53,7 @@ findClockTimes rp Entry {..} =
                 , clockTimeEntries = ne
                 }
 
-trimClockTime :: ZonedTime -> ClockPeriod -> ClockTime -> Maybe ClockTime
+trimClockTime :: ZonedTime -> Period -> ClockTime -> Maybe ClockTime
 trimClockTime zt cp ct = do
     let entries =
             mapMaybe (trimLogbookEntry zt cp) $ NE.toList $ clockTimeEntries ct
@@ -60,7 +61,7 @@ trimClockTime zt cp ct = do
     pure ct {clockTimeEntries = ne}
 
 trimLogbookEntry ::
-       ZonedTime -> ClockPeriod -> LogbookEntry -> Maybe LogbookEntry
+       ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
     case cp of
         AllTime -> pure

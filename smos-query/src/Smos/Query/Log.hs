@@ -7,16 +7,12 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 
-import qualified Data.Map as M
-import Data.Map (Map)
-
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Data
-
 import Smos.Report.Log
+import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.Streaming
 
@@ -37,7 +33,12 @@ log LogSettings {..} = do
             smosFileCursors .|
             C.filter (maybe (const True) filterPredicate logSetFilter . snd) .|
             smosCursorCurrents
-        putTableLn $ renderLogReport zt $ makeLogReport (zonedTimeZone zt) es
+        putTableLn $
+            renderLogReport zt $
+            filter
+                (filterPeriod zt logSetPeriod .
+                 logEventTimestamp . logEntryEvent) $
+            makeLogReport (zonedTimeZone zt) es
 
 renderLogReport :: ZonedTime -> [LogEntry] -> Table
 renderLogReport zt = formatAsTable . map (renderLogEntry zt)

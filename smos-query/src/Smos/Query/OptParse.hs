@@ -12,6 +12,7 @@ import System.Environment
 
 import Options.Applicative
 
+import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.TimeBlock
 
@@ -67,7 +68,12 @@ getDispatch c =
                     }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
-            pure $ DispatchLog LogSettings {logSetFilter = logFlagFilter}
+            pure $
+            DispatchLog
+                LogSettings
+                    { logSetFilter = logFlagFilter
+                    , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
+                    }
         CommandStats StatsFlags {..} ->
             pure $
             DispatchStats StatsSettings {statsSetFilter = statsFlagFilter}
@@ -149,10 +155,7 @@ parseCommandClock = info parser modifier
                    , value Nothing
                    ])) <*>
          parseFilterArg <*>
-         (Just <$>
-          (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
-           flag' AllTime (long "all-time")) <|>
-          pure Nothing) <*>
+         parsePeriod <*>
          (Just <$>
           (flag' SecondsResolution (long "seconds-resolution") <|>
            flag' MinutesResolution (long "minutes-resolution") <|>
@@ -183,7 +186,7 @@ parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print a log of what has happened."
-    parser = CommandLog <$> (LogFlags <$> parseFilterArg)
+    parser = CommandLog <$> (LogFlags <$> parseFilterArg <*> parsePeriod)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
@@ -206,4 +209,11 @@ parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
     Just <$>
     (flag' DayBlock (long "day-block") <|> flag' OneBlock (long "one-block")) <|>
+    pure Nothing
+
+parsePeriod :: Parser (Maybe Period)
+parsePeriod =
+    Just <$>
+    (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
+     flag' AllTime (long "all-time")) <|>
     pure Nothing

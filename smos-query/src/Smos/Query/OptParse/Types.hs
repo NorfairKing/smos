@@ -9,6 +9,7 @@ import Path
 
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
+import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.ShouldPrint
 import Smos.Report.TimeBlock
@@ -47,7 +48,7 @@ data NextFlags = NextFlags
 data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
     , clockFlagFilter :: Maybe Filter
-    , clockFlagPeriodFlags :: Maybe ClockPeriod
+    , clockFlagPeriodFlags :: Maybe Period
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
     } deriving (Show, Eq)
@@ -60,6 +61,7 @@ data AgendaFlags = AgendaFlags
 
 data LogFlags = LogFlags
     { logFlagFilter :: Maybe Filter
+    , logFlagPeriodFlags :: Maybe Period
     } deriving (Show, Eq)
 
 data StatsFlags = StatsFlags
@@ -100,7 +102,7 @@ data NextSettings = NextSettings
 data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)
     , clockSetFilter :: Maybe Filter
-    , clockSetPeriod :: ClockPeriod
+    , clockSetPeriod :: Period
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
     } deriving (Show, Eq)
@@ -113,6 +115,7 @@ data AgendaSettings = AgendaSettings
 
 data LogSettings = LogSettings
     { logSetFilter :: Maybe Filter
+    , logSetPeriod :: Period
     } deriving (Show, Eq)
 
 data StatsSettings = StatsSettings
