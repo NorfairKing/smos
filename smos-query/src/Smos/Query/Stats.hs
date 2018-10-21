@@ -3,11 +3,11 @@
 
 module Smos.Query.Stats where
 
-import Data.Text (Text)
-import qualified Data.Text as T
-
 import qualified Data.Map as M
 import Data.Map (Map)
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Time
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
@@ -27,6 +27,7 @@ stats :: StatsSettings -> Q ()
 stats StatsSettings {..} = do
     wd <- askWorkDir
     liftIO $ do
+        now <- getZonedTime
         es <-
             sourceToList $
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
@@ -36,7 +37,7 @@ stats StatsSettings {..} = do
             C.filter (maybe (const True) filterPredicate statsSetFilter . snd) .|
             smosCursorCurrents .|
             C.map snd
-        putTableLn $ renderStatsReport $ makeStatsReport es
+        putTableLn $ renderStatsReport $ makeStatsReport now statsSetPeriod es
 
 renderStatsReport :: StatsReport -> Table
 renderStatsReport StatsReport {..} =

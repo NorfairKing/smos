@@ -6,48 +6,83 @@ import GHC.Generics (Generic)
 
 import qualified Data.Map as M
 import Data.Map (Map)
+import Data.Maybe
+import Data.Time
 
 import Smos.Data
 
+import Smos.Report.Period
+
 data StatsReport = StatsReport
-    { statsReportStates :: Map (Maybe TodoState) Int
-    , statsReportHistoricalStates :: Map (Maybe TodoState) Int
-    , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
+    { statsReportHistoricalStates :: Map (Maybe TodoState) Int
+    , statsReportStates :: Map (Maybe TodoState) Int
     , statsReportFromStateTransitions :: Map (Maybe TodoState) Int
     , statsReportToStateTransitions :: Map (Maybe TodoState) Int
+    , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
     } deriving (Show, Eq, Generic)
 
-makeStatsReport :: [Entry] -> StatsReport
-makeStatsReport es =
+makeStatsReport :: ZonedTime -> Period -> [Entry] -> StatsReport
+makeStatsReport now p es =
     StatsReport
-        { statsReportStates = getCount $ map entryState es
-        , statsReportHistoricalStates = getCount $ historicalStates es
-        , statsReportStateTransitions = getCount $ stateTransitions es
-        , statsReportFromStateTransitions = getCount $ fromStateTransitions es
-        , statsReportToStateTransitions = getCount $ toStateTransitions es
+        { statsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
+        , statsReportHistoricalStates =
+              getCount $ historicalStatesInPeriod now p es
+        , statsReportFromStateTransitions =
+              getCount $ fromStateTransitionsInPeriod now p es
+        , statsReportToStateTransitions =
+              getCount $ toStateTransitionsInPeriod now p es
+        , statsReportStateTransitions =
+              getCount $ stateTransitionsInPeriod now p es
         }
 
-historicalStates :: [Entry] -> [Maybe TodoState]
-historicalStates =
+withinPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Bool
+withinPeriod now p = filterPeriod now p . stateHistoryEntryTimestamp
+
+stateHistoryEntryInPeriod ::
+       ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryEntryInPeriod now p tse =
+    if withinPeriod now p tse
+        then Just (stateHistoryEntryNewState tse)
+        else Nothing
+
+entryStateInPeriod :: ZonedTime -> Period -> Entry -> Maybe (Maybe TodoState)
+entryStateInPeriod now p e =
+    case (p, unStateHistory $ entryStateHistory e) of
+        (AllTime, []) -> Just Nothing
+        (_, []) -> Nothing
+        (_, (tse:_)) -> stateHistoryEntryInPeriod now p tse
+
+historicalStatesInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+historicalStatesInPeriod now p =
     concatMap
-        ((Nothing :) .
-         map stateHistoryEntryNewState . unStateHistory . entryStateHistory)
+        ((if p == AllTime
+              then (Nothing :)
+              else id) .
+         mapMaybe (stateHistoryEntryInPeriod now p) .
+         unStateHistory . entryStateHistory)
 
-fromStateTransitions :: [Entry] -> [Maybe TodoState]
-fromStateTransitions = map fst . stateTransitions
+fromStateTransitionsInPeriod ::
+       ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+fromStateTransitionsInPeriod now p = map fst . stateTransitionsInPeriod now p
 
-toStateTransitions :: [Entry] -> [Maybe TodoState]
-toStateTransitions = map snd . stateTransitions
+toStateTransitionsInPeriod ::
+       ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+toStateTransitionsInPeriod now p = map snd . stateTransitionsInPeriod now p
 
-stateTransitions :: [Entry] -> [(Maybe TodoState, Maybe TodoState)]
-stateTransitions =
+stateTransitionsInPeriod ::
+       ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+stateTransitionsInPeriod now p =
     concatMap
         (conseqMs .
-         map stateHistoryEntryNewState . unStateHistory . entryStateHistory)
+         mapMaybe (stateHistoryEntryInPeriod now p) .
+         unStateHistory . entryStateHistory)
   where
     conseqMs :: [Maybe a] -> [(Maybe a, Maybe a)]
     conseqMs [] = []
-    conseqMs [x] = [(Nothing, x)]
+    conseqMs [x] =
+        if p == AllTime
+            then [(Nothing, x)]
+            else []
     conseqMs (x:y:xs) = (y, x) : conseqMs (y : xs)
 
 getCount :: (Ord a, Foldable f) => f a -> Map a Int

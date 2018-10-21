@@ -77,7 +77,11 @@ getDispatch c =
                     }
         CommandStats StatsFlags {..} ->
             pure $
-            DispatchStats StatsSettings {statsSetFilter = statsFlagFilter}
+            DispatchStats
+                StatsSettings
+                    { statsSetFilter = statsFlagFilter
+                    , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
+                    }
 
 getArguments :: IO Arguments
 getArguments = do
@@ -197,7 +201,7 @@ parseCommandStats = info parser modifier
     modifier =
         fullDesc <>
         progDesc "Print the stats actions and warn if a file does not have one."
-    parser = CommandStats <$> (StatsFlags <$> parseFilterArg)
+    parser = CommandStats <$> (StatsFlags <$> parseFilterArg <*> parsePeriod)
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
