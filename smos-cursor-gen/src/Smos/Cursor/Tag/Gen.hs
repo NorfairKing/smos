@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-
-module Smos.Cursor.Tags.Gen where
+module Smos.Cursor.Tag.Gen where
 
 import Data.GenValidity
 
@@ -9,9 +8,8 @@ import Cursor.Text.Gen ()
 
 import Smos.Data.Gen ()
 
-import Smos.Cursor.Tag.Gen ()
-import Smos.Cursor.Tags
+import Smos.Cursor.Tag
 
-instance GenUnchecked TagsCursor
+instance GenUnchecked TagCursor
 
-instance GenValid TagsCursor
+instance GenValid TagCursor
