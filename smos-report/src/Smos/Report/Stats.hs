@@ -71,19 +71,18 @@ toStateTransitionsInPeriod now p = map snd . stateTransitionsInPeriod now p
 
 stateTransitionsInPeriod ::
        ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
-stateTransitionsInPeriod now p =
-    concatMap
-        (conseqMs .
-         mapMaybe (stateHistoryEntryInPeriod now p) .
-         unStateHistory . entryStateHistory)
+stateTransitionsInPeriod now p = concatMap go
   where
-    conseqMs :: [Maybe a] -> [(Maybe a, Maybe a)]
-    conseqMs [] = []
-    conseqMs [x] =
-        if p == AllTime
-            then [(Nothing, x)]
-            else []
-    conseqMs (x:y:xs) = (y, x) : conseqMs (y : xs)
+    go :: Entry -> [(Maybe TodoState, Maybe TodoState)]
+    go  = go' . unStateHistory . entryStateHistory
+    go' :: [StateHistoryEntry] -> [(Maybe TodoState, Maybe TodoState)]
+    go' [] = []
+    go' [she] = case stateHistoryEntryInPeriod now p she of
+        Nothing -> []
+        Just mts -> [(Nothing, mts)]
+    go' (x:y:xs) = case (,) <$> stateHistoryEntryInPeriod now p x <*> stateHistoryEntryInPeriod now p y of
+        Just (tsx, tsy) -> (tsy, tsx) : go' (y:xs)
+        _ -> go' (y:xs)
 
 getCount :: (Ord a, Foldable f) => f a -> Map a Int
 getCount = foldl (flip go) M.empty
