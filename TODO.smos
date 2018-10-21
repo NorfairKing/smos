@@ -532,6 +532,19 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-10-14 13:51:46.383973186000+0000
+      - header: Auto-save and auto-reload
+        contents: ! 'Smos should be able to save periodically automatically but:
+
+          - It should also be able to reload if anything has changed in the meantime
+
+          - It should also play well with not saving a file if nothing has changed
+          between the start and the end
+
+          - Reloading is not guaranteed to work, so do something sensible when it
+          goes wrong'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-21 14:22:58.671085180000+0000
     - entry:
         header: Editing
         state-history:
