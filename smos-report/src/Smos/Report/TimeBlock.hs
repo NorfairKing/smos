@@ -48,7 +48,7 @@ turnIntoSingletonBlock :: (b -> Day) -> b -> Block Day b
 turnIntoSingletonBlock func b = Block {blockTitle = func b, blockEntries = [b]}
 
 combineBlocksByName :: Ord a => [Block a b] -> [Block a b]
-combineBlocksByName = map comb . groupBy ((==) `on` blockTitle)
+combineBlocksByName = map comb . groupBy ((==) `on` blockTitle) . sortOn blockTitle
   where
     comb :: [Block a b] -> Block a b
     comb [] = error "cannot happen due to 'groupBy' above"
