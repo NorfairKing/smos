@@ -52,16 +52,17 @@ smosHandleEvent ::
 smosHandleEvent cf s e = do
     let func =
             case keyMapFunc s e (configKeyMap cf) (configReportsKeyMap cf) of
-                Nothing ->
+                NothingActivated ->
                     case e of
                         B.VtyEvent (Vty.EvKey ek mods) ->
                             let kp = KeyPress ek mods
                              in recordKeyPress kp
                         _ -> pure ()
-                Just func_ -> do
+                KeyActivated func_ -> do
                     recordCursorHistory
                     func_
                     clearKeyHistory
+                EventActivated func_ -> func_
     (mkHalt, s') <- runSmosM cf s func
     case mkHalt of
         Stop -> B.halt s'
@@ -80,7 +81,7 @@ smosHandleEvent cf s e = do
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
-keyMapFunc :: SmosState -> Event -> KeyMap -> ReportsKeyMap -> Maybe (SmosM ())
+keyMapFunc :: SmosState -> Event -> KeyMap -> ReportsKeyMap -> EventResult
 keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
     case editorCursorSelection $ smosStateCursor s of
         HelpSelected -> handleWith keyMapHelpMatchers
@@ -102,7 +103,7 @@ keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
                         LogbookSelected -> handleWith keyMapLogbookMatchers
         ReportSelected -> handleWith reportsKeymapNextActionReportMatchers
   where
-    handleWith :: KeyMappings -> Maybe (SmosM ())
+    handleWith :: KeyMappings -> EventResult
     handleWith specificMappings =
         let m =
                 map ((,) SpecificMatcher) specificMappings ++
@@ -116,9 +117,9 @@ keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
                                      (smosStateKeyHistory s)
                                      (KeyPress k mods)
                                      m of
-                                Nothing -> Nothing
+                                Nothing -> NothingActivated
                                 Just nems@(a :| _) ->
-                                    Just $ do
+                                    KeyActivated $ do
                                         modify
                                             (\ss ->
                                                  let dbi = smosStateDebugInfo ss
@@ -135,15 +136,20 @@ keyMapFunc s e KeyMap {..} ReportsKeyMap {..} =
                                                                dbi'
                                                          })
                                         activationFunc a
-                        _ -> Nothing
+                        _ -> NothingActivated
                 AppEvent se ->
                     case se of
                         SmosUpdateTime ->
-                            Just $ do
+                            EventActivated $ do
                                 now <- liftIO getZonedTime
                                 modify (\s_ -> s_ {smosStateTime = now})
-                        SmosSaveFile -> Just saveCurrentSmosFile
-                _ -> Nothing
+                        SmosSaveFile -> EventActivated saveCurrentSmosFile
+                _ -> NothingActivated
+
+data EventResult
+    = KeyActivated (SmosM ())
+    | EventActivated (SmosM ())
+    | NothingActivated
 
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =

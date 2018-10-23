@@ -732,6 +732,15 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 14:41:16.667140383000+0000
+      - header: Display the typing history by default?
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-23 06:42:15.370993481000+0000
+      - header: Make sure that the custom events interact well with the rest of the
+          mechanics of activation
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-23 06:42:35.027629665000+0000
     - entry:
         header: Debugging
         state-history:
