@@ -106,7 +106,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-report"
+    description = "smos-query"
 
 parseArgs :: Parser Arguments
 parseArgs = (,) <$> parseCommand <*> parseFlags
