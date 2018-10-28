@@ -722,6 +722,10 @@
           timestamp: 2018-10-18 18:44:43.491477782000+0000
         - new-state: TODO
           timestamp: 2018-10-14 10:24:05.798875032000+0000
+      - header: Clocking out should uncollapse everything on the way up
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-28 10:19:04.463049343000+0000
       - header: relative timestamp diffirent under cursor
         state-history:
         - new-state: TODO
