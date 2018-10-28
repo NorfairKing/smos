@@ -12,7 +12,6 @@ import GHC.Generics (Generic)
 
 import Data.Maybe
 
-import qualified Data.Conduit.Combinators as C
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty(..))
@@ -21,32 +20,15 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
-import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
-
-import Conduit
 
 import Smos.Data
 
 import Smos.Report.Clock.Types
 import Smos.Report.Path
+import Smos.Report.Period
 import Smos.Report.TimeBlock
-
-trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
-trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
-  where
-    goF :: Forest Entry -> Forest Entry
-    goF =
-        concatMap $ \t ->
-            case goT t of
-                Left t_ -> [t_]
-                Right fs -> fs
-    goT :: Tree Entry -> Either (Tree Entry) (Forest Entry)
-    goT t@(Node e fs) =
-        if all (`elem` entryTags e) ts
-            then Left t
-            else Right $ goF fs
 
 data ClockTime = ClockTime
     { clockTimeFile :: RootedPath
@@ -56,33 +38,29 @@ data ClockTime = ClockTime
 
 instance Validity ClockTime
 
-findClockTimes :: RootedPath -> SmosFile -> [ClockTime]
-findClockTimes rp = mapMaybe go . concatMap flatten . smosFileForest
+findClockTimes :: RootedPath -> Entry -> Maybe ClockTime
+findClockTimes rp Entry {..} =
+    case entryLogbook of
+        LogOpen _ es -> go' es
+        LogClosed es -> go' es
   where
-    go :: Entry -> Maybe ClockTime
-    go Entry {..} =
-        case entryLogbook of
-            LogOpen _ es -> go' es
-            LogClosed es -> go' es
-      where
-        go' es = do
-            ne <- NE.nonEmpty es
-            pure $
-                ClockTime
-                    { clockTimeFile = rp
-                    , clockTimeHeader = entryHeader
-                    , clockTimeEntries = ne
-                    }
+    go' es = do
+        ne <- NE.nonEmpty es
+        pure $
+            ClockTime
+                { clockTimeFile = rp
+                , clockTimeHeader = entryHeader
+                , clockTimeEntries = ne
+                }
 
-trimClockTime :: ZonedTime -> ClockPeriod -> ClockTime -> Maybe ClockTime
+trimClockTime :: ZonedTime -> Period -> ClockTime -> Maybe ClockTime
 trimClockTime zt cp ct = do
     let entries =
             mapMaybe (trimLogbookEntry zt cp) $ NE.toList $ clockTimeEntries ct
     ne <- NE.nonEmpty entries
     pure ct {clockTimeEntries = ne}
 
-trimLogbookEntry ::
-       ZonedTime -> ClockPeriod -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
     case cp of
         AllTime -> pure
@@ -132,46 +110,24 @@ trimLogbookEntryTo tz begin end LogbookEntry {..} =
     fromLocal :: LocalTime -> UTCTime
     fromLocal = localTimeToUTC tz
 
-data ClockTimeBlock a = ClockTimeBlock
-    { clockTimeBlockName :: a
-    , clockTimeBlockEntries :: [ClockTime]
-    } deriving (Show, Eq, Generic, Functor)
+type ClockTimeBlock a = Block a ClockTime
 
-instance Validity a => Validity (ClockTimeBlock a)
-
-divideIntoBlocks ::
+divideIntoClockTimeBlocks ::
        TimeZone -> TimeBlock -> [ClockTime] -> [ClockTimeBlock Text]
-divideIntoBlocks tz cb cts =
+divideIntoClockTimeBlocks tz cb cts =
     case cb of
-        OneBlock ->
-            [ ClockTimeBlock
-                  {clockTimeBlockName = "All Time", clockTimeBlockEntries = cts}
-            ]
+        OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
         DayBlock ->
-            map (fmap (T.pack . show)) $
+            map (mapBlockTitle (T.pack . show)) $
             combineBlocksByName $
             concatMap (divideClockTimeIntoDailyBlocks tz) cts
-
-combineBlocksByName :: Ord a => [ClockTimeBlock a] -> [ClockTimeBlock a]
-combineBlocksByName =
-    map (uncurry makeClockTimeBlock) .
-    sortAndGroupCombineOrd . map unClockTimeBlock
-  where
-    unClockTimeBlock :: ClockTimeBlock a -> (a, [ClockTime])
-    unClockTimeBlock ClockTimeBlock {..} =
-        (clockTimeBlockName, clockTimeBlockEntries)
-    makeClockTimeBlock :: a -> [[ClockTime]] -> ClockTimeBlock a
-    makeClockTimeBlock n cts =
-        ClockTimeBlock
-            {clockTimeBlockName = n, clockTimeBlockEntries = concat cts}
 
 divideClockTimeIntoDailyBlocks :: TimeZone -> ClockTime -> [ClockTimeBlock Day]
 divideClockTimeIntoDailyBlocks tz =
     map (uncurry makeClockTimeBlock) . sortAndGroupCombineOrd . divideClockTime
   where
     makeClockTimeBlock :: a -> [ClockTime] -> ClockTimeBlock a
-    makeClockTimeBlock n cts =
-        ClockTimeBlock {clockTimeBlockName = n, clockTimeBlockEntries = cts}
+    makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
     divideClockTime :: ClockTime -> [(Day, ClockTime)]
@@ -209,21 +165,16 @@ sortGroupCombine func =
 
 type ClockTable = [ClockTableBlock]
 
-data ClockTableBlock = ClockTableBlock
-    { clockTableBlockName :: Text
-    , clockTableBlockEntries :: [ClockTableEntry]
-    } deriving (Show, Eq, Generic)
-
-instance Validity ClockTableBlock
+type ClockTableBlock = Block Text ClockTableEntry
 
 makeClockTable :: [ClockTimeBlock Text] -> [ClockTableBlock]
 makeClockTable = map makeClockTableBlock
 
 makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
-makeClockTableBlock ClockTimeBlock {..} =
-    ClockTableBlock
-        { clockTableBlockName = clockTimeBlockName
-        , clockTableBlockEntries = map makeClockTableEntry clockTimeBlockEntries
+makeClockTableBlock Block {..} =
+    Block
+        { blockTitle = blockTitle
+        , blockEntries = map makeClockTableEntry blockEntries
         }
 
 data ClockTableEntry = ClockTableEntry

@@ -7,39 +7,67 @@ module Smos.Query.OptParse.Types
 
 import Path
 
-import Smos.Data
-
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
-import Smos.Report.TimeBlock
+import Smos.Report.Period
+import Smos.Report.Query
 import Smos.Report.ShouldPrint
+import Smos.Report.TimeBlock
 
 type Arguments = (Command, Flags)
 
 type Instructions = (Dispatch, Settings)
 
 data Command
-    = CommandWaiting
-    | CommandNext
+    = CommandEntry EntryFlags
+    | CommandWaiting WaitingFlags
+    | CommandNext NextFlags
     | CommandClock ClockFlags
     | CommandAgenda AgendaFlags
+    | CommandProjects
+    | CommandLog LogFlags
+    | CommandStats StatsFlags
     deriving (Show, Eq)
 
 data Flags =
     Flags
     deriving (Show, Eq)
 
+data EntryFlags = EntryFlags
+    { entryFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data WaitingFlags = WaitingFlags
+    { waitingFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data NextFlags = NextFlags
+    { nextFlagFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
 data ClockFlags = ClockFlags
     { clockFlagFile :: Maybe FilePath
-    , clockFlagPeriodFlags :: Maybe ClockPeriod
+    , clockFlagFilter :: Maybe Filter
+    , clockFlagPeriodFlags :: Maybe Period
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
-    , clockFlagTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
-    { agendaFlagHistoricity :: Maybe AgendaHistoricity
+    { agendaFlagFilter :: Maybe Filter
+    , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
+    } deriving (Show, Eq)
+
+data LogFlags = LogFlags
+    { logFlagFilter :: Maybe Filter
+    , logFlagPeriodFlags :: Maybe Period
+    , logFlagBlockFlags :: Maybe TimeBlock
+    } deriving (Show, Eq)
+
+data StatsFlags = StatsFlags
+    { statsFlagFilter :: Maybe Filter
+    , statsFlagPeriodFlags :: Maybe Period
     } deriving (Show, Eq)
 
 data Configuration =
@@ -51,21 +79,49 @@ data Settings =
     deriving (Show, Eq)
 
 data Dispatch
-    = DispatchWaiting
-    | DispatchNext
+    = DispatchEntry EntrySettings
+    | DispatchWaiting WaitingSettings
+    | DispatchNext NextSettings
     | DispatchClock ClockSettings
     | DispatchAgenda AgendaSettings
+    | DispatchProjects
+    | DispatchLog LogSettings
+    | DispatchStats StatsSettings
     deriving (Show, Eq)
+
+data EntrySettings = EntrySettings
+    { entrySetFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data WaitingSettings = WaitingSettings
+    { waitingSetFilter :: Maybe Filter
+    } deriving (Show, Eq)
+
+data NextSettings = NextSettings
+    { nextSetFilter :: Maybe Filter
+    } deriving (Show, Eq)
 
 data ClockSettings = ClockSettings
     { clockSetFile :: Maybe (Path Abs File)
-    , clockSetPeriod :: ClockPeriod
+    , clockSetFilter :: Maybe Filter
+    , clockSetPeriod :: Period
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
-    , clockSetTags :: [Tag]
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
-    { agendaSetHistoricity :: AgendaHistoricity
+    { agendaSetFilter :: Maybe Filter
+    , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
+    } deriving (Show, Eq)
+
+data LogSettings = LogSettings
+    { logSetFilter :: Maybe Filter
+    , logSetPeriod :: Period
+    , logSetBlock :: TimeBlock
+    } deriving (Show, Eq)
+
+data StatsSettings = StatsSettings
+    { statsSetFilter :: Maybe Filter
+    , statsSetPeriod :: Period
     } deriving (Show, Eq)

@@ -82,15 +82,21 @@ defaultKeyMap =
                   , exactString "sd" $ timestampsSelect "DEADLINE"
                   , exactString "ss" $ timestampsSelect "SCHEDULED"
                   -- Clocking
-                  , exactString "ci" forestClockOutEverywhereAndClockInHere
-                  , exactString "co" forestClockOutEverywhere
+                  , exactString
+                        "ci"
+                        forestClockOutEverywhereInAllFilesAndClockInHere
+                  , exactString "co" forestClockOutEverywhereInAllFiles
                   -- Reports
                   , exactString "rn" reportNextActions
                   -- Convenience
                   , exactString " nw" convDoneAndWaitForResponse
+                  , exactString " rp" convRepinged
                   -- Collapsing
                   , exactChar '?' selectHelp
                   , exactChar '\t' forestToggleCollapse
+                  , exactKeyPress
+                        (KeyPress (KChar '\t') [MMeta])
+                        forestToggleCollapseRecursively
                   , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
                   , combo

@@ -73,20 +73,9 @@ enterNextActionFile =
                                  let sfc =
                                          nextActionReportCursorBuildSmosFileCursor
                                              narc
-                                 put $
-                                     ss
-                                         { smosStateStartSmosFile =
-                                               Just
-                                                   (rebuildSmosFileCursorEntirely
-                                                        sfc)
-                                         , smosStateFilePath =nextActionReportCursorBuildFilePath narc
-                                         , smosStateCursor =
-                                               editorCursorSwitchToFile
-                                                   ec
-                                                       { editorCursorFileCursor =
-                                                             Just sfc
-                                                       }
-                                         }
+                                 void $ switchToFile
+                                     (nextActionReportCursorBuildFilePath narc)
+                                     sfc
                      _ -> pure ()
         , actionDescription = "Enter the currently selected next action"
         }

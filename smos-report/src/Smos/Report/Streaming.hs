@@ -9,11 +9,14 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Tree
 
+import Lens.Micro
+
 import Path
 import Path.IO
 
 import Conduit
 import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 import qualified Data.Conduit.Combinators as C
 
 import Smos.Data
@@ -30,8 +33,8 @@ sourceFilesInNonHiddenDirsRecursively dir = walkDir go dir
        -> [Path Abs File]
        -> ConduitT i RootedPath IO WalkAction
     go curdir subdirs files = do
-        C.yieldMany $
-            map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
+        C.yieldMany $ map (Relative dir) $
+            mapMaybe (stripProperPrefix dir) files
         pure $ WalkExclude $ filter hidden subdirs
       where
         hidden ad =
@@ -50,10 +53,7 @@ parseSmosFiles ::
        ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
 parseSmosFiles =
     C.mapM $ \p -> do
-        let ap =
-                case p of
-                    Relative pad prf -> pad </> prf
-                    Absolute af -> af
+        let ap = resolveRootedPath p
         mErrOrSmosFile <- liftIO $ readSmosFile ap
         let ei =
                 case mErrOrSmosFile of
@@ -86,6 +86,21 @@ instance Exception ParseSmosFileException where
     displayException (SmosFileParseError file errMess) =
         "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
+trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
+trimByTags ts = C.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
+  where
+    goF :: Forest Entry -> Forest Entry
+    goF =
+        concatMap $ \t ->
+            case goT t of
+                Left t_ -> [t_]
+                Right fs -> fs
+    goT :: Tree Entry -> Either (Tree Entry) (Forest Entry)
+    goT t@(Node e fs) =
+        if all (`elem` entryTags e) ts
+            then Left t
+            else Right $ goF fs
+
 smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = C.concatMap $ uncurry go
   where
@@ -95,6 +110,12 @@ smosFileEntries = C.concatMap $ uncurry go
 smosFileCursors ::
        Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
+
+smosCursorCurrents ::
+       Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
+smosCursorCurrents =
+    C.map $ \(rf, fc) ->
+        (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors sf =

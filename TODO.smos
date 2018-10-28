@@ -467,17 +467,10 @@
 
           Opening file A the second time should not be possible'
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-15 21:30:18.365498544000+0000
         - new-state: TODO
           timestamp: 2018-10-07 17:12:51.588908229000+0000
-      - header: Copy-pasting
-        contents: ! 'also not critical, because the user can just use swapping and
-          promoting/demoting to move the entry to the desired place.
-
-          When it comes to multiple entries to move, that''s a bit cumbersome, but
-          still not critical.'
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-09-29 10:42:19.961781171000+0000
       - header: The archive
         contents: ! 'The idea here is that you should never have to remove data to
           have a clear overview.
@@ -491,14 +484,67 @@
           of details to work out there.
 
 
-          The archive could house the done tasks in this file.'
+          The archive could house the done tasks in this file.
+
+
+          It turns out we don''t need an archive at all. We just have to explain to
+          users how to archive their files.
+
+          You need a seperate directory where you archive done projects manually.
+
+          There''s no real need for an entry-granularity archive and as long as you
+          DONE every appropriately in the archives, then you don''t even need to change
+          the other commands. Genius!'
         state-history:
+        - new-state: CANCELLED
+          timestamp: 2018-10-12 14:23:06.004032690000+0000
         - new-state: TODO
           timestamp: 2018-10-03 23:25:44.736092452000+0000
       - header: Allow parsing an empty file as an empty smos file
         state-history:
+        - new-state: DONE
+          timestamp: 2018-10-18 20:05:35.739596537000+0000
         - new-state: TODO
           timestamp: 2018-10-11 22:08:06.398627323000+0000
+      - header: save when quit with ctrl-c or closing the terminal
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-16 08:46:44.583579437000+0000
+      - header: Copy-pasting
+        contents: ! 'also not critical, because the user can just use swapping and
+          promoting/demoting to move the entry to the desired place.
+
+          When it comes to multiple entries to move, that''s a bit cumbersome, but
+          still not critical.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-09-29 10:42:19.961781171000+0000
+      - header: Archiving
+        contents: ! 'A way to put away an entire smos file such that it never conflicts
+          with another file.
+
+          If we have two projects (over a long timespan) that both were called p.smos
+          .
+
+          They should both somehow fit into the archive without conflicts.
+
+          Smos could have some tooling for that, something like smos-archive or so.'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-14 13:51:46.383973186000+0000
+      - header: Auto-save and auto-reload
+        contents: ! 'Smos should be able to save periodically automatically but:
+
+          - It should also be able to reload if anything has changed in the meantime
+
+          - It should also play well with not saving a file if nothing has changed
+          between the start and the end
+
+          - Reloading is not guaranteed to work, so do something sensible when it
+          goes wrong'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-21 14:22:58.671085180000+0000
     - entry:
         header: Editing
         state-history:
@@ -513,6 +559,8 @@
         forest:
         - header: Un-collapsing an entire tree recursively
           state-history:
+          - new-state: DONE
+            timestamp: 2018-10-18 18:44:16.268081222000+0000
           - new-state: TODO
             timestamp: 2018-10-11 22:10:17.270628908000+0000
         - header: moving to the node above
@@ -582,11 +630,21 @@
         - entry:
             header: Clocking
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:30.479144851000+0000
             - new-state: TODO
               timestamp: 2018-09-29 10:47:34.849786330000+0000
           forest:
+          - header: Clocking in should display the currently running clock
+            state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:28.415541549000+0000
+            - new-state: TODO
+              timestamp: 2018-10-14 11:24:48.759250459000+0000
           - header: Also clock-out anywhere also in other files
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 07:42:29.775495634000+0000
             - new-state: TODO
               timestamp: 2018-09-22 08:29:23.945647335000+0000
         - entry:
@@ -608,6 +666,8 @@
           forest:
           - header: use day of the week (and prefixes) to define a timestamp
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-18 18:44:30.703808089000+0000
             - new-state: TODO
               timestamp: 2018-10-06 11:21:43.746944934000+0000
           - header: deleting a timestamp
@@ -622,6 +682,18 @@
             state-history:
             - new-state: TODO
               timestamp: 2018-10-08 16:47:36.613506648000+0000
+      - entry:
+          header: Convenience
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 13:55:00.856012672000+0000
+        forest:
+        - header: ! 'Cancel the current waiting task, make a new task that is DONE:
+            ping about this, and open a new waiting task that is the same as the one
+            that was cancelled'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 13:55:24.759971424000+0000
     - entry:
         header: Display
         state-history:
@@ -638,12 +710,41 @@
           timestamp: 2018-09-29 15:05:22.835248279000+0000
         - new-state: TODO
           timestamp: 2018-09-29 14:41:34.427187264000+0000
+      - header: Show time elapsed per period and total time elapsed for clock times
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-10-12 16:27:36.268545305000+0000
+        - new-state: TODO
+          timestamp: 2018-10-12 14:32:11.548046181000+0000
+      - header: No need to show total time elapsed if there is only one clock entry?
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-10-18 18:44:43.491477782000+0000
+        - new-state: TODO
+          timestamp: 2018-10-14 10:24:05.798875032000+0000
+      - header: Clocking out should uncollapse everything on the way up
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-28 10:19:04.463049343000+0000
+      - header: relative timestamp diffirent under cursor
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-19 12:55:24.585079022000+0000
       - header: Line wrapping cursor placement bug
         contents: ! 'Both for headers and for cursors: when the line wraps, then the
           cursor is still shown on the previous cursor'
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 14:41:16.667140383000+0000
+      - header: Display the typing history by default?
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-23 06:42:15.370993481000+0000
+      - header: Make sure that the custom events interact well with the rest of the
+          mechanics of activation
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-10-23 06:42:35.027629665000+0000
     - entry:
         header: Debugging
         state-history:
@@ -696,60 +797,65 @@
         - entry:
             header: TODO state options
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:57.054879514000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:29.304259983000+0000
           forest:
           - header: Only show TODO items
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:55.910917002000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:22.896264365000+0000
           - header: Don't show DONE items
             state-history:
+            - new-state: DONE
+              timestamp: 2018-10-12 23:31:56.382801567000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:23.488277355000+0000
-        - entry:
-            header: Period
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:36:37.616233040000+0000
-          forest:
-          - header: Day
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:01.472236138000+0000
-          - header: This week
-            contents: monday - sunday
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:26:59.360230704000+0000
-          - header: Week to date
-            contents: today - 6, today -5, ... today
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:31.616171810000+0000
-          - header: The week to come, starting from today
-            contents: today, today +1, ... today + 6
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:48.064242054000+0000
-          - header: Week centered around today
-            contents: today - 3, today - 2, today - 1, today, today + 1, today + 2,
-              today + 3
-            state-history:
-            - new-state: TODO
-              timestamp: 2018-10-03 23:27:36.480229176000+0000
+        - header: ! 'Stats: how many new todos? How many did I finish?'
+          state-history:
+          - new-state: DONE
+            timestamp: 2018-10-14 17:31:40.393000729000+0000
+          - new-state: TODO
+            timestamp: 2018-10-14 13:51:39.072010385000+0000
+        - header: No need to show total clock time if there are no matching entries
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 10:24:30.190843122000+0000
+        - header: ! 'Clock: nicer day format for humans in reports'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 11:05:41.471081520000+0000
+        - header: ! 'Stats: perioud to filter'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 17:31:48.569204767000+0000
+        - header: ! 'Clock: mention open clocks'
+          state-history:
+          - new-state: TODO
+            timestamp: 2018-10-14 14:04:37.552167601000+0000
       - entry:
           header: Interactive reports
           state-history:
           - new-state: TODO
             timestamp: 2018-10-07 16:50:32.020845922000+0000
         forest:
-        - header: Next actions
-          state-history:
-          - new-state: DONE
-            timestamp: 2018-10-07 16:50:55.676424467000+0000
-          - new-state: TODO
-            timestamp: 2018-10-07 16:50:48.004747025000+0000
+        - entry:
+            header: Next actions
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-12 23:32:11.887007456000+0000
+            - new-state: DONE
+              timestamp: 2018-10-07 16:50:55.676424467000+0000
+            - new-state: TODO
+              timestamp: 2018-10-07 16:50:48.004747025000+0000
+          forest:
+          - header: interactive filter
+            state-history:
+            - new-state: TODO
+              timestamp: 2018-10-12 23:32:17.422403491000+0000
         - header: waiting
           state-history:
           - new-state: TODO

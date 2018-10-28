@@ -11,13 +11,16 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - async
   - base
   - brick
   - bytestring
+  - conduit
   - containers
   - contravariant
   - cursor
   - cursor-fuzzy-time
+  - filelock
   - fuzzy-time
   - megaparsec
   - microlens
@@ -25,6 +28,7 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - pretty-relative-time
   - pretty-show
   - process
   - safe

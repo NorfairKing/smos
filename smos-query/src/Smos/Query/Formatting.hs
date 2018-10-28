@@ -42,6 +42,9 @@ rootedPathChunk rp =
         Relative _ rf -> fromRelFile rf
         Absolute af -> fromAbsFile af
 
+mTodoStateChunk :: Maybe TodoState -> Chunk Text
+mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
+
 todoStateChunk :: TodoState -> Chunk Text
 todoStateChunk ts = fore color . chunk . todoStateText $ ts
   where

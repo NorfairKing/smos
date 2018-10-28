@@ -36,7 +36,10 @@ tests:
     - genvalidity-hspec
     - genvalidity-path
     - hspec
+    - megaparsec
+    - smos-data
     - smos-data-gen
     - smos-report
     - smos-report-gen
+    - text
     - time

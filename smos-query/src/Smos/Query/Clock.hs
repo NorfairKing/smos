@@ -18,10 +18,13 @@ import Text.Printf
 import Rainbow
 
 import Conduit
+import qualified Data.Conduit.Combinators as C
 
 import Smos.Report.Clock
 import Smos.Report.Path
+import Smos.Report.Query
 import Smos.Report.Streaming
+import Smos.Report.TimeBlock
 
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -39,26 +42,35 @@ clock ClockSettings {..} = do
             sourceToList $
             filesSource .| filterSmosFiles .| parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            trimByTags clockSetTags
+            smosFileCursors .|
+            C.filter (maybe (const True) filterPredicate clockSetFilter . snd) .|
+            smosCursorCurrents
         now <- getZonedTime
         putTableLn $
             renderClockTable clockSetResolution $
             makeClockTable $
-            divideIntoBlocks (zonedTimeZone now) clockSetBlock $
-            concatMap
-                (mapMaybe (trimClockTime now clockSetPeriod) .
-                 uncurry findClockTimes)
-                tups
+            divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
+            mapMaybe (trimClockTime now clockSetPeriod) $
+            mapMaybe (uncurry findClockTimes) tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
-renderClockTable res ctbs = formatAsTable $ case ctbs of
-    [] -> []
-    [ctb] -> map go (clockTableBlockEntries ctb)
-    _ -> concatMap goB ctbs
+renderClockTable res ctbs =
+    formatAsTable $
+    case ctbs of
+        [] -> []
+        [ctb] -> goEs $ blockEntries ctb
+        _ -> concatMap goB ctbs
   where
     goB :: ClockTableBlock -> [[Chunk Text]]
-    goB ClockTableBlock {..} =
-        [chunk clockTableBlockName] : map go clockTableBlockEntries
+    goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
+    goEs es =
+        map go es ++
+        [ map (fore blue) $
+          [ chunk ""
+          , chunk "Total:"
+          , chunk $ renderNominalDiffTime res $ sum $ map clockTableEntryTime es
+          ]
+        ]
     go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
         [ rootedPathChunk clockTableEntryFile

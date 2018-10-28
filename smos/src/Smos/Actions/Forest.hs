@@ -5,6 +5,7 @@ module Smos.Actions.Forest
     ( allForestPlainActions
     , allForestUsingCharActions
     , forestToggleCollapse
+    , forestToggleCollapseRecursively
     , forestInsertEntryBefore
     , forestInsertEntryBeforeAndSelectHeader
     , forestInsertEntryBelow
@@ -24,11 +25,21 @@ module Smos.Actions.Forest
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideEntireEntry
-    , forestClockOutEverywhere
-    , forestClockOutEverywhereAndClockInHere
+    , forestClockOutEverywhereInThisFile
+    , forestClockOutEverywhereInAllFiles
+    , forestClockOutEverywhereInThisFileAndClockInHere
+    , forestClockOutEverywhereInAllFilesAndClockInHere
     ) where
 
 import Data.Time
+
+import Conduit
+
+import Smos.Data
+
+import Smos.Report.Config
+import Smos.Report.Path
+import Smos.Report.Streaming
 
 import Smos.Types
 
@@ -37,6 +48,7 @@ import Smos.Actions.Utils
 allForestPlainActions :: [Action]
 allForestPlainActions =
     [ forestToggleCollapse
+    , forestToggleCollapseRecursively
     , forestInsertEntryBefore
     , forestInsertEntryBeforeAndSelectHeader
     , forestInsertEntryBelow
@@ -54,7 +66,10 @@ allForestPlainActions =
     , forestDemoteEntry
     , forestDemoteSubTree
     , forestToggleHideEntireEntry
-    , forestClockOutEverywhere
+    , forestClockOutEverywhereInThisFile
+    , forestClockOutEverywhereInAllFiles
+    , forestClockOutEverywhereInThisFileAndClockInHere
+    , forestClockOutEverywhereInAllFilesAndClockInHere
     ]
 
 allForestUsingCharActions :: [ActionUsing Char]
@@ -66,6 +81,14 @@ forestToggleCollapse =
     { actionName = "forestToggleCollapse"
     , actionFunc = modifyFileCursorM smosFileCursorToggleCollapse
     , actionDescription = "Toggle collapsing the current sub forest"
+    }
+
+forestToggleCollapseRecursively :: Action
+forestToggleCollapseRecursively =
+    Action
+    { actionName = "forestToggleCollapseRecursively"
+    , actionFunc = modifyFileCursorM smosFileCursorToggleCollapseRecursively
+    , actionDescription = "Toggle collapsing the current sub forest recursively"
     }
 
 forestInsertEntryBefore :: Action
@@ -233,23 +256,67 @@ forestToggleHideEntireEntry =
     , actionDescription = "Toggle the hiding of the current entire entry"
     }
 
-forestClockOutEverywhere :: Action
-forestClockOutEverywhere =
+forestClockOutEverywhereInThisFile :: Action
+forestClockOutEverywhereInThisFile =
     Action
-    { actionName = "forestClockOutEverywhere"
+    { actionName = "forestClockOutEverywhereInThisFile"
     , actionFunc =
           modifyFileCursorS $ \sfc -> do
               now <- liftIO getCurrentTime
               pure $ smosFileCursorClockOutEverywhere now sfc
-    , actionDescription = "Clock out everywhere"
+    , actionDescription = "Clock out everywhere in this file"
     }
-forestClockOutEverywhereAndClockInHere :: Action
-forestClockOutEverywhereAndClockInHere =
+
+forestClockOutEverywhereInAllFiles :: Action
+forestClockOutEverywhereInAllFiles =
     Action
-    { actionName = "forestClockOutEverywhereAndClockInHere"
+    { actionName = "forestClockOutEverywhereInAllFiles"
     , actionFunc =
           modifyFileCursorS $ \sfc -> do
               now <- liftIO getCurrentTime
-              pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
-    , actionDescription = "Clock out everywhere and clock in at the current entry"
+              pure $ smosFileCursorClockOutEverywhere now sfc
+    , actionDescription = "Clock out everywhere in all files"
     }
+
+forestClockOutEverywhereInThisFileAndClockInHere :: Action
+forestClockOutEverywhereInThisFileAndClockInHere =
+    Action
+    { actionName = "forestClockOutEverywhereInThisFileAndClockInHere"
+    , actionFunc =
+          modifyFileCursorS $ \sfc -> do
+              now <- liftIO getCurrentTime
+              clockOutInAllAgendaFiles now
+              pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
+    , actionDescription =
+          "Clock out everywhere in this file and clock in at the current entry"
+    }
+
+forestClockOutEverywhereInAllFilesAndClockInHere :: Action
+forestClockOutEverywhereInAllFilesAndClockInHere =
+    Action
+    { actionName = "forestClockOutEverywhereInAllFilesAndClockInHere"
+    , actionFunc =
+          do modifyFileCursorS $ \sfc -> do
+                 now <- liftIO getCurrentTime
+                 clockOutInAllAgendaFiles now
+                 pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
+    , actionDescription =
+          "Clock out everywhere in all files and clock in at the current entry"
+    }
+
+clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
+clockOutInAllAgendaFiles now = do
+    agendaFileSpec <- asks $ smosReportConfigAgendaFileSpec . configReportConfig
+    liftIO $ do
+        agendaFileDir <- agendaFileSpecGetWorkDir agendaFileSpec
+        agendaFiles <-
+            sourceToList $ sourceFilesInNonHiddenDirsRecursively agendaFileDir
+        forM_ agendaFiles $ \rp -> do
+            let af = resolveRootedPath rp
+            merrOrFile <- readSmosFile af
+            case merrOrFile of
+                Nothing -> pure () -- Should not happen
+                Just (Left _) -> pure () -- Nothing we can do
+                Just (Right sf) -> do
+                    let sf' = smosFileClockOutEverywhere now sf
+                    unless (sf == sf') $ writeSmosFile af sf'

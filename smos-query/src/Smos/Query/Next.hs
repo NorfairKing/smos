@@ -10,14 +10,15 @@ import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Report.Next
+import Smos.Report.Query
 import Smos.Report.Streaming
 
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
-next :: Q ()
-next = do
+next :: NextSettings -> Q ()
+next NextSettings {..} = do
     wd <- askWorkDir
     liftIO $ do
         tups <-
@@ -25,7 +26,9 @@ next = do
             sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            smosFileEntries .|
+            smosFileCursors .|
+            C.filter (maybe (const True) filterPredicate nextSetFilter . snd) .|
+            smosCursorCurrents .|
             C.filter (isNextAction . snd) .|
             C.map (uncurry makeNextActionEntry)
         putTableLn $ renderNextActionReport tups

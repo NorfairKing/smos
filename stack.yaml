@@ -11,22 +11,25 @@ packages:
 - smos-report-cursor-gen
 - smos-query
 - smos-convert-org
+- smos-archive
 extra-deps:
 - git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - thyme-0.3.5.5
+- git: https://github.com/NorfairKing/pretty-relative-time.git
+  commit: 0044ce34d484d54e6809c30cee8e1219c722765f
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
   commit: 13f7585d0b18403b5d78f0c0bbef608d8fad0b40
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: 765afdf9a18566007f26499398a04f3fac6435cd
+  commit: 79cac898f475036f08022992ebc764026ce510e5
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 50fad900ce14c82db4b18eb3767df3d82e1f4939
+  commit: 1e5e70afd71a4184d0ad417ff08fd904b389faa4
   subdirs:
     - cursor
     - cursor-gen

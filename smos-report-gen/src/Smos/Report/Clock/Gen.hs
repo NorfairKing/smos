@@ -10,12 +10,8 @@ import Smos.Data.Gen ()
 import Smos.Report.Clock
 
 import Smos.Report.Path.Gen ()
+import Smos.Report.Period.Gen ()
 import Smos.Report.TimeBlock.Gen ()
-
-instance GenUnchecked ClockPeriod
-
-instance GenValid ClockPeriod where
-    genValid = genValidStructurally
 
 instance GenUnchecked ClockResolution
 
@@ -25,16 +21,6 @@ instance GenValid ClockResolution where
 instance GenUnchecked ClockTime
 
 instance GenValid ClockTime where
-    genValid = genValidStructurally
-
-instance GenUnchecked a => GenUnchecked (ClockTimeBlock a)
-
-instance GenValid a => GenValid (ClockTimeBlock a) where
-    genValid = genValidStructurally
-
-instance GenUnchecked ClockTableBlock
-
-instance GenValid ClockTableBlock where
     genValid = genValidStructurally
 
 instance GenUnchecked ClockTableEntry

@@ -241,15 +241,23 @@ data CommandsRun = CommandsRun
     }
 
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
-runCommandsOn mstart commands = do
-    tz <- getCurrentTimeZone
-    let startState = initState $(mkAbsFile "/pretend/test/file") mstart tz
-    (fs, rs) <- foldM go (startState, []) commands
-    pure
-        CommandsRun
-            { intermidiaryResults = reverse rs
-            , finalResult = rebuildEditorCursor $ smosStateCursor fs
-            }
+runCommandsOn mstart commands =
+    withSystemTempFile "smos-golden" $ \af _ -> do
+        zt <- getZonedTime
+        mfl <- lockFile af
+        case mfl of
+            Nothing -> die "Could not lock pretend file."
+            Just fl -> do
+                let startState = initState zt af fl mstart
+                (fs, rs) <- foldM go (startState, []) commands
+                let cr =
+                        CommandsRun
+                            { intermidiaryResults = reverse rs
+                            , finalResult =
+                                  rebuildEditorCursor $ smosStateCursor fs
+                            }
+                unlockFile fl
+                pure cr
   where
     testConf = error "tried to access the config"
     go :: (SmosState, [(Command, SmosFile)])

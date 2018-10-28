@@ -1,0 +1,28 @@
+name: smos-archive
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
+license: AllRightsReserved
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+    - base
+    - mtl
+    - optparse-applicative
+    - path
+    - path-io
+    - smos-report
+    - time
+
+executables:
+  smos-archive:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - base
+    - smos-archive

@@ -13,6 +13,10 @@ let
     (pkgs.fetchFromGitHub (import ./nix/fuzzy-time-version.nix)
     + "/nix/overlay.nix")
   );
+  pretty-relative-time-overlay = import (
+    (pkgs.fetchFromGitHub (import ./nix/pretty-relative-time-version.nix)
+    + "/nix/overlay.nix")
+  );
   cursor-fuzzy-time-overlay = import (
     (pkgs.fetchFromGitHub (import ./nix/cursor-fuzzy-time-version.nix)
     + "/nix/overlay.nix")
@@ -22,6 +26,7 @@ in pkgsv {
     [ validity-overlay
       cursor-overlay
       fuzzy-time-overlay
+      pretty-relative-time-overlay
       cursor-fuzzy-time-overlay
       (import ./nix/overlay.nix)
     ];
