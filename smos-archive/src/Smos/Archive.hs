@@ -46,7 +46,7 @@ getToFile file = do
                     fromRelFile withoutExt ++
                     "_" ++ formatTime defaultTimeLocale "%F" today
             arf' <- parseRelFile newRelFile
-            arf'' <- setFileExtension ".smos" arf'
+            arf'' <- setFileExtension ext arf'
             pure $ arch </> arf''
 
 moveToArchive :: Path Abs File -> Path Abs File -> Q ()
