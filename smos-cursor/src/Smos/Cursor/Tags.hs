@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Cursor.Tags
-    ( TagsCursor
+    ( TagsCursor(..)
     , makeTagsCursor
     , singletonTagsCursor
     , rebuildTagsCursor

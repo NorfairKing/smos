@@ -7,6 +7,8 @@ module Smos.Actions.Tags
     , tagsSet
     , tagsUnset
     , tagsToggle
+    , tagsInsert
+    , tagsAppend
     ) where
 
 import Data.Maybe
@@ -25,7 +27,7 @@ allTagsPlainActions = do
     pure $ act arg
 
 allTagsUsingCharActions :: [ActionUsing Char]
-allTagsUsingCharActions = []
+allTagsUsingCharActions = [tagsInsert, tagsAppend]
 
 tagsSet :: Tag -> Action
 tagsSet t =
@@ -49,4 +51,22 @@ tagsToggle t =
     { actionName = "tagsToggle_" <> tagText t
     , actionFunc = modifyMTagsCursorD $ tagsCursorToggleTag t
     , actionDescription = T.unwords ["Toggle the", tagText t, "tag"]
+    }
+
+tagsInsert :: ActionUsing Char
+tagsInsert =
+    ActionUsing
+    { actionUsingName = "tagsInsert"
+    , actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorInsert c
+    , actionUsingDescription =
+          "Insert a character at the cursor select the space after it"
+    }
+
+tagsAppend :: ActionUsing Char
+tagsAppend =
+    ActionUsing
+    { actionUsingName = "tagsAppend"
+    , actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorAppend c
+    , actionUsingDescription =
+          "Insert a character at the cursor select the space before it"
     }

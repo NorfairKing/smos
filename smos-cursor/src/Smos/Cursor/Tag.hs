@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Tag
-    ( TagCursor
+    ( TagCursor(..)
     , makeTagCursor
     , rebuildTagCursor
     , tagCursorInsert

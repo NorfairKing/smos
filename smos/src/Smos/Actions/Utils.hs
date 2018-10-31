@@ -130,6 +130,9 @@ modifyMTagsCursorMD func =
             Just Deleted -> Nothing
             Just (Updated tc') -> Just tc'
 
+modifyMTagsCursor :: (Maybe TagsCursor -> TagsCursor) -> SmosM ()
+modifyMTagsCursor func = modifyMTagsCursorM $ Just . func
+
 modifyMTagsCursorM :: (Maybe TagsCursor -> Maybe TagsCursor) -> SmosM ()
 modifyMTagsCursorM func = modifyEntryCursor $ entryCursorTagsCursorL %~ func
 
