@@ -158,6 +158,7 @@ defaultKeyMap =
     , keyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , keyMapTagsMatchers = listMatchers [
                 anyChar tagsInsert
+            , exactKey KBS tagsRemove, exactKey KDel tagsDelete
         ,exactKey KEsc entrySelectWhole]
     , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , keyMapHelpMatchers =

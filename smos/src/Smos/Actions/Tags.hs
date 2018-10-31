@@ -9,6 +9,8 @@ module Smos.Actions.Tags
     , tagsToggle
     , tagsInsert
     , tagsAppend
+    , tagsRemove
+    , tagsDelete
     ) where
 
 import Data.Maybe
@@ -69,4 +71,20 @@ tagsAppend =
     , actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorAppend c
     , actionUsingDescription =
           "Insert a character at the cursor select the space before it"
+    }
+
+tagsRemove :: Action
+tagsRemove =
+    Action
+    { actionName = "tagsRemove"
+    , actionFunc = modifyTagsCursorMD tagsCursorRemove
+    , actionDescription = "Remove from the tags cursor"
+    }
+
+tagsDelete :: Action
+tagsDelete =
+    Action
+    { actionName = "tagsDelete"
+    , actionFunc = modifyTagsCursorMD tagsCursorDelete
+    , actionDescription = "Delete from the tags cursor"
     }
