@@ -12,6 +12,12 @@ module Smos.Cursor.Tags
     , tagsCursorAppend
     , tagsCursorDelete
     , tagsCursorRemove
+    , tagsCursorSelectPrev
+    , tagsCursorSelectNext
+    , tagsCursorSelectPrevChar
+    , tagsCursorSelectNextChar
+    , tagsCursorSelectPrevTag
+    , tagsCursorSelectNextTag
     ) where
 
 import GHC.Generics (Generic)
@@ -19,6 +25,8 @@ import GHC.Generics (Generic)
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
+
+import Control.Applicative
 
 import Lens.Micro
 
@@ -58,20 +66,20 @@ tagsCursorSetTag t mtc =
             if t `elem` rebuildTagsCursor tc
                 then Nothing
                 else Just $
-                     tc &
-                     tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
+                     tc & tagsCursorNonEmptyCursorL %~
+                     nonEmptyCursorAppendAtEnd t
 
 tagsCursorUnsetTag :: Tag -> TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
 tagsCursorUnsetTag t tc =
     let ne = rebuildTagsCursor tc
-     in if t `elem` ne
-            then do
-                let ts = NE.filter (/= t) ne
-                pure $
-                    case NE.nonEmpty ts of
-                        Nothing -> Deleted
-                        Just ne' -> Updated $ makeTagsCursor ne'
-            else Nothing
+    in if t `elem` ne
+           then do
+               let ts = NE.filter (/= t) ne
+               pure $
+                   case NE.nonEmpty ts of
+                       Nothing -> Deleted
+                       Just ne' -> Updated $ makeTagsCursor ne'
+           else Nothing
 
 tagsCursorToggleTag :: Tag -> Maybe TagsCursor -> DeleteOrUpdate TagsCursor
 tagsCursorToggleTag t mtc =
@@ -79,15 +87,14 @@ tagsCursorToggleTag t mtc =
         Nothing -> Updated $ singletonTagsCursor t
         Just tc ->
             let ne = rebuildTagsCursor tc
-             in if t `elem` ne
-                    then let ts = NE.filter (/= t) ne
-                          in case NE.nonEmpty ts of
-                                 Nothing -> Deleted
-                                 Just ne' -> Updated $ makeTagsCursor ne'
-                    else Updated $
-                         tc &
-                         tagsCursorNonEmptyCursorL %~
-                         nonEmptyCursorAppendAtEnd t
+            in if t `elem` ne
+                   then let ts = NE.filter (/= t) ne
+                        in case NE.nonEmpty ts of
+                               Nothing -> Deleted
+                               Just ne' -> Updated $ makeTagsCursor ne'
+                   else Updated $
+                        tc & tagsCursorNonEmptyCursorL %~
+                        nonEmptyCursorAppendAtEnd t
 
 tagsCursorInsert :: Char -> TagsCursor -> Maybe TagsCursor
 tagsCursorInsert c =
@@ -108,7 +115,7 @@ tagsCursorDelete tc =
                 (nonEmptyCursorDeleteElemAndSelectNext makeTagCursor)
 
 tagsCursorRemove :: TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
-tagsCursorRemove tc=
+tagsCursorRemove tc =
     case tc & (tagsCursorNonEmptyCursorL . nonEmptyCursorElemL) tagCursorRemove of
         Just tc' -> Just $ Updated tc'
         Nothing ->
@@ -116,3 +123,29 @@ tagsCursorRemove tc=
             focusPossibleDeleteOrUpdate
                 tagsCursorNonEmptyCursorL
                 (nonEmptyCursorRemoveElemAndSelectPrev makeTagCursor)
+
+tagsCursorSelectPrev :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectPrev tc =
+    tagsCursorSelectNextChar tc <|> tagsCursorSelectNextTag tc
+
+tagsCursorSelectNext :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectNext tc =
+    tagsCursorSelectNextChar tc <|> tagsCursorSelectNextTag tc
+
+tagsCursorSelectPrevChar :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectPrevChar =
+    tagsCursorNonEmptyCursorL . nonEmptyCursorElemL $ tagCursorSelectPrevChar
+
+tagsCursorSelectNextChar :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectNextChar =
+    tagsCursorNonEmptyCursorL . nonEmptyCursorElemL $ tagCursorSelectNextChar
+
+tagsCursorSelectPrevTag :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectPrevTag =
+    tagsCursorNonEmptyCursorL $
+    nonEmptyCursorSelectPrev rebuildTagCursor makeTagCursor
+
+tagsCursorSelectNextTag :: TagsCursor -> Maybe TagsCursor
+tagsCursorSelectNextTag =
+    tagsCursorNonEmptyCursorL $
+    nonEmptyCursorSelectNext rebuildTagCursor makeTagCursor

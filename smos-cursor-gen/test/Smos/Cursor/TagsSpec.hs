@@ -41,3 +41,21 @@ spec = do
     describe "tagsCursorRemove" $
         it "produces valid tags cursors" $
         producesValidsOnValids tagsCursorRemove
+    describe "tagsCursorSelectPrev" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectPrev
+    describe "tagsCursorSelectNext" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectNext
+    describe "tagsCursorSelectPrevChar" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectPrevChar
+    describe "tagsCursorSelectNextChar" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectNextChar
+    describe "tagsCursorSelectPrevTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectPrevTag
+    describe "tagsCursorSelectNextTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectNextTag

@@ -9,12 +9,14 @@ module Smos.Cursor.Tag
     , tagCursorAppend
     , tagCursorDelete
     , tagCursorRemove
+    , tagCursorSelectPrevChar
+    , tagCursorSelectNextChar
     ) where
 
 import GHC.Generics (Generic)
 
-import Data.Maybe
 import Control.Monad
+import Data.Maybe
 import Data.Validity
 
 import Lens.Micro
@@ -58,3 +60,10 @@ tagCursorDelete = tagCursorTextCursorL textCursorDelete
 
 tagCursorRemove :: TagCursor -> Maybe TagCursor
 tagCursorRemove = tagCursorTextCursorL textCursorRemove
+
+tagCursorSelectPrevChar :: TagCursor -> Maybe TagCursor
+tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev
+
+tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
+tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectPrev
+

@@ -11,6 +11,8 @@ module Smos.Actions.Tags
     , tagsAppend
     , tagsRemove
     , tagsDelete
+    , tagsLeft
+    , tagsRight
     ) where
 
 import Data.Maybe
@@ -23,10 +25,13 @@ import Smos.Types
 import Smos.Actions.Utils
 
 allTagsPlainActions :: [Action]
-allTagsPlainActions = do
-    act <- [tagsSet, tagsUnset, tagsToggle]
-    arg <- catMaybes [tag "work", tag "online"]
-    pure $ act arg
+allTagsPlainActions =
+    concat
+        [ do act <- [tagsSet, tagsUnset, tagsToggle]
+             arg <- catMaybes [tag "work", tag "online"]
+             pure $ act arg
+        , [tagsRemove, tagsDelete, tagsLeft, tagsRight]
+        ]
 
 allTagsUsingCharActions :: [ActionUsing Char]
 allTagsUsingCharActions = [tagsInsert, tagsAppend]
@@ -87,4 +92,20 @@ tagsDelete =
     { actionName = "tagsDelete"
     , actionFunc = modifyTagsCursorMD tagsCursorDelete
     , actionDescription = "Delete from the tags cursor"
+    }
+
+tagsLeft :: Action
+tagsLeft =
+    Action
+    { actionName = "tagsLeft"
+    , actionFunc = modifyTagsCursorM tagsCursorSelectPrev
+    , actionDescription = "Move left in the tags cursor"
+    }
+
+tagsRight :: Action
+tagsRight =
+    Action
+    { actionName = "tagsRight"
+    , actionFunc = modifyTagsCursorM tagsCursorSelectNext
+    , actionDescription = "Move right in the tags cursor"
     }
