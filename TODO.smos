@@ -722,6 +722,10 @@
           timestamp: 2018-10-18 18:44:43.491477782000+0000
         - new-state: TODO
           timestamp: 2018-10-14 10:24:05.798875032000+0000
+      - header: The entire entry should be visible, instead of just the header
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-11-01 21:14:12.467734270000+0000
       - header: Clocking out should uncollapse everything on the way up
         state-history:
         - new-state: TODO
