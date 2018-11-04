@@ -163,6 +163,7 @@ defaultKeyMap =
               , exactKey KRight tagsRight
               , exactKey KBS tagsRemove
               , exactKey KDel tagsDelete
+              , exactKey KEnter entrySelectWhole
               , exactKey KEsc entrySelectWhole
               ]
     , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]

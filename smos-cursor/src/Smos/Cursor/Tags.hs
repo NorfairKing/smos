@@ -97,10 +97,16 @@ tagsCursorToggleTag t mtc =
                         nonEmptyCursorAppendAtEnd t
 
 tagsCursorInsert :: Char -> TagsCursor -> Maybe TagsCursor
+tagsCursorInsert '\t' =
+    tagsCursorNonEmptyCursorL $
+    pure . nonEmptyCursorAppendAndSelect rebuildTagCursor emptyTagCursor
 tagsCursorInsert c =
     tagsCursorNonEmptyCursorL . nonEmptyCursorElemL $ tagCursorInsert c
 
 tagsCursorAppend :: Char -> TagsCursor -> Maybe TagsCursor
+tagsCursorAppend '\t' =
+    tagsCursorNonEmptyCursorL $
+    pure . nonEmptyCursorInsertAndSelect rebuildTagCursor emptyTagCursor
 tagsCursorAppend c =
     tagsCursorNonEmptyCursorL . nonEmptyCursorElemL $ tagCursorAppend c
 

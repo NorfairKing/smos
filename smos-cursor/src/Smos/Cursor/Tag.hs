@@ -3,6 +3,7 @@
 
 module Smos.Cursor.Tag
     ( TagCursor(..)
+    , emptyTagCursor
     , makeTagCursor
     , rebuildTagCursor
     , tagCursorInsert
@@ -43,6 +44,9 @@ tagCursorTextCursorL :: Lens' TagCursor TextCursor
 tagCursorTextCursorL =
     lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
 
+emptyTagCursor :: TagCursor
+emptyTagCursor = TagCursor emptyTextCursor
+
 makeTagCursor :: Tag -> TagCursor
 makeTagCursor = TagCursor . fromJust . makeTextCursor . tagText
 
@@ -66,4 +70,3 @@ tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev
 
 tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
 tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectPrev
-
