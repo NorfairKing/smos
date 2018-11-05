@@ -65,6 +65,7 @@ trimLogbookEntry now cp =
     case cp of
         AllTime -> pure
         Today -> trimToToday
+        LastWeek -> trimToLastWeek
         ThisWeek -> trimToThisWeek
   where
     tz :: TimeZone
@@ -79,6 +80,10 @@ trimLogbookEntry now cp =
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
     trimToToday = trimLogbookEntryTo tz todayStart todayEnd
+    lastWeekStart :: LocalTime
+    lastWeekStart =
+        let (y, wn, _) = toWeekDate today
+         in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today
@@ -89,6 +94,8 @@ trimLogbookEntry now cp =
          in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
+    trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
+    trimToLastWeek = trimLogbookEntryTo tz lastWeekStart thisWeekStart
 
 trimLogbookEntryTo ::
        TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry

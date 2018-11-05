@@ -222,5 +222,6 @@ parsePeriod :: Parser (Maybe Period)
 parsePeriod =
     Just <$>
     (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
+     flag' LastWeek (long "last-week") <|>
      flag' AllTime (long "all-time")) <|>
     pure Nothing
