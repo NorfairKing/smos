@@ -75,8 +75,9 @@ renderClockTable res ctbs =
     go ClockTableEntry {..} =
         [ rootedPathChunk clockTableEntryFile
         , headerChunk clockTableEntryHeader
-        , chunk $ renderNominalDiffTime res clockTableEntryTime
+        , fore brown $ chunk $ renderNominalDiffTime res clockTableEntryTime
         ]
+    brown = color256 166
 
 renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text
 renderNominalDiffTime res ndt =
