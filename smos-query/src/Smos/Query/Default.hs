@@ -1,10 +1,14 @@
 module Smos.Query.Default where
 
-import Smos.Query
+import Path
 
-defaultSmosQuery :: IO ()
-defaultSmosQuery = smosQuery defaultSmosQueryConfig
+import Smos.Query.Config
 
-defaultSmosQueryConfig :: SmosQueryConfig
-defaultSmosQueryConfig =
+smosQueryConfig :: Maybe (Path Abs Dir) -> SmosQueryConfig
+smosQueryConfig Nothing =
     SmosQueryConfig {smosQueryConfigReportConfig = defaultReportConfig}
+smosQueryConfig (Just path) =
+    SmosQueryConfig
+        { smosQueryConfigReportConfig =
+              SmosReportConfig . AgendaFileSpec $ pure path
+        }

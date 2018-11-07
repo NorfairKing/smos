@@ -6,6 +6,7 @@ module Smos.Query.OptParse where
 import Control.Monad
 import Data.Maybe
 import qualified Data.Text as T
+import Path
 import Path.IO
 
 import System.Environment
@@ -25,10 +26,11 @@ getInstructions = do
     (,) <$> getDispatch cmd <*> getSettings flags config
 
 getConfig :: Flags -> IO Configuration
-getConfig Flags = pure Configuration
+getConfig _ = pure Configuration
 
 getSettings :: Flags -> Configuration -> IO Settings
-getSettings Flags Configuration = pure Settings
+getSettings flags Configuration =
+    fmap Settings $ traverse parseAbsDir $ flgWorkflowDir flags
 
 getDispatch :: Command -> IO Dispatch
 getDispatch c =
@@ -204,7 +206,13 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parseFilterArg <*> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = pure Flags
+parseFlags = Flags <$> parseProjectDir
+
+parseProjectDir :: Parser (Maybe FilePath)
+parseProjectDir =
+    option
+        (Just <$> str)
+        (mconcat [long "workflow-dir", help "workflow directory", value Nothing])
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =

@@ -29,9 +29,9 @@ data Command
     | CommandStats StatsFlags
     deriving (Show, Eq)
 
-data Flags =
-    Flags
-    deriving (Show, Eq)
+newtype Flags = Flags
+    { flgWorkflowDir :: Maybe FilePath
+    } deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
     { entryFlagFilter :: Maybe Filter
@@ -74,9 +74,9 @@ data Configuration =
     Configuration
     deriving (Show, Eq)
 
-data Settings =
-    Settings
-    deriving (Show, Eq)
+newtype Settings = Settings
+    { sttWorkflowDir :: Maybe (Path Abs Dir)
+    } deriving (Show, Eq)
 
 data Dispatch
     = DispatchEntry EntrySettings

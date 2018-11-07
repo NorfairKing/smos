@@ -1,6 +1,6 @@
 module Main where
 
-import Smos.Query.Default
+import Smos.Query
 
 main :: IO ()
-main = defaultSmosQuery
+main = smosQuery
