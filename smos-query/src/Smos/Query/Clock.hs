@@ -59,18 +59,33 @@ renderClockTable res ctbs =
     case ctbs of
         [] -> []
         [ctb] -> goEs $ blockEntries ctb
-        _ -> concatMap goB ctbs
+        _ -> goBs ctbs
   where
+    goBs :: [ClockTableBlock] -> [[Chunk Text]]
+    goBs ctbs_ =
+        concatMap goB ctbs_ ++
+        [  [chunk "", chunk "", chunk ""]
+        , map (fore blue) $
+          [ chunk ""
+          , chunk "Total:"
+          , chunk $ renderNominalDiffTime res $ sumBlocks ctbs_
+          ]
+        ]
     goB :: ClockTableBlock -> [[Chunk Text]]
     goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
     goEs es =
         map go es ++
-        [ map (fore blue) $
+        [
+          map (fore blue) $
           [ chunk ""
           , chunk "Total:"
-          , chunk $ renderNominalDiffTime res $ sum $ map clockTableEntryTime es
+          , chunk $ renderNominalDiffTime res $ sumEntries es
           ]
         ]
+    sumBlocks :: [ClockTableBlock] -> NominalDiffTime
+    sumBlocks = sum . map (sumEntries . blockEntries)
+    sumEntries :: [ClockTableEntry] -> NominalDiffTime
+    sumEntries = sum . map clockTableEntryTime
     go :: ClockTableEntry -> [Chunk Text]
     go ClockTableEntry {..} =
         [ rootedPathChunk clockTableEntryFile

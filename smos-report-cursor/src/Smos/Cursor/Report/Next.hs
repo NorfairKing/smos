@@ -38,7 +38,7 @@ produceNextActionReportCursor src = do
         sourceToList $
         sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
         parseSmosFiles .|
-        printShouldPrint DontPrint .|
+        printShouldPrint PrintWarning .|
         smosFileCursors .|
         C.map (uncurry makeNextActionEntryCursor) .|
         C.filter cursorPointsToNextAction
