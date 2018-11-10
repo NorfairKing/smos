@@ -1,0 +1,31 @@
+before:
+- entry: a
+  forest:
+  - entry: b
+    forest:
+    - entry: c
+      forest:
+      - d
+  - e
+  - f
+commands:
+- forestToggleCollapse
+- forestMoveDown
+- forestToggleCollapse
+- forestMoveDown
+- forestToggleCollapse
+- forestMoveDown
+- forestPromoteSubTree
+- forestMoveDown
+- forestDemoteSubTree
+- forestPromoteEntry
+- forestDemoteEntry
+after:
+- entry: a
+  forest:
+  - entry: b
+    forest:
+    - c
+    - d
+    - e
+  - f

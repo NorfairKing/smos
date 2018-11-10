@@ -1,3 +1,12 @@
+before:
+- Hello
+- World
+commands:
+- logbookClockIn
+- forestMoveDown
+- logbookClockIn
+- logbookClockOut
+after:
 - header: Hello
   logbook:
   - start: 2018-09-26 00:23:38.588646153000+0000

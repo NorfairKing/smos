@@ -126,4 +126,5 @@ tests:
     - smos-data-gen
     - text
     - time
+    - validity
     - yaml

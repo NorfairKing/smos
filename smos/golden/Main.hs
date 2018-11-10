@@ -1,25 +1,32 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Main where
+module Main
+    ( main
+    ) where
+
+import GHC.Generics
 
 import System.Exit
-
-import Test.Hspec
 
 import qualified Data.ByteString.Char8 as SB8
 import Data.Function
 import Data.List
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Time
+import Data.Validity
+import Data.Yaml
 import Data.Yaml.Builder as Yaml
 
 import Control.Monad
+
+import Test.Hspec
+import Test.Validity
 
 import Path
 import Path.IO
@@ -40,181 +47,66 @@ main = hspec spec
 spec :: Spec
 spec = do
     tfs <-
-        runIO $
-            -- TODO verify that all plain actions and using char actions are unique
-         do
+        runIO $ do
             resourcesDir <- resolveDir' "test_resources"
             fs <- snd <$> listDirRecur resourcesDir
-            pure $ mapMaybe classify fs
+            pure $ filter ((== ".yaml") . fileExtension) fs
+    describe "Preconditions" $ do
+        let distinct ls = sort (nub ls) == sort ls
+        specify "all actions have unique names" $
+            distinct $
+            concat
+                [ map actionName allPlainActions
+                , map actionUsingName allUsingCharActions
+                ]
     describe "Golden" $ makeTestcases tfs
 
-data TestFile
-    = Before (Path Abs File)
-    | Commands (Path Abs File)
-    | After (Path Abs File)
-    deriving (Show, Eq)
-
-classify :: Path Abs File -> Maybe TestFile
-classify fp
-    | ".before" `isSuffixOf` fromAbsFile fp = Just $ Before fp
-    | ".commands" `isSuffixOf` fromAbsFile fp = Just $ Commands fp
-    | ".after" `isSuffixOf` fromAbsFile fp = Just $ After fp
-    | otherwise = Nothing
-
 data GoldenTestCase = GoldenTestCase
-    { testCaseName :: Path Abs File
-    , beforeFile :: Path Abs File
-    , commandsFile :: Path Abs File
-    , afterFile :: Path Abs File
-    } deriving (Show, Eq)
+    { goldenTestCaseBefore :: SmosFile
+    , goldenTestCaseCommands :: [Command]
+    , goldenTestCaseAfter :: SmosFile
+    } deriving (Show, Generic)
 
-matchUp :: [TestFile] -> Either String [GoldenTestCase]
-matchUp tfs =
-    fmap nub $
-    forM tfs $ \tf ->
-        case tf of
-            Before b -> do
-                c <- findCommands b
-                a <- findAfter b
-                pure $
-                    GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
-            Commands c -> do
-                b <- findBefore c
-                a <- findAfter c
-                pure $
-                    GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
-            After a -> do
-                b <- findBefore a
-                c <- findCommands a
-                pure $
-                    GoldenTestCase
-                        { testCaseName = stripFileExtension b
-                        , beforeFile = b
-                        , commandsFile = c
-                        , afterFile = a
-                        }
-  where
-    findBefore :: Path Abs File -> Either String (Path Abs File)
-    findBefore p =
-        let fs =
-                mapMaybe
-                    (\case
-                         Before bp ->
-                             if stripFileExtension p == stripFileExtension bp
-                                 then Just bp
-                                 else Nothing
-                         _ -> Nothing)
-                    tfs
-         in case fs of
-                [] ->
-                    Left $ unwords ["Before file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple Before files found:"
-                        , show $ map fromAbsFile fs
-                        ]
-    findCommands :: Path Abs File -> Either String (Path Abs File)
-    findCommands p =
-        let fs =
-                mapMaybe
-                    (\case
-                         Commands cp ->
-                             if stripFileExtension p == stripFileExtension cp
-                                 then Just cp
-                                 else Nothing
-                         _ -> Nothing)
-                    tfs
-         in case fs of
-                [] ->
-                    Left $
-                    unwords ["Commands file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple Commands files found:"
-                        , show $ map fromAbsFile fs
-                        ]
-    findAfter :: Path Abs File -> Either String (Path Abs File)
-    findAfter p =
-        let fs =
-                mapMaybe
-                    (\case
-                         After ap_ ->
-                             if stripFileExtension p == stripFileExtension ap_
-                                 then Just ap_
-                                 else Nothing
-                         _ -> Nothing)
-                    tfs
-         in case fs of
-                [] -> Left $ unwords ["After file not found for", fromAbsFile p]
-                [f] -> Right f
-                _ ->
-                    Left $
-                    unwords
-                        [ "Multiple After files found:"
-                        , show $ map fromAbsFile fs
-                        ]
+instance Validity GoldenTestCase
 
-stripFileExtension :: Path b File -> Path b File
-stripFileExtension = fromJust . setFileExtension ""
+instance FromJSON GoldenTestCase where
+    parseJSON =
+        withObject "GoldenTestCase" $ \o ->
+            GoldenTestCase <$> o .: "before" <*> o .: "commands" <*>
+            o .: "after"
 
-makeTestcases :: [TestFile] -> Spec
-makeTestcases tfs =
-    case matchUp tfs of
-        Left err -> runIO $ die err
-        Right ts -> mapM_ makeTestcase ts
+makeTestcases :: [Path Abs File] -> Spec
+makeTestcases = mapM_ makeTestcase
 
-makeTestcase :: GoldenTestCase -> Spec
-makeTestcase GoldenTestCase {..} =
-    it (fromAbsFile testCaseName) $ do
-        bf <- readSmosfileForTest beforeFile
-        cs <- readCommandsFileForTest commandsFile
-        af <- readSmosfileForTest afterFile
-        run <- runCommandsOn (Just bf) cs
-        expectResults bf af run
-
-readSmosfileForTest :: Path Abs File -> IO SmosFile
-readSmosfileForTest fp = do
-    mb <- readSmosFile fp
-    case mb of
-        Nothing -> failure "Could not find before file anymore."
-        Just errOrSmosFile ->
-            case errOrSmosFile of
-                Left err ->
-                    failure $ unlines ["Failed to read smos file:", show err]
-                Right sf -> pure sf
+makeTestcase :: Path Abs File -> Spec
+makeTestcase p =
+    it (fromAbsFile p) $ do
+        gtc@GoldenTestCase {..} <- decodeFileThrow (fromAbsFile p)
+        run <- runCommandsOn (Just goldenTestCaseBefore) goldenTestCaseCommands
+        shouldBeValid gtc
+        expectResults goldenTestCaseBefore goldenTestCaseAfter run
 
 failure :: String -> IO a
 failure s = expectationFailure s >> undefined
-
-readCommandsFileForTest :: Path Abs File -> IO [Command]
-readCommandsFileForTest f = do
-    t <- T.readFile $ fromAbsFile f
-    case mapM parseCommand $ T.lines t of
-        Left e -> failure $ unlines ["Failed to parse command:", e]
-        Right c -> pure c
 
 data Command where
     CommandPlain :: Action -> Command
     CommandUsing :: Show a => ActionUsing a -> a -> Command
 
+instance Validity Command where
+    validate = trivialValidation
+
 instance Show Command where
     show (CommandPlain a) = T.unpack $ actionName a
     show (CommandUsing au inp) =
         unwords [T.unpack $ actionUsingName au, show inp]
+
+instance FromJSON Command where
+    parseJSON =
+        withText "Command" $ \t ->
+            case parseCommand t of
+                Left err -> fail err
+                Right c -> pure c
 
 parseCommand :: Text -> Either String Command
 parseCommand t =
@@ -310,7 +202,7 @@ expectResults bf af CommandsRun {..} =
           , ppShow af
           , ""
           , "The intermediary steps built up to the result as follows:"
-        , ""
+          , ""
           ]
         , concatMap (uncurry go) intermidiaryResults
         , [ "The expected result was the following:"

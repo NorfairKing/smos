@@ -1,3 +1,14 @@
+before:
+- example
+- example2
+- example3
+commands:
+- entrySetTodoState_TODO
+- forestMoveDown
+- forestMoveDown
+- undoAny
+- entrySetTodoState_TODO
+after:
 - header: example
   state-history:
   - timestamp: 2018-09-05T06:13:41.359194141Z

@@ -1,0 +1,8 @@
+before:
+- forest:
+  - world
+  entry: hello
+commands:
+- forestDeleteCurrentEntry
+after:
+- world

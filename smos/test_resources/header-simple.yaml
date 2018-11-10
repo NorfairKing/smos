@@ -1,0 +1,10 @@
+before: []
+commands:
+- startHeaderFromEmptyAndSelectHeader
+- headerInsert h
+- headerInsert e
+- headerInsert l
+- headerInsert l
+- headerInsert o
+after:
+- hello

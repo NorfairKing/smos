@@ -1,3 +1,4 @@
+before:
 - forest:
   - forest:
     - forest:
@@ -7,3 +8,9 @@
       entry: this
     entry: world
   entry: hello
+commands:
+- forestToggleCollapse
+- forestMoveDown
+- forestDeleteCurrentSubTree
+after:
+- hello

@@ -1,0 +1,9 @@
+before:
+- Hello
+commands:
+- tagsSet_work
+- tagsToggle_online
+- tagsToggle_work
+- tagsUnset_online
+after:
+- Hello

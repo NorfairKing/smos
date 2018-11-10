@@ -1,0 +1,22 @@
+before:
+- forest:
+  - forest:
+    - forest:
+      - forest:
+        - me
+        entry: is
+      entry: this
+    entry: world
+  entry: hello
+commands:
+- forestToggleCollapse
+- forestMoveDown
+- forestDeleteCurrentEntry
+after:
+- forest:
+  - forest:
+    - forest:
+      - me
+      entry: is
+    entry: this
+  entry: hello
