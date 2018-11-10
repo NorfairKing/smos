@@ -41,21 +41,45 @@ spec = do
     describe "tagsCursorRemove" $
         it "produces valid tags cursors" $
         producesValidsOnValids tagsCursorRemove
-    describe "tagsCursorSelectPrev" $
+    describe "tagsCursorSelectPrev" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectPrev
-    describe "tagsCursorSelectNext" $
+            producesValidsOnValids tagsCursorSelectPrev
+        it "is the inverse of tagsCursorSelectNext" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectNext
+                tagsCursorSelectPrev
+    describe "tagsCursorSelectNext" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectNext
-    describe "tagsCursorSelectPrevChar" $
+            producesValidsOnValids tagsCursorSelectNext
+        it "is the inverse of tagsCursorSelectPrev" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectPrev
+                tagsCursorSelectNext
+    describe "tagsCursorSelectPrevChar" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectPrevChar
-    describe "tagsCursorSelectNextChar" $
+            producesValidsOnValids tagsCursorSelectPrevChar
+        it "is the inverse of tagsCursorSelectNextChar" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectNextChar
+                tagsCursorSelectPrevChar
+    describe "tagsCursorSelectNextChar" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectNextChar
-    describe "tagsCursorSelectPrevTag" $
+            producesValidsOnValids tagsCursorSelectNextChar
+        it "is the inverse of tagsCursorSelectPrevChar" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectPrevChar
+                tagsCursorSelectNextChar
+    describe "tagsCursorSelectPrevTag" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectPrevTag
-    describe "tagsCursorSelectNextTag" $
+            producesValidsOnValids tagsCursorSelectPrevTag
+        it "is the inverse of tagsCursorSelectNextTag" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectPrevTag
+                tagsCursorSelectNextTag
+    describe "tagsCursorSelectNextTag" $ do
         it "produces valid tags cursors" $
-        producesValidsOnValids tagsCursorSelectNextTag
+            producesValidsOnValids tagsCursorSelectNextTag
+        it "is the inverse of tagsCursorSelectPrevTag" $
+            inverseFunctionsIfSucceedOnValid
+                tagsCursorSelectNextTag
+                tagsCursorSelectPrevTag
