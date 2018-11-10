@@ -35,6 +35,18 @@ spec = do
     describe "tagsCursorAppend" $
         it "produces valid tags cursors" $
         producesValidsOnValids2 tagsCursorAppend
+    describe "tagsCursorInsertTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids2 tagsCursorInsertTag
+    describe "tagsCursorAppendTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids2 tagsCursorAppendTag
+    describe "tagsCursorInsertAndSelectTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids2 tagsCursorInsertAndSelectTag
+    describe "tagsCursorAppendAndSelectTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids2 tagsCursorAppendAndSelectTag
     describe "tagsCursorDelete" $
         it "produces valid tags cursors" $
         producesValidsOnValids tagsCursorDelete
@@ -55,6 +67,12 @@ spec = do
             inverseFunctionsIfSucceedOnValid
                 tagsCursorSelectPrev
                 tagsCursorSelectNext
+    describe "tagsCursorSelectOrCreatePrev" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectOrCreatePrev
+    describe "tagsCursorSelectOrCreateNext" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectOrCreateNext
     describe "tagsCursorSelectPrevChar" $ do
         it "produces valid tags cursors" $
             producesValidsOnValids tagsCursorSelectPrevChar
@@ -71,7 +89,13 @@ spec = do
                 tagsCursorSelectNextChar
     describe "tagsCursorSelectPrevTag" $
         it "produces valid tags cursors" $
-            producesValidsOnValids tagsCursorSelectPrevTag
+        producesValidsOnValids tagsCursorSelectPrevTag
     describe "tagsCursorSelectNextTag" $
         it "produces valid tags cursors" $
-            producesValidsOnValids tagsCursorSelectNextTag
+        producesValidsOnValids tagsCursorSelectNextTag
+    describe "tagsCursorSelectOrCreatePrevTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectOrCreatePrevTag
+    describe "tagsCursorSelectOrCreateNextTag" $
+        it "produces valid tags cursors" $
+        producesValidsOnValids tagsCursorSelectOrCreateNextTag

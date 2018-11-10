@@ -100,7 +100,7 @@ tagsPrev :: Action
 tagsPrev =
     Action
     { actionName = "tagsPrev"
-    , actionFunc = modifyTagsCursorM tagsCursorSelectPrev
+    , actionFunc = modifyTagsCursor tagsCursorSelectOrCreatePrev
     , actionDescription = "Move left in the tags cursor"
     }
 
@@ -108,7 +108,7 @@ tagsNext :: Action
 tagsNext =
     Action
     { actionName = "tagsNext"
-    , actionFunc = modifyTagsCursorM tagsCursorSelectNext
+    , actionFunc = modifyTagsCursor tagsCursorSelectOrCreateNext
     , actionDescription = "Move right in the tags cursor"
     }
 
@@ -116,7 +116,7 @@ tagsPrevTag :: Action
 tagsPrevTag =
     Action
     { actionName = "tagsPrevTag"
-    , actionFunc = modifyTagsCursorM tagsCursorSelectPrevTag
+    , actionFunc = modifyTagsCursor tagsCursorSelectOrCreatePrevTag
     , actionDescription = "Move to the next tag in the tags cursor"
     }
 
@@ -124,6 +124,6 @@ tagsNextTag :: Action
 tagsNextTag =
     Action
     { actionName = "tagsNextTag"
-    , actionFunc = modifyTagsCursorM tagsCursorSelectNextTag
+    , actionFunc = modifyTagsCursor tagsCursorSelectOrCreateNextTag
     , actionDescription = "Move to the previous tag in the tags cursor"
     }
