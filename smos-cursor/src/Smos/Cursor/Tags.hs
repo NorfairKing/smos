@@ -22,6 +22,7 @@ module Smos.Cursor.Tags
 
 import GHC.Generics (Generic)
 
+import Control.Monad
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
@@ -148,10 +149,15 @@ tagsCursorSelectNextChar =
 
 tagsCursorSelectPrevTag :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectPrevTag =
-    tagsCursorNonEmptyCursorL $
-    nonEmptyCursorSelectPrev rebuildTagCursor makeTagCursor
+    fmap
+        ((tagsCursorNonEmptyCursorL . nonEmptyCursorElemL) %~ tagCursorSelectEnd) .
+    tagsCursorNonEmptyCursorL
+        (nonEmptyCursorSelectPrev rebuildTagCursor makeTagCursor)
 
 tagsCursorSelectNextTag :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectNextTag =
-    tagsCursorNonEmptyCursorL $
-    nonEmptyCursorSelectNext rebuildTagCursor makeTagCursor
+    fmap
+        ((tagsCursorNonEmptyCursorL . nonEmptyCursorElemL) %~
+         tagCursorSelectStart) .
+    tagsCursorNonEmptyCursorL
+        (nonEmptyCursorSelectNext rebuildTagCursor makeTagCursor)

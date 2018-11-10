@@ -10,6 +10,8 @@ module Smos.Cursor.Tag
     , tagCursorAppend
     , tagCursorDelete
     , tagCursorRemove
+    , tagCursorSelectStart
+    , tagCursorSelectEnd
     , tagCursorSelectPrevChar
     , tagCursorSelectNextChar
     ) where
@@ -64,6 +66,12 @@ tagCursorDelete = tagCursorTextCursorL textCursorDelete
 
 tagCursorRemove :: TagCursor -> Maybe TagCursor
 tagCursorRemove = tagCursorTextCursorL textCursorRemove
+
+tagCursorSelectStart :: TagCursor -> TagCursor
+tagCursorSelectStart = tagCursorTextCursorL  %~ textCursorSelectStart
+
+tagCursorSelectEnd :: TagCursor -> TagCursor
+tagCursorSelectEnd = tagCursorTextCursorL %~ textCursorSelectEnd
 
 tagCursorSelectPrevChar :: TagCursor -> Maybe TagCursor
 tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev

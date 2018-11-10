@@ -69,17 +69,9 @@ spec = do
             inverseFunctionsIfSucceedOnValid
                 tagsCursorSelectPrevChar
                 tagsCursorSelectNextChar
-    describe "tagsCursorSelectPrevTag" $ do
+    describe "tagsCursorSelectPrevTag" $
         it "produces valid tags cursors" $
             producesValidsOnValids tagsCursorSelectPrevTag
-        it "is the inverse of tagsCursorSelectNextTag" $
-            inverseFunctionsIfSucceedOnValid
-                tagsCursorSelectPrevTag
-                tagsCursorSelectNextTag
-    describe "tagsCursorSelectNextTag" $ do
+    describe "tagsCursorSelectNextTag" $
         it "produces valid tags cursors" $
             producesValidsOnValids tagsCursorSelectNextTag
-        it "is the inverse of tagsCursorSelectPrevTag" $
-            inverseFunctionsIfSucceedOnValid
-                tagsCursorSelectNextTag
-                tagsCursorSelectPrevTag
