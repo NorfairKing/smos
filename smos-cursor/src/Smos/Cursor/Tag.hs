@@ -69,4 +69,4 @@ tagCursorSelectPrevChar :: TagCursor -> Maybe TagCursor
 tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev
 
 tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
-tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectPrev
+tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectNext

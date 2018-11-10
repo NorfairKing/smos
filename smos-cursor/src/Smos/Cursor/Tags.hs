@@ -132,7 +132,7 @@ tagsCursorRemove tc =
 
 tagsCursorSelectPrev :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectPrev tc =
-    tagsCursorSelectNextChar tc <|> tagsCursorSelectNextTag tc
+    tagsCursorSelectPrevChar tc <|> tagsCursorSelectPrevTag tc
 
 tagsCursorSelectNext :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectNext tc =

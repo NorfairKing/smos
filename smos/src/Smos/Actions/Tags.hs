@@ -11,8 +11,10 @@ module Smos.Actions.Tags
     , tagsAppend
     , tagsRemove
     , tagsDelete
-    , tagsLeft
-    , tagsRight
+    , tagsPrev
+    , tagsNext
+    , tagsPrevTag
+    , tagsNextTag
     ) where
 
 import Data.Maybe
@@ -30,7 +32,7 @@ allTagsPlainActions =
         [ do act <- [tagsSet, tagsUnset, tagsToggle]
              arg <- catMaybes [tag "work", tag "online"]
              pure $ act arg
-        , [tagsRemove, tagsDelete, tagsLeft, tagsRight]
+        , [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag]
         ]
 
 allTagsUsingCharActions :: [ActionUsing Char]
@@ -94,18 +96,34 @@ tagsDelete =
     , actionDescription = "Delete from the tags cursor"
     }
 
-tagsLeft :: Action
-tagsLeft =
+tagsPrev :: Action
+tagsPrev =
     Action
-    { actionName = "tagsLeft"
+    { actionName = "tagsPrev"
     , actionFunc = modifyTagsCursorM tagsCursorSelectPrev
     , actionDescription = "Move left in the tags cursor"
     }
 
-tagsRight :: Action
-tagsRight =
+tagsNext :: Action
+tagsNext =
     Action
-    { actionName = "tagsRight"
+    { actionName = "tagsNext"
     , actionFunc = modifyTagsCursorM tagsCursorSelectNext
     , actionDescription = "Move right in the tags cursor"
+    }
+
+tagsPrevTag :: Action
+tagsPrevTag =
+    Action
+    { actionName = "tagsPrevTag"
+    , actionFunc = modifyTagsCursorM tagsCursorSelectPrevTag
+    , actionDescription = "Move to the next tag in the tags cursor"
+    }
+
+tagsNextTag :: Action
+tagsNextTag =
+    Action
+    { actionName = "tagsNextTag"
+    , actionFunc = modifyTagsCursorM tagsCursorSelectNextTag
+    , actionDescription = "Move to the previous tag in the tags cursor"
     }

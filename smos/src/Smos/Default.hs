@@ -159,8 +159,10 @@ defaultKeyMap =
     , keyMapTagsMatchers =
           listMatchers
               [ anyChar tagsInsert
-              , exactKey KLeft tagsLeft
-              , exactKey KRight tagsRight
+              , exactKey KLeft tagsPrev
+              , exactKey KRight tagsNext
+              , exactChar '\t' tagsNextTag
+              , exactKey KBackTab tagsPrevTag
               , exactKey KBS tagsRemove
               , exactKey KDel tagsDelete
               , exactKey KEnter entrySelectWhole
