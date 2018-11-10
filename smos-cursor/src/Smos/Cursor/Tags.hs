@@ -30,7 +30,6 @@ module Smos.Cursor.Tags
 
 import GHC.Generics (Generic)
 
-import Control.Monad
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
@@ -79,20 +78,20 @@ tagsCursorSetTag t mtc =
             if t `elem` rebuildTagsCursor tc
                 then Nothing
                 else Just $
-                     tc & tagsCursorNonEmptyCursorL %~
-                     nonEmptyCursorAppendAtEnd t
+                     tc &
+                     tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
 
 tagsCursorUnsetTag :: Tag -> TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
 tagsCursorUnsetTag t tc =
     let ne = rebuildTagsCursor tc
-    in if t `elem` ne
-           then do
-               let ts = NE.filter (/= t) ne
-               pure $
-                   case NE.nonEmpty ts of
-                       Nothing -> Deleted
-                       Just ne' -> Updated $ makeTagsCursor ne'
-           else Nothing
+     in if t `elem` ne
+            then do
+                let ts = NE.filter (/= t) ne
+                pure $
+                    case NE.nonEmpty ts of
+                        Nothing -> Deleted
+                        Just ne' -> Updated $ makeTagsCursor ne'
+            else Nothing
 
 tagsCursorToggleTag :: Tag -> Maybe TagsCursor -> DeleteOrUpdate TagsCursor
 tagsCursorToggleTag t mtc =
@@ -100,14 +99,15 @@ tagsCursorToggleTag t mtc =
         Nothing -> Updated $ singletonTagsCursor t
         Just tc ->
             let ne = rebuildTagsCursor tc
-            in if t `elem` ne
-                   then let ts = NE.filter (/= t) ne
-                        in case NE.nonEmpty ts of
-                               Nothing -> Deleted
-                               Just ne' -> Updated $ makeTagsCursor ne'
-                   else Updated $
-                        tc & tagsCursorNonEmptyCursorL %~
-                        nonEmptyCursorAppendAtEnd t
+             in if t `elem` ne
+                    then let ts = NE.filter (/= t) ne
+                          in case NE.nonEmpty ts of
+                                 Nothing -> Deleted
+                                 Just ne' -> Updated $ makeTagsCursor ne'
+                    else Updated $
+                         tc &
+                         tagsCursorNonEmptyCursorL %~
+                         nonEmptyCursorAppendAtEnd t
 
 tagsCursorInsert :: Char -> TagsCursor -> Maybe TagsCursor
 tagsCursorInsert '\t' =
@@ -139,9 +139,10 @@ tagsCursorAppendAndSelectTag tc =
 
 tagsCursorDelete :: TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
 tagsCursorDelete tc =
-    case tc & (tagsCursorSelectedTagL) tagCursorDelete of
-        Just tc' -> Just $ Updated tc'
-        Nothing ->
+    case tc & focusPossibleDeleteOrUpdate tagsCursorSelectedTagL tagCursorDelete of
+        Just (Updated tc') -> Just $ Updated tc'
+        _ -- TODO fix the entire deletion
+         ->
             tc &
             focusPossibleDeleteOrUpdate
                 tagsCursorNonEmptyCursorL
@@ -149,9 +150,10 @@ tagsCursorDelete tc =
 
 tagsCursorRemove :: TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
 tagsCursorRemove tc =
-    case tc & (tagsCursorSelectedTagL) tagCursorRemove of
-        Just tc' -> Just $ Updated tc'
-        Nothing ->
+    case tc & focusPossibleDeleteOrUpdate tagsCursorSelectedTagL tagCursorRemove of
+        Just (Updated tc') -> Just $ Updated tc'
+        _ -- TODO fix the entire deletion
+         ->
             tc &
             focusPossibleDeleteOrUpdate
                 tagsCursorNonEmptyCursorL

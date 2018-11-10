@@ -25,6 +25,7 @@ import Data.Validity
 import Lens.Micro
 
 import Cursor.Text
+import Cursor.Types
 
 import Smos.Data.Types
 
@@ -61,14 +62,16 @@ tagCursorInsert c = tagCursorTextCursorL (textCursorInsert c) >=> constructValid
 tagCursorAppend :: Char -> TagCursor -> Maybe TagCursor
 tagCursorAppend c = tagCursorTextCursorL (textCursorAppend c) >=> constructValid
 
-tagCursorDelete :: TagCursor -> Maybe TagCursor
-tagCursorDelete = tagCursorTextCursorL textCursorDelete
+tagCursorDelete :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
+tagCursorDelete =
+    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
 
-tagCursorRemove :: TagCursor -> Maybe TagCursor
-tagCursorRemove = tagCursorTextCursorL textCursorRemove
+tagCursorRemove :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
+tagCursorRemove =
+    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
 
 tagCursorSelectStart :: TagCursor -> TagCursor
-tagCursorSelectStart = tagCursorTextCursorL  %~ textCursorSelectStart
+tagCursorSelectStart = tagCursorTextCursorL %~ textCursorSelectStart
 
 tagCursorSelectEnd :: TagCursor -> TagCursor
 tagCursorSelectEnd = tagCursorTextCursorL %~ textCursorSelectEnd

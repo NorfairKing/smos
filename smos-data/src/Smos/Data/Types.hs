@@ -265,7 +265,7 @@ header :: Text -> Maybe Header
 header = constructValid . Header
 
 parseHeader :: Text -> Either String Header
-parseHeader = prettyValidation . Header
+parseHeader = prettyValidate . Header
 
 newtype Contents = Contents
     { contentsText :: Text
@@ -283,7 +283,7 @@ contents :: Text -> Maybe Contents
 contents = constructValid . Contents
 
 parseContents :: Text -> Either String Contents
-parseContents = prettyValidation . Contents
+parseContents = prettyValidate . Contents
 
 newtype PropertyName = PropertyName
     { propertyNameText :: Text
@@ -316,7 +316,7 @@ propertyName :: Text -> Maybe PropertyName
 propertyName = constructValid . PropertyName
 
 parsePropertyName :: Text -> Either String PropertyName
-parsePropertyName = prettyValidation . PropertyName
+parsePropertyName = prettyValidate . PropertyName
 
 newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
@@ -343,7 +343,7 @@ propertyValue :: Text -> Maybe PropertyValue
 propertyValue = constructValid . PropertyValue
 
 parsePropertyValue :: Text -> Either String PropertyValue
-parsePropertyValue = prettyValidation . PropertyValue
+parsePropertyValue = prettyValidate . PropertyValue
 
 newtype TimestampName = TimestampName
     { timestampNameText :: Text
@@ -376,7 +376,7 @@ timestampName :: Text -> Maybe TimestampName
 timestampName = constructValid . TimestampName
 
 parseTimestampName :: Text -> Either String TimestampName
-parseTimestampName = prettyValidation . TimestampName
+parseTimestampName = prettyValidate . TimestampName
 
 data Timestamp = Timestamp
     { timestampDay :: Day
@@ -436,7 +436,7 @@ todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
 
 parseTodoState :: Text -> Either String TodoState
-parseTodoState = prettyValidation . TodoState
+parseTodoState = prettyValidate . TodoState
 
 newtype StateHistory = StateHistory
     { unStateHistory :: [StateHistoryEntry]
@@ -519,7 +519,7 @@ tag :: Text -> Maybe Tag
 tag = constructValid . Tag
 
 parseTag :: Text -> Either String Tag
-parseTag = prettyValidation . Tag
+parseTag = prettyValidate . Tag
 
 data Logbook
     = LogOpen UTCTime
@@ -571,7 +571,7 @@ instance FromJSON Logbook where
                             Nothing -> LogOpen start rest
                             Just end ->
                                 LogClosed $ LogbookEntry start end : rest
-                case prettyValidation candidate of
+                case prettyValidate candidate of
                     Left err ->
                         fail $
                         unlines ["JSON represented an invalid logbook:", err]
@@ -613,7 +613,7 @@ instance FromJSON LogbookEntry where
     parseJSON =
         withObject "LogbookEntry" $ \o -> do
             candidate <- LogbookEntry <$> o .: "start" <*> o .: "end"
-            case prettyValidation candidate of
+            case prettyValidate candidate of
                 Left err ->
                     fail $
                     unlines ["JSON represented an invalid logbook entry:", err]

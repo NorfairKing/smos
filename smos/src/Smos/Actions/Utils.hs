@@ -93,19 +93,14 @@ modifyMContentsCursorWhenSelectedM func =
         case entryCursorSelected ec of
             ContentsSelected ->
                 let ec' = ec & entryCursorContentsCursorL %~ func
-                in if isNothing $ entryCursorContentsCursor ec'
-                       then ec' {entryCursorSelected = WholeEntrySelected}
-                       else ec'
+                 in if isNothing $ entryCursorContentsCursor ec'
+                        then ec' {entryCursorSelected = WholeEntrySelected}
+                        else ec'
             _ -> ec
 
 modifyTagsCursorMD ::
        (TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)) -> SmosM ()
-modifyTagsCursorMD func =
-    modifyTagsCursorM $ \tc -> do
-        doutc <- func tc
-        case doutc of
-            Deleted -> Nothing
-            Updated tc' -> Just tc'
+modifyTagsCursorMD func = modifyMTagsCursorMD  (>>= func)
 
 modifyTagsCursorD :: (TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
 modifyTagsCursorD func =
