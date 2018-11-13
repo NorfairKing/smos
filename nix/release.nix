@@ -5,7 +5,8 @@ in rec {
       name = "smos-release";
       buildInputs = [ smos-static ];
       nativeBuildInputs =
-           pkgs.lib.attrsets.attrValues pkgs.smosPackages
+        pkgs.lib.attrsets.attrValues pkgs.smosPackages
+        ++ [pkgs.smosDocumentationSite]
         ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages
         ++ pkgs.lib.attrsets.attrValues pkgs.fuzzyTimePackages
         ++ pkgs.lib.attrsets.attrValues pkgs.cursorFuzzyTimePackages;

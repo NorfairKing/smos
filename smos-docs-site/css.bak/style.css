@@ -1,0 +1,106 @@
+@import "base.css";
+
+/* fonts */
+
+@import url(http://fonts.googleapis.com/css?family=Ubuntu);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+html {
+    /* to allow the #footer to be properly positioned
+    at the bottom, even when #content is longer than
+    the viewport high */
+    min-height: 100%;
+    position: relative;
+}
+
+body {
+    color: black;
+    font-size: 16px;
+    margin: auto;
+}
+
+header {
+    margin-bottom: 0px;
+    padding: 50px;
+    background: linear-gradient(to right, #19111f 0%, #2c1e37 100%);
+}
+
+div.logo a {
+    color: #FFFFFF;
+    float: left;
+    font-family: Ubuntu, 'Open Sans', sans-serif;
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+header nav {
+    text-align: right;
+}
+
+header nav a {
+    color: #d1cddc!important;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 12px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+header nav a:hover {
+    color: #FFFFFF;
+}
+
+main {
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-bottom: 5.5rem;
+    /* footer-height + 1.5rem */
+}
+
+main h1 {
+    color: #6e618d;
+    font-size: 36px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+main,
+
+/* this line for archives page */
+
+main p {
+    color: #333333;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+main a {
+    color: #428bca;
+    text-decoration: none;
+}
+
+footer {
+    color: #999999;
+    font-size: 12px;
+    text-align: center;
+    height: 4em;
+    background-color: #323232;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    overflow: hidden;
+    padding-top: 1em;
+    font-family: 'Open Sans', sans-serif;
+}
+
+footer a {
+    color: #ffffff;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+section.header {
+    color: #555;
+    font-size: 14px;
+    font-style: italic;
+}

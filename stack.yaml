@@ -12,10 +12,12 @@ packages:
 - smos-query
 - smos-convert-org
 - smos-archive
+- smos-docs-site
 extra-deps:
 - git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - thyme-0.3.5.5
+- hakyll-sass-0.2.3
 - git: https://github.com/NorfairKing/pretty-relative-time.git
   commit: 0044ce34d484d54e6809c30cee8e1219c722765f
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
