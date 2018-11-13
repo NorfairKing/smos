@@ -1,0 +1,15 @@
+before:
+- header: ''
+  tags:
+  - a
+  - b
+  - c
+commands:
+- entrySelectTags
+- tagsDelete
+- tagsNext
+- tagsRemove
+after:
+- header: ''
+  tags:
+  - b

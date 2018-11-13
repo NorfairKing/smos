@@ -71,6 +71,7 @@ allUsingCharActions =
         , allForestUsingCharActions
         , allHeaderUsingCharActions
         , allTimestampsUsingCharActions
+        , allTagsUsingCharActions
         , allUndoUsingCharActions
         ]
 
