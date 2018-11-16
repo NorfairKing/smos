@@ -7,7 +7,7 @@ module Smos.OptParse
 
 import Import
 
-import System.Environment (getArgs)
+import System.Environment (getArgs, getEnvironment)
 
 import Options.Applicative
 
@@ -18,17 +18,27 @@ import Smos.Types
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
     args <- getArguments
+    env <- getEnv
     config <- getConfiguration args
-    combineToInstructions conf args config
+    combineToInstructions conf args env config
 
 combineToInstructions ::
-       SmosConfig -> Arguments -> Configuration -> IO Instructions
-combineToInstructions sc@SmosConfig {..} (Arguments fp Flags) Configuration = do
+       SmosConfig
+    -> Arguments
+    -> Environment
+    -> Configuration
+    -> IO Instructions
+combineToInstructions sc@SmosConfig {..} (Arguments fp Flags) Environment Configuration = do
     p <- resolveFile' fp
     pure $ Instructions p sc
 
 getConfiguration :: Arguments -> IO Configuration
 getConfiguration _ = pure Configuration
+
+getEnv :: IO Environment
+getEnv = do
+    _ <- getEnvironment
+    pure Environment
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> getArgs >>= handleParseResult

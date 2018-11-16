@@ -20,6 +20,9 @@ data Configuration =
     Configuration
     deriving (Show, Eq)
 
+data Environment = Environment
+    deriving (Show, Eq)
+
 data Instructions =
     Instructions (Path Abs File)
                  SmosConfig
