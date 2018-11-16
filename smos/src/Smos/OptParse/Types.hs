@@ -34,9 +34,13 @@ instance FromJSON Configuration where
         withObject "Configuration" $ \o ->
             Configuration <$> o .:? "workflow-dir"
 
+configurationDefaults :: Text
+configurationDefaults = "{ workflowDir = [] : Optional Text }"
+
 configurationType :: Dhall.Type Configuration
 configurationType =
-    Dhall.record (Configuration <$> Dhall.field "workflow-dir" (Dhall.maybe Dhall.string))
+    Dhall.record
+        (Configuration <$> Dhall.field "workflowDir" (Dhall.maybe Dhall.string))
 
 data Instructions =
     Instructions (Path Abs File)

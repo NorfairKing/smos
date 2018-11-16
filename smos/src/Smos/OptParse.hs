@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.OptParse
     ( getInstructions
@@ -60,7 +61,10 @@ getConfiguration (Arguments _ Flags {..}) Environment {..} = do
         case fileExtension configFile of
             ".dhall" -> do
                 contents <- T.readFile $ fromAbsFile configFile
-                input configurationType contents
+                detailed
+                    (input
+                         configurationType
+                         (configurationDefaults <> "//" <> contents))
             ".json" -> do
                 errOrConfig <-
                     JSON.eitherDecodeFileStrict $ fromAbsFile configFile
