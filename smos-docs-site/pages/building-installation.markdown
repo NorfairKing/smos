@@ -41,18 +41,21 @@ $ nix-build -A smos-static nix/release.nix
 $ ./result/bin/smos
 ```
 
-The difference is that the latter will not build and run test suites that are external to the package that they are testing.
-These are all the test suites in packages that end in `-gen`.
+The difference is that the latter will not build and run test suites that are
+external to the package that they are testing.  These are all the test suites
+in packages that end in `-gen`.
 
 #### Troubleshooting
 
-When you first run a `smos` executable that has been built with Nix, you may get an error like the following:
+When you first run a `smos` executable that has been built with Nix, you may
+get an error like the following:
 
 ```
 smos: setupTerm: Couldn't look up terminfo entry "rxvt-unicode-256color"
 ```
 
-In this case, you can probably solve the problem by setting the `TERM` variable to `xterm`:
+In this case, you can probably solve the problem by setting the `TERM` variable
+to `xterm`:
 
 ```
 $ TERM=xterm ./result/bin/smos
@@ -60,7 +63,7 @@ $ TERM=xterm ./result/bin/smos
 
 ## Custom installation
 
-Should you wish to change the key controls, you can do this by making your own
-little Haskell project (also with stack), define the configuration you want to
-use and pass it to the [`smos`](https://github.com/NorfairKing/smos/blob/development/smos/src/Smos.hs#L29)
-library function.
+Should you wish to customise your `smos` installation, or customise the `smos`
+build entirely, then follow the appropriate guides
+[here](/pages/customisation-default.html) or
+[here](/pages/customisation-haskell.html), respectively.

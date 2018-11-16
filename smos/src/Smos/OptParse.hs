@@ -55,7 +55,13 @@ getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
 getConfiguration (Arguments _ Flags {..}) Environment {..} = do
     mConfigFile <-
         case flagConfigFile <|> envConfigFile of
-            Nothing -> liftM2 (<|>) defaultDhallConfigFile defaultYamlConfigFile
+            Nothing ->
+                msum <$>
+                Import.sequence
+                    [ defaultDhallConfigFile
+                    , defaultYamlConfigFile
+                    , defaultJSONConfigFile
+                    ]
             Just fp -> Just <$> resolveFile' fp
     forM mConfigFile $ \configFile ->
         case fileExtension configFile of
@@ -78,20 +84,30 @@ getConfiguration (Arguments _ Flags {..}) Environment {..} = do
                     Left err -> die $ prettyPrintParseException err
                     Right config -> pure config
 
-defaultYamlConfigFile :: IO (Maybe (Path Abs File))
-defaultYamlConfigFile = do
+defaultDhallConfigFile :: IO (Maybe (Path Abs File))
+defaultDhallConfigFile = do
     home <- getHomeDir
-    p <- resolveFile home ".smos.yaml"
+    p <- resolveFile home ".smos.dhall"
     e <- doesFileExist p
     pure $
         if e
             then Just p
             else Nothing
 
-defaultDhallConfigFile :: IO (Maybe (Path Abs File))
-defaultDhallConfigFile = do
+defaultJSONConfigFile :: IO (Maybe (Path Abs File))
+defaultJSONConfigFile = do
     home <- getHomeDir
-    p <- resolveFile home ".smos.dhall"
+    p <- resolveFile home ".smos.json"
+    e <- doesFileExist p
+    pure $
+        if e
+            then Just p
+            else Nothing
+
+defaultYamlConfigFile :: IO (Maybe (Path Abs File))
+defaultYamlConfigFile = do
+    home <- getHomeDir
+    p <- resolveFile home ".smos.yaml"
     e <- doesFileExist p
     pure $
         if e
@@ -107,7 +123,7 @@ getEnv = do
         Environment
             { envConfigFile =
                   getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-            , envWorkflowDir = getSmosEnv "WORKFLOW_DIR"
+            , envWorkflowDir = getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
             }
 
 getArguments :: IO Arguments
