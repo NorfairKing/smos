@@ -11,6 +11,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
   - async
   - base
   - brick
@@ -20,6 +21,7 @@ library:
   - contravariant
   - cursor
   - cursor-fuzzy-time
+  - dhall
   - filelock
   - fuzzy-time
   - megaparsec
