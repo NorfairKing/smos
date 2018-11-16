@@ -6,6 +6,8 @@ module Smos.OptParse.Types where
 
 import Import
 
+import Smos.Types
+
 data Arguments =
     Arguments FilePath
               Flags
@@ -20,7 +22,4 @@ data Configuration =
 
 data Instructions =
     Instructions (Path Abs File)
-                 Settings
-
-data Settings =
-    Settings
+                 SmosConfig

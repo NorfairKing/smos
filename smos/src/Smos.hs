@@ -29,8 +29,8 @@ import Smos.Types
 
 smos :: SmosConfig -> IO ()
 smos sc = do
-    Instructions p Settings <- getInstructions sc
-    startSmosOn p sc
+    Instructions p sc' <- getInstructions sc
+    startSmosOn p sc'
 
 smosWithoutRuntimeConfig :: SmosConfig -> IO ()
 smosWithoutRuntimeConfig sc = do

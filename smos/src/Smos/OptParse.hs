@@ -3,7 +3,6 @@
 module Smos.OptParse
     ( getInstructions
     , Instructions(..)
-    , Settings(..)
     ) where
 
 import Import
@@ -24,9 +23,9 @@ getInstructions conf = do
 
 combineToInstructions ::
        SmosConfig -> Arguments -> Configuration -> IO Instructions
-combineToInstructions SmosConfig {..} (Arguments fp Flags) Configuration = do
+combineToInstructions sc@SmosConfig {..} (Arguments fp Flags) Configuration = do
     p <- resolveFile' fp
-    pure $ Instructions p Settings
+    pure $ Instructions p sc
 
 getConfiguration :: Arguments -> IO Configuration
 getConfiguration _ = pure Configuration
