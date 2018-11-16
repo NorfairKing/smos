@@ -5,7 +5,6 @@ date: 2018-11-13
 
 Smos can be configured very flexibly, via flags, environment variables and configuration files.
 
-TODO
 
 
 Smos can also be configured more flexibly in Haskell.
