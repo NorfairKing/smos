@@ -8,20 +8,35 @@ import Import
 
 import Smos.Types
 
+import Data.Yaml as Yaml
+import Dhall
+
 data Arguments =
     Arguments FilePath
               Flags
 
-data Flags =
-    Flags
-    deriving (Show, Eq)
-
-data Configuration =
-    Configuration
-    deriving (Show, Eq)
+data Flags = Flags
+    { flagConfigFile :: Maybe FilePath
+    , flagWorkflowDir :: Maybe FilePath
+    } deriving (Show, Eq)
 
 data Environment = Environment
-    deriving (Show, Eq)
+    { envConfigFile :: Maybe FilePath
+    , envWorkflowDir :: Maybe FilePath
+    } deriving (Show, Eq)
+
+data Configuration = Configuration
+    { confWorkflowDir :: Maybe FilePath
+    } deriving (Show, Eq)
+
+instance FromJSON Configuration where
+    parseJSON =
+        withObject "Configuration" $ \o ->
+            Configuration <$> o .:? "workflow-dir"
+
+configurationType :: Dhall.Type Configuration
+configurationType =
+    Dhall.record (Configuration <$> Dhall.field "workflow-dir" (Dhall.maybe Dhall.string))
 
 data Instructions =
     Instructions (Path Abs File)
