@@ -8,7 +8,7 @@ import Data.Maybe
 import qualified Data.Text as T
 import Path.IO
 
-import System.Environment
+import System.Environment (getArgs, getEnvironment)
 
 import Options.Applicative
 
@@ -16,19 +16,26 @@ import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.TimeBlock
 
+import Smos.Query.Config
 import Smos.Query.OptParse.Types
 
-getInstructions :: IO Instructions
-getInstructions = do
-    (cmd, flags) <- getArguments
-    config <- getConfig flags
-    (,) <$> getDispatch cmd <*> getSettings flags config
+getInstructions :: SmosQueryConfig -> IO Instructions
+getInstructions sqc = do
+    Arguments cmd flags <- getArguments
+    env <- getEnv flags
+    config <- getConfig flags env
+    Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
 
-getConfig :: Flags -> IO Configuration
-getConfig Flags = pure Configuration
+getConfig :: Flags -> Environment -> IO Configuration
+getConfig Flags Environment = pure Configuration
 
-getSettings :: Flags -> Configuration -> IO Settings
-getSettings Flags Configuration = pure Settings
+getSettings ::
+       SmosQueryConfig
+    -> Flags
+    -> Environment
+    -> Configuration
+    -> IO SmosQueryConfig
+getSettings sqc Flags Environment Configuration = pure sqc
 
 getDispatch :: Command -> IO Dispatch
 getDispatch c =
@@ -83,6 +90,9 @@ getDispatch c =
                     , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
                     }
 
+getEnv :: Flags -> IO Environment
+getEnv Flags = pure Environment
+
 getArguments :: IO Arguments
 getArguments = do
     args <- getArgs
@@ -109,7 +119,7 @@ argParser = info (helper <*> parseArgs) help_
     description = "smos-query"
 
 parseArgs :: Parser Arguments
-parseArgs = (,) <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> parseFlags
 
 parseCommand :: Parser Command
 parseCommand =

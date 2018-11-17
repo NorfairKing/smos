@@ -11,12 +11,14 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
   - base
   - bytestring
   - conduit
   - configurator
   - containers
   - cursor
+  - dhall
   - filepath
   - mtl
   - optparse-applicative
@@ -31,6 +33,7 @@ library:
   - time
   - validity
   - validity-path
+  - yaml
 
 executables:
   smos-query:

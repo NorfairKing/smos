@@ -6,10 +6,12 @@ module Smos.OptParse.Types where
 
 import Import
 
-import Smos.Types
-
 import Data.Yaml as Yaml
 import Dhall
+
+import qualified Smos.Report.OptParse.Types as Report
+
+import Smos.Types
 
 data Arguments =
     Arguments FilePath
@@ -17,30 +19,23 @@ data Arguments =
 
 data Flags = Flags
     { flagConfigFile :: Maybe FilePath
-    , flagWorkflowDir :: Maybe FilePath
+    , flagReportFlags :: Report.Flags
     } deriving (Show, Eq)
 
 data Environment = Environment
     { envConfigFile :: Maybe FilePath
-    , envWorkflowDir :: Maybe FilePath
+    , envReportEnv :: Report.Environment
     } deriving (Show, Eq)
 
 data Configuration = Configuration
-    { confWorkflowDir :: Maybe FilePath
+    { confReportConf :: Report.Configuration
     } deriving (Show, Eq)
 
 instance FromJSON Configuration where
-    parseJSON =
-        withObject "Configuration" $ \o ->
-            Configuration <$> o .:? "workflow-dir"
-
-configurationDefaults :: Text
-configurationDefaults = "{ workflow-dir = [] : Optional Text }"
+    parseJSON v = Configuration <$> parseJSON v
 
 configurationType :: Dhall.Type Configuration
-configurationType =
-    Dhall.record
-        (Configuration <$> Dhall.field "workflow-dir" (Dhall.maybe Dhall.string))
+configurationType = Configuration <$> Report.configurationType
 
 data Instructions =
     Instructions (Path Abs File)

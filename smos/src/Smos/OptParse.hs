@@ -20,9 +20,11 @@ import Dhall
 
 import Options.Applicative
 
+
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import Smos.Report.Config
+import qualified Smos.Report.OptParse as Report
 import Smos.Types
 
 getInstructions :: SmosConfig -> IO Instructions
@@ -40,15 +42,9 @@ combineToInstructions ::
     -> IO Instructions
 combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
     p <- resolveFile' fp
+    src <- Report.combineToConfig configReportConfig flagReportFlags envReportEnv (configReportConfig <$> mc)
     let sc' =
-            case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
-                Nothing -> sc
-                Just wd ->
-                    let afs = AgendaFileSpec $ resolveDir' wd
-                        src =
-                            configReportConfig
-                                {smosReportConfigAgendaFileSpec = afs}
-                     in sc {configReportConfig = src}
+                      sc {configReportConfig = src}
     pure $ Instructions p sc'
 
 getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
@@ -117,13 +113,14 @@ defaultYamlConfigFile = do
 getEnv :: IO Environment
 getEnv = do
     env <- getEnvironment
+    reportEnv <- Report.getEnv
     let getSmosEnv :: String -> Maybe String
         getSmosEnv key = ("SMOS_" ++ key) `lookup` env
     pure
         Environment
             { envConfigFile =
                   getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-            , envWorkflowDir = getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
+            , envReportEnv = reportEnv
             }
 
 getArguments :: IO Arguments
@@ -161,15 +158,5 @@ parseConfigFileFlag =
         (mconcat
              [ metavar "FILEPATH"
              , help "The configuration file to use"
-             , value Nothing
-             ])
-
-parseWorkflowDirFlag :: Parser (Maybe FilePath)
-parseWorkflowDirFlag =
-    option
-        (Just <$> str)
-        (mconcat
-             [ metavar "FILEPATH"
-             , help "The workflow directory to use"
              , value Nothing
              ])
