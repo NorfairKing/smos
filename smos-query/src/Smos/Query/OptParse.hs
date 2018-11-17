@@ -12,6 +12,7 @@ import System.Environment (getArgs, getEnvironment)
 
 import Options.Applicative
 
+import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.TimeBlock
@@ -22,20 +23,9 @@ import Smos.Query.OptParse.Types
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
     Arguments cmd flags <- getArguments
-    env <- getEnv flags
-    config <- getConfig flags env
+    env <- getEnv
+    config <- getConfiguration flags env
     Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
-
-getConfig :: Flags -> Environment -> IO Configuration
-getConfig Flags Environment = pure Configuration
-
-getSettings ::
-       SmosQueryConfig
-    -> Flags
-    -> Environment
-    -> Configuration
-    -> IO SmosQueryConfig
-getSettings sqc Flags Environment Configuration = pure sqc
 
 getDispatch :: Command -> IO Dispatch
 getDispatch c =
@@ -54,44 +44,74 @@ getDispatch c =
             pure $
                 DispatchClock
                     ClockSettings
-                        { clockSetFile = mf
-                        , clockSetFilter = clockFlagFilter
-                        , clockSetPeriod =
-                              fromMaybe AllTime clockFlagPeriodFlags
-                        , clockSetResolution =
-                              fromMaybe
-                                  MinutesResolution
-                                  clockFlagResolutionFlags
-                        , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-                        }
+                    { clockSetFile = mf
+                    , clockSetFilter = clockFlagFilter
+                    , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+                    , clockSetResolution =
+                          fromMaybe MinutesResolution clockFlagResolutionFlags
+                    , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                    }
         CommandAgenda AgendaFlags {..} ->
             pure $
             DispatchAgenda
                 AgendaSettings
-                    { agendaSetFilter = agendaFlagFilter
-                    , agendaSetHistoricity =
-                          fromMaybe HistoricalAgenda agendaFlagHistoricity
-                    , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
-                    }
+                { agendaSetFilter = agendaFlagFilter
+                , agendaSetHistoricity =
+                      fromMaybe HistoricalAgenda agendaFlagHistoricity
+                , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
+                }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
             pure $
             DispatchLog
                 LogSettings
-                    { logSetFilter = logFlagFilter
-                    , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
-                    , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
-                    }
+                { logSetFilter = logFlagFilter
+                , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
+                , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
+                }
         CommandStats StatsFlags {..} ->
             pure $
             DispatchStats
                 StatsSettings
-                    { statsSetFilter = statsFlagFilter
-                    , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
-                    }
+                { statsSetFilter = statsFlagFilter
+                , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
+                }
 
-getEnv :: Flags -> IO Environment
-getEnv Flags = pure Environment
+getSettings ::
+       SmosQueryConfig
+    -> Flags
+    -> Environment
+    -> Maybe Configuration
+    -> IO SmosQueryConfig
+getSettings sqc@SmosQueryConfig {..} Flags {..} Environment {..} mc = do
+    src <-
+        Report.combineToConfig
+            smosQueryConfigReportConfig
+            flagReportFlags
+            envReportEnv
+            (confReportConf <$> mc)
+    let sqc' = sqc {smosQueryConfigReportConfig = src}
+    pure sqc'
+
+getEnv :: IO Environment
+getEnv = do
+    env <- getEnvironment
+    reportEnv <- Report.getEnv
+    let getSmosEnv :: String -> Maybe String
+        getSmosEnv key = ("SMOS_" ++ key) `lookup` env
+    pure
+        Environment
+        { envConfigFile =
+              getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
+        , envReportEnv = reportEnv
+        }
+
+getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
+getConfiguration Flags {..} Environment {..} =
+    Report.getConfigurationWith
+        [flagConfigFile, envConfigFile]
+        configurationDefaults
+        configurationType
 
 getArguments :: IO Arguments
 getArguments = do
@@ -104,13 +124,13 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
         ParserPrefs
-            { prefMultiSuffix = ""
-            , prefDisambiguate = True
-            , prefShowHelpOnError = True
-            , prefShowHelpOnEmpty = True
-            , prefBacktrack = True
-            , prefColumns = 80
-            }
+        { prefMultiSuffix = ""
+        , prefDisambiguate = True
+        , prefShowHelpOnError = True
+        , prefShowHelpOnEmpty = True
+        , prefBacktrack = True
+        , prefColumns = 80
+        }
 
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
@@ -214,7 +234,17 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parseFilterArg <*> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = pure Flags
+parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
+
+parseConfigFileFlag :: Parser (Maybe FilePath)
+parseConfigFileFlag =
+    option
+        (Just <$> str)
+        (mconcat
+             [ metavar "FILEPATH"
+             , help "The configuration file to use"
+             , value Nothing
+             ])
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =

@@ -78,23 +78,27 @@ data StatsFlags = StatsFlags
     } deriving (Show, Eq)
 
 data Flags = Flags
-    { flagReportFlags :: Report.Flags
+    { flagConfigFile :: Maybe FilePath, flagReportFlags :: Report.Flags
     } deriving (Show, Eq)
 
 data Environment = Environment
-    { envReportEnv :: Report.Environment
+    { envConfigFile :: Maybe FilePath
+    , envReportEnv :: Report.Environment
     } deriving (Show, Eq)
 
 data Configuration = Configuration
-    { confReportConf :: Report.Configuration
+    {
+     confReportConf :: Report.Configuration
     } deriving (Show, Eq)
 
 instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v
 
+configurationDefaults :: Text
+configurationDefaults = Report.configurationDefaults
+
 configurationType :: Dhall.Type Configuration
 configurationType = Configuration <$> Report.configurationType
-
 
 data Dispatch
     = DispatchEntry EntrySettings

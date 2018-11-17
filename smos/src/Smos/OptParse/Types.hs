@@ -34,6 +34,9 @@ data Configuration = Configuration
 instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v
 
+configurationDefaults :: Text
+configurationDefaults = Report.configurationDefaults
+
 configurationType :: Dhall.Type Configuration
 configurationType = Configuration <$> Report.configurationType
 
