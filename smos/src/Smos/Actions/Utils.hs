@@ -93,14 +93,14 @@ modifyMContentsCursorWhenSelectedM func =
         case entryCursorSelected ec of
             ContentsSelected ->
                 let ec' = ec & entryCursorContentsCursorL %~ func
-                 in if isNothing $ entryCursorContentsCursor ec'
-                        then ec' {entryCursorSelected = WholeEntrySelected}
-                        else ec'
+                in if isNothing $ entryCursorContentsCursor ec'
+                       then ec' {entryCursorSelected = WholeEntrySelected}
+                       else ec'
             _ -> ec
 
 modifyTagsCursorMD ::
        (TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)) -> SmosM ()
-modifyTagsCursorMD func = modifyMTagsCursorMD  (>>= func)
+modifyTagsCursorMD func = modifyMTagsCursorMD (>>= func)
 
 modifyTagsCursorD :: (TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
 modifyTagsCursorD func =
@@ -132,7 +132,15 @@ modifyMTagsCursor :: (Maybe TagsCursor -> TagsCursor) -> SmosM ()
 modifyMTagsCursor func = modifyMTagsCursorM $ Just . func
 
 modifyMTagsCursorM :: (Maybe TagsCursor -> Maybe TagsCursor) -> SmosM ()
-modifyMTagsCursorM func = modifyEntryCursor $ entryCursorTagsCursorL %~ func
+modifyMTagsCursorM func =
+    modifyEntryCursor $ \ec ->
+        ec &
+        case func (entryCursorTagsCursor ec) of
+            Nothing ->
+                (entryCursorSelectionL .~ WholeEntrySelected) .
+                (entryCursorTagsCursorL .~
+                Nothing)
+            Just tsc -> entryCursorTagsCursorL .~ Just tsc
 
 modifyTimestampsCursorM ::
        (TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()

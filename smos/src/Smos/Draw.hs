@@ -523,12 +523,12 @@ drawStateHistory (StateHistory ls)
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
     drawNonEmptyCursor
-        drawTag
+        (\t -> str ":" <+> drawTag t)
         (drawTagCursor s)
-        drawTag
-        (hBox . intersperse (str ":"))
-        (hBox . intersperse (str ":"))
-        (\f d g -> hBox $ intersperse (str ":") [f, d, g]) .
+        (\t -> drawTag t <+> str ":")
+        hBox
+        hBox
+        (\f d g -> hBox [f, d, g]) .
     tagsCursorNonEmptyCursor
 
 drawTags :: [Tag] -> Maybe (Widget ResourceName)
@@ -543,7 +543,7 @@ drawTagCursor s =
         (case s of
              NotSelected -> id
              MaybeSelected -> withAttr selectedAttr) .
-    drawTextCursor s . tagCursorTextCursor
+    (str ":" <+>) .(<+> str ":" ). drawTextCursor s . tagCursorTextCursor
 
 drawTag :: Tag -> Widget n
 drawTag = txt . tagText
