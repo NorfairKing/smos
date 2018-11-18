@@ -92,6 +92,7 @@ tests:
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen
     - text

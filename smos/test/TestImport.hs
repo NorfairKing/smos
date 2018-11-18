@@ -14,6 +14,9 @@ import Data.GenValidity.Time as X ()
 
 import Control.Monad as X
 
+import Path as X
+import Path.IO as X
+
 import Test.Hspec as X
 import Test.QuickCheck as X
 import Test.Validity as X

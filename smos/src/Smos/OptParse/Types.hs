@@ -36,11 +36,14 @@ instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v <*> parseJSON v
 
 configurationDefaults :: Text
-configurationDefaults = Report.configurationDefaults
+configurationDefaults =
+    Report.configurationDefaults <> "// { reset = [ False ] : Optional Bool }"
 
 configurationType :: Dhall.Type Configuration
-configurationType = Dhall.record (
-    Configuration <$> Report.configurationRecordType <*> keybindingsConfigurationRecordType)
+configurationType =
+    Dhall.record
+        (Configuration <$> Report.configurationRecordType <*>
+         keybindingsConfigurationRecordType)
 
 data KeybindingsConfiguration = KeybindingsConfiguration
     { confReset :: Maybe Bool
@@ -51,8 +54,7 @@ instance FromJSON KeybindingsConfiguration where
 
 keybindingsConfigurationRecordType :: Dhall.RecordType KeybindingsConfiguration
 keybindingsConfigurationRecordType =
-        KeybindingsConfiguration <$>
-         Dhall.field "reset" (Dhall.maybe Dhall.bool)
+    KeybindingsConfiguration <$> Dhall.field "reset" (Dhall.maybe Dhall.bool)
 
 data Instructions =
     Instructions (Path Abs File)
