@@ -29,16 +29,30 @@ data Environment = Environment
 
 data Configuration = Configuration
     { confReportConf :: Report.Configuration
+    , confKeybindingsConf :: KeybindingsConfiguration
     } deriving (Show, Eq)
 
 instance FromJSON Configuration where
-    parseJSON v = Configuration <$> parseJSON v
+    parseJSON v = Configuration <$> parseJSON v <*> parseJSON v
 
 configurationDefaults :: Text
 configurationDefaults = Report.configurationDefaults
 
 configurationType :: Dhall.Type Configuration
-configurationType = Configuration <$> Report.configurationType
+configurationType = Dhall.record (
+    Configuration <$> Report.configurationRecordType <*> keybindingsConfigurationRecordType)
+
+data KeybindingsConfiguration = KeybindingsConfiguration
+    { confReset :: Maybe Bool
+    } deriving (Show, Eq)
+
+instance FromJSON KeybindingsConfiguration where
+    parseJSON = withObject "KeybindingsConfiguration" $ \o -> o .: "reset"
+
+keybindingsConfigurationRecordType :: Dhall.RecordType KeybindingsConfiguration
+keybindingsConfigurationRecordType =
+        KeybindingsConfiguration <$>
+         Dhall.field "reset" (Dhall.maybe Dhall.bool)
 
 data Instructions =
     Instructions (Path Abs File)

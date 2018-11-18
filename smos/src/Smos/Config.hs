@@ -14,6 +14,7 @@ module Smos.Config
     , anyChar
     , catchAll
     , KeyMap(..)
+    , FileKeyMap(..)
     , ReportsKeyMap(..)
     , KeyMapping(..)
     , KeyMappings

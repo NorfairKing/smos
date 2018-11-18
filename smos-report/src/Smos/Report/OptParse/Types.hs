@@ -27,6 +27,8 @@ configurationDefaults :: Text
 configurationDefaults = "{ workflow-dir = [] : Optional Text }"
 
 configurationType :: Dhall.Type Configuration
-configurationType =
-    Dhall.record
-        (Configuration <$> Dhall.field "workflow-dir" (Dhall.maybe Dhall.string))
+configurationType = Dhall.record configurationRecordType
+
+configurationRecordType :: Dhall.RecordType Configuration
+configurationRecordType =
+        Configuration <$> Dhall.field "workflow-dir" (Dhall.maybe Dhall.string)
