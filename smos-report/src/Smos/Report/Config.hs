@@ -18,7 +18,7 @@ data SmosReportConfig = SmosReportConfig
 
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
-    SmosReportConfig {smosReportConfigAgendaFileSpec = inHomeDir "workflow"}
+   SmosReportConfig {smosReportConfigAgendaFileSpec = inHomeDir "workflow"}
 
 data AgendaFileSpec = AgendaFileSpec
     { agendaFileSpecGetWorkDir :: IO (Path Abs Dir)

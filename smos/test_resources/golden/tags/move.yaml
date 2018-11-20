@@ -1,0 +1,17 @@
+before:
+- header:
+  tags:
+  - a
+  - b
+commands:
+- entrySelectTags
+- tagsNext
+- tagsInsert x
+- tagsPrev
+- tagsPrev
+- tagsInsert y
+after:
+- header: ''
+  tags:
+  - ay
+  - xb

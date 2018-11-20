@@ -4,7 +4,7 @@ final:
     {
       smosPackages =
             let smosPkg = name:
-                (failOnAllWarnings (final.haskellPackages.callCabal2nix name (../. + "/${name}") {}));
+                (failOnAllWarnings (disableLibraryProfiling (final.haskellPackages.callCabal2nix name (../. + "/${name}") {})));
             in final.lib.genAttrs [
               "smos"
               "smos-data"
@@ -18,7 +18,25 @@ final:
               "smos-query"
               "smos-convert-org"
               "smos-archive"
+              "smos-docs-site"
             ] smosPkg;
+      smosDocumentationSite =  final.stdenv.mkDerivation rec {
+          name = "smosDocumentationSite";
+          src = ../smos-docs-site;
+          phases = "unpackPhase buildPhase";
+          version = "0.0";
+          buildInputs = [
+            final.haskellPackages.smos-docs-site
+          ];
+          buildPhase = ''
+            export LOCALE_ARCHIVE="${final.glibcLocales}/lib/locale/locale-archive";
+            export LANG=en_US.UTF-8
+            smos-docs-site build
+            
+            mkdir $out
+            cp -r _site/* $out
+          '';
+        };
       haskellPackages = previous.haskellPackages.override (old: {
         overrides = final.lib.composeExtensions (old.overrides or (_: _: {})) (
         self: super: 
@@ -33,6 +51,7 @@ final:
             in final.smosPackages //
               { # Have to turn off tests because they don't compile --'
                 thyme = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "thyme" "0.3.5.5" {});
+                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.3" {});
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
               }
         );

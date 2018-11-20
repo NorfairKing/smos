@@ -10,14 +10,18 @@ defaultSmos = smos defaultConfig
 defaultConfig :: SmosConfig
 defaultConfig =
     SmosConfig
-    { configKeyMap = defaultKeyMap
-    , configReportsKeyMap = defaultReportsKeymap
-    , configReportConfig = defaultReportConfig
-    }
+    {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
     KeyMap
+    { keyMapFileKeyMap = defaultFileKeyMap
+    , keyMapReportsKeyMap = defaultReportsKeyMap
+    }
+
+defaultFileKeyMap :: FileKeyMap
+defaultFileKeyMap =
+    FileKeyMap
     { keyMapEmptyMatchers =
           listMatchers
               [ exactChar 'q' stop
@@ -190,8 +194,8 @@ defaultKeyMap =
               ]
     }
 
-defaultReportsKeymap :: ReportsKeyMap
-defaultReportsKeymap =
+defaultReportsKeyMap :: ReportsKeyMap
+defaultReportsKeyMap =
     ReportsKeyMap
     { reportsKeymapNextActionReportMatchers =
           listMatchers

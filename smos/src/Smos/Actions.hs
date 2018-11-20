@@ -71,6 +71,7 @@ allUsingCharActions =
         , allForestUsingCharActions
         , allHeaderUsingCharActions
         , allTimestampsUsingCharActions
+        , allTagsUsingCharActions
         , allUndoUsingCharActions
         ]
 
@@ -89,8 +90,7 @@ selectHelp =
         , actionFunc =
               modifyEditorCursorS $ \ec -> do
                   km <- asks configKeyMap
-                  rkm <- asks configReportsKeyMap
-                  pure $ editorCursorSwitchToHelp km rkm ec
+                  pure $ editorCursorSwitchToHelp km ec
         , actionDescription = "Show the (contextual) help screen"
         }
 

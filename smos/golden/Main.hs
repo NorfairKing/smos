@@ -48,7 +48,7 @@ spec :: Spec
 spec = do
     tfs <-
         runIO $ do
-            resourcesDir <- resolveDir' "test_resources"
+            resourcesDir <- resolveDir' "test_resources/golden"
             fs <- snd <$> listDirRecur resourcesDir
             pure $ filter ((== ".yaml") . fileExtension) fs
     describe "Preconditions" $ do

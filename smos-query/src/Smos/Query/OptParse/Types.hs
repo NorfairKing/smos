@@ -7,16 +7,27 @@ module Smos.Query.OptParse.Types
 
 import Path
 
+import Data.Yaml as Yaml
+import Dhall
+
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.ShouldPrint
 import Smos.Report.TimeBlock
 
-type Arguments = (Command, Flags)
+import Smos.Query.Config
 
-type Instructions = (Dispatch, Settings)
+data Arguments =
+    Arguments Command
+              Flags
+    deriving (Show, Eq)
+
+data Instructions =
+    Instructions Dispatch
+                 SmosQueryConfig
 
 data Command
     = CommandEntry EntryFlags
@@ -27,10 +38,6 @@ data Command
     | CommandProjects
     | CommandLog LogFlags
     | CommandStats StatsFlags
-    deriving (Show, Eq)
-
-data Flags =
-    Flags
     deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
@@ -70,13 +77,28 @@ data StatsFlags = StatsFlags
     , statsFlagPeriodFlags :: Maybe Period
     } deriving (Show, Eq)
 
-data Configuration =
-    Configuration
-    deriving (Show, Eq)
+data Flags = Flags
+    { flagConfigFile :: Maybe FilePath, flagReportFlags :: Report.Flags
+    } deriving (Show, Eq)
 
-data Settings =
-    Settings
-    deriving (Show, Eq)
+data Environment = Environment
+    { envConfigFile :: Maybe FilePath
+    , envReportEnv :: Report.Environment
+    } deriving (Show, Eq)
+
+data Configuration = Configuration
+    {
+     confReportConf :: Report.Configuration
+    } deriving (Show, Eq)
+
+instance FromJSON Configuration where
+    parseJSON v = Configuration <$> parseJSON v
+
+configurationDefaults :: Text
+configurationDefaults = Report.configurationDefaults
+
+configurationType :: Dhall.Type Configuration
+configurationType = Configuration <$> Report.configurationType
 
 data Dispatch
     = DispatchEntry EntrySettings

@@ -1,34 +1,72 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.OptParse
     ( getInstructions
     , Instructions(..)
-    , Settings(..)
     ) where
 
 import Import
 
-import System.Environment (getArgs)
+import System.Environment (getArgs, getEnvironment)
 
 import Options.Applicative
 
+import Smos.OptParse.Bare
 import Smos.OptParse.Types
+import qualified Smos.Report.OptParse as Report
 import Smos.Types
 
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
     args <- getArguments
-    config <- getConfiguration args
-    combineToInstructions conf args config
+    env <- getEnv
+    config <- getConfiguration args env
+    combineToInstructions conf args env config
 
 combineToInstructions ::
-       SmosConfig -> Arguments -> Configuration -> IO Instructions
-combineToInstructions SmosConfig {..} (Arguments fp Flags) Configuration = do
+       SmosConfig
+    -> Arguments
+    -> Environment
+    -> Maybe Configuration
+    -> IO Instructions
+combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
     p <- resolveFile' fp
-    pure $ Instructions p Settings
+    src <-
+        Report.combineToConfig
+            configReportConfig
+            flagReportFlags
+            envReportEnv
+            (confReportConf <$> mc)
+    let sc' =
+            sc
+            { configKeyMap =
+                  if ((confKeybindingsConf <$> mc) >>= confReset) == Just True
+                      then mempty
+                      else configKeyMap
+            , configReportConfig = src
+            }
+    pure $ Instructions p sc'
 
-getConfiguration :: Arguments -> IO Configuration
-getConfiguration _ = pure Configuration
+getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
+getConfiguration (Arguments _ Flags {..}) Environment {..} =
+    Report.getConfigurationWith
+        [flagConfigFile, envConfigFile]
+        configurationDefaults
+        configurationType
+
+getEnv :: IO Environment
+getEnv = do
+    env <- getEnvironment
+    reportEnv <- Report.getEnv
+    let getSmosEnv :: String -> Maybe String
+        getSmosEnv key = ("SMOS_" ++ key) `lookup` env
+    pure
+        Environment
+        { envConfigFile =
+              getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
+        , envReportEnv = reportEnv
+        }
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> getArgs >>= handleParseResult
@@ -38,13 +76,13 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
         ParserPrefs
-            { prefMultiSuffix = ""
-            , prefDisambiguate = True
-            , prefShowHelpOnError = True
-            , prefShowHelpOnEmpty = True
-            , prefBacktrack = True
-            , prefColumns = 80
-            }
+        { prefMultiSuffix = ""
+        , prefDisambiguate = True
+        , prefShowHelpOnError = True
+        , prefShowHelpOnEmpty = True
+        , prefBacktrack = True
+        , prefColumns = 80
+        }
 
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
@@ -55,10 +93,15 @@ argParser = info (helper <*> parseArgs) help_
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> editParser <*> parseFlags
 
-editParser :: Parser FilePath
-editParser =
-    strArgument
-        (mconcat [metavar "FILE", help "the file to edit",completer $ bashCompleter "file",value "/tmp/example.smos"])
-
 parseFlags :: Parser Flags
-parseFlags = pure Flags
+parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
+
+parseConfigFileFlag :: Parser (Maybe FilePath)
+parseConfigFileFlag =
+    option
+        (Just <$> str)
+        (mconcat
+             [ metavar "FILEPATH"
+             , help "The configuration file to use"
+             , value Nothing
+             ])
