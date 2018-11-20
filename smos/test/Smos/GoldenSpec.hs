@@ -11,8 +11,6 @@ module Smos.GoldenSpec
 
 import TestImport
 
-import System.Exit
-
 import qualified Data.ByteString.Char8 as SB8
 import Data.Function
 import Data.List

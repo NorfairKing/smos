@@ -1,7 +1,12 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.OptParse.Types where
+
+import GHC.Generics (Generic)
+
+import Data.Validity
 
 import Data.Yaml as Yaml
 
@@ -15,7 +20,9 @@ data Environment = Environment
 
 data Configuration = Configuration
     { confWorkflowDir :: Maybe FilePath
-    } deriving (Show, Eq)
+    } deriving (Show, Eq, Generic)
+
+instance Validity Configuration
 
 instance FromJSON Configuration where
     parseJSON =

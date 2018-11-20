@@ -10,11 +10,17 @@ spec = do
     configSpecWithExt ".yaml" parseYamlConfig
     configSpecWithExt ".json" parseJSONConfig
 
-configSpecWithExt :: String -> (Path Abs File -> IO Configuration) -> Spec
+configSpecWithExt ::
+       String -> (Path Abs File -> IO (Either String Configuration)) -> Spec
 configSpecWithExt ext parseConf = do
     extFiles <- runIO $ getResourcesWithExtension ext
     describe ext $
-        forM_ extFiles $ \df -> it (fromAbsFile df) $ do void $ parseConf df
+        forM_ extFiles $ \df ->
+            it (fromAbsFile df) $ do
+                errOrConf <- parseConf df
+                case errOrConf of
+                    Left err -> expectationFailure err
+                    Right conf -> shouldBeValid conf
 
 getResourcesWithExtension :: String -> IO [Path Abs File]
 getResourcesWithExtension ext = do

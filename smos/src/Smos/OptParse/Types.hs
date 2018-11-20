@@ -11,6 +11,7 @@ import Import
 
 import qualified Data.Text as T
 import Data.Yaml as Yaml
+import Text.Read
 
 import Graphics.Vty.Input.Events
 
@@ -34,13 +35,15 @@ data Environment = Environment
 
 data Configuration = Configuration
     { confReportConf :: !Report.Configuration
-    , confKeybindingsConf :: !KeybindingsConfiguration
+    , confKeybindingsConf :: !(Maybe KeybindingsConfiguration)
     } deriving (Show, Eq, Generic)
+
+instance Validity Configuration
 
 instance FromJSON Configuration where
     parseJSON v =
         flip (withObject "Configuration") v $ \o ->
-            Configuration <$> parseJSON v <*> o .: "keys"
+            Configuration <$> parseJSON v <*> o .:? "keys"
 
 data KeybindingsConfiguration = KeybindingsConfiguration
     { confReset :: !(Maybe Bool)
@@ -48,6 +51,8 @@ data KeybindingsConfiguration = KeybindingsConfiguration
     , confReportsKeyConfig :: !(Maybe ReportsKeyConfigs)
     , confHelpKeyConfig :: !(Maybe KeyConfigs)
     } deriving (Show, Eq, Generic)
+
+instance Validity KeybindingsConfiguration
 
 instance FromJSON KeybindingsConfiguration where
     parseJSON =
@@ -69,6 +74,8 @@ data FileKeyConfigs = FileKeyConfigs
     , anyKeyConfigs :: !(Maybe KeyConfigs)
     } deriving (Show, Eq, Generic)
 
+instance Validity FileKeyConfigs
+
 instance FromJSON FileKeyConfigs where
     parseJSON =
         withObject "FileKeyConfigs" $ \o ->
@@ -86,6 +93,8 @@ data ReportsKeyConfigs = ReportsKeyConfigs
     { nextActionReportKeyConfigs :: !(Maybe KeyConfigs)
     } deriving (Show, Eq, Generic)
 
+instance Validity ReportsKeyConfigs
+
 instance FromJSON ReportsKeyConfigs where
     parseJSON =
         withObject "ReportsKeyConfigs" $ \o ->
@@ -95,10 +104,14 @@ newtype KeyConfigs = KeyConfigs
     { keyConfigs :: [KeyConfig]
     } deriving (Show, Eq, Generic, FromJSON)
 
+instance Validity KeyConfigs
+
 data KeyConfig = KeyConfig
     { keyConfigMatcher :: !MatcherConfig
     , keyConfigAction :: !ActionName
     } deriving (Show, Eq, Generic)
+
+instance Validity KeyConfig
 
 instance FromJSON KeyConfig where
     parseJSON =
@@ -109,23 +122,42 @@ data MatcherConfig
     = MatchConfKeyPress !KeyPress
     | MatchConfAnyChar
     | MatchConfCatchAll
+    | MatchConfCombination !KeyPress
+                           !MatcherConfig
     deriving (Show, Eq, Generic)
 
+instance Validity MatcherConfig
+
+-- TODO this doesn't actually work if you want to use the key-combo: 'c'+'h'+'a'+'r'
+-- It also doesn't work with 'c' + <anychar> yet.
 instance FromJSON MatcherConfig where
     parseJSON =
         withText "MatcherConfig" $ \t ->
             case T.unpack t of
                 [c] -> pure $ MatchConfKeyPress (KeyPress (KChar c) [])
+                "Escape" -> pure $ MatchConfKeyPress (KeyPress KEsc [])
                 "char" -> pure MatchConfAnyChar
-                "any" -> pure MatchConfCatchAll
-                _ -> fail "Unknown key matcher"
+                [] -> pure MatchConfCatchAll
+                s@(c:cs) ->
+                    case readMaybe ('K' : s) of
+                        Nothing ->
+                            pure $
+                            foldl
+                                (\cc_ c_ ->
+                                     MatchConfCombination
+                                         (KeyPress (KChar c_) [])
+                                         cc_)
+                                (MatchConfKeyPress $ KeyPress (KChar c) [])
+                                cs
+                        Just k -> pure $ MatchConfKeyPress (KeyPress k [])
 
 data Instructions =
     Instructions (Path Abs File)
                  SmosConfig
 
-data CombineError =
-    ActionNotFound ActionName | ActionWrongType ActionName
+data CombineError
+    = ActionNotFound ActionName
+    | ActionWrongType ActionName
     deriving (Show, Eq, Generic)
 
 data Comb a

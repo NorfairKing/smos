@@ -6,13 +6,12 @@ module Smos.Report.OptParse where
 import System.Environment
 import System.Exit
 
+import Control.Arrow
 import Control.Monad
-
 
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
-import Data.Yaml as Yaml
-       (decodeFileEither, prettyPrintParseException)
+import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 
 import Path
 import Path.IO
@@ -35,9 +34,9 @@ combineToConfig src Flags {..} Environment {..} mc = do
             Nothing -> src
             Just wd ->
                 src
-                { smosReportConfigAgendaFileSpec =
-                      AgendaFileSpec $ resolveDir' wd
-                }
+                    { smosReportConfigAgendaFileSpec =
+                          AgendaFileSpec $ resolveDir' wd
+                    }
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> parseWorkflowDirFlag
@@ -59,9 +58,9 @@ getEnv = do
         getSmosEnv key = ("SMOS_" ++ key) `lookup` env
     pure
         Environment
-        { envWorkflowDir =
-              getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
-        }
+            { envWorkflowDir =
+                  getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
+            }
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))
 defaultJSONConfigFile = do
@@ -83,19 +82,14 @@ defaultYamlConfigFile = do
             then Just p
             else Nothing
 
-parseYamlConfig :: FromJSON a => Path Abs File -> IO a
-parseYamlConfig configFile = do
-    errOrConfig <- decodeFileEither $ fromAbsFile configFile
-    case errOrConfig of
-        Left err -> die $ prettyPrintParseException err
-        Right config -> pure config
+parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
+parseYamlConfig configFile =
+    fmap (left prettyPrintParseException) $
+    decodeFileEither $ fromAbsFile configFile
 
-parseJSONConfig :: FromJSON a => Path Abs File -> IO a
+parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = do
-    errOrConfig <- JSON.eitherDecodeFileStrict $ fromAbsFile configFile
-    case errOrConfig of
-        Left err -> die err
-        Right config -> pure config
+    JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
 getConfigurationWith :: FromJSON a => [Maybe FilePath] -> IO (Maybe a)
 getConfigurationWith mConfigFileOverrides = do
@@ -106,8 +100,13 @@ getConfigurationWith mConfigFileOverrides = do
                 Control.Monad.sequence
                     [defaultYamlConfigFile, defaultJSONConfigFile]
             Just fp -> Just <$> resolveFile' fp
-    forM mConfigFile $ \configFile ->
-        case fileExtension configFile of
-            ".json" -> parseJSONConfig configFile
-            -- As Yaml
-            _ -> parseYamlConfig configFile
+    forM mConfigFile $ \configFile -> do
+        errOrConfig <-
+            case fileExtension configFile of
+                ".json" -> parseJSONConfig configFile
+                -- As Yaml
+                ".yaml" -> parseYamlConfig configFile
+                _ -> parseYamlConfig configFile
+        case errOrConfig of
+            Left err -> die err
+            Right conf -> pure conf

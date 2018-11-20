@@ -14,8 +14,9 @@ import Data.GenValidity.HashMap as X ()
 import Data.GenValidity.Text as X ()
 import Data.GenValidity.Time as X ()
 
-
 import Control.Monad as X
+
+import System.Exit as X
 
 import Path as X
 import Path.IO as X
