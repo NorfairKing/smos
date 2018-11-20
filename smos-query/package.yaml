@@ -12,6 +12,7 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - aeson-pretty
   - base
   - bytestring
   - conduit

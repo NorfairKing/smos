@@ -1,15 +1,17 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Clock.Types where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
-
 
 import Smos.Data
 
@@ -25,6 +27,8 @@ data ClockResolution
 
 instance Validity ClockResolution
 
+instance ToJSON ClockResolution
+
 type ClockTable = [ClockTableBlock]
 
 type ClockTableBlock = Block Text ClockTableEntry
@@ -34,6 +38,14 @@ data ClockTableEntry = ClockTableEntry
     , clockTableEntryHeader :: Header
     , clockTableEntryTime :: NominalDiffTime
     } deriving (Show, Eq, Generic)
+
+instance ToJSON ClockTableEntry where
+    toJSON ClockTableEntry {..} =
+        object
+            [ "file" .= clockTableEntryFile
+            , "header" .= clockTableEntryHeader
+            , "difftime" .= clockTableEntryTime
+            ]
 
 instance Validity ClockTableEntry
 

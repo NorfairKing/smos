@@ -57,6 +57,7 @@ data ClockFlags = ClockFlags
     , clockFlagPeriodFlags :: Maybe Period
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
+    , clockFlagOutputFormat :: Maybe OutputFormat
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
@@ -122,6 +123,7 @@ data ClockSettings = ClockSettings
     , clockSetPeriod :: Period
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
+    , clockSetOutputFormat :: OutputFormat
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
@@ -140,3 +142,10 @@ data StatsSettings = StatsSettings
     { statsSetFilter :: Maybe Filter
     , statsSetPeriod :: Period
     } deriving (Show, Eq)
+
+data OutputFormat
+    = OutputPretty
+    | OutputYaml
+    | OutputJSON
+    | OutputJSONPretty
+    deriving (Show, Eq)

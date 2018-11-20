@@ -9,10 +9,15 @@ module Smos.Query.Clock
 
 import Data.Maybe
 
+import qualified Data.Aeson as JSON
+import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
+import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
 import Data.Validity.Path ()
+import qualified Data.Yaml as Yaml
 import Text.Printf
 
 import Rainbow
@@ -46,12 +51,17 @@ clock ClockSettings {..} = do
             C.filter (maybe (const True) filterPredicate clockSetFilter . snd) .|
             smosCursorCurrents
         now <- getZonedTime
-        putTableLn $
-            renderClockTable clockSetResolution $
-            makeClockTable $
-            divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
-            mapMaybe (trimClockTime now clockSetPeriod) $
-            mapMaybe (uncurry (findClockTimes $ zonedTimeToUTC now)) tups
+        let clockTable =
+                makeClockTable $
+                divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
+                mapMaybe (trimClockTime now clockSetPeriod) $
+                mapMaybe (uncurry (findClockTimes $ zonedTimeToUTC now)) tups
+        case clockSetOutputFormat of
+            OutputPretty ->
+                putTableLn $ renderClockTable clockSetResolution clockTable
+            OutputYaml -> SB.putStr $ Yaml.encode clockTable
+            OutputJSON -> LB.putStr $ JSON.encode clockTable
+            OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
 renderClockTable res ctbs =

@@ -13,8 +13,6 @@ import Smos.Report.Clock.Gen ()
 
 spec :: Spec
 spec = do
-    describe "findClockTimes" $
-        it "produces valid clock times" $ producesValidsOnValids2 findClockTimes
     describe "trimClockTime" $
         it "produces valid clock times" $ producesValidsOnValids3 trimClockTime
     describe "trimLogbookEntry" $

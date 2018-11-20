@@ -1,17 +1,18 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.TimeBlock where
 
 import GHC.Generics (Generic)
 
-import Data.Validity
-
+import Data.Aeson
 import Data.Function
 import Data.List
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
+import Data.Validity
 
 data TimeBlock
     = OneBlock
@@ -26,6 +27,10 @@ data Block a b = Block
     } deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Block a b)
+
+instance (ToJSON a, ToJSON b) => ToJSON (Block a b) where
+    toJSON Block {..} =
+        object ["title" .= blockTitle, "entries" .= blockEntries]
 
 mapBlockTitle :: (a -> b) -> Block a c -> Block b c
 mapBlockTitle func b = b {blockTitle = func $ blockTitle b}
@@ -48,7 +53,8 @@ turnIntoSingletonBlock :: (b -> Day) -> b -> Block Day b
 turnIntoSingletonBlock func b = Block {blockTitle = func b, blockEntries = [b]}
 
 combineBlocksByName :: Ord a => [Block a b] -> [Block a b]
-combineBlocksByName = map comb . groupBy ((==) `on` blockTitle) . sortOn blockTitle
+combineBlocksByName =
+    map comb . groupBy ((==) `on` blockTitle) . sortOn blockTitle
   where
     comb :: [Block a b] -> Block a b
     comb [] = error "cannot happen due to 'groupBy' above"
