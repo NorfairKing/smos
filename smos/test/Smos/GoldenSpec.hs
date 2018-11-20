@@ -5,11 +5,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Main
-    ( main
+module Smos.GoldenSpec
+    ( spec
     ) where
 
-import GHC.Generics
+import TestImport
 
 import System.Exit
 
@@ -19,17 +19,8 @@ import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Data.Validity
 import Data.Yaml
 import Data.Yaml.Builder as Yaml
-
-import Control.Monad
-
-import Test.Hspec
-import Test.Validity
-
-import Path
-import Path.IO
 
 import Brick hiding (on)
 
@@ -40,9 +31,6 @@ import Smos.App
 import Smos.Types
 
 import Text.Show.Pretty
-
-main :: IO ()
-main = hspec spec
 
 spec :: Spec
 spec = do
@@ -123,7 +111,9 @@ parseCommand t =
             case T.unpack arg of
                 [] -> Left "Should never happen."
                 [c] ->
-                    case filter ((==ActionName n) . actionUsingName) allUsingCharActions of
+                    case filter
+                             ((== ActionName n) . actionUsingName)
+                             allUsingCharActions of
                         [] ->
                             Left $ unwords ["No action found with name", show n]
                         [a] -> pure $ CommandUsing a c
