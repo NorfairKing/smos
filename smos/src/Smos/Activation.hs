@@ -122,7 +122,7 @@ data Activation = Activation
     { activationPrecedence :: Precedence
     , activationPriority :: Priority
     , activationMatch :: Seq KeyPress
-    , activationName :: Text
+    , activationName :: ActionName
     , activationFunc :: SmosM ()
     }
 

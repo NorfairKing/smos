@@ -40,20 +40,82 @@ combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {
             flagReportFlags
             envReportEnv
             (confReportConf <$> mc)
-    let sc' =
-            sc
-            { configKeyMap =
-                  if ((confKeybindingsConf <$> mc) >>= confReset) == Just True
-                      then mempty
-                      else configKeyMap
-            , configReportConfig = src
-            }
+    let keyMap =
+            combineKeymap configKeyMap $
+            confKeybindingsConf <$> mc
+    let sc' = sc {configKeyMap = keyMap, configReportConfig = src}
     pure $ Instructions p sc'
+
+combineKeymap :: KeyMap -> Maybe KeybindingsConfiguration -> KeyMap
+combineKeymap km Nothing = km
+combineKeymap km (Just kbc) =
+    let startingPoint =
+            case confReset kbc of
+                Just True -> mempty
+                Just False -> km
+                Nothing -> km
+    in startingPoint
+       { keyMapFileKeyMap =
+             combineFileKeymap
+                 (keyMapFileKeyMap startingPoint)
+                 (confFileKeyConfig kbc)
+       , keyMapReportsKeyMap =
+             combineReportsKeymap
+                 (keyMapReportsKeyMap startingPoint)
+                 (confReportsKeyConfig kbc)
+       , keyMapHelpMatchers =
+             combineKeyMappings
+                 (keyMapHelpMatchers startingPoint)
+                 (confHelpKeyConfig kbc)
+       }
+
+combineFileKeymap :: FileKeyMap -> Maybe FileKeyConfigs -> FileKeyMap
+combineFileKeymap fkm Nothing = fkm
+combineFileKeymap fkm (Just fkc) =
+    fkm
+    { fileKeyMapEmptyMatchers =
+          combineKeyMappings (fileKeyMapEmptyMatchers fkm) (emptyKeyConfigs fkc)
+    }
+
+combineReportsKeymap ::
+       ReportsKeyMap -> Maybe ReportsKeyConfigs -> ReportsKeyMap
+combineReportsKeymap rkm Nothing = rkm
+combineReportsKeymap rkm (Just rkc) =
+    rkm
+    { reportsKeymapNextActionReportMatchers =
+          combineKeyMappings
+              (reportsKeymapNextActionReportMatchers rkm)
+              (nextActionReportKeyConfigs rkc)
+    }
+
+combineKeyMappings :: KeyMappings -> Maybe KeyConfigs -> KeyMappings
+combineKeyMappings kms Nothing = kms
+combineKeyMappings kms (Just kcs) = map go (keyConfigs kcs) ++ kms
+  where
+    go :: KeyConfig -> KeyMapping
+    go KeyConfig {..} =
+        case keyConfigMatcher of
+            MatchConfKeyPress kp ->
+                MapVtyExactly kp $
+                case findAction keyConfigAction of
+                    Just (PlainAction a) -> a
+                    _ -> error "TODO deal with this error correctly"
+            MatchConfCatchAll ->
+                MapCatchAll $
+                case findAction keyConfigAction of
+                    Just (PlainAction a) -> a
+                    _ -> error "TODO deal with this error correctly"
+            MatchConfAnyChar ->
+                MapAnyTypeableChar $
+                case findAction keyConfigAction of
+                    Just (UsingCharAction a) -> a
+                    _ -> error "TODO deal with this error correctly"
+    findAction :: ActionName -> Maybe AnyAction
+    findAction an = find ((== an) . anyActionName) allActions
 
 getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
 getConfiguration (Arguments _ Flags {..}) Environment {..} =
-    Report.getConfigurationWith
-        [flagConfigFile, envConfigFile]
+    Report.getConfigurationWith [flagConfigFile, envConfigFile]
 
 getEnv :: IO Environment
 getEnv = do

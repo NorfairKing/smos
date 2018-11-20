@@ -129,7 +129,9 @@ drawHelpCursor s (Just HelpCursor {..}) =
                   nonEmptyCursorCurrent helpCursorKeyHelpCursors
           in vBox
                  [ txt "Name: " <+>
-                   withAttr selectedAttr (txtWrap keyHelpCursorName)
+                   withAttr
+                       selectedAttr
+                       (txtWrap $ actionNameText keyHelpCursorName)
                  , txtWrap "Description:"
                  , txt " "
                  , hLimit 75 $
@@ -147,7 +149,7 @@ drawHelpCursor s (Just HelpCursor {..}) =
                      NotSelected -> id)
         in [ withAttr helpKeyCombinationAttr $
              drawKeyCombination keyHelpCursorKeyBinding
-           , msel $ withAttr helpNameAttr $ txt keyHelpCursorName
+           , msel $ withAttr helpNameAttr $ txt $ actionNameText keyHelpCursorName
            ]
 
 drawKeyCombination :: KeyCombination -> Widget n
@@ -540,10 +542,10 @@ drawTags ts
 
 drawTagCursor :: Select -> TagCursor -> Widget ResourceName
 drawTagCursor s =
-        (case s of
-             NotSelected -> id
-             MaybeSelected -> withAttr selectedAttr) .
-    (str ":" <+>) .(<+> str ":" ). drawTextCursor s . tagCursorTextCursor
+    (case s of
+         NotSelected -> id
+         MaybeSelected -> withAttr selectedAttr) .
+    (str ":" <+>) . (<+> str ":") . drawTextCursor s . tagCursorTextCursor
 
 drawTag :: Tag -> Widget n
 drawTag = txt . tagText

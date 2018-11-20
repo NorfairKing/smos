@@ -42,14 +42,14 @@ import Smos.Report.Config
 import Smos.Monad
 
 data SmosConfig = SmosConfig
-    { configKeyMap :: KeyMap
-    , configReportConfig :: SmosReportConfig
+    { configKeyMap :: !KeyMap
+    , configReportConfig :: !SmosReportConfig
     } deriving (Generic)
 
 data KeyMap = KeyMap
-    { keyMapFileKeyMap :: FileKeyMap
-    , keyMapReportsKeyMap :: ReportsKeyMap
-    , keyMapHelpMatchers :: KeyMappings
+    { keyMapFileKeyMap :: !FileKeyMap
+    , keyMapReportsKeyMap :: !ReportsKeyMap
+    , keyMapHelpMatchers :: !KeyMappings
     } deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -70,16 +70,16 @@ instance Monoid KeyMap where
         }
 
 data FileKeyMap = FileKeyMap
-    { fileKeyMapEmptyMatchers :: KeyMappings
-    , fileKeyMapEntryMatchers :: KeyMappings
-    , fileKeyMapHeaderMatchers :: KeyMappings
-    , fileKeyMapContentsMatchers :: KeyMappings
-    , fileKeyMapTimestampsMatchers :: KeyMappings
-    , fileKeyMapPropertiesMatchers :: KeyMappings
-    , fileKeyMapStateHistoryMatchers :: KeyMappings
-    , fileKeyMapTagsMatchers :: KeyMappings
-    , fileKeyMapLogbookMatchers :: KeyMappings
-    , fileKeyMapAnyMatchers :: KeyMappings
+    { fileKeyMapEmptyMatchers :: !KeyMappings
+    , fileKeyMapEntryMatchers :: !KeyMappings
+    , fileKeyMapHeaderMatchers :: !KeyMappings
+    , fileKeyMapContentsMatchers :: !KeyMappings
+    , fileKeyMapTimestampsMatchers :: !KeyMappings
+    , fileKeyMapPropertiesMatchers :: !KeyMappings
+    , fileKeyMapStateHistoryMatchers :: !KeyMappings
+    , fileKeyMapTagsMatchers :: !KeyMappings
+    , fileKeyMapLogbookMatchers :: !KeyMappings
+    , fileKeyMapAnyMatchers :: !KeyMappings
     } deriving (Generic)
 
 instance Semigroup FileKeyMap where
@@ -126,7 +126,7 @@ instance Monoid FileKeyMap where
         }
 
 data ReportsKeyMap = ReportsKeyMap
-    { reportsKeymapNextActionReportMatchers :: KeyMappings
+    { reportsKeymapNextActionReportMatchers :: !KeyMappings
     } deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
@@ -143,35 +143,35 @@ instance Monoid ReportsKeyMap where
 type KeyMappings = [KeyMapping]
 
 data KeyMapping
-    = MapVtyExactly KeyPress
-                    Action
-    | MapAnyTypeableChar (ActionUsing Char)
-    | MapCatchAll Action
-    | MapCombination KeyPress
-                     KeyMapping
+    = MapVtyExactly !KeyPress
+                    !Action
+    | MapAnyTypeableChar !(ActionUsing Char)
+    | MapCatchAll !Action
+    | MapCombination !KeyPress
+                     !KeyMapping
 
 newtype ActionName = ActionName
     { actionNameText :: Text
-    } deriving (Show, Eq, Generic)
+    } deriving ( Show
+               , Eq
+               , Generic
+               , IsString
+               , Semigroup
+               , Monoid
+               , FromJSON
+               , ToJSON
+               )
 
 instance Validity ActionName
 
-instance FromJSON ActionName
-
-instance ToJSON ActionName
-
 data Action = Action
-    { actionName :: Text
+    { actionName :: ActionName
     , actionFunc :: SmosM ()
     , actionDescription :: Text
     } deriving (Generic)
 
-action :: Text -> SmosM () -> Action
-action name func =
-    Action {actionName = name, actionFunc = func, actionDescription = ""}
-
 data ActionUsing a = ActionUsing
-    { actionUsingName :: Text
+    { actionUsingName :: ActionName
     , actionUsingFunc :: a -> SmosM ()
     , actionUsingDescription :: Text
     } deriving (Generic)
@@ -179,17 +179,13 @@ data ActionUsing a = ActionUsing
 instance Contravariant ActionUsing where
     contramap func a = a {actionUsingFunc = \b -> actionUsingFunc a $ func b}
 
-actionUsing :: Text -> (a -> SmosM ()) -> ActionUsing a
-actionUsing name func =
-    ActionUsing
-    { actionUsingName = name
-    , actionUsingFunc = func
-    , actionUsingDescription = ""
-    }
-
 data AnyAction
     = PlainAction Action
     | UsingCharAction (ActionUsing Char)
+
+anyActionName :: AnyAction -> ActionName
+anyActionName (PlainAction a) = actionName a
+anyActionName (UsingCharAction au) = actionUsingName au
 
 type Event = BrickEvent ResourceName SmosEvent
 
@@ -233,7 +229,7 @@ data ActivationDebug = ActivationDebug
     { activationDebugPrecedence :: Precedence
     , activationDebugPriority :: Priority
     , activationDebugMatch :: Seq KeyPress
-    , activationDebugName :: Text
+    , activationDebugName :: ActionName
     } deriving (Show, Eq, Generic)
 
 data Priority
@@ -330,7 +326,7 @@ helpCursorEnd = helpCursorKeyHelpCursorsL %~ nonEmptyCursorSelectLast
 
 data KeyHelpCursor = KeyHelpCursor
     { keyHelpCursorKeyBinding :: KeyCombination
-    , keyHelpCursorName :: Text
+    , keyHelpCursorName :: ActionName
     , keyHelpCursorDescription :: Text
     } deriving (Show, Eq, Generic)
 

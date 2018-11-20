@@ -18,7 +18,6 @@ module Smos.Config
     , ReportsKeyMap(..)
     , KeyMapping(..)
     , KeyMappings
-    , action
     , ActionUsing(..)
     , stop
     , module Graphics.Vty.Input.Events

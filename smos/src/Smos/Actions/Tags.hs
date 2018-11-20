@@ -41,7 +41,7 @@ allTagsUsingCharActions = [tagsInsert, tagsAppend]
 tagsSet :: Tag -> Action
 tagsSet t =
     Action
-    { actionName = "tagsSet_" <> tagText t
+    { actionName = "tagsSet_" <> ActionName(tagText t)
     , actionFunc = modifyMTagsCursorM $ tagsCursorSetTag t
     , actionDescription = T.unwords ["Set the", tagText t, "tag"]
     }
@@ -49,7 +49,7 @@ tagsSet t =
 tagsUnset :: Tag -> Action
 tagsUnset t =
     Action
-    { actionName = "tagsUnset_" <> tagText t
+    { actionName = "tagsUnset_" <> ActionName (tagText t)
     , actionFunc = modifyTagsCursorMD $ tagsCursorUnsetTag t
     , actionDescription = T.unwords ["Unset the", tagText t, "tag"]
     }
@@ -57,7 +57,7 @@ tagsUnset t =
 tagsToggle :: Tag -> Action
 tagsToggle t =
     Action
-    { actionName = "tagsToggle_" <> tagText t
+    { actionName = "tagsToggle_" <> ActionName    (tagText t)
     , actionFunc = modifyMTagsCursorD $ tagsCursorToggleTag t
     , actionDescription = T.unwords ["Toggle the", tagText t, "tag"]
     }
