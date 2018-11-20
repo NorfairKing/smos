@@ -97,9 +97,9 @@ instance Validity Command where
     validate = trivialValidation
 
 instance Show Command where
-    show (CommandPlain a) = T.unpack $ actionName a
+    show (CommandPlain a) = T.unpack $ actionNameText $ actionName a
     show (CommandUsing au inp) =
-        unwords [T.unpack $ actionUsingName au, show inp]
+        unwords [T.unpack $ actionNameText $ actionUsingName au, show inp]
 
 instance FromJSON Command where
     parseJSON =
@@ -113,7 +113,7 @@ parseCommand t =
     case T.words t of
         [] -> Left "Should never happen."
         [n] ->
-            case filter ((== n) . actionName) allPlainActions of
+            case filter ((== ActionName n) . actionName) allPlainActions of
                 [] -> Left $ unwords ["No action found with name", show n]
                 [a] -> pure $ CommandPlain a
                 _ ->
@@ -123,7 +123,7 @@ parseCommand t =
             case T.unpack arg of
                 [] -> Left "Should never happen."
                 [c] ->
-                    case filter ((== n) . actionUsingName) allUsingCharActions of
+                    case filter ((==ActionName n) . actionUsingName) allUsingCharActions of
                         [] ->
                             Left $ unwords ["No action found with name", show n]
                         [a] -> pure $ CommandUsing a c
@@ -219,10 +219,7 @@ expectResults bf af CommandsRun {..} =
     go :: Command -> SmosFile -> [String]
     go c isf =
         [ "After running the following command:"
-        , case c of
-              CommandPlain a -> T.unpack $ actionName a
-              CommandUsing a arg ->
-                  unwords [T.unpack $ actionUsingName a, show arg]
+        , show c
         , "The file looked as follows:"
         , ppShow isf
         ]

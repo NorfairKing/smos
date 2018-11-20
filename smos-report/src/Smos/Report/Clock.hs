@@ -8,11 +8,8 @@ module Smos.Report.Clock
     , module Smos.Report.Clock.Types
     ) where
 
-import GHC.Generics (Generic)
-
 import Data.Function
 import Data.List
-import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Text as T
@@ -39,10 +36,10 @@ findClockTimes rp Entry {..} =
         ne <- NE.nonEmpty es
         pure $
             ClockTime
-            { clockTimeFile = rp
-            , clockTimeHeader = entryHeader
-            , clockTimeEntries = ne
-            }
+                { clockTimeFile = rp
+                , clockTimeHeader = entryHeader
+                , clockTimeEntries = ne
+                }
 
 trimClockTime :: ZonedTime -> Period -> ClockTime -> Maybe ClockTime
 trimClockTime zt cp ct = do
@@ -74,15 +71,15 @@ trimLogbookEntry now cp =
     lastWeekStart :: LocalTime
     lastWeekStart =
         let (y, wn, _) = toWeekDate today
-        in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
+         in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today
-        in LocalTime (fromWeekDate y wn 1) midnight
+         in LocalTime (fromWeekDate y wn 1) midnight
     thisWeekEnd :: LocalTime
     thisWeekEnd =
         let (y, wn, _) = toWeekDate today
-        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+         in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
     trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
@@ -93,15 +90,15 @@ trimLogbookEntryTo ::
 trimLogbookEntryTo tz begin end LogbookEntry {..} =
     constructValid $
     LogbookEntry
-    { logbookEntryStart =
-          if toLocal logbookEntryStart >= begin
-              then logbookEntryStart
-              else fromLocal begin
-    , logbookEntryEnd =
-          if toLocal logbookEntryEnd < end
-              then logbookEntryEnd
-              else fromLocal end
-    }
+        { logbookEntryStart =
+              if toLocal logbookEntryStart >= begin
+                  then logbookEntryStart
+                  else fromLocal begin
+        , logbookEntryEnd =
+              if toLocal logbookEntryEnd < end
+                  then logbookEntryEnd
+                  else fromLocal end
+        }
   where
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
@@ -165,17 +162,17 @@ makeClockTable = map makeClockTableBlock
 makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
 makeClockTableBlock Block {..} =
     Block
-    { blockTitle = blockTitle
-    , blockEntries = map makeClockTableEntry blockEntries
-    }
+        { blockTitle = blockTitle
+        , blockEntries = map makeClockTableEntry blockEntries
+        }
 
 makeClockTableEntry :: ClockTime -> ClockTableEntry
 makeClockTableEntry ClockTime {..} =
     ClockTableEntry
-    { clockTableEntryFile = clockTimeFile
-    , clockTableEntryHeader = clockTimeHeader
-    , clockTableEntryTime = sumLogbookEntryTime $ NE.toList clockTimeEntries
-    }
+        { clockTableEntryFile = clockTimeFile
+        , clockTableEntryHeader = clockTimeHeader
+        , clockTableEntryTime = sumLogbookEntryTime $ NE.toList clockTimeEntries
+        }
 
 sumLogbookEntryTime :: [LogbookEntry] -> NominalDiffTime
 sumLogbookEntryTime = sum . map go

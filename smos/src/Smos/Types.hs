@@ -152,8 +152,8 @@ data KeyMapping
 
 newtype ActionName = ActionName
     { actionNameText :: Text
-    } deriving ( Show
-               , Eq
+    } deriving ( Show,Read
+               , Eq,Ord
                , Generic
                , IsString
                , Semigroup
