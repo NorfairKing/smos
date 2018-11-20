@@ -7,15 +7,19 @@ import Smos.Report.OptParse
 
 spec :: Spec
 spec = do
-    dhallFiles <- runIO $ getResourcesWithExtension ".dhall"
-    describe "Dhall" $
-        forM_ dhallFiles $ \df ->
-            it (fromAbsFile df) $ do
-                void $
-                    parseDhallConfig df configurationDefaults configurationType
+    configSpecWithExt ".dhall" $
+        parseDhallConfig configurationType configurationDefaults
+    configSpecWithExt ".yaml" parseYamlConfig
+    configSpecWithExt ".json" parseJSONConfig
+
+configSpecWithExt :: String -> (Path Abs File -> IO Configuration) -> Spec
+configSpecWithExt ext parseConf = do
+    extFiles <- runIO $ getResourcesWithExtension ext
+    describe ext $
+        forM_ extFiles $ \df -> it (fromAbsFile df) $ do void $ parseConf df
 
 getResourcesWithExtension :: String -> IO [Path Abs File]
 getResourcesWithExtension ext = do
     resourcesDir <- resolveDir' $ "test_resources/config/" ++ drop 1 ext
-    fs <- snd <$> listDirRecur resourcesDir
-    pure $ filter ((== ext) . fileExtension) fs
+    fs <- forgivingAbsence $ snd <$> listDirRecur resourcesDir
+    pure $ filter ((== ext) . fileExtension) $ fromMaybe [] fs

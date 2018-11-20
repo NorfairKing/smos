@@ -95,26 +95,24 @@ defaultYamlConfigFile = do
             then Just p
             else Nothing
 
-parseDhallConfig :: Path Abs File -> Text -> Dhall.Type a -> IO a
-parseDhallConfig configFile configDefaults configType = do
+parseDhallConfig :: Dhall.Type a -> Text -> Path Abs File -> IO a
+parseDhallConfig configType configDefaults configFile = do
     contents <- T.readFile $ fromAbsFile configFile
     detailed (input configType (configDefaults <> "//" <> contents))
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO a
 parseYamlConfig configFile = do
-                errOrConfig <- decodeFileEither $ fromAbsFile configFile
-                case errOrConfig of
-                    Left err -> die $ prettyPrintParseException err
-                    Right config -> pure config
+    errOrConfig <- decodeFileEither $ fromAbsFile configFile
+    case errOrConfig of
+        Left err -> die $ prettyPrintParseException err
+        Right config -> pure config
 
 parseJSONConfig :: FromJSON a => Path Abs File -> IO a
-
 parseJSONConfig configFile = do
-                errOrConfig <-
-                    JSON.eitherDecodeFileStrict $ fromAbsFile configFile
-                case errOrConfig of
-                    Left err -> die err
-                    Right config -> pure config
+    errOrConfig <- JSON.eitherDecodeFileStrict $ fromAbsFile configFile
+    case errOrConfig of
+        Left err -> die err
+        Right config -> pure config
 
 getConfigurationWith ::
        FromJSON a => [Maybe FilePath] -> Text -> Dhall.Type a -> IO (Maybe a)
@@ -131,7 +129,7 @@ getConfigurationWith mConfigFileOverrides configDefaults configType = do
             Just fp -> Just <$> resolveFile' fp
     forM mConfigFile $ \configFile ->
         case fileExtension configFile of
-            ".dhall" -> parseDhallConfig configFile configDefaults configType
+            ".dhall" -> parseDhallConfig configType configDefaults configFile
             ".json" -> parseJSONConfig configFile
             -- As Yaml
             _ -> parseYamlConfig configFile

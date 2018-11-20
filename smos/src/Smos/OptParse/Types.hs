@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -30,7 +31,7 @@ data Environment = Environment
 data Configuration = Configuration
     { confReportConf :: Report.Configuration
     , confKeybindingsConf :: KeybindingsConfiguration
-    } deriving (Show, Eq)
+    } deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v <*> parseJSON v
@@ -47,10 +48,10 @@ configurationType =
 
 data KeybindingsConfiguration = KeybindingsConfiguration
     { confReset :: Maybe Bool
-    } deriving (Show, Eq)
+    } deriving (Show, Eq, Generic)
 
 instance FromJSON KeybindingsConfiguration where
-    parseJSON = withObject "KeybindingsConfiguration" $ \o -> o .: "reset"
+    parseJSON = withObject "KeybindingsConfiguration" $ \o -> KeybindingsConfiguration <$> o .:? "reset"
 
 keybindingsConfigurationRecordType :: Dhall.RecordType KeybindingsConfiguration
 keybindingsConfigurationRecordType =
