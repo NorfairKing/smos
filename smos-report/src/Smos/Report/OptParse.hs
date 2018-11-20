@@ -8,7 +8,6 @@ import System.Exit
 
 import Control.Monad
 
-import qualified Data.Text.IO as T
 
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)

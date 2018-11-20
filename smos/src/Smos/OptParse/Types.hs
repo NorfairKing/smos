@@ -123,3 +123,25 @@ instance FromJSON MatcherConfig where
 data Instructions =
     Instructions (Path Abs File)
                  SmosConfig
+
+data CombineError =
+    ActionNotFound ActionName | ActionWrongType ActionName
+    deriving (Show, Eq, Generic)
+
+data Comb a
+    = Combined a
+    | CombErr [CombineError]
+    deriving (Show, Eq, Generic)
+
+instance Functor Comb where
+    fmap f (Combined a) = Combined (f a)
+    fmap _ (CombErr errs) = CombErr errs
+
+instance Applicative Comb where
+    pure = Combined
+    cfa <*> ca =
+        case (cfa, ca) of
+            (Combined f, Combined a) -> Combined (f a)
+            (CombErr err1, CombErr err2) -> CombErr $ err1 ++ err2
+            (CombErr err1, _) -> CombErr err1
+            (_, CombErr err2) -> CombErr err2
