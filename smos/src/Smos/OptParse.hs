@@ -38,7 +38,14 @@ combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {
             flagReportFlags
             envReportEnv
             (confReportConf <$> mc)
-    let sc' = sc {configReportConfig = src}
+    let sc' =
+            sc
+            { configKeyMap =
+                  if ((confKeybindingsConf <$> mc) >>= confReset) == Just True
+                      then mempty
+                      else configKeyMap
+            , configReportConfig = src
+            }
     pure $ Instructions p sc'
 
 getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)

@@ -4,7 +4,7 @@ final:
     {
       smosPackages =
             let smosPkg = name:
-                (failOnAllWarnings (final.haskellPackages.callCabal2nix name (../. + "/${name}") {}));
+                (failOnAllWarnings (disableLibraryProfiling (final.haskellPackages.callCabal2nix name (../. + "/${name}") {})));
             in final.lib.genAttrs [
               "smos"
               "smos-data"
