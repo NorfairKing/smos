@@ -40,9 +40,7 @@ combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {
             flagReportFlags
             envReportEnv
             (confReportConf <$> mc)
-    let keyMap =
-            combineKeymap configKeyMap $
-            confKeybindingsConf <$> mc
+    let keyMap = combineKeymap configKeyMap $ confKeybindingsConf <$> mc
     let sc' = sc {configKeyMap = keyMap, configReportConfig = src}
     pure $ Instructions p sc'
 
@@ -75,6 +73,36 @@ combineFileKeymap fkm (Just fkc) =
     fkm
     { fileKeyMapEmptyMatchers =
           combineKeyMappings (fileKeyMapEmptyMatchers fkm) (emptyKeyConfigs fkc)
+    , fileKeyMapEntryMatchers =
+          combineKeyMappings (fileKeyMapEntryMatchers fkm) (entryKeyConfigs fkc)
+    , fileKeyMapHeaderMatchers =
+          combineKeyMappings
+              (fileKeyMapHeaderMatchers fkm)
+              (headerKeyConfigs fkc)
+    , fileKeyMapContentsMatchers =
+          combineKeyMappings
+              (fileKeyMapContentsMatchers fkm)
+              (contentsKeyConfigs fkc)
+    , fileKeyMapTimestampsMatchers =
+          combineKeyMappings
+              (fileKeyMapTimestampsMatchers fkm)
+              (timestampsKeyConfigs fkc)
+    , fileKeyMapPropertiesMatchers =
+          combineKeyMappings
+              (fileKeyMapPropertiesMatchers fkm)
+              (propertiesKeyConfigs fkc)
+    , fileKeyMapStateHistoryMatchers =
+          combineKeyMappings
+              (fileKeyMapStateHistoryMatchers fkm)
+              (stateHistoryKeyConfigs fkc)
+    , fileKeyMapTagsMatchers =
+          combineKeyMappings (fileKeyMapTagsMatchers fkm) (tagsKeyConfigs fkc)
+    , fileKeyMapLogbookMatchers =
+          combineKeyMappings
+              (fileKeyMapLogbookMatchers fkm)
+              (logbookKeyConfigs fkc)
+    , fileKeyMapAnyMatchers =
+          combineKeyMappings (fileKeyMapAnyMatchers fkm) (anyKeyConfigs fkc)
     }
 
 combineReportsKeymap ::
