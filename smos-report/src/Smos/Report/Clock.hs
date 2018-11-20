@@ -11,6 +11,7 @@ module Smos.Report.Clock
 import Data.Function
 import Data.List
 import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -26,10 +27,12 @@ import Smos.Report.Path
 import Smos.Report.Period
 import Smos.Report.TimeBlock
 
-findClockTimes :: RootedPath -> Entry -> Maybe ClockTime
-findClockTimes rp Entry {..} =
+findClockTimes :: UTCTime -> RootedPath -> Entry -> Maybe ClockTime
+findClockTimes now rp Entry {..} =
     case entryLogbook of
-        LogOpen _ es -> go' es
+        LogOpen s es ->
+            (go' $ (LogbookEntry
+                          {logbookEntryStart = s, logbookEntryEnd = now} ) :es)
         LogClosed es -> go' es
   where
     go' es = do

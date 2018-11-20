@@ -51,7 +51,7 @@ clock ClockSettings {..} = do
             makeClockTable $
             divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
             mapMaybe (trimClockTime now clockSetPeriod) $
-            mapMaybe (uncurry findClockTimes) tups
+            mapMaybe (uncurry (findClockTimes $ zonedTimeToUTC now)) tups
 
 renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
 renderClockTable res ctbs =
@@ -64,7 +64,7 @@ renderClockTable res ctbs =
     goBs :: [ClockTableBlock] -> [[Chunk Text]]
     goBs ctbs_ =
         concatMap goB ctbs_ ++
-        [  [chunk "", chunk "", chunk ""]
+        [ [chunk "", chunk "", chunk ""]
         , map (fore blue) $
           [ chunk ""
           , chunk "Total:"
@@ -75,8 +75,7 @@ renderClockTable res ctbs =
     goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
     goEs es =
         map go es ++
-        [
-          map (fore blue) $
+        [ map (fore blue) $
           [ chunk ""
           , chunk "Total:"
           , chunk $ renderNominalDiffTime res $ sumEntries es
