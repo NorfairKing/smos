@@ -17,7 +17,6 @@ library:
   - conduit
   - containers
   - cursor
-  - dhall
   - filepath
   - megaparsec
   - microlens

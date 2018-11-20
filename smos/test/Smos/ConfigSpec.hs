@@ -7,8 +7,6 @@ import Smos.Report.OptParse
 
 spec :: Spec
 spec = do
-    configSpecWithExt ".dhall" $
-        parseDhallConfig configurationType configurationDefaults
     configSpecWithExt ".yaml" parseYamlConfig
     configSpecWithExt ".json" parseJSONConfig
 

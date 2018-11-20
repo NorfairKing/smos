@@ -8,7 +8,6 @@ module Smos.Query.OptParse.Types
 import Path
 
 import Data.Yaml as Yaml
-import Dhall
 
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
@@ -78,7 +77,8 @@ data StatsFlags = StatsFlags
     } deriving (Show, Eq)
 
 data Flags = Flags
-    { flagConfigFile :: Maybe FilePath, flagReportFlags :: Report.Flags
+    { flagConfigFile :: Maybe FilePath
+    , flagReportFlags :: Report.Flags
     } deriving (Show, Eq)
 
 data Environment = Environment
@@ -87,18 +87,11 @@ data Environment = Environment
     } deriving (Show, Eq)
 
 data Configuration = Configuration
-    {
-     confReportConf :: Report.Configuration
+    { confReportConf :: Report.Configuration
     } deriving (Show, Eq)
 
 instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v
-
-configurationDefaults :: Text
-configurationDefaults = Report.configurationDefaults
-
-configurationType :: Dhall.Type Configuration
-configurationType = Configuration <$> Report.configurationType
 
 data Dispatch
     = DispatchEntry EntrySettings

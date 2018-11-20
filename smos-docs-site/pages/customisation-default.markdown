@@ -11,18 +11,10 @@ you can use a configuration file.
 
 The default configuration files are (in the order that they are tried):
 
-- `~/.smos.dhall`: in [Dhall](https://github.com/dhall-lang/dhall-lang)
 - `~/.smos.yaml` in [YAML](http://yaml.org/)
 - `~/.smos.json` in [JSON](http://json.org/)
 
 For example, to change the workflow directory, you can use:
-
-- This Dhall config:
-
-``` dhall
-{ workflow-dir = [ "/home/user/different-workflow" ] : Optional Text
-}
-```
 
 - This YAML config:
 

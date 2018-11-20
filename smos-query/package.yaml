@@ -18,7 +18,6 @@ library:
   - configurator
   - containers
   - cursor
-  - dhall
   - filepath
   - mtl
   - optparse-applicative

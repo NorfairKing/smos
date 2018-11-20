@@ -21,7 +21,6 @@ library:
   - contravariant
   - cursor
   - cursor-fuzzy-time
-  - dhall
   - filelock
   - fuzzy-time
   - megaparsec

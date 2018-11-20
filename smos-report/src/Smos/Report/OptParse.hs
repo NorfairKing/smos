@@ -14,7 +14,6 @@ import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
 import Data.Yaml as Yaml
        (decodeFileEither, prettyPrintParseException)
-import Dhall
 
 import Path
 import Path.IO
@@ -65,16 +64,6 @@ getEnv = do
               getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
         }
 
-defaultDhallConfigFile :: IO (Maybe (Path Abs File))
-defaultDhallConfigFile = do
-    home <- getHomeDir
-    p <- resolveFile home ".smos.dhall"
-    e <- doesFileExist p
-    pure $
-        if e
-            then Just p
-            else Nothing
-
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))
 defaultJSONConfigFile = do
     home <- getHomeDir
@@ -95,11 +84,6 @@ defaultYamlConfigFile = do
             then Just p
             else Nothing
 
-parseDhallConfig :: Dhall.Type a -> Text -> Path Abs File -> IO a
-parseDhallConfig configType configDefaults configFile = do
-    contents <- T.readFile $ fromAbsFile configFile
-    detailed (input configType (configDefaults <> "//" <> contents))
-
 parseYamlConfig :: FromJSON a => Path Abs File -> IO a
 parseYamlConfig configFile = do
     errOrConfig <- decodeFileEither $ fromAbsFile configFile
@@ -114,22 +98,17 @@ parseJSONConfig configFile = do
         Left err -> die err
         Right config -> pure config
 
-getConfigurationWith ::
-       FromJSON a => [Maybe FilePath] -> Text -> Dhall.Type a -> IO (Maybe a)
-getConfigurationWith mConfigFileOverrides configDefaults configType = do
+getConfigurationWith :: FromJSON a => [Maybe FilePath] -> IO (Maybe a)
+getConfigurationWith mConfigFileOverrides = do
     mConfigFile <-
         case msum mConfigFileOverrides of
             Nothing ->
                 msum <$>
                 Control.Monad.sequence
-                    [ defaultDhallConfigFile
-                    , defaultYamlConfigFile
-                    , defaultJSONConfigFile
-                    ]
+                    [defaultYamlConfigFile, defaultJSONConfigFile]
             Just fp -> Just <$> resolveFile' fp
     forM mConfigFile $ \configFile ->
         case fileExtension configFile of
-            ".dhall" -> parseDhallConfig configType configDefaults configFile
             ".json" -> parseJSONConfig configFile
             -- As Yaml
             _ -> parseYamlConfig configFile

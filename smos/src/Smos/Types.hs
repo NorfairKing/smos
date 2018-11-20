@@ -16,6 +16,7 @@ import Import
 
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
+import Data.Aeson
 import Data.Time
 import System.FileLock
 
@@ -59,7 +60,7 @@ instance Semigroup KeyMap where
         }
 
 instance Monoid KeyMap where
-    mempty = KeyMap { keyMapFileKeyMap = mempty , keyMapReportsKeyMap = mempty}
+    mempty = KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty}
 
 data FileKeyMap = FileKeyMap
     { keyMapHelpMatchers :: KeyMappings
@@ -139,6 +140,15 @@ data KeyMapping
     | MapCatchAll Action
     | MapCombination KeyPress
                      KeyMapping
+
+newtype ActionName = ActionName
+    { actionNameText :: Text
+    } deriving (Show, Eq, Generic)
+
+instance Validity ActionName
+instance FromJSON ActionName
+
+instance ToJSON ActionName
 
 data Action = Action
     { actionName :: Text

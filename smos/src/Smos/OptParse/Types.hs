@@ -8,7 +8,6 @@ module Smos.OptParse.Types where
 import Import
 
 import Data.Yaml as Yaml
-import Dhall
 
 import qualified Smos.Report.OptParse.Types as Report
 
@@ -36,26 +35,22 @@ data Configuration = Configuration
 instance FromJSON Configuration where
     parseJSON v = Configuration <$> parseJSON v <*> parseJSON v
 
-configurationDefaults :: Text
-configurationDefaults =
-    Report.configurationDefaults <> "// { reset = [ False ] : Optional Bool }"
-
-configurationType :: Dhall.Type Configuration
-configurationType =
-    Dhall.record
-        (Configuration <$> Report.configurationRecordType <*>
-         keybindingsConfigurationRecordType)
-
 data KeybindingsConfiguration = KeybindingsConfiguration
     { confReset :: Maybe Bool
+    , confKeyConfig :: Maybe KeyConfig
     } deriving (Show, Eq, Generic)
 
 instance FromJSON KeybindingsConfiguration where
-    parseJSON = withObject "KeybindingsConfiguration" $ \o -> KeybindingsConfiguration <$> o .:? "reset"
+    parseJSON =
+        withObject "KeybindingsConfiguration" $ \o ->
+            KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "help"
 
-keybindingsConfigurationRecordType :: Dhall.RecordType KeybindingsConfiguration
-keybindingsConfigurationRecordType =
-    KeybindingsConfiguration <$> Dhall.field "reset" (Dhall.maybe Dhall.bool)
+data KeyConfig = KeyConfig
+    { keyConfigCatchAll :: Maybe ActionName
+    } deriving (Show, Eq, Generic)
+
+instance FromJSON KeyConfig where
+    parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .:? "catch-all"
 
 data Instructions =
     Instructions (Path Abs File)

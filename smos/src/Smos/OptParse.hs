@@ -15,6 +15,8 @@ import Options.Applicative
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
+
+import Smos.Actions
 import Smos.Types
 
 getInstructions :: SmosConfig -> IO Instructions
@@ -52,8 +54,6 @@ getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
 getConfiguration (Arguments _ Flags {..}) Environment {..} =
     Report.getConfigurationWith
         [flagConfigFile, envConfigFile]
-        configurationDefaults
-        configurationType
 
 getEnv :: IO Environment
 getEnv = do
