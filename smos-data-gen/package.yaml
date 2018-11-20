@@ -43,6 +43,8 @@ tests:
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - hspec
+    - path
+    - path-io
     - pretty-show
     - smos-data
     - smos-data-gen
