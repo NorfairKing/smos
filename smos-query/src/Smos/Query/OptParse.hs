@@ -108,10 +108,7 @@ getEnv = do
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
-    Report.getConfigurationWith
-        [flagConfigFile, envConfigFile]
-        configurationDefaults
-        configurationType
+    Report.getConfigurationWith [flagConfigFile, envConfigFile]
 
 getArguments :: IO Arguments
 getArguments = do

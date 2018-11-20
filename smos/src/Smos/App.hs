@@ -84,68 +84,82 @@ smosHandleEvent cf s e = do
 keyMapFunc :: SmosState -> Event -> KeyMap -> EventResult
 keyMapFunc s e KeyMap {..} =
     case editorCursorSelection $ smosStateCursor s of
-        HelpSelected -> handleWith keyMapHelpMatchers
+        HelpSelected ->
+            let handleWith :: KeyMappings -> EventResult
+                handleWith specificMappings =
+                    let m = map ((,) SpecificMatcher) specificMappings
+                    in handleRaw m
+            in handleWith keyMapHelpMatchers
         FileSelected ->
-            case editorCursorFileCursor $ smosStateCursor s of
-                Nothing -> handleWith keyMapEmptyMatchers
-                Just sfc ->
-                    case sfc ^. smosFileCursorEntrySelectionL of
-                        WholeEntrySelected -> handleWith keyMapEntryMatchers
-                        HeaderSelected -> handleWith keyMapHeaderMatchers
-                        ContentsSelected -> handleWith keyMapContentsMatchers
-                        TimestampsSelected ->
-                            handleWith keyMapTimestampsMatchers
-                        PropertiesSelected ->
-                            handleWith keyMapPropertiesMatchers
-                        StateHistorySelected ->
-                            handleWith keyMapStateHistoryMatchers
-                        TagsSelected -> handleWith keyMapTagsMatchers
-                        LogbookSelected -> handleWith keyMapLogbookMatchers
+            let handleWith :: KeyMappings -> EventResult
+                handleWith specificMappings =
+                    let m =
+                            map ((,) SpecificMatcher) specificMappings ++
+                            map ((,) AnyMatcher) fileKeyMapAnyMatchers
+                    in handleRaw m
+            in case editorCursorFileCursor $ smosStateCursor s of
+                   Nothing -> handleWith fileKeyMapEmptyMatchers
+                   Just sfc ->
+                       case sfc ^. smosFileCursorEntrySelectionL of
+                           WholeEntrySelected ->
+                               handleWith fileKeyMapEntryMatchers
+                           HeaderSelected -> handleWith fileKeyMapHeaderMatchers
+                           ContentsSelected ->
+                               handleWith fileKeyMapContentsMatchers
+                           TimestampsSelected ->
+                               handleWith fileKeyMapTimestampsMatchers
+                           PropertiesSelected ->
+                               handleWith fileKeyMapPropertiesMatchers
+                           StateHistorySelected ->
+                               handleWith fileKeyMapStateHistoryMatchers
+                           TagsSelected -> handleWith fileKeyMapTagsMatchers
+                           LogbookSelected ->
+                               handleWith fileKeyMapLogbookMatchers
         ReportSelected ->
             let ReportsKeyMap {..} = keyMapReportsKeyMap
+                handleWith :: KeyMappings -> EventResult
+                handleWith specificMappings =
+                    let m = map ((,) SpecificMatcher) specificMappings
+                    in handleRaw m
             in handleWith reportsKeymapNextActionReportMatchers
   where
     FileKeyMap {..} = keyMapFileKeyMap
-    handleWith :: KeyMappings -> EventResult
-    handleWith specificMappings =
-        let m =
-                map ((,) SpecificMatcher) specificMappings ++
-                map ((,) AnyMatcher) keyMapAnyMatchers
-        in case e of
-               VtyEvent vtye ->
-                   case vtye of
-                       Vty.EvKey k mods ->
-                           case NE.nonEmpty $
-                                findActivations
-                                    (smosStateKeyHistory s)
-                                    (KeyPress k mods)
-                                    m of
-                               Nothing -> NothingActivated
-                               Just nems@(a :| _) ->
-                                   KeyActivated $ do
-                                       modify
-                                           (\ss ->
-                                                let dbi = smosStateDebugInfo ss
-                                                    dbi' =
-                                                        dbi
-                                                        { debugInfoLastMatches =
-                                                              Just $
-                                                              NE.map
-                                                                  activationDebug
-                                                                  nems
-                                                        }
-                                                in ss
-                                                   {smosStateDebugInfo = dbi'})
-                                       activationFunc a
-                       _ -> NothingActivated
-               AppEvent se ->
-                   case se of
-                       SmosUpdateTime ->
-                           EventActivated $ do
-                               now <- liftIO getZonedTime
-                               modify (\s_ -> s_ {smosStateTime = now})
-                       SmosSaveFile -> EventActivated saveCurrentSmosFile
-               _ -> NothingActivated
+    handleRaw :: [(Precedence, KeyMapping)] -> EventResult
+    handleRaw m =
+        case e of
+            VtyEvent vtye ->
+                case vtye of
+                    Vty.EvKey k mods ->
+                        case NE.nonEmpty $
+                             findActivations
+                                 (smosStateKeyHistory s)
+                                 (KeyPress k mods)
+                                 m of
+                            Nothing -> NothingActivated
+                            Just nems@(a :| _) ->
+                                KeyActivated $ do
+                                    modify
+                                        (\ss ->
+                                             let dbi = smosStateDebugInfo ss
+                                                 dbi' =
+                                                     dbi
+                                                     { debugInfoLastMatches =
+                                                           Just $
+                                                           NE.map
+                                                               activationDebug
+                                                               nems
+                                                     }
+                                             in ss {smosStateDebugInfo = dbi'})
+                                    activationFunc a
+                    _ -> NothingActivated
+            AppEvent se ->
+                case se of
+                    SmosUpdateTime ->
+                        EventActivated $ do
+                            now <- liftIO getZonedTime
+                            modify (\s_ -> s_ {smosStateTime = now})
+                    SmosSaveFile -> EventActivated saveCurrentSmosFile
+            _ -> NothingActivated
 
 data EventResult
     = KeyActivated (SmosM ())

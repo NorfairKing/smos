@@ -17,21 +17,35 @@ defaultKeyMap =
     KeyMap
     { keyMapFileKeyMap = defaultFileKeyMap
     , keyMapReportsKeyMap = defaultReportsKeyMap
+    , keyMapHelpMatchers =
+          listMatchers
+              [ exactKey KUp helpUp
+              , exactChar 'k' helpUp
+              , exactKey KDown helpDown
+              , exactChar 'j' helpDown
+              , exactKey KHome helpStart
+              , exactString "gg" helpStart
+              , exactKey KEnd helpEnd
+              , exactChar 'G' helpEnd
+              , exactKey KEsc selectEditor
+              , exactChar 'q' selectEditor
+              ]
     }
 
 defaultFileKeyMap :: FileKeyMap
 defaultFileKeyMap =
     FileKeyMap
-    { keyMapEmptyMatchers =
+    { fileKeyMapEmptyMatchers =
           listMatchers
               [ exactChar 'q' stop
               , exactKey KEsc stop
               , exactChar 'h' startHeaderFromEmptyAndSelectHeader
               , exactChar 'H' startHeaderFromEmptyAndSelectHeader
+              , exactChar '?' selectHelp
                   -- Reports
               , exactString "rn" reportNextActions
               ]
-    , keyMapEntryMatchers =
+    , fileKeyMapEntryMatchers =
           listMatchers
               [ exactChar 'q' stop
               , exactChar 'w' saveFile
@@ -109,7 +123,7 @@ defaultFileKeyMap =
                   -- Entering tags
               , exactString "gi" entrySelectTags
               ]
-    , keyMapHeaderMatchers =
+    , fileKeyMapHeaderMatchers =
           listMatchers
               [ exactKey KEsc entrySelectWhole
               , exactKey KEnter entrySelectWhole
@@ -127,7 +141,7 @@ defaultFileKeyMap =
               , modifiedChar 'l' [MMeta] forestDemoteEntry
               , modifiedChar 'L' [MMeta] forestDemoteSubTree
               ]
-    , keyMapContentsMatchers =
+    , fileKeyMapContentsMatchers =
           listMatchers
               [ exactKey KEsc entrySelectWhole
               , anyChar contentsInsert
@@ -147,7 +161,7 @@ defaultFileKeyMap =
               , modifiedChar 'l' [MMeta] forestDemoteEntry
               , modifiedChar 'L' [MMeta] forestDemoteSubTree
               ]
-    , keyMapTimestampsMatchers =
+    , fileKeyMapTimestampsMatchers =
           listMatchers
               [ exactKey KEsc entrySelectWhole
               , exactKey KEnter entrySelectWhole
@@ -158,9 +172,9 @@ defaultFileKeyMap =
               , exactKey KDel timestampsDelete
               , exactChar '\t' timestampsToggle
               ]
-    , keyMapPropertiesMatchers = listMatchers [exactKey KEsc entrySelectWhole]
-    , keyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
-    , keyMapTagsMatchers =
+    , fileKeyMapPropertiesMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapTagsMatchers =
           listMatchers
               [ anyChar tagsInsert
               , exactKey KLeft tagsPrev
@@ -172,21 +186,8 @@ defaultFileKeyMap =
               , exactKey KEnter entrySelectWhole
               , exactKey KEsc entrySelectWhole
               ]
-    , keyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
-    , keyMapHelpMatchers =
-          listMatchers
-              [ exactKey KUp helpUp
-              , exactChar 'k' helpUp
-              , exactKey KDown helpDown
-              , exactChar 'j' helpDown
-              , exactKey KHome helpStart
-              , exactString "gg" helpStart
-              , exactKey KEnd helpEnd
-              , exactChar 'G' helpEnd
-              , exactKey KEsc selectEditor
-              , exactChar 'q' selectEditor
-              ]
-    , keyMapAnyMatchers =
+    , fileKeyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapAnyMatchers =
           listMatchers
               [ exactChar 'u' undo
               , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp

@@ -14,9 +14,9 @@ module Smos.Types
 
 import Import
 
+import Data.Aeson
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
-import Data.Aeson
 import Data.Time
 import System.FileLock
 
@@ -49,6 +49,7 @@ data SmosConfig = SmosConfig
 data KeyMap = KeyMap
     { keyMapFileKeyMap :: FileKeyMap
     , keyMapReportsKeyMap :: ReportsKeyMap
+    , keyMapHelpMatchers :: KeyMappings
     } deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -57,63 +58,71 @@ instance Semigroup KeyMap where
         { keyMapFileKeyMap = keyMapFileKeyMap km1 <> keyMapFileKeyMap km2
         , keyMapReportsKeyMap =
               keyMapReportsKeyMap km1 <> keyMapReportsKeyMap km2
+        , keyMapHelpMatchers = keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
         }
 
 instance Monoid KeyMap where
-    mempty = KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty}
+    mempty =
+        KeyMap
+        { keyMapFileKeyMap = mempty
+        , keyMapReportsKeyMap = mempty
+        , keyMapHelpMatchers = mempty
+        }
 
 data FileKeyMap = FileKeyMap
-    { keyMapHelpMatchers :: KeyMappings
-    , keyMapEmptyMatchers :: KeyMappings
-    , keyMapEntryMatchers :: KeyMappings
-    , keyMapHeaderMatchers :: KeyMappings
-    , keyMapContentsMatchers :: KeyMappings
-    , keyMapTimestampsMatchers :: KeyMappings
-    , keyMapPropertiesMatchers :: KeyMappings
-    , keyMapStateHistoryMatchers :: KeyMappings
-    , keyMapTagsMatchers :: KeyMappings
-    , keyMapLogbookMatchers :: KeyMappings
-    , keyMapAnyMatchers :: KeyMappings
+    { fileKeyMapEmptyMatchers :: KeyMappings
+    , fileKeyMapEntryMatchers :: KeyMappings
+    , fileKeyMapHeaderMatchers :: KeyMappings
+    , fileKeyMapContentsMatchers :: KeyMappings
+    , fileKeyMapTimestampsMatchers :: KeyMappings
+    , fileKeyMapPropertiesMatchers :: KeyMappings
+    , fileKeyMapStateHistoryMatchers :: KeyMappings
+    , fileKeyMapTagsMatchers :: KeyMappings
+    , fileKeyMapLogbookMatchers :: KeyMappings
+    , fileKeyMapAnyMatchers :: KeyMappings
     } deriving (Generic)
 
 instance Semigroup FileKeyMap where
     (<>) km1 km2 =
         FileKeyMap
-        { keyMapHelpMatchers = keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
-        , keyMapEmptyMatchers =
-              keyMapEmptyMatchers km1 <> keyMapEmptyMatchers km2
-        , keyMapEntryMatchers =
-              keyMapEntryMatchers km1 <> keyMapEntryMatchers km2
-        , keyMapHeaderMatchers =
-              keyMapHeaderMatchers km1 <> keyMapHeaderMatchers km2
-        , keyMapContentsMatchers =
-              keyMapContentsMatchers km1 <> keyMapContentsMatchers km2
-        , keyMapTimestampsMatchers =
-              keyMapTimestampsMatchers km1 <> keyMapTimestampsMatchers km2
-        , keyMapPropertiesMatchers =
-              keyMapPropertiesMatchers km1 <> keyMapPropertiesMatchers km2
-        , keyMapStateHistoryMatchers =
-              keyMapStateHistoryMatchers km1 <> keyMapStateHistoryMatchers km2
-        , keyMapTagsMatchers = keyMapTagsMatchers km1 <> keyMapTagsMatchers km2
-        , keyMapLogbookMatchers =
-              keyMapLogbookMatchers km1 <> keyMapLogbookMatchers km2
-        , keyMapAnyMatchers = keyMapAnyMatchers km1 <> keyMapAnyMatchers km2
+        { fileKeyMapEmptyMatchers =
+              fileKeyMapEmptyMatchers km1 <> fileKeyMapEmptyMatchers km2
+        , fileKeyMapEntryMatchers =
+              fileKeyMapEntryMatchers km1 <> fileKeyMapEntryMatchers km2
+        , fileKeyMapHeaderMatchers =
+              fileKeyMapHeaderMatchers km1 <> fileKeyMapHeaderMatchers km2
+        , fileKeyMapContentsMatchers =
+              fileKeyMapContentsMatchers km1 <> fileKeyMapContentsMatchers km2
+        , fileKeyMapTimestampsMatchers =
+              fileKeyMapTimestampsMatchers km1 <>
+              fileKeyMapTimestampsMatchers km2
+        , fileKeyMapPropertiesMatchers =
+              fileKeyMapPropertiesMatchers km1 <>
+              fileKeyMapPropertiesMatchers km2
+        , fileKeyMapStateHistoryMatchers =
+              fileKeyMapStateHistoryMatchers km1 <>
+              fileKeyMapStateHistoryMatchers km2
+        , fileKeyMapTagsMatchers =
+              fileKeyMapTagsMatchers km1 <> fileKeyMapTagsMatchers km2
+        , fileKeyMapLogbookMatchers =
+              fileKeyMapLogbookMatchers km1 <> fileKeyMapLogbookMatchers km2
+        , fileKeyMapAnyMatchers =
+              fileKeyMapAnyMatchers km1 <> fileKeyMapAnyMatchers km2
         }
 
 instance Monoid FileKeyMap where
     mempty =
         FileKeyMap
-        { keyMapHelpMatchers = mempty
-        , keyMapEmptyMatchers = mempty
-        , keyMapEntryMatchers = mempty
-        , keyMapHeaderMatchers = mempty
-        , keyMapContentsMatchers = mempty
-        , keyMapTimestampsMatchers = mempty
-        , keyMapPropertiesMatchers = mempty
-        , keyMapStateHistoryMatchers = mempty
-        , keyMapTagsMatchers = mempty
-        , keyMapLogbookMatchers = mempty
-        , keyMapAnyMatchers = mempty
+        { fileKeyMapEmptyMatchers = mempty
+        , fileKeyMapEntryMatchers = mempty
+        , fileKeyMapHeaderMatchers = mempty
+        , fileKeyMapContentsMatchers = mempty
+        , fileKeyMapTimestampsMatchers = mempty
+        , fileKeyMapPropertiesMatchers = mempty
+        , fileKeyMapStateHistoryMatchers = mempty
+        , fileKeyMapTagsMatchers = mempty
+        , fileKeyMapLogbookMatchers = mempty
+        , fileKeyMapAnyMatchers = mempty
         }
 
 data ReportsKeyMap = ReportsKeyMap
@@ -146,6 +155,7 @@ newtype ActionName = ActionName
     } deriving (Show, Eq, Generic)
 
 instance Validity ActionName
+
 instance FromJSON ActionName
 
 instance ToJSON ActionName
@@ -419,27 +429,30 @@ editorCursorSwitchToHelp KeyMap {..} ec =
                   let FileKeyMap {..} = keyMapFileKeyMap
                   in (\(t, ms) ->
                           makeHelpCursor t $
-                          ms ++ keyMapAnyMatchers ++ keyMapHelpMatchers) $
+                          ms ++ fileKeyMapAnyMatchers ++ keyMapHelpMatchers) $
                      case editorCursorFileCursor ec of
-                         Nothing -> ("Empty file", keyMapEmptyMatchers)
+                         Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
                          Just sfc ->
                              case sfc ^. smosFileCursorEntrySelectionL of
                                  WholeEntrySelected ->
-                                     ("Entry", keyMapEntryMatchers)
+                                     ("Entry", fileKeyMapEntryMatchers)
                                  HeaderSelected ->
-                                     ("Header", keyMapHeaderMatchers)
+                                     ("Header", fileKeyMapHeaderMatchers)
                                  ContentsSelected ->
-                                     ("Contents", keyMapContentsMatchers)
+                                     ("Contents", fileKeyMapContentsMatchers)
                                  TimestampsSelected ->
-                                     ("Timestamps", keyMapTimestampsMatchers)
+                                     ( "Timestamps"
+                                     , fileKeyMapTimestampsMatchers)
                                  PropertiesSelected ->
-                                     ("Properties", keyMapPropertiesMatchers)
+                                     ( "Properties"
+                                     , fileKeyMapPropertiesMatchers)
                                  StateHistorySelected ->
                                      ( "State History"
-                                     , keyMapStateHistoryMatchers)
-                                 TagsSelected -> ("Tags", keyMapTagsMatchers)
+                                     , fileKeyMapStateHistoryMatchers)
+                                 TagsSelected ->
+                                     ("Tags", fileKeyMapTagsMatchers)
                                  LogbookSelected ->
-                                     ("Logbook", keyMapLogbookMatchers)
+                                     ("Logbook", fileKeyMapLogbookMatchers)
               ReportSelected ->
                   let ReportsKeyMap {..} = keyMapReportsKeyMap
                   in makeHelpCursor "Next Action Report" $

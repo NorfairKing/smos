@@ -1,1 +1,4 @@
 reset: true
+keys:
+  help:
+    catch-all: null
