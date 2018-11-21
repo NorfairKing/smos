@@ -122,46 +122,52 @@ clockTableRows ctbs =
 -- file name    headers and   time
 --                           total time
 renderClockTable :: ClockResolution -> [ClockTableRow] -> Box Vertical
-renderClockTable res = tableByRows . S.fromList . map (S.fromList . renderRow)
+renderClockTable res =
+    tableByRows . S.fromList . map S.fromList . concatMap renderRows
   where
-    renderRow :: ClockTableRow -> [Cell]
-    renderRow ctr =
+    renderRows :: ClockTableRow -> [[Cell]]
+    renderRows ctr =
         case ctr of
-            BlockTitleRow t -> [cell $ blockTitleChunk t]
+            BlockTitleRow t -> [[cell $ blockTitleChunk t]]
             EntryRow mrp i h ndt ndtt ->
-                [ cell $ maybe (chunk "") rootedPathChunk mrp
-                , separator mempty 1
-                , cell $ chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h
-                , cell $
-                  chunk $
-                  if ndt == 0
-                      then ""
-                      else renderNominalDiffTime res ndt
-                , cell $
-                  fore brown $
-                  chunk $
-                  if ndt == ndtt
-                      then ""
-                      else renderNominalDiffTime res ndtt
+                [ [ cell $ maybe (chunk "") (fore green . rootedPathChunk) mrp
+                  , separator mempty 1
+                  , cell $
+                    chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h
+                  , cell $
+                    chunk $
+                    if ndt == 0
+                        then ""
+                        else renderNominalDiffTime res ndt
+                  , cell $
+                    fore brown $
+                    chunk $
+                    if ndt == ndtt
+                        then ""
+                        else renderNominalDiffTime res ndtt
+                  ]
                 ]
             BlockTotalRow t ->
-                map (cell . fore blue) $
-                [ chunk ""
-                , chunk ""
-                , chunk "Total:"
-                , chunk ""
-                , chunk $ renderNominalDiffTime res t
+                [ map (cell . fore blue) $
+                  [ chunk ""
+                  , chunk ""
+                  , chunk "Total:"
+                  , chunk $ renderNominalDiffTime res t
+                  ]
+                , replicate 5 emptyCell
                 ]
             AllTotalRow t ->
-                map (cell . fore blue) $
-                [ chunk ""
-                , chunk ""
-                , chunk "Total:"
-                , chunk ""
-                , chunk $ renderNominalDiffTime res t
+                [ map (cell . fore blue) $
+                  [ chunk ""
+                  , chunk ""
+                  , chunk "Total:"
+                  , chunk $ renderNominalDiffTime res t
+                  ]
                 ]
     blockTitleChunk :: Text -> Chunk Text
     blockTitleChunk = fore blue . chunk
+    emptyCell :: Cell
+    emptyCell = cell $ chunk ""
     cell :: Chunk Text -> Cell
     cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
     brown = color256 166

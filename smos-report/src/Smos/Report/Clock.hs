@@ -13,6 +13,8 @@ import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
+import Data.Set (Set(..))
+import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -96,7 +98,7 @@ trimLogbookEntry now cp =
     todayEnd :: LocalTime
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
-    trimToToday = trimLogbookEntryTo tz todayStart todayEnd
+    trimToToday = trimLogbookEntryToDay tz today
     lastWeekStart :: LocalTime
     lastWeekStart =
         let (y, wn, _) = toWeekDate today
@@ -113,6 +115,12 @@ trimLogbookEntry now cp =
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
     trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToLastWeek = trimLogbookEntryTo tz lastWeekStart thisWeekStart
+
+trimLogbookEntryToDay :: TimeZone -> Day -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
+  where
+    dayStart = LocalTime d midnight
+    dayEnd = LocalTime (addDays 1 d) midnight
 
 trimLogbookEntryTo ::
        TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
@@ -150,29 +158,48 @@ divideClockTimeIntoDailyBlocks tz =
   where
     makeClockTimeBlock :: a -> [FileTimes] -> ClockTimeBlock a
     makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
+    divideFileTimes :: FileTimes -> [(Day, FileTimes)]
+    divideFileTimes fts =
+        mapMaybe
+            (\d -> (,) d <$> trimFileTimesToDay tz d fts)
+            (S.toList $ fileTimesDays fts)
+    fileTimesDays :: FileTimes -> Set Day
+    fileTimesDays = goTF . clockTimeForest
+      where
+        goTF :: TForest HeaderTimes -> Set Day
+        goTF = S.unions . map goTT . NE.toList
+        goTT :: TTree HeaderTimes -> Set Day
+        goTT (TLeaf hts) = goHT $ headerTimesList hts
+        goTT (TBranch hts tf) = goHT hts `S.union` goTF tf
+        goHT :: HeaderTimes [] -> Set Day
+        goHT = S.unions . map logbookEntryDays . headerTimesEntries
+        logbookEntryDays :: LogbookEntry -> Set Day
+        logbookEntryDays LogbookEntry {..} =
+            S.fromList [utcDay logbookEntryStart .. utcDay logbookEntryEnd]
+        utcDay :: UTCTime -> Day
+        utcDay = localDay . toLocal
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
-    divideFileTimes :: FileTimes -> [(Day, FileTimes)]
-    divideFileTimes ct = undefined
-    --     mapMaybe
-    --         (\(d, es) ->
-    --              (,) d <$>
-    --              ((\ne -> ct {clockTimeEntries = ne}) <$> NE.nonEmpty es)) $
-    --     sortAndGroupCombineOrd . concatMap divideLogbookEntry $
-    --     clockTimeEntries ct
-    -- divideLogbookEntry :: LogbookEntry -> [(Day, LogbookEntry)]
-    -- divideLogbookEntry lbe@LogbookEntry {..} =
-    --     flip mapMaybe dayRange $ \d ->
-    --         (,) d <$>
-    --         trimLogbookEntryTo
-    --             tz
-    --             (LocalTime d midnight)
-    --             (LocalTime (addDays 1 d) midnight)
-    --             lbe
-    --   where
-    --     startDay = localDay $ toLocal logbookEntryStart
-    --     endDay = localDay $ toLocal logbookEntryEnd
-    --     dayRange = [startDay .. endDay]
+
+trimFileTimesToDay :: TimeZone -> Day -> FileTimes -> Maybe FileTimes
+trimFileTimesToDay tz d fts =
+    (\f -> fts {clockTimeForest = f}) <$> goTF (clockTimeForest fts)
+  where
+    goTF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
+    goTF ts = do
+        let ts' = mapMaybe goTT $ NE.toList ts
+        NE.nonEmpty ts'
+    goTT :: TTree HeaderTimes -> Maybe (TTree HeaderTimes)
+    goTT (TLeaf hts) = do
+        hts' <- headerTimesNonEmpty $ goHT $ headerTimesList hts
+        pure $ TLeaf hts'
+    goTT (TBranch hts tf) = TBranch (goHT hts) <$> goTF tf
+    goHT :: HeaderTimes [] -> HeaderTimes []
+    goHT hts =
+        hts
+            { headerTimesEntries =
+                  mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)
+            }
 
 sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
 sortAndGroupCombineOrd = sortGroupCombine compare
