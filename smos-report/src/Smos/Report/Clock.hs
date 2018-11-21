@@ -8,8 +8,6 @@ module Smos.Report.Clock
     , module Smos.Report.Clock.Types
     ) where
 
-import Debug.Trace
-
 import Data.Function
 import Data.List
 import qualified Data.List.NonEmpty as NE
@@ -37,7 +35,7 @@ zeroOutByFilter = undefined
 findFileTimes :: UTCTime -> RootedPath -> SmosFile -> Maybe FileTimes
 findFileTimes now rp (SmosFile ts) = do
     ne <- goF ts
-    pure $ FileTimes {clockTimeFile = traceShowId rp, clockTimeForest = ne}
+    pure $ FileTimes {clockTimeFile = rp, clockTimeForest = ne}
   where
     goF :: Forest Entry -> Maybe (TForest HeaderTimes)
     goF = NE.nonEmpty . mapMaybe goT
