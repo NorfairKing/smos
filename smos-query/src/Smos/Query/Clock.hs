@@ -7,15 +7,17 @@ module Smos.Query.Clock
     ( clock
     ) where
 
-import Data.Maybe
+import Debug.Trace
 
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode.Pretty as JSON
+import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Lazy as LB
+import Data.Tree
 import Data.Validity.Path ()
 import qualified Data.Yaml as Yaml
 import Text.Printf
@@ -23,7 +25,7 @@ import Text.Printf
 import Rainbow
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
+import qualified Data.Conduit.List as C
 
 import Smos.Report.Clock
 import Smos.Report.Path
@@ -43,19 +45,20 @@ clock ClockSettings {..} = do
                 Nothing -> sourceFilesInNonHiddenDirsRecursively wd
                 Just f -> yield $ Absolute f
     liftIO $ do
+        now <- getZonedTime
         tups <-
             sourceToList $
             filesSource .| filterSmosFiles .| parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate clockSetFilter . snd) .|
-            smosCursorCurrents
-        now <- getZonedTime
+            (case clockSetFilter of
+                 Nothing -> C.map id
+                 Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))) .|
+            C.mapMaybe
+                (uncurry (findFileTimes $ zonedTimeToUTC now)) .|
+            C.mapMaybe (trimFileTimes now clockSetPeriod)
         let clockTable =
                 makeClockTable $
-                divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
-                mapMaybe (trimClockTime now clockSetPeriod) $
-                mapMaybe (uncurry (findClockTimes $ zonedTimeToUTC now)) tups
+                divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock tups
         case clockSetOutputFormat of
             OutputPretty ->
                 putTableLn $ renderClockTable clockSetResolution clockTable
@@ -63,12 +66,12 @@ clock ClockSettings {..} = do
             OutputJSON -> LB.putStr $ JSON.encode clockTable
             OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
 
-renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
+renderClockTable :: ClockResolution -> ClockTable -> Table
 renderClockTable res ctbs =
     formatAsTable $
     case ctbs of
         [] -> []
-        [ctb] -> goEs $ blockEntries ctb
+        [ctb] -> goFs $ blockEntries ctb
         _ -> goBs ctbs
   where
     goBs :: [ClockTableBlock] -> [[Chunk Text]]
@@ -82,24 +85,33 @@ renderClockTable res ctbs =
           ]
         ]
     goB :: ClockTableBlock -> [[Chunk Text]]
-    goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
-    goEs es =
-        map go es ++
-        [ map (fore blue) $
-          [ chunk ""
-          , chunk "Total:"
-          , chunk $ renderNominalDiffTime res $ sumEntries es
-          ]
-        ]
+    goB Block {..} = [fore blue $ chunk blockTitle] : goFs blockEntries
+    goFs :: [ClockTableFile] -> [[Chunk Text]]
+    goFs = concatMap goF
+    goF :: ClockTableFile -> [[Chunk Text]]
+    goF ClockTableFile {..} =
+        [rootedPathChunk clockTableFile] : goHEs clockTableForest -- ++
+        -- [ map (fore blue) $
+        --   [ chunk ""
+        --   , chunk "Total:"
+        --   , chunk $ renderNominalDiffTime res $ sumEntries es
+        --   ]
+        -- ]
+    goHEs :: Forest ClockTableHeaderEntry -> [[Chunk Text]]
+    goHEs = undefined
     sumBlocks :: [ClockTableBlock] -> NominalDiffTime
-    sumBlocks = sum . map (sumEntries . blockEntries)
-    sumEntries :: [ClockTableEntry] -> NominalDiffTime
-    sumEntries = sum . map clockTableEntryTime
-    go :: ClockTableEntry -> [Chunk Text]
-    go ClockTableEntry {..} =
-        [ rootedPathChunk clockTableEntryFile
-        , headerChunk clockTableEntryHeader
-        , fore brown $ chunk $ renderNominalDiffTime res clockTableEntryTime
+    sumBlocks = sum . map (sumFiles . blockEntries)
+    sumFiles :: [ClockTableFile] -> NominalDiffTime
+    sumFiles = sum . map sumFile
+    sumFile :: ClockTableFile -> NominalDiffTime
+    sumFile = sumHeaderEntries . concatMap flatten . clockTableForest
+    sumHeaderEntries :: [ClockTableHeaderEntry] -> NominalDiffTime
+    sumHeaderEntries = sum . map clockTableHeaderEntryTime
+    go :: ClockTableHeaderEntry -> [Chunk Text]
+    go ClockTableHeaderEntry {..} =
+        [ headerChunk clockTableHeaderEntryHeader
+        , fore brown $
+          chunk $ renderNominalDiffTime res clockTableHeaderEntryTime
         ]
     brown = color256 166
 
