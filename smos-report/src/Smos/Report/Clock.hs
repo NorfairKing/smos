@@ -13,8 +13,8 @@ import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
-import Data.Set (Set(..))
 import qualified Data.Set as S
+import Data.Set(Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -93,10 +93,6 @@ trimLogbookEntry now cp =
     nowLocal = zonedTimeToLocalTime now
     today :: Day
     today = localDay nowLocal
-    todayStart :: LocalTime
-    todayStart = nowLocal {localTimeOfDay = midnight}
-    todayEnd :: LocalTime
-    todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
     trimToToday = trimLogbookEntryToDay tz today
     lastWeekStart :: LocalTime

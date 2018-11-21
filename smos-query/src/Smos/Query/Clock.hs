@@ -7,17 +7,11 @@ module Smos.Query.Clock
     ( clock
     ) where
 
-import Debug.Trace
-
-import qualified Data.Aeson as JSON
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
-import Data.Foldable
-import Data.Maybe
 import qualified Data.Sequence as S
-import Data.Sequence (Seq, (<|), (><))
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -34,7 +28,6 @@ import qualified Data.Conduit.List as C
 
 import Smos.Report.Clock
 import Smos.Report.Path
-import Smos.Report.Query
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
@@ -171,70 +164,6 @@ renderClockTable res =
     cell :: Chunk Text -> Cell
     cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
     brown = color256 166
-  --   case ctbs of
-  --       [] -> mempty
-  --       [ctb] -> goFs $ blockEntries ctb
-  --       _ -> goBs ctbs
-  -- where
-  --   goBs :: [ClockTableBlock] -> Seq (Seq Cell)
-  --   goBs ctbs_ = concatMapSeq goB ctbs_
-  --       -- concatMap goB ctbs_ ++
-  --       -- [ [chunk "", chunk "", chunk ""]
-  --       -- , map (fore blue) $
-  --       --   [ chunk ""
-  --       --   , chunk "Total:"
-  --       --   , chunk $ renderNominalDiffTime res $ sumBlocks ctbs_
-  --       --   ]
-  --       -- ]
-  --   goB :: ClockTableBlock -> Seq (Seq Cell)
-  --   goB Block {..} =
-  --       (S.singleton $ cell $ fore blue $ chunk blockTitle) <| goFs blockEntries
-  --   goFs :: [ClockTableFile] -> Seq (Seq Cell)
-  --   goFs = concatMapSeq goF
-  --   goF :: ClockTableFile -> Seq (Seq Cell)
-  --   goF ClockTableFile {..} =
-  --       fmap ((cell $ rootedPathChunk clockTableFile) <|) $
-  --       goHEs clockTableForest -- ++
-  --       -- [ map (fore blue) $
-  --       --   [ chunk ""
-  --       --   , chunk "Total:"
-  --       --   , chunk $ renderNominalDiffTime res $ sumEntries es
-  --       --   ]
-  --       -- ]
-  --   goHEs :: Forest ClockTableHeaderEntry -> Seq (Seq Cell)
-  --   goHEs f =
-  --       S.singleton $
-  --       S.singleton $ mempty {_rows = concatMapSeq treeRow f, _vertical = left}
-  --   treeRow :: Tree ClockTableHeaderEntry -> Seq (Seq (Chunk Text))
-  --   treeRow (Node ClockTableHeaderEntry {..} ts) =
-  --       S.singleton
-  --           (S.fromList
-  --                [ headerChunk clockTableHeaderEntryHeader
-  --                , fore brown $
-  --                  chunk $ renderNominalDiffTime res clockTableHeaderEntryTime
-  --                ])
-    -- sumBlocks :: [ClockTableBlock] -> NominalDiffTime
-    -- sumBlocks = sum . map (sumFiles . blockEntries)
-    -- sumFiles :: [ClockTableFile] -> NominalDiffTime
-    -- sumFiles = sum . map sumFile
-    -- sumFile :: ClockTableFile -> NominalDiffTime
-    -- sumFile = sumHeaderEntries . concatMap flatten . clockTableForest
-    -- sumHeaderEntries :: [ClockTableHeaderEntry] -> NominalDiffTime
-    -- sumHeaderEntries = sum . map clockTableHeaderEntryTime
-    -- go :: ClockTableHeaderEntry -> [Chunk Text]
-    -- go ClockTableHeaderEntry {..} =
-    --     [ headerChunk clockTableHeaderEntryHeader
-    --     , fore brown $
-    --       chunk $ renderNominalDiffTime res clockTableHeaderEntryTime
-    --     ]
-  --   concatMapSeq :: (a -> Seq b) -> [a] -> Seq b
-  --   concatMapSeq f = concatSeq . map f
-  --   concatSeq :: [Seq a] -> Seq a
-  --   concatSeq [] = S.empty
-  --   concatSeq (l:ls) = l >< concatSeq ls
-  --   cell :: Chunk Text -> Cell
-  --   cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
-  --   brown = color256 166
 
 renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text
 renderNominalDiffTime res ndt =
