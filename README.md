@@ -66,7 +66,7 @@ $ git clone https://github.com/NorfairKing/smos
 
 ### Building with Stack
 
-Use [Stack](haskellstack.org) to install Smos with the default configuration:
+Use [Stack](https://docs.haskellstack.org/en/stable/README/) to install Smos with the default configuration:
 
 ```
 $ stack install :smos
