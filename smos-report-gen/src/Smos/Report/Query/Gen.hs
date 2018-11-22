@@ -6,6 +6,7 @@
 module Smos.Report.Query.Gen where
 
 import Data.GenValidity
+import Data.GenValidity.Path ()
 
 import Test.QuickCheck
 
@@ -26,6 +27,7 @@ instance GenUnchecked Filter where
                     oneof
                         [ FilterHasTag <$> genUnchecked
                         , FilterTodoState <$> genUnchecked
+                        , FilterFile <$> genUnchecked
                         , FilterParent <$>
                           scale (max 0 . (\x -> x - 1)) genUnchecked
                         , FilterAncestor <$>

@@ -36,13 +36,13 @@ import Smos.Report.TimeBlock
 
 -- | Reset the timers of every entry that doesn't match the filter to zero
 zeroOutByFilter :: Filter -> RootedPath -> SmosFile -> SmosFile
-zeroOutByFilter f _ sf =
+zeroOutByFilter f rp sf =
     let cursors = forestCursors $ smosFileForest sf
      in SmosFile $ map (fmap go) cursors
   where
     go :: ForestCursor Entry -> Entry
     go fc =
-        (if filterPredicate f fc
+        (if filterPredicate f rp fc
              then id
              else zeroOutEntry) $
         (fc ^. (forestCursorSelectedTreeL . treeCursorCurrentL))

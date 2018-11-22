@@ -34,7 +34,9 @@ stats StatsSettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate statsSetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe True (\f -> filterPredicate f rp fc) statsSetFilter) .|
             smosCursorCurrents .|
             C.map snd
         putTableLn $ renderStatsReport $ makeStatsReport now statsSetPeriod es

@@ -32,11 +32,12 @@ log LogSettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate logSetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
             smosCursorCurrents
         putTableLn $
-            renderLogReport zt $
-            makeLogReport zt logSetPeriod logSetBlock es
+            renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 
 renderLogReport :: ZonedTime -> LogReport -> Table
 renderLogReport zt lrbs =
