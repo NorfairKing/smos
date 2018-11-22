@@ -34,6 +34,11 @@ putTableLn myChunks = do
     printer <- byteStringMakerFromEnvironment
     mapM_ SB.putStr $ chunksToByteStrings printer $ toList myChunks
 
+putBoxLn :: Orientation a => Box a -> IO ()
+putBoxLn box = do
+    printer <- byteStringMakerFromEnvironment
+    mapM_ SB.putStr $ chunksToByteStrings printer $ toList $ Box.render box
+
 rootedPathChunk :: RootedPath -> Chunk Text
 rootedPathChunk rp =
     chunk $

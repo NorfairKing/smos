@@ -31,31 +31,50 @@ instance ToJSON ClockResolution
 
 type ClockTable = [ClockTableBlock]
 
-type ClockTableBlock = Block Text ClockTableEntry
+type ClockTableBlock = Block Text ClockTableFile
 
-data ClockTableEntry = ClockTableEntry
-    { clockTableEntryFile :: RootedPath
-    , clockTableEntryHeader :: Header
-    , clockTableEntryTime :: NominalDiffTime
+data ClockTableFile = ClockTableFile
+    { clockTableFile :: RootedPath
+    , clockTableForest :: Forest ClockTableHeaderEntry
     } deriving (Show, Eq, Generic)
 
-instance ToJSON ClockTableEntry where
-    toJSON ClockTableEntry {..} =
+instance Validity ClockTableFile
+
+instance ToJSON ClockTableFile where
+    toJSON ClockTableFile {..} =
+        object ["file" .= clockTableFile, "forest" .= clockTableForest]
+
+data ClockTableHeaderEntry = ClockTableHeaderEntry
+    { clockTableHeaderEntryHeader :: Header
+    , clockTableHeaderEntryTime :: NominalDiffTime
+    } deriving (Show, Eq, Generic)
+
+instance Validity ClockTableHeaderEntry
+
+instance ToJSON ClockTableHeaderEntry where
+    toJSON ClockTableHeaderEntry {..} =
         object
-            [ "file" .= clockTableEntryFile
-            , "header" .= clockTableEntryHeader
-            , "difftime" .= clockTableEntryTime
+            [ "header" .= clockTableHeaderEntryHeader
+            , "time" .= clockTableHeaderEntryTime
             ]
 
-instance Validity ClockTableEntry
-
 -- Intermediary types
-data ClockTime = ClockTime
+type ClockTimeBlock a = Block a FileTimes
+
+data FileTimes = FileTimes
     { clockTimeFile :: RootedPath
-    , clockTimeHeader :: Header
-    , clockTimeEntries :: NonEmpty LogbookEntry
-    } deriving (Show, Eq, Generic)
+    , clockTimeForest :: TForest HeaderTimes
+    } deriving (Generic)
 
-instance Validity ClockTime
+data HeaderTimes f = HeaderTimes
+    { headerTimesHeader :: Header
+    , headerTimesEntries :: f LogbookEntry
+    } deriving (Generic)
 
-type ClockTimeBlock a = Block a ClockTime
+type TForest a = NonEmpty (TTree a)
+
+data TTree a
+    = TLeaf (a NonEmpty)
+    | TBranch (a [])
+              (TForest a)
+    deriving (Generic)

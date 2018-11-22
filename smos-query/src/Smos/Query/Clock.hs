@@ -7,33 +7,35 @@ module Smos.Query.Clock
     ( clock
     ) where
 
-import Data.Maybe
-
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode.Pretty as JSON
+import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
+import qualified Data.Sequence as S
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Lazy as LB
+import Data.Tree
 import Data.Validity.Path ()
 import qualified Data.Yaml as Yaml
 import Text.Printf
 
 import Rainbow
+import Rainbox
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
+import qualified Data.Conduit.List as C
 
 import Smos.Report.Clock
 import Smos.Report.Path
-import Smos.Report.Query
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
+
+import Smos.Query.Clock.Types
 
 clock :: ClockSettings -> Q ()
 clock ClockSettings {..} = do
@@ -43,64 +45,124 @@ clock ClockSettings {..} = do
                 Nothing -> sourceFilesInNonHiddenDirsRecursively wd
                 Just f -> yield $ Absolute f
     liftIO $ do
+        now <- getZonedTime
         tups <-
             sourceToList $
             filesSource .| filterSmosFiles .| parseSmosFiles .|
             printShouldPrint PrintWarning .|
-            smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate clockSetFilter . snd) .|
-            smosCursorCurrents
-        now <- getZonedTime
+            (case clockSetFilter of
+                 Nothing -> C.map id
+                 Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))) .|
+            C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now)) .|
+            C.mapMaybe (trimFileTimes now clockSetPeriod)
         let clockTable =
                 makeClockTable $
-                divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock $
-                mapMaybe (trimClockTime now clockSetPeriod) $
-                mapMaybe (uncurry (findClockTimes $ zonedTimeToUTC now)) tups
+                divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock tups
         case clockSetOutputFormat of
             OutputPretty ->
-                putTableLn $ renderClockTable clockSetResolution clockTable
+                putBoxLn $
+                renderClockTable clockSetResolution $ clockTableRows clockTable
             OutputYaml -> SB.putStr $ Yaml.encode clockTable
             OutputJSON -> LB.putStr $ JSON.encode clockTable
             OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
 
-renderClockTable :: ClockResolution -> [ClockTableBlock] -> Table
-renderClockTable res ctbs =
-    formatAsTable $
+clockTableRows :: ClockTable -> [ClockTableRow]
+clockTableRows ctbs =
     case ctbs of
         [] -> []
-        [ctb] -> goEs $ blockEntries ctb
-        _ -> goBs ctbs
+        [ctb] -> goFs (blockEntries ctb) ++ allTotalRow
+        _ -> goBs ctbs ++ allTotalRow
   where
-    goBs :: [ClockTableBlock] -> [[Chunk Text]]
-    goBs ctbs_ =
-        concatMap goB ctbs_ ++
-        [ [chunk "", chunk "", chunk ""]
-        , map (fore blue) $
-          [ chunk ""
-          , chunk "Total:"
-          , chunk $ renderNominalDiffTime res $ sumBlocks ctbs_
-          ]
-        ]
-    goB :: ClockTableBlock -> [[Chunk Text]]
-    goB Block {..} = [fore blue $ chunk blockTitle] : goEs blockEntries
-    goEs es =
-        map go es ++
-        [ map (fore blue) $
-          [ chunk ""
-          , chunk "Total:"
-          , chunk $ renderNominalDiffTime res $ sumEntries es
-          ]
-        ]
-    sumBlocks :: [ClockTableBlock] -> NominalDiffTime
-    sumBlocks = sum . map (sumEntries . blockEntries)
-    sumEntries :: [ClockTableEntry] -> NominalDiffTime
-    sumEntries = sum . map clockTableEntryTime
-    go :: ClockTableEntry -> [Chunk Text]
-    go ClockTableEntry {..} =
-        [ rootedPathChunk clockTableEntryFile
-        , headerChunk clockTableEntryHeader
-        , fore brown $ chunk $ renderNominalDiffTime res clockTableEntryTime
-        ]
+    allTotalRow = [AllTotalRow $ sumTable ctbs]
+    goBs :: [ClockTableBlock] -> [ClockTableRow]
+    goBs = concatMap goB
+    goB :: ClockTableBlock -> [ClockTableRow]
+    goB b@Block {..} =
+        BlockTitleRow blockTitle :
+        goFs blockEntries ++ [BlockTotalRow $ sumBlock b]
+    goFs :: [ClockTableFile] -> [ClockTableRow]
+    goFs = concatMap goF
+    goF :: ClockTableFile -> [ClockTableRow]
+    goF ClockTableFile {..} = goHF 0 True clockTableForest
+      where
+        goHF :: Int -> Bool -> Forest ClockTableHeaderEntry -> [ClockTableRow]
+        goHF l b = concatMap (uncurry $ goHT l) . zip (b : repeat False)
+        goHT :: Int -> Bool -> Tree ClockTableHeaderEntry -> [ClockTableRow]
+        goHT l b t@(Node ClockTableHeaderEntry {..} f) =
+            EntryRow
+                (if b
+                     then Just clockTableFile
+                     else Nothing)
+                l
+                clockTableHeaderEntryHeader
+                clockTableHeaderEntryTime
+                (sumTree t) :
+            goHF (l + 1) False f
+    sumTable :: ClockTable -> NominalDiffTime
+    sumTable = sum . map sumBlock
+    sumBlock :: ClockTableBlock -> NominalDiffTime
+    sumBlock = sum . map sumFile . blockEntries
+    sumFile :: ClockTableFile -> NominalDiffTime
+    sumFile = sumForest . clockTableForest
+    sumTree :: Tree ClockTableHeaderEntry -> NominalDiffTime
+    sumTree = sum . map clockTableHeaderEntryTime . flatten
+    sumForest :: Forest ClockTableHeaderEntry -> NominalDiffTime
+    sumForest = sum . map sumTree
+
+-- We want the following columns
+--
+-- block title
+-- file name    headers and   time
+--                           total time
+renderClockTable :: ClockResolution -> [ClockTableRow] -> Box Vertical
+renderClockTable res =
+    tableByRows . S.fromList . map S.fromList . concatMap renderRows
+  where
+    renderRows :: ClockTableRow -> [[Cell]]
+    renderRows ctr =
+        case ctr of
+            BlockTitleRow t -> [[cell $ blockTitleChunk t]]
+            EntryRow mrp i h ndt ndtt ->
+                [ [ cell $ maybe (chunk "") (fore green . rootedPathChunk) mrp
+                  , separator mempty 1
+                  , cell $
+                    chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h
+                  , cell $
+                    chunk $
+                    if ndt == 0
+                        then ""
+                        else renderNominalDiffTime res ndt
+                  , cell $
+                    fore brown $
+                    chunk $
+                    if ndt == ndtt
+                        then ""
+                        else renderNominalDiffTime res ndtt
+                  ]
+                ]
+            BlockTotalRow t ->
+                [ map (cell . fore blue) $
+                  [ chunk ""
+                  , chunk ""
+                  , chunk "Total:"
+                  , chunk $ renderNominalDiffTime res t
+                  ]
+                , replicate 5 emptyCell
+                ]
+            AllTotalRow t ->
+                [ map (cell . fore blue) $
+                  [ chunk ""
+                  , chunk ""
+                  , chunk "Total:"
+                  , chunk $ renderNominalDiffTime res t
+                  ]
+                ]
+    blockTitleChunk :: Text -> Chunk Text
+    blockTitleChunk = fore blue . chunk
+    emptyCell :: Cell
+    emptyCell = cell $ chunk ""
+    cell :: Chunk Text -> Cell
+    cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
     brown = color256 166
 
 renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text

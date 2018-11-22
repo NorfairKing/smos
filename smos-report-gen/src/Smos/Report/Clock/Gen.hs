@@ -17,13 +17,3 @@ instance GenUnchecked ClockResolution
 
 instance GenValid ClockResolution where
     genValid = genValidStructurally
-
-instance GenUnchecked ClockTime
-
-instance GenValid ClockTime where
-    genValid = genValidStructurally
-
-instance GenUnchecked ClockTableEntry
-
-instance GenValid ClockTableEntry where
-    genValid = genValidStructurally

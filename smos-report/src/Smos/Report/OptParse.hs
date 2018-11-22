@@ -48,6 +48,7 @@ parseWorkflowDirFlag =
         (mconcat
              [ metavar "FILEPATH"
              , help "The workflow directory to use"
+             , long "workflow-dir"
              , value Nothing
              ])
 

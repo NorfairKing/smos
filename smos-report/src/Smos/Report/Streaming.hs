@@ -118,15 +118,15 @@ smosCursorCurrents =
         (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
-allCursors sf =
-    case NE.nonEmpty $ smosFileForest sf of
+allCursors = concatMap flatten . forestCursors . smosFileForest
+
+forestCursors :: Forest a -> Forest (ForestCursor a)
+forestCursors ts =
+    case NE.nonEmpty ts of
         Nothing -> []
         Just ne -> go (makeForestCursor $ NE.map (cTree True) ne)
   where
-    go :: ForestCursor Entry -> [ForestCursor Entry]
+    go :: ForestCursor a -> Forest (ForestCursor a)
     go fc =
-        fc :
-        concat
-            [ maybeToList (forestCursorSelectNextOnSameLevel fc) >>= go
-            , maybeToList (forestCursorSelectBelowAtStart fc) >>= go
-            ]
+        Node fc (maybeToList (forestCursorSelectBelowAtStart fc) >>= go) :
+        (maybeToList (forestCursorSelectNextOnSameLevel fc) >>= go)
