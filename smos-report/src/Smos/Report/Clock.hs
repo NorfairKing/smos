@@ -8,19 +8,22 @@ module Smos.Report.Clock
     , module Smos.Report.Clock.Types
     ) where
 
+import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 import Data.Function
 import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
 import qualified Data.Set as S
-import Data.Set(Set)
+import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Path ()
+import Lens.Micro
 
 import Smos.Data
 
@@ -28,11 +31,24 @@ import Smos.Report.Clock.Types
 import Smos.Report.Path
 import Smos.Report.Period
 import Smos.Report.Query
+import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 -- | Reset the timers of every entry that doesn't match the filter to zero
 zeroOutByFilter :: Filter -> RootedPath -> SmosFile -> SmosFile
-zeroOutByFilter = undefined
+zeroOutByFilter f _ sf =
+    let cursors = forestCursors $ smosFileForest sf
+     in SmosFile $ map (fmap go) cursors
+  where
+    go :: ForestCursor Entry -> Entry
+    go fc =
+        (if filterPredicate f fc
+             then id
+             else zeroOutEntry) $
+        (fc ^. (forestCursorSelectedTreeL . treeCursorCurrentL))
+
+zeroOutEntry :: Entry -> Entry
+zeroOutEntry e = e {entryLogbook = emptyLogbook}
 
 findFileTimes :: UTCTime -> RootedPath -> SmosFile -> Maybe FileTimes
 findFileTimes now rp (SmosFile ts) = do

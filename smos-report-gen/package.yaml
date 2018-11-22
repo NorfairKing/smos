@@ -33,6 +33,7 @@ tests:
     dependencies:
     - QuickCheck
     - base
+    - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-path
     - hspec
