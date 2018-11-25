@@ -54,7 +54,7 @@ convertOrg = do
             case convertDocument doc of
                 Left err -> die $ unlines ["Failed to convert:", show err]
                 Right sf ->
-                    case prettyValidation sf of
+                    case prettyValidate sf of
                         Left err ->
                             die $
                             unlines
@@ -178,7 +178,7 @@ convertLogbook (Org.Logbook cs) = do
             day <- constructDay yearMonthDay
             dt <- maybe (pure 0) constructDiffTime hourMinute
             left InvalidUTCTime $
-                prettyValidation $ UTCTime {utctDay = day, utctDayTime = dt}
+                prettyValidate $ UTCTime {utctDay = day, utctDayTime = dt}
           where
             constructDiffTime :: (Int, Int) -> Convert DiffTime
             constructDiffTime (h, m) =
@@ -189,4 +189,4 @@ convertLogbook (Org.Logbook cs) = do
 constructDay :: YearMonthDay -> Convert Day
 constructDay YearMonthDay {..} =
     left InvalidDay $
-    prettyValidation $ fromGregorian (fromIntegral ymdYear) ymdMonth ymdDay
+    prettyValidate $ fromGregorian (fromIntegral ymdYear) ymdMonth ymdDay

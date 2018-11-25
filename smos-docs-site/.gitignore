@@ -1,0 +1,5 @@
+.stack-work/
+_cache/
+_site/
+smos-docs-site.cabal
+*~

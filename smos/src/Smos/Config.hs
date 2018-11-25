@@ -14,10 +14,10 @@ module Smos.Config
     , anyChar
     , catchAll
     , KeyMap(..)
+    , FileKeyMap(..)
     , ReportsKeyMap(..)
     , KeyMapping(..)
     , KeyMappings
-    , action
     , ActionUsing(..)
     , stop
     , module Graphics.Vty.Input.Events

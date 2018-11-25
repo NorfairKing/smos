@@ -32,7 +32,9 @@ entry EntrySettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate entrySetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe True (\f -> filterPredicate f rp fc) entrySetFilter) .|
             smosCursorCurrents .|
             C.map (uncurry makeEntryEntry)
         putTableLn $ renderEntryReport tups

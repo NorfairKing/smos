@@ -33,6 +33,7 @@ import Lens.Micro
 import Cursor.FuzzyDay
 import Cursor.Map
 import Cursor.Text
+import Cursor.Types
 
 import Smos.Data.Types
 
@@ -89,10 +90,12 @@ timestampsCursorAppendChar c =
     timestampsCursorCurrentTextCursorL $ textCursorAppend c
 
 timestampsCursorRemoveChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorRemoveChar = timestampsCursorCurrentTextCursorL textCursorRemove
+timestampsCursorRemoveChar =
+    timestampsCursorCurrentTextCursorL (dullMDelete . textCursorRemove)
 
 timestampsCursorDeleteChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorDeleteChar = timestampsCursorCurrentTextCursorL textCursorDelete
+timestampsCursorDeleteChar =
+    timestampsCursorCurrentTextCursorL (dullMDelete . textCursorDelete)
 
 timestampsCursorSelectNextChar :: TimestampsCursor -> Maybe TimestampsCursor
 timestampsCursorSelectNextChar =

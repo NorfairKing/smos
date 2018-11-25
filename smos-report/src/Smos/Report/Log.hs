@@ -31,11 +31,12 @@ data LogEvent = LogEvent
     , logEventType :: LogEventType
     } deriving (Show, Eq, Ord, Generic)
 
+-- The order of these constructors matters because ClockOut should happen before ClockIn
 data LogEventType
     = StateChange (Maybe TodoState)
                   (Maybe TodoState)
-    | ClockIn
     | ClockOut
+    | ClockIn
     | TimestampEvent TimestampName
     deriving (Show, Eq, Ord, Generic)
 

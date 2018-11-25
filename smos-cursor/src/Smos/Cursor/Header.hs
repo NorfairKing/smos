@@ -13,6 +13,7 @@ module Smos.Cursor.Header
     ) where
 
 import Cursor.Text
+import Cursor.Types
 
 import Data.Maybe
 
@@ -37,10 +38,10 @@ headerCursorAppend :: Char -> HeaderCursor -> Maybe HeaderCursor
 headerCursorAppend = textCursorAppend
 
 headerCursorRemove :: HeaderCursor -> Maybe HeaderCursor
-headerCursorRemove = textCursorRemove
+headerCursorRemove = dullMDelete . textCursorRemove
 
 headerCursorDelete :: HeaderCursor -> Maybe HeaderCursor
-headerCursorDelete = textCursorDelete
+headerCursorDelete = dullMDelete . textCursorDelete
 
 headerCursorSelectPrev :: HeaderCursor -> Maybe HeaderCursor
 headerCursorSelectPrev = textCursorSelectPrev

@@ -27,8 +27,18 @@ spec = do
         it "produces valid tag cursors" $
         producesValidsOnValids2 tagCursorAppend
     describe "tagCursorDelete" $
-        it "produces valid tag cursors" $
-        producesValidsOnValids tagCursorDelete
+        it "produces valid tag cursors" $ producesValidsOnValids tagCursorDelete
     describe "tagCursorRemove" $
+        it "produces valid tag cursors" $ producesValidsOnValids tagCursorRemove
+    describe "tagCursorSelectStart" $
         it "produces valid tag cursors" $
-        producesValidsOnValids tagCursorRemove
+        producesValidsOnValids tagCursorSelectStart
+    describe "tagCursorSelectEnd" $
+        it "produces valid tag cursors" $
+        producesValidsOnValids tagCursorSelectEnd
+    describe "tagCursorSelectPrevChar" $
+        it "produces valid tag cursors" $
+        producesValidsOnValids tagCursorSelectPrevChar
+    describe "tagCursorSelectNextChar" $
+        it "produces valid tag cursors" $
+        producesValidsOnValids tagCursorSelectNextChar

@@ -1,0 +1,13 @@
+before: []
+commands:
+- startHeaderFromEmptyAndSelectHeader
+- forestInsertEntryAfter
+- forestInsertEntryAfter
+- forestInsertEntryAfter
+- forestInsertEntryAfter
+after:
+- ''
+- ''
+- ''
+- ''
+- ''

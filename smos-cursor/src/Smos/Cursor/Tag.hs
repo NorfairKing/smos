@@ -2,24 +2,30 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Tag
-    ( TagCursor
+    ( TagCursor(..)
+    , emptyTagCursor
     , makeTagCursor
     , rebuildTagCursor
     , tagCursorInsert
     , tagCursorAppend
     , tagCursorDelete
     , tagCursorRemove
+    , tagCursorSelectStart
+    , tagCursorSelectEnd
+    , tagCursorSelectPrevChar
+    , tagCursorSelectNextChar
     ) where
 
 import GHC.Generics (Generic)
 
-import Data.Maybe
 import Control.Monad
+import Data.Maybe
 import Data.Validity
 
 import Lens.Micro
 
 import Cursor.Text
+import Cursor.Types
 
 import Smos.Data.Types
 
@@ -41,6 +47,9 @@ tagCursorTextCursorL :: Lens' TagCursor TextCursor
 tagCursorTextCursorL =
     lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
 
+emptyTagCursor :: TagCursor
+emptyTagCursor = TagCursor emptyTextCursor
+
 makeTagCursor :: Tag -> TagCursor
 makeTagCursor = TagCursor . fromJust . makeTextCursor . tagText
 
@@ -53,8 +62,22 @@ tagCursorInsert c = tagCursorTextCursorL (textCursorInsert c) >=> constructValid
 tagCursorAppend :: Char -> TagCursor -> Maybe TagCursor
 tagCursorAppend c = tagCursorTextCursorL (textCursorAppend c) >=> constructValid
 
-tagCursorDelete :: TagCursor -> Maybe TagCursor
-tagCursorDelete = tagCursorTextCursorL textCursorDelete
+tagCursorDelete :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
+tagCursorDelete =
+    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
 
-tagCursorRemove :: TagCursor -> Maybe TagCursor
-tagCursorRemove = tagCursorTextCursorL textCursorRemove
+tagCursorRemove :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
+tagCursorRemove =
+    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
+
+tagCursorSelectStart :: TagCursor -> TagCursor
+tagCursorSelectStart = tagCursorTextCursorL %~ textCursorSelectStart
+
+tagCursorSelectEnd :: TagCursor -> TagCursor
+tagCursorSelectEnd = tagCursorTextCursorL %~ textCursorSelectEnd
+
+tagCursorSelectPrevChar :: TagCursor -> Maybe TagCursor
+tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev
+
+tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
+tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectNext

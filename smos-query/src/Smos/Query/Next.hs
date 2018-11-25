@@ -27,7 +27,12 @@ next NextSettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate nextSetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe
+                         True
+                         (\f -> filterPredicate f rp fc)
+                         nextSetFilter) .|
             smosCursorCurrents .|
             C.filter (isNextAction . snd) .|
             C.map (uncurry makeNextActionEntry)

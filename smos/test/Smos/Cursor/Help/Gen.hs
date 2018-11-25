@@ -9,6 +9,7 @@ import Graphics.Vty.Input.Events
 import Smos.Types
 
 import Smos.Cursor.SmosFile.Gen ()
+import Smos.Types.Gen()
 
 instance GenUnchecked Key
 

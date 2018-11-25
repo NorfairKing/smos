@@ -11,6 +11,8 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
+  - aeson-pretty
   - base
   - bytestring
   - conduit
@@ -31,6 +33,7 @@ library:
   - time
   - validity
   - validity-path
+  - yaml
 
 executables:
   smos-query:

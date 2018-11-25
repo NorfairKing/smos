@@ -1,0 +1,15 @@
+before:
+- ''
+commands:
+- entrySelectTags
+- tagsInsert b
+- tagsNextTag
+- tagsAppend d
+- tagsInsert c
+- tagsPrevTag
+- tagsAppend a
+after:
+- header: ''
+  tags:
+  - ba
+  - cd

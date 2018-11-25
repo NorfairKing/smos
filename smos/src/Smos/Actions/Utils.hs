@@ -93,19 +93,14 @@ modifyMContentsCursorWhenSelectedM func =
         case entryCursorSelected ec of
             ContentsSelected ->
                 let ec' = ec & entryCursorContentsCursorL %~ func
-                 in if isNothing $ entryCursorContentsCursor ec'
-                        then ec' {entryCursorSelected = WholeEntrySelected}
-                        else ec'
+                in if isNothing $ entryCursorContentsCursor ec'
+                       then ec' {entryCursorSelected = WholeEntrySelected}
+                       else ec'
             _ -> ec
 
 modifyTagsCursorMD ::
        (TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)) -> SmosM ()
-modifyTagsCursorMD func =
-    modifyTagsCursorM $ \tc -> do
-        doutc <- func tc
-        case doutc of
-            Deleted -> Nothing
-            Updated tc' -> Just tc'
+modifyTagsCursorMD func = modifyMTagsCursorMD (>>= func)
 
 modifyTagsCursorD :: (TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
 modifyTagsCursorD func =
@@ -115,7 +110,10 @@ modifyTagsCursorD func =
             Updated tc' -> Just tc'
 
 modifyTagsCursorM :: (TagsCursor -> Maybe TagsCursor) -> SmosM ()
-modifyTagsCursorM func = modifyMTagsCursorM (>>= func)
+modifyTagsCursorM func = modifyTagsCursor $ \tc -> fromMaybe tc $ func tc
+
+modifyTagsCursor :: (TagsCursor -> TagsCursor) -> SmosM ()
+modifyTagsCursor func = modifyMTagsCursorM $ fmap func
 
 modifyMTagsCursorD ::
        (Maybe TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
@@ -130,8 +128,19 @@ modifyMTagsCursorMD func =
             Just Deleted -> Nothing
             Just (Updated tc') -> Just tc'
 
+modifyMTagsCursor :: (Maybe TagsCursor -> TagsCursor) -> SmosM ()
+modifyMTagsCursor func = modifyMTagsCursorM $ Just . func
+
 modifyMTagsCursorM :: (Maybe TagsCursor -> Maybe TagsCursor) -> SmosM ()
-modifyMTagsCursorM func = modifyEntryCursor $ entryCursorTagsCursorL %~ func
+modifyMTagsCursorM func =
+    modifyEntryCursor $ \ec ->
+        ec &
+        case func (entryCursorTagsCursor ec) of
+            Nothing ->
+                (entryCursorSelectionL .~ WholeEntrySelected) .
+                (entryCursorTagsCursorL .~
+                Nothing)
+            Just tsc -> entryCursorTagsCursorL .~ Just tsc
 
 modifyTimestampsCursorM ::
        (TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()
@@ -246,7 +255,7 @@ modifyNextActionReportCursorM func =
 
 modifyNextActionReportCursor ::
        (NextActionReportCursor -> NextActionReportCursor) -> SmosM ()
-modifyNextActionReportCursor func = modifyNextActionReportCursorS $ pure. func
+modifyNextActionReportCursor func = modifyNextActionReportCursorS $ pure . func
 
 modifyNextActionReportCursorS ::
        (NextActionReportCursor -> SmosM NextActionReportCursor) -> SmosM ()

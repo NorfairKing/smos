@@ -12,6 +12,7 @@ import Data.Time.Calendar.WeekDate
 data Period
     = Today
     | ThisWeek
+    | LastWeek
     | AllTime
     deriving (Show, Eq, Generic)
 
@@ -22,6 +23,7 @@ filterPeriod now p u =
     (case p of
          AllTime -> const True
          Today -> filterBetween todayStart todayEnd
+         LastWeek -> filterBetween lastWeekStart thisWeekStart
          ThisWeek -> filterBetween thisWeekStart thisWeekEnd) $
     utcToLocalTime tz u
   where
@@ -37,6 +39,10 @@ filterPeriod now p u =
     todayStart = nowLocal {localTimeOfDay = midnight}
     todayEnd :: LocalTime
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
+    lastWeekStart :: LocalTime
+    lastWeekStart =
+        let (y, wn, _) = toWeekDate today
+         in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today

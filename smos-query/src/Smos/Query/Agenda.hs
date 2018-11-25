@@ -5,6 +5,7 @@
 module Smos.Query.Agenda where
 
 import Data.List
+import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -36,12 +37,15 @@ agenda AgendaSettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate agendaSetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
             smosCursorCurrents .|
             C.concatMap (uncurry makeAgendaEntry) .|
             C.filter (fitsHistoricity now agendaSetHistoricity)
         putTableLn $
-            renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
+            renderAgendaReport now $
+            divideIntoAgendaTableBlocks agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
 renderAgendaReport now atbs =
@@ -53,7 +57,14 @@ renderAgendaReport now atbs =
   where
     goEntriesWithTitle Block {..} =
         [fore blue $ chunk blockTitle] : goEntries blockEntries
-    goEntries es = map (formatAgendaEntry now) (sortOn agendaEntryTimestamp es)
+    goEntries es =
+        map
+            (formatAgendaEntry now)
+            (sortBy
+                 (comparing agendaEntryTimestamp <>
+                  comparing agendaEntryTimestampName <>
+                  comparing agendaEntryTodoState)
+                 es)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
@@ -63,7 +74,8 @@ formatAgendaEntry now AgendaEntry {..} =
                 (localDay $ zonedTimeToLocalTime now)
         func =
             if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-               | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore green
+               | d == 1 && agendaEntryTimestampName == "DEADLINE" ->
+                   fore brightRed . back black
                | d <= 10 && agendaEntryTimestampName == "DEADLINE" ->
                    fore yellow
                | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red

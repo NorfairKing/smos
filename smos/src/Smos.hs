@@ -2,6 +2,8 @@
 
 module Smos
     ( smos
+    , smosWithoutRuntimeConfig
+    , startSmosOn
     , module Smos.Config
     ) where
 
@@ -22,11 +24,21 @@ import Smos.Data
 import Smos.App
 import Smos.Config
 import Smos.OptParse
+import Smos.OptParse.Bare
 import Smos.Types
 
 smos :: SmosConfig -> IO ()
-smos sc@SmosConfig {..} = do
-    Instructions p Settings <- getInstructions sc
+smos sc = do
+    Instructions p sc' <- getInstructions sc
+    startSmosOn p sc'
+
+smosWithoutRuntimeConfig :: SmosConfig -> IO ()
+smosWithoutRuntimeConfig sc = do
+    p <- getPathArgument
+    startSmosOn p sc
+
+startSmosOn :: Path Abs File -> SmosConfig -> IO ()
+startSmosOn p sc@SmosConfig {..} = do
     lock <- lockFile p
     case lock of
         Nothing -> die "Failed to lock."

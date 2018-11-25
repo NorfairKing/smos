@@ -506,6 +506,21 @@
           timestamp: 2018-10-18 20:05:35.739596537000+0000
         - new-state: TODO
           timestamp: 2018-10-11 22:08:06.398627323000+0000
+      - header: Archiving
+        contents: ! 'A way to put away an entire smos file such that it never conflicts
+          with another file.
+
+          If we have two projects (over a long timespan) that both were called p.smos
+          .
+
+          They should both somehow fit into the archive without conflicts.
+
+          Smos could have some tooling for that, something like smos-archive or so.'
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-11-25 17:33:13.969209996000+0000
+        - new-state: TODO
+          timestamp: 2018-10-14 13:51:46.383973186000+0000
       - header: save when quit with ctrl-c or closing the terminal
         state-history:
         - new-state: TODO
@@ -519,19 +534,6 @@
         state-history:
         - new-state: TODO
           timestamp: 2018-09-29 10:42:19.961781171000+0000
-      - header: Archiving
-        contents: ! 'A way to put away an entire smos file such that it never conflicts
-          with another file.
-
-          If we have two projects (over a long timespan) that both were called p.smos
-          .
-
-          They should both somehow fit into the archive without conflicts.
-
-          Smos could have some tooling for that, something like smos-archive or so.'
-        state-history:
-        - new-state: TODO
-          timestamp: 2018-10-14 13:51:46.383973186000+0000
       - header: Auto-save and auto-reload
         contents: ! 'Smos should be able to save periodically automatically but:
 
@@ -685,6 +687,8 @@
       - entry:
           header: Convenience
           state-history:
+          - new-state: DONE
+            timestamp: 2018-11-25 17:34:06.345576597000+0000
           - new-state: TODO
             timestamp: 2018-10-14 13:55:00.856012672000+0000
         forest:
@@ -692,6 +696,8 @@
             ping about this, and open a new waiting task that is the same as the one
             that was cancelled'
           state-history:
+          - new-state: DONE
+            timestamp: 2018-11-25 17:34:06.113971769000+0000
           - new-state: TODO
             timestamp: 2018-10-14 13:55:24.759971424000+0000
     - entry:
@@ -826,20 +832,26 @@
             timestamp: 2018-10-14 13:51:39.072010385000+0000
         - header: No need to show total clock time if there are no matching entries
           state-history:
+          - new-state: DONE
+            timestamp: 2018-11-25 17:35:30.601656757000+0000
           - new-state: TODO
             timestamp: 2018-10-14 10:24:30.190843122000+0000
         - header: ! 'Clock: nicer day format for humans in reports'
           state-history:
+          - new-state: DONE
+            timestamp: 2018-11-25 17:46:26.161572484000+0000
           - new-state: TODO
             timestamp: 2018-10-14 11:05:41.471081520000+0000
+        - header: ! 'Clock: mention open clocks'
+          state-history:
+          - new-state: DONE
+            timestamp: 2018-11-25 17:46:23.657704956000+0000
+          - new-state: TODO
+            timestamp: 2018-10-14 14:04:37.552167601000+0000
         - header: ! 'Stats: perioud to filter'
           state-history:
           - new-state: TODO
             timestamp: 2018-10-14 17:31:48.569204767000+0000
-        - header: ! 'Clock: mention open clocks'
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-10-14 14:04:37.552167601000+0000
       - entry:
           header: Interactive reports
           state-history:

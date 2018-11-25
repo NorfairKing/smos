@@ -11,6 +11,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
   - base
   - bytestring
   - conduit
@@ -19,6 +20,7 @@ library:
   - filepath
   - megaparsec
   - microlens
+  - optparse-applicative
   - path
   - path-io
   - pretty-show
@@ -27,3 +29,4 @@ library:
   - time
   - validity
   - validity-path
+  - yaml

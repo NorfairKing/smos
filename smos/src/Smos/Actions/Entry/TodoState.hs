@@ -36,7 +36,7 @@ allTodoStateUsingCharActions = []
 entrySetTodoState :: TodoState -> Action
 entrySetTodoState ts =
     Action
-        { actionName = "entrySetTodoState_" <> todoStateText ts
+        { actionName = "entrySetTodoState_" <> ActionName (todoStateText ts)
         , actionFunc = modifyMTodoStateM $ const $ Just ts
         , actionDescription =
               "Set the given TODO state of the selected current entry"
@@ -45,7 +45,7 @@ entrySetTodoState ts =
 entryToggleTodoState :: TodoState -> Action
 entryToggleTodoState ts =
     Action
-        { actionName = "entryToggleTodoState_" <> todoStateText ts
+        { actionName = "entryToggleTodoState_" <> ActionName (todoStateText ts)
         , actionFunc =
               modifyMTodoStateM $ \mts ->
                   case mts of
@@ -70,7 +70,7 @@ entryUnsetTodoState =
 subtreeSetTodoState :: TodoState -> Action
 subtreeSetTodoState ts =
     Action
-        { actionName = "subtreeSetTodoState_" <> todoStateText ts
+        { actionName = "subtreeSetTodoState_" <> ActionName (todoStateText ts)
         , actionFunc =
               modifyFileCursorS $ \sfc -> do
                   now <- liftIO getCurrentTime

@@ -1,0 +1,9 @@
+before:
+- ''
+commands:
+- entrySelectTags
+- tagsInsert a
+after:
+- header: ''
+  tags:
+  - a

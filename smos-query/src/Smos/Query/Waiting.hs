@@ -33,7 +33,9 @@ waiting WaitingSettings {..} = do
             parseSmosFiles .|
             printShouldPrint PrintWarning .|
             smosFileCursors .|
-            C.filter (maybe (const True) filterPredicate waitingSetFilter . snd) .|
+            C.filter
+                (\(rp, fc) ->
+                     maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
             smosCursorCurrents .|
             C.filter (isWaitingAction . snd) .|
             C.map (uncurry makeWaitingActionEntry)

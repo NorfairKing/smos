@@ -16,6 +16,8 @@ module Smos.Actions.Entry
     , module Smos.Actions.Entry.TodoState
     ) where
 
+import Data.Maybe
+
 import Smos.Types
 
 import Smos.Actions.Utils
@@ -100,7 +102,9 @@ entrySelectTags :: Action
 entrySelectTags =
     Action
     { actionName = "entrySelectTags"
-    , actionFunc = modifyEntryCursor entryCursorSelectTags
+    , actionFunc =
+          do modifyEntryCursor entryCursorSelectTags
+             modifyMTagsCursor $ fromMaybe (singletonTagsCursor "")
     , actionDescription = "Select the current Entry's tags"
     }
 

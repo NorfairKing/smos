@@ -1,0 +1,15 @@
+before:
+- example
+commands:
+- entrySetTodoState_TODO
+- entryUnsetTodoState
+- entryToggleTodoState_DONE
+after:
+- header: example
+  state-history:
+  - timestamp: 2018-09-05T06:13:41.359194627Z
+    new-state: DONE
+  - timestamp: 2018-09-05T06:13:41.359194464Z
+    new-state: null
+  - timestamp: 2018-09-05T06:13:41.359194141Z
+    new-state: TODO

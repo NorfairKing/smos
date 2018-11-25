@@ -21,8 +21,8 @@ import Smos.Query.Waiting
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do
-    (disp, Settings) <- getInstructions
-    runReaderT (execute disp) sqc
+    Instructions disp sqc' <- getInstructions sqc
+    runReaderT (execute disp) sqc'
 
 execute :: Dispatch -> Q ()
 execute (DispatchEntry es) = entry es

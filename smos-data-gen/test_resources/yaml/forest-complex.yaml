@@ -1,0 +1,8 @@
+- entry:
+    header: Hello
+    tags: 
+      - world
+  forest:
+    - foo
+    - bar
+    - quux

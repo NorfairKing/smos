@@ -8,27 +8,24 @@ import Data.Maybe
 import qualified Data.Text as T
 import Path.IO
 
-import System.Environment
+import System.Environment (getArgs, getEnvironment)
 
 import Options.Applicative
 
+import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Query
 import Smos.Report.TimeBlock
 
+import Smos.Query.Config
 import Smos.Query.OptParse.Types
 
-getInstructions :: IO Instructions
-getInstructions = do
-    (cmd, flags) <- getArguments
-    config <- getConfig flags
-    (,) <$> getDispatch cmd <*> getSettings flags config
-
-getConfig :: Flags -> IO Configuration
-getConfig Flags = pure Configuration
-
-getSettings :: Flags -> Configuration -> IO Settings
-getSettings Flags Configuration = pure Settings
+getInstructions :: SmosQueryConfig -> IO Instructions
+getInstructions sqc = do
+    Arguments cmd flags <- getArguments
+    env <- getEnv
+    config <- getConfiguration flags env
+    Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
 
 getDispatch :: Command -> IO Dispatch
 getDispatch c =
@@ -56,6 +53,8 @@ getDispatch c =
                                   MinutesResolution
                                   clockFlagResolutionFlags
                         , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                        , clockSetOutputFormat =
+                              fromMaybe OutputPretty clockFlagOutputFormat
                         }
         CommandAgenda AgendaFlags {..} ->
             pure $
@@ -83,6 +82,39 @@ getDispatch c =
                     , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
                     }
 
+getSettings ::
+       SmosQueryConfig
+    -> Flags
+    -> Environment
+    -> Maybe Configuration
+    -> IO SmosQueryConfig
+getSettings sqc@SmosQueryConfig {..} Flags {..} Environment {..} mc = do
+    src <-
+        Report.combineToConfig
+            smosQueryConfigReportConfig
+            flagReportFlags
+            envReportEnv
+            (confReportConf <$> mc)
+    let sqc' = sqc {smosQueryConfigReportConfig = src}
+    pure sqc'
+
+getEnv :: IO Environment
+getEnv = do
+    env <- getEnvironment
+    reportEnv <- Report.getEnv
+    let getSmosEnv :: String -> Maybe String
+        getSmosEnv key = ("SMOS_" ++ key) `lookup` env
+    pure
+        Environment
+            { envConfigFile =
+                  getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
+            , envReportEnv = reportEnv
+            }
+
+getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
+getConfiguration Flags {..} Environment {..} =
+    Report.getConfigurationWith [flagConfigFile, envConfigFile]
+
 getArguments :: IO Arguments
 getArguments = do
     args <- getArgs
@@ -109,7 +141,7 @@ argParser = info (helper <*> parseArgs) help_
     description = "smos-query"
 
 parseArgs :: Parser Arguments
-parseArgs = (,) <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -166,7 +198,8 @@ parseCommandClock = info parser modifier
            flag' MinutesResolution (long "minutes-resolution") <|>
            flag' HoursResolution (long "hours-resolution")) <|>
           pure Nothing) <*>
-         parseTimeBlock)
+         parseTimeBlock <*>
+         parseOutputFormat)
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
@@ -204,7 +237,17 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parseFilterArg <*> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = pure Flags
+parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
+
+parseConfigFileFlag :: Parser (Maybe FilePath)
+parseConfigFileFlag =
+    option
+        (Just <$> str)
+        (mconcat
+             [ metavar "FILEPATH"
+             , help "The configuration file to use"
+             , value Nothing
+             ])
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =
@@ -222,5 +265,14 @@ parsePeriod :: Parser (Maybe Period)
 parsePeriod =
     Just <$>
     (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
+     flag' LastWeek (long "last-week") <|>
      flag' AllTime (long "all-time")) <|>
+    pure Nothing
+
+parseOutputFormat :: Parser (Maybe OutputFormat)
+parseOutputFormat =
+    Just <$>
+    (flag' OutputPretty (long "pretty") <|> flag' OutputYaml (long "yaml") <|>
+     flag' OutputJSON (long "json") <|>
+     flag' OutputJSONPretty (long "pretty-json")) <|>
     pure Nothing
