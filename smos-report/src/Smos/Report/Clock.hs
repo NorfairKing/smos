@@ -160,9 +160,12 @@ divideIntoClockTimeBlocks tz cb cts =
     case cb of
         OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
         DayBlock ->
-            map (mapBlockTitle (T.pack . show)) $
+            map (mapBlockTitle formatDayTitle) $
             combineBlocksByName $
             concatMap (divideClockTimeIntoDailyBlocks tz) cts
+  where
+    formatDayTitle :: Day -> Text
+    formatDayTitle = T.pack . formatTime defaultTimeLocale "%F (%A)"
 
 divideClockTimeIntoDailyBlocks :: TimeZone -> FileTimes -> [ClockTimeBlock Day]
 divideClockTimeIntoDailyBlocks tz =
