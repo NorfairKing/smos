@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -12,6 +13,10 @@ import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
+import Data.Yaml.Builder (ToYaml(..))
+import qualified Data.Yaml.Builder as Yaml
+
+import Control.Applicative
 
 import Smos.Data
 
@@ -42,7 +47,39 @@ instance Validity ClockTableFile
 
 instance ToJSON ClockTableFile where
     toJSON ClockTableFile {..} =
-        object ["file" .= clockTableFile, "forest" .= clockTableForest]
+        object ["file" .= clockTableFile, "forest" .= ForYaml clockTableForest]
+
+instance ToYaml ClockTableFile where
+    toYaml ClockTableFile {..} =
+        Yaml.mapping
+            [ ("file", toYaml clockTableFile)
+            , ("forest", toYaml $ ForYaml clockTableForest)
+            ]
+
+instance FromJSON (ForYaml (Tree ClockTableHeaderEntry)) where
+    parseJSON v =
+        ForYaml <$>
+        (((withObject "Tree ClockTableHeaderEntry" $ \o ->
+               Node <$> o .: "entry" <*>
+               (unForYaml <$> o .:? "forest" .!= ForYaml []))
+              v) <|>
+         (Node <$> parseJSON v <*> pure []))
+
+instance ToJSON (ForYaml (Tree ClockTableHeaderEntry)) where
+    toJSON (ForYaml Node {..}) =
+        if null subForest
+            then toJSON rootLabel
+            else object $
+                 [("entry" .= rootLabel), ("forest" .= ForYaml subForest)]
+
+instance ToYaml (ForYaml (Tree ClockTableHeaderEntry)) where
+    toYaml (ForYaml Node {..}) =
+        if null subForest
+            then toYaml rootLabel
+            else Yaml.mapping
+                     [ ("entry", toYaml rootLabel)
+                     , ("forest", toYaml (ForYaml subForest))
+                     ]
 
 data ClockTableHeaderEntry = ClockTableHeaderEntry
     { clockTableHeaderEntryHeader :: Header
@@ -51,11 +88,23 @@ data ClockTableHeaderEntry = ClockTableHeaderEntry
 
 instance Validity ClockTableHeaderEntry
 
+instance FromJSON ClockTableHeaderEntry where
+    parseJSON =
+        withObject "ClockTableHeaderEntry" $ \o ->
+            ClockTableHeaderEntry <$> o .: "header" <*> o .: "time"
+
 instance ToJSON ClockTableHeaderEntry where
     toJSON ClockTableHeaderEntry {..} =
         object
             [ "header" .= clockTableHeaderEntryHeader
             , "time" .= clockTableHeaderEntryTime
+            ]
+
+instance ToYaml ClockTableHeaderEntry where
+    toYaml ClockTableHeaderEntry {..} =
+        Yaml.mapping
+            [ ("header", toYaml clockTableHeaderEntryHeader)
+            , ("time", toYaml clockTableHeaderEntryTime)
             ]
 
 -- Intermediary types

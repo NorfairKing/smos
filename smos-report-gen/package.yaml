@@ -35,6 +35,7 @@ tests:
     - base
     - genvalidity-containers
     - genvalidity-hspec
+    - genvalidity-hspec-aeson
     - genvalidity-path
     - hspec
     - megaparsec

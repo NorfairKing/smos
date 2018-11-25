@@ -1,8 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Types
@@ -83,6 +84,7 @@ import Data.Time
 import Data.Tree
 import Data.Yaml.Builder (ToYaml(..))
 import qualified Data.Yaml.Builder as Yaml
+import Path
 
 import Control.Applicative
 import Control.Arrow
@@ -108,16 +110,16 @@ newtype ForYaml a = ForYaml
 
 instance Validity a => Validity (ForYaml a)
 
-instance FromJSON (ForYaml (Forest Entry)) where
+instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
     parseJSON v = do
         els <- parseJSON v
         ts <- mapM (fmap unForYaml . parseJSON) els
         pure $ ForYaml ts
 
-instance ToJSON (ForYaml (Forest Entry)) where
+instance ToJSON (ForYaml (Tree a)) => ToJSON (ForYaml (Forest a)) where
     toJSON = toJSON . map ForYaml . unForYaml
 
-instance ToYaml (ForYaml (Forest Entry)) where
+instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
     toYaml = toYaml . map ForYaml . unForYaml
 
 instance FromJSON (ForYaml (Tree Entry)) where
@@ -140,10 +142,10 @@ instance ToYaml (ForYaml (Tree Entry)) where
     toYaml (ForYaml Node {..}) =
         if null subForest
             then toYaml rootLabel
-            else Yaml.mapping $
-                 [ ("entry", toYaml rootLabel)
-                 , ("forest", toYaml (ForYaml subForest))
-                 ]
+            else Yaml.mapping
+                     [ ("entry", toYaml rootLabel)
+                     , ("forest", toYaml (ForYaml subForest))
+                     ]
 
 data Entry = Entry
     { entryHeader :: Header
@@ -637,6 +639,12 @@ logbookEntryDiffTime LogbookEntry {..} =
 instance ToYaml UTCTime where
     toYaml =
         Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
+
+instance ToYaml NominalDiffTime where
+    toYaml = Yaml.scientific . realToFrac
+
+instance ToYaml (Path r d) where
+    toYaml = Yaml.string . T.pack . toFilePath
 
 instance (ToYaml a) => ToYaml (Maybe a) where
     toYaml Nothing = Yaml.null

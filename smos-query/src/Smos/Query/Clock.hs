@@ -17,7 +17,7 @@ import Data.Text (Text)
 import Data.Time
 import Data.Tree
 import Data.Validity.Path ()
-import qualified Data.Yaml as Yaml
+import qualified Data.Yaml.Builder as Yaml
 import Text.Printf
 
 import Rainbow
@@ -62,7 +62,7 @@ clock ClockSettings {..} = do
             OutputPretty ->
                 putBoxLn $
                 renderClockTable clockSetResolution $ clockTableRows clockTable
-            OutputYaml -> SB.putStr $ Yaml.encode clockTable
+            OutputYaml -> SB.putStr $ Yaml.toByteString clockTable
             OutputJSON -> LB.putStr $ JSON.encode clockTable
             OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
 

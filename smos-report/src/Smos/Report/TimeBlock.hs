@@ -13,6 +13,8 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
+import Data.Yaml.Builder (ToYaml(..))
+import qualified Data.Yaml.Builder as Yaml
 
 data TimeBlock
     = OneBlock
@@ -31,6 +33,11 @@ instance (Validity a, Validity b) => Validity (Block a b)
 instance (ToJSON a, ToJSON b) => ToJSON (Block a b) where
     toJSON Block {..} =
         object ["title" .= blockTitle, "entries" .= blockEntries]
+
+instance (ToYaml a, ToYaml b) => ToYaml (Block a b) where
+    toYaml Block {..} =
+        Yaml.mapping
+            [("title", toYaml blockTitle), ("entries", toYaml blockEntries)]
 
 mapBlockTitle :: (a -> b) -> Block a c -> Block b c
 mapBlockTitle func b = b {blockTitle = func $ blockTitle b}
