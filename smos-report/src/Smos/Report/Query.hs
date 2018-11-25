@@ -20,6 +20,7 @@ import Lens.Micro
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
+import Text.Megaparsec.Char.Lexer
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -32,6 +33,7 @@ data Filter
     = FilterHasTag Tag
     | FilterTodoState TodoState
     | FilterFile (Path Rel File) -- Substring of the filename
+    | FilterLevel Word -- The level of the entry in the tree (0 is top)
     | FilterParent Filter
     | FilterAncestor Filter
     | FilterNot Filter
@@ -66,12 +68,24 @@ filterPredicate f_ rp = go f_
                 FilterTodoState mts -> Just mts == entryState cur
                 FilterFile t ->
                     fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
+                FilterLevel l -> l == level fc
                 FilterParent f' -> maybe False (go f') parent_
                 FilterAncestor f' ->
                     maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
                 FilterNot f' -> not $ go f' fc
                 FilterAnd f1 f2 -> go f1 fc && go f2 fc
                 FilterOr f1 f2 -> go f1 fc || go f2 fc
+    level :: ForestCursor a -> Word
+    level fc = go' $ fc ^. forestCursorSelectedTreeL
+      where
+        go' tc =
+            case tc ^. treeCursorAboveL of
+                Nothing -> 0
+                Just tc' -> 1 + goA' tc'
+        goA' ta =
+            case treeAboveAbove ta of
+                Nothing -> 0
+                Just ta' -> 1 + goA' ta'
 
 type P = Parsec Void Text
 
@@ -81,6 +95,7 @@ parseFilter = parseMaybe filterP
 filterP :: P Filter
 filterP =
     try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|>
+    try filterLevelP <|>
     try filterParentP <|>
     try filterAncestorP <|>
     try filterNotP <|>
@@ -111,6 +126,12 @@ filterFileP = do
     void $ string' "file:"
     s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
     either (fail . show) (pure . FilterFile) $ parseRelFile s
+
+filterLevelP :: P Filter
+filterLevelP = do
+    void $ string' "level:"
+    w <- decimal
+    pure $ FilterLevel w
 
 filterParentP :: P Filter
 filterParentP = do
@@ -154,6 +175,7 @@ renderFilter f =
         FilterHasTag t -> "tag:" <> tagText t
         FilterTodoState ts -> "state:" <> todoStateText ts
         FilterFile t -> "file:" <> T.pack (fromRelFile t)
+        FilterLevel l -> "level:" <> T.pack (show l)
         FilterParent f' -> "parent:" <> renderFilter f'
         FilterAncestor f' -> "ancestor:" <> renderFilter f'
         FilterNot f' -> "not:" <> renderFilter f'
