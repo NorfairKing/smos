@@ -59,11 +59,11 @@ findFileTimes now rp (SmosFile ts) = do
     goF = NE.nonEmpty . mapMaybe goT
     goT :: Tree Entry -> Maybe (TTree HeaderTimes)
     goT (Node e ts_) =
-        case ts_ of
-            [] -> do
+        case goF ts_ of
+            Nothing -> do
                 hts <- headerTimesNonEmpty $ findHeaderTimes now e
                 pure $ TLeaf hts
-            _ -> TBranch (findHeaderTimes now e) <$> goF ts_
+            Just f -> pure $ TBranch (findHeaderTimes now e) f
 
 findHeaderTimes :: UTCTime -> Entry -> HeaderTimes []
 findHeaderTimes now Entry {..} =
@@ -208,7 +208,9 @@ trimFileTimesToDay tz d fts =
     goTT (TLeaf hts) = do
         hts' <- headerTimesNonEmpty $ goHT $ headerTimesList hts
         pure $ TLeaf hts'
-    goTT (TBranch hts tf) = TBranch (goHT hts) <$> goTF tf
+    goTT (TBranch hts tf) = case goTF tf of
+        Nothing -> TLeaf <$> (headerTimesNonEmpty $ goHT hts)
+        Just f -> pure $ TBranch (goHT hts) f
     goHT :: HeaderTimes [] -> HeaderTimes []
     goHT hts =
         hts
@@ -275,4 +277,8 @@ trimFileTimes zt cp fts = do
     goT (TLeaf hts) =
         TLeaf <$>
         (headerTimesNonEmpty $ trimHeaderTimes zt cp (headerTimesList hts))
-    goT (TBranch hts tf) = TBranch (trimHeaderTimes zt cp hts) <$> goF tf
+    goT (TBranch hts tf) =
+        case goF tf of
+            Nothing ->
+                TLeaf <$> (headerTimesNonEmpty $ trimHeaderTimes zt cp hts)
+            Just f -> pure $ TBranch (trimHeaderTimes zt cp hts) f
