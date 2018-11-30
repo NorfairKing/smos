@@ -24,13 +24,33 @@ spec = do
     forFilesIn "test_resources/success/file" $ \tf -> do
         it (fromAbsFile tf ++ " succesfully parses as .smos") $ do
             shouldSucceedInParsingAsSmosFile @SmosFile tf
-    forFilesIn "test_resources/success/file" $ \tf -> do
-        let ext = fileExtension tf
-        it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $ do
-            shouldSucceedInParsingByExtension @SmosFile tf
-    forFilesIn "test_resources/failure/file" $ \tf -> do
-        it (fromAbsFile tf ++ " successfully fails to parse") $ do
-            shouldFailToParse @SmosFile tf
+    successAndFailureTests @SmosFile "file"
+    successAndFailureTests @Entry "entry"
+    successAndFailureTests @Header "header"
+    successAndFailureTests @StateHistory "state-history"
+    successAndFailureTests @TodoState "state"
+    successAndFailureTests @PropertyName "property-name"
+    successAndFailureTests @PropertyValue "property-value"
+    successAndFailureTests @Contents "contents"
+    successAndFailureTests @Tag "tag"
+    successAndFailureTests @Logbook "logbook"
+    successAndFailureTests @LogbookEntry "logbook-entry"
+    successAndFailureTests @TimestampName "timestamp-name"
+    successAndFailureTests @Timestamp "timestamp"
+
+successAndFailureTests ::
+       forall a. (Validity a, Show a, FromJSON a)
+    => FilePath
+    -> Spec
+successAndFailureTests name = do
+    describe name $ do
+        forFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
+            let ext = fileExtension tf
+            it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $ do
+                shouldSucceedInParsingByExtension @a tf
+        forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf -> do
+            it (fromAbsFile tf ++ " successfully fails to parse") $ do
+                shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
        forall a. (Validity a, Show a, FromJSON a)
