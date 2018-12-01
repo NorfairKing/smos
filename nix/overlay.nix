@@ -3,8 +3,15 @@ final:
     with final.haskell.lib;
     {
       smosPackages =
-            let smosPkg = name:
-                (failOnAllWarnings (disableLibraryProfiling (final.haskellPackages.callCabal2nix name (../. + "/${name}") {})));
+            let pathFor = name:
+                  builtins.path {
+                      inherit name;
+                      path = ../. + "/${name}";
+                      filter = path: type:
+                        !(final.lib.hasPrefix "." (baseNameOf path));
+                    };
+                smosPkg = name:
+                (failOnAllWarnings (disableLibraryProfiling (final.haskellPackages.callCabal2nix name (pathFor name) {})));
             in final.lib.genAttrs [
               "smos"
               "smos-data"
