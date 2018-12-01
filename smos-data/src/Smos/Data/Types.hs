@@ -124,12 +124,20 @@ instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
 
 instance FromJSON (ForYaml (Tree Entry)) where
     parseJSON v =
-        ForYaml <$>
-        (((withObject "Tree Entry" $ \o ->
-               Node <$> o .: "entry" <*>
-               (unForYaml <$> o .:? "forest" .!= ForYaml []))
-              v) <|>
-         (Node <$> parseJSON v <*> pure []))
+        fmap ForYaml $
+        case v of
+            Object o -> do
+                mv <- o .:? "entry"
+                -- This marks that we want to be trying to parse a tree and NOT an entry.
+                -- We force the parser to make a decision this way.
+                case mv :: Maybe Value of
+                    Nothing -> Node <$> parseJSON v <*> pure []
+                    Just _ ->
+                        (withObject "Tree Entry" $ \o ->
+                             Node <$> o .: "entry" <*>
+                             (unForYaml <$> o .:? "forest" .!= ForYaml []))
+                            v
+            _ -> Node <$> parseJSON v <*> pure []
 
 instance ToJSON (ForYaml (Tree Entry)) where
     toJSON (ForYaml Node {..}) =

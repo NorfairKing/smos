@@ -8,6 +8,9 @@ module Smos.Data
     , parseSmosFile
     , parseSmosFileYaml
     , parseSmosFileJSON
+    , parseSmosData
+    , parseSmosDataYaml
+    , parseSmosDataJSON
     , smosFileYamlBS
     , smosFileJSONBS
     , smosFileJSONPrettyBS
@@ -59,13 +62,22 @@ writeSmosFile fp sf = do
     SB.writeFile (toFilePath fp) (smosFileYamlBS sf)
 
 parseSmosFile :: ByteString -> Either String SmosFile
-parseSmosFile bs = parseSmosFileYaml bs <|> parseSmosFileJSON bs
+parseSmosFile = parseSmosData
 
 parseSmosFileYaml :: ByteString -> Either String SmosFile
-parseSmosFileYaml = left show . Yaml.decodeEither'
+parseSmosFileYaml = parseSmosDataYaml
 
 parseSmosFileJSON :: ByteString -> Either String SmosFile
-parseSmosFileJSON = JSON.eitherDecode . LB.fromStrict
+parseSmosFileJSON = parseSmosDataJSON
+
+parseSmosData :: FromJSON a => ByteString -> Either String a
+parseSmosData bs = parseSmosDataYaml bs <|> parseSmosDataJSON bs
+
+parseSmosDataYaml :: FromJSON a => ByteString -> Either String a
+parseSmosDataYaml = left show . Yaml.decodeEither'
+
+parseSmosDataJSON :: FromJSON a => ByteString -> Either String a
+parseSmosDataJSON = JSON.eitherDecode . LB.fromStrict
 
 smosFileYamlBS :: SmosFile -> ByteString
 smosFileYamlBS sf = Yaml.toByteString sf
