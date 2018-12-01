@@ -1,0 +1,3 @@
+header: 'logbook should not be empty'
+logbook:
+- start: 2018-11-30 06:3*:48.590857846000+0000
