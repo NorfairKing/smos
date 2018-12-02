@@ -133,9 +133,9 @@ instance FromJSON (ForYaml (Tree Entry)) where
                 case mv :: Maybe Value of
                     Nothing -> Node <$> parseJSON v <*> pure []
                     Just _ ->
-                        (withObject "Tree Entry" $ \o ->
+                        (withObject "Tree Entry" $ \o' ->
                              Node <$> o .: "entry" <*>
-                             (unForYaml <$> o .:? "forest" .!= ForYaml []))
+                             (unForYaml <$> o' .:? "forest" .!= ForYaml []))
                             v
             _ -> Node <$> parseJSON v <*> pure []
 
