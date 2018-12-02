@@ -79,7 +79,7 @@ eventPusher :: BChan SmosEvent -> IO ()
 eventPusher chan =
     concurrently_
         (loopEvery 1 (writeBChan chan SmosUpdateTime))
-        (loopEvery 2 (writeBChan chan SmosSaveFile))
+        (loopEvery 5 (writeBChan chan SmosSaveFile))
   where
     loopEvery :: Int -> IO () -> IO ()
     loopEvery i func = do
