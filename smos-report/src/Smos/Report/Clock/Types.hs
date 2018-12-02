@@ -34,6 +34,15 @@ instance Validity ClockResolution
 
 instance ToJSON ClockResolution
 
+data ClockReportStyle
+    = ClockForest
+    | ClockFlat
+    deriving (Show, Eq, Ord, Generic)
+
+instance Validity ClockReportStyle
+
+instance ToJSON ClockReportStyle
+
 type ClockTable = [ClockTableBlock]
 
 type ClockTableBlock = Block Text ClockTableFile

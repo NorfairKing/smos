@@ -61,7 +61,8 @@ clock ClockSettings {..} = do
         case clockSetOutputFormat of
             OutputPretty ->
                 putBoxLn $
-                renderClockTable clockSetResolution $ clockTableRows clockTable
+                renderClockTable clockSetReportStyle clockSetResolution $
+                clockTableRows clockTable
             OutputYaml -> SB.putStr $ Yaml.toByteString clockTable
             OutputJSON -> LB.putStr $ JSON.encode clockTable
             OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
@@ -83,21 +84,20 @@ clockTableRows ctbs =
     goFs :: [ClockTableFile] -> [ClockTableRow]
     goFs = concatMap goF
     goF :: ClockTableFile -> [ClockTableRow]
-    goF ClockTableFile {..} = goHF 0 True clockTableForest
+    goF ClockTableFile {..} =
+        FileRow clockTableFile (sumForest clockTableForest) :
+        goHF 0 clockTableForest
       where
-        goHF :: Int -> Bool -> Forest ClockTableHeaderEntry -> [ClockTableRow]
-        goHF l b = concatMap (uncurry $ goHT l) . zip (b : repeat False)
-        goHT :: Int -> Bool -> Tree ClockTableHeaderEntry -> [ClockTableRow]
-        goHT l b t@(Node ClockTableHeaderEntry {..} f) =
+        goHF :: Int -> Forest ClockTableHeaderEntry -> [ClockTableRow]
+        goHF l = concatMap $ goHT l
+        goHT :: Int -> Tree ClockTableHeaderEntry -> [ClockTableRow]
+        goHT l t@(Node ClockTableHeaderEntry {..} f) =
             EntryRow
-                (if b
-                     then Just clockTableFile
-                     else Nothing)
                 l
                 clockTableHeaderEntryHeader
                 clockTableHeaderEntryTime
                 (sumTree t) :
-            goHF (l + 1) False f
+            goHF (l + 1) f
     sumTable :: ClockTable -> NominalDiffTime
     sumTable = sum . map sumBlock
     sumBlock :: ClockTableBlock -> NominalDiffTime
@@ -114,32 +114,52 @@ clockTableRows ctbs =
 -- block title
 -- file name    headers and   time
 --                           total time
-renderClockTable :: ClockResolution -> [ClockTableRow] -> Box Vertical
-renderClockTable res =
+renderClockTable ::
+       ClockReportStyle -> ClockResolution -> [ClockTableRow] -> Box Vertical
+renderClockTable crs res =
     tableByRows . S.fromList . map S.fromList . concatMap renderRows
   where
     renderRows :: ClockTableRow -> [[Cell]]
     renderRows ctr =
         case ctr of
             BlockTitleRow t -> [[cell $ blockTitleChunk t]]
-            EntryRow mrp i h ndt ndtt ->
-                [ [ cell $ maybe (chunk "") (fore green . rootedPathChunk) mrp
-                  , separator mempty 1
-                  , cell $
-                    chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h
-                  , cell $
-                    chunk $
-                    if ndt == 0
-                        then ""
-                        else renderNominalDiffTime res ndt
-                  , cell $
-                    fore brown $
-                    chunk $
-                    if ndt == ndtt
-                        then ""
-                        else renderNominalDiffTime res ndtt
-                  ]
+            FileRow rp ndt ->
+                [ map cell
+                      [ fore green $ rootedPathChunk rp
+                      , chunk ""
+                      , chunk ""
+                      , chunk ""
+                      , fore green $ chunk $ renderNominalDiffTime res ndt
+                      ]
                 ]
+            EntryRow i h ndt ndtt ->
+                case crs of
+                    ClockFlat ->
+                        [ if ndt == 0 then [] else [ cell $ chunk ""
+                          , separator mempty 1
+                          , cell $ headerChunk h
+                          , cell $ chunk $ renderNominalDiffTime res ndt
+                          ]
+                        ]
+                    ClockForest ->
+                        [ [ cell $ chunk ""
+                          , separator mempty 1
+                          , cell $
+                            chunk (T.pack $ replicate (2 * i) ' ') <>
+                            headerChunk h
+                          , cell $
+                            chunk $
+                            if ndt == 0
+                                then ""
+                                else renderNominalDiffTime res ndt
+                          , cell $
+                            fore brown $
+                            chunk $
+                            if ndt == ndtt
+                                then ""
+                                else renderNominalDiffTime res ndtt
+                          ]
+                        ]
             BlockTotalRow t ->
                 [ map (cell . fore blue) $
                   [ chunk ""

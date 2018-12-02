@@ -58,6 +58,7 @@ data ClockFlags = ClockFlags
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
     , clockFlagOutputFormat :: Maybe OutputFormat
+    , clockFlagReportStyle :: Maybe ClockReportStyle
     } deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
@@ -124,6 +125,7 @@ data ClockSettings = ClockSettings
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
     , clockSetOutputFormat :: OutputFormat
+    , clockSetReportStyle :: ClockReportStyle
     } deriving (Show, Eq)
 
 data AgendaSettings = AgendaSettings
