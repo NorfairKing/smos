@@ -23,10 +23,10 @@ import Smos.Types
 saveFile :: Action
 saveFile =
     Action
-        { actionName = "saveFile"
-        , actionFunc = saveCurrentSmosFile
-        , actionDescription = "Save the current file"
-        }
+    { actionName = "saveFile"
+    , actionFunc = saveCurrentSmosFile
+    , actionDescription = "Save the current file"
+    }
 
 saveCurrentSmosFile :: SmosM ()
 saveCurrentSmosFile = do
@@ -34,7 +34,7 @@ saveCurrentSmosFile = do
     let sf' = rebuildEditorCursor smosStateCursor
     (case smosStateStartSmosFile of
          Nothing -> unless (sf' == emptySmosFile)
-         Just sf'' -> unless (sf'' == sf'')) $
+         Just sf'' -> unless (sf'' == sf')) $
         liftIO $ writeSmosFile smosStateFilePath sf'
     modify (\ss -> ss {smosStateStartSmosFile = Just sf'})
 
@@ -48,13 +48,13 @@ switchToFile path sfc = do
     forM_ mfl $ \fl ->
         put $
         ss
-            { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc)
-            , smosStateFilePath = path
-            , smosStateFileLock = fl
-            , smosStateCursor =
-                  editorCursorSwitchToFile
-                      (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
-            }
+        { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc)
+        , smosStateFilePath = path
+        , smosStateFileLock = fl
+        , smosStateCursor =
+              editorCursorSwitchToFile
+                  (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
+        }
     pure mfl
 
 lockFile :: Path Abs File -> IO (Maybe FL.FileLock)
