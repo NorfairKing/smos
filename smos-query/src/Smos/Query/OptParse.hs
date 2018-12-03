@@ -44,45 +44,42 @@ getDispatch c =
             pure $
                 DispatchClock
                     ClockSettings
-                        { clockSetFile = mf
-                        , clockSetFilter = clockFlagFilter
-                        , clockSetPeriod =
-                              fromMaybe AllTime clockFlagPeriodFlags
-                        , clockSetResolution =
-                              fromMaybe
-                                  MinutesResolution
-                                  clockFlagResolutionFlags
-                        , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-                        , clockSetOutputFormat =
-                              fromMaybe OutputPretty clockFlagOutputFormat
-                        , clockSetReportStyle =
-                              fromMaybe ClockForest clockFlagReportStyle
-                        }
+                    { clockSetFile = mf
+                    , clockSetFilter = clockFlagFilter
+                    , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+                    , clockSetResolution =
+                          fromMaybe MinutesResolution clockFlagResolutionFlags
+                    , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                    , clockSetOutputFormat =
+                          fromMaybe OutputPretty clockFlagOutputFormat
+                    , clockSetReportStyle =
+                          fromMaybe ClockForest clockFlagReportStyle
+                    }
         CommandAgenda AgendaFlags {..} ->
             pure $
             DispatchAgenda
                 AgendaSettings
-                    { agendaSetFilter = agendaFlagFilter
-                    , agendaSetHistoricity =
-                          fromMaybe HistoricalAgenda agendaFlagHistoricity
-                    , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
-                    }
+                { agendaSetFilter = agendaFlagFilter
+                , agendaSetHistoricity =
+                      fromMaybe HistoricalAgenda agendaFlagHistoricity
+                , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
+                }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
             pure $
             DispatchLog
                 LogSettings
-                    { logSetFilter = logFlagFilter
-                    , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
-                    , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
-                    }
+                { logSetFilter = logFlagFilter
+                , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
+                , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
+                }
         CommandStats StatsFlags {..} ->
             pure $
             DispatchStats
                 StatsSettings
-                    { statsSetFilter = statsFlagFilter
-                    , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
-                    }
+                { statsSetFilter = statsFlagFilter
+                , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
+                }
 
 getSettings ::
        SmosQueryConfig
@@ -108,10 +105,10 @@ getEnv = do
         getSmosEnv key = ("SMOS_" ++ key) `lookup` env
     pure
         Environment
-            { envConfigFile =
-                  getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-            , envReportEnv = reportEnv
-            }
+        { envConfigFile =
+              getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
+        , envReportEnv = reportEnv
+        }
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
@@ -128,13 +125,13 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
         ParserPrefs
-            { prefMultiSuffix = ""
-            , prefDisambiguate = True
-            , prefShowHelpOnError = True
-            , prefShowHelpOnEmpty = True
-            , prefBacktrack = True
-            , prefColumns = 80
-            }
+        { prefMultiSuffix = ""
+        , prefDisambiguate = True
+        , prefShowHelpOnError = True
+        , prefShowHelpOnEmpty = True
+        , prefBacktrack = True
+        , prefColumns = 80
+        }
 
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
@@ -262,7 +259,11 @@ parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =
     argument
         (Just <$> (maybeReader (parseFilter . T.pack)))
-        (mconcat [value Nothing, help "A filter to filter entries by"])
+        (mconcat
+             [ value Nothing
+             , metavar "FILTER"
+             , help "A filter to filter entries by"
+             ])
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
