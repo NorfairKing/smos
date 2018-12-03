@@ -55,6 +55,8 @@ getDispatch c =
                         , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
                         , clockSetOutputFormat =
                               fromMaybe OutputPretty clockFlagOutputFormat
+                        , clockSetReportStyle =
+                              fromMaybe ClockForest clockFlagReportStyle
                         }
         CommandAgenda AgendaFlags {..} ->
             pure $
@@ -199,7 +201,14 @@ parseCommandClock = info parser modifier
            flag' HoursResolution (long "hours-resolution")) <|>
           pure Nothing) <*>
          parseTimeBlock <*>
-         parseOutputFormat)
+         parseOutputFormat <*>
+         parseClockReportStyle)
+
+parseClockReportStyle :: Parser (Maybe ClockReportStyle)
+parseClockReportStyle =
+    (Just <$>
+     (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|>
+     pure Nothing)
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier

@@ -442,6 +442,16 @@
         timestamp: 2018-09-29 10:41:16.337481922000+0000
     forest:
     - entry:
+        header: Data format
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:13:37.222482363000+0000
+      forest:
+      - header: Add a comment with the smos version in a data file
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:13:47.376342258000+0000
+    - entry:
         header: Concept
         state-history:
         - new-state: TODO
@@ -728,6 +738,19 @@
           timestamp: 2018-10-18 18:44:43.491477782000+0000
         - new-state: TODO
           timestamp: 2018-10-14 10:24:05.798875032000+0000
+      - header: Change the > symbol to something different when the entry is selected
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-12-02 18:06:54.182502733000+0000
+      - header: ! 'When typing ''t'' for the todo state, show which options are possible:
+          t: TODO, w: WAITING, etc'
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:12:36.442256364000+0000
+      - header: A better default color scheme
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:02:37.032626415000+0000
       - header: The entire entry should be visible, instead of just the header
         state-history:
         - new-state: TODO
@@ -894,7 +917,33 @@
         - new-state: TODO
           timestamp: 2018-09-11 19:39:53.356426165000+0000
       forest:
+      - header: Label for help page should say that it's a help page
+        state-history:
+        - new-state: DONE
+          timestamp: 2018-12-02 18:10:34.870520755000+0000
+        - new-state: TODO
+          timestamp: 2018-12-02 18:10:34.310536320000+0000
       - header: combine keybindings per key in help page
         state-history:
         - new-state: TODO
           timestamp: 2018-09-11 19:40:01.436108571000+0000
+      - header: Scrolling up and down with page-up and page-down
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:07:30.422429680000+0000
+      - header: Fuzzy Filter
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:01:01.622715673000+0000
+      - header: Scroll bar on the right to see how much is visible
+        state-history:
+        - new-state: TODO
+          timestamp: 2018-12-02 18:10:16.478522175000+0000
+    - header: Documentation
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-12-02 18:12:55.062378588000+0000
+    - header: ! 'Build all smos packages: nix-env --file default.nix -iA smosPackages'
+      state-history:
+      - new-state: TODO
+        timestamp: 2018-12-02 18:13:29.822523378000+0000
