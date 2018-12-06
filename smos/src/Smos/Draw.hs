@@ -296,7 +296,7 @@ drawEntryCursor s tc e = do
               concat $
               [ [ case s of
                       NotSelected -> str "-"
-                      MaybeSelected -> withAttr selectedAttr $ str ">"
+                      MaybeSelected -> visible $ withAttr selectedAttr $ str ">"
                 ]
               , maybeToList
                     (entryCursorStateHistoryCursor >>=
