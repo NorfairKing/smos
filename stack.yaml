@@ -31,7 +31,7 @@ extra-deps:
     - fuzzy-time
     - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
-  commit: a1c35161d308289b4b0af2aa228a6898fa367d36
+  commit: f2ed6981a34b787d82d56f116e57bf3a83056a5a
   subdirs:
     - cursor
     - cursor-gen
