@@ -39,8 +39,8 @@ defaultFileKeyMap =
           listMatchers
               [ exactChar 'q' stop
               , exactKey KEsc stop
-              , exactChar 'h' startHeaderFromEmptyAndSelectHeader
-              , exactChar 'H' startHeaderFromEmptyAndSelectHeader
+              , exactChar 'e' startHeaderFromEmptyAndSelectHeader
+              , exactChar 'E' startHeaderFromEmptyAndSelectHeader
               , exactChar '?' selectHelp
                   -- Reports
               , exactString "rn" reportNextActions
@@ -69,8 +69,8 @@ defaultFileKeyMap =
               , modifiedChar 'l' [MMeta] forestDemoteEntry
               , modifiedChar 'L' [MMeta] forestDemoteSubTree
                   -- Forest manipulation
-              , exactChar 'h' forestInsertEntryAfterAndSelectHeader
-              , exactChar 'H' forestInsertEntryBelowAndSelectHeader
+              , exactChar 'e' forestInsertEntryAfterAndSelectHeader
+              , exactChar 'E' forestInsertEntryBelowAndSelectHeader
                   -- Deletion
               , exactChar 'd' forestDeleteCurrentEntry
               , exactChar 'D' forestDeleteCurrentSubTree
