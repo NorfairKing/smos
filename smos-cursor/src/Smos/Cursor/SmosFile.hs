@@ -13,6 +13,8 @@ module Smos.Cursor.SmosFile
     , smosFileCursorSelectNextOnSameLevel
     , smosFileCursorSelectFirst
     , smosFileCursorSelectLast
+    , smosFileCursorSelectAbove
+    , smosFileCursorSelectBelowAtStart
     , smosFileCursorToggleCollapse
     , smosFileCursorToggleCollapseRecursively
     , smosFileCursorInsertEntryBefore
@@ -116,6 +118,12 @@ smosFileCursorSelectFirst = forestCursorSelectFirst rebuild make
 smosFileCursorSelectLast :: SmosFileCursor -> SmosFileCursor
 smosFileCursorSelectLast = forestCursorSelectLast rebuild make
 
+smosFileCursorSelectAbove :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectAbove = forestCursorSelectAbove rebuild make
+
+smosFileCursorSelectBelowAtStart :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectBelowAtStart = forestCursorSelectBelowAtStart rebuild make
+
 smosFileCursorToggleCollapse :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorToggleCollapse = forestCursorToggleCurrentForest
 
@@ -191,9 +199,9 @@ smosFileCursorClockOutEverywhere now =
            Eq a => (a -> a) -> CollapseEntry a -> CollapseEntry a
     mapAndUncollapseIfChanged func ce =
         let ce' = func <$> ce
-        in if ce' == ce
-               then ce'
-               else ce' {collapseEntryShowLogbook = True}
+         in if ce' == ce
+                then ce'
+                else ce' {collapseEntryShowLogbook = True}
     goEC :: EntryCursor -> EntryCursor
     goEC =
         entryCursorLogbookCursorL %~
@@ -205,9 +213,9 @@ smosFileCursorClockOutEverywhereAndClockInHere ::
        UTCTime -> SmosFileCursor -> SmosFileCursor
 smosFileCursorClockOutEverywhereAndClockInHere now sfc =
     let sfc' = smosFileCursorClockOutEverywhere now sfc
-    in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL) %~
-       (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc) &
-       (smosFileCursorSelectedEntireL . collapseEntryShowLogbookL .~ True)
+     in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL) %~
+        (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc) &
+        (smosFileCursorSelectedEntireL . collapseEntryShowLogbookL .~ True)
 
 smosFileSubtreeSetTodoState ::
        UTCTime -> Maybe TodoState -> SmosFileCursor -> SmosFileCursor
@@ -235,10 +243,11 @@ smosFileSubtreeSetTodoState now mts =
             fmap
                 (\e ->
                      e
-                     { entryStateHistory =
-                           let sh = entryStateHistory e
-                           in fromMaybe sh $ stateHistorySetState now mts sh
-                     })
+                         { entryStateHistory =
+                               let sh = entryStateHistory e
+                                in fromMaybe sh $
+                                   stateHistorySetState now mts sh
+                         })
                 ce
 
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry

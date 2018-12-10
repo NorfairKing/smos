@@ -107,6 +107,10 @@ drawInfo =
         , str "version 0.0.0.0"
         , str "by Tom Sydney Kerckhove"
         , str "Smos is open source and freely distributable"
+        , str " "
+        , str "Building smos takes time, energy and money."
+        , str "Please consider supporting the project."
+        , str "https://smos.cs-syd.eu/support"
         ]
 
 drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
@@ -114,8 +118,7 @@ drawHelpCursor _ Nothing = drawInfo
 drawHelpCursor s (Just HelpCursor {..}) =
     centerLayer $
     borderWithLabel
-        (withAttr selectedAttr $
-         txt ("[Help page: " <> helpCursorTitle <> "]")) $
+        (withAttr selectedAttr $ txt ("[Help page: " <> helpCursorTitle <> "]")) $
     hBox
         [ padAll 1 $
           viewport "viewport-help" Vertical $

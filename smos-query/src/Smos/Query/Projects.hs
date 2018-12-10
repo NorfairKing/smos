@@ -5,6 +5,7 @@
 
 module Smos.Query.Projects where
 
+import Data.List
 import Data.Text (Text)
 import Path
 
@@ -31,7 +32,10 @@ projects = do
             filterSmosFiles .|
             parseSmosFiles .|
             printShouldPrint PrintWarning
-        putTableLn $ renderProjectsReport $ map (uncurry makeProjectEntry) tups
+        putTableLn $
+            renderProjectsReport $
+            sortOn (fmap entryState . projectEntryCurrentEntry) $
+            map (uncurry makeProjectEntry) tups
 
 renderProjectsReport :: [ProjectEntry] -> Table
 renderProjectsReport = formatAsTable . map renderProjectEntry

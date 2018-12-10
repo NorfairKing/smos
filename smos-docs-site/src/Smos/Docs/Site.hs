@@ -20,7 +20,10 @@ smosDocsSite =
                 (sassCompilerWith
                      sassDefConfig {sassIncludePaths = Just ["_sass"]})
         match "pages/*" $ do
-            route $ setExtension "html"
+            route $
+                composeRoutes
+                    (gsubRoute "pages/" (const ""))
+                    (setExtension "html")
             compile $
                 pandocCompiler >>=
                 loadAndApplyTemplate "templates/page.html" pageCtx >>=
