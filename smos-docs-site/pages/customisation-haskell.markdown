@@ -12,13 +12,13 @@ If you are looking to do that, please see [the respective guide](/customisation-
 ## Your own smos
 
 Smos is not a program as much as it is a library to write your own version of smos.
-(This is a lot like the way [Xmonad](/TODO) does things.)
+(This is a lot like the way [Xmonad](https://xmonad.org/) does things.)
 
 
 ### Set up a Haskell project
 
 To customise Smos within Haskell for yourself, you will need to set up your own little Haskell project.
-You can do this with either [stack](/TODO) or with Nix.
+You can do this with either [stack](https://haskellstack.org) or with Nix.
 In this tutorial we will use stack, because I assume that if you want to use Nix, you know what you are doing and you will be able to figure it out.
 
 To get started, have `stack` setup a new project:
@@ -139,4 +139,4 @@ Compile this with `stack build`.
 Now you should be able to run `stack exec my-smos-exe`.
 Now you can start customising the configuration that you pass to the `smos` function to your heart's content.
 
-Note: The `smos` function will also deal with flags, environment variables and configuration files. If you want to make your customisations without these features, you can use [`smosWithoutRuntimeConfig`](/TODO) instead.
+Note: The `smos` function will also deal with flags, environment variables and configuration files. If you want to make your customisations without these features, you can use `smosWithoutRuntimeConfig` instead.

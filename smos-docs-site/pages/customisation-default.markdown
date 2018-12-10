@@ -30,4 +30,4 @@ workflow-dir: "/home/user/different-workflow"
 ```
 
 Smos can also be configured more flexibly in Haskell.
-If you are looking to do that, please see [the respective guide](/pages/customisation-haskell.html)
+If you are looking to do that, please see [the respective guide](/customisation-haskell.html)

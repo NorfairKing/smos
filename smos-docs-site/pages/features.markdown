@@ -15,7 +15,7 @@ format and by using a more sane configuration language.
 
 Smos is first and foremost a library with which you can build your own version.
 It is similar to XMonad in this respect.
-See [the default configuration](smos/src/Smos/Default.hs)
+See [the default configuration](https://github.com/NorfairKing/smos/blob/master/smos/src/Smos/Default.hs)
 for an example of a configuration.
 
 ### Future-proof file format

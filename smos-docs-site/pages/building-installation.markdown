@@ -65,5 +65,5 @@ $ TERM=xterm ./result/bin/smos
 
 Should you wish to customise your `smos` installation, or customise the `smos`
 build entirely, then follow the appropriate guides
-[here](/pages/customisation-default.html) or
-[here](/pages/customisation-haskell.html), respectively.
+[here](/customisation-default.html) or
+[here](/customisation-haskell.html), respectively.
