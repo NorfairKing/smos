@@ -109,7 +109,7 @@ drawInfo =
         , str "Smos is open source and freely distributable"
         , str " "
         , str "Building smos takes time, energy and money."
-        , str "Please consider donating."
+        , str "Please consider supporting the project."
         , str "https://smos.cs-syd.eu/support"
         ]
 
