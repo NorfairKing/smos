@@ -575,17 +575,21 @@
             timestamp: 2018-10-18 18:44:16.268081222000+0000
           - new-state: TODO
             timestamp: 2018-10-11 22:10:17.270628908000+0000
+        - header: Moving to the node below, uncollapsing as necessary
+          contents: ! 'Keyboard shortcut: arrow right or l'
+          state-history:
+          - new-state: DONE
+            timestamp: 2018-12-12 06:07:50.721315028000+0000
+          - new-state: TODO
+            timestamp: 2018-10-07 17:17:49.037011535000+0000
         - header: moving to the node above
           contents: ! "Example start\n - a\n   - b\n   - c <-\n   - d\nExample end\n
             - a <-\n   - b\n   - c\n   - d\n\nKeyboard shortcut: arrow left h"
           state-history:
+          - new-state: DONE
+            timestamp: 2018-12-12 06:08:11.507403724000+0000
           - new-state: TODO
             timestamp: 2018-10-07 17:16:29.612880939000+0000
-        - header: Moving to the node below, uncollapsing as necessary
-          contents: ! 'Keyboard shortcut: arrow right or l'
-          state-history:
-          - new-state: TODO
-            timestamp: 2018-10-07 17:17:49.037011535000+0000
         - header: Inserting an entry below the current one, but above the current
             level
           contents: ! 'This is not critical because the user can user can just start
@@ -662,12 +666,16 @@
         - entry:
             header: Tags
             state-history:
+            - new-state: DONE
+              timestamp: 2018-12-12 06:08:42.314017734000+0000
             - new-state: TODO
               timestamp: 2018-09-29 10:47:58.465782880000+0000
           forest:
           - header: Edit tags in a freeform manner instead of just with predefined
               tags
             state-history:
+            - new-state: DONE
+              timestamp: 2018-12-12 06:08:41.640400151000+0000
             - new-state: TODO
               timestamp: 2018-09-21 07:59:33.639419606000+0000
         - entry:
