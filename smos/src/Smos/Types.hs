@@ -213,7 +213,7 @@ data SmosState = SmosState
     , smosStateFileLock :: FileLock
     , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
-    , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest
+    , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest, TODO make bounded?
     , smosStateDebugInfo :: DebugInfo
     } deriving (Generic)
 
