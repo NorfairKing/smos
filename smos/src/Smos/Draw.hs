@@ -85,7 +85,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
                 HelpSelected -> helpCursorWidget
         debugWidget = [drawDebug ss | editorCursorDebug]
         baseWidget = [vBox $ [mainCursorWidget] ++ debugWidget]
-     in baseWidget
+    in baseWidget
   where
     EditorCursor {..} = smosStateCursor
     selectWhen :: EditorSelection -> Select
@@ -131,18 +131,18 @@ drawHelpCursor s (Just HelpCursor {..}) =
         , padAll 1 $
           let KeyHelpCursor {..} =
                   nonEmptyCursorCurrent helpCursorKeyHelpCursors
-           in vBox
-                  [ txt "Name: " <+>
-                    withAttr
-                        selectedAttr
-                        (txtWrap $ actionNameText keyHelpCursorName)
-                  , txtWrap "Description:"
-                  , txt " "
-                  , hLimit 75 $
-                    padRight Max $
-                    withAttr helpDescriptionAttr $
-                    txtWrap keyHelpCursorDescription
-                  ]
+          in vBox
+                 [ txt "Name: " <+>
+                   withAttr
+                       selectedAttr
+                       (txtWrap $ actionNameText keyHelpCursorName)
+                 , txtWrap "Description:"
+                 , txt " "
+                 , hLimit 75 $
+                   padRight Max $
+                   withAttr helpDescriptionAttr $
+                   txtWrap keyHelpCursorDescription
+                 ]
         ]
   where
     go :: Select -> KeyHelpCursor -> [Widget n]
@@ -151,11 +151,13 @@ drawHelpCursor s (Just HelpCursor {..}) =
                 (case s_ of
                      MaybeSelected -> forceAttr selectedAttr . visible
                      NotSelected -> id)
-         in [ withAttr helpKeyCombinationAttr $
-              drawKeyCombination keyHelpCursorKeyBinding
-            , msel $
-              withAttr helpNameAttr $ txt $ actionNameText keyHelpCursorName
-            ]
+        in [ hBox $ intersperse (str ", ") $
+             map
+                 (withAttr helpKeyCombinationAttr . drawKeyCombination)
+                 keyHelpCursorKeyBinding
+           , msel $
+             withAttr helpNameAttr $ txt $ actionNameText keyHelpCursorName
+           ]
 
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = str . go
@@ -215,17 +217,17 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
             (case s of
                  MaybeSelected -> forceAttr selectedAttr . visible
                  NotSelected -> id)
-     in hBox $
-        intersperse (str " ") $
-        [ hLimit 20 $
-          padRight Max $
-          drawFilePath $
-          case nextActionEntryCursorFilePath of
-              Relative _ rf -> filename rf
-              Absolute af -> filename af
-        , maybe emptyWidget drawTodoState $ entryState e
-        , sel $ drawHeader entryHeader
-        ]
+    in hBox $
+       intersperse (str " ") $
+       [ hLimit 20 $
+         padRight Max $
+         drawFilePath $
+         case nextActionEntryCursorFilePath of
+             Relative _ rf -> filename rf
+             Absolute af -> filename af
+       , maybe emptyWidget drawTodoState $ entryState e
+       , sel $ drawHeader entryHeader
+       ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
@@ -313,13 +315,13 @@ drawEntryCursor s tc e = do
                 entryCursorTagsCursor
               , [ str "..."
                 | let e_ = rebuildEntryCursor ec
-                   in or [ not (collapseEntryShowContents e) &&
-                           not (isNothing $ entryContents e_)
-                         , not (collapseEntryShowHistory e) &&
-                           not (nullStateHistory $ entryStateHistory e_)
-                         , not (collapseEntryShowLogbook e) &&
-                           not (nullLogbook $ entryLogbook e_)
-                          ]
+                  in or [ not (collapseEntryShowContents e) &&
+                          not (isNothing $ entryContents e_)
+                        , not (collapseEntryShowHistory e) &&
+                          not (nullStateHistory $ entryStateHistory e_)
+                        , not (collapseEntryShowLogbook e) &&
+                          not (nullLogbook $ entryLogbook e_)
+                         ]
                 ]
               , [str "+++" | tc == TreeIsCollapsed]
               ]

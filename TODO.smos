@@ -933,6 +933,8 @@
           timestamp: 2018-12-02 18:10:34.310536320000+0000
       - header: combine keybindings per key in help page
         state-history:
+        - new-state: DONE
+          timestamp: 2018-12-15 16:31:42.002548216000+0000
         - new-state: TODO
           timestamp: 2018-09-11 19:40:01.436108571000+0000
       - header: Scrolling up and down with page-up and page-down
