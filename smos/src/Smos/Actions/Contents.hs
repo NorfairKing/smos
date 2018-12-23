@@ -116,7 +116,7 @@ contentsMoveUp =
     Action
         { actionName = "contentsMoveUp"
         , actionFunc =
-              modifyContentsCursorWhenSelectedM contentsCursorSelectPrevLine
+              modifyContentsCursorWhenSelected contentsCursorSelectPrevLine
         , actionDescription = "Move up in the contents"
         }
 
@@ -125,7 +125,7 @@ contentsMoveDown =
     Action
         { actionName = "contentsMoveDown"
         , actionFunc =
-              modifyContentsCursorWhenSelectedM contentsCursorSelectNextLine
+              modifyContentsCursorWhenSelected contentsCursorSelectNextLine
         , actionDescription = "Move down in the contents"
         }
 

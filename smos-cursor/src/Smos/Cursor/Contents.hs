@@ -53,10 +53,10 @@ nullContentsCursor = nullTextFieldCursor
 contentsCursorSelection :: ContentsCursor -> (Int, Int)
 contentsCursorSelection = textFieldCursorSelection
 
-contentsCursorSelectPrevLine :: ContentsCursor -> Maybe ContentsCursor
+contentsCursorSelectPrevLine :: ContentsCursor -> ContentsCursor
 contentsCursorSelectPrevLine = textFieldCursorSelectPrevLine
 
-contentsCursorSelectNextLine :: ContentsCursor -> Maybe ContentsCursor
+contentsCursorSelectNextLine :: ContentsCursor -> ContentsCursor
 contentsCursorSelectNextLine = textFieldCursorSelectNextLine
 
 contentsCursorSelectFirstLine :: ContentsCursor -> ContentsCursor
