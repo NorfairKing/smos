@@ -20,8 +20,7 @@ import Smos.Cursor.Header
 import Smos.Actions.Utils
 
 allConveniencePlainActions :: [Action]
-allConveniencePlainActions =
-    [convDoneAndWaitForResponse, convRepinged, convDoneAndWaitForResponse]
+allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged]
 
 convDoneAndWaitForResponse :: Action
 convDoneAndWaitForResponse =
