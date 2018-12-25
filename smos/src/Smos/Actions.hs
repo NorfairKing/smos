@@ -22,7 +22,6 @@ module Smos.Actions
     , module Smos.Actions.Utils
     ) where
 
-
 import Smos.Types
 
 import Smos.Actions.Contents
@@ -61,6 +60,7 @@ allPlainActions =
         , allTagsPlainActions
         , allTimestampsPlainActions
         , allUndoPlainActions
+        , allConveniencePlainActions
         ]
 
 allUsingCharActions :: [ActionUsing Char]
@@ -78,50 +78,50 @@ allUsingCharActions =
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =
     Action
-        { actionName = "startHeaderFromEmptyAndSelectHeader"
-        , actionFunc = modifyEmptyFile startSmosFile
-        , actionDescription = "Start a first header in an empty Smos File"
-        }
+    { actionName = "startHeaderFromEmptyAndSelectHeader"
+    , actionFunc = modifyEmptyFile startSmosFile
+    , actionDescription = "Start a first header in an empty Smos File"
+    }
 
 selectHelp :: Action
 selectHelp =
     Action
-        { actionName = "selectHelp"
-        , actionFunc =
-              modifyEditorCursorS $ \ec -> do
-                  km <- asks configKeyMap
-                  pure $ editorCursorSwitchToHelp km ec
-        , actionDescription = "Show the (contextual) help screen"
-        }
+    { actionName = "selectHelp"
+    , actionFunc =
+          modifyEditorCursorS $ \ec -> do
+              km <- asks configKeyMap
+              pure $ editorCursorSwitchToHelp km ec
+    , actionDescription = "Show the (contextual) help screen"
+    }
 
 selectEditor :: Action
 selectEditor =
     Action
-        { actionName = "selectEditor"
-        , actionFunc = modifyEditorCursor editorCursorSwitchToFile
-        , actionDescription = "Hide the help screen"
-        }
+    { actionName = "selectEditor"
+    , actionFunc = modifyEditorCursor editorCursorSwitchToFile
+    , actionDescription = "Hide the help screen"
+    }
 
 showDebug :: Action
 showDebug =
     Action
-        { actionName = "showDebug"
-        , actionFunc = modifyEditorCursor editorCursorShowDebug
-        , actionDescription = "Show the debug screen"
-        }
+    { actionName = "showDebug"
+    , actionFunc = modifyEditorCursor editorCursorShowDebug
+    , actionDescription = "Show the debug screen"
+    }
 
 hideDebug :: Action
 hideDebug =
     Action
-        { actionName = "hideDebug"
-        , actionFunc = modifyEditorCursor editorCursorHideDebug
-        , actionDescription = "Hide the debug screen"
-        }
+    { actionName = "hideDebug"
+    , actionFunc = modifyEditorCursor editorCursorHideDebug
+    , actionDescription = "Hide the debug screen"
+    }
 
 toggleDebug :: Action
 toggleDebug =
     Action
-        { actionName = "toggleDebug"
-        , actionFunc = modifyEditorCursor editorCursorToggleDebug
-        , actionDescription = "Toggle the debug page to be shown"
-        }
+    { actionName = "toggleDebug"
+    , actionFunc = modifyEditorCursor editorCursorToggleDebug
+    , actionDescription = "Toggle the debug page to be shown"
+    }
