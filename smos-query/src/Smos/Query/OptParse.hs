@@ -6,6 +6,7 @@ module Smos.Query.OptParse where
 import Control.Monad
 import Data.Maybe
 import qualified Data.Text as T
+import Data.Time
 import Path.IO
 
 import System.Environment (getArgs, getEnvironment)
@@ -274,10 +275,42 @@ parseTimeBlock =
 parsePeriod :: Parser (Maybe Period)
 parsePeriod =
     Just <$>
-    (flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
+    (parseBeginEnd <|> flag' Today (long "today") <|>
+     flag' ThisWeek (long "this-week") <|>
      flag' LastWeek (long "last-week") <|>
      flag' AllTime (long "all-time")) <|>
     pure Nothing
+  where
+    parseBeginEnd :: Parser Period
+    parseBeginEnd =
+        BeginEnd <$>
+        option
+            (maybeReader parseLocalBegin)
+            (mconcat
+                 [ long "begin"
+                 , metavar "LOCALTIME"
+                 , help "The time to start from (inclusive)"
+                 ]) <*>
+        option
+            (maybeReader parseLocalEnd)
+            (mconcat
+                 [ long "end"
+                 , metavar "LOCALTIME"
+                 , help "The time to end at (inclusive)"
+                 ])
+    parseLocalBegin :: String -> Maybe LocalTime
+    parseLocalBegin s =
+        LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
+    parseLocalEnd :: String -> Maybe LocalTime
+    parseLocalEnd s =
+        (LocalTime <$> (addDays 1 <$> parseLocalDay s) <*> pure midnight) <|>
+        parseExactly s
+    parseExactly :: String -> Maybe LocalTime
+    parseExactly s =
+        parseTimeM True defaultTimeLocale "%F %R" s <|>
+        parseTimeM True defaultTimeLocale "%F %T" s
+    parseLocalDay :: String -> Maybe Day
+    parseLocalDay = parseTimeM True defaultTimeLocale "%F"
 
 parseOutputFormat :: Parser (Maybe OutputFormat)
 parseOutputFormat =
