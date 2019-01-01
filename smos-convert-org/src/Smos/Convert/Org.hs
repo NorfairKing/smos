@@ -10,6 +10,7 @@ import GHC.Generics (Generic)
 
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Reader
 import qualified Data.Attoparsec.Text as Attoparsec
 import qualified Data.ByteString as SB
 import qualified Data.HashMap.Strict as HM
@@ -39,7 +40,14 @@ convertOrg = do
     let errOrDocument =
             Attoparsec.parseOnly
                 (Org.parseDocument
-                     ["TODO", "NEXT", "WAITING", "READY", "CANCELLED", "DONE"])
+                     [ "TODO"
+                     , "NEXT"
+                     , "STARTED"
+                     , "WAITING"
+                     , "READY"
+                     , "CANCELLED"
+                     , "DONE"
+                     ])
                 t
     case errOrDocument of
         Left err ->
@@ -50,8 +58,9 @@ convertOrg = do
                 , "with error"
                 , err
                 ]
-        Right doc ->
-            case convertDocument doc of
+        Right doc -> do
+            now <- getCurrentTime
+            case runReaderT (convertDocument doc) now of
                 Left err -> die $ unlines ["Failed to convert:", show err]
                 Right sf ->
                     case prettyValidate sf of
@@ -64,7 +73,7 @@ convertOrg = do
                                 Nothing -> SB.putStr $ smosFileYamlBS sf'
                                 Just p -> writeSmosFile p sf'
 
-type Convert = Either ConvertErr
+type Convert = ReaderT UTCTime (Either ConvertErr)
 
 data ConvertErr
     = InvalidHeader String
@@ -93,12 +102,12 @@ convertDocument Document {..} =
 
 convertHeadline :: Org.Headline -> Convert (Tree Smos.Entry)
 convertHeadline h = do
-    entryHeader <- left InvalidHeader $ Smos.parseHeader $ Org.title h
+    entryHeader <- lleft InvalidHeader $ Smos.parseHeader $ Org.title h
     let s = Org.section h
     entryContents <-
         case Org.sectionParagraph s of
             "" -> pure Nothing
-            t -> fmap Just $ left InvalidContents $ Smos.parseContents t
+            t -> fmap Just $ lleft InvalidContents $ Smos.parseContents t
     entryTimestamps <- convertPlannings $ Org.sectionPlannings s
     entryProperties <- convertProperties $ Org.sectionProperties s
     entryStateHistory <- convertStateHistory $ Org.stateKeyword h
@@ -113,7 +122,8 @@ convertPlannings ::
 convertPlannings (Plns hm) =
     fmap M.fromList $
     forM (HM.toList hm) $ \(kw, ots) -> do
-        tsn <- left InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
+        tsn <-
+            lleft InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
         ts <- fmap Smos.Timestamp $ constructDay $ yearMonthDay $ tsTime ots
         pure (tsn, ts)
 
@@ -122,26 +132,26 @@ convertProperties ::
 convertProperties ps =
     fmap M.fromList $
     forM (HM.toList $ unProperties ps) $ \(kt, vt) -> do
-        k <- left InvalidPropertyName $ parsePropertyName kt
-        v <- left InvalidPropertyValue $ parsePropertyValue vt
+        k <- lleft InvalidPropertyName $ parsePropertyName kt
+        v <- lleft InvalidPropertyValue $ parsePropertyValue vt
         pure (k, v)
 
 convertStateHistory :: Maybe Org.StateKeyword -> Convert Smos.StateHistory
 convertStateHistory mkw = do
     mts <-
         forM mkw $ \kw ->
-            left InvalidTodoState $ parseTodoState $ unStateKeyword kw
+            lleft InvalidTodoState $ parseTodoState $ unStateKeyword kw
+    now <- ask
     pure $
         StateHistory
             [ StateHistoryEntry
-                  { stateHistoryEntryNewState = mts
-                  , stateHistoryEntryTimestamp =
-                        UTCTime (fromGregorian 1970 1 1) 0 -- TODO what timestamp should we use?
-                  }
+              { stateHistoryEntryNewState = mts
+              , stateHistoryEntryTimestamp = now
+              }
             ]
 
 convertTag :: Org.Tag -> Convert Smos.Tag
-convertTag = left InvalidTag . parseTag
+convertTag = lleft InvalidTag . parseTag
 
 convertLogbook :: Org.Logbook -> Convert Smos.Logbook
 convertLogbook (Org.Logbook cs) = do
@@ -157,6 +167,7 @@ convertLogbook (Org.Logbook cs) = do
         lb <- constructLogbook rest
         case lb of
             LogOpen _ _ ->
+                lift $
                 Left $ InvalidLogbook "Cannot prepend to an open logbook."
             LogClosed es ->
                 case mend of
@@ -168,16 +179,16 @@ convertLogbook (Org.Logbook cs) = do
                         endT <- constructUTCTime end
                         let lbe =
                                 LogbookEntry
-                                    { logbookEntryStart = beginT
-                                    , logbookEntryEnd = endT
-                                    }
+                                { logbookEntryStart = beginT
+                                , logbookEntryEnd = endT
+                                }
                         pure $ LogClosed $ lbe : es
       where
         constructUTCTime :: DateTime -> Convert UTCTime
         constructUTCTime DateTime {..} = do
             day <- constructDay yearMonthDay
             dt <- maybe (pure 0) constructDiffTime hourMinute
-            left InvalidUTCTime $
+            lleft InvalidUTCTime $
                 prettyValidate $ UTCTime {utctDay = day, utctDayTime = dt}
           where
             constructDiffTime :: (Int, Int) -> Convert DiffTime
@@ -188,5 +199,8 @@ convertLogbook (Org.Logbook cs) = do
 
 constructDay :: YearMonthDay -> Convert Day
 constructDay YearMonthDay {..} =
-    left InvalidDay $
+    lleft InvalidDay $
     prettyValidate $ fromGregorian (fromIntegral ymdYear) ymdMonth ymdDay
+
+lleft :: (b -> ConvertErr) -> Either b a -> Convert a
+lleft v = lift . left v

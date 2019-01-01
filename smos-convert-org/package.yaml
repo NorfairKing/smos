@@ -16,6 +16,7 @@ library:
   - bytestring
   - containers
   - filepath
+  - mtl
   - optparse-applicative
   - orgmode-parse
   - path
