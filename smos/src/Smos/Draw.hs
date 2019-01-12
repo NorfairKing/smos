@@ -416,7 +416,7 @@ drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-    drawVerticalMapCursor drawTimestamp (drawTimestampKVCursor s) drawTimestamp
+    drawVerticalMapCursorM drawTimestamp (drawTimestampKVCursor s) drawTimestamp
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
@@ -489,12 +489,37 @@ drawDay d = do
             ]
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
-drawPropertiesCursor _ = strWrap . show
+drawPropertiesCursor s =
+    drawVerticalMapCursor
+        drawPropertyPair
+        (drawPropertyKVCursor s)
+        drawPropertyPair
+
+drawPropertyKVCursor ::
+       Select
+    -> KeyValueCursor TextCursor TextCursor PropertyName PropertyValue
+    -> Widget ResourceName
+drawPropertyKVCursor s kvc =
+    case kvc of
+        KeyValueCursorKey tc pv ->
+            hBox [drawTextCursor s tc, str ": ", drawPropertyValue pv]
+        KeyValueCursorValue pn tc ->
+            hBox [drawPropertyName pn, str ": ", drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
     | M.null m = Nothing
-    | otherwise = Just $ strWrap $ show m
+    | otherwise = Just $ vBox $ map (uncurry drawPropertyPair )$ M.toList m
+
+drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
+drawPropertyPair pn pv =
+    hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
+
+drawPropertyName :: PropertyName -> Widget ResourceName
+drawPropertyName = drawText . propertyNameText
+
+drawPropertyValue :: PropertyValue -> Widget ResourceName
+drawPropertyValue = drawText . propertyValueText
 
 drawStateHistoryCursor :: Select -> StateHistoryCursor -> MDrawer
 drawStateHistoryCursor _ = drawStateHistory . rebuildStateHistoryCursor . Just

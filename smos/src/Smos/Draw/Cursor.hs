@@ -4,13 +4,17 @@
 
 module Smos.Draw.Cursor
     ( drawVerticalMapCursor
+    , drawVerticalMapCursorM
     , drawMapCursor
+    , drawMapCursorM
     , drawVerticalForestCursor
     , drawForestCursorM
     , drawTreeCursorM
     , drawVerticalNonEmptyCursorTable
     , drawHorizontalNonEmptyCursor
+    , drawHorizontalNonEmptyCursorM
     , drawVerticalNonEmptyCursor
+    , drawVerticalNonEmptyCursorM
     , drawNonEmptyCursor
     ) where
 
@@ -28,25 +32,43 @@ import Cursor.Map
 import Cursor.Tree hiding (drawTreeCursor)
 
 drawVerticalMapCursor ::
+       (k -> v -> Widget n)
+    -> (KeyValueCursor kc vc k v -> Widget n)
+    -> (k -> v -> Widget n)
+    -> MapCursor kc vc k v
+    -> Widget n
+drawVerticalMapCursor prevFunc curFunc nextFunc =
+    drawMapCursor $ \ps c ns ->
+        B.vBox $
+        map (uncurry prevFunc) ps ++ [curFunc c] ++ map (uncurry nextFunc) ns
+
+drawVerticalMapCursorM ::
        Monad m
     => (k -> v -> m (Widget n))
     -> (KeyValueCursor kc vc k v -> m (Widget n))
     -> (k -> v -> m (Widget n))
     -> MapCursor kc vc k v
     -> m (Widget n)
-drawVerticalMapCursor prevFunc curFunc nextFunc =
-    drawMapCursor $ \ps c ns -> do
+drawVerticalMapCursorM prevFunc curFunc nextFunc =
+    drawMapCursorM $ \ps c ns -> do
         ps' <- mapM (uncurry prevFunc) ps
         c' <- curFunc c
         ns' <- mapM (uncurry nextFunc) ns
         pure $ B.vBox $ ps' ++ [c'] ++ ns'
 
 drawMapCursor ::
+       ([(k, v)] -> KeyValueCursor kc vc k v -> [(k, v)] -> Widget n)
+    -> MapCursor kc vc k v
+    -> Widget n
+drawMapCursor combFunc =
+    runIdentity . drawMapCursorM (\ps c ns -> Identity $ combFunc ps c ns)
+
+drawMapCursorM ::
        Monad m
     => ([(k, v)] -> KeyValueCursor kc vc k v -> [(k, v)] -> m (Widget n))
     -> MapCursor kc vc k v
     -> m (Widget n)
-drawMapCursor combFunc = drawNonEmptyCursorM combFunc . mapCursorList
+drawMapCursorM combFunc = drawNonEmptyCursorM combFunc . mapCursorList
 
 drawVerticalForestCursor ::
        Monad m
