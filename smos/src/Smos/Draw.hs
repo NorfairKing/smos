@@ -242,7 +242,7 @@ drawSmosTreeCursor ::
        Select
     -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
     -> Drawer
-drawSmosTreeCursor s = drawTreeCursor wrap cur
+drawSmosTreeCursor s = drawTreeCursorM wrap cur
   where
     cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
     cur ec cf =
@@ -530,13 +530,10 @@ drawStateHistory (StateHistory ls)
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
-    drawNonEmptyCursor
+    drawHorizontalNonEmptyCursor
         (\t -> str ":" <+> drawTag t)
         (drawTagCursor s)
-        (\t -> drawTag t <+> str ":")
-        hBox
-        hBox
-        (\f d g -> hBox [f, d, g]) .
+        (\t -> drawTag t <+> str ":") .
     tagsCursorNonEmptyCursor
 
 drawTags :: [Tag] -> Maybe (Widget ResourceName)
