@@ -332,7 +332,13 @@ newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
     } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
-instance Validity PropertyValue
+instance Validity PropertyValue where
+    validate (PropertyValue t) =
+        mconcat
+            [ delve "propertyValueText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare "The character is not a newline character" $ c /= '\n'
+            ]
 
 instance FromJSON PropertyValue where
     parseJSON = withText "PropertyValue" parseJSONPropertyValue

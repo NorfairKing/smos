@@ -5,17 +5,24 @@ module Smos.Cursor.Properties
     ) where
 
 import Data.List.NonEmpty (NonEmpty)
+import Data.Maybe
 
-import Cursor.Simple.Map
+import Cursor.Map
+import Cursor.Text
 
 import Smos.Data.Types
 
-type PropertiesCursor = MapCursor PropertyName PropertyValue
+type PropertiesCursor
+     = MapCursor TextCursor TextCursor PropertyName PropertyValue
 
 makePropertiesCursor ::
        NonEmpty (PropertyName, PropertyValue) -> PropertiesCursor
-makePropertiesCursor = makeMapCursor
+makePropertiesCursor =
+    makeMapCursor (fromJust . makeTextCursor . propertyNameText)
 
 rebuildPropertiesCursor ::
        PropertiesCursor -> NonEmpty (PropertyName, PropertyValue)
-rebuildPropertiesCursor = rebuildMapCursor
+rebuildPropertiesCursor =
+    rebuildMapCursor
+        (fromJust . propertyName . rebuildTextCursor)
+        (fromJust . propertyValue . rebuildTextCursor)
