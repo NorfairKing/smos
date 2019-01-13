@@ -1,5 +1,0 @@
-- header: hello
-  properties:
-    hello: world
-    foo: bar
-- hello

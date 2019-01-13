@@ -19,6 +19,7 @@ module Smos.Actions.Utils
     , module Smos.Cursor.Entry
     , module Smos.Cursor.Header
     , module Smos.Cursor.Logbook
+    , module Smos.Cursor.Properties
     , module Smos.Cursor.Report.Next
     , module Smos.Cursor.SmosFile
     , module Smos.Cursor.StateHistory
@@ -37,6 +38,7 @@ import Smos.Cursor.Contents
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
+import Smos.Cursor.Properties
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.StateHistory
@@ -93,9 +95,9 @@ modifyMContentsCursorWhenSelectedM func =
         case entryCursorSelected ec of
             ContentsSelected ->
                 let ec' = ec & entryCursorContentsCursorL %~ func
-                in if isNothing $ entryCursorContentsCursor ec'
-                       then ec' {entryCursorSelected = WholeEntrySelected}
-                       else ec'
+                 in if isNothing $ entryCursorContentsCursor ec'
+                        then ec' {entryCursorSelected = WholeEntrySelected}
+                        else ec'
             _ -> ec
 
 modifyTagsCursorMD ::
@@ -103,7 +105,8 @@ modifyTagsCursorMD ::
 modifyTagsCursorMD func = modifyMTagsCursorMD (>>= func)
 
 modifyTagsCursorD :: (TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
-modifyTagsCursorD func =
+modifyTagsCursorD func -- TODO this is wrong
+ =
     modifyTagsCursorM $ \tc ->
         case func tc of
             Deleted -> Nothing
@@ -119,7 +122,8 @@ modifyMTagsCursorD ::
        (Maybe TagsCursor -> DeleteOrUpdate TagsCursor) -> SmosM ()
 modifyMTagsCursorD func = modifyMTagsCursorMD $ Just . func
 
-modifyMTagsCursorMD ::
+modifyMTagsCursorMD -- TODO this is wrong
+ ::
        (Maybe TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)) -> SmosM ()
 modifyMTagsCursorMD func =
     modifyMTagsCursorM $ \mtc ->
@@ -138,9 +142,35 @@ modifyMTagsCursorM func =
         case func (entryCursorTagsCursor ec) of
             Nothing ->
                 (entryCursorSelectionL .~ WholeEntrySelected) .
-                (entryCursorTagsCursorL .~
-                Nothing)
+                (entryCursorTagsCursorL .~ Nothing)
             Just tsc -> entryCursorTagsCursorL .~ Just tsc
+
+modifyPropertiesCursorM ::
+       (PropertiesCursor -> Maybe PropertiesCursor) -> SmosM ()
+modifyPropertiesCursorM func =
+    modifyPropertiesCursor $ \tsc -> fromMaybe tsc $ func tsc
+
+modifyPropertiesCursor :: (PropertiesCursor -> PropertiesCursor) -> SmosM ()
+modifyPropertiesCursor func = modifyMPropertiesCursorM $ fmap func
+
+modifyPropertiesCursorMD ::
+       (PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)) -> SmosM ()
+modifyPropertiesCursorMD func =
+    modifyMPropertiesCursorM $ \mpc -> do
+        pc <- mpc
+        case func pc of
+            Nothing -> pure pc
+            Just Deleted -> Nothing
+            Just (Updated pc') -> Just pc'
+
+modifyMPropertiesCursorM ::
+       (Maybe PropertiesCursor -> Maybe PropertiesCursor) -> SmosM ()
+modifyMPropertiesCursorM func = modifyMPropertiesCursorSM $ pure . func
+
+modifyMPropertiesCursorSM ::
+       (Maybe PropertiesCursor -> SmosM (Maybe PropertiesCursor)) -> SmosM ()
+modifyMPropertiesCursorSM func =
+    modifyEntryCursorS $ entryCursorPropertiesCursorL func
 
 modifyTimestampsCursorM ::
        (TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()
