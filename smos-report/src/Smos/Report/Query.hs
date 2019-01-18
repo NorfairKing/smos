@@ -8,6 +8,8 @@ import GHC.Generics (Generic)
 import Data.Char as Char
 import Data.Function
 import Data.List
+import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
@@ -34,6 +36,7 @@ data Filter
     | FilterTodoState TodoState
     | FilterFile (Path Rel File) -- Substring of the filename
     | FilterLevel Word -- The level of the entry in the tree (0 is top)
+    | FilterProperty PropertyFilter
     | FilterParent Filter
     | FilterAncestor Filter
     | FilterNot Filter
@@ -55,6 +58,14 @@ instance Validity Filter where
                   _ -> valid
             ]
 
+data PropertyFilter
+    = ExactProperty PropertyName
+                    PropertyValue
+    | HasProperty PropertyName
+    deriving (Show, Eq, Generic)
+
+instance Validity PropertyFilter
+
 filterPredicate :: Filter -> RootedPath -> ForestCursor Entry -> Bool
 filterPredicate f_ rp = go f_
   where
@@ -63,18 +74,26 @@ filterPredicate f_ rp = go f_
             parent_ = fc & forestCursorSelectedTreeL treeCursorSelectAbove
             cur :: Entry
             cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
-         in case f of
-                FilterHasTag t -> t `elem` entryTags cur
-                FilterTodoState mts -> Just mts == entryState cur
-                FilterFile t ->
-                    fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
-                FilterLevel l -> l == level fc
-                FilterParent f' -> maybe False (go f') parent_
-                FilterAncestor f' ->
-                    maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
-                FilterNot f' -> not $ go f' fc
-                FilterAnd f1 f2 -> go f1 fc && go f2 fc
-                FilterOr f1 f2 -> go f1 fc || go f2 fc
+        in case f of
+               FilterHasTag t -> t `elem` entryTags cur
+               FilterTodoState mts -> Just mts == entryState cur
+               FilterFile t ->
+                   fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
+               FilterProperty pf ->
+                   case pf of
+                       ExactProperty pn pv ->
+                           case M.lookup pn $ entryProperties cur of
+                               Nothing -> False
+                               Just pv' -> pv == pv'
+                       HasProperty pn ->
+                           isJust $ M.lookup pn $ entryProperties cur
+               FilterLevel l -> l == level fc
+               FilterParent f' -> maybe False (go f') parent_
+               FilterAncestor f' ->
+                   maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+               FilterNot f' -> not $ go f' fc
+               FilterAnd f1 f2 -> go f1 fc && go f2 fc
+               FilterOr f1 f2 -> go f1 fc || go f2 fc
     level :: ForestCursor a -> Word
     level fc = go' $ fc ^. forestCursorSelectedTreeL
       where
@@ -96,6 +115,7 @@ filterP :: P Filter
 filterP =
     try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|>
     try filterLevelP <|>
+    try filterPropertyP <|>
     try filterParentP <|>
     try filterAncestorP <|>
     try filterNotP <|>
@@ -133,6 +153,12 @@ filterLevelP = do
     w <- decimal
     pure $ FilterLevel w
 
+filterPropertyP :: P Filter
+filterPropertyP = do
+    void $ string' "property:"
+    pf <- propertyFilterP
+    pure $ FilterProperty pf
+
 filterParentP :: P Filter
 filterParentP = do
     void $ string' "parent:"
@@ -169,6 +195,42 @@ filterAndP = do
     f2 <- filterP
     pure $ FilterAnd f1 f2
 
+propertyFilterP :: P PropertyFilter
+propertyFilterP = do
+    try exactPropertyP <|> hasPropertyP
+
+exactPropertyP :: P PropertyFilter
+exactPropertyP = do
+    void $ string' "exact:"
+    pn <- propertyNameP
+    void $ string' ":"
+    pv <- propertyValueP
+    pure $ ExactProperty pn pv
+
+hasPropertyP :: P PropertyFilter
+hasPropertyP = do
+    void $ string' "has:"
+    pn <- propertyNameP
+    pure $ HasProperty pn
+
+propertyNameP :: P PropertyName
+propertyNameP = do
+    s <-
+        many
+            (satisfy $ \c ->
+                 Char.isPrint c && not (Char.isSpace c) &&
+                 not (Char.isPunctuation c))
+    either fail pure $ parsePropertyName $ T.pack s
+
+propertyValueP :: P PropertyValue
+propertyValueP = do
+    s <-
+        many
+            (satisfy $ \c ->
+                 Char.isPrint c && not (Char.isSpace c) &&
+                 not (Char.isPunctuation c))
+    either fail pure $ parsePropertyValue $ T.pack s
+
 renderFilter :: Filter -> Text
 renderFilter f =
     case f of
@@ -176,6 +238,7 @@ renderFilter f =
         FilterTodoState ts -> "state:" <> todoStateText ts
         FilterFile t -> "file:" <> T.pack (fromRelFile t)
         FilterLevel l -> "level:" <> T.pack (show l)
+        FilterProperty fp -> "property:" <> renderPropertyFilter fp
         FilterParent f' -> "parent:" <> renderFilter f'
         FilterAncestor f' -> "ancestor:" <> renderFilter f'
         FilterNot f' -> "not:" <> renderFilter f'
@@ -183,3 +246,10 @@ renderFilter f =
             T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
         FilterAnd f1 f2 ->
             T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
+
+renderPropertyFilter :: PropertyFilter -> Text
+renderPropertyFilter pf =
+    case pf of
+        ExactProperty pn pv ->
+            "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
+        HasProperty pn -> "has:" <> propertyNameText pn
