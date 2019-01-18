@@ -493,7 +493,8 @@ drawPropertiesCursor s =
     drawVerticalMapCursor
         drawPropertyPair
         (drawPropertyKVCursor s)
-        drawPropertyPair
+        drawPropertyPair .
+    propertiesCursorMapCursor
 
 drawPropertyKVCursor ::
        Select
@@ -509,7 +510,7 @@ drawPropertyKVCursor s kvc =
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
     | M.null m = Nothing
-    | otherwise = Just $ vBox $ map (uncurry drawPropertyPair )$ M.toList m
+    | otherwise = Just $ vBox $ map (uncurry drawPropertyPair) $ M.toList m
 
 drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
 drawPropertyPair pn pv =
