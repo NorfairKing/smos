@@ -10,6 +10,8 @@ module Smos.Cursor.Properties
     , propertiesCursorAppend
     , propertiesCursorRemove
     , propertiesCursorDelete
+    , propertiesCursorStartNewPropertyBefore
+    , propertiesCursorStartNewPropertyAfter
     ) where
 
 import Data.List.NonEmpty (NonEmpty(..))
@@ -47,8 +49,7 @@ propertiesCursorCurrentTextCursorL =
                  KeyValueCursorKey kc _ -> kc
                  KeyValueCursorValue _ vc -> vc)
         (\tsc tc ->
-             tsc &
-             mapCursorElemL %~
+             tsc & mapCursorElemL %~
              (\kvc ->
                   case kvc of
                       KeyValueCursorKey _ v -> KeyValueCursorKey tc v
@@ -91,6 +92,22 @@ propertiesCursorDelete =
     focusPossibleDeleteOrUpdate
         propertiesCursorCurrentTextCursorL
         textCursorDelete
+
+propertiesCursorStartNewPropertyBefore :: PropertiesCursor -> PropertiesCursor
+propertiesCursorStartNewPropertyBefore =
+    mapCursorInsertAndSelectKey
+        rebuildPropertyNameCursor
+        rebuildPropertyValueCursor
+        emptyTextCursor
+        emptyPropertyValue
+
+propertiesCursorStartNewPropertyAfter :: PropertiesCursor -> PropertiesCursor
+propertiesCursorStartNewPropertyAfter =
+    mapCursorAppendAndSelectKey
+        rebuildPropertyNameCursor
+        rebuildPropertyValueCursor
+        emptyTextCursor
+        emptyPropertyValue
 
 -- safe because of validity
 rebuildPropertyNameCursor :: TextCursor -> PropertyName

@@ -48,3 +48,9 @@ spec = do
     describe "propertiesCursorDelete" $ do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorDelete
+    describe "propertiesCursorStartNewPropertyBefore" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids propertiesCursorStartNewPropertyBefore
+    describe "propertiesCursorStartNewPropertyAfter" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids propertiesCursorStartNewPropertyAfter
