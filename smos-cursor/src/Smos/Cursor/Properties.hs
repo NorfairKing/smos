@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Smos.Cursor.Properties
     ( PropertiesCursor
     , emptyPropertiesCursor
@@ -14,8 +16,12 @@ module Smos.Cursor.Properties
     , propertiesCursorStartNewPropertyAfter
     ) where
 
+import GHC.Generics (Generic)
+
+import Control.Monad
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
+import Data.Validity
 
 import Lens.Micro
 
@@ -25,8 +31,9 @@ import Cursor.Types
 
 import Smos.Data.Types
 
-type PropertiesCursor
-     = MapCursor TextCursor TextCursor PropertyName PropertyValue
+newtype PropertiesCursor = PropertiesCursor
+    { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
+    } deriving (Show, Eq, Generic)
 
 emptyPropertiesCursor :: PropertiesCursor
 emptyPropertiesCursor =
@@ -73,11 +80,11 @@ propertiesCursorSelectPrevChar =
 
 propertiesCursorInsert :: Char -> PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorInsert c =
-    propertiesCursorCurrentTextCursorL $ textCursorInsert c
+    propertiesCursorCurrentTextCursorL (textCursorInsert c)
 
 propertiesCursorAppend :: Char -> PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorAppend c =
-    propertiesCursorCurrentTextCursorL $ textCursorAppend c
+    propertiesCursorCurrentTextCursorL (textCursorAppend c)
 
 propertiesCursorRemove ::
        PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
