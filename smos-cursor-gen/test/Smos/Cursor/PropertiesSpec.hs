@@ -36,6 +36,14 @@ spec = do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorSelectNextChar
         it "is a movement" pending
+    describe "propertiesCursorSelectPrevProperty" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids propertiesCursorSelectPrevProperty
+        it "is a movement" pending
+    describe "propertiesCursorSelectNextProperty" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids propertiesCursorSelectNextProperty
+        it "is a movement" pending
     describe "propertiesCursorInsert" $ do
         it "produces valid cursors" $
             producesValidsOnValids2 propertiesCursorInsert

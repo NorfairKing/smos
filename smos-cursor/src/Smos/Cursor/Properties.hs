@@ -8,6 +8,8 @@ module Smos.Cursor.Properties
     , propertiesCursorToggleSelected
     , propertiesCursorSelectNextChar
     , propertiesCursorSelectPrevChar
+    , propertiesCursorSelectNextProperty
+    , propertiesCursorSelectPrevProperty
     , propertiesCursorInsert
     , propertiesCursorAppend
     , propertiesCursorRemove
@@ -102,6 +104,22 @@ propertiesCursorSelectNextChar =
 propertiesCursorSelectPrevChar :: PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorSelectPrevChar =
     propertiesCursorCurrentTextCursorL $ textCursorSelectPrev
+
+propertiesCursorSelectNextProperty :: PropertiesCursor -> Maybe PropertiesCursor
+propertiesCursorSelectNextProperty =
+    propertiesCursorMapCursorL $
+    mapCursorSelectNext
+        rebuildPropertyNameCursor
+        makePropertyNameCursor
+        rebuildPropertyValueCursor
+
+propertiesCursorSelectPrevProperty :: PropertiesCursor -> Maybe PropertiesCursor
+propertiesCursorSelectPrevProperty =
+    propertiesCursorMapCursorL $
+    mapCursorSelectPrev
+        rebuildPropertyNameCursor
+        makePropertyNameCursor
+        rebuildPropertyValueCursor
 
 propertiesCursorInsert :: Char -> PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorInsert c =
