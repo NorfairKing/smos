@@ -19,7 +19,7 @@ extra-deps:
 - thyme-0.3.5.5
 - hakyll-sass-0.2.3
 - git: https://github.com/NorfairKing/pretty-relative-time.git
-  commit: 0044ce34d484d54e6809c30cee8e1219c722765f
+  commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
   commit: 8b1358f768b709651efb90f8f7bd2d84f70cd0ae
   subdirs:
