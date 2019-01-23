@@ -3,6 +3,7 @@
 module Smos.Cursor.Properties
     ( PropertiesCursor(..)
     , emptyPropertiesCursor
+    , singletonPropertiesCursor
     , makePropertiesCursor
     , rebuildPropertiesCursor
     , propertiesCursorToggleSelected
@@ -16,6 +17,7 @@ module Smos.Cursor.Properties
     , propertiesCursorDelete
     , propertiesCursorStartNewPropertyBefore
     , propertiesCursorStartNewPropertyAfter
+    , propertiesCursorAddOrSelect
     ) where
 
 import GHC.Generics (Generic)
@@ -34,11 +36,9 @@ import Cursor.Types
 
 import Smos.Data.Types
 
-newtype PropertiesCursor =
-    PropertiesCursor
-        { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
-        }
-    deriving (Show, Eq, Generic)
+newtype PropertiesCursor = PropertiesCursor
+    { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
+    } deriving (Show, Eq, Generic)
 
 instance Validity PropertiesCursor where
     validate (PropertiesCursor pc) =
@@ -60,7 +60,10 @@ propertiesCursorMapCursorL =
 
 emptyPropertiesCursor :: PropertiesCursor
 emptyPropertiesCursor =
-    makePropertiesCursor $ (emptyPropertyName, emptyPropertyValue) :| []
+    singletonPropertiesCursor emptyPropertyName emptyPropertyValue
+
+singletonPropertiesCursor :: PropertyName -> PropertyValue -> PropertiesCursor
+singletonPropertiesCursor pn pv = makePropertiesCursor $ (pn, pv) :| []
 
 makePropertiesCursor ::
        NonEmpty (PropertyName, PropertyValue) -> PropertiesCursor
@@ -81,8 +84,7 @@ propertiesCursorCurrentTextCursorL =
                  KeyValueCursorKey kc _ -> kc
                  KeyValueCursorValue _ vc -> vc)
         (\tsc tc ->
-             tsc &
-             mapCursorElemL %~
+             tsc & mapCursorElemL %~
              (\kvc ->
                   case kvc of
                       KeyValueCursorKey _ v -> KeyValueCursorKey tc v
@@ -160,6 +162,30 @@ propertiesCursorStartNewPropertyAfter =
         rebuildPropertyValueCursor
         emptyTextCursor
         emptyPropertyValue
+
+propertiesCursorAddOrSelect ::
+       PropertyName -> Maybe PropertiesCursor -> PropertiesCursor
+propertiesCursorAddOrSelect pn mpc =
+    let pc = fromMaybe (singletonPropertiesCursor pn emptyPropertyValue) mpc
+    in case propertiesCursorMapCursorL
+                (mapCursorSearch
+                     rebuildPropertyNameCursor
+                     makePropertyNameCursor
+                     rebuildPropertyValueCursor
+                     (\k _ -> k == pn))
+                pc of
+           Just pc' ->
+               pc' & propertiesCursorMapCursorL %~
+               mapCursorSelectValue
+                   rebuildPropertyNameCursor
+                   makePropertyValueCursor
+           Nothing ->
+               pc & propertiesCursorMapCursorL %~
+               mapCursorInsertAndSelectValue
+                   rebuildPropertyNameCursor
+                   rebuildPropertyValueCursor
+                   pn
+                   emptyTextCursor
 
 -- safe because of validity
 rebuildPropertyNameCursor :: TextCursor -> PropertyName

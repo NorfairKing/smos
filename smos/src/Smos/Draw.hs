@@ -501,11 +501,15 @@ drawPropertyKVCursor ::
     -> KeyValueCursor TextCursor TextCursor PropertyName PropertyValue
     -> Widget ResourceName
 drawPropertyKVCursor s kvc =
-    case kvc of
-        KeyValueCursorKey tc pv ->
-            hBox [drawTextCursor s tc, str ": ", drawPropertyValue pv]
-        KeyValueCursorValue pn tc ->
-            hBox [drawPropertyName pn, str ": ", drawTextCursor s tc]
+    let sel =
+            (case s of
+                 NotSelected -> id
+                 MaybeSelected -> withAttr selectedAttr)
+    in case kvc of
+           KeyValueCursorKey tc pv ->
+               hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+           KeyValueCursorValue pn tc ->
+               hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m

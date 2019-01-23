@@ -62,3 +62,6 @@ spec = do
     describe "propertiesCursorStartNewPropertyAfter" $ do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorStartNewPropertyAfter
+    describe "propertiesCursorAddOrSelect" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids2 propertiesCursorAddOrSelect
