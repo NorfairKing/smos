@@ -18,6 +18,7 @@ module Smos.Cursor.Properties
     , propertiesCursorStartNewPropertyBefore
     , propertiesCursorStartNewPropertyAfter
     , propertiesCursorAddOrSelect
+    , propertiesCursorSet
     ) where
 
 import GHC.Generics (Generic)
@@ -186,6 +187,42 @@ propertiesCursorAddOrSelect pn mpc =
                    rebuildPropertyValueCursor
                    pn
                    emptyTextCursor
+
+propertiesCursorSet ::
+       PropertyName
+    -> PropertyValue
+    -> Maybe PropertiesCursor
+    -> PropertiesCursor
+propertiesCursorSet pn pv mpc =
+    case mpc of
+        Nothing -> singletonPropertiesCursor pn pv
+        Just pc ->
+            case pc &
+                 propertiesCursorMapCursorL
+                     (mapCursorSearch
+                          rebuildPropertyNameCursor
+                          makePropertyNameCursor
+                          rebuildPropertyValueCursor
+                          (\k _ -> k == pn)) of
+                Just pc' ->
+                    pc' & (propertiesCursorMapCursorL . mapCursorElemL) %~
+                    (\kvc ->
+                         case kvc of
+                             KeyValueCursorKey tc _ ->
+                                 KeyValueCursorValue
+                                     (rebuildPropertyNameCursor tc)
+                                     (makePropertyValueCursor pv)
+                             KeyValueCursorValue k _ ->
+                                 KeyValueCursorValue
+                                     k
+                                     (makePropertyValueCursor pv))
+                Nothing ->
+                    pc & propertiesCursorMapCursorL %~
+                    mapCursorAppendAndSelectValue
+                        rebuildPropertyNameCursor
+                        rebuildPropertyValueCursor
+                        pn
+                        (makePropertyValueCursor pv)
 
 -- safe because of validity
 rebuildPropertyNameCursor :: TextCursor -> PropertyName

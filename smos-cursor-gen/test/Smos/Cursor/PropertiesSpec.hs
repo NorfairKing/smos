@@ -65,3 +65,6 @@ spec = do
     describe "propertiesCursorAddOrSelect" $ do
         it "produces valid cursors" $
             producesValidsOnValids2 propertiesCursorAddOrSelect
+    describe "propertiesCursorSet" $ do
+        it "produces valid cursors" $
+            producesValidsOnValids3 propertiesCursorSet

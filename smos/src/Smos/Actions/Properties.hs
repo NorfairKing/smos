@@ -16,6 +16,7 @@ module Smos.Actions.Properties
     , propertiesInsertNewProperty
     , propertiesAppendNewProperty
     , propertiesEditProperty
+    , propertiesSetProperty
     ) where
 
 import Smos.Data
@@ -141,9 +142,20 @@ propertiesEditProperty :: PropertyName -> Action
 propertiesEditProperty pn =
     Action
     { actionName = "propertiesEditProperty_" <> ActionName (propertyNameText pn)
-    , actionFunc = do
-             modifyMPropertiesCursorM $ Just . propertiesCursorAddOrSelect pn
+    , actionFunc =
+          do modifyMPropertiesCursorM $ Just . propertiesCursorAddOrSelect pn
              modifyEntryCursor entryCursorSelectProperties
     , actionDescription =
           "Start editing a property with the given name, create it if it does not exist yet"
+    }
+
+propertiesSetProperty :: PropertyName -> PropertyValue -> Action
+propertiesSetProperty pn pv =
+    Action
+    { actionName =
+          "propertiesSetProperty_" <> ActionName (propertyNameText pn) <> "_" <>
+          ActionName (propertyValueText pv)
+    , actionFunc = modifyMPropertiesCursorM $ Just . propertiesCursorSet pn pv
+    , actionDescription =
+          "Set a property with the given name to the given value, create it if it does not exist yet"
     }
