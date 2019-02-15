@@ -38,7 +38,7 @@ import Smos.Report.TimeBlock
 zeroOutByFilter :: Filter -> RootedPath -> SmosFile -> SmosFile
 zeroOutByFilter f rp sf =
     let cursors = forestCursors $ smosFileForest sf
-     in SmosFile $ map (fmap go) cursors
+    in SmosFile $ map (fmap go) cursors
   where
     go :: ForestCursor Entry -> Entry
     go fc =
@@ -79,21 +79,21 @@ findHeaderTimes now Entry {..} =
 headerTimesList :: HeaderTimes NonEmpty -> HeaderTimes []
 headerTimesList hts =
     HeaderTimes
-        { headerTimesHeader = headerTimesHeader hts
-        , headerTimesEntries = NE.toList $ headerTimesEntries hts
-        }
+    { headerTimesHeader = headerTimesHeader hts
+    , headerTimesEntries = NE.toList $ headerTimesEntries hts
+    }
 
 headerTimesNonEmpty :: HeaderTimes [] -> Maybe (HeaderTimes NonEmpty)
 headerTimesNonEmpty hts = do
     ne <- NE.nonEmpty $ headerTimesEntries hts
     pure $
         HeaderTimes
-            {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
+        {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
 
 trimHeaderTimes :: ZonedTime -> Period -> HeaderTimes [] -> HeaderTimes []
 trimHeaderTimes zt cp ht =
     let es' = mapMaybe (trimLogbookEntry zt cp) $ headerTimesEntries ht
-     in ht {headerTimesEntries = es'}
+    in ht {headerTimesEntries = es'}
 
 trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
@@ -102,6 +102,7 @@ trimLogbookEntry now cp =
         Today -> trimToToday
         LastWeek -> trimToLastWeek
         ThisWeek -> trimToThisWeek
+        BeginEnd begin end -> trimLogbookEntryTo tz begin end
   where
     tz :: TimeZone
     tz = zonedTimeZone now
@@ -114,15 +115,15 @@ trimLogbookEntry now cp =
     lastWeekStart :: LocalTime
     lastWeekStart =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
+        in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y wn 1) midnight
+        in LocalTime (fromWeekDate y wn 1) midnight
     thisWeekEnd :: LocalTime
     thisWeekEnd =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
     trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
@@ -139,15 +140,15 @@ trimLogbookEntryTo ::
 trimLogbookEntryTo tz begin end LogbookEntry {..} =
     constructValid $
     LogbookEntry
-        { logbookEntryStart =
-              if toLocal logbookEntryStart >= begin
-                  then logbookEntryStart
-                  else fromLocal begin
-        , logbookEntryEnd =
-              if toLocal logbookEntryEnd < end
-                  then logbookEntryEnd
-                  else fromLocal end
-        }
+    { logbookEntryStart =
+          if toLocal logbookEntryStart >= begin
+              then logbookEntryStart
+              else fromLocal begin
+    , logbookEntryEnd =
+          if toLocal logbookEntryEnd < end
+              then logbookEntryEnd
+              else fromLocal end
+    }
   where
     toLocal :: UTCTime -> LocalTime
     toLocal = utcToLocalTime tz
@@ -208,15 +209,16 @@ trimFileTimesToDay tz d fts =
     goTT (TLeaf hts) = do
         hts' <- headerTimesNonEmpty $ goHT $ headerTimesList hts
         pure $ TLeaf hts'
-    goTT (TBranch hts tf) = case goTF tf of
-        Nothing -> TLeaf <$> (headerTimesNonEmpty $ goHT hts)
-        Just f -> pure $ TBranch (goHT hts) f
+    goTT (TBranch hts tf) =
+        case goTF tf of
+            Nothing -> TLeaf <$> (headerTimesNonEmpty $ goHT hts)
+            Just f -> pure $ TBranch (goHT hts) f
     goHT :: HeaderTimes [] -> HeaderTimes []
     goHT hts =
         hts
-            { headerTimesEntries =
-                  mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)
-            }
+        { headerTimesEntries =
+              mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)
+        }
 
 sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
 sortAndGroupCombineOrd = sortGroupCombine compare
@@ -235,16 +237,16 @@ makeClockTable = map makeClockTableBlock
 makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
 makeClockTableBlock Block {..} =
     Block
-        { blockTitle = blockTitle
-        , blockEntries = map makeClockTableFile blockEntries
-        }
+    { blockTitle = blockTitle
+    , blockEntries = map makeClockTableFile blockEntries
+    }
 
 makeClockTableFile :: FileTimes -> ClockTableFile
 makeClockTableFile FileTimes {..} =
     ClockTableFile
-        { clockTableFile = clockTimeFile
-        , clockTableForest = unTForest clockTimeForest
-        }
+    { clockTableFile = clockTimeFile
+    , clockTableForest = unTForest clockTimeForest
+    }
 
 unTForest :: TForest HeaderTimes -> Forest ClockTableHeaderEntry
 unTForest = map unTTree . NE.toList
@@ -256,9 +258,9 @@ unTTree (TBranch hts tf) = Node (makeClockTableHeaderEntry hts) (unTForest tf)
 makeClockTableHeaderEntry :: HeaderTimes [] -> ClockTableHeaderEntry
 makeClockTableHeaderEntry HeaderTimes {..} =
     ClockTableHeaderEntry
-        { clockTableHeaderEntryHeader = headerTimesHeader
-        , clockTableHeaderEntryTime = sumLogbookEntryTime $ headerTimesEntries
-        }
+    { clockTableHeaderEntryHeader = headerTimesHeader
+    , clockTableHeaderEntryTime = sumLogbookEntryTime $ headerTimesEntries
+    }
 
 sumLogbookEntryTime :: [LogbookEntry] -> NominalDiffTime
 sumLogbookEntryTime = sum . map go

@@ -2,7 +2,8 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Activation
-    ( findActivations
+    ( currentKeyMappings
+    , findActivations
     , Activation(..)
     ) where
 
@@ -11,9 +12,43 @@ import Import
 import Data.Ord as Ord
 import qualified Data.Sequence as Seq
 
+import Lens.Micro
+
 import qualified Graphics.Vty as Vty
 
+import Smos.Cursor.Entry
+import Smos.Cursor.SmosFile
+
 import Smos.Types
+
+currentKeyMappings :: KeyMap -> EditorCursor -> [(Precedence, KeyMapping)]
+currentKeyMappings KeyMap {..} ec =
+    case editorCursorSelection ec of
+        HelpSelected -> map ((,) SpecificMatcher) keyMapHelpMatchers
+        FileSelected ->
+            let FileKeyMap {..} = keyMapFileKeyMap
+                with :: KeyMappings -> [(Precedence, KeyMapping)]
+                with specificMappings =
+                    map ((,) SpecificMatcher) specificMappings ++
+                    map ((,) AnyMatcher) fileKeyMapAnyMatchers
+             in case editorCursorFileCursor ec of
+                    Nothing -> with fileKeyMapEmptyMatchers
+                    Just sfc ->
+                        case sfc ^. smosFileCursorEntrySelectionL of
+                            WholeEntrySelected -> with fileKeyMapEntryMatchers
+                            HeaderSelected -> with fileKeyMapHeaderMatchers
+                            ContentsSelected -> with fileKeyMapContentsMatchers
+                            TimestampsSelected ->
+                                with fileKeyMapTimestampsMatchers
+                            PropertiesSelected ->
+                                with fileKeyMapPropertiesMatchers
+                            StateHistorySelected ->
+                                with fileKeyMapStateHistoryMatchers
+                            TagsSelected -> with fileKeyMapTagsMatchers
+                            LogbookSelected -> with fileKeyMapLogbookMatchers
+        ReportSelected ->
+            let ReportsKeyMap {..} = keyMapReportsKeyMap
+             in map ((,) SpecificMatcher) reportsKeymapNextActionReportMatchers
 
 findActivations ::
        Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
@@ -31,12 +66,12 @@ findExactActivations history mappings =
                         if keyPressMatch kp kp_
                             then Just
                                      Activation
-                                     { activationPrecedence = p
-                                     , activationPriority = MatchExact
-                                     , activationMatch = Seq.singleton kp
-                                     , activationName = actionName a
-                                     , activationFunc = actionFunc a
-                                     }
+                                         { activationPrecedence = p
+                                         , activationPriority = MatchExact
+                                         , activationMatch = Seq.singleton kp
+                                         , activationName = actionName a
+                                         , activationFunc = actionFunc a
+                                         }
                             else Nothing
                     _ -> Nothing
             MapAnyTypeableChar a ->
@@ -46,12 +81,12 @@ findExactActivations history mappings =
                             Vty.KChar c ->
                                 Just
                                     Activation
-                                    { activationPrecedence = p
-                                    , activationPriority = MatchAnyChar
-                                    , activationMatch = Seq.singleton kp
-                                    , activationName = actionUsingName a
-                                    , activationFunc = actionUsingFunc a c
-                                    }
+                                        { activationPrecedence = p
+                                        , activationPriority = MatchAnyChar
+                                        , activationMatch = Seq.singleton kp
+                                        , activationName = actionUsingName a
+                                        , activationFunc = actionUsingFunc a c
+                                        }
                             _ -> Nothing
                     _ -> Nothing
             MapCatchAll a ->
@@ -60,12 +95,12 @@ findExactActivations history mappings =
                     (kp:_) ->
                         Just
                             Activation
-                            { activationPrecedence = p
-                            , activationPriority = CatchAll
-                            , activationMatch = Seq.singleton kp
-                            , activationName = actionName a
-                            , activationFunc = actionFunc a
-                            }
+                                { activationPrecedence = p
+                                , activationPriority = CatchAll
+                                , activationMatch = Seq.singleton kp
+                                , activationName = actionName a
+                                , activationFunc = actionFunc a
+                                }
             mc@(MapCombination _ _) ->
                 let go :: [KeyPress] -- History
                        -> KeyMapping
@@ -77,42 +112,45 @@ findExactActivations history mappings =
                             (hkp:_, MapCatchAll a) ->
                                 Just
                                     Activation
-                                    { activationPrecedence = p
-                                    , activationPriority = CatchAll
-                                    , activationMatch = acc |> hkp
-                                    , activationName = actionName a
-                                    , activationFunc = actionFunc a
-                                    }
+                                        { activationPrecedence = p
+                                        , activationPriority = CatchAll
+                                        , activationMatch = acc |> hkp
+                                        , activationName = actionName a
+                                        , activationFunc = actionFunc a
+                                        }
                             ([hkp], MapVtyExactly kp_ a) ->
                                 if keyPressMatch hkp kp_
                                     then Just
                                              Activation
-                                             { activationPrecedence = p
-                                             , activationPriority = MatchExact
-                                             , activationMatch = acc |> hkp
-                                             , activationName = actionName a
-                                             , activationFunc = actionFunc a
-                                             }
+                                                 { activationPrecedence = p
+                                                 , activationPriority =
+                                                       MatchExact
+                                                 , activationMatch = acc |> hkp
+                                                 , activationName = actionName a
+                                                 , activationFunc = actionFunc a
+                                                 }
                                     else Nothing
                             ([hkp@(KeyPress hk _)], MapAnyTypeableChar a) ->
                                 case hk of
                                     Vty.KChar c ->
                                         Just
                                             Activation
-                                            { activationPrecedence = p
-                                            , activationPriority = MatchAnyChar
-                                            , activationMatch = acc |> hkp
-                                            , activationName = actionUsingName a
-                                            , activationFunc =
-                                                  actionUsingFunc a c
-                                            }
+                                                { activationPrecedence = p
+                                                , activationPriority =
+                                                      MatchAnyChar
+                                                , activationMatch = acc |> hkp
+                                                , activationName =
+                                                      actionUsingName a
+                                                , activationFunc =
+                                                      actionUsingFunc a c
+                                                }
                                     _ -> Nothing
                             (hkp:hkps, MapCombination kp_ km_) ->
                                 if keyPressMatch hkp kp_
                                     then go hkps km_ (acc |> hkp)
                                     else Nothing
                             (_, _) -> Nothing
-                in go history mc Seq.empty
+                 in go history mc Seq.empty
 
 keyPressMatch :: KeyPress -> KeyPress -> Bool
 keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) =

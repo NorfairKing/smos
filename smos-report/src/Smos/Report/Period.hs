@@ -5,6 +5,7 @@ module Smos.Report.Period where
 import GHC.Generics (Generic)
 
 import Data.Validity
+import Data.Validity.Time ()
 
 import Data.Time
 import Data.Time.Calendar.WeekDate
@@ -14,6 +15,8 @@ data Period
     | ThisWeek
     | LastWeek
     | AllTime
+    | BeginEnd LocalTime
+               LocalTime -- If end is before begin, this matches nothing
     deriving (Show, Eq, Generic)
 
 instance Validity Period
@@ -24,7 +27,8 @@ filterPeriod now p u =
          AllTime -> const True
          Today -> filterBetween todayStart todayEnd
          LastWeek -> filterBetween lastWeekStart thisWeekStart
-         ThisWeek -> filterBetween thisWeekStart thisWeekEnd) $
+         ThisWeek -> filterBetween thisWeekStart thisWeekEnd
+         BeginEnd begin end -> filterBetween begin end) $
     utcToLocalTime tz u
   where
     tz :: TimeZone
@@ -42,12 +46,12 @@ filterPeriod now p u =
     lastWeekStart :: LocalTime
     lastWeekStart =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
+        in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
     thisWeekStart :: LocalTime
     thisWeekStart =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y wn 1) midnight
+        in LocalTime (fromWeekDate y wn 1) midnight
     thisWeekEnd :: LocalTime
     thisWeekEnd =
         let (y, wn, _) = toWeekDate today
-         in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year

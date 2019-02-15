@@ -17,12 +17,7 @@ import System.FileLock
 import Brick.Main as B
 import Brick.Types as B
 
-import Lens.Micro
-
 import qualified Graphics.Vty as Vty
-
-import Smos.Cursor.Entry
-import Smos.Cursor.SmosFile
 
 import Smos.Data
 
@@ -36,12 +31,12 @@ import Smos.Types
 mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
 mkSmosApp sc@SmosConfig {..} =
     App
-    { appDraw = smosDraw sc
-    , appChooseCursor = smosChooseCursor
-    , appHandleEvent = smosHandleEvent sc
-    , appStartEvent = smosStartEvent
-    , appAttrMap = defaultAttrMap
-    }
+        { appDraw = smosDraw sc
+        , appChooseCursor = smosChooseCursor
+        , appHandleEvent = smosHandleEvent sc
+        , appStartEvent = smosStartEvent
+        , appAttrMap = defaultAttrMap
+        }
 
 smosChooseCursor ::
        s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
@@ -56,7 +51,7 @@ smosHandleEvent cf s e = do
                     case e of
                         B.VtyEvent (Vty.EvKey ek mods) ->
                             let kp = KeyPress ek mods
-                            in recordKeyPress kp
+                             in recordKeyPress kp
                         _ -> pure ()
                 KeyActivated func_ -> do
                     recordCursorHistory
@@ -75,55 +70,15 @@ smosHandleEvent cf s e = do
     recordCursorHistory =
         modify $ \ss ->
             ss
-            { smosStateCursorHistory =
-                  smosStateCursor ss : smosStateCursorHistory ss
-            }
+                { smosStateCursorHistory =
+                      smosStateCursor ss : smosStateCursorHistory ss
+                }
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
 keyMapFunc :: SmosState -> Event -> KeyMap -> EventResult
-keyMapFunc s e KeyMap {..} =
-    case editorCursorSelection $ smosStateCursor s of
-        HelpSelected ->
-            let handleWith :: KeyMappings -> EventResult
-                handleWith specificMappings =
-                    let m = map ((,) SpecificMatcher) specificMappings
-                    in handleRaw m
-            in handleWith keyMapHelpMatchers
-        FileSelected ->
-            let handleWith :: KeyMappings -> EventResult
-                handleWith specificMappings =
-                    let m =
-                            map ((,) SpecificMatcher) specificMappings ++
-                            map ((,) AnyMatcher) fileKeyMapAnyMatchers
-                    in handleRaw m
-            in case editorCursorFileCursor $ smosStateCursor s of
-                   Nothing -> handleWith fileKeyMapEmptyMatchers
-                   Just sfc ->
-                       case sfc ^. smosFileCursorEntrySelectionL of
-                           WholeEntrySelected ->
-                               handleWith fileKeyMapEntryMatchers
-                           HeaderSelected -> handleWith fileKeyMapHeaderMatchers
-                           ContentsSelected ->
-                               handleWith fileKeyMapContentsMatchers
-                           TimestampsSelected ->
-                               handleWith fileKeyMapTimestampsMatchers
-                           PropertiesSelected ->
-                               handleWith fileKeyMapPropertiesMatchers
-                           StateHistorySelected ->
-                               handleWith fileKeyMapStateHistoryMatchers
-                           TagsSelected -> handleWith fileKeyMapTagsMatchers
-                           LogbookSelected ->
-                               handleWith fileKeyMapLogbookMatchers
-        ReportSelected ->
-            let ReportsKeyMap {..} = keyMapReportsKeyMap
-                handleWith :: KeyMappings -> EventResult
-                handleWith specificMappings =
-                    let m = map ((,) SpecificMatcher) specificMappings
-                    in handleRaw m
-            in handleWith reportsKeymapNextActionReportMatchers
+keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
   where
-    FileKeyMap {..} = keyMapFileKeyMap
     handleRaw :: [(Precedence, KeyMapping)] -> EventResult
     handleRaw m =
         case e of
@@ -143,13 +98,13 @@ keyMapFunc s e KeyMap {..} =
                                              let dbi = smosStateDebugInfo ss
                                                  dbi' =
                                                      dbi
-                                                     { debugInfoLastMatches =
-                                                           Just $
-                                                           NE.map
-                                                               activationDebug
-                                                               nems
-                                                     }
-                                             in ss {smosStateDebugInfo = dbi'})
+                                                         { debugInfoLastMatches =
+                                                               Just $
+                                                               NE.map
+                                                                   activationDebug
+                                                                   nems
+                                                         }
+                                              in ss {smosStateDebugInfo = dbi'})
                                     activationFunc a
                     _ -> NothingActivated
             AppEvent se ->
@@ -169,11 +124,11 @@ data EventResult
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =
     ActivationDebug
-    { activationDebugPrecedence = activationPrecedence
-    , activationDebugPriority = activationPriority
-    , activationDebugMatch = activationMatch
-    , activationDebugName = activationName
-    }
+        { activationDebugPrecedence = activationPrecedence
+        , activationDebugPriority = activationPriority
+        , activationDebugMatch = activationMatch
+        , activationDebugName = activationName
+        }
 
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
@@ -182,12 +137,12 @@ initState ::
        ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
 initState zt p fl msf =
     SmosState
-    { smosStateTime = zt
-    , smosStateStartSmosFile = msf
-    , smosStateFilePath = p
-    , smosStateFileLock = fl
-    , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
-    , smosStateKeyHistory = Empty
-    , smosStateCursorHistory = []
-    , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
-    }
+        { smosStateTime = zt
+        , smosStateStartSmosFile = msf
+        , smosStateFilePath = p
+        , smosStateFileLock = fl
+        , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
+        , smosStateKeyHistory = Empty
+        , smosStateCursorHistory = []
+        , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
+        }

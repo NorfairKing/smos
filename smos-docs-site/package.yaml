@@ -1,10 +1,10 @@
-name:                smos-docs-site
-version:             0.0.0.0
-github:              "NorfairKing/smos"
-license:             AllRightsReserved
-author:              "Tom Sydney Kerckhove"
-maintainer:          "syd@cs-syd.eu"
-copyright:           "2018 Tom Sydney Kerckhove"
+name: smos-docs-site
+version: 0.0.0.0
+github: "NorfairKing/smos"
+license: MIT
+author: "Tom Sydney Kerckhove"
+maintainer: "syd@cs-syd.eu"
+copyright: "2018-2019 TomSydney Kerckhove"
 
 
 library:

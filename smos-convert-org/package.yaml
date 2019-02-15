@@ -3,8 +3,8 @@ version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2018 Tom Sydney Kerckhove'
-license: AllRightsReserved
+copyright: ! 'Copyright: (c) 2018-2019 TomSydney Kerckhove'
+license: MIT
 homepage: https://github.com/NorfairKing/smos
 
 library:
@@ -16,6 +16,7 @@ library:
   - bytestring
   - containers
   - filepath
+  - mtl
   - optparse-applicative
   - orgmode-parse
   - path
