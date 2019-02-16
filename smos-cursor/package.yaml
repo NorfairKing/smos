@@ -3,7 +3,7 @@ version:             0.0.0.0
 github:              "NorfairKing/smos"
 author:              "Tom Sydney Kerckhove"
 maintainer:          "syd@cs-syd.eu"
-copyright:           "Copyright: (c) 2018-2019 TomSydney Kerckhove"
+copyright:           "Copyright: (c) 2018-2019 Tom Sydney Kerckhove"
 
 extra-source-files:
 - README.md
