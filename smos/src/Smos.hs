@@ -21,6 +21,7 @@ import Graphics.Vty as Vty (defaultConfig, mkVty)
 
 import Smos.Data
 
+import Smos.Actions.File
 import Smos.App
 import Smos.Config
 import Smos.OptParse
@@ -67,12 +68,10 @@ startSmosOn p sc@SmosConfig {..} = do
                          (mkSmosApp sc)
                          s)
                     (eventPusher chan)
-            let sf' = rebuildEditorCursor $ smosStateCursor s'
-            let p' = smosStateFilePath s'
-            (case smosStateStartSmosFile s' of
-                 Nothing -> unless (sf' == emptySmosFile)
-                 Just sf'' -> unless (sf'' == sf')) $
-                writeSmosFile p' sf'
+            saveSmosFile
+                    (rebuildEditorCursor $ smosStateCursor s')
+                    (smosStateStartSmosFile s')
+                    (smosStateFilePath s')
             unlockFile $ smosStateFileLock s'
 
 eventPusher :: BChan SmosEvent -> IO ()
