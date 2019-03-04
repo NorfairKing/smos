@@ -40,23 +40,23 @@ smosWithoutRuntimeConfig sc = do
 
 startSmosOn :: Path Abs File -> SmosConfig -> IO ()
 startSmosOn p sc@SmosConfig {..} = do
+    errOrSF <- readSmosFile p
+    startF <-
+        case errOrSF of
+            Nothing -> pure Nothing
+            Just (Left err) ->
+                die $
+                unlines
+                    [ "Failed to read smos file"
+                    , fromAbsFile p
+                    , "could not parse it:"
+                    , show err
+                    ]
+            Just (Right sf) -> pure $ Just sf
     lock <- lockFile p
     case lock of
-        Nothing -> die "Failed to lock."
+        Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
         Just fl -> do
-            errOrSF <- readSmosFile p
-            startF <-
-                case errOrSF of
-                    Nothing -> pure Nothing
-                    Just (Left err) ->
-                        die $
-                        unlines
-                            [ "Failed to read smos file"
-                            , fromAbsFile p
-                            , "could not parse it:"
-                            , show err
-                            ]
-                    Just (Right sf) -> pure $ Just sf
             zt <- getZonedTime
             let s = initState zt p fl startF
             chan <- Brick.newBChan maxBound
@@ -69,9 +69,9 @@ startSmosOn p sc@SmosConfig {..} = do
                          s)
                     (eventPusher chan)
             saveSmosFile
-                    (rebuildEditorCursor $ smosStateCursor s')
-                    (smosStateStartSmosFile s')
-                    (smosStateFilePath s')
+                (rebuildEditorCursor $ smosStateCursor s')
+                (smosStateStartSmosFile s')
+                (smosStateFilePath s')
             unlockFile $ smosStateFileLock s'
 
 eventPusher :: BChan SmosEvent -> IO ()
