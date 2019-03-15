@@ -560,38 +560,51 @@ drawLogbookCursor :: Select -> LogbookCursor -> MDrawer
 drawLogbookCursor _ lbc =
     case lbc of
         LogbookCursorClosed Nothing -> pure Nothing
-        LogbookCursorClosed (Just ne) ->
-            drawLogbookEntries (NE.toList $ rebuildNonEmptyCursor ne)
+        LogbookCursorClosed (Just ne) -> do
+            let lbes = (NE.toList $ rebuildNonEmptyCursor ne)
+            md <- drawLogbookEntries lbes
+            tw <- drawLogbookTotal Nothing lbes
+            pure $ Just $ vBox $ [fromMaybe emptyWidget md] ++ maybeToList tw -- TODO don't use empty widgets
         LogbookCursorOpen u ne -> do
             ow <- drawLogOpen u
-            md <-
-                drawLogbookEntries
-                    (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
-            pure $ Just $ vBox [ow, fromMaybe emptyWidget md]
+            let lbes = (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
+            md <- drawLogbookEntries lbes
+            tw <- drawLogbookTotal (Just u) lbes
+            pure $
+                Just $ vBox $ [ow, fromMaybe emptyWidget md] ++ maybeToList tw
 
 drawLogbook :: Logbook -> MDrawer
-drawLogbook (LogClosed ls) = drawLogbookEntries ls
+drawLogbook (LogClosed ls) = do
+    md <- drawLogbookEntries ls
+    tw <- drawLogbookTotal Nothing ls
+    pure $ Just $ vBox $ maybe [] (: []) md ++ maybeToList tw
 drawLogbook (LogOpen u ls) = do
     ow <- drawLogOpen u
     md <- drawLogbookEntries ls
-    pure $ Just $ vBox [ow, fromMaybe emptyWidget md] -- TODO don't use empty widgets
+    tw <- drawLogbookTotal (Just u) ls
+    pure $ Just $ vBox $ [ow, fromMaybe emptyWidget md] ++ maybeToList tw -- TODO don't use empty widgets
 
 drawLogbookEntries :: [LogbookEntry] -> MDrawer
 drawLogbookEntries [] = pure Nothing
-drawLogbookEntries lbes = do
-    ews <- mapM drawLogbookEntry lbes
+drawLogbookEntries lbes = (Just . vBox) <$> mapM drawLogbookEntry lbes
+
+drawLogbookTotal :: Maybe UTCTime -> [LogbookEntry] -> MDrawer
+drawLogbookTotal Nothing [] = pure Nothing
+drawLogbookTotal mopen lbes = do
+    openTime <-
+        forM mopen $ \open -> do
+            now <- asks zonedTimeToUTC
+            pure $ diffUTCTime now open
+    let total = fromMaybe 0 openTime + sum (map logbookEntryDiffTime lbes)
     pure $
         Just $
-        vBox
-            [ vBox ews
-            , hBox
-                  [ str "TOTAL: "
-                  , hLimit
-                        (length
-                             ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: [Char])) $
-                    vLimit 1 $ fill ' '
-                  , drawNominalDiffTime $ sum $ map logbookEntryDiffTime lbes
-                  ]
+        hBox
+            [ str "TOTAL: "
+            , hLimit
+                  (length
+                       ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: [Char])) $
+              vLimit 1 $ fill ' '
+            , drawNominalDiffTime total
             ]
 
 drawLogbookEntry :: LogbookEntry -> Drawer
