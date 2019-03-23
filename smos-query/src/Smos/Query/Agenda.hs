@@ -58,13 +58,50 @@ renderAgendaReport now atbs =
     goEntriesWithTitle Block {..} =
         [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es =
-        map
-            (formatAgendaEntry now)
-            (sortBy
-                 (comparing agendaEntryTimestamp <>
-                  comparing agendaEntryTimestampName <>
-                  comparing agendaEntryTodoState)
-                 es)
+        renderSplit . splitUp $
+        (sortBy
+             (comparing agendaEntryTimestamp <>
+              comparing agendaEntryTimestampName <>
+              comparing agendaEntryTodoState)
+             es)
+    splitUp =
+        splitList $ \ae ->
+            compare
+                (timestampDay $ agendaEntryTimestamp ae)
+                (localDay $ zonedTimeToLocalTime now)
+    renderSplit (before, during, after) =
+        case (go before, go during, go after) of
+            (xs, [], []) -> concat [xs]
+            ([], ys, []) -> concat [ys]
+            ([], [], zs) -> concat [zs]
+            (xs, ys, []) -> concat [xs, [[chunk ""]], ys]
+            ([], ys, zs) -> concat [ys, [[chunk ""]], zs]
+            (xs, [], zs) -> concat [xs, [[chunk ""]], zs]
+            (xs, ys, zs) -> concat [xs, [[chunk ""]], ys, [[chunk ""]], zs]
+      where
+        go = map (formatAgendaEntry now)
+
+splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
+splitList func = go
+  where
+    go [] = ([], [], [])
+    go (a:as) =
+        case func a of
+            LT ->
+                case go as of
+                    (xs, ys, zs) -> (a : xs, ys, zs)
+            EQ ->
+                case go2 as of
+                    (ys, zs) -> ([], a : ys, zs)
+            GT -> ([], [], a : as)
+    go2 [] = ([], [])
+    go2 (a:as) =
+        case func a of
+            LT -> error "should not happen"
+            EQ ->
+                case go2 as of
+                    (ys, zs) -> (a : ys, zs)
+            GT -> ([], a : as)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
