@@ -5,6 +5,8 @@ module Smos.Cursor.PropertiesSpec where
 import Test.Hspec
 import Test.Validity
 
+import Cursor.Types
+
 import Smos.Data.Gen ()
 
 import Smos.Cursor.Properties
@@ -59,6 +61,16 @@ spec = do
     describe "propertiesCursorStartNewPropertyBefore" $ do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorStartNewPropertyBefore
+        it "is the inverse of propertiesCursorStartNewPropertyBefore" $
+            forAllValid $ \pc ->
+                case propertiesCursorDelete
+                         (propertiesCursorStartNewPropertyBefore pc) of
+                    Nothing ->
+                        expectationFailure "Deletion should have been possible."
+                    Just Deleted ->
+                        expectationFailure
+                            "Should not have been deleted entirely."
+                    Just (Updated pc') -> pc' `shouldBe` pc
     describe "propertiesCursorStartNewPropertyAfter" $ do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorStartNewPropertyAfter
