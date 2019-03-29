@@ -15,6 +15,10 @@ module Smos.Cursor.Properties
     , propertiesCursorAppend
     , propertiesCursorRemove
     , propertiesCursorDelete
+    , propertiesCursorRemoveProperty
+    , propertiesCursorDeleteProperty
+    , propertiesCursorRemovePropertyAndSelectPrevious
+    , propertiesCursorDeletePropertyAndSelectNext
     , propertiesCursorStartNewPropertyBefore
     , propertiesCursorStartNewPropertyAfter
     , propertiesCursorAddOrSelect
@@ -23,6 +27,7 @@ module Smos.Cursor.Properties
 
 import GHC.Generics (Generic)
 
+import Control.Applicative
 import Control.Monad
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
@@ -37,9 +42,11 @@ import Cursor.Types
 
 import Smos.Data.Types
 
-newtype PropertiesCursor = PropertiesCursor
-    { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
-    } deriving (Show, Eq, Generic)
+newtype PropertiesCursor =
+    PropertiesCursor
+        { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
+        }
+    deriving (Show, Eq, Generic)
 
 instance Validity PropertiesCursor where
     validate (PropertiesCursor pc) =
@@ -85,7 +92,8 @@ propertiesCursorCurrentTextCursorL =
                  KeyValueCursorKey kc _ -> kc
                  KeyValueCursorValue _ vc -> vc)
         (\tsc tc ->
-             tsc & mapCursorElemL %~
+             tsc &
+             mapCursorElemL %~
              (\kvc ->
                   case kvc of
                       KeyValueCursorKey _ v -> KeyValueCursorKey tc v
@@ -134,17 +142,45 @@ propertiesCursorAppend c =
 
 propertiesCursorRemove ::
        PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
-propertiesCursorRemove =
-    focusPossibleDeleteOrUpdate
-        propertiesCursorCurrentTextCursorL
-        textCursorRemove
+propertiesCursorRemove pc =
+    case focusPossibleDeleteOrUpdate
+             propertiesCursorCurrentTextCursorL
+             textCursorRemove
+             pc of
+        Just Deleted -> Just $ propertiesCursorRemoveProperty pc
+        r -> r
 
 propertiesCursorDelete ::
        PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
-propertiesCursorDelete =
-    focusPossibleDeleteOrUpdate
-        propertiesCursorCurrentTextCursorL
-        textCursorDelete
+propertiesCursorDelete pc =
+    case focusPossibleDeleteOrUpdate
+             propertiesCursorCurrentTextCursorL
+             textCursorDelete
+             pc of
+        Just Deleted -> Just $ propertiesCursorDeleteProperty pc
+        r -> r
+
+propertiesCursorRemoveProperty ::
+       PropertiesCursor -> DeleteOrUpdate PropertiesCursor
+propertiesCursorRemoveProperty =
+    propertiesCursorMapCursorL $ mapCursorRemoveElem makePropertyNameCursor
+
+propertiesCursorDeleteProperty ::
+       PropertiesCursor -> DeleteOrUpdate PropertiesCursor
+propertiesCursorDeleteProperty =
+    propertiesCursorMapCursorL $ mapCursorDeleteElem makePropertyNameCursor
+
+propertiesCursorRemovePropertyAndSelectPrevious ::
+       PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
+propertiesCursorRemovePropertyAndSelectPrevious =
+    focusPossibleDeleteOrUpdate propertiesCursorMapCursorL $
+    mapCursorRemoveElemAndSelectPrev makePropertyNameCursor
+
+propertiesCursorDeletePropertyAndSelectNext ::
+       PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
+propertiesCursorDeletePropertyAndSelectNext =
+    focusPossibleDeleteOrUpdate propertiesCursorMapCursorL $
+    mapCursorDeleteElemAndSelectNext makePropertyNameCursor
 
 propertiesCursorStartNewPropertyBefore :: PropertiesCursor -> PropertiesCursor
 propertiesCursorStartNewPropertyBefore =
@@ -168,25 +204,27 @@ propertiesCursorAddOrSelect ::
        PropertyName -> Maybe PropertiesCursor -> PropertiesCursor
 propertiesCursorAddOrSelect pn mpc =
     let pc = fromMaybe (singletonPropertiesCursor pn emptyPropertyValue) mpc
-    in case propertiesCursorMapCursorL
-                (mapCursorSearch
-                     rebuildPropertyNameCursor
-                     makePropertyNameCursor
-                     rebuildPropertyValueCursor
-                     (\k _ -> k == pn))
-                pc of
-           Just pc' ->
-               pc' & propertiesCursorMapCursorL %~
-               mapCursorSelectValue
-                   rebuildPropertyNameCursor
-                   makePropertyValueCursor
-           Nothing ->
-               pc & propertiesCursorMapCursorL %~
-               mapCursorInsertAndSelectValue
-                   rebuildPropertyNameCursor
-                   rebuildPropertyValueCursor
-                   pn
-                   emptyTextCursor
+     in case propertiesCursorMapCursorL
+                 (mapCursorSearch
+                      rebuildPropertyNameCursor
+                      makePropertyNameCursor
+                      rebuildPropertyValueCursor
+                      (\k _ -> k == pn))
+                 pc of
+            Just pc' ->
+                pc' &
+                propertiesCursorMapCursorL %~
+                mapCursorSelectValue
+                    rebuildPropertyNameCursor
+                    makePropertyValueCursor
+            Nothing ->
+                pc &
+                propertiesCursorMapCursorL %~
+                mapCursorInsertAndSelectValue
+                    rebuildPropertyNameCursor
+                    rebuildPropertyValueCursor
+                    pn
+                    emptyTextCursor
 
 propertiesCursorSet ::
        PropertyName
@@ -205,7 +243,8 @@ propertiesCursorSet pn pv mpc =
                           rebuildPropertyValueCursor
                           (\k _ -> k == pn)) of
                 Just pc' ->
-                    pc' & (propertiesCursorMapCursorL . mapCursorElemL) %~
+                    pc' &
+                    (propertiesCursorMapCursorL . mapCursorElemL) %~
                     (\kvc ->
                          case kvc of
                              KeyValueCursorKey tc _ ->
@@ -217,7 +256,8 @@ propertiesCursorSet pn pv mpc =
                                      k
                                      (makePropertyValueCursor pv))
                 Nothing ->
-                    pc & propertiesCursorMapCursorL %~
+                    pc &
+                    propertiesCursorMapCursorL %~
                     mapCursorAppendAndSelectValue
                         rebuildPropertyNameCursor
                         rebuildPropertyValueCursor

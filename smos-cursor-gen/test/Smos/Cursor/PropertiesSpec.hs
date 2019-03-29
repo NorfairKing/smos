@@ -58,9 +58,6 @@ spec = do
     describe "propertiesCursorDelete" $ do
         it "produces valid cursors" $
             producesValidsOnValids propertiesCursorDelete
-    describe "propertiesCursorStartNewPropertyBefore" $ do
-        it "produces valid cursors" $
-            producesValidsOnValids propertiesCursorStartNewPropertyBefore
         it "is the inverse of propertiesCursorStartNewPropertyBefore" $
             forAllValid $ \pc ->
                 case propertiesCursorDelete
@@ -70,10 +67,39 @@ spec = do
                     Just Deleted ->
                         expectationFailure
                             "Should not have been deleted entirely."
-                    Just (Updated pc') -> pc' `shouldBe` pc
-    describe "propertiesCursorStartNewPropertyAfter" $ do
+                    Just (Updated pc') ->
+                        rebuildPropertiesCursor pc' `shouldBe`
+                        rebuildPropertiesCursor pc
+    describe "propertiesCursorRemoveProperty" $ do
         it "produces valid cursors" $
-            producesValidsOnValids propertiesCursorStartNewPropertyAfter
+            producesValidsOnValids propertiesCursorRemoveProperty
+        it "is the inverse of propertiesCursorStartNewPropertyBefore" $
+            forAllValid $ \pc ->
+                case propertiesCursorRemove
+                         (propertiesCursorStartNewPropertyBefore pc) of
+                    Nothing ->
+                        expectationFailure "Removal should have been possible."
+                    Just Deleted ->
+                        expectationFailure
+                            "Should not have been deleted entirely."
+                    Just (Updated pc') ->
+                        rebuildPropertiesCursor pc' `shouldBe`
+                        rebuildPropertiesCursor pc
+    describe "propertiesCursorDeleteProperty" $
+        it "produces valid cursors" $
+            producesValidsOnValids propertiesCursorDeleteProperty
+    describe "propertiesCursorRemovePropertyAndSelectPrevious" $
+        it "produces valid cursors" $
+        producesValidsOnValids propertiesCursorRemovePropertyAndSelectPrevious
+    describe "propertiesCursorDeletePropertyAndSelectNext" $
+        it "produces valid cursors" $
+        producesValidsOnValids propertiesCursorDeletePropertyAndSelectNext
+    describe "propertiesCursorStartNewPropertyBefore" $
+        it "produces valid cursors" $
+        producesValidsOnValids propertiesCursorStartNewPropertyBefore
+    describe "propertiesCursorStartNewPropertyAfter" $
+        it "produces valid cursors" $
+        producesValidsOnValids propertiesCursorStartNewPropertyAfter
     describe "propertiesCursorAddOrSelect" $ do
         it "produces valid cursors" $
             producesValidsOnValids2 propertiesCursorAddOrSelect
