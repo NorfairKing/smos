@@ -6,6 +6,7 @@ module Smos.Query.Entry
     ( entry
     ) where
 
+import Data.List
 import Data.Text (Text)
 
 import Conduit
@@ -16,6 +17,7 @@ import Smos.Data
 
 import Smos.Report.Entry
 import Smos.Report.Query
+import Smos.Report.Sorter
 import Smos.Report.Streaming
 
 import Smos.Query.Config
@@ -34,10 +36,19 @@ entry EntrySettings {..} = do
             smosFileCursors .|
             C.filter
                 (\(rp, fc) ->
-                     maybe True (\f -> filterPredicate f rp fc) entrySetFilter) .|
-            smosCursorCurrents .|
-            C.map (uncurry makeEntryEntry)
-        putTableLn $ renderEntryReport tups
+                     maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
+            -- smosCursorCurrents .|
+            -- C.map (uncurry makeEntryEntry)
+        let sortIt =
+                maybe
+                    id
+                    (\s ->
+                         sortBy $ \(rpa, fca) (rpb, fcb) ->
+                             sorterOrdering s rpa fca rpb fcb)
+                    entrySetSorter
+        let ees =
+                map (uncurry makeEntryEntry . smosCursorCurrent) . sortIt $ tups
+        putTableLn $ renderEntryReport ees
 
 renderEntryReport :: [EntryEntry] -> Table
 renderEntryReport = formatAsTable . map renderEntryEntry
