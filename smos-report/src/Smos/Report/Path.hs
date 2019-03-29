@@ -18,8 +18,7 @@ import Control.Applicative
 import Smos.Data.Types ()
 
 data RootedPath
-    = Relative (Path Abs Dir)
-               (Path Rel File)
+    = Relative (Path Abs Dir) (Path Rel File)
     | Absolute (Path Abs File)
     deriving (Show, Eq, Generic)
 
