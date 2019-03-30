@@ -35,6 +35,8 @@ import Smos.Report.Path
 data Sorter
     = ByFile -- Substring of the filename
     | ByProperty PropertyName
+    | Reverse Sorter
+    | AndThen Sorter Sorter
     deriving (Show, Eq, Generic)
 
 instance Validity Sorter
@@ -46,7 +48,7 @@ sorterOrdering ::
     -> RootedPath
     -> ForestCursor Entry
     -> Ordering
-sorterOrdering s_ rpa fca rpb fcb = go s_ fca fcb
+sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
   where
     go s fca fcb =
         case s of
@@ -59,6 +61,14 @@ sorterOrdering s_ rpa fca rpb fcb = go s_ fca fcb
                          treeCursorCurrentL)
                     fca
                     fcb
+            Reverse s' ->
+                (\o ->
+                     case o of
+                         GT -> LT
+                         EQ -> EQ
+                         LT -> GT) $
+                go s' fca fcb
+            AndThen s1 s2 -> go s1 fca fcb <> go s2 fca fcb
 
 type P = Parsec Void Text
 
@@ -66,7 +76,7 @@ parseSorter :: Text -> Maybe Sorter
 parseSorter = parseMaybe sorterP
 
 sorterP :: P Sorter
-sorterP = try byFileP <|> byPropertyP
+sorterP = try byFileP <|> try byPropertyP <|> try reverseP <|> andThenP
 
 byFileP :: P Sorter
 byFileP = do
@@ -78,6 +88,20 @@ byPropertyP = do
     void $ string' "property:"
     pn <- propertyNameP
     pure $ ByProperty pn
+
+reverseP :: P Sorter
+reverseP = do
+    void $ string' "reverse:"
+    Reverse <$> sorterP
+
+andThenP :: P Sorter
+andThenP = do
+    void $ char '('
+    s1 <- sorterP
+    void $ string' " then "
+    s2 <- sorterP
+    void $ char ')'
+    pure $ AndThen s1 s2
 
 propertyNameP :: P PropertyName
 propertyNameP = do
@@ -93,3 +117,6 @@ renderSorter f =
     case f of
         ByFile -> "file"
         ByProperty pn -> "property:" <> propertyNameText pn
+        Reverse s' -> "reverse:" <> renderSorter s'
+        AndThen s1 s2 ->
+            T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]

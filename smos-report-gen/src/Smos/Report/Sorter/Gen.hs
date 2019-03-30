@@ -18,8 +18,14 @@ instance GenUnchecked Sorter where
     genUnchecked =
         sized $ \n ->
             case n of
-                0 -> oneof [pure ByFile]
-                _ -> oneof [ByProperty <$> genUnchecked]
+                0 -> oneof [pure ByFile, ByProperty <$> genUnchecked]
+                _ ->
+                    oneof
+                        [ Reverse <$> scale pred genUnchecked
+                        , do (a, b) <- genSplit n
+                             s1 <- resize a genUnchecked
+                             s2 <- resize b genUnchecked
+                             pure $ AndThen s1 s2
+                        ]
 
-instance GenValid Sorter where
-    genValid = genValidStructurally
+instance GenValid Sorter

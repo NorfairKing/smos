@@ -10,6 +10,10 @@ import Test.Validity
 
 import Text.Megaparsec
 
+import Cursor.Forest.Gen ()
+
+import Smos.Report.Path.Gen ()
+
 import Smos.Report.Query
 import Smos.Report.Query.Gen ()
 
@@ -17,6 +21,8 @@ spec :: Spec
 spec = do
     eqSpec @Filter
     genValidSpec @Filter
+    describe "filterPredicate" $
+        it "produces valid results" $ producesValidsOnValids3 filterPredicate
     describe "filterP" $ do
         parsesValidSpec filterP
         parseJustSpec filterP "tag:work" (FilterHasTag "work")
