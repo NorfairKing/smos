@@ -33,7 +33,7 @@ import Smos.Data
 import Smos.Report.Path
 
 data Sorter
-    = ByFile -- Substring of the filename
+    = ByFile
     | ByProperty PropertyName
     | Reverse Sorter
     | AndThen Sorter Sorter
