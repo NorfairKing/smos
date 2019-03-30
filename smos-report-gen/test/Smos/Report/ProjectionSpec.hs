@@ -27,11 +27,14 @@ spec = do
                 forAllValid $ \fc -> shouldBeValid $ performProjection s rp fc
     describe "ontoFileP" $ parsesValidSpec ontoFileP
     describe "ontoPropertyP" $ parsesValidSpec ontoPropertyP
+    describe "ontoHeaderP" $ parsesValidSpec ontoHeaderP
+    describe "ontoStateP" $ parsesValidSpec ontoStateP
     describe "andAlsoP" $ parsesValidSpec andAlsoP
     describe "projectionP" $ do
         parsesValidSpec projectionP
         parseJustSpec projectionP "file" OntoFile
         parseJustSpec projectionP "property:effort" $ OntoProperty "effort"
+        parseJustSpec projectionP "header" OntoHeader
         parseJustSpec projectionP "state" OntoState
         parseJustSpec projectionP "(property:effort also file)" $
             AndAlso (OntoProperty "effort") OntoFile

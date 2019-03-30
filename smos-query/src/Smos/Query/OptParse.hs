@@ -17,6 +17,7 @@ import Options.Applicative
 import qualified Smos.Report.OptParse as Report
 
 import Smos.Report.Period
+import Smos.Report.Projection
 import Smos.Report.Query
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock
@@ -39,6 +40,7 @@ getDispatch c =
             DispatchEntry
                 EntrySettings
                     { entrySetFilter = entryFlagFilter
+                    , entrySetProjection = entryFlagProjection
                     , entrySetSorter = entryFlagSorter
                     }
         CommandWaiting WaitingFlags {..} ->
@@ -172,7 +174,9 @@ parseCommandEntry = info parser modifier
   where
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
-        CommandEntry <$> (EntryFlags <$> parseFilterArg <*> parseSorterArgs)
+        CommandEntry <$>
+        (EntryFlags <$> parseFilterArg <*> parseProjectionArgs <*>
+         parseSorterArgs)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -276,6 +280,18 @@ parseFilterArg =
              , metavar "FILTER"
              , help "A filter to filter entries by"
              ])
+
+parseProjectionArgs :: Parser (Maybe Projection)
+parseProjectionArgs =
+    (fmap (foldl1 AndAlso) . NE.nonEmpty . catMaybes) <$>
+    many
+        (option
+             (Just <$> (maybeReader (parseProjection . T.pack)))
+             (mconcat
+                  [ long "project"
+                  , metavar "PROJECTION"
+                  , help "A projection to project entries onto fields"
+                  ]))
 
 parseSorterArgs :: Parser (Maybe Sorter)
 parseSorterArgs =

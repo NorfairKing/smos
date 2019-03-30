@@ -34,6 +34,7 @@ import Smos.Report.Path
 
 data Projection
     = OntoFile
+    | OntoHeader
     | OntoProperty PropertyName
     | OntoState
     | AndAlso Projection Projection
@@ -43,8 +44,9 @@ instance Validity Projection
 
 data Projectee
     = FileProjection RootedPath
+    | HeaderProjection Header
     | StateProjection (Maybe TodoState)
-    | PropertyProjection (Maybe PropertyValue)
+    | PropertyProjection PropertyName (Maybe PropertyValue)
     deriving (Show, Eq, Generic)
 
 instance Validity Projectee
@@ -57,9 +59,10 @@ performProjection p_ rp fc = go p_ fc
         let cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
          in case p of
                 OntoFile -> [FileProjection rp]
+                OntoHeader -> [HeaderProjection $ entryHeader cur]
                 OntoState -> [StateProjection $ entryState cur]
                 OntoProperty pn ->
-                    [PropertyProjection $ M.lookup pn $ entryProperties cur]
+                    [PropertyProjection pn $ M.lookup pn $ entryProperties cur]
                 AndAlso p1 p2 -> go p1 fc ++ go p2 fc
 
 type P = Parsec Void Text
@@ -69,12 +72,18 @@ parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
 projectionP =
-    try ontoFileP <|> try ontoStateP <|> try ontoPropertyP <|> andAlsoP
+    try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP <|>
+    andAlsoP
 
 ontoFileP :: P Projection
 ontoFileP = do
     void $ string' "file"
     pure OntoFile
+
+ontoHeaderP :: P Projection
+ontoHeaderP = do
+    void $ string' "header"
+    pure OntoHeader
 
 ontoStateP :: P Projection
 ontoStateP = do
@@ -109,6 +118,7 @@ renderProjection :: Projection -> Text
 renderProjection f =
     case f of
         OntoFile -> "file"
+        OntoHeader -> "header"
         OntoState -> "state"
         OntoProperty pn -> "property:" <> propertyNameText pn
         AndAlso s1 s2 ->
