@@ -27,7 +27,6 @@ module Smos.Cursor.Properties
 
 import GHC.Generics (Generic)
 
-import Control.Applicative
 import Control.Monad
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe

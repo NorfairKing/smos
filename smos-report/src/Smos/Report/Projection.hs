@@ -6,16 +6,11 @@ module Smos.Report.Projection where
 import GHC.Generics (Generic)
 
 import Data.Char as Char
-import Data.Function
-import Data.List
 import qualified Data.Map as M
-import Data.Maybe
-import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Data.Void
-import Path
 
 import Control.Monad
 
@@ -23,7 +18,6 @@ import Lens.Micro
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -53,7 +47,7 @@ instance Validity Projectee
 
 performProjection ::
        Projection -> RootedPath -> ForestCursor Entry -> [Projectee]
-performProjection p_ rp fc = go p_ fc
+performProjection p_ rp fc_ = go p_ fc_
   where
     go p fc =
         let cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL

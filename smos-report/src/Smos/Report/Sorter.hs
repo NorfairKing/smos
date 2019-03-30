@@ -6,16 +6,12 @@ module Smos.Report.Sorter where
 import GHC.Generics (Generic)
 
 import Data.Char as Char
-import Data.Function
-import Data.List
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Data.Void
-import Path
 
 import Control.Monad
 
@@ -23,7 +19,6 @@ import Lens.Micro
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
