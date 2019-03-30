@@ -10,6 +10,8 @@ module Smos.Style
     , todoStateHistoryAttr
     , timestampNameAttr
     , timestampNameSpecificAttr
+    , propertyNameAttr
+    , propertyNameSpecificAttr
     , tagAttr
     , tagSpecificAttr
     , helpNameAttr
@@ -53,6 +55,8 @@ defaultAttrMap _ =
             , (timestampNameSpecificAttr "END", fg brown)
             , (timestampNameSpecificAttr "SCHEDULED", fg orange)
             , (timestampNameSpecificAttr "DEADLINE", fg red)
+            , (propertyNameSpecificAttr "effort", fg magenta)
+            , (propertyNameSpecificAttr "client", fg green)
             , (selectedAttr <> tagAttr, fg brightWhite)
             , (selectedAttr <> headerAttr, fg brightWhite)
             ] $
@@ -90,6 +94,13 @@ timestampNameAttr = "timestampname"
 timestampNameSpecificAttr :: TimestampName -> AttrName
 timestampNameSpecificAttr tsn =
     fromString $ "timestampname-" ++ T.unpack (timestampNameText tsn)
+
+propertyNameAttr :: AttrName
+propertyNameAttr = "propertyname"
+
+propertyNameSpecificAttr :: PropertyName -> AttrName
+propertyNameSpecificAttr pn =
+    fromString $ "propertyname-" ++ T.unpack (propertyNameText pn)
 
 tagAttr :: AttrName
 tagAttr = "tag"

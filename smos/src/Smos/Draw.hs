@@ -505,11 +505,18 @@ drawPropertyKVCursor s kvc =
             (case s of
                  NotSelected -> id
                  MaybeSelected -> withAttr selectedAttr)
-    in case kvc of
-           KeyValueCursorKey tc pv ->
-               hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
-           KeyValueCursorValue pn tc ->
-               hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
+     in case kvc of
+            KeyValueCursorKey tc pv ->
+                withAttr
+                    (maybe
+                         id
+                         (\pn -> (<>) (propertyNameSpecificAttr pn))
+                         (propertyName $ rebuildTextCursor tc) $
+                     propertyNameAttr) $
+                hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+            KeyValueCursorValue pn tc ->
+                withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+                hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
@@ -518,6 +525,7 @@ drawProperties m
 
 drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
 drawPropertyPair pn pv =
+    withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
     hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
 
 drawPropertyName :: PropertyName -> Widget ResourceName

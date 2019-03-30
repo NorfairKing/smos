@@ -38,7 +38,7 @@ allPropertiesPlainActions =
           , propertiesInsertNewProperty
           , propertiesAppendNewProperty
           ]
-        , do pn <- ["client", "timebox", "lead"]
+        , do pn <- ["client", "timebox", "lead", "effort"]
              pure $ propertiesEditProperty pn
         ]
 

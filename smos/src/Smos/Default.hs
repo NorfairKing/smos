@@ -104,7 +104,8 @@ defaultFileKeyMap =
                   , exactString "sd" $ timestampsSelect "DEADLINE"
                   , exactString "ss" $ timestampsSelect "SCHEDULED"
                   , exactString "pi" entrySelectProperties
-                  , exactString "pc"  $ propertiesEditProperty "client"
+                  , exactString "pc" $ propertiesEditProperty "client"
+                  , exactString "pe" $ propertiesEditProperty "effort"
                   -- Clocking
                   , exactString
                         "ci"
