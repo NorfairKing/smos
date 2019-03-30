@@ -98,6 +98,7 @@ defaultFileKeyMap =
                   -- Fast tag manipulation
                   , exactString "gw" $ tagsToggle "work"
                   , exactString "go" $ tagsToggle "online"
+                  , exactString "gt" $ tagsToggle "toast"
                   -- Fast timestamps manipulation
                   , exactString "sb" $ timestampsSelect "BEGIN"
                   , exactString "se" $ timestampsSelect "END"

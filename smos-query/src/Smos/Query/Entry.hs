@@ -56,7 +56,7 @@ entry EntrySettings {..} = do
 renderEntryReport :: Projection -> [(RootedPath, ForestCursor Entry)] -> Table
 renderEntryReport projection =
     formatAsTable .
-    (renderProjectionHeader projection :) .map renderProjectees . map (uncurry (performProjection projection))
+    (\l -> if null l then [] else renderProjectionHeader projection : l) .map renderProjectees . map (uncurry (performProjection projection))
 
 renderProjectionHeader :: Projection -> [Chunk Text]
 renderProjectionHeader p = case p of
