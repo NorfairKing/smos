@@ -19,21 +19,45 @@ The first command to consider is the `entry` command.
 It allows you to run a filter over all of your entries.
 
 ```
-smos-query entry [FILTER]
+smos-query entry [FILTER] [--project PROJECTION] [--sort SORTER]
 ```
 
+Filters allow you to select which entries are shown.
 A filter is something of the following form:
 
 ```
-tag:<tag>                -- tag:online
-state:<state>            -- state:TODO
-file:<file>              -- file:my-client.smos
-level:<level>            -- level:5
-parent:<filter>          -- parent:tag:work
-ancestor:<filter>        -- ancestor:state:DONE
-not:<filter>             -- not:tag:work
-(<filter> and <filter>)  -- (tag:work and state:NEXT)
-(<filter> or <filter>)   -- (level:0 or state:DONE)
+tag:<tag>                                          -- tag:online
+state:<state>                                      -- state:TODO
+file:<file>                                        -- file:my-client.smos
+level:<level>                                      -- level:5
+property:has:<property-name>                       -- property:has:effort
+property:exact:<property-name>:<property-value>    -- property:exact:effort:15min
+parent:<filter>                                    -- parent:tag:work
+ancestor:<filter>                                  -- ancestor:state:DONE
+not:<filter>                                       -- not:tag:work
+(<filter> and <filter>)                            -- (tag:work and state:NEXT)
+(<filter> or <filter>)                             -- (level:0 or state:DONE)
+```
+
+Projections allow you to select which aspects of the entries are shown.
+A projection is something of the following form:
+
+```
+file
+state
+header
+property:<property-name>          -- property:effort
+(<projection> also <projection>)  -- file also state
+```
+
+Sorters allow you to select in which order the entries are shown.
+A sorter is something of the following form:
+
+```
+file
+property:<property-name>          -- property:effort
+reverse:<sorter>                  -- reverse:file
+(<sorter> then <sorter>)          -- file then property:effort
 ```
 
 # Agenda

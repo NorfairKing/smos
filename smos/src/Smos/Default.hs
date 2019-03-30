@@ -103,6 +103,9 @@ defaultFileKeyMap =
                   , exactString "se" $ timestampsSelect "END"
                   , exactString "sd" $ timestampsSelect "DEADLINE"
                   , exactString "ss" $ timestampsSelect "SCHEDULED"
+                  , exactString "pi" entrySelectProperties
+                  , exactString "pc" $ propertiesEditProperty "client"
+                  , exactString "pe" $ propertiesEditProperty "effort"
                   -- Clocking
                   , exactString
                         "ci"
@@ -177,7 +180,26 @@ defaultFileKeyMap =
                   , exactChar '\t' timestampsToggle
                   ]
         , fileKeyMapPropertiesMatchers =
-              listMatchers [exactKey KEsc entrySelectWhole]
+              listMatchers
+                  [ exactKey KEsc entrySelectWhole
+                  , exactKey KEnter entrySelectWhole
+                  , anyChar propertiesInsert
+                  , exactKey KLeft propertiesMoveLeft
+                  , exactKey KRight propertiesMoveRight
+                  , exactKey KUp propertiesMoveUp
+                  , exactKey KDown propertiesMoveDown
+                  , exactKey KBS propertiesRemove
+                  , exactKey KDel propertiesDelete
+                  , modifiedChar 'k' [MMeta] propertiesInsertNewProperty
+                  , exactKeyPress
+                        (KeyPress KUp [MMeta])
+                        propertiesInsertNewProperty
+                  , modifiedChar 'j' [MMeta] propertiesAppendNewProperty
+                  , exactKeyPress
+                        (KeyPress KDown [MMeta])
+                        propertiesAppendNewProperty
+                  , exactChar '\t' propertiesToggleSelected
+                  ]
         , fileKeyMapStateHistoryMatchers =
               listMatchers [exactKey KEsc entrySelectWhole]
         , fileKeyMapTagsMatchers =

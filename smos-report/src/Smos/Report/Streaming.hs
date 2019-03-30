@@ -76,8 +76,7 @@ printShouldPrint sp =
 
 data ParseSmosFileException
     = FileDoesntExist (Path Abs File)
-    | SmosFileParseError (Path Abs File)
-                         String
+    | SmosFileParseError (Path Abs File) String
     deriving (Show, Eq)
 
 instance Exception ParseSmosFileException where
@@ -113,9 +112,11 @@ smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
 smosCursorCurrents ::
        Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
-smosCursorCurrents =
-    C.map $ \(rf, fc) ->
-        (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrents = C.map smosCursorCurrent
+
+smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
+smosCursorCurrent =
+    \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest

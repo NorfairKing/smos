@@ -242,7 +242,7 @@ drawSmosTreeCursor ::
        Select
     -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
     -> Drawer
-drawSmosTreeCursor s = drawTreeCursor wrap cur
+drawSmosTreeCursor s = drawTreeCursorM wrap cur
   where
     cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
     cur ec cf =
@@ -416,7 +416,7 @@ drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-    drawVerticalMapCursor drawTimestamp (drawTimestampKVCursor s) drawTimestamp
+    drawVerticalMapCursorM drawTimestamp (drawTimestampKVCursor s) drawTimestamp
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
@@ -489,12 +489,50 @@ drawDay d = do
             ]
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
-drawPropertiesCursor _ = strWrap . show
+drawPropertiesCursor s =
+    drawVerticalMapCursor
+        drawPropertyPair
+        (drawPropertyKVCursor s)
+        drawPropertyPair .
+    propertiesCursorMapCursor
+
+drawPropertyKVCursor ::
+       Select
+    -> KeyValueCursor TextCursor TextCursor PropertyName PropertyValue
+    -> Widget ResourceName
+drawPropertyKVCursor s kvc =
+    let sel =
+            (case s of
+                 NotSelected -> id
+                 MaybeSelected -> withAttr selectedAttr)
+     in case kvc of
+            KeyValueCursorKey tc pv ->
+                withAttr
+                    (maybe
+                         id
+                         (\pn -> (<>) (propertyNameSpecificAttr pn))
+                         (propertyName $ rebuildTextCursor tc) $
+                     propertyNameAttr) $
+                hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+            KeyValueCursorValue pn tc ->
+                withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+                hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
     | M.null m = Nothing
-    | otherwise = Just $ strWrap $ show m
+    | otherwise = Just $ vBox $ map (uncurry drawPropertyPair) $ M.toList m
+
+drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
+drawPropertyPair pn pv =
+    withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+    hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
+
+drawPropertyName :: PropertyName -> Widget ResourceName
+drawPropertyName = drawText . propertyNameText
+
+drawPropertyValue :: PropertyValue -> Widget ResourceName
+drawPropertyValue = drawText . propertyValueText
 
 drawStateHistoryCursor :: Select -> StateHistoryCursor -> MDrawer
 drawStateHistoryCursor _ = drawStateHistory . rebuildStateHistoryCursor . Just
@@ -530,13 +568,10 @@ drawStateHistory (StateHistory ls)
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
-    drawNonEmptyCursor
+    drawHorizontalNonEmptyCursor
         (\t -> str ":" <+> drawTag t)
         (drawTagCursor s)
-        (\t -> drawTag t <+> str ":")
-        hBox
-        hBox
-        (\f d g -> hBox [f, d, g]) .
+        (\t -> drawTag t <+> str ":") .
     tagsCursorNonEmptyCursor
 
 drawTags :: [Tag] -> Maybe (Widget ResourceName)

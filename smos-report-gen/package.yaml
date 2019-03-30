@@ -34,12 +34,16 @@ tests:
     dependencies:
     - QuickCheck
     - base
+    - cursor
+    - cursor-gen
     - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - genvalidity-path
     - hspec
     - megaparsec
+    - smos-cursor
+    - smos-cursor-gen
     - smos-data
     - smos-data-gen
     - smos-report
