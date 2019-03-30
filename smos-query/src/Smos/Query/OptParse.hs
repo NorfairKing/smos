@@ -4,6 +4,7 @@
 module Smos.Query.OptParse where
 
 import Control.Monad
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
@@ -170,7 +171,8 @@ parseCommandEntry :: ParserInfo Command
 parseCommandEntry = info parser modifier
   where
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
-    parser = CommandEntry <$> (EntryFlags <$> parseFilterArg <*> parseSorterArg)
+    parser =
+        CommandEntry <$> (EntryFlags <$> parseFilterArg <*> parseSorterArgs)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -275,16 +277,17 @@ parseFilterArg =
              , help "A filter to filter entries by"
              ])
 
-parseSorterArg :: Parser (Maybe Sorter)
-parseSorterArg =
-    option
-        (Just <$> (maybeReader (parseSorter . T.pack)))
-        (mconcat
-             [ value Nothing
-             , long "sort"
-             , metavar "SORTER"
-             , help "A sorter to sort entries by"
-             ])
+parseSorterArgs :: Parser (Maybe Sorter)
+parseSorterArgs =
+    (fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes) <$>
+    many
+        (option
+             (Just <$> (maybeReader (parseSorter . T.pack)))
+             (mconcat
+                  [ long "sort"
+                  , metavar "SORTER"
+                  , help "A sorter to sort entries by"
+                  ]))
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
