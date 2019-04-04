@@ -294,6 +294,9 @@ drawEntryCursor s tc e = do
         forM entryCursorStateHistoryCursor $
         drawStateHistoryCursor (selectWhen StateHistorySelected)
     pure $
+        (case s of
+             NotSelected -> id
+             MaybeSelected -> visible) $
         vBox $
         catMaybes
             [ Just $
@@ -302,7 +305,7 @@ drawEntryCursor s tc e = do
               concat $
               [ [ case s of
                       NotSelected -> str "-"
-                      MaybeSelected -> visible $ withAttr selectedAttr $ str ">"
+                      MaybeSelected -> withAttr selectedAttr $ str ">"
                 ]
               , maybeToList
                     (entryCursorStateHistoryCursor >>=
