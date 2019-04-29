@@ -1,0 +1,16 @@
+before:
+- example
+commands:
+- entrySelectProperties
+- propertiesInsert a
+- propertiesToggleSelected
+- propertiesInsert b
+- propertiesToggleSelected
+- propertiesMoveLeft
+- propertiesAppend c
+- propertiesMoveRight
+- propertiesAppend d
+after:
+- header: example
+  properties:
+    cda: b

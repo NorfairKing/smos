@@ -15,6 +15,7 @@ module Smos.Actions
     , module Smos.Actions.Header
     , module Smos.Actions.Help
     , module Smos.Actions.Logbook
+    , module Smos.Actions.Properties
     , module Smos.Actions.Report
     , module Smos.Actions.Tags
     , module Smos.Actions.Timestamps
@@ -32,6 +33,7 @@ import Smos.Actions.Forest
 import Smos.Actions.Header
 import Smos.Actions.Help
 import Smos.Actions.Logbook
+import Smos.Actions.Properties
 import Smos.Actions.Report
 import Smos.Actions.Tags
 import Smos.Actions.Timestamps
@@ -58,6 +60,7 @@ allPlainActions =
         , allHeaderPlainActions
         , allLogbookPlainActions
         , allTagsPlainActions
+        , allPropertiesPlainActions
         , allTimestampsPlainActions
         , allUndoPlainActions
         , allConveniencePlainActions
@@ -72,6 +75,7 @@ allUsingCharActions =
         , allHeaderUsingCharActions
         , allTimestampsUsingCharActions
         , allTagsUsingCharActions
+        , allPropertiesUsingCharActions
         , allUndoUsingCharActions
         ]
 

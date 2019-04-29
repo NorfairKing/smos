@@ -15,6 +15,7 @@ module Smos.Cursor.SmosFile
     , smosFileCursorSelectLast
     , smosFileCursorSelectAbove
     , smosFileCursorSelectBelowAtStart
+    , smosFileCursorSelectBelowAtEnd
     , smosFileCursorToggleCollapse
     , smosFileCursorToggleCollapseRecursively
     , smosFileCursorInsertEntryBefore
@@ -123,9 +124,12 @@ smosFileCursorSelectAbove :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectAbove = forestCursorSelectAbove rebuild make
 
 smosFileCursorSelectBelowAtStart :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorSelectBelowAtStart =
-    forestCursorOpenCurrentForest >=>
-    forestCursorSelectBelowAtStart rebuild make
+smosFileCursorSelectBelowAtStart sfc =
+    forestCursorSelectBelowAtStart rebuild make $ fromMaybe sfc $ forestCursorOpenCurrentForest sfc
+ 
+smosFileCursorSelectBelowAtEnd :: SmosFileCursor -> Maybe SmosFileCursor
+smosFileCursorSelectBelowAtEnd sfc =
+    forestCursorSelectBelowAtEnd rebuild make $ fromMaybe sfc $ forestCursorOpenCurrentForest sfc
 
 smosFileCursorToggleCollapse :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorToggleCollapse = forestCursorToggleCurrentForest

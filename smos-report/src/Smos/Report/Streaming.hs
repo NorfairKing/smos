@@ -76,8 +76,7 @@ printShouldPrint sp =
 
 data ParseSmosFileException
     = FileDoesntExist (Path Abs File)
-    | SmosFileParseError (Path Abs File)
-                         String
+    | SmosFileParseError (Path Abs File) String
     deriving (Show, Eq)
 
 instance Exception ParseSmosFileException where
@@ -113,9 +112,11 @@ smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
 smosCursorCurrents ::
        Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
-smosCursorCurrents =
-    C.map $ \(rf, fc) ->
-        (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrents = C.map smosCursorCurrent
+
+smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
+smosCursorCurrent =
+    \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest
@@ -124,9 +125,21 @@ forestCursors :: Forest a -> Forest (ForestCursor a)
 forestCursors ts =
     case NE.nonEmpty ts of
         Nothing -> []
-        Just ne -> go (makeForestCursor $ NE.map (cTree True) ne)
+        Just ne -> goTop (makeForestCursor $ NE.map (cTree True) ne)
   where
+    goTop :: ForestCursor a -> Forest (ForestCursor a)
+    goTop fc =
+        go fc ++
+        (case forestCursorSelectNextTreeCursor fc of
+             Nothing -> []
+             Just fc' -> goTop fc')
     go :: ForestCursor a -> Forest (ForestCursor a)
     go fc =
-        Node fc (maybeToList (forestCursorSelectBelowAtStart fc) >>= go) :
-        (maybeToList (forestCursorSelectNextOnSameLevel fc) >>= go)
+        Node
+            fc
+            (case forestCursorSelectBelowAtStart fc of
+                 Nothing -> []
+                 Just fc' -> go fc') :
+        (case (fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel) of
+             Nothing -> []
+             Just fc' -> go fc')

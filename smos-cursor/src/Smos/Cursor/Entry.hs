@@ -10,6 +10,7 @@ module Smos.Cursor.Entry
     , entryCursorContentsCursorL
     , entryCursorStateHistoryCursorL
     , entryCursorTagsCursorL
+    , entryCursorPropertiesCursorL
     , entryCursorTimestampsCursorL
     , entryCursorLogbookCursorL
     , entryCursorSelectionL
@@ -45,16 +46,18 @@ import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
 
-data EntryCursor = EntryCursor
-    { entryCursorHeaderCursor :: HeaderCursor
-    , entryCursorContentsCursor :: Maybe ContentsCursor
-    , entryCursorTimestampsCursor :: Maybe TimestampsCursor
-    , entryCursorPropertiesCursor :: Maybe PropertiesCursor
-    , entryCursorStateHistoryCursor :: Maybe StateHistoryCursor
-    , entryCursorTagsCursor :: Maybe TagsCursor
-    , entryCursorLogbookCursor :: LogbookCursor
-    , entryCursorSelected :: EntryCursorSelection
-    } deriving (Show, Eq, Generic)
+data EntryCursor =
+    EntryCursor
+        { entryCursorHeaderCursor :: HeaderCursor
+        , entryCursorContentsCursor :: Maybe ContentsCursor
+        , entryCursorTimestampsCursor :: Maybe TimestampsCursor
+        , entryCursorPropertiesCursor :: Maybe PropertiesCursor
+        , entryCursorStateHistoryCursor :: Maybe StateHistoryCursor
+        , entryCursorTagsCursor :: Maybe TagsCursor
+        , entryCursorLogbookCursor :: LogbookCursor
+        , entryCursorSelected :: EntryCursorSelection
+        }
+    deriving (Show, Eq, Generic)
 
 instance Validity EntryCursor
 
@@ -63,8 +66,7 @@ makeEntryCursor Entry {..} =
     EntryCursor
         { entryCursorHeaderCursor = makeHeaderCursor entryHeader
         , entryCursorContentsCursor = makeContentsCursor <$> entryContents
-        , entryCursorTimestampsCursor =
-              makeTimestampsCursor  entryTimestamps
+        , entryCursorTimestampsCursor = makeTimestampsCursor entryTimestamps
         , entryCursorPropertiesCursor =
               makePropertiesCursor <$> NE.nonEmpty (M.toList entryProperties)
         , entryCursorTagsCursor = makeTagsCursor <$> NE.nonEmpty entryTags
@@ -82,8 +84,7 @@ rebuildEntryCursor EntryCursor {..} =
     Entry
         { entryHeader = rebuildHeaderCursor entryCursorHeaderCursor
         , entryContents = rebuildContentsCursor <$> entryCursorContentsCursor
-        , entryTimestamps =
-              rebuildTimestampsCursor entryCursorTimestampsCursor
+        , entryTimestamps = rebuildTimestampsCursor entryCursorTimestampsCursor
         , entryProperties =
               maybe M.empty (M.fromList . NE.toList) $
               rebuildPropertiesCursor <$> entryCursorPropertiesCursor
@@ -115,9 +116,16 @@ entryCursorStateHistoryCursorL =
 entryCursorTagsCursorL :: Lens' EntryCursor (Maybe TagsCursor)
 entryCursorTagsCursorL =
     lens entryCursorTagsCursor $ \ec shc -> ec {entryCursorTagsCursor = shc}
+
+entryCursorPropertiesCursorL :: Lens' EntryCursor (Maybe PropertiesCursor)
+entryCursorPropertiesCursorL =
+    lens entryCursorPropertiesCursor $ \ec shc ->
+        ec {entryCursorPropertiesCursor = shc}
+
 entryCursorTimestampsCursorL :: Lens' EntryCursor (Maybe TimestampsCursor)
 entryCursorTimestampsCursorL =
-    lens entryCursorTimestampsCursor $ \ec shc -> ec {entryCursorTimestampsCursor = shc}
+    lens entryCursorTimestampsCursor $ \ec shc ->
+        ec {entryCursorTimestampsCursor = shc}
 
 entryCursorLogbookCursorL :: Lens' EntryCursor LogbookCursor
 entryCursorLogbookCursorL =
@@ -149,7 +157,9 @@ entryCursorSelectTimestamps :: EntryCursor -> EntryCursor
 entryCursorSelectTimestamps = entryCursorSelect TimestampsSelected
 
 entryCursorSelectProperties :: EntryCursor -> EntryCursor
-entryCursorSelectProperties = entryCursorSelect PropertiesSelected
+entryCursorSelectProperties =
+    (entryCursorPropertiesCursorL %~ (maybe (Just emptyPropertiesCursor) Just)) .
+    entryCursorSelect PropertiesSelected
 
 entryCursorSelectStateHistory :: EntryCursor -> EntryCursor
 entryCursorSelectStateHistory = entryCursorSelect StateHistorySelected

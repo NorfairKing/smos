@@ -82,3 +82,12 @@ timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
 
 headerChunk :: Header -> Chunk Text
 headerChunk = fore yellow . chunk . headerText
+
+propertyValueChunk :: PropertyName -> PropertyValue -> Chunk Text
+propertyValueChunk pn pv = fore color . chunk . propertyValueText $ pv
+  where
+    color =
+        case propertyNameText pn of
+            "effort" -> magenta
+            "client" -> green
+            _ -> mempty

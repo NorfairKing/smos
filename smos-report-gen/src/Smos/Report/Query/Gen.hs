@@ -44,3 +44,7 @@ instance GenUnchecked Filter where
 
 instance GenValid Filter where
     genValid = genValidStructurally
+
+instance GenUnchecked PropertyFilter
+
+instance GenValid PropertyFilter

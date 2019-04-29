@@ -5,6 +5,7 @@
 module Smos.Actions.File
     ( saveFile
     , saveCurrentSmosFile
+    , saveSmosFile
     , switchToFile
     , lockFile
     , unlockFile
@@ -12,6 +13,7 @@ module Smos.Actions.File
     ) where
 
 import Path
+import Path.IO
 import qualified System.FileLock as FL
 
 import Smos.Data
@@ -32,11 +34,17 @@ saveCurrentSmosFile :: SmosM ()
 saveCurrentSmosFile = do
     SmosState {..} <- get
     let sf' = rebuildEditorCursor smosStateCursor
+    liftIO $ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath
+    modify (\ss -> ss {smosStateStartSmosFile = Just sf'})
+
+saveSmosFile :: SmosFile -> Maybe SmosFile -> Path Abs File -> IO ()
+saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
+    e <- doesFileExist smosStateFilePath
+    when (e && smosStateStartSmosFile == Nothing) $ removeFile smosStateFilePath
     (case smosStateStartSmosFile of
          Nothing -> unless (sf' == emptySmosFile)
          Just sf'' -> unless (sf'' == sf')) $
-        liftIO $ writeSmosFile smosStateFilePath sf'
-    modify (\ss -> ss {smosStateStartSmosFile = Just sf'})
+        writeSmosFile smosStateFilePath sf'
 
 switchToFile :: Path Abs File -> SmosFileCursor -> SmosM (Maybe FL.FileLock)
 switchToFile path sfc = do

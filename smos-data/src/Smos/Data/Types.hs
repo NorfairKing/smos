@@ -168,14 +168,14 @@ data Entry = Entry
 newEntry :: Header -> Entry
 newEntry h =
     Entry
-        { entryHeader = h
-        , entryContents = Nothing
-        , entryTimestamps = M.empty
-        , entryProperties = M.empty
-        , entryStateHistory = emptyStateHistory
-        , entryTags = []
-        , entryLogbook = emptyLogbook
-        }
+    { entryHeader = h
+    , entryContents = Nothing
+    , entryTimestamps = M.empty
+    , entryProperties = M.empty
+    , entryStateHistory = emptyStateHistory
+    , entryTags = []
+    , entryLogbook = emptyLogbook
+    }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
@@ -304,7 +304,10 @@ instance Validity PropertyName where
         mconcat
             [ delve "propertyNameText" t
             , decorateList (T.unpack t) $ \c ->
-                  declare "The character is not a newline character" $ c /= '\n'
+                  declare
+                      "The character is printable but not a whitespace character or punctuation" $
+                  Char.isPrint c &&
+                  not (Char.isSpace c) && not (Char.isPunctuation c)
             ]
 
 instance FromJSON PropertyName where
@@ -332,7 +335,16 @@ newtype PropertyValue = PropertyValue
     { propertyValueText :: Text
     } deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
-instance Validity PropertyValue
+instance Validity PropertyValue where
+    validate (PropertyValue t) =
+        mconcat
+            [ delve "propertyValueText" t
+            , decorateList (T.unpack t) $ \c ->
+                  declare
+                      "The character is printable but not a whitespace character or punctuation" $
+                  Char.isPrint c &&
+                  not (Char.isSpace c) && not (Char.isPunctuation c)
+            ]
 
 instance FromJSON PropertyValue where
     parseJSON = withText "PropertyValue" parseJSONPropertyValue

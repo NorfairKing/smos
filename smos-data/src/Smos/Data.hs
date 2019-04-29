@@ -122,12 +122,12 @@ logbookClockIn now lb =
     case lb of
         LogClosed es ->
             let d = constructValid $ LogOpen now es
-             in case es of
-                    [] -> d
-                    (LogbookEntry {..}:rest) ->
-                        if logbookEntryEnd == now
-                            then Just $ LogOpen logbookEntryStart rest
-                            else d
+            in case es of
+                   [] -> d
+                   (LogbookEntry {..}:rest) ->
+                       if logbookEntryEnd == now
+                           then Just $ LogOpen logbookEntryStart rest
+                           else d
         LogOpen {} -> Nothing
 
 logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook

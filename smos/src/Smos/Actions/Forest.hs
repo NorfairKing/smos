@@ -200,7 +200,7 @@ forestMoveRight :: Action
 forestMoveRight =
     Action
         { actionName = "forestMoveRight"
-        , actionFunc = modifyFileCursorM smosFileCursorSelectBelowAtStart
+        , actionFunc = modifyFileCursorM smosFileCursorSelectBelowAtEnd
         , actionDescription =
               "Move the current cursor to the first child of the current entry in the entry forest"
         }
