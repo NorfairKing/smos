@@ -27,6 +27,9 @@ defaultKeyMap =
                   , exactString "gg" helpStart
                   , exactKey KEnd helpEnd
                   , exactChar 'G' helpEnd
+                  , exactKey KBS helpRemove
+                  , exactKey KDel helpDelete
+                  , anyChar helpInsert
                   , exactKey KEsc selectEditor
                   , exactChar 'q' selectEditor
                   ]
