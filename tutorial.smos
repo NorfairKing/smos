@@ -1,0 +1,9 @@
+- header: Smos Tutorial
+  contents: ! "Welcome to Smos.\nThis is an interactive tutorial for you to walk through
+    (like vimtutor).\n\nThe thing that you see at the top entitled \"Smos Tutorial\",
+    prefaced with \">\"\nis called a _header_. The header belongs to an _entry_.\nWhat
+    you are reading now are the _contents_ of that entry. \n\nSmos is self-documenting,
+    press the ? button to see the help page.\nAfter you do, press `Esc` or `q` to
+    return.\nThis tutorial will use the names of actions to describe them, not keybindings.\nThis
+    means that you will have to look them up to figure out the keybindings\nin order
+    to follow along with this tutorial."

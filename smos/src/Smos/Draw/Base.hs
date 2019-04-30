@@ -20,29 +20,29 @@ drawText :: Text -> Widget n
 drawText = vBox . map go . T.splitOn "\n"
   where
     go t =
-        txtWrap $
-        case t of
-            "" -> " "
-            _ -> t
+      txtWrap $
+      case t of
+        "" -> " "
+        _ -> t
 
 data Select
-    = MaybeSelected
-    | NotSelected
-    deriving (Show, Eq)
+  = MaybeSelected
+  | NotSelected
+  deriving (Show, Eq)
 
 instance Semigroup Select where
-    MaybeSelected <> MaybeSelected = MaybeSelected
-    _ <> _ = NotSelected
+  MaybeSelected <> MaybeSelected = MaybeSelected
+  _ <> _ = NotSelected
 
 drawNominalDiffTime :: NominalDiffTime -> Widget n
 drawNominalDiffTime ndt =
-    hBox
-        [ str $ printf "%.2d" hours
-        , str ":"
-        , str $ printf "%.2d" minutes
-        , str ":"
-        , str $ printf "%.2d" seconds
-        ]
+  hBox
+    [ str $ printf "%.2d" hours
+    , str ":"
+    , str $ printf "%.2d" minutes
+    , str ":"
+    , str $ printf "%.2d" seconds
+    ]
   where
     totalSeconds = round ndt :: Int
     totalMinutes = totalSeconds `div` secondsInAMinute
@@ -58,6 +58,7 @@ formatTimestampDay = formatTime defaultTimeLocale "%A %F"
 
 showKey :: Key -> String
 showKey (KChar '\t') = "<tab>"
+showKey (KChar ' ') = "<space>"
 showKey (KChar c) = [c]
 showKey KBackTab = "S-<tab>"
 showKey (KFun i) = "F" ++ show i
