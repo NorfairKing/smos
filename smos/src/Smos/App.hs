@@ -144,5 +144,6 @@ initState zt p fl msf =
         , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
         , smosStateKeyHistory = Empty
         , smosStateCursorHistory = []
+        , smosStateAsyncs = []
         , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
         }

@@ -68,6 +68,7 @@ startSmosOn p sc@SmosConfig {..} = do
                          (mkSmosApp sc)
                          s)
                     (eventPusher chan)
+            forM_ (smosStateAsyncs s') wait
             saveSmosFile
                 (rebuildEditorCursor $ smosStateCursor s')
                 (smosStateStartSmosFile s')

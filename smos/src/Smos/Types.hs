@@ -14,6 +14,7 @@ module Smos.Types
 
 import Import
 
+import Control.Concurrent.Async
 import Data.Aeson
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
@@ -199,9 +200,15 @@ data SmosState =
     , smosStateCursor :: EditorCursor
     , smosStateKeyHistory :: Seq KeyPress
     , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest, TODO make bounded?
+    , smosStateAsyncs :: [Async ()]
     , smosStateDebugInfo :: DebugInfo
     }
   deriving (Generic)
+
+runSmosAsync :: IO () -> SmosM ()
+runSmosAsync func = do
+  a <- liftIO $ async func
+  modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss} )
 
 data KeyPress =
   KeyPress Key [Modifier]
