@@ -40,7 +40,7 @@ module Smos.Cursor.SmosFile
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
-import Control.Monad
+import Control.Monad()
 import Data.Time
 
 import Lens.Micro
