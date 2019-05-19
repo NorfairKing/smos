@@ -40,7 +40,6 @@ module Smos.Cursor.SmosFile
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
-import Control.Monad
 import Data.Time
 
 import Lens.Micro
@@ -126,7 +125,7 @@ smosFileCursorSelectAbove = forestCursorSelectAbove rebuild make
 smosFileCursorSelectBelowAtStart :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectBelowAtStart sfc =
     forestCursorSelectBelowAtStart rebuild make $ fromMaybe sfc $ forestCursorOpenCurrentForest sfc
- 
+
 smosFileCursorSelectBelowAtEnd :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectBelowAtEnd sfc =
     forestCursorSelectBelowAtEnd rebuild make $ fromMaybe sfc $ forestCursorOpenCurrentForest sfc
