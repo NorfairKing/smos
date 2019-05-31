@@ -193,15 +193,15 @@ runSmosM = runMkSmosM
 
 data SmosState =
   SmosState
-    { smosStateTime :: ZonedTime
-    , smosStateStartSmosFile :: Maybe SmosFile
-    , smosStateFilePath :: Path Abs File
-    , smosStateFileLock :: FileLock
-    , smosStateCursor :: EditorCursor
-    , smosStateKeyHistory :: Seq KeyPress
-    , smosStateCursorHistory :: [EditorCursor] -- From youngest to oldest, TODO make bounded?
-    , smosStateAsyncs :: [Async ()]
-    , smosStateDebugInfo :: DebugInfo
+    { smosStateTime :: !ZonedTime
+    , smosStateStartSmosFile :: !(Maybe SmosFile)
+    , smosStateFilePath :: !(Path Abs File)
+    , smosStateFileLock :: !FileLock
+    , smosStateCursor :: !EditorCursor
+    , smosStateKeyHistory :: !(Seq KeyPress)
+    , smosStateCursorHistory :: ![EditorCursor] -- From youngest to oldest, TODO make bounded?
+    , smosStateAsyncs :: ![Async ()]
+    , smosStateDebugInfo :: !DebugInfo
     }
   deriving (Generic)
 
