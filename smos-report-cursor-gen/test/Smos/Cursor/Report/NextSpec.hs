@@ -11,7 +11,7 @@ import Smos.Cursor.Report.Next.Gen ()
 
 spec :: Spec
 spec = do
-    eqSpec @NextActionReportCursor
+    eqSpecOnValid @NextActionReportCursor
     genValidSpec @NextActionReportCursor
-    eqSpec @NextActionEntryCursor
+    eqSpecOnValid @NextActionEntryCursor
     genValidSpec @NextActionEntryCursor

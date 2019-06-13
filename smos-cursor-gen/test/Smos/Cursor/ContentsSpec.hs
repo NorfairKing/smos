@@ -14,9 +14,8 @@ import Smos.Cursor.Contents.Gen ()
 
 spec :: Spec
 spec = do
-    eqSpec @ContentsCursor
+    eqSpecOnValid @ContentsCursor
     genValidSpec @ContentsCursor
-    shrinkValidSpecWithLimit @ContentsCursor 100
     describe "makeContentsCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeContentsCursor
     describe "rebuildContentsCursor" $ do

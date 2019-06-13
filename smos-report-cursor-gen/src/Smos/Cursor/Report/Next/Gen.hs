@@ -11,9 +11,8 @@ import Cursor.Forest.Gen ()
 
 import Smos.Cursor.Report.Next
 
-import Smos.Report.Path.Gen()
-
-instance GenUnchecked NextActionEntryCursor
+import Smos.Report.Path.Gen ()
 
 instance GenValid NextActionEntryCursor where
-    genValid = genValidStructurally
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

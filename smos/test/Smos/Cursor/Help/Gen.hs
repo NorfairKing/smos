@@ -9,7 +9,7 @@ import Graphics.Vty.Input.Events
 import Smos.Types
 
 import Smos.Cursor.SmosFile.Gen ()
-import Smos.Types.Gen()
+import Smos.Types.Gen ()
 
 instance GenUnchecked Key
 
@@ -23,12 +23,10 @@ instance GenUnchecked KeyCombination
 
 instance GenValid KeyCombination
 
-instance GenUnchecked HelpCursor
-
-instance GenValid HelpCursor
-
-instance GenUnchecked KeyHelpCursor
+instance GenValid HelpCursor where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid KeyHelpCursor where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

@@ -14,10 +14,10 @@ import Smos.Report.Path.Gen ()
 
 import Smos.Report.Projection
 
-instance GenUnchecked Projection
+instance GenValid Projection where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
-instance GenValid Projection
-
-instance GenUnchecked Projectee
-
-instance GenValid Projectee
+instance GenValid Projectee where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

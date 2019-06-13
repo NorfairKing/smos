@@ -8,9 +8,10 @@ import Smos.Types
 
 instance GenUnchecked a => GenUnchecked (MStop a)
 
-instance GenValid a => GenValid (MStop a)
-
-instance GenUnchecked ActionName
+instance GenValid a => GenValid (MStop a) where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid ActionName where
-    genValid = genValidStructurally
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

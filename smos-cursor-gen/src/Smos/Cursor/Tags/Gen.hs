@@ -12,6 +12,6 @@ import Smos.Data.Gen ()
 import Smos.Cursor.Tag.Gen ()
 import Smos.Cursor.Tags
 
-instance GenUnchecked TagsCursor
-
-instance GenValid TagsCursor
+instance GenValid TagsCursor where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

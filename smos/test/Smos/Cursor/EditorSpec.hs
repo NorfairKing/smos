@@ -13,7 +13,7 @@ import Smos.Cursor.Editor.Gen ()
 
 spec :: Spec
 spec = do
-    eqSpec @EditorCursor
+    eqSpecOnValid @EditorCursor
     genValidSpec @EditorCursor
     describe "makeEditorCursor" $
         it "produces valid cursors" $ producesValidsOnValids makeEditorCursor

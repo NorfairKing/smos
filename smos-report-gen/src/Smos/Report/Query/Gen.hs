@@ -14,37 +14,26 @@ import Smos.Data.Gen ()
 
 import Smos.Report.Query
 
-instance GenUnchecked Filter where
-    genUnchecked =
-        sized $ \n ->
-            case n of
-                0 ->
-                    oneof
-                        [ FilterHasTag <$> genUnchecked
-                        , FilterTodoState <$> genUnchecked
-                        ]
-                _ ->
-                    oneof
-                        [ FilterHasTag <$> genUnchecked
-                        , FilterTodoState <$> genUnchecked
-                        , FilterFile <$> genUnchecked
-                        , FilterParent <$>
-                          scale (max 0 . (\x -> x - 1)) genUnchecked
-                        , FilterAncestor <$>
-                          scale (max 0 . (\x -> x - 2)) genUnchecked
-                        , FilterNot <$>
-                          scale (max 0 . (\x -> x - 1)) genUnchecked
-                        , do (a, b) <- genSplit =<< upTo n
-                             FilterAnd <$> resize a genUnchecked <*>
-                                 resize b genUnchecked
-                        , do (a, b) <- genSplit =<< upTo n
-                             FilterOr <$> resize a genUnchecked <*>
-                                 resize b genUnchecked
-                        ]
-
 instance GenValid Filter where
-    genValid = genValidStructurally
+  genValid =
+    sized $ \n ->
+      case n of
+        0 -> oneof [FilterHasTag <$> genValid, FilterTodoState <$> genValid]
+        _ ->
+          oneof
+            [ FilterHasTag <$> genValid
+            , FilterTodoState <$> genValid
+            , (FilterFile <$> genValid) `suchThat` isValid
+            , FilterParent <$> scale (max 0 . (\x -> x - 1)) genValid
+            , FilterAncestor <$> scale (max 0 . (\x -> x - 2)) genValid
+            , FilterNot <$> scale (max 0 . (\x -> x - 1)) genValid
+            , do (a, b) <- genSplit =<< upTo n
+                 FilterAnd <$> resize a genValid <*> resize b genValid
+            , do (a, b) <- genSplit =<< upTo n
+                 FilterOr <$> resize a genValid <*> resize b genValid
+            ]
+  shrinkValid = shrinkValidStructurally
 
-instance GenUnchecked PropertyFilter
-
-instance GenValid PropertyFilter
+instance GenValid PropertyFilter where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

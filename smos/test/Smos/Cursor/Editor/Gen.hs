@@ -10,20 +10,14 @@ import Smos.Cursor.Help.Gen ()
 import Smos.Cursor.Report.Next.Gen ()
 import Smos.Cursor.SmosFile.Gen ()
 
-instance GenUnchecked EditorCursor
-
 instance GenValid EditorCursor where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenUnchecked ReportCursor
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid ReportCursor where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenUnchecked EditorSelection
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid EditorSelection where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
