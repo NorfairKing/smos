@@ -12,5 +12,5 @@ import Smos.Data.Gen ()
 import Smos.Cursor.Properties
 
 instance GenValid PropertiesCursor where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

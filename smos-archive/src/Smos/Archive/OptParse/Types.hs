@@ -2,14 +2,18 @@ module Smos.Archive.OptParse.Types where
 
 import Path
 
-data Flags = Flags
+data Flags =
+  Flags
     { flagFile :: FilePath
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)
 
 data Configuration =
-    Configuration
-    deriving (Show, Eq)
+  Configuration
+  deriving (Show, Eq)
 
-data Settings = Settings
+data Settings =
+  Settings
     { setFile :: Path Abs File
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)

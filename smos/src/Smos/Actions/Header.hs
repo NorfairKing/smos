@@ -2,17 +2,17 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Header
-    ( allHeaderPlainActions
-    , allHeaderUsingCharActions
-    , headerInsert
-    , headerAppend
-    , headerRemove
-    , headerDelete
-    , headerMoveLeft
-    , headerMoveRight
-    , headerMoveToStart
-    , headerMoveToEnd
-    ) where
+  ( allHeaderPlainActions
+  , allHeaderUsingCharActions
+  , headerInsert
+  , headerAppend
+  , headerRemove
+  , headerDelete
+  , headerMoveLeft
+  , headerMoveRight
+  , headerMoveToStart
+  , headerMoveToEnd
+  ) where
 
 import Smos.Types
 
@@ -20,40 +20,40 @@ import Smos.Actions.Utils
 
 allHeaderPlainActions :: [Action]
 allHeaderPlainActions =
-    [ headerRemove
-    , headerDelete
-    , headerMoveLeft
-    , headerMoveRight
-    , headerMoveToStart
-    , headerMoveToEnd
-    ]
+  [ headerRemove
+  , headerDelete
+  , headerMoveLeft
+  , headerMoveRight
+  , headerMoveToStart
+  , headerMoveToEnd
+  ]
 
 allHeaderUsingCharActions :: [ActionUsing Char]
 allHeaderUsingCharActions = [headerInsert, headerAppend]
 
 headerInsert :: ActionUsing Char
 headerInsert =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "headerInsert"
     , actionUsingFunc =
-          \c -> modifyHeaderCursorWhenSelectedM (headerCursorInsert c)
+        \c -> modifyHeaderCursorWhenSelectedM (headerCursorInsert c)
     , actionUsingDescription =
-          "Insert a character into the header in front of the cursor"
+        "Insert a character into the header in front of the cursor"
     }
 
 headerAppend :: ActionUsing Char
 headerAppend =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "headerAppend"
     , actionUsingFunc =
-          \c -> modifyHeaderCursorWhenSelectedM (headerCursorAppend c)
+        \c -> modifyHeaderCursorWhenSelectedM (headerCursorAppend c)
     , actionUsingDescription =
-          "Append a character into the header in front of the cursor"
+        "Append a character into the header in front of the cursor"
     }
 
 headerRemove :: Action
 headerRemove =
-    Action
+  Action
     { actionName = "headerRemove"
     , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorRemove
     , actionDescription = "Remove a character from the header"
@@ -61,7 +61,7 @@ headerRemove =
 
 headerDelete :: Action
 headerDelete =
-    Action
+  Action
     { actionName = "headerDelete"
     , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorDelete
     , actionDescription = "Remove a character from the header"
@@ -69,7 +69,7 @@ headerDelete =
 
 headerMoveLeft :: Action
 headerMoveLeft =
-    Action
+  Action
     { actionName = "headerMoveLeft"
     , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorSelectPrev
     , actionDescription = "Move left in the header"
@@ -77,7 +77,7 @@ headerMoveLeft =
 
 headerMoveRight :: Action
 headerMoveRight =
-    Action
+  Action
     { actionName = "headerMoveRight"
     , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorSelectNext
     , actionDescription = "Move right in the header"
@@ -85,7 +85,7 @@ headerMoveRight =
 
 headerMoveToStart :: Action
 headerMoveToStart =
-    Action
+  Action
     { actionName = "headerMoveToStart"
     , actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectStart
     , actionDescription = "Move to the start of the header"
@@ -93,7 +93,7 @@ headerMoveToStart =
 
 headerMoveToEnd :: Action
 headerMoveToEnd =
-    Action
+  Action
     { actionName = "headerMoveToEnd"
     , actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectEnd
     , actionDescription = "Move to the end of the header"

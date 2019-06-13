@@ -24,14 +24,19 @@ import Smos.Data
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
-sourceFilesInNonHiddenDirsRecursively :: Path Abs Dir -> ConduitT i RootedPath IO ()
+sourceFilesInNonHiddenDirsRecursively ::
+     Path Abs Dir -> ConduitT i RootedPath IO ()
 sourceFilesInNonHiddenDirsRecursively dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
   if e
     then walkDir go dir
     else pure ()
   where
-    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath IO WalkAction
+    go ::
+         Path Abs Dir
+      -> [Path Abs Dir]
+      -> [Path Abs File]
+      -> ConduitT i RootedPath IO WalkAction
     go curdir subdirs files = do
       C.yieldMany $ map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
       pure $ WalkExclude $ filter hidden subdirs
@@ -48,7 +53,8 @@ filterSmosFiles =
       Relative _ prf -> fileExtension prf == ".smos"
       Absolute paf -> fileExtension paf == ".smos"
 
-parseSmosFiles :: ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
+parseSmosFiles ::
+     ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
 parseSmosFiles =
   C.mapM $ \p -> do
     let ap = resolveRootedPath p
@@ -62,7 +68,8 @@ parseSmosFiles =
                 Right sf -> Right sf
     pure (p, ei)
 
-printShouldPrint :: ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) IO ()
+printShouldPrint ::
+     ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) IO ()
 printShouldPrint sp =
   C.concatMapM $ \(a, errOrB) ->
     case errOrB of
@@ -77,7 +84,8 @@ data ParseSmosFileException
   deriving (Show, Eq)
 
 instance Exception ParseSmosFileException where
-  displayException (FileDoesntExist file) = "The file " <> fromAbsFile file <> " does not exist."
+  displayException (FileDoesntExist file) =
+    "The file " <> fromAbsFile file <> " does not exist."
   displayException (SmosFileParseError file errMess) =
     "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
@@ -102,14 +110,17 @@ smosFileEntries = C.concatMap $ uncurry go
     go :: a -> SmosFile -> [(a, Entry)]
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
 
-smosFileCursors :: Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
+smosFileCursors ::
+     Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
-smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
+smosCursorCurrents ::
+     Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
 smosCursorCurrents = C.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent = \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrent =
+  \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest

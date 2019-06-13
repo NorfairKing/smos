@@ -10,4 +10,4 @@ import Smos.Report.Path
 instance GenUnchecked RootedPath
 
 instance GenValid RootedPath where
-    genValid = genValidStructurally
+  genValid = genValidStructurally

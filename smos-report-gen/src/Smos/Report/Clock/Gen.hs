@@ -16,4 +16,4 @@ import Smos.Report.TimeBlock.Gen ()
 instance GenUnchecked ClockResolution
 
 instance GenValid ClockResolution where
-    genValid = genValidStructurally
+  genValid = genValidStructurally

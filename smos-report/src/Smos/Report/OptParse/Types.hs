@@ -10,21 +10,26 @@ import Data.Validity
 
 import Data.Yaml as Yaml
 
-data Flags = Flags
+data Flags =
+  Flags
     { flagWorkflowDir :: Maybe FilePath
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)
 
-data Environment = Environment
+data Environment =
+  Environment
     { envWorkflowDir :: Maybe FilePath
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)
 
-data Configuration = Configuration
+data Configuration =
+  Configuration
     { confWorkflowDir :: Maybe FilePath
-    } deriving (Show, Eq, Generic)
+    }
+  deriving (Show, Eq, Generic)
 
 instance Validity Configuration
 
 instance FromJSON Configuration where
-    parseJSON =
-        withObject "Configuration" $ \o ->
-            Configuration <$> o .:? "workflow-dir"
+  parseJSON =
+    withObject "Configuration" $ \o -> Configuration <$> o .:? "workflow-dir"

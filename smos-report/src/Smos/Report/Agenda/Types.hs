@@ -7,8 +7,8 @@ import GHC.Generics (Generic)
 import Data.Validity
 
 data AgendaHistoricity
-    = HistoricalAgenda
-    | FutureAgenda
-    deriving (Show, Eq, Generic)
+  = HistoricalAgenda
+  | FutureAgenda
+  deriving (Show, Eq, Generic)
 
 instance Validity AgendaHistoricity

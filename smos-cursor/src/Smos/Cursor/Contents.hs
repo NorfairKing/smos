@@ -1,30 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Cursor.Contents
-    ( ContentsCursor
-    , makeContentsCursor
-    , makeContentsCursorWithSelection
-    , rebuildContentsCursor
-    , emptyContentsCursor
-    , nullContentsCursor
-    , contentsCursorSelection
-    , contentsCursorSelectPrevLine
-    , contentsCursorSelectNextLine
-    , contentsCursorSelectFirstLine
-    , contentsCursorSelectLastLine
-    , contentsCursorSelectPrevChar
-    , contentsCursorSelectNextChar
-    , contentsCursorIndexOnLine
-    , contentsCursorSelectIndexOnLine
-    , contentsCursorInsertChar
-    , contentsCursorAppendChar
-    , contentsCursorInsertNewline
-    , contentsCursorAppendNewline
-    , contentsCursorRemove
-    , contentsCursorDelete
-    , contentsCursorSelectStartOfLine
-    , contentsCursorSelectEndOfLine
-    ) where
+  ( ContentsCursor
+  , makeContentsCursor
+  , makeContentsCursorWithSelection
+  , rebuildContentsCursor
+  , emptyContentsCursor
+  , nullContentsCursor
+  , contentsCursorSelection
+  , contentsCursorSelectPrevLine
+  , contentsCursorSelectNextLine
+  , contentsCursorSelectFirstLine
+  , contentsCursorSelectLastLine
+  , contentsCursorSelectPrevChar
+  , contentsCursorSelectNextChar
+  , contentsCursorIndexOnLine
+  , contentsCursorSelectIndexOnLine
+  , contentsCursorInsertChar
+  , contentsCursorAppendChar
+  , contentsCursorInsertNewline
+  , contentsCursorAppendNewline
+  , contentsCursorRemove
+  , contentsCursorDelete
+  , contentsCursorSelectStartOfLine
+  , contentsCursorSelectEndOfLine
+  ) where
 
 import Cursor.TextField
 import Cursor.Types
@@ -37,9 +37,9 @@ makeContentsCursor :: Contents -> ContentsCursor
 makeContentsCursor = makeTextFieldCursor . contentsText
 
 makeContentsCursorWithSelection ::
-       Int -> Int -> Contents -> Maybe ContentsCursor
+     Int -> Int -> Contents -> Maybe ContentsCursor
 makeContentsCursorWithSelection x y =
-    makeTextFieldCursorWithSelection x y . contentsText
+  makeTextFieldCursorWithSelection x y . contentsText
 
 rebuildContentsCursor :: ContentsCursor -> Contents
 rebuildContentsCursor = Contents . rebuildTextFieldCursor

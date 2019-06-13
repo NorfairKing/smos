@@ -63,7 +63,8 @@ instance GenValid StateHistory where
 
 instance GenValid StateHistoryEntry where
   genValid = genValidStructurally
-  shrinkValid (StateHistoryEntry mts ts) = StateHistoryEntry <$> shrinkValid mts <*> pure ts
+  shrinkValid (StateHistoryEntry mts ts) =
+    StateHistoryEntry <$> shrinkValid mts <*> pure ts
 
 instance GenValid Tag where
   genValid = genValidStructurally
@@ -73,7 +74,8 @@ instance GenUnchecked Logbook
 
 instance GenValid Logbook where
   genValid =
-    let genPositiveNominalDiffTime = (realToFrac . abs) <$> (genValid :: Gen Rational)
+    let genPositiveNominalDiffTime =
+          (realToFrac . abs) <$> (genValid :: Gen Rational)
         listOfLogbookEntries =
           sized $ \n -> do
             ss <- arbPartition n
@@ -91,7 +93,9 @@ instance GenValid Logbook where
                           ndt2 <- resize b genPositiveNominalDiffTime
                           let start = addUTCTime ndt1 (logbookEntryEnd p)
                               end = addUTCTime ndt2 start
-                          pure $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+                          pure $
+                            LogbookEntry
+                              {logbookEntryStart = start, logbookEntryEnd = end}
                   pure $ cur : lbes
             go ss
      in oneof

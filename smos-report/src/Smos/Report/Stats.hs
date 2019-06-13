@@ -13,83 +13,86 @@ import Smos.Data
 
 import Smos.Report.Period
 
-data StatsReport = StatsReport
+data StatsReport =
+  StatsReport
     { statsReportHistoricalStates :: Map (Maybe TodoState) Int
     , statsReportStates :: Map (Maybe TodoState) Int
     , statsReportFromStateTransitions :: Map (Maybe TodoState) Int
     , statsReportToStateTransitions :: Map (Maybe TodoState) Int
     , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
-    } deriving (Show, Eq, Generic)
+    }
+  deriving (Show, Eq, Generic)
 
 makeStatsReport :: ZonedTime -> Period -> [Entry] -> StatsReport
 makeStatsReport now p es =
-    StatsReport
-        { statsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
-        , statsReportHistoricalStates =
-              getCount $ historicalStatesInPeriod now p es
-        , statsReportFromStateTransitions =
-              getCount $ fromStateTransitionsInPeriod now p es
-        , statsReportToStateTransitions =
-              getCount $ toStateTransitionsInPeriod now p es
-        , statsReportStateTransitions =
-              getCount $ stateTransitionsInPeriod now p es
-        }
+  StatsReport
+    { statsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
+    , statsReportHistoricalStates = getCount $ historicalStatesInPeriod now p es
+    , statsReportFromStateTransitions =
+        getCount $ fromStateTransitionsInPeriod now p es
+    , statsReportToStateTransitions =
+        getCount $ toStateTransitionsInPeriod now p es
+    , statsReportStateTransitions = getCount $ stateTransitionsInPeriod now p es
+    }
 
 withinPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Bool
 withinPeriod now p = filterPeriod now p . stateHistoryEntryTimestamp
 
 stateHistoryEntryInPeriod ::
-       ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+     ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
 stateHistoryEntryInPeriod now p tse =
-    if withinPeriod now p tse
-        then Just (stateHistoryEntryNewState tse)
-        else Nothing
+  if withinPeriod now p tse
+    then Just (stateHistoryEntryNewState tse)
+    else Nothing
 
 entryStateInPeriod :: ZonedTime -> Period -> Entry -> Maybe (Maybe TodoState)
 entryStateInPeriod now p e =
-    case (p, unStateHistory $ entryStateHistory e) of
-        (AllTime, []) -> Just Nothing
-        (_, []) -> Nothing
-        (_, (tse:_)) -> stateHistoryEntryInPeriod now p tse
+  case (p, unStateHistory $ entryStateHistory e) of
+    (AllTime, []) -> Just Nothing
+    (_, []) -> Nothing
+    (_, (tse:_)) -> stateHistoryEntryInPeriod now p tse
 
 historicalStatesInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 historicalStatesInPeriod now p =
-    concatMap
-        ((if p == AllTime
-              then (Nothing :)
-              else id) .
-         mapMaybe (stateHistoryEntryInPeriod now p) .
-         unStateHistory . entryStateHistory)
+  concatMap
+    ((if p == AllTime
+        then (Nothing :)
+        else id) .
+     mapMaybe (stateHistoryEntryInPeriod now p) .
+     unStateHistory . entryStateHistory)
 
 fromStateTransitionsInPeriod ::
-       ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 fromStateTransitionsInPeriod now p = map fst . stateTransitionsInPeriod now p
 
 toStateTransitionsInPeriod ::
-       ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 toStateTransitionsInPeriod now p = map snd . stateTransitionsInPeriod now p
 
 stateTransitionsInPeriod ::
-       ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+     ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
 stateTransitionsInPeriod now p = concatMap go
   where
     go :: Entry -> [(Maybe TodoState, Maybe TodoState)]
-    go  = go' . unStateHistory . entryStateHistory
+    go = go' . unStateHistory . entryStateHistory
     go' :: [StateHistoryEntry] -> [(Maybe TodoState, Maybe TodoState)]
     go' [] = []
-    go' [she] = case stateHistoryEntryInPeriod now p she of
+    go' [she] =
+      case stateHistoryEntryInPeriod now p she of
         Nothing -> []
         Just mts -> [(Nothing, mts)]
-    go' (x:y:xs) = case (,) <$> stateHistoryEntryInPeriod now p x <*> stateHistoryEntryInPeriod now p y of
-        Just (tsx, tsy) -> (tsy, tsx) : go' (y:xs)
-        _ -> go' (y:xs)
+    go' (x:y:xs) =
+      case (,) <$> stateHistoryEntryInPeriod now p x <*>
+           stateHistoryEntryInPeriod now p y of
+        Just (tsx, tsy) -> (tsy, tsx) : go' (y : xs)
+        _ -> go' (y : xs)
 
 getCount :: (Ord a, Foldable f) => f a -> Map a Int
 getCount = foldl (flip go) M.empty
   where
     go :: Ord a => a -> Map a Int -> Map a Int
     go i =
-        flip M.alter i $ \mv ->
-            case mv of
-                Nothing -> Just 1
-                Just n -> Just $ n + 1
+      flip M.alter i $ \mv ->
+        case mv of
+          Nothing -> Just 1
+          Just n -> Just $ n + 1

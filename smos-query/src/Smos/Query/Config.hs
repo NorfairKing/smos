@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Query.Config
-    ( SmosQueryConfig(..)
-    , Q
-    , askWorkDir
-    , module Smos.Report.Config
-    , module Control.Monad.IO.Class
-    , module Control.Monad.Reader
-    ) where
+  ( SmosQueryConfig(..)
+  , Q
+  , askWorkDir
+  , module Smos.Report.Config
+  , module Control.Monad.IO.Class
+  , module Control.Monad.Reader
+  ) where
 
 import GHC.Generics
 
@@ -18,16 +18,18 @@ import Control.Monad.Reader
 
 import Smos.Report.Config
 
-data SmosQueryConfig = SmosQueryConfig
+data SmosQueryConfig =
+  SmosQueryConfig
     { smosQueryConfigReportConfig :: SmosReportConfig
-    } deriving (Generic)
+    }
+  deriving (Generic)
 
 type Q = ReaderT SmosQueryConfig IO
 
 askWorkDir :: Q (Path Abs Dir)
 askWorkDir = do
-    func <-
-        asks
-            (agendaFileSpecGetWorkDir .
-             smosReportConfigAgendaFileSpec . smosQueryConfigReportConfig)
-    liftIO func
+  func <-
+    asks
+      (agendaFileSpecGetWorkDir .
+       smosReportConfigAgendaFileSpec . smosQueryConfigReportConfig)
+  liftIO func

@@ -2,19 +2,19 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Tag
-    ( TagCursor(..)
-    , emptyTagCursor
-    , makeTagCursor
-    , rebuildTagCursor
-    , tagCursorInsert
-    , tagCursorAppend
-    , tagCursorDelete
-    , tagCursorRemove
-    , tagCursorSelectStart
-    , tagCursorSelectEnd
-    , tagCursorSelectPrevChar
-    , tagCursorSelectNextChar
-    ) where
+  ( TagCursor(..)
+  , emptyTagCursor
+  , makeTagCursor
+  , rebuildTagCursor
+  , tagCursorInsert
+  , tagCursorAppend
+  , tagCursorDelete
+  , tagCursorRemove
+  , tagCursorSelectStart
+  , tagCursorSelectEnd
+  , tagCursorSelectPrevChar
+  , tagCursorSelectNextChar
+  ) where
 
 import GHC.Generics (Generic)
 
@@ -29,23 +29,25 @@ import Cursor.Types
 
 import Smos.Data.Types
 
-newtype TagCursor = TagCursor
+newtype TagCursor =
+  TagCursor
     { tagCursorTextCursor :: TextCursor
-    } deriving (Show, Eq, Generic)
+    }
+  deriving (Show, Eq, Generic)
 
 instance Validity TagCursor where
-    validate tc@TagCursor {..} =
-        mconcat
-            [ genericValidate tc
-            , decorate "The resulting Tag is valid" $
-              case parseTag (rebuildTextCursor tagCursorTextCursor) of
-                  Left err -> invalid err
-                  Right t -> validate t
-            ]
+  validate tc@TagCursor {..} =
+    mconcat
+      [ genericValidate tc
+      , decorate "The resulting Tag is valid" $
+        case parseTag (rebuildTextCursor tagCursorTextCursor) of
+          Left err -> invalid err
+          Right t -> validate t
+      ]
 
 tagCursorTextCursorL :: Lens' TagCursor TextCursor
 tagCursorTextCursorL =
-    lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
+  lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
 
 emptyTagCursor :: TagCursor
 emptyTagCursor = TagCursor emptyTextCursor
@@ -64,11 +66,11 @@ tagCursorAppend c = tagCursorTextCursorL (textCursorAppend c) >=> constructValid
 
 tagCursorDelete :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
 tagCursorDelete =
-    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
+  focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
 
 tagCursorRemove :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
 tagCursorRemove =
-    focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
+  focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
 
 tagCursorSelectStart :: TagCursor -> TagCursor
 tagCursorSelectStart = tagCursorTextCursorL %~ textCursorSelectStart

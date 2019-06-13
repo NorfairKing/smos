@@ -2,11 +2,11 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Logbook
-    ( allLogbookPlainActions
-    , allLogbookUsingCharActions
-    , logbookClockIn
-    , logbookClockOut
-    ) where
+  ( allLogbookPlainActions
+  , allLogbookUsingCharActions
+  , logbookClockIn
+  , logbookClockOut
+  ) where
 
 import Data.Time
 
@@ -22,22 +22,22 @@ allLogbookUsingCharActions = []
 
 logbookClockIn :: Action
 logbookClockIn =
-    Action
+  Action
     { actionName = "logbookClockIn"
     , actionFunc =
-          modifyLogbookCursorSM $ \lbc -> do
-              now <- liftIO getCurrentTime
-              pure $ logbookCursorClockIn now lbc
+        modifyLogbookCursorSM $ \lbc -> do
+          now <- liftIO getCurrentTime
+          pure $ logbookCursorClockIn now lbc
     , actionDescription = "Clock in the currently selected entry."
     }
 
 logbookClockOut :: Action
 logbookClockOut =
-    Action
+  Action
     { actionName = "logbookClockOut"
     , actionFunc =
-          modifyLogbookCursorSM $ \lbc -> do
-              now <- liftIO getCurrentTime
-              pure $ logbookCursorClockOut now lbc
+        modifyLogbookCursorSM $ \lbc -> do
+          now <- liftIO getCurrentTime
+          pure $ logbookCursorClockOut now lbc
     , actionDescription = "Clock out the currently selected entry."
     }

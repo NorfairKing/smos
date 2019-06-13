@@ -1,9 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Query
-    ( smosQuery
-    , module Smos.Query.Config
-    ) where
+  ( smosQuery
+  , module Smos.Query.Config
+  ) where
 
 import Prelude (IO)
 
@@ -21,8 +21,8 @@ import Smos.Query.Waiting
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do
-    Instructions disp sqc' <- getInstructions sqc
-    runReaderT (execute disp) sqc'
+  Instructions disp sqc' <- getInstructions sqc
+  runReaderT (execute disp) sqc'
 
 execute :: Dispatch -> Q ()
 execute (DispatchEntry es) = entry es

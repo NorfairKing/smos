@@ -2,16 +2,20 @@ module Smos.Convert.Org.OptParse.Types where
 
 import Path
 
-data Flags = Flags
+data Flags =
+  Flags
     { flagFromFile :: FilePath
     , flagToFile :: Maybe FilePath
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)
 
 data Configuration =
-    Configuration
-    deriving (Show, Eq)
+  Configuration
+  deriving (Show, Eq)
 
-data Settings = Settings
+data Settings =
+  Settings
     { setFromFile :: Path Abs File
     , setToFile :: Maybe (Path Abs File)
-    } deriving (Show, Eq)
+    }
+  deriving (Show, Eq)

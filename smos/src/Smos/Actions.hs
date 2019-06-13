@@ -3,25 +3,25 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions
-    ( Action(..)
-    , ActionUsing(..)
-    , AnyAction(..)
-    , module Smos.Actions
-    , module Smos.Actions.Contents
-    , module Smos.Actions.Convenience
-    , module Smos.Actions.Entry
-    , module Smos.Actions.File
-    , module Smos.Actions.Forest
-    , module Smos.Actions.Header
-    , module Smos.Actions.Help
-    , module Smos.Actions.Logbook
-    , module Smos.Actions.Properties
-    , module Smos.Actions.Report
-    , module Smos.Actions.Tags
-    , module Smos.Actions.Timestamps
-    , module Smos.Actions.Undo
-    , module Smos.Actions.Utils
-    ) where
+  ( Action(..)
+  , ActionUsing(..)
+  , AnyAction(..)
+  , module Smos.Actions
+  , module Smos.Actions.Contents
+  , module Smos.Actions.Convenience
+  , module Smos.Actions.Entry
+  , module Smos.Actions.File
+  , module Smos.Actions.Forest
+  , module Smos.Actions.Header
+  , module Smos.Actions.Help
+  , module Smos.Actions.Logbook
+  , module Smos.Actions.Properties
+  , module Smos.Actions.Report
+  , module Smos.Actions.Tags
+  , module Smos.Actions.Timestamps
+  , module Smos.Actions.Undo
+  , module Smos.Actions.Utils
+  ) where
 
 import Smos.Types
 
@@ -42,46 +42,46 @@ import Smos.Actions.Utils
 
 allActions :: [AnyAction]
 allActions =
-    map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
+  map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
 
 allPlainActions :: [Action]
 allPlainActions =
-    concat
-        [ [ startHeaderFromEmptyAndSelectHeader
-          , selectHelp
-          , selectEditor
-          , showDebug
-          , hideDebug
-          , toggleDebug
-          ]
-        , allContentsPlainActions
-        , allEntryPlainActions
-        , allForestPlainActions
-        , allHeaderPlainActions
-        , allLogbookPlainActions
-        , allTagsPlainActions
-        , allPropertiesPlainActions
-        , allTimestampsPlainActions
-        , allUndoPlainActions
-        , allConveniencePlainActions
-        ]
+  concat
+    [ [ startHeaderFromEmptyAndSelectHeader
+      , selectHelp
+      , selectEditor
+      , showDebug
+      , hideDebug
+      , toggleDebug
+      ]
+    , allContentsPlainActions
+    , allEntryPlainActions
+    , allForestPlainActions
+    , allHeaderPlainActions
+    , allLogbookPlainActions
+    , allTagsPlainActions
+    , allPropertiesPlainActions
+    , allTimestampsPlainActions
+    , allUndoPlainActions
+    , allConveniencePlainActions
+    ]
 
 allUsingCharActions :: [ActionUsing Char]
 allUsingCharActions =
-    concat
-        [ allContentsUsingCharActions
-        , allEntryUsingCharActions
-        , allForestUsingCharActions
-        , allHeaderUsingCharActions
-        , allTimestampsUsingCharActions
-        , allTagsUsingCharActions
-        , allPropertiesUsingCharActions
-        , allUndoUsingCharActions
-        ]
+  concat
+    [ allContentsUsingCharActions
+    , allEntryUsingCharActions
+    , allForestUsingCharActions
+    , allHeaderUsingCharActions
+    , allTimestampsUsingCharActions
+    , allTagsUsingCharActions
+    , allPropertiesUsingCharActions
+    , allUndoUsingCharActions
+    ]
 
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =
-    Action
+  Action
     { actionName = "startHeaderFromEmptyAndSelectHeader"
     , actionFunc = modifyEmptyFile startSmosFile
     , actionDescription = "Start a first header in an empty Smos File"
@@ -89,18 +89,18 @@ startHeaderFromEmptyAndSelectHeader =
 
 selectHelp :: Action
 selectHelp =
-    Action
+  Action
     { actionName = "selectHelp"
     , actionFunc =
-          modifyEditorCursorS $ \ec -> do
-              km <- asks configKeyMap
-              pure $ editorCursorSwitchToHelp km ec
+        modifyEditorCursorS $ \ec -> do
+          km <- asks configKeyMap
+          pure $ editorCursorSwitchToHelp km ec
     , actionDescription = "Show the (contextual) help screen"
     }
 
 selectEditor :: Action
 selectEditor =
-    Action
+  Action
     { actionName = "selectEditor"
     , actionFunc = modifyEditorCursor editorCursorSwitchToFile
     , actionDescription = "Hide the help screen"
@@ -108,7 +108,7 @@ selectEditor =
 
 showDebug :: Action
 showDebug =
-    Action
+  Action
     { actionName = "showDebug"
     , actionFunc = modifyEditorCursor editorCursorShowDebug
     , actionDescription = "Show the debug screen"
@@ -116,7 +116,7 @@ showDebug =
 
 hideDebug :: Action
 hideDebug =
-    Action
+  Action
     { actionName = "hideDebug"
     , actionFunc = modifyEditorCursor editorCursorHideDebug
     , actionDescription = "Hide the debug screen"
@@ -124,7 +124,7 @@ hideDebug =
 
 toggleDebug :: Action
 toggleDebug =
-    Action
+  Action
     { actionName = "toggleDebug"
     , actionFunc = modifyEditorCursor editorCursorToggleDebug
     , actionDescription = "Toggle the debug page to be shown"

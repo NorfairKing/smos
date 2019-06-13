@@ -3,8 +3,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Waiting
-    ( waiting
-    ) where
+  ( waiting
+  ) where
 
 import Data.List
 import qualified Data.Text as T
@@ -25,43 +25,43 @@ import Smos.Query.OptParse.Types
 
 waiting :: WaitingSettings -> Q ()
 waiting WaitingSettings {..} = do
-    wd <- askWorkDir
-    liftIO $ do
-        tups <-
-            sourceToList $
-            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles .|
-            printShouldPrint PrintWarning .|
-            smosFileCursors .|
-            C.filter
-                (\(rp, fc) ->
-                     maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
-            smosCursorCurrents .|
-            C.filter (isWaitingAction . snd) .|
-            C.map (uncurry makeWaitingActionEntry)
-        now <- getCurrentTime
-        putTableLn $ renderWaitingActionReport now tups
+  wd <- askWorkDir
+  liftIO $ do
+    tups <-
+      sourceToList $
+      sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+      parseSmosFiles .|
+      printShouldPrint PrintWarning .|
+      smosFileCursors .|
+      C.filter
+        (\(rp, fc) ->
+           maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
+      smosCursorCurrents .|
+      C.filter (isWaitingAction . snd) .|
+      C.map (uncurry makeWaitingActionEntry)
+    now <- getCurrentTime
+    putTableLn $ renderWaitingActionReport now tups
 
 renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-    formatAsTable .
-    map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
+  formatAsTable .
+  map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
 
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
-    [ rootedPathChunk waitingActionEntryFilePath
-    , headerChunk $ waitingActionEntryHeader
-    , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
-    ]
+  [ rootedPathChunk waitingActionEntryFilePath
+  , headerChunk $ waitingActionEntryHeader
+  , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
+  ]
 
 showDaysSince :: UTCTime -> UTCTime -> Chunk Text
 showDaysSince now t = fore color $ chunk $ T.pack $ show i <> " days"
   where
     color
-        | i > 21 = red
-        | i > 15 = yellow
-        | i > 5 = blue
-        | otherwise = mempty
+      | i > 21 = red
+      | i > 15 = yellow
+      | i > 5 = blue
+      | otherwise = mempty
     i = diffInDays now t :: Int
     diffInDays :: UTCTime -> UTCTime -> Int
     diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay

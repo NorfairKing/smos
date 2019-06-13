@@ -1,9 +1,9 @@
 module Smos.Query.OptParse.Types
-    ( module Smos.Report.Clock.Types
-    , module Smos.Report.Agenda.Types
-    , module Smos.Query.OptParse.Types
-    , module Smos.Report.ShouldPrint
-    ) where
+  ( module Smos.Report.Clock.Types
+  , module Smos.Report.Agenda.Types
+  , module Smos.Query.OptParse.Types
+  , module Smos.Report.ShouldPrint
+  ) where
 
 import Path
 
@@ -23,170 +23,170 @@ import Smos.Report.TimeBlock
 import Smos.Query.Config
 
 data Arguments =
-    Arguments Command Flags
-    deriving (Show, Eq)
+  Arguments Command Flags
+  deriving (Show, Eq)
 
 data Instructions =
-    Instructions Dispatch SmosQueryConfig
+  Instructions Dispatch SmosQueryConfig
 
 data Command
-    = CommandEntry EntryFlags
-    | CommandWaiting WaitingFlags
-    | CommandNext NextFlags
-    | CommandClock ClockFlags
-    | CommandAgenda AgendaFlags
-    | CommandProjects
-    | CommandLog LogFlags
-    | CommandStats StatsFlags
-    deriving (Show, Eq)
+  = CommandEntry EntryFlags
+  | CommandWaiting WaitingFlags
+  | CommandNext NextFlags
+  | CommandClock ClockFlags
+  | CommandAgenda AgendaFlags
+  | CommandProjects
+  | CommandLog LogFlags
+  | CommandStats StatsFlags
+  deriving (Show, Eq)
 
 data EntryFlags =
-    EntryFlags
-        { entryFlagFilter :: Maybe Filter
-        , entryFlagProjection :: Maybe Projection
-        , entryFlagSorter :: Maybe Sorter
-        }
-    deriving (Show, Eq)
+  EntryFlags
+    { entryFlagFilter :: Maybe Filter
+    , entryFlagProjection :: Maybe Projection
+    , entryFlagSorter :: Maybe Sorter
+    }
+  deriving (Show, Eq)
 
 data WaitingFlags =
-    WaitingFlags
-        { waitingFlagFilter :: Maybe Filter
-        }
-    deriving (Show, Eq)
+  WaitingFlags
+    { waitingFlagFilter :: Maybe Filter
+    }
+  deriving (Show, Eq)
 
 data NextFlags =
-    NextFlags
-        { nextFlagFilter :: Maybe Filter
-        }
-    deriving (Show, Eq)
+  NextFlags
+    { nextFlagFilter :: Maybe Filter
+    }
+  deriving (Show, Eq)
 
 data ClockFlags =
-    ClockFlags
-        { clockFlagFile :: Maybe FilePath
-        , clockFlagFilter :: Maybe Filter
-        , clockFlagPeriodFlags :: Maybe Period
-        , clockFlagResolutionFlags :: Maybe ClockResolution
-        , clockFlagBlockFlags :: Maybe TimeBlock
-        , clockFlagOutputFormat :: Maybe OutputFormat
-        , clockFlagReportStyle :: Maybe ClockReportStyle
-        }
-    deriving (Show, Eq)
+  ClockFlags
+    { clockFlagFile :: Maybe FilePath
+    , clockFlagFilter :: Maybe Filter
+    , clockFlagPeriodFlags :: Maybe Period
+    , clockFlagResolutionFlags :: Maybe ClockResolution
+    , clockFlagBlockFlags :: Maybe TimeBlock
+    , clockFlagOutputFormat :: Maybe OutputFormat
+    , clockFlagReportStyle :: Maybe ClockReportStyle
+    }
+  deriving (Show, Eq)
 
 data AgendaFlags =
-    AgendaFlags
-        { agendaFlagFilter :: Maybe Filter
-        , agendaFlagHistoricity :: Maybe AgendaHistoricity
-        , agendaFlagBlock :: Maybe TimeBlock
-        }
-    deriving (Show, Eq)
+  AgendaFlags
+    { agendaFlagFilter :: Maybe Filter
+    , agendaFlagHistoricity :: Maybe AgendaHistoricity
+    , agendaFlagBlock :: Maybe TimeBlock
+    }
+  deriving (Show, Eq)
 
 data LogFlags =
-    LogFlags
-        { logFlagFilter :: Maybe Filter
-        , logFlagPeriodFlags :: Maybe Period
-        , logFlagBlockFlags :: Maybe TimeBlock
-        }
-    deriving (Show, Eq)
+  LogFlags
+    { logFlagFilter :: Maybe Filter
+    , logFlagPeriodFlags :: Maybe Period
+    , logFlagBlockFlags :: Maybe TimeBlock
+    }
+  deriving (Show, Eq)
 
 data StatsFlags =
-    StatsFlags
-        { statsFlagFilter :: Maybe Filter
-        , statsFlagPeriodFlags :: Maybe Period
-        }
-    deriving (Show, Eq)
+  StatsFlags
+    { statsFlagFilter :: Maybe Filter
+    , statsFlagPeriodFlags :: Maybe Period
+    }
+  deriving (Show, Eq)
 
 data Flags =
-    Flags
-        { flagConfigFile :: Maybe FilePath
-        , flagReportFlags :: Report.Flags
-        }
-    deriving (Show, Eq)
+  Flags
+    { flagConfigFile :: Maybe FilePath
+    , flagReportFlags :: Report.Flags
+    }
+  deriving (Show, Eq)
 
 data Environment =
-    Environment
-        { envConfigFile :: Maybe FilePath
-        , envReportEnv :: Report.Environment
-        }
-    deriving (Show, Eq)
+  Environment
+    { envConfigFile :: Maybe FilePath
+    , envReportEnv :: Report.Environment
+    }
+  deriving (Show, Eq)
 
 data Configuration =
-    Configuration
-        { confReportConf :: Report.Configuration
-        }
-    deriving (Show, Eq)
+  Configuration
+    { confReportConf :: Report.Configuration
+    }
+  deriving (Show, Eq)
 
 instance FromJSON Configuration where
-    parseJSON v = Configuration <$> parseJSON v
+  parseJSON v = Configuration <$> parseJSON v
 
 data Dispatch
-    = DispatchEntry EntrySettings
-    | DispatchWaiting WaitingSettings
-    | DispatchNext NextSettings
-    | DispatchClock ClockSettings
-    | DispatchAgenda AgendaSettings
-    | DispatchProjects
-    | DispatchLog LogSettings
-    | DispatchStats StatsSettings
-    deriving (Show, Eq)
+  = DispatchEntry EntrySettings
+  | DispatchWaiting WaitingSettings
+  | DispatchNext NextSettings
+  | DispatchClock ClockSettings
+  | DispatchAgenda AgendaSettings
+  | DispatchProjects
+  | DispatchLog LogSettings
+  | DispatchStats StatsSettings
+  deriving (Show, Eq)
 
 data EntrySettings =
-    EntrySettings
-        { entrySetFilter :: Maybe Filter
-        , entrySetProjection :: Maybe Projection
-        , entrySetSorter :: Maybe Sorter
-        }
-    deriving (Show, Eq)
+  EntrySettings
+    { entrySetFilter :: Maybe Filter
+    , entrySetProjection :: Maybe Projection
+    , entrySetSorter :: Maybe Sorter
+    }
+  deriving (Show, Eq)
 
 data WaitingSettings =
-    WaitingSettings
-        { waitingSetFilter :: Maybe Filter
-        }
-    deriving (Show, Eq)
+  WaitingSettings
+    { waitingSetFilter :: Maybe Filter
+    }
+  deriving (Show, Eq)
 
 data NextSettings =
-    NextSettings
-        { nextSetFilter :: Maybe Filter
-        }
-    deriving (Show, Eq)
+  NextSettings
+    { nextSetFilter :: Maybe Filter
+    }
+  deriving (Show, Eq)
 
 data ClockSettings =
-    ClockSettings
-        { clockSetFile :: Maybe (Path Abs File)
-        , clockSetFilter :: Maybe Filter
-        , clockSetPeriod :: Period
-        , clockSetResolution :: ClockResolution
-        , clockSetBlock :: TimeBlock
-        , clockSetOutputFormat :: OutputFormat
-        , clockSetReportStyle :: ClockReportStyle
-        }
-    deriving (Show, Eq)
+  ClockSettings
+    { clockSetFile :: Maybe (Path Abs File)
+    , clockSetFilter :: Maybe Filter
+    , clockSetPeriod :: Period
+    , clockSetResolution :: ClockResolution
+    , clockSetBlock :: TimeBlock
+    , clockSetOutputFormat :: OutputFormat
+    , clockSetReportStyle :: ClockReportStyle
+    }
+  deriving (Show, Eq)
 
 data AgendaSettings =
-    AgendaSettings
-        { agendaSetFilter :: Maybe Filter
-        , agendaSetHistoricity :: AgendaHistoricity
-        , agendaSetBlock :: TimeBlock
-        }
-    deriving (Show, Eq)
+  AgendaSettings
+    { agendaSetFilter :: Maybe Filter
+    , agendaSetHistoricity :: AgendaHistoricity
+    , agendaSetBlock :: TimeBlock
+    }
+  deriving (Show, Eq)
 
 data LogSettings =
-    LogSettings
-        { logSetFilter :: Maybe Filter
-        , logSetPeriod :: Period
-        , logSetBlock :: TimeBlock
-        }
-    deriving (Show, Eq)
+  LogSettings
+    { logSetFilter :: Maybe Filter
+    , logSetPeriod :: Period
+    , logSetBlock :: TimeBlock
+    }
+  deriving (Show, Eq)
 
 data StatsSettings =
-    StatsSettings
-        { statsSetFilter :: Maybe Filter
-        , statsSetPeriod :: Period
-        }
-    deriving (Show, Eq)
+  StatsSettings
+    { statsSetFilter :: Maybe Filter
+    , statsSetPeriod :: Period
+    }
+  deriving (Show, Eq)
 
 data OutputFormat
-    = OutputPretty
-    | OutputYaml
-    | OutputJSON
-    | OutputJSONPretty
-    deriving (Show, Eq)
+  = OutputPretty
+  | OutputYaml
+  | OutputJSON
+  | OutputJSONPretty
+  deriving (Show, Eq)

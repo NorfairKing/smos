@@ -18,22 +18,22 @@ import Smos.Cursor.Tags.Gen ()
 import Smos.Cursor.Timestamps.Gen ()
 
 instance GenValid EntryCursor where
-    genValid =
-        sized $ \n -> do
-            (x, y) <- genSplit n
-            (a, b, c, d) <- genSplit4 x
-            (e, f, g, h) <- genSplit4 y
-            entryCursorHeaderCursor <- resize a genValid
-            entryCursorContentsCursor <- resize b genValid
-            entryCursorTimestampsCursor <- resize c genValid
-            entryCursorPropertiesCursor <- resize d genValid
-            entryCursorStateHistoryCursor <- resize e genValid
-            entryCursorTagsCursor <- resize f genValid
-            entryCursorLogbookCursor <- resize g genValid
-            entryCursorSelected <- resize h genValid
-            pure EntryCursor {..}
-    shrinkValid = shrinkValidStructurally
+  genValid =
+    sized $ \n -> do
+      (x, y) <- genSplit n
+      (a, b, c, d) <- genSplit4 x
+      (e, f, g, h) <- genSplit4 y
+      entryCursorHeaderCursor <- resize a genValid
+      entryCursorContentsCursor <- resize b genValid
+      entryCursorTimestampsCursor <- resize c genValid
+      entryCursorPropertiesCursor <- resize d genValid
+      entryCursorStateHistoryCursor <- resize e genValid
+      entryCursorTagsCursor <- resize f genValid
+      entryCursorLogbookCursor <- resize g genValid
+      entryCursorSelected <- resize h genValid
+      pure EntryCursor {..}
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid EntryCursorSelection where
-    genValid = genValidStructurally
-    shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

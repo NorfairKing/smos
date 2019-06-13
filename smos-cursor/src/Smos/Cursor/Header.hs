@@ -1,16 +1,16 @@
 module Smos.Cursor.Header
-    ( HeaderCursor
-    , makeHeaderCursor
-    , rebuildHeaderCursor
-    , headerCursorInsert
-    , headerCursorAppend
-    , headerCursorRemove
-    , headerCursorDelete
-    , headerCursorSelectPrev
-    , headerCursorSelectNext
-    , headerCursorSelectStart
-    , headerCursorSelectEnd
-    ) where
+  ( HeaderCursor
+  , makeHeaderCursor
+  , rebuildHeaderCursor
+  , headerCursorInsert
+  , headerCursorAppend
+  , headerCursorRemove
+  , headerCursorDelete
+  , headerCursorSelectPrev
+  , headerCursorSelectNext
+  , headerCursorSelectStart
+  , headerCursorSelectEnd
+  ) where
 
 import Cursor.Text
 import Cursor.Types

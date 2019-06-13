@@ -3,10 +3,10 @@
 module Smos.Report.ShouldPrint where
 
 data ShouldPrint
-    = PrintError
-    | PrintWarning
-    | DontPrint
-    deriving (Show, Eq)
+  = PrintError
+  | PrintWarning
+  | DontPrint
+  deriving (Show, Eq)
 
 parseShouldPrint :: String -> Maybe ShouldPrint
 parseShouldPrint "error" = Just PrintError

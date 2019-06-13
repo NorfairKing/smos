@@ -15,19 +15,19 @@ import Smos.Data
 
 import Smos.Report.Path
 
-data ProjectEntry = ProjectEntry
+data ProjectEntry =
+  ProjectEntry
     { projectEntryFilePath :: RootedPath
     , projectEntryCurrentEntry :: Maybe Entry
-    } deriving (Show, Eq, Generic)
+    }
+  deriving (Show, Eq, Generic)
 
 instance Validity ProjectEntry
 
 makeProjectEntry :: RootedPath -> SmosFile -> ProjectEntry
 makeProjectEntry rp sf =
-    ProjectEntry
-        { projectEntryFilePath = rp
-        , projectEntryCurrentEntry = getCurrentEntry sf
-        }
+  ProjectEntry
+    {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
 
 getCurrentEntry :: SmosFile -> Maybe Entry
 getCurrentEntry = goF . smosFileForest
@@ -36,16 +36,16 @@ getCurrentEntry = goF . smosFileForest
     goF f = msum $ map goT $ reverse f
     goT :: Tree Entry -> Maybe Entry
     goT (Node e f) =
-        case entryState e of
-            Nothing -> Nothing
-            Just ts ->
-                if isDone ts
-                    then Nothing
-                    else (case reverse f of
-                              _ -> goF f) <|>
-                         if isCurrent ts
-                             then Just e
-                             else Nothing
+      case entryState e of
+        Nothing -> Nothing
+        Just ts ->
+          if isDone ts
+            then Nothing
+            else (case reverse f of
+                    _ -> goF f) <|>
+                 if isCurrent ts
+                   then Just e
+                   else Nothing
     isDone :: TodoState -> Bool
     isDone "DONE" = True
     isDone "CANCELLED" = True

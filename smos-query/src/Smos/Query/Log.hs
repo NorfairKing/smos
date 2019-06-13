@@ -23,51 +23,50 @@ import Smos.Query.OptParse.Types
 
 log :: LogSettings -> Q ()
 log LogSettings {..} = do
-    wd <- askWorkDir
-    liftIO $ do
-        zt <- getZonedTime
-        es <-
-            sourceToList $
-            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles .|
-            printShouldPrint PrintWarning .|
-            smosFileCursors .|
-            C.filter
-                (\(rp, fc) ->
-                     maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
-            smosCursorCurrents
-        putTableLn $
-            renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
+  wd <- askWorkDir
+  liftIO $ do
+    zt <- getZonedTime
+    es <-
+      sourceToList $
+      sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+      parseSmosFiles .|
+      printShouldPrint PrintWarning .|
+      smosFileCursors .|
+      C.filter
+        (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
+      smosCursorCurrents
+    putTableLn $
+      renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 
 renderLogReport :: ZonedTime -> LogReport -> Table
 renderLogReport zt lrbs =
-    formatAsTable $
-    case lrbs of
-        [] -> []
-        [lrb] -> goEntries (blockEntries lrb)
-        _ -> concatMap goEntriesWithTitle lrbs
+  formatAsTable $
+  case lrbs of
+    [] -> []
+    [lrb] -> goEntries (blockEntries lrb)
+    _ -> concatMap goEntriesWithTitle lrbs
   where
     goEntriesWithTitle Block {..} =
-        [fore blue $ chunk blockTitle] : goEntries blockEntries
+      [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es = map (renderLogEntry zt) (sortOn logEntryEvent es)
 
 renderLogEntry :: ZonedTime -> LogEntry -> [Chunk Text]
 renderLogEntry zt LogEntry {..} =
-    let LogEvent {..} = logEntryEvent
-     in [ rootedPathChunk logEntryFilePath
-        , headerChunk logEntryHeader
-        , chunk $
-          T.pack $
-          formatTime defaultTimeLocale "%F %X" $
-          utcToLocalTime (zonedTimeZone zt) logEventTimestamp
-        ] <>
-        logEventTypeChunk logEventType
+  let LogEvent {..} = logEntryEvent
+   in [ rootedPathChunk logEntryFilePath
+      , headerChunk logEntryHeader
+      , chunk $
+        T.pack $
+        formatTime defaultTimeLocale "%F %X" $
+        utcToLocalTime (zonedTimeZone zt) logEventTimestamp
+      ] <>
+      logEventTypeChunk logEventType
 
 logEventTypeChunk :: LogEventType -> [Chunk Text]
 logEventTypeChunk typ =
-    case typ of
-        StateChange from to ->
-            [mTodoStateChunk from, chunk " -> ", mTodoStateChunk to]
-        ClockIn -> [chunk "clock in"]
-        ClockOut -> [chunk "clock out"]
-        TimestampEvent tsn -> [timestampNameChunk tsn]
+  case typ of
+    StateChange from to ->
+      [mTodoStateChunk from, chunk " -> ", mTodoStateChunk to]
+    ClockIn -> [chunk "clock in"]
+    ClockOut -> [chunk "clock out"]
+    TimestampEvent tsn -> [timestampNameChunk tsn]

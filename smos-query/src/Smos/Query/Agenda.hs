@@ -28,56 +28,53 @@ import Smos.Query.OptParse.Types
 
 agenda :: AgendaSettings -> Q ()
 agenda AgendaSettings {..} = do
-    wd <- askWorkDir
-    liftIO $ do
-        now <- getZonedTime
-        tups <-
-            sourceToList $
-            sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-            parseSmosFiles .|
-            printShouldPrint PrintWarning .|
-            smosFileCursors .|
-            C.filter
-                (\(rp, fc) ->
-                     maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
-            smosCursorCurrents .|
-            C.concatMap (uncurry makeAgendaEntry) .|
-            C.filter (fitsHistoricity now agendaSetHistoricity)
-        putTableLn $
-            renderAgendaReport now $
-            divideIntoAgendaTableBlocks agendaSetBlock tups
+  wd <- askWorkDir
+  liftIO $ do
+    now <- getZonedTime
+    tups <-
+      sourceToList $
+      sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+      parseSmosFiles .|
+      printShouldPrint PrintWarning .|
+      smosFileCursors .|
+      C.filter
+        (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
+      smosCursorCurrents .|
+      C.concatMap (uncurry makeAgendaEntry) .|
+      C.filter (fitsHistoricity now agendaSetHistoricity)
+    putTableLn $
+      renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
 renderAgendaReport now atbs =
-    formatAsTable $
-    case atbs of
-        [] -> []
-        [atb] -> goEntries (blockEntries atb)
-        _ -> concatMap goEntriesWithTitle atbs
+  formatAsTable $
+  case atbs of
+    [] -> []
+    [atb] -> goEntries (blockEntries atb)
+    _ -> concatMap goEntriesWithTitle atbs
   where
     goEntriesWithTitle Block {..} =
-        [fore blue $ chunk blockTitle] : goEntries blockEntries
+      [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es =
-        renderSplit . splitUp $
-        (sortBy
-             (comparing agendaEntryTimestamp <>
-              comparing agendaEntryTimestampName <>
-              comparing agendaEntryTodoState)
-             es)
+      renderSplit . splitUp $
+      (sortBy
+         (comparing agendaEntryTimestamp <> comparing agendaEntryTimestampName <>
+          comparing agendaEntryTodoState)
+         es)
     splitUp =
-        splitList $ \ae ->
-            compare
-                (timestampDay $ agendaEntryTimestamp ae)
-                (localDay $ zonedTimeToLocalTime now)
+      splitList $ \ae ->
+        compare
+          (timestampDay $ agendaEntryTimestamp ae)
+          (localDay $ zonedTimeToLocalTime now)
     renderSplit (before, during, after) =
-        case (go before, go during, go after) of
-            (xs, [], []) -> concat [xs]
-            ([], ys, []) -> concat [ys]
-            ([], [], zs) -> concat [zs]
-            (xs, ys, []) -> concat [xs, [[chunk ""]], ys]
-            ([], ys, zs) -> concat [ys, [[chunk ""]], zs]
-            (xs, [], zs) -> concat [xs, [[chunk ""]], zs]
-            (xs, ys, zs) -> concat [xs, [[chunk ""]], ys, [[chunk ""]], zs]
+      case (go before, go during, go after) of
+        (xs, [], []) -> concat [xs]
+        ([], ys, []) -> concat [ys]
+        ([], [], zs) -> concat [zs]
+        (xs, ys, []) -> concat [xs, [[chunk ""]], ys]
+        ([], ys, zs) -> concat [ys, [[chunk ""]], zs]
+        (xs, [], zs) -> concat [xs, [[chunk ""]], zs]
+        (xs, ys, zs) -> concat [xs, [[chunk ""]], ys, [[chunk ""]], zs]
       where
         go = map (formatAgendaEntry now)
 
@@ -86,42 +83,41 @@ splitList func = go
   where
     go [] = ([], [], [])
     go (a:as) =
-        case func a of
-            LT ->
-                case go as of
-                    (xs, ys, zs) -> (a : xs, ys, zs)
-            EQ ->
-                case go2 as of
-                    (ys, zs) -> ([], a : ys, zs)
-            GT -> ([], [], a : as)
+      case func a of
+        LT ->
+          case go as of
+            (xs, ys, zs) -> (a : xs, ys, zs)
+        EQ ->
+          case go2 as of
+            (ys, zs) -> ([], a : ys, zs)
+        GT -> ([], [], a : as)
     go2 [] = ([], [])
     go2 (a:as) =
-        case func a of
-            LT -> error "should not happen"
-            EQ ->
-                case go2 as of
-                    (ys, zs) -> (a : ys, zs)
-            GT -> ([], a : as)
+      case func a of
+        LT -> error "should not happen"
+        EQ ->
+          case go2 as of
+            (ys, zs) -> (a : ys, zs)
+        GT -> ([], a : as)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
-    let d =
-            diffDays
-                (timestampDay agendaEntryTimestamp)
-                (localDay $ zonedTimeToLocalTime now)
-        func =
-            if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-               | d == 1 && agendaEntryTimestampName == "DEADLINE" ->
-                   fore brightRed . back black
-               | d <= 10 && agendaEntryTimestampName == "DEADLINE" ->
-                   fore yellow
-               | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
-               | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
-               | otherwise -> id
-     in [ func $ rootedPathChunk agendaEntryFilePath
-        , func $ chunk $ timestampText agendaEntryTimestamp
-        , func $ chunk $ T.pack $ printf "%+3dd" d
-        , timestampNameChunk $ agendaEntryTimestampName
-        , maybe (chunk "") todoStateChunk agendaEntryTodoState
-        , headerChunk agendaEntryHeader
-        ]
+  let d =
+        diffDays
+          (timestampDay agendaEntryTimestamp)
+          (localDay $ zonedTimeToLocalTime now)
+      func =
+        if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+           | d == 1 && agendaEntryTimestampName == "DEADLINE" ->
+             fore brightRed . back black
+           | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
+           | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
+           | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
+           | otherwise -> id
+   in [ func $ rootedPathChunk agendaEntryFilePath
+      , func $ chunk $ timestampText agendaEntryTimestamp
+      , func $ chunk $ T.pack $ printf "%+3dd" d
+      , timestampNameChunk $ agendaEntryTimestampName
+      , maybe (chunk "") todoStateChunk agendaEntryTodoState
+      , headerChunk agendaEntryHeader
+      ]

@@ -2,17 +2,17 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Timestamps
-    ( allTimestampsPlainActions
-    , allTimestampsUsingCharActions
-    , timestampsSelect
-    , timestampsInsert
-    , timestampsAppend
-    , timestampsMoveLeft
-    , timestampsMoveRight
-    , timestampsRemove
-    , timestampsDelete
-    , timestampsToggle
-    ) where
+  ( allTimestampsPlainActions
+  , allTimestampsUsingCharActions
+  , timestampsSelect
+  , timestampsInsert
+  , timestampsAppend
+  , timestampsMoveLeft
+  , timestampsMoveRight
+  , timestampsRemove
+  , timestampsDelete
+  , timestampsToggle
+  ) where
 
 import Data.Maybe
 import Data.Time
@@ -25,35 +25,34 @@ import Smos.Actions.Utils
 
 allTimestampsPlainActions :: [Action]
 allTimestampsPlainActions =
-    concat
-        [ do act <- [timestampsSelect]
-             arg <-
-                 catMaybes [timestampName "SCHEDULED", timestampName "DEADLINE"]
-             pure $ act arg
-        , [ timestampsMoveLeft
-          , timestampsMoveRight
-          , timestampsRemove
-          , timestampsDelete
-          , timestampsToggle
-          ]
-        ]
+  concat
+    [ do act <- [timestampsSelect]
+         arg <- catMaybes [timestampName "SCHEDULED", timestampName "DEADLINE"]
+         pure $ act arg
+    , [ timestampsMoveLeft
+      , timestampsMoveRight
+      , timestampsRemove
+      , timestampsDelete
+      , timestampsToggle
+      ]
+    ]
 
 allTimestampsUsingCharActions :: [ActionUsing Char]
 allTimestampsUsingCharActions = [timestampsInsert, timestampsAppend]
 
 timestampsSelect :: TimestampName -> Action
 timestampsSelect tsn =
-    Action
+  Action
     { actionName = "timestampsSelect_" <> ActionName t
     , actionFunc =
-          do modifyMTimestampsCursorSM $ \mtsc -> do
-                 today <- liftIO $ utctDay <$> getCurrentTime
-                 pure $
-                     Just $
-                     case mtsc of
-                         Nothing -> startTimestampsCursor tsn today
-                         Just tsc -> timestampsCursorSelectOrAdd tsn today tsc
-             modifyEntryCursor entryCursorSelectTimestamps
+        do modifyMTimestampsCursorSM $ \mtsc -> do
+             today <- liftIO $ utctDay <$> getCurrentTime
+             pure $
+               Just $
+               case mtsc of
+                 Nothing -> startTimestampsCursor tsn today
+                 Just tsc -> timestampsCursorSelectOrAdd tsn today tsc
+           modifyEntryCursor entryCursorSelectTimestamps
     , actionDescription = "Select a timestamp for name " <> t
     }
   where
@@ -61,63 +60,63 @@ timestampsSelect tsn =
 
 timestampsInsert :: ActionUsing Char
 timestampsInsert =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "timestampsInsert"
     , actionUsingFunc =
-          \c -> modifyTimestampsCursorM $ timestampsCursorInsertChar c
+        \c -> modifyTimestampsCursorM $ timestampsCursorInsertChar c
     , actionUsingDescription =
-          "Insert a character into the current timestamp cursor, whether that be the name or the timestamp itself"
+        "Insert a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
 
 timestampsAppend :: ActionUsing Char
 timestampsAppend =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "timestampsAppend"
     , actionUsingFunc =
-          \c -> modifyTimestampsCursorM $ timestampsCursorAppendChar c
+        \c -> modifyTimestampsCursorM $ timestampsCursorAppendChar c
     , actionUsingDescription =
-          "Append a character into the current timestamp cursor, whether that be the name or the timestamp itself"
+        "Append a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
 
 timestampsMoveLeft :: Action
 timestampsMoveLeft =
-    Action
+  Action
     { actionName = "timestampsMoveLeft"
     , actionFunc = modifyTimestampsCursorM $ timestampsCursorSelectPrevChar
     , actionDescription =
-          "Move one character to the left in the current timestamps cursor"
+        "Move one character to the left in the current timestamps cursor"
     }
 
 timestampsMoveRight :: Action
 timestampsMoveRight =
-    Action
+  Action
     { actionName = "timestampsMoveRight"
     , actionFunc = modifyTimestampsCursorM $ timestampsCursorSelectNextChar
     , actionDescription =
-          "Move one character to the right in the current timestamps cursor"
+        "Move one character to the right in the current timestamps cursor"
     }
 
 timestampsRemove :: Action
 timestampsRemove =
-    Action
+  Action
     { actionName = "timestampsRemove"
     , actionFunc = modifyTimestampsCursorM $ timestampsCursorRemoveChar
     , actionDescription =
-          "Remove one character in the current timestamps cursor"
+        "Remove one character in the current timestamps cursor"
     }
 
 timestampsDelete :: Action
 timestampsDelete =
-    Action
+  Action
     { actionName = "timestampsDelete"
     , actionFunc = modifyTimestampsCursorM $ timestampsCursorDeleteChar
     , actionDescription =
-          "Delete one character  in the current timestamps cursor"
+        "Delete one character  in the current timestamps cursor"
     }
 
 timestampsToggle :: Action
 timestampsToggle =
-    Action
+  Action
     { actionName = "timestampsToggle"
     , actionFunc = modifyTimestampsCursor timestampsCursorToggleSelected
     , actionDescription = "Switch between selecting the timestamp name or date"

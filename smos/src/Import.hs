@@ -1,8 +1,8 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 module Import
-    ( module X
-    ) where
+  ( module X
+  ) where
 
 import Prelude as X hiding (head, init, last, tail)
 
@@ -20,13 +20,13 @@ import Data.Map as X (Map)
 import Data.Maybe as X
 import Data.Monoid as X
 import Data.Sequence as X
-    ( pattern (:<|)
-    , pattern (:|>)
-    , pattern Empty
-    , Seq(..)
-    , (<|)
-    , (|>)
-    )
+  ( pattern (:<|)
+  , pattern (:|>)
+  , pattern Empty
+  , Seq(..)
+  , (<|)
+  , (|>)
+  )
 import Data.String as X
 import Data.Text as X (Text)
 import Data.Validity as X

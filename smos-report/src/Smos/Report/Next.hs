@@ -21,14 +21,14 @@ import Smos.Report.Streaming
 
 produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
 produceNextActionReport src = do
-    wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
-    sourceToList $
-        sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-        parseSmosFiles .|
-        printShouldPrint PrintWarning .|
-        smosFileEntries .|
-        C.filter (isNextAction . snd) .|
-        C.map (uncurry makeNextActionEntry)
+  wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
+  sourceToList $
+    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
+    parseSmosFiles .|
+    printShouldPrint PrintWarning .|
+    smosFileEntries .|
+    C.filter (isNextAction . snd) .|
+    C.map (uncurry makeNextActionEntry)
 
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
@@ -38,16 +38,18 @@ isNextTodoState = (`elem` (mapMaybe todoState ["NEXT", "STARTED"]))
 
 makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
-    NextActionEntry
-        { nextActionEntryTodoState = entryState e
-        , nextActionEntryHeader = entryHeader e
-        , nextActionEntryFilePath = rf
-        }
+  NextActionEntry
+    { nextActionEntryTodoState = entryState e
+    , nextActionEntryHeader = entryHeader e
+    , nextActionEntryFilePath = rf
+    }
 
-data NextActionEntry = NextActionEntry
+data NextActionEntry =
+  NextActionEntry
     { nextActionEntryTodoState :: Maybe TodoState
     , nextActionEntryHeader :: Header
     , nextActionEntryFilePath :: RootedPath
-    } deriving (Show, Eq, Generic)
+    }
+  deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntry

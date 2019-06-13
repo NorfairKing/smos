@@ -2,22 +2,22 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Properties
-    ( allPropertiesPlainActions
-    , allPropertiesUsingCharActions
-    , propertiesToggleSelected
-    , propertiesMoveLeft
-    , propertiesMoveRight
-    , propertiesMoveUp
-    , propertiesMoveDown
-    , propertiesInsert
-    , propertiesAppend
-    , propertiesRemove
-    , propertiesDelete
-    , propertiesInsertNewProperty
-    , propertiesAppendNewProperty
-    , propertiesEditProperty
-    , propertiesSetProperty
-    ) where
+  ( allPropertiesPlainActions
+  , allPropertiesUsingCharActions
+  , propertiesToggleSelected
+  , propertiesMoveLeft
+  , propertiesMoveRight
+  , propertiesMoveUp
+  , propertiesMoveDown
+  , propertiesInsert
+  , propertiesAppend
+  , propertiesRemove
+  , propertiesDelete
+  , propertiesInsertNewProperty
+  , propertiesAppendNewProperty
+  , propertiesEditProperty
+  , propertiesSetProperty
+  ) where
 
 import Smos.Data
 
@@ -27,36 +27,36 @@ import Smos.Actions.Utils
 
 allPropertiesPlainActions :: [Action]
 allPropertiesPlainActions =
-    concat
-        [ [ propertiesToggleSelected
-          , propertiesMoveLeft
-          , propertiesMoveRight
-          , propertiesMoveUp
-          , propertiesMoveDown
-          , propertiesRemove
-          , propertiesDelete
-          , propertiesInsertNewProperty
-          , propertiesAppendNewProperty
-          ]
-        , do pn <- ["client", "timebox", "lead", "effort"]
-             pure $ propertiesEditProperty pn
-        ]
+  concat
+    [ [ propertiesToggleSelected
+      , propertiesMoveLeft
+      , propertiesMoveRight
+      , propertiesMoveUp
+      , propertiesMoveDown
+      , propertiesRemove
+      , propertiesDelete
+      , propertiesInsertNewProperty
+      , propertiesAppendNewProperty
+      ]
+    , do pn <- ["client", "timebox", "lead", "effort"]
+         pure $ propertiesEditProperty pn
+    ]
 
 allPropertiesUsingCharActions :: [ActionUsing Char]
 allPropertiesUsingCharActions = [propertiesInsert, propertiesAppend]
 
 propertiesToggleSelected :: Action
 propertiesToggleSelected =
-    Action
+  Action
     { actionName = "propertiesToggleSelected"
     , actionFunc = modifyPropertiesCursor propertiesCursorToggleSelected
     , actionDescription =
-          "Switch the properties cursor selection between the property name and value"
+        "Switch the properties cursor selection between the property name and value"
     }
 
 propertiesMoveLeft :: Action
 propertiesMoveLeft =
-    Action
+  Action
     { actionName = "propertiesMoveLeft"
     , actionFunc = modifyPropertiesCursorM propertiesCursorSelectPrevChar
     , actionDescription = "Move left in the properties cursor"
@@ -64,7 +64,7 @@ propertiesMoveLeft =
 
 propertiesMoveRight :: Action
 propertiesMoveRight =
-    Action
+  Action
     { actionName = "propertiesMoveRight"
     , actionFunc = modifyPropertiesCursorM propertiesCursorSelectNextChar
     , actionDescription = "Move right in the properties cursor"
@@ -72,7 +72,7 @@ propertiesMoveRight =
 
 propertiesMoveUp :: Action
 propertiesMoveUp =
-    Action
+  Action
     { actionName = "propertiesMoveUp"
     , actionFunc = modifyPropertiesCursorM propertiesCursorSelectPrevProperty
     , actionDescription = "Move up in the properties cursor"
@@ -80,7 +80,7 @@ propertiesMoveUp =
 
 propertiesMoveDown :: Action
 propertiesMoveDown =
-    Action
+  Action
     { actionName = "propertiesMoveDown"
     , actionFunc = modifyPropertiesCursorM propertiesCursorSelectNextProperty
     , actionDescription = "Move down in the properties cursor"
@@ -88,25 +88,25 @@ propertiesMoveDown =
 
 propertiesInsert :: ActionUsing Char
 propertiesInsert =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "propertiesInsert"
     , actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorInsert c
     , actionUsingDescription =
-          "Insert a character at the cursor select the space after it"
+        "Insert a character at the cursor select the space after it"
     }
 
 propertiesAppend :: ActionUsing Char
 propertiesAppend =
-    ActionUsing
+  ActionUsing
     { actionUsingName = "propertiesAppend"
     , actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorAppend c
     , actionUsingDescription =
-          "Insert a character at the cursor select the space before it"
+        "Insert a character at the cursor select the space before it"
     }
 
 propertiesRemove :: Action
 propertiesRemove =
-    Action
+  Action
     { actionName = "propertiesRemove"
     , actionFunc = modifyPropertiesCursorMD propertiesCursorRemove
     , actionDescription = "Remove from the properties cursor"
@@ -114,7 +114,7 @@ propertiesRemove =
 
 propertiesDelete :: Action
 propertiesDelete =
-    Action
+  Action
     { actionName = "propertiesDelete"
     , actionFunc = modifyPropertiesCursorMD propertiesCursorDelete
     , actionDescription = "Delete from the properties cursor"
@@ -122,40 +122,40 @@ propertiesDelete =
 
 propertiesInsertNewProperty :: Action
 propertiesInsertNewProperty =
-    Action
+  Action
     { actionName = "propertiesInsertNewProperty"
     , actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyBefore
     , actionDescription =
-          "Insert a new property before the currently selected property"
+        "Insert a new property before the currently selected property"
     }
 
 propertiesAppendNewProperty :: Action
 propertiesAppendNewProperty =
-    Action
+  Action
     { actionName = "propertiesAppendNewProperty"
     , actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyAfter
     , actionDescription =
-          "Append a new property before the currently selected property"
+        "Append a new property before the currently selected property"
     }
 
 propertiesEditProperty :: PropertyName -> Action
 propertiesEditProperty pn =
-    Action
+  Action
     { actionName = "propertiesEditProperty_" <> ActionName (propertyNameText pn)
     , actionFunc =
-          do modifyMPropertiesCursorM $ Just . propertiesCursorAddOrSelect pn
-             modifyEntryCursor entryCursorSelectProperties
+        do modifyMPropertiesCursorM $ Just . propertiesCursorAddOrSelect pn
+           modifyEntryCursor entryCursorSelectProperties
     , actionDescription =
-          "Start editing a property with the given name, create it if it does not exist yet"
+        "Start editing a property with the given name, create it if it does not exist yet"
     }
 
 propertiesSetProperty :: PropertyName -> PropertyValue -> Action
 propertiesSetProperty pn pv =
-    Action
+  Action
     { actionName =
-          "propertiesSetProperty_" <> ActionName (propertyNameText pn) <> "_" <>
-          ActionName (propertyValueText pv)
+        "propertiesSetProperty_" <> ActionName (propertyNameText pn) <> "_" <>
+        ActionName (propertyValueText pv)
     , actionFunc = modifyMPropertiesCursorM $ Just . propertiesCursorSet pn pv
     , actionDescription =
-          "Set a property with the given name to the given value, create it if it does not exist yet"
+        "Set a property with the given name to the given value, create it if it does not exist yet"
     }

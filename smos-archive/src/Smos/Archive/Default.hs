@@ -7,5 +7,4 @@ defaultSmosArchive = smosArchive defaultSmosArchiveConfig
 
 defaultSmosArchiveConfig :: SmosArchiveConfig
 defaultSmosArchiveConfig =
-    SmosArchiveConfig {smosArchiveConfigReportConfig = defaultReportConfig}
-
+  SmosArchiveConfig {smosArchiveConfigReportConfig = defaultReportConfig}
