@@ -23,7 +23,10 @@ drawText = vBox . map go . T.splitOn "\n"
       txtWrap $
       case t of
         "" -> " "
-        _ -> t
+        _ -> sanitise t
+    sanitise  = T.map  $ \c -> case c of
+      '\t' -> ' '
+      _ -> c
 
 data Select
   = MaybeSelected
