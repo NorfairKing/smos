@@ -8,9 +8,7 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig =
-  SmosConfig
-    {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
+defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -70,7 +68,9 @@ defaultFileKeyMap =
           , exactChar 'G' forestMoveToLast
                   -- Swaps
           , modifiedChar 'k' [MMeta] forestSwapUp
+          , modifiedChar 'K' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
+          , modifiedChar 'J' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry
           , modifiedChar 'H' [MMeta] forestPromoteSubTree
           , modifiedChar 'l' [MMeta] forestDemoteEntry
@@ -121,9 +121,7 @@ defaultFileKeyMap =
                   -- Collapsing
           , exactChar '?' selectHelp
           , exactChar '\t' forestToggleCollapse
-          , exactKeyPress
-              (KeyPress (KChar '\t') [MMeta])
-              forestToggleCollapseRecursively
+          , exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively
           , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
           , combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents
@@ -196,8 +194,7 @@ defaultFileKeyMap =
           , exactKeyPress (KeyPress KDown [MMeta]) propertiesAppendNewProperty
           , exactChar '\t' propertiesToggleSelected
           ]
-    , fileKeyMapStateHistoryMatchers =
-        listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , fileKeyMapTagsMatchers =
         listMatchers
           [ anyChar tagsInsert
