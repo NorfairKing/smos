@@ -34,6 +34,8 @@ property:has:<property-name>                       -- property:has:effort
 property:exact:<property-name>:<property-value>    -- property:exact:effort:15min
 parent:<filter>                                    -- parent:tag:work
 ancestor:<filter>                                  -- ancestor:state:DONE
+child:<filter>                                     -- child:tag:work
+legacy:<filter>                                    -- legacy:state:DONE
 not:<filter>                                       -- not:tag:work
 (<filter> and <filter>)                            -- (tag:work and state:NEXT)
 (<filter> or <filter>)                             -- (level:0 or state:DONE)
