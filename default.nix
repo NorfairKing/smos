@@ -21,7 +21,7 @@ let
     (pkgs.fetchFromGitHub (import ./nix/cursor-fuzzy-time-version.nix)
     + "/nix/overlay.nix")
   );
-in pkgsv {
+  smosPkgs = pkgsv {
   overlays =
     [ validity-overlay
       cursor-overlay
@@ -30,5 +30,6 @@ in pkgsv {
       cursor-fuzzy-time-overlay
       (import ./nix/overlay.nix)
     ];
-  config.allowUnfree = true;
-}
+    config.allowUnfree = true;
+  };
+in smosPkgs.smosPackages
