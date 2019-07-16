@@ -133,7 +133,10 @@ filterFileP :: P Filter
 filterFileP = do
   void $ string' "file:"
   s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
-  either (fail . show) (pure . FilterFile) $ parseRelFile s
+  r <- either (fail . show) (pure . FilterFile) $ parseRelFile s
+  case prettyValidate r of
+    Left err -> fail err
+    Right f -> pure f
 
 filterLevelP :: P Filter
 filterLevelP = do
