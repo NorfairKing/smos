@@ -1,4 +1,4 @@
-module Smos.ConfigSpec where
+module Smos.ConfigFileSpec where
 
 import TestImport
 

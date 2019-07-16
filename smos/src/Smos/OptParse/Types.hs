@@ -4,13 +4,15 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.OptParse.Types where
 
 import Import
 
+import Data.Aeson as JSON
 import qualified Data.Text as T
-import Data.Yaml as Yaml
 import Text.Read
 
 import Graphics.Vty.Input.Events
@@ -45,10 +47,20 @@ data Configuration =
 
 instance Validity Configuration
 
+instance ToJSON Configuration where
+  toJSON Configuration {..} =
+    toJSON confReportConf `mergeObjects` object ["keys" .= confKeybindingsConf]
+
 instance FromJSON Configuration where
   parseJSON v =
-    flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "keys"
+    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "keys"
+
+mergeObjects :: Value -> Value -> Value
+mergeObjects (Object hm1) (Object hm2) = Object $ hm1 <> hm2
+mergeObjects v1 _ = v1
+
+backToConfiguration :: SmosConfig -> Configuration
+backToConfiguration = undefined
 
 data KeybindingsConfiguration =
   KeybindingsConfiguration
@@ -61,11 +73,19 @@ data KeybindingsConfiguration =
 
 instance Validity KeybindingsConfiguration
 
+instance ToJSON KeybindingsConfiguration where
+  toJSON KeybindingsConfiguration {..} =
+    object
+      [ "reset" .= confReset
+      , "file" .= confFileKeyConfig
+      , "reports" .= confReportsKeyConfig
+      , "help" .= confHelpKeyConfig
+      ]
+
 instance FromJSON KeybindingsConfiguration where
   parseJSON =
     withObject "KeybindingsConfiguration" $ \o ->
-      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*>
-      o .:? "reports" <*>
+      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports" <*>
       o .:? "help"
 
 data FileKeyConfigs =
@@ -85,11 +105,25 @@ data FileKeyConfigs =
 
 instance Validity FileKeyConfigs
 
+instance ToJSON FileKeyConfigs where
+  toJSON FileKeyConfigs {..} =
+    object
+      [ "empty" .= emptyKeyConfigs
+      , "entry" .= entryKeyConfigs
+      , "header" .= headerKeyConfigs
+      , "contents" .= contentsKeyConfigs
+      , "timestamps" .= timestampsKeyConfigs
+      , "properties" .= propertiesKeyConfigs
+      , "state-history" .= stateHistoryKeyConfigs
+      , "tags" .= tagsKeyConfigs
+      , "logbook" .= logbookKeyConfigs
+      , "any" .= anyKeyConfigs
+      ]
+
 instance FromJSON FileKeyConfigs where
   parseJSON =
     withObject "FileKeyConfigs" $ \o ->
-      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*>
-      o .:? "contents" <*>
+      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*> o .:? "contents" <*>
       o .:? "timestamps" <*>
       o .:? "properties" <*>
       o .:? "state-history" <*>
@@ -105,16 +139,17 @@ data ReportsKeyConfigs =
 
 instance Validity ReportsKeyConfigs
 
+instance ToJSON ReportsKeyConfigs where
+  toJSON ReportsKeyConfigs {..} = object ["next-action" .= nextActionReportKeyConfigs]
+
 instance FromJSON ReportsKeyConfigs where
-  parseJSON =
-    withObject "ReportsKeyConfigs" $ \o ->
-      ReportsKeyConfigs <$> o .:? "next-action"
+  parseJSON = withObject "ReportsKeyConfigs" $ \o -> ReportsKeyConfigs <$> o .:? "next-action"
 
 newtype KeyConfigs =
   KeyConfigs
     { keyConfigs :: [KeyConfig]
     }
-  deriving (Show, Eq, Generic, FromJSON)
+  deriving (Show, Eq, Generic, ToJSON, FromJSON)
 
 instance Validity KeyConfigs
 
@@ -127,9 +162,11 @@ data KeyConfig =
 
 instance Validity KeyConfig
 
+instance ToJSON KeyConfig where
+  toJSON KeyConfig {..} = object ["key" .= keyConfigMatcher, "action" .= keyConfigAction]
+
 instance FromJSON KeyConfig where
-  parseJSON =
-    withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
+  parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
 
 data MatcherConfig
   = MatchConfKeyPress !KeyPress
@@ -139,6 +176,14 @@ data MatcherConfig
   deriving (Show, Eq, Generic)
 
 instance Validity MatcherConfig
+
+instance ToJSON MatcherConfig where
+  toJSON mc =
+    case mc of
+      MatchConfKeyPress kp -> toJSON kp
+      MatchConfAnyChar -> JSON.String "char"
+      MatchConfCatchAll -> JSON.String ""
+      MatchConfCombination _ _-> undefined
 
 -- TODO this doesn't actually work if you want to use the key-combo: 'c'+'h'+'a'+'r'
 -- It also doesn't work with 'c' + <anychar> yet.
@@ -159,6 +204,12 @@ instance FromJSON MatcherConfig where
                 (MatchConfKeyPress $ KeyPress (KChar c) [])
                 cs
             Just k -> pure $ MatchConfKeyPress (KeyPress k [])
+
+instance ToJSON KeyPress where
+  toJSON = undefined
+
+instance FromJSON KeyPress where
+  parseJSON = undefined
 
 data Instructions =
   Instructions (Path Abs File) SmosConfig

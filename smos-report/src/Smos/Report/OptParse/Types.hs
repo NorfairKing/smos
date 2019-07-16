@@ -30,6 +30,8 @@ data Configuration =
 
 instance Validity Configuration
 
+instance ToJSON Configuration where
+  toJSON Configuration {..} = object ["workflow-dir" .= confWorkflowDir]
+
 instance FromJSON Configuration where
-  parseJSON =
-    withObject "Configuration" $ \o -> Configuration <$> o .:? "workflow-dir"
+  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .:? "workflow-dir"

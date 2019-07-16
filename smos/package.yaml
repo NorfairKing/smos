@@ -71,6 +71,7 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - aeson
     - base
     - brick
     - bytestring
@@ -94,6 +95,7 @@ tests:
     - smos-data
     - smos-data-gen
     - smos-report
+    - smos-report-gen
     - smos-report-cursor
     - smos-report-cursor-gen
     - text
