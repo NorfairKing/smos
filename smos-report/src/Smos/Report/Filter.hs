@@ -38,8 +38,10 @@ data Filter
   | FilterFile (Path Rel File) -- Substring of the filename
   | FilterLevel Word -- The level of the entry in the tree (0 is top)
   | FilterProperty PropertyFilter
-  | FilterParent Filter
-  | FilterAncestor Filter
+  | FilterParent Filter -- Match direct parent
+  | FilterAncestor Filter -- Match parent or parent of parents recursively
+  | FilterChild Filter -- Match any direct child
+  | FilterLegacy Filter -- Match any direct child or their children
   | FilterNot Filter
   | FilterAnd Filter Filter
   | FilterOr Filter Filter
@@ -72,6 +74,12 @@ filterPredicate f_ rp = go f_
     go f fc =
       let parent_ :: Maybe (ForestCursor Entry)
           parent_ = fc & forestCursorSelectedTreeL treeCursorSelectAbove
+          children_ :: [ForestCursor Entry]
+          children_ =
+            mapMaybe
+              (\i -> fc & forestCursorSelectBelowAtPos i)
+              (let CNode _ cf = rebuildTreeCursor $ fc ^. forestCursorSelectedTreeL
+                in [0 .. length (rebuildCForest cf) - 1])
           cur :: Entry
           cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
        in case f of
@@ -88,6 +96,8 @@ filterPredicate f_ rp = go f_
             FilterLevel l -> l == level fc
             FilterParent f' -> maybe False (go f') parent_
             FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+            FilterChild f' -> any (go f') children_
+            FilterLegacy f' -> any (\fc_ -> go f' fc_ || go f fc_) children_
             FilterNot f' -> not $ go f' fc
             FilterAnd f1 f2 -> go f1 fc && go f2 fc
             FilterOr f1 f2 -> go f1 fc || go f2 fc
@@ -114,6 +124,8 @@ filterP =
   try filterPropertyP <|>
   try filterParentP <|>
   try filterAncestorP <|>
+  try filterChildP <|>
+  try filterLegacyP <|>
   try filterNotP <|>
   filterBinRelP
 
@@ -159,6 +171,16 @@ filterAncestorP :: P Filter
 filterAncestorP = do
   void $ string' "ancestor:"
   FilterAncestor <$> filterP
+
+filterChildP :: P Filter
+filterChildP = do
+  void $ string' "child:"
+  FilterChild <$> filterP
+
+filterLegacyP :: P Filter
+filterLegacyP = do
+  void $ string' "legacy:"
+  FilterLegacy <$> filterP
 
 filterNotP :: P Filter
 filterNotP = do
@@ -224,6 +246,8 @@ renderFilter f =
     FilterProperty fp -> "property:" <> renderPropertyFilter fp
     FilterParent f' -> "parent:" <> renderFilter f'
     FilterAncestor f' -> "ancestor:" <> renderFilter f'
+    FilterChild f' -> "child:" <> renderFilter f'
+    FilterLegacy f' -> "legacy:" <> renderFilter f'
     FilterNot f' -> "not:" <> renderFilter f'
     FilterOr f1 f2 -> T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
     FilterAnd f1 f2 -> T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]

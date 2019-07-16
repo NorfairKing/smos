@@ -43,6 +43,8 @@ spec = do
   describe "filterPropertyP" $ parsesValidSpec filterPropertyP propertyText
   describe "filterParentP" $ parsesValidSpec filterParentP parentText
   describe "filterAncestorP" $ parsesValidSpec filterAncestorP ancestorText
+  describe "filterChildP" $ parsesValidSpec filterChildP childText
+  describe "filterLegacyP" $ parsesValidSpec filterLegacyP legacyText
   describe "filterNotP" $ parsesValidSpec filterNotP notText
   describe "filterBinrelP" $ parsesValidSpec filterBinRelP binRelText
   describe "filterOrP" $ parsesValidSpec filterOrP orText
@@ -69,6 +71,8 @@ filterText =
     , propertyText
     , parentText
     , ancestorText
+    , childText
+    , legacyText
     , notText
     , binRelText
     ]
@@ -93,6 +97,12 @@ parentText = textPieces [pure "parent:", filterText]
 
 ancestorText :: Gen Text
 ancestorText = textPieces [pure "ancestor:", filterText]
+
+childText :: Gen Text
+childText = textPieces [pure "child:", filterText]
+
+legacyText :: Gen Text
+legacyText = textPieces [pure "legacy:", filterText]
 
 notText :: Gen Text
 notText = textPieces [pure "not:", filterText]
