@@ -8,6 +8,7 @@ import GHC.Generics (Generic)
 import Data.Char as Char
 import Data.Function
 import Data.List
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
@@ -50,8 +51,7 @@ instance Validity Filter where
       [ genericValidate f
       , case f of
           FilterFile s ->
-            declare "The filenames are restricted" $
-            all (\c -> not (Char.isSpace c) && c /= ')') $
+            declare "The filenames are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
             fromRelFile s
           _ -> valid
       ]
@@ -62,6 +62,9 @@ data PropertyFilter
   deriving (Show, Eq, Generic)
 
 instance Validity PropertyFilter
+
+foldFilterAnd :: NonEmpty Filter -> Filter
+foldFilterAnd = foldl1 FilterAnd
 
 filterPredicate :: Filter -> RootedPath -> ForestCursor Entry -> Bool
 filterPredicate f_ rp = go f_
@@ -74,8 +77,7 @@ filterPredicate f_ rp = go f_
        in case f of
             FilterHasTag t -> t `elem` entryTags cur
             FilterTodoState mts -> Just mts == entryState cur
-            FilterFile t ->
-              fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
+            FilterFile t -> fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
             FilterProperty pf ->
               case pf of
                 ExactProperty pn pv ->
@@ -85,8 +87,7 @@ filterPredicate f_ rp = go f_
                 HasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
             FilterLevel l -> l == level fc
             FilterParent f' -> maybe False (go f') parent_
-            FilterAncestor f' ->
-              maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+            FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
             FilterNot f' -> not $ go f' fc
             FilterAnd f1 f2 -> go f1 fc && go f2 fc
             FilterOr f1 f2 -> go f1 fc || go f2 fc
@@ -109,8 +110,7 @@ parseFilter = parseMaybe filterP
 
 filterP :: P Filter
 filterP =
-  try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|>
-  try filterLevelP <|>
+  try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
   try filterPropertyP <|>
   try filterParentP <|>
   try filterAncestorP <|>
@@ -120,19 +120,13 @@ filterP =
 filterHasTagP :: P Filter
 filterHasTagP = do
   void $ string' "tag:"
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail (pure . FilterHasTag) $ parseTag $ T.pack s
 
 filterTodoStateP :: P Filter
 filterTodoStateP = do
   void $ string' "state:"
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail (pure . FilterTodoState) $ parseTodoState $ T.pack s
 
 filterFileP :: P Filter
@@ -209,18 +203,12 @@ hasPropertyP = do
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 propertyValueP :: P PropertyValue
 propertyValueP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyValue $ T.pack s
 
 renderFilter :: Filter -> Text
@@ -234,14 +222,11 @@ renderFilter f =
     FilterParent f' -> "parent:" <> renderFilter f'
     FilterAncestor f' -> "ancestor:" <> renderFilter f'
     FilterNot f' -> "not:" <> renderFilter f'
-    FilterOr f1 f2 ->
-      T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
-    FilterAnd f1 f2 ->
-      T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
+    FilterOr f1 f2 -> T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
+    FilterAnd f1 f2 -> T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
 
 renderPropertyFilter :: PropertyFilter -> Text
 renderPropertyFilter pf =
   case pf of
-    ExactProperty pn pv ->
-      "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
+    ExactProperty pn pv -> "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
     HasProperty pn -> "has:" <> propertyNameText pn
