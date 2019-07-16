@@ -15,7 +15,7 @@ import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Period
 import Smos.Report.Projection
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock

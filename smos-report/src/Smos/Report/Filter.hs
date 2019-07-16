@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.Query where
+module Smos.Report.Filter where
 
 import GHC.Generics (Generic)
 

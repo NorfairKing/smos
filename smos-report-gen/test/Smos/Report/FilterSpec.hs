@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.QuerySpec where
+module Smos.Report.FilterSpec where
 
 import Data.Text (Text)
 
@@ -14,8 +14,8 @@ import Cursor.Forest.Gen ()
 
 import Smos.Report.Path.Gen ()
 
-import Smos.Report.Query
-import Smos.Report.Query.Gen ()
+import Smos.Report.Filter
+import Smos.Report.Filter.Gen ()
 
 spec :: Spec
 spec = do

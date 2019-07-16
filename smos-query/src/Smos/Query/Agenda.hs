@@ -18,7 +18,7 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Agenda
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 

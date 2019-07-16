@@ -30,7 +30,7 @@ import Smos.Data
 import Smos.Report.Clock.Types
 import Smos.Report.Path
 import Smos.Report.Period
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 

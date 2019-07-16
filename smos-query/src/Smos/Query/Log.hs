@@ -13,7 +13,7 @@ import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Report.Log
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 

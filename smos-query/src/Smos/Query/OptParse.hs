@@ -18,7 +18,7 @@ import qualified Smos.Report.OptParse as Report
 
 import Smos.Report.Period
 import Smos.Report.Projection
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock
 
