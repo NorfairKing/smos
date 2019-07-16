@@ -99,9 +99,10 @@ defaultFileKeyMap =
           , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
           , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
-          , exactString "gw" $ tagsToggle "work"
+          , exactString "gh" $ tagsToggle "home"
           , exactString "go" $ tagsToggle "online"
           , exactString "gt" $ tagsToggle "toast"
+          , exactString "gw" $ tagsToggle "work"
                   -- Fast timestamps manipulation
           , exactString "sb" $ timestampsSelect "BEGIN"
           , exactString "se" $ timestampsSelect "END"
