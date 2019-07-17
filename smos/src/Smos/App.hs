@@ -26,6 +26,7 @@ import Smos.Actions.File
 import Smos.Activation
 import Smos.Draw
 import Smos.Style
+import Smos.Keys
 import Smos.Types
 
 mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName

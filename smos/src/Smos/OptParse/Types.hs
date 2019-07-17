@@ -19,6 +19,7 @@ import Graphics.Vty.Input.Events
 
 import qualified Smos.Report.OptParse.Types as Report
 
+import Smos.Keys
 import Smos.Types
 
 data Arguments =
@@ -183,7 +184,7 @@ instance ToJSON MatcherConfig where
       MatchConfKeyPress kp -> toJSON kp
       MatchConfAnyChar -> JSON.String "char"
       MatchConfCatchAll -> JSON.String ""
-      MatchConfCombination _ _-> undefined
+      MatchConfCombination _ _ -> undefined
 
 -- TODO this doesn't actually work if you want to use the key-combo: 'c'+'h'+'a'+'r'
 -- It also doesn't work with 'c' + <anychar> yet.
@@ -204,12 +205,6 @@ instance FromJSON MatcherConfig where
                 (MatchConfKeyPress $ KeyPress (KChar c) [])
                 cs
             Just k -> pure $ MatchConfKeyPress (KeyPress k [])
-
-instance ToJSON KeyPress where
-  toJSON = undefined
-
-instance FromJSON KeyPress where
-  parseJSON = undefined
 
 data Instructions =
   Instructions (Path Abs File) SmosConfig

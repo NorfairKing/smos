@@ -9,13 +9,9 @@ import Data.Aeson as JSON
 import Smos.Default
 import Smos.OptParse.Gen ()
 import Smos.OptParse.Types
-import Smos.Types
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @KeyPress
-  genValidSpec @KeyPress
-  jsonSpecOnValid @KeyPress
   eqSpecOnValid @MatcherConfig
   genValidSpec @MatcherConfig
   jsonSpecOnValid @MatcherConfig

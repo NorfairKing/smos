@@ -58,22 +58,3 @@ drawNominalDiffTime ndt =
 
 formatTimestampDay :: Day -> String
 formatTimestampDay = formatTime defaultTimeLocale "%A %F"
-
-showKey :: Key -> String
-showKey (KChar '\t') = "<tab>"
-showKey (KChar ' ') = "<space>"
-showKey (KChar c) = [c]
-showKey KBackTab = "S-<tab>"
-showKey (KFun i) = "F" ++ show i
-showKey k = go $ show k
-    -- Because these constructors all start with 'K'
-  where
-    go [] = []
-    go ('K':s) = s
-    go s = s
-
-showMod :: Modifier -> String
-showMod MShift = "S"
-showMod MCtrl = "C"
-showMod MMeta = "M"
-showMod MAlt = "A"

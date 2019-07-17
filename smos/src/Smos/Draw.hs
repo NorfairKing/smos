@@ -10,6 +10,7 @@ module Smos.Draw
 import Import hiding ((<+>))
 
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Time
 import Text.Time.Pretty
@@ -49,6 +50,7 @@ import Smos.Draw.Base
 import Smos.Draw.Cursor
 import Smos.Draw.Text
 
+import Smos.Keys
 import Smos.Style
 import Smos.Types
 
@@ -144,22 +146,16 @@ drawHelpCursor s (Just HelpCursor {..}) =
           ]
 
 drawKeyCombination :: KeyCombination -> Widget n
-drawKeyCombination = str . go
+drawKeyCombination = txt . go
   where
-    go :: KeyCombination -> String
-    go (PressExactly kp) = showKeypress kp
+    go :: KeyCombination -> Text
+    go (PressExactly kp) = renderKeypress kp
     go PressAnyChar = "<any char>"
     go PressAny = "<any key>"
-    go (PressCombination kp km) = showKeypress kp ++ go km
+    go (PressCombination kp km) = renderKeypress kp <> go km
 
 drawHistory :: Seq KeyPress -> Widget n
-drawHistory = strWrap . unwords . map showKeypress . toList
-
-showKeypress :: KeyPress -> String
-showKeypress (KeyPress key mods) =
-  case mods of
-    [] -> showKey key
-    _ -> intercalate "-" $ map showMod mods ++ [showKey key]
+drawHistory = txtWrap . T.unwords . map renderKeypress . toList
 
 drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =

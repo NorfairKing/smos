@@ -5,7 +5,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Types
   ( module Smos.Types
@@ -27,8 +26,6 @@ import Lens.Micro
 import Control.Monad.Reader
 import Control.Monad.State
 
-import Graphics.Vty.Input.Events as Vty
-
 import Brick.Types as B hiding (Next)
 
 import Cursor.Simple.List.NonEmpty
@@ -43,6 +40,7 @@ import Smos.Cursor.SmosFile
 import Smos.Cursor.Report.Next
 import Smos.Report.Config
 
+import Smos.Keys
 import Smos.Monad
 
 data SmosConfig =
@@ -209,19 +207,6 @@ runSmosAsync :: IO () -> SmosM ()
 runSmosAsync func = do
   a <- liftIO $ async func
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
-
-data KeyPress =
-  KeyPress Key [Modifier]
-  deriving (Show, Eq, Ord, Generic)
-
-instance Validity Key where
-  validate = trivialValidation
-
-instance Validity Modifier where
-  validate = trivialValidation
-
-instance Validity KeyPress where
-  validate = trivialValidation
 
 data DebugInfo =
   DebugInfo
