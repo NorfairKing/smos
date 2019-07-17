@@ -12,9 +12,6 @@ import Smos.OptParse.Types
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @MatcherConfig
-  genValidSpec @MatcherConfig
-  jsonSpecOnValid @MatcherConfig
   eqSpecOnValid @KeyConfig
   genValidSpec @KeyConfig
   jsonSpecOnValid @KeyConfig

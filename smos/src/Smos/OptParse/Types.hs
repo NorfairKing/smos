@@ -169,43 +169,6 @@ instance ToJSON KeyConfig where
 instance FromJSON KeyConfig where
   parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
 
-data MatcherConfig
-  = MatchConfKeyPress !KeyPress
-  | MatchConfAnyChar
-  | MatchConfCatchAll
-  | MatchConfCombination !KeyPress !MatcherConfig
-  deriving (Show, Eq, Generic)
-
-instance Validity MatcherConfig
-
-instance ToJSON MatcherConfig where
-  toJSON mc =
-    case mc of
-      MatchConfKeyPress kp -> toJSON kp
-      MatchConfAnyChar -> JSON.String "char"
-      MatchConfCatchAll -> JSON.String ""
-      MatchConfCombination _ _ -> undefined
-
--- TODO this doesn't actually work if you want to use the key-combo: 'c'+'h'+'a'+'r'
--- It also doesn't work with 'c' + <anychar> yet.
-instance FromJSON MatcherConfig where
-  parseJSON =
-    withText "MatcherConfig" $ \t ->
-      case T.unpack t of
-        [c] -> pure $ MatchConfKeyPress (KeyPress (KChar c) [])
-        "Escape" -> pure $ MatchConfKeyPress (KeyPress KEsc [])
-        "char" -> pure MatchConfAnyChar
-        [] -> pure MatchConfCatchAll
-        s@(c:cs) ->
-          case readMaybe ('K' : s) of
-            Nothing ->
-              pure $
-              foldl
-                (\cc_ c_ -> MatchConfCombination (KeyPress (KChar c_) []) cc_)
-                (MatchConfKeyPress $ KeyPress (KChar c) [])
-                cs
-            Just k -> pure $ MatchConfKeyPress (KeyPress k [])
-
 data Instructions =
   Instructions (Path Abs File) SmosConfig
 

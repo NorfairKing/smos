@@ -10,10 +10,6 @@ import Smos.OptParse.Types
 import Smos.Report.OptParse.Gen ()
 import Smos.Types.Gen ()
 
-instance GenValid MatcherConfig where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid KeyConfig where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

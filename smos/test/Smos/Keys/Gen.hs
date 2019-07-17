@@ -22,3 +22,7 @@ instance GenValid Modifier where
 instance GenValid KeyPress where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+
+instance GenValid MatcherConfig where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
