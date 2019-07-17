@@ -21,6 +21,7 @@ module Smos.Keys
 import Import
 
 import Data.Aeson as JSON
+import Data.Either
 import Data.Functor
 import qualified Data.Text as T
 import Data.Void
@@ -145,21 +146,17 @@ renderKeyPress (KeyPress key mods) =
     [] -> renderKey key
     _ -> T.intercalate "-" $ map renderModifier mods ++ [renderKey key]
 
-{-
 keyPressP :: P KeyPress
-keyPressP = go []
-  where
-    go acc = do
-      mm <-
-        optional $
-        try $ do
-          m <- modifierP
-          void $ string' "-"
-          pure m
-      case mm of
-        Nothing -> KeyPress <$> keyP <*> pure (reverse acc)
-        Just m -> go $ m : acc
--}
+keyPressP = do
+  mods <-
+    many $
+    try $ do
+      m <- modifierP
+      void $ string' "-"
+      pure m
+  key <- keyP
+  pure $ KeyPress key mods
+
 -- a <char>
 -- a <any>
 -- ab M-c <any>
@@ -198,46 +195,26 @@ charP = string' "<char>" $> MatchConfAnyChar
 
 anyP :: P MatcherConfig
 anyP = string' "<any>" $> MatchConfCatchAll
-
--- Grammar
---
--- key: [s, F12]
--- modifier: M
--- keypress: S-s
---
--- -> not allowed: M-sM-a
--- allowed: [M-s M-a, M-s a, M-sa]
---
--- Up <char>
---
 multipleMatchersP :: P MatcherConfig
 multipleMatchersP = go
   where
     go = do
-      lrkp <- (Left <$> (try charP <|> try anyP)) <|> (Right <$> keyPressP)
-      meof <- optional eof
-      case meof of
-        Just () ->
-          pure $ case lrkp of
-            Left r -> r
-            Right kp ->
-               MatchConfKeyPress kp
-        Nothing -> do
-          void $ optional $ string' " "
-          case lrkp of
-            Left r -> pure r
-            Right kp -> MatchConfCombination kp <$> go
-
-keyPressP :: P KeyPress
-keyPressP = do
-  mods <-
-    many $
-    try $ do
-      m <- modifierP
-      void $ string' "-"
-      pure m
-  key <- keyP
-  pure $ KeyPress key mods
+      list <-
+        sepBy1
+          ((Left <$> (try charP <|> try anyP)) <|> (Right <$> keyPressP))
+          (void $ optional $ string' " ")
+      case reverse list of
+        [] -> pure MatchConfCatchAll
+        (l:rest) ->
+          if any isLeft rest
+            then fail "<char> or <any> not allowed in any position other than the last"
+            else do
+              let rest' = rights rest
+              let l' =
+                    case l of
+                      Left r -> r
+                      Right kp -> MatchConfKeyPress kp
+              pure $ foldl (flip MatchConfCombination) l' rest'
 
 choice' :: [P a] -> P a
 choice' [] = empty
