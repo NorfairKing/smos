@@ -10,8 +10,8 @@ module Smos.Draw
 import Import hiding ((<+>))
 
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Text as T
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Data.Time
 import Text.Time.Pretty
 
@@ -149,13 +149,13 @@ drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . go
   where
     go :: KeyCombination -> Text
-    go (PressExactly kp) = renderKeypress kp
+    go (PressExactly kp) = renderKeyPress kp
     go PressAnyChar = "<any char>"
     go PressAny = "<any key>"
-    go (PressCombination kp km) = renderKeypress kp <> go km
+    go (PressCombination kp km) = renderKeyPress kp <> go km
 
 drawHistory :: Seq KeyPress -> Widget n
-drawHistory = txtWrap . T.unwords . map renderKeypress . toList
+drawHistory = txtWrap . T.unwords . map renderKeyPress . toList
 
 drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
