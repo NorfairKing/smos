@@ -28,8 +28,5 @@ type Q = ReaderT SmosQueryConfig IO
 
 askWorkDir :: Q (Path Abs Dir)
 askWorkDir = do
-  func <-
-    asks
-      (agendaFileSpecGetWorkDir .
-       smosReportConfigAgendaFileSpec . smosQueryConfigReportConfig)
+  func <- asks (resolveWorkflowDir . smosReportConfigAgendaFileSpec . smosQueryConfigReportConfig)
   liftIO func

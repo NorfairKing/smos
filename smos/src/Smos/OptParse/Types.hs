@@ -12,10 +12,7 @@ module Smos.OptParse.Types where
 import Import
 
 import Data.Aeson as JSON
-import qualified Data.Text as T
-import Text.Read
 
-import Graphics.Vty.Input.Events
 
 import qualified Smos.Report.OptParse.Types as Report
 
@@ -56,12 +53,12 @@ instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "keys"
 
-mergeObjects :: Value -> Value -> Value
-mergeObjects (Object hm1) (Object hm2) = Object $ hm1 <> hm2
-mergeObjects v1 _ = v1
-
 backToConfiguration :: SmosConfig -> Configuration
-backToConfiguration = undefined
+backToConfiguration SmosConfig {..} =
+  Configuration
+    { confReportConf = Report.backToConfiguration configReportConfig
+    , confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
+    }
 
 data KeybindingsConfiguration =
   KeybindingsConfiguration
@@ -88,6 +85,15 @@ instance FromJSON KeybindingsConfiguration where
     withObject "KeybindingsConfiguration" $ \o ->
       KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports" <*>
       o .:? "help"
+
+backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
+backToKeybindingsConfiguration KeyMap {..} =
+  KeybindingsConfiguration
+    { confReset = Just True
+    , confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap
+    , confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap
+    , confHelpKeyConfig = Just $ backToKeyConfigs keyMapHelpMatchers
+    }
 
 data FileKeyConfigs =
   FileKeyConfigs
@@ -132,6 +138,21 @@ instance FromJSON FileKeyConfigs where
       o .:? "logbook" <*>
       o .:? "any"
 
+backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
+backToFileKeyConfigs FileKeyMap {..} =
+  FileKeyConfigs
+    { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers
+    , entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers
+    , headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers
+    , contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers
+    , timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers
+    , propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers
+    , stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers
+    , tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers
+    , logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers
+    , anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
+    }
+
 data ReportsKeyConfigs =
   ReportsKeyConfigs
     { nextActionReportKeyConfigs :: !(Maybe KeyConfigs)
@@ -146,13 +167,19 @@ instance ToJSON ReportsKeyConfigs where
 instance FromJSON ReportsKeyConfigs where
   parseJSON = withObject "ReportsKeyConfigs" $ \o -> ReportsKeyConfigs <$> o .:? "next-action"
 
+backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
+backToReportsKeyConfig ReportsKeyMap {..} =
+  ReportsKeyConfigs
+    {nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers}
+
 newtype KeyConfigs =
   KeyConfigs
     { keyConfigs :: [KeyConfig]
     }
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Generic, Validity, ToJSON, FromJSON)
 
-instance Validity KeyConfigs
+backToKeyConfigs :: KeyMappings -> KeyConfigs
+backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
 
 data KeyConfig =
   KeyConfig
@@ -168,6 +195,27 @@ instance ToJSON KeyConfig where
 
 instance FromJSON KeyConfig where
   parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
+
+backToKeyConfig :: KeyMapping -> KeyConfig
+backToKeyConfig km =
+  case km of
+    MapVtyExactly kp a ->
+      KeyConfig {keyConfigMatcher = MatchConfKeyPress kp, keyConfigAction = actionName a}
+    MapAnyTypeableChar au ->
+      KeyConfig {keyConfigMatcher = MatchConfAnyChar, keyConfigAction = actionUsingName au}
+    MapCatchAll a ->
+      KeyConfig {keyConfigMatcher = MatchConfCatchAll, keyConfigAction = actionName a}
+    MapCombination kp_ km_ ->
+      let go km__ =
+            case km__ of
+              MapVtyExactly kp__ a_ -> (MatchConfKeyPress kp__, actionName a_)
+              MapAnyTypeableChar au -> (MatchConfAnyChar, actionUsingName au)
+              MapCatchAll a_ -> (MatchConfCatchAll, actionName a_)
+              MapCombination kp__ km___ ->
+                let (mc_, a_) = go km___
+                 in (MatchConfCombination kp__ mc_, a_)
+          (mc, a) = go km_
+       in KeyConfig {keyConfigMatcher = MatchConfCombination kp_ mc, keyConfigAction = a}
 
 data Instructions =
   Instructions (Path Abs File) SmosConfig
@@ -194,3 +242,7 @@ instance Applicative Comb where
       (CombErr err1, CombErr err2) -> CombErr $ err1 ++ err2
       (CombErr err1, _) -> CombErr err1
       (_, CombErr err2) -> CombErr err2
+
+mergeObjects :: Value -> Value -> Value
+mergeObjects (Object hm1) (Object hm2) = Object $ hm1 <> hm2
+mergeObjects v1 _ = v1

@@ -23,17 +23,13 @@ import Options.Applicative
 import Smos.Report.OptParse.Types
 
 combineToConfig ::
-     SmosReportConfig
-  -> Flags
-  -> Environment
-  -> Maybe Configuration
-  -> IO SmosReportConfig
-combineToConfig src Flags {..} Environment {..} mc = do
-  pure $
-    case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
-      Nothing -> src
-      Just wd ->
-        src {smosReportConfigAgendaFileSpec = AgendaFileSpec $ resolveDir' wd}
+     SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
+combineToConfig src Flags {..} Environment {..} mc =
+  case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
+    Nothing -> pure src
+    Just wd -> do
+      ad <- resolveDir' wd
+      pure $ src {smosReportConfigAgendaFileSpec = DirAbsolute ad}
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> parseWorkflowDirFlag
@@ -54,11 +50,7 @@ getEnv = do
   env <- getEnvironment
   let getSmosEnv :: String -> Maybe String
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure
-    Environment
-      { envWorkflowDir =
-          getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"
-      }
+  pure Environment {envWorkflowDir = getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"}
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))
 defaultJSONConfigFile = do
@@ -82,8 +74,7 @@ defaultYamlConfigFile = do
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =
-  fmap (left prettyPrintParseException) $
-  decodeFileEither $ fromAbsFile configFile
+  fmap (left prettyPrintParseException) $ decodeFileEither $ fromAbsFile configFile
 
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = do
@@ -93,9 +84,7 @@ getConfigurationWith :: FromJSON a => [Maybe FilePath] -> IO (Maybe a)
 getConfigurationWith mConfigFileOverrides = do
   mConfigFile <-
     case msum mConfigFileOverrides of
-      Nothing ->
-        msum <$>
-        Control.Monad.sequence [defaultYamlConfigFile, defaultJSONConfigFile]
+      Nothing -> msum <$> Control.Monad.sequence [defaultYamlConfigFile, defaultJSONConfigFile]
       Just fp -> Just <$> resolveFile' fp
   forM mConfigFile $ \configFile -> do
     errOrConfig <-

@@ -7,26 +7,40 @@ module Smos.Report.OptParse.Types where
 import GHC.Generics (Generic)
 
 import Data.Validity
-
 import Data.Yaml as Yaml
+import Path
+
+import Smos.Report.Config
 
 data Flags =
   Flags
     { flagWorkflowDir :: Maybe FilePath
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
     { envWorkflowDir :: Maybe FilePath
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data Configuration =
   Configuration
     { confWorkflowDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
+
+backToConfiguration :: SmosReportConfig -> Configuration
+backToConfiguration SmosReportConfig {..} =
+  Configuration
+    { confWorkflowDir =
+        if smosReportConfigAgendaFileSpec == defaultWorkflowDirSpec
+          then Nothing
+          else Just $
+               case smosReportConfigAgendaFileSpec of
+                 DirInHome rd ->  "~/" <> fromRelDir rd
+                 DirAbsolute ad ->  fromAbsDir ad
+    }
 
 instance Validity Configuration
 

@@ -11,8 +11,6 @@ import Text.Printf
 import Brick.Types as B
 import Brick.Widgets.Core as B
 
-import Graphics.Vty.Input.Events (Key(..), Modifier(..))
-
 drawFilePath :: Path r d -> Widget n
 drawFilePath = str . toFilePath
 
@@ -24,9 +22,11 @@ drawText = vBox . map go . T.splitOn "\n"
       case t of
         "" -> " "
         _ -> sanitise t
-    sanitise  = T.map  $ \c -> case c of
-      '\t' -> ' '
-      _ -> c
+    sanitise =
+      T.map $ \c ->
+        case c of
+          '\t' -> ' '
+          _ -> c
 
 data Select
   = MaybeSelected

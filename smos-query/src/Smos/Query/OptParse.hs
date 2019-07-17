@@ -239,7 +239,7 @@ parseConfigFileFlag =
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =
   (fmap foldFilterAnd . NE.nonEmpty ) <$>
-  some
+  many
     (argument
        (maybeReader (parseFilter . T.pack))
        (mconcat [metavar "FILTER", help "A filter to filter entries by"]))
