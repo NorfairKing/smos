@@ -1,4 +1,4 @@
-workflow-dir: /home/user/workflow
+workflow-dir: null
 keys:
   reports:
     next-action:
@@ -347,4 +347,3 @@ keys:
       key: M-Down
     - action: propertiesToggleSelected
       key: <tab>
-
