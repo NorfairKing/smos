@@ -51,7 +51,7 @@ keys:
         key: PageDown
 ```
 
-See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/workflow.yaml) for a more comprehensive example of all the possible options.
+See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/complete.yaml) for a more comprehensive example of all the possible options.
 
 - This JSON config:
 
@@ -84,7 +84,7 @@ See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_
 }
 ```
 
-See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/json/workflow.json) for a more comprehensive example of all the possible options.
+See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/json/complete.json) for a more comprehensive example of all the possible options.
 
 Smos can also be configured directly in Haskell.
 If you are looking to do that, please see [the respective guide](/customisation-haskell.html)
