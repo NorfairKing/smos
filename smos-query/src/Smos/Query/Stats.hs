@@ -15,7 +15,7 @@ import Rainbow
 
 import Smos.Data
 
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Stats
 import Smos.Report.Streaming
 

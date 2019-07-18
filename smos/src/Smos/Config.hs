@@ -33,6 +33,7 @@ import Smos.Report.Config
 
 import Smos.Actions
 import Smos.Types
+import Smos.Keys
 
 listMatchers :: [KeyMapping] -> KeyMappings
 listMatchers = id

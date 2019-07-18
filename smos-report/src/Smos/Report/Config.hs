@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Report.Config
   ( SmosReportConfig(..)
-  , defaultReportConfig
-  , AgendaFileSpec(..)
-  , inHomeDir
+  , defaultReportConfig, defaultWorkflowDirSpec
+  , WorkflowDirSpec(..)
+  , resolveWorkflowDir
   ) where
 
 import GHC.Generics (Generic)
@@ -14,22 +16,23 @@ import Path.IO
 
 data SmosReportConfig =
   SmosReportConfig
-    { smosReportConfigAgendaFileSpec :: AgendaFileSpec
+    { smosReportConfigAgendaFileSpec :: !WorkflowDirSpec
     }
-  deriving (Generic)
+  deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
-defaultReportConfig =
-  SmosReportConfig {smosReportConfigAgendaFileSpec = inHomeDir "workflow"}
+defaultReportConfig = SmosReportConfig {smosReportConfigAgendaFileSpec = defaultWorkflowDirSpec}
 
-data AgendaFileSpec =
-  AgendaFileSpec
-    { agendaFileSpecGetWorkDir :: IO (Path Abs Dir)
-    }
-  deriving (Generic)
+defaultWorkflowDirSpec :: WorkflowDirSpec
+defaultWorkflowDirSpec = DirInHome [reldir|workflow|]
 
-inHomeDir :: FilePath -> AgendaFileSpec
-inHomeDir fp =
-  AgendaFileSpec $ do
-    home <- getHomeDir
-    resolveDir home fp
+data WorkflowDirSpec
+  = DirInHome (Path Rel Dir)
+  | DirAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+resolveWorkflowDir :: WorkflowDirSpec -> IO (Path Abs Dir)
+resolveWorkflowDir afs =
+  case afs of
+    DirInHome rp -> getHomeDir >>= (`resolveDir` fromRelDir rp)
+    DirAbsolute ad -> pure ad

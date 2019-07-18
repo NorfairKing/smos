@@ -10,7 +10,7 @@ import Smos.Data.Gen ()
 import Smos.Report.Clock
 
 import Smos.Report.Clock.Gen ()
-import Smos.Report.Query.Gen ()
+import Smos.Report.Filter.Gen ()
 
 spec :: Spec
 spec = do

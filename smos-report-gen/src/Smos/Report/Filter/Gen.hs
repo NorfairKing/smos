@@ -3,7 +3,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Report.Query.Gen where
+module Smos.Report.Filter.Gen where
 
 import Data.GenValidity
 import Data.GenValidity.Path ()
@@ -12,7 +12,7 @@ import Test.QuickCheck
 
 import Smos.Data.Gen ()
 
-import Smos.Report.Query
+import Smos.Report.Filter
 
 instance GenValid Filter where
   genValid =

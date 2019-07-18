@@ -1,13 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.Query where
+module Smos.Report.Filter where
 
 import GHC.Generics (Generic)
 
 import Data.Char as Char
 import Data.Function
 import Data.List
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
@@ -37,8 +38,10 @@ data Filter
   | FilterFile (Path Rel File) -- Substring of the filename
   | FilterLevel Word -- The level of the entry in the tree (0 is top)
   | FilterProperty PropertyFilter
-  | FilterParent Filter
-  | FilterAncestor Filter
+  | FilterParent Filter -- Match direct parent
+  | FilterAncestor Filter -- Match parent or parent of parents recursively
+  | FilterChild Filter -- Match any direct child
+  | FilterLegacy Filter -- Match any direct child or their children
   | FilterNot Filter
   | FilterAnd Filter Filter
   | FilterOr Filter Filter
@@ -50,8 +53,7 @@ instance Validity Filter where
       [ genericValidate f
       , case f of
           FilterFile s ->
-            declare "The filenames are restricted" $
-            all (\c -> not (Char.isSpace c) && c /= ')') $
+            declare "The filenames are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
             fromRelFile s
           _ -> valid
       ]
@@ -63,19 +65,27 @@ data PropertyFilter
 
 instance Validity PropertyFilter
 
+foldFilterAnd :: NonEmpty Filter -> Filter
+foldFilterAnd = foldl1 FilterAnd
+
 filterPredicate :: Filter -> RootedPath -> ForestCursor Entry -> Bool
 filterPredicate f_ rp = go f_
   where
     go f fc =
       let parent_ :: Maybe (ForestCursor Entry)
           parent_ = fc & forestCursorSelectedTreeL treeCursorSelectAbove
+          children_ :: [ForestCursor Entry]
+          children_ =
+            mapMaybe
+              (\i -> fc & forestCursorSelectBelowAtPos i)
+              (let CNode _ cf = rebuildTreeCursor $ fc ^. forestCursorSelectedTreeL
+                in [0 .. length (rebuildCForest cf) - 1])
           cur :: Entry
           cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
        in case f of
             FilterHasTag t -> t `elem` entryTags cur
             FilterTodoState mts -> Just mts == entryState cur
-            FilterFile t ->
-              fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
+            FilterFile t -> fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
             FilterProperty pf ->
               case pf of
                 ExactProperty pn pv ->
@@ -85,8 +95,9 @@ filterPredicate f_ rp = go f_
                 HasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
             FilterLevel l -> l == level fc
             FilterParent f' -> maybe False (go f') parent_
-            FilterAncestor f' ->
-              maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+            FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+            FilterChild f' -> any (go f') children_
+            FilterLegacy f' -> any (\fc_ -> go f' fc_ || go f fc_) children_
             FilterNot f' -> not $ go f' fc
             FilterAnd f1 f2 -> go f1 fc && go f2 fc
             FilterOr f1 f2 -> go f1 fc || go f2 fc
@@ -109,37 +120,35 @@ parseFilter = parseMaybe filterP
 
 filterP :: P Filter
 filterP =
-  try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|>
-  try filterLevelP <|>
+  try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
   try filterPropertyP <|>
   try filterParentP <|>
   try filterAncestorP <|>
+  try filterChildP <|>
+  try filterLegacyP <|>
   try filterNotP <|>
   filterBinRelP
 
 filterHasTagP :: P Filter
 filterHasTagP = do
   void $ string' "tag:"
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail (pure . FilterHasTag) $ parseTag $ T.pack s
 
 filterTodoStateP :: P Filter
 filterTodoStateP = do
   void $ string' "state:"
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail (pure . FilterTodoState) $ parseTodoState $ T.pack s
 
 filterFileP :: P Filter
 filterFileP = do
   void $ string' "file:"
   s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
-  either (fail . show) (pure . FilterFile) $ parseRelFile s
+  r <- either (fail . show) (pure . FilterFile) $ parseRelFile s
+  case prettyValidate r of
+    Left err -> fail err
+    Right f -> pure f
 
 filterLevelP :: P Filter
 filterLevelP = do
@@ -162,6 +171,16 @@ filterAncestorP :: P Filter
 filterAncestorP = do
   void $ string' "ancestor:"
   FilterAncestor <$> filterP
+
+filterChildP :: P Filter
+filterChildP = do
+  void $ string' "child:"
+  FilterChild <$> filterP
+
+filterLegacyP :: P Filter
+filterLegacyP = do
+  void $ string' "legacy:"
+  FilterLegacy <$> filterP
 
 filterNotP :: P Filter
 filterNotP = do
@@ -209,18 +228,12 @@ hasPropertyP = do
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 propertyValueP :: P PropertyValue
 propertyValueP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyValue $ T.pack s
 
 renderFilter :: Filter -> Text
@@ -233,15 +246,14 @@ renderFilter f =
     FilterProperty fp -> "property:" <> renderPropertyFilter fp
     FilterParent f' -> "parent:" <> renderFilter f'
     FilterAncestor f' -> "ancestor:" <> renderFilter f'
+    FilterChild f' -> "child:" <> renderFilter f'
+    FilterLegacy f' -> "legacy:" <> renderFilter f'
     FilterNot f' -> "not:" <> renderFilter f'
-    FilterOr f1 f2 ->
-      T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
-    FilterAnd f1 f2 ->
-      T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
+    FilterOr f1 f2 -> T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
+    FilterAnd f1 f2 -> T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
 
 renderPropertyFilter :: PropertyFilter -> Text
 renderPropertyFilter pf =
   case pf of
-    ExactProperty pn pv ->
-      "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
+    ExactProperty pn pv -> "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
     HasProperty pn -> "has:" <> propertyNameText pn

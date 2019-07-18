@@ -20,7 +20,7 @@ import Smos.Data
 
 import Smos.Report.Path
 import Smos.Report.Projection
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 

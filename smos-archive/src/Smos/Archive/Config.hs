@@ -30,6 +30,6 @@ askWorkDir :: Q (Path Abs Dir)
 askWorkDir = do
   func <-
     asks
-      (agendaFileSpecGetWorkDir .
+      (resolveWorkflowDir .
        smosReportConfigAgendaFileSpec . smosArchiveConfigReportConfig)
   liftIO func

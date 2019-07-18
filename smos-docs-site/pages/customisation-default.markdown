@@ -25,9 +25,66 @@ workflow-dir: "/home/user/different-workflow"
 - This JSON config:
 
 ``` json
-{ "workflow-dir": "/home/user/different-workflow"
+{ "workflow-dir": "/home/user/different-workflow" }
+```
+
+You can also reconfigure the keybindings using, for example ...
+
+- This YAML config:
+
+``` yaml
+workflow-dir: "/home/user/different-workflow"
+keys:
+  reset: false
+  file:
+    entry:
+      - action: subtreeUnsetTodoState
+        key: T<space>
+      - action: forestToggleCollapseRecursively
+        key: <tab>
+      - action: forestToggleCollapse
+        key: M-<tab>
+    header:
+      - action: headerMoveToStart
+        key: PageUp
+      - action: headerMoveToEnd
+        key: PageDown
+```
+
+See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/workflow.yaml) for a more comprehensive example of all the possible options.
+
+- This JSON config:
+
+``` json
+{ "workflow-dir": "/home/user/different-workflow",
+  "keys": {
+    "reset": false,
+    "file": {
+      "entry": [
+        { "action": "subtreeUnsetTodoState",
+          "key": "T<space>"
+        },
+        { "action": "forestToggleCollapseRecursively",
+          "key": "<tab>"
+        },
+        { "action": "forestToggleCollapse",
+          "key": "M-<tab>"
+        }
+      ],
+      "header": [
+        { "action": "headerMoveToStart",
+          "key": "PageUp"
+        },
+        { "action": "headerMoveToEnd",
+          "key": "PageDown"
+        }
+      ]
+    }
+  }
 }
 ```
 
-Smos can also be configured more flexibly in Haskell.
+See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/json/workflow.json) for a more comprehensive example of all the possible options.
+
+Smos can also be configured directly in Haskell.
 If you are looking to do that, please see [the respective guide](/customisation-haskell.html)
