@@ -65,7 +65,10 @@ instance FromJSON Modifier where
         Right r -> pure r
 
 data KeyPress =
-  KeyPress Key [Modifier]
+  KeyPress
+    { keyPressKey :: !Key
+    , keyPressMods :: ![Modifier]
+    }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity KeyPress where
@@ -185,7 +188,22 @@ renderMatcherConfig mc =
     MatchConfAnyChar -> "<char>"
     MatchConfCatchAll -> "<any>"
     MatchConfKeyPress kp -> renderKeyPress kp
-    MatchConfCombination kp rest -> renderKeyPress kp <> " " <> renderMatcherConfig rest
+    MatchConfCombination kp rest ->
+      let mkp' =
+            case rest of
+              MatchConfCombination kp' _ ->Just  kp'
+              MatchConfKeyPress kp' ->Just kp'
+              _ -> Nothing
+      in
+          T.concat
+            [ renderKeyPress kp
+            , case mkp' of
+                Nothing -> " "
+                Just kp' -> case keyPressMods kp' of
+                 [] -> ""
+                 _ -> " "
+            , renderMatcherConfig rest
+            ]
 
 matcherConfigP :: P MatcherConfig
 matcherConfigP = choice' [charP, anyP, multipleMatchersP]
@@ -195,6 +213,7 @@ charP = string' "<char>" $> MatchConfAnyChar
 
 anyP :: P MatcherConfig
 anyP = string' "<any>" $> MatchConfCatchAll
+
 multipleMatchersP :: P MatcherConfig
 multipleMatchersP = go
   where

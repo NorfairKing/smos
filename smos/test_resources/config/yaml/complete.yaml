@@ -15,7 +15,7 @@ keys:
     - action: firstNextAction
       key: Home
     - action: firstNextAction
-      key: g g
+      key: gg
     - action: lastNextAction
       key: End
     - action: lastNextAction
@@ -40,7 +40,7 @@ keys:
   - action: helpStart
     key: Home
   - action: helpStart
-    key: g g
+    key: gg
   - action: helpEnd
     key: End
   - action: helpEnd
@@ -104,7 +104,7 @@ keys:
     - action: selectHelp
       key: ! '?'
     - action: reportNextActions
-      key: r n
+      key: rn
     logbook:
     - action: entrySelectWhole
       key: Esc
@@ -138,7 +138,7 @@ keys:
     - action: forestMoveRight
       key: Right
     - action: forestMoveToFirst
-      key: g g
+      key: gg
     - action: forestMoveToLast
       key: G
     - action: forestSwapUp
@@ -166,69 +166,69 @@ keys:
     - action: forestDeleteCurrentSubTree
       key: D
     - action: entrySetTodoState_TODO
-      key: t t
+      key: tt
     - action: entrySetTodoState_NEXT
-      key: t n
+      key: tn
     - action: entrySetTodoState_STARTED
-      key: t s
+      key: ts
     - action: entrySetTodoState_READY
-      key: t r
+      key: tr
     - action: entrySetTodoState_WAITING
-      key: t w
+      key: tw
     - action: entrySetTodoState_DONE
-      key: t d
+      key: td
     - action: entrySetTodoState_CANCELLED
-      key: t c
+      key: tc
     - action: entryUnsetTodoState
-      key: t <space>
+      key: t<space>
     - action: subtreeSetTodoState_TODO
-      key: T t
+      key: Tt
     - action: subtreeSetTodoState_NEXT
-      key: T n
+      key: Tn
     - action: subtreeSetTodoState_STARTED
-      key: T s
+      key: Ts
     - action: subtreeSetTodoState_READY
-      key: T r
+      key: Tr
     - action: subtreeSetTodoState_WAITING
-      key: T w
+      key: Tw
     - action: subtreeSetTodoState_DONE
-      key: T d
+      key: Td
     - action: subtreeSetTodoState_CANCELLED
-      key: T c
+      key: Tc
     - action: subtreeUnsetTodoState
-      key: T <space>
+      key: T<space>
     - action: tagsToggle_home
-      key: g h
+      key: gh
     - action: tagsToggle_online
-      key: g o
+      key: go
     - action: tagsToggle_toast
-      key: g t
+      key: gt
     - action: tagsToggle_work
-      key: g w
+      key: gw
     - action: timestampsSelect_BEGIN
-      key: s b
+      key: sb
     - action: timestampsSelect_END
-      key: s e
+      key: se
     - action: timestampsSelect_DEADLINE
-      key: s d
+      key: sd
     - action: timestampsSelect_SCHEDULED
-      key: s s
+      key: ss
     - action: entrySelectProperties
-      key: p i
+      key: pi
     - action: propertiesEditProperty_client
-      key: p c
+      key: pc
     - action: propertiesEditProperty_effort
-      key: p e
+      key: pe
     - action: forestClockOutEverywhereInAllFilesAndClockInHere
-      key: c i
+      key: ci
     - action: forestClockOutEverywhereInAllFiles
-      key: c o
+      key: co
     - action: reportNextActions
-      key: r n
+      key: rn
     - action: convDoneAndWaitForResponse
-      key: <space> n w
+      key: <space>nw
     - action: convRepinged
-      key: <space> r p
+      key: <space>rp
     - action: selectHelp
       key: ! '?'
     - action: forestToggleCollapse
@@ -238,9 +238,9 @@ keys:
     - action: forestToggleHideEntireEntry
       key: BackTab
     - action: entrySelectContents
-      key: Enter Enter
+      key: EnterEnter
     - action: entrySelectTags
-      key: g i
+      key: gi
     header:
     - action: entrySelectWhole
       key: Esc
