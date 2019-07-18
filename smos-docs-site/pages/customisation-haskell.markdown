@@ -38,39 +38,40 @@ To make that happen, add the following to your `stack.yaml`:
 extra-deps:
 - git: https://github.com/NorfairKing/smos.git
   # Use a recent commit from the 'master' branch
-  commit: 598e3e917b22c3ab1f3bffc3645424e4a7a568c7
+  commit: f6bbd6abf11ad9785baaaaf04256c78926896a51
   subdirs:
     - smos
-    - smos-archive
-    - smos-convert-org
-    - smos-cursor
-    - smos-cursor-gen
     - smos-data
     - smos-data-gen
-    - smos-query
+    - smos-cursor
+    - smos-cursor-gen
     - smos-report
+    - smos-report-gen
     - smos-report-cursor
     - smos-report-cursor-gen
-    - smos-report-gen
+    - smos-query
+    - smos-convert-org
+    - smos-archive
+    - smos-docs-site
 - git: https://github.com/NorfairKing/pretty-relative-time.git
-  commit: 0044ce34d484d54e6809c30cee8e1219c722765f
+  commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
   commit: 8b1358f768b709651efb90f8f7bd2d84f70cd0ae
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: 79cac898f475036f08022992ebc764026ce510e5
+  commit: 4e388ab8f0bf9f1e8c64f39e98da6867c383dc3c
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor.git
-  commit: a1c35161d308289b4b0af2aa228a6898fa367d36
+  commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 70874acf594ec3667b974032379aa29c961e5866
+  commit: 8a13a23696115845133d87118b81c47fa1f9b04b
   subdirs:
   - genvalidity
   - genvalidity-aeson
