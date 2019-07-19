@@ -29,21 +29,51 @@ sourceFilesInNonHiddenDirsRecursively ::
      forall m i. MonadIO m
   => Path Abs Dir
   -> ConduitT i RootedPath m ()
-sourceFilesInNonHiddenDirsRecursively dir = do
+sourceFilesInNonHiddenDirsRecursively dir = walkSafe go dir
+  where
+    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath m WalkAction
+    go curdir subdirs files = do
+      C.yieldMany $ map (rootedIn dir) files
+      pure $ WalkExclude $ filter (isHiddenIn curdir) subdirs
+
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdir ::
+     forall m i. MonadIO m
+  => Path Rel Dir
+  -> Path Abs Dir
+  -> ConduitT i RootedPath m ()
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = walkSafe go dir
+  where
+    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath m WalkAction
+    go curdir subdirs files = do
+      let addExtraFilter =
+            if curdir == (dir </> subdir)
+              then const subdirs
+              else id
+      C.yieldMany $ map (rootedIn dir) files
+      pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
+
+walkSafe ::
+     MonadIO m
+  => (Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> m WalkAction)
+  -> Path Abs Dir
+  -> m ()
+walkSafe go dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
   if e
     then walkDir go dir
     else pure ()
-  where
-    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath m WalkAction
-    go curdir subdirs files = do
-      C.yieldMany $ map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
-      pure $ WalkExclude $ filter hidden subdirs
-      where
-        hidden ad =
-          case stripProperPrefix curdir ad of
-            Nothing -> True
-            Just rd -> ("." `isPrefixOf` fromRelDir rd)
+
+rootedIn :: Path Abs Dir -> Path Abs File -> RootedPath
+rootedIn dir ap =
+  case stripProperPrefix dir ap of
+    Nothing -> Absolute ap
+    Just rd -> Relative dir rd
+
+isHiddenIn :: Path r Dir -> Path r Dir -> Bool
+isHiddenIn curdir ad =
+  case stripProperPrefix curdir ad of
+    Nothing -> True
+    Just rd -> "." `isPrefixOf` fromRelDir rd
 
 filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
 filterSmosFiles =
@@ -67,7 +97,8 @@ parseSmosFiles =
                 Right sf -> Right sf
     pure (p, ei)
 
-printShouldPrint :: MonadIO m=>ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
+printShouldPrint ::
+     MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
   C.concatMapM $ \(a, errOrB) ->
     case errOrB of
