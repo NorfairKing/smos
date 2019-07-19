@@ -14,6 +14,8 @@ data Period
   = Today
   | ThisWeek
   | LastWeek
+  | ThisMonth
+  | LastMonth
   | AllTime
   | BeginEnd LocalTime LocalTime -- If end is before begin, this matches nothing
   deriving (Show, Eq, Generic)
@@ -27,6 +29,8 @@ filterPeriod now p u =
      Today -> filterBetween todayStart todayEnd
      LastWeek -> filterBetween lastWeekStart thisWeekStart
      ThisWeek -> filterBetween thisWeekStart thisWeekEnd
+     LastMonth -> filterBetween lastMonthStart thisMonthStart
+     ThisMonth -> filterBetween thisMonthStart thisMonthEnd
      BeginEnd begin end -> filterBetween begin end) $
   utcToLocalTime tz u
   where
@@ -54,3 +58,15 @@ filterPeriod now p u =
     thisWeekEnd =
       let (y, wn, _) = toWeekDate today
        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+    lastMonthStart :: LocalTime
+    lastMonthStart =
+      let (y, m, _) = toGregorian today
+       in LocalTime (fromGregorian y (m - 1) 1) midnight -- This will fail around newyear
+    thisMonthStart :: LocalTime
+    thisMonthStart =
+      let (y, m, _) = toGregorian today
+       in LocalTime (fromGregorian y m 1) midnight
+    thisMonthEnd :: LocalTime
+    thisMonthEnd =
+      let (y, m, _) = toGregorian today
+       in LocalTime (fromGregorian y m 31) midnight

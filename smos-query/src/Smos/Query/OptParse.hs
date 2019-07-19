@@ -296,6 +296,8 @@ parsePeriod =
      [ flag' Today (mconcat [long "today", help "today"])
      , flag' ThisWeek (mconcat [long "this-week", help "this week"])
      , flag' LastWeek (mconcat [long "last-week", help "last week"])
+     , flag' ThisMonth (mconcat [long "this-month", help "this month"])
+     , flag' LastMonth (mconcat [long "last-month", help "last month"])
      , flag' AllTime (mconcat [long "all-time", help "all time"])
      ]) <|>
   pure Nothing
