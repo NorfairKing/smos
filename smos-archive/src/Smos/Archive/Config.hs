@@ -3,7 +3,8 @@
 module Smos.Archive.Config
   ( SmosArchiveConfig(..)
   , Q
-  , askWorkDir
+  , askWorkflowDir
+  , askArchiveDir
   , module Smos.Report.Config
   , module Control.Monad.IO.Class
   , module Control.Monad.Reader
@@ -26,10 +27,12 @@ data SmosArchiveConfig =
 
 type Q = ReaderT SmosArchiveConfig IO
 
-askWorkDir :: Q (Path Abs Dir)
-askWorkDir = do
-  func <-
-    asks
-      (resolveWorkflowDir .
-       smosReportConfigAgendaFileSpec . smosArchiveConfigReportConfig)
-  liftIO func
+askWorkflowDir :: Q (Path Abs Dir)
+askWorkflowDir = do
+  rc <- asks smosArchiveConfigReportConfig
+  liftIO $ resolveReportWorkflowDir rc
+
+askArchiveDir :: Q (Path Abs Dir)
+askArchiveDir = do
+  rc <- asks smosArchiveConfigReportConfig
+  liftIO $ resolveReportArchiveDir rc

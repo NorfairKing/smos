@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Report.Config
@@ -8,6 +9,9 @@ module Smos.Report.Config
   , defaultWorkflowDirSpec
   , WorkflowDirSpec(..)
   , resolveWorkflowDir
+  , resolveArchiveDir
+  , resolveReportWorkflowDir
+  , resolveReportArchiveDir
   ) where
 
 import GHC.Generics (Generic)
@@ -23,7 +27,11 @@ data SmosReportConfig =
   deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
-defaultReportConfig = SmosReportConfig {smosReportConfigAgendaFileSpec = defaultWorkflowDirSpec, smosReportConfigArchiveFileSpec = defaultArchiveDirSpec}
+defaultReportConfig =
+  SmosReportConfig
+    { smosReportConfigAgendaFileSpec = defaultWorkflowDirSpec
+    , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
+    }
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)
@@ -52,3 +60,11 @@ resolveArchiveDir wd as =
   case as of
     ArchiveInWorkflow ard -> wd </> ard
     ArchiveAbsolute aad -> aad
+
+resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigAgendaFileSpec
+
+resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportArchiveDir SmosReportConfig {..} =
+  resolveArchiveDir <$> resolveWorkflowDir smosReportConfigAgendaFileSpec <*>
+  pure smosReportConfigArchiveFileSpec

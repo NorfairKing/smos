@@ -5,9 +5,10 @@ module Smos.Archive.OptParse
   ( getSettings
   ) where
 
-import System.Environment
-
+import Control.Monad
 import Path.IO
+
+import System.Environment
 
 import Options.Applicative
 
@@ -23,7 +24,11 @@ getConfig :: Flags -> IO Configuration
 getConfig Flags {..} = pure Configuration
 
 deriveSettings :: Flags -> Configuration -> IO Settings
-deriveSettings Flags {..} Configuration = Settings <$> resolveFile' flagFile
+deriveSettings Flags {..} Configuration = do
+  setFile <- resolveFile' flagFile
+  setWorkflowDir <- forM flagWorkflowDir resolveDir'
+  setArchiveDir <- forM flagArchiveDir resolveDir'
+  pure Settings {..}
 
 getFlags :: IO Flags
 getFlags = do
@@ -52,5 +57,10 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$>
-  strArgument (mconcat [help "The file to archive", metavar "FILEPATH"])
+  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
+  option
+    (Just <$> str)
+    (mconcat [long "workflow-dir", help "The workflow directory", metavar "FILEPATH", value Nothing]) <*>
+  option
+    (Just <$> str)
+    (mconcat [long "archive-dir", help "The archive directory", metavar "FILEPATH", value Nothing])
