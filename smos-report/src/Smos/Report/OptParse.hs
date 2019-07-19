@@ -3,7 +3,7 @@
 
 module Smos.Report.OptParse where
 
-import System.Environment
+import qualified System.Environment as System
 import System.Exit
 
 import Control.Arrow
@@ -24,15 +24,30 @@ import Smos.Report.OptParse.Types
 
 combineToConfig ::
      SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
-combineToConfig src Flags {..} Environment {..} mc =
-  case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
-    Nothing -> pure src
-    Just wd -> do
-      ad <- resolveDir' wd
-      pure $ src {smosReportConfigAgendaFileSpec = DirAbsolute ad}
+combineToConfig src Flags {..} Environment {..} mc = do
+  wfs <-
+    case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
+      Nothing -> pure $ smosReportConfigWorkflowFileSpec src
+      Just wd -> do
+        ad <- resolveDir' wd
+        pure $ DirAbsolute ad
+  afs <-
+    case msum [flagArchiveDir, envArchiveDir, mc >>= confArchiveDir] of
+      Nothing -> pure $ smosReportConfigArchiveFileSpec src
+      Just wd -> do
+        ad <- resolveDir' wd
+        pure $ ArchiveAbsolute ad
+  pure $
+    SmosReportConfig {smosReportConfigWorkflowFileSpec = wfs, smosReportConfigArchiveFileSpec = afs}
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> parseWorkflowDirFlag
+parseFlags = Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag
+
+parseConfigFileFlag :: Parser (Maybe FilePath)
+parseConfigFileFlag =
+  option
+    (Just <$> str)
+    (mconcat [metavar "FILEPATH", help "The config file to use", long "config-file", value Nothing])
 
 parseWorkflowDirFlag :: Parser (Maybe FilePath)
 parseWorkflowDirFlag =
@@ -45,12 +60,25 @@ parseWorkflowDirFlag =
        , value Nothing
        ])
 
-getEnv :: IO Environment
-getEnv = do
-  env <- getEnvironment
+parseArchiveDirFlag :: Parser (Maybe FilePath)
+parseArchiveDirFlag =
+  option
+    (Just <$> str)
+    (mconcat
+       [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing])
+
+getEnvironment :: IO Environment
+getEnvironment = do
+  env <- System.getEnvironment
   let getSmosEnv :: String -> Maybe String
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure Environment {envWorkflowDir = getSmosEnv "WORKFLOW_DIRECTORY" <|> getSmosEnv "WORKFLOW_DIR"}
+  pure
+    Environment
+      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
+      , envWorkflowDir =
+          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
+      , envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
+      }
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))
 defaultJSONConfigFile = do
@@ -80,10 +108,10 @@ parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = do
   JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
-getConfigurationWith :: FromJSON a => [Maybe FilePath] -> IO (Maybe a)
-getConfigurationWith mConfigFileOverrides = do
+getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
+getConfiguration Flags {..} Environment {..} = do
   mConfigFile <-
-    case msum mConfigFileOverrides of
+    case msum [flagConfigFile, envConfigFile] of
       Nothing -> msum <$> Control.Monad.sequence [defaultYamlConfigFile, defaultJSONConfigFile]
       Just fp -> Just <$> resolveFile' fp
   forM mConfigFile $ \configFile -> do

@@ -18,39 +18,32 @@ import Cursor.Simple.Forest
 
 import Smos.Data
 
+import Smos.Report.Filter
 import Smos.Report.Path
 import Smos.Report.Projection
-import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
+import Smos.Query.Streaming
 
 entry :: EntrySettings -> Q ()
 entry EntrySettings {..} = do
-  wd <- askWorkDir
-  liftIO $ do
-    tups <-
-      sourceToList $
-      sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-      parseSmosFiles .|
-      printShouldPrint PrintWarning .|
-      smosFileCursors .|
-      C.filter
-        (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
-    let sortIt =
-          maybe
-            id
-            (\s ->
-               sortBy $ \(rpa, fca) (rpb, fcb) ->
-                 sorterOrdering s rpa fca rpb fcb)
-            entrySetSorter
-    let ees = sortIt $ tups
-    let defaultProjection = foldl1 AndAlso [OntoFile, OntoState, OntoHeader]
-    let projection = fromMaybe defaultProjection entrySetProjection
-    putTableLn $ renderEntryReport projection ees
+  tups <-
+    sourceToList $
+    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
+  let sortIt =
+        maybe
+          id
+          (\s -> sortBy $ \(rpa, fca) (rpb, fcb) -> sorterOrdering s rpa fca rpb fcb)
+          entrySetSorter
+  let ees = sortIt $ tups
+  let defaultProjection = foldl1 AndAlso [OntoFile, OntoState, OntoHeader]
+  let projection = fromMaybe defaultProjection entrySetProjection
+  liftIO $ putTableLn $ renderEntryReport projection ees
 
 renderEntryReport :: Projection -> [(RootedPath, ForestCursor Entry)] -> Table
 renderEntryReport projection =

@@ -4,21 +4,23 @@
 module Smos.Query.OptParse where
 
 import Control.Monad
+import Data.Functor
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Path.IO
+import Text.Read (readMaybe)
 
-import System.Environment (getArgs, getEnvironment)
+import qualified System.Environment as System
 
 import Options.Applicative
 
 import qualified Smos.Report.OptParse as Report
 
+import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
-import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock
 
@@ -28,7 +30,7 @@ import Smos.Query.OptParse.Types
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
   Arguments cmd flags <- getArguments
-  env <- getEnv
+  env <- getEnvironment
   config <- getConfiguration flags env
   Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
 
@@ -85,35 +87,43 @@ getDispatch c =
           }
 
 getSettings :: SmosQueryConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosQueryConfig
-getSettings sqc@SmosQueryConfig {..} Flags {..} Environment {..} mc = do
+getSettings SmosQueryConfig {..} Flags {..} Environment {..} mc = do
   src <-
     Report.combineToConfig
       smosQueryConfigReportConfig
       flagReportFlags
-      envReportEnv
+      envReportEnvironment
       (confReportConf <$> mc)
-  let sqc' = sqc {smosQueryConfigReportConfig = src}
-  pure sqc'
+  pure $
+    SmosQueryConfig
+      { smosQueryConfigReportConfig = src
+      , smosQueryConfigHideArchive =
+          fromMaybe smosQueryConfigHideArchive $
+          flagHideArchive <|> envHideArchive <|> (mc >>= confHideArchive)
+      }
 
-getEnv :: IO Environment
-getEnv = do
-  env <- getEnvironment
-  reportEnv <- Report.getEnv
+getEnvironment :: IO Environment
+getEnvironment = do
+  env <- System.getEnvironment
   let getSmosEnv :: String -> Maybe String
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure
-    Environment
-      { envConfigFile = getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-      , envReportEnv = reportEnv
-      }
+      readSmosEnv :: Read a => String -> Maybe a
+      readSmosEnv key = getSmosEnv key >>= readMaybe
+  envReportEnvironment <- Report.getEnvironment
+  let envHideArchive =
+        readSmosEnv "IGNORE_ARCHIVE" <&> \b ->
+          case b of
+            True -> Don'tHideArchive
+            False -> HideArchive
+  pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
-  Report.getConfigurationWith [flagConfigFile, envConfigFile]
+  Report.getConfiguration flagReportFlags envReportEnvironment
 
 getArguments :: IO Arguments
 getArguments = do
-  args <- getArgs
+  args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
@@ -227,18 +237,20 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parseFilterArgs <*> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
+parseFlags = Flags <$> Report.parseFlags <*> parseHideArchiveFlag
 
-parseConfigFileFlag :: Parser (Maybe FilePath)
-parseConfigFileFlag =
-  option
-    (Just <$> str)
-    (mconcat
-       [long "config", metavar "FILEPATH", help "The configuration file to use", value Nothing])
+parseHideArchiveFlag :: Parser (Maybe HideArchive)
+parseHideArchiveFlag =
+  (Just <$>
+   ((flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])) <|>
+    (flag'
+       Don'tHideArchive
+       (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])))) <|>
+  (pure Nothing)
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =
-  (fmap foldFilterAnd . NE.nonEmpty ) <$>
+  (fmap foldFilterAnd . NE.nonEmpty) <$>
   many
     (argument
        (maybeReader (parseFilter . T.pack))
@@ -269,15 +281,23 @@ parseSorterArgs =
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
-  Just <$> (flag' DayBlock (long "day-block") <|> flag' OneBlock (long "one-block")) <|>
+  Just <$>
+  (choices
+     [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"]
+     , flag' OneBlock $ mconcat [long "one-block", help "a single block"]
+     ]) <|>
   pure Nothing
 
 parsePeriod :: Parser (Maybe Period)
 parsePeriod =
   Just <$>
-  (parseBeginEnd <|> flag' Today (long "today") <|> flag' ThisWeek (long "this-week") <|>
-   flag' LastWeek (long "last-week") <|>
-   flag' AllTime (long "all-time")) <|>
+  (parseBeginEnd <|>
+   choices
+     [ flag' Today (mconcat [long "today", help "today"])
+     , flag' ThisWeek (mconcat [long "this-week", help "this week"])
+     , flag' LastWeek (mconcat [long "last-week", help "last week"])
+     , flag' AllTime (mconcat [long "all-time", help "all time"])
+     ]) <|>
   pure Nothing
   where
     parseBeginEnd :: Parser Period
@@ -285,10 +305,10 @@ parsePeriod =
       BeginEnd <$>
       option
         (maybeReader parseLocalBegin)
-        (mconcat [long "begin", metavar "LOCALTIME", help "The time to start from (inclusive)"]) <*>
+        (mconcat [long "begin", metavar "LOCALTIME", help "start time (inclusive)"]) <*>
       option
         (maybeReader parseLocalEnd)
-        (mconcat [long "end", metavar "LOCALTIME", help "The time to end at (inclusive)"])
+        (mconcat [long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
     parseLocalBegin :: String -> Maybe LocalTime
     parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
     parseLocalEnd :: String -> Maybe LocalTime
@@ -303,7 +323,14 @@ parsePeriod =
 parseOutputFormat :: Parser (Maybe OutputFormat)
 parseOutputFormat =
   Just <$>
-  (flag' OutputPretty (long "pretty") <|> flag' OutputYaml (long "yaml") <|>
-   flag' OutputJSON (long "json") <|>
-   flag' OutputJSONPretty (long "pretty-json")) <|>
+  (choices
+     [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"]
+     , flag' OutputYaml $ mconcat [long "yaml", help "Yaml"]
+     , flag' OutputJSON $ mconcat [long "json", help "single-line JSON"]
+     , flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
+     ]) <|>
   pure Nothing
+
+choices :: [Parser a] -> Parser a
+choices [] = empty
+choices (a:as) = a <|> choices as

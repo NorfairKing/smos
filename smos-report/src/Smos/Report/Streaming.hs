@@ -1,5 +1,6 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Report.Streaming where
 
@@ -25,26 +26,54 @@ import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
 sourceFilesInNonHiddenDirsRecursively ::
-     Path Abs Dir -> ConduitT i RootedPath IO ()
-sourceFilesInNonHiddenDirsRecursively dir = do
+     forall m i. MonadIO m
+  => Path Abs Dir
+  -> ConduitT i RootedPath m ()
+sourceFilesInNonHiddenDirsRecursively dir = walkSafe go dir
+  where
+    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath m WalkAction
+    go curdir subdirs files = do
+      C.yieldMany $ map (rootedIn dir) files
+      pure $ WalkExclude $ filter (isHiddenIn curdir) subdirs
+
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdir ::
+     forall m i. MonadIO m
+  => Path Rel Dir
+  -> Path Abs Dir
+  -> ConduitT i RootedPath m ()
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = walkSafe go dir
+  where
+    go :: Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> ConduitT i RootedPath m WalkAction
+    go curdir subdirs files = do
+      let addExtraFilter =
+            if curdir == (dir </> subdir)
+              then const subdirs
+              else id
+      C.yieldMany $ map (rootedIn dir) files
+      pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
+
+walkSafe ::
+     MonadIO m
+  => (Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> m WalkAction)
+  -> Path Abs Dir
+  -> m ()
+walkSafe go dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
   if e
     then walkDir go dir
     else pure ()
-  where
-    go ::
-         Path Abs Dir
-      -> [Path Abs Dir]
-      -> [Path Abs File]
-      -> ConduitT i RootedPath IO WalkAction
-    go curdir subdirs files = do
-      C.yieldMany $ map (Relative dir) $ mapMaybe (stripProperPrefix dir) files
-      pure $ WalkExclude $ filter hidden subdirs
-      where
-        hidden ad =
-          case stripProperPrefix curdir ad of
-            Nothing -> True
-            Just rd -> ("." `isPrefixOf` fromRelDir rd)
+
+rootedIn :: Path Abs Dir -> Path Abs File -> RootedPath
+rootedIn dir ap =
+  case stripProperPrefix dir ap of
+    Nothing -> Absolute ap
+    Just rd -> Relative dir rd
+
+isHiddenIn :: Path r Dir -> Path r Dir -> Bool
+isHiddenIn curdir ad =
+  case stripProperPrefix curdir ad of
+    Nothing -> True
+    Just rd -> "." `isPrefixOf` fromRelDir rd
 
 filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
 filterSmosFiles =
@@ -54,7 +83,7 @@ filterSmosFiles =
       Absolute paf -> fileExtension paf == ".smos"
 
 parseSmosFiles ::
-     ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) IO ()
+     MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
 parseSmosFiles =
   C.mapM $ \p -> do
     let ap = resolveRootedPath p
@@ -69,7 +98,7 @@ parseSmosFiles =
     pure (p, ei)
 
 printShouldPrint ::
-     ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) IO ()
+     MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
   C.concatMapM $ \(a, errOrB) ->
     case errOrB of
@@ -84,8 +113,7 @@ data ParseSmosFileException
   deriving (Show, Eq)
 
 instance Exception ParseSmosFileException where
-  displayException (FileDoesntExist file) =
-    "The file " <> fromAbsFile file <> " does not exist."
+  displayException (FileDoesntExist file) = "The file " <> fromAbsFile file <> " does not exist."
   displayException (SmosFileParseError file errMess) =
     "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
@@ -110,17 +138,14 @@ smosFileEntries = C.concatMap $ uncurry go
     go :: a -> SmosFile -> [(a, Entry)]
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
 
-smosFileCursors ::
-     Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
+smosFileCursors :: Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = C.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
-smosCursorCurrents ::
-     Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
+smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
 smosCursorCurrents = C.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent =
-  \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrent = \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest

@@ -90,45 +90,46 @@ type P = Parsec Void Text
 renderKey :: Key -> Text
 renderKey (KChar '\t') = "<tab>"
 renderKey (KChar ' ') = "<space>"
-renderKey (KFun i) = "F" <> T.pack (show i)
+renderKey (KFun i) = "<F" <> T.pack (show i) <> ">"
 renderKey (KChar c) = T.singleton c
 renderKey k = T.pack $ go $ show k
     -- Because these constructors all start with 'K'
   where
     go [] = []
-    go ('K':s) = s
-    go s = s
+    go ('K':s) = "<" <> s <> ">"
+    go s = "<" <> s <> ">"
 
 keyP :: P Key
 keyP =
   choice'
     [ string' "<tab>" $> KChar '\t'
     , string' "<space>" $> KChar ' '
-    , string' "UpRight" $> KUpRight
-    , string' "UpLeft" $> KUpLeft
-    , string' "Up" $> KUp
-    , string' "Right" $> KRight
-    , string' "PrtScr" $> KPrtScr
-    , string' "Pause" $> KPause
-    , string' "PageUp" $> KPageUp
-    , string' "PageDown" $> KPageDown
-    , string' "Menu" $> KMenu
-    , string' "Left" $> KLeft
-    , string' "Ins" $> KIns
-    , string' "Home" $> KHome
-    , string' "Esc" $> KEsc
-    , string' "Enter" $> KEnter
-    , string' "End" $> KEnd
-    , string' "DownRight" $> KDownRight
-    , string' "DownLeft" $> KDownLeft
-    , string' "Down" $> KDown
-    , string' "Del" $> KDel
-    , string' "Center" $> KCenter
-    , string' "Begin" $> KBegin
-    , string' "BackTab" $> KBackTab
-    , string' "BS" $> KBS
-    , do void $ string' "F"
+    , string' "<UpRight>" $> KUpRight
+    , string' "<UpLeft>" $> KUpLeft
+    , string' "<Up>" $> KUp
+    , string' "<Right>" $> KRight
+    , string' "<PrtScr>" $> KPrtScr
+    , string' "<Pause>" $> KPause
+    , string' "<PageUp>" $> KPageUp
+    , string' "<PageDown>" $> KPageDown
+    , string' "<Menu>" $> KMenu
+    , string' "<Left>" $> KLeft
+    , string' "<Ins>" $> KIns
+    , string' "<Home>" $> KHome
+    , string' "<Esc>" $> KEsc
+    , string' "<Enter>" $> KEnter
+    , string' "<End>" $> KEnd
+    , string' "<DownRight>" $> KDownRight
+    , string' "<DownLeft>" $> KDownLeft
+    , string' "<Down>" $> KDown
+    , string' "<Del>" $> KDel
+    , string' "<Center>" $> KCenter
+    , string' "<Begin>" $> KBegin
+    , string' "<BackTab>" $> KBackTab
+    , string' "<BS>" $> KBS
+    , do void $ string' "<F"
          i <- decimal
+         void $ string' ">"
          pure $ KFun i
     , KChar <$> satisfy (const True)
     ]
@@ -191,17 +192,17 @@ renderMatcherConfig mc =
     MatchConfCombination kp rest ->
       let mkp' =
             case rest of
-              MatchConfCombination kp' _ ->Just  kp'
-              MatchConfKeyPress kp' ->Just kp'
+              MatchConfCombination kp' _ -> Just kp'
+              MatchConfKeyPress kp' -> Just kp'
               _ -> Nothing
-      in
-          T.concat
+       in T.concat
             [ renderKeyPress kp
             , case mkp' of
                 Nothing -> " "
-                Just kp' -> case keyPressMods kp' of
-                 [] -> ""
-                 _ -> " "
+                Just kp' ->
+                  case keyPressMods kp' of
+                    [] -> ""
+                    _ -> " "
             , renderMatcherConfig rest
             ]
 

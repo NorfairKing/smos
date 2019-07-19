@@ -13,7 +13,6 @@ import Import
 
 import Data.Aeson as JSON
 
-
 import qualified Smos.Report.OptParse.Types as Report
 
 import Smos.Keys
@@ -24,15 +23,13 @@ data Arguments =
 
 data Flags =
   Flags
-    { flagConfigFile :: !(Maybe FilePath)
-    , flagReportFlags :: !Report.Flags
+    { flagReportFlags :: !Report.Flags
     }
   deriving (Show, Eq)
 
 data Environment =
   Environment
-    { envConfigFile :: !(Maybe FilePath)
-    , envReportEnv :: !Report.Environment
+    { envReportEnvironment :: !Report.Environment
     }
   deriving (Show, Eq)
 

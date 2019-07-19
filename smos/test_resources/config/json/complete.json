@@ -1,11 +1,12 @@
 {
+    "archive-dir": null,
     "workflow-dir": null,
     "keys": {
         "reports": {
             "next-action": [
                 {
                     "action": "prevNextAction",
-                    "key": "Up"
+                    "key": "<Up>"
                 },
                 {
                     "action": "prevNextAction",
@@ -13,7 +14,7 @@
                 },
                 {
                     "action": "nextNextAction",
-                    "key": "Down"
+                    "key": "<Down>"
                 },
                 {
                     "action": "nextNextAction",
@@ -21,11 +22,11 @@
                 },
                 {
                     "action": "selectEditor",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "firstNextAction",
-                    "key": "Home"
+                    "key": "<Home>"
                 },
                 {
                     "action": "firstNextAction",
@@ -33,7 +34,7 @@
                 },
                 {
                     "action": "lastNextAction",
-                    "key": "End"
+                    "key": "<End>"
                 },
                 {
                     "action": "lastNextAction",
@@ -45,7 +46,7 @@
                 },
                 {
                     "action": "enterNextActionFile",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "selectHelp",
@@ -60,7 +61,7 @@
         "help": [
             {
                 "action": "helpUp",
-                "key": "Up"
+                "key": "<Up>"
             },
             {
                 "action": "helpUp",
@@ -68,7 +69,7 @@
             },
             {
                 "action": "helpDown",
-                "key": "Down"
+                "key": "<Down>"
             },
             {
                 "action": "helpDown",
@@ -76,7 +77,7 @@
             },
             {
                 "action": "helpStart",
-                "key": "Home"
+                "key": "<Home>"
             },
             {
                 "action": "helpStart",
@@ -84,7 +85,7 @@
             },
             {
                 "action": "helpEnd",
-                "key": "End"
+                "key": "<End>"
             },
             {
                 "action": "helpEnd",
@@ -92,11 +93,11 @@
             },
             {
                 "action": "helpRemove",
-                "key": "BS"
+                "key": "<BS>"
             },
             {
                 "action": "helpDelete",
-                "key": "Del"
+                "key": "<Del>"
             },
             {
                 "action": "helpInsert",
@@ -104,7 +105,7 @@
             },
             {
                 "action": "selectEditor",
-                "key": "Esc"
+                "key": "<Esc>"
             },
             {
                 "action": "selectEditor",
@@ -116,7 +117,7 @@
             "contents": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "contentsInsert",
@@ -124,39 +125,39 @@
                 },
                 {
                     "action": "contentsInsertNewline",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "contentsRemove",
-                    "key": "BS"
+                    "key": "<BS>"
                 },
                 {
                     "action": "contentsDelete",
-                    "key": "Del"
+                    "key": "<Del>"
                 },
                 {
                     "action": "contentsMoveLeft",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "contentsMoveRight",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "contentsMoveUp",
-                    "key": "Up"
+                    "key": "<Up>"
                 },
                 {
                     "action": "contentsMoveDown",
-                    "key": "Down"
+                    "key": "<Down>"
                 },
                 {
                     "action": "contentsMoveToStartOfLine",
-                    "key": "Home"
+                    "key": "<Home>"
                 },
                 {
                     "action": "contentsMoveToEndOfLine",
-                    "key": "End"
+                    "key": "<End>"
                 },
                 {
                     "action": "forestSwapUp",
@@ -190,7 +191,7 @@
                 },
                 {
                     "action": "stop",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "startHeaderFromEmptyAndSelectHeader",
@@ -212,7 +213,7 @@
             "logbook": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 }
             ],
             "entry": [
@@ -246,7 +247,7 @@
                 },
                 {
                     "action": "forestMoveUp",
-                    "key": "Up"
+                    "key": "<Up>"
                 },
                 {
                     "action": "forestMoveDown",
@@ -254,7 +255,7 @@
                 },
                 {
                     "action": "forestMoveDown",
-                    "key": "Down"
+                    "key": "<Down>"
                 },
                 {
                     "action": "forestMoveLeft",
@@ -262,7 +263,7 @@
                 },
                 {
                     "action": "forestMoveLeft",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "forestMoveRight",
@@ -270,7 +271,7 @@
                 },
                 {
                     "action": "forestMoveRight",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "forestMoveToFirst",
@@ -470,11 +471,11 @@
                 },
                 {
                     "action": "forestToggleHideEntireEntry",
-                    "key": "BackTab"
+                    "key": "<BackTab>"
                 },
                 {
                     "action": "entrySelectContents",
-                    "key": "EnterEnter"
+                    "key": "<Enter><Enter>"
                 },
                 {
                     "action": "entrySelectTags",
@@ -484,11 +485,11 @@
             "header": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "entrySelectWhole",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "headerInsert",
@@ -496,27 +497,27 @@
                 },
                 {
                     "action": "headerRemove",
-                    "key": "BS"
+                    "key": "<BS>"
                 },
                 {
                     "action": "headerDelete",
-                    "key": "Del"
+                    "key": "<Del>"
                 },
                 {
                     "action": "headerMoveLeft",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "headerMoveRight",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "headerMoveToStart",
-                    "key": "Home"
+                    "key": "<Home>"
                 },
                 {
                     "action": "headerMoveToEnd",
-                    "key": "End"
+                    "key": "<End>"
                 },
                 {
                     "action": "forestSwapUp",
@@ -546,11 +547,11 @@
             "timestamps": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "entrySelectWhole",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "timestampsInsert",
@@ -558,19 +559,19 @@
                 },
                 {
                     "action": "timestampsMoveLeft",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "timestampsMoveRight",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "timestampsRemove",
-                    "key": "BS"
+                    "key": "<BS>"
                 },
                 {
                     "action": "timestampsDelete",
-                    "key": "Del"
+                    "key": "<Del>"
                 },
                 {
                     "action": "timestampsToggle",
@@ -580,7 +581,7 @@
             "state-history": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 }
             ],
             "any": [
@@ -594,7 +595,7 @@
                 },
                 {
                     "action": "toggleDebug",
-                    "key": "M-Enter"
+                    "key": "M-<Enter>"
                 }
             ],
             "tags": [
@@ -604,11 +605,11 @@
                 },
                 {
                     "action": "tagsPrev",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "tagsNext",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "tagsNextTag",
@@ -616,33 +617,33 @@
                 },
                 {
                     "action": "tagsPrevTag",
-                    "key": "BackTab"
+                    "key": "<BackTab>"
                 },
                 {
                     "action": "tagsRemove",
-                    "key": "BS"
+                    "key": "<BS>"
                 },
                 {
                     "action": "tagsDelete",
-                    "key": "Del"
+                    "key": "<Del>"
                 },
                 {
                     "action": "entrySelectWhole",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 }
             ],
             "properties": [
                 {
                     "action": "entrySelectWhole",
-                    "key": "Esc"
+                    "key": "<Esc>"
                 },
                 {
                     "action": "entrySelectWhole",
-                    "key": "Enter"
+                    "key": "<Enter>"
                 },
                 {
                     "action": "propertiesInsert",
@@ -650,27 +651,27 @@
                 },
                 {
                     "action": "propertiesMoveLeft",
-                    "key": "Left"
+                    "key": "<Left>"
                 },
                 {
                     "action": "propertiesMoveRight",
-                    "key": "Right"
+                    "key": "<Right>"
                 },
                 {
                     "action": "propertiesMoveUp",
-                    "key": "Up"
+                    "key": "<Up>"
                 },
                 {
                     "action": "propertiesMoveDown",
-                    "key": "Down"
+                    "key": "<Down>"
                 },
                 {
                     "action": "propertiesRemove",
-                    "key": "BS"
+                    "key": "<BS>"
                 },
                 {
                     "action": "propertiesDelete",
-                    "key": "Del"
+                    "key": "<Del>"
                 },
                 {
                     "action": "propertiesInsertNewProperty",
@@ -678,7 +679,7 @@
                 },
                 {
                     "action": "propertiesInsertNewProperty",
-                    "key": "M-Up"
+                    "key": "M-<Up>"
                 },
                 {
                     "action": "propertiesAppendNewProperty",
@@ -686,7 +687,7 @@
                 },
                 {
                     "action": "propertiesAppendNewProperty",
-                    "key": "M-Down"
+                    "key": "M-<Down>"
                 },
                 {
                     "action": "propertiesToggleSelected",

@@ -1,85 +1,86 @@
+archive-dir: null
 workflow-dir: null
 keys:
   reports:
     next-action:
     - action: prevNextAction
-      key: Up
+      key: <Up>
     - action: prevNextAction
       key: k
     - action: nextNextAction
-      key: Down
+      key: <Down>
     - action: nextNextAction
       key: j
     - action: selectEditor
-      key: Esc
+      key: <Esc>
     - action: firstNextAction
-      key: Home
+      key: <Home>
     - action: firstNextAction
       key: gg
     - action: lastNextAction
-      key: End
+      key: <End>
     - action: lastNextAction
       key: G
     - action: selectEditor
       key: q
     - action: enterNextActionFile
-      key: Enter
+      key: <Enter>
     - action: selectHelp
       key: ! '?'
     - action: selectHelp
       key: M-?
   help:
   - action: helpUp
-    key: Up
+    key: <Up>
   - action: helpUp
     key: k
   - action: helpDown
-    key: Down
+    key: <Down>
   - action: helpDown
     key: j
   - action: helpStart
-    key: Home
+    key: <Home>
   - action: helpStart
     key: gg
   - action: helpEnd
-    key: End
+    key: <End>
   - action: helpEnd
     key: G
   - action: helpRemove
-    key: BS
+    key: <BS>
   - action: helpDelete
-    key: Del
+    key: <Del>
   - action: helpInsert
     key: <char>
   - action: selectEditor
-    key: Esc
+    key: <Esc>
   - action: selectEditor
     key: q
   reset: true
   file:
     contents:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     - action: contentsInsert
       key: <char>
     - action: contentsInsertNewline
-      key: Enter
+      key: <Enter>
     - action: contentsRemove
-      key: BS
+      key: <BS>
     - action: contentsDelete
-      key: Del
+      key: <Del>
     - action: contentsMoveLeft
-      key: Left
+      key: <Left>
     - action: contentsMoveRight
-      key: Right
+      key: <Right>
     - action: contentsMoveUp
-      key: Up
+      key: <Up>
     - action: contentsMoveDown
-      key: Down
+      key: <Down>
     - action: contentsMoveToStartOfLine
-      key: Home
+      key: <Home>
     - action: contentsMoveToEndOfLine
-      key: End
+      key: <End>
     - action: forestSwapUp
       key: M-k
     - action: forestSwapDown
@@ -96,7 +97,7 @@ keys:
     - action: stop
       key: q
     - action: stop
-      key: Esc
+      key: <Esc>
     - action: startHeaderFromEmptyAndSelectHeader
       key: e
     - action: startHeaderFromEmptyAndSelectHeader
@@ -107,7 +108,7 @@ keys:
       key: rn
     logbook:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     entry:
     - action: stop
       key: q
@@ -124,19 +125,19 @@ keys:
     - action: forestMoveUp
       key: k
     - action: forestMoveUp
-      key: Up
+      key: <Up>
     - action: forestMoveDown
       key: j
     - action: forestMoveDown
-      key: Down
+      key: <Down>
     - action: forestMoveLeft
       key: h
     - action: forestMoveLeft
-      key: Left
+      key: <Left>
     - action: forestMoveRight
       key: l
     - action: forestMoveRight
-      key: Right
+      key: <Right>
     - action: forestMoveToFirst
       key: gg
     - action: forestMoveToLast
@@ -236,30 +237,30 @@ keys:
     - action: forestToggleCollapseRecursively
       key: M-<tab>
     - action: forestToggleHideEntireEntry
-      key: BackTab
+      key: <BackTab>
     - action: entrySelectContents
-      key: EnterEnter
+      key: <Enter><Enter>
     - action: entrySelectTags
       key: gi
     header:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     - action: entrySelectWhole
-      key: Enter
+      key: <Enter>
     - action: headerInsert
       key: <char>
     - action: headerRemove
-      key: BS
+      key: <BS>
     - action: headerDelete
-      key: Del
+      key: <Del>
     - action: headerMoveLeft
-      key: Left
+      key: <Left>
     - action: headerMoveRight
-      key: Right
+      key: <Right>
     - action: headerMoveToStart
-      key: Home
+      key: <Home>
     - action: headerMoveToEnd
-      key: End
+      key: <End>
     - action: forestSwapUp
       key: M-k
     - action: forestSwapDown
@@ -274,76 +275,76 @@ keys:
       key: M-L
     timestamps:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     - action: entrySelectWhole
-      key: Enter
+      key: <Enter>
     - action: timestampsInsert
       key: <char>
     - action: timestampsMoveLeft
-      key: Left
+      key: <Left>
     - action: timestampsMoveRight
-      key: Right
+      key: <Right>
     - action: timestampsRemove
-      key: BS
+      key: <BS>
     - action: timestampsDelete
-      key: Del
+      key: <Del>
     - action: timestampsToggle
       key: <tab>
     state-history:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     any:
     - action: undo
       key: u
     - action: selectHelp
       key: M-?
     - action: toggleDebug
-      key: M-Enter
+      key: M-<Enter>
     tags:
     - action: tagsInsert
       key: <char>
     - action: tagsPrev
-      key: Left
+      key: <Left>
     - action: tagsNext
-      key: Right
+      key: <Right>
     - action: tagsNextTag
       key: <tab>
     - action: tagsPrevTag
-      key: BackTab
+      key: <BackTab>
     - action: tagsRemove
-      key: BS
+      key: <BS>
     - action: tagsDelete
-      key: Del
+      key: <Del>
     - action: entrySelectWhole
-      key: Enter
+      key: <Enter>
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     properties:
     - action: entrySelectWhole
-      key: Esc
+      key: <Esc>
     - action: entrySelectWhole
-      key: Enter
+      key: <Enter>
     - action: propertiesInsert
       key: <char>
     - action: propertiesMoveLeft
-      key: Left
+      key: <Left>
     - action: propertiesMoveRight
-      key: Right
+      key: <Right>
     - action: propertiesMoveUp
-      key: Up
+      key: <Up>
     - action: propertiesMoveDown
-      key: Down
+      key: <Down>
     - action: propertiesRemove
-      key: BS
+      key: <BS>
     - action: propertiesDelete
-      key: Del
+      key: <Del>
     - action: propertiesInsertNewProperty
       key: M-k
     - action: propertiesInsertNewProperty
-      key: M-Up
+      key: M-<Up>
     - action: propertiesAppendNewProperty
       key: M-j
     - action: propertiesAppendNewProperty
-      key: M-Down
+      key: M-<Down>
     - action: propertiesToggleSelected
       key: <tab>

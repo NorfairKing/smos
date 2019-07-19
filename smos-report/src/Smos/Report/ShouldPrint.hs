@@ -2,6 +2,8 @@
 
 module Smos.Report.ShouldPrint where
 
+import Control.Monad.IO.Class
+
 data ShouldPrint
   = PrintError
   | PrintWarning
@@ -14,7 +16,7 @@ parseShouldPrint "warning" = Just PrintWarning
 parseShouldPrint "nothing" = Just DontPrint
 parseShouldPrint _ = Nothing
 
-printErrorMessage :: ShouldPrint -> String -> IO ()
+printErrorMessage :: MonadIO m => ShouldPrint -> String -> m ()
 printErrorMessage DontPrint = const $ pure ()
-printErrorMessage PrintWarning = putStrLn
+printErrorMessage PrintWarning = liftIO . putStrLn
 printErrorMessage PrintError = error

@@ -7,4 +7,5 @@ defaultSmosQuery = smosQuery defaultSmosQueryConfig
 
 defaultSmosQueryConfig :: SmosQueryConfig
 defaultSmosQueryConfig =
-  SmosQueryConfig {smosQueryConfigReportConfig = defaultReportConfig}
+  SmosQueryConfig
+    {smosQueryConfigReportConfig = defaultReportConfig, smosQueryConfigHideArchive = HideArchive}
