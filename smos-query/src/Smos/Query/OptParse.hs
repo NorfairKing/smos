@@ -10,15 +10,15 @@ import qualified Data.Text as T
 import Data.Time
 import Path.IO
 
-import System.Environment (getArgs, getEnvironment)
+import qualified System.Environment as System
 
 import Options.Applicative
 
 import qualified Smos.Report.OptParse as Report
 
+import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
-import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock
 
@@ -28,7 +28,7 @@ import Smos.Query.OptParse.Types
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
   Arguments cmd flags <- getArguments
-  env <- getEnv
+  env <- getEnvironment
   config <- getConfiguration flags env
   Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
 
@@ -90,30 +90,21 @@ getSettings sqc@SmosQueryConfig {..} Flags {..} Environment {..} mc = do
     Report.combineToConfig
       smosQueryConfigReportConfig
       flagReportFlags
-      envReportEnv
+      envReportEnvironment
       (confReportConf <$> mc)
   let sqc' = sqc {smosQueryConfigReportConfig = src}
   pure sqc'
 
-getEnv :: IO Environment
-getEnv = do
-  env <- getEnvironment
-  reportEnv <- Report.getEnv
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure
-    Environment
-      { envConfigFile = getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-      , envReportEnv = reportEnv
-      }
+getEnvironment :: IO Environment
+getEnvironment = Environment <$> Report.getEnvironment
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
-  Report.getConfigurationWith [flagConfigFile, envConfigFile]
+  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
 
 getArguments :: IO Arguments
 getArguments = do
-  args <- getArgs
+  args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
@@ -227,18 +218,11 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parseFilterArgs <*> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
-
-parseConfigFileFlag :: Parser (Maybe FilePath)
-parseConfigFileFlag =
-  option
-    (Just <$> str)
-    (mconcat
-       [long "config", metavar "FILEPATH", help "The configuration file to use", value Nothing])
+parseFlags = Flags <$> Report.parseFlags
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =
-  (fmap foldFilterAnd . NE.nonEmpty ) <$>
+  (fmap foldFilterAnd . NE.nonEmpty) <$>
   many
     (argument
        (maybeReader (parseFilter . T.pack))

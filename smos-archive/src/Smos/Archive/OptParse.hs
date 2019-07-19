@@ -5,34 +5,42 @@ module Smos.Archive.OptParse
   ( getSettings
   ) where
 
-import Control.Monad
 import Path.IO
 
-import System.Environment
+import qualified System.Environment as System
 
 import Options.Applicative
+
+import qualified Smos.Report.Config as Report
+import qualified Smos.Report.OptParse as Report
 
 import Smos.Archive.OptParse.Types
 
 getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
-  config <- getConfig flags
-  deriveSettings flags config
+  env <- getEnvironment
+  config <- getConfig flags env
+  deriveSettings flags env config
 
-getConfig :: Flags -> IO Configuration
-getConfig Flags {..} = pure Configuration
+getConfig :: Flags -> Environment -> IO (Maybe Configuration)
+getConfig Flags {..} Environment {..} =
+  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
 
-deriveSettings :: Flags -> Configuration -> IO Settings
-deriveSettings Flags {..} Configuration = do
+deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
+deriveSettings Flags {..} Environment {..} mc = do
   setFile <- resolveFile' flagFile
-  setWorkflowDir <- forM flagWorkflowDir resolveDir'
-  setArchiveDir <- forM flagArchiveDir resolveDir'
+  setReportSettings <-
+    Report.combineToConfig
+      Report.defaultReportConfig
+      flagReportFlags
+      envReportEnvironment
+      (confReportConfiguration <$> mc)
   pure Settings {..}
 
 getFlags :: IO Flags
 getFlags = do
-  args <- getArgs
+  args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
@@ -58,9 +66,7 @@ flagsParser = info (helper <*> parseFlags) help_
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
-  option
-    (Just <$> str)
-    (mconcat [long "workflow-dir", help "The workflow directory", metavar "FILEPATH", value Nothing]) <*>
-  option
-    (Just <$> str)
-    (mconcat [long "archive-dir", help "The archive directory", metavar "FILEPATH", value Nothing])
+  Report.parseFlags
+
+getEnvironment :: IO Environment
+getEnvironment = Environment <$> Report.getEnvironment

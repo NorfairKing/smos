@@ -13,9 +13,9 @@ import qualified Smos.Report.OptParse.Types as Report
 
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
+import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
-import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.TimeBlock
@@ -97,15 +97,13 @@ data StatsFlags =
 
 data Flags =
   Flags
-    { flagConfigFile :: Maybe FilePath
-    , flagReportFlags :: Report.Flags
+    { flagReportFlags :: Report.Flags
     }
   deriving (Show, Eq)
 
 data Environment =
   Environment
-    { envConfigFile :: Maybe FilePath
-    , envReportEnv :: Report.Environment
+    { envReportEnvironment :: Report.Environment
     }
   deriving (Show, Eq)
 

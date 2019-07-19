@@ -6,9 +6,11 @@
 module Smos.Report.Config
   ( SmosReportConfig(..)
   , defaultReportConfig
-  , defaultWorkflowDirSpec
   , WorkflowDirSpec(..)
+  , defaultWorkflowDirSpec
   , resolveWorkflowDir
+  , ArchiveDirSpec(..)
+  , defaultArchiveDirSpec
   , resolveArchiveDir
   , resolveReportWorkflowDir
   , resolveReportArchiveDir
@@ -49,22 +51,24 @@ resolveWorkflowDir afs =
 
 data ArchiveDirSpec
   = ArchiveInWorkflow (Path Rel Dir)
+  | ArchiveInHome (Path Rel Dir)
   | ArchiveAbsolute (Path Abs Dir)
   deriving (Show, Eq, Generic)
 
 defaultArchiveDirSpec :: ArchiveDirSpec
 defaultArchiveDirSpec = ArchiveInWorkflow [reldir|archive|]
 
-resolveArchiveDir :: Path Abs Dir -> ArchiveDirSpec -> Path Abs Dir
+resolveArchiveDir :: Path Abs Dir -> ArchiveDirSpec -> IO (Path Abs Dir)
 resolveArchiveDir wd as =
   case as of
-    ArchiveInWorkflow ard -> wd </> ard
-    ArchiveAbsolute aad -> aad
+    ArchiveInWorkflow ard -> pure $ wd </> ard
+    ArchiveInHome ard -> (</> ard) <$> getHomeDir
+    ArchiveAbsolute aad -> pure aad
 
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigAgendaFileSpec
 
 resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchiveDir SmosReportConfig {..} =
-  resolveArchiveDir <$> resolveWorkflowDir smosReportConfigAgendaFileSpec <*>
-  pure smosReportConfigArchiveFileSpec
+resolveReportArchiveDir SmosReportConfig {..} = do
+  wd <- resolveWorkflowDir smosReportConfigAgendaFileSpec
+  resolveArchiveDir wd smosReportConfigArchiveFileSpec

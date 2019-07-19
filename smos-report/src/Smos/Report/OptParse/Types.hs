@@ -14,19 +14,22 @@ import Smos.Report.Config
 
 data Flags =
   Flags
-    { flagWorkflowDir :: Maybe FilePath
+    { flagConfigFile :: Maybe FilePath,flagWorkflowDir :: Maybe FilePath
+    , flagArchiveDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
-    { envWorkflowDir :: Maybe FilePath
+    { envConfigFile :: Maybe FilePath,envWorkflowDir :: Maybe FilePath
+    , envArchiveDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
 data Configuration =
   Configuration
     { confWorkflowDir :: Maybe FilePath
+    , confArchiveDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -38,14 +41,25 @@ backToConfiguration SmosReportConfig {..} =
           then Nothing
           else Just $
                case smosReportConfigAgendaFileSpec of
-                 DirInHome rd ->  "~/" <> fromRelDir rd
-                 DirAbsolute ad ->  fromAbsDir ad
+                 DirInHome rd -> "~/" <> fromRelDir rd
+                 DirAbsolute ad -> fromAbsDir ad
+    , confArchiveDir =
+        if smosReportConfigArchiveFileSpec == defaultArchiveDirSpec
+          then Nothing
+          else Just $
+               case smosReportConfigArchiveFileSpec of
+                 ArchiveInWorkflow ard -> fromRelDir ard
+                 ArchiveInHome ard -> "~/" <> fromRelDir ard
+                 ArchiveAbsolute aad -> fromAbsDir aad
     }
 
 instance Validity Configuration
 
 instance ToJSON Configuration where
-  toJSON Configuration {..} = object ["workflow-dir" .= confWorkflowDir]
+  toJSON Configuration {..} =
+    object ["workflow-dir" .= confWorkflowDir, "archive-dir" .= confArchiveDir]
 
 instance FromJSON Configuration where
-  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .:? "workflow-dir"
+  parseJSON =
+    withObject "Configuration" $ \o ->
+      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir"

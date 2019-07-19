@@ -11,10 +11,8 @@ import Import
 
 import qualified Data.Text as T
 
-import System.Environment (getArgs, getEnvironment)
+import qualified System.Environment as System
 import System.Exit (die)
-
-import Control.Applicative
 
 import Options.Applicative
 
@@ -29,7 +27,7 @@ import Smos.Types
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
   args <- getArguments
-  env <- getEnv
+  env <- getEnvironment
   config <- getConfiguration args env
   combineToInstructions conf args env config
 
@@ -38,7 +36,11 @@ combineToInstructions ::
 combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
   p <- resolveFile' fp
   src <-
-    Report.combineToConfig configReportConfig flagReportFlags envReportEnv (confReportConf <$> mc)
+    Report.combineToConfig
+      configReportConfig
+      flagReportFlags
+      envReportEnvironment
+      (confReportConf <$> mc)
   keyMap <-
     case combineKeymap configKeyMap $ mc >>= confKeybindingsConf of
       CombErr errs -> die $ unlines $ map prettyCombError errs
@@ -165,22 +167,13 @@ prettyCombError (ActionWrongType a) =
 
 getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
 getConfiguration (Arguments _ Flags {..}) Environment {..} =
-  Report.getConfigurationWith [flagConfigFile, envConfigFile]
+  Report.getConfiguration flagReportFlags envReportEnvironment
 
-getEnv :: IO Environment
-getEnv = do
-  env <- getEnvironment
-  reportEnv <- Report.getEnv
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure
-    Environment
-      { envConfigFile = getSmosEnv "CONFIGURATION_FILE" <|> getSmosEnv "CONFIG_FILE"
-      , envReportEnv = reportEnv
-      }
+getEnvironment :: IO Environment
+getEnvironment = Environment <$> Report.getEnvironment
 
 getArguments :: IO Arguments
-getArguments = runArgumentsParser <$> getArgs >>= handleParseResult
+getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
 
 runArgumentsParser :: [String] -> ParserResult Arguments
 runArgumentsParser = execParserPure prefs_ argParser
@@ -205,10 +198,4 @@ parseArgs :: Parser Arguments
 parseArgs = Arguments <$> editParser <*> parseFlags
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> parseConfigFileFlag <*> Report.parseFlags
-
-parseConfigFileFlag :: Parser (Maybe FilePath)
-parseConfigFileFlag =
-  option
-    (Just <$> str)
-    (mconcat [metavar "FILEPATH", help "The configuration file to use", value Nothing])
+parseFlags = Flags <$> Report.parseFlags

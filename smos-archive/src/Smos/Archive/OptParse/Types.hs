@@ -2,22 +2,31 @@ module Smos.Archive.OptParse.Types where
 
 import Path
 
+import Smos.Report.Config as Report
+import Smos.Report.OptParse.Types as Report
+
 data Flags =
   Flags
     { flagFile :: FilePath
-    , flagWorkflowDir :: Maybe FilePath
-    , flagArchiveDir :: Maybe FilePath
+    , flagReportFlags :: Report.Flags
     }
   deriving (Show, Eq)
 
 data Configuration =
   Configuration
+    { confReportConfiguration :: Report.Configuration
+    }
+  deriving (Show, Eq)
+
+data Environment =
+  Environment
+    { envReportEnvironment :: Report.Environment
+    }
   deriving (Show, Eq)
 
 data Settings =
   Settings
     { setFile :: Path Abs File
-    , setWorkflowDir :: Maybe (Path Abs Dir)
-    , setArchiveDir :: Maybe (Path Abs Dir)
+    , setReportSettings :: SmosReportConfig
     }
   deriving (Show, Eq)
