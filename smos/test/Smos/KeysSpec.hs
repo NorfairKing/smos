@@ -5,6 +5,8 @@ module Smos.KeysSpec where
 
 import TestImport
 
+import Data.List (nub)
+import qualified Data.Text as T
 import Text.Megaparsec
 
 import Smos.Keys
@@ -15,7 +17,6 @@ spec :: Spec
 spec = do
   eqSpecOnValid @Key
   genValidSpec @Key
-  jsonSpecOnValid @Key
   describe "keyP" $ do
     parsesValidSpec keyP keyText
     parseJustSpec keyP "c" (KChar 'c')
@@ -23,18 +24,21 @@ spec = do
     parseJustSpec keyP "m" (KChar 'm')
     parseJustSpec keyP "M" (KChar 'M')
     parseJustSpec keyP "-" (KChar '-')
-    parseJustSpec keyP "F12" (KFun 12)
-    parseJustSpec keyP "f12" (KFun 12)
-    parseNothingSpec keyP "g12"
-    parseNothingSpec keyP "g12"
-    parseJustSpec keyP "Enter" KEnter
-    parseJustSpec keyP "enter" KEnter
+    parseJustSpec keyP "<F12>" (KFun 12)
+    parseJustSpec keyP "<f12>" (KFun 12)
+    parseJustSpec keyP "<Enter>" KEnter
+    parseJustSpec keyP "<enter>" KEnter
+    parseJustSpec keyP "<BS>" KBS
+    parseJustSpec keyP "<Bs>" KBS
+    parseJustSpec keyP "<bs>" KBS
+    parseNothingSpec keyP "<g12>"
+    parseNothingSpec keyP "<g12>"
   describe "renderKey" $ do
     it "renders the something that keyP can parse to the same thing" $
       forAllValid $ \k -> parseJust keyP (renderKey k) k
+  jsonSpecOnValid @Key
   eqSpecOnValid @Modifier
   genValidSpec @Modifier
-  jsonSpecOnValid @Modifier
   describe "modifierP" $ do
     parsesValidSpec modifierP modText
     parseJustSpec modifierP "S" MShift
@@ -48,9 +52,9 @@ spec = do
   describe "renderModifier" $ do
     it "renders the something that modifierP can parse to the same thing" $
       forAllValid $ \k -> parseJust modifierP (renderModifier k) k
+  jsonSpecOnValid @Modifier
   eqSpecOnValid @KeyPress
   genValidSpec @KeyPress
-  jsonSpecOnValid @KeyPress
   describe "keyPressP" $ do
     parsesValidSpec keyPressP keyPressText
     parseJustSpec keyPressP "a" $ KeyPress (KChar 'a') []
@@ -68,27 +72,27 @@ spec = do
     parseJustSpec keyPressP "A" $ KeyPress (KChar 'A') []
     parseJustSpec keyPressP "m-a" $ KeyPress (KChar 'a') [MMeta]
     parseJustSpec keyPressP "M-s-A" $ KeyPress (KChar 'A') [MMeta, MShift]
-    parseJustSpec keyPressP "Enter" $ KeyPress KEnter []
-    parseJustSpec keyPressP "M-Enter" $ KeyPress KEnter [MMeta]
-    parseJustSpec keyPressP "M-S-Enter" $ KeyPress KEnter [MMeta, MShift]
-    parseJustSpec keyPressP "enter" $ KeyPress KEnter []
-    parseJustSpec keyPressP "m-enter" $ KeyPress KEnter [MMeta]
-    parseJustSpec keyPressP "m-s-enter" $ KeyPress KEnter [MMeta, MShift]
-    parseJustSpec keyPressP "F12" $ KeyPress (KFun 12) []
-    parseJustSpec keyPressP "M-F12" $ KeyPress (KFun 12) [MMeta]
-    parseJustSpec keyPressP "M-S-F12" $ KeyPress (KFun 12) [MMeta, MShift]
-    parseJustSpec keyPressP "f12" $ KeyPress (KFun 12) []
-    parseJustSpec keyPressP "m-f12" $ KeyPress (KFun 12) [MMeta]
-    parseJustSpec keyPressP "m-S-f12" $ KeyPress (KFun 12) [MMeta, MShift]
-    parseNothingSpec keyPressP "Enbler"
-    parseNothingSpec keyPressP "Tal"
-    parseNothingSpec keyPressP "maB"
+    parseJustSpec keyPressP "<Enter>" $ KeyPress KEnter []
+    parseJustSpec keyPressP "M-<Enter>" $ KeyPress KEnter [MMeta]
+    parseJustSpec keyPressP "M-S-<Enter>" $ KeyPress KEnter [MMeta, MShift]
+    parseJustSpec keyPressP "<enter>" $ KeyPress KEnter []
+    parseJustSpec keyPressP "m-<enter>" $ KeyPress KEnter [MMeta]
+    parseJustSpec keyPressP "m-s-<enter>" $ KeyPress KEnter [MMeta, MShift]
+    parseJustSpec keyPressP "<F12>" $ KeyPress (KFun 12) []
+    parseJustSpec keyPressP "M-<F12>" $ KeyPress (KFun 12) [MMeta]
+    parseJustSpec keyPressP "M-S-<F12>" $ KeyPress (KFun 12) [MMeta, MShift]
+    parseJustSpec keyPressP "<f12>" $ KeyPress (KFun 12) []
+    parseJustSpec keyPressP "m-<f12>" $ KeyPress (KFun 12) [MMeta]
+    parseJustSpec keyPressP "m-S-<f12>" $ KeyPress (KFun 12) [MMeta, MShift]
+    parseNothingSpec keyPressP "<Enbler>"
+    parseNothingSpec keyPressP "<Tal>"
+    parseNothingSpec keyPressP "<maB>"
   describe "renderKeyPress" $ do
     it "renders the something that keyPressP can parse to the same thing" $
       forAllValid $ \k -> parseJust keyPressP (renderKeyPress k) k
+  jsonSpecOnValid @KeyPress
   eqSpecOnValid @MatcherConfig
   genValidSpec @MatcherConfig
-  jsonSpecOnValid @MatcherConfig
   describe "matcherConfigP" $ do
     parsesValidSpec matcherConfigP matcherConfigText
     parseJustSpec matcherConfigP "<any>" MatchConfCatchAll
@@ -102,19 +106,21 @@ spec = do
       parseJustSpec matcherConfigP "m-a" $ MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
       parseJustSpec matcherConfigP "M-s-A" $
         MatchConfKeyPress $ KeyPress (KChar 'A') [MMeta, MShift]
-      parseJustSpec matcherConfigP "Enter" $ MatchConfKeyPress $ KeyPress KEnter []
-      parseJustSpec matcherConfigP "M-Enter" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
-      parseJustSpec matcherConfigP "M-S-Enter" $ MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
-      parseJustSpec matcherConfigP "enter" $ MatchConfKeyPress $ KeyPress KEnter []
-      parseJustSpec matcherConfigP "m-enter" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
-      parseJustSpec matcherConfigP "m-s-enter" $ MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
-      parseJustSpec matcherConfigP "F12" $ MatchConfKeyPress $ KeyPress (KFun 12) []
-      parseJustSpec matcherConfigP "M-F12" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
-      parseJustSpec matcherConfigP "M-S-F12" $
+      parseJustSpec matcherConfigP "<Enter>" $ MatchConfKeyPress $ KeyPress KEnter []
+      parseJustSpec matcherConfigP "M-<Enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
+      parseJustSpec matcherConfigP "M-S-<Enter>" $
+        MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
+      parseJustSpec matcherConfigP "<enter>" $ MatchConfKeyPress $ KeyPress KEnter []
+      parseJustSpec matcherConfigP "m-<enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
+      parseJustSpec matcherConfigP "m-s-<enter>" $
+        MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
+      parseJustSpec matcherConfigP "<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
+      parseJustSpec matcherConfigP "M-<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
+      parseJustSpec matcherConfigP "M-S-<F12>" $
         MatchConfKeyPress $ KeyPress (KFun 12) [MMeta, MShift]
-      parseJustSpec matcherConfigP "f12" $ MatchConfKeyPress $ KeyPress (KFun 12) []
-      parseJustSpec matcherConfigP "m-f12" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
-      parseJustSpec matcherConfigP "m-S-f12" $
+      parseJustSpec matcherConfigP "<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
+      parseJustSpec matcherConfigP "m-<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
+      parseJustSpec matcherConfigP "m-S-<f12>" $
         MatchConfKeyPress $ KeyPress (KFun 12) [MMeta, MShift]
     describe "multi-keypress" $ do
       let ab =
@@ -163,6 +169,7 @@ spec = do
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfCatchAll
       parseJustSpec matcherConfigP "M-S-c<char>" $
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfAnyChar
+  jsonSpecOnValid @MatcherConfig
   describe "renderMatcherConfig" $ do
     it "renders the something that matcherConfigP can parse to the same thing" $
       forAllValid $ \k -> parseJust matcherConfigP (renderMatcherConfig k) k
@@ -171,10 +178,49 @@ matcherConfigText :: Gen Text
 matcherConfigText = genValid
 
 keyPressText :: Gen Text
-keyPressText = genValid
+keyPressText = do
+  mods <- nub <$> genListOf modText
+  key <- keyText
+  pure $ T.intercalate "-" $ mods ++ [key]
 
 keyText :: Gen Text
-keyText = genValid
+keyText =
+  let special =
+        elements
+          [ "<tab>"
+          , "<space>"
+          , "<UpRight>"
+          , "<UpLeft>"
+          , "<Up>"
+          , "<Right>"
+          , "<PrtScr>"
+          , "<Pause>"
+          , "<PageUp>"
+          , "<PageDown>"
+          , "<Menu>"
+          , "<Left>"
+          , "<Ins>"
+          , "<Home>"
+          , "<Esc>"
+          , "<Enter>"
+          , "<End>"
+          , "<DownRight>"
+          , "<DownLeft>"
+          , "<Down>"
+          , "<Del>"
+          , "<Center>"
+          , "<Begin>"
+          , "<BackTab>"
+          , "<BS>"
+          ]
+      functionKey = do
+        i <- abs <$> genValid
+        pure $ T.pack $ "<F" <> show (i :: Int) <> ">"
+      normal = T.singleton <$> genValid
+   in frequency [(2, special), (1, functionKey), (2, normal)]
+
+textPieces :: [Gen Text] -> Gen Text
+textPieces = fmap T.concat . sequenceA
 
 modText :: Gen Text
 modText = elements ["S", "C", "M", "A"]

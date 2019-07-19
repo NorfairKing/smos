@@ -1,9 +1,14 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Smos.Query.OptParse.Types
   ( module Smos.Report.Clock.Types
   , module Smos.Report.Agenda.Types
   , module Smos.Query.OptParse.Types
   , module Smos.Report.ShouldPrint
   ) where
+
+import GHC.Generics (Generic)
 
 import Path
 
@@ -86,35 +91,40 @@ data LogFlags =
     , logFlagPeriodFlags :: Maybe Period
     , logFlagBlockFlags :: Maybe TimeBlock
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data StatsFlags =
   StatsFlags
     { statsFlagFilter :: Maybe Filter
     , statsFlagPeriodFlags :: Maybe Period
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
+    , flagHideArchive :: Maybe HideArchive
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
     { envReportEnvironment :: Report.Environment
+    , envHideArchive :: Maybe HideArchive
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
+    , confHideArchive :: Maybe HideArchive
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON v = Configuration <$> parseJSON v
+  parseJSON v =
+    flip (withObject "Configuration") v $ \o ->
+      Configuration <$> parseJSON v <*> o .:? "hide-archive"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -125,7 +135,7 @@ data Dispatch
   | DispatchProjects
   | DispatchLog LogSettings
   | DispatchStats StatsSettings
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data EntrySettings =
   EntrySettings
@@ -133,19 +143,19 @@ data EntrySettings =
     , entrySetProjection :: Maybe Projection
     , entrySetSorter :: Maybe Sorter
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data WaitingSettings =
   WaitingSettings
     { waitingSetFilter :: Maybe Filter
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data NextSettings =
   NextSettings
     { nextSetFilter :: Maybe Filter
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data ClockSettings =
   ClockSettings
@@ -157,7 +167,7 @@ data ClockSettings =
     , clockSetOutputFormat :: OutputFormat
     , clockSetReportStyle :: ClockReportStyle
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data AgendaSettings =
   AgendaSettings
@@ -165,7 +175,7 @@ data AgendaSettings =
     , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data LogSettings =
   LogSettings
@@ -173,18 +183,18 @@ data LogSettings =
     , logSetPeriod :: Period
     , logSetBlock :: TimeBlock
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data StatsSettings =
   StatsSettings
     { statsSetFilter :: Maybe Filter
     , statsSetPeriod :: Period
     }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 data OutputFormat
   = OutputPretty
   | OutputYaml
   | OutputJSON
   | OutputJSONPretty
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)

@@ -23,18 +23,16 @@ import Smos.Query.OptParse.Types
 
 projects :: Q ()
 projects = do
-  wd <- askWorkDir
-  liftIO $ do
-    tups <-
-      sourceToList $
-      sourceFilesInNonHiddenDirsRecursively (wd </> $(mkRelDir "projects")) .|
-      filterSmosFiles .|
-      parseSmosFiles .|
-      printShouldPrint PrintWarning
+  wd <- askWorkflowDir
+  tups <-
+    sourceToList $
+    sourceFilesInNonHiddenDirsRecursively (wd </> $(mkRelDir "projects")) .| filterSmosFiles .|
+    parseSmosFiles .|
+    printShouldPrint PrintWarning
+  liftIO $
     putTableLn $
-      renderProjectsReport $
-      sortOn (fmap entryState . projectEntryCurrentEntry) $
-      map (uncurry makeProjectEntry) tups
+    renderProjectsReport $
+    sortOn (fmap entryState . projectEntryCurrentEntry) $ map (uncurry makeProjectEntry) tups
 
 renderProjectsReport :: [ProjectEntry] -> Table
 renderProjectsReport = formatAsTable . map renderProjectEntry
@@ -44,5 +42,4 @@ renderProjectEntry ProjectEntry {..} =
   rootedPathChunk projectEntryFilePath :
   case projectEntryCurrentEntry of
     Nothing -> [chunk "No next action"]
-    Just e@Entry {..} ->
-      [mTodoStateChunk $ entryState e, headerChunk entryHeader]
+    Just e@Entry {..} -> [mTodoStateChunk $ entryState e, headerChunk entryHeader]

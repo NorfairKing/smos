@@ -2,8 +2,10 @@
 
 module Smos.Query.Config
   ( SmosQueryConfig(..)
+  , HideArchive(..)
   , Q
-  , askWorkDir
+  , askWorkflowDir
+  , askArchiveDir
   , module Smos.Report.Config
   , module Control.Monad.IO.Class
   , module Control.Monad.Reader
@@ -11,6 +13,7 @@ module Smos.Query.Config
 
 import GHC.Generics
 
+import Data.Aeson
 import Path
 
 import Control.Monad.IO.Class
@@ -21,12 +24,31 @@ import Smos.Report.Config
 data SmosQueryConfig =
   SmosQueryConfig
     { smosQueryConfigReportConfig :: SmosReportConfig
+    , smosQueryConfigHideArchive :: HideArchive
     }
   deriving (Generic)
 
+data HideArchive
+  = HideArchive
+  | Don'tHideArchive
+  deriving (Show, Eq, Generic)
+
+instance FromJSON HideArchive where
+  parseJSON =
+    withBool "HideArchive" $ \b ->
+      pure $
+      if b
+        then HideArchive
+        else Don'tHideArchive
+
 type Q = ReaderT SmosQueryConfig IO
 
-askWorkDir :: Q (Path Abs Dir)
-askWorkDir = do
-  func <- asks (resolveWorkflowDir . smosReportConfigAgendaFileSpec . smosQueryConfigReportConfig)
+askWorkflowDir :: Q (Path Abs Dir)
+askWorkflowDir = do
+  func <- asks (resolveReportWorkflowDir . smosQueryConfigReportConfig)
+  liftIO func
+
+askArchiveDir :: Q (Path Abs Dir)
+askArchiveDir = do
+  func <- asks (resolveReportArchiveDir . smosQueryConfigReportConfig)
   liftIO func
