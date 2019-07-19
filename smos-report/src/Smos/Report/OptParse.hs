@@ -27,7 +27,7 @@ combineToConfig ::
 combineToConfig src Flags {..} Environment {..} mc = do
   wfs <-
     case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
-      Nothing -> pure $ smosReportConfigAgendaFileSpec src
+      Nothing -> pure $ smosReportConfigWorkflowFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
         pure $ DirAbsolute ad
@@ -38,7 +38,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
         ad <- resolveDir' wd
         pure $ ArchiveAbsolute ad
   pure $
-    SmosReportConfig {smosReportConfigAgendaFileSpec = wfs, smosReportConfigArchiveFileSpec = afs}
+    SmosReportConfig {smosReportConfigWorkflowFileSpec = wfs, smosReportConfigArchiveFileSpec = afs}
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag

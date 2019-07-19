@@ -37,10 +37,10 @@ backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
   Configuration
     { confWorkflowDir =
-        if smosReportConfigAgendaFileSpec == defaultWorkflowDirSpec
+        if smosReportConfigWorkflowFileSpec == defaultWorkflowDirSpec
           then Nothing
           else Just $
-               case smosReportConfigAgendaFileSpec of
+               case smosReportConfigWorkflowFileSpec of
                  DirInHome rd -> "~/" <> fromRelDir rd
                  DirAbsolute ad -> fromAbsDir ad
     , confArchiveDir =

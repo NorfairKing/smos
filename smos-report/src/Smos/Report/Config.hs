@@ -23,7 +23,7 @@ import Path.IO
 
 data SmosReportConfig =
   SmosReportConfig
-    { smosReportConfigAgendaFileSpec :: !WorkflowDirSpec
+    { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec
     , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
     }
   deriving (Show, Eq, Generic)
@@ -31,7 +31,7 @@ data SmosReportConfig =
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
   SmosReportConfig
-    { smosReportConfigAgendaFileSpec = defaultWorkflowDirSpec
+    { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec
     , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
     }
 
@@ -66,9 +66,9 @@ resolveArchiveDir wd as =
     ArchiveAbsolute aad -> pure aad
 
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigAgendaFileSpec
+resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigWorkflowFileSpec
 
 resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportArchiveDir SmosReportConfig {..} = do
-  wd <- resolveWorkflowDir smosReportConfigAgendaFileSpec
+  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
   resolveArchiveDir wd smosReportConfigArchiveFileSpec

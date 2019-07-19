@@ -314,7 +314,7 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
 
 clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
-  agendaFileSpec <- asks $ smosReportConfigAgendaFileSpec . configReportConfig
+  agendaFileSpec <- asks $ smosReportConfigWorkflowFileSpec . configReportConfig
   runSmosAsync $ do
     agendaFileDir <- resolveWorkflowDir agendaFileSpec
     agendaFiles <- sourceToList $ sourceFilesInNonHiddenDirsRecursively agendaFileDir

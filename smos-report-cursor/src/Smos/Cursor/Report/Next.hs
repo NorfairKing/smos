@@ -32,7 +32,7 @@ import Smos.Report.Streaming
 
 produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportCursor)
 produceNextActionReportCursor src = do
-  wd <- resolveWorkflowDir $ smosReportConfigAgendaFileSpec src
+  wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
   naes <-
     sourceToList $
     sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles .|
