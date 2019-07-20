@@ -258,10 +258,18 @@ data HelpCursor =
     , helpCursorSearchBar :: TextCursor
     , helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor)
     , helpCursorKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor)
+    , helpCursorSelection :: HelpCursorSelection
     }
   deriving (Show, Eq, Generic)
 
 instance Validity HelpCursor
+
+data HelpCursorSelection
+  = HelpCursorHelpSelected
+  | HelpCursorSearchSelected
+  deriving (Show, Eq, Generic)
+
+instance Validity HelpCursorSelection
 
 makeHelpCursor :: Text -> KeyMappings -> HelpCursor
 makeHelpCursor title kms =
@@ -270,6 +278,7 @@ makeHelpCursor title kms =
     , helpCursorSearchBar = emptyTextCursor
     , helpCursorSelectedKeyHelpCursors = hcs
     , helpCursorKeyHelpCursors = hcs
+    , helpCursorSelection = HelpCursorHelpSelected
     }
   where
     hcs = makeNonEmptyCursor <$> NE.nonEmpty (combine $ map go kms)
@@ -306,13 +315,17 @@ helpCursorKeySearchBarL :: Lens' HelpCursor TextCursor
 helpCursorKeySearchBarL =
   lens helpCursorSearchBar $ \hc tc ->
     let query = rebuildTextCursor tc
-        selected =
-          filter ((T.toLower query `T.isInfixOf`) . T.toLower . actionNameText . keyHelpCursorName) $
+        selected = searchHelpCursor  query $
           fromMaybe [] $ (NE.toList . rebuildNonEmptyCursor) <$> helpCursorKeyHelpCursors hc
      in hc
           { helpCursorSearchBar = tc
           , helpCursorSelectedKeyHelpCursors = makeNonEmptyCursor <$> NE.nonEmpty selected
           }
+
+searchHelpCursor :: Text -> [KeyHelpCursor] -> [KeyHelpCursor]
+searchHelpCursor query =
+  filter
+    ((T.toCaseFold query `T.isInfixOf`) . T.toCaseFold . actionNameText . keyHelpCursorName)
 
 helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
 helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c

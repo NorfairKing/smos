@@ -951,9 +951,13 @@
           timestamp: 2018-12-02 18:10:16.478522175000+0000
     - header: Documentation
       state-history:
+      - new-state: DONE
+        timestamp: 2019-07-20 15:29:16.144475997000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:12:55.062378588000+0000
     - header: ! 'Build all smos packages: nix-env --file default.nix -iA smosPackages'
       state-history:
+      - new-state: DONE
+        timestamp: 2019-07-20 15:29:16.470726752000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:13:29.822523378000+0000
