@@ -46,9 +46,9 @@ keys:
         key: M-<tab>
     header:
       - action: headerMoveToStart
-        key: PageUp
+        key: <PageUp>
       - action: headerMoveToEnd
-        key: PageDown
+        key: <PageDown>
 ```
 
 See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/complete.yaml) for a more comprehensive example of all the possible options.
@@ -73,10 +73,10 @@ See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_
       ],
       "header": [
         { "action": "headerMoveToStart",
-          "key": "PageUp"
+          "key": "<PageUp>"
         },
         { "action": "headerMoveToEnd",
-          "key": "PageDown"
+          "key": "<PageDown>"
         }
       ]
     }
