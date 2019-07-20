@@ -26,17 +26,16 @@ import Smos.Cursor.SmosFile
 
 import Smos.Report.Config
 import Smos.Report.Next
+import Smos.Report.Archive
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
 produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportCursor)
 produceNextActionReportCursor src = do
-  wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
   naes <-
     sourceToList $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles .|
-    printShouldPrint PrintWarning .|
+    streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint .|
     smosFileCursors .|
     C.map (uncurry makeNextActionEntryCursor) .|
     C.filter cursorPointsToNextAction
