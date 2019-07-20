@@ -21,6 +21,9 @@ spec = do
   eqSpecOnValid @FileKeyConfigs
   genValidSpec @FileKeyConfigs
   jsonSpecOnValid @FileKeyConfigs
+  eqSpecOnValid @HelpKeyConfigs
+  genValidSpec @HelpKeyConfigs
+  jsonSpecOnValid @HelpKeyConfigs
   eqSpecOnValid @ReportsKeyConfigs
   genValidSpec @ReportsKeyConfigs
   jsonSpecOnValid @ReportsKeyConfigs

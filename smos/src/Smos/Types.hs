@@ -54,7 +54,7 @@ data KeyMap =
   KeyMap
     { keyMapFileKeyMap :: !FileKeyMap
     , keyMapReportsKeyMap :: !ReportsKeyMap
-    , keyMapHelpMatchers :: !KeyMappings
+    , keyMapHelpKeyMap :: !HelpKeyMap
     }
   deriving (Generic)
 
@@ -63,12 +63,12 @@ instance Semigroup KeyMap where
     KeyMap
       { keyMapFileKeyMap = keyMapFileKeyMap km1 <> keyMapFileKeyMap km2
       , keyMapReportsKeyMap = keyMapReportsKeyMap km1 <> keyMapReportsKeyMap km2
-      , keyMapHelpMatchers = keyMapHelpMatchers km1 <> keyMapHelpMatchers km2
+      , keyMapHelpKeyMap = keyMapHelpKeyMap km1 <> keyMapHelpKeyMap km2
       }
 
 instance Monoid KeyMap where
   mempty =
-    KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpMatchers = mempty}
+    KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpKeyMap = mempty}
 
 data FileKeyMap =
   FileKeyMap
@@ -134,6 +134,28 @@ instance Semigroup ReportsKeyMap where
 
 instance Monoid ReportsKeyMap where
   mempty = ReportsKeyMap {reportsKeymapNextActionReportMatchers = mempty}
+
+keyMapHelpMatchers :: KeyMap -> KeyMappings
+keyMapHelpMatchers km =
+  let HelpKeyMap {..} = keyMapHelpKeyMap km
+   in helpKeyMapHelpMatchers <> helpKeyMapSearchMatchers
+
+data HelpKeyMap =
+  HelpKeyMap
+    { helpKeyMapHelpMatchers :: !KeyMappings
+    , helpKeyMapSearchMatchers :: !KeyMappings
+    }
+  deriving (Generic)
+
+instance Semigroup HelpKeyMap where
+  hkm1 <> hkm2 =
+    HelpKeyMap
+      { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2
+      , helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2
+      }
+
+instance Monoid HelpKeyMap where
+  mempty = HelpKeyMap {helpKeyMapHelpMatchers = mempty, helpKeyMapSearchMatchers = mempty}
 
 type KeyMappings = [KeyMapping]
 
@@ -315,7 +337,8 @@ helpCursorKeySearchBarL :: Lens' HelpCursor TextCursor
 helpCursorKeySearchBarL =
   lens helpCursorSearchBar $ \hc tc ->
     let query = rebuildTextCursor tc
-        selected = searchHelpCursor  query $
+        selected =
+          searchHelpCursor query $
           fromMaybe [] $ (NE.toList . rebuildNonEmptyCursor) <$> helpCursorKeyHelpCursors hc
      in hc
           { helpCursorSearchBar = tc
@@ -324,8 +347,7 @@ helpCursorKeySearchBarL =
 
 searchHelpCursor :: Text -> [KeyHelpCursor] -> [KeyHelpCursor]
 searchHelpCursor query =
-  filter
-    ((T.toCaseFold query `T.isInfixOf`) . T.toCaseFold . actionNameText . keyHelpCursorName)
+  filter ((T.toCaseFold query `T.isInfixOf`) . T.toCaseFold . actionNameText . keyHelpCursorName)
 
 helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
 helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c
@@ -471,14 +493,14 @@ editorCursorSwitchToFile ec =
     }
 
 editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
-editorCursorSwitchToHelp KeyMap {..} ec =
+editorCursorSwitchToHelp km@KeyMap {..} ec =
   ec
     { editorCursorHelpCursor =
         case editorCursorSelection ec of
           FileSelected ->
             let FileKeyMap {..} = keyMapFileKeyMap
              in (\(t, ms) ->
-                   Just $ makeHelpCursor t $ ms ++ fileKeyMapAnyMatchers ++ keyMapHelpMatchers) $
+                   Just $ makeHelpCursor t $ ms ++ fileKeyMapAnyMatchers ++ keyMapHelpMatchers km) $
                 case editorCursorFileCursor ec of
                   Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
                   Just sfc ->

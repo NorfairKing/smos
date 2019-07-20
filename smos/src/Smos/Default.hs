@@ -15,22 +15,7 @@ defaultKeyMap =
   KeyMap
     { keyMapFileKeyMap = defaultFileKeyMap
     , keyMapReportsKeyMap = defaultReportsKeyMap
-    , keyMapHelpMatchers =
-        listMatchers
-          [ exactKey KUp helpUp
-          , exactChar 'k' helpUp
-          , exactKey KDown helpDown
-          , exactChar 'j' helpDown
-          , exactKey KHome helpStart
-          , exactString "gg" helpStart
-          , exactKey KEnd helpEnd
-          , exactChar 'G' helpEnd
-          , exactKey KBS helpRemove
-          , exactKey KDel helpDelete
-          , anyChar helpInsert
-          , exactKey KEsc selectEditor
-          , exactChar 'q' selectEditor
-          ]
+    , keyMapHelpKeyMap = defaultHelpKeyMap
     }
 
 defaultFileKeyMap :: FileKeyMap
@@ -236,4 +221,24 @@ defaultReportsKeyMap =
           , exactChar '?' selectHelp
           , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
           ]
+    }
+
+defaultHelpKeyMap :: HelpKeyMap
+defaultHelpKeyMap =
+  HelpKeyMap
+    { helpKeyMapHelpMatchers =
+        listMatchers
+          [ exactKey KUp helpUp
+          , exactChar 'k' helpUp
+          , exactKey KDown helpDown
+          , exactChar 'j' helpDown
+          , exactKey KHome helpStart
+          , exactString "gg" helpStart
+          , exactKey KEnd helpEnd
+          , exactChar 'G' helpEnd
+          , exactKey KEsc selectEditor
+          , exactChar 'q' selectEditor
+          ]
+    , helpKeyMapSearchMatchers =
+        listMatchers [anyChar helpInsert, exactKey KEsc selectEditor, exactChar 'q' selectEditor]
     }

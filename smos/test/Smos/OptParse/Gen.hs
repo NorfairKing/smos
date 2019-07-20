@@ -26,6 +26,10 @@ instance GenValid ReportsKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid HelpKeyConfigs where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid KeybindingsConfiguration where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

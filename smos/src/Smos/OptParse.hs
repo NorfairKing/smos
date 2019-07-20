@@ -59,13 +59,12 @@ combineKeymap km (Just kbc) = do
   keyMapFileKeyMap <- combineFileKeymap (keyMapFileKeyMap startingPoint) (confFileKeyConfig kbc)
   keyMapReportsKeyMap <-
     combineReportsKeymap (keyMapReportsKeyMap startingPoint) (confReportsKeyConfig kbc)
-  keyMapHelpMatchers <-
-    combineKeyMappings (keyMapHelpMatchers startingPoint) (confHelpKeyConfig kbc)
+  keyMapHelpKeyMap <- combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
   return
     startingPoint
       { keyMapFileKeyMap = keyMapFileKeyMap
       , keyMapReportsKeyMap = keyMapReportsKeyMap
-      , keyMapHelpMatchers = keyMapHelpMatchers
+      , keyMapHelpKeyMap = keyMapHelpKeyMap
       }
 
 combineFileKeymap :: FileKeyMap -> Maybe FileKeyConfigs -> Comb FileKeyMap
@@ -107,6 +106,13 @@ combineReportsKeymap rkm (Just rkc) = do
   nams <-
     combineKeyMappings (reportsKeymapNextActionReportMatchers rkm) (nextActionReportKeyConfigs rkc)
   return $ rkm {reportsKeymapNextActionReportMatchers = nams}
+
+combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
+combineHelpKeymap hkm Nothing = pure hkm
+combineHelpKeymap hkm (Just hkc) = do
+  hms <- combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
+  sms <- combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
+  return $ hkm {helpKeyMapHelpMatchers = hms, helpKeyMapSearchMatchers = sms}
 
 combineKeyMappings :: KeyMappings -> Maybe KeyConfigs -> Comb KeyMappings
 combineKeyMappings kms Nothing = pure kms

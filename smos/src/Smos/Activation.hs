@@ -23,15 +23,22 @@ import Smos.Keys
 import Smos.Types
 
 currentKeyMappings :: KeyMap -> EditorCursor -> [(Precedence, KeyMapping)]
-currentKeyMappings KeyMap {..} ec =
-  case editorCursorSelection ec of
-    HelpSelected -> map ((,) SpecificMatcher) keyMapHelpMatchers
+currentKeyMappings KeyMap {..} EditorCursor {..} =
+  case editorCursorSelection of
+    HelpSelected ->
+      case editorCursorHelpCursor of
+        Nothing -> []
+        Just HelpCursor {..} ->
+          map ((,) SpecificMatcher) $
+          case helpCursorSelection of
+            HelpCursorHelpSelected -> helpKeyMapHelpMatchers keyMapHelpKeyMap
+            HelpCursorSearchSelected -> helpKeyMapSearchMatchers keyMapHelpKeyMap
     FileSelected ->
       let FileKeyMap {..} = keyMapFileKeyMap
           with :: KeyMappings -> [(Precedence, KeyMapping)]
           with specificMappings =
             map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers
-       in case editorCursorFileCursor ec of
+       in case editorCursorFileCursor of
             Nothing -> with fileKeyMapEmptyMatchers
             Just sfc ->
               case sfc ^. smosFileCursorEntrySelectionL of

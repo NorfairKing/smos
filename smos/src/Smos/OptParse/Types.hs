@@ -62,7 +62,7 @@ data KeybindingsConfiguration =
     { confReset :: !(Maybe Bool)
     , confFileKeyConfig :: !(Maybe FileKeyConfigs)
     , confReportsKeyConfig :: !(Maybe ReportsKeyConfigs)
-    , confHelpKeyConfig :: !(Maybe KeyConfigs)
+    , confHelpKeyConfig :: !(Maybe HelpKeyConfigs)
     }
   deriving (Show, Eq, Generic)
 
@@ -89,7 +89,7 @@ backToKeybindingsConfiguration KeyMap {..} =
     { confReset = Just True
     , confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap
     , confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap
-    , confHelpKeyConfig = Just $ backToKeyConfigs keyMapHelpMatchers
+    , confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap
     }
 
 data FileKeyConfigs =
@@ -168,6 +168,29 @@ backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
   ReportsKeyConfigs
     {nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers}
+
+data HelpKeyConfigs =
+  HelpKeyConfigs
+    { helpHelpKeyConfigs :: !(Maybe KeyConfigs)
+    , helpSearchKeyConfigs :: !(Maybe KeyConfigs)
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity HelpKeyConfigs
+
+instance ToJSON HelpKeyConfigs where
+  toJSON HelpKeyConfigs {..} =
+    object ["help" .= helpHelpKeyConfigs, "search" .= helpSearchKeyConfigs]
+
+instance FromJSON HelpKeyConfigs where
+  parseJSON = withObject "HelpKeyConfigs" $ \o -> HelpKeyConfigs <$> o .:? "help" <*> o .:? "search"
+
+backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
+backToHelpKeyConfigs HelpKeyMap {..} =
+  HelpKeyConfigs
+    { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers
+    , helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
+    }
 
 newtype KeyConfigs =
   KeyConfigs
