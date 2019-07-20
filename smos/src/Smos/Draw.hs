@@ -116,7 +116,14 @@ drawHelpCursor s (Just HelpCursor {..}) =
           case helpCursorSelectedKeyHelpCursors of
             Nothing -> txtWrap "No matching keybindings found."
             Just hcs -> drawVerticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs
-        , hBox [drawText "Search: ", drawTextCursor MaybeSelected helpCursorSearchBar]
+        , (case helpCursorSelection of
+             HelpCursorSearchSelected -> withAttr selectedAttr
+             _ -> id) $
+          let ms =
+                case helpCursorSelection of
+                  HelpCursorSearchSelected -> MaybeSelected
+                  _ -> NotSelected
+           in hBox [drawText "Search:", txt " ",drawTextCursor ms helpCursorSearchBar]
         ]
     , vBorder
     , padAll 1 $

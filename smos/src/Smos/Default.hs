@@ -243,6 +243,8 @@ defaultHelpKeyMap =
     , helpKeyMapSearchMatchers =
         listMatchers
           [ anyChar helpInsert
+          , exactKey KBS helpRemove
+          , exactKey KDel helpDelete
           , exactKey KEsc selectEditor
           , exactChar 'q' selectEditor
           , exactKey KEsc helpSelectHelp
