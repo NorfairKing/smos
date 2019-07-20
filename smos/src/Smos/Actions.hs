@@ -41,8 +41,7 @@ import Smos.Actions.Undo
 import Smos.Actions.Utils
 
 allActions :: [AnyAction]
-allActions =
-  map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
+allActions = map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
 
 allPlainActions :: [Action]
 allPlainActions =
@@ -64,6 +63,7 @@ allPlainActions =
     , allTimestampsPlainActions
     , allUndoPlainActions
     , allConveniencePlainActions
+    , allHelpPlainActions
     ]
 
 allUsingCharActions :: [ActionUsing Char]
@@ -77,6 +77,7 @@ allUsingCharActions =
     , allTagsUsingCharActions
     , allPropertiesUsingCharActions
     , allUndoUsingCharActions
+    , allHelpUsingCharActions
     ]
 
 startHeaderFromEmptyAndSelectHeader :: Action

@@ -236,9 +236,16 @@ defaultHelpKeyMap =
           , exactString "gg" helpStart
           , exactKey KEnd helpEnd
           , exactChar 'G' helpEnd
+          , exactChar '/' helpSelectSearch
           , exactKey KEsc selectEditor
           , exactChar 'q' selectEditor
           ]
     , helpKeyMapSearchMatchers =
-        listMatchers [anyChar helpInsert, exactKey KEsc selectEditor, exactChar 'q' selectEditor]
+        listMatchers
+          [ anyChar helpInsert
+          , exactKey KEsc selectEditor
+          , exactChar 'q' selectEditor
+          , exactKey KEsc helpSelectHelp
+          , exactKey KEnter helpSelectHelp
+          ]
     }

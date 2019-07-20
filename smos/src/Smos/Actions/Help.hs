@@ -2,19 +2,78 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Help
-  ( helpInsert
-  , helpAppend
-  , helpRemove
-  , helpDelete
-  , helpUp
+  ( allHelpPlainActions, allHelpUsingCharActions,helpUp
   , helpDown
   , helpStart
   , helpEnd
+  , helpSelectSearch
+  , helpInsert
+  , helpAppend
+  , helpRemove
+  , helpDelete
+  , helpSelectHelp
+  , helpToggleSelection
   ) where
 
 import Smos.Types
 
 import Smos.Actions.Utils
+
+allHelpPlainActions :: [Action]
+allHelpPlainActions =
+  [ helpUp
+  , helpDown
+  , helpStart
+  , helpEnd
+  , helpSelectSearch
+  , helpRemove
+  , helpDelete
+  , helpSelectHelp
+  , helpToggleSelection
+  ]
+
+allHelpUsingCharActions :: [ActionUsing Char]
+allHelpUsingCharActions = [helpInsert, helpAppend]
+
+helpUp :: Action
+helpUp =
+  Action
+    { actionName = "helpUp"
+    , actionDescription = "Scroll up in the help screen"
+    , actionFunc = modifyHelpCursorM helpCursorUp
+    }
+
+helpDown :: Action
+helpDown =
+  Action
+    { actionName = "helpDown"
+    , actionDescription = "Scroll down in the help screen"
+    , actionFunc = modifyHelpCursorM helpCursorDown
+    }
+
+helpStart :: Action
+helpStart =
+  Action
+    { actionName = "helpStart"
+    , actionDescription = "Scroll to the start of the screen"
+    , actionFunc = modifyHelpCursor helpCursorStart
+    }
+
+helpEnd :: Action
+helpEnd =
+  Action
+    { actionName = "helpEnd"
+    , actionDescription = "Scroll to the end of the help screen"
+    , actionFunc = modifyHelpCursor helpCursorEnd
+    }
+
+helpSelectSearch :: Action
+helpSelectSearch =
+  Action
+    { actionName = "helpSelectSearch"
+    , actionDescription = "Select the help search bar"
+    , actionFunc = modifyHelpCursorM helpCursorSelectSearch
+    }
 
 helpInsert :: ActionUsing Char
 helpInsert =
@@ -48,34 +107,18 @@ helpDelete =
     , actionFunc = modifyHelpCursorM helpCursorDelete
     }
 
-helpUp :: Action
-helpUp =
+helpSelectHelp :: Action
+helpSelectHelp =
   Action
-    { actionName = "helpUp"
-    , actionDescription = "Scroll up in the help screen"
-    , actionFunc = modifyHelpCursorM helpCursorUp
+    { actionName = "helpSelectHelp"
+    , actionDescription = "Deselect the help search bar"
+    , actionFunc = modifyHelpCursorM helpCursorSelectHelp
     }
 
-helpDown :: Action
-helpDown =
+helpToggleSelection :: Action
+helpToggleSelection =
   Action
-    { actionName = "helpDown"
-    , actionDescription = "Scroll down in the help screen"
-    , actionFunc = modifyHelpCursorM helpCursorDown
-    }
-
-helpStart :: Action
-helpStart =
-  Action
-    { actionName = "helpStart"
-    , actionDescription = "Scroll to the start of the screen"
-    , actionFunc = modifyHelpCursor helpCursorStart
-    }
-
-helpEnd :: Action
-helpEnd =
-  Action
-    { actionName = "helpEnd"
-    , actionDescription = "Scroll to the end of the help screen"
-    , actionFunc = modifyHelpCursor helpCursorEnd
+    { actionName = "helpToggleSelection"
+    , actionDescription = "Toggle between selecting and deselecting the search bar"
+    , actionFunc = modifyHelpCursor helpCursorToggleSelection
     }

@@ -349,28 +349,6 @@ searchHelpCursor :: Text -> [KeyHelpCursor] -> [KeyHelpCursor]
 searchHelpCursor query =
   filter ((T.toCaseFold query `T.isInfixOf`) . T.toCaseFold . actionNameText . keyHelpCursorName)
 
-helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
-helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c
-
-helpCursorAppend :: Char -> HelpCursor -> Maybe HelpCursor
-helpCursorAppend c = helpCursorKeySearchBarL $ textCursorAppend c
-
-helpCursorRemove :: HelpCursor -> Maybe HelpCursor
-helpCursorRemove =
-  helpCursorKeySearchBarL $ \tc ->
-    case textCursorRemove tc of
-      Nothing -> Nothing
-      Just Deleted -> Nothing
-      Just (Updated hc) -> Just hc
-
-helpCursorDelete :: HelpCursor -> Maybe HelpCursor
-helpCursorDelete =
-  helpCursorKeySearchBarL $ \tc ->
-    case textCursorDelete tc of
-      Nothing -> Nothing
-      Just Deleted -> Nothing
-      Just (Updated hc) -> Just hc
-
 helpCursorSelectedKeyHelpCursorsL :: Lens' HelpCursor (Maybe (NonEmptyCursor KeyHelpCursor))
 helpCursorSelectedKeyHelpCursorsL =
   lens helpCursorSelectedKeyHelpCursors $ \hc ne -> hc {helpCursorSelectedKeyHelpCursors = ne}
@@ -394,6 +372,53 @@ helpCursorStart = helpCursorSelectedKeyHelpCursorsL %~ fmap nonEmptyCursorSelect
 
 helpCursorEnd :: HelpCursor -> HelpCursor
 helpCursorEnd = helpCursorSelectedKeyHelpCursorsL %~ fmap nonEmptyCursorSelectLast
+
+helpCursorSelectionL :: Lens' HelpCursor HelpCursorSelection
+helpCursorSelectionL = lens helpCursorSelection $ \hc hcs -> hc {helpCursorSelection = hcs}
+
+helpCursorSelectHelp :: HelpCursor -> Maybe HelpCursor
+helpCursorSelectHelp =
+  helpCursorSelectionL $ \hcs ->
+    case hcs of
+      HelpCursorSearchSelected -> Just HelpCursorHelpSelected
+      HelpCursorHelpSelected -> Nothing
+
+helpCursorSelectSearch :: HelpCursor -> Maybe HelpCursor
+helpCursorSelectSearch =
+  helpCursorSelectionL $ \hcs ->
+    case hcs of
+      HelpCursorHelpSelected -> Just HelpCursorSearchSelected
+      HelpCursorSearchSelected -> Nothing
+
+helpCursorToggleSelection :: HelpCursor -> HelpCursor
+helpCursorToggleSelection =
+  helpCursorSelectionL %~
+  (\hcs ->
+     case hcs of
+       HelpCursorHelpSelected -> HelpCursorSearchSelected
+       HelpCursorSearchSelected -> HelpCursorHelpSelected)
+
+helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
+helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c
+
+helpCursorAppend :: Char -> HelpCursor -> Maybe HelpCursor
+helpCursorAppend c = helpCursorKeySearchBarL $ textCursorAppend c
+
+helpCursorRemove :: HelpCursor -> Maybe HelpCursor
+helpCursorRemove =
+  helpCursorKeySearchBarL $ \tc ->
+    case textCursorRemove tc of
+      Nothing -> Nothing
+      Just Deleted -> Nothing
+      Just (Updated hc) -> Just hc
+
+helpCursorDelete :: HelpCursor -> Maybe HelpCursor
+helpCursorDelete =
+  helpCursorKeySearchBarL $ \tc ->
+    case textCursorDelete tc of
+      Nothing -> Nothing
+      Just Deleted -> Nothing
+      Just (Updated hc) -> Just hc
 
 data KeyHelpCursor =
   KeyHelpCursor
