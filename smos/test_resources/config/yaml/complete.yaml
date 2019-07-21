@@ -1,5 +1,6 @@
 archive-dir: null
 workflow-dir: null
+projects-dir: null
 keys:
   reports:
     next-action:

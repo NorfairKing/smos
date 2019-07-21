@@ -27,6 +27,11 @@ import Smos.Report.Config
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
+streamSmosProjectsFiles :: MonadIO m => SmosReportConfig -> ConduitT i RootedPath m ()
+streamSmosProjectsFiles src = do
+  pd <- liftIO $ resolveReportProjectsDir src
+  sourceFilesInNonHiddenDirsRecursively pd .| filterSmosFiles
+
 streamSmosFilesFromWorkflow ::
      MonadIO m => HideArchive -> SmosReportConfig -> ConduitT i RootedPath m ()
 streamSmosFilesFromWorkflow ha src@SmosReportConfig {..} = do

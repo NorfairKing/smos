@@ -14,15 +14,19 @@ import Smos.Report.Config
 
 data Flags =
   Flags
-    { flagConfigFile :: Maybe FilePath,flagWorkflowDir :: Maybe FilePath
+    { flagConfigFile :: Maybe FilePath
+    , flagWorkflowDir :: Maybe FilePath
     , flagArchiveDir :: Maybe FilePath
+    , flagProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
-    { envConfigFile :: Maybe FilePath,envWorkflowDir :: Maybe FilePath
+    { envConfigFile :: Maybe FilePath
+    , envWorkflowDir :: Maybe FilePath
     , envArchiveDir :: Maybe FilePath
+    , envProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -30,6 +34,7 @@ data Configuration =
   Configuration
     { confWorkflowDir :: Maybe FilePath
     , confArchiveDir :: Maybe FilePath
+    , confProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -51,15 +56,27 @@ backToConfiguration SmosReportConfig {..} =
                  ArchiveInWorkflow ard -> fromRelDir ard
                  ArchiveInHome ard -> "~/" <> fromRelDir ard
                  ArchiveAbsolute aad -> fromAbsDir aad
+    , confProjectsDir =
+        if smosReportConfigProjectsFileSpec == defaultProjectsDirSpec
+          then Nothing
+          else Just $
+               case smosReportConfigProjectsFileSpec of
+                 ProjectsInWorkflow ard -> fromRelDir ard
+                 ProjectsInHome ard -> "~/" <> fromRelDir ard
+                 ProjectsAbsolute aad -> fromAbsDir aad
     }
 
 instance Validity Configuration
 
 instance ToJSON Configuration where
   toJSON Configuration {..} =
-    object ["workflow-dir" .= confWorkflowDir, "archive-dir" .= confArchiveDir]
+    object
+      [ "workflow-dir" .= confWorkflowDir
+      , "archive-dir" .= confArchiveDir
+      , "projects-dir" .= confProjectsDir
+      ]
 
 instance FromJSON Configuration where
   parseJSON =
     withObject "Configuration" $ \o ->
-      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir"
+      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir"

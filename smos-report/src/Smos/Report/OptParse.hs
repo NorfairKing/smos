@@ -37,11 +37,23 @@ combineToConfig src Flags {..} Environment {..} mc = do
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchiveAbsolute ad
+  pfs <-
+    case msum [flagProjectsDir, envProjectsDir, mc >>= confProjectsDir] of
+      Nothing -> pure $ smosReportConfigProjectsFileSpec src
+      Just wd -> do
+        ad <- resolveDir' wd
+        pure $ ProjectsAbsolute ad
   pure $
-    SmosReportConfig {smosReportConfigWorkflowFileSpec = wfs, smosReportConfigArchiveFileSpec = afs}
+    SmosReportConfig
+      { smosReportConfigWorkflowFileSpec = wfs
+      , smosReportConfigArchiveFileSpec = afs
+      , smosReportConfigProjectsFileSpec = pfs
+      }
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag
+parseFlags =
+  Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag <*>
+  parseProjectsDirFlag
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
@@ -67,6 +79,17 @@ parseArchiveDirFlag =
     (mconcat
        [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing])
 
+parseProjectsDirFlag :: Parser (Maybe FilePath)
+parseProjectsDirFlag =
+  option
+    (Just <$> str)
+    (mconcat
+       [ metavar "FILEPATH"
+       , help "The projects directory to use"
+       , long "projects-dir"
+       , value Nothing
+       ])
+
 getEnvironment :: IO Environment
 getEnvironment = do
   env <- System.getEnvironment
@@ -78,6 +101,7 @@ getEnvironment = do
       , envWorkflowDir =
           msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
       , envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
+      , envProjectsDir = msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
       }
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))

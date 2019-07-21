@@ -7,7 +7,6 @@ module Smos.Query.Projects where
 
 import Data.List
 import Data.Text (Text)
-import Path
 
 import Conduit
 import Rainbow
@@ -20,15 +19,11 @@ import Smos.Report.Streaming
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
+import Smos.Query.Streaming
 
 projects :: Q ()
 projects = do
-  wd <- askWorkflowDir
-  tups <-
-    sourceToList $
-    sourceFilesInNonHiddenDirsRecursively (wd </> $(mkRelDir "projects")) .| filterSmosFiles .|
-    parseSmosFiles .|
-    printShouldPrint PrintWarning
+  tups <- sourceToList $ streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning
   liftIO $
     putTableLn $
     renderProjectsReport $

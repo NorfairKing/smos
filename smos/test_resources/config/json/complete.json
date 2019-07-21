@@ -695,5 +695,6 @@
                 }
             ]
         }
-    }
+    },
+    "projects-dir": null
 }

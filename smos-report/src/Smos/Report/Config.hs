@@ -12,8 +12,12 @@ module Smos.Report.Config
   , ArchiveDirSpec(..)
   , defaultArchiveDirSpec
   , resolveArchiveDir
+  , ProjectsDirSpec(..)
+  , defaultProjectsDirSpec
+  , resolveProjectsDir
   , resolveReportWorkflowDir
   , resolveReportArchiveDir
+  , resolveReportProjectsDir
   ) where
 
 import GHC.Generics (Generic)
@@ -25,6 +29,7 @@ data SmosReportConfig =
   SmosReportConfig
     { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec
     , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
+    , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
     }
   deriving (Show, Eq, Generic)
 
@@ -33,6 +38,7 @@ defaultReportConfig =
   SmosReportConfig
     { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec
     , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
+    , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
     }
 
 data WorkflowDirSpec
@@ -65,6 +71,22 @@ resolveArchiveDir wd as =
     ArchiveInHome ard -> (</> ard) <$> getHomeDir
     ArchiveAbsolute aad -> pure aad
 
+data ProjectsDirSpec
+  = ProjectsInWorkflow (Path Rel Dir)
+  | ProjectsInHome (Path Rel Dir)
+  | ProjectsAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+defaultProjectsDirSpec :: ProjectsDirSpec
+defaultProjectsDirSpec = ProjectsInWorkflow [reldir|projects|]
+
+resolveProjectsDir :: Path Abs Dir -> ProjectsDirSpec -> IO (Path Abs Dir)
+resolveProjectsDir wd as =
+  case as of
+    ProjectsInWorkflow ard -> pure $ wd </> ard
+    ProjectsInHome ard -> (</> ard) <$> getHomeDir
+    ProjectsAbsolute aad -> pure aad
+
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigWorkflowFileSpec
 
@@ -72,3 +94,8 @@ resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportArchiveDir SmosReportConfig {..} = do
   wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
   resolveArchiveDir wd smosReportConfigArchiveFileSpec
+
+resolveReportProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportProjectsDir SmosReportConfig {..} = do
+  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
+  resolveProjectsDir wd smosReportConfigProjectsFileSpec
