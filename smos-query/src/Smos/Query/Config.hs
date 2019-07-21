@@ -13,12 +13,12 @@ module Smos.Query.Config
 
 import GHC.Generics (Generic)
 
-import Data.Aeson
 import Path
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 
+import Smos.Report.Archive
 import Smos.Report.Config
 
 data SmosQueryConfig =
