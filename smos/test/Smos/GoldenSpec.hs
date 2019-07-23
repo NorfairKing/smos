@@ -28,8 +28,6 @@ import Smos
 import Smos.App
 import Smos.Types
 
-import Text.Show.Pretty
-
 spec :: Spec
 spec = do
   tfs <-

@@ -6,9 +6,11 @@ import Prelude as X hiding (head, init, last, tail)
 
 import GHC.Generics as X hiding (Selector)
 
-import Data.Text  as X(Text)
-import Data.ByteString  as X(ByteString)
+import Data.ByteString as X (ByteString)
 import Data.Maybe as X
+import Data.Text as X (Text)
+
+import Text.Show.Pretty as X (ppShow)
 
 import Data.GenValidity as X
 import Data.GenValidity.Containers as X ()

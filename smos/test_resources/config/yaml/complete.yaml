@@ -1,6 +1,5 @@
 archive-dir: null
 workflow-dir: null
-projects-dir: null
 keys:
   reports:
     next-action:
@@ -31,32 +30,44 @@ keys:
     - action: selectHelp
       key: M-?
   help:
-  - action: helpUp
-    key: <Up>
-  - action: helpUp
-    key: k
-  - action: helpDown
-    key: <Down>
-  - action: helpDown
-    key: j
-  - action: helpStart
-    key: <Home>
-  - action: helpStart
-    key: gg
-  - action: helpEnd
-    key: <End>
-  - action: helpEnd
-    key: G
-  - action: helpRemove
-    key: <BS>
-  - action: helpDelete
-    key: <Del>
-  - action: helpInsert
-    key: <char>
-  - action: selectEditor
-    key: <Esc>
-  - action: selectEditor
-    key: q
+    help:
+    - action: helpUp
+      key: <Up>
+    - action: helpUp
+      key: k
+    - action: helpDown
+      key: <Down>
+    - action: helpDown
+      key: j
+    - action: helpStart
+      key: <Home>
+    - action: helpStart
+      key: gg
+    - action: helpEnd
+      key: <End>
+    - action: helpEnd
+      key: G
+    - action: helpSelectSearch
+      key: /
+    - action: selectEditor
+      key: <Esc>
+    - action: selectEditor
+      key: q
+    search:
+    - action: helpInsert
+      key: <char>
+    - action: helpRemove
+      key: <BS>
+    - action: helpDelete
+      key: <Del>
+    - action: selectEditor
+      key: <Esc>
+    - action: selectEditor
+      key: q
+    - action: helpSelectHelp
+      key: <Esc>
+    - action: helpSelectHelp
+      key: <Enter>
   reset: true
   file:
     contents:
@@ -349,3 +360,4 @@ keys:
       key: M-<Down>
     - action: propertiesToggleSelected
       key: <tab>
+projects-dir: null
