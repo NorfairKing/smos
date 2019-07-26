@@ -59,6 +59,9 @@ module Smos.Data.Types
   , timestampString
   , timestampText
   , timestampDayFormat
+  , timestampLocalTimeFormat
+  , parseTimestampString
+  , parseTimestampText
     -- Utils
   , ForYaml(..)
   ) where
@@ -399,10 +402,9 @@ timestampName = constructValid . TimestampName
 parseTimestampName :: Text -> Either String TimestampName
 parseTimestampName = prettyValidate . TimestampName
 
-data Timestamp =
-  Timestamp
-    { timestampDay :: Day
-    }
+data Timestamp
+  = TimestampDay Day
+  | TimestampLocalTime LocalTime
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Timestamp
@@ -410,22 +412,38 @@ instance Validity Timestamp
 instance FromJSON Timestamp where
   parseJSON v = do
     s <- parseJSON v
-    Timestamp <$> parseTimeM False defaultTimeLocale timestampDayFormat s
+    case parseTimestampString s of
+      Nothing -> fail $ "Failed to parse a timestamp from" <> s
+      Just ts -> pure ts
 
 instance ToJSON Timestamp where
-  toJSON (Timestamp d) = toJSON $ T.pack $ formatTime defaultTimeLocale timestampDayFormat d
+  toJSON = toJSON . timestampText
 
 instance ToYaml Timestamp where
-  toYaml = toYaml . T.pack . formatTime defaultTimeLocale timestampDayFormat . timestampDay
+  toYaml = toYaml . timestampText
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
 
+timestampLocalTimeFormat :: String
+timestampLocalTimeFormat = "%F %T%Q"
+
 timestampString :: Timestamp -> String
-timestampString = formatTime defaultTimeLocale timestampDayFormat . timestampDay
+timestampString ts =
+  case ts of
+    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
+    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimeFormat lt
 
 timestampText :: Timestamp -> Text
 timestampText = T.pack . timestampString
+
+parseTimestampString :: String -> Maybe Timestamp
+parseTimestampString s =
+  (TimestampDay <$> parseTimeM False defaultTimeLocale timestampDayFormat s) <|>
+  (TimestampLocalTime <$> parseTimeM False defaultTimeLocale timestampLocalTimeFormat s)
+
+parseTimestampText :: Text -> Maybe Timestamp
+parseTimestampText = parseTimestampString . T.unpack
 
 newtype TodoState =
   TodoState
