@@ -62,6 +62,7 @@ module Smos.Data.Types
   , timestampLocalTimeFormat
   , parseTimestampString
   , parseTimestampText
+  , timestampLocalTime
     -- Utils
   , ForYaml(..)
   ) where
@@ -444,6 +445,12 @@ parseTimestampString s =
 
 parseTimestampText :: Text -> Maybe Timestamp
 parseTimestampText = parseTimestampString . T.unpack
+
+timestampLocalTime :: Timestamp -> LocalTime
+timestampLocalTime ts =
+  case ts of
+    TimestampDay d -> LocalTime d midnight
+    TimestampLocalTime lt -> lt
 
 newtype TodoState =
   TodoState

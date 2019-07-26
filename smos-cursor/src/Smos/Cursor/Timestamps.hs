@@ -23,6 +23,7 @@ module Smos.Cursor.Timestamps
   ) where
 
 import Data.Function
+import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -30,19 +31,17 @@ import Data.Maybe
 import Data.Time
 import Lens.Micro
 
-import Cursor.FuzzyDay
+import Cursor.FuzzyLocalTime
 import Cursor.Map
 import Cursor.Text
 import Cursor.Types
 
 import Smos.Data.Types
 
-type TimestampsCursor
-   = MapCursor TextCursor FuzzyDayCursor TimestampName Timestamp
+type TimestampsCursor = MapCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp
 
-startTimestampsCursor :: TimestampName -> Day -> TimestampsCursor
-startTimestampsCursor tsn d =
-  singletonMapCursorValue tsn $ emptyFuzzyDayCursor d
+startTimestampsCursor :: TimestampName -> LocalTime -> TimestampsCursor
+startTimestampsCursor tsn lt = singletonMapCursorValue tsn $ emptyFuzzyLocalTimeCursor lt
 
 makeTimestampsCursor :: Map TimestampName Timestamp -> Maybe TimestampsCursor
 makeTimestampsCursor m = do
@@ -52,9 +51,7 @@ makeTimestampsCursor m = do
 rebuildTimestampsCursor :: Maybe TimestampsCursor -> Map TimestampName Timestamp
 rebuildTimestampsCursor Nothing = M.empty
 rebuildTimestampsCursor (Just tsc) =
-  M.fromList $
-  NE.toList $
-  rebuildMapCursor rebuildTimestampNameCursor rebuildTimestampCursor tsc
+  M.fromList $ NE.toList $ rebuildMapCursor rebuildTimestampNameCursor rebuildTimestampCursor tsc
 
 timestampsCursorCurrentTextCursorL :: Lens' TimestampsCursor TextCursor
 timestampsCursorCurrentTextCursorL =
@@ -62,7 +59,7 @@ timestampsCursorCurrentTextCursorL =
     (\tsc ->
        case tsc ^. mapCursorElemL of
          KeyValueCursorKey kc _ -> kc
-         KeyValueCursorValue _ vc -> vc ^. fuzzyDayCursorTextCursorL)
+         KeyValueCursorValue _ vc -> vc ^. fuzzyLocalTimeCursorTextCursorL)
     (\tsc tc ->
        tsc &
        mapCursorElemL %~
@@ -70,7 +67,7 @@ timestampsCursorCurrentTextCursorL =
           case kvc of
             KeyValueCursorKey _ v -> KeyValueCursorKey tc v
             KeyValueCursorValue k vc ->
-              KeyValueCursorValue k $ vc {fuzzyDayCursorTextCursor = tc}))
+              KeyValueCursorValue k $ vc {fuzzyLocalTimeCursorTextCursor = tc}))
 
 timestampsCursorToggleSelected :: TimestampsCursor -> TimestampsCursor
 timestampsCursorToggleSelected =
@@ -81,66 +78,49 @@ timestampsCursorToggleSelected =
     makeTimestampCursor
 
 timestampsCursorInsertChar :: Char -> TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorInsertChar c =
-  timestampsCursorCurrentTextCursorL $ textCursorInsert c
+timestampsCursorInsertChar c = timestampsCursorCurrentTextCursorL $ textCursorInsert c
 
 timestampsCursorAppendChar :: Char -> TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorAppendChar c =
-  timestampsCursorCurrentTextCursorL $ textCursorAppend c
+timestampsCursorAppendChar c = timestampsCursorCurrentTextCursorL $ textCursorAppend c
 
 timestampsCursorRemoveChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorRemoveChar =
-  timestampsCursorCurrentTextCursorL (dullMDelete . textCursorRemove)
+timestampsCursorRemoveChar = timestampsCursorCurrentTextCursorL (dullMDelete . textCursorRemove)
 
 timestampsCursorDeleteChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorDeleteChar =
-  timestampsCursorCurrentTextCursorL (dullMDelete . textCursorDelete)
+timestampsCursorDeleteChar = timestampsCursorCurrentTextCursorL (dullMDelete . textCursorDelete)
 
 timestampsCursorSelectNextChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorSelectNextChar =
-  timestampsCursorCurrentTextCursorL textCursorSelectNext
+timestampsCursorSelectNextChar = timestampsCursorCurrentTextCursorL textCursorSelectNext
 
 timestampsCursorSelectPrevChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorSelectPrevChar =
-  timestampsCursorCurrentTextCursorL textCursorSelectPrev
+timestampsCursorSelectPrevChar = timestampsCursorCurrentTextCursorL textCursorSelectPrev
 
-timestampsCursorInsertEmptyAndSelect ::
-     Day -> TimestampsCursor -> TimestampsCursor
-timestampsCursorInsertEmptyAndSelect =
-  timestampsCursorInsertAndSelect emptyTimestampName
+timestampsCursorInsertEmptyAndSelect :: LocalTime -> TimestampsCursor -> TimestampsCursor
+timestampsCursorInsertEmptyAndSelect = timestampsCursorInsertAndSelect emptyTimestampName
 
 timestampsCursorInsertAndSelect ::
-     TimestampName -> Day -> TimestampsCursor -> TimestampsCursor
-timestampsCursorInsertAndSelect tsn d =
-  mapCursorInsertAndSelectValue
-    rebuildTimestampNameCursor
-    rebuildTimestampCursor
-    tsn $
-  emptyFuzzyDayCursor d
+     TimestampName -> LocalTime -> TimestampsCursor -> TimestampsCursor
+timestampsCursorInsertAndSelect tsn lt =
+  mapCursorInsertAndSelectValue rebuildTimestampNameCursor rebuildTimestampCursor tsn $
+  emptyFuzzyLocalTimeCursor lt
 
-timestampsCursorAppendEmptyAndSelect ::
-     Day -> TimestampsCursor -> TimestampsCursor
-timestampsCursorAppendEmptyAndSelect =
-  timestampsCursorAppendAndSelect emptyTimestampName
+timestampsCursorAppendEmptyAndSelect :: LocalTime -> TimestampsCursor -> TimestampsCursor
+timestampsCursorAppendEmptyAndSelect = timestampsCursorAppendAndSelect emptyTimestampName
 
 timestampsCursorAppendAndSelect ::
-     TimestampName -> Day -> TimestampsCursor -> TimestampsCursor
+     TimestampName -> LocalTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorAppendAndSelect tsn d =
-  mapCursorAppendAndSelectValue
-    rebuildTimestampNameCursor
-    rebuildTimestampCursor
-    tsn $
-  emptyFuzzyDayCursor d
+  mapCursorAppendAndSelectValue rebuildTimestampNameCursor rebuildTimestampCursor tsn $
+  emptyFuzzyLocalTimeCursor d
 
-timestampsCursorSelectOrAdd ::
-     TimestampName -> Day -> TimestampsCursor -> TimestampsCursor
+timestampsCursorSelectOrAdd :: TimestampName -> LocalTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorSelectOrAdd tsn d =
   mapCursorSelectOrAdd
     rebuildTimestampNameCursor
     makeTimestampNameCursor
     rebuildTimestampCursor
     (\t _ -> t == tsn)
-    (makeKeyValueCursorValue tsn (emptyFuzzyDayCursor d))
+    (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
 
 -- safe because of validity
 makeTimestampNameCursor :: TimestampName -> TextCursor
@@ -150,8 +130,11 @@ makeTimestampNameCursor = fromJust . makeTextCursor . timestampNameText
 rebuildTimestampNameCursor :: TextCursor -> TimestampName
 rebuildTimestampNameCursor = fromJust . timestampName . rebuildTextCursor
 
-makeTimestampCursor :: Timestamp -> FuzzyDayCursor
-makeTimestampCursor = makeFuzzyDayCursor . timestampDay
+makeTimestampCursor :: Timestamp -> FuzzyLocalTimeCursor
+makeTimestampCursor = makeFuzzyLocalTimeCursor . timestampLocalTime
 
-rebuildTimestampCursor :: FuzzyDayCursor -> Timestamp
-rebuildTimestampCursor = Timestamp . rebuildFuzzyDayCursor
+rebuildTimestampCursor :: FuzzyLocalTimeCursor -> Timestamp
+rebuildTimestampCursor fltc =
+  case rebuildFuzzyLocalTimeCursor fltc of
+    OnlyDaySpecified d -> TimestampDay d
+    BothTimeAndDay lt -> TimestampLocalTime lt
