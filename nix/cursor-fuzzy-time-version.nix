@@ -1,6 +1,6 @@
 {
   owner = "NorfairKing";
   repo = "cursor-fuzzy-time";
-  rev = "8b1358f768b709651efb90f8f7bd2d84f70cd0ae";
-  sha256 = "0d9n6cxr6x9490xn2vwzzxafrp5ld80dwn3b4d6w46sx9b6pznkx";
+  rev = "a2729b073ca58241f291ea5a91807ea28ff2a932";
+  sha256 = "sha256:1h3cmsh9h6nfidsyffrv92p1mzd5rbwzypd8gl7nswfsj86zm1bj";
 }
