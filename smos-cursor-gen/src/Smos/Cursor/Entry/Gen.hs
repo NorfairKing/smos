@@ -7,6 +7,8 @@ import Data.GenValidity
 
 import Test.QuickCheck
 
+import Cursor.FuzzyLocalTime.Gen ()
+
 import Smos.Cursor.Entry
 
 import Smos.Cursor.Contents.Gen ()

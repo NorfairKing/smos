@@ -58,3 +58,6 @@ drawNominalDiffTime ndt =
 
 formatTimestampDay :: Day -> String
 formatTimestampDay = formatTime defaultTimeLocale "%A %F"
+
+formatTimestampLocalTime :: LocalTime -> String
+formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %T"

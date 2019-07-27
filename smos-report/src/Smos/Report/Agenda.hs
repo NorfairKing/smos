@@ -55,7 +55,7 @@ fitsHistoricity zt ah ae =
   case ah of
     HistoricalAgenda -> True
     FutureAgenda ->
-      LocalTime (timestampDay (agendaEntryTimestamp ae)) midnight >=
+      timestampLocalTime  (agendaEntryTimestamp ae) >=
       zonedTimeToLocalTime zt
 
 type AgendaTableBlock a = Block a AgendaEntry
