@@ -39,7 +39,7 @@ final:
             export LOCALE_ARCHIVE="${final.glibcLocales}/lib/locale/locale-archive";
             export LANG=en_US.UTF-8
             smos-docs-site build
-            smos-docs-site check
+            smos-docs-site check --internal-links
             
             mkdir $out
             cp -r _site/* $out

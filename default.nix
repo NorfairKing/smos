@@ -32,4 +32,4 @@ let
     ];
     config.allowUnfree = true;
   };
-in smosPkgs.smosPackages
+in smosPkgs.smosPackages // { "smos-docs-site" = smosPkgs.smosDocumentationSite; }
