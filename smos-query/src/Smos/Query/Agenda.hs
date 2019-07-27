@@ -51,8 +51,11 @@ renderAgendaReport now atbs =
     goEntries es =
       renderSplit . splitUp $
       (sortBy
-         (comparing agendaEntryTimestamp <> comparing agendaEntryTimestampName <>
-          comparing agendaEntryTodoState)
+         (mconcat
+            [ comparing (timestampLocalTime . agendaEntryTimestamp)
+            , comparing agendaEntryTimestampName
+            , comparing agendaEntryTodoState
+            ])
          es)
     splitUp =
       splitList $ \ae ->

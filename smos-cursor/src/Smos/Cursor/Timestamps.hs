@@ -133,7 +133,11 @@ timestampsCursorUpdateTime zt = mapCursorElemL %~ go
       case kvc of
         KeyValueCursorKey _ _ -> kvc
         KeyValueCursorValue k fztc ->
-          KeyValueCursorValue k $ fztc {fuzzyLocalTimeCursorBaseLocalTime = utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)}
+          KeyValueCursorValue k $
+          fztc
+            { fuzzyLocalTimeCursorBaseLocalTime =
+                utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)
+            }
 
 -- safe because of validity
 makeTimestampNameCursor :: TimestampName -> TextCursor
@@ -144,7 +148,11 @@ rebuildTimestampNameCursor :: TextCursor -> TimestampName
 rebuildTimestampNameCursor = fromJust . timestampName . rebuildTextCursor
 
 makeTimestampCursor :: Timestamp -> FuzzyLocalTimeCursor
-makeTimestampCursor = makeFuzzyLocalTimeCursor . timestampLocalTime
+makeTimestampCursor ts =
+  makeFuzzyLocalTimeCursor $
+  case ts of
+    TimestampDay d -> OnlyDaySpecified d
+    TimestampLocalTime lt -> BothTimeAndDay lt
 
 rebuildTimestampCursor :: FuzzyLocalTimeCursor -> Timestamp
 rebuildTimestampCursor fltc =

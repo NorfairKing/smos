@@ -56,28 +56,28 @@ packages:
     git: https://github.com/NorfairKing/cursor-fuzzy-time.git
     pantry-tree:
       size: 348
-      sha256: bae9ad20cb8b8d2e20790037a53b0be7f998aea3cee9ba12038d79b0e57ba6c3
-    commit: a2729b073ca58241f291ea5a91807ea28ff2a932
+      sha256: 3da6edc17492af8be681db287fcfb6384078bc47ff7b50648151107cb132ae22
+    commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
   original:
     subdir: cursor-fuzzy-time
     git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-    commit: a2729b073ca58241f291ea5a91807ea28ff2a932
+    commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
 - completed:
     subdir: cursor-fuzzy-time-gen
     cabal-file:
-      size: 1586
-      sha256: 0394a349039a8d60f12e76caadf7887c85cafe4467b5f31270c5c5db9fb739b1
+      size: 1624
+      sha256: ba22998648a2490993add4e8fa3a9e59576d15428c03f90a5178410ad5eebf18
     name: cursor-fuzzy-time-gen
     version: 0.0.0.0
     git: https://github.com/NorfairKing/cursor-fuzzy-time.git
     pantry-tree:
       size: 624
-      sha256: 8bdc5dbac196c8759212ffc00e6eb836716c8630dbc7f342892f305b5ad74505
-    commit: a2729b073ca58241f291ea5a91807ea28ff2a932
+      sha256: 32b7ce1ecfbf56eef0cbf53f59fb22b4e9f22cd31888f6cfece435709490f9cd
+    commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
   original:
     subdir: cursor-fuzzy-time-gen
     git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-    commit: a2729b073ca58241f291ea5a91807ea28ff2a932
+    commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
 - completed:
     subdir: fuzzy-time
     cabal-file:
@@ -88,12 +88,12 @@ packages:
     git: https://github.com/NorfairKing/fuzzy-time.git
     pantry-tree:
       size: 415
-      sha256: b56675410266164e36cc90a565ba025dd4dd7a389a3ffdb7c202e3a040e2bd5b
-    commit: a0ed9ae78371d41034c6eb670f8f80a3c2f6c1b9
+      sha256: df8ab800792ec9e012c68f8235c0d3835ec6e49ed337b97640475bc7c79babd2
+    commit: e496ad8924cebea70dd81f85325e92a6a658475d
   original:
     subdir: fuzzy-time
     git: https://github.com/NorfairKing/fuzzy-time.git
-    commit: a0ed9ae78371d41034c6eb670f8f80a3c2f6c1b9
+    commit: e496ad8924cebea70dd81f85325e92a6a658475d
 - completed:
     subdir: fuzzy-time-gen
     cabal-file:
@@ -103,13 +103,13 @@ packages:
     version: 0.0.0.0
     git: https://github.com/NorfairKing/fuzzy-time.git
     pantry-tree:
-      size: 492
-      sha256: a63e65579f8d37d3bd85910de38aef76b29f3ac68062b88d69cd13eadd3d309a
-    commit: a0ed9ae78371d41034c6eb670f8f80a3c2f6c1b9
+      size: 493
+      sha256: dc6dea4284c0b39f2c314b17b1f0c24a7f3ca1fbf0019016202dfb4103785af9
+    commit: e496ad8924cebea70dd81f85325e92a6a658475d
   original:
     subdir: fuzzy-time-gen
     git: https://github.com/NorfairKing/fuzzy-time.git
-    commit: a0ed9ae78371d41034c6eb670f8f80a3c2f6c1b9
+    commit: e496ad8924cebea70dd81f85325e92a6a658475d
 - completed:
     subdir: cursor
     cabal-file:

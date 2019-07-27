@@ -21,12 +21,12 @@ extra-deps:
 - git: https://github.com/NorfairKing/pretty-relative-time.git
   commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-  commit: a2729b073ca58241f291ea5a91807ea28ff2a932
+  commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: a0ed9ae78371d41034c6eb670f8f80a3c2f6c1b9
+  commit: e496ad8924cebea70dd81f85325e92a6a658475d
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
