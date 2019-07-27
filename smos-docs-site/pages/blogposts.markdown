@@ -13,6 +13,7 @@ date: 2019-07-18
 * [Nanosmos: A simple text editor](https://cs-syd.eu/posts/2019-03-28-nanosmos)
 * [Tree cursor](https://cs-syd.eu/posts/2019-05-28-cursors-tree)
 * [Microsmos: A simple tree editor](https://cs-syd.eu/posts/2019-06-28-microsmos)
+* [Forest cursor](https://cs-syd.eu/posts/2019-07-28-cursors-forest)
 
 #### Call for contributions
 
