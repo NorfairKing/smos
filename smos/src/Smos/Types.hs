@@ -552,6 +552,10 @@ editorCursorSwitchToNextActionReport narc ec =
     , editorCursorSelection = ReportSelected
     }
 
+editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
+editorCursorUpdateTime zt ec =
+  ec {editorCursorFileCursor = smosFileCursorUpdateTime zt <$> editorCursorFileCursor ec}
+
 newtype ReportCursor =
   ReportNextActions NextActionReportCursor
   deriving (Show, Eq, Generic)

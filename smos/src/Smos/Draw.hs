@@ -9,6 +9,7 @@ module Smos.Draw
 
 import Import hiding ((<+>))
 
+import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -23,7 +24,7 @@ import Brick.Widgets.Core ((<+>))
 
 import Lens.Micro
 
-import Cursor.FuzzyDay
+import Cursor.FuzzyLocalTime
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
@@ -123,7 +124,7 @@ drawHelpCursor s (Just HelpCursor {..}) =
                 case helpCursorSelection of
                   HelpCursorSearchSelected -> MaybeSelected
                   _ -> NotSelected
-           in hBox [drawText "Search:", txt " ",drawTextCursor ms helpCursorSearchBar]
+           in hBox [drawText "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
         ]
     , vBorder
     , padAll 1 $
@@ -377,19 +378,19 @@ drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-  drawVerticalMapCursorM drawTimestamp (drawTimestampKVCursor s) drawTimestamp
+  drawVerticalMapCursorM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
   | M.null m = pure Nothing
-  | otherwise = fmap (Just . vBox) $ mapM (uncurry drawTimestamp) (M.toList m)
+  | otherwise = fmap (Just . vBox) $ mapM (uncurry drawTimestampPair) (M.toList m)
 
 drawTimestampKVCursor ::
-     Select -> KeyValueCursor TextCursor FuzzyDayCursor TimestampName Timestamp -> Drawer
+     Select -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp -> Drawer
 drawTimestampKVCursor s kvc =
   case kvc of
     KeyValueCursorKey tc ts -> do
-      dw <- drawDay $ timestampDay ts
+      dw <- drawTimestamp ts
       pure $
         hBox
           [ case s of
@@ -399,36 +400,41 @@ drawTimestampKVCursor s kvc =
           , dw
           ]
     KeyValueCursorValue tsn fdc -> do
-      fdcw <- drawFuzzyDayCursor s fdc
-      pure $
-        hBox
-          [ drawTimestampName tsn
-          , str ": "
-          , case s of
-              NotSelected -> str $ formatTimestampDay $ timestampDay $ rebuildTimestampCursor fdc
-              MaybeSelected -> fdcw
-          ]
+      tsw <-
+        case s of
+          NotSelected -> drawTimestamp $ rebuildTimestampCursor fdc
+          MaybeSelected -> drawFuzzyLocalTimeCursor s fdc
+      pure $ hBox [drawTimestampName tsn, str ": ", tsw]
 
-drawTimestamp :: TimestampName -> Timestamp -> Drawer
-drawTimestamp tsn ts = do
-  dw <- drawDay $ timestampDay ts
+drawTimestampPair :: TimestampName -> Timestamp -> Drawer
+drawTimestampPair tsn ts = do
+  dw <- drawTimestamp ts
   pure $ hBox [drawTimestampName tsn, str ": ", dw]
 
-drawFuzzyDayCursor :: Select -> FuzzyDayCursor -> Drawer
-drawFuzzyDayCursor s fdc@FuzzyDayCursor {..} = do
-  dw <- drawDay (rebuildFuzzyDayCursor fdc)
+drawFuzzyLocalTimeCursor :: Select -> FuzzyLocalTimeCursor -> Drawer
+drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
+  dw <-
+    case rebuildFuzzyLocalTimeCursor fdc of
+      OnlyDaySpecified d -> drawDay d
+      BothTimeAndDay lt -> drawLocalTime lt
   pure $
     (case s of
        NotSelected -> id
        MaybeSelected -> withAttr selectedAttr) $
     hBox $
     intersperse (str " ") $
-    [drawTextCursor s fuzzyDayCursorTextCursor] ++
+    [drawTextCursor s fuzzyLocalTimeCursorTextCursor] ++
     [hBox [str "(", dw, str ")"] | MaybeSelected <- [s]]
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
   withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . drawText $ timestampNameText tsn
+
+drawTimestamp :: Timestamp -> Drawer
+drawTimestamp ts =
+  case ts of
+    TimestampDay d -> drawDay d
+    TimestampLocalTime lt -> drawLocalTime lt
 
 drawDay :: Day -> Drawer
 drawDay d = do
@@ -438,6 +444,16 @@ drawDay d = do
       [ str $ formatTimestampDay d
       , str ", "
       , str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz $ LocalTime d midnight
+      ]
+
+drawLocalTime :: LocalTime -> Drawer
+drawLocalTime lt = do
+  zt@(ZonedTime _ tz) <- ask
+  pure $
+    hBox
+      [ str $ formatTimestampLocalTime lt
+      , str ", "
+      , str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
       ]
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName

@@ -16,6 +16,7 @@ module Smos.Cursor.Timestamps
   , timestampsCursorAppendAndSelect
   , timestampsCursorAppendEmptyAndSelect
   , timestampsCursorSelectOrAdd
+  , timestampsCursorUpdateTime
   , makeTimestampNameCursor
   , rebuildTimestampNameCursor
   , makeTimestampCursor
@@ -121,6 +122,18 @@ timestampsCursorSelectOrAdd tsn d =
     rebuildTimestampCursor
     (\t _ -> t == tsn)
     (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
+
+timestampsCursorUpdateTime :: ZonedTime -> TimestampsCursor -> TimestampsCursor
+timestampsCursorUpdateTime zt = mapCursorElemL %~ go
+  where
+    go ::
+         KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp
+      -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp
+    go kvc =
+      case kvc of
+        KeyValueCursorKey _ _ -> kvc
+        KeyValueCursorValue k fztc ->
+          KeyValueCursorValue k $ fztc {fuzzyLocalTimeCursorBaseLocalTime = utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)}
 
 -- safe because of validity
 makeTimestampNameCursor :: TimestampName -> TextCursor

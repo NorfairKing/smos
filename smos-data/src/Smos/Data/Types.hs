@@ -62,9 +62,11 @@ module Smos.Data.Types
   , timestampLocalTimeFormat
   , parseTimestampString
   , parseTimestampText
+  , timestampDay
   , timestampLocalTime
     -- Utils
   , ForYaml(..)
+  , getLocalTime
   ) where
 
 import GHC.Generics (Generic)
@@ -446,6 +448,12 @@ parseTimestampString s =
 parseTimestampText :: Text -> Maybe Timestamp
 parseTimestampText = parseTimestampString . T.unpack
 
+timestampDay :: Timestamp -> Day
+timestampDay ts =
+  case ts of
+    TimestampDay d -> d
+    TimestampLocalTime (LocalTime d _) -> d
+
 timestampLocalTime :: Timestamp -> LocalTime
 timestampLocalTime ts =
   case ts of
@@ -671,3 +679,6 @@ instance (ToYaml a) => ToYaml (Maybe a) where
 
 instance (ToYaml a) => ToYaml (Map Text a) where
   toYaml = Yaml.mapping . map (second toYaml) . M.toList
+
+getLocalTime :: IO LocalTime
+getLocalTime = (\zt -> utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)) <$> getZonedTime

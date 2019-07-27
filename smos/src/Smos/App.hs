@@ -107,7 +107,7 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
             SmosUpdateTime ->
               EventActivated $ do
                 now <- liftIO getZonedTime
-                modify (\s_ -> s_ {smosStateTime = now})
+                modify (\s_ -> s_ {smosStateTime = now,smosStateCursor=editorCursorUpdateTime now $ smosStateCursor s_})
             SmosSaveFile -> EventActivated saveCurrentSmosFile
         _ -> NothingActivated
 
