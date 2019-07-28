@@ -17,3 +17,8 @@ streamSmosFiles = do
   src <- lift $ asks smosQueryConfigReportConfig
   ha <- lift $ asks smosQueryConfigHideArchive
   streamSmosFilesFromWorkflow ha src
+
+streamAllSmosFiles :: ConduitT i RootedPath Q ()
+streamAllSmosFiles = do
+  src <- lift $ asks smosQueryConfigReportConfig
+  streamSmosFilesFromWorkflow Don'tHideArchive src

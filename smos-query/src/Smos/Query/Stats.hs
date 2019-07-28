@@ -44,7 +44,8 @@ stats StatsSettings {..} = do
           }
   sr <-
     runConduit $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| accumulateStatsReport src
+    streamAllSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    accumulateStatsReport src
   liftIO $ putTableLn $ renderStatsReport sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
@@ -103,7 +104,7 @@ formatReportToStateTransitions m =
 renderProjectsStatsReport :: ProjectStatsReport -> Table
 renderProjectsStatsReport ProjectStatsReport {..} =
   formatAsTable $
-  [ [fore white $ chunk "Projects"]
+  [ [fore white $ chunk "All Projects"]
   , [chunk "Current Projects", intChunk projectStatsReportCurrentProjects]
   , [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects]
   , [chunk "Total Projects", intChunk projectStatsReportTotalProjects]

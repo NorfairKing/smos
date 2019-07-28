@@ -57,16 +57,17 @@ makeStatsReport src@StatsReportContext {..} rp sf =
     }
 
 makeProjectsStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> ProjectStatsReport
-makeProjectsStatsReport StatsReportContext {..} rp _ =
+makeProjectsStatsReport StatsReportContext {..} rp sf =
   ProjectStatsReport
-    { projectStatsReportArchivedProjects = countIf isArchivedProject
-    , projectStatsReportCurrentProjects = countIf isProject
-    , projectStatsReportTotalProjects = countIf $ isArchivedProject  || isProject
-    , projectStatsReportArchivedFiles = countIf isArchived
-    , projectStatsReportCurrentFiles = countIf $ not isArchived
-    , projectStatsReportTotalFiles = 1
+    { projectStatsReportArchivedProjects = countIf $ active && isArchivedProject
+    , projectStatsReportCurrentProjects = countIf $ active && isProject
+    , projectStatsReportTotalProjects = countIf $ active && (isArchivedProject || isProject)
+    , projectStatsReportArchivedFiles = countIf $ active && isArchived
+    , projectStatsReportCurrentFiles = countIf $ active && not isArchived
+    , projectStatsReportTotalFiles = countIf active
     }
   where
+    active = smosFileActiveDuringPeriod statsReportContextNow statsReportContextPeriod sf
     isArchived = isProperPrefixOf statsReportContextArchiveDir $ resolveRootedPath rp
     isArchivedProject =
       isProperPrefixOf statsReportContextArchivedProjectsDir $ resolveRootedPath rp
@@ -75,6 +76,16 @@ makeProjectsStatsReport StatsReportContext {..} rp _ =
       if b
         then 1
         else 0
+
+smosFileActiveDuringPeriod :: ZonedTime -> Period -> SmosFile -> Bool
+smosFileActiveDuringPeriod now p sf = if p == AllTime then True else
+  not $ null $ stateHistoryEntriesInPeriod now p $ concatMap flatten $ smosFileForest sf
+
+stateHistoryEntriesInPeriod :: ZonedTime -> Period -> [Entry] -> [StateHistoryEntry]
+stateHistoryEntriesInPeriod now p = concatMap go
+  where
+    go :: Entry -> [StateHistoryEntry]
+    go = mapMaybe (stateHistoryEntryInPeriod now p) . unStateHistory . entryStateHistory
 
 data ProjectStatsReport =
   ProjectStatsReport
@@ -172,18 +183,22 @@ makeStateStatsReport now p es =
 withinPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Bool
 withinPeriod now p = filterPeriod now p . stateHistoryEntryTimestamp
 
-stateHistoryEntryInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryEntryInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe StateHistoryEntry
 stateHistoryEntryInPeriod now p tse =
   if withinPeriod now p tse
-    then Just (stateHistoryEntryNewState tse)
+    then Just tse
     else Nothing
+
+stateHistoryStateInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryStateInPeriod now p tse =
+  stateHistoryEntryNewState <$> stateHistoryEntryInPeriod now p tse
 
 entryStateInPeriod :: ZonedTime -> Period -> Entry -> Maybe (Maybe TodoState)
 entryStateInPeriod now p e =
   case (p, unStateHistory $ entryStateHistory e) of
     (AllTime, []) -> Just Nothing
     (_, []) -> Nothing
-    (_, (tse:_)) -> stateHistoryEntryInPeriod now p tse
+    (_, (tse:_)) -> stateHistoryStateInPeriod now p tse
 
 historicalStatesInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 historicalStatesInPeriod now p =
@@ -191,7 +206,7 @@ historicalStatesInPeriod now p =
     ((if p == AllTime
         then (Nothing :)
         else id) .
-     mapMaybe (stateHistoryEntryInPeriod now p) . unStateHistory . entryStateHistory)
+     mapMaybe (stateHistoryStateInPeriod now p) . unStateHistory . entryStateHistory)
 
 fromStateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 fromStateTransitionsInPeriod now p = map fst . stateTransitionsInPeriod now p
@@ -207,11 +222,11 @@ stateTransitionsInPeriod now p = concatMap go
     go' :: [StateHistoryEntry] -> [(Maybe TodoState, Maybe TodoState)]
     go' [] = []
     go' [she] =
-      case stateHistoryEntryInPeriod now p she of
+      case stateHistoryStateInPeriod now p she of
         Nothing -> []
         Just mts -> [(Nothing, mts)]
     go' (x:y:xs) =
-      case (,) <$> stateHistoryEntryInPeriod now p x <*> stateHistoryEntryInPeriod now p y of
+      case (,) <$> stateHistoryStateInPeriod now p x <*> stateHistoryStateInPeriod now p y of
         Just (tsx, tsy) -> (tsy, tsx) : go' (y : xs)
         _ -> go' (y : xs)
 
