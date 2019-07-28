@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Stats where
 
@@ -9,42 +10,119 @@ import Data.Map (Map)
 import Data.Maybe
 import Data.Time
 import Data.Tree
+import Path
 
 import Smos.Data
 
 import Smos.Report.Path
 import Smos.Report.Period
 
+data StatsReportContext =
+  StatsReportContext
+    { statsReportContextNow :: ZonedTime
+    , statsReportContextPeriod :: Period
+    , statsReportContextArchiveDir :: Path Abs Dir
+    , statsReportContextProjectsDir :: Path Abs Dir
+    , statsReportContextArchivedProjectsDir :: Path Abs Dir
+    }
+  deriving (Show, Generic)
+
 data StatsReport =
   StatsReport
-    { statsReportStateStatsReport :: StateStatsReport
+    { statsReportProjectStatsReport :: !ProjectStatsReport
+    , statsReportStateStatsReport :: !StateStatsReport
     }
   deriving (Show, Eq, Generic)
 
 instance Semigroup StatsReport where
   sr1 <> sr2 =
     StatsReport
-      { statsReportStateStatsReport =
+      { statsReportProjectStatsReport =
+          statsReportProjectStatsReport sr1 <> statsReportProjectStatsReport sr2
+      , statsReportStateStatsReport =
           statsReportStateStatsReport sr1 <> statsReportStateStatsReport sr2
       }
 
 instance Monoid StatsReport where
-  mempty = StatsReport { statsReportStateStatsReport=mempty}
+  mempty =
+    StatsReport {statsReportProjectStatsReport = mempty, statsReportStateStatsReport = mempty}
 
-makeStatsReport :: ZonedTime -> Period -> RootedPath -> SmosFile -> StatsReport
-makeStatsReport now p _ sf =
+makeStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> StatsReport
+makeStatsReport src@StatsReportContext {..} rp sf =
   StatsReport
-    { statsReportStateStatsReport =
-        makeStateStatsReport now p $ concatMap flatten $ smosFileForest sf
+    { statsReportProjectStatsReport = makeProjectsStatsReport src rp sf
+    , statsReportStateStatsReport =
+        makeStateStatsReport statsReportContextNow statsReportContextPeriod $
+        concatMap flatten $ smosFileForest sf
     }
+
+makeProjectsStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> ProjectStatsReport
+makeProjectsStatsReport StatsReportContext {..} rp _ =
+  ProjectStatsReport
+    { projectStatsReportArchivedProjects = countIf isArchivedProject
+    , projectStatsReportCurrentProjects = countIf isProject
+    , projectStatsReportTotalProjects = countIf $ isArchivedProject  || isProject
+    , projectStatsReportArchivedFiles = countIf isArchived
+    , projectStatsReportCurrentFiles = countIf $ not isArchived
+    , projectStatsReportTotalFiles = 1
+    }
+  where
+    isArchived = isProperPrefixOf statsReportContextArchiveDir $ resolveRootedPath rp
+    isArchivedProject =
+      isProperPrefixOf statsReportContextArchivedProjectsDir $ resolveRootedPath rp
+    isProject = isProperPrefixOf statsReportContextProjectsDir $ resolveRootedPath rp
+    countIf b =
+      if b
+        then 1
+        else 0
+
+data ProjectStatsReport =
+  ProjectStatsReport
+    { projectStatsReportCurrentProjects :: Int
+    , projectStatsReportArchivedProjects :: Int
+    , projectStatsReportTotalProjects :: Int
+    , projectStatsReportCurrentFiles :: Int
+    , projectStatsReportArchivedFiles :: Int
+    , projectStatsReportTotalFiles :: Int
+    }
+  deriving (Show, Eq, Generic)
+
+instance Semigroup ProjectStatsReport where
+  psr1 <> psr2 =
+    ProjectStatsReport
+      { projectStatsReportArchivedProjects =
+          projectStatsReportArchivedProjects psr1 + projectStatsReportArchivedProjects psr2
+      , projectStatsReportCurrentProjects =
+          projectStatsReportCurrentProjects psr1 + projectStatsReportCurrentProjects psr2
+      , projectStatsReportTotalProjects =
+          projectStatsReportTotalProjects psr1 + projectStatsReportTotalProjects psr2
+      , projectStatsReportArchivedFiles =
+          projectStatsReportArchivedFiles psr1 + projectStatsReportArchivedFiles psr2
+      , projectStatsReportCurrentFiles =
+          projectStatsReportCurrentFiles psr1 + projectStatsReportCurrentFiles psr2
+      , projectStatsReportTotalFiles =
+          projectStatsReportTotalFiles psr1 + projectStatsReportTotalFiles psr2
+      }
+
+instance Monoid ProjectStatsReport where
+  mempty =
+    ProjectStatsReport
+      { projectStatsReportArchivedProjects = 0
+      , projectStatsReportCurrentProjects = 0
+      , projectStatsReportTotalProjects = 0
+      , projectStatsReportArchivedFiles = 0
+      , projectStatsReportCurrentFiles = 0
+      , projectStatsReportTotalFiles = 0
+      }
+  mappend = (<>)
 
 data StateStatsReport =
   StateStatsReport
-    { stateStatsReportHistoricalStates :: Map (Maybe TodoState) Int
-    , stateStatsReportStates :: Map (Maybe TodoState) Int
-    , stateStatsReportFromStateTransitions :: Map (Maybe TodoState) Int
-    , stateStatsReportToStateTransitions :: Map (Maybe TodoState) Int
-    , stateStatsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
+    { stateStatsReportHistoricalStates :: !(Map (Maybe TodoState) Int)
+    , stateStatsReportStates :: !(Map (Maybe TodoState) Int)
+    , stateStatsReportFromStateTransitions :: !(Map (Maybe TodoState) Int)
+    , stateStatsReportToStateTransitions :: !(Map (Maybe TodoState) Int)
+    , stateStatsReportStateTransitions :: !(Map (Maybe TodoState, Maybe TodoState) Int)
     }
   deriving (Show, Eq, Generic)
 

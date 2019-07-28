@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -17,7 +18,8 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Path
-import Smos.Report.Period
+
+-- import Smos.Report.Period
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
@@ -29,24 +31,37 @@ import Smos.Query.Streaming
 stats :: StatsSettings -> Q ()
 stats StatsSettings {..} = do
   now <- liftIO getZonedTime
+  ad <- askArchiveDir
+  pd <- askProjectsDir
+  apd <- askArchivedProjectsDir
+  let src =
+        StatsReportContext
+          { statsReportContextNow = now
+          , statsReportContextPeriod = statsSetPeriod
+          , statsReportContextArchiveDir = ad
+          , statsReportContextProjectsDir = pd
+          , statsReportContextArchivedProjectsDir = apd
+          }
   sr <-
     runConduit $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .|
-    accumulateStatsReport now statsSetPeriod
+    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| accumulateStatsReport src
   liftIO $ putTableLn $ renderStatsReport sr
 
-accumulateStatsReport :: ZonedTime -> Period -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
-accumulateStatsReport zt p = go mempty
+accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
+accumulateStatsReport src = go mempty
   where
-    go sr = do
+    go !sr = do
       mf <- await
       case mf of
         Nothing -> return sr
-        Just (rp, sf) -> go $ sr <> makeStatsReport zt p rp sf
-
+        Just (rp, sf) -> go $ sr <> makeStatsReport src rp sf
 
 renderStatsReport :: StatsReport -> Table
-renderStatsReport StatsReport {..} = renderStateStatsReport statsReportStateStatsReport
+renderStatsReport StatsReport {..} =
+  mconcat
+    [ renderStateStatsReport statsReportStateStatsReport
+    , renderProjectsStatsReport statsReportProjectStatsReport
+    ]
 
 renderStateStatsReport :: StateStatsReport -> Table
 renderStateStatsReport StateStatsReport {..} =
@@ -70,18 +85,34 @@ renderStateStatsReport StateStatsReport {..} =
     ]
 
 formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk Text]]
-formatReportStates m =
-  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk $ T.pack $ show i]
+formatReportStates m = flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, intChunk i]
 
 formatReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
 formatReportStateTransitions m =
   flip map (M.toList m) $ \((mts1, mts2), i) ->
-    [mTodoStateChunk mts1, mTodoStateChunk mts2, chunk $ T.pack $ show i]
+    [mTodoStateChunk mts1, mTodoStateChunk mts2, intChunk i]
 
 formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportFromStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", chunk $ T.pack $ show i]
+  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", intChunk i]
 
 formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportToStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, chunk $ T.pack $ show i]
+  flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
+
+renderProjectsStatsReport :: ProjectStatsReport -> Table
+renderProjectsStatsReport ProjectStatsReport {..} =
+  formatAsTable $
+  [ [fore white $ chunk "Projects"]
+  , [chunk "Current Projects", intChunk projectStatsReportCurrentProjects]
+  , [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects]
+  , [chunk "Total Projects", intChunk projectStatsReportTotalProjects]
+  , [chunk ""]
+  , [fore white $ chunk "Files"]
+  , [chunk "Current Files", intChunk projectStatsReportCurrentFiles]
+  , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
+  , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
+  ]
+
+intChunk :: Int -> Chunk Text
+intChunk = chunk . T.pack . show

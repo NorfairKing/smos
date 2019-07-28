@@ -18,6 +18,7 @@ data Flags =
     , flagWorkflowDir :: Maybe FilePath
     , flagArchiveDir :: Maybe FilePath
     , flagProjectsDir :: Maybe FilePath
+    , flagArchivedProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -27,6 +28,7 @@ data Environment =
     , envWorkflowDir :: Maybe FilePath
     , envArchiveDir :: Maybe FilePath
     , envProjectsDir :: Maybe FilePath
+    , envArchivedProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -35,6 +37,7 @@ data Configuration =
     { confWorkflowDir :: Maybe FilePath
     , confArchiveDir :: Maybe FilePath
     , confProjectsDir :: Maybe FilePath
+    , confArchivedProjectsDir :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -64,6 +67,14 @@ backToConfiguration SmosReportConfig {..} =
                  ProjectsInWorkflow ard -> fromRelDir ard
                  ProjectsInHome ard -> "~/" <> fromRelDir ard
                  ProjectsAbsolute aad -> fromAbsDir aad
+    , confArchivedProjectsDir =
+        if smosReportConfigArchivedProjectsFileSpec == defaultArchivedProjectsDirSpec
+          then Nothing
+          else Just $
+               case smosReportConfigArchivedProjectsFileSpec of
+                 ArchivedProjectsInArchive ard -> fromRelDir ard
+                 ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
+                 ArchivedProjectsAbsolute aad -> fromAbsDir aad
     }
 
 instance Validity Configuration
@@ -74,9 +85,11 @@ instance ToJSON Configuration where
       [ "workflow-dir" .= confWorkflowDir
       , "archive-dir" .= confArchiveDir
       , "projects-dir" .= confProjectsDir
+      , "archived-projects-dir" .= confArchivedProjectsDir
       ]
 
 instance FromJSON Configuration where
   parseJSON =
     withObject "Configuration" $ \o ->
-      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir"
+      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir" <*>
+      o .:? "archived-projects-dir"

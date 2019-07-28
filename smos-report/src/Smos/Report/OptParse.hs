@@ -43,17 +43,25 @@ combineToConfig src Flags {..} Environment {..} mc = do
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ProjectsAbsolute ad
+  apfs <-
+    case msum [flagArchivedProjectsDir, envArchivedProjectsDir, mc >>= confArchivedProjectsDir] of
+      Nothing -> pure $ smosReportConfigArchivedProjectsFileSpec src
+      Just wd -> do
+        ad <- resolveDir' wd
+        pure $ ArchivedProjectsAbsolute ad
   pure $
     SmosReportConfig
       { smosReportConfigWorkflowFileSpec = wfs
       , smosReportConfigArchiveFileSpec = afs
       , smosReportConfigProjectsFileSpec = pfs
+      , smosReportConfigArchivedProjectsFileSpec = apfs
       }
 
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag <*>
-  parseProjectsDirFlag
+  parseProjectsDirFlag <*>
+  parseArchivedProjectsDirFlag
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
@@ -90,6 +98,17 @@ parseProjectsDirFlag =
        , value Nothing
        ])
 
+parseArchivedProjectsDirFlag :: Parser (Maybe FilePath)
+parseArchivedProjectsDirFlag =
+  option
+    (Just <$> str)
+    (mconcat
+       [ metavar "FILEPATH"
+       , help "The archived projects directory to use"
+       , long "archived-projects-dir"
+       , value Nothing
+       ])
+
 getEnvironment :: IO Environment
 getEnvironment = do
   env <- System.getEnvironment
@@ -101,7 +120,10 @@ getEnvironment = do
       , envWorkflowDir =
           msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
       , envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
-      , envProjectsDir = msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
+      , envProjectsDir =
+          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
+      , envArchivedProjectsDir =
+          msum $ map getSmosEnv ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))

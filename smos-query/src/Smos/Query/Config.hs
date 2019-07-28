@@ -6,6 +6,8 @@ module Smos.Query.Config
   , Q
   , askWorkflowDir
   , askArchiveDir
+  , askProjectsDir
+  , askArchivedProjectsDir
   , module Smos.Report.Config
   , module Control.Monad.IO.Class
   , module Control.Monad.Reader
@@ -38,4 +40,14 @@ askWorkflowDir = do
 askArchiveDir :: Q (Path Abs Dir)
 askArchiveDir = do
   func <- asks (resolveReportArchiveDir . smosQueryConfigReportConfig)
+  liftIO func
+
+askProjectsDir :: Q (Path Abs Dir)
+askProjectsDir = do
+  func <- asks (resolveReportProjectsDir . smosQueryConfigReportConfig)
+  liftIO func
+
+askArchivedProjectsDir :: Q (Path Abs Dir)
+askArchivedProjectsDir = do
+  func <- asks (resolveReportArchivedProjectsDir . smosQueryConfigReportConfig)
   liftIO func
