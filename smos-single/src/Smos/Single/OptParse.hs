@@ -7,7 +7,6 @@ module Smos.Single.OptParse
 
 import qualified Data.Text as T
 import Path
-import Path.IO
 
 import Control.Monad
 

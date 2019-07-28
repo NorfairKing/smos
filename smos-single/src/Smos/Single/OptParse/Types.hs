@@ -1,6 +1,5 @@
 module Smos.Single.OptParse.Types where
 
-import Data.Text (Text)
 import Path
 
 import Smos.Data
