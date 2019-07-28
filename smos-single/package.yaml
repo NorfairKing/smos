@@ -16,6 +16,7 @@ library:
     - optparse-applicative
     - path
     - path-io
+    - smos-data
     - smos-report
     - text
     - time

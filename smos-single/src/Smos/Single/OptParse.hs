@@ -6,14 +6,17 @@ module Smos.Single.OptParse
   ) where
 
 import qualified Data.Text as T
-import Path.IO
 import Path
+import Path.IO
 
 import Control.Monad
 
 import qualified System.Environment as System
+import System.Exit
 
 import Options.Applicative
+
+import Smos.Data
 
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -33,7 +36,10 @@ getConfig Flags {..} Environment {..} =
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
-  let setTask = T.pack $ unwords flagTaskPieces
+  setTask <-
+    case parseHeader $ T.pack $ unwords flagTaskPieces of
+      Left err -> die $ "Failed to parse header: " <> err
+      Right h -> pure h
   setReportSettings <-
     Report.combineToConfig
       Report.defaultReportConfig
