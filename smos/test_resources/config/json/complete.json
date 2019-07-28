@@ -2,6 +2,7 @@
     "archive-dir": null,
     "workflow-dir": null,
     "projects-dir": null,
+    "archived-projects-dir": null,
     "keys": {
         "reports": {
             "next-action": [
