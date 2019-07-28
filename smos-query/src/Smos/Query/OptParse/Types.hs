@@ -95,8 +95,7 @@ data LogFlags =
 
 data StatsFlags =
   StatsFlags
-    { statsFlagFilter :: Maybe Filter
-    , statsFlagPeriodFlags :: Maybe Period
+    { statsFlagPeriodFlags :: Maybe Period
     }
   deriving (Show, Eq, Generic)
 
@@ -187,8 +186,7 @@ data LogSettings =
 
 data StatsSettings =
   StatsSettings
-    { statsSetFilter :: Maybe Filter
-    , statsSetPeriod :: Period
+    { statsSetPeriod :: Period
     }
   deriving (Show, Eq, Generic)
 

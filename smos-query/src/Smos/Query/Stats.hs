@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -10,12 +11,15 @@ import qualified Data.Text as T
 import Data.Time
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
+
+-- import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Data
 
-import Smos.Report.Filter
+import Smos.Report.Path
+
+-- import Smos.Report.Period
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
@@ -27,48 +31,89 @@ import Smos.Query.Streaming
 stats :: StatsSettings -> Q ()
 stats StatsSettings {..} = do
   now <- liftIO getZonedTime
-  es <-
-    sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) statsSetFilter) .|
-    smosCursorCurrents .|
-    C.map snd
-  liftIO $ putTableLn $ renderStatsReport $ makeStatsReport now statsSetPeriod es
+  ad <- askArchiveDir
+  pd <- askProjectsDir
+  apd <- askArchivedProjectsDir
+  let src =
+        StatsReportContext
+          { statsReportContextNow = now
+          , statsReportContextPeriod = statsSetPeriod
+          , statsReportContextArchiveDir = ad
+          , statsReportContextProjectsDir = pd
+          , statsReportContextArchivedProjectsDir = apd
+          }
+  sr <-
+    runConduit $
+    streamAllSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    accumulateStatsReport src
+  liftIO $ putTableLn $ renderStatsReport sr
+
+accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
+accumulateStatsReport src = go mempty
+  where
+    go !sr = do
+      mf <- await
+      case mf of
+        Nothing -> return sr
+        Just (rp, sf) -> go $ sr <> makeStatsReport src rp sf
 
 renderStatsReport :: StatsReport -> Table
 renderStatsReport StatsReport {..} =
+  mconcat
+    [ renderStateStatsReport statsReportStateStatsReport
+    , renderProjectsStatsReport statsReportProjectStatsReport
+    ]
+
+renderStateStatsReport :: StateStatsReport -> Table
+renderStateStatsReport StateStatsReport {..} =
   formatAsTable $
   concat
     [ [[fore white $ chunk "Historical states"]]
-    , formatReportStates statsReportHistoricalStates
+    , formatReportStates stateStatsReportHistoricalStates
     , [[chunk ""]]
     , [[fore white $ chunk "Current states"]]
-    , formatReportStates statsReportStates
+    , formatReportStates stateStatsReportStates
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions"]]
-    , formatReportStateTransitions statsReportStateTransitions
+    , formatReportStateTransitions stateStatsReportStateTransitions
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions (from)"]]
-    , formatReportFromStateTransitions statsReportFromStateTransitions
+    , formatReportFromStateTransitions stateStatsReportFromStateTransitions
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions (to)"]]
-    , formatReportToStateTransitions statsReportToStateTransitions
+    , formatReportToStateTransitions stateStatsReportToStateTransitions
     , [[chunk ""]]
     ]
 
 formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk Text]]
-formatReportStates m =
-  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk $ T.pack $ show i]
+formatReportStates m = flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, intChunk i]
 
 formatReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
 formatReportStateTransitions m =
   flip map (M.toList m) $ \((mts1, mts2), i) ->
-    [mTodoStateChunk mts1, mTodoStateChunk mts2, chunk $ T.pack $ show i]
+    [mTodoStateChunk mts1, mTodoStateChunk mts2, intChunk i]
 
 formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportFromStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", chunk $ T.pack $ show i]
+  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", intChunk i]
 
 formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportToStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, chunk $ T.pack $ show i]
+  flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
+
+renderProjectsStatsReport :: ProjectStatsReport -> Table
+renderProjectsStatsReport ProjectStatsReport {..} =
+  formatAsTable $
+  [ [fore white $ chunk "All Projects"]
+  , [chunk "Current Projects", intChunk projectStatsReportCurrentProjects]
+  , [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects]
+  , [chunk "Total Projects", intChunk projectStatsReportTotalProjects]
+  , [chunk ""]
+  , [fore white $ chunk "Files"]
+  , [chunk "Current Files", intChunk projectStatsReportCurrentFiles]
+  , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
+  , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
+  ]
+
+intChunk :: Int -> Chunk Text
+intChunk = chunk . T.pack . show
