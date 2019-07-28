@@ -79,12 +79,7 @@ getDispatch c =
           , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
           }
     CommandStats StatsFlags {..} ->
-      pure $
-      DispatchStats
-        StatsSettings
-          { statsSetFilter = statsFlagFilter
-          , statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags
-          }
+      pure $ DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
 
 getSettings :: SmosQueryConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosQueryConfig
 getSettings SmosQueryConfig {..} Flags {..} Environment {..} mc = do
@@ -234,7 +229,7 @@ parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
-    parser = CommandStats <$> (StatsFlags <$> parseFilterArgs <*> parsePeriod)
+    parser = CommandStats <$> (StatsFlags <$> parsePeriod)
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags <*> parseHideArchiveFlag

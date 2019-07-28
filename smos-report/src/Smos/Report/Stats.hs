@@ -8,38 +8,93 @@ import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
 import Data.Time
+import Data.Tree
 
 import Smos.Data
 
+import Smos.Report.Path
 import Smos.Report.Period
 
 data StatsReport =
   StatsReport
-    { statsReportHistoricalStates :: Map (Maybe TodoState) Int
-    , statsReportStates :: Map (Maybe TodoState) Int
-    , statsReportFromStateTransitions :: Map (Maybe TodoState) Int
-    , statsReportToStateTransitions :: Map (Maybe TodoState) Int
-    , statsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
+    { statsReportStateStatsReport :: StateStatsReport
     }
   deriving (Show, Eq, Generic)
 
-makeStatsReport :: ZonedTime -> Period -> [Entry] -> StatsReport
-makeStatsReport now p es =
+instance Semigroup StatsReport where
+  sr1 <> sr2 =
+    StatsReport
+      { statsReportStateStatsReport =
+          statsReportStateStatsReport sr1 <> statsReportStateStatsReport sr2
+      }
+
+instance Monoid StatsReport where
+  mempty = StatsReport { statsReportStateStatsReport=mempty}
+
+makeStatsReport :: ZonedTime -> Period -> RootedPath -> SmosFile -> StatsReport
+makeStatsReport now p _ sf =
   StatsReport
-    { statsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
-    , statsReportHistoricalStates = getCount $ historicalStatesInPeriod now p es
-    , statsReportFromStateTransitions =
-        getCount $ fromStateTransitionsInPeriod now p es
-    , statsReportToStateTransitions =
-        getCount $ toStateTransitionsInPeriod now p es
-    , statsReportStateTransitions = getCount $ stateTransitionsInPeriod now p es
+    { statsReportStateStatsReport =
+        makeStateStatsReport now p $ concatMap flatten $ smosFileForest sf
+    }
+
+data StateStatsReport =
+  StateStatsReport
+    { stateStatsReportHistoricalStates :: Map (Maybe TodoState) Int
+    , stateStatsReportStates :: Map (Maybe TodoState) Int
+    , stateStatsReportFromStateTransitions :: Map (Maybe TodoState) Int
+    , stateStatsReportToStateTransitions :: Map (Maybe TodoState) Int
+    , stateStatsReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int
+    }
+  deriving (Show, Eq, Generic)
+
+instance Semigroup StateStatsReport where
+  sr1 <> sr2 =
+    StateStatsReport
+      { stateStatsReportHistoricalStates =
+          addMapOfInts (stateStatsReportHistoricalStates sr1) (stateStatsReportHistoricalStates sr2)
+      , stateStatsReportStates =
+          addMapOfInts (stateStatsReportStates sr1) (stateStatsReportStates sr2)
+      , stateStatsReportFromStateTransitions =
+          addMapOfInts
+            (stateStatsReportFromStateTransitions sr1)
+            (stateStatsReportFromStateTransitions sr2)
+      , stateStatsReportToStateTransitions =
+          addMapOfInts
+            (stateStatsReportToStateTransitions sr1)
+            (stateStatsReportToStateTransitions sr2)
+      , stateStatsReportStateTransitions =
+          addMapOfInts (stateStatsReportStateTransitions sr1) (stateStatsReportStateTransitions sr2)
+      }
+
+addMapOfInts :: Ord a => Map a Int -> Map a Int -> Map a Int
+addMapOfInts = M.unionWith (+)
+
+instance Monoid StateStatsReport where
+  mempty =
+    StateStatsReport
+      { stateStatsReportHistoricalStates = M.empty
+      , stateStatsReportStates = M.empty
+      , stateStatsReportFromStateTransitions = M.empty
+      , stateStatsReportToStateTransitions = M.empty
+      , stateStatsReportStateTransitions = M.empty
+      }
+  mappend = (<>)
+
+makeStateStatsReport :: ZonedTime -> Period -> [Entry] -> StateStatsReport
+makeStateStatsReport now p es =
+  StateStatsReport
+    { stateStatsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
+    , stateStatsReportHistoricalStates = getCount $ historicalStatesInPeriod now p es
+    , stateStatsReportFromStateTransitions = getCount $ fromStateTransitionsInPeriod now p es
+    , stateStatsReportToStateTransitions = getCount $ toStateTransitionsInPeriod now p es
+    , stateStatsReportStateTransitions = getCount $ stateTransitionsInPeriod now p es
     }
 
 withinPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Bool
 withinPeriod now p = filterPeriod now p . stateHistoryEntryTimestamp
 
-stateHistoryEntryInPeriod ::
-     ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryEntryInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
 stateHistoryEntryInPeriod now p tse =
   if withinPeriod now p tse
     then Just (stateHistoryEntryNewState tse)
@@ -58,19 +113,15 @@ historicalStatesInPeriod now p =
     ((if p == AllTime
         then (Nothing :)
         else id) .
-     mapMaybe (stateHistoryEntryInPeriod now p) .
-     unStateHistory . entryStateHistory)
+     mapMaybe (stateHistoryEntryInPeriod now p) . unStateHistory . entryStateHistory)
 
-fromStateTransitionsInPeriod ::
-     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+fromStateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 fromStateTransitionsInPeriod now p = map fst . stateTransitionsInPeriod now p
 
-toStateTransitionsInPeriod ::
-     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+toStateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 toStateTransitionsInPeriod now p = map snd . stateTransitionsInPeriod now p
 
-stateTransitionsInPeriod ::
-     ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+stateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
 stateTransitionsInPeriod now p = concatMap go
   where
     go :: Entry -> [(Maybe TodoState, Maybe TodoState)]
@@ -82,8 +133,7 @@ stateTransitionsInPeriod now p = concatMap go
         Nothing -> []
         Just mts -> [(Nothing, mts)]
     go' (x:y:xs) =
-      case (,) <$> stateHistoryEntryInPeriod now p x <*>
-           stateHistoryEntryInPeriod now p y of
+      case (,) <$> stateHistoryEntryInPeriod now p x <*> stateHistoryEntryInPeriod now p y of
         Just (tsx, tsy) -> (tsy, tsx) : go' (y : xs)
         _ -> go' (y : xs)
 

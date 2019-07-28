@@ -10,12 +10,14 @@ import qualified Data.Text as T
 import Data.Time
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
+
+-- import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Data
 
-import Smos.Report.Filter
+import Smos.Report.Path
+import Smos.Report.Period
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
@@ -27,32 +29,43 @@ import Smos.Query.Streaming
 stats :: StatsSettings -> Q ()
 stats StatsSettings {..} = do
   now <- liftIO getZonedTime
-  es <-
-    sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) statsSetFilter) .|
-    smosCursorCurrents .|
-    C.map snd
-  liftIO $ putTableLn $ renderStatsReport $ makeStatsReport now statsSetPeriod es
+  sr <-
+    runConduit $
+    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    accumulateStatsReport now statsSetPeriod
+  liftIO $ putTableLn $ renderStatsReport sr
+
+accumulateStatsReport :: ZonedTime -> Period -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
+accumulateStatsReport zt p = go mempty
+  where
+    go sr = do
+      mf <- await
+      case mf of
+        Nothing -> return sr
+        Just (rp, sf) -> go $ sr <> makeStatsReport zt p rp sf
+
 
 renderStatsReport :: StatsReport -> Table
-renderStatsReport StatsReport {..} =
+renderStatsReport StatsReport {..} = renderStateStatsReport statsReportStateStatsReport
+
+renderStateStatsReport :: StateStatsReport -> Table
+renderStateStatsReport StateStatsReport {..} =
   formatAsTable $
   concat
     [ [[fore white $ chunk "Historical states"]]
-    , formatReportStates statsReportHistoricalStates
+    , formatReportStates stateStatsReportHistoricalStates
     , [[chunk ""]]
     , [[fore white $ chunk "Current states"]]
-    , formatReportStates statsReportStates
+    , formatReportStates stateStatsReportStates
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions"]]
-    , formatReportStateTransitions statsReportStateTransitions
+    , formatReportStateTransitions stateStatsReportStateTransitions
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions (from)"]]
-    , formatReportFromStateTransitions statsReportFromStateTransitions
+    , formatReportFromStateTransitions stateStatsReportFromStateTransitions
     , [[chunk ""]]
     , [[fore white $ chunk "State Transitions (to)"]]
-    , formatReportToStateTransitions statsReportToStateTransitions
+    , formatReportToStateTransitions stateStatsReportToStateTransitions
     , [[chunk ""]]
     ]
 
