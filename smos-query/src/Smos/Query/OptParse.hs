@@ -249,13 +249,18 @@ parseFilterArgs =
   many
     (argument
        (maybeReader (parseFilter . T.pack))
-       (mconcat [metavar "FILTER", help "A filter to filter entries by"]))
+       (mconcat [metavar "FILTER", help "A filter to filter entries by", completer $ mkCompleter$ pure . filterCompleter]))
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =
   argument
     (Just <$> (maybeReader (parseFilter . T.pack)))
-    (mconcat [value Nothing, metavar "FILTER", help "A filter to filter entries by"])
+    (mconcat
+       [ value Nothing
+       , metavar "FILTER"
+       , help "A filter to filter entries by"
+       , completer $ mkCompleter $ pure . filterCompleter
+       ])
 
 parseProjectionArgs :: Parser (Maybe Projection)
 parseProjectionArgs =
