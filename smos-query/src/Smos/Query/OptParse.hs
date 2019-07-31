@@ -80,6 +80,7 @@ getDispatch c =
           }
     CommandStats StatsFlags {..} ->
       pure $ DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+    CommandTags TagsFlags {..} -> pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
 
 getSettings :: SmosQueryConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosQueryConfig
 getSettings SmosQueryConfig {..} Flags {..} Environment {..} mc = do
@@ -156,6 +157,7 @@ parseCommand =
     , command "projects" parseCommandProjects
     , command "log" parseCommandLog
     , command "stats" parseCommandStats
+    , command "tags" parseCommandTags
     ]
 
 parseCommandEntry :: ParserInfo Command
@@ -231,6 +233,12 @@ parseCommandStats = info parser modifier
     modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
     parser = CommandStats <$> (StatsFlags <$> parsePeriod)
 
+parseCommandTags :: ParserInfo Command
+parseCommandTags = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print all the tags that are in use"
+    parser = CommandTags <$> (TagsFlags <$> parseFilterArgs)
+
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags <*> parseHideArchiveFlag
 
@@ -249,7 +257,11 @@ parseFilterArgs =
   many
     (argument
        (maybeReader (parseFilter . T.pack))
-       (mconcat [metavar "FILTER", help "A filter to filter entries by", completer $ mkCompleter$ pure . filterCompleter]))
+       (mconcat
+          [ metavar "FILTER"
+          , help "A filter to filter entries by"
+          , completer $ mkCompleter $ pure . filterCompleter
+          ]))
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =

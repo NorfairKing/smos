@@ -115,5 +115,3 @@ renderProjectsStatsReport ProjectStatsReport {..} =
   , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
   ]
 
-intChunk :: Int -> Chunk Text
-intChunk = chunk . T.pack . show

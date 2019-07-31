@@ -17,6 +17,7 @@ import Smos.Query.OptParse
 import Smos.Query.OptParse.Types
 import Smos.Query.Projects
 import Smos.Query.Stats
+import Smos.Query.Tags
 import Smos.Query.Waiting
 
 smosQuery :: SmosQueryConfig -> IO ()
@@ -33,3 +34,4 @@ execute (DispatchAgenda as) = agenda as
 execute DispatchProjects = projects
 execute (DispatchLog ss) = log ss
 execute (DispatchStats ss) = stats ss
+execute (DispatchTags ts) = tags ts
