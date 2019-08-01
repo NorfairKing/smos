@@ -268,7 +268,7 @@ data CompleterOption
 
 filterCompleterOptions :: [CompleterOption]
 filterCompleterOptions =
-  [ Nullary "tag" ["home", "online", "toast", "work"]
+  [ Nullary "tag" ["out", "online","offline", "toast", "personal", "work"]
   , Nullary "state" ["CANCELLED", "DONE", "NEXT", "READY", "STARTED", "TODO", "WAITING"]
   , Nullary "file" []
   , Nullary "level" []
