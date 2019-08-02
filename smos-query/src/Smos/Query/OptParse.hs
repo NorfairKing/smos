@@ -45,6 +45,7 @@ getDispatch c =
           , entrySetProjection = entryFlagProjection
           , entrySetSorter = entryFlagSorter
           }
+    CommandWork WorkFlags {..} -> pure $ DispatchWork WorkSettings {workSetFilter = workFlagFilter}
     CommandWaiting WaitingFlags {..} ->
       pure $ DispatchWaiting WaitingSettings {waitingSetFilter = waitingFlagFilter}
     CommandNext NextFlags {..} -> pure $ DispatchNext NextSettings {nextSetFilter = nextFlagFilter}
@@ -150,6 +151,7 @@ parseCommand =
   hsubparser $
   mconcat
     [ command "entry" parseCommandEntry
+    , command "work" parseCommandWork
     , command "waiting" parseCommandWaiting
     , command "next" parseCommandNext
     , command "clock" parseCommandClock
@@ -166,6 +168,12 @@ parseCommandEntry = info parser modifier
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
       CommandEntry <$> (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs)
+
+parseCommandWork :: ParserInfo Command
+parseCommandWork = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Show the work overview"
+    parser = CommandWork <$> (WorkFlags <$> parseFilterArgs)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier

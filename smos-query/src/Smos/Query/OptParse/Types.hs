@@ -20,6 +20,7 @@ import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
 import Smos.Report.Period
+import Smos.Report.Work
 import Smos.Report.Projection
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
@@ -36,6 +37,7 @@ data Instructions =
 
 data Command
   = CommandEntry EntryFlags
+  | CommandWork WorkFlags
   | CommandWaiting WaitingFlags
   | CommandNext NextFlags
   | CommandClock ClockFlags
@@ -51,6 +53,15 @@ data EntryFlags =
     { entryFlagFilter :: Maybe Filter
     , entryFlagProjection :: Maybe Projection
     , entryFlagSorter :: Maybe Sorter
+    }
+  deriving (Show, Eq)
+
+data WorkFlags =
+  WorkFlags
+    { workFlagContext :: Text
+    , workFlagBrainpower :: Text
+    , workFlagTime :: Text
+    , workFlagFilter :: Maybe Filter
     }
   deriving (Show, Eq)
 
@@ -134,6 +145,7 @@ instance FromJSON Configuration where
 
 data Dispatch
   = DispatchEntry EntrySettings
+  | DispatchWork WorkSettings
   | DispatchWaiting WaitingSettings
   | DispatchNext NextSettings
   | DispatchClock ClockSettings
@@ -149,6 +161,12 @@ data EntrySettings =
     { entrySetFilter :: Maybe Filter
     , entrySetProjection :: Maybe Projection
     , entrySetSorter :: Maybe Sorter
+    }
+  deriving (Show, Eq, Generic)
+
+data WorkSettings =
+  WorkSettings
+    { workSetFilter :: Maybe Filter
     }
   deriving (Show, Eq, Generic)
 

@@ -19,6 +19,7 @@ import Smos.Query.Projects
 import Smos.Query.Stats
 import Smos.Query.Tags
 import Smos.Query.Waiting
+import Smos.Query.Work
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do
@@ -27,6 +28,7 @@ smosQuery sqc = do
 
 execute :: Dispatch -> Q ()
 execute (DispatchEntry es) = entry es
+execute (DispatchWork ws) = work ws
 execute (DispatchWaiting ws) = waiting ws
 execute (DispatchNext ns) = next ns
 execute (DispatchClock cs) = clock cs
