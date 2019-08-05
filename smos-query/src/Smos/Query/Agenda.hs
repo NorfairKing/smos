@@ -105,7 +105,7 @@ formatAgendaEntry now AgendaEntry {..} =
            | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
            | otherwise -> id
    in [ func $ rootedPathChunk agendaEntryFilePath
-      , func $ chunk $ timestampText agendaEntryTimestamp
+      , func $ chunk $ timestampPrettyText agendaEntryTimestamp
       , func $ chunk $ T.pack $ printf "%+3dd" d
       , timestampNameChunk $ agendaEntryTimestampName
       , maybe (chunk "") todoStateChunk agendaEntryTodoState

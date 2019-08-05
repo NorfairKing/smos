@@ -58,8 +58,11 @@ module Smos.Data.Types
   , Timestamp(..)
   , timestampString
   , timestampText
+  , timestampPrettyString
+  , timestampPrettyText
   , timestampDayFormat
   , timestampLocalTimeFormat
+  , timestampLocalTimePrettyFormat
   , parseTimestampString
   , parseTimestampText
   , timestampDay
@@ -431,6 +434,9 @@ timestampDayFormat = "%F"
 timestampLocalTimeFormat :: String
 timestampLocalTimeFormat = "%F %T%Q"
 
+timestampLocalTimePrettyFormat :: String
+timestampLocalTimePrettyFormat = "%F %T"
+
 timestampString :: Timestamp -> String
 timestampString ts =
   case ts of
@@ -439,6 +445,15 @@ timestampString ts =
 
 timestampText :: Timestamp -> Text
 timestampText = T.pack . timestampString
+
+timestampPrettyString :: Timestamp -> String
+timestampPrettyString ts =
+  case ts of
+    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
+    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimePrettyFormat lt
+
+timestampPrettyText :: Timestamp -> Text
+timestampPrettyText = T.pack . timestampPrettyString
 
 parseTimestampString :: String -> Maybe Timestamp
 parseTimestampString s =
