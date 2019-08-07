@@ -176,7 +176,10 @@ smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m (
 smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent = \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrent = \(rf, fc) -> (rf, forestCursorCurrent fc)
+
+forestCursorCurrent :: ForestCursor a -> a
+forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest

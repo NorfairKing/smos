@@ -34,27 +34,35 @@ work WorkSettings {..} = do
   liftIO $ putTableLn $ renderWorkReport wr
 
 produceWorkReport :: SmosReportConfig -> ContextName -> Maybe Filter -> Q WorkReport
-produceWorkReport src cn mf =
-  case M.lookup cn $ smosReportConfigContexts src of
+produceWorkReport src cn mf = do
+  let contexts = smosReportConfigContexts src
+  case M.lookup cn contexts of
     Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
     Just cf -> do
       let f =
             case mf of
               Nothing -> cf
               Just af -> FilterAnd cf af
-      es <-
-        sourceToList $
+      let wrc =
+            WorkReportContext
+              {workReportContextCurrentContext = f, workReportContextContexts = contexts}
+      runConduit $
         streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
-        C.filter (\(rp, fc) -> filterPredicate f rp fc) .|
-        smosCursorCurrents .|
-        C.filter (isNextAction . snd)
-      pure $ WorkReport {workReportEntries = es}
+        C.filter (isNextAction . forestCursorCurrent . snd) .|
+        C.map (uncurry $ makeWorkReport wrc) .|
+        accumulateMonoid
 
 renderWorkReport :: WorkReport -> Table
 renderWorkReport WorkReport {..} =
-  formatAsTable $
-  flip map workReportEntries $ \(rp, e) ->
-    [ rootedPathChunk rp
-    , maybe (chunk "") todoStateChunk $ entryState e
-    , headerChunk $ entryHeader e
-    ]
+  mconcat $ concat
+    [[ formatAsTable $ map (uncurry entryLine) workReportResultEntries]
+    , if null workReportEntriesWithoutContext then [] else [ formatAsTable $
+      [fore red $ chunk "WARNING, the following Entries don't match any context:"] :
+      map (uncurry entryLine) workReportEntriesWithoutContext
+    ]]
+  where
+    entryLine rp e =
+      [ rootedPathChunk rp
+      , maybe (chunk "") todoStateChunk $ entryState e
+      , headerChunk $ entryHeader e
+      ]
