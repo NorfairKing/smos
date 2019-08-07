@@ -59,24 +59,25 @@ renderWorkReport :: ZonedTime -> WorkReport -> Table
 renderWorkReport now WorkReport {..} =
   mconcat $
   concat
-    [ [ formatAsTable $
-        [fore white $ chunk "Agenda:"] :
-        map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)
-      ]
-    , [ formatAsTable $
-        [[chunk " "], [fore white $ chunk "Next actions:"]] ++
-        map (uncurry entryLine) workReportResultEntries
-      ]
+    [ sectionHeading  $ "Today's agenda:"
+    , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
+    , spacer
+    , sectionHeading $ "Next actions:"
+    , [formatAsTable $ map (uncurry entryLine) workReportResultEntries]
     , if null workReportEntriesWithoutContext
         then []
-        else [ formatAsTable $
-               [ [chunk " "]
-               , [fore red $ chunk "WARNING, the following Entries don't match any context:"]
-               ] ++
-               map (uncurry entryLine) workReportEntriesWithoutContext
-             ]
+        else concat
+               [ spacer
+               , heading $
+                 fore red $ chunk "WARNING, the following Entries don't match any context:"
+               , [formatAsTable $ map (uncurry entryLine) workReportEntriesWithoutContext]
+               ]
     ]
   where
+    sectionHeading t =
+       heading $ fore white $ chunk t
+    heading c = [formatAsTable $ [[c]]]
+    spacer = [formatAsTable $ [[chunk " "]]]
     entryLine rp e =
       [ rootedPathChunk rp
       , maybe (chunk "") todoStateChunk $ entryState e
