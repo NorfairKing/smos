@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -7,6 +8,7 @@
 module Smos.Report.Config
   ( SmosReportConfig(..)
   , defaultReportConfig
+  , defaultWorkBaseFilter
   , WorkflowDirSpec(..)
   , defaultWorkflowDirSpec
   , resolveWorkflowDir
@@ -45,6 +47,7 @@ data SmosReportConfig =
     , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
     , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter :: Maybe Filter
     , smosReportConfigContexts :: Map ContextName Filter
     }
   deriving (Show, Eq, Generic)
@@ -56,8 +59,12 @@ defaultReportConfig =
     , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
     , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter = defaultWorkBaseFilter
     , smosReportConfigContexts = M.fromList []
     }
+
+defaultWorkBaseFilter :: Maybe Filter
+defaultWorkBaseFilter = Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)

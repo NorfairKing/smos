@@ -8,6 +8,7 @@ module Smos.Query.Work
 
 import qualified Data.Map as M
 import qualified Data.Text as T
+import Data.Time
 
 import System.Exit
 
@@ -18,10 +19,10 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Filter
-import Smos.Report.Next
 import Smos.Report.Streaming
 import Smos.Report.Work
 
+import Smos.Query.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
@@ -29,9 +30,10 @@ import Smos.Query.Streaming
 
 work :: WorkSettings -> Q ()
 work WorkSettings {..} = do
+  now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
   wr <- produceWorkReport src workSetContext workSetFilter
-  liftIO $ putTableLn $ renderWorkReport wr
+  liftIO $ putTableLn $ renderWorkReport now wr
 
 produceWorkReport :: SmosReportConfig -> ContextName -> Maybe Filter -> Q WorkReport
 produceWorkReport src cn mf = do
@@ -39,27 +41,41 @@ produceWorkReport src cn mf = do
   case M.lookup cn contexts of
     Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
     Just cf -> do
-      let f =
-            case mf of
-              Nothing -> cf
-              Just af -> FilterAnd cf af
+      now <- liftIO getZonedTime
       let wrc =
             WorkReportContext
-              {workReportContextCurrentContext = f, workReportContextContexts = contexts}
+              { workReportContextNow = now
+              , workReportContextBaseFilter = smosReportConfigWorkBaseFilter src
+              , workReportContextCurrentContext = cf
+              , workReportContextAdditionalFilter = mf
+              , workReportContextContexts = contexts
+              }
       runConduit $
         streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
-        C.filter (isNextAction . forestCursorCurrent . snd) .|
         C.map (uncurry $ makeWorkReport wrc) .|
         accumulateMonoid
 
-renderWorkReport :: WorkReport -> Table
-renderWorkReport WorkReport {..} =
-  mconcat $ concat
-    [[ formatAsTable $ map (uncurry entryLine) workReportResultEntries]
-    , if null workReportEntriesWithoutContext then [] else [ formatAsTable $
-      [fore red $ chunk "WARNING, the following Entries don't match any context:"] :
-      map (uncurry entryLine) workReportEntriesWithoutContext
-    ]]
+renderWorkReport :: ZonedTime -> WorkReport -> Table
+renderWorkReport now WorkReport {..} =
+  mconcat $
+  concat
+    [ [ formatAsTable $
+        [fore white $ chunk "Agenda:"] :
+        map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)
+      ]
+    , [ formatAsTable $
+        [[chunk " "], [fore white $ chunk "Next actions:"]] ++
+        map (uncurry entryLine) workReportResultEntries
+      ]
+    , if null workReportEntriesWithoutContext
+        then []
+        else [ formatAsTable $
+               [ [chunk " "]
+               , [fore red $ chunk "WARNING, the following Entries don't match any context:"]
+               ] ++
+               map (uncurry entryLine) workReportEntriesWithoutContext
+             ]
+    ]
   where
     entryLine rp e =
       [ rootedPathChunk rp

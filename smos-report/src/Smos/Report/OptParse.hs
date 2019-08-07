@@ -9,9 +9,9 @@ import System.Exit
 import Control.Arrow
 import Control.Monad
 
-import Data.Maybe
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
+import Data.Maybe
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 
 import Path
@@ -56,6 +56,8 @@ combineToConfig src Flags {..} Environment {..} mc = do
       , smosReportConfigArchiveFileSpec = afs
       , smosReportConfigProjectsFileSpec = pfs
       , smosReportConfigArchivedProjectsFileSpec = apfs
+      , smosReportConfigWorkBaseFilter =
+          (mc >>= confWorkBaseFilter) <|> (smosReportConfigWorkBaseFilter src)
       , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
