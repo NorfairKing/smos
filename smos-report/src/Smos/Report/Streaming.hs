@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -202,3 +203,15 @@ forestCursors ts =
       (case (fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel) of
          Nothing -> []
          Just fc' -> go fc')
+
+accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a Void m a
+accumulateSink operation start = go start
+  where
+    go !a = do
+      mn <- await
+      case mn of
+        Nothing -> pure a
+        Just n -> go $ a `operation` n
+
+accumulateMonoid :: (Monoid a,Monad m) => ConduitT a Void m a
+accumulateMonoid = accumulateSink mappend mempty

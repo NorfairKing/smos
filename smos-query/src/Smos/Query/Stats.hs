@@ -10,6 +10,8 @@ import Data.Text (Text)
 import Data.Time
 
 import Conduit
+import qualified Data.Conduit.Combinators as C
+
 
 import Rainbow
 
@@ -46,13 +48,7 @@ stats StatsSettings {..} = do
   liftIO $ putTableLn $ renderStatsReport sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
-accumulateStatsReport src = go mempty
-  where
-    go !sr = do
-      mf <- await
-      case mf of
-        Nothing -> return sr
-        Just (rp, sf) -> go $ sr <> makeStatsReport src rp sf
+accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
 renderStatsReport :: StatsReport -> Table
 renderStatsReport StatsReport {..} =
