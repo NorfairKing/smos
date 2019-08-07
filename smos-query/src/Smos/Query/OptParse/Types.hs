@@ -20,7 +20,6 @@ import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
 import Smos.Report.Period
-import Smos.Report.Work
 import Smos.Report.Projection
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
@@ -58,9 +57,7 @@ data EntryFlags =
 
 data WorkFlags =
   WorkFlags
-    { workFlagContext :: Text
-    , workFlagBrainpower :: Text
-    , workFlagTime :: Text
+    { workFlagContext :: ContextName
     , workFlagFilter :: Maybe Filter
     }
   deriving (Show, Eq)
@@ -166,7 +163,8 @@ data EntrySettings =
 
 data WorkSettings =
   WorkSettings
-    { workSetFilter :: Maybe Filter
+    { workSetContext :: ContextName
+    , workSetFilter :: Maybe Filter
     }
   deriving (Show, Eq, Generic)
 

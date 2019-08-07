@@ -7,19 +7,16 @@ module Smos.Query.Stats where
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Time
 
 import Conduit
 
--- import qualified Data.Conduit.Combinators as C
 import Rainbow
 
 import Smos.Data
 
 import Smos.Report.Path
 
--- import Smos.Report.Period
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
@@ -114,4 +111,3 @@ renderProjectsStatsReport ProjectStatsReport {..} =
   , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
   , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
   ]
-

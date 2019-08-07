@@ -6,11 +6,13 @@ module Smos.Report.OptParse.Types where
 
 import GHC.Generics (Generic)
 
+import Data.Map (Map)
 import Data.Validity
 import Data.Yaml as Yaml
 import Path
 
 import Smos.Report.Config
+import Smos.Report.Filter
 
 data Flags =
   Flags
@@ -38,6 +40,7 @@ data Configuration =
     , confArchiveDir :: Maybe FilePath
     , confProjectsDir :: Maybe FilePath
     , confArchivedProjectsDir :: Maybe FilePath
+    , confContexts :: Maybe (Map ContextName Filter)
     }
   deriving (Show, Eq, Generic)
 
@@ -75,6 +78,7 @@ backToConfiguration SmosReportConfig {..} =
                  ArchivedProjectsInArchive ard -> fromRelDir ard
                  ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
                  ArchivedProjectsAbsolute aad -> fromAbsDir aad
+    , confContexts = Just smosReportConfigContexts
     }
 
 instance Validity Configuration
@@ -86,10 +90,12 @@ instance ToJSON Configuration where
       , "archive-dir" .= confArchiveDir
       , "projects-dir" .= confProjectsDir
       , "archived-projects-dir" .= confArchivedProjectsDir
+      , "contexts" .= confContexts
       ]
 
 instance FromJSON Configuration where
   parseJSON =
     withObject "Configuration" $ \o ->
       Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir" <*>
-      o .:? "archived-projects-dir"
+      o .:? "archived-projects-dir" <*>
+      o .:? "contexts"

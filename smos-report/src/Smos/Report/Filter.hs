@@ -8,6 +8,7 @@ import GHC.Generics (Generic)
 import Data.Char as Char
 import Data.Function
 import Data.List
+import Data.Aeson
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import Data.Maybe
@@ -39,9 +40,9 @@ data Filter
   | FilterLevel Word -- The level of the entry in the tree (0 is top)
   | FilterProperty PropertyFilter
   | FilterParent Filter -- Match direct parent
-  | FilterAncestor Filter -- Match parent or parent of parents recursively
+  | FilterAncestor Filter -- Match self, parent or parent of parents recursively
   | FilterChild Filter -- Match any direct child
-  | FilterLegacy Filter -- Match any direct child or their children
+  | FilterLegacy Filter -- Match self, any direct child or their children
   | FilterNot Filter
   | FilterAnd Filter Filter
   | FilterOr Filter Filter
@@ -57,6 +58,16 @@ instance Validity Filter where
             fromRelFile s
           _ -> valid
       ]
+
+instance FromJSON Filter where
+  parseJSON =
+    withText "Filter" $ \t ->
+      case parseFilter t of
+        Nothing -> fail "could not parse filter."
+        Just f -> pure f
+
+instance ToJSON Filter where
+  toJSON = toJSON . renderFilter
 
 data PropertyFilter
   = ExactProperty PropertyName PropertyValue
@@ -95,9 +106,9 @@ filterPredicate f_ rp = go f_
                 HasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
             FilterLevel l -> l == level fc
             FilterParent f' -> maybe False (go f') parent_
-            FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_
+            FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_ || go f' fc
             FilterChild f' -> any (go f') children_
-            FilterLegacy f' -> any (\fc_ -> go f' fc_ || go f fc_) children_
+            FilterLegacy f' -> any (\fc_ -> go f' fc_ || go f fc_) children_ || go f' fc
             FilterNot f' -> not $ go f' fc
             FilterAnd f1 f2 -> go f1 fc && go f2 fc
             FilterOr f1 f2 -> go f1 fc || go f2 fc
@@ -268,7 +279,7 @@ data CompleterOption
 
 filterCompleterOptions :: [CompleterOption]
 filterCompleterOptions =
-  [ Nullary "tag" ["out", "online","offline", "toast", "personal", "work"]
+  [ Nullary "tag" ["out", "online", "offline", "toast", "personal", "work"]
   , Nullary "state" ["CANCELLED", "DONE", "NEXT", "READY", "STARTED", "TODO", "WAITING"]
   , Nullary "file" []
   , Nullary "level" []
@@ -292,11 +303,11 @@ makeCompleterFromOptions separator os s =
                                                                                         , SearchResult)]
        in flip concatMap searchResults $ \(o, sr) ->
             case sr of
-              PrefixFound f -> [renderCompletionOption o <> [separator]]
+              PrefixFound _ -> [renderCompletionOption o <> [separator]]
               ExactFound ->
                 case o of
-                  Unary s -> map ((prefix <> [separator]) <>) allOptions
-                  Nullary s rest -> map ((prefix <> [separator]) <>) rest
+                  Unary _ -> map ((prefix <> [separator]) <>) allOptions
+                  Nullary _ rest -> map ((prefix <> [separator]) <>) rest
   where
     allOptions :: [String]
     allOptions = map ((<> [separator]) . renderCompletionOption) os

@@ -28,7 +28,6 @@ produceNextActionReport src = do
     smosFileEntries .|
     C.filter (isNextAction . snd) .|
     C.map (uncurry makeNextActionEntry)
-
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
 

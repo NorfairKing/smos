@@ -45,7 +45,7 @@ getDispatch c =
           , entrySetProjection = entryFlagProjection
           , entrySetSorter = entryFlagSorter
           }
-    CommandWork WorkFlags {..} -> pure $ DispatchWork WorkSettings {workSetFilter = workFlagFilter}
+    CommandWork WorkFlags {..} -> pure $ DispatchWork WorkSettings {workSetFilter = workFlagFilter, workSetContext = workFlagContext}
     CommandWaiting WaitingFlags {..} ->
       pure $ DispatchWaiting WaitingSettings {waitingSetFilter = waitingFlagFilter}
     CommandNext NextFlags {..} -> pure $ DispatchNext NextSettings {nextSetFilter = nextFlagFilter}
@@ -173,7 +173,7 @@ parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
     modifier = fullDesc <> progDesc "Show the work overview"
-    parser = CommandWork <$> (WorkFlags <$> parseFilterArgs)
+    parser = CommandWork <$> (WorkFlags <$> parseContextNameArg <*> parseFilterArgs)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -258,6 +258,12 @@ parseHideArchiveFlag =
        Don'tHideArchive
        (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])))) <|>
   (pure Nothing)
+
+parseContextNameArg :: Parser ContextName
+parseContextNameArg =
+  argument
+    (ContextName <$> str)
+    (mconcat [ metavar "CONTEXT", help "The context that you are in"])
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =

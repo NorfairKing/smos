@@ -9,6 +9,7 @@ import System.Exit
 import Control.Arrow
 import Control.Monad
 
+import Data.Maybe
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
@@ -55,6 +56,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
       , smosReportConfigArchiveFileSpec = afs
       , smosReportConfigProjectsFileSpec = pfs
       , smosReportConfigArchivedProjectsFileSpec = apfs
+      , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
 parseFlags :: Parser Flags
@@ -123,7 +125,10 @@ getEnvironment = do
       , envProjectsDir =
           msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
       , envArchivedProjectsDir =
-          msum $ map getSmosEnv ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
+          msum $
+          map
+            getSmosEnv
+            ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
 
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))

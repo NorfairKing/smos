@@ -10,6 +10,7 @@ import qualified Data.Text as T
 
 import Test.Hspec
 import Test.QuickCheck as QC
+import Test.Validity.Aeson
 import Test.Validity
 
 import Text.Megaparsec
@@ -25,6 +26,7 @@ spec :: Spec
 spec = do
   eqSpecOnValid @Filter
   genValidSpec @Filter
+  aesonSpecOnValid @Filter
   describe "foldFilterAnd" $ it "produces valid results" $ producesValidsOnValids foldFilterAnd
   describe "filterPredicate" $ it "produces valid results" $ producesValidsOnValids3 filterPredicate
   describe "filterP" $ do
