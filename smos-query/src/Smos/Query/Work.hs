@@ -18,6 +18,7 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Filter
+import Smos.Report.Next
 import Smos.Report.Streaming
 import Smos.Report.Work
 
@@ -45,11 +46,15 @@ produceWorkReport src cn mf =
         sourceToList $
         streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
         C.filter (\(rp, fc) -> filterPredicate f rp fc) .|
-        smosCursorCurrents
+        smosCursorCurrents .|
+        C.filter (isNextAction . snd)
       pure $ WorkReport {workReportEntries = es}
 
 renderWorkReport :: WorkReport -> Table
 renderWorkReport WorkReport {..} =
   formatAsTable $
   flip map workReportEntries $ \(rp, e) ->
-    [rootedPathChunk rp, maybe (chunk "") todoStateChunk $ entryState e, headerChunk $ entryHeader e]
+    [ rootedPathChunk rp
+    , maybe (chunk "") todoStateChunk $ entryState e
+    , headerChunk $ entryHeader e
+    ]
