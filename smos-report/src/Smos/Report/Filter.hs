@@ -5,10 +5,10 @@ module Smos.Report.Filter where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
 import Data.Char as Char
 import Data.Function
 import Data.List
-import Data.Aeson
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import Data.Maybe
@@ -38,7 +38,8 @@ data Filter
   | FilterTodoState TodoState
   | FilterFile (Path Rel File) -- Substring of the filename
   | FilterLevel Word -- The level of the entry in the tree (0 is top)
-  | FilterProperty PropertyFilter
+  | FilterExactProperty PropertyName PropertyValue
+  | FilterHasProperty PropertyName
   | FilterParent Filter -- Match direct parent
   | FilterAncestor Filter -- Match self, parent or parent of parents recursively
   | FilterChild Filter -- Match any direct child
@@ -69,13 +70,6 @@ instance FromJSON Filter where
 instance ToJSON Filter where
   toJSON = toJSON . renderFilter
 
-data PropertyFilter
-  = ExactProperty PropertyName PropertyValue
-  | HasProperty PropertyName
-  deriving (Show, Eq, Generic)
-
-instance Validity PropertyFilter
-
 foldFilterAnd :: NonEmpty Filter -> Filter
 foldFilterAnd = foldl1 FilterAnd
 
@@ -97,13 +91,11 @@ filterPredicate f_ rp = go f_
             FilterHasTag t -> t `elem` entryTags cur
             FilterTodoState mts -> Just mts == entryState cur
             FilterFile t -> fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
-            FilterProperty pf ->
-              case pf of
-                ExactProperty pn pv ->
-                  case M.lookup pn $ entryProperties cur of
-                    Nothing -> False
-                    Just pv' -> pv == pv'
-                HasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
+            FilterExactProperty pn pv ->
+              case M.lookup pn $ entryProperties cur of
+                Nothing -> False
+                Just pv' -> pv == pv'
+            FilterHasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
             FilterLevel l -> l == level fc
             FilterParent f' -> maybe False (go f') parent_
             FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_ || go f' fc
@@ -132,7 +124,8 @@ parseFilter = parseMaybe filterP
 filterP :: P Filter
 filterP =
   try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
-  try filterPropertyP <|>
+  try filterExactPropertyP <|>
+  try filterHasPropertyP <|>
   try filterParentP <|>
   try filterAncestorP <|>
   try filterChildP <|>
@@ -166,12 +159,6 @@ filterLevelP = do
   void $ string' "level:"
   w <- decimal
   pure $ FilterLevel w
-
-filterPropertyP :: P Filter
-filterPropertyP = do
-  void $ string' "property:"
-  pf <- propertyFilterP
-  pure $ FilterProperty pf
 
 filterParentP :: P Filter
 filterParentP = do
@@ -219,23 +206,19 @@ filterAndP = do
   f2 <- filterP
   pure $ FilterAnd f1 f2
 
-propertyFilterP :: P PropertyFilter
-propertyFilterP = do
-  try exactPropertyP <|> hasPropertyP
+filterHasPropertyP :: P Filter
+filterHasPropertyP = do
+  void $ string' "has-property:"
+  pn <- propertyNameP
+  pure $ FilterHasProperty pn
 
-exactPropertyP :: P PropertyFilter
-exactPropertyP = do
-  void $ string' "exact:"
+filterExactPropertyP :: P Filter
+filterExactPropertyP = do
+  void $ string' "exact-property:"
   pn <- propertyNameP
   void $ string' ":"
   pv <- propertyValueP
-  pure $ ExactProperty pn pv
-
-hasPropertyP :: P PropertyFilter
-hasPropertyP = do
-  void $ string' "has:"
-  pn <- propertyNameP
-  pure $ HasProperty pn
+  pure $ FilterExactProperty pn pv
 
 propertyNameP :: P PropertyName
 propertyNameP = do
@@ -254,7 +237,9 @@ renderFilter f =
     FilterTodoState ts -> "state:" <> todoStateText ts
     FilterFile t -> "file:" <> T.pack (fromRelFile t)
     FilterLevel l -> "level:" <> T.pack (show l)
-    FilterProperty fp -> "property:" <> renderPropertyFilter fp
+    FilterExactProperty pn pv ->
+      "exact-property:" <> propertyNameText pn <> ":" <> propertyValueText pv
+    FilterHasProperty pn -> "has-property:" <> propertyNameText pn
     FilterParent f' -> "parent:" <> renderFilter f'
     FilterAncestor f' -> "ancestor:" <> renderFilter f'
     FilterChild f' -> "child:" <> renderFilter f'
@@ -262,12 +247,6 @@ renderFilter f =
     FilterNot f' -> "not:" <> renderFilter f'
     FilterOr f1 f2 -> T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
     FilterAnd f1 f2 -> T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
-
-renderPropertyFilter :: PropertyFilter -> Text
-renderPropertyFilter pf =
-  case pf of
-    ExactProperty pn pv -> "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
-    HasProperty pn -> "has:" <> propertyNameText pn
 
 filterCompleter :: String -> [String]
 filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions

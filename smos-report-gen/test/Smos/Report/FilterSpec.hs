@@ -34,16 +34,12 @@ spec = do
     parseJustSpec filterP "tag:work" (FilterHasTag "work")
     parseJustSpec filterP "state:NEXT" (FilterTodoState "NEXT")
     parseJustSpec filterP "level:5" (FilterLevel 5)
-    parseJustSpec
-      filterP
-      "property:exact:effort:30m"
-      (FilterProperty $ ExactProperty "effort" "30m")
-    parseJustSpec filterP "property:has:effort" (FilterProperty $ HasProperty "effort")
+    parseJustSpec filterP "exact-property:effort:30m" (FilterExactProperty "effort" "30m")
+    parseJustSpec filterP "has-property:effort" (FilterHasProperty "effort")
   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText
   describe "filterFileP" $ parsesValidSpec filterFileP fileText
   describe "filterLevelP" $ parsesValidSpec filterLevelP levelText
-  describe "filterPropertyP" $ parsesValidSpec filterPropertyP propertyText
   describe "filterParentP" $ parsesValidSpec filterParentP parentText
   describe "filterAncestorP" $ parsesValidSpec filterAncestorP ancestorText
   describe "filterChildP" $ parsesValidSpec filterChildP childText
@@ -52,17 +48,12 @@ spec = do
   describe "filterBinrelP" $ parsesValidSpec filterBinRelP binRelText
   describe "filterOrP" $ parsesValidSpec filterOrP orText
   describe "filterAndP" $ parsesValidSpec filterAndP andText
-  describe "propertyFilterP" $ parsesValidSpec propertyFilterP propertyFilterText
-  describe "exactPropertyP" $ parsesValidSpec exactPropertyP exactPropertyText
-  describe "hasPropertyP" $ parsesValidSpec hasPropertyP hasPropertyText
+  describe "filterExactPropertyP" $ parsesValidSpec filterExactPropertyP exactPropertyText
+  describe "filterHasPropertyP" $ parsesValidSpec filterHasPropertyP hasPropertyText
   describe "renderFilter" $ do
     it "produces valid texts" $ producesValidsOnValids renderFilter
     it "renders filters that parse to the same" $
       forAllValid $ \f -> parseJust filterP (renderFilter f) f
-  describe "renderPropertyFilter" $ do
-    it "produces valid texts" $ producesValidsOnValids renderPropertyFilter
-    it "renders filters that parse to the same" $
-      forAllValid $ \f -> parseJust propertyFilterP (renderPropertyFilter f) f
   describe "filterCompleter" $ do
     let c s ss =
           it (unwords ["completes", show s, "to", show ss]) $
@@ -98,7 +89,7 @@ spec = do
       , "not:legacy:"
       , "not:not:"
       ]
-    c "tag" ["tag:out", "tag:online", "tag:personal","tag:offline", "tag:toast", "tag:work"]
+    c "tag" ["tag:out", "tag:online", "tag:personal", "tag:offline", "tag:toast", "tag:work"]
     c "tag:" ["tag:out", "tag:online", "tag:personal", "tag:offline", "tag:toast", "tag:work"]
     cp "tag:h" ["tag:home"]
     cp "state:N" ["state:NEXT"]
@@ -110,7 +101,8 @@ filterText =
     , todoStateText
     , fileText
     , levelText
-    , propertyText
+    , hasPropertyText
+    , exactPropertyText
     , parentText
     , ancestorText
     , childText
@@ -130,9 +122,6 @@ fileText = textPieces [pure "file:", genValid]
 
 levelText :: Gen Text
 levelText = textPieces [pure "level:", T.pack . show <$> (genValid :: Gen Int)]
-
-propertyText :: Gen Text
-propertyText = textPieces [pure "property:", propertyFilterText]
 
 parentText :: Gen Text
 parentText = textPieces [pure "parent:", filterText]
@@ -162,10 +151,11 @@ propertyFilterText :: Gen Text
 propertyFilterText = oneof [exactPropertyText, hasPropertyText]
 
 exactPropertyText :: Gen Text
-exactPropertyText = textPieces [pure "exact:", propertyNameText, pure ":", propertyValueText]
+exactPropertyText =
+  textPieces [pure "exact-property:", propertyNameText, pure ":", propertyValueText]
 
 hasPropertyText :: Gen Text
-hasPropertyText = textPieces [pure "has:", propertyNameText]
+hasPropertyText = textPieces [pure "has-property:", propertyNameText]
 
 -- These don't match exactly, but they're a good start.
 propertyNameText :: Gen Text
