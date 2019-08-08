@@ -10,8 +10,8 @@ import qualified Data.Text as T
 
 import Test.Hspec
 import Test.QuickCheck as QC
-import Test.Validity.Aeson
 import Test.Validity
+import Test.Validity.Aeson
 
 import Text.Megaparsec
 
@@ -26,7 +26,7 @@ spec :: Spec
 spec = do
   eqSpecOnValid @Filter
   genValidSpec @Filter
-  aesonSpecOnValid @Filter
+  jsonSpecOnValid @Filter
   describe "foldFilterAnd" $ it "produces valid results" $ producesValidsOnValids foldFilterAnd
   describe "filterPredicate" $ it "produces valid results" $ producesValidsOnValids3 filterPredicate
   describe "filterP" $ do
@@ -98,8 +98,8 @@ spec = do
       , "not:legacy:"
       , "not:not:"
       ]
-    c "tag" ["tag:home", "tag:online", "tag:toast", "tag:work"]
-    c "tag:" ["tag:home", "tag:online", "tag:toast", "tag:work"]
+    c "tag" ["tag:out", "tag:online", "tag:personal","tag:offline", "tag:toast", "tag:work"]
+    c "tag:" ["tag:out", "tag:online", "tag:personal", "tag:offline", "tag:toast", "tag:work"]
     cp "tag:h" ["tag:home"]
     cp "state:N" ["state:NEXT"]
 

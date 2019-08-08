@@ -11,6 +11,6 @@ import Smos.Report.OptParse.Types
 
 spec :: Spec
 spec = do
-  eqSpec @Configuration
+  eqSpecOnValid @Configuration
   genValidSpec @Configuration
   jsonSpecOnValid @Configuration
