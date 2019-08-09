@@ -12,10 +12,12 @@ library:
   ghc-options: -Wall
   dependencies:
     - base
+    - containers
     - mtl
     - optparse-applicative
     - path
     - path-io
+    - smos-data
     - smos-report
     - time
 
