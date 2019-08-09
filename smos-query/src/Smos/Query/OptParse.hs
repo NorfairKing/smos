@@ -29,73 +29,87 @@ import Smos.Query.OptParse.Types
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
-  Arguments cmd flags <- getArguments
+  args@(Arguments _ flags) <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  Instructions <$> getDispatch cmd <*> getSettings sqc flags env config
+  combineToInstructions sqc args env config
 
-getDispatch :: Command -> IO Dispatch
-getDispatch c =
-  case c of
-    CommandEntry EntryFlags {..} ->
-      pure $
-      DispatchEntry
-        EntrySettings
-          { entrySetFilter = entryFlagFilter
-          , entrySetProjection = entryFlagProjection
-          , entrySetSorter = entryFlagSorter
-          }
-    CommandWaiting WaitingFlags {..} ->
-      pure $ DispatchWaiting WaitingSettings {waitingSetFilter = waitingFlagFilter}
-    CommandNext NextFlags {..} -> pure $ DispatchNext NextSettings {nextSetFilter = nextFlagFilter}
-    CommandClock ClockFlags {..} -> do
-      mf <- forM clockFlagFile resolveFile'
-      pure $
-        DispatchClock
-          ClockSettings
-            { clockSetFile = mf
-            , clockSetFilter = clockFlagFilter
-            , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-            , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
-            , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-            , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
-            , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
-            }
-    CommandAgenda AgendaFlags {..} ->
-      pure $
-      DispatchAgenda
-        AgendaSettings
-          { agendaSetFilter = agendaFlagFilter
-          , agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity
-          , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
-          }
-    CommandProjects -> pure DispatchProjects
-    CommandLog LogFlags {..} ->
-      pure $
-      DispatchLog
-        LogSettings
-          { logSetFilter = logFlagFilter
-          , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
-          , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
-          }
-    CommandStats StatsFlags {..} ->
-      pure $ DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
-
-getSettings :: SmosQueryConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosQueryConfig
-getSettings SmosQueryConfig {..} Flags {..} Environment {..} mc = do
-  src <-
-    Report.combineToConfig
-      smosQueryConfigReportConfig
-      flagReportFlags
-      envReportEnvironment
-      (confReportConf <$> mc)
-  pure $
-    SmosQueryConfig
-      { smosQueryConfigReportConfig = src
-      , smosQueryConfigHideArchive =
-          fromMaybe smosQueryConfigHideArchive $
-          flagHideArchive <|> envHideArchive <|> (mc >>= confHideArchive)
-      }
+combineToInstructions ::
+     SmosQueryConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment {..} mc =
+  Instructions <$> getDispatch <*> getSettings
+  where
+    hideArchiveWithDefault def mflag = fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
+    getDispatch =
+      case c of
+        CommandEntry EntryFlags {..} ->
+          pure $
+          DispatchEntry
+            EntrySettings
+              { entrySetFilter = entryFlagFilter
+              , entrySetProjection = entryFlagProjection
+              , entrySetSorter = entryFlagSorter
+              , entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
+              }
+        CommandWaiting WaitingFlags {..} ->
+          pure $
+          DispatchWaiting
+            WaitingSettings
+              { waitingSetFilter = waitingFlagFilter
+              , waitingSetHideArchive =
+                  hideArchiveWithDefault HideArchive waitingFlagHideArchive
+              }
+        CommandNext NextFlags {..} ->
+          pure $
+          DispatchNext
+            NextSettings
+              { nextSetFilter = nextFlagFilter
+              , nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
+              }
+        CommandClock ClockFlags {..} -> do
+          mf <- forM clockFlagFile resolveFile'
+          pure $
+            DispatchClock
+              ClockSettings
+                { clockSetFile = mf
+                , clockSetFilter = clockFlagFilter
+                , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+                , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
+                , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+                , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
+                , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
+                , clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
+                }
+        CommandAgenda AgendaFlags {..} ->
+          pure $
+          DispatchAgenda
+            AgendaSettings
+              { agendaSetFilter = agendaFlagFilter
+              , agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity
+              , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
+              , agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive
+              }
+        CommandProjects -> pure DispatchProjects
+        CommandLog LogFlags {..} ->
+          pure $
+          DispatchLog
+            LogSettings
+              { logSetFilter = logFlagFilter
+              , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
+              , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
+              , logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
+              }
+        CommandStats StatsFlags {..} ->
+          pure $
+          DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+    getSettings = do
+      src <-
+        Report.combineToConfig
+          smosQueryConfigReportConfig
+          flagReportFlags
+          envReportEnvironment
+          (confReportConf <$> mc)
+      pure $ SmosQueryConfig {smosQueryConfigReportConfig = src}
 
 getEnvironment :: IO Environment
 getEnvironment = do
@@ -163,19 +177,21 @@ parseCommandEntry = info parser modifier
   where
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
-      CommandEntry <$> (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs)
+      CommandEntry <$>
+      (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs <*>
+       parseHideArchiveFlag)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the \"waiting\" tasks"
-    parser = CommandWaiting <$> (WaitingFlags <$> parseFilterArgs)
+    parser = CommandWaiting <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the next actions and warn if a file does not have one."
-    parser = CommandNext <$> (NextFlags <$> parseFilterArgs)
+    parser = CommandNext <$> (NextFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
@@ -189,14 +205,19 @@ parseCommandClock = info parser modifier
           (mconcat [long "file", help "A single file to gather clock info from", value Nothing])) <*>
        parseFilterArgs <*>
        parsePeriod <*>
-       (Just <$>
-        (flag' SecondsResolution (long "seconds-resolution") <|>
-         flag' MinutesResolution (long "minutes-resolution") <|>
-         flag' HoursResolution (long "hours-resolution")) <|>
-        pure Nothing) <*>
+       parseResolution <*>
        parseTimeBlock <*>
        parseOutputFormat <*>
-       parseClockReportStyle)
+       parseClockReportStyle <*>
+       parseHideArchiveFlag)
+
+parseResolution :: Parser (Maybe ClockResolution)
+parseResolution =
+  Just <$>
+  (flag' SecondsResolution (long "seconds-resolution") <|>
+   flag' MinutesResolution (long "minutes-resolution") <|>
+   flag' HoursResolution (long "hours-resolution")) <|>
+  pure Nothing
 
 parseClockReportStyle :: Parser (Maybe ClockReportStyle)
 parseClockReportStyle =
@@ -208,10 +229,8 @@ parseCommandAgenda = info parser modifier
     modifier = fullDesc <> progDesc "Print the agenda"
     parser =
       CommandAgenda <$>
-      (AgendaFlags <$> parseFilterArgs <*>
-       (Just <$> (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future")) <|>
-        pure Nothing) <*>
-       parseTimeBlock)
+      (AgendaFlags <$> parseFilterArgs <*> parseHistoricityFlag <*> parseTimeBlock <*>
+       parseHideArchiveFlag)
 
 parseCommandProjects :: ParserInfo Command
 parseCommandProjects = info parser modifier
@@ -223,7 +242,9 @@ parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print a log of what has happened."
-    parser = CommandLog <$> (LogFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock)
+    parser =
+      CommandLog <$>
+      (LogFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*> parseHideArchiveFlag)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
@@ -232,7 +253,12 @@ parseCommandStats = info parser modifier
     parser = CommandStats <$> (StatsFlags <$> parsePeriod)
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> Report.parseFlags <*> parseHideArchiveFlag
+parseFlags = Flags <$> Report.parseFlags
+
+parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
+parseHistoricityFlag =
+  Just <$> (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future")) <|>
+  pure Nothing
 
 parseHideArchiveFlag :: Parser (Maybe HideArchive)
 parseHideArchiveFlag =

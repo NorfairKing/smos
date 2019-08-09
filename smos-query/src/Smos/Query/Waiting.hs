@@ -28,7 +28,7 @@ waiting :: WaitingSettings -> Q ()
 waiting WaitingSettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
     smosCursorCurrents .|
     C.filter (isWaitingAction . snd) .|

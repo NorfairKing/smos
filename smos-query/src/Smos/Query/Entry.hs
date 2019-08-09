@@ -33,7 +33,8 @@ entry :: EntrySettings -> Q ()
 entry EntrySettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
   let sortIt =
         maybe

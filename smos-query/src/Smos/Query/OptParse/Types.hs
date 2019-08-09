@@ -50,18 +50,21 @@ data EntryFlags =
     { entryFlagFilter :: Maybe Filter
     , entryFlagProjection :: Maybe Projection
     , entryFlagSorter :: Maybe Sorter
+    , entryFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
 data WaitingFlags =
   WaitingFlags
     { waitingFlagFilter :: Maybe Filter
+    , waitingFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
 data NextFlags =
   NextFlags
     { nextFlagFilter :: Maybe Filter
+    , nextFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
@@ -74,6 +77,7 @@ data ClockFlags =
     , clockFlagBlockFlags :: Maybe TimeBlock
     , clockFlagOutputFormat :: Maybe OutputFormat
     , clockFlagReportStyle :: Maybe ClockReportStyle
+    , clockFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
@@ -82,6 +86,7 @@ data AgendaFlags =
     { agendaFlagFilter :: Maybe Filter
     , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
+    , agendaFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
@@ -90,6 +95,7 @@ data LogFlags =
     { logFlagFilter :: Maybe Filter
     , logFlagPeriodFlags :: Maybe Period
     , logFlagBlockFlags :: Maybe TimeBlock
+    , logFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq, Generic)
 
@@ -102,7 +108,6 @@ data StatsFlags =
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
-    , flagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq, Generic)
 
@@ -141,18 +146,21 @@ data EntrySettings =
     { entrySetFilter :: Maybe Filter
     , entrySetProjection :: Maybe Projection
     , entrySetSorter :: Maybe Sorter
+    , entrySetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
 data WaitingSettings =
   WaitingSettings
     { waitingSetFilter :: Maybe Filter
+    , waitingSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
 data NextSettings =
   NextSettings
     { nextSetFilter :: Maybe Filter
+    , nextSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
@@ -165,6 +173,7 @@ data ClockSettings =
     , clockSetBlock :: TimeBlock
     , clockSetOutputFormat :: OutputFormat
     , clockSetReportStyle :: ClockReportStyle
+    , clockSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
@@ -173,6 +182,7 @@ data AgendaSettings =
     { agendaSetFilter :: Maybe Filter
     , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
+    , agendaSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
@@ -181,6 +191,7 @@ data LogSettings =
     { logSetFilter :: Maybe Filter
     , logSetPeriod :: Period
     , logSetBlock :: TimeBlock
+    , logSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 

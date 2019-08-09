@@ -22,7 +22,8 @@ next :: NextSettings -> Q ()
 next NextSettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles nextSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) nextSetFilter) .|
     smosCursorCurrents .|
     C.filter (isNextAction . snd) .|

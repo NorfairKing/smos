@@ -26,7 +26,6 @@ import Smos.Report.Config
 data SmosQueryConfig =
   SmosQueryConfig
     { smosQueryConfigReportConfig :: SmosReportConfig
-    , smosQueryConfigHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 

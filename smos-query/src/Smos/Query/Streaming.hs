@@ -12,10 +12,9 @@ streamSmosProjects = do
   src <- lift $ asks smosQueryConfigReportConfig
   streamSmosProjectsFiles src
 
-streamSmosFiles :: ConduitT i RootedPath Q ()
-streamSmosFiles = do
+streamSmosFiles :: HideArchive -> ConduitT i RootedPath Q ()
+streamSmosFiles ha = do
   src <- lift $ asks smosQueryConfigReportConfig
-  ha <- lift $ asks smosQueryConfigHideArchive
   streamSmosFilesFromWorkflow ha src
 
 streamAllSmosFiles :: ConduitT i RootedPath Q ()

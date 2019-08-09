@@ -27,7 +27,8 @@ log LogSettings {..} = do
   zt <- liftIO getZonedTime
   es <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles logSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
     smosCursorCurrents
   liftIO $ putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es

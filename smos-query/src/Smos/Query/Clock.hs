@@ -42,7 +42,7 @@ clock ClockSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    streamSmosFiles clockSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     (case clockSetFilter of
        Nothing -> C.map id
        Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))) .|

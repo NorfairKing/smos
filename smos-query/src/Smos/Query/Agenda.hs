@@ -32,7 +32,7 @@ agenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-    streamSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
