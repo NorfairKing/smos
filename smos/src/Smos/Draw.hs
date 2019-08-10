@@ -25,10 +25,17 @@ import Brick.Widgets.Core ((<+>))
 import Lens.Micro
 
 import Cursor.FuzzyLocalTime
+import Cursor.List.NonEmpty (NonEmptyCursor)
 import Cursor.Map
-import Cursor.Simple.List.NonEmpty
+import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
 import Cursor.Text
 import Cursor.Tree hiding (drawTreeCursor)
+
+import Cursor.Brick.Forest
+import Cursor.Brick.List.NonEmpty
+import Cursor.Brick.Map
+import Cursor.Brick.Map.KeyValue
+import Cursor.Brick.Tree
 
 import Smos.Data
 
@@ -48,7 +55,6 @@ import Smos.Cursor.Timestamps
 import Smos.Report.Path
 
 import Smos.Draw.Base
-import Smos.Draw.Cursor
 import Smos.Draw.Text
 
 import Smos.Keys
@@ -116,7 +122,7 @@ drawHelpCursor s (Just HelpCursor {..}) =
           viewport "viewport-help" Vertical $
           case helpCursorSelectedKeyHelpCursors of
             Nothing -> txtWrap "No matching keybindings found."
-            Just hcs -> drawVerticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs
+            Just hcs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs
         , (case helpCursorSelection of
              HelpCursorSearchSelected -> withAttr selectedAttr
              _ -> id) $
@@ -152,6 +158,14 @@ drawHelpCursor s (Just HelpCursor {..}) =
             map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding
           , msel $ withAttr helpNameAttr $ drawText $ actionNameText keyHelpCursorName
           ]
+
+verticalNonEmptyCursorTable ::
+     (b -> [Widget n]) -> (a -> [Widget n]) -> (b -> [Widget n]) -> NonEmptyCursor a b -> Widget n
+verticalNonEmptyCursorTable prevFunc curFunc nextFunc =
+  nonEmptyCursorWidget (\ps c ns -> drawTable $ map prevFunc ps ++ [curFunc c] ++ map nextFunc ns)
+
+drawTable :: [[Widget n]] -> Widget n
+drawTable = hBox . intersperse (str " ") . map vBox . transpose
 
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . go
@@ -189,7 +203,7 @@ drawReportCursor s rc =
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s =
-  drawVerticalNonEmptyCursor
+  verticalNonEmptyCursorWidget
     (drawNextActionEntryCursor NotSelected)
     (drawNextActionEntryCursor s)
     (drawNextActionEntryCursor NotSelected)
@@ -216,11 +230,11 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
   fmap (viewport "viewport-file" Vertical) .
-  drawVerticalForestCursor drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
+  verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
 
 drawSmosTreeCursor ::
      Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
-drawSmosTreeCursor s = drawTreeCursorM wrap cur
+drawSmosTreeCursor s = treeCursorWidgetM wrap cur
   where
     cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
     cur ec cf =
@@ -378,7 +392,7 @@ drawContents = drawText . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-  drawVerticalMapCursorM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
+  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
@@ -387,9 +401,9 @@ drawTimestamps m
 
 drawTimestampKVCursor ::
      Select -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp -> Drawer
-drawTimestampKVCursor s kvc =
-  case kvc of
-    KeyValueCursorKey tc ts -> do
+drawTimestampKVCursor s = keyValueWidgetM goKey goVal
+  where
+    goKey tc ts = do
       dw <- drawTimestamp ts
       pure $
         hBox
@@ -399,7 +413,7 @@ drawTimestampKVCursor s kvc =
           , str ": "
           , dw
           ]
-    KeyValueCursorValue tsn fdc -> do
+    goVal tsn fdc = do
       tsw <-
         case s of
           NotSelected -> drawTimestamp $ rebuildTimestampCursor fdc
@@ -458,30 +472,27 @@ drawLocalTime lt = do
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
 drawPropertiesCursor s =
-  drawVerticalMapCursor drawPropertyPair (drawPropertyKVCursor s) drawPropertyPair .
+  verticalMapCursorWidget drawPropertyPair (drawPropertyKVCursor s) drawPropertyPair .
   propertiesCursorMapCursor
 
 drawPropertyKVCursor ::
      Select
   -> KeyValueCursor TextCursor TextCursor PropertyName PropertyValue
   -> Widget ResourceName
-drawPropertyKVCursor s kvc =
-  let sel =
-        (case s of
-           NotSelected -> id
-           MaybeSelected -> withAttr selectedAttr)
-   in case kvc of
-        KeyValueCursorKey tc pv ->
-          withAttr
-            (maybe
-               id
-               (\pn -> (<>) (propertyNameSpecificAttr pn))
-               (propertyName $ rebuildTextCursor tc) $
-             propertyNameAttr) $
-          hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
-        KeyValueCursorValue pn tc ->
-          withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
-          hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
+drawPropertyKVCursor s = keyValueWidget goKey goVal
+  where
+    sel =
+      (case s of
+         NotSelected -> id
+         MaybeSelected -> withAttr selectedAttr)
+    goKey tc pv =
+      withAttr
+        (maybe id (\pn -> (<>) (propertyNameSpecificAttr pn)) (propertyName $ rebuildTextCursor tc) $
+         propertyNameAttr) $
+      hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+    goVal pn tc =
+      withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+      hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
@@ -525,7 +536,7 @@ drawStateHistory (StateHistory ls)
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
-  drawHorizontalNonEmptyCursor
+  horizontalNonEmptyCursorWidget
     (\t -> str ":" <+> drawTag t)
     (drawTagCursor s)
     (\t -> drawTag t <+> str ":") .
