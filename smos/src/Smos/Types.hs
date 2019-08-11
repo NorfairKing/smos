@@ -256,9 +256,9 @@ data Precedence
   | SpecificMatcher
   deriving (Show, Eq, Ord)
 
-newtype ResourceName =
-  ResourceName Text
-  deriving (Show, Eq, Ord, Generic, IsString)
+data ResourceName =
+  ResourceTextCursor | ResourceViewport
+  deriving (Show, Eq, Ord, Generic)
 
 stop :: Action
 stop =

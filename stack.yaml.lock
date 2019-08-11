@@ -111,6 +111,22 @@ packages:
     git: https://github.com/NorfairKing/fuzzy-time.git
     commit: e496ad8924cebea70dd81f85325e92a6a658475d
 - completed:
+    subdir: cursor-brick
+    cabal-file:
+      size: 1265
+      sha256: 40ba21b44b14cd8acc9a03eec0870f7543c72729b2882ebfe834789f325aba3c
+    name: cursor-brick
+    version: 0.0.0.0
+    git: https://github.com/NorfairKing/cursor-brick.git
+    pantry-tree:
+      size: 848
+      sha256: f885b9840a68512c5319e3a7fc0f16c6c4a061542c80165fd76fbcdd9b3fa2d9
+    commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
+  original:
+    subdir: cursor-brick
+    git: https://github.com/NorfairKing/cursor-brick.git
+    commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
+- completed:
     subdir: cursor
     cabal-file:
       size: 1509
@@ -120,12 +136,12 @@ packages:
     git: https://github.com/NorfairKing/cursor.git
     pantry-tree:
       size: 1760
-      sha256: 30c3e53fce854471c5de7a5ef0fa545a1ca194812697c2675db05b31da26bb37
-    commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+      sha256: f8aba66d9fa0adfe4f793b5d103ab05c6b64489a83cb952a35310e514ea5fe0c
+    commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
   original:
     subdir: cursor
     git: https://github.com/NorfairKing/cursor.git
-    commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+    commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
 - completed:
     subdir: cursor-gen
     cabal-file:
@@ -136,12 +152,12 @@ packages:
     git: https://github.com/NorfairKing/cursor.git
     pantry-tree:
       size: 2608
-      sha256: cde2ed9a167d13e8f80302b2cd6f0e4064e65cfd38e6f49dc068e5f791cfcbd3
-    commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+      sha256: 15f2d4488f6f3e41fe732c002c6b8e1f4ddf9ec1c2a40239e7b54c1721f31662
+    commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
   original:
     subdir: cursor-gen
     git: https://github.com/NorfairKing/cursor.git
-    commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+    commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
 - completed:
     subdir: genvalidity
     cabal-file:

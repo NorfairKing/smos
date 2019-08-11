@@ -31,8 +31,12 @@ extra-deps:
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
+- git: https://github.com/NorfairKing/cursor-brick.git
+  commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
+  subdirs:
+    - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git
-  commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+  commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
   subdirs:
     - cursor
     - cursor-gen

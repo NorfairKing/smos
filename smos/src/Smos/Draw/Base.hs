@@ -2,8 +2,6 @@
 
 module Smos.Draw.Base where
 
-import qualified Data.Text as T
-import Data.Text (Text)
 import Data.Time
 import Path
 import Text.Printf
@@ -13,20 +11,6 @@ import Brick.Widgets.Core as B
 
 drawFilePath :: Path r d -> Widget n
 drawFilePath = str . toFilePath
-
-drawText :: Text -> Widget n
-drawText = vBox . map go . T.splitOn "\n"
-  where
-    go t =
-      txtWrap $
-      case t of
-        "" -> " "
-        _ -> sanitise t
-    sanitise =
-      T.map $ \c ->
-        case c of
-          '\t' -> ' '
-          _ -> c
 
 data Select
   = MaybeSelected
@@ -60,4 +44,4 @@ formatTimestampDay :: Day -> String
 formatTimestampDay = formatTime defaultTimeLocale "%A %F"
 
 formatTimestampLocalTime :: LocalTime -> String
-formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %T"
+formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %R"
