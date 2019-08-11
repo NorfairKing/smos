@@ -48,15 +48,7 @@ renderAgendaReport now atbs =
     _ -> concatMap goEntriesWithTitle atbs
   where
     goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
-    goEntries es =
-      renderSplit . splitUp $
-      (sortBy
-         (mconcat
-            [ comparing (timestampLocalTime . agendaEntryTimestamp)
-            , comparing agendaEntryTimestampName
-            , comparing agendaEntryTodoState
-            ])
-         es)
+    goEntries es = renderSplit . splitUp $ (sortAgendaEntries es)
     splitUp =
       splitList $ \ae ->
         compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
@@ -71,6 +63,15 @@ renderAgendaReport now atbs =
         (xs, ys, zs) -> concat [xs, [[chunk ""]], ys, [[chunk ""]], zs]
       where
         go = map (formatAgendaEntry now)
+
+sortAgendaEntries :: [AgendaEntry] -> [AgendaEntry]
+sortAgendaEntries =
+  sortBy
+    (mconcat
+       [ comparing (timestampLocalTime . agendaEntryTimestamp)
+       , comparing agendaEntryTimestampName
+       , comparing agendaEntryTodoState
+       ])
 
 splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
 splitList func = go

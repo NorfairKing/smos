@@ -29,5 +29,6 @@ library:
   - time
   - validity
   - validity-path
+  - validity-text
   - validity-time
   - yaml

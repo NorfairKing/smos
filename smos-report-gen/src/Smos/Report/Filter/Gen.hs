@@ -18,11 +18,21 @@ instance GenValid Filter where
   genValid =
     sized $ \n ->
       case n of
-        0 -> oneof [FilterHasTag <$> genValid, FilterTodoState <$> genValid]
+        0 ->
+          oneof
+            [ FilterHasTag <$> genValid
+            , FilterLevel <$> genValid
+            , FilterTodoState <$> genValid
+            , FilterHasProperty <$> genValid
+            , FilterExactProperty <$> genValid <*> genValid
+            ]
         _ ->
           oneof
             [ FilterHasTag <$> genValid
             , FilterTodoState <$> genValid
+            , FilterLevel <$> genValid
+            , FilterHasProperty <$> genValid
+            , FilterExactProperty <$> genValid <*> genValid
             , (FilterFile <$> genValid) `suchThat` isValid
             , FilterParent <$> scale (max 0 . (\x -> x - 1)) genValid
             , FilterAncestor <$> scale (max 0 . (\x -> x - 2)) genValid
@@ -32,8 +42,4 @@ instance GenValid Filter where
             , do (a, b) <- genSplit =<< upTo n
                  FilterOr <$> resize a genValid <*> resize b genValid
             ]
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid PropertyFilter where
-  genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

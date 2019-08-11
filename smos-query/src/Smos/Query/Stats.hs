@@ -7,19 +7,18 @@ module Smos.Query.Stats where
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Time
 
 import Conduit
+import qualified Data.Conduit.Combinators as C
 
--- import qualified Data.Conduit.Combinators as C
+
 import Rainbow
 
 import Smos.Data
 
 import Smos.Report.Path
 
--- import Smos.Report.Period
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
@@ -49,13 +48,7 @@ stats StatsSettings {..} = do
   liftIO $ putTableLn $ renderStatsReport sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
-accumulateStatsReport src = go mempty
-  where
-    go !sr = do
-      mf <- await
-      case mf of
-        Nothing -> return sr
-        Just (rp, sf) -> go $ sr <> makeStatsReport src rp sf
+accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
 renderStatsReport :: StatsReport -> Table
 renderStatsReport StatsReport {..} =
@@ -114,4 +107,3 @@ renderProjectsStatsReport ProjectStatsReport {..} =
   , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
   , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
   ]
-

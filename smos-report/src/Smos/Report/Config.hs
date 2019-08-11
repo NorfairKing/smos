@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -6,6 +8,7 @@
 module Smos.Report.Config
   ( SmosReportConfig(..)
   , defaultReportConfig
+  , defaultWorkBaseFilter
   , WorkflowDirSpec(..)
   , defaultWorkflowDirSpec
   , resolveWorkflowDir
@@ -22,12 +25,21 @@ module Smos.Report.Config
   , resolveReportArchiveDir
   , resolveReportProjectsDir
   , resolveReportArchivedProjectsDir
+  , ContextName(..)
   ) where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
+import qualified Data.Map as M
+import Data.Map (Map)
+import Data.Text (Text)
+import Data.Validity
+
 import Path
 import Path.IO
+
+import Smos.Report.Filter
 
 data SmosReportConfig =
   SmosReportConfig
@@ -35,6 +47,8 @@ data SmosReportConfig =
     , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
     , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter :: Maybe Filter
+    , smosReportConfigContexts :: Map ContextName Filter
     }
   deriving (Show, Eq, Generic)
 
@@ -45,7 +59,12 @@ defaultReportConfig =
     , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
     , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter = defaultWorkBaseFilter
+    , smosReportConfigContexts = M.fromList []
     }
+
+defaultWorkBaseFilter :: Maybe Filter
+defaultWorkBaseFilter = Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)
@@ -127,3 +146,11 @@ resolveReportArchivedProjectsDir SmosReportConfig {..} = do
   wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
   ad <- resolveArchiveDir wd smosReportConfigArchiveFileSpec
   resolveArchivedProjectsDir ad smosReportConfigArchivedProjectsFileSpec
+
+newtype ContextName =
+  ContextName
+    { contextNameText :: Text
+    }
+  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
+
+instance Validity ContextName

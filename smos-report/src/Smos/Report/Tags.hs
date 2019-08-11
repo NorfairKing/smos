@@ -7,15 +7,9 @@ import GHC.Generics (Generic)
 
 import qualified Data.Map as M
 import Data.Map (Map)
-import Data.Maybe
-import Data.Time
-import Data.Tree
-import Path
 
 import Smos.Data
 
-import Smos.Report.Path
-import Smos.Report.Period
 import Smos.Report.Stats
 
 newtype TagsReport =

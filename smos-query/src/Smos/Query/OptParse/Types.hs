@@ -36,6 +36,7 @@ data Instructions =
 
 data Command
   = CommandEntry EntryFlags
+  | CommandWork WorkFlags
   | CommandWaiting WaitingFlags
   | CommandNext NextFlags
   | CommandClock ClockFlags
@@ -52,6 +53,13 @@ data EntryFlags =
     , entryFlagProjection :: Maybe Projection
     , entryFlagSorter :: Maybe Sorter
     , entryFlagHideArchive :: Maybe HideArchive
+    }
+  deriving (Show, Eq)
+
+data WorkFlags =
+  WorkFlags
+    { workFlagContext :: ContextName
+    , workFlagFilter :: Maybe Filter
     }
   deriving (Show, Eq)
 
@@ -139,6 +147,7 @@ instance FromJSON Configuration where
 
 data Dispatch
   = DispatchEntry EntrySettings
+  | DispatchWork WorkSettings
   | DispatchWaiting WaitingSettings
   | DispatchNext NextSettings
   | DispatchClock ClockSettings
@@ -155,6 +164,13 @@ data EntrySettings =
     , entrySetProjection :: Maybe Projection
     , entrySetSorter :: Maybe Sorter
     , entrySetHideArchive :: HideArchive
+    }
+  deriving (Show, Eq, Generic)
+
+data WorkSettings =
+  WorkSettings
+    { workSetContext :: ContextName
+    , workSetFilter :: Maybe Filter
     }
   deriving (Show, Eq, Generic)
 

@@ -30,8 +30,8 @@ tag:<tag>                                          -- tag:online
 state:<state>                                      -- state:TODO
 file:<file>                                        -- file:my-client.smos
 level:<level>                                      -- level:5
-property:has:<property-name>                       -- property:has:effort
-property:exact:<property-name>:<property-value>    -- property:exact:effort:15min
+has-property:<property-name>                       -- property:has:effort
+exact-property:<property-name>:<property-value>    -- property:exact:effort:15min
 parent:<filter>                                    -- parent:tag:work
 ancestor:<filter>                                  -- ancestor:state:DONE
 child:<filter>                                     -- child:tag:work

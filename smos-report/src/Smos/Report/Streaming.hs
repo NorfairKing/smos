@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -175,7 +176,10 @@ smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m (
 smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent = \(rf, fc) -> (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
+smosCursorCurrent = \(rf, fc) -> (rf, forestCursorCurrent fc)
+
+forestCursorCurrent :: ForestCursor a -> a
+forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest
@@ -202,3 +206,15 @@ forestCursors ts =
       (case (fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel) of
          Nothing -> []
          Just fc' -> go fc')
+
+accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a Void m a
+accumulateSink operation start = go start
+  where
+    go !a = do
+      mn <- await
+      case mn of
+        Nothing -> pure a
+        Just n -> go $ a `operation` n
+
+accumulateMonoid :: (Monoid a,Monad m) => ConduitT a Void m a
+accumulateMonoid = accumulateSink mappend mempty

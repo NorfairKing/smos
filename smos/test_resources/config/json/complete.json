@@ -1,8 +1,10 @@
 {
-    "archive-dir": null,
     "workflow-dir": null,
     "projects-dir": null,
+    "archive-dir": null,
     "archived-projects-dir": null,
+    "work-filter": null,
+    "contexts": {},
     "keys": {
         "reports": {
             "next-action": [
@@ -424,7 +426,7 @@
                     "key": "gh"
                 },
                 {
-                    "action": "tagsToggle_online",
+                    "action": "tagsToggle_offline",
                     "key": "go"
                 },
                 {
@@ -462,6 +464,10 @@
                 {
                     "action": "propertiesEditProperty_effort",
                     "key": "pe"
+                },
+                {
+                    "action": "propertiesEditProperty_time",
+                    "key": "pt"
                 },
                 {
                     "action": "forestClockOutEverywhereInAllFilesAndClockInHere",

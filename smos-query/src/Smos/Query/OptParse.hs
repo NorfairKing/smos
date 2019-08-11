@@ -39,7 +39,8 @@ combineToInstructions ::
 combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
-    hideArchiveWithDefault def mflag = fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
+    hideArchiveWithDefault def mflag =
+      fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -56,8 +57,7 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
           DispatchWaiting
             WaitingSettings
               { waitingSetFilter = waitingFlagFilter
-              , waitingSetHideArchive =
-                  hideArchiveWithDefault HideArchive waitingFlagHideArchive
+              , waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive
               }
         CommandNext NextFlags {..} ->
           pure $
@@ -89,6 +89,10 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
               , agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive
               }
+        CommandWork WorkFlags {..} ->
+          pure $
+          DispatchWork
+            WorkSettings {workSetContext = workFlagContext, workSetFilter = workFlagFilter}
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
           pure $
@@ -99,6 +103,8 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
               , logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
               }
+        CommandTags TagsFlags {..} ->
+          pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
         CommandStats StatsFlags {..} ->
           pure $
           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
@@ -163,6 +169,7 @@ parseCommand =
   hsubparser $
   mconcat
     [ command "entry" parseCommandEntry
+    , command "work" parseCommandWork
     , command "waiting" parseCommandWaiting
     , command "next" parseCommandNext
     , command "clock" parseCommandClock
@@ -181,6 +188,12 @@ parseCommandEntry = info parser modifier
       CommandEntry <$>
       (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs <*>
        parseHideArchiveFlag)
+
+parseCommandWork :: ParserInfo Command
+parseCommandWork = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Show the work overview"
+    parser = CommandWork <$> (WorkFlags <$> parseContextNameArg <*> parseFilterArgs)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -275,6 +288,10 @@ parseHideArchiveFlag =
        Don'tHideArchive
        (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])))) <|>
   (pure Nothing)
+
+parseContextNameArg :: Parser ContextName
+parseContextNameArg =
+  argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =

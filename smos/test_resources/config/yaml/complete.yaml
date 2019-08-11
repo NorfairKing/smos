@@ -1,7 +1,9 @@
-archive-dir: null
 workflow-dir: null
 projects-dir: null
+archive-dir: null
 archived-projects-dir: null
+work-filter: null
+contexts: {}
 keys:
   reports:
     next-action:
@@ -214,7 +216,7 @@ keys:
       key: T<space>
     - action: tagsToggle_home
       key: gh
-    - action: tagsToggle_online
+    - action: tagsToggle_offline
       key: go
     - action: tagsToggle_toast
       key: gt
@@ -234,6 +236,8 @@ keys:
       key: pc
     - action: propertiesEditProperty_effort
       key: pe
+    - action: propertiesEditProperty_time
+      key: pt
     - action: forestClockOutEverywhereInAllFilesAndClockInHere
       key: ci
     - action: forestClockOutEverywhereInAllFiles
@@ -362,3 +366,6 @@ keys:
       key: M-<Down>
     - action: propertiesToggleSelected
       key: <tab>
+projects-dir: null
+work-filter: null
+archived-projects-dir: null
