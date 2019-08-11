@@ -9,6 +9,10 @@ let
     (pkgs.fetchFromGitHub (import ./nix/cursor-version.nix)
     + "/nix/overlay.nix")
   );
+  cursor-brick-overlay = import (
+    (pkgs.fetchFromGitHub (import ./nix/cursor-brick-version.nix)
+    + "/nix/overlay.nix")
+  );
   fuzzy-time-overlay = import (
     (pkgs.fetchFromGitHub (import ./nix/fuzzy-time-version.nix)
     + "/nix/overlay.nix")
@@ -25,6 +29,7 @@ let
   overlays =
     [ validity-overlay
       cursor-overlay
+      cursor-brick-overlay
       fuzzy-time-overlay
       pretty-relative-time-overlay
       cursor-fuzzy-time-overlay
