@@ -17,8 +17,6 @@ module Smos.Style
   , helpNameAttr
   , helpKeyCombinationAttr
   , helpDescriptionAttr
-    -- * Names of widgets
-  , textCursorName
     -- * Re-exports
   , applyAttrMappings
   , fg
@@ -36,7 +34,6 @@ import qualified Graphics.Vty as V
 import Graphics.Vty.Attributes
 
 import Smos.Data
-import Smos.Types
 
 defaultAttrMap :: s -> AttrMap
 defaultAttrMap _ =
@@ -82,8 +79,7 @@ todoStateAttr :: AttrName
 todoStateAttr = "todostate"
 
 todoStateSpecificAttr :: TodoState -> AttrName
-todoStateSpecificAttr tss =
-  fromString $ "todostate-" ++ T.unpack (todoStateText tss)
+todoStateSpecificAttr tss = fromString $ "todostate-" ++ T.unpack (todoStateText tss)
 
 todoStateHistoryAttr :: AttrName
 todoStateHistoryAttr = "todostatehistory"
@@ -92,15 +88,13 @@ timestampNameAttr :: AttrName
 timestampNameAttr = "timestampname"
 
 timestampNameSpecificAttr :: TimestampName -> AttrName
-timestampNameSpecificAttr tsn =
-  fromString $ "timestampname-" ++ T.unpack (timestampNameText tsn)
+timestampNameSpecificAttr tsn = fromString $ "timestampname-" ++ T.unpack (timestampNameText tsn)
 
 propertyNameAttr :: AttrName
 propertyNameAttr = "propertyname"
 
 propertyNameSpecificAttr :: PropertyName -> AttrName
-propertyNameSpecificAttr pn =
-  fromString $ "propertyname-" ++ T.unpack (propertyNameText pn)
+propertyNameSpecificAttr pn = fromString $ "propertyname-" ++ T.unpack (propertyNameText pn)
 
 tagAttr :: AttrName
 tagAttr = "tag"
@@ -116,6 +110,3 @@ helpKeyCombinationAttr = "helpkeycombination"
 
 helpDescriptionAttr :: AttrName
 helpDescriptionAttr = "helpdescription"
-
-textCursorName :: ResourceName
-textCursorName = "text-cursor"

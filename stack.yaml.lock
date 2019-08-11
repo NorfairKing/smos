@@ -113,19 +113,19 @@ packages:
 - completed:
     subdir: cursor-brick
     cabal-file:
-      size: 1215
-      sha256: c90788ed29d4593554081cc6ca9db3d9f37d1a1f361a21658996d782e91ca61d
+      size: 1265
+      sha256: 40ba21b44b14cd8acc9a03eec0870f7543c72729b2882ebfe834789f325aba3c
     name: cursor-brick
     version: 0.0.0.0
     git: https://github.com/NorfairKing/cursor-brick.git
     pantry-tree:
-      size: 760
-      sha256: 1c8aff29948839ce3bbb093d8399df0d6d6c45b42094d32fa0313a7145836e61
-    commit: f4ecf7b83cd94704ee598711e8b72d74e30848f8
+      size: 848
+      sha256: 25343a77efbbe0138018c845747b89d546d6733962eb58425e22bdadaea054a8
+    commit: 4187fb5e8e3d2b046fc942a7b47cc0fbac75f006
   original:
     subdir: cursor-brick
     git: https://github.com/NorfairKing/cursor-brick.git
-    commit: f4ecf7b83cd94704ee598711e8b72d74e30848f8
+    commit: 4187fb5e8e3d2b046fc942a7b47cc0fbac75f006
 - completed:
     subdir: cursor
     cabal-file:

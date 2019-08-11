@@ -41,7 +41,7 @@ mkSmosApp sc@SmosConfig {..} =
 
 smosChooseCursor ::
      s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
-smosChooseCursor _ = showCursorNamed textCursorName
+smosChooseCursor _ = showCursorNamed ResourceTextCursor
 
 smosHandleEvent ::
      SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
