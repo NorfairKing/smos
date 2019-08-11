@@ -43,6 +43,7 @@ data Command
   | CommandProjects
   | CommandLog LogFlags
   | CommandStats StatsFlags
+  | CommandTags TagsFlags
   deriving (Show, Eq)
 
 data EntryFlags =
@@ -105,6 +106,12 @@ data StatsFlags =
     }
   deriving (Show, Eq, Generic)
 
+data TagsFlags =
+  TagsFlags
+    { tagsFlagFilter :: Maybe Filter
+    }
+  deriving (Show, Eq, Generic)
+
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
@@ -139,6 +146,7 @@ data Dispatch
   | DispatchProjects
   | DispatchLog LogSettings
   | DispatchStats StatsSettings
+  | DispatchTags TagsSettings
   deriving (Show, Eq, Generic)
 
 data EntrySettings =
@@ -198,6 +206,12 @@ data LogSettings =
 data StatsSettings =
   StatsSettings
     { statsSetPeriod :: Period
+    }
+  deriving (Show, Eq, Generic)
+
+data TagsSettings =
+  TagsSettings
+    { tagsSetFilter :: Maybe Filter
     }
   deriving (Show, Eq, Generic)
 

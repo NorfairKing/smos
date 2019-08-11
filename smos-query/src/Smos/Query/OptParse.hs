@@ -170,6 +170,7 @@ parseCommand =
     , command "projects" parseCommandProjects
     , command "log" parseCommandLog
     , command "stats" parseCommandStats
+    , command "tags" parseCommandTags
     ]
 
 parseCommandEntry :: ParserInfo Command
@@ -252,6 +253,12 @@ parseCommandStats = info parser modifier
     modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
     parser = CommandStats <$> (StatsFlags <$> parsePeriod)
 
+parseCommandTags :: ParserInfo Command
+parseCommandTags = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print all the tags that are in use"
+    parser = CommandTags <$> (TagsFlags <$> parseFilterArgs)
+
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags
 
@@ -275,13 +282,22 @@ parseFilterArgs =
   many
     (argument
        (maybeReader (parseFilter . T.pack))
-       (mconcat [metavar "FILTER", help "A filter to filter entries by"]))
+       (mconcat
+          [ metavar "FILTER"
+          , help "A filter to filter entries by"
+          , completer $ mkCompleter $ pure . filterCompleter
+          ]))
 
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =
   argument
     (Just <$> (maybeReader (parseFilter . T.pack)))
-    (mconcat [value Nothing, metavar "FILTER", help "A filter to filter entries by"])
+    (mconcat
+       [ value Nothing
+       , metavar "FILTER"
+       , help "A filter to filter entries by"
+       , completer $ mkCompleter $ pure . filterCompleter
+       ])
 
 parseProjectionArgs :: Parser (Maybe Projection)
 parseProjectionArgs =

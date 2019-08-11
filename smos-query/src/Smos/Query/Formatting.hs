@@ -22,9 +22,7 @@ type Table = Seq (Chunk Text)
 formatAsTable :: [[Chunk Text]] -> Seq (Chunk Text)
 formatAsTable =
   Box.render .
-  tableByRows .
-  S.fromList .
-  map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
+  tableByRows . S.fromList . map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
 
 mkCell :: Chunk Text -> Cell
 mkCell c = Cell (S.singleton (S.singleton c)) center left mempty
@@ -91,3 +89,9 @@ propertyValueChunk pn pv = fore color . chunk . propertyValueText $ pv
         "effort" -> magenta
         "client" -> green
         _ -> mempty
+
+tagChunk :: Tag -> Chunk Text
+tagChunk = fore cyan . chunk . tagText
+
+intChunk :: Int -> Chunk Text
+intChunk = chunk . T.pack . show

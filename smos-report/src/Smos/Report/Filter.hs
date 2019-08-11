@@ -257,3 +257,74 @@ renderPropertyFilter pf =
   case pf of
     ExactProperty pn pv -> "exact:" <> propertyNameText pn <> ":" <> propertyValueText pv
     HasProperty pn -> "has:" <> propertyNameText pn
+
+filterCompleter :: String -> [String]
+filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions
+
+data CompleterOption
+  = Nullary String [String]
+  | Unary String
+  deriving (Show, Eq)
+
+filterCompleterOptions :: [CompleterOption]
+filterCompleterOptions =
+  [ Nullary "tag" ["out", "online","offline", "toast", "personal", "work"]
+  , Nullary "state" ["CANCELLED", "DONE", "NEXT", "READY", "STARTED", "TODO", "WAITING"]
+  , Nullary "file" []
+  , Nullary "level" []
+  , Nullary "property" []
+  , Unary "parent"
+  , Unary "ancestor"
+  , Unary "child"
+  , Unary "legacy"
+  , Unary "not"
+  ]
+
+makeCompleterFromOptions :: Char -> [CompleterOption] -> String -> [String]
+makeCompleterFromOptions separator os s =
+  case separate separator (dropSeparatorAtEnd s) of
+    [] -> allOptions
+    pieces ->
+      let l = last pieces
+          prefix = intercalate [separator] pieces :: String
+          searchResults =
+            mapMaybe (\o -> (,) o <$> searchString l (renderCompletionOption o)) os :: [( CompleterOption
+                                                                                        , SearchResult)]
+       in flip concatMap searchResults $ \(o, sr) ->
+            case sr of
+              PrefixFound f -> [renderCompletionOption o <> [separator]]
+              ExactFound ->
+                case o of
+                  Unary s -> map ((prefix <> [separator]) <>) allOptions
+                  Nullary s rest -> map ((prefix <> [separator]) <>) rest
+  where
+    allOptions :: [String]
+    allOptions = map ((<> [separator]) . renderCompletionOption) os
+    dropSeparatorAtEnd :: String -> String
+    dropSeparatorAtEnd = reverse . dropWhile (== separator) . reverse
+
+data SearchResult
+  = PrefixFound String
+  | ExactFound
+
+searchString :: String -> String -> Maybe SearchResult
+searchString needle haystack =
+  if needle `isPrefixOf` haystack
+    then Just $
+         if needle == haystack
+           then ExactFound
+           else PrefixFound needle
+    else Nothing
+
+renderCompletionOption :: CompleterOption -> String
+renderCompletionOption co =
+  case co of
+    Nullary s _ -> s
+    Unary s -> s
+
+separate :: Char -> String -> [String]
+separate c s =
+  case dropWhile (== c) s of
+    "" -> []
+    s' -> w : words s''
+      where (w, s'') = break (== c) s'

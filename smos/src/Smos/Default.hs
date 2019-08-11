@@ -85,7 +85,7 @@ defaultFileKeyMap =
           , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
           , exactString "gh" $ tagsToggle "home"
-          , exactString "go" $ tagsToggle "online"
+          , exactString "go" $ tagsToggle "offline"
           , exactString "gt" $ tagsToggle "toast"
           , exactString "gw" $ tagsToggle "work"
                   -- Fast timestamps manipulation
@@ -96,6 +96,7 @@ defaultFileKeyMap =
           , exactString "pi" entrySelectProperties
           , exactString "pc" $ propertiesEditProperty "client"
           , exactString "pe" $ propertiesEditProperty "effort"
+          , exactString "pt" $ propertiesEditProperty "time"
                   -- Clocking
           , exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere
           , exactString "co" forestClockOutEverywhereInAllFiles

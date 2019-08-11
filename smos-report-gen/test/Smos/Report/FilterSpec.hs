@@ -4,6 +4,7 @@
 module Smos.Report.FilterSpec where
 
 import Data.Char as Char
+import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -60,6 +61,45 @@ spec = do
     it "produces valid texts" $ producesValidsOnValids renderPropertyFilter
     it "renders filters that parse to the same" $
       forAllValid $ \f -> parseJust propertyFilterP (renderPropertyFilter f) f
+  describe "filterCompleter" $ do
+    let c s ss =
+          it (unwords ["completes", show s, "to", show ss]) $
+          sort (filterCompleter s) `shouldBe` sort ss
+        cp s ss = xdescribe "Not implemented yet." $ c s ss
+    c "t" ["tag:"]
+    c "s" ["state:"]
+    c "n" ["not:"]
+    c "p" ["parent:", "property:"]
+    c
+      "not"
+      [ "not:tag:"
+      , "not:state:"
+      , "not:file:"
+      , "not:level:"
+      , "not:property:"
+      , "not:parent:"
+      , "not:ancestor:"
+      , "not:child:"
+      , "not:legacy:"
+      , "not:not:"
+      ]
+    c
+      "not:"
+      [ "not:tag:"
+      , "not:state:"
+      , "not:file:"
+      , "not:level:"
+      , "not:property:"
+      , "not:parent:"
+      , "not:ancestor:"
+      , "not:child:"
+      , "not:legacy:"
+      , "not:not:"
+      ]
+    c "tag" ["tag:home", "tag:online", "tag:toast", "tag:work"]
+    c "tag:" ["tag:home", "tag:online", "tag:toast", "tag:work"]
+    cp "tag:h" ["tag:home"]
+    cp "state:N" ["state:NEXT"]
 
 filterText :: Gen Text
 filterText =
