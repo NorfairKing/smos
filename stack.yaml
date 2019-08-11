@@ -32,7 +32,7 @@ extra-deps:
     - fuzzy-time
     - fuzzy-time-gen
 - git: https://github.com/NorfairKing/cursor-brick.git
-  commit: 4187fb5e8e3d2b046fc942a7b47cc0fbac75f006
+  commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
   subdirs:
     - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git

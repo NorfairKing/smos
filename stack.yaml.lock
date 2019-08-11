@@ -120,12 +120,12 @@ packages:
     git: https://github.com/NorfairKing/cursor-brick.git
     pantry-tree:
       size: 848
-      sha256: 25343a77efbbe0138018c845747b89d546d6733962eb58425e22bdadaea054a8
-    commit: 4187fb5e8e3d2b046fc942a7b47cc0fbac75f006
+      sha256: f885b9840a68512c5319e3a7fc0f16c6c4a061542c80165fd76fbcdd9b3fa2d9
+    commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
   original:
     subdir: cursor-brick
     git: https://github.com/NorfairKing/cursor-brick.git
-    commit: 4187fb5e8e3d2b046fc942a7b47cc0fbac75f006
+    commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
 - completed:
     subdir: cursor
     cabal-file:

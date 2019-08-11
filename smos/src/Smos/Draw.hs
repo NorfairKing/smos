@@ -132,7 +132,7 @@ drawHelpCursor s (Just HelpCursor {..}) =
                 case helpCursorSelection of
                   HelpCursorSearchSelected -> MaybeSelected
                   _ -> NotSelected
-           in hBox [textWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
+           in hBox [textLineWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
         ]
     , vBorder
     , padAll 1 $
@@ -377,7 +377,7 @@ drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor s = withAttr headerAttr . drawTextCursor s
 
 drawHeader :: Header -> Widget ResourceName
-drawHeader = withAttr headerAttr . textWidget . headerText
+drawHeader = withAttr headerAttr . textLineWidget . headerText
 
 drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
 drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
@@ -444,7 +444,7 @@ drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
-  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textWidget $ timestampNameText tsn
+  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $ timestampNameText tsn
 
 drawTimestamp :: Timestamp -> Drawer
 drawTimestamp ts =
@@ -507,7 +507,7 @@ drawPropertyPair pn pv =
   hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
 
 drawPropertyName :: PropertyName -> Widget ResourceName
-drawPropertyName = textWidget . propertyNameText
+drawPropertyName = textLineWidget . propertyNameText
 
 drawPropertyValue :: PropertyValue -> Widget ResourceName
 drawPropertyValue = textWidget . propertyValueText
@@ -557,7 +557,7 @@ drawTagCursor s =
   (str ":" <+>) . (<+> str ":") . drawTextCursor s . tagCursorTextCursor
 
 drawTag :: Tag -> Widget n
-drawTag = textWidget . tagText
+drawTag = textLineWidget . tagText
 
 drawLogbookCursor :: Select -> LogbookCursor -> MDrawer
 drawLogbookCursor _ lbc =
@@ -639,7 +639,7 @@ drawLogbookTimestamp utct = do
 
 drawTodoState :: TodoState -> Widget ResourceName
 drawTodoState ts =
-  withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textWidget $ todoStateText ts
+  withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textLineWidget $ todoStateText ts
 
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
