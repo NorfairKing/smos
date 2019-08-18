@@ -6,6 +6,7 @@ module Smos.Query.Work
   ( work
   ) where
 
+import Data.List (intersperse)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
@@ -51,31 +52,38 @@ produceWorkReport src cn mf = do
               , workReportContextContexts = contexts
               }
       runConduit $
-        streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+        streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+        smosFileCursors .|
         C.map (uncurry $ makeWorkReport wrc) .|
         accumulateMonoid
 
 renderWorkReport :: ZonedTime -> WorkReport -> Table
 renderWorkReport now WorkReport {..} =
   mconcat $
-  concat
-    [ sectionHeading  $ "Today's agenda:"
-    , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
-    , spacer
-    , sectionHeading $ "Next actions:"
-    , [formatAsTable $ map (uncurry entryLine) workReportResultEntries]
-    , if null workReportEntriesWithoutContext
-        then []
-        else concat
-               [ spacer
-               , heading $
-                 fore red $ chunk "WARNING, the following Entries don't match any context:"
-               , [formatAsTable $ map (uncurry entryLine) workReportEntriesWithoutContext]
-               ]
-    ]
+  (concat . concat) $
+  intersperse [spacer] $ filter (not. null)$
+  [ unlessNull
+      workReportAgendaEntries
+      [ sectionHeading $ "Today's agenda:"
+      , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
+      ]
+  , unlessNull
+      workReportResultEntries
+      [ sectionHeading $ "Next actions:"
+      , [formatAsTable $ map (uncurry entryLine) workReportResultEntries]
+      ]
+  , unlessNull
+      workReportEntriesWithoutContext
+      [ heading $ fore red $ chunk "WARNING, the following Entries don't match any context:"
+      , [formatAsTable $ map (uncurry entryLine) workReportEntriesWithoutContext]
+      ]
+  ]
   where
-    sectionHeading t =
-       heading $ fore white $ chunk t
+    unlessNull l r =
+      if null l
+        then []
+        else r
+    sectionHeading t = heading $ fore white $ chunk t
     heading c = [formatAsTable $ [[c]]]
     spacer = [formatAsTable $ [[chunk " "]]]
     entryLine rp e =
