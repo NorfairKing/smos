@@ -36,14 +36,7 @@ import Data.Mergeful
 
 smosServer :: IO ()
 smosServer = do
-  mContents <- forgivingAbsence $ LB.readFile "store.json"
-  serverStore <-
-    case mContents of
-      Nothing -> pure emptyServerStore
-      Just contents ->
-        case JSON.eitherDecode contents of
-          Left err -> die err
-          Right store -> pure store
+  serverStore <- readStore
   var <- newTVarIO serverStore
   Warp.run 8000 $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}
 
@@ -94,5 +87,23 @@ handleSync request = do
   var <- asks serverEnvStoreVar
   store <- liftIO $ readTVarIO var
   (resp, newStore) <- processServerSync (liftIO UUID.nextRandom) store request
-  liftIO $ atomically $ writeTVar var newStore
+  liftIO $ do
+    atomically $ writeTVar var newStore
+    saveStore newStore
   pure resp
+
+readStore :: IO (ServerStore UUID SyncFile)
+readStore = do
+  mContents <- forgivingAbsence $ LB.readFile storeFile
+  case mContents of
+    Nothing -> pure emptyServerStore
+    Just contents ->
+      case JSON.eitherDecode contents of
+        Left err -> die err
+        Right store -> pure store
+
+saveStore :: ServerStore UUID SyncFile -> IO ()
+saveStore = encodeFile storeFile
+
+storeFile :: FilePath
+storeFile = "store.json"
