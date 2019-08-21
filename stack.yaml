@@ -14,7 +14,8 @@ packages:
 - smos-convert-org
 - smos-archive
 - smos-docs-site
-- smos-server
+- smos-sync-server
+- smos-sync-client
 extra-deps:
 - /home/syd/src/mergeful/mergeful
 - /home/syd/src/mergeful/genvalidity-mergeful

@@ -1,4 +1,4 @@
-name: smos-server
+name: smos-sync-server
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -30,8 +30,8 @@ library:
   - warp
 
 executables:
-  smos-server:
+  smos-sync-server:
     main: Main.hs
     source-dirs: app
     dependencies:
-    - smos-server
+    - smos-sync-server

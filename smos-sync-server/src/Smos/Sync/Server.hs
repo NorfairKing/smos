@@ -4,9 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Smos.Server
-  ( smosServer
-  ) where
+module Smos.Sync.Server where
 
 import GHC.Generics (Generic)
 
@@ -34,8 +32,8 @@ import Path.IO
 
 import Data.Mergeful
 
-smosServer :: IO ()
-smosServer = do
+smosSyncServer :: IO ()
+smosSyncServer = do
   serverStore <- readStore
   var <- newTVarIO serverStore
   Warp.run 8000 $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}

@@ -1,0 +1,34 @@
+name: smos-sync-client
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - aeson
+  - bytestring
+  - http-client
+  - mergeful
+  - path
+  - path-io
+  - servant-client
+  - smos-sync-server
+  - stm
+  - text
+  - uuid
+
+executables:
+  smos-sync-client:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - smos-sync-client
