@@ -9,13 +9,14 @@ module Smos.Sync.Server where
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
-import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import Data.UUID as UUID
 import Data.UUID.V4 as UUID
+
+import Text.Show.Pretty
 
 import System.Exit
 
@@ -56,7 +57,7 @@ instance FromJSON SyncFile where
 
 instance ToJSON SyncFile where
   toJSON SyncFile {..} =
-    object ["path" .= syncFilePath, "contents" .= SB.unpack (Base64.encode syncFileContents)]
+    object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
 data ServerEnv =
   ServerEnv
@@ -84,10 +85,14 @@ handleSync :: SyncRequest UUID SyncFile -> SyncHandler (SyncResponse UUID SyncFi
 handleSync request = do
   var <- asks serverEnvStoreVar
   store <- liftIO $ readTVarIO var
+  liftIO $ pPrint store
+  liftIO $ pPrint request
   (resp, newStore) <- processServerSync (liftIO UUID.nextRandom) store request
   liftIO $ do
     atomically $ writeTVar var newStore
     saveStore newStore
+  liftIO $ pPrint newStore
+  liftIO $ pPrint resp
   pure resp
 
 readStore :: IO (ServerStore UUID SyncFile)

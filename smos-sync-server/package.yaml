@@ -21,6 +21,7 @@ library:
   - mtl
   - path
   - path-io
+  - pretty-show
   - servant
   - servant-server
   - stm

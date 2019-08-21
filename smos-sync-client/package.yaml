@@ -16,6 +16,8 @@ library:
   dependencies:
   - aeson
   - bytestring
+  - containers
+  - filepath
   - http-client
   - mergeful
   - path
