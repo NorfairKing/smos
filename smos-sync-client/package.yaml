@@ -23,6 +23,7 @@ library:
   - mergeful
   - path
   - path-io
+  - pretty-show
   - servant-client
   - smos-sync-server
   - stm

@@ -23,6 +23,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
 import Data.UUID as UUID (UUID)
+import Text.Show.Pretty
 
 import Control.Monad
 
@@ -50,11 +51,14 @@ smosSyncClient = do
   man <- HTTP.newManager HTTP.defaultManagerSettings
   burl <- parseBaseUrl "localhost:8000"
   let cenv = mkClientEnv man burl
-  errOrResp <- runClient cenv $ clientSync $ makeSyncRequest clientStore
+  let req = makeSyncRequest clientStore
+  pPrint req
+  errOrResp <- runClient cenv $ clientSync req
   resp <-
     case errOrResp of
       Left err -> die $ show err
       Right resp -> pure resp
+  pPrint resp
   saveClientStore metaFile dir $ mergeSyncResponseIgnoreProblems clientStore resp
 
 runClient :: ClientEnv -> ClientM a -> IO (Either ServantError a)
