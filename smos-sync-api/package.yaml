@@ -1,4 +1,4 @@
-name: smos-sync-client
+name: smos-sync-api
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -15,24 +15,17 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - base64-bytestring
   - bytestring
-  - containers
-  - filepath
-  - hashable
-  - http-client
   - mergeful
+  - mtl
   - path
   - path-io
   - pretty-show
-  - servant-client
-  - smos-sync-api
+  - servant
+  - servant-server
   - stm
   - text
   - uuid
-
-executables:
-  smos-sync-client:
-    main: Main.hs
-    source-dirs: app
-    dependencies:
-    - smos-sync-client
+  - wai
+  - warp

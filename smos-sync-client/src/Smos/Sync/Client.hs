@@ -13,7 +13,6 @@ module Smos.Sync.Client
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
@@ -21,7 +20,6 @@ import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Text as T
 import Data.UUID as UUID (UUID)
 import Text.Show.Pretty
 
@@ -40,7 +38,7 @@ import Data.Mergeful
 
 import Network.HTTP.Client as HTTP
 
-import Smos.Sync.Server
+import Smos.Sync.API
 
 smosSyncClient :: IO ()
 smosSyncClient = do
@@ -78,16 +76,6 @@ newtype ClientMetaData =
     { clientMetaDataMap :: Map (Path Rel File) SyncFileMeta
     }
   deriving (Show, Eq, Generic, FromJSON, ToJSON)
-
-instance FromJSONKey (Path Rel File) where
-  fromJSONKey =
-    FromJSONKeyTextParser $ \t ->
-      case parseRelFile (T.unpack t) of
-        Nothing -> fail "failed to parse relative file"
-        Just rf -> pure rf
-
-instance ToJSONKey (Path Rel File) where
-  toJSONKey = toJSONKeyText $ T.pack . fromRelFile
 
 data SyncFileMeta =
   SyncFileMeta
