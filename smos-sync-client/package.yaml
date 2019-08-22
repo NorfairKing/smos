@@ -18,6 +18,7 @@ library:
   - bytestring
   - containers
   - filepath
+  - hashable
   - http-client
   - mergeful
   - path

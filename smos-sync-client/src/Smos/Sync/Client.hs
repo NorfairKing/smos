@@ -1,5 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
@@ -8,15 +10,19 @@ module Smos.Sync.Client
   ( smosSyncClient
   ) where
 
+import GHC.Generics (Generic)
+
 import Data.Aeson as JSON
+import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
-import Data.List
+import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import Data.UUID as UUID
+import qualified Data.Text as T
+import Data.UUID as UUID (UUID)
 
 import Control.Monad
 
@@ -63,14 +69,43 @@ readClientStore metaFile dir = do
   files <- readSyncFiles dir
   pure $ consolidateMetaWithFiles meta files
 
--- TODO make the metadata different from the store.
--- there are a lot of possible efficiency gains.
--- We could use hashes to speed things up, for example, I think.
-readStoreMeta :: Path Abs File -> IO (ClientStore UUID SyncFile)
+newtype ClientMetaData =
+  ClientMetaData
+    { clientMetaDataMap :: Map (Path Rel File) SyncFileMeta
+    }
+  deriving (Show, Eq, Generic, FromJSON, ToJSON)
+
+instance FromJSONKey (Path Rel File) where
+  fromJSONKey =
+    FromJSONKeyTextParser $ \t ->
+      case parseRelFile (T.unpack t) of
+        Nothing -> fail "failed to parse relative file"
+        Just rf -> pure rf
+
+instance ToJSONKey (Path Rel File) where
+  toJSONKey = toJSONKeyText $ T.pack . fromRelFile
+
+data SyncFileMeta =
+  SyncFileMeta
+    { syncFileMetaUUID :: UUID
+    , syncFileMetaHash :: Int
+    , syncFileMetaTime :: ServerTime
+    }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON SyncFileMeta where
+  parseJSON =
+    withObject "SyncFileMeta" $ \o -> SyncFileMeta <$> o .: "uuid" <*> o .: "hash" <*> o .: "time"
+
+instance ToJSON SyncFileMeta where
+  toJSON SyncFileMeta {..} =
+    object ["uuid" .= syncFileMetaUUID, "hash" .= syncFileMetaHash, "time" .= syncFileMetaTime]
+
+readStoreMeta :: Path Abs File -> IO ClientMetaData
 readStoreMeta p = do
   mContents <- forgivingAbsence $ LB.readFile $ toFilePath p
   case mContents of
-    Nothing -> pure emptyClientStore
+    Nothing -> pure $ ClientMetaData {clientMetaDataMap = M.empty}
     Just contents ->
       case JSON.eitherDecode contents of
         Left err -> die err
@@ -86,44 +121,90 @@ readSyncFiles dir = do
         Just rfile -> Just <$> ((,) rfile <$> SB.readFile (toFilePath file))
 
 consolidateMetaWithFiles ::
-     ClientStore UUID SyncFile -> Map (Path Rel File) ByteString -> ClientStore UUID SyncFile
-consolidateMetaWithFiles cs contentsMap
-    -- We leave the existing added, the changed and the deleted items as is.
-    -- There shouldn't be any of those anyway.
-    -- So we only need to go through the synced items
-    -- to see if anything has been changed or deleted.
-    -- Afterwards we also go through the rest of the items.
-    -- Those are the new added ones
+     ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore UUID SyncFile
+consolidateMetaWithFiles ClientMetaData {..} contentsMap
+  -- The existing files need to be checked for deletions and changes.
  =
-  let go :: ClientStore UUID SyncFile -> UUID -> Timed SyncFile -> ClientStore UUID SyncFile
-      go s u t@Timed {..} =
-        case M.lookup (syncFilePath timedValue) contentsMap of
+  let go1 :: ClientStore UUID SyncFile -> Path Rel File -> SyncFileMeta -> ClientStore UUID SyncFile
+      go1 s rf SyncFileMeta {..} =
+        case M.lookup rf contentsMap of
           Nothing
-          -- The file is not there, that means that it must have been deleted.
-           -> s {clientStoreDeletedItems = M.insert u timedTime $ clientStoreDeletedItems s}
-          Just contents
-          -- The file is there, so we need to check if it has changed.
+           -- The file is not there, that means that it must have been deleted.
            ->
-            if contents == syncFileContents timedValue
-              -- If it hasn't changed, it's still synced.
-              then s {clientStoreSyncedItems = M.insert u t $ clientStoreSyncedItems s}
-              -- If it has changed, mark it as such
+            s
+              { clientStoreDeletedItems =
+                  M.insert syncFileMetaUUID syncFileMetaTime $ clientStoreDeletedItems s
+              }
+          Just contents
+           -- The file is there, so we need to check if it has changed.
+           -- We will trust hashing. (TODO do we need to fix that?)
+           ->
+            if hash contents == syncFileMetaHash
+               -- If it hasn't changed, it's still synced.
+              then s
+                     { clientStoreSyncedItems =
+                         M.insert
+                           syncFileMetaUUID
+                           (Timed
+                              { timedValue =
+                                  SyncFile {syncFilePath = rf, syncFileContents = contents}
+                              , timedTime = syncFileMetaTime
+                              }) $
+                         clientStoreSyncedItems s
+                     }
+               -- If it has changed, mark it as such
               else s
                      { clientStoreSyncedButChangedItems =
-                         M.insert u (t { timedValue = timedValue { syncFileContents = contents}} ) $ clientStoreSyncedButChangedItems s
+                         M.insert
+                           syncFileMetaUUID
+                           (Timed
+                              { timedValue =
+                                  SyncFile {syncFilePath = rf, syncFileContents = contents}
+                              , timedTime = syncFileMetaTime
+                              }) $
+                         clientStoreSyncedButChangedItems s
                      }
-      checked =
-        M.foldlWithKey go (cs {clientStoreSyncedItems = M.empty}) (clientStoreSyncedItems cs)
-      added = map (uncurry SyncFile) $ M.toList $ contentsMap `M.difference` makeContentsMap cs
-   in checked {clientStoreAddedItems = nub $ added ++ clientStoreAddedItems checked}
+      syncedChangedAndDeleted = M.foldlWithKey go1 emptyClientStore clientMetaDataMap
+      go2 :: ClientStore UUID SyncFile -> Path Rel File -> ByteString -> ClientStore UUID SyncFile
+      go2 s rf contents =
+        s
+          { clientStoreAddedItems =
+              SyncFile {syncFilePath = rf, syncFileContents = contents} : clientStoreAddedItems s
+          }
+   in M.foldlWithKey go2 syncedChangedAndDeleted (contentsMap `M.difference` clientMetaDataMap)
 
 -- TODO this could be optimised using the sync response
 saveClientStore :: Path Abs File -> Path Abs Dir -> ClientStore UUID SyncFile -> IO ()
 saveClientStore metaFile dir store = do
-  saveMeta metaFile store
+  saveMeta metaFile $ makeClientMetaData store
   saveSyncFiles dir store
 
-saveMeta :: Path Abs File -> ClientStore UUID SyncFile -> IO ()
+-- | We only check the synced items, because it should be the case that
+-- they're the only ones that are not empty.
+makeClientMetaData :: ClientStore UUID SyncFile -> ClientMetaData
+makeClientMetaData ClientStore {..} =
+  if not
+       (null clientStoreAddedItems &&
+        null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
+    then error "Should not happen."
+    else let go ::
+                  Map (Path Rel File) SyncFileMeta
+               -> UUID
+               -> Timed SyncFile
+               -> Map (Path Rel File) SyncFileMeta
+             go m u Timed {..} =
+               let SyncFile {..} = timedValue
+                in M.insert
+                     syncFilePath
+                     SyncFileMeta
+                       { syncFileMetaUUID = u
+                       , syncFileMetaTime = timedTime
+                       , syncFileMetaHash = hash syncFileContents
+                       }
+                     m
+          in ClientMetaData $ M.foldlWithKey go M.empty clientStoreSyncedItems
+
+saveMeta :: Path Abs File -> ClientMetaData -> IO ()
 saveMeta p store = encodeFile (toFilePath p) store
 
 saveSyncFiles :: Path Abs Dir -> ClientStore UUID SyncFile -> IO ()
