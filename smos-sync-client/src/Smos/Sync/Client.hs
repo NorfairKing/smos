@@ -63,7 +63,7 @@ smosSyncClient = do
        -- We have synced before.
        -> pure meta
   files <- readSyncFiles dir
-  let clientStore =  consolidateMetaWithFiles meta files
+  let clientStore = consolidateMetaWithFiles meta files
   newClientStore <- runSync cenv clientStore
   saveClientStore metaFile dir newClientStore
 
@@ -130,7 +130,8 @@ readStoreMeta p = do
 
 readSyncFiles :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
 readSyncFiles dir = do
-  files <- snd <$> listDirRecur dir
+  (dirs, files) <- listDirRecur dir
+  forM_ dirs ensureDir
   fmap (M.fromList . catMaybes) $
     forM files $ \file ->
       case stripProperPrefix dir file of
@@ -237,7 +238,10 @@ saveSyncFiles dir store = do
       ensureDir d
       void $ M.traverseWithKey go (makeContentsMap store)
       where
-        go p bs = SB.writeFile (fromAbsFile (d </> p)) bs
+        go p bs = do
+          let f = d </> p
+          ensureDir $ parent f
+          SB.writeFile (fromAbsFile f) bs
 
 makeContentsMap :: ClientStore UUID SyncFile -> Map (Path Rel File) ByteString
 makeContentsMap ClientStore {..} =
