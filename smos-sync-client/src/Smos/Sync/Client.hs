@@ -35,6 +35,7 @@ import Path
 import Path.IO
 
 import Data.Mergeful
+import Data.Mergeful.Timed
 
 import Network.HTTP.Client as HTTP
 
@@ -45,10 +46,30 @@ smosSyncClient = do
   (metaFileFP:dirFP:_) <- getArgs
   metaFile <- resolveFile' metaFileFP
   dir <- resolveDir' dirFP
-  clientStore <- readClientStore metaFile dir
   man <- HTTP.newManager HTTP.defaultManagerSettings
   burl <- parseBaseUrl "localhost:8000"
   let cenv = mkClientEnv man burl
+  mMeta <- readStoreMeta metaFile
+  meta <-
+    case mMeta of
+      Nothing
+       -- Never synced yet
+       --
+       -- That means we need to run an initial sync first.
+       -> do
+        initialStore <- runInitialSync cenv
+        pure $ makeClientMetaData initialStore
+      Just meta
+       -- We have synced before.
+       -> pure meta
+  files <- readSyncFiles dir
+  let clientStore =  consolidateMetaWithFiles meta files
+  newClientStore <- runSync cenv clientStore
+  saveClientStore metaFile dir newClientStore
+
+runInitialSync :: ClientEnv -> IO (ClientStore UUID SyncFile)
+runInitialSync cenv = do
+  let clientStore = initialClientStore :: ClientStore UUID SyncFile
   let req = makeSyncRequest clientStore
   pPrint req
   errOrResp <- runClient cenv $ clientSync req
@@ -57,19 +78,25 @@ smosSyncClient = do
       Left err -> die $ show err
       Right resp -> pure resp
   pPrint resp
-  saveClientStore metaFile dir $ mergeSyncResponseIgnoreProblems clientStore resp
+  pure $ mergeSyncResponseIgnoreProblems initialClientStore resp
+
+runSync :: ClientEnv -> ClientStore UUID SyncFile -> IO (ClientStore UUID SyncFile)
+runSync cenv clientStore = do
+  let req = makeSyncRequest clientStore
+  pPrint req
+  errOrResp <- runClient cenv $ clientSync req
+  resp <-
+    case errOrResp of
+      Left err -> die $ show err
+      Right resp -> pure resp
+  pPrint resp
+  pure $ mergeSyncResponseIgnoreProblems clientStore resp
 
 runClient :: ClientEnv -> ClientM a -> IO (Either ServantError a)
 runClient = flip runClientM
 
 clientSync :: SyncRequest UUID SyncFile -> ClientM (SyncResponse UUID SyncFile)
 clientSync = client syncAPI
-
-readClientStore :: Path Abs File -> Path Abs Dir -> IO (ClientStore UUID SyncFile)
-readClientStore metaFile dir = do
-  meta <- readStoreMeta metaFile
-  files <- readSyncFiles dir
-  pure $ consolidateMetaWithFiles meta files
 
 newtype ClientMetaData =
   ClientMetaData
@@ -93,15 +120,13 @@ instance ToJSON SyncFileMeta where
   toJSON SyncFileMeta {..} =
     object ["uuid" .= syncFileMetaUUID, "hash" .= syncFileMetaHash, "time" .= syncFileMetaTime]
 
-readStoreMeta :: Path Abs File -> IO ClientMetaData
+readStoreMeta :: Path Abs File -> IO (Maybe ClientMetaData)
 readStoreMeta p = do
   mContents <- forgivingAbsence $ LB.readFile $ toFilePath p
-  case mContents of
-    Nothing -> pure $ ClientMetaData {clientMetaDataMap = M.empty}
-    Just contents ->
-      case JSON.eitherDecode contents of
-        Left err -> die err
-        Right store -> pure store
+  forM mContents $ \contents ->
+    case JSON.eitherDecode contents of
+      Left err -> die err
+      Right store -> pure store
 
 readSyncFiles :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
 readSyncFiles dir = do
@@ -156,7 +181,7 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap
                               }) $
                          clientStoreSyncedButChangedItems s
                      }
-      syncedChangedAndDeleted = M.foldlWithKey go1 emptyClientStore clientMetaDataMap
+      syncedChangedAndDeleted = M.foldlWithKey go1 initialClientStore clientMetaDataMap
       go2 :: ClientStore UUID SyncFile -> Path Rel File -> ByteString -> ClientStore UUID SyncFile
       go2 s rf contents =
         s

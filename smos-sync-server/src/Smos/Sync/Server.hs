@@ -99,7 +99,7 @@ readStore :: IO (ServerStore UUID SyncFile)
 readStore = do
   mContents <- forgivingAbsence $ LB.readFile storeFile
   case mContents of
-    Nothing -> pure emptyServerStore
+    Nothing -> pure initialServerStore
     Just contents ->
       case JSON.eitherDecode contents of
         Left err -> die err
