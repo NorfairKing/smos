@@ -6,6 +6,7 @@ module Smos.Cursor.SmosFile
   , startSmosFile
   , smosFileCursorSelectedEntryL
   , smosFileCursorEntrySelectionL
+  , smosFileCursorReadyForStartup
   , smosFileCursorToggleHideEntireEntry
   , smosFileCursorSelectPrev
   , smosFileCursorSelectNext
@@ -85,6 +86,21 @@ smosFileCursorSelectedEntryL = smosFileCursorSelectedEntireL . collapseEntryValu
 
 smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL = smosFileCursorSelectedEntryL . entryCursorSelectionL
+
+smosFileCursorReadyForStartup :: SmosFileCursor -> SmosFileCursor
+smosFileCursorReadyForStartup = go
+  where
+    go :: SmosFileCursor -> SmosFileCursor
+    go sfc =
+      case forestCursorOpenCurrentForest sfc of
+        Nothing -> sfc
+        Just sfc' ->
+          case smosFileCursorSelectNext sfc of
+            Nothing ->
+              case smosFileCursorSelectBelowAtEnd sfc' of
+                Nothing -> sfc'
+                Just sfc'' -> sfc''
+            Just sfc'' -> go sfc''
 
 smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleHideEntireEntry =

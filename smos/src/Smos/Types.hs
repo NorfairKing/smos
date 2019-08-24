@@ -256,8 +256,9 @@ data Precedence
   | SpecificMatcher
   deriving (Show, Eq, Ord)
 
-data ResourceName =
-  ResourceTextCursor | ResourceViewport
+data ResourceName
+  = ResourceTextCursor
+  | ResourceViewport
   deriving (Show, Eq, Ord, Generic)
 
 stop :: Action
@@ -472,7 +473,8 @@ instance Validity EditorSelection
 makeEditorCursor :: SmosFile -> EditorCursor
 makeEditorCursor sf =
   EditorCursor
-    { editorCursorFileCursor = fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
+    { editorCursorFileCursor =
+        fmap (smosFileCursorReadyForStartup . makeSmosFileCursor) $ NE.nonEmpty $ smosFileForest sf
     , editorCursorReportCursor = Nothing
     , editorCursorHelpCursor = Nothing
     , editorCursorSelection = FileSelected
