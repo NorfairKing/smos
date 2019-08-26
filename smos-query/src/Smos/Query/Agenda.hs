@@ -9,7 +9,7 @@ import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
-import Text.Printf
+import Text.Time.Pretty
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
@@ -32,7 +32,8 @@ agenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-    streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
@@ -107,7 +108,7 @@ formatAgendaEntry now AgendaEntry {..} =
            | otherwise -> id
    in [ func $ rootedPathChunk agendaEntryFilePath
       , func $ chunk $ timestampPrettyText agendaEntryTimestamp
-      , func $ chunk $ T.pack $ printf "%+3dd" d
+      , func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d
       , timestampNameChunk $ agendaEntryTimestampName
       , maybe (chunk "") todoStateChunk agendaEntryTodoState
       , headerChunk agendaEntryHeader

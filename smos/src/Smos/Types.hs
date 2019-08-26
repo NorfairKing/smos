@@ -472,9 +472,15 @@ instance Validity EditorSelection
 
 makeEditorCursor :: SmosFile -> EditorCursor
 makeEditorCursor sf =
+  (\ec ->
+     ec {editorCursorFileCursor = fmap smosFileCursorReadyForStartup $ editorCursorFileCursor ec})
+    (makeEditorCursorClosed sf)
+
+makeEditorCursorClosed :: SmosFile -> EditorCursor
+makeEditorCursorClosed sf =
   EditorCursor
     { editorCursorFileCursor =
-        fmap (smosFileCursorReadyForStartup . makeSmosFileCursor) $ NE.nonEmpty $ smosFileForest sf
+        fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
     , editorCursorReportCursor = Nothing
     , editorCursorHelpCursor = Nothing
     , editorCursorSelection = FileSelected

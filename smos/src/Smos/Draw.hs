@@ -444,7 +444,8 @@ drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
-  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $ timestampNameText tsn
+  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $
+  timestampNameText tsn
 
 drawTimestamp :: Timestamp -> Drawer
 drawTimestamp ts =
@@ -454,12 +455,12 @@ drawTimestamp ts =
 
 drawDay :: Day -> Drawer
 drawDay d = do
-  zt@(ZonedTime _ tz) <- ask
+  zt <- ask
   pure $
     hBox
       [ str $ formatTimestampDay d
       , str ", "
-      , str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz $ LocalTime d midnight
+      , str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
       ]
 
 drawLocalTime :: LocalTime -> Drawer

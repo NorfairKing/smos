@@ -40,12 +40,12 @@ packages:
     version: 0.0.0.0
     git: https://github.com/NorfairKing/pretty-relative-time.git
     pantry-tree:
-      size: 1421
-      sha256: 9f353197b0ce943d60eb6bcff4950fd46923bca14e520ed94b936a6cdd8e83a6
-    commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
+      size: 1331
+      sha256: 709b79823a4d178cce9d2c86d15f769560e3672ad0ea30ae75c9c5035ae67653
+    commit: 2f9d597fc754f338e1e33fa182dcd09abf2c1227
   original:
     git: https://github.com/NorfairKing/pretty-relative-time.git
-    commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
+    commit: 2f9d597fc754f338e1e33fa182dcd09abf2c1227
 - completed:
     subdir: cursor-fuzzy-time
     cabal-file:
