@@ -86,7 +86,7 @@ propertyValueChunk pn pv = fore color . chunk . propertyValueText $ pv
   where
     color =
       case propertyNameText pn of
-        "effort" -> magenta
+        "timebox" -> magenta
         "client" -> green
         _ -> mempty
 

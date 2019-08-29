@@ -98,8 +98,11 @@ makeWorkReport WorkReportContext {..} rp fc =
              in filter go $ makeAgendaEntry rp cur
         , workReportCheckViolations =
             if matchesAnyContext
-              then let go :: Filter -> [(RootedPath, Entry)]
-                       go f = match $ not $ filterPredicate (filterWithBase f) rp fc
-                    in M.fromSet go workReportContextChecks
+              then let go :: Filter -> Maybe (RootedPath, Entry)
+                       go f =
+                         if filterPredicate (filterWithBase f) rp fc
+                           then Nothing
+                           else Just (rp, cur)
+                    in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks
               else M.empty
         }
