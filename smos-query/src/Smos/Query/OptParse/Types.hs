@@ -12,6 +12,7 @@ import GHC.Generics (Generic)
 
 import Path
 
+import Data.List.NonEmpty (NonEmpty(..))
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Yaml as Yaml
@@ -52,7 +53,7 @@ data Command
 data EntryFlags =
   EntryFlags
     { entryFlagFilter :: Maybe Filter
-    , entryFlagProjection :: Maybe Projection
+    , entryFlagProjection :: Maybe (NonEmpty Projection)
     , entryFlagSorter :: Maybe Sorter
     , entryFlagHideArchive :: Maybe HideArchive
     }
@@ -62,6 +63,7 @@ data WorkFlags =
   WorkFlags
     { workFlagContext :: ContextName
     , workFlagFilter :: Maybe Filter
+    , workFlagProjection :: Maybe (NonEmpty Projection)
     , workFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
@@ -140,14 +142,26 @@ data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
     , confHideArchive :: Maybe HideArchive
-    , confChecks :: Set Filter
+    , confWorkConfiguration :: Maybe WorkConfiguration
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "checks" .!= S.empty
+      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "work"
+
+data WorkConfiguration =
+  WorkConfiguration
+    { workConfChecks :: Set Filter
+    , workConfProjection :: Maybe (NonEmpty Projection)
+    }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON WorkConfiguration where
+  parseJSON =
+    withObject "WorkConfiguration" $ \o ->
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" .!= Nothing
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -165,7 +179,7 @@ data Dispatch
 data EntrySettings =
   EntrySettings
     { entrySetFilter :: Maybe Filter
-    , entrySetProjection :: Maybe Projection
+    , entrySetProjection :: NonEmpty Projection
     , entrySetSorter :: Maybe Sorter
     , entrySetHideArchive :: HideArchive
     }
@@ -175,7 +189,9 @@ data WorkSettings =
   WorkSettings
     { workSetContext :: ContextName
     , workSetFilter :: Maybe Filter
-    , workSetChecks :: Set Filter, workSetHideArchive :: HideArchive
+    , workSetChecks :: Set Filter
+    , workSetProjection :: NonEmpty Projection
+    , workSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 

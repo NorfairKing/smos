@@ -5,6 +5,7 @@ module Smos.Query.OptParse where
 
 import Control.Monad
 import Data.Functor
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Set as S
@@ -42,6 +43,7 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
   where
     hideArchiveWithDefault def mflag =
       fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
+    defaultProjection = OntoFile :| [OntoState, OntoHeader]
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -49,7 +51,7 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
           DispatchEntry
             EntrySettings
               { entrySetFilter = entryFlagFilter
-              , entrySetProjection = entryFlagProjection
+              , entrySetProjection = fromMaybe defaultProjection entryFlagProjection
               , entrySetSorter = entryFlagSorter
               , entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
               }
@@ -90,14 +92,25 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
               , agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive
               }
-        CommandWork WorkFlags {..} ->
+        CommandWork WorkFlags {..} -> do
+          let wc func = func <$> (mc >>= confWorkConfiguration)
+              mwc func = mc >>= confWorkConfiguration >>= func
+              combineMaybe :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
+              combineMaybe f m1 m2 =
+                case (m1, m2) of
+                  (Nothing, Nothing) -> Nothing
+                  (Just a, Nothing) -> Just a
+                  (Nothing, Just a) -> Just a
+                  (Just a1, Just a2) -> Just $ f a1 a2
           pure $
-          DispatchWork
-            WorkSettings
-              { workSetContext = workFlagContext
-              , workSetFilter = workFlagFilter
-              , workSetChecks = fromMaybe S.empty $ confChecks <$> mc, workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
-              }
+            DispatchWork
+              WorkSettings
+                { workSetContext = workFlagContext
+                , workSetFilter = workFlagFilter
+                , workSetChecks = fromMaybe S.empty $ wc workConfChecks
+                , workSetProjection = fromMaybe defaultProjection $ combineMaybe (<>) (mwc workConfProjection) workFlagProjection
+                , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
+                }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
           pure $
@@ -200,7 +213,8 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork <$>
-      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseHideArchiveFlag)
+      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseProjectionArgs <*>
+       parseHideArchiveFlag)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -323,14 +337,18 @@ parseFilterArg =
        , completer $ mkCompleter $ pure . filterCompleter
        ])
 
-parseProjectionArgs :: Parser (Maybe Projection)
+parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
 parseProjectionArgs =
-  (fmap (foldl1 AndAlso) . NE.nonEmpty . catMaybes) <$>
+  (NE.nonEmpty . catMaybes) <$>
   many
     (option
        (Just <$> (maybeReader (parseProjection . T.pack)))
        (mconcat
-          [long "project", metavar "PROJECTION", help "A projection to project entries onto fields"]))
+          [ long "add-column"
+          , long "project"
+          , metavar "PROJECTION"
+          , help "A projection to project entries onto fields"
+          ]))
 
 parseSorterArgs :: Parser (Maybe Sorter)
 parseSorterArgs =

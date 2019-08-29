@@ -7,6 +7,7 @@ module Smos.Query.Work
   ) where
 
 import Data.List (intersperse)
+import Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Text as T
@@ -18,9 +19,8 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Data
-
 import Smos.Report.Filter
+import Smos.Report.Projection
 import Smos.Report.Streaming
 import Smos.Report.Work
 
@@ -35,9 +35,10 @@ work WorkSettings {..} = do
   now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
   wr <- produceWorkReport src workSetHideArchive workSetContext workSetFilter workSetChecks
-  liftIO $ putTableLn $ renderWorkReport now wr
+  liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
 
-produceWorkReport :: SmosReportConfig -> HideArchive -> ContextName -> Maybe Filter -> Set Filter -> Q WorkReport
+produceWorkReport ::
+     SmosReportConfig -> HideArchive -> ContextName -> Maybe Filter -> Set Filter -> Q WorkReport
 produceWorkReport src ha cn mf checks = do
   let contexts = smosReportConfigContexts src
   case M.lookup cn contexts of
@@ -54,13 +55,12 @@ produceWorkReport src ha cn mf checks = do
               , workReportContextChecks = checks
               }
       runConduit $
-        streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .|
-        smosFileCursors .|
+        streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
         C.map (uncurry $ makeWorkReport wrc) .|
         accumulateMonoid
 
-renderWorkReport :: ZonedTime -> WorkReport -> Table
-renderWorkReport now WorkReport {..} =
+renderWorkReport :: ZonedTime -> NonEmpty Projection -> WorkReport -> Table
+renderWorkReport now ne WorkReport {..} =
   mconcat $
   (concat . concat) $
   intersperse [spacer] $
@@ -72,22 +72,18 @@ renderWorkReport now WorkReport {..} =
       ]
   , unlessNull
       workReportResultEntries
-      [ sectionHeading "Next actions:"
-      , [formatAsTable $ map (uncurry entryLine) workReportResultEntries]
-      ]
+      [sectionHeading "Next actions:", [entryTable workReportResultEntries]]
   , unlessNull
       workReportEntriesWithoutContext
       [ warningHeading "WARNING, the following Entries don't match any context:"
-      , [formatAsTable $ map (uncurry entryLine) workReportEntriesWithoutContext]
+      , [entryTable workReportEntriesWithoutContext]
       ]
   , unlessNull
       workReportCheckViolations
       [ warningHeading "WARNING, the following Entries did not pass the checks:"
       , concat $
         flip concatMap (M.toList workReportCheckViolations) $ \(f, violations) ->
-          unlessNull
-            violations
-            [warningHeading (renderFilter f), [formatAsTable (map (uncurry entryLine) violations)]]
+          unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
       ]
   ]
   where
@@ -99,8 +95,4 @@ renderWorkReport now WorkReport {..} =
     warningHeading t = heading $ fore red $ chunk t
     heading c = [formatAsTable $ [[c]]]
     spacer = [formatAsTable $ [[chunk " "]]]
-    entryLine rp e =
-      [ rootedPathChunk rp
-      , maybe (chunk "") todoStateChunk $ entryState e
-      , headerChunk $ entryHeader e
-      ]
+    entryTable = renderEntryTable ne
