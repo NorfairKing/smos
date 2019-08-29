@@ -6,8 +6,6 @@ module Smos.Query.Entry
   ( entry
   ) where
 
-import Data.List
-
 import Control.Arrow
 
 import Conduit
@@ -29,10 +27,5 @@ entry EntrySettings {..} = do
     streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
-  let sortIt =
-        maybe
-          id
-          (\s -> sortBy $ \(rpa, fca) (rpb, fcb) -> sorterOrdering s rpa fca rpb fcb)
-          entrySetSorter
-  let ees = sortIt $ tups
-  liftIO $ putTableLn $ renderEntryTable entrySetProjection $ map (second forestCursorCurrent) ees
+  let ees = maybe id sorterSortList entrySetSorter $ map (second forestCursorCurrent) tups
+  liftIO $ putTableLn $ renderEntryTable entrySetProjection ees

@@ -21,6 +21,7 @@ import Smos.Report.Agenda
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Path
+import Smos.Report.Sorter
 import Smos.Report.Streaming
 
 data WorkReport =
@@ -105,4 +106,16 @@ makeWorkReport WorkReportContext {..} rp fc =
                            else Just (rp, cur)
                     in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks
               else M.empty
+        }
+
+finishWorkReport :: Maybe Sorter -> WorkReport -> WorkReport
+finishWorkReport ms wr =
+  case ms of
+    Nothing -> wr
+    Just s ->
+      WorkReport
+        { workReportAgendaEntries = workReportAgendaEntries wr
+        , workReportResultEntries = sorterSortList s $ workReportResultEntries wr
+        , workReportEntriesWithoutContext = sorterSortList s $ workReportEntriesWithoutContext wr
+        , workReportCheckViolations = workReportCheckViolations wr
         }

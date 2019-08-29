@@ -64,6 +64,7 @@ data WorkFlags =
     { workFlagContext :: ContextName
     , workFlagFilter :: Maybe Filter
     , workFlagProjection :: Maybe (NonEmpty Projection)
+    , workFlagSorter :: Maybe Sorter
     , workFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
@@ -155,13 +156,15 @@ data WorkConfiguration =
   WorkConfiguration
     { workConfChecks :: Set Filter
     , workConfProjection :: Maybe (NonEmpty Projection)
+    , workConfSorter :: Maybe Sorter
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON WorkConfiguration where
   parseJSON =
     withObject "WorkConfiguration" $ \o ->
-      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" .!= Nothing
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*>
+      o .:? "sorter"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -191,6 +194,7 @@ data WorkSettings =
     , workSetFilter :: Maybe Filter
     , workSetChecks :: Set Filter
     , workSetProjection :: NonEmpty Projection
+    , workSetSorter :: Maybe Sorter
     , workSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)

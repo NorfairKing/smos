@@ -5,7 +5,9 @@ module Smos.Report.Sorter where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
 import Data.Char as Char
+import Data.List
 import qualified Data.Map as M
 import Data.Ord
 import qualified Data.Text as T
@@ -15,13 +17,10 @@ import Data.Void
 
 import Control.Monad
 
-import Lens.Micro
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-import Cursor.Simple.Forest
-import Cursor.Simple.Tree
 
 import Smos.Data
 
@@ -36,33 +35,34 @@ data Sorter
 
 instance Validity Sorter
 
-sorterOrdering ::
-     Sorter
-  -> RootedPath
-  -> ForestCursor Entry
-  -> RootedPath
-  -> ForestCursor Entry
-  -> Ordering
+instance FromJSON Sorter where
+  parseJSON v =
+    flip (withText "Sorter") v $ \t ->
+      case parseSorter t of
+        Nothing -> fail "could not parse sorter."
+        Just f -> pure f
+
+instance ToJSON Sorter where
+  toJSON = toJSON . renderSorter
+
+sorterSortList :: Sorter -> [(RootedPath, Entry)] -> [(RootedPath, Entry)]
+sorterSortList s = sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb
+
+sorterOrdering :: Sorter -> RootedPath -> Entry -> RootedPath -> Entry -> Ordering
 sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
   where
-    go s fca fcb =
+    go s ea eb =
       case s of
         ByFile -> comparing resolveRootedPath rpa rpb
-        ByProperty pn ->
-          comparing
-            (\pc ->
-               M.lookup pn $ entryProperties $ pc ^. forestCursorSelectedTreeL .
-               treeCursorCurrentL)
-            fca
-            fcb
+        ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
         Reverse s' ->
           (\o ->
              case o of
                GT -> LT
                EQ -> EQ
                LT -> GT) $
-          go s' fca fcb
-        AndThen s1 s2 -> go s1 fca fcb <> go s2 fca fcb
+          go s' ea eb
+        AndThen s1 s2 -> go s1 ea eb <> go s2 ea eb
 
 type P = Parsec Void Text
 
@@ -99,10 +99,7 @@ andThenP = do
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 renderSorter :: Sorter -> Text
@@ -111,5 +108,4 @@ renderSorter f =
     ByFile -> "file"
     ByProperty pn -> "property:" <> propertyNameText pn
     Reverse s' -> "reverse:" <> renderSorter s'
-    AndThen s1 s2 ->
-      T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]
+    AndThen s1 s2 -> T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]

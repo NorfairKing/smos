@@ -108,7 +108,10 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 { workSetContext = workFlagContext
                 , workSetFilter = workFlagFilter
                 , workSetChecks = fromMaybe S.empty $ wc workConfChecks
-                , workSetProjection = fromMaybe defaultProjection $ combineMaybe (<>) (mwc workConfProjection) workFlagProjection
+                , workSetProjection =
+                    fromMaybe defaultProjection $
+                    combineMaybe (<>) (mwc workConfProjection) workFlagProjection
+                , workSetSorter = mwc workConfSorter <|> workFlagSorter
                 , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
         CommandProjects -> pure DispatchProjects
@@ -214,6 +217,7 @@ parseCommandWork = info parser modifier
     parser =
       CommandWork <$>
       (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseProjectionArgs <*>
+       parseSorterArgs <*>
        parseHideArchiveFlag)
 
 parseCommandWaiting :: ParserInfo Command

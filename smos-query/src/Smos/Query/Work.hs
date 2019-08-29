@@ -21,6 +21,7 @@ import Rainbow
 
 import Smos.Report.Filter
 import Smos.Report.Projection
+import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Work
 
@@ -34,12 +35,18 @@ work :: WorkSettings -> Q ()
 work WorkSettings {..} = do
   now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
-  wr <- produceWorkReport src workSetHideArchive workSetContext workSetFilter workSetChecks
+  wr <- produceWorkReport src workSetHideArchive workSetContext workSetFilter workSetSorter workSetChecks
   liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
 
 produceWorkReport ::
-     SmosReportConfig -> HideArchive -> ContextName -> Maybe Filter -> Set Filter -> Q WorkReport
-produceWorkReport src ha cn mf checks = do
+     SmosReportConfig
+  -> HideArchive
+  -> ContextName
+  -> Maybe Filter
+  -> Maybe Sorter
+  -> Set Filter
+  -> Q WorkReport
+produceWorkReport src ha cn mf ms checks = do
   let contexts = smosReportConfigContexts src
   case M.lookup cn contexts of
     Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
@@ -54,7 +61,8 @@ produceWorkReport src ha cn mf checks = do
               , workReportContextContexts = contexts
               , workReportContextChecks = checks
               }
-      runConduit $
+      fmap (finishWorkReport ms) $
+        runConduit $
         streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
         C.map (uncurry $ makeWorkReport wrc) .|
         accumulateMonoid
