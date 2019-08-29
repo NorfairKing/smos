@@ -467,7 +467,7 @@
                     "key": "pc"
                 },
                 {
-                    "action": "propertiesEditProperty_timebox",
+                    "action": "propertiesEditProperty_timewindow",
                     "key": "pt"
                 },
                 {

@@ -96,7 +96,7 @@ defaultFileKeyMap =
           , exactString "ss" $ timestampsSelect "SCHEDULED"
           , exactString "pi" entrySelectProperties
           , exactString "pc" $ propertiesEditProperty "client"
-          , exactString "pt" $ propertiesEditProperty "timebox"
+          , exactString "pt" $ propertiesEditProperty "timewindow"
                   -- Clocking
           , exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere
           , exactString "co" forestClockOutEverywhereInAllFiles

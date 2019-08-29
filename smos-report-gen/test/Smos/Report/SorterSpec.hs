@@ -1,7 +1,9 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.SorterSpec where
+module Smos.Report.SorterSpec
+  ( spec
+  ) where
 
 import Data.Text (Text)
 
@@ -35,6 +37,7 @@ spec = do
     parsesValidSpec sorterP
     parseJustSpec sorterP "file" ByFile
     parseJustSpec sorterP "property:effort" $ ByProperty "effort"
+    parseJustSpec sorterP "property-as-time:timewindow" $ ByPropertyTime "timewindow"
     parseJustSpec sorterP "reverse:property:effort" $ Reverse (ByProperty "effort")
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
@@ -45,9 +48,6 @@ spec = do
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
-parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
-parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
-
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Spec
 parsesValidSpec p = it "only parses valid values" $ forAllValid $ parsesValid p
 
@@ -57,14 +57,6 @@ parseJust p s res =
     Left err ->
       expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
     Right out -> out `shouldBe` res
-
-parseNothing :: (Show a, Eq a) => P a -> Text -> Expectation
-parseNothing p s =
-  case parse (p <* eof) "test input" s of
-    Right v ->
-      expectationFailure $
-      unlines ["P succeeded on input", show s, "at parsing", show v, "but it should have failed."]
-    Left _ -> pure ()
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Expectation
 parsesValid p s =

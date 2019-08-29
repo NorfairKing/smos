@@ -237,7 +237,7 @@ keys:
       key: pi
     - action: propertiesEditProperty_client
       key: pc
-    - action: propertiesEditProperty_timebox
+    - action: propertiesEditProperty_timewindow
       key: pt
     - action: forestClockOutEverywhereInAllFilesAndClockInHere
       key: ci
