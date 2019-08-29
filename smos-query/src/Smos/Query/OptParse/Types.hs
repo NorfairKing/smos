@@ -12,6 +12,9 @@ import GHC.Generics (Generic)
 
 import Path
 
+import Data.List.NonEmpty (NonEmpty(..))
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Yaml as Yaml
 
 import qualified Smos.Report.OptParse.Types as Report
@@ -50,7 +53,7 @@ data Command
 data EntryFlags =
   EntryFlags
     { entryFlagFilter :: Maybe Filter
-    , entryFlagProjection :: Maybe Projection
+    , entryFlagProjection :: Maybe (NonEmpty Projection)
     , entryFlagSorter :: Maybe Sorter
     , entryFlagHideArchive :: Maybe HideArchive
     }
@@ -60,6 +63,9 @@ data WorkFlags =
   WorkFlags
     { workFlagContext :: ContextName
     , workFlagFilter :: Maybe Filter
+    , workFlagProjection :: Maybe (NonEmpty Projection)
+    , workFlagSorter :: Maybe Sorter
+    , workFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
@@ -137,13 +143,28 @@ data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
     , confHideArchive :: Maybe HideArchive
+    , confWorkConfiguration :: Maybe WorkConfiguration
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive"
+      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "work"
+
+data WorkConfiguration =
+  WorkConfiguration
+    { workConfChecks :: Set Filter
+    , workConfProjection :: Maybe (NonEmpty Projection)
+    , workConfSorter :: Maybe Sorter
+    }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON WorkConfiguration where
+  parseJSON =
+    withObject "WorkConfiguration" $ \o ->
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*>
+      o .:? "sorter"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -161,7 +182,7 @@ data Dispatch
 data EntrySettings =
   EntrySettings
     { entrySetFilter :: Maybe Filter
-    , entrySetProjection :: Maybe Projection
+    , entrySetProjection :: NonEmpty Projection
     , entrySetSorter :: Maybe Sorter
     , entrySetHideArchive :: HideArchive
     }
@@ -171,6 +192,10 @@ data WorkSettings =
   WorkSettings
     { workSetContext :: ContextName
     , workSetFilter :: Maybe Filter
+    , workSetChecks :: Set Filter
+    , workSetProjection :: NonEmpty Projection
+    , workSetSorter :: Maybe Sorter
+    , workSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 

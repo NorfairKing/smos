@@ -4,6 +4,7 @@ archive-dir: null
 archived-projects-dir: null
 work-filter: null
 contexts: {}
+work: null
 keys:
   reports:
     next-action:
@@ -216,8 +217,10 @@ keys:
       key: T<space>
     - action: tagsToggle_home
       key: gh
+    - action: tagsToggle_online
+      key: gon
     - action: tagsToggle_offline
-      key: go
+      key: gof
     - action: tagsToggle_toast
       key: gt
     - action: tagsToggle_work
@@ -234,9 +237,7 @@ keys:
       key: pi
     - action: propertiesEditProperty_client
       key: pc
-    - action: propertiesEditProperty_effort
-      key: pe
-    - action: propertiesEditProperty_time
+    - action: propertiesEditProperty_timewindow
       key: pt
     - action: forestClockOutEverywhereInAllFilesAndClockInHere
       key: ci

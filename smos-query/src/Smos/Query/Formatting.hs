@@ -4,6 +4,7 @@ module Smos.Query.Formatting where
 
 import qualified Data.ByteString as SB
 import Data.Foldable
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
 import qualified Data.Text as T
@@ -13,9 +14,11 @@ import Path
 import Rainbow
 import Rainbox as Box
 
+
 import Smos.Data
 
 import Smos.Report.Path
+import Smos.Report.Projection
 
 type Table = Seq (Chunk Text)
 
@@ -44,6 +47,36 @@ rootedPathChunk rp =
   case rp of
     Relative _ rf -> fromRelFile rf
     Absolute af -> fromAbsFile af
+
+renderEntryTable :: NonEmpty Projection -> [(RootedPath, Entry)] -> Table
+renderEntryTable ne tups =
+  formatAsTable $
+  (\l ->
+     if null l
+       then []
+       else map renderProjectionHeader (toList ne) : l) $
+  map renderProjectees $
+  flip map tups $ \(rp, e) ->
+    flip map (toList ne) $ \projection -> performProjection projection rp e
+
+renderProjectionHeader :: Projection -> Chunk Text
+renderProjectionHeader p =
+  case p of
+    OntoFile -> chunk "file"
+    OntoHeader -> chunk "header"
+    OntoProperty pn -> chunk $ propertyNameText pn
+    OntoState -> chunk "state"
+
+renderProjectees :: [Projectee] -> [Chunk Text]
+renderProjectees = map projecteeChunk
+
+projecteeChunk :: Projectee -> Chunk Text
+projecteeChunk p =
+  case p of
+    FileProjection rp -> rootedPathChunk rp
+    HeaderProjection h -> headerChunk h
+    StateProjection s -> maybe (chunk "") todoStateChunk s
+    PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
 
 mTodoStateChunk :: Maybe TodoState -> Chunk Text
 mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
@@ -86,7 +119,7 @@ propertyValueChunk pn pv = fore color . chunk . propertyValueText $ pv
   where
     color =
       case propertyNameText pn of
-        "effort" -> magenta
+        "timewindow" -> magenta
         "client" -> green
         _ -> mempty
 

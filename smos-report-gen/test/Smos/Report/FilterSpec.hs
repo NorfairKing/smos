@@ -1,7 +1,9 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.FilterSpec where
+module Smos.Report.FilterSpec
+  ( spec
+  ) where
 
 import Data.Char as Char
 import Data.List
@@ -147,8 +149,6 @@ orText = textPieces [filterText, pure " or ", filterText]
 andText :: Gen Text
 andText = textPieces [filterText, pure " and ", filterText]
 
-propertyFilterText :: Gen Text
-propertyFilterText = oneof [exactPropertyText, hasPropertyText]
 
 exactPropertyText :: Gen Text
 exactPropertyText =
@@ -176,14 +176,8 @@ propertyValueText =
 textPieces :: [Gen Text] -> Gen Text
 textPieces = fmap T.concat . sequenceA
 
-textStartingWith :: Text -> Gen Text
-textStartingWith prefix = (prefix <>) <$> genValid
-
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
-
-parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
-parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
 parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
@@ -194,14 +188,6 @@ parseJust p s res =
     Left err ->
       expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
     Right out -> out `shouldBe` res
-
-parseNothing :: (Show a, Eq a) => P a -> Text -> Expectation
-parseNothing p s =
-  case parse (p <* eof) "test input" s of
-    Right v ->
-      expectationFailure $
-      unlines ["P succeeded on input", show s, "at parsing", show v, "but it should have failed."]
-    Left _ -> pure ()
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
 parsesValid p s =

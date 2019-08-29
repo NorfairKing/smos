@@ -5,6 +5,7 @@ module Smos.Report.Projection where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
 import Data.Char as Char
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -14,13 +15,9 @@ import Data.Void
 
 import Control.Monad
 
-import Lens.Micro
-
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-import Cursor.Simple.Forest
-import Cursor.Simple.Tree
 
 import Smos.Data
 
@@ -31,10 +28,19 @@ data Projection
   | OntoHeader
   | OntoProperty PropertyName
   | OntoState
-  | AndAlso Projection Projection
   deriving (Show, Eq, Generic)
 
 instance Validity Projection
+
+instance FromJSON Projection where
+  parseJSON v =
+    flip (withText "Projection") v $ \t ->
+      case parseProjection t of
+        Nothing -> fail "could not parse projection."
+        Just f -> pure f
+
+instance ToJSON Projection where
+  toJSON = toJSON . renderProjection
 
 data Projectee
   = FileProjection RootedPath
@@ -45,19 +51,13 @@ data Projectee
 
 instance Validity Projectee
 
-performProjection ::
-     Projection -> RootedPath -> ForestCursor Entry -> [Projectee]
-performProjection p_ rp fc_ = go p_ fc_
-  where
-    go p fc =
-      let cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
-       in case p of
-            OntoFile -> [FileProjection rp]
-            OntoHeader -> [HeaderProjection $ entryHeader cur]
-            OntoState -> [StateProjection $ entryState cur]
-            OntoProperty pn ->
-              [PropertyProjection pn $ M.lookup pn $ entryProperties cur]
-            AndAlso p1 p2 -> go p1 fc ++ go p2 fc
+performProjection :: Projection -> RootedPath -> Entry -> Projectee
+performProjection p rp cur =
+  case p of
+    OntoFile -> FileProjection rp
+    OntoHeader -> HeaderProjection $ entryHeader cur
+    OntoState -> StateProjection $ entryState cur
+    OntoProperty pn -> PropertyProjection pn $ M.lookup pn $ entryProperties cur
 
 type P = Parsec Void Text
 
@@ -65,9 +65,7 @@ parseProjection :: Text -> Maybe Projection
 parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
-projectionP =
-  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP <|>
-  andAlsoP
+projectionP = try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP
 
 ontoFileP :: P Projection
 ontoFileP = do
@@ -90,21 +88,9 @@ ontoPropertyP = do
   pn <- propertyNameP
   pure $ OntoProperty pn
 
-andAlsoP :: P Projection
-andAlsoP = do
-  void $ char '('
-  s1 <- projectionP
-  void $ string' " also "
-  s2 <- projectionP
-  void $ char ')'
-  pure $ AndAlso s1 s2
-
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 renderProjection :: Projection -> Text
@@ -114,5 +100,3 @@ renderProjection f =
     OntoHeader -> "header"
     OntoState -> "state"
     OntoProperty pn -> "property:" <> propertyNameText pn
-    AndAlso s1 s2 ->
-      T.concat ["(", renderProjection s1, " also ", renderProjection s2, ")"]
