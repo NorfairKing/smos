@@ -8,6 +8,7 @@ import GHC.Generics (Generic)
 
 import qualified Data.Map as M
 import Data.Map (Map)
+import Data.Set (Set)
 import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
@@ -27,6 +28,7 @@ data WorkReport =
     { workReportResultEntries :: [(RootedPath, Entry)]
     , workReportEntriesWithoutContext :: [(RootedPath, Entry)]
     , workReportAgendaEntries :: [AgendaEntry]
+    , workReportCheckViolations :: Map Filter [(RootedPath, Entry)]
     }
   deriving (Show, Eq, Generic)
 
@@ -39,6 +41,8 @@ instance Semigroup WorkReport where
       , workReportEntriesWithoutContext =
           workReportEntriesWithoutContext wr1 <> workReportEntriesWithoutContext wr2
       , workReportAgendaEntries = workReportAgendaEntries wr1 <> workReportAgendaEntries wr2
+      , workReportCheckViolations =
+          M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2)
       }
 
 instance Monoid WorkReport where
@@ -47,6 +51,7 @@ instance Monoid WorkReport where
       { workReportResultEntries = mempty
       , workReportEntriesWithoutContext = mempty
       , workReportAgendaEntries = []
+      , workReportCheckViolations = M.empty
       }
 
 data WorkReportContext =
@@ -56,6 +61,7 @@ data WorkReportContext =
     , workReportContextCurrentContext :: Filter
     , workReportContextAdditionalFilter :: Maybe Filter
     , workReportContextContexts :: Map ContextName Filter
+    , workReportContextChecks :: Set Filter
     }
   deriving (Show, Generic)
 
@@ -72,8 +78,9 @@ makeWorkReport WorkReportContext {..} rp fc =
         filterWithBase $
         combineFilter workReportContextCurrentContext workReportContextAdditionalFilter
       matchesSelectedContext = filterPredicate currentFilter rp fc
-      matchesNoContext =
-        not $ any (\f -> filterPredicate f rp fc) $ M.elems workReportContextContexts
+      matchesAnyContext =
+        any (\f -> filterPredicate (filterWithBase f) rp fc) $ M.elems workReportContextContexts
+      matchesNoContext = not matchesAnyContext
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext
         , workReportEntriesWithoutContext =
@@ -82,15 +89,17 @@ makeWorkReport WorkReportContext {..} rp fc =
             matchesNoContext
         , workReportAgendaEntries =
             let go ae =
-                  let day =
-                        timestampDay (agendaEntryTimestamp ae)
-                      today =
-                          localDay (zonedTimeToLocalTime workReportContextNow)
-                  in case agendaEntryTimestampName ae of
-                    "SCHEDULED" -> day <=today
-                    "DEADLINE" ->
-                      day  <=
-                        addDays 7 today
-                    _ -> day == today
+                  let day = timestampDay (agendaEntryTimestamp ae)
+                      today = localDay (zonedTimeToLocalTime workReportContextNow)
+                   in case agendaEntryTimestampName ae of
+                        "SCHEDULED" -> day <= today
+                        "DEADLINE" -> day <= addDays 7 today
+                        _ -> day == today
              in filter go $ makeAgendaEntry rp cur
+        , workReportCheckViolations =
+            if matchesAnyContext
+              then let go :: Filter -> [(RootedPath, Entry)]
+                       go f = match $ not $ filterPredicate (filterWithBase f) rp fc
+                    in M.fromSet go workReportContextChecks
+              else M.empty
         }

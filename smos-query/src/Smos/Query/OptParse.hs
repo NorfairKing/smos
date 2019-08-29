@@ -7,6 +7,7 @@ import Control.Monad
 import Data.Functor
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
+import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time
 import Path.IO
@@ -92,7 +93,11 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
         CommandWork WorkFlags {..} ->
           pure $
           DispatchWork
-            WorkSettings {workSetContext = workFlagContext, workSetFilter = workFlagFilter}
+            WorkSettings
+              { workSetContext = workFlagContext
+              , workSetFilter = workFlagFilter
+              , workSetChecks = fromMaybe S.empty $ confChecks <$> mc, workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
+              }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
           pure $
@@ -193,7 +198,9 @@ parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
     modifier = fullDesc <> progDesc "Show the work overview"
-    parser = CommandWork <$> (WorkFlags <$> parseContextNameArg <*> parseFilterArgs)
+    parser =
+      CommandWork <$>
+      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier

@@ -47,7 +47,7 @@ data Filter
   | FilterNot Filter
   | FilterAnd Filter Filter
   | FilterOr Filter Filter
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Filter where
   validate f =

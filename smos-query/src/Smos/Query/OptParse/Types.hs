@@ -12,6 +12,8 @@ import GHC.Generics (Generic)
 
 import Path
 
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Yaml as Yaml
 
 import qualified Smos.Report.OptParse.Types as Report
@@ -60,6 +62,7 @@ data WorkFlags =
   WorkFlags
     { workFlagContext :: ContextName
     , workFlagFilter :: Maybe Filter
+    , workFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
@@ -137,13 +140,14 @@ data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
     , confHideArchive :: Maybe HideArchive
+    , confChecks :: Set Filter
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive"
+      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "checks" .!= S.empty
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -171,6 +175,7 @@ data WorkSettings =
   WorkSettings
     { workSetContext :: ContextName
     , workSetFilter :: Maybe Filter
+    , workSetChecks :: Set Filter, workSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
