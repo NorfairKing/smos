@@ -8,31 +8,14 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig =
-  SmosConfig
-    {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
+defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
   KeyMap
     { keyMapFileKeyMap = defaultFileKeyMap
     , keyMapReportsKeyMap = defaultReportsKeyMap
-    , keyMapHelpMatchers =
-        listMatchers
-          [ exactKey KUp helpUp
-          , exactChar 'k' helpUp
-          , exactKey KDown helpDown
-          , exactChar 'j' helpDown
-          , exactKey KHome helpStart
-          , exactString "gg" helpStart
-          , exactKey KEnd helpEnd
-          , exactChar 'G' helpEnd
-          , exactKey KBS helpRemove
-          , exactKey KDel helpDelete
-          , anyChar helpInsert
-          , exactKey KEsc selectEditor
-          , exactChar 'q' selectEditor
-          ]
+    , keyMapHelpKeyMap = defaultHelpKeyMap
     }
 
 defaultFileKeyMap :: FileKeyMap
@@ -70,7 +53,9 @@ defaultFileKeyMap =
           , exactChar 'G' forestMoveToLast
                   -- Swaps
           , modifiedChar 'k' [MMeta] forestSwapUp
+          , modifiedChar 'K' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
+          , modifiedChar 'J' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry
           , modifiedChar 'H' [MMeta] forestPromoteSubTree
           , modifiedChar 'l' [MMeta] forestDemoteEntry
@@ -99,9 +84,11 @@ defaultFileKeyMap =
           , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
           , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
-          , exactString "gw" $ tagsToggle "work"
-          , exactString "go" $ tagsToggle "online"
+          , exactString "gh" $ tagsToggle "home"
+          , exactString "gon" $ tagsToggle "online"
+          , exactString "gof" $ tagsToggle "offline"
           , exactString "gt" $ tagsToggle "toast"
+          , exactString "gw" $ tagsToggle "work"
                   -- Fast timestamps manipulation
           , exactString "sb" $ timestampsSelect "BEGIN"
           , exactString "se" $ timestampsSelect "END"
@@ -109,7 +96,7 @@ defaultFileKeyMap =
           , exactString "ss" $ timestampsSelect "SCHEDULED"
           , exactString "pi" entrySelectProperties
           , exactString "pc" $ propertiesEditProperty "client"
-          , exactString "pe" $ propertiesEditProperty "effort"
+          , exactString "pt" $ propertiesEditProperty "timewindow"
                   -- Clocking
           , exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere
           , exactString "co" forestClockOutEverywhereInAllFiles
@@ -121,9 +108,7 @@ defaultFileKeyMap =
                   -- Collapsing
           , exactChar '?' selectHelp
           , exactChar '\t' forestToggleCollapse
-          , exactKeyPress
-              (KeyPress (KChar '\t') [MMeta])
-              forestToggleCollapseRecursively
+          , exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively
           , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
           , combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents
@@ -196,8 +181,7 @@ defaultFileKeyMap =
           , exactKeyPress (KeyPress KDown [MMeta]) propertiesAppendNewProperty
           , exactChar '\t' propertiesToggleSelected
           ]
-    , fileKeyMapStateHistoryMatchers =
-        listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , fileKeyMapTagsMatchers =
         listMatchers
           [ anyChar tagsInsert
@@ -237,5 +221,34 @@ defaultReportsKeyMap =
           , exactKey KEnter enterNextActionFile
           , exactChar '?' selectHelp
           , exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+          ]
+    }
+
+defaultHelpKeyMap :: HelpKeyMap
+defaultHelpKeyMap =
+  HelpKeyMap
+    { helpKeyMapHelpMatchers =
+        listMatchers
+          [ exactKey KUp helpUp
+          , exactChar 'k' helpUp
+          , exactKey KDown helpDown
+          , exactChar 'j' helpDown
+          , exactKey KHome helpStart
+          , exactString "gg" helpStart
+          , exactKey KEnd helpEnd
+          , exactChar 'G' helpEnd
+          , exactChar '/' helpSelectSearch
+          , exactKey KEsc selectEditor
+          , exactChar 'q' selectEditor
+          ]
+    , helpKeyMapSearchMatchers =
+        listMatchers
+          [ anyChar helpInsert
+          , exactKey KBS helpRemove
+          , exactKey KDel helpDelete
+          , exactKey KEsc selectEditor
+          , exactChar 'q' selectEditor
+          , exactKey KEsc helpSelectHelp
+          , exactKey KEnter helpSelectHelp
           ]
     }

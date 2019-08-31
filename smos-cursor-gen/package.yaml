@@ -19,14 +19,16 @@ library:
   - QuickCheck
   - base
   - cursor
+  - cursor-fuzzy-time
+  - cursor-fuzzy-time-gen
   - cursor-gen
+  - fuzzy-time
+  - fuzzy-time-gen
   - genvalidity
   - genvalidity-time
   - smos-cursor
   - smos-data
   - smos-data-gen
-  - cursor-fuzzy-time
-  - cursor-fuzzy-time-gen
 
 tests:
   smos-cursor-test:

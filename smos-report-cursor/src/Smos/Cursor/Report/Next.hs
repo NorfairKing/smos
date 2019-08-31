@@ -26,19 +26,16 @@ import Smos.Cursor.SmosFile
 
 import Smos.Report.Config
 import Smos.Report.Next
+import Smos.Report.Archive
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceNextActionReportCursor ::
-     SmosReportConfig -> IO (Maybe NextActionReportCursor)
+produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportCursor)
 produceNextActionReportCursor src = do
-  wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
   naes <-
     sourceToList $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-    parseSmosFiles .|
-    printShouldPrint PrintWarning .|
+    streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint .|
     smosFileCursors .|
     C.map (uncurry makeNextActionEntryCursor) .|
     C.filter cursorPointsToNextAction
@@ -46,12 +43,10 @@ produceNextActionReportCursor src = do
 
 type NextActionReportCursor = NonEmptyCursor NextActionEntryCursor
 
-makeNextActionReportCursor ::
-     [NextActionEntryCursor] -> Maybe NextActionReportCursor
+makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
 makeNextActionReportCursor = fmap makeNonEmptyCursor . NE.nonEmpty
 
-nextActionReportCursorBuildSmosFileCursor ::
-     NextActionReportCursor -> SmosFileCursor
+nextActionReportCursorBuildSmosFileCursor :: NextActionReportCursor -> SmosFileCursor
 nextActionReportCursorBuildSmosFileCursor =
   go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
   where
@@ -65,12 +60,10 @@ nextActionReportCursorBuildFilePath narc =
         Relative pad prf -> pad </> prf
         Absolute paf -> paf
 
-nextActionReportCursorNext ::
-     NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
 nextActionReportCursorNext = nonEmptyCursorSelectNext
 
-nextActionReportCursorPrev ::
-     NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorPrev :: NextActionReportCursor -> Maybe NextActionReportCursor
 nextActionReportCursorPrev = nonEmptyCursorSelectPrev
 
 nextActionReportCursorFirst :: NextActionReportCursor -> NextActionReportCursor
@@ -88,23 +81,18 @@ data NextActionEntryCursor =
 
 instance Validity NextActionEntryCursor
 
-makeNextActionEntryCursor ::
-     RootedPath -> ForestCursor Entry Entry -> NextActionEntryCursor
+makeNextActionEntryCursor :: RootedPath -> ForestCursor Entry Entry -> NextActionEntryCursor
 makeNextActionEntryCursor rp fc =
-  NextActionEntryCursor
-    {nextActionEntryCursorFilePath = rp, nextActionEntryCursorForestCursor = fc}
+  NextActionEntryCursor {nextActionEntryCursorFilePath = rp, nextActionEntryCursorForestCursor = fc}
 
 cursorPointsToNextAction :: NextActionEntryCursor -> Bool
 cursorPointsToNextAction naec =
   maybe False isNextTodoState . entryState $ naec ^. nextActionEntryCursorEntryL
 
-nextActionEntryCursorForestCursorL ::
-     Lens' NextActionEntryCursor (ForestCursor Entry Entry)
+nextActionEntryCursorForestCursorL :: Lens' NextActionEntryCursor (ForestCursor Entry Entry)
 nextActionEntryCursorForestCursorL =
-  lens nextActionEntryCursorForestCursor $ \nac fc ->
-    nac {nextActionEntryCursorForestCursor = fc}
+  lens nextActionEntryCursorForestCursor $ \nac fc -> nac {nextActionEntryCursorForestCursor = fc}
 
 nextActionEntryCursorEntryL :: Lens' NextActionEntryCursor Entry
 nextActionEntryCursorEntryL =
-  nextActionEntryCursorForestCursorL .
-  forestCursorSelectedTreeL . treeCursorCurrentL
+  nextActionEntryCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL

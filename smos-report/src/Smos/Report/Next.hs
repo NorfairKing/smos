@@ -21,15 +21,13 @@ import Smos.Report.Streaming
 
 produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
 produceNextActionReport src = do
-  wd <- agendaFileSpecGetWorkDir (smosReportConfigAgendaFileSpec src)
+  wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
   sourceToList $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-    parseSmosFiles .|
+    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles .|
     printShouldPrint PrintWarning .|
     smosFileEntries .|
     C.filter (isNextAction . snd) .|
     C.map (uncurry makeNextActionEntry)
-
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
 

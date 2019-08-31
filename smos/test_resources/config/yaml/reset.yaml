@@ -1,26 +1,27 @@
 reset: true
 keys:
   help:
-    - key: Up
-      action: helpUp
-    - key: Down
-      action: helpDown
-    - key: Home
-      action: helpStart
-    - key: End
-      action: helpEnd
-    - key: Escape
-      action: selectEditor
-    - key: k
-      action: helpUp
-    - key: j
-      action: helpDown
-    - key: gg
-      action: helpStart
-    - key: G
-      action: helpEnd
-    - key: q
-      action: selectEditor
+    help:
+      - key: Up
+        action: helpUp
+      - key: Down
+        action: helpDown
+      - key: Home
+        action: helpStart
+      - key: End
+        action: helpEnd
+      - key: Escape
+        action: selectEditor
+      - key: k
+        action: helpUp
+      - key: j
+        action: helpDown
+      - key: gg
+        action: helpStart
+      - key: G
+        action: helpEnd
+      - key: q
+        action: selectEditor
   file:
     entry: []
   reports:

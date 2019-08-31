@@ -100,16 +100,14 @@ forestInsertEntryBefore =
   Action
     { actionName = "forestInsertEntryBefore"
     , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
-    , actionDescription =
-        "Insert an entry before the currently selected header, on the same level"
+    , actionDescription = "Insert an entry before the currently selected header, on the same level"
     }
 
 forestInsertEntryBeforeAndSelectHeader :: Action
 forestInsertEntryBeforeAndSelectHeader =
   Action
     { actionName = "forestInsertEntryBeforeAndSelectHeader"
-    , actionFunc =
-        modifyFileCursor smosFileCursorInsertEntryBeforeAndSelectHeader
+    , actionFunc = modifyFileCursor smosFileCursorInsertEntryBeforeAndSelectHeader
     , actionDescription =
         "Insert an entry before the currently selected entry, on the same level, and select its header"
     }
@@ -126,8 +124,7 @@ forestInsertEntryBelowAndSelectHeader :: Action
 forestInsertEntryBelowAndSelectHeader =
   Action
     { actionName = "forestInsertEntryBelowAndSelectHeader"
-    , actionFunc =
-        modifyFileCursor smosFileCursorInsertEntryBelowAndSelectHeader
+    , actionFunc = modifyFileCursor smosFileCursorInsertEntryBelowAndSelectHeader
     , actionDescription = "Insert an entry below the currently selected entry"
     }
 
@@ -136,16 +133,14 @@ forestInsertEntryAfter =
   Action
     { actionName = "forestInsertEntryAfter"
     , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfter
-    , actionDescription =
-        "Insert an entry after the currently selected entry, on the same level"
+    , actionDescription = "Insert an entry after the currently selected entry, on the same level"
     }
 
 forestInsertEntryAfterAndSelectHeader :: Action
 forestInsertEntryAfterAndSelectHeader =
   Action
     { actionName = "forestInsertEntryAfterAndSelectHeader"
-    , actionFunc =
-        modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
+    , actionFunc = modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
     , actionDescription =
         "Insert an entry after the currently selected entry, on the same level, and select its header"
     }
@@ -171,8 +166,7 @@ forestMoveUp =
   Action
     { actionName = "forestMoveUp"
     , actionFunc = modifyFileCursorM smosFileCursorSelectPrev
-    , actionDescription =
-        "Move the current cursor up to the previous entry in the entry forest"
+    , actionDescription = "Move the current cursor up to the previous entry in the entry forest"
     }
 
 forestMoveDown :: Action
@@ -180,8 +174,7 @@ forestMoveDown =
   Action
     { actionName = "forestMoveDown"
     , actionFunc = modifyFileCursorM smosFileCursorSelectNext
-    , actionDescription =
-        "Move the current cursor down to the previous entry in the entry forest"
+    , actionDescription = "Move the current cursor down to the previous entry in the entry forest"
     }
 
 forestMoveLeft :: Action
@@ -189,8 +182,7 @@ forestMoveLeft =
   Action
     { actionName = "forestMoveLeft"
     , actionFunc = modifyFileCursorM smosFileCursorSelectAbove
-    , actionDescription =
-        "Move the current cursor to the parent entry in the entry forest"
+    , actionDescription = "Move the current cursor to the parent entry in the entry forest"
     }
 
 forestMoveRight :: Action
@@ -207,8 +199,7 @@ forestMoveToFirst =
   Action
     { actionName = "forestMoveToFirst"
     , actionFunc = modifyFileCursor smosFileCursorSelectFirst
-    , actionDescription =
-        "Move the current cursor up to the first entry in the entry forest"
+    , actionDescription = "Move the current cursor up to the first entry in the entry forest"
     }
 
 forestMoveToLast :: Action
@@ -216,8 +207,7 @@ forestMoveToLast =
   Action
     { actionName = "forestMoveToLast"
     , actionFunc = modifyFileCursor smosFileCursorSelectLast
-    , actionDescription =
-        "Move the current cursor down to the last entry in the entry forest"
+    , actionDescription = "Move the current cursor down to the last entry in the entry forest"
     }
 
 forestSwapUp :: Action
@@ -225,8 +215,7 @@ forestSwapUp =
   Action
     { actionName = "forestSwapUp"
     , actionFunc = modifyFileCursorM smosFileCursorSwapPrev
-    , actionDescription =
-        "Swap the current and the previous entry on the same level."
+    , actionDescription = "Swap the current and the previous entry on the same level."
     }
 
 forestSwapDown :: Action
@@ -234,8 +223,7 @@ forestSwapDown =
   Action
     { actionName = "forestSwapDown"
     , actionFunc = modifyFileCursorM smosFileCursorSwapNext
-    , actionDescription =
-        "Swap the current and the next entry on the same level."
+    , actionDescription = "Swap the current and the next entry on the same level."
     }
 
 forestPromoteEntry :: Action
@@ -309,8 +297,7 @@ forestClockOutEverywhereInThisFileAndClockInHere =
           now <- liftIO getCurrentTime
           clockOutInAllAgendaFiles now
           pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
-    , actionDescription =
-        "Clock out everywhere in this file and clock in at the current entry"
+    , actionDescription = "Clock out everywhere in this file and clock in at the current entry"
     }
 
 forestClockOutEverywhereInAllFilesAndClockInHere :: Action
@@ -322,17 +309,15 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
              now <- liftIO getCurrentTime
              clockOutInAllAgendaFiles now
              pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
-    , actionDescription =
-        "Clock out everywhere in all files and clock in at the current entry"
+    , actionDescription = "Clock out everywhere in all files and clock in at the current entry"
     }
 
 clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
-  agendaFileSpec <- asks $ smosReportConfigAgendaFileSpec . configReportConfig
+  agendaFileSpec <- asks $ smosReportConfigWorkflowFileSpec . configReportConfig
   runSmosAsync $ do
-    agendaFileDir <- agendaFileSpecGetWorkDir agendaFileSpec
-    agendaFiles <-
-      sourceToList $ sourceFilesInNonHiddenDirsRecursively agendaFileDir
+    agendaFileDir <- resolveWorkflowDir agendaFileSpec
+    agendaFiles <- sourceToList $ sourceFilesInNonHiddenDirsRecursively agendaFileDir
     forM_ agendaFiles $ \rp -> do
       let af = resolveRootedPath rp
       merrOrFile <- readSmosFile af

@@ -16,6 +16,7 @@ module Smos.Config
   , KeyMap(..)
   , FileKeyMap(..)
   , ReportsKeyMap(..)
+  , HelpKeyMap(..)
   , KeyMapping(..)
   , KeyMappings
   , ActionUsing(..)
@@ -32,6 +33,7 @@ import Graphics.Vty.Input.Events (Key(..), Modifier(..))
 import Smos.Report.Config
 
 import Smos.Actions
+import Smos.Keys
 import Smos.Types
 
 listMatchers :: [KeyMapping] -> KeyMappings

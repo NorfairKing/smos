@@ -26,24 +26,14 @@ Instead, install `stack` by following the documentation [on this page](https://d
 
 ### Building with Nix
 
-There are a few relevant targets that you may want to use.
-Most likely, you will want to use.
+If you are building with nix, you probably know what you are doing.
+Start with a regular build, and go from there using the multiple results:
 
 ```
-$ nix-build nix/release.nix
-$ ./result/bin/smos
+$ nix-build
 ```
 
-Alternatively, you can also use:
-
-```
-$ nix-build -A smos-static nix/release.nix
-$ ./result/bin/smos
-```
-
-The difference is that the latter will not build and run test suites that are
-external to the package that they are testing.  These are all the test suites
-in packages that end in `-gen`.
+In particular, you will want `smos`, `smos-query`,`smos-archive` and possibly `smos-convert-org`.
 
 #### Troubleshooting
 

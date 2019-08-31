@@ -5,29 +5,42 @@ module Smos.Archive.OptParse
   ( getSettings
   ) where
 
-import System.Environment
-
 import Path.IO
 
+import qualified System.Environment as System
+
 import Options.Applicative
+
+import qualified Smos.Report.Config as Report
+import qualified Smos.Report.OptParse as Report
 
 import Smos.Archive.OptParse.Types
 
 getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
-  config <- getConfig flags
-  deriveSettings flags config
+  env <- getEnvironment
+  config <- getConfig flags env
+  deriveSettings flags env config
 
-getConfig :: Flags -> IO Configuration
-getConfig Flags {..} = pure Configuration
+getConfig :: Flags -> Environment -> IO (Maybe Configuration)
+getConfig Flags {..} Environment {..} =
+  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
 
-deriveSettings :: Flags -> Configuration -> IO Settings
-deriveSettings Flags {..} Configuration = Settings <$> resolveFile' flagFile
+deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
+deriveSettings Flags {..} Environment {..} mc = do
+  setFile <- resolveFile' flagFile
+  setReportSettings <-
+    Report.combineToConfig
+      Report.defaultReportConfig
+      flagReportFlags
+      envReportEnvironment
+      (confReportConfiguration <$> mc)
+  pure Settings {..}
 
 getFlags :: IO Flags
 getFlags = do
-  args <- getArgs
+  args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
@@ -52,5 +65,8 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$>
-  strArgument (mconcat [help "The file to archive", metavar "FILEPATH"])
+  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
+  Report.parseFlags
+
+getEnvironment :: IO Environment
+getEnvironment = Environment <$> Report.getEnvironment

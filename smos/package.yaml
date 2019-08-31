@@ -20,6 +20,7 @@ library:
   - containers
   - contravariant
   - cursor
+  - cursor-brick
   - cursor-fuzzy-time
   - filelock
   - fuzzy-time
@@ -71,6 +72,8 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - aeson
+    - aeson-pretty
     - base
     - brick
     - bytestring
@@ -85,6 +88,7 @@ tests:
     - genvalidity-time
     - genvalidity-unordered-containers
     - hspec
+    - megaparsec
     - path
     - path-io
     - pretty-show
@@ -96,6 +100,7 @@ tests:
     - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen
+    - smos-report-gen
     - text
     - time
     - validity

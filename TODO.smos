@@ -922,6 +922,8 @@
     - entry:
         header: Help page
         state-history:
+        - new-state: DONE
+          timestamp: 2019-07-21 09:10:00.248927889000+0000
         - new-state: TODO
           timestamp: 2018-09-11 19:39:53.356426165000+0000
       forest:
@@ -939,21 +941,31 @@
           timestamp: 2018-09-11 19:40:01.436108571000+0000
       - header: Scrolling up and down with page-up and page-down
         state-history:
+        - new-state: CANCELLED
+          timestamp: 2019-07-21 09:09:59.414715350000+0000
         - new-state: TODO
           timestamp: 2018-12-02 18:07:30.422429680000+0000
       - header: Fuzzy Filter
         state-history:
+        - new-state: DONE
+          timestamp: 2019-07-21 09:09:58.741388207000+0000
         - new-state: TODO
           timestamp: 2018-12-02 18:01:01.622715673000+0000
       - header: Scroll bar on the right to see how much is visible
         state-history:
+        - new-state: CANCELLED
+          timestamp: 2019-07-21 09:09:28.072615787000+0000
         - new-state: TODO
           timestamp: 2018-12-02 18:10:16.478522175000+0000
     - header: Documentation
       state-history:
+      - new-state: DONE
+        timestamp: 2019-07-20 15:29:16.144475997000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:12:55.062378588000+0000
     - header: ! 'Build all smos packages: nix-env --file default.nix -iA smosPackages'
       state-history:
+      - new-state: DONE
+        timestamp: 2019-07-20 15:29:16.470726752000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:13:29.822523378000+0000

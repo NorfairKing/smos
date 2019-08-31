@@ -1,0 +1,372 @@
+workflow-dir: null
+projects-dir: null
+archive-dir: null
+archived-projects-dir: null
+work-filter: null
+contexts: {}
+work: null
+keys:
+  reports:
+    next-action:
+    - action: prevNextAction
+      key: <Up>
+    - action: prevNextAction
+      key: k
+    - action: nextNextAction
+      key: <Down>
+    - action: nextNextAction
+      key: j
+    - action: selectEditor
+      key: <Esc>
+    - action: firstNextAction
+      key: <Home>
+    - action: firstNextAction
+      key: gg
+    - action: lastNextAction
+      key: <End>
+    - action: lastNextAction
+      key: G
+    - action: selectEditor
+      key: q
+    - action: enterNextActionFile
+      key: <Enter>
+    - action: selectHelp
+      key: ! '?'
+    - action: selectHelp
+      key: M-?
+  help:
+    help:
+    - action: helpUp
+      key: <Up>
+    - action: helpUp
+      key: k
+    - action: helpDown
+      key: <Down>
+    - action: helpDown
+      key: j
+    - action: helpStart
+      key: <Home>
+    - action: helpStart
+      key: gg
+    - action: helpEnd
+      key: <End>
+    - action: helpEnd
+      key: G
+    - action: helpSelectSearch
+      key: /
+    - action: selectEditor
+      key: <Esc>
+    - action: selectEditor
+      key: q
+    search:
+    - action: helpInsert
+      key: <char>
+    - action: helpRemove
+      key: <BS>
+    - action: helpDelete
+      key: <Del>
+    - action: selectEditor
+      key: <Esc>
+    - action: selectEditor
+      key: q
+    - action: helpSelectHelp
+      key: <Esc>
+    - action: helpSelectHelp
+      key: <Enter>
+  reset: true
+  file:
+    contents:
+    - action: entrySelectWhole
+      key: <Esc>
+    - action: contentsInsert
+      key: <char>
+    - action: contentsInsertNewline
+      key: <Enter>
+    - action: contentsRemove
+      key: <BS>
+    - action: contentsDelete
+      key: <Del>
+    - action: contentsMoveLeft
+      key: <Left>
+    - action: contentsMoveRight
+      key: <Right>
+    - action: contentsMoveUp
+      key: <Up>
+    - action: contentsMoveDown
+      key: <Down>
+    - action: contentsMoveToStartOfLine
+      key: <Home>
+    - action: contentsMoveToEndOfLine
+      key: <End>
+    - action: forestSwapUp
+      key: M-k
+    - action: forestSwapDown
+      key: M-j
+    - action: forestPromoteEntry
+      key: M-h
+    - action: forestPromoteSubTree
+      key: M-H
+    - action: forestDemoteEntry
+      key: M-l
+    - action: forestDemoteSubTree
+      key: M-L
+    empty:
+    - action: stop
+      key: q
+    - action: stop
+      key: <Esc>
+    - action: startHeaderFromEmptyAndSelectHeader
+      key: e
+    - action: startHeaderFromEmptyAndSelectHeader
+      key: E
+    - action: selectHelp
+      key: ! '?'
+    - action: reportNextActions
+      key: rn
+    logbook:
+    - action: entrySelectWhole
+      key: <Esc>
+    entry:
+    - action: stop
+      key: q
+    - action: saveFile
+      key: w
+    - action: entrySelectHeaderAtEnd
+      key: a
+    - action: entrySelectHeaderAtEnd
+      key: A
+    - action: entrySelectHeaderAtStart
+      key: i
+    - action: entrySelectHeaderAtStart
+      key: I
+    - action: forestMoveUp
+      key: k
+    - action: forestMoveUp
+      key: <Up>
+    - action: forestMoveDown
+      key: j
+    - action: forestMoveDown
+      key: <Down>
+    - action: forestMoveLeft
+      key: h
+    - action: forestMoveLeft
+      key: <Left>
+    - action: forestMoveRight
+      key: l
+    - action: forestMoveRight
+      key: <Right>
+    - action: forestMoveToFirst
+      key: gg
+    - action: forestMoveToLast
+      key: G
+    - action: forestSwapUp
+      key: M-k
+    - action: forestSwapUp
+      key: M-K
+    - action: forestSwapDown
+      key: M-j
+    - action: forestSwapDown
+      key: M-J
+    - action: forestPromoteEntry
+      key: M-h
+    - action: forestPromoteSubTree
+      key: M-H
+    - action: forestDemoteEntry
+      key: M-l
+    - action: forestDemoteSubTree
+      key: M-L
+    - action: forestInsertEntryAfterAndSelectHeader
+      key: e
+    - action: forestInsertEntryBelowAndSelectHeader
+      key: E
+    - action: forestDeleteCurrentEntry
+      key: d
+    - action: forestDeleteCurrentSubTree
+      key: D
+    - action: entrySetTodoState_TODO
+      key: tt
+    - action: entrySetTodoState_NEXT
+      key: tn
+    - action: entrySetTodoState_STARTED
+      key: ts
+    - action: entrySetTodoState_READY
+      key: tr
+    - action: entrySetTodoState_WAITING
+      key: tw
+    - action: entrySetTodoState_DONE
+      key: td
+    - action: entrySetTodoState_CANCELLED
+      key: tc
+    - action: entryUnsetTodoState
+      key: t<space>
+    - action: subtreeSetTodoState_TODO
+      key: Tt
+    - action: subtreeSetTodoState_NEXT
+      key: Tn
+    - action: subtreeSetTodoState_STARTED
+      key: Ts
+    - action: subtreeSetTodoState_READY
+      key: Tr
+    - action: subtreeSetTodoState_WAITING
+      key: Tw
+    - action: subtreeSetTodoState_DONE
+      key: Td
+    - action: subtreeSetTodoState_CANCELLED
+      key: Tc
+    - action: subtreeUnsetTodoState
+      key: T<space>
+    - action: tagsToggle_home
+      key: gh
+    - action: tagsToggle_online
+      key: gon
+    - action: tagsToggle_offline
+      key: gof
+    - action: tagsToggle_toast
+      key: gt
+    - action: tagsToggle_work
+      key: gw
+    - action: timestampsSelect_BEGIN
+      key: sb
+    - action: timestampsSelect_END
+      key: se
+    - action: timestampsSelect_DEADLINE
+      key: sd
+    - action: timestampsSelect_SCHEDULED
+      key: ss
+    - action: entrySelectProperties
+      key: pi
+    - action: propertiesEditProperty_client
+      key: pc
+    - action: propertiesEditProperty_timewindow
+      key: pt
+    - action: forestClockOutEverywhereInAllFilesAndClockInHere
+      key: ci
+    - action: forestClockOutEverywhereInAllFiles
+      key: co
+    - action: reportNextActions
+      key: rn
+    - action: convDoneAndWaitForResponse
+      key: <space>nw
+    - action: convRepinged
+      key: <space>rp
+    - action: selectHelp
+      key: ! '?'
+    - action: forestToggleCollapse
+      key: <tab>
+    - action: forestToggleCollapseRecursively
+      key: M-<tab>
+    - action: forestToggleHideEntireEntry
+      key: <BackTab>
+    - action: entrySelectContents
+      key: <Enter><Enter>
+    - action: entrySelectTags
+      key: gi
+    header:
+    - action: entrySelectWhole
+      key: <Esc>
+    - action: entrySelectWhole
+      key: <Enter>
+    - action: headerInsert
+      key: <char>
+    - action: headerRemove
+      key: <BS>
+    - action: headerDelete
+      key: <Del>
+    - action: headerMoveLeft
+      key: <Left>
+    - action: headerMoveRight
+      key: <Right>
+    - action: headerMoveToStart
+      key: <Home>
+    - action: headerMoveToEnd
+      key: <End>
+    - action: forestSwapUp
+      key: M-k
+    - action: forestSwapDown
+      key: M-j
+    - action: forestPromoteEntry
+      key: M-h
+    - action: forestPromoteSubTree
+      key: M-H
+    - action: forestDemoteEntry
+      key: M-l
+    - action: forestDemoteSubTree
+      key: M-L
+    timestamps:
+    - action: entrySelectWhole
+      key: <Esc>
+    - action: entrySelectWhole
+      key: <Enter>
+    - action: timestampsInsert
+      key: <char>
+    - action: timestampsMoveLeft
+      key: <Left>
+    - action: timestampsMoveRight
+      key: <Right>
+    - action: timestampsRemove
+      key: <BS>
+    - action: timestampsDelete
+      key: <Del>
+    - action: timestampsToggle
+      key: <tab>
+    state-history:
+    - action: entrySelectWhole
+      key: <Esc>
+    any:
+    - action: undo
+      key: u
+    - action: selectHelp
+      key: M-?
+    - action: toggleDebug
+      key: M-<Enter>
+    tags:
+    - action: tagsInsert
+      key: <char>
+    - action: tagsPrev
+      key: <Left>
+    - action: tagsNext
+      key: <Right>
+    - action: tagsNextTag
+      key: <tab>
+    - action: tagsPrevTag
+      key: <BackTab>
+    - action: tagsRemove
+      key: <BS>
+    - action: tagsDelete
+      key: <Del>
+    - action: entrySelectWhole
+      key: <Enter>
+    - action: entrySelectWhole
+      key: <Esc>
+    properties:
+    - action: entrySelectWhole
+      key: <Esc>
+    - action: entrySelectWhole
+      key: <Enter>
+    - action: propertiesInsert
+      key: <char>
+    - action: propertiesMoveLeft
+      key: <Left>
+    - action: propertiesMoveRight
+      key: <Right>
+    - action: propertiesMoveUp
+      key: <Up>
+    - action: propertiesMoveDown
+      key: <Down>
+    - action: propertiesRemove
+      key: <BS>
+    - action: propertiesDelete
+      key: <Del>
+    - action: propertiesInsertNewProperty
+      key: M-k
+    - action: propertiesInsertNewProperty
+      key: M-<Up>
+    - action: propertiesAppendNewProperty
+      key: M-j
+    - action: propertiesAppendNewProperty
+      key: M-<Down>
+    - action: propertiesToggleSelected
+      key: <tab>
+projects-dir: null
+work-filter: null
+archived-projects-dir: null

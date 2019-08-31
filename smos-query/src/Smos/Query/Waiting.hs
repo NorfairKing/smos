@@ -15,37 +15,30 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Report.Query
+import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.Waiting
 
 import Smos.Query.Config
+import Smos.Query.Streaming
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 
 waiting :: WaitingSettings -> Q ()
 waiting WaitingSettings {..} = do
-  wd <- askWorkDir
-  liftIO $ do
-    tups <-
-      sourceToList $
-      sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-      parseSmosFiles .|
-      printShouldPrint PrintWarning .|
-      smosFileCursors .|
-      C.filter
-        (\(rp, fc) ->
-           maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
-      smosCursorCurrents .|
-      C.filter (isWaitingAction . snd) .|
-      C.map (uncurry makeWaitingActionEntry)
-    now <- getCurrentTime
-    putTableLn $ renderWaitingActionReport now tups
+  tups <-
+    sourceToList $
+    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
+    smosCursorCurrents .|
+    C.filter (isWaitingAction . snd) .|
+    C.map (uncurry makeWaitingActionEntry)
+  now <- liftIO getCurrentTime
+  liftIO $ putTableLn $ renderWaitingActionReport now tups
 
 renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-  formatAsTable .
-  map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
+  formatAsTable . map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
 
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =

@@ -58,9 +58,18 @@ module Smos.Data.Types
   , Timestamp(..)
   , timestampString
   , timestampText
+  , timestampPrettyString
+  , timestampPrettyText
   , timestampDayFormat
+  , timestampLocalTimeFormat
+  , timestampLocalTimePrettyFormat
+  , parseTimestampString
+  , parseTimestampText
+  , timestampDay
+  , timestampLocalTime
     -- Utils
   , ForYaml(..)
+  , getLocalTime
   ) where
 
 import GHC.Generics (Generic)
@@ -138,8 +147,7 @@ instance FromJSON (ForYaml (Tree Entry)) where
           Nothing -> Node <$> parseJSON v <*> pure []
           Just _ ->
             (withObject "Tree Entry" $ \o' ->
-               Node <$> o .: "entry" <*>
-               (unForYaml <$> o' .:? "forest" .!= ForYaml []))
+               Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml []))
               v
       _ -> Node <$> parseJSON v <*> pure []
 
@@ -153,10 +161,7 @@ instance ToYaml (ForYaml (Tree Entry)) where
   toYaml (ForYaml Node {..}) =
     if null subForest
       then toYaml rootLabel
-      else Yaml.mapping
-             [ ("entry", toYaml rootLabel)
-             , ("forest", toYaml (ForYaml subForest))
-             ]
+      else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
 data Entry =
   Entry
@@ -216,9 +221,7 @@ instance ToJSON Entry where
            ["contents" .= entryContents | isJust entryContents] ++
            ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps] ++
            ["properties" .= entryProperties | not $ M.null entryProperties] ++
-           [ "state-history" .= entryStateHistory
-           | not $ null $ unStateHistory entryStateHistory
-           ] ++
+           ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory] ++
            ["tags" .= entryTags | not $ null entryTags] ++
            ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
 
@@ -236,8 +239,7 @@ instance ToYaml Entry where
       else Yaml.mapping $
            [("header", toYaml entryHeader)] ++
            [("contents", toYaml entryContents) | isJust entryContents] ++
-           [ ( "timestamps"
-             , toYaml $ M.mapKeys timestampNameText entryTimestamps)
+           [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
            | not $ M.null entryTimestamps
            ] ++
            [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
@@ -310,8 +312,7 @@ instance Validity PropertyName where
     mconcat
       [ delve "propertyNameText" t
       , decorateList (T.unpack t) $ \c ->
-          declare
-            "The character is printable but not a whitespace character or punctuation" $
+          declare "The character is printable but not a whitespace character or punctuation" $
           Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
       ]
 
@@ -347,8 +348,7 @@ instance Validity PropertyValue where
     mconcat
       [ delve "propertyValueText" t
       , decorateList (T.unpack t) $ \c ->
-          declare
-            "The character is printable but not a whitespace character or punctuation" $
+          declare "The character is printable but not a whitespace character or punctuation" $
           Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
       ]
 
@@ -408,10 +408,9 @@ timestampName = constructValid . TimestampName
 parseTimestampName :: Text -> Either String TimestampName
 parseTimestampName = prettyValidate . TimestampName
 
-data Timestamp =
-  Timestamp
-    { timestampDay :: Day
-    }
+data Timestamp
+  = TimestampDay Day
+  | TimestampLocalTime LocalTime
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Timestamp
@@ -419,25 +418,62 @@ instance Validity Timestamp
 instance FromJSON Timestamp where
   parseJSON v = do
     s <- parseJSON v
-    Timestamp <$> parseTimeM False defaultTimeLocale timestampDayFormat s
+    case parseTimestampString s of
+      Nothing -> fail $ "Failed to parse a timestamp from" <> s
+      Just ts -> pure ts
 
 instance ToJSON Timestamp where
-  toJSON (Timestamp d) =
-    toJSON $ T.pack $ formatTime defaultTimeLocale timestampDayFormat d
+  toJSON = toJSON . timestampText
 
 instance ToYaml Timestamp where
-  toYaml =
-    toYaml .
-    T.pack . formatTime defaultTimeLocale timestampDayFormat . timestampDay
+  toYaml = toYaml . timestampText
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
 
+timestampLocalTimeFormat :: String
+timestampLocalTimeFormat = "%F %T%Q"
+
+timestampLocalTimePrettyFormat :: String
+timestampLocalTimePrettyFormat = "%F %T"
+
 timestampString :: Timestamp -> String
-timestampString = formatTime defaultTimeLocale timestampDayFormat . timestampDay
+timestampString ts =
+  case ts of
+    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
+    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimeFormat lt
 
 timestampText :: Timestamp -> Text
 timestampText = T.pack . timestampString
+
+timestampPrettyString :: Timestamp -> String
+timestampPrettyString ts =
+  case ts of
+    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
+    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimePrettyFormat lt
+
+timestampPrettyText :: Timestamp -> Text
+timestampPrettyText = T.pack . timestampPrettyString
+
+parseTimestampString :: String -> Maybe Timestamp
+parseTimestampString s =
+  (TimestampDay <$> parseTimeM False defaultTimeLocale timestampDayFormat s) <|>
+  (TimestampLocalTime <$> parseTimeM False defaultTimeLocale timestampLocalTimeFormat s)
+
+parseTimestampText :: Text -> Maybe Timestamp
+parseTimestampText = parseTimestampString . T.unpack
+
+timestampDay :: Timestamp -> Day
+timestampDay ts =
+  case ts of
+    TimestampDay d -> d
+    TimestampLocalTime (LocalTime d _) -> d
+
+timestampLocalTime :: Timestamp -> LocalTime
+timestampLocalTime ts =
+  case ts of
+    TimestampDay d -> LocalTime d midnight
+    TimestampLocalTime lt -> lt
 
 newtype TodoState =
   TodoState
@@ -450,8 +486,7 @@ instance Validity TodoState where
     mconcat
       [ delve "todoStateText" t
       , decorateList (T.unpack t) $ \c ->
-          declare
-            "The character is printable but not a whitespace character or punctuation" $
+          declare "The character is printable but not a whitespace character or punctuation" $
           Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
       ]
 
@@ -459,8 +494,7 @@ instance FromJSON TodoState where
   parseJSON =
     withText "TodoState" $ \t ->
       case parseTodoState t of
-        Left err ->
-          fail $ unwords ["Invalid todo state: ", T.unpack t, "  error:", err]
+        Left err -> fail $ unwords ["Invalid todo state: ", T.unpack t, "  error:", err]
         Right h -> pure h
 
 todoState :: Text -> Maybe TodoState
@@ -478,9 +512,7 @@ newtype StateHistory =
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
     genericValidate st <>
-    declare
-      "The entries are stored in reverse chronological order"
-      (hs <= sort hs)
+    declare "The entries are stored in reverse chronological order" (hs <= sort hs)
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -499,10 +531,7 @@ instance Validity StateHistoryEntry
 
 instance Ord StateHistoryEntry where
   compare =
-    mconcat
-      [ comparing $ Down . stateHistoryEntryTimestamp
-      , comparing stateHistoryEntryNewState
-      ]
+    mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
 
 instance FromJSON StateHistoryEntry where
   parseJSON =
@@ -511,10 +540,7 @@ instance FromJSON StateHistoryEntry where
 
 instance ToJSON StateHistoryEntry where
   toJSON StateHistoryEntry {..} =
-    object
-      [ "new-state" .= stateHistoryEntryNewState
-      , "timestamp" .= stateHistoryEntryTimestamp
-      ]
+    object ["new-state" .= stateHistoryEntryNewState, "timestamp" .= stateHistoryEntryTimestamp]
 
 instance ToYaml StateHistoryEntry where
   toYaml StateHistoryEntry {..} =
@@ -534,8 +560,7 @@ instance Validity Tag where
     mconcat
       [ delve "tagText" t
       , decorateList (T.unpack t) $ \c ->
-          declare
-            "The character is printable but not a whitespace character or punctuation" $
+          declare "The character is printable but not a whitespace character or punctuation" $
           Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
       ]
 
@@ -543,8 +568,7 @@ instance FromJSON Tag where
   parseJSON =
     withText "Tag" $ \t ->
       case parseTag t of
-        Left err ->
-          fail $ unwords ["Invalid tag: ", T.unpack t, "  error:", err]
+        Left err -> fail $ unwords ["Invalid tag: ", T.unpack t, "  error:", err]
         Right h -> pure h
 
 emptyTag :: Tag
@@ -595,18 +619,14 @@ instance FromJSON Logbook where
       [] -> pure $ LogClosed []
       (e:es) -> do
         (start, mend) <-
-          withObject
-            "First logbook entry"
-            (\o -> (,) <$> o .: "start" <*> o .:? "end")
-            e
+          withObject "First logbook entry" (\o -> (,) <$> o .: "start" <*> o .:? "end") e
         rest <- mapM parseJSON es
         let candidate =
               case mend of
                 Nothing -> LogOpen start rest
                 Just end -> LogClosed $ LogbookEntry start end : rest
         case prettyValidate candidate of
-          Left err ->
-            fail $ unlines ["JSON represented an invalid logbook:", err]
+          Left err -> fail $ unlines ["JSON represented an invalid logbook:", err]
           Right r -> pure r
 
 instance ToJSON Logbook where
@@ -618,8 +638,7 @@ instance ToJSON Logbook where
 instance ToYaml Logbook where
   toYaml = toYaml . go
     where
-      go (LogOpen start rest) =
-        Yaml.mapping [("start", toYaml start)] : map toYaml rest
+      go (LogOpen start rest) = Yaml.mapping [("start", toYaml start)] : map toYaml rest
       go (LogClosed rest) = map toYaml rest
 
 emptyLogbook :: Logbook
@@ -639,8 +658,7 @@ instance Validity LogbookEntry where
   validate lbe@LogbookEntry {..} =
     mconcat
       [ genericValidate lbe
-      , declare "The start time occurred before the end time" $
-        logbookEntryStart <= logbookEntryEnd
+      , declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
       ]
 
 instance FromJSON LogbookEntry where
@@ -648,26 +666,21 @@ instance FromJSON LogbookEntry where
     withObject "LogbookEntry" $ \o -> do
       candidate <- LogbookEntry <$> o .: "start" <*> o .: "end"
       case prettyValidate candidate of
-        Left err ->
-          fail $ unlines ["JSON represented an invalid logbook entry:", err]
+        Left err -> fail $ unlines ["JSON represented an invalid logbook entry:", err]
         Right r -> pure r
 
 instance ToJSON LogbookEntry where
-  toJSON LogbookEntry {..} =
-    object ["start" .= logbookEntryStart, "end" .= logbookEntryEnd]
+  toJSON LogbookEntry {..} = object ["start" .= logbookEntryStart, "end" .= logbookEntryEnd]
 
 instance ToYaml LogbookEntry where
   toYaml LogbookEntry {..} =
-    Yaml.mapping
-      [("start", toYaml logbookEntryStart), ("end", toYaml logbookEntryEnd)]
+    Yaml.mapping [("start", toYaml logbookEntryStart), ("end", toYaml logbookEntryEnd)]
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
-logbookEntryDiffTime LogbookEntry {..} =
-  diffUTCTime logbookEntryEnd logbookEntryStart
+logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
 instance ToYaml UTCTime where
-  toYaml =
-    Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
+  toYaml = Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
 
 instance ToYaml NominalDiffTime where
   toYaml = Yaml.scientific . realToFrac
@@ -681,3 +694,6 @@ instance (ToYaml a) => ToYaml (Maybe a) where
 
 instance (ToYaml a) => ToYaml (Map Text a) where
   toYaml = Yaml.mapping . map (second toYaml) . M.toList
+
+getLocalTime :: IO LocalTime
+getLocalTime = (\zt -> utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)) <$> getZonedTime

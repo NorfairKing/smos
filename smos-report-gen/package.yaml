@@ -15,8 +15,10 @@ library:
   - QuickCheck
   - base >=4.9 && <=5
   - genvalidity
-  - genvalidity-time
+  - genvalidity-containers
   - genvalidity-path
+  - genvalidity-text
+  - genvalidity-time
   - smos-data
   - smos-data-gen
   - smos-report

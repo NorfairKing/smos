@@ -24,6 +24,7 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - pretty-relative-time
   - pretty-show
   - rainbow
   - rainbox

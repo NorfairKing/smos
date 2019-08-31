@@ -23,6 +23,7 @@ final:
               "smos-report-cursor"
               "smos-report-cursor-gen"
               "smos-query"
+              "smos-single"
               "smos-convert-org"
               "smos-archive"
               "smos-docs-site"
@@ -39,7 +40,7 @@ final:
             export LOCALE_ARCHIVE="${final.glibcLocales}/lib/locale/locale-archive";
             export LANG=en_US.UTF-8
             smos-docs-site build
-            smos-docs-site check
+            smos-docs-site check --internal-links
             
             mkdir $out
             cp -r _site/* $out

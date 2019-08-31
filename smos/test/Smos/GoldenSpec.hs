@@ -28,8 +28,6 @@ import Smos
 import Smos.App
 import Smos.Types
 
-import Text.Show.Pretty
-
 spec :: Spec
 spec = do
   tfs <-
@@ -40,11 +38,7 @@ spec = do
   describe "Preconditions" $ do
     let distinct ls = sort (nub ls) == sort ls
     specify "all actions have unique names" $
-      distinct $
-      concat
-        [ map actionName allPlainActions
-        , map actionUsingName allUsingCharActions
-        ]
+      distinct $ concat [map actionName allPlainActions, map actionUsingName allUsingCharActions]
   describe "Golden" $ makeTestcases tfs
 
 data GoldenTestCase =
@@ -71,7 +65,7 @@ makeTestcase p =
     gtc@GoldenTestCase {..} <- decodeFileThrow (fromAbsFile p)
     run <- runCommandsOn (Just goldenTestCaseBefore) goldenTestCaseCommands
     shouldBeValid gtc
-    expectResults goldenTestCaseBefore goldenTestCaseAfter run
+    expectResults p goldenTestCaseBefore goldenTestCaseAfter run
 
 failure :: String -> IO a
 failure s = expectationFailure s >> undefined
@@ -85,8 +79,7 @@ instance Validity Command where
 
 instance Show Command where
   show (CommandPlain a) = T.unpack $ actionNameText $ actionName a
-  show (CommandUsing au inp) =
-    unwords [T.unpack $ actionNameText $ actionUsingName au, show inp]
+  show (CommandUsing au inp) = unwords [T.unpack $ actionNameText $ actionUsingName au, show inp]
 
 instance FromJSON Command where
   parseJSON =
@@ -129,7 +122,8 @@ runCommandsOn mstart commands =
     case mfl of
       Nothing -> die "Could not lock pretend file."
       Just fl -> do
-        let startState = initState zt af fl mstart
+        let startState =
+              initStateWithCursor zt af fl $ makeEditorCursorClosed $ fromMaybe emptySmosFile mstart
         (fs, rs) <- foldM go (startState, []) commands
         let cr =
               CommandsRun
@@ -140,18 +134,12 @@ runCommandsOn mstart commands =
         pure cr
   where
     testConf = error "tried to access the config"
-    go ::
-         (SmosState, [(Command, SmosFile)])
-      -> Command
-      -> IO (SmosState, [(Command, SmosFile)])
+    go :: (SmosState, [(Command, SmosFile)]) -> Command -> IO (SmosState, [(Command, SmosFile)])
     go (ss, rs) c = do
       let recordCursorHistory :: SmosM ()
           recordCursorHistory =
             modify $ \ss_ ->
-              ss_
-                { smosStateCursorHistory =
-                    smosStateCursor ss_ : smosStateCursorHistory ss_
-                }
+              ss_ {smosStateCursorHistory = smosStateCursor ss_ : smosStateCursorHistory ss_}
       let func = do
             recordCursorHistory
             case c of
@@ -160,17 +148,14 @@ runCommandsOn mstart commands =
       let eventFunc = runSmosM testConf ss func
       ((s, ss'), _) <-
         runStateT
-          (runReaderT
-             (runEventM eventFunc)
-             (error "Tried to access the brick env"))
+          (runReaderT (runEventM eventFunc) (error "Tried to access the brick env"))
           (error "Tried to access the brick state")
       case s of
         Stop -> failure "Premature stop"
-        Continue () ->
-          pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
+        Continue () -> pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
 
-expectResults :: SmosFile -> SmosFile -> CommandsRun -> IO ()
-expectResults bf af CommandsRun {..} =
+expectResults :: Path Abs File -> SmosFile -> SmosFile -> CommandsRun -> IO ()
+expectResults p bf af CommandsRun {..} =
   unless (finalResult `eqForTest` af) $
   failure $
   unlines $
@@ -192,7 +177,11 @@ expectResults bf af CommandsRun {..} =
       , "The actual result was the following:"
       , ppShow finalResult
       ]
-    , [ "If this was intentional, you can replace the contents of the expected results file by the following:"
+    , [ unwords
+          [ "If this was intentional, you can replace the contents of the 'after' part in"
+          , fromAbsFile p
+          , "by the following:"
+          ]
       , "---[START]---"
       , SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
       ]
@@ -200,11 +189,7 @@ expectResults bf af CommandsRun {..} =
   where
     go :: Command -> SmosFile -> [String]
     go c isf =
-      [ "After running the following command:"
-      , show c
-      , "The file looked as follows:"
-      , ppShow isf
-      ]
+      ["After running the following command:", show c, "The file looked as follows:", ppShow isf]
 
 eqForTest :: SmosFile -> SmosFile -> Bool
 eqForTest = forestEqForTest `on` smosFileForest
@@ -214,11 +199,9 @@ eqForTest = forestEqForTest `on` smosFileForest
     forestEq1 :: (a -> a -> Bool) -> Forest a -> Forest a -> Bool
     forestEq1 eq = listEq1 (treeEq1 eq)
     treeEq1 :: (a -> a -> Bool) -> Tree a -> Tree a -> Bool
-    treeEq1 eq (Node n1 fs1) (Node n2 fs2) =
-      (n1 `eq` n2) && (forestEq1 eq fs1 fs2)
+    treeEq1 eq (Node n1 fs1) (Node n2 fs2) = (n1 `eq` n2) && (forestEq1 eq fs1 fs2)
     listEq1 :: (a -> a -> Bool) -> [a] -> [a] -> Bool
-    listEq1 eq as bs =
-      go $ zip (map Just as ++ repeat Nothing) (map Just bs ++ repeat Nothing)
+    listEq1 eq as bs = go $ zip (map Just as ++ repeat Nothing) (map Just bs ++ repeat Nothing)
       where
         go [] = True
         go (a:rest) =
@@ -237,21 +220,16 @@ eqForTest = forestEqForTest `on` smosFileForest
       ((==) `on` entryTags) &&& (logbookEqForTest `on` entryLogbook)
     stateHistoryEqForTest :: StateHistory -> StateHistory -> Bool
     stateHistoryEqForTest sh1 sh2 =
-      listEq1
-        stateHistoryEntryEqForTest
-        (unStateHistory sh1)
-        (unStateHistory sh2)
+      listEq1 stateHistoryEntryEqForTest (unStateHistory sh1) (unStateHistory sh2)
     stateHistoryEntryEqForTest :: StateHistoryEntry -> StateHistoryEntry -> Bool
     stateHistoryEntryEqForTest =
-      ((==) `on` stateHistoryEntryNewState) &&&
-      (dateTimeEqForTest `on` stateHistoryEntryTimestamp)
+      ((==) `on` stateHistoryEntryNewState) &&& (dateTimeEqForTest `on` stateHistoryEntryTimestamp)
     logbookEqForTest :: Logbook -> Logbook -> Bool
     logbookEqForTest lb1 lb2 =
       case (lb1, lb2) of
         (LogOpen ut1 lbes1, LogOpen ut2 lbes2) ->
           dateTimeEqForTest ut1 ut2 && listEq1 logbookEntryEqForTest lbes1 lbes2
-        (LogClosed lbes1, LogClosed lbes2) ->
-          listEq1 logbookEntryEqForTest lbes1 lbes2
+        (LogClosed lbes1, LogClosed lbes2) -> listEq1 logbookEntryEqForTest lbes1 lbes2
         (_, _) -> False
     logbookEntryEqForTest :: LogbookEntry -> LogbookEntry -> Bool
     logbookEntryEqForTest (LogbookEntry s1 e1) (LogbookEntry s2 e2) =

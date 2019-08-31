@@ -1,13 +1,13 @@
 before:
-- forest:
-  - forest:
-    - forest:
-      - forest:
+- entry: hello
+  forest:
+  - entry: world
+    forest:
+    - entry: this
+      forest:
+      - entry: is
+        forest:
         - me
-        entry: is
-      entry: this
-    entry: world
-  entry: hello
 commands:
 - forestToggleCollapse
 - forestMoveDown

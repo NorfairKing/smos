@@ -1,35 +1,156 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Report.Config
   ( SmosReportConfig(..)
   , defaultReportConfig
-  , AgendaFileSpec(..)
-  , inHomeDir
+  , defaultWorkBaseFilter
+  , WorkflowDirSpec(..)
+  , defaultWorkflowDirSpec
+  , resolveWorkflowDir
+  , ArchiveDirSpec(..)
+  , defaultArchiveDirSpec
+  , resolveArchiveDir
+  , ProjectsDirSpec(..)
+  , defaultProjectsDirSpec
+  , resolveProjectsDir
+  , ArchivedProjectsDirSpec(..)
+  , defaultArchivedProjectsDirSpec
+  , resolveArchivedProjectsDir
+  , resolveReportWorkflowDir
+  , resolveReportArchiveDir
+  , resolveReportProjectsDir
+  , resolveReportArchivedProjectsDir
+  , ContextName(..)
   ) where
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
+import qualified Data.Map as M
+import Data.Map (Map)
+import Data.Text (Text)
+import Data.Validity
+
 import Path
 import Path.IO
 
+import Smos.Report.Filter
+
 data SmosReportConfig =
   SmosReportConfig
-    { smosReportConfigAgendaFileSpec :: AgendaFileSpec
+    { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec
+    , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
+    , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
+    , smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter :: Maybe Filter
+    , smosReportConfigContexts :: Map ContextName Filter
     }
-  deriving (Generic)
+  deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
-  SmosReportConfig {smosReportConfigAgendaFileSpec = inHomeDir "workflow"}
-
-data AgendaFileSpec =
-  AgendaFileSpec
-    { agendaFileSpecGetWorkDir :: IO (Path Abs Dir)
+  SmosReportConfig
+    { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec
+    , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
+    , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
+    , smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
+    , smosReportConfigWorkBaseFilter = defaultWorkBaseFilter
+    , smosReportConfigContexts = M.fromList []
     }
-  deriving (Generic)
 
-inHomeDir :: FilePath -> AgendaFileSpec
-inHomeDir fp =
-  AgendaFileSpec $ do
-    home <- getHomeDir
-    resolveDir home fp
+defaultWorkBaseFilter :: Maybe Filter
+defaultWorkBaseFilter = Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
+
+data WorkflowDirSpec
+  = DirInHome (Path Rel Dir)
+  | DirAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+defaultWorkflowDirSpec :: WorkflowDirSpec
+defaultWorkflowDirSpec = DirInHome [reldir|workflow|]
+
+resolveWorkflowDir :: WorkflowDirSpec -> IO (Path Abs Dir)
+resolveWorkflowDir afs =
+  case afs of
+    DirInHome rp -> getHomeDir >>= (`resolveDir` fromRelDir rp)
+    DirAbsolute ad -> pure ad
+
+data ArchiveDirSpec
+  = ArchiveInWorkflow (Path Rel Dir)
+  | ArchiveInHome (Path Rel Dir)
+  | ArchiveAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+defaultArchiveDirSpec :: ArchiveDirSpec
+defaultArchiveDirSpec = ArchiveInWorkflow [reldir|archive|]
+
+resolveArchiveDir :: Path Abs Dir -> ArchiveDirSpec -> IO (Path Abs Dir)
+resolveArchiveDir wd as =
+  case as of
+    ArchiveInWorkflow ard -> pure $ wd </> ard
+    ArchiveInHome ard -> (</> ard) <$> getHomeDir
+    ArchiveAbsolute aad -> pure aad
+
+data ProjectsDirSpec
+  = ProjectsInWorkflow (Path Rel Dir)
+  | ProjectsInHome (Path Rel Dir)
+  | ProjectsAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+defaultProjectsDirSpec :: ProjectsDirSpec
+defaultProjectsDirSpec = ProjectsInWorkflow [reldir|projects|]
+
+resolveProjectsDir :: Path Abs Dir -> ProjectsDirSpec -> IO (Path Abs Dir)
+resolveProjectsDir wd as =
+  case as of
+    ProjectsInWorkflow ard -> pure $ wd </> ard
+    ProjectsInHome ard -> (</> ard) <$> getHomeDir
+    ProjectsAbsolute aad -> pure aad
+
+data ArchivedProjectsDirSpec
+  = ArchivedProjectsInArchive (Path Rel Dir)
+  | ArchivedProjectsInHome (Path Rel Dir)
+  | ArchivedProjectsAbsolute (Path Abs Dir)
+  deriving (Show, Eq, Generic)
+
+defaultArchivedProjectsDirSpec :: ArchivedProjectsDirSpec
+defaultArchivedProjectsDirSpec = ArchivedProjectsInArchive [reldir|projects|]
+
+resolveArchivedProjectsDir :: Path Abs Dir -> ArchivedProjectsDirSpec -> IO (Path Abs Dir)
+resolveArchivedProjectsDir ad as =
+  case as of
+    ArchivedProjectsInArchive ard -> pure $ ad </> ard
+    ArchivedProjectsInHome ard -> (</> ard) <$> getHomeDir
+    ArchivedProjectsAbsolute aad -> pure aad
+
+resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigWorkflowFileSpec
+
+resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportArchiveDir SmosReportConfig {..} = do
+  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
+  resolveArchiveDir wd smosReportConfigArchiveFileSpec
+
+resolveReportProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportProjectsDir SmosReportConfig {..} = do
+  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
+  resolveProjectsDir wd smosReportConfigProjectsFileSpec
+
+resolveReportArchivedProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
+resolveReportArchivedProjectsDir SmosReportConfig {..} = do
+  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
+  ad <- resolveArchiveDir wd smosReportConfigArchiveFileSpec
+  resolveArchivedProjectsDir ad smosReportConfigArchivedProjectsFileSpec
+
+newtype ContextName =
+  ContextName
+    { contextNameText :: Text
+    }
+  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
+
+instance Validity ContextName

@@ -54,6 +54,12 @@ spec = do
   genValidSpec @Timestamp
   jsonSpecOnValid @Timestamp
   textLikeJSONValid @Timestamp
+  describe "parseTimestampString" $
+    it "parses whatever timestampString outputs" $
+    forAllValid $ \ts -> parseTimestampString (timestampString ts) `shouldBe` Just ts
+  describe "parseTimestampText" $
+    it "parses whatever timestampText outputs" $
+    forAllValid $ \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
   eqSpecOnValid @TodoState
   ordSpecOnValid @TodoState
   genValidSpec @TodoState
