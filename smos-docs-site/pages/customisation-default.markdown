@@ -5,7 +5,7 @@ date: 2018-11-13
 
 Smos can be configured very flexibly, via flags, environment variables and configuration files.
 
-For example, to configur a different workflow directory than the default `~/workflow`, you can use
+For example, to configure a different workflow directory than the default `~/workflow`, you can use
 the command-line flag `--workflow-dir` or the environment variable `SMOS_WORKFLOW_DIR`, or
 you can use a configuration file.
 
