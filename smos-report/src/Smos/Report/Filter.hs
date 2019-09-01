@@ -38,6 +38,7 @@ data Filter
   | FilterTodoState TodoState
   | FilterFile (Path Rel File) -- Substring of the filename
   | FilterLevel Word -- The level of the entry in the tree (0 is top)
+  | FilterHeader Header -- Substring of the headder
   | FilterExactProperty PropertyName PropertyValue
   | FilterHasProperty PropertyName
   | FilterParent Filter -- Match direct parent
@@ -57,6 +58,11 @@ instance Validity Filter where
           FilterFile s ->
             declare "The filenames are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
             fromRelFile s
+          FilterHeader h ->
+            declare "The header characters are restricted" $
+            all (\c -> not (Char.isSpace c) && c /= ')') $
+            T.unpack $
+            headerText h
           _ -> valid
       ]
 
@@ -91,6 +97,8 @@ filterPredicate f_ rp = go f_
             FilterHasTag t -> t `elem` entryTags cur
             FilterTodoState mts -> Just mts == entryState cur
             FilterFile t -> fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
+            FilterHeader h ->
+              T.toCaseFold (headerText h) `T.isInfixOf` T.toCaseFold (headerText (entryHeader cur))
             FilterExactProperty pn pv ->
               case M.lookup pn $ entryProperties cur of
                 Nothing -> False
@@ -124,6 +132,7 @@ parseFilter = parseMaybe filterP
 filterP :: P Filter
 filterP =
   try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
+  try filterHeaderP <|>
   try filterExactPropertyP <|>
   try filterHasPropertyP <|>
   try filterParentP <|>
@@ -159,6 +168,12 @@ filterLevelP = do
   void $ string' "level:"
   w <- decimal
   pure $ FilterLevel w
+
+filterHeaderP :: P Filter
+filterHeaderP = do
+  void $ string' "header:"
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')')
+  either fail (pure . FilterHeader) $ parseHeader $ T.pack s
 
 filterParentP :: P Filter
 filterParentP = do
@@ -237,6 +252,7 @@ renderFilter f =
     FilterTodoState ts -> "state:" <> todoStateText ts
     FilterFile t -> "file:" <> T.pack (fromRelFile t)
     FilterLevel l -> "level:" <> T.pack (show l)
+    FilterHeader h -> "header:" <> headerText h
     FilterExactProperty pn pv ->
       "exact-property:" <> propertyNameText pn <> ":" <> propertyValueText pv
     FilterHasProperty pn -> "has-property:" <> propertyNameText pn

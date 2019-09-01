@@ -7,6 +7,8 @@ copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+dependencies:
+- base >=4.9 && <=5
   
 library:
   source-dirs: src/
@@ -15,7 +17,6 @@ library:
   - Smos.Data.Gen
   dependencies:
   - QuickCheck
-  - base >=4.9 && <=5
   - containers
   - genvalidity
   - genvalidity-containers
@@ -24,6 +25,7 @@ library:
   - genvalidity-time
   - genvalidity-unordered-containers
   - smos-data
+  - text
   - time
 
 tests:

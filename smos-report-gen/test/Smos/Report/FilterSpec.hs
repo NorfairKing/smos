@@ -42,6 +42,7 @@ spec = do
   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText
   describe "filterFileP" $ parsesValidSpec filterFileP fileText
   describe "filterLevelP" $ parsesValidSpec filterLevelP levelText
+  describe "filterHeaderP" $ parsesValidSpec filterHeaderP headerText
   describe "filterParentP" $ parsesValidSpec filterParentP parentText
   describe "filterAncestorP" $ parsesValidSpec filterAncestorP ancestorText
   describe "filterChildP" $ parsesValidSpec filterChildP childText
@@ -103,6 +104,7 @@ filterText =
     , todoStateText
     , fileText
     , levelText
+    , headerText
     , hasPropertyText
     , exactPropertyText
     , parentText
@@ -124,6 +126,8 @@ fileText = textPieces [pure "file:", genValid]
 
 levelText :: Gen Text
 levelText = textPieces [pure "level:", T.pack . show <$> (genValid :: Gen Int)]
+headerText :: Gen Text
+headerText = textPieces [pure "header:", genValid]
 
 parentText :: Gen Text
 parentText = textPieces [pure "parent:", filterText]
@@ -148,7 +152,6 @@ orText = textPieces [filterText, pure " or ", filterText]
 
 andText :: Gen Text
 andText = textPieces [filterText, pure " and ", filterText]
-
 
 exactPropertyText :: Gen Text
 exactPropertyText =

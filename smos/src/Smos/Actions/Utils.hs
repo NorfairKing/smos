@@ -49,6 +49,11 @@ import Lens.Micro
 
 import Smos.Types
 
+modifyHeaderCursorWhenSelectedMD ::
+     (HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)) -> SmosM ()
+modifyHeaderCursorWhenSelectedMD func =
+  modifyHeaderCursorWhenSelectedM $  dullMDelete . func
+
 modifyHeaderCursorWhenSelectedM ::
      (HeaderCursor -> Maybe HeaderCursor) -> SmosM ()
 modifyHeaderCursorWhenSelectedM func =

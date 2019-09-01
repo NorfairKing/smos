@@ -262,7 +262,8 @@ instance Validity Header where
     mconcat
       [ delve "headerText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is not a newline character" $ c /= '\n'
+          declare "The character is printable but not a newline character" $
+          Char.isPrint c && c /= '\n'
       ]
 
 instance FromJSON Header where
