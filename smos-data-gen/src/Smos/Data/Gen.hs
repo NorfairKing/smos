@@ -2,6 +2,8 @@
 
 module Smos.Data.Gen where
 
+import Data.Char as Char
+import qualified Data.Text as T
 import Data.Time
 
 import Test.QuickCheck
@@ -28,7 +30,9 @@ instance GenValid Entry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$> genListOf (genValid `suchThat` (\c -> Char.isPrint c && c /= '\n'))) `suchThatMap`
+    header
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Contents where
@@ -36,15 +40,30 @@ instance GenValid Contents where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid PropertyName where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$>
+     genListOf
+       (genValid `suchThat`
+        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
+    propertyName
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyValue where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$>
+     genListOf
+       (genValid `suchThat`
+        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
+    propertyValue
   shrinkValid = shrinkValidStructurally
 
 instance GenValid TimestampName where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$>
+     genListOf
+       (genValid `suchThat`
+        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
+    timestampName
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Timestamp
@@ -54,7 +73,12 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$>
+     genListOf
+       (genValid `suchThat`
+        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
+    todoState
   shrinkValid = shrinkValidStructurally
 
 instance GenValid StateHistory where
@@ -63,19 +87,22 @@ instance GenValid StateHistory where
 
 instance GenValid StateHistoryEntry where
   genValid = genValidStructurally
-  shrinkValid (StateHistoryEntry mts ts) =
-    StateHistoryEntry <$> shrinkValid mts <*> pure ts
+  shrinkValid (StateHistoryEntry mts ts) = StateHistoryEntry <$> shrinkValid mts <*> pure ts
 
 instance GenValid Tag where
-  genValid = genValidStructurally
+  genValid =
+    (T.pack <$>
+     genListOf
+       (genValid `suchThat`
+        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
+    tag
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Logbook
 
 instance GenValid Logbook where
   genValid =
-    let genPositiveNominalDiffTime =
-          (realToFrac . abs) <$> (genValid :: Gen Rational)
+    let genPositiveNominalDiffTime = (realToFrac . abs) <$> (genValid :: Gen Rational)
         listOfLogbookEntries =
           sized $ \n -> do
             ss <- arbPartition n
@@ -93,9 +120,7 @@ instance GenValid Logbook where
                           ndt2 <- resize b genPositiveNominalDiffTime
                           let start = addUTCTime ndt1 (logbookEntryEnd p)
                               end = addUTCTime ndt2 start
-                          pure $
-                            LogbookEntry
-                              {logbookEntryStart = start, logbookEntryEnd = end}
+                          pure $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
                   pure $ cur : lbes
             go ss
      in oneof

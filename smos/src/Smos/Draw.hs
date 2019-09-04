@@ -374,7 +374,7 @@ drawEntry tc e = do
         else Nothing
 
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
-drawHeaderCursor s = withAttr headerAttr . drawTextCursor s
+drawHeaderCursor s = withAttr headerAttr . drawTextCursor s . headerCursorTextCursor
 
 drawHeader :: Header -> Widget ResourceName
 drawHeader = withAttr headerAttr . textLineWidget . headerText

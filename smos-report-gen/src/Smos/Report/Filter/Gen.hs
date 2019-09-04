@@ -23,14 +23,16 @@ instance GenValid Filter where
             [ FilterHasTag <$> genValid
             , FilterLevel <$> genValid
             , FilterTodoState <$> genValid
+            ,( FilterHeader <$> genValid )`suchThat` isValid
             , FilterHasProperty <$> genValid
             , FilterExactProperty <$> genValid <*> genValid
             ]
         _ ->
           oneof
             [ FilterHasTag <$> genValid
-            , FilterTodoState <$> genValid
             , FilterLevel <$> genValid
+            , FilterTodoState <$> genValid
+            ,( FilterHeader <$> genValid) `suchThat` isValid
             , FilterHasProperty <$> genValid
             , FilterExactProperty <$> genValid <*> genValid
             , (FilterFile <$> genValid) `suchThat` isValid

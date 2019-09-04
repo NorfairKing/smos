@@ -55,7 +55,7 @@ headerRemove :: Action
 headerRemove =
   Action
     { actionName = "headerRemove"
-    , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorRemove
+    , actionFunc = modifyHeaderCursorWhenSelectedMD headerCursorRemove
     , actionDescription = "Remove a character from the header"
     }
 
@@ -63,7 +63,7 @@ headerDelete :: Action
 headerDelete =
   Action
     { actionName = "headerDelete"
-    , actionFunc = modifyHeaderCursorWhenSelectedM headerCursorDelete
+    , actionFunc = modifyHeaderCursorWhenSelectedMD headerCursorDelete
     , actionDescription = "Remove a character from the header"
     }
 

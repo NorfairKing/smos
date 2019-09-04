@@ -1,56 +1,84 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module Smos.Cursor.Header
-  ( HeaderCursor
+  ( HeaderCursor(..)
   , makeHeaderCursor
   , rebuildHeaderCursor
   , headerCursorInsert
   , headerCursorAppend
   , headerCursorRemove
   , headerCursorDelete
-  , headerCursorSelectPrev
-  , headerCursorSelectNext
   , headerCursorSelectStart
   , headerCursorSelectEnd
+  , headerCursorSelectPrev
+  , headerCursorSelectNext
   ) where
+
+import GHC.Generics (Generic)
+
+import Data.Maybe
+import Data.Validity
+
+import Control.Monad
+
+import Lens.Micro
 
 import Cursor.Text
 import Cursor.Types
 
-import Data.Maybe
-
 import Smos.Data.Types
 
-type HeaderCursor = TextCursor
+newtype HeaderCursor =
+  HeaderCursor
+    { headerCursorTextCursor :: TextCursor
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity HeaderCursor where
+  validate tc@HeaderCursor {..} =
+    mconcat
+      [ genericValidate tc
+      , decorate "The resulting Header is valid" $
+        case parseHeader (rebuildTextCursor headerCursorTextCursor) of
+          Left err -> invalid err
+          Right t -> validate t
+      ]
+
+headerCursorTextCursorL :: Lens' HeaderCursor TextCursor
+headerCursorTextCursorL =
+  lens headerCursorTextCursor $ \headerc textc -> headerc {headerCursorTextCursor = textc}
 
 -- fromJust is safe because makeTextCursor only works with text without newlines,
 -- and that is one of the validity requirements of 'Header'.
 makeHeaderCursor :: Header -> HeaderCursor
-makeHeaderCursor = fromJust . makeTextCursor . headerText
+makeHeaderCursor = HeaderCursor . fromJust . makeTextCursor . headerText
 
 -- fromJust is safe because 'header' only returns Nothing if the text cursor contains
--- newlines and it's one of the validity constraints that it doesn't.
+-- an invalid header and it's one of the validity constraints that it doesn't.
 rebuildHeaderCursor :: HeaderCursor -> Header
-rebuildHeaderCursor = fromJust . header . rebuildTextCursor
+rebuildHeaderCursor = fromJust . header . rebuildTextCursor . headerCursorTextCursor
 
 headerCursorInsert :: Char -> HeaderCursor -> Maybe HeaderCursor
-headerCursorInsert = textCursorInsert
+headerCursorInsert c = headerCursorTextCursorL (textCursorInsert c) >=> constructValid
 
 headerCursorAppend :: Char -> HeaderCursor -> Maybe HeaderCursor
-headerCursorAppend = textCursorAppend
+headerCursorAppend c = headerCursorTextCursorL (textCursorAppend c) >=> constructValid
 
-headerCursorRemove :: HeaderCursor -> Maybe HeaderCursor
-headerCursorRemove = dullMDelete . textCursorRemove
+headerCursorRemove :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
+headerCursorRemove = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorRemove
 
-headerCursorDelete :: HeaderCursor -> Maybe HeaderCursor
-headerCursorDelete = dullMDelete . textCursorDelete
-
-headerCursorSelectPrev :: HeaderCursor -> Maybe HeaderCursor
-headerCursorSelectPrev = textCursorSelectPrev
-
-headerCursorSelectNext :: HeaderCursor -> Maybe HeaderCursor
-headerCursorSelectNext = textCursorSelectNext
+headerCursorDelete :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
+headerCursorDelete = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorDelete
 
 headerCursorSelectStart :: HeaderCursor -> HeaderCursor
-headerCursorSelectStart = textCursorSelectStart
+headerCursorSelectStart = headerCursorTextCursorL %~ textCursorSelectStart
 
 headerCursorSelectEnd :: HeaderCursor -> HeaderCursor
-headerCursorSelectEnd = textCursorSelectEnd
+headerCursorSelectEnd = headerCursorTextCursorL %~ textCursorSelectEnd
+
+headerCursorSelectPrev :: HeaderCursor -> Maybe HeaderCursor
+headerCursorSelectPrev = headerCursorTextCursorL textCursorSelectPrev
+
+headerCursorSelectNext :: HeaderCursor -> Maybe HeaderCursor
+headerCursorSelectNext = headerCursorTextCursorL textCursorSelectNext
