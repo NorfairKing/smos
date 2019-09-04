@@ -110,7 +110,7 @@ drawInfo =
     , str " "
     , str "Building smos takes time, energy and money."
     , str "Please consider supporting the project."
-    , str "https://smos.cs-syd.eu/support"
+    , str "https://smos.cs-syd.eu/support.html"
     ]
 
 drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
