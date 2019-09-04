@@ -26,3 +26,8 @@ smos-docs-site           : The generator for the documentation website.
 
 
 
+## Sponsor this project
+
+Smos is free and open-source software.
+Building it takes time, energy and money.
+Please consider supporting the project at https://smos.cs-syd.eu/support.html
