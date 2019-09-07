@@ -18,12 +18,11 @@ import qualified Data.ByteString.Char8 as SB8
 import qualified Data.Text as T
 import Data.UUID as UUID
 
-
 import Servant
 
 import Path
 
-import Data.Mergeful
+import qualified Data.Mergeful as Mergeful
 
 instance FromJSONKey (Path Rel File) where
   fromJSONKey =
@@ -58,5 +57,8 @@ instance ToJSON SyncFile where
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
 
-type SyncAPI
-   = "sync" :> ReqBody '[ JSON] (SyncRequest UUID SyncFile) :> Post '[ JSON] (SyncResponse UUID SyncFile)
+type SyncRequest = Mergeful.SyncRequest UUID SyncFile
+
+type SyncResponse = Mergeful.SyncResponse UUID SyncFile
+
+type SyncAPI = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse

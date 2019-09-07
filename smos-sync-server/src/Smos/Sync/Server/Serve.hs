@@ -19,9 +19,15 @@ import Smos.Sync.Server.OptParse
 serveSmosSyncServer :: ServeSettings -> IO ()
 serveSmosSyncServer ss@ServeSettings {..} = do
   pPrint ss
-  serverStore <- readStore
-  var <- newTVarIO serverStore
-  Warp.run serveSetPort $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}
+  ServerStore {..} <- readStore serveSetStoreFile
+  var <- newTVarIO serverStoreItems
+  let env =
+        ServerEnv
+          { serverEnvServerUUID = serverStoreServerUUID
+          , serverEnvStoreFile = serveSetStoreFile
+          , serverEnvStoreVar = var
+          }
+  Warp.run serveSetPort $ makeSyncApp env
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =

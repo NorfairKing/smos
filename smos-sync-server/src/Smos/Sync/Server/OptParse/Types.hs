@@ -7,6 +7,8 @@ import GHC.Generics (Generic)
 
 import Data.Yaml as Yaml
 
+import Path
+
 data Arguments =
   Arguments Command Flags
   deriving (Show, Eq)
@@ -20,30 +22,34 @@ data Command =
 
 data ServeFlags =
   ServeFlags
-    { serveFlagPort :: Maybe Int
+    { serveFlagStoreFile :: Maybe FilePath
+    , serveFlagPort :: Maybe Int
     }
   deriving (Show, Eq)
 
 data Flags =
   Flags
-    { flagConfigFile :: Maybe FilePath}
+    { flagConfigFile :: Maybe FilePath
+    }
   deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
     { envConfigFile :: Maybe FilePath
+    , envStoreFile :: Maybe FilePath
     , envPort :: Maybe Int
     }
   deriving (Show, Eq, Generic)
 
 data Configuration =
   Configuration
-    { confPort :: Maybe Int
+    { confStoreFile :: Maybe FilePath
+    , confPort :: Maybe Int
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .: "port"
+  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .: "store-file" <*> o .: "port"
 
 data Dispatch =
   DispatchServe ServeSettings
@@ -51,7 +57,8 @@ data Dispatch =
 
 data ServeSettings =
   ServeSettings
-    { serveSetPort :: Int
+    { serveSetStoreFile :: Path Abs File
+    , serveSetPort :: Int
     }
   deriving (Show, Eq, Generic)
 

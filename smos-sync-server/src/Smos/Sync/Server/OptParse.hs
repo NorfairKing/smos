@@ -39,6 +39,10 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
       case c of
         CommandServe ServeFlags {..} -> do
           let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
+          serveSetStoreFile <-
+            case serveFlagStoreFile <|> envStoreFile <|> (mc >>= confStoreFile) of
+              Nothing -> resolveFile' "smos-sync-server-store.json"
+              Just fp -> resolveFile' fp
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -51,6 +55,7 @@ getEnvironment = do
       readEnv key = getEnv key >>= readMaybe
   let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
       envPort = readEnv "PORT"
+      envStoreFile = getEnv "STORE_FILE" <|> getEnv "STORE"
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -101,9 +106,21 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe <$>
       (ServeFlags <$>
-       option (Just <$> auto) (mconcat [long "port", help "The port to serve on", value Nothing]))
+       option
+         (Just <$> str)
+         (mconcat
+            [ long "store-file"
+            , help "The file to use for the server store"
+            , metavar "FILEPATH"
+            , value Nothing
+            ]) <*>
+       option
+         (Just <$> auto)
+         (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing]))
 
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$>
-  option (Just <$> str) (mconcat [long "config-file", help "The config file to use", value Nothing])
+  option
+    (Just <$> str)
+    (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])
