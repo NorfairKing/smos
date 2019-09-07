@@ -136,7 +136,7 @@ getEnvironment = do
 defaultJSONConfigFile :: IO (Maybe (Path Abs File))
 defaultJSONConfigFile = do
   home <- getHomeDir
-  p <- resolveFile home ".smos.json"
+  p <- resolveFile home ".smos/config.json"
   e <- doesFileExist p
   pure $
     if e
@@ -146,7 +146,7 @@ defaultJSONConfigFile = do
 defaultYamlConfigFile :: IO (Maybe (Path Abs File))
 defaultYamlConfigFile = do
   home <- getHomeDir
-  p <- resolveFile home ".smos.yaml"
+  p <- resolveFile home ".smos/config.yaml"
   e <- doesFileExist p
   pure $
     if e
