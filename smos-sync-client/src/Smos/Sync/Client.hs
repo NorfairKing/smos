@@ -78,7 +78,7 @@ runInitialSync cenv = do
       Left err -> die $ show err
       Right resp -> pure resp
   pPrint resp
-  pure $ mergeSyncResponseIgnoreProblems initialClientStore resp
+  pure $ mergeSyncResponseFromServer initialClientStore resp
 
 runSync :: ClientEnv -> ClientStore UUID SyncFile -> IO (ClientStore UUID SyncFile)
 runSync cenv clientStore = do
@@ -185,10 +185,8 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap
       syncedChangedAndDeleted = M.foldlWithKey go1 initialClientStore clientMetaDataMap
       go2 :: ClientStore UUID SyncFile -> Path Rel File -> ByteString -> ClientStore UUID SyncFile
       go2 s rf contents =
-        s
-          { clientStoreAddedItems =
-              SyncFile {syncFilePath = rf, syncFileContents = contents} : clientStoreAddedItems s
-          }
+        let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
+         in addItemToClientStore sf s
    in M.foldlWithKey go2 syncedChangedAndDeleted (contentsMap `M.difference` clientMetaDataMap)
 
 -- TODO this could be optimised using the sync response
@@ -248,7 +246,7 @@ makeContentsMap ClientStore {..} =
   M.fromList $
   map (\SyncFile {..} -> (syncFilePath, syncFileContents)) $
   concat
-    [ clientStoreAddedItems
+    [ M.elems clientStoreAddedItems
     , M.elems $ M.map timedValue clientStoreSyncedItems
     , M.elems $ M.map timedValue clientStoreSyncedButChangedItems
     ]
