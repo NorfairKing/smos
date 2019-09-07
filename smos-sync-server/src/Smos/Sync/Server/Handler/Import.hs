@@ -10,6 +10,7 @@ module Smos.Sync.Server.Handler.Import
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
+import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LB
 import Data.UUID as X
 import Data.UUID.V4 as UUID
@@ -68,4 +69,4 @@ readStore p = do
         Right store -> pure store
 
 saveStore :: Path Abs File -> ServerStore -> IO ()
-saveStore p = encodeFile (fromAbsFile p)
+saveStore p = LB.writeFile (fromAbsFile p) . encodePretty

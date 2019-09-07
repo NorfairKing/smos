@@ -15,6 +15,7 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - aeson-pretty
   - base64-bytestring
   - bytestring
   - mergeful

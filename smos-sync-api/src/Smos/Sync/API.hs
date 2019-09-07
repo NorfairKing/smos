@@ -59,6 +59,18 @@ syncAPI = Proxy
 
 type SyncRequest = Mergeful.SyncRequest UUID SyncFile
 
-type SyncResponse = Mergeful.SyncResponse UUID SyncFile
+data SyncResponse =
+  SyncResponse
+    { syncResponseServerId :: UUID
+    , syncResponseItems :: Mergeful.SyncResponse UUID SyncFile
+    }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON SyncResponse where
+  parseJSON = withObject "SyncResponse" $ \o -> SyncResponse <$> o .: "server-id" <*> o .: "items"
+
+instance ToJSON SyncResponse where
+  toJSON SyncResponse {..} =
+    object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
 
 type SyncAPI = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
