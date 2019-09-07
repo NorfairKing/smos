@@ -91,7 +91,12 @@ runSync cenv clientStore = do
       Left err -> die $ show err
       Right resp -> pure resp
   unless (syncResponseServerId == clientStoreServerUUID clientStore) $
-    die "The server was reset since the last time it was synced with, refusing to sync."
+    die $
+    unlines
+      [ "The server was reset since the last time it was synced with, refusing to sync."
+      , "If you want to sync anyway, remove the client metadata file and sync again."
+      , "Note that you can lose data by doing this, so make a backup first."
+      ]
   pPrint resp
   let newClientStore =
         clientStore
