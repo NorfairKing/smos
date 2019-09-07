@@ -3,7 +3,8 @@
 
 module Smos.Sync.Server.OptParse
   ( getInstructions
-  , Instructions(..), Dispatch(..)
+  , Instructions(..)
+  , Dispatch(..)
   , ServeSettings(..)
   , Settings(..)
   ) where
@@ -99,8 +100,10 @@ parseCommandServe = info parser modifier
     modifier = fullDesc <> progDesc "Serve as the sync server"
     parser =
       CommandServe <$>
-      (ServeFlags <$> option (Just <$> auto) (mconcat [help "The port to serve on", value Nothing]))
+      (ServeFlags <$>
+       option (Just <$> auto) (mconcat [long "port", help "The port to serve on", value Nothing]))
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> option (Just <$> str) (mconcat [help "The config file to use", value Nothing])
+  Flags <$>
+  option (Just <$> str) (mconcat [long "config-file", help "The config file to use", value Nothing])

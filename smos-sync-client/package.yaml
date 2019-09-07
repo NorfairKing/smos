@@ -15,20 +15,25 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - aeson-pretty
   - bytestring
   - containers
   - filepath
   - hashable
   - http-client
+  - http-client-tls
   - mergeful
+  - optparse-applicative
   - path
   - path-io
   - pretty-show
   - servant-client
+  - smos-report
   - smos-sync-api
   - stm
   - text
   - uuid
+  - yaml
 
 executables:
   smos-sync-client:

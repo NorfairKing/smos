@@ -17,7 +17,8 @@ import Smos.Sync.Server.Handler
 import Smos.Sync.Server.OptParse
 
 serveSmosSyncServer :: ServeSettings -> IO ()
-serveSmosSyncServer ServeSettings {..} = do
+serveSmosSyncServer ss@ServeSettings {..} = do
+  pPrint ss
   serverStore <- readStore
   var <- newTVarIO serverStore
   Warp.run serveSetPort $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}
