@@ -33,11 +33,19 @@ import Path.IO
 
 import Data.Mergeful
 
+import Smos.Sync.Server.OptParse
+
 smosSyncServer :: IO ()
 smosSyncServer = do
+  Instructions dispatch Settings <- getInstructions
+  case dispatch of
+    DispatchServe ss -> serveSmosSyncServer ss
+
+serveSmosSyncServer :: ServeSettings -> IO ()
+serveSmosSyncServer ServeSettings{..} =  do
   serverStore <- readStore
   var <- newTVarIO serverStore
-  Warp.run 8000 $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}
+  Warp.run serveSetPort $ makeSyncApp $ ServerEnv {serverEnvStoreVar = var}
 
 data SyncFile =
   SyncFile

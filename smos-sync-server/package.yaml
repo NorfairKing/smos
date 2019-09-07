@@ -19,6 +19,7 @@ library:
   - bytestring
   - mergeful
   - mtl
+  - optparse-applicative
   - path
   - path-io
   - pretty-show
@@ -29,6 +30,7 @@ library:
   - uuid
   - wai
   - warp
+  - yaml
 
 executables:
   smos-sync-server:
