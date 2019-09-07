@@ -25,6 +25,7 @@ library:
   - pretty-show
   - servant
   - servant-server
+  - smos-sync-api
   - stm
   - text
   - uuid

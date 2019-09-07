@@ -18,8 +18,6 @@ import qualified Data.ByteString.Char8 as SB8
 import qualified Data.Text as T
 import Data.UUID as UUID
 
-import Control.Concurrent.STM
-import Control.Monad.Reader
 
 import Servant
 
@@ -57,16 +55,8 @@ instance ToJSON SyncFile where
   toJSON SyncFile {..} =
     object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-data ServerEnv =
-  ServerEnv
-    { serverEnvStoreVar :: TVar (ServerStore UUID SyncFile)
-    }
-  deriving (Generic)
-
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
 
 type SyncAPI
    = "sync" :> ReqBody '[ JSON] (SyncRequest UUID SyncFile) :> Post '[ JSON] (SyncResponse UUID SyncFile)
-
-type SyncHandler = ReaderT ServerEnv Handler
