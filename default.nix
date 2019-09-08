@@ -25,6 +25,10 @@ let
     (pkgs.fetchFromGitHub (import ./nix/cursor-fuzzy-time-version.nix)
     + "/nix/overlay.nix")
   );
+  mergeful-overlay = import (
+    (pkgs.fetchFromGitHub (import ./nix/mergeful-version.nix)
+    + "/nix/overlay.nix")
+  );
   smosPkgs = pkgsv {
   overlays =
     [ validity-overlay
@@ -33,6 +37,7 @@ let
       fuzzy-time-overlay
       pretty-relative-time-overlay
       cursor-fuzzy-time-overlay
+      mergeful-overlay
       (import ./nix/overlay.nix)
     ];
     config.allowUnfree = true;
