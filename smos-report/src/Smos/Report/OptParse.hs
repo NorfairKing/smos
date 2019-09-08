@@ -1,7 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.OptParse where
+
+import Debug.Trace
 
 import qualified System.Environment as System
 import System.Exit
@@ -133,25 +136,21 @@ getEnvironment = do
             ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
 
-defaultJSONConfigFile :: IO (Maybe (Path Abs File))
-defaultJSONConfigFile = do
+defaultConfigFiles :: IO [Path Abs File]
+defaultConfigFiles = do
   home <- getHomeDir
-  p <- resolveFile home ".smos/config.json"
-  e <- doesFileExist p
+  homeConfigDir <- resolveDir home ".smos"
+  xdgConfigDir <- getXdgDir XdgConfig (Just [reldir|smos|])
+  let inDirs = do
+        d <- [xdgConfigDir, homeConfigDir]
+        pure $ d </> [relfile|config|]
+  plainFile <- resolveFile home ".smos"
+  let files = inDirs ++ [plainFile]
   pure $
-    if e
-      then Just p
-      else Nothing
-
-defaultYamlConfigFile :: IO (Maybe (Path Abs File))
-defaultYamlConfigFile = do
-  home <- getHomeDir
-  p <- resolveFile home ".smos/config.yaml"
-  e <- doesFileExist p
-  pure $
-    if e
-      then Just p
-      else Nothing
+    traceShowId $ do
+      file <- files
+      ext <- [".yaml", ".json"]
+      addFileExtension ext file
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =
@@ -165,7 +164,15 @@ getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do
   mConfigFile <-
     case msum [flagConfigFile, envConfigFile] of
-      Nothing -> msum <$> Control.Monad.sequence [defaultYamlConfigFile, defaultJSONConfigFile]
+      Nothing -> do
+        files <- defaultConfigFiles
+        let go [] = pure Nothing
+            go (f:fs) = do
+              e <- doesFileExist f
+              if e
+                then pure $ Just f
+                else go fs
+        go files
       Just fp -> Just <$> resolveFile' fp
   forM mConfigFile $ \configFile -> do
     errOrConfig <-
