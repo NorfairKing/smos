@@ -2,6 +2,7 @@
 title: Building/Installation
 date: 2018-11-13
 ---
+
 ## Default Installation
 
 Clone the repository:
@@ -15,7 +16,7 @@ $ git clone https://github.com/NorfairKing/smos
 Use [Stack](https://haskellstack.org) to install Smos with the default configuration:
 
 ```
-$ stack install :smos
+$ stack install smos
 ```
 
 #### Troubleshooting on Arch linux
@@ -32,8 +33,6 @@ Start with a regular build, and go from there using the multiple results:
 ```
 $ nix-build
 ```
-
-In particular, you will want `smos`, `smos-query`,`smos-archive` and possibly `smos-convert-org`.
 
 #### Troubleshooting
 

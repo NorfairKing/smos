@@ -11,8 +11,12 @@ you can use a configuration file.
 
 The default configuration files are (in the order that they are tried):
 
-- `~/.smos.yaml` in [YAML](http://yaml.org/)
-- `~/.smos.json` in [JSON](http://json.org/)
+- `$XDG_CONFIG_HOME/smos/config.yaml`
+- `$XDG_CONFIG_HOME/smos/config.json`
+- `$HOME/.smos/config.yaml`
+- `$HOME/.smos/config.json`
+- `$HOME/.smos.yaml`
+- `$HOME/.smos.json`
 
 For example, to change the workflow directory, you can use:
 
@@ -51,7 +55,7 @@ keys:
         key: <PageDown>
 ```
 
-See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/complete.yaml) for a more comprehensive example of all the possible options.
+See [this golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/yaml/complete.yaml) for a more comprehensive example of all the possible options.
 
 - This JSON config:
 
@@ -84,7 +88,7 @@ See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_
 }
 ```
 
-See [the golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/json/complete.json) for a more comprehensive example of all the possible options.
+See [this golden test](https://github.com/NorfairKing/smos/blob/master/smos/test_resources/config/json/complete.json) for a more comprehensive example of all the possible options.
 
 Smos can also be configured directly in Haskell.
 If you are looking to do that, please see [the respective guide](/customisation-haskell.html)

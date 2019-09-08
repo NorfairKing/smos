@@ -4,8 +4,6 @@
 
 module Smos.Report.OptParse where
 
-import Debug.Trace
-
 import qualified System.Environment as System
 import System.Exit
 
@@ -146,11 +144,10 @@ defaultConfigFiles = do
         pure $ d </> [relfile|config|]
   plainFile <- resolveFile home ".smos"
   let files = inDirs ++ [plainFile]
-  pure $
-    traceShowId $ do
-      file <- files
-      ext <- [".yaml", ".json"]
-      addFileExtension ext file
+  pure $ do
+    file <- files
+    ext <- [".yaml", ".json"]
+    addFileExtension ext file
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =

@@ -5,6 +5,8 @@ date: 2019-07-18
 
 #### CS Syd:
 
+Building smos:
+
 * [List Cursor](https://cs-syd.eu/posts/2018-10-28-cursor-list)
 * [Text Cursor](https://cs-syd.eu/posts/2018-11-28-cursors-text)
 * [Picosmos: A simple single-line text editor](https://cs-syd.eu/posts/2018-12-14-picosmos)
@@ -14,6 +16,9 @@ date: 2019-07-18
 * [Tree cursor](https://cs-syd.eu/posts/2019-05-28-cursors-tree)
 * [Microsmos: A simple tree editor](https://cs-syd.eu/posts/2019-06-28-microsmos)
 * [Forest cursor](https://cs-syd.eu/posts/2019-07-28-cursors-forest)
+* [Cursor-brick](https://cs-syd.eu/posts/2019-08-14-cursor-brick)
+* [Millismos](https://cs-syd.eu/posts/2019-08-14-cursor-brick)
+
 
 #### Call for contributions
 

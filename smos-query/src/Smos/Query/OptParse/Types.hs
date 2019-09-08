@@ -10,8 +10,6 @@ module Smos.Query.OptParse.Types
 
 import GHC.Generics (Generic)
 
-import Path
-
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -85,8 +83,7 @@ data NextFlags =
 
 data ClockFlags =
   ClockFlags
-    { clockFlagFile :: Maybe FilePath
-    , clockFlagFilter :: Maybe Filter
+    { clockFlagFilter :: Maybe Filter
     , clockFlagPeriodFlags :: Maybe Period
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
@@ -163,8 +160,7 @@ data WorkConfiguration =
 instance FromJSON WorkConfiguration where
   parseJSON =
     withObject "WorkConfiguration" $ \o ->
-      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*>
-      o .:? "sorter"
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*> o .:? "sorter"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -215,8 +211,7 @@ data NextSettings =
 
 data ClockSettings =
   ClockSettings
-    { clockSetFile :: Maybe (Path Abs File)
-    , clockSetFilter :: Maybe Filter
+    { clockSetFilter :: Maybe Filter
     , clockSetPeriod :: Period
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock

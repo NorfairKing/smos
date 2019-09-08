@@ -3,22 +3,18 @@ title: Features
 date: 2018-11-13
 ---
 
-## What is Smos?
+## GTD for power-users
 
-### A replacement for emacs org mode
+Smos is a comprehensive system for GTD with power-users as the audience.
 
-Smos intends to deprecate Emacs org mode by being more robust, more
-customisable, by providing a better and more tool-friendly file
-format and by using a more sane configuration language.
-
-### Completely customisable
+## Completely customisable
 
 Smos is first and foremost a library with which you can build your own version.
 It is similar to XMonad in this respect.
 See [the default configuration](https://github.com/NorfairKing/smos/blob/master/smos/src/Smos/Default.hs)
 for an example of a configuration.
 
-### Future-proof file format
+## Future-proof file format
 
 The Smos file format (`.smos`) is completely future proof because it is just
 a subset of YAML:
@@ -49,11 +45,22 @@ a subset of YAML:
     - work
 ```
 
-This format is very easy to work with programmatically, and convenience
+This means that if you ever stop using smos, or it becomes unavaible,
+your data is still available and easy to read.
+
+## Machine-readible file format
+
+The file format is very easy to work with programmatically, and convenience
 functions in the `smos-data` library are provided to operate on Smos data.
+You can write your own tools to operate on these files.
 
-### Great for version control
+## Great for synchronise
 
-Files are made to make git diffs easy and disjoint.
+Files are made to make diffs easy and disjoint.
 Derived data is never stored, but instead computed or rendered with `smos-report`.
 
+## A replacement for emacs org mode
+
+Smos intends to deprecate Emacs org mode by being more robust, more
+customisable, by providing a better and more tool-friendly file
+format and by using a more sane configuration language.

@@ -3,7 +3,6 @@
 
 module Smos.Query.OptParse where
 
-import Control.Monad
 import Data.Functor
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
@@ -11,7 +10,6 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time
-import Path.IO
 import Text.Read (readMaybe)
 
 import qualified System.Environment as System
@@ -69,20 +67,18 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               { nextSetFilter = nextFlagFilter
               , nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
               }
-        CommandClock ClockFlags {..} -> do
-          mf <- forM clockFlagFile resolveFile'
+        CommandClock ClockFlags {..} ->
           pure $
-            DispatchClock
-              ClockSettings
-                { clockSetFile = mf
-                , clockSetFilter = clockFlagFilter
-                , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-                , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
-                , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-                , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
-                , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
-                , clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
-                }
+          DispatchClock
+            ClockSettings
+              { clockSetFilter = clockFlagFilter
+              , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
+              , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
+              , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
+              , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
+              , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
+              , clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
+              }
         CommandAgenda AgendaFlags {..} ->
           pure $
           DispatchAgenda
@@ -229,7 +225,7 @@ parseCommandWaiting = info parser modifier
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Print the next actions and warn if a file does not have one."
+    modifier = fullDesc <> progDesc "Print the next actions"
     parser = CommandNext <$> (NextFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandClock :: ParserInfo Command
@@ -238,14 +234,7 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock <$>
-      (ClockFlags <$>
-       (option
-          (Just <$> str)
-          (mconcat [long "file", help "A single file to gather clock info from", value Nothing])) <*>
-       parseFilterArgs <*>
-       parsePeriod <*>
-       parseResolution <*>
-       parseTimeBlock <*>
+      (ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseResolution <*> parseTimeBlock <*>
        parseOutputFormat <*>
        parseClockReportStyle <*>
        parseHideArchiveFlag)

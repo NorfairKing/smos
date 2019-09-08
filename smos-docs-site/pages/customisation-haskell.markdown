@@ -38,7 +38,7 @@ To make that happen, add the following to your `stack.yaml`:
 extra-deps:
 - git: https://github.com/NorfairKing/smos.git
   # Use a recent commit from the 'master' branch
-  commit: f6bbd6abf11ad9785baaaaf04256c78926896a51
+  commit: 4e7eb8c83851847546c15e4b33a4bb9984a4a55b
   subdirs:
     - smos
     - smos-data
@@ -54,22 +54,31 @@ extra-deps:
     - smos-archive
     - smos-docs-site
 - git: https://github.com/NorfairKing/pretty-relative-time.git
-  commit: 54a323a955a05ec1261d3cf87c87ef29d8d87b58
+  commit: 21b29c9d729ed91a56819f569de6fdc8582d7e3d
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-  commit: 8b1358f768b709651efb90f8f7bd2d84f70cd0ae
+  commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: 4e388ab8f0bf9f1e8c64f39e98da6867c383dc3c
+  commit: e496ad8924cebea70dd81f85325e92a6a658475d
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
+- git: https://github.com/NorfairKing/cursor-brick.git
+  commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
+  subdirs:
+    - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git
-  commit: f67e8da673b3f934518810d9681206ff8cf1bf5e
+  commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
   subdirs:
     - cursor
     - cursor-gen
+- git: https://github.com/NorfairKing/mergeful
+  commit: b14dde7a01cb12d7a2eec180c03de135059e36c6
+  subdirs:
+    - mergeful
+    - genvalidity-mergeful
 - git: https://github.com/NorfairKing/validity.git
   commit: 8a13a23696115845133d87118b81c47fa1f9b04b
   subdirs:
