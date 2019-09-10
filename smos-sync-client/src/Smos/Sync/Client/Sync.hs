@@ -6,9 +6,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Smos.Sync.Client.Sync
-  ( syncSmosSyncClient
-  ) where
+module Smos.Sync.Client.Sync where
 
 import GHC.Generics (Generic)
 
@@ -20,9 +18,9 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.UUID as UUID (UUID)
-import Text.Show.Pretty
+import Data.Validity
+import Data.Validity.UUID
 
 import Control.Monad
 
@@ -39,6 +37,12 @@ import qualified Data.Mergeful.Timed as Mergeful
 
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
+
+import Conduit
+import qualified Data.Conduit.Combinators as C
+
+import Smos.Report.Path
+import Smos.Report.Streaming
 
 import Smos.Sync.API
 
@@ -70,13 +74,11 @@ runInitialSync :: ClientEnv -> IO ClientStore
 runInitialSync cenv = do
   let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
-  pPrint req
   errOrResp <- runClient cenv $ clientSync req
-  resp@SyncResponse {..} <-
+  SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
       Right resp -> pure resp
-  pPrint resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
   pure $ ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
 
@@ -84,9 +86,8 @@ runSync :: ClientEnv -> ClientStore -> IO ClientStore
 runSync cenv clientStore = do
   let items = clientStoreItems clientStore
   let req = Mergeful.makeSyncRequest items
-  pPrint req
   errOrResp <- runClient cenv $ clientSync req
-  resp@SyncResponse {..} <-
+  SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
       Right resp -> pure resp
@@ -97,7 +98,6 @@ runSync cenv clientStore = do
       , "If you want to sync anyway, remove the client metadata file and sync again."
       , "Note that you can lose data by doing this, so make a backup first."
       ]
-  pPrint resp
   let newClientStore =
         clientStore
           { clientStoreServerUUID = syncResponseServerId
@@ -118,6 +118,8 @@ data ClientStore =
     }
   deriving (Show, Eq, Generic)
 
+instance Validity ClientStore
+
 instance FromJSON ClientStore where
   parseJSON = withObject "ClientStore" $ \o -> ClientStore <$> o .: "server-id" <*> o .: "items"
 
@@ -131,6 +133,8 @@ data ClientMetaData =
     , clientMetaDataMap :: Map (Path Rel File) SyncFileMeta
     }
   deriving (Show, Eq, Generic)
+
+instance Validity ClientMetaData
 
 instance FromJSON ClientMetaData where
   parseJSON =
@@ -147,6 +151,8 @@ data SyncFileMeta =
     , syncFileMetaTime :: Mergeful.ServerTime
     }
   deriving (Show, Eq, Generic)
+
+instance Validity SyncFileMeta
 
 instance FromJSON SyncFileMeta where
   parseJSON =
@@ -165,14 +171,18 @@ readStoreMeta p = do
       Right store -> pure store
 
 readSyncFiles :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
-readSyncFiles dir = do
-  (dirs, files) <- listDirRecur dir
-  forM_ dirs ensureDir
-  fmap (M.fromList . catMaybes) $
-    forM files $ \file ->
-      case stripProperPrefix dir file of
-        Nothing -> pure Nothing
-        Just rfile -> Just <$> ((,) rfile <$> SB.readFile (toFilePath file))
+readSyncFiles dir =
+  fmap M.fromList $
+  sourceToList $
+  sourceFilesInNonHiddenDirsRecursively dir .|
+  C.mapM
+    (\rp -> do
+       let rel =
+             case rp of
+               Relative _ r -> r
+               _ -> error "should not happen" -- TODO get rid of this.
+       contents <- SB.readFile (fromAbsFile $ resolveRootedPath rp)
+       pure (rel, contents))
 
 consolidateMetaWithFiles :: ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
 consolidateMetaWithFiles ClientMetaData {..} contentsMap = ClientStore clientMetaDataServerId items

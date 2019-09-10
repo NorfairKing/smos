@@ -15,8 +15,6 @@ handlePostSync :: SyncRequest -> SyncHandler SyncResponse
 handlePostSync request = do
   var <- asks serverEnvStoreVar
   store <- liftIO $ readTVarIO var
-  liftIO $ pPrint store
-  liftIO $ pPrint request
   (items, newStore) <- Mergeful.processServerSync (liftIO UUID.nextRandom) store request
   serverId <- asks serverEnvServerUUID
   storeFile <- asks serverEnvStoreFile
@@ -24,7 +22,5 @@ handlePostSync request = do
     atomically $ writeTVar var newStore
     let newServerStore = ServerStore {serverStoreServerUUID = serverId, serverStoreItems = newStore}
     saveStore storeFile newServerStore
-  liftIO $ pPrint newStore
-  liftIO $ pPrint items
   let resp = SyncResponse {syncResponseServerId = serverId, syncResponseItems = items}
   pure resp

@@ -1,35 +1,25 @@
-name: smos-data-gen
+name: smos-sync-client-gen
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
+copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
 dependencies:
-- base >=4.9 && <=5
-  
+- base
+
 library:
   source-dirs: src/
   ghc-options: -Wall
-  exposed-modules:
-  - Smos.Data.Gen
   dependencies:
-  - QuickCheck
-  - containers
   - genvalidity
-  - genvalidity-containers
-  - genvalidity-path
-  - genvalidity-text
-  - genvalidity-time
-  - genvalidity-unordered-containers
-  - smos-data
-  - text
-  - time
+  - smos-sync-api-gen
+  - smos-sync-client
 
 tests:
-  smos-data-test:
+  smos-sync-client-test:
     main: Spec.hs
     source-dirs: test/
     ghc-options:
@@ -39,15 +29,12 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - aeson
-    - bytestring
+    - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - hspec
     - path
     - path-io
-    - pretty-show
-    - smos-data
-    - smos-data-gen
-    - text
-    - time
+    - smos-sync-client
+    - smos-sync-client-gen
+

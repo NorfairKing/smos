@@ -17,6 +17,10 @@ import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.Text as T
 import Data.UUID as UUID
+import Data.Validity
+import Data.Validity.ByteString ()
+import Data.Validity.Path ()
+import Data.Validity.UUID ()
 
 import Servant
 
@@ -40,6 +44,8 @@ data SyncFile =
     , syncFileContents :: ByteString
     }
   deriving (Show, Eq, Generic)
+
+instance Validity SyncFile
 
 instance FromJSON SyncFile where
   parseJSON =
@@ -65,6 +71,8 @@ data SyncResponse =
     , syncResponseItems :: Mergeful.SyncResponse UUID SyncFile
     }
   deriving (Show, Eq, Generic)
+
+instance Validity SyncResponse
 
 instance FromJSON SyncResponse where
   parseJSON = withObject "SyncResponse" $ \o -> SyncResponse <$> o .: "server-id" <*> o .: "items"

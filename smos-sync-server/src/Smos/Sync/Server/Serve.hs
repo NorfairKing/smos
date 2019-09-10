@@ -1,8 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Sync.Server.Serve
-  ( serveSmosSyncServer
-  ) where
+module Smos.Sync.Server.Serve where
 
 import Control.Concurrent.STM
 import Control.Monad.Reader

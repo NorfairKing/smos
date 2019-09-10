@@ -17,6 +17,7 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
+  - conduit
   - containers
   - filepath
   - hashable
@@ -33,6 +34,8 @@ library:
   - stm
   - text
   - uuid
+  - validity
+  - validity-uuid
   - yaml
 
 executables:

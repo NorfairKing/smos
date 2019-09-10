@@ -29,8 +29,11 @@ final:
         "smos-archive"
         "smos-docs-site"
         "smos-sync-api"
-        "smos-sync-client"
+        "smos-sync-api-gen"
         "smos-sync-server"
+        "smos-sync-server-gen"
+        "smos-sync-client"
+        "smos-sync-client-gen"
       ] smosPkg;
       smosDocumentationSite = final.stdenv.mkDerivation rec {
         name = "smosDocumentationSite";
