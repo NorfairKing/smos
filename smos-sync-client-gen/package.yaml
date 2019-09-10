@@ -29,10 +29,13 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - bytestring
+    - containers
     - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - hspec
+    - mergeful
     - path
     - path-io
     - smos-sync-api
