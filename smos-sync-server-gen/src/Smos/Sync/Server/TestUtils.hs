@@ -24,7 +24,8 @@ serverSpec = modifyMaxSuccess (`div` 20) . around withTestServer
 withTestServer :: (ClientEnv -> IO a) -> IO a
 withTestServer func = do
   man <- Http.newManager Http.defaultManagerSettings
-  withSystemTempFile "smos-sync-server-test" $ \storeFile _ -> do
+  withSystemTempDir "smos-sync-server-test" $ \tmpDir -> do
+    storeFile <- resolveFile tmpDir "store.json"
     let mkApp = do
           uuid <- UUID.nextRandom
           storeVar <- newTVarIO initialServerStore

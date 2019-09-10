@@ -35,6 +35,8 @@ tests:
     - hspec
     - path
     - path-io
+    - smos-sync-api
     - smos-sync-client
     - smos-sync-client-gen
-
+    - smos-sync-server-gen
+    - uuid
