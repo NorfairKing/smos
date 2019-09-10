@@ -38,8 +38,10 @@ tests:
     - mergeful
     - path
     - path-io
+    - servant-client
     - smos-sync-api
     - smos-sync-client
     - smos-sync-client-gen
+    - smos-sync-server
     - smos-sync-server-gen
     - uuid
