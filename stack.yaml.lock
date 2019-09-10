@@ -5,6 +5,20 @@
 
 packages:
 - completed:
+    hackage: thyme-0.3.5.5@sha256:a723192fd26240b38589029fbc05fc25ba7c0b105042601e554db18e69860931,4716
+    pantry-tree:
+      size: 1890
+      sha256: e9d6b3817f0b4c134f678c9f42ce6fe81737ab0cafeb97d394fbe507c0220d2c
+  original:
+    hackage: thyme-0.3.5.5
+- completed:
+    hackage: hakyll-sass-0.2.3@sha256:be00ce113a00f28794b607fd08866068c47c782b47d7a91ea6ada04b69cb4671,939
+    pantry-tree:
+      size: 217
+      sha256: 227755ab4be56968d80883ab7c40241d8d2be5f7cb90cae343153c8708938595
+  original:
+    hackage: hakyll-sass-0.2.3
+- completed:
     subdir: mergeful
     cabal-file:
       size: 1216
@@ -50,20 +64,6 @@ packages:
   original:
     git: https://github.com/ixmatus/orgmode-parse
     commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
-- completed:
-    hackage: thyme-0.3.5.5@sha256:a723192fd26240b38589029fbc05fc25ba7c0b105042601e554db18e69860931,4716
-    pantry-tree:
-      size: 1890
-      sha256: e9d6b3817f0b4c134f678c9f42ce6fe81737ab0cafeb97d394fbe507c0220d2c
-  original:
-    hackage: thyme-0.3.5.5
-- completed:
-    hackage: hakyll-sass-0.2.3@sha256:be00ce113a00f28794b607fd08866068c47c782b47d7a91ea6ada04b69cb4671,939
-    pantry-tree:
-      size: 217
-      sha256: 227755ab4be56968d80883ab7c40241d8d2be5f7cb90cae343153c8708938595
-  original:
-    hackage: hakyll-sass-0.2.3
 - completed:
     cabal-file:
       size: 1777

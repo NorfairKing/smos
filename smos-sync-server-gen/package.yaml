@@ -14,7 +14,9 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - QuickCheck
   - hspec
+  - hspec-core
   - http-client
   - http-types
   - mergeful
