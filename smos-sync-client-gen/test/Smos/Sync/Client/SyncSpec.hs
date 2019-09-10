@@ -83,32 +83,14 @@ spec = do
               cstore <- runInitialSync cenv
               runSync cenv cstore
           shouldBeValid stores
-      modifyMaxSuccess (* 10) $
-        modifyMaxSize (* 10) $ do
+      modifyMaxSuccess (* 20) $
+        modifyMaxSize (* 20) $ do
           it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
             forAll genCTestOps $ \cops -> do
               let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
                   go cstore op = applyCTestOp cenv cstore op
               result <- foldM go M.empty cops
               shouldBeValid result
-          it "succesfully syncs a list of phases of operations for clients" $ \cenv ->
-            forAll genCTestOpsPhases $ \cops -> do
-              let go :: Map Int ClientStore -> [CTestOp] -> IO (Map Int ClientStore)
-                  go cstore op = applyCTestOps cenv cstore op
-              result <- foldM go M.empty cops
-              shouldBeValid result
-
-genCTestOpsPhases :: Gen [[CTestOp]]
-genCTestOpsPhases =
-  sized $ \n -> do
-    part <- arbPartition n
-    let go :: (TestSituation, [[CTestOp]]) -> Int -> Gen (TestSituation, [[CTestOp]])
-        go (m, os) s = do
-          tos <- resize s $ validCTestOpsFor m
-          let m' = testApplyCTestOps m tos
-          pure (m', tos : os)
-    (_, ops) <- foldM go (initialSituation, []) part
-    pure $ reverse ops
 
 data CTestOp =
   CTestOp Int ClientOp
@@ -154,7 +136,7 @@ validCTestOpFor m =
       (1, addClientGen) :
       if M.null (testSituationClients m)
         then []
-        else [ ( 2
+        else [ ( 3
                , do (cid, _) <- elements $ M.toList (testSituationClients m)
                     pure $ CTestOp cid ClientSync)
              , ( 5
@@ -163,31 +145,23 @@ validCTestOpFor m =
                     pure $ CTestOp cid $ ClientTestOps ops)
              ]
 
-testApplyCTestOps :: TestSituation -> [CTestOp] -> TestSituation
-testApplyCTestOps = foldl testApplyCTestOp
 
 testApplyCTestOp :: TestSituation -> CTestOp -> TestSituation
 testApplyCTestOp ts (CTestOp i cop) =
   let cs = testSituationClients ts
-      cs' =
-        case cop of
-          ClientNew -> M.insert i S.empty cs
-          ClientSync -> cs
-          ClientTestOps to -> M.adjust (`testApplyTestOps` to) i cs
-   in applySync (ts {testSituationClients = cs'}) i
+   in case cop of
+        ClientNew -> ts {testSituationClients = M.insert i S.empty cs}
+        ClientSync -> applySync ts i
+        ClientTestOps to -> ts {testSituationClients = M.adjust (`testApplyTestOps` to) i cs}
 
 applySync :: TestSituation -> Int -> TestSituation
 applySync ts i =
   case M.lookup i (testSituationClients ts) of
     Nothing -> ts
     Just s ->
-      ts
-        { testSituationClients =
-            M.insert i (S.union s (testSituationServer ts)) (testSituationClients ts)
-        }
-
-applyCTestOps :: ClientEnv -> Map Int ClientStore -> [CTestOp] -> IO (Map Int ClientStore)
-applyCTestOps cenv = foldM (applyCTestOp cenv)
+      let u = S.union s (testSituationServer ts)
+       in TestSituation
+            {testSituationClients = M.insert i u (testSituationClients ts), testSituationServer = u}
 
 applyCTestOp :: ClientEnv -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
 applyCTestOp cenv m (CTestOp i cop) =
@@ -206,8 +180,7 @@ applyCTestOp cenv m (CTestOp i cop) =
         Nothing -> pure m
         Just cstore -> do
           let cstore' = applyTestOpsStore cstore ops
-          cstore'' <- runSync cenv cstore'
-          pure $ M.adjust (const cstore'') i m
+          pure $ M.adjust (const cstore') i m
 
 data TestOp
   = AddFile SyncFile
