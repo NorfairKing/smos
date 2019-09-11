@@ -47,5 +47,4 @@ tests:
     - path
     - path-io
     - smos-sync-client
-    - smos-sync-client-gen
 
