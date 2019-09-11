@@ -8,6 +8,8 @@
 
 module Smos.Sync.Client.Sync where
 
+import Debug.Trace
+
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
@@ -20,7 +22,8 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.UUID as UUID (UUID)
 import Data.Validity
-import Data.Validity.UUID
+import Data.Validity.UUID ()
+import Text.Show.Pretty
 
 import Control.Monad
 
@@ -50,10 +53,12 @@ import Smos.Sync.Client.OptParse
 
 syncSmosSyncClient :: SyncSettings -> IO ()
 syncSmosSyncClient SyncSettings {..} = do
+  putStrLn "client start"
   man <- HTTP.newManager HTTP.tlsManagerSettings
   let cenv = mkClientEnv man syncSetServerUrl
   mMeta <- readStoreMeta syncSetMetadataFile
-  meta <-
+  files <- readSyncFiles syncSetContentsDir
+  clientStore <-
     case mMeta of
       Nothing
        -- Never synced yet
@@ -61,14 +66,16 @@ syncSmosSyncClient SyncSettings {..} = do
        -- That means we need to run an initial sync first.
        -> do
         initialStore <- runInitialSync cenv
-        pure $ makeClientMetaData initialStore
+        pure $ consolidateInitialStoreWithFiles initialStore files
       Just meta
        -- We have synced before.
-       -> pure meta
-  files <- readSyncFiles syncSetContentsDir
-  let clientStore = consolidateMetaWithFiles meta files
+       -> do
+        pure $ consolidateMetaWithFiles meta files
+  pPrint clientStore
   newClientStore <- runSync cenv clientStore
+  pPrint newClientStore
   saveClientStore syncSetMetadataFile syncSetContentsDir newClientStore
+  putStrLn "client end"
 
 runInitialSync :: ClientEnv -> IO ClientStore
 runInitialSync cenv = do
@@ -78,9 +85,12 @@ runInitialSync cenv = do
   SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
-      Right resp -> pure resp
+      Right resp -> do
+        pure resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
-  pure $ ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
+  let newClientStore =
+        ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
+  pure newClientStore
 
 runSync :: ClientEnv -> ClientStore -> IO ClientStore
 runSync cenv clientStore = do
@@ -90,7 +100,8 @@ runSync cenv clientStore = do
   SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
-      Right resp -> pure resp
+      Right resp -> do
+        pure resp
   unless (syncResponseServerId == clientStoreServerUUID clientStore) $
     die $
     unlines
@@ -101,7 +112,7 @@ runSync cenv clientStore = do
   let newClientStore =
         clientStore
           { clientStoreServerUUID = syncResponseServerId
-          , clientStoreItems = Mergeful.mergeSyncResponseIgnoreProblems items syncResponseItems
+          , clientStoreItems = Mergeful.mergeSyncResponseFromServer items syncResponseItems
           }
   pure newClientStore
 
@@ -180,9 +191,39 @@ readSyncFiles dir =
        let rel =
              case rp of
                Relative _ r -> r
-               _ -> error "should not happen" -- TODO get rid of this.
+               _ -> error "should not happen: absolute file" -- TODO get rid of this.
        contents <- SB.readFile (fromAbsFile $ resolveRootedPath rp)
        pure (rel, contents))
+
+consolidateInitialStoreWithFiles :: ClientStore -> Map (Path Rel File) ByteString -> ClientStore
+consolidateInitialStoreWithFiles cs contentsMap =
+  let Mergeful.ClientStore {..} = clientStoreItems cs
+   in if not
+           (null clientStoreAddedItems &&
+            null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
+        then error "should not happen: initial"
+        else cs {clientStoreItems = items}
+  where
+    alreadySyncedMap = makeAlreadySyncedMap (clientStoreItems cs)
+    go ::
+         Mergeful.ClientStore UUID SyncFile
+      -> Path Rel File
+      -> ByteString
+      -> Mergeful.ClientStore UUID SyncFile
+    go s rf contents =
+      let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
+       in case M.lookup rf alreadySyncedMap of
+            Nothing
+          -- Not in the initial sync, that means it was added
+             -> Mergeful.addItemToClientStore sf s
+            Just i
+          -- We have a different file locally, so we'll mark this as 'synced but changed'.
+             -> Mergeful.changeItemInClientStore i sf s
+    items = M.foldlWithKey go (clientStoreItems cs) contentsMap
+    makeAlreadySyncedMap :: Mergeful.ClientStore i SyncFile -> Map (Path Rel File) i
+    makeAlreadySyncedMap cs = M.fromList $ map go $ M.toList (Mergeful.clientStoreSyncedItems cs)
+      where
+        go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, i)
 
 consolidateMetaWithFiles :: ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
 consolidateMetaWithFiles ClientMetaData {..} contentsMap = ClientStore clientMetaDataServerId items
@@ -259,7 +300,7 @@ makeClientMetaData ClientStore {..} =
    in if not
            (null clientStoreAddedItems &&
             null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
-        then error "Should not happen."
+        then error "Should not happen: make meta"
         else let go ::
                       Map (Path Rel File) SyncFileMeta
                    -> UUID
@@ -282,7 +323,10 @@ saveMeta :: Path Abs File -> ClientMetaData -> IO ()
 saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
 
 saveSyncFiles :: Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
-saveSyncFiles dir store = do
+saveSyncFiles dir store = saveContentsMap dir $ makeContentsMap store
+
+saveContentsMap :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
+saveContentsMap dir cm = do
   tmpDir1 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
   tmpDir2 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
   writeAllTo tmpDir1
@@ -292,7 +336,7 @@ saveSyncFiles dir store = do
   where
     writeAllTo d = do
       ensureDir d
-      void $ M.traverseWithKey go (makeContentsMap store)
+      void $ M.traverseWithKey go cm
       where
         go p bs = do
           let f = d </> p

@@ -14,9 +14,25 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - QuickCheck
+  - bytestring
+  - containers
   - genvalidity
+  - genvalidity-hspec
+  - hspec
+  - hspec-core
+  - http-client
+  - mergeful
+  - path
+  - path-io
+  - servant-client
   - smos-sync-api-gen
   - smos-sync-client
+  - smos-sync-server-gen
+  - stm
+  - uuid
+  - wai
+  - warp
 
 tests:
   smos-sync-client-test:
