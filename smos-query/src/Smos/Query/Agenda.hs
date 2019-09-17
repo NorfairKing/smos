@@ -49,15 +49,15 @@ renderAgendaReport now atbs =
     _ -> concatMap goEntriesWithTitle atbs
   where
     goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
-    goEntries es = renderSplit . splitUp $ (sortAgendaEntries es)
+    goEntries es = renderSplit . splitUp $ sortAgendaEntries es
     splitUp =
       splitList $ \ae ->
         compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
     renderSplit (before, during, after) =
       case (go before, go during, go after) of
-        (xs, [], []) -> concat [xs]
-        ([], ys, []) -> concat [ys]
-        ([], [], zs) -> concat [zs]
+        (xs, [], []) -> xs
+        ([], ys, []) -> ys
+        ([], [], zs) -> zs
         (xs, ys, []) -> concat [xs, [[chunk ""]], ys]
         ([], ys, zs) -> concat [ys, [[chunk ""]], zs]
         (xs, [], zs) -> concat [xs, [[chunk ""]], zs]
@@ -109,7 +109,7 @@ formatAgendaEntry now AgendaEntry {..} =
    in [ func $ rootedPathChunk agendaEntryFilePath
       , func $ chunk $ timestampPrettyText agendaEntryTimestamp
       , func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d
-      , timestampNameChunk $ agendaEntryTimestampName
+      , timestampNameChunk agendaEntryTimestampName
       , maybe (chunk "") todoStateChunk agendaEntryTodoState
       , headerChunk agendaEntryHeader
       ]

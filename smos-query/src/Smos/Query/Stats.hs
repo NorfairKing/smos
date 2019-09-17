@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -11,7 +10,6 @@ import Data.Time
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-
 
 import Rainbow
 
@@ -96,14 +94,14 @@ formatReportToStateTransitions m =
 
 renderProjectsStatsReport :: ProjectStatsReport -> Table
 renderProjectsStatsReport ProjectStatsReport {..} =
-  formatAsTable $
-  [ [fore white $ chunk "All Projects"]
-  , [chunk "Current Projects", intChunk projectStatsReportCurrentProjects]
-  , [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects]
-  , [chunk "Total Projects", intChunk projectStatsReportTotalProjects]
-  , [chunk ""]
-  , [fore white $ chunk "Files"]
-  , [chunk "Current Files", intChunk projectStatsReportCurrentFiles]
-  , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
-  , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
-  ]
+  formatAsTable
+    [ [fore white $ chunk "All Projects"]
+    , [chunk "Current Projects", intChunk projectStatsReportCurrentProjects]
+    , [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects]
+    , [chunk "Total Projects", intChunk projectStatsReportTotalProjects]
+    , [chunk ""]
+    , [fore white $ chunk "Files"]
+    , [chunk "Current Files", intChunk projectStatsReportCurrentFiles]
+    , [chunk "Archived Files", intChunk projectStatsReportArchivedFiles]
+    , [chunk "Total Files", intChunk projectStatsReportTotalFiles]
+    ]
