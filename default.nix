@@ -47,7 +47,7 @@ let
     };
   nix-pre-commit-hooks =
     import (
-      builtins.fetchTarball "https://github.com/NorfairKing/nix-pre-commit-hooks/tarball/master"
+      builtins.fetchTarball "https://github.com/NorfairKing/nix-pre-commit-hooks/archive/d1e5f7aa6103ef9f97cb4c4675e1288ec1d57f3e.tar.gz"
     );
 in
   smosPkgs.smosPackages // {
