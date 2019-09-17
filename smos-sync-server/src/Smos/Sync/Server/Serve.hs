@@ -25,13 +25,13 @@ serveSmosSyncServer ss@ServeSettings {..} = do
           , serverEnvStoreFile = serveSetStoreFile
           , serverEnvStoreVar = var
           }
-  saveStore  serveSetStoreFile store
+  saveStore serveSetStoreFile store
   Warp.run serveSetPort $ makeSyncApp env
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   Servant.serve syncAPI $
-  hoistServer syncAPI ((\func -> runReaderT func env) :: SyncHandler a -> Handler a) syncServer
+  hoistServer syncAPI ((`runReaderT` env) :: SyncHandler a -> Handler a) syncServer
 
 syncServer :: ServerT SyncAPI SyncHandler
 syncServer = handlePostSync

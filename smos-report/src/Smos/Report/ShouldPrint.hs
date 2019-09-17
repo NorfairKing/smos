@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Report.ShouldPrint where
 
 import Control.Monad.IO.Class

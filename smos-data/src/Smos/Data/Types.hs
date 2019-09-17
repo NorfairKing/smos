@@ -107,7 +107,7 @@ newtype SmosFile =
 instance Validity SmosFile
 
 instance FromJSON SmosFile where
-  parseJSON v = (SmosFile . unForYaml) <$> parseJSON v
+  parseJSON v = SmosFile . unForYaml <$> parseJSON v
 
 instance ToJSON SmosFile where
   toJSON = toJSON . ForYaml . smosFileForest
@@ -155,7 +155,7 @@ instance ToJSON (ForYaml (Tree Entry)) where
   toJSON (ForYaml Node {..}) =
     if null subForest
       then toJSON rootLabel
-      else object $ [("entry" .= rootLabel), ("forest" .= ForYaml subForest)]
+      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
 
 instance ToYaml (ForYaml (Tree Entry)) where
   toYaml (ForYaml Node {..}) =

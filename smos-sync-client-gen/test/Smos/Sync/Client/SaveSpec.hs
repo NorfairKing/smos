@@ -1,17 +1,11 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
-
 module Smos.Sync.Client.SaveSpec
   ( spec
   ) where
 
 import qualified Data.Map as M
 
-
 import Test.Hspec
 import Test.Validity
-
 
 import Smos.Sync.Client.TestUtils
 

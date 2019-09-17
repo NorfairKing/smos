@@ -69,11 +69,8 @@ data WorkReportContext =
 makeWorkReport :: WorkReportContext -> RootedPath -> ForestCursor Entry -> WorkReport
 makeWorkReport WorkReportContext {..} rp fc =
   let cur = forestCursorCurrent fc
-      match b =
-        if b
-          then [(rp, cur)]
-          else []
-      combineFilter f mf = maybe f (FilterAnd f) mf
+      match b = [(rp, cur) | b]
+      combineFilter f = maybe f (FilterAnd f)
       filterWithBase f = combineFilter f workReportContextBaseFilter
       currentFilter =
         filterWithBase $

@@ -1,19 +1,27 @@
-final:
-  previous:
-    with final.haskell.lib;
-    {
-      smosPackages = let
-        pathFor = name:
+final: previous:
+with final.haskell.lib;
+
+{
+  smosPackages =
+    let
+      pathFor =
+        name:
           builtins.path {
             inherit name;
             path = ../. + "/${name}";
-            filter = path:
-              type:
+            filter =
+              path: type:
                 !final.lib.hasPrefix "." (baseNameOf path);
           };
-        smosPkg = name:
-          addBuildDepend (failOnAllWarnings (disableLibraryProfiling (final.haskellPackages.callCabal2nix name (pathFor name) {}))) (final.haskellPackages.autoexporter);
-      in final.lib.genAttrs [
+      smosPkg =
+        name:
+          addBuildDepend (
+            failOnAllWarnings (
+              disableLibraryProfiling ( final.haskellPackages.callCabal2nix name ( pathFor name ) {} )
+            )
+          ) ( final.haskellPackages.autoexporter );
+    in
+      final.lib.genAttrs [
         "smos"
         "smos-data"
         "smos-data-gen"
@@ -35,15 +43,18 @@ final:
         "smos-sync-client"
         "smos-sync-client-gen"
       ] smosPkg;
-      smosDocumentationSite = final.stdenv.mkDerivation rec {
-        name = "smosDocumentationSite";
-        src = ../smos-docs-site;
-        phases = "unpackPhase buildPhase";
-        version = "0.0";
-        buildInputs = [
-          (final.haskellPackages.smos-docs-site)
+  smosDocumentationSite =
+    final.stdenv.mkDerivation rec {
+      name = "smosDocumentationSite";
+      src = ../smos-docs-site;
+      phases = "unpackPhase buildPhase";
+      version = "0.0";
+      buildInputs =
+        [
+          ( final.haskellPackages.smos-docs-site )
         ];
-        buildPhase = ''
+      buildPhase =
+        ''
           export LOCALE_ARCHIVE="${final.glibcLocales}/lib/locale/locale-archive";
           export LANG=en_US.UTF-8
           smos-docs-site build
@@ -52,24 +63,34 @@ final:
           mkdir $out
           cp -r _site/* $out
         '';
-      };
-      haskellPackages = previous.haskellPackages.override (old:
+    };
+  haskellPackages =
+    previous.haskellPackages.override (
+      old:
         {
-          overrides = final.lib.composeExtensions (old.overrides or (_:
+          overrides =
+            final.lib.composeExtensions (
+              old.overrides or (_:
             _:
-              {})) (self:
-            super:
-              let
-                orgmodeParseRepo = final.fetchFromGitHub {
-                  owner = "ixmatus";
-                  repo = "orgmode-parse";
-                  rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
-                  sha256 = "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
-                };
-              in final.smosPackages // {
+              {})
+            ) (
+              self: super:
+                let
+                  orgmodeParseRepo =
+                    final.fetchFromGitHub {
+                      owner = "ixmatus";
+                      repo = "orgmode-parse";
+                      rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
+                      sha256 =
+                        "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
+                    };
+                in
+                  final.smosPackages // {
                 thyme = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "thyme" "0.3.5.5" {});
                 hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.3" {});
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
-              });
-        });
-    }
+              }
+            );
+        }
+    );
+}

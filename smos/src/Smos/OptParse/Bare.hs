@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.OptParse.Bare
   ( getPathArgument
   , editParser

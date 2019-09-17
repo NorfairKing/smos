@@ -21,7 +21,7 @@ data Arguments =
 data Instructions =
   Instructions Dispatch Settings
 
-data Command =
+newtype Command =
   CommandSync SyncFlags
   deriving (Show, Eq)
 
@@ -33,7 +33,7 @@ data SyncFlags =
     }
   deriving (Show, Eq)
 
-data Flags =
+newtype Flags =
   Flags
     { flagReportFlags :: Report.Flags
     }
@@ -42,7 +42,9 @@ data Flags =
 data Environment =
   Environment
     { envReportEnvironment :: Report.Environment
-    , envServerUrl :: Maybe String, envContentsDir :: Maybe FilePath, envMetadataFile :: Maybe FilePath
+    , envServerUrl :: Maybe String
+    , envContentsDir :: Maybe FilePath
+    , envMetadataFile :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -70,7 +72,7 @@ instance FromJSON SyncConfiguration where
     withObject "SyncConfiguration" $ \o ->
       SyncConfiguration <$> o .: "server-url" <*> o .: "contents-dir" <*> o .: "metadata-file"
 
-data Dispatch =
+newtype Dispatch =
   DispatchSync SyncSettings
   deriving (Show, Eq, Generic)
 
@@ -82,7 +84,7 @@ data SyncSettings =
     }
   deriving (Show, Eq, Generic)
 
-data Settings =
+newtype Settings =
   Settings
     { setReportConfig :: SmosReportConfig
     }

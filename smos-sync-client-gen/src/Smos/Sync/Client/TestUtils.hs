@@ -12,9 +12,7 @@ import Control.Monad
 import Path
 import Path.IO
 
-
 import Servant.Client
-
 
 import Test.Hspec
 import Test.QuickCheck
@@ -49,7 +47,7 @@ setupContents :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
 setupContents dir m = do
   let parents = S.map (parent . (dir </>)) (M.keysSet m)
   forM_ parents ensureDir
-  forM_ (M.toList m) $ \(k, v) -> setupFile dir k v
+  forM_ (M.toList m) $ uncurry $ setupFile dir
 
 setupFile :: Path Abs Dir -> Path Rel File -> ByteString -> IO ()
 setupFile dir file contents = do

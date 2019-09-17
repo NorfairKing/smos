@@ -1,8 +1,10 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.OptParse where
 
+import Data.Foldable
 import Data.Functor
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
@@ -143,10 +145,9 @@ getEnvironment = do
       readSmosEnv key = getSmosEnv key >>= readMaybe
   envReportEnvironment <- Report.getEnvironment
   let envHideArchive =
-        readSmosEnv "IGNORE_ARCHIVE" <&> \b ->
-          case b of
-            True -> Don'tHideArchive
-            False -> HideArchive
+        readSmosEnv "IGNORE_ARCHIVE" <&> \case
+          True -> Don'tHideArchive
+          False -> HideArchive
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -249,7 +250,7 @@ parseResolution =
 
 parseClockReportStyle :: Parser (Maybe ClockReportStyle)
 parseClockReportStyle =
-  (Just <$> (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|> pure Nothing)
+  Just <$> (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|> pure Nothing
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
@@ -297,11 +298,11 @@ parseHistoricityFlag =
 parseHideArchiveFlag :: Parser (Maybe HideArchive)
 parseHideArchiveFlag =
   (Just <$>
-   ((flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])) <|>
-    (flag'
-       Don'tHideArchive
-       (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])))) <|>
-  (pure Nothing)
+   (flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."]) <|>
+    flag'
+      Don'tHideArchive
+      (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."]))) <|>
+  pure Nothing
 
 parseContextNameArg :: Parser ContextName
 parseContextNameArg =
@@ -309,7 +310,7 @@ parseContextNameArg =
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =
-  (fmap foldFilterAnd . NE.nonEmpty) <$>
+  fmap foldFilterAnd . NE.nonEmpty <$>
   many
     (argument
        (maybeReader (parseFilter . T.pack))
@@ -322,7 +323,7 @@ parseFilterArgs =
 parseFilterArg :: Parser (Maybe Filter)
 parseFilterArg =
   argument
-    (Just <$> (maybeReader (parseFilter . T.pack)))
+    (Just <$> maybeReader (parseFilter . T.pack))
     (mconcat
        [ value Nothing
        , metavar "FILTER"
@@ -332,10 +333,10 @@ parseFilterArg =
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
 parseProjectionArgs =
-  (NE.nonEmpty . catMaybes) <$>
+  NE.nonEmpty . catMaybes <$>
   many
     (option
-       (Just <$> (maybeReader (parseProjection . T.pack)))
+       (Just <$> maybeReader (parseProjection . T.pack))
        (mconcat
           [ long "add-column"
           , long "project"
@@ -345,19 +346,19 @@ parseProjectionArgs =
 
 parseSorterArgs :: Parser (Maybe Sorter)
 parseSorterArgs =
-  (fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes) <$>
+  fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes <$>
   many
     (option
-       (Just <$> (maybeReader (parseSorter . T.pack)))
+       (Just <$> maybeReader (parseSorter . T.pack))
        (mconcat [long "sort", metavar "SORTER", help "A sorter to sort entries by"]))
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
   Just <$>
-  (choices
-     [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"]
-     , flag' OneBlock $ mconcat [long "one-block", help "a single block"]
-     ]) <|>
+  choices
+    [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"]
+    , flag' OneBlock $ mconcat [long "one-block", help "a single block"]
+    ] <|>
   pure Nothing
 
 parsePeriod :: Parser (Maybe Period)
@@ -397,14 +398,13 @@ parsePeriod =
 parseOutputFormat :: Parser (Maybe OutputFormat)
 parseOutputFormat =
   Just <$>
-  (choices
-     [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"]
-     , flag' OutputYaml $ mconcat [long "yaml", help "Yaml"]
-     , flag' OutputJSON $ mconcat [long "json", help "single-line JSON"]
-     , flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
-     ]) <|>
+  choices
+    [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"]
+    , flag' OutputYaml $ mconcat [long "yaml", help "Yaml"]
+    , flag' OutputJSON $ mconcat [long "json", help "single-line JSON"]
+    , flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
+    ] <|>
   pure Nothing
 
 choices :: [Parser a] -> Parser a
-choices [] = empty
-choices (a:as) = a <|> choices as
+choices = asum

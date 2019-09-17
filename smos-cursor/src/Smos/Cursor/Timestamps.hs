@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Smos.Cursor.Timestamps
   ( TimestampsCursor
   , startTimestampsCursor
@@ -64,11 +66,10 @@ timestampsCursorCurrentTextCursorL =
     (\tsc tc ->
        tsc &
        mapCursorElemL %~
-       (\kvc ->
-          case kvc of
-            KeyValueCursorKey _ v -> KeyValueCursorKey tc v
-            KeyValueCursorValue k vc ->
-              KeyValueCursorValue k $ vc {fuzzyLocalTimeCursorTextCursor = tc}))
+       (\case
+          KeyValueCursorKey _ v -> KeyValueCursorKey tc v
+          KeyValueCursorValue k vc ->
+            KeyValueCursorValue k $ vc {fuzzyLocalTimeCursorTextCursor = tc}))
 
 timestampsCursorToggleSelected :: TimestampsCursor -> TimestampsCursor
 timestampsCursorToggleSelected =

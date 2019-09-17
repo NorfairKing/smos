@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Sorter where
@@ -8,12 +9,12 @@ import GHC.Generics (Generic)
 import Data.Aeson
 import Data.Char as Char
 import Data.List
-import Data.Void
 import qualified Data.Map as M
 import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
+import Data.Void
 
 import Control.Monad
 
@@ -61,11 +62,10 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
             eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
         Reverse s' ->
-          (\o ->
-             case o of
-               GT -> LT
-               EQ -> EQ
-               LT -> GT) $
+          (\case
+             GT -> LT
+             EQ -> EQ
+             LT -> GT) $
           go s' ea eb
         AndThen s1 s2 -> go s1 ea eb <> go s2 ea eb
 
@@ -85,14 +85,12 @@ byFileP = do
 byPropertyP :: P Sorter
 byPropertyP = do
   void $ string' "property:"
-  pn <- propertyNameP
-  pure $ ByProperty pn
+  ByProperty <$> propertyNameP
 
 byPropertyAsTimeP :: P Sorter
 byPropertyAsTimeP = do
   void $ string' "property-as-time:"
-  pn <- propertyNameP
-  pure $ ByPropertyTime pn
+  ByPropertyTime <$> propertyNameP
 
 reverseP :: P Sorter
 reverseP = do

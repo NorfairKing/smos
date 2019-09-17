@@ -1,5 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Work
@@ -35,7 +34,14 @@ work :: WorkSettings -> Q ()
 work WorkSettings {..} = do
   now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
-  wr <- produceWorkReport src workSetHideArchive workSetContext workSetFilter workSetSorter workSetChecks
+  wr <-
+    produceWorkReport
+      src
+      workSetHideArchive
+      workSetContext
+      workSetFilter
+      workSetSorter
+      workSetChecks
   liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
 
 produceWorkReport ::
@@ -72,28 +78,29 @@ renderWorkReport now ne WorkReport {..} =
   mconcat $
   (concat . concat) $
   intersperse [spacer] $
-  filter (not . null) $
-  [ unlessNull
-      workReportAgendaEntries
-      [ sectionHeading "Today's agenda:"
-      , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
-      ]
-  , unlessNull
-      workReportResultEntries
-      [sectionHeading "Next actions:", [entryTable workReportResultEntries]]
-  , unlessNull
-      workReportEntriesWithoutContext
-      [ warningHeading "WARNING, the following Entries don't match any context:"
-      , [entryTable workReportEntriesWithoutContext]
-      ]
-  , unlessNull
-      workReportCheckViolations
-      [ warningHeading "WARNING, the following Entries did not pass the checks:"
-      , concat $
-        flip concatMap (M.toList workReportCheckViolations) $ \(f, violations) ->
-          unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
-      ]
-  ]
+  filter
+    (not . null)
+    [ unlessNull
+        workReportAgendaEntries
+        [ sectionHeading "Today's agenda:"
+        , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
+        ]
+    , unlessNull
+        workReportResultEntries
+        [sectionHeading "Next actions:", [entryTable workReportResultEntries]]
+    , unlessNull
+        workReportEntriesWithoutContext
+        [ warningHeading "WARNING, the following Entries don't match any context:"
+        , [entryTable workReportEntriesWithoutContext]
+        ]
+    , unlessNull
+        workReportCheckViolations
+        [ warningHeading "WARNING, the following Entries did not pass the checks:"
+        , concat $
+          flip concatMap (M.toList workReportCheckViolations) $ \(f, violations) ->
+            unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
+        ]
+    ]
   where
     unlessNull l r =
       if null l
@@ -101,6 +108,6 @@ renderWorkReport now ne WorkReport {..} =
         else r
     sectionHeading t = heading $ fore white $ chunk t
     warningHeading t = heading $ fore red $ chunk t
-    heading c = [formatAsTable $ [[c]]]
-    spacer = [formatAsTable $ [[chunk " "]]]
+    heading c = [formatAsTable [[c]]]
+    spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryTable ne

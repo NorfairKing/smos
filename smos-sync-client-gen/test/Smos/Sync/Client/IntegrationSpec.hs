@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.IntegrationSpec
   ( spec
@@ -14,6 +12,7 @@ import Test.Validity
 
 import Smos.Sync.Server.TestUtils
 
+import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync
 
 import Smos.Sync.Client.Sync.Gen ()
@@ -82,9 +81,7 @@ spec =
                     let m = M.union m1 m2
                     setupClientContents c1 m1
                     setupClientContents c2 m2
-                    syncSmosSyncClient c1
-                    syncSmosSyncClient c2
-                    syncSmosSyncClient c1
+                    fullySyncTwoClients c1 c2
                     assertClientContents c1 m
                     assertClientContents c2 m
         it "succesfully syncs any number of files accross two clients" $ \cenv ->
@@ -95,8 +92,14 @@ spec =
                   let m = M.union m1 m2
                   setupClientContents c1 m1
                   setupClientContents c2 m2
-                  syncSmosSyncClient c1
-                  syncSmosSyncClient c2
-                  syncSmosSyncClient c1
+                  fullySyncTwoClients c1 c2
                   assertClientContents c1 m
                   assertClientContents c2 m
+
+fullySyncTwoClients :: SyncSettings -> SyncSettings -> IO ()
+fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
+
+fullySyncClients :: [SyncSettings] -> IO ()
+fullySyncClients cs = do
+  let twice f = f >> f
+  twice $ mapM_ syncSmosSyncClient cs

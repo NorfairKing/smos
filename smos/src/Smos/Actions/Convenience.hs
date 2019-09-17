@@ -43,7 +43,7 @@ convRepinged =
     , actionFunc =
         do me <-
              gets
-               (fmap (rebuildEntryCursor . view (smosFileCursorSelectedEntryL)) .
+               (fmap (rebuildEntryCursor . view smosFileCursorSelectedEntryL) .
                 view editorCursorSmosFileCursorL . smosStateCursor)
            case me of
              Nothing -> pure ()

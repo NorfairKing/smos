@@ -111,19 +111,19 @@ data LogFlags =
     }
   deriving (Show, Eq, Generic)
 
-data StatsFlags =
+newtype StatsFlags =
   StatsFlags
     { statsFlagPeriodFlags :: Maybe Period
     }
   deriving (Show, Eq, Generic)
 
-data TagsFlags =
+newtype TagsFlags =
   TagsFlags
     { tagsFlagFilter :: Maybe Filter
     }
   deriving (Show, Eq, Generic)
 
-data Flags =
+newtype Flags =
   Flags
     { flagReportFlags :: Report.Flags
     }
@@ -239,13 +239,13 @@ data LogSettings =
     }
   deriving (Show, Eq, Generic)
 
-data StatsSettings =
+newtype StatsSettings =
   StatsSettings
     { statsSetPeriod :: Period
     }
   deriving (Show, Eq, Generic)
 
-data TagsSettings =
+newtype TagsSettings =
   TagsSettings
     { tagsSetFilter :: Maybe Filter
     }

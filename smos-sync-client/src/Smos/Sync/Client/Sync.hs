@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
@@ -65,8 +64,7 @@ syncSmosSyncClient SyncSettings {..} = do
         pure $ consolidateInitialStoreWithFiles initialStore files
       Just meta
        -- We have synced before.
-       -> do
-        pure $ consolidateMetaWithFiles meta files
+       -> pure $ consolidateMetaWithFiles meta files
   newClientStore <- runSync cenv clientStore
   saveClientStore syncSetMetadataFile syncSetContentsDir newClientStore
 
@@ -78,8 +76,7 @@ runInitialSync cenv = do
   SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
-      Right resp -> do
-        pure resp
+      Right resp -> pure resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
   let newClientStore =
         ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
@@ -93,8 +90,7 @@ runSync cenv clientStore = do
   SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
-      Right resp -> do
-        pure resp
+      Right resp -> pure resp
   unless (syncResponseServerId == clientStoreServerUUID clientStore) $
     die $
     unlines

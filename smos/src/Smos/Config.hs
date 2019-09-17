@@ -39,7 +39,7 @@ import Smos.Types
 listMatchers :: [KeyMapping] -> KeyMappings
 listMatchers = id
 
-exactString :: [Char] -> Action -> KeyMapping
+exactString :: String -> Action -> KeyMapping
 exactString cs a =
   case cs of
     [] -> error "Cannot have an empty key combination"

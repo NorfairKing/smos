@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Smos.Cursor.Contents
   ( ContentsCursor
   , makeContentsCursor
@@ -36,10 +34,8 @@ type ContentsCursor = TextFieldCursor
 makeContentsCursor :: Contents -> ContentsCursor
 makeContentsCursor = makeTextFieldCursor . contentsText
 
-makeContentsCursorWithSelection ::
-     Int -> Int -> Contents -> Maybe ContentsCursor
-makeContentsCursorWithSelection x y =
-  makeTextFieldCursorWithSelection x y . contentsText
+makeContentsCursorWithSelection :: Int -> Int -> Contents -> Maybe ContentsCursor
+makeContentsCursorWithSelection x y = makeTextFieldCursorWithSelection x y . contentsText
 
 rebuildContentsCursor :: ContentsCursor -> Contents
 rebuildContentsCursor = Contents . rebuildTextFieldCursor

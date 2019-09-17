@@ -1,6 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Tags
   ( tags
@@ -30,7 +28,8 @@ tags :: TagsSettings -> Q ()
 tags TagsSettings {..} = do
   es <-
     sourceToList $
-    streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) tagsSetFilter) .|
     smosCursorCurrents .|
     C.map snd

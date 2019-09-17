@@ -33,9 +33,9 @@ spec = do
     parseJustSpec keyP "<bs>" KBS
     parseNothingSpec keyP "<g12>"
     parseNothingSpec keyP "<g12>"
-  describe "renderKey" $ do
+  describe "renderKey" $
     it "renders the something that keyP can parse to the same thing" $
-      forAllValid $ \k -> parseJust keyP (renderKey k) k
+    forAllValid $ \k -> parseJust keyP (renderKey k) k
   jsonSpecOnValid @Key
   eqSpecOnValid @Modifier
   genValidSpec @Modifier
@@ -49,9 +49,9 @@ spec = do
     parseJustSpec modifierP "m" MMeta
     parseJustSpec modifierP "A" MAlt
     parseJustSpec modifierP "a" MAlt
-  describe "renderModifier" $ do
+  describe "renderModifier" $
     it "renders the something that modifierP can parse to the same thing" $
-      forAllValid $ \k -> parseJust modifierP (renderModifier k) k
+    forAllValid $ \k -> parseJust modifierP (renderModifier k) k
   jsonSpecOnValid @Modifier
   eqSpecOnValid @KeyPress
   genValidSpec @KeyPress
@@ -87,9 +87,9 @@ spec = do
     parseNothingSpec keyPressP "<Enbler>"
     parseNothingSpec keyPressP "<Tal>"
     parseNothingSpec keyPressP "<maB>"
-  describe "renderKeyPress" $ do
+  describe "renderKeyPress" $
     it "renders the something that keyPressP can parse to the same thing" $
-      forAllValid $ \k -> parseJust keyPressP (renderKeyPress k) k
+    forAllValid $ \k -> parseJust keyPressP (renderKeyPress k) k
   jsonSpecOnValid @KeyPress
   eqSpecOnValid @MatcherConfig
   genValidSpec @MatcherConfig
@@ -170,9 +170,9 @@ spec = do
       parseJustSpec matcherConfigP "M-S-c<char>" $
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfAnyChar
   jsonSpecOnValid @MatcherConfig
-  describe "renderMatcherConfig" $ do
+  describe "renderMatcherConfig" $
     it "renders the something that matcherConfigP can parse to the same thing" $
-      forAllValid $ \k -> parseJust matcherConfigP (renderMatcherConfig k) k
+    forAllValid $ \k -> parseJust matcherConfigP (renderMatcherConfig k) k
 
 matcherConfigText :: Gen Text
 matcherConfigText = genValid
@@ -253,6 +253,6 @@ parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
 parsesValid p s =
   let (useful, ass) =
         case parse (p <* eof) "test input" s of
-          Left _ -> (False, (pure () :: IO ()))
+          Left _ -> (False, pure () :: IO ())
           Right out -> (True, shouldBeValid out)
    in cover useful 10 "useful" $ property ass

@@ -126,6 +126,7 @@ fileText = textPieces [pure "file:", genValid]
 
 levelText :: Gen Text
 levelText = textPieces [pure "level:", T.pack . show <$> (genValid :: Gen Int)]
+
 headerText :: Gen Text
 headerText = textPieces [pure "header:", genValid]
 
@@ -196,6 +197,6 @@ parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
 parsesValid p s =
   let (useful, ass) =
         case parse (p <* eof) "test input" s of
-          Left _ -> (False, (pure () :: IO ()))
+          Left _ -> (False, pure () :: IO ())
           Right out -> (True, shouldBeValid out)
    in cover useful 10 "useful" $ property ass

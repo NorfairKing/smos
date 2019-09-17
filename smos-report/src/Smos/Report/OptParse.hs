@@ -58,7 +58,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
       , smosReportConfigProjectsFileSpec = pfs
       , smosReportConfigArchivedProjectsFileSpec = apfs
       , smosReportConfigWorkBaseFilter =
-          (mc >>= confWorkBaseFilter) <|> (smosReportConfigWorkBaseFilter src)
+          (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src
       , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
@@ -154,8 +154,7 @@ parseYamlConfig configFile =
   fmap (left prettyPrintParseException) $ decodeFileEither $ fromAbsFile configFile
 
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
-parseJSONConfig configFile = do
-  JSON.eitherDecodeFileStrict $ fromAbsFile configFile
+parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
 getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do
