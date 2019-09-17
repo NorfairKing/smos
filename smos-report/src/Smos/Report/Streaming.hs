@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -40,21 +40,21 @@ streamSmosFilesFromWorkflow ha src@SmosReportConfig {..} = do
   case smosReportConfigArchiveFileSpec of
     ArchiveInWorkflow rf -> do
       let source =
-            (case ha of
-               HideArchive -> sourceFilesInNonHiddenDirsRecursivelyExceptSubdir rf wd
-               Don'tHideArchive -> sourceFilesInNonHiddenDirsRecursively wd)
+            case ha of
+              HideArchive -> sourceFilesInNonHiddenDirsRecursivelyExceptSubdir rf wd
+              Don'tHideArchive -> sourceFilesInNonHiddenDirsRecursively wd
       source .| filterSmosFiles
     _ -> do
       ad <- liftIO $ resolveReportArchiveDir src
       let maybeFilterOutArchived =
-            (case ha of
-               HideArchive -> (filterOutDir ad .|)
-               Don'tHideArchive -> id)
+            case ha of
+              HideArchive -> (filterOutDir ad .|)
+              Don'tHideArchive -> id
       sourceFilesInNonHiddenDirsRecursively wd .| maybeFilterOutArchived filterSmosFiles
 
 -- TODO I think we can do fancier filtering based on the other ArchiveDirSpecs
 filterOutDir :: Monad m => Path Abs Dir -> ConduitT RootedPath RootedPath m ()
-filterOutDir ad = Conduit.filter (\rp -> not $ isProperPrefixOf ad $ resolveRootedPath rp)
+filterOutDir ad = Conduit.filter (not . isProperPrefixOf ad . resolveRootedPath)
 
 sourceFilesInNonHiddenDirsRecursively ::
      forall m i. MonadIO m
@@ -108,10 +108,9 @@ isHiddenIn curdir ad =
 
 filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
 filterSmosFiles =
-  Conduit.filter $ \f ->
-    case f of
-      Relative _ prf -> fileExtension prf == ".smos"
-      Absolute paf -> fileExtension paf == ".smos"
+  Conduit.filter $ \case
+    Relative _ prf -> fileExtension prf == ".smos"
+    Absolute paf -> fileExtension paf == ".smos"
 
 parseSmosFiles ::
      MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
@@ -176,7 +175,7 @@ smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m (
 smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent = \(rf, fc) -> (rf, forestCursorCurrent fc)
+smosCursorCurrent (rf, fc) = (rf, forestCursorCurrent fc)
 
 forestCursorCurrent :: ForestCursor a -> a
 forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
@@ -203,12 +202,12 @@ forestCursors ts =
         (case forestCursorSelectBelowAtStart fc of
            Nothing -> []
            Just fc' -> go fc') :
-      (case (fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel) of
+      (case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
          Nothing -> []
          Just fc' -> go fc')
 
 accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a Void m a
-accumulateSink operation start = go start
+accumulateSink operation = go
   where
     go !a = do
       mn <- await
@@ -216,5 +215,5 @@ accumulateSink operation start = go start
         Nothing -> pure a
         Just n -> go $ a `operation` n
 
-accumulateMonoid :: (Monoid a,Monad m) => ConduitT a Void m a
+accumulateMonoid :: (Monoid a, Monad m) => ConduitT a Void m a
 accumulateMonoid = accumulateSink mappend mempty

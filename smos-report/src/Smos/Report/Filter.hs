@@ -166,8 +166,7 @@ filterFileP = do
 filterLevelP :: P Filter
 filterLevelP = do
   void $ string' "level:"
-  w <- decimal
-  pure $ FilterLevel w
+  FilterLevel <$> decimal
 
 filterHeaderP :: P Filter
 filterHeaderP = do
@@ -224,8 +223,7 @@ filterAndP = do
 filterHasPropertyP :: P Filter
 filterHasPropertyP = do
   void $ string' "has-property:"
-  pn <- propertyNameP
-  pure $ FilterHasProperty pn
+  FilterHasProperty <$> propertyNameP
 
 filterExactPropertyP :: P Filter
 filterExactPropertyP = do

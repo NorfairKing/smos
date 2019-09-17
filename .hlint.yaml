@@ -1,0 +1,15 @@
+- ignore:
+    name: "Use tuple-section"
+- ignore:
+    name: "Use camelCase"
+    within: "Smos.Report.Archive.HideArchive"
+- ignore: 
+    name: "Use <$>"
+    within: 
+      - "Smos.Report.Filter.filterAndP"
+      - "Smos.Report.Filter.filterOrP"
+      - "Smos.Report.Filter.filterExactPropertyP"
+- ignore: 
+    name: "Eta reduce"
+    within: "Smos.Report.Sorter.sorterOrdering"
+
