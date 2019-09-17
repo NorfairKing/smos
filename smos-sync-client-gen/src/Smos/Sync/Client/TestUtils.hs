@@ -27,6 +27,9 @@ withTestDir = around $ withSystemTempDir "smos-sync-client-save-test"
 disjunctMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
 disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
 
+changedMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
+changedMap = traverse (const genValid)
+
 assertClientContents :: SyncSettings -> Map (Path Rel File) ByteString -> IO ()
 assertClientContents ss = assertContents (syncSetContentsDir ss)
 
