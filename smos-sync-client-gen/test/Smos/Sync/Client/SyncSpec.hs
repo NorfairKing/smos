@@ -84,13 +84,13 @@ spec = do
               runSync cenv cstore
           shouldBeValid stores
       modifyMaxSuccess (* 20) $
-        modifyMaxSize (* 20) $ do
-          it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
-            forAll genCTestOps $ \cops -> do
-              let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
-                  go cstore op = applyCTestOp cenv cstore op
-              result <- foldM go M.empty cops
-              shouldBeValid result
+        modifyMaxSize (* 20) $
+        it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
+          forAll genCTestOps $ \cops -> do
+            let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
+                go = applyCTestOp cenv
+            result <- foldM go M.empty cops
+            shouldBeValid result
 
 data CTestOp =
   CTestOp Int ClientOp
@@ -145,7 +145,6 @@ validCTestOpFor m =
                     pure $ CTestOp cid $ ClientTestOps ops)
              ]
 
-
 testApplyCTestOp :: TestSituation -> CTestOp -> TestSituation
 testApplyCTestOp ts (CTestOp i cop) =
   let cs = testSituationClients ts
@@ -169,13 +168,13 @@ applyCTestOp cenv m (CTestOp i cop) =
     ClientNew -> do
       initial <- runInitialSync cenv
       pure $ M.insert i initial m
-    ClientSync -> do
+    ClientSync ->
       case M.lookup i m of
         Nothing -> pure m
         Just cstore -> do
           cstore' <- runSync cenv cstore
           pure $ M.adjust (const cstore') i m
-    ClientTestOps ops -> do
+    ClientTestOps ops ->
       case M.lookup i m of
         Nothing -> pure m
         Just cstore -> do

@@ -3,17 +3,18 @@
 - ignore:
     name: "Reduce duplication"
     within: 
+      - "Smos.Actions.Forest.forestClockOutEverywhereInAllFilesAndClockInHere"
+      - "Smos.Actions.Forest.forestClockOutEverywhereInThisFileAndClockInHere"
       - "Smos.Draw.drawEntry"
       - "Smos.Draw.drawEntryCursor"
       - "Smos.IntegrationSpec.spec"
-      - "Smos.Actions.Forest.forestClockOutEverywhereInThisFileAndClockInHere"
-      - "Smos.Actions.Forest.forestClockOutEverywhereInAllFilesAndClockInHere"
+      - "Smos.Sync.Client.IntegrationSpec.spec"
 - ignore:
     name: "Use ++"
     within: 
-      - "Smos.Actions.Timestamps.allTimestampsPlainActions"
-      - "Smos.Actions.Tags.allTagsPlainActions"
       - "Smos.Actions.Properties.allPropertiesPlainActions"
+      - "Smos.Actions.Tags.allTagsPlainActions"
+      - "Smos.Actions.Timestamps.allTimestampsPlainActions"
       - "Smos.GoldenSpec"
 - ignore:
     name: "Use ||"
@@ -26,14 +27,13 @@
 - ignore: 
     name: "Use <$>"
     within: 
-      - "Smos.Report.Filter.filterAndP"
-      - "Smos.Report.Filter.filterOrP"
-      - "Smos.Report.Filter.filterExactPropertyP"
       - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
+      - "Smos.Report.Filter.filterAndP"
+      - "Smos.Report.Filter.filterExactPropertyP"
+      - "Smos.Report.Filter.filterOrP"
 - ignore:
     name: "Avoid lambda"
     within:
-      - "Smos.Draw.drawPropertyKVCursor"
       - "Smos.Actions.Contents.contentsAppend"
       - "Smos.Actions.Contents.contentsInsert"
       - "Smos.Actions.Header.headerAppend"
@@ -46,6 +46,8 @@
       - "Smos.Actions.Tags.tagsInsert"
       - "Smos.Actions.Timestamps.timestampsAppend"
       - "Smos.Actions.Timestamps.timestampsInsert"
+      - "Smos.Draw.drawPropertyKVCursor"
+      - "Smos.Sync.Client.TestUtils.disjunctMap"
 - ignore: 
     name: "Eta reduce"
     within: "Smos.Report.Sorter.sorterOrdering"
