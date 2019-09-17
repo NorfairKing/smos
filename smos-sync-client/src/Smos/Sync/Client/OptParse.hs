@@ -46,13 +46,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
           syncSetServerUrl <-
             Servant.parseBaseUrl $
             fromMaybe "sync.api.smos.cs-syd.eu" $
-            syncFlagServerUrl <|> envServerUrl <|> (cM syncConfServerUrl)
+            syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl
           syncSetContentsDir <-
-            case syncFlagContentsDir <|> envContentsDir <|> (cM syncConfContentsDir) of
+            case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
               Nothing -> Report.resolveReportWorkflowDir setReportConfig
               Just d -> resolveDir' d
           syncSetMetadataFile <-
-            case syncFlagMetadataFile <|> envMetadataFile <|> (cM syncConfMetadataFile) of
+            case syncFlagMetadataFile <|> envMetadataFile <|> cM syncConfMetadataFile of
               Nothing -> defaultMetadataFile
               Just d -> resolveFile' d
           pure $ DispatchSync SyncSettings {..}
