@@ -45,6 +45,7 @@ setupClientContents ss = setupContents (syncSetContentsDir ss)
 
 setupContents :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
 setupContents dir m = do
+  resetDir dir
   let parents = S.map (parent . (dir </>)) (M.keysSet m)
   forM_ parents ensureDir
   forM_ (M.toList m) $ uncurry $ setupFile dir
@@ -53,6 +54,11 @@ setupFile :: Path Abs Dir -> Path Rel File -> ByteString -> IO ()
 setupFile dir file contents = do
   let p = dir </> file
   SB.writeFile (fromAbsFile p) contents
+
+resetDir :: Path Abs Dir -> IO ()
+resetDir dir = do
+  removeDirRecur dir
+  ensureDir dir
 
 withClient :: ClientEnv -> (SyncSettings -> IO ()) -> IO ()
 withClient cenv func =
