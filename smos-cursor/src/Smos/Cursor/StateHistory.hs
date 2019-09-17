@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.Cursor.StateHistory
   ( StateHistoryCursor(..)
@@ -86,8 +87,7 @@ stateHistoryCursorToggleTodoState ::
   -> Maybe StateHistoryCursor
   -> Maybe StateHistoryCursor
 stateHistoryCursorToggleTodoState t ts =
-  stateHistoryCursorModTodoState t $ \mts ->
-    case mts of
+  stateHistoryCursorModTodoState t $ \case
       Nothing -> Just ts
       Just ts' ->
         if ts == ts'

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.Cursor.Properties
   ( PropertiesCursor(..)
@@ -54,8 +55,7 @@ instance Validity PropertiesCursor where
       , declare "The text cursor under selection builds to a valid value" $
         case nonEmptyCursorCurrent (mapCursorList pc) of
           KeyValueCursorKey tc _ -> isJust $ propertyName $ rebuildTextCursor tc
-          KeyValueCursorValue _ tc ->
-            isJust $ propertyValue $ rebuildTextCursor tc
+          KeyValueCursorValue _ tc -> isJust $ propertyValue $ rebuildTextCursor tc
       ]
 
 propertiesCursorMapCursorL ::
@@ -64,21 +64,17 @@ propertiesCursorMapCursorL =
   lens propertiesCursorMapCursor $ \pc mc -> pc {propertiesCursorMapCursor = mc}
 
 emptyPropertiesCursor :: PropertiesCursor
-emptyPropertiesCursor =
-  singletonPropertiesCursor emptyPropertyName emptyPropertyValue
+emptyPropertiesCursor = singletonPropertiesCursor emptyPropertyName emptyPropertyValue
 
 singletonPropertiesCursor :: PropertyName -> PropertyValue -> PropertiesCursor
 singletonPropertiesCursor pn pv = makePropertiesCursor $ (pn, pv) :| []
 
-makePropertiesCursor ::
-     NonEmpty (PropertyName, PropertyValue) -> PropertiesCursor
+makePropertiesCursor :: NonEmpty (PropertyName, PropertyValue) -> PropertiesCursor
 makePropertiesCursor = PropertiesCursor . makeMapCursor makePropertyNameCursor
 
-rebuildPropertiesCursor ::
-     PropertiesCursor -> NonEmpty (PropertyName, PropertyValue)
+rebuildPropertiesCursor :: PropertiesCursor -> NonEmpty (PropertyName, PropertyValue)
 rebuildPropertiesCursor =
-  rebuildMapCursor rebuildPropertyNameCursor rebuildPropertyValueCursor .
-  propertiesCursorMapCursor
+  rebuildMapCursor rebuildPropertyNameCursor rebuildPropertyValueCursor . propertiesCursorMapCursor
 
 propertiesCursorCurrentTextCursorL :: Lens' PropertiesCursor TextCursor
 propertiesCursorCurrentTextCursorL =
@@ -91,10 +87,9 @@ propertiesCursorCurrentTextCursorL =
     (\tsc tc ->
        tsc &
        mapCursorElemL %~
-       (\kvc ->
-          case kvc of
-            KeyValueCursorKey _ v -> KeyValueCursorKey tc v
-            KeyValueCursorValue k _ -> KeyValueCursorValue k tc))
+       (\case
+          KeyValueCursorKey _ v -> KeyValueCursorKey tc v
+          KeyValueCursorValue k _ -> KeyValueCursorValue k tc))
 
 propertiesCursorToggleSelected :: PropertiesCursor -> PropertiesCursor
 propertiesCursorToggleSelected =
@@ -106,28 +101,20 @@ propertiesCursorToggleSelected =
     makePropertyValueCursor
 
 propertiesCursorSelectNextChar :: PropertiesCursor -> Maybe PropertiesCursor
-propertiesCursorSelectNextChar =
-  propertiesCursorCurrentTextCursorL $ textCursorSelectNext
+propertiesCursorSelectNextChar = propertiesCursorCurrentTextCursorL textCursorSelectNext
 
 propertiesCursorSelectPrevChar :: PropertiesCursor -> Maybe PropertiesCursor
-propertiesCursorSelectPrevChar =
-  propertiesCursorCurrentTextCursorL $ textCursorSelectPrev
+propertiesCursorSelectPrevChar = propertiesCursorCurrentTextCursorL textCursorSelectPrev
 
 propertiesCursorSelectNextProperty :: PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorSelectNextProperty =
   propertiesCursorMapCursorL $
-  mapCursorSelectNext
-    rebuildPropertyNameCursor
-    makePropertyNameCursor
-    rebuildPropertyValueCursor
+  mapCursorSelectNext rebuildPropertyNameCursor makePropertyNameCursor rebuildPropertyValueCursor
 
 propertiesCursorSelectPrevProperty :: PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorSelectPrevProperty =
   propertiesCursorMapCursorL $
-  mapCursorSelectPrev
-    rebuildPropertyNameCursor
-    makePropertyNameCursor
-    rebuildPropertyValueCursor
+  mapCursorSelectPrev rebuildPropertyNameCursor makePropertyNameCursor rebuildPropertyValueCursor
 
 propertiesCursorInsert :: Char -> PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorInsert c =
@@ -137,33 +124,23 @@ propertiesCursorAppend :: Char -> PropertiesCursor -> Maybe PropertiesCursor
 propertiesCursorAppend c =
   propertiesCursorCurrentTextCursorL (textCursorAppend c) >=> constructValid
 
-propertiesCursorRemove ::
-     PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
+propertiesCursorRemove :: PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
 propertiesCursorRemove pc =
-  case focusPossibleDeleteOrUpdate
-         propertiesCursorCurrentTextCursorL
-         textCursorRemove
-         pc of
+  case focusPossibleDeleteOrUpdate propertiesCursorCurrentTextCursorL textCursorRemove pc of
     Just Deleted -> Just $ propertiesCursorRemoveProperty pc
     r -> r
 
-propertiesCursorDelete ::
-     PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
+propertiesCursorDelete :: PropertiesCursor -> Maybe (DeleteOrUpdate PropertiesCursor)
 propertiesCursorDelete pc =
-  case focusPossibleDeleteOrUpdate
-         propertiesCursorCurrentTextCursorL
-         textCursorDelete
-         pc of
+  case focusPossibleDeleteOrUpdate propertiesCursorCurrentTextCursorL textCursorDelete pc of
     Just Deleted -> Just $ propertiesCursorDeleteProperty pc
     r -> r
 
-propertiesCursorRemoveProperty ::
-     PropertiesCursor -> DeleteOrUpdate PropertiesCursor
+propertiesCursorRemoveProperty :: PropertiesCursor -> DeleteOrUpdate PropertiesCursor
 propertiesCursorRemoveProperty =
   propertiesCursorMapCursorL $ mapCursorRemoveElem makePropertyNameCursor
 
-propertiesCursorDeleteProperty ::
-     PropertiesCursor -> DeleteOrUpdate PropertiesCursor
+propertiesCursorDeleteProperty :: PropertiesCursor -> DeleteOrUpdate PropertiesCursor
 propertiesCursorDeleteProperty =
   propertiesCursorMapCursorL $ mapCursorDeleteElem makePropertyNameCursor
 
@@ -197,8 +174,7 @@ propertiesCursorStartNewPropertyAfter =
     emptyTextCursor
     emptyPropertyValue
 
-propertiesCursorAddOrSelect ::
-     PropertyName -> Maybe PropertiesCursor -> PropertiesCursor
+propertiesCursorAddOrSelect :: PropertyName -> Maybe PropertiesCursor -> PropertiesCursor
 propertiesCursorAddOrSelect pn mpc =
   let pc = fromMaybe (singletonPropertiesCursor pn emptyPropertyValue) mpc
    in case propertiesCursorMapCursorL
@@ -221,8 +197,7 @@ propertiesCursorAddOrSelect pn mpc =
             pn
             emptyTextCursor
 
-propertiesCursorSet ::
-     PropertyName -> PropertyValue -> Maybe PropertiesCursor -> PropertiesCursor
+propertiesCursorSet :: PropertyName -> PropertyValue -> Maybe PropertiesCursor -> PropertiesCursor
 propertiesCursorSet pn pv mpc =
   case mpc of
     Nothing -> singletonPropertiesCursor pn pv
@@ -237,14 +212,10 @@ propertiesCursorSet pn pv mpc =
         Just pc' ->
           pc' &
           (propertiesCursorMapCursorL . mapCursorElemL) %~
-          (\kvc ->
-             case kvc of
-               KeyValueCursorKey tc _ ->
-                 KeyValueCursorValue
-                   (rebuildPropertyNameCursor tc)
-                   (makePropertyValueCursor pv)
-               KeyValueCursorValue k _ ->
-                 KeyValueCursorValue k (makePropertyValueCursor pv))
+          (\case
+             KeyValueCursorKey tc _ ->
+               KeyValueCursorValue (rebuildPropertyNameCursor tc) (makePropertyValueCursor pv)
+             KeyValueCursorValue k _ -> KeyValueCursorValue k (makePropertyValueCursor pv))
         Nothing ->
           pc &
           propertiesCursorMapCursorL %~

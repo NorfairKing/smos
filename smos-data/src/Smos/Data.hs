@@ -32,7 +32,6 @@ import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
-import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Data.Tree

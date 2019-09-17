@@ -138,7 +138,7 @@ entryCursorSelectHeaderAtEnd =
 
 entryCursorSelectContents :: EntryCursor -> EntryCursor
 entryCursorSelectContents =
-  (entryCursorContentsCursorL %~ (maybe (Just emptyContentsCursor) Just)) .
+  (entryCursorContentsCursorL %~ maybe (Just emptyContentsCursor) Just) .
   entryCursorSelect ContentsSelected
 
 entryCursorSelectTimestamps :: EntryCursor -> EntryCursor
@@ -146,7 +146,7 @@ entryCursorSelectTimestamps = entryCursorSelect TimestampsSelected
 
 entryCursorSelectProperties :: EntryCursor -> EntryCursor
 entryCursorSelectProperties =
-  (entryCursorPropertiesCursorL %~ (maybe (Just emptyPropertiesCursor) Just)) .
+  (entryCursorPropertiesCursorL %~ maybe (Just emptyPropertiesCursor) Just) .
   entryCursorSelect PropertiesSelected
 
 entryCursorSelectStateHistory :: EntryCursor -> EntryCursor
@@ -172,4 +172,4 @@ data EntryCursorSelection
 instance Validity EntryCursorSelection
 
 entryCursorUpdateTime :: ZonedTime -> EntryCursor -> EntryCursor
-entryCursorUpdateTime zt = entryCursorTimestampsCursorL %~ (fmap $ timestampsCursorUpdateTime zt)
+entryCursorUpdateTime zt = entryCursorTimestampsCursorL %~ fmap (timestampsCursorUpdateTime zt)
