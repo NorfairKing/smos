@@ -393,7 +393,7 @@ spec =
                         assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files" $ \cenv ->
             forAllValid $ \m1 ->
-              forAllValid $ \m2 ->
+              forAll (disjunctMap m1) $ \m2 ->
                 withClient cenv $ \c1 ->
                   withClient cenv $ \c2 -> do
                     let m = M.union m1 m2
@@ -408,7 +408,7 @@ spec =
                     assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
             forAllValid $ \m1 ->
-              forAllValid $ \m2 ->
+              forAll (disjunctMap m1) $ \m2 ->
                 forAllValid $ \m3 ->
                   withClient cenv $ \c1 ->
                     withClient cenv $ \c2 -> do
@@ -421,6 +421,41 @@ spec =
                       fullySyncTwoClients c1 c2
                       assertClientContents c1 m3
                       assertClientContents c2 m3
+        describe "conflicts" $
+          describe "both changed" $ do
+            it "succesfully syncs a single conflicting change" $ \cenv ->
+              forAllValid $ \(rp, contents1, contents2, contents3) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    let m = M.singleton rp contents3
+                    setupClientContents c1 m
+                    setupClientContents c1 m
+                    fullySyncTwoClients c1 c2
+                    let m1 = M.singleton rp contents1
+                    let m2 = M.singleton rp contents2
+                    setupClientContents c1 m1
+                    setupClientContents c2 m2
+                    fullySyncTwoClients c1 c2
+                    let m' = M.singleton rp contents1 -- client 1 synced first
+                    assertClientContents c1 m'
+                    assertClientContents c2 m'
+            it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
+              forAllValid $ \(rp, contents1, contents2, contents3) ->
+                forAllValid $ \m ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      let ma = M.insert rp contents3 m
+                      setupClientContents c1 ma
+                      setupClientContents c1 ma
+                      fullySyncTwoClients c1 c2
+                      let m1 = M.insert rp contents1 m
+                      let m2 = M.insert rp contents2 m
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      let mb = M.insert rp contents1 m -- client 1 synced first
+                      assertClientContents c1 mb
+                      assertClientContents c2 mb
 
 fullySyncTwoClients :: SyncSettings -> SyncSettings -> IO ()
 fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
