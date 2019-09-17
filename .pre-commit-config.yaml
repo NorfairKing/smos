@@ -6,3 +6,4 @@ repos:
   - id: elm-format
   - id: hlint
   - id: shellcheck
+  - id: hindent
