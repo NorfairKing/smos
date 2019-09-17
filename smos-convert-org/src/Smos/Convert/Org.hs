@@ -165,8 +165,9 @@ constructTimestamp DateTime {..} =
   case hourMinute of
     Nothing -> TimestampDay <$> constructDay yearMonthDay
     Just (h, m) ->
-      TimestampLocalTime <$> (LocalTime <$>constructDay yearMonthDay <*>
-      (lleft InvalidLocalTime $ prettyValidate (TimeOfDay h m 0)))
+      TimestampLocalTime <$>
+      (LocalTime <$> constructDay yearMonthDay <*>
+       lleft InvalidLocalTime ( prettyValidate (TimeOfDay h m 0)))
 
 constructDay :: YearMonthDay -> Convert Day
 constructDay YearMonthDay {..} =
