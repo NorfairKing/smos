@@ -5,28 +5,15 @@ module Smos.Sync.Client.IntegrationSpec
   ( spec
   ) where
 
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import qualified Data.Set as S
-
-import Control.Monad
 
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 
-import Servant.Client
-
-import Path
-import Path.IO
-
 import Smos.Sync.Server.TestUtils
 
-import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.Sync
 
 import Smos.Sync.Client.Sync.Gen ()
@@ -97,6 +84,7 @@ spec =
                     setupClientContents c2 m2
                     syncSmosSyncClient c1
                     syncSmosSyncClient c2
+                    syncSmosSyncClient c1
                     assertClientContents c1 m
                     assertClientContents c2 m
         it "succesfully syncs any number of files accross two clients" $ \cenv ->
@@ -109,5 +97,6 @@ spec =
                   setupClientContents c2 m2
                   syncSmosSyncClient c1
                   syncSmosSyncClient c2
+                  syncSmosSyncClient c1
                   assertClientContents c1 m
                   assertClientContents c2 m

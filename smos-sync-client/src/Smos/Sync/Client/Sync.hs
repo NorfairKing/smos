@@ -8,8 +8,6 @@
 
 module Smos.Sync.Client.Sync where
 
-import Debug.Trace
-
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
@@ -23,7 +21,6 @@ import qualified Data.Map as M
 import Data.UUID as UUID (UUID)
 import Data.Validity
 import Data.Validity.UUID ()
-import Text.Show.Pretty
 
 import Control.Monad
 
@@ -53,7 +50,6 @@ import Smos.Sync.Client.OptParse
 
 syncSmosSyncClient :: SyncSettings -> IO ()
 syncSmosSyncClient SyncSettings {..} = do
-  putStrLn "client start"
   man <- HTTP.newManager HTTP.tlsManagerSettings
   let cenv = mkClientEnv man syncSetServerUrl
   mMeta <- readStoreMeta syncSetMetadataFile
@@ -71,11 +67,8 @@ syncSmosSyncClient SyncSettings {..} = do
        -- We have synced before.
        -> do
         pure $ consolidateMetaWithFiles meta files
-  pPrint clientStore
   newClientStore <- runSync cenv clientStore
-  pPrint newClientStore
   saveClientStore syncSetMetadataFile syncSetContentsDir newClientStore
-  putStrLn "client end"
 
 runInitialSync :: ClientEnv -> IO ClientStore
 runInitialSync cenv = do
@@ -220,10 +213,11 @@ consolidateInitialStoreWithFiles cs contentsMap =
           -- We have a different file locally, so we'll mark this as 'synced but changed'.
              -> Mergeful.changeItemInClientStore i sf s
     items = M.foldlWithKey go (clientStoreItems cs) contentsMap
-    makeAlreadySyncedMap :: Mergeful.ClientStore i SyncFile -> Map (Path Rel File) i
-    makeAlreadySyncedMap cs = M.fromList $ map go $ M.toList (Mergeful.clientStoreSyncedItems cs)
-      where
-        go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, i)
+
+makeAlreadySyncedMap :: Mergeful.ClientStore i SyncFile -> Map (Path Rel File) i
+makeAlreadySyncedMap cs = M.fromList $ map go $ M.toList (Mergeful.clientStoreSyncedItems cs)
+  where
+    go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, i)
 
 consolidateMetaWithFiles :: ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
 consolidateMetaWithFiles ClientMetaData {..} contentsMap = ClientStore clientMetaDataServerId items

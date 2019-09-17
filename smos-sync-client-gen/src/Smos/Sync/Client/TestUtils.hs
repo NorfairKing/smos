@@ -5,7 +5,6 @@ import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
-import Data.Mergeful
 import qualified Data.Set as S
 
 import Control.Monad
@@ -13,16 +12,11 @@ import Control.Monad
 import Path
 import Path.IO
 
-import Control.Concurrent.STM
 
 import Servant.Client
 
-import qualified Network.HTTP.Client as Http
-import Network.Wai.Handler.Warp as Warp (testWithApplication)
 
 import Test.Hspec
-import Test.Hspec.Core.QuickCheck
-import Test.Hspec.Core.Spec
 import Test.QuickCheck
 import Test.Validity
 
