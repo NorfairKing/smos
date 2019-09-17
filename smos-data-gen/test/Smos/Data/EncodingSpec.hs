@@ -1,5 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
-
 module Smos.Data.EncodingSpec
   ( spec
   ) where

@@ -102,7 +102,7 @@ instance GenUnchecked Logbook
 
 instance GenValid Logbook where
   genValid =
-    let genPositiveNominalDiffTime = (realToFrac . abs) <$> (genValid :: Gen Rational)
+    let genPositiveNominalDiffTime = realToFrac . abs <$> (genValid :: Gen Rational)
         listOfLogbookEntries =
           sized $ \n -> do
             ss <- arbPartition n
@@ -143,6 +143,6 @@ instance GenValid LogbookEntry where
     sized $ \n -> do
       (a, b) <- genSplit n
       start <- resize a genValid
-      ndt <- resize b $ (realToFrac . abs) <$> (genValid :: Gen Rational)
+      ndt <- resize b $ realToFrac . abs <$> (genValid :: Gen Rational)
       let end = addUTCTime ndt start
       pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
