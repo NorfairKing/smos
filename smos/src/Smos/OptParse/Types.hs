@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -21,15 +20,15 @@ import Smos.Types
 data Arguments =
   Arguments FilePath Flags
 
-data Flags =
+newtype Flags =
   Flags
-    { flagReportFlags :: !Report.Flags
+    { flagReportFlags :: Report.Flags
     }
   deriving (Show, Eq)
 
-data Environment =
+newtype Environment =
   Environment
-    { envReportEnvironment :: !Report.Environment
+    { envReportEnvironment :: Report.Environment
     }
   deriving (Show, Eq)
 
@@ -150,9 +149,9 @@ backToFileKeyConfigs FileKeyMap {..} =
     , anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
     }
 
-data ReportsKeyConfigs =
+newtype ReportsKeyConfigs =
   ReportsKeyConfigs
-    { nextActionReportKeyConfigs :: !(Maybe KeyConfigs)
+    { nextActionReportKeyConfigs :: Maybe KeyConfigs
     }
   deriving (Show, Eq, Generic)
 

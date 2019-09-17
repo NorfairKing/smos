@@ -1,6 +1,26 @@
 - ignore:
     name: "Use tuple-section"
 - ignore:
+    name: "Reduce duplication"
+    within: 
+      - "Smos.Draw.drawEntry"
+      - "Smos.Draw.drawEntryCursor"
+      - "Smos.IntegrationSpec.spec"
+      - "Smos.Actions.Forest.forestClockOutEverywhereInThisFileAndClockInHere"
+      - "Smos.Actions.Forest.forestClockOutEverywhereInAllFilesAndClockInHere"
+- ignore:
+    name: "Use ++"
+    within: 
+      - "Smos.Actions.Timestamps.allTimestampsPlainActions"
+      - "Smos.Actions.Tags.allTagsPlainActions"
+      - "Smos.Actions.Properties.allPropertiesPlainActions"
+      - "Smos.GoldenSpec"
+- ignore:
+    name: "Use ||"
+    within:
+      - "Smos.Draw.drawEntry"
+      - "Smos.Draw.drawEntryCursor"
+- ignore:
     name: "Use camelCase"
     within: "Smos.Report.Archive.HideArchive"
 - ignore: 
@@ -9,6 +29,23 @@
       - "Smos.Report.Filter.filterAndP"
       - "Smos.Report.Filter.filterOrP"
       - "Smos.Report.Filter.filterExactPropertyP"
+      - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
+- ignore:
+    name: "Avoid lambda"
+    within:
+      - "Smos.Draw.drawPropertyKVCursor"
+      - "Smos.Actions.Contents.contentsAppend"
+      - "Smos.Actions.Contents.contentsInsert"
+      - "Smos.Actions.Header.headerAppend"
+      - "Smos.Actions.Header.headerInsert"
+      - "Smos.Actions.Help.helpAppend"
+      - "Smos.Actions.Help.helpInsert"
+      - "Smos.Actions.Properties.propertiesAppend"
+      - "Smos.Actions.Properties.propertiesInsert"
+      - "Smos.Actions.Tags.tagsAppend"
+      - "Smos.Actions.Tags.tagsInsert"
+      - "Smos.Actions.Timestamps.timestampsAppend"
+      - "Smos.Actions.Timestamps.timestampsInsert"
 - ignore: 
     name: "Eta reduce"
     within: "Smos.Report.Sorter.sorterOrdering"

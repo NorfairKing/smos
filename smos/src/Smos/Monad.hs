@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -29,8 +28,7 @@ instance MonadIO (MkSmosM c n s) where
   liftIO = MkSmosM . liftIO
 
 runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n (MStop a, s)
-runMkSmosM conf initState act =
-  runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
+runMkSmosM conf initState act = runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
 
 data MStop a
   = Stop
@@ -77,9 +75,9 @@ instance MonadIO m => MonadIO (NextT m) where
   liftIO = lift . liftIO
 
 instance MonadState s m => MonadState s (NextT m) where
-  get = NextT $ Continue <$> get
+  get = NextT $ gets Continue
   put = NextT . fmap Continue . put
 
 instance MonadReader s m => MonadReader s (NextT m) where
-  ask = NextT $ Continue <$> ask
+  ask = NextT $ asks Continue
   local func (NextT m) = NextT $ local func m

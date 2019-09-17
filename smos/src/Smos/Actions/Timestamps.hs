@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Timestamps
   ( allTimestampsPlainActions
@@ -79,7 +78,7 @@ timestampsMoveLeft :: Action
 timestampsMoveLeft =
   Action
     { actionName = "timestampsMoveLeft"
-    , actionFunc = modifyTimestampsCursorM $ timestampsCursorSelectPrevChar
+    , actionFunc = modifyTimestampsCursorM timestampsCursorSelectPrevChar
     , actionDescription = "Move one character to the left in the current timestamps cursor"
     }
 
@@ -87,7 +86,7 @@ timestampsMoveRight :: Action
 timestampsMoveRight =
   Action
     { actionName = "timestampsMoveRight"
-    , actionFunc = modifyTimestampsCursorM $ timestampsCursorSelectNextChar
+    , actionFunc = modifyTimestampsCursorM timestampsCursorSelectNextChar
     , actionDescription = "Move one character to the right in the current timestamps cursor"
     }
 
@@ -95,7 +94,7 @@ timestampsRemove :: Action
 timestampsRemove =
   Action
     { actionName = "timestampsRemove"
-    , actionFunc = modifyTimestampsCursorM $ timestampsCursorRemoveChar
+    , actionFunc = modifyTimestampsCursorM timestampsCursorRemoveChar
     , actionDescription = "Remove one character in the current timestamps cursor"
     }
 
@@ -103,7 +102,7 @@ timestampsDelete :: Action
 timestampsDelete =
   Action
     { actionName = "timestampsDelete"
-    , actionFunc = modifyTimestampsCursorM $ timestampsCursorDeleteChar
+    , actionFunc = modifyTimestampsCursorM timestampsCursorDeleteChar
     , actionDescription = "Delete one character  in the current timestamps cursor"
     }
 

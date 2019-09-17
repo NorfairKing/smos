@@ -47,8 +47,7 @@ entryToggleTodoState ts =
   Action
     { actionName = "entryToggleTodoState_" <> ActionName (todoStateText ts)
     , actionFunc =
-        modifyMTodoStateM $ \mts ->
-          case mts of
+        modifyMTodoStateM $ \case
             Nothing -> Just ts
             Just ts' ->
               if ts == ts'

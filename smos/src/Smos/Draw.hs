@@ -1,6 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Draw
@@ -67,7 +66,7 @@ smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
   let helpCursorWidget = drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
       withHeading hw w =
-        vBox [hBox [str "──[ ", (withAttr selectedAttr hw), str " ]──", vLimit 1 $ fill '─'], w]
+        vBox [hBox [str "──[ ", withAttr selectedAttr hw, str " ]──", vLimit 1 $ fill '─'], w]
       fileCursorWidget =
         withHeading (drawFilePath smosStateFilePath) $
         maybe drawInfo (drawFileCursor $ selectWhen FileSelected) editorCursorFileCursor
@@ -83,7 +82,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
           ReportSelected -> reportCursorWidget
           HelpSelected -> helpCursorWidget
       debugWidget = [drawDebug ss | editorCursorDebug]
-      baseWidget = [vBox $ [mainCursorWidget] ++ debugWidget]
+      baseWidget = [vBox $ mainCursorWidget : debugWidget]
    in baseWidget
   where
     EditorCursor {..} = smosStateCursor
@@ -218,16 +217,17 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
            MaybeSelected -> forceAttr selectedAttr . visible
            NotSelected -> id)
    in hBox $
-      intersperse (str " ") $
-      [ hLimit 20 $
-        padRight Max $
-        drawFilePath $
-        case nextActionEntryCursorFilePath of
-          Relative _ rf -> filename rf
-          Absolute af -> filename af
-      , maybe emptyWidget drawTodoState $ entryState e
-      , sel $ drawHeader entryHeader
-      ]
+      intersperse
+        (str " ")
+        [ hLimit 20 $
+          padRight Max $
+          drawFilePath $
+          case nextActionEntryCursorFilePath of
+            Relative _ rf -> filename rf
+            Absolute af -> filename af
+        , maybe emptyWidget drawTodoState $ entryState e
+        , sel $ drawHeader entryHeader
+        ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
@@ -290,25 +290,25 @@ drawEntryCursor s tc e = do
       [ Just $
         hBox $
         intersperse (str " ") $
-        concat $
-        [ [ case s of
-              NotSelected -> str "-"
-              MaybeSelected -> withAttr selectedAttr $ str ">"
+        concat
+          [ [ case s of
+                NotSelected -> str "-"
+                MaybeSelected -> withAttr selectedAttr $ str ">"
+            ]
+          , maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
+          , [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor]
+          , maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
+          , [ str "..."
+            | let e_ = rebuildEntryCursor ec
+               in or
+                    [ not (collapseEntryShowContents e) && isJust (entryContents e_)
+                    , not (collapseEntryShowHistory e) &&
+                      not (nullStateHistory $ entryStateHistory e_)
+                    , not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
+                    ]
+            ]
+          , [str "+++" | tc == TreeIsCollapsed]
           ]
-        , maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
-        , [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor]
-        , maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
-        , [ str "..."
-          | let e_ = rebuildEntryCursor ec
-             in or
-                  [ not (collapseEntryShowContents e) && not (isNothing $ entryContents e_)
-                  , not (collapseEntryShowHistory e) &&
-                    not (nullStateHistory $ entryStateHistory e_)
-                  , not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
-                  ]
-          ]
-        , [str "+++" | tc == TreeIsCollapsed]
-        ]
       , drawIfM collapseEntryShowContents $
         drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor
       , tscw
@@ -350,7 +350,7 @@ drawEntry tc e = do
           , maybeToList (drawTags entryTags)
           , [ str "..."
             | or
-                [ not (collapseEntryShowContents e) && not (isNothing entryContents)
+                [ not (collapseEntryShowContents e) && isJust entryContents
                 , not (collapseEntryShowHistory e) && not (nullStateHistory entryStateHistory)
                 , not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
                 ]
@@ -399,7 +399,7 @@ drawTimestampsCursor s =
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
   | M.null m = pure Nothing
-  | otherwise = fmap (Just . vBox) $ mapM (uncurry drawTimestampPair) (M.toList m)
+  | otherwise = Just . vBox <$> mapM (uncurry drawTimestampPair) (M.toList m)
 
 drawTimestampKVCursor ::
      Select -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp -> Drawer
@@ -439,7 +439,7 @@ drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
        MaybeSelected -> withAttr selectedAttr) $
     hBox $
     intersperse (str " ") $
-    [drawTextCursor s fuzzyLocalTimeCursorTextCursor] ++
+    drawTextCursor s fuzzyLocalTimeCursorTextCursor :
     [hBox [str "(", dw, str ")"] | MaybeSelected <- [s]]
 
 drawTimestampName :: TimestampName -> Widget n
@@ -485,13 +485,16 @@ drawPropertyKVCursor ::
 drawPropertyKVCursor s = keyValueWidget goKey goVal
   where
     sel =
-      (case s of
-         NotSelected -> id
-         MaybeSelected -> withAttr selectedAttr)
+      case s of
+        NotSelected -> id
+        MaybeSelected -> withAttr selectedAttr
     goKey tc pv =
       withAttr
-        (maybe id (\pn -> (<>) (propertyNameSpecificAttr pn)) (propertyName $ rebuildTextCursor tc) $
-         propertyNameAttr) $
+        (maybe
+           id
+           (\pn -> (<>) (propertyNameSpecificAttr pn))
+           (propertyName $ rebuildTextCursor tc)
+           propertyNameAttr) $
       hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
     goVal pn tc =
       withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
@@ -532,9 +535,9 @@ drawStateHistory (StateHistory ls)
             strWrap $
             unwords
               [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp
-              , "(" ++ (prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp) ++ ")"
+              , "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
               ]
-          , ((str " " <+>) . drawTodoState) <$> stateHistoryEntryNewState
+          , (str " " <+>) . drawTodoState <$> stateHistoryEntryNewState
           ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
@@ -565,13 +568,13 @@ drawLogbookCursor _ lbc =
   case lbc of
     LogbookCursorClosed Nothing -> pure Nothing
     LogbookCursorClosed (Just ne) -> do
-      let lbes = (NE.toList $ rebuildNonEmptyCursor ne)
+      let lbes = NE.toList $ rebuildNonEmptyCursor ne
       md <- drawLogbookEntries lbes
       tw <- drawLogbookTotal Nothing lbes
-      pure $ Just $ vBox $ [fromMaybe emptyWidget md] ++ maybeToList tw -- TODO don't use empty widgets
+      pure $ Just $ vBox $ fromMaybe emptyWidget md : maybeToList tw -- TODO don't use empty widgets
     LogbookCursorOpen u ne -> do
       ow <- drawLogOpen u
-      let lbes = (maybe [] (NE.toList . rebuildNonEmptyCursor) ne)
+      let lbes = maybe [] (NE.toList . rebuildNonEmptyCursor) ne
       md <- drawLogbookEntries lbes
       tw <- drawLogbookTotal (Just u) lbes
       pure $ Just $ vBox $ [ow, fromMaybe emptyWidget md] ++ maybeToList tw
@@ -580,7 +583,7 @@ drawLogbook :: Logbook -> MDrawer
 drawLogbook (LogClosed ls) = do
   md <- drawLogbookEntries ls
   tw <- drawLogbookTotal Nothing ls
-  pure $ Just $ vBox $ maybe [] (: []) md ++ maybeToList tw
+  pure $ Just $ vBox $ maybeToList md ++ maybeToList tw
 drawLogbook (LogOpen u ls) = do
   ow <- drawLogOpen u
   md <- drawLogbookEntries ls
@@ -589,7 +592,7 @@ drawLogbook (LogOpen u ls) = do
 
 drawLogbookEntries :: [LogbookEntry] -> MDrawer
 drawLogbookEntries [] = pure Nothing
-drawLogbookEntries lbes = (Just . vBox) <$> mapM drawLogbookEntry lbes
+drawLogbookEntries lbes = Just . vBox <$> mapM drawLogbookEntry lbes
 
 drawLogbookTotal :: Maybe UTCTime -> [LogbookEntry] -> MDrawer
 drawLogbookTotal Nothing [] = pure Nothing
@@ -603,7 +606,7 @@ drawLogbookTotal mopen lbes = do
     Just $
     hBox
       [ str "TOTAL: "
-      , hLimit (length ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: [Char])) $
+      , hLimit (length ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: String)) $
         vLimit 1 $ fill ' '
       , drawNominalDiffTime total
       ]

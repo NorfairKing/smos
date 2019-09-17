@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.File
   ( saveFile
@@ -11,6 +10,8 @@ module Smos.Actions.File
   , unlockFile
   , FL.FileLock
   ) where
+
+import Data.Maybe
 
 import Path
 import Path.IO
@@ -40,7 +41,7 @@ saveCurrentSmosFile = do
 saveSmosFile :: SmosFile -> Maybe SmosFile -> Path Abs File -> IO ()
 saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
   e <- doesFileExist smosStateFilePath
-  when (e && smosStateStartSmosFile == Nothing) $ removeFile smosStateFilePath
+  when (e && isNothing smosStateStartSmosFile) $ removeFile smosStateFilePath
   (case smosStateStartSmosFile of
      Nothing -> unless (sf' == emptySmosFile)
      Just sf'' -> unless (sf'' == sf')) $
