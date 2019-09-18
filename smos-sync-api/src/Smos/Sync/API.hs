@@ -58,10 +58,7 @@ instance FromJSON SyncFile where
 
 instance ToJSON SyncFile where
   toJSON SyncFile {..} =
-    object
-      [ "path" .= syncFilePath
-      , "contents" .= SB8.unpack (Base64.encode syncFileContents)
-      ]
+    object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
@@ -78,13 +75,10 @@ data SyncResponse =
 instance Validity SyncResponse
 
 instance FromJSON SyncResponse where
-  parseJSON =
-    withObject "SyncResponse" $ \o ->
-      SyncResponse <$> o .: "server-id" <*> o .: "items"
+  parseJSON = withObject "SyncResponse" $ \o -> SyncResponse <$> o .: "server-id" <*> o .: "items"
 
 instance ToJSON SyncResponse where
   toJSON SyncResponse {..} =
     object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
 
-type SyncAPI
-   = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
+type SyncAPI = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse

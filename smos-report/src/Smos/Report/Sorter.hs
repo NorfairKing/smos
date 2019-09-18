@@ -47,11 +47,9 @@ instance ToJSON Sorter where
   toJSON = toJSON . renderSorter
 
 sorterSortList :: Sorter -> [(RootedPath, Entry)] -> [(RootedPath, Entry)]
-sorterSortList s =
-  sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb
+sorterSortList s = sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb
 
-sorterOrdering ::
-     Sorter -> RootedPath -> Entry -> RootedPath -> Entry -> Ordering
+sorterOrdering :: Sorter -> RootedPath -> Entry -> RootedPath -> Entry -> Ordering
 sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
   where
     go s ea eb =
@@ -59,9 +57,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
         ByFile -> comparing resolveRootedPath rpa rpb
         ByPropertyTime pn ->
           comparing
-            (\e ->
-               M.lookup pn (entryProperties e) >>=
-               (parseTime . propertyValueText))
+            (\e -> M.lookup pn (entryProperties e) >>= (parseTime . propertyValueText))
             ea
             eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
@@ -79,9 +75,7 @@ parseSorter = parseMaybe sorterP
 type P = Parsec Void Text
 
 sorterP :: P Sorter
-sorterP =
-  try byFileP <|> try byPropertyAsTimeP <|> try byPropertyP <|> try reverseP <|>
-  andThenP
+sorterP = try byFileP <|> try byPropertyAsTimeP <|> try byPropertyP <|> try reverseP <|> andThenP
 
 byFileP :: P Sorter
 byFileP = do
@@ -114,10 +108,7 @@ andThenP = do
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 renderSorter :: Sorter -> Text
@@ -127,5 +118,4 @@ renderSorter f =
     ByProperty pn -> "property:" <> propertyNameText pn
     ByPropertyTime pn -> "property-as-time:" <> propertyNameText pn
     Reverse s' -> "reverse:" <> renderSorter s'
-    AndThen s1 s2 ->
-      T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]
+    AndThen s1 s2 -> T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]

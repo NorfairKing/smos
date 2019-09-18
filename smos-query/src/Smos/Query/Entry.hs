@@ -22,12 +22,8 @@ entry :: EntrySettings -> Q ()
 entry EntrySettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles entrySetHideArchive .| parseSmosFiles .|
-    printShouldPrint PrintWarning .|
+    streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter
-      (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
-  let ees =
-        maybe id sorterSortList entrySetSorter $
-        map (second forestCursorCurrent) tups
+    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
+  let ees = maybe id sorterSortList entrySetSorter $ map (second forestCursorCurrent) tups
   liftIO $ putTableLn $ renderEntryTable entrySetProjection ees

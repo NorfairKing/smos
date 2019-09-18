@@ -70,23 +70,16 @@ syncSmosSyncClient SyncSettings {..} = do
 
 runInitialSync :: ClientEnv -> IO ClientStore
 runInitialSync cenv = do
-  let clientStore =
-        Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
+  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
   errOrResp <- runClient cenv $ clientSync req
   SyncResponse {..} <-
     case errOrResp of
       Left err -> die $ show err
       Right resp -> pure resp
-  let items =
-        Mergeful.mergeSyncResponseFromServer
-          Mergeful.initialClientStore
-          syncResponseItems
+  let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
   let newClientStore =
-        ClientStore
-          { clientStoreServerUUID = syncResponseServerId
-          , clientStoreItems = items
-          }
+        ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
   pure newClientStore
 
 runSync :: ClientEnv -> ClientStore -> IO ClientStore
@@ -108,8 +101,7 @@ runSync cenv clientStore = do
   let newClientStore =
         clientStore
           { clientStoreServerUUID = syncResponseServerId
-          , clientStoreItems =
-              Mergeful.mergeSyncResponseFromServer items syncResponseItems
+          , clientStoreItems = Mergeful.mergeSyncResponseFromServer items syncResponseItems
           }
   pure newClientStore
 
@@ -129,9 +121,7 @@ data ClientStore =
 instance Validity ClientStore
 
 instance FromJSON ClientStore where
-  parseJSON =
-    withObject "ClientStore" $ \o ->
-      ClientStore <$> o .: "server-id" <*> o .: "items"
+  parseJSON = withObject "ClientStore" $ \o -> ClientStore <$> o .: "server-id" <*> o .: "items"
 
 instance ToJSON ClientStore where
   toJSON ClientStore {..} =
@@ -148,8 +138,7 @@ instance Validity ClientMetaData
 
 instance FromJSON ClientMetaData where
   parseJSON =
-    withObject "ClientMetaData" $ \o ->
-      ClientMetaData <$> o .: "server-id" <*> o .: "items"
+    withObject "ClientMetaData" $ \o -> ClientMetaData <$> o .: "server-id" <*> o .: "items"
 
 instance ToJSON ClientMetaData where
   toJSON ClientMetaData {..} =
@@ -167,16 +156,11 @@ instance Validity SyncFileMeta
 
 instance FromJSON SyncFileMeta where
   parseJSON =
-    withObject "SyncFileMeta" $ \o ->
-      SyncFileMeta <$> o .: "uuid" <*> o .: "hash" <*> o .: "time"
+    withObject "SyncFileMeta" $ \o -> SyncFileMeta <$> o .: "uuid" <*> o .: "hash" <*> o .: "time"
 
 instance ToJSON SyncFileMeta where
   toJSON SyncFileMeta {..} =
-    object
-      [ "uuid" .= syncFileMetaUUID
-      , "hash" .= syncFileMetaHash
-      , "time" .= syncFileMetaTime
-      ]
+    object ["uuid" .= syncFileMetaUUID, "hash" .= syncFileMetaHash, "time" .= syncFileMetaTime]
 
 readStoreMeta :: Path Abs File -> IO (Maybe ClientMetaData)
 readStoreMeta p = do
@@ -200,14 +184,12 @@ readSyncFiles dir =
        contents <- SB.readFile (fromAbsFile $ resolveRootedPath rp)
        pure (rel, contents))
 
-consolidateInitialStoreWithFiles ::
-     ClientStore -> Map (Path Rel File) ByteString -> ClientStore
+consolidateInitialStoreWithFiles :: ClientStore -> Map (Path Rel File) ByteString -> ClientStore
 consolidateInitialStoreWithFiles cs contentsMap =
   let Mergeful.ClientStore {..} = clientStoreItems cs
    in if not
            (null clientStoreAddedItems &&
-            null clientStoreDeletedItems &&
-            null clientStoreSyncedButChangedItems)
+            null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
         then error "should not happen: initial"
         else cs {clientStoreItems = items}
   where
@@ -229,15 +211,12 @@ consolidateInitialStoreWithFiles cs contentsMap =
     items = M.foldlWithKey go (clientStoreItems cs) contentsMap
 
 makeAlreadySyncedMap :: Mergeful.ClientStore i SyncFile -> Map (Path Rel File) i
-makeAlreadySyncedMap cs =
-  M.fromList $ map go $ M.toList (Mergeful.clientStoreSyncedItems cs)
+makeAlreadySyncedMap cs = M.fromList $ map go $ M.toList (Mergeful.clientStoreSyncedItems cs)
   where
     go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, i)
 
-consolidateMetaWithFiles ::
-     ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
-consolidateMetaWithFiles ClientMetaData {..} contentsMap =
-  ClientStore clientMetaDataServerId items
+consolidateMetaWithFiles :: ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
+consolidateMetaWithFiles ClientMetaData {..} contentsMap = ClientStore clientMetaDataServerId items
   where
     items
       -- The existing files need to be checked for deletions and changes.
@@ -269,10 +248,7 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap =
                                syncFileMetaUUID
                                (Mergeful.Timed
                                   { Mergeful.timedValue =
-                                      SyncFile
-                                        { syncFilePath = rf
-                                        , syncFileContents = contents
-                                        }
+                                      SyncFile {syncFilePath = rf, syncFileContents = contents}
                                   , timedTime = syncFileMetaTime
                                   }) $
                              Mergeful.clientStoreSyncedItems s
@@ -284,16 +260,12 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap =
                                syncFileMetaUUID
                                (Mergeful.Timed
                                   { Mergeful.timedValue =
-                                      SyncFile
-                                        { syncFilePath = rf
-                                        , syncFileContents = contents
-                                        }
+                                      SyncFile {syncFilePath = rf, syncFileContents = contents}
                                   , timedTime = syncFileMetaTime
                                   }) $
                              Mergeful.clientStoreSyncedButChangedItems s
                          }
-          syncedChangedAndDeleted =
-            M.foldlWithKey go1 Mergeful.initialClientStore clientMetaDataMap
+          syncedChangedAndDeleted = M.foldlWithKey go1 Mergeful.initialClientStore clientMetaDataMap
           go2 ::
                Mergeful.ClientStore UUID SyncFile
             -> Path Rel File
@@ -302,10 +274,7 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap =
           go2 s rf contents =
             let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
              in Mergeful.addItemToClientStore sf s
-       in M.foldlWithKey
-            go2
-            syncedChangedAndDeleted
-            (contentsMap `M.difference` clientMetaDataMap)
+       in M.foldlWithKey go2 syncedChangedAndDeleted (contentsMap `M.difference` clientMetaDataMap)
 
 -- TODO this could be optimised using the sync response
 saveClientStore :: Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
@@ -320,8 +289,7 @@ makeClientMetaData ClientStore {..} =
   let Mergeful.ClientStore {..} = clientStoreItems
    in if not
            (null clientStoreAddedItems &&
-            null clientStoreDeletedItems &&
-            null clientStoreSyncedButChangedItems)
+            null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
         then error "Should not happen: make meta"
         else let go ::
                       Map (Path Rel File) SyncFileMeta
@@ -349,10 +317,8 @@ saveSyncFiles dir store = saveContentsMap dir $ makeContentsMap store
 
 saveContentsMap :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
 saveContentsMap dir cm = do
-  tmpDir1 <-
-    resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
-  tmpDir2 <-
-    resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
+  tmpDir1 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
+  tmpDir2 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
   writeAllTo tmpDir1
   renameDir dir tmpDir2
   renameDir tmpDir1 dir
@@ -367,8 +333,7 @@ saveContentsMap dir cm = do
           ensureDir $ parent f
           SB.writeFile (fromAbsFile f) bs
 
-makeContentsMap ::
-     Mergeful.ClientStore UUID SyncFile -> Map (Path Rel File) ByteString
+makeContentsMap :: Mergeful.ClientStore UUID SyncFile -> Map (Path Rel File) ByteString
 makeContentsMap Mergeful.ClientStore {..} =
   M.fromList $
   map (\SyncFile {..} -> (syncFilePath, syncFileContents)) $

@@ -43,37 +43,24 @@ data LogEventType
   | TimestampEvent TimestampName
   deriving (Show, Eq, Ord, Generic)
 
-makeLogReport ::
-     ZonedTime -> Period -> TimeBlock -> [(RootedPath, Entry)] -> LogReport
+makeLogReport :: ZonedTime -> Period -> TimeBlock -> [(RootedPath, Entry)] -> LogReport
 makeLogReport zt pe tb =
   divideIntoBlocks (logEntryDay $ zonedTimeZone zt) tb .
   filter (filterPeriod zt pe . logEventTimestamp . logEntryEvent) .
   sortOn logEntryEvent . concatMap (uncurry $ makeLogEntries $ zonedTimeZone zt)
 
 logEntryDay :: TimeZone -> LogEntry -> Day
-logEntryDay tz =
-  localDay . utcToLocalTime tz . logEventTimestamp . logEntryEvent
+logEntryDay tz = localDay . utcToLocalTime tz . logEventTimestamp . logEntryEvent
 
 makeLogEntries :: TimeZone -> RootedPath -> Entry -> [LogEntry]
 makeLogEntries tz rp e =
-  map
-    (\le ->
-       LogEntry
-         { logEntryHeader = entryHeader e
-         , logEntryFilePath = rp
-         , logEntryEvent = le
-         }) $
-  concat
-    [ makeLogbookLogEntries e
-    , makeStateHistoryLogEntries e
-    , makeTimestampLogEntries tz e
-    ]
+  map (\le -> LogEntry {logEntryHeader = entryHeader e, logEntryFilePath = rp, logEntryEvent = le}) $
+  concat [makeLogbookLogEntries e, makeStateHistoryLogEntries e, makeTimestampLogEntries tz e]
 
 makeLogbookLogEntries :: Entry -> [LogEvent]
 makeLogbookLogEntries e = go (entryLogbook e)
   where
-    go (LogOpen u es) =
-      LogEvent {logEventTimestamp = u, logEventType = ClockIn} : goEs es
+    go (LogOpen u es) = LogEvent {logEventTimestamp = u, logEventType = ClockIn} : goEs es
     go (LogClosed es) = goEs es
     goEs = concatMap goE
     goE LogbookEntry {..} =
@@ -82,17 +69,13 @@ makeLogbookLogEntries e = go (entryLogbook e)
       ]
 
 makeStateHistoryLogEntries :: Entry -> [LogEvent]
-makeStateHistoryLogEntries =
-  map (uncurry go) . conseqs . unStateHistory . entryStateHistory
+makeStateHistoryLogEntries = map (uncurry go) . conseqs . unStateHistory . entryStateHistory
   where
     go :: StateHistoryEntry -> StateHistoryEntry -> LogEvent
     go old new =
       LogEvent
         { logEventTimestamp = stateHistoryEntryTimestamp new
-        , logEventType =
-            StateChange
-              (stateHistoryEntryNewState old)
-              (stateHistoryEntryNewState new)
+        , logEventType = StateChange (stateHistoryEntryNewState old) (stateHistoryEntryNewState new)
         }
     conseqs :: [a] -> [(a, a)]
     conseqs [] = []

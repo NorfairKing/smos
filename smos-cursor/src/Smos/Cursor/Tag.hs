@@ -46,8 +46,7 @@ instance Validity TagCursor where
       ]
 
 tagCursorTextCursorL :: Lens' TagCursor TextCursor
-tagCursorTextCursorL =
-  lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
+tagCursorTextCursorL = lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}
 
 emptyTagCursor :: TagCursor
 emptyTagCursor = TagCursor emptyTextCursor
@@ -65,12 +64,10 @@ tagCursorAppend :: Char -> TagCursor -> Maybe TagCursor
 tagCursorAppend c = tagCursorTextCursorL (textCursorAppend c) >=> constructValid
 
 tagCursorDelete :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
-tagCursorDelete =
-  focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
+tagCursorDelete = focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorDelete
 
 tagCursorRemove :: TagCursor -> Maybe (DeleteOrUpdate TagCursor)
-tagCursorRemove =
-  focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
+tagCursorRemove = focusPossibleDeleteOrUpdate tagCursorTextCursorL textCursorRemove
 
 tagCursorSelectStart :: TagCursor -> TagCursor
 tagCursorSelectStart = tagCursorTextCursorL %~ textCursorSelectStart

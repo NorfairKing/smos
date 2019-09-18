@@ -17,8 +17,7 @@ spec = do
   describe "zeroOutByFilter" $
     it "produces valid smos files" $ producesValidsOnValids3 zeroOutByFilter
   describe "trimLogbookEntry" $
-    it "produces valid logbook entries" $
-    producesValidsOnValids3 trimLogbookEntry
+    it "produces valid logbook entries" $ producesValidsOnValids3 trimLogbookEntry
   describe "trimLogbookEntryTo" $
     it "produces valid logbook entries" $
     forAllValid $ \tz -> producesValidsOnValids3 $ trimLogbookEntryTo tz

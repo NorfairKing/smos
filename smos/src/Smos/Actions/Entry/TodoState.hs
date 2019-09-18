@@ -27,8 +27,7 @@ allTodoStatePlainActions =
     s <- states
     pure $ a s
   where
-    states =
-      ["TODO", "NEXT", "STARTED", "READY", "WAITING", "DONE", "CANCELLED"]
+    states = ["TODO", "NEXT", "STARTED", "READY", "WAITING", "DONE", "CANCELLED"]
 
 allTodoStateUsingCharActions :: [ActionUsing Char]
 allTodoStateUsingCharActions = []
@@ -38,8 +37,7 @@ entrySetTodoState ts =
   Action
     { actionName = "entrySetTodoState_" <> ActionName (todoStateText ts)
     , actionFunc = modifyMTodoStateM $ const $ Just ts
-    , actionDescription =
-        "Set the given TODO state of the selected current entry"
+    , actionDescription = "Set the given TODO state of the selected current entry"
     }
 
 entryToggleTodoState :: TodoState -> Action
@@ -53,8 +51,7 @@ entryToggleTodoState ts =
             if ts == ts'
               then Nothing
               else Just ts
-    , actionDescription =
-        "Toggle the given TODO state of the selected current entry"
+    , actionDescription = "Toggle the given TODO state of the selected current entry"
     }
 
 entryUnsetTodoState :: Action
@@ -73,8 +70,7 @@ subtreeSetTodoState ts =
         modifyFileCursorS $ \sfc -> do
           now <- liftIO getCurrentTime
           pure $ smosFileSubtreeSetTodoState now (Just ts) sfc
-    , actionDescription =
-        "Set the given TODO state on all of the entries in the current subtree"
+    , actionDescription = "Set the given TODO state on all of the entries in the current subtree"
     }
 
 subtreeUnsetTodoState :: Action
@@ -85,6 +81,5 @@ subtreeUnsetTodoState =
         modifyFileCursorS $ \sfc -> do
           now <- liftIO getCurrentTime
           pure $ smosFileSubtreeSetTodoState now Nothing sfc
-    , actionDescription =
-        "Unset the TODO state on all of the entries in the current subtree"
+    , actionDescription = "Unset the TODO state on all of the entries in the current subtree"
     }

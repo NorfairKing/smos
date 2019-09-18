@@ -22,8 +22,7 @@ produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
 produceNextActionReport src = do
   wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
   sourceToList $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .|
-    parseSmosFiles .|
+    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles .|
     printShouldPrint PrintWarning .|
     smosFileEntries .|
     C.filter (isNextAction . snd) .|

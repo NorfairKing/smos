@@ -2,20 +2,16 @@ module Smos.Data.EncodingSpec
   ( spec
   ) where
 
+import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-
-import Test.Hspec
-import Test.Validity
-
-import Text.Show.Pretty
-
-import Control.Monad
-
 import Smos.Data
 import Smos.Data.Gen ()
+import Test.Hspec
+import Test.Validity
+import Text.Show.Pretty
 
 spec :: Spec
 spec = do

@@ -3,14 +3,11 @@ module Smos.Sync.Client.SaveSpec
   ) where
 
 import qualified Data.Map as M
-
-import Test.Hspec
-import Test.Validity
-
-import Smos.Sync.Client.TestUtils
-
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
+import Smos.Sync.Client.TestUtils
+import Test.Hspec
+import Test.Validity
 
 spec :: Spec
 spec =

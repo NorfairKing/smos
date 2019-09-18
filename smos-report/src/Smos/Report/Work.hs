@@ -38,18 +38,12 @@ instance Validity WorkReport
 instance Semigroup WorkReport where
   wr1 <> wr2 =
     WorkReport
-      { workReportResultEntries =
-          workReportResultEntries wr1 <> workReportResultEntries wr2
+      { workReportResultEntries = workReportResultEntries wr1 <> workReportResultEntries wr2
       , workReportEntriesWithoutContext =
-          workReportEntriesWithoutContext wr1 <>
-          workReportEntriesWithoutContext wr2
-      , workReportAgendaEntries =
-          workReportAgendaEntries wr1 <> workReportAgendaEntries wr2
+          workReportEntriesWithoutContext wr1 <> workReportEntriesWithoutContext wr2
+      , workReportAgendaEntries = workReportAgendaEntries wr1 <> workReportAgendaEntries wr2
       , workReportCheckViolations =
-          M.unionWith
-            (++)
-            (workReportCheckViolations wr1)
-            (workReportCheckViolations wr2)
+          M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2)
       }
 
 instance Monoid WorkReport where
@@ -72,8 +66,7 @@ data WorkReportContext =
     }
   deriving (Show, Generic)
 
-makeWorkReport ::
-     WorkReportContext -> RootedPath -> ForestCursor Entry -> WorkReport
+makeWorkReport :: WorkReportContext -> RootedPath -> ForestCursor Entry -> WorkReport
 makeWorkReport WorkReportContext {..} rp fc =
   let cur = forestCursorCurrent fc
       match b = [(rp, cur) | b]
@@ -81,28 +74,21 @@ makeWorkReport WorkReportContext {..} rp fc =
       filterWithBase f = combineFilter f workReportContextBaseFilter
       currentFilter =
         filterWithBase $
-        combineFilter
-          workReportContextCurrentContext
-          workReportContextAdditionalFilter
+        combineFilter workReportContextCurrentContext workReportContextAdditionalFilter
       matchesSelectedContext = filterPredicate currentFilter rp fc
       matchesAnyContext =
-        any (\f -> filterPredicate (filterWithBase f) rp fc) $
-        M.elems workReportContextContexts
+        any (\f -> filterPredicate (filterWithBase f) rp fc) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext
         , workReportEntriesWithoutContext =
             match $
-            maybe
-              True
-              (\f -> filterPredicate f rp fc)
-              workReportContextBaseFilter &&
+            maybe True (\f -> filterPredicate f rp fc) workReportContextBaseFilter &&
             matchesNoContext
         , workReportAgendaEntries =
             let go ae =
                   let day = timestampDay (agendaEntryTimestamp ae)
-                      today =
-                        localDay (zonedTimeToLocalTime workReportContextNow)
+                      today = localDay (zonedTimeToLocalTime workReportContextNow)
                    in case agendaEntryTimestampName ae of
                         "SCHEDULED" -> day <= today
                         "DEADLINE" -> day <= addDays 7 today
@@ -115,8 +101,7 @@ makeWorkReport WorkReportContext {..} rp fc =
                          if filterPredicate (filterWithBase f) rp fc
                            then Nothing
                            else Just (rp, cur)
-                    in M.map (: []) . M.mapMaybe id $
-                       M.fromSet go workReportContextChecks
+                    in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks
               else M.empty
         }
 
@@ -127,9 +112,7 @@ finishWorkReport ms wr =
     Just s ->
       WorkReport
         { workReportAgendaEntries = workReportAgendaEntries wr
-        , workReportResultEntries =
-            sorterSortList s $ workReportResultEntries wr
-        , workReportEntriesWithoutContext =
-            sorterSortList s $ workReportEntriesWithoutContext wr
+        , workReportResultEntries = sorterSortList s $ workReportResultEntries wr
+        , workReportEntriesWithoutContext = sorterSortList s $ workReportEntriesWithoutContext wr
         , workReportCheckViolations = workReportCheckViolations wr
         }

@@ -25,11 +25,7 @@ import Options.Applicative
 import Smos.Report.OptParse.Types
 
 combineToConfig ::
-     SmosReportConfig
-  -> Flags
-  -> Environment
-  -> Maybe Configuration
-  -> IO SmosReportConfig
+     SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
   wfs <-
     case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
@@ -50,11 +46,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
         ad <- resolveDir' wd
         pure $ ProjectsAbsolute ad
   apfs <-
-    case msum
-           [ flagArchivedProjectsDir
-           , envArchivedProjectsDir
-           , mc >>= confArchivedProjectsDir
-           ] of
+    case msum [flagArchivedProjectsDir, envArchivedProjectsDir, mc >>= confArchivedProjectsDir] of
       Nothing -> pure $ smosReportConfigArchivedProjectsFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
@@ -67,8 +59,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
       , smosReportConfigArchivedProjectsFileSpec = apfs
       , smosReportConfigWorkBaseFilter =
           (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src
-      , smosReportConfigContexts =
-          fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
+      , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
 parseFlags :: Parser Flags
@@ -81,12 +72,7 @@ parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
   option
     (Just <$> str)
-    (mconcat
-       [ metavar "FILEPATH"
-       , help "The config file to use"
-       , long "config-file"
-       , value Nothing
-       ])
+    (mconcat [metavar "FILEPATH", help "The config file to use", long "config-file", value Nothing])
 
 parseWorkflowDirFlag :: Parser (Maybe FilePath)
 parseWorkflowDirFlag =
@@ -104,11 +90,7 @@ parseArchiveDirFlag =
   option
     (Just <$> str)
     (mconcat
-       [ metavar "FILEPATH"
-       , help "The archive directory to use"
-       , long "archive-dir"
-       , value Nothing
-       ])
+       [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing])
 
 parseProjectsDirFlag :: Parser (Maybe FilePath)
 parseProjectsDirFlag =
@@ -139,25 +121,17 @@ getEnvironment = do
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
   pure
     Environment
-      { envConfigFile =
-          msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
+      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
       , envWorkflowDir =
-          msum $
-          map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
-      , envArchiveDir =
-          msum $
-          map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
+          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
+      , envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
       , envProjectsDir =
-          msum $
-          map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
+          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
       , envArchivedProjectsDir =
           msum $
           map
             getSmosEnv
-            [ "ARCHIVED_PROJECTS_DIRECTORY"
-            , "ARCHIVED_PROJECTS_DIR"
-            , "ARCHIVED_PROJECTS_DIR"
-            ]
+            ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
 
 defaultConfigFiles :: IO [Path Abs File]
@@ -177,12 +151,10 @@ defaultConfigFiles = do
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =
-  fmap (left prettyPrintParseException) $
-  decodeFileEither $ fromAbsFile configFile
+  fmap (left prettyPrintParseException) $ decodeFileEither $ fromAbsFile configFile
 
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
-parseJSONConfig configFile =
-  JSON.eitherDecodeFileStrict $ fromAbsFile configFile
+parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
 getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do

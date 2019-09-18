@@ -37,11 +37,7 @@ getInstructions sqc = do
   combineToInstructions sqc args env config
 
 combineToInstructions ::
-     SmosQueryConfig
-  -> Arguments
-  -> Environment
-  -> Maybe Configuration
-  -> IO Instructions
+     SmosQueryConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
@@ -55,27 +51,23 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
           DispatchEntry
             EntrySettings
               { entrySetFilter = entryFlagFilter
-              , entrySetProjection =
-                  fromMaybe defaultProjection entryFlagProjection
+              , entrySetProjection = fromMaybe defaultProjection entryFlagProjection
               , entrySetSorter = entryFlagSorter
-              , entrySetHideArchive =
-                  hideArchiveWithDefault HideArchive entryFlagHideArchive
+              , entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
               }
         CommandWaiting WaitingFlags {..} ->
           pure $
           DispatchWaiting
             WaitingSettings
               { waitingSetFilter = waitingFlagFilter
-              , waitingSetHideArchive =
-                  hideArchiveWithDefault HideArchive waitingFlagHideArchive
+              , waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive
               }
         CommandNext NextFlags {..} ->
           pure $
           DispatchNext
             NextSettings
               { nextSetFilter = nextFlagFilter
-              , nextSetHideArchive =
-                  hideArchiveWithDefault HideArchive nextFlagHideArchive
+              , nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
               }
         CommandClock ClockFlags {..} ->
           pure $
@@ -83,25 +75,20 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
             ClockSettings
               { clockSetFilter = clockFlagFilter
               , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-              , clockSetResolution =
-                  fromMaybe MinutesResolution clockFlagResolutionFlags
+              , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
               , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
-              , clockSetOutputFormat =
-                  fromMaybe OutputPretty clockFlagOutputFormat
+              , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
               , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
-              , clockSetHideArchive =
-                  hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
+              , clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
               }
         CommandAgenda AgendaFlags {..} ->
           pure $
           DispatchAgenda
             AgendaSettings
               { agendaSetFilter = agendaFlagFilter
-              , agendaSetHistoricity =
-                  fromMaybe HistoricalAgenda agendaFlagHistoricity
+              , agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity
               , agendaSetBlock = fromMaybe OneBlock agendaFlagBlock
-              , agendaSetHideArchive =
-                  hideArchiveWithDefault HideArchive agendaFlagHideArchive
+              , agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive
               }
         CommandWork WorkFlags {..} -> do
           let wc func = func <$> (mc >>= confWorkConfiguration)
@@ -121,13 +108,9 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 , workSetChecks = fromMaybe S.empty $ wc workConfChecks
                 , workSetProjection =
                     fromMaybe defaultProjection $
-                    combineMaybe
-                      (<>)
-                      (mwc workConfProjection)
-                      workFlagProjection
+                    combineMaybe (<>) (mwc workConfProjection) workFlagProjection
                 , workSetSorter = mwc workConfSorter <|> workFlagSorter
-                , workSetHideArchive =
-                    hideArchiveWithDefault HideArchive workFlagHideArchive
+                , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
         CommandProjects -> pure DispatchProjects
         CommandLog LogFlags {..} ->
@@ -137,16 +120,13 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               { logSetFilter = logFlagFilter
               , logSetPeriod = fromMaybe AllTime logFlagPeriodFlags
               , logSetBlock = fromMaybe OneBlock logFlagBlockFlags
-              , logSetHideArchive =
-                  hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
+              , logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
               }
         CommandTags TagsFlags {..} ->
           pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
         CommandStats StatsFlags {..} ->
           pure $
-          DispatchStats
-            StatsSettings
-              {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+          DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
     getSettings = do
       src <-
         Report.combineToConfig
@@ -224,8 +204,7 @@ parseCommandEntry = info parser modifier
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
       CommandEntry <$>
-      (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*>
-       parseSorterArgs <*>
+      (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs <*>
        parseHideArchiveFlag)
 
 parseCommandWork :: ParserInfo Command
@@ -234,8 +213,7 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork <$>
-      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*>
-       parseProjectionArgs <*>
+      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseProjectionArgs <*>
        parseSorterArgs <*>
        parseHideArchiveFlag)
 
@@ -243,16 +221,13 @@ parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the \"waiting\" tasks"
-    parser =
-      CommandWaiting <$>
-      (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
+    parser = CommandWaiting <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the next actions"
-    parser =
-      CommandNext <$> (NextFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
+    parser = CommandNext <$> (NextFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
@@ -260,8 +235,7 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock <$>
-      (ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseResolution <*>
-       parseTimeBlock <*>
+      (ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseResolution <*> parseTimeBlock <*>
        parseOutputFormat <*>
        parseClockReportStyle <*>
        parseHideArchiveFlag)
@@ -276,8 +250,7 @@ parseResolution =
 
 parseClockReportStyle :: Parser (Maybe ClockReportStyle)
 parseClockReportStyle =
-  Just <$> (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|>
-  pure Nothing
+  Just <$> (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|> pure Nothing
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
@@ -285,8 +258,7 @@ parseCommandAgenda = info parser modifier
     modifier = fullDesc <> progDesc "Print the agenda"
     parser =
       CommandAgenda <$>
-      (AgendaFlags <$> parseFilterArgs <*> parseHistoricityFlag <*>
-       parseTimeBlock <*>
+      (AgendaFlags <$> parseFilterArgs <*> parseHistoricityFlag <*> parseTimeBlock <*>
        parseHideArchiveFlag)
 
 parseCommandProjects :: ParserInfo Command
@@ -301,15 +273,12 @@ parseCommandLog = info parser modifier
     modifier = fullDesc <> progDesc "Print a log of what has happened."
     parser =
       CommandLog <$>
-      (LogFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*>
-       parseHideArchiveFlag)
+      (LogFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*> parseHideArchiveFlag)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
   where
-    modifier =
-      fullDesc <>
-      progDesc "Print the stats actions and warn if a file does not have one."
+    modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
     parser = CommandStats <$> (StatsFlags <$> parsePeriod)
 
 parseCommandTags :: ParserInfo Command
@@ -323,28 +292,21 @@ parseFlags = Flags <$> Report.parseFlags
 
 parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
 parseHistoricityFlag =
-  Just <$>
-  (flag' HistoricalAgenda (long "historical") <|>
-   flag' FutureAgenda (long "future")) <|>
+  Just <$> (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future")) <|>
   pure Nothing
 
 parseHideArchiveFlag :: Parser (Maybe HideArchive)
 parseHideArchiveFlag =
   (Just <$>
-   (flag'
-      HideArchive
-      (mconcat [long "hide-archived", help "ignore archived files."]) <|>
+   (flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."]) <|>
     flag'
       Don'tHideArchive
-      (mconcat
-         [short 'a', long "show-archived", help "Don't ignore archived files."]))) <|>
+      (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."]))) <|>
   pure Nothing
 
 parseContextNameArg :: Parser ContextName
 parseContextNameArg =
-  argument
-    (ContextName <$> str)
-    (mconcat [metavar "CONTEXT", help "The context that you are in"])
+  argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
 parseFilterArgs :: Parser (Maybe Filter)
 parseFilterArgs =
@@ -388,8 +350,7 @@ parseSorterArgs =
   many
     (option
        (Just <$> maybeReader (parseSorter . T.pack))
-       (mconcat
-          [long "sort", metavar "SORTER", help "A sorter to sort entries by"]))
+       (mconcat [long "sort", metavar "SORTER", help "A sorter to sort entries by"]))
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
@@ -419,22 +380,18 @@ parsePeriod =
       BeginEnd <$>
       option
         (maybeReader parseLocalBegin)
-        (mconcat
-           [long "begin", metavar "LOCALTIME", help "start time (inclusive)"]) <*>
+        (mconcat [long "begin", metavar "LOCALTIME", help "start time (inclusive)"]) <*>
       option
         (maybeReader parseLocalEnd)
         (mconcat [long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
     parseLocalBegin :: String -> Maybe LocalTime
-    parseLocalBegin s =
-      LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
+    parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
     parseLocalEnd :: String -> Maybe LocalTime
     parseLocalEnd s =
-      (LocalTime <$> (addDays 1 <$> parseLocalDay s) <*> pure midnight) <|>
-      parseExactly s
+      (LocalTime <$> (addDays 1 <$> parseLocalDay s) <*> pure midnight) <|> parseExactly s
     parseExactly :: String -> Maybe LocalTime
     parseExactly s =
-      parseTimeM True defaultTimeLocale "%F %R" s <|>
-      parseTimeM True defaultTimeLocale "%F %T" s
+      parseTimeM True defaultTimeLocale "%F %R" s <|> parseTimeM True defaultTimeLocale "%F %T" s
     parseLocalDay :: String -> Maybe Day
     parseLocalDay = parseTimeM True defaultTimeLocale "%F"
 

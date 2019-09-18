@@ -21,9 +21,7 @@ import Smos.Sync.Server.Handler.Import as Server
 import Smos.Sync.Server.Serve as Server
 
 serverSpec :: SpecWith ClientEnv -> Spec
-serverSpec =
-  modifyMaxShrinks (const 0) .
-  modifyMaxSuccess (`div` 20) . around withTestServer
+serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer
 
 withTestServer :: (ClientEnv -> IO a) -> IO a
 withTestServer func = do

@@ -3,9 +3,7 @@
 module Smos.Sync.Client.Sync.Gen where
 
 import Data.GenValidity
-
 import Smos.Sync.API.Gen ()
-
 import Smos.Sync.Client.Sync
 
 instance GenValid ClientStore where

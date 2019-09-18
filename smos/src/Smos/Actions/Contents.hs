@@ -38,10 +38,8 @@ contentsInsert :: ActionUsing Char
 contentsInsert =
   ActionUsing
     { actionUsingName = "contentsInsert"
-    , actionUsingFunc =
-        \c -> modifyMContentsCursorWhenSelected (contentsCursorInsertChar c)
-    , actionUsingDescription =
-        "Insert a character into the contents in front of the cursor"
+    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelected (contentsCursorInsertChar c)
+    , actionUsingDescription = "Insert a character into the contents in front of the cursor"
     }
 
 contentsInsertNewline :: Action
@@ -49,18 +47,15 @@ contentsInsertNewline =
   Action
     { actionName = "contentsInsertNewline"
     , actionFunc = modifyMContentsCursorWhenSelected contentsCursorInsertNewline
-    , actionDescription =
-        "Insert a newline into the contents in front of the cursor"
+    , actionDescription = "Insert a newline into the contents in front of the cursor"
     }
 
 contentsAppend :: ActionUsing Char
 contentsAppend =
   ActionUsing
     { actionUsingName = "contentsAppend"
-    , actionUsingFunc =
-        \c -> modifyMContentsCursorWhenSelected (contentsCursorAppendChar c)
-    , actionUsingDescription =
-        "Append a character into the contents in front of the cursor"
+    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelected (contentsCursorAppendChar c)
+    , actionUsingDescription = "Append a character into the contents in front of the cursor"
     }
 
 contentsAppendNewline :: Action
@@ -68,8 +63,7 @@ contentsAppendNewline =
   Action
     { actionName = "contentsAppendNewline"
     , actionFunc = modifyMContentsCursorWhenSelected contentsCursorAppendNewline
-    , actionDescription =
-        "Append a newline into the contents in front of the cursor"
+    , actionDescription = "Append a newline into the contents in front of the cursor"
     }
 
 contentsRemove :: Action
@@ -92,8 +86,7 @@ contentsMoveLeft :: Action
 contentsMoveLeft =
   Action
     { actionName = "contentsMoveLeft"
-    , actionFunc =
-        modifyContentsCursorWhenSelectedM contentsCursorSelectPrevChar
+    , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectPrevChar
     , actionDescription = "Move left in the contents"
     }
 
@@ -101,8 +94,7 @@ contentsMoveRight :: Action
 contentsMoveRight =
   Action
     { actionName = "contentsMoveRight"
-    , actionFunc =
-        modifyContentsCursorWhenSelectedM contentsCursorSelectNextChar
+    , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectNextChar
     , actionDescription = "Move right in the contents"
     }
 
@@ -110,8 +102,7 @@ contentsMoveUp :: Action
 contentsMoveUp =
   Action
     { actionName = "contentsMoveUp"
-    , actionFunc =
-        modifyContentsCursorWhenSelectedM contentsCursorSelectPrevLine
+    , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectPrevLine
     , actionDescription = "Move up in the contents"
     }
 
@@ -119,8 +110,7 @@ contentsMoveDown :: Action
 contentsMoveDown =
   Action
     { actionName = "contentsMoveDown"
-    , actionFunc =
-        modifyContentsCursorWhenSelectedM contentsCursorSelectNextLine
+    , actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectNextLine
     , actionDescription = "Move down in the contents"
     }
 
@@ -128,17 +118,14 @@ contentsMoveToStartOfLine :: Action
 contentsMoveToStartOfLine =
   Action
     { actionName = "contentsMoveToStartOfLine"
-    , actionFunc =
-        modifyContentsCursorWhenSelected contentsCursorSelectStartOfLine
-    , actionDescription =
-        "Move to the start of the current line in the contents"
+    , actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectStartOfLine
+    , actionDescription = "Move to the start of the current line in the contents"
     }
 
 contentsMoveToEndOfLine :: Action
 contentsMoveToEndOfLine =
   Action
     { actionName = "contentsMoveToEndOfLine"
-    , actionFunc =
-        modifyContentsCursorWhenSelected contentsCursorSelectEndOfLine
+    , actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectEndOfLine
     , actionDescription = "Move to the of the current line in the contents"
     }

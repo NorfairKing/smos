@@ -2,12 +2,10 @@
 
 module Smos.Cursor.Report.NextSpec where
 
+import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Next.Gen ()
 import Test.Hspec
 import Test.Validity
-
-import Smos.Cursor.Report.Next
-
-import Smos.Cursor.Report.Next.Gen ()
 
 spec :: Spec
 spec = do

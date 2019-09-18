@@ -7,18 +7,15 @@ module Smos.Archive
   ) where
 
 import Data.Time
+import Data.Tree
 import Path
 import Path.IO
-import System.Exit
-import System.IO (hFlush, stdout)
-
-import Data.Tree
-
-import Smos.Data
-
 import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
+import Smos.Data
+import System.Exit
+import System.IO (hFlush, stdout)
 
 smosArchive :: SmosArchiveConfig -> IO ()
 smosArchive = runReaderT $ liftIO getSettings >>= archive
@@ -49,9 +46,7 @@ getToFile file = do
       let ext = fileExtension rf
       withoutExt <- setFileExtension "" rf
       today <- liftIO $ utctDay <$> getCurrentTime
-      let newRelFile =
-            fromRelFile withoutExt ++
-            "_" ++ formatTime defaultTimeLocale "%F" today
+      let newRelFile = fromRelFile withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F" today
       arf' <- parseRelFile newRelFile
       arf'' <- setFileExtension ext arf'
       pure $ archiveDir </> arf''
@@ -62,8 +57,7 @@ checkFromFile from = do
   case mErrOrSF of
     Nothing -> die $ unwords ["File does not exist:", fromAbsFile from]
     Just (Left e) ->
-      die $
-      unlines [unwords ["Failed to read file to archive:", fromAbsFile from], e]
+      die $ unlines [unwords ["Failed to read file to archive:", fromAbsFile from], e]
     Just (Right sf) ->
       unless (all (isDone . entryState) (concatMap flatten (smosFileForest sf))) $ do
         res <-
@@ -116,7 +110,5 @@ moveToArchive from to = do
     else do
       e2 <- doesFileExist to
       if e2
-        then die $
-             unwords
-               ["Proposed archive file", fromAbsFile to, "already exists."]
+        then die $ unwords ["Proposed archive file", fromAbsFile to, "already exists."]
         else renameFile from to

@@ -71,5 +71,4 @@ convRepinged =
     }
 
 insertHeaderString :: String -> SmosM ()
-insertHeaderString s =
-  modifyHeaderCursorWhenSelectedM $ \hc -> foldM (flip headerCursorInsert) hc s
+insertHeaderString s = modifyHeaderCursorWhenSelectedM $ \hc -> foldM (flip headerCursorInsert) hc s

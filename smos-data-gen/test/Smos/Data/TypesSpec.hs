@@ -7,20 +7,17 @@ module Smos.Data.TypesSpec
   ( spec
   ) where
 
+import Control.Monad
 import Data.Aeson as JSON
 import Data.Data
 import Data.Time
-
-import Control.Monad
-
+import Smos.Data.Gen ()
+import Smos.Data.Types
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
 import Test.Validity.Aeson
 import Test.Validity.Utils
-
-import Smos.Data.Gen ()
-import Smos.Data.Types
 
 spec :: Spec
 spec = do
@@ -56,12 +53,10 @@ spec = do
   textLikeJSONValid @Timestamp
   describe "parseTimestampString" $
     it "parses whatever timestampString outputs" $
-    forAllValid $ \ts ->
-      parseTimestampString (timestampString ts) `shouldBe` Just ts
+    forAllValid $ \ts -> parseTimestampString (timestampString ts) `shouldBe` Just ts
   describe "parseTimestampText" $
     it "parses whatever timestampText outputs" $
-    forAllValid $ \ts ->
-      parseTimestampText (timestampText ts) `shouldBe` Just ts
+    forAllValid $ \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
   eqSpecOnValid @TodoState
   ordSpecOnValid @TodoState
   genValidSpec @TodoState

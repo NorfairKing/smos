@@ -39,12 +39,10 @@ mkSmosApp sc@SmosConfig {..} =
     , appAttrMap = defaultAttrMap
     }
 
-smosChooseCursor ::
-     s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
+smosChooseCursor :: s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
 smosChooseCursor _ = showCursorNamed ResourceTextCursor
 
-smosHandleEvent ::
-     SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
+smosHandleEvent :: SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
 smosHandleEvent cf s e = do
   let func =
         case keyMapFunc s e (configKeyMap cf) of
@@ -65,15 +63,10 @@ smosHandleEvent cf s e = do
     Continue () -> B.continue s'
   where
     recordKeyPress :: KeyPress -> SmosM ()
-    recordKeyPress kp =
-      modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
+    recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
     recordCursorHistory :: SmosM ()
     recordCursorHistory =
-      modify $ \ss ->
-        ss
-          { smosStateCursorHistory =
-              smosStateCursor ss : smosStateCursorHistory ss
-          }
+      modify $ \ss -> ss {smosStateCursorHistory = smosStateCursor ss : smosStateCursorHistory ss}
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
@@ -86,19 +79,14 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
         VtyEvent vtye ->
           case vtye of
             Vty.EvKey k mods ->
-              case NE.nonEmpty $
-                   findActivations (smosStateKeyHistory s) (KeyPress k mods) m of
+              case NE.nonEmpty $ findActivations (smosStateKeyHistory s) (KeyPress k mods) m of
                 Nothing -> NothingActivated
                 Just nems@(a :| _) ->
                   KeyActivated $ do
                     modify
                       (\ss ->
                          let dbi = smosStateDebugInfo ss
-                             dbi' =
-                               dbi
-                                 { debugInfoLastMatches =
-                                     Just $ NE.map activationDebug nems
-                                 }
+                             dbi' = dbi {debugInfoLastMatches = Just $ NE.map activationDebug nems}
                           in ss {smosStateDebugInfo = dbi'})
                     activationFunc a
             _ -> NothingActivated
@@ -111,8 +99,7 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
                   (\s_ ->
                      s_
                        { smosStateTime = now
-                       , smosStateCursor =
-                           editorCursorUpdateTime now $ smosStateCursor s_
+                       , smosStateCursor = editorCursorUpdateTime now $ smosStateCursor s_
                        })
             SmosSaveFile -> EventActivated saveCurrentSmosFile
         _ -> NothingActivated
@@ -134,8 +121,7 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-initState ::
-     ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
+initState :: ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
 initState zt p fl msf =
   SmosState
     { smosStateTime = zt
@@ -149,8 +135,7 @@ initState zt p fl msf =
     , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }
 
-initStateWithCursor ::
-     ZonedTime -> Path Abs File -> FileLock -> EditorCursor -> SmosState
+initStateWithCursor :: ZonedTime -> Path Abs File -> FileLock -> EditorCursor -> SmosState
 initStateWithCursor zt p fl ec =
   SmosState
     { smosStateTime = zt

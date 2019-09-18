@@ -27,11 +27,9 @@ waiting :: WaitingSettings -> Q ()
 waiting WaitingSettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .|
-    printShouldPrint PrintWarning .|
+    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter
-      (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
+    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
     smosCursorCurrents .|
     C.filter (isWaitingAction . snd) .|
     C.map (uncurry makeWaitingActionEntry)
@@ -40,8 +38,7 @@ waiting WaitingSettings {..} = do
 
 renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
 renderWaitingActionReport now =
-  formatAsTable .
-  map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
+  formatAsTable . map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
 
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =

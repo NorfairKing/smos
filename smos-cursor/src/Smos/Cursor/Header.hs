@@ -47,8 +47,7 @@ instance Validity HeaderCursor where
 
 headerCursorTextCursorL :: Lens' HeaderCursor TextCursor
 headerCursorTextCursorL =
-  lens headerCursorTextCursor $ \headerc textc ->
-    headerc {headerCursorTextCursor = textc}
+  lens headerCursorTextCursor $ \headerc textc -> headerc {headerCursorTextCursor = textc}
 
 -- fromJust is safe because makeTextCursor only works with text without newlines,
 -- and that is one of the validity requirements of 'Header'.
@@ -58,24 +57,19 @@ makeHeaderCursor = HeaderCursor . fromJust . makeTextCursor . headerText
 -- fromJust is safe because 'header' only returns Nothing if the text cursor contains
 -- an invalid header and it's one of the validity constraints that it doesn't.
 rebuildHeaderCursor :: HeaderCursor -> Header
-rebuildHeaderCursor =
-  fromJust . header . rebuildTextCursor . headerCursorTextCursor
+rebuildHeaderCursor = fromJust . header . rebuildTextCursor . headerCursorTextCursor
 
 headerCursorInsert :: Char -> HeaderCursor -> Maybe HeaderCursor
-headerCursorInsert c =
-  headerCursorTextCursorL (textCursorInsert c) >=> constructValid
+headerCursorInsert c = headerCursorTextCursorL (textCursorInsert c) >=> constructValid
 
 headerCursorAppend :: Char -> HeaderCursor -> Maybe HeaderCursor
-headerCursorAppend c =
-  headerCursorTextCursorL (textCursorAppend c) >=> constructValid
+headerCursorAppend c = headerCursorTextCursorL (textCursorAppend c) >=> constructValid
 
 headerCursorRemove :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
-headerCursorRemove =
-  focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorRemove
+headerCursorRemove = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorRemove
 
 headerCursorDelete :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
-headerCursorDelete =
-  focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorDelete
+headerCursorDelete = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorDelete
 
 headerCursorSelectStart :: HeaderCursor -> HeaderCursor
 headerCursorSelectStart = headerCursorTextCursorL %~ textCursorSelectStart

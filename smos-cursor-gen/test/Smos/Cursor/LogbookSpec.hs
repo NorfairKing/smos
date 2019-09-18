@@ -2,13 +2,11 @@
 
 module Smos.Cursor.LogbookSpec where
 
-import Test.Hspec
-import Test.Validity
-
-import Smos.Data.Gen ()
-
 import Smos.Cursor.Logbook
 import Smos.Cursor.Logbook.Gen ()
+import Smos.Data.Gen ()
+import Test.Hspec
+import Test.Validity
 
 spec :: Spec
 spec = do

@@ -45,30 +45,18 @@ startSmosOn p sc@SmosConfig {..} = do
     case errOrSF of
       Nothing -> pure Nothing
       Just (Left err) ->
-        die $
-        unlines
-          [ "Failed to read smos file"
-          , fromAbsFile p
-          , "could not parse it:"
-          , show err
-          ]
+        die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", show err]
       Just (Right sf) -> pure $ Just sf
   lock <- lockFile p
   case lock of
-    Nothing ->
-      die
-        "Failed to lock. Has this file already been opened in another instance of smos?"
+    Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
     Just fl -> do
       zt <- getZonedTime
       let s = initState zt p fl startF
       chan <- Brick.newBChan maxBound
       Left s' <-
         race
-          (Brick.customMain
-             (Vty.mkVty Vty.defaultConfig)
-             (Just chan)
-             (mkSmosApp sc)
-             s)
+          (Brick.customMain (Vty.mkVty Vty.defaultConfig) (Just chan) (mkSmosApp sc) s)
           (eventPusher chan)
       forM_ (smosStateAsyncs s') wait
       saveSmosFile

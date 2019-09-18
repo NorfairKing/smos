@@ -5,7 +5,6 @@ module Smos.Docs.Site
   ) where
 
 import Hakyll
-
 import Hakyll.Web.Sass
 
 smosDocsSite :: IO ()
@@ -16,11 +15,9 @@ smosDocsSite =
       compile copyFileCompiler
     match "css/*" $ do
       route $ setExtension "css"
-      compile
-        (sassCompilerWith sassDefConfig {sassIncludePaths = Just ["_sass"]})
+      compile (sassCompilerWith sassDefConfig {sassIncludePaths = Just ["_sass"]})
     match "pages/*" $ do
-      route $
-        composeRoutes (gsubRoute "pages/" (const "")) (setExtension "html")
+      route $ composeRoutes (gsubRoute "pages/" (const "")) (setExtension "html")
       compile $
         pandocCompiler >>= loadAndApplyTemplate "templates/page.html" pageCtx >>=
         loadAndApplyTemplate "templates/default.html" pageCtx >>=
@@ -30,8 +27,7 @@ smosDocsSite =
       compile $ do
         pages <- recentFirst =<< loadAll "pages/*"
         let indexCtx =
-              listField "pages" pageCtx (return pages) `mappend`
-              constField "title" "Home" `mappend`
+              listField "pages" pageCtx (return pages) `mappend` constField "title" "Home" `mappend`
               defaultContext
         getResourceBody >>= applyAsTemplate indexCtx >>=
           loadAndApplyTemplate "templates/default.html" indexCtx >>=

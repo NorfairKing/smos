@@ -18,9 +18,7 @@ newtype TagsReport =
   deriving (Show, Eq, Generic)
 
 instance Semigroup TagsReport where
-  tr1 <> tr2 =
-    TagsReport
-      {tagsReportMap = M.unionWith (+) (tagsReportMap tr1) (tagsReportMap tr2)}
+  tr1 <> tr2 = TagsReport {tagsReportMap = M.unionWith (+) (tagsReportMap tr1) (tagsReportMap tr2)}
 
 instance Monoid TagsReport where
   mempty = TagsReport {tagsReportMap = M.empty}

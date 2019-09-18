@@ -89,8 +89,7 @@ propertiesInsert =
   ActionUsing
     { actionUsingName = "propertiesInsert"
     , actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorInsert c
-    , actionUsingDescription =
-        "Insert a character at the cursor select the space after it"
+    , actionUsingDescription = "Insert a character at the cursor select the space after it"
     }
 
 propertiesAppend :: ActionUsing Char
@@ -98,8 +97,7 @@ propertiesAppend =
   ActionUsing
     { actionUsingName = "propertiesAppend"
     , actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorAppend c
-    , actionUsingDescription =
-        "Insert a character at the cursor select the space before it"
+    , actionUsingDescription = "Insert a character at the cursor select the space before it"
     }
 
 propertiesRemove :: Action
@@ -123,8 +121,7 @@ propertiesInsertNewProperty =
   Action
     { actionName = "propertiesInsertNewProperty"
     , actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyBefore
-    , actionDescription =
-        "Insert a new property before the currently selected property"
+    , actionDescription = "Insert a new property before the currently selected property"
     }
 
 propertiesAppendNewProperty :: Action
@@ -132,8 +129,7 @@ propertiesAppendNewProperty =
   Action
     { actionName = "propertiesAppendNewProperty"
     , actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyAfter
-    , actionDescription =
-        "Append a new property before the currently selected property"
+    , actionDescription = "Append a new property before the currently selected property"
     }
 
 propertiesEditProperty :: PropertyName -> Action

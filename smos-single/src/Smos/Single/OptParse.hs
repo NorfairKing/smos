@@ -31,8 +31,7 @@ getSettings = do
 
 getConfig :: Flags -> Environment -> IO (Maybe Configuration)
 getConfig Flags {..} Environment {..} =
-  fmap Configuration <$>
-  Report.getConfiguration flagReportFlags envReportEnvironment
+  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
@@ -79,8 +78,7 @@ parseFlags =
   Flags <$> some (strArgument (mconcat [help "The task", metavar "TASK"])) <*>
   option
     (Just <$> str)
-    (mconcat
-       [help "The file to put the task in", metavar "FILEPATH", value Nothing]) <*>
+    (mconcat [help "The file to put the task in", metavar "FILEPATH", value Nothing]) <*>
   Report.parseFlags
 
 getEnvironment :: IO Environment

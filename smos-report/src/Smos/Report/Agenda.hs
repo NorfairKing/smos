@@ -52,12 +52,9 @@ fitsHistoricity :: ZonedTime -> AgendaHistoricity -> AgendaEntry -> Bool
 fitsHistoricity zt ah ae =
   case ah of
     HistoricalAgenda -> True
-    FutureAgenda ->
-      timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime zt
+    FutureAgenda -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime zt
 
 type AgendaTableBlock a = Block a AgendaEntry
 
-divideIntoAgendaTableBlocks ::
-     TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
-divideIntoAgendaTableBlocks =
-  divideIntoBlocks (timestampDay . agendaEntryTimestamp)
+divideIntoAgendaTableBlocks :: TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
+divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimestamp)

@@ -47,8 +47,7 @@ instance ToJSON Configuration where
 
 instance FromJSON Configuration where
   parseJSON v =
-    flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "keys"
+    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "keys"
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
@@ -80,8 +79,7 @@ instance ToJSON KeybindingsConfiguration where
 instance FromJSON KeybindingsConfiguration where
   parseJSON =
     withObject "KeybindingsConfiguration" $ \o ->
-      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*>
-      o .:? "reports" <*>
+      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports" <*>
       o .:? "help"
 
 backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
@@ -128,8 +126,7 @@ instance ToJSON FileKeyConfigs where
 instance FromJSON FileKeyConfigs where
   parseJSON =
     withObject "FileKeyConfigs" $ \o ->
-      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*>
-      o .:? "contents" <*>
+      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*> o .:? "contents" <*>
       o .:? "timestamps" <*>
       o .:? "properties" <*>
       o .:? "state-history" <*>
@@ -144,12 +141,9 @@ backToFileKeyConfigs FileKeyMap {..} =
     , entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers
     , headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers
     , contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers
-    , timestampsKeyConfigs =
-        Just $ backToKeyConfigs fileKeyMapTimestampsMatchers
-    , propertiesKeyConfigs =
-        Just $ backToKeyConfigs fileKeyMapPropertiesMatchers
-    , stateHistoryKeyConfigs =
-        Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers
+    , timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers
+    , propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers
+    , stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers
     , tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers
     , logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers
     , anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
@@ -164,20 +158,15 @@ newtype ReportsKeyConfigs =
 instance Validity ReportsKeyConfigs
 
 instance ToJSON ReportsKeyConfigs where
-  toJSON ReportsKeyConfigs {..} =
-    object ["next-action" .= nextActionReportKeyConfigs]
+  toJSON ReportsKeyConfigs {..} = object ["next-action" .= nextActionReportKeyConfigs]
 
 instance FromJSON ReportsKeyConfigs where
-  parseJSON =
-    withObject "ReportsKeyConfigs" $ \o ->
-      ReportsKeyConfigs <$> o .:? "next-action"
+  parseJSON = withObject "ReportsKeyConfigs" $ \o -> ReportsKeyConfigs <$> o .:? "next-action"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
   ReportsKeyConfigs
-    { nextActionReportKeyConfigs =
-        Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
-    }
+    {nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers}
 
 data HelpKeyConfigs =
   HelpKeyConfigs
@@ -193,9 +182,7 @@ instance ToJSON HelpKeyConfigs where
     object ["help" .= helpHelpKeyConfigs, "search" .= helpSearchKeyConfigs]
 
 instance FromJSON HelpKeyConfigs where
-  parseJSON =
-    withObject "HelpKeyConfigs" $ \o ->
-      HelpKeyConfigs <$> o .:? "help" <*> o .:? "search"
+  parseJSON = withObject "HelpKeyConfigs" $ \o -> HelpKeyConfigs <$> o .:? "help" <*> o .:? "search"
 
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =
@@ -223,29 +210,20 @@ data KeyConfig =
 instance Validity KeyConfig
 
 instance ToJSON KeyConfig where
-  toJSON KeyConfig {..} =
-    object ["key" .= keyConfigMatcher, "action" .= keyConfigAction]
+  toJSON KeyConfig {..} = object ["key" .= keyConfigMatcher, "action" .= keyConfigAction]
 
 instance FromJSON KeyConfig where
-  parseJSON =
-    withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
+  parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
 
 backToKeyConfig :: KeyMapping -> KeyConfig
 backToKeyConfig km =
   case km of
     MapVtyExactly kp a ->
-      KeyConfig
-        { keyConfigMatcher = MatchConfKeyPress kp
-        , keyConfigAction = actionName a
-        }
+      KeyConfig {keyConfigMatcher = MatchConfKeyPress kp, keyConfigAction = actionName a}
     MapAnyTypeableChar au ->
-      KeyConfig
-        { keyConfigMatcher = MatchConfAnyChar
-        , keyConfigAction = actionUsingName au
-        }
+      KeyConfig {keyConfigMatcher = MatchConfAnyChar, keyConfigAction = actionUsingName au}
     MapCatchAll a ->
-      KeyConfig
-        {keyConfigMatcher = MatchConfCatchAll, keyConfigAction = actionName a}
+      KeyConfig {keyConfigMatcher = MatchConfCatchAll, keyConfigAction = actionName a}
     MapCombination kp_ km_ ->
       let go km__ =
             case km__ of
@@ -256,10 +234,7 @@ backToKeyConfig km =
                 let (mc_, a_) = go km___
                  in (MatchConfCombination kp__ mc_, a_)
           (mc, a) = go km_
-       in KeyConfig
-            { keyConfigMatcher = MatchConfCombination kp_ mc
-            , keyConfigAction = a
-            }
+       in KeyConfig {keyConfigMatcher = MatchConfCombination kp_ mc, keyConfigAction = a}
 
 data Instructions =
   Instructions (Path Abs File) SmosConfig

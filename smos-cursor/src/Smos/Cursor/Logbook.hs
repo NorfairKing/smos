@@ -27,25 +27,19 @@ data LogbookCursor
   deriving (Show, Eq, Generic)
 
 instance Validity LogbookCursor where
-  validate lbc =
-    decorate "It rebuilds to a valid logbook" $
-    validate $ rebuildLogbookCursor lbc
+  validate lbc = decorate "It rebuilds to a valid logbook" $ validate $ rebuildLogbookCursor lbc
 
 makeLogbookCursor :: Logbook -> LogbookCursor
 makeLogbookCursor l =
   case l of
-    (LogOpen ut es) ->
-      LogbookCursorOpen ut $ makeNonEmptyCursor <$> NE.nonEmpty es
-    (LogClosed es) ->
-      LogbookCursorClosed $ makeNonEmptyCursor <$> NE.nonEmpty es
+    (LogOpen ut es) -> LogbookCursorOpen ut $ makeNonEmptyCursor <$> NE.nonEmpty es
+    (LogClosed es) -> LogbookCursorClosed $ makeNonEmptyCursor <$> NE.nonEmpty es
 
 rebuildLogbookCursor :: LogbookCursor -> Logbook
 rebuildLogbookCursor lc =
   case lc of
-    LogbookCursorOpen ut mnec ->
-      LogOpen ut $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
-    LogbookCursorClosed mnec ->
-      LogClosed $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
+    LogbookCursorOpen ut mnec -> LogOpen ut $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
+    LogbookCursorClosed mnec -> LogClosed $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
 
 logbookCursorClockIn :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockIn utct lbc =

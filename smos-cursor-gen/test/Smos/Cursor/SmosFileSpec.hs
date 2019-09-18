@@ -22,50 +22,38 @@ spec = do
     it "is the inverse of makeFileCursor" $
       inverseFunctionsOnValid makeSmosFileCursor rebuildSmosFileCursor
   describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
-  describe "smosFileCursorSelectedEntryL" $
-    lensSpecOnValid smosFileCursorSelectedEntryL
-  describe "smosFileCursorEntrySelectionL" $
-    lensSpecOnValid smosFileCursorEntrySelectionL
+  describe "smosFileCursorSelectedEntryL" $ lensSpecOnValid smosFileCursorSelectedEntryL
+  describe "smosFileCursorEntrySelectionL" $ lensSpecOnValid smosFileCursorEntrySelectionL
   describe "smosFileCursorToggleHideEntireEntry" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorToggleHideEntireEntry
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorToggleHideEntireEntry
   describe "smosFileCursorSelectPrev" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorSelectPrev
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorSelectPrev
   describe "smosFileCursorSelectNext" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorSelectNext
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorSelectNext
   describe "smosFileCursorSelectFirst" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorSelectFirst
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorSelectFirst
   describe "smosFileCursorSelectLast" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorSelectLast
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorSelectLast
   describe "smosFileCursorToggleCollapse" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorToggleCollapse
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorToggleCollapse
   describe "smosFileCursorToggleCollapseRecursively" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorToggleCollapseRecursively
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorToggleCollapseRecursively
   describe "smosFileCursorInsertEntryBefore" $ do
-    it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBefore
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBefore
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryBeforeAndSelectHeader" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelectHeader
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryBelow" $ do
-    it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBelow
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelow
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryBelowAndSelectHeader" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBelowAndSelectHeader
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryAfter" $ do
-    it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryAfter
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryAfter
     it "inserts an entry above the currently selected entry" pending
   describe "smosFileCursorInsertEntryAfterAndSelectHeader" $ do
     it "produces valid cursors" $
@@ -76,26 +64,19 @@ spec = do
   describe "smosFileCursorSwapNext" $
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorSwapNext
   describe "smosFileCursorPromoteElem" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorPromoteEntry
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorPromoteEntry
   describe "smosFileCursorPromoteSubTree" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorPromoteSubTree
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorPromoteSubTree
   describe "smosFileCursorDemoteElem" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorDemoteEntry
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorDemoteEntry
   describe "smosFileCursorDemoteSubTree" $
-    it "produces valid cursors" $
-    producesValidsOnValids smosFileCursorDemoteSubTree
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorDemoteSubTree
   describe "smosFileCursorClockOutEverywhere" $
-    it "produces valid cursors" $
-    producesValidsOnValids2 smosFileCursorClockOutEverywhere
+    it "produces valid cursors" $ producesValidsOnValids2 smosFileCursorClockOutEverywhere
   describe "smosFileCursorClockOutEverywhereAndClockInHere" $
     it "produces valid cursors" $
     producesValidsOnValids2 smosFileCursorClockOutEverywhereAndClockInHere
   describe "smosFileSubtreeSetTodoState" $ do
     it "produces valid cursors when unsetting todo states" $
-      forAllValid $ \now ->
-        producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
-    it "produces valid cursors" $
-      producesValidsOnValids3 smosFileSubtreeSetTodoState
+      forAllValid $ \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
+    it "produces valid cursors" $ producesValidsOnValids3 smosFileSubtreeSetTodoState

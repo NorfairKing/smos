@@ -61,8 +61,7 @@ switchToFile path sfc = do
       , smosStateFilePath = path
       , smosStateFileLock = fl
       , smosStateCursor =
-          editorCursorSwitchToFile
-            (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
+          editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
       }
   pure mfl
 

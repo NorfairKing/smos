@@ -98,40 +98,28 @@ spec = do
     parseJustSpec matcherConfigP "<any>" MatchConfCatchAll
     parseJustSpec matcherConfigP "<char>" MatchConfAnyChar
     describe "single keypress" $ do
-      parseJustSpec matcherConfigP "a" $
-        MatchConfKeyPress $ KeyPress (KChar 'a') []
-      parseJustSpec matcherConfigP "M-a" $
-        MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
+      parseJustSpec matcherConfigP "a" $ MatchConfKeyPress $ KeyPress (KChar 'a') []
+      parseJustSpec matcherConfigP "M-a" $ MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
       parseJustSpec matcherConfigP "M-S-a" $
         MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta, MShift]
-      parseJustSpec matcherConfigP "A" $
-        MatchConfKeyPress $ KeyPress (KChar 'A') []
-      parseJustSpec matcherConfigP "m-a" $
-        MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
+      parseJustSpec matcherConfigP "A" $ MatchConfKeyPress $ KeyPress (KChar 'A') []
+      parseJustSpec matcherConfigP "m-a" $ MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
       parseJustSpec matcherConfigP "M-s-A" $
         MatchConfKeyPress $ KeyPress (KChar 'A') [MMeta, MShift]
-      parseJustSpec matcherConfigP "<Enter>" $
-        MatchConfKeyPress $ KeyPress KEnter []
-      parseJustSpec matcherConfigP "M-<Enter>" $
-        MatchConfKeyPress $ KeyPress KEnter [MMeta]
+      parseJustSpec matcherConfigP "<Enter>" $ MatchConfKeyPress $ KeyPress KEnter []
+      parseJustSpec matcherConfigP "M-<Enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
       parseJustSpec matcherConfigP "M-S-<Enter>" $
         MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
-      parseJustSpec matcherConfigP "<enter>" $
-        MatchConfKeyPress $ KeyPress KEnter []
-      parseJustSpec matcherConfigP "m-<enter>" $
-        MatchConfKeyPress $ KeyPress KEnter [MMeta]
+      parseJustSpec matcherConfigP "<enter>" $ MatchConfKeyPress $ KeyPress KEnter []
+      parseJustSpec matcherConfigP "m-<enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
       parseJustSpec matcherConfigP "m-s-<enter>" $
         MatchConfKeyPress $ KeyPress KEnter [MMeta, MShift]
-      parseJustSpec matcherConfigP "<F12>" $
-        MatchConfKeyPress $ KeyPress (KFun 12) []
-      parseJustSpec matcherConfigP "M-<F12>" $
-        MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
+      parseJustSpec matcherConfigP "<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
+      parseJustSpec matcherConfigP "M-<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
       parseJustSpec matcherConfigP "M-S-<F12>" $
         MatchConfKeyPress $ KeyPress (KFun 12) [MMeta, MShift]
-      parseJustSpec matcherConfigP "<f12>" $
-        MatchConfKeyPress $ KeyPress (KFun 12) []
-      parseJustSpec matcherConfigP "m-<f12>" $
-        MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
+      parseJustSpec matcherConfigP "<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
+      parseJustSpec matcherConfigP "m-<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
       parseJustSpec matcherConfigP "m-S-<f12>" $
         MatchConfKeyPress $ KeyPress (KFun 12) [MMeta, MShift]
     describe "multi-keypress" $ do
@@ -178,13 +166,9 @@ spec = do
              (KeyPress (KChar 'd') [])
              (MatchConfKeyPress $ KeyPress (KChar 'e') []))
       parseJustSpec matcherConfigP "M-S-c<any>" $
-        MatchConfCombination
-          (KeyPress (KChar 'c') [MMeta, MShift])
-          MatchConfCatchAll
+        MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfCatchAll
       parseJustSpec matcherConfigP "M-S-c<char>" $
-        MatchConfCombination
-          (KeyPress (KChar 'c') [MMeta, MShift])
-          MatchConfAnyChar
+        MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfAnyChar
   jsonSpecOnValid @MatcherConfig
   describe "renderMatcherConfig" $
     it "renders the something that matcherConfigP can parse to the same thing" $
@@ -242,23 +226,19 @@ modText :: Gen Text
 modText = elements ["S", "C", "M", "A"]
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
-parseJustSpec p s res =
-  it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
+parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
 parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
-parseNothingSpec p s =
-  it (unwords ["fails to parse", show s]) $ parseNothing p s
+parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
-parsesValidSpec p gen =
-  it "only parses valid values" $ forAll gen $ parsesValid p
+parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
-      expectationFailure $
-      unlines ["P failed on input", show s, "with error", parseErrorPretty err]
+      expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
     Right out -> out `shouldBe` res
 
 parseNothing :: (Show a, Eq a) => P a -> Text -> Expectation
@@ -266,13 +246,7 @@ parseNothing p s =
   case parse (p <* eof) "test input" s of
     Right v ->
       expectationFailure $
-      unlines
-        [ "P succeeded on input"
-        , show s
-        , "at parsing"
-        , show v
-        , "but it should have failed."
-        ]
+      unlines ["P succeeded on input", show s, "at parsing", show v, "but it should have failed."]
     Left _ -> pure ()
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property

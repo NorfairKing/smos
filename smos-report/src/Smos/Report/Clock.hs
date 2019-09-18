@@ -66,12 +66,10 @@ findFileTimes now rp (SmosFile ts) = do
 findHeaderTimes :: UTCTime -> Entry -> HeaderTimes []
 findHeaderTimes now Entry {..} =
   case entryLogbook of
-    LogOpen s es ->
-      ht $ (LogbookEntry {logbookEntryStart = s, logbookEntryEnd = now}) : es
+    LogOpen s es -> ht $ (LogbookEntry {logbookEntryStart = s, logbookEntryEnd = now}) : es
     LogClosed es -> ht es
   where
-    ht es =
-      HeaderTimes {headerTimesHeader = entryHeader, headerTimesEntries = es}
+    ht es = HeaderTimes {headerTimesHeader = entryHeader, headerTimesEntries = es}
 
 headerTimesList :: HeaderTimes NonEmpty -> HeaderTimes []
 headerTimesList hts =
@@ -83,9 +81,7 @@ headerTimesList hts =
 headerTimesNonEmpty :: HeaderTimes [] -> Maybe (HeaderTimes NonEmpty)
 headerTimesNonEmpty hts = do
   ne <- NE.nonEmpty $ headerTimesEntries hts
-  pure $
-    HeaderTimes
-      {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
+  pure $ HeaderTimes {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
 
 trimHeaderTimes :: ZonedTime -> Period -> HeaderTimes [] -> HeaderTimes []
 trimHeaderTimes zt cp ht =
@@ -150,8 +146,7 @@ trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
     dayStart = LocalTime d midnight
     dayEnd = LocalTime (addDays 1 d) midnight
 
-trimLogbookEntryTo ::
-     TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryTo :: TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntryTo tz begin end LogbookEntry {..} =
   constructValid $
   LogbookEntry
@@ -170,8 +165,7 @@ trimLogbookEntryTo tz begin end LogbookEntry {..} =
     fromLocal :: LocalTime -> UTCTime
     fromLocal = localTimeToUTC tz
 
-divideIntoClockTimeBlocks ::
-     TimeZone -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
+divideIntoClockTimeBlocks :: TimeZone -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
 divideIntoClockTimeBlocks tz cb cts =
   case cb of
     OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
@@ -190,9 +184,7 @@ divideClockTimeIntoDailyBlocks tz =
     makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
     divideFileTimes :: FileTimes -> [(Day, FileTimes)]
     divideFileTimes fts =
-      mapMaybe
-        (\d -> (,) d <$> trimFileTimesToDay tz d fts)
-        (S.toList $ fileTimesDays fts)
+      mapMaybe (\d -> (,) d <$> trimFileTimesToDay tz d fts) (S.toList $ fileTimesDays fts)
     fileTimesDays :: FileTimes -> Set Day
     fileTimesDays = goTF . clockTimeForest
       where
@@ -212,8 +204,7 @@ divideClockTimeIntoDailyBlocks tz =
     toLocal = utcToLocalTime tz
 
 trimFileTimesToDay :: TimeZone -> Day -> FileTimes -> Maybe FileTimes
-trimFileTimesToDay tz d fts =
-  (\f -> fts {clockTimeForest = f}) <$> goTF (clockTimeForest fts)
+trimFileTimesToDay tz d fts = (\f -> fts {clockTimeForest = f}) <$> goTF (clockTimeForest fts)
   where
     goTF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
     goTF ts = do
@@ -229,18 +220,14 @@ trimFileTimesToDay tz d fts =
         Just f -> pure $ TBranch (goHT hts) f
     goHT :: HeaderTimes [] -> HeaderTimes []
     goHT hts =
-      hts
-        { headerTimesEntries =
-            mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)
-        }
+      hts {headerTimesEntries = mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)}
 
 sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
 sortAndGroupCombineOrd = sortGroupCombine compare
 
 sortGroupCombine :: (a -> a -> Ordering) -> [(a, b)] -> [(a, [b])]
 sortGroupCombine func =
-  map combine .
-  groupBy ((\a1 a2 -> func a1 a2 == EQ) `on` fst) . sortBy (func `on` fst)
+  map combine . groupBy ((\a1 a2 -> func a1 a2 == EQ) `on` fst) . sortBy (func `on` fst)
   where
     combine [] = error "cannot happen due to groupBy above"
     combine ts@((a, _):_) = (a, map snd ts)
@@ -250,17 +237,11 @@ makeClockTable = map makeClockTableBlock
 
 makeClockTableBlock :: ClockTimeBlock Text -> ClockTableBlock
 makeClockTableBlock Block {..} =
-  Block
-    { blockTitle = blockTitle
-    , blockEntries = map makeClockTableFile blockEntries
-    }
+  Block {blockTitle = blockTitle, blockEntries = map makeClockTableFile blockEntries}
 
 makeClockTableFile :: FileTimes -> ClockTableFile
 makeClockTableFile FileTimes {..} =
-  ClockTableFile
-    { clockTableFile = clockTimeFile
-    , clockTableForest = unTForest clockTimeForest
-    }
+  ClockTableFile {clockTableFile = clockTimeFile, clockTableForest = unTForest clockTimeForest}
 
 unTForest :: TForest HeaderTimes -> Forest ClockTableHeaderEntry
 unTForest = map unTTree . NE.toList
@@ -290,9 +271,7 @@ trimFileTimes zt cp fts = do
     goF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
     goF tf = NE.nonEmpty $ mapMaybe goT $ NE.toList tf
     goT :: TTree HeaderTimes -> Maybe (TTree HeaderTimes)
-    goT (TLeaf hts) =
-      TLeaf <$>
-      headerTimesNonEmpty (trimHeaderTimes zt cp (headerTimesList hts))
+    goT (TLeaf hts) = TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp (headerTimesList hts))
     goT (TBranch hts tf) =
       case goF tf of
         Nothing -> TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp hts)

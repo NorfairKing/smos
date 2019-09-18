@@ -1,23 +1,19 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Data.FormatSpec where
 
+import Control.Monad
 import Data.Aeson
 import qualified Data.ByteString as SB
 import Data.Maybe
-import Text.Show.Pretty
-
-import Control.Monad
-
 import Path
 import Path.IO
-
+import Smos.Data
 import Test.Hspec
 import Test.Validity
-
-import Smos.Data
+import Text.Show.Pretty
 
 spec :: Spec
 spec = do
@@ -49,8 +45,7 @@ successAndFailureTests name =
       it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $
         shouldSucceedInParsingByExtension @a tf
     forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
-      it (fromAbsFile tf ++ " successfully fails to parse") $
-      shouldFailToParse @a tf
+      it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
      forall a. (Validity a, Show a, FromJSON a)
@@ -82,8 +77,7 @@ shouldFailToParse tf = do
   case errOrSmosFile of
     Left _ -> pure ()
     Right sf ->
-      expectationFailure $
-      unwords ["Should have failed, but got this smos file:", ppShow sf]
+      expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
 
 readFileByExtension ::
      forall a. (Show a, FromJSON a)

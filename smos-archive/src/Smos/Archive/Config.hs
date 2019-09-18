@@ -10,13 +10,10 @@ module Smos.Archive.Config
   , module Control.Monad.Reader
   ) where
 
-import GHC.Generics
-
-import Path
-
 import Control.Monad.IO.Class
 import Control.Monad.Reader
-
+import GHC.Generics
+import Path
 import Smos.Report.Config
 
 newtype SmosArchiveConfig =

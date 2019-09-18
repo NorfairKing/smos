@@ -120,7 +120,6 @@ helpToggleSelection :: Action
 helpToggleSelection =
   Action
     { actionName = "helpToggleSelection"
-    , actionDescription =
-        "Toggle between selecting and deselecting the search bar"
+    , actionDescription = "Toggle between selecting and deselecting the search bar"
     , actionFunc = modifyHelpCursor helpCursorToggleSelection
     }

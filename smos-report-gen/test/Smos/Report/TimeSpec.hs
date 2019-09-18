@@ -28,8 +28,7 @@ spec = do
   describe "timeP" $ parsesValidSpec timeP
   describe "renderTime" $ do
     it "produces valid texts" $ producesValidsOnValids renderTime
-    it "renders bys that parse to the same" $
-      forAllValid $ \s -> parseJust timeP (renderTime s) s
+    it "renders bys that parse to the same" $ forAllValid $ \s -> parseJust timeP (renderTime s) s
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Spec
 parsesValidSpec p = it "only parses valid values" $ forAllValid $ parsesValid p
@@ -38,8 +37,7 @@ parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
-      expectationFailure $
-      unlines ["P failed on input", show s, "with error", parseErrorPretty err]
+      expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Expectation

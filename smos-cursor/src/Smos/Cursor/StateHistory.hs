@@ -47,8 +47,7 @@ rebuildStateHistoryCursor mshc =
   case mshc of
     Nothing -> emptyStateHistory
     Just shc ->
-      StateHistory $
-      NE.toList . rebuildNonEmptyCursor $ stateHistoryCursorNonEmptyCursor shc
+      StateHistory $ NE.toList . rebuildNonEmptyCursor $ stateHistoryCursorNonEmptyCursor shc
 
 stateHistoryCursorModTodoState ::
      UTCTime
@@ -74,18 +73,11 @@ stateHistoryCursorModTodoState now func mshc =
             }
 
 stateHistoryCursorSetTodoState ::
-     UTCTime
-  -> TodoState
-  -> Maybe StateHistoryCursor
-  -> Maybe StateHistoryCursor
-stateHistoryCursorSetTodoState t ts =
-  stateHistoryCursorModTodoState t $ const $ Just ts
+     UTCTime -> TodoState -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor
+stateHistoryCursorSetTodoState t ts = stateHistoryCursorModTodoState t $ const $ Just ts
 
 stateHistoryCursorToggleTodoState ::
-     UTCTime
-  -> TodoState
-  -> Maybe StateHistoryCursor
-  -> Maybe StateHistoryCursor
+     UTCTime -> TodoState -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor
 stateHistoryCursorToggleTodoState t ts =
   stateHistoryCursorModTodoState t $ \case
     Nothing -> Just ts
@@ -94,7 +86,5 @@ stateHistoryCursorToggleTodoState t ts =
         then Nothing
         else Just ts
 
-stateHistoryCursorUnsetTodoState ::
-     UTCTime -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor
-stateHistoryCursorUnsetTodoState t =
-  stateHistoryCursorModTodoState t $ const Nothing
+stateHistoryCursorUnsetTodoState :: UTCTime -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor
+stateHistoryCursorUnsetTodoState t = stateHistoryCursorModTodoState t $ const Nothing

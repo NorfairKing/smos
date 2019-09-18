@@ -22,14 +22,11 @@ import Smos.Query.Streaming
 
 projects :: Q ()
 projects = do
-  tups <-
-    sourceToList $
-    streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning
+  tups <- sourceToList $ streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning
   liftIO $
     putTableLn $
     renderProjectsReport $
-    sortOn (fmap entryState . projectEntryCurrentEntry) $
-    map (uncurry makeProjectEntry) tups
+    sortOn (fmap entryState . projectEntryCurrentEntry) $ map (uncurry makeProjectEntry) tups
 
 renderProjectsReport :: [ProjectEntry] -> Table
 renderProjectsReport = formatAsTable . map renderProjectEntry
@@ -39,5 +36,4 @@ renderProjectEntry ProjectEntry {..} =
   rootedPathChunk projectEntryFilePath :
   case projectEntryCurrentEntry of
     Nothing -> [chunk "No next action"]
-    Just e@Entry {..} ->
-      [mTodoStateChunk $ entryState e, headerChunk entryHeader]
+    Just e@Entry {..} -> [mTodoStateChunk $ entryState e, headerChunk entryHeader]

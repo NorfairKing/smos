@@ -1,7 +1,6 @@
 module Smos.Archive.OptParse.Types where
 
 import Path
-
 import Smos.Report.Config as Report
 import Smos.Report.OptParse.Types as Report
 

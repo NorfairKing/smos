@@ -3,18 +3,14 @@ module Smos.Sync.Client.IntegrationSpec
   ) where
 
 import qualified Data.Map as M
-
+import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.Sync
+import Smos.Sync.Client.Sync.Gen ()
+import Smos.Sync.Client.TestUtils
+import Smos.Sync.Server.TestUtils
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
-
-import Smos.Sync.Server.TestUtils
-
-import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
-
-import Smos.Sync.Client.Sync.Gen ()
-import Smos.Sync.Client.TestUtils
 
 spec :: Spec
 spec =
@@ -343,21 +339,21 @@ spec =
               forAll (changedMap m1a) $ \m1b ->
                 forAllValid $ \m2a ->
                   forAll (changedMap m2a) $ \m2b ->
-                  forAllValid $ \m ->
-                    withClient cenv $ \c1 ->
-                      withClient cenv $ \c2 -> do
-                        let ma = M.unions [m1a, m2a,m]
-                        setupClientContents c1 ma
-                        setupClientContents c2 ma
-                        fullySyncTwoClients c1 c2
-                        let m1 = M.unions [m1b, m2a, m]
-                        let m2 = M.unions [m1a, m2b, m]
-                        setupClientContents c1 m1
-                        setupClientContents c2 m2
-                        fullySyncTwoClients c1 c2
-                        let mb = M.unions [m1b, m2b,m]
-                        assertClientContents c1 mb
-                        assertClientContents c2 mb
+                    forAllValid $ \m ->
+                      withClient cenv $ \c1 ->
+                        withClient cenv $ \c2 -> do
+                          let ma = M.unions [m1a, m2a, m]
+                          setupClientContents c1 ma
+                          setupClientContents c2 ma
+                          fullySyncTwoClients c1 c2
+                          let m1 = M.unions [m1b, m2a, m]
+                          let m2 = M.unions [m1a, m2b, m]
+                          setupClientContents c1 m1
+                          setupClientContents c2 m2
+                          fullySyncTwoClients c1 c2
+                          let mb = M.unions [m1b, m2b, m]
+                          assertClientContents c1 mb
+                          assertClientContents c2 mb
         describe "Deletion" $ do
           it "succesfully syncs a single deletion" $ \cenv ->
             forAllValid $ \(rp1, contents1) ->

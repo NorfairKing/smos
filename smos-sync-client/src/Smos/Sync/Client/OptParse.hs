@@ -32,8 +32,7 @@ getInstructions = do
   config <- getConfiguration flags env
   combineToInstructions args env config
 
-combineToInstructions ::
-     Arguments -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
   s <- getSettings
   d <- getDispatch s
@@ -49,13 +48,11 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
             fromMaybe "sync.api.smos.cs-syd.eu" $
             syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl
           syncSetContentsDir <-
-            case syncFlagContentsDir <|> envContentsDir <|>
-                 cM syncConfContentsDir of
+            case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
               Nothing -> Report.resolveReportWorkflowDir setReportConfig
               Just d -> resolveDir' d
           syncSetMetadataFile <-
-            case syncFlagMetadataFile <|> envMetadataFile <|>
-                 cM syncConfMetadataFile of
+            case syncFlagMetadataFile <|> envMetadataFile <|> cM syncConfMetadataFile of
               Nothing -> defaultMetadataFile
               Just d -> resolveFile' d
           pure $ DispatchSync SyncSettings {..}
@@ -130,15 +127,10 @@ parseCommandSync = info parser modifier
       (SyncFlags <$>
        option
          (Just <$> str)
-         (mconcat
-            [long "server-url", help "The server to sync with", value Nothing]) <*>
+         (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
        option
          (Just <$> str)
-         (mconcat
-            [ long "contents-dir"
-            , help "The directory to synchronise"
-            , value Nothing
-            ]) <*>
+         (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing]) <*>
        option
          (Just <$> str)
          (mconcat

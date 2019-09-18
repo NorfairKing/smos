@@ -64,8 +64,7 @@ parseProjection :: Text -> Maybe Projection
 parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
-projectionP =
-  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP
+projectionP = try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP
 
 ontoFileP :: P Projection
 ontoFileP = do
@@ -89,10 +88,7 @@ ontoPropertyP = do
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <-
-    many
-      (satisfy $ \c ->
-         Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parsePropertyName $ T.pack s
 
 renderProjection :: Projection -> Text

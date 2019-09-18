@@ -8,9 +8,7 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig =
-  SmosConfig
-    {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
+defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -110,9 +108,7 @@ defaultFileKeyMap =
                   -- Collapsing
           , exactChar '?' selectHelp
           , exactChar '\t' forestToggleCollapse
-          , exactKeyPress
-              (KeyPress (KChar '\t') [MMeta])
-              forestToggleCollapseRecursively
+          , exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively
           , exactKey KBackTab forestToggleHideEntireEntry
                   -- Entering contents
           , combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents
@@ -185,8 +181,7 @@ defaultFileKeyMap =
           , exactKeyPress (KeyPress KDown [MMeta]) propertiesAppendNewProperty
           , exactChar '\t' propertiesToggleSelected
           ]
-    , fileKeyMapStateHistoryMatchers =
-        listMatchers [exactKey KEsc entrySelectWhole]
+    , fileKeyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole]
     , fileKeyMapTagsMatchers =
         listMatchers
           [ anyChar tagsInsert

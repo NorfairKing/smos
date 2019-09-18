@@ -24,9 +24,7 @@ type Table = Seq (Chunk Text)
 formatAsTable :: [[Chunk Text]] -> Seq (Chunk Text)
 formatAsTable =
   Box.render .
-  tableByRows .
-  S.fromList .
-  map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
+  tableByRows . S.fromList . map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
 
 mkCell :: Chunk Text -> Cell
 mkCell c = Cell (S.singleton (S.singleton c)) center left mempty

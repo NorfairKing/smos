@@ -21,8 +21,7 @@ spec = do
     it "produces valid cursors" $ producesValidsOnValids rebuildEditorCursor
     it "is the inverse of makeFileCursor" $
       inverseFunctionsOnValid makeEditorCursor rebuildEditorCursor
-  describe "editorCursorSmosFileCursorL" $
-    lensSpecOnValid editorCursorSmosFileCursorL
+  describe "editorCursorSmosFileCursorL" $ lensSpecOnValid editorCursorSmosFileCursorL
   describe "editorCursorSelectionL" $ lensSpecOnValid editorCursorSelectionL
   describe "editorCursorDebugL" $ lensSpecOnValid editorCursorDebugL
   describe "editorCursorShowDebug" $
