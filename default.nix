@@ -1,59 +1,14 @@
 let
-  pkgsv = import ( import ./nix/nixpkgs.nix );
-  pkgs = pkgsv {};
-  validity-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/validity-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/cursor-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-brick-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/cursor-brick-version.nix) + "/nix/overlay.nix"
-    );
-  fuzzy-time-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/fuzzy-time-version.nix) + "/nix/overlay.nix"
-    );
-  pretty-relative-time-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/pretty-relative-time-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-fuzzy-time-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/cursor-fuzzy-time-version.nix) + "/nix/overlay.nix"
-    );
-  mergeful-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./nix/mergeful-version.nix) + "/nix/overlay.nix"
-    );
-  smosPkgs =
-    pkgsv {
-      overlays =
-        [
-          validity-overlay
-          cursor-overlay
-          cursor-brick-overlay
-          fuzzy-time-overlay
-          pretty-relative-time-overlay
-          cursor-fuzzy-time-overlay
-          mergeful-overlay
-          ( import ./nix/gitignore-src.nix )
-          ( import ./nix/overlay.nix )
-        ];
-      config.allowUnfree = true;
-    };
+  pkgs = import ./nix/pkgs.nix;
   nix-pre-commit-hooks =
     import (
-      builtins.fetchTarball "https://github.com/NorfairKing/nix-pre-commit-hooks/archive/4e8cb1ab913407ecd8a18ff3b3346796d90dbdda.tar.gz"
+      builtins.fetchTarball "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/a3bd860016653ab53ed49e2c4523e3e7297e58bb.tar.gz"
     );
 in
-  smosPkgs.smosPackages // {
-  "smos-docs-site" = smosPkgs.smosDocumentationSite;
+  pkgs.smosPackages // {
+  "smos-docs-site" = pkgs.smosDocumentationSite;
 } // {
   pre-commit-check = nix-pre-commit-hooks.run {
-    src = smosPkgs.gitignoreSource ./.;
+    src = pkgs.gitignoreSource ./.;
   };
 }

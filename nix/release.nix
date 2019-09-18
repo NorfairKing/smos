@@ -1,5 +1,5 @@
 let
-  pkgs = import ( ../default.nix );
+  pkgs = import ( ../nix/pkgs.nix );
 in
   rec {
     smos-static =
