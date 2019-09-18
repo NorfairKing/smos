@@ -31,14 +31,16 @@ getInstructions = do
   config <- getConfiguration flags env
   combineToInstructions args env config
 
-combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions ::
+     Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
     getDispatch =
       case c of
         CommandServe ServeFlags {..} -> do
-          let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
+          let serveSetPort =
+                fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
           serveSetStoreFile <-
             case serveFlagStoreFile <|> envStoreFile <|> (mc >>= confStoreFile) of
               Nothing -> resolveFile' "smos-sync-server-store.json"
@@ -53,17 +55,20 @@ getEnvironment = do
       getEnv key = ("SMOS_SYNC_SERVER" ++ key) `lookup` env
       readEnv :: Read a => String -> Maybe a
       readEnv key = getEnv key >>= readMaybe
-  let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
+  let envConfigFile =
+        getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
       envPort = readEnv "PORT"
       envStoreFile = getEnv "STORE_FILE" <|> getEnv "STORE"
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} = do
-  mConfigFile <- forM (msum [flagConfigFile, envConfigFile]) $ \fp -> resolveFile' fp
+  mConfigFile <-
+    forM (msum [flagConfigFile, envConfigFile]) $ \fp -> resolveFile' fp
   forM mConfigFile $ \configFile -> do
     errOrConfig <-
-      fmap (left prettyPrintParseException) $ Yaml.decodeFileEither $ fromAbsFile configFile
+      fmap (left prettyPrintParseException) $
+      Yaml.decodeFileEither $ fromAbsFile configFile
     case errOrConfig of
       Left err -> die err
       Right conf -> pure conf
@@ -116,11 +121,21 @@ parseCommandServe = info parser modifier
             ]) <*>
        option
          (Just <$> auto)
-         (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing]))
+         (mconcat
+            [ long "port"
+            , help "The port to serve on"
+            , metavar "PORT"
+            , value Nothing
+            ]))
 
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$>
   option
     (Just <$> str)
-    (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])
+    (mconcat
+       [ long "config-file"
+       , help "The config file to use"
+       , metavar "FILEPATH"
+       , value Nothing
+       ])

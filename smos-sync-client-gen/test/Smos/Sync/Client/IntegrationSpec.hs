@@ -1,4 +1,3 @@
-
 module Smos.Sync.Client.IntegrationSpec
   ( spec
   ) where

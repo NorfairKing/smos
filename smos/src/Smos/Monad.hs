@@ -28,7 +28,8 @@ instance MonadIO (MkSmosM c n s) where
   liftIO = MkSmosM . liftIO
 
 runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n (MStop a, s)
-runMkSmosM conf initState act = runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
+runMkSmosM conf initState act =
+  runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
 
 data MStop a
   = Stop

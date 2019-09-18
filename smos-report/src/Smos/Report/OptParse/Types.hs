@@ -72,7 +72,8 @@ backToConfiguration SmosReportConfig {..} =
                  ProjectsInHome ard -> "~/" <> fromRelDir ard
                  ProjectsAbsolute aad -> fromAbsDir aad
     , confArchivedProjectsDir =
-        if smosReportConfigArchivedProjectsFileSpec == defaultArchivedProjectsDirSpec
+        if smosReportConfigArchivedProjectsFileSpec ==
+           defaultArchivedProjectsDirSpec
           then Nothing
           else Just $
                case smosReportConfigArchivedProjectsFileSpec of
@@ -102,7 +103,8 @@ instance ToJSON Configuration where
 instance FromJSON Configuration where
   parseJSON =
     withObject "Configuration" $ \o ->
-      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir" <*>
+      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*>
+      o .:? "projects-dir" <*>
       o .:? "archived-projects-dir" <*>
       o .:? "work-filter" <*>
       o .:? "contexts"

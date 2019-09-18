@@ -32,13 +32,17 @@ agenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-    streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    streamSmosFiles agendaSetHideArchive .| parseSmosFiles .|
+    printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
+    C.filter
+      (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
     C.filter (fitsHistoricity now agendaSetHistoricity)
-  liftIO $ putTableLn $ renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
+  liftIO $
+    putTableLn $
+    renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
 renderAgendaReport now atbs =
@@ -48,11 +52,14 @@ renderAgendaReport now atbs =
     [atb] -> goEntries (blockEntries atb)
     _ -> concatMap goEntriesWithTitle atbs
   where
-    goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
+    goEntriesWithTitle Block {..} =
+      [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es = renderSplit . splitUp $ sortAgendaEntries es
     splitUp =
       splitList $ \ae ->
-        compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
+        compare
+          (timestampDay $ agendaEntryTimestamp ae)
+          (localDay $ zonedTimeToLocalTime now)
     renderSplit (before, during, after) =
       case (go before, go during, go after) of
         (xs, [], []) -> xs
@@ -98,10 +105,14 @@ splitList func = go
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
-  let d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
+  let d =
+        diffDays
+          (timestampDay agendaEntryTimestamp)
+          (localDay $ zonedTimeToLocalTime now)
       func =
         if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-           | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
+           | d == 1 && agendaEntryTimestampName == "DEADLINE" ->
+             fore brightRed . back black
            | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
            | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
            | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green

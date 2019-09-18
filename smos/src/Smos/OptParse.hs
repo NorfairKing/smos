@@ -32,7 +32,11 @@ getInstructions conf = do
   combineToInstructions conf args env config
 
 combineToInstructions ::
-     SmosConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
+     SmosConfig
+  -> Arguments
+  -> Environment
+  -> Maybe Configuration
+  -> IO Instructions
 combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
   p <- resolveFile' fp
   src <-
@@ -56,10 +60,14 @@ combineKeymap km (Just kbc) = do
           Just True -> mempty
           Just False -> km
           Nothing -> km
-  keyMapFileKeyMap <- combineFileKeymap (keyMapFileKeyMap startingPoint) (confFileKeyConfig kbc)
+  keyMapFileKeyMap <-
+    combineFileKeymap (keyMapFileKeyMap startingPoint) (confFileKeyConfig kbc)
   keyMapReportsKeyMap <-
-    combineReportsKeymap (keyMapReportsKeyMap startingPoint) (confReportsKeyConfig kbc)
-  keyMapHelpKeyMap <- combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
+    combineReportsKeymap
+      (keyMapReportsKeyMap startingPoint)
+      (confReportsKeyConfig kbc)
+  keyMapHelpKeyMap <-
+    combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
   return
     startingPoint
       { keyMapFileKeyMap = keyMapFileKeyMap
@@ -70,22 +78,32 @@ combineKeymap km (Just kbc) = do
 combineFileKeymap :: FileKeyMap -> Maybe FileKeyConfigs -> Comb FileKeyMap
 combineFileKeymap fkm Nothing = pure fkm
 combineFileKeymap fkm (Just fkc) = do
-  fileKeyMapEmptyMatchers <- combineKeyMappings (fileKeyMapEmptyMatchers fkm) (emptyKeyConfigs fkc)
-  fileKeyMapEntryMatchers <- combineKeyMappings (fileKeyMapEntryMatchers fkm) (entryKeyConfigs fkc)
+  fileKeyMapEmptyMatchers <-
+    combineKeyMappings (fileKeyMapEmptyMatchers fkm) (emptyKeyConfigs fkc)
+  fileKeyMapEntryMatchers <-
+    combineKeyMappings (fileKeyMapEntryMatchers fkm) (entryKeyConfigs fkc)
   fileKeyMapHeaderMatchers <-
     combineKeyMappings (fileKeyMapHeaderMatchers fkm) (headerKeyConfigs fkc)
   fileKeyMapContentsMatchers <-
     combineKeyMappings (fileKeyMapContentsMatchers fkm) (contentsKeyConfigs fkc)
   fileKeyMapTimestampsMatchers <-
-    combineKeyMappings (fileKeyMapTimestampsMatchers fkm) (timestampsKeyConfigs fkc)
+    combineKeyMappings
+      (fileKeyMapTimestampsMatchers fkm)
+      (timestampsKeyConfigs fkc)
   fileKeyMapPropertiesMatchers <-
-    combineKeyMappings (fileKeyMapPropertiesMatchers fkm) (propertiesKeyConfigs fkc)
+    combineKeyMappings
+      (fileKeyMapPropertiesMatchers fkm)
+      (propertiesKeyConfigs fkc)
   fileKeyMapStateHistoryMatchers <-
-    combineKeyMappings (fileKeyMapStateHistoryMatchers fkm) (stateHistoryKeyConfigs fkc)
-  fileKeyMapTagsMatchers <- combineKeyMappings (fileKeyMapTagsMatchers fkm) (tagsKeyConfigs fkc)
+    combineKeyMappings
+      (fileKeyMapStateHistoryMatchers fkm)
+      (stateHistoryKeyConfigs fkc)
+  fileKeyMapTagsMatchers <-
+    combineKeyMappings (fileKeyMapTagsMatchers fkm) (tagsKeyConfigs fkc)
   fileKeyMapLogbookMatchers <-
     combineKeyMappings (fileKeyMapLogbookMatchers fkm) (logbookKeyConfigs fkc)
-  fileKeyMapAnyMatchers <- combineKeyMappings (fileKeyMapAnyMatchers fkm) (anyKeyConfigs fkc)
+  fileKeyMapAnyMatchers <-
+    combineKeyMappings (fileKeyMapAnyMatchers fkm) (anyKeyConfigs fkc)
   return $
     fkm
       { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers
@@ -100,18 +118,23 @@ combineFileKeymap fkm (Just fkc) = do
       , fileKeyMapAnyMatchers = fileKeyMapAnyMatchers
       }
 
-combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
+combineReportsKeymap ::
+     ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
   nams <-
-    combineKeyMappings (reportsKeymapNextActionReportMatchers rkm) (nextActionReportKeyConfigs rkc)
+    combineKeyMappings
+      (reportsKeymapNextActionReportMatchers rkm)
+      (nextActionReportKeyConfigs rkc)
   return $ rkm {reportsKeymapNextActionReportMatchers = nams}
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
 combineHelpKeymap hkm Nothing = pure hkm
 combineHelpKeymap hkm (Just hkc) = do
-  hms <- combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
-  sms <- combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
+  hms <-
+    combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
+  sms <-
+    combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
   return $ hkm {helpKeyMapHelpMatchers = hms, helpKeyMapSearchMatchers = sms}
 
 combineKeyMappings :: KeyMappings -> Maybe KeyConfigs -> Comb KeyMappings
@@ -161,13 +184,15 @@ combineKeyMappings kms (Just kcs) = (++ kms) <$> traverse go (keyConfigs kcs)
                       Just (PlainAction a) -> pure a
                       Just _ -> CombErr [ActionWrongType keyConfigAction]
                       Nothing -> CombErr [ActionNotFound keyConfigAction]
-                  MatchConfCombination kp_ mc__ -> MapCombination kp_ <$> go' mc__
+                  MatchConfCombination kp_ mc__ ->
+                    MapCombination kp_ <$> go' mc__
            in MapCombination kp <$> go' mc
     findAction :: ActionName -> Maybe AnyAction
     findAction an = find ((== an) . anyActionName) allActions
 
 prettyCombError :: CombineError -> String
-prettyCombError (ActionNotFound a) = unwords ["Action not found:", T.unpack $ actionNameText a]
+prettyCombError (ActionNotFound a) =
+  unwords ["Action not found:", T.unpack $ actionNameText a]
 prettyCombError (ActionWrongType a) =
   unwords ["Action found, but of the wrong type:", T.unpack $ actionNameText a]
 

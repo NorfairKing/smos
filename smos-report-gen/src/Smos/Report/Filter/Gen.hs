@@ -23,7 +23,7 @@ instance GenValid Filter where
             [ FilterHasTag <$> genValid
             , FilterLevel <$> genValid
             , FilterTodoState <$> genValid
-            ,( FilterHeader <$> genValid )`suchThat` isValid
+            , (FilterHeader <$> genValid) `suchThat` isValid
             , FilterHasProperty <$> genValid
             , FilterExactProperty <$> genValid <*> genValid
             ]
@@ -32,7 +32,7 @@ instance GenValid Filter where
             [ FilterHasTag <$> genValid
             , FilterLevel <$> genValid
             , FilterTodoState <$> genValid
-            ,( FilterHeader <$> genValid) `suchThat` isValid
+            , (FilterHeader <$> genValid) `suchThat` isValid
             , FilterHasProperty <$> genValid
             , FilterExactProperty <$> genValid <*> genValid
             , (FilterFile <$> genValid) `suchThat` isValid

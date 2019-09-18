@@ -48,11 +48,11 @@ entryToggleTodoState ts =
     { actionName = "entryToggleTodoState_" <> ActionName (todoStateText ts)
     , actionFunc =
         modifyMTodoStateM $ \case
-            Nothing -> Just ts
-            Just ts' ->
-              if ts == ts'
-                then Nothing
-                else Just ts
+          Nothing -> Just ts
+          Just ts' ->
+            if ts == ts'
+              then Nothing
+              else Just ts
     , actionDescription =
         "Toggle the given TODO state of the selected current entry"
     }

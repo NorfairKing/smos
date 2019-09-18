@@ -39,7 +39,8 @@ import Smos.Actions.Undo
 import Smos.Actions.Utils
 
 allActions :: [AnyAction]
-allActions = map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
+allActions =
+  map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
 
 allPlainActions :: [Action]
 allPlainActions =

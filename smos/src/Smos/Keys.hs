@@ -73,7 +73,10 @@ data KeyPress =
 
 instance Validity KeyPress where
   validate kp@(KeyPress _ mods) =
-    mconcat [genericValidate kp, declare "Each of the mods appears at most once" $ nub mods == mods]
+    mconcat
+      [ genericValidate kp
+      , declare "Each of the mods appears at most once" $ nub mods == mods
+      ]
 
 instance ToJSON KeyPress where
   toJSON kp = toJSON $ renderKeyPress kp
@@ -142,7 +145,12 @@ renderModifier MAlt = "A"
 
 modifierP :: P Modifier
 modifierP =
-  choice [string' "S" $> MShift, string' "C" $> MCtrl, string' "M" $> MMeta, string' "A" $> MAlt]
+  choice
+    [ string' "S" $> MShift
+    , string' "C" $> MCtrl
+    , string' "M" $> MMeta
+    , string' "A" $> MAlt
+    ]
 
 renderKeyPress :: KeyPress -> Text
 renderKeyPress (KeyPress key mods) =
@@ -227,7 +235,8 @@ multipleMatchersP = go
         [] -> pure MatchConfCatchAll
         (l:rest) ->
           if any isLeft rest
-            then fail "<char> or <any> not allowed in any position other than the last"
+            then fail
+                   "<char> or <any> not allowed in any position other than the last"
             else do
               let rest' = rights rest
               let l' =

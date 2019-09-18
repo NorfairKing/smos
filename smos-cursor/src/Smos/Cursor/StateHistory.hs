@@ -88,11 +88,11 @@ stateHistoryCursorToggleTodoState ::
   -> Maybe StateHistoryCursor
 stateHistoryCursorToggleTodoState t ts =
   stateHistoryCursorModTodoState t $ \case
-      Nothing -> Just ts
-      Just ts' ->
-        if ts == ts'
-          then Nothing
-          else Just ts
+    Nothing -> Just ts
+    Just ts' ->
+      if ts == ts'
+        then Nothing
+        else Just ts
 
 stateHistoryCursorUnsetTodoState ::
      UTCTime -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor

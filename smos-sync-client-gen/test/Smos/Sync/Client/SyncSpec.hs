@@ -110,7 +110,8 @@ data TestSituation =
   deriving (Show, Eq, Generic)
 
 initialSituation :: TestSituation
-initialSituation = TestSituation {testSituationServer = S.empty, testSituationClients = M.empty}
+initialSituation =
+  TestSituation {testSituationServer = S.empty, testSituationClients = M.empty}
 
 genCTestOps :: Gen [CTestOp]
 genCTestOps = validCTestOpsFor initialSituation
@@ -119,7 +120,8 @@ validCTestOpsFor :: TestSituation -> Gen [CTestOp]
 validCTestOpsFor initial =
   sized $ \n -> do
     part <- arbPartition n
-    let go :: (TestSituation, [CTestOp]) -> Int -> Gen (TestSituation, [CTestOp])
+    let go ::
+             (TestSituation, [CTestOp]) -> Int -> Gen (TestSituation, [CTestOp])
         go (m, os) s = do
           to <- resize s $ validCTestOpFor m
           let m' = testApplyCTestOp m to
@@ -130,7 +132,8 @@ validCTestOpsFor initial =
 validCTestOpFor :: TestSituation -> Gen CTestOp
 validCTestOpFor m =
   let addClientGen =
-        CTestOp <$> (genValid `suchThat` (\i -> not $ M.member i (testSituationClients m))) <*>
+        CTestOp <$>
+        (genValid `suchThat` (\i -> not $ M.member i (testSituationClients m))) <*>
         pure ClientNew
    in frequency $
       (1, addClientGen) :
@@ -140,7 +143,8 @@ validCTestOpFor m =
                , do (cid, _) <- elements $ M.toList (testSituationClients m)
                     pure $ CTestOp cid ClientSync)
              , ( 5
-               , do (cid, cstore) <- elements $ M.toList (testSituationClients m)
+               , do (cid, cstore) <-
+                      elements $ M.toList (testSituationClients m)
                     ops <- validTestOpsFor cstore
                     pure $ CTestOp cid $ ClientTestOps ops)
              ]
@@ -151,7 +155,8 @@ testApplyCTestOp ts (CTestOp i cop) =
    in case cop of
         ClientNew -> ts {testSituationClients = M.insert i S.empty cs}
         ClientSync -> applySync ts i
-        ClientTestOps to -> ts {testSituationClients = M.adjust (`testApplyTestOps` to) i cs}
+        ClientTestOps to ->
+          ts {testSituationClients = M.adjust (`testApplyTestOps` to) i cs}
 
 applySync :: TestSituation -> Int -> TestSituation
 applySync ts i =
@@ -160,9 +165,12 @@ applySync ts i =
     Just s ->
       let u = S.union s (testSituationServer ts)
        in TestSituation
-            {testSituationClients = M.insert i u (testSituationClients ts), testSituationServer = u}
+            { testSituationClients = M.insert i u (testSituationClients ts)
+            , testSituationServer = u
+            }
 
-applyCTestOp :: ClientEnv -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
+applyCTestOp ::
+     ClientEnv -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
 applyCTestOp cenv m (CTestOp i cop) =
   case cop of
     ClientNew -> do
@@ -191,7 +199,10 @@ genTestOpsPhases :: Gen [[TestOp]]
 genTestOpsPhases =
   sized $ \n -> do
     part <- arbPartition n
-    let go :: (Set (Path Rel File), [[TestOp]]) -> Int -> Gen (Set (Path Rel File), [[TestOp]])
+    let go ::
+             (Set (Path Rel File), [[TestOp]])
+          -> Int
+          -> Gen (Set (Path Rel File), [[TestOp]])
         go (m, os) s = do
           tos <- resize s $ validTestOpsFor m
           let m' = testApplyTestOps m tos
@@ -206,7 +217,10 @@ validTestOpsFor :: Set (Path Rel File) -> Gen [TestOp]
 validTestOpsFor initial =
   sized $ \n -> do
     part <- arbPartition n
-    let go :: (Set (Path Rel File), [TestOp]) -> Int -> Gen (Set (Path Rel File), [TestOp])
+    let go ::
+             (Set (Path Rel File), [TestOp])
+          -> Int
+          -> Gen (Set (Path Rel File), [TestOp])
         go (m, os) s = do
           to <- resize s $ validTestOpFor m
           let m' = testApplyTestOp m to
@@ -216,7 +230,9 @@ validTestOpsFor initial =
 
 validTestOpFor :: Set (Path Rel File) -> Gen TestOp
 validTestOpFor s =
-  let addFileGen = AddFile <$> (genValid `suchThat` (\sf -> not $ S.member (syncFilePath sf) s))
+  let addFileGen =
+        AddFile <$>
+        (genValid `suchThat` (\sf -> not $ S.member (syncFilePath sf) s))
    in frequency $
       (1, addFileGen) :
       if S.null s
@@ -224,7 +240,9 @@ validTestOpFor s =
         else [ ( 3
                , do rf <- elements $ S.toList s
                     v' <- genValid
-                    pure $ ChangeFile $ SyncFile {syncFilePath = rf, syncFileContents = v'})
+                    pure $
+                      ChangeFile $
+                      SyncFile {syncFilePath = rf, syncFileContents = v'})
              , ( 1
                , do rf <- elements $ S.elems s
                     pure $ RemoveFile rf)
@@ -249,13 +267,17 @@ applyTestOpStore cstore op =
       s' = applyTestOp s op
    in cstore {clientStoreItems = s'}
 
-applyTestOp :: Mergeful.ClientStore UUID SyncFile -> TestOp -> Mergeful.ClientStore UUID SyncFile
+applyTestOp ::
+     Mergeful.ClientStore UUID SyncFile
+  -> TestOp
+  -> Mergeful.ClientStore UUID SyncFile
 applyTestOp cs op =
   case op of
     AddFile sf -> Mergeful.addItemToClientStore sf cs
     ChangeFile sf ->
       case find
-             (\(_, sf') -> syncFilePath sf == (syncFilePath . Mergeful.timedValue) sf')
+             (\(_, sf') ->
+                syncFilePath sf == (syncFilePath . Mergeful.timedValue) sf')
              (M.toList $
               M.union
                 (Mergeful.clientStoreSyncedItems cs)

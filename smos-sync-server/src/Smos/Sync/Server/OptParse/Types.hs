@@ -49,7 +49,9 @@ data Configuration =
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .: "store-file" <*> o .: "port"
+  parseJSON =
+    withObject "Configuration" $ \o ->
+      Configuration <$> o .: "store-file" <*> o .: "port"
 
 newtype Dispatch =
   DispatchServe ServeSettings

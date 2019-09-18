@@ -55,7 +55,9 @@ produceWorkReport ::
 produceWorkReport src ha cn mf ms checks = do
   let contexts = smosReportConfigContexts src
   case M.lookup cn contexts of
-    Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
+    Nothing ->
+      liftIO $
+      die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
     Just cf -> do
       now <- liftIO getZonedTime
       let wrc =
@@ -69,7 +71,8 @@ produceWorkReport src ha cn mf ms checks = do
               }
       fmap (finishWorkReport ms) $
         runConduit $
-        streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+        streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .|
+        smosFileCursors .|
         C.map (uncurry $ makeWorkReport wrc) .|
         accumulateMonoid
 
@@ -83,22 +86,30 @@ renderWorkReport now ne WorkReport {..} =
     [ unlessNull
         workReportAgendaEntries
         [ sectionHeading "Today's agenda:"
-        , [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
+        , [ formatAsTable $
+            map
+              (formatAgendaEntry now)
+              (sortAgendaEntries workReportAgendaEntries)
+          ]
         ]
     , unlessNull
         workReportResultEntries
         [sectionHeading "Next actions:", [entryTable workReportResultEntries]]
     , unlessNull
         workReportEntriesWithoutContext
-        [ warningHeading "WARNING, the following Entries don't match any context:"
+        [ warningHeading
+            "WARNING, the following Entries don't match any context:"
         , [entryTable workReportEntriesWithoutContext]
         ]
     , unlessNull
         workReportCheckViolations
-        [ warningHeading "WARNING, the following Entries did not pass the checks:"
+        [ warningHeading
+            "WARNING, the following Entries did not pass the checks:"
         , concat $
           flip concatMap (M.toList workReportCheckViolations) $ \(f, violations) ->
-            unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
+            unlessNull
+              violations
+              [warningHeading (renderFilter f), [entryTable violations]]
         ]
     ]
   where

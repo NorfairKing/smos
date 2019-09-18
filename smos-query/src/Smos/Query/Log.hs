@@ -27,11 +27,15 @@ log LogSettings {..} = do
   zt <- liftIO getZonedTime
   es <-
     sourceToList $
-    streamSmosFiles logSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    streamSmosFiles logSetHideArchive .| parseSmosFiles .|
+    printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
+    C.filter
+      (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
     smosCursorCurrents
-  liftIO $ putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
+  liftIO $
+    putTableLn $
+    renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 
 renderLogReport :: ZonedTime -> LogReport -> Table
 renderLogReport zt lrbs =
@@ -41,7 +45,8 @@ renderLogReport zt lrbs =
     [lrb] -> goEntries (blockEntries lrb)
     _ -> concatMap goEntriesWithTitle lrbs
   where
-    goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
+    goEntriesWithTitle Block {..} =
+      [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es = map (renderLogEntry zt) (sortOn logEntryEvent es)
 
 renderLogEntry :: ZonedTime -> LogEntry -> [Chunk Text]
@@ -51,14 +56,16 @@ renderLogEntry zt LogEntry {..} =
       , headerChunk logEntryHeader
       , chunk $
         T.pack $
-        formatTime defaultTimeLocale "%F %X" $ utcToLocalTime (zonedTimeZone zt) logEventTimestamp
+        formatTime defaultTimeLocale "%F %X" $
+        utcToLocalTime (zonedTimeZone zt) logEventTimestamp
       ] <>
       logEventTypeChunk logEventType
 
 logEventTypeChunk :: LogEventType -> [Chunk Text]
 logEventTypeChunk typ =
   case typ of
-    StateChange from to -> [mTodoStateChunk from, chunk " -> ", mTodoStateChunk to]
+    StateChange from to ->
+      [mTodoStateChunk from, chunk " -> ", mTodoStateChunk to]
     ClockIn -> [chunk "clock in"]
     ClockOut -> [chunk "clock out"]
     TimestampEvent tsn -> [timestampNameChunk tsn]

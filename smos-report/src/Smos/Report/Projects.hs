@@ -24,7 +24,8 @@ instance Validity ProjectEntry
 
 makeProjectEntry :: RootedPath -> SmosFile -> ProjectEntry
 makeProjectEntry rp sf =
-  ProjectEntry {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
+  ProjectEntry
+    {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
 
 getCurrentEntry :: SmosFile -> Maybe Entry
 getCurrentEntry = goF . smosFileForest

@@ -46,7 +46,10 @@ instance Semigroup StatsReport where
 
 instance Monoid StatsReport where
   mempty =
-    StatsReport {statsReportProjectStatsReport = mempty, statsReportStateStatsReport = mempty}
+    StatsReport
+      { statsReportProjectStatsReport = mempty
+      , statsReportStateStatsReport = mempty
+      }
 
 makeStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> StatsReport
 makeStatsReport src@StatsReportContext {..} rp sf =
@@ -57,22 +60,31 @@ makeStatsReport src@StatsReportContext {..} rp sf =
         concatMap flatten $ smosFileForest sf
     }
 
-makeProjectsStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> ProjectStatsReport
+makeProjectsStatsReport ::
+     StatsReportContext -> RootedPath -> SmosFile -> ProjectStatsReport
 makeProjectsStatsReport StatsReportContext {..} rp sf =
   ProjectStatsReport
     { projectStatsReportArchivedProjects = countIf $ active && isArchivedProject
     , projectStatsReportCurrentProjects = countIf $ active && isProject
-    , projectStatsReportTotalProjects = countIf $ active && (isArchivedProject || isProject)
+    , projectStatsReportTotalProjects =
+        countIf $ active && (isArchivedProject || isProject)
     , projectStatsReportArchivedFiles = countIf $ active && isArchived
     , projectStatsReportCurrentFiles = countIf $ active && not isArchived
     , projectStatsReportTotalFiles = countIf active
     }
   where
-    active = smosFileActiveDuringPeriod statsReportContextNow statsReportContextPeriod sf
-    isArchived = isProperPrefixOf statsReportContextArchiveDir $ resolveRootedPath rp
+    active =
+      smosFileActiveDuringPeriod
+        statsReportContextNow
+        statsReportContextPeriod
+        sf
+    isArchived =
+      isProperPrefixOf statsReportContextArchiveDir $ resolveRootedPath rp
     isArchivedProject =
-      isProperPrefixOf statsReportContextArchivedProjectsDir $ resolveRootedPath rp
-    isProject = isProperPrefixOf statsReportContextProjectsDir $ resolveRootedPath rp
+      isProperPrefixOf statsReportContextArchivedProjectsDir $
+      resolveRootedPath rp
+    isProject =
+      isProperPrefixOf statsReportContextProjectsDir $ resolveRootedPath rp
     countIf b =
       if b
         then 1
@@ -81,13 +93,18 @@ makeProjectsStatsReport StatsReportContext {..} rp sf =
 smosFileActiveDuringPeriod :: ZonedTime -> Period -> SmosFile -> Bool
 smosFileActiveDuringPeriod now p sf =
   (p == AllTime) ||
-  not (null $ stateHistoryEntriesInPeriod now p $ concatMap flatten $ smosFileForest sf)
+  not
+    (null $
+     stateHistoryEntriesInPeriod now p $ concatMap flatten $ smosFileForest sf)
 
-stateHistoryEntriesInPeriod :: ZonedTime -> Period -> [Entry] -> [StateHistoryEntry]
+stateHistoryEntriesInPeriod ::
+     ZonedTime -> Period -> [Entry] -> [StateHistoryEntry]
 stateHistoryEntriesInPeriod now p = concatMap go
   where
     go :: Entry -> [StateHistoryEntry]
-    go = mapMaybe (stateHistoryEntryInPeriod now p) . unStateHistory . entryStateHistory
+    go =
+      mapMaybe (stateHistoryEntryInPeriod now p) .
+      unStateHistory . entryStateHistory
 
 data ProjectStatsReport =
   ProjectStatsReport
@@ -104,15 +121,20 @@ instance Semigroup ProjectStatsReport where
   psr1 <> psr2 =
     ProjectStatsReport
       { projectStatsReportArchivedProjects =
-          projectStatsReportArchivedProjects psr1 + projectStatsReportArchivedProjects psr2
+          projectStatsReportArchivedProjects psr1 +
+          projectStatsReportArchivedProjects psr2
       , projectStatsReportCurrentProjects =
-          projectStatsReportCurrentProjects psr1 + projectStatsReportCurrentProjects psr2
+          projectStatsReportCurrentProjects psr1 +
+          projectStatsReportCurrentProjects psr2
       , projectStatsReportTotalProjects =
-          projectStatsReportTotalProjects psr1 + projectStatsReportTotalProjects psr2
+          projectStatsReportTotalProjects psr1 +
+          projectStatsReportTotalProjects psr2
       , projectStatsReportArchivedFiles =
-          projectStatsReportArchivedFiles psr1 + projectStatsReportArchivedFiles psr2
+          projectStatsReportArchivedFiles psr1 +
+          projectStatsReportArchivedFiles psr2
       , projectStatsReportCurrentFiles =
-          projectStatsReportCurrentFiles psr1 + projectStatsReportCurrentFiles psr2
+          projectStatsReportCurrentFiles psr1 +
+          projectStatsReportCurrentFiles psr2
       , projectStatsReportTotalFiles =
           projectStatsReportTotalFiles psr1 + projectStatsReportTotalFiles psr2
       }
@@ -135,7 +157,8 @@ data StateStatsReport =
     , stateStatsReportStates :: !(Map (Maybe TodoState) Int)
     , stateStatsReportFromStateTransitions :: !(Map (Maybe TodoState) Int)
     , stateStatsReportToStateTransitions :: !(Map (Maybe TodoState) Int)
-    , stateStatsReportStateTransitions :: !(Map (Maybe TodoState, Maybe TodoState) Int)
+    , stateStatsReportStateTransitions :: !(Map ( Maybe TodoState
+                                                , Maybe TodoState) Int)
     }
   deriving (Show, Eq, Generic)
 
@@ -143,7 +166,9 @@ instance Semigroup StateStatsReport where
   sr1 <> sr2 =
     StateStatsReport
       { stateStatsReportHistoricalStates =
-          addMapOfInts (stateStatsReportHistoricalStates sr1) (stateStatsReportHistoricalStates sr2)
+          addMapOfInts
+            (stateStatsReportHistoricalStates sr1)
+            (stateStatsReportHistoricalStates sr2)
       , stateStatsReportStates =
           addMapOfInts (stateStatsReportStates sr1) (stateStatsReportStates sr2)
       , stateStatsReportFromStateTransitions =
@@ -155,7 +180,9 @@ instance Semigroup StateStatsReport where
             (stateStatsReportToStateTransitions sr1)
             (stateStatsReportToStateTransitions sr2)
       , stateStatsReportStateTransitions =
-          addMapOfInts (stateStatsReportStateTransitions sr1) (stateStatsReportStateTransitions sr2)
+          addMapOfInts
+            (stateStatsReportStateTransitions sr1)
+            (stateStatsReportStateTransitions sr2)
       }
 
 addMapOfInts :: Ord a => Map a Int -> Map a Int -> Map a Int
@@ -176,22 +203,28 @@ makeStateStatsReport :: ZonedTime -> Period -> [Entry] -> StateStatsReport
 makeStateStatsReport now p es =
   StateStatsReport
     { stateStatsReportStates = getCount $ mapMaybe (entryStateInPeriod now p) es
-    , stateStatsReportHistoricalStates = getCount $ historicalStatesInPeriod now p es
-    , stateStatsReportFromStateTransitions = getCount $ fromStateTransitionsInPeriod now p es
-    , stateStatsReportToStateTransitions = getCount $ toStateTransitionsInPeriod now p es
-    , stateStatsReportStateTransitions = getCount $ stateTransitionsInPeriod now p es
+    , stateStatsReportHistoricalStates =
+        getCount $ historicalStatesInPeriod now p es
+    , stateStatsReportFromStateTransitions =
+        getCount $ fromStateTransitionsInPeriod now p es
+    , stateStatsReportToStateTransitions =
+        getCount $ toStateTransitionsInPeriod now p es
+    , stateStatsReportStateTransitions =
+        getCount $ stateTransitionsInPeriod now p es
     }
 
 withinPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Bool
 withinPeriod now p = filterPeriod now p . stateHistoryEntryTimestamp
 
-stateHistoryEntryInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe StateHistoryEntry
+stateHistoryEntryInPeriod ::
+     ZonedTime -> Period -> StateHistoryEntry -> Maybe StateHistoryEntry
 stateHistoryEntryInPeriod now p tse =
   if withinPeriod now p tse
     then Just tse
     else Nothing
 
-stateHistoryStateInPeriod :: ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryStateInPeriod ::
+     ZonedTime -> Period -> StateHistoryEntry -> Maybe (Maybe TodoState)
 stateHistoryStateInPeriod now p tse =
   stateHistoryEntryNewState <$> stateHistoryEntryInPeriod now p tse
 
@@ -208,15 +241,19 @@ historicalStatesInPeriod now p =
     ((if p == AllTime
         then (Nothing :)
         else id) .
-     mapMaybe (stateHistoryStateInPeriod now p) . unStateHistory . entryStateHistory)
+     mapMaybe (stateHistoryStateInPeriod now p) .
+     unStateHistory . entryStateHistory)
 
-fromStateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+fromStateTransitionsInPeriod ::
+     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 fromStateTransitionsInPeriod now p = map fst . stateTransitionsInPeriod now p
 
-toStateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
+toStateTransitionsInPeriod ::
+     ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 toStateTransitionsInPeriod now p = map snd . stateTransitionsInPeriod now p
 
-stateTransitionsInPeriod :: ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+stateTransitionsInPeriod ::
+     ZonedTime -> Period -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
 stateTransitionsInPeriod now p = concatMap go
   where
     go :: Entry -> [(Maybe TodoState, Maybe TodoState)]
@@ -228,7 +265,8 @@ stateTransitionsInPeriod now p = concatMap go
         Nothing -> []
         Just mts -> [(Nothing, mts)]
     go' (x:y:xs) =
-      case (,) <$> stateHistoryStateInPeriod now p x <*> stateHistoryStateInPeriod now p y of
+      case (,) <$> stateHistoryStateInPeriod now p x <*>
+           stateHistoryStateInPeriod now p y of
         Just (tsx, tsy) -> (tsy, tsx) : go' (y : xs)
         _ -> go' (y : xs)
 

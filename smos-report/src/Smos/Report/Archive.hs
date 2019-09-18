@@ -1,9 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-
 module Smos.Report.Archive where
 
-import GHC.Generics(Generic)
+import GHC.Generics (Generic)
 
 import Data.Aeson
 

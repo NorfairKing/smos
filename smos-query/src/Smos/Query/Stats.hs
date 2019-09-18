@@ -45,8 +45,10 @@ stats StatsSettings {..} = do
     accumulateStatsReport src
   liftIO $ putTableLn $ renderStatsReport sr
 
-accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
-accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
+accumulateStatsReport ::
+     StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
+accumulateStatsReport src =
+  C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
 renderStatsReport :: StatsReport -> Table
 renderStatsReport StatsReport {..} =
@@ -77,20 +79,24 @@ renderStateStatsReport StateStatsReport {..} =
     ]
 
 formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk Text]]
-formatReportStates m = flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, intChunk i]
+formatReportStates m =
+  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, intChunk i]
 
-formatReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
+formatReportStateTransitions ::
+     Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
 formatReportStateTransitions m =
   flip map (M.toList m) $ \((mts1, mts2), i) ->
     [mTodoStateChunk mts1, mTodoStateChunk mts2, intChunk i]
 
 formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportFromStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", intChunk i]
+  flip map (M.toList m) $ \(mts, i) ->
+    [mTodoStateChunk mts, chunk "(any)", intChunk i]
 
 formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
 formatReportToStateTransitions m =
-  flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
+  flip map (M.toList m) $ \(mts, i) ->
+    [chunk "(any)", mTodoStateChunk mts, intChunk i]
 
 renderProjectsStatsReport :: ProjectStatsReport -> Table
 renderProjectsStatsReport ProjectStatsReport {..} =

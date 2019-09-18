@@ -28,9 +28,11 @@ tags :: TagsSettings -> Q ()
 tags TagsSettings {..} = do
   es <-
     sourceToList $
-    streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    streamSmosFiles HideArchive .| parseSmosFiles .|
+    printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) tagsSetFilter) .|
+    C.filter
+      (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) tagsSetFilter) .|
     smosCursorCurrents .|
     C.map snd
   let tr = makeTagsReport es
@@ -38,7 +40,8 @@ tags TagsSettings {..} = do
 
 renderTagsReport :: TagsReport -> Table
 renderTagsReport TagsReport {..} =
-  formatAsTable $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
+  formatAsTable $
+  map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
   where
     go :: Tag -> Int -> [Chunk Text]
     go t n = [tagChunk t, intChunk n]
