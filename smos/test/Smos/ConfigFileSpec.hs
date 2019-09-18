@@ -20,7 +20,8 @@ spec = do
   configSpecWithExt ".yaml" parseYamlConfig
   configSpecWithExt ".json" parseJSONConfig
 
-configSpecWithExt :: String -> (Path Abs File -> IO (Either String Configuration)) -> Spec
+configSpecWithExt ::
+     String -> (Path Abs File -> IO (Either String Configuration)) -> Spec
 configSpecWithExt ext parseConf = do
   rd <- runIO resourcesDir
   extResourcesDir <- runIO $ resourcesFormatDir rd ext
@@ -33,7 +34,8 @@ configSpecWithExt ext parseConf = do
           Left err -> expectationFailure err
           Right conf -> shouldBeValid conf
     describe "default config" $ do
-      defaultConfigFile <- runIO $ resolveFile extResourcesDir $ "complete" <> ext
+      defaultConfigFile <-
+        runIO $ resolveFile extResourcesDir $ "complete" <> ext
       it ("rebuilds to the the contents of " <> fromAbsFile defaultConfigFile) $ do
         let actual = backToConfiguration defaultConfig
         let encodeFunc =
@@ -49,7 +51,9 @@ configSpecWithExt ext parseConf = do
                      ".json" -> JSON.decode . LB.fromStrict
                      _ -> error "unknown format"
              case decodeFunc contents of
-               Nothing -> expectationFailure "Failed to decode expected result." >> undefined
+               Nothing ->
+                 expectationFailure "Failed to decode expected result." >>
+                 undefined
                Just r -> pure r
         unless (actual == expected) $ do
           putStrLn $

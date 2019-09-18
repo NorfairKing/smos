@@ -68,7 +68,8 @@ makeEntryCursor Entry {..} =
     { entryCursorHeaderCursor = makeHeaderCursor entryHeader
     , entryCursorContentsCursor = makeContentsCursor <$> entryContents
     , entryCursorTimestampsCursor = makeTimestampsCursor entryTimestamps
-    , entryCursorPropertiesCursor = makePropertiesCursor <$> NE.nonEmpty (M.toList entryProperties)
+    , entryCursorPropertiesCursor =
+        makePropertiesCursor <$> NE.nonEmpty (M.toList entryProperties)
     , entryCursorTagsCursor = makeTagsCursor <$> NE.nonEmpty entryTags
     , entryCursorStateHistoryCursor = makeStateHistoryCursor entryStateHistory
     , entryCursorLogbookCursor = makeLogbookCursor entryLogbook
@@ -87,13 +88,16 @@ rebuildEntryCursor EntryCursor {..} =
     , entryProperties =
         maybe M.empty (M.fromList . NE.toList) $
         rebuildPropertiesCursor <$> entryCursorPropertiesCursor
-    , entryStateHistory = rebuildStateHistoryCursor entryCursorStateHistoryCursor
-    , entryTags = maybe [] NE.toList $ rebuildTagsCursor <$> entryCursorTagsCursor
+    , entryStateHistory =
+        rebuildStateHistoryCursor entryCursorStateHistoryCursor
+    , entryTags =
+        maybe [] NE.toList $ rebuildTagsCursor <$> entryCursorTagsCursor
     , entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
     }
 
 entryCursorSelectionL :: Lens' EntryCursor EntryCursorSelection
-entryCursorSelectionL = lens entryCursorSelected $ \ec s -> ec {entryCursorSelected = s}
+entryCursorSelectionL =
+  lens entryCursorSelected $ \ec s -> ec {entryCursorSelected = s}
 
 entryCursorHeaderCursorL :: Lens' EntryCursor HeaderCursor
 entryCursorHeaderCursorL =
@@ -105,18 +109,22 @@ entryCursorContentsCursorL =
 
 entryCursorStateHistoryCursorL :: Lens' EntryCursor (Maybe StateHistoryCursor)
 entryCursorStateHistoryCursorL =
-  lens entryCursorStateHistoryCursor $ \ec shc -> ec {entryCursorStateHistoryCursor = shc}
+  lens entryCursorStateHistoryCursor $ \ec shc ->
+    ec {entryCursorStateHistoryCursor = shc}
 
 entryCursorTagsCursorL :: Lens' EntryCursor (Maybe TagsCursor)
-entryCursorTagsCursorL = lens entryCursorTagsCursor $ \ec shc -> ec {entryCursorTagsCursor = shc}
+entryCursorTagsCursorL =
+  lens entryCursorTagsCursor $ \ec shc -> ec {entryCursorTagsCursor = shc}
 
 entryCursorPropertiesCursorL :: Lens' EntryCursor (Maybe PropertiesCursor)
 entryCursorPropertiesCursorL =
-  lens entryCursorPropertiesCursor $ \ec shc -> ec {entryCursorPropertiesCursor = shc}
+  lens entryCursorPropertiesCursor $ \ec shc ->
+    ec {entryCursorPropertiesCursor = shc}
 
 entryCursorTimestampsCursorL :: Lens' EntryCursor (Maybe TimestampsCursor)
 entryCursorTimestampsCursorL =
-  lens entryCursorTimestampsCursor $ \ec shc -> ec {entryCursorTimestampsCursor = shc}
+  lens entryCursorTimestampsCursor $ \ec shc ->
+    ec {entryCursorTimestampsCursor = shc}
 
 entryCursorLogbookCursorL :: Lens' EntryCursor LogbookCursor
 entryCursorLogbookCursorL =
@@ -130,11 +138,13 @@ entryCursorSelectWhole = entryCursorSelect WholeEntrySelected
 
 entryCursorSelectHeaderAtStart :: EntryCursor -> EntryCursor
 entryCursorSelectHeaderAtStart =
-  (entryCursorHeaderCursorL %~ headerCursorSelectStart) . entryCursorSelect HeaderSelected
+  (entryCursorHeaderCursorL %~ headerCursorSelectStart) .
+  entryCursorSelect HeaderSelected
 
 entryCursorSelectHeaderAtEnd :: EntryCursor -> EntryCursor
 entryCursorSelectHeaderAtEnd =
-  (entryCursorHeaderCursorL %~ headerCursorSelectEnd) . entryCursorSelect HeaderSelected
+  (entryCursorHeaderCursorL %~ headerCursorSelectEnd) .
+  entryCursorSelect HeaderSelected
 
 entryCursorSelectContents :: EntryCursor -> EntryCursor
 entryCursorSelectContents =
@@ -172,4 +182,5 @@ data EntryCursorSelection
 instance Validity EntryCursorSelection
 
 entryCursorUpdateTime :: ZonedTime -> EntryCursor -> EntryCursor
-entryCursorUpdateTime zt = entryCursorTimestampsCursorL %~ fmap (timestampsCursorUpdateTime zt)
+entryCursorUpdateTime zt =
+  entryCursorTimestampsCursorL %~ fmap (timestampsCursorUpdateTime zt)

@@ -21,7 +21,9 @@ import Smos.Sync.Server.Handler.Import as Server
 import Smos.Sync.Server.Serve as Server
 
 serverSpec :: SpecWith ClientEnv -> Spec
-serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer
+serverSpec =
+  modifyMaxShrinks (const 0) .
+  modifyMaxSuccess (`div` 20) . around withTestServer
 
 withTestServer :: (ClientEnv -> IO a) -> IO a
 withTestServer func = do
@@ -44,7 +46,6 @@ withTestServer func = do
 
 -- These are coppied from newer hspec versions.
 -- Feel free to delete them after hspec-2.5.7
-
 -- | Use a modified `maxShrinks` for given spec.
 modifyMaxShrinks :: (Int -> Int) -> SpecWith a -> SpecWith a
 modifyMaxShrinks = modifyArgs . modify

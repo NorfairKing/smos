@@ -25,7 +25,8 @@ getSettings = do
 
 getConfig :: Flags -> Environment -> IO (Maybe Configuration)
 getConfig Flags {..} Environment {..} =
-  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
+  fmap Configuration <$>
+  Report.getConfiguration flagReportFlags envReportEnvironment
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
@@ -65,7 +66,8 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
+  Flags <$>
+  strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
   Report.parseFlags
 
 getEnvironment :: IO Environment

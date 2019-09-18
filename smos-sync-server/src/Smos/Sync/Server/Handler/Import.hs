@@ -50,7 +50,9 @@ data ServerStore =
   deriving (Show, Eq, Generic)
 
 instance FromJSON ServerStore where
-  parseJSON = withObject "ServerStore" $ \o -> ServerStore <$> o .: "server-id" <*> o .: "items"
+  parseJSON =
+    withObject "ServerStore" $ \o ->
+      ServerStore <$> o .: "server-id" <*> o .: "items"
 
 instance ToJSON ServerStore where
   toJSON ServerStore {..} =
@@ -62,7 +64,11 @@ readStore p = do
   case mContents of
     Nothing -> do
       u <- UUID.nextRandom
-      pure ServerStore {serverStoreServerUUID = u, serverStoreItems = Mergeful.initialServerStore}
+      pure
+        ServerStore
+          { serverStoreServerUUID = u
+          , serverStoreItems = Mergeful.initialServerStore
+          }
     Just contents ->
       case JSON.eitherDecode contents of
         Left err -> die err

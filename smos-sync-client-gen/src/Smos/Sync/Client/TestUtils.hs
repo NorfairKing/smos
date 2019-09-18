@@ -41,7 +41,8 @@ assertContents dir m = do
 readContents :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
 readContents dir = do
   fs <- snd <$> listDirRecurRel dir
-  fmap M.fromList $ forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
+  fmap M.fromList $
+    forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
 
 setupClientContents :: SyncSettings -> Map (Path Rel File) ByteString -> IO ()
 setupClientContents ss = setupContents (syncSetContentsDir ss)

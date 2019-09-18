@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Smos.Cursor.Header.Gen where
 
 import Data.GenValidity

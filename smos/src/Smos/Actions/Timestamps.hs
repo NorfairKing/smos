@@ -60,7 +60,8 @@ timestampsInsert :: ActionUsing Char
 timestampsInsert =
   ActionUsing
     { actionUsingName = "timestampsInsert"
-    , actionUsingFunc = \c -> modifyTimestampsCursorM $ timestampsCursorInsertChar c
+    , actionUsingFunc =
+        \c -> modifyTimestampsCursorM $ timestampsCursorInsertChar c
     , actionUsingDescription =
         "Insert a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
@@ -69,7 +70,8 @@ timestampsAppend :: ActionUsing Char
 timestampsAppend =
   ActionUsing
     { actionUsingName = "timestampsAppend"
-    , actionUsingFunc = \c -> modifyTimestampsCursorM $ timestampsCursorAppendChar c
+    , actionUsingFunc =
+        \c -> modifyTimestampsCursorM $ timestampsCursorAppendChar c
     , actionUsingDescription =
         "Append a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
@@ -79,7 +81,8 @@ timestampsMoveLeft =
   Action
     { actionName = "timestampsMoveLeft"
     , actionFunc = modifyTimestampsCursorM timestampsCursorSelectPrevChar
-    , actionDescription = "Move one character to the left in the current timestamps cursor"
+    , actionDescription =
+        "Move one character to the left in the current timestamps cursor"
     }
 
 timestampsMoveRight :: Action
@@ -87,7 +90,8 @@ timestampsMoveRight =
   Action
     { actionName = "timestampsMoveRight"
     , actionFunc = modifyTimestampsCursorM timestampsCursorSelectNextChar
-    , actionDescription = "Move one character to the right in the current timestamps cursor"
+    , actionDescription =
+        "Move one character to the right in the current timestamps cursor"
     }
 
 timestampsRemove :: Action
@@ -95,7 +99,8 @@ timestampsRemove =
   Action
     { actionName = "timestampsRemove"
     , actionFunc = modifyTimestampsCursorM timestampsCursorRemoveChar
-    , actionDescription = "Remove one character in the current timestamps cursor"
+    , actionDescription =
+        "Remove one character in the current timestamps cursor"
     }
 
 timestampsDelete :: Action
@@ -103,7 +108,8 @@ timestampsDelete =
   Action
     { actionName = "timestampsDelete"
     , actionFunc = modifyTimestampsCursorM timestampsCursorDeleteChar
-    , actionDescription = "Delete one character  in the current timestamps cursor"
+    , actionDescription =
+        "Delete one character  in the current timestamps cursor"
     }
 
 timestampsToggle :: Action

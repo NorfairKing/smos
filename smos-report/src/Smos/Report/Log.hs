@@ -105,7 +105,6 @@ makeTimestampLogEntries tz = map (uncurry go) . M.toList . entryTimestamps
     go :: TimestampName -> Timestamp -> LogEvent
     go tsn ts =
       LogEvent
-        { logEventTimestamp =
-            localTimeToUTC tz $ timestampLocalTime ts
+        { logEventTimestamp = localTimeToUTC tz $ timestampLocalTime ts
         , logEventType = TimestampEvent tsn
         }

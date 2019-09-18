@@ -49,7 +49,8 @@ successAndFailureTests name =
       it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $
         shouldSucceedInParsingByExtension @a tf
     forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
-      it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
+      it (fromAbsFile tf ++ " successfully fails to parse") $
+      shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
      forall a. (Validity a, Show a, FromJSON a)
@@ -81,7 +82,8 @@ shouldFailToParse tf = do
   case errOrSmosFile of
     Left _ -> pure ()
     Right sf ->
-      expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
+      expectationFailure $
+      unwords ["Should have failed, but got this smos file:", ppShow sf]
 
 readFileByExtension ::
      forall a. (Show a, FromJSON a)

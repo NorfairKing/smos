@@ -29,14 +29,19 @@ spec = do
   eqSpecOnValid @Filter
   genValidSpec @Filter
   jsonSpecOnValid @Filter
-  describe "foldFilterAnd" $ it "produces valid results" $ producesValidsOnValids foldFilterAnd
-  describe "filterPredicate" $ it "produces valid results" $ producesValidsOnValids3 filterPredicate
+  describe "foldFilterAnd" $
+    it "produces valid results" $ producesValidsOnValids foldFilterAnd
+  describe "filterPredicate" $
+    it "produces valid results" $ producesValidsOnValids3 filterPredicate
   describe "filterP" $ do
     parsesValidSpec filterP filterText
     parseJustSpec filterP "tag:work" (FilterHasTag "work")
     parseJustSpec filterP "state:NEXT" (FilterTodoState "NEXT")
     parseJustSpec filterP "level:5" (FilterLevel 5)
-    parseJustSpec filterP "exact-property:effort:30m" (FilterExactProperty "effort" "30m")
+    parseJustSpec
+      filterP
+      "exact-property:effort:30m"
+      (FilterExactProperty "effort" "30m")
     parseJustSpec filterP "has-property:effort" (FilterHasProperty "effort")
   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText
@@ -51,8 +56,10 @@ spec = do
   describe "filterBinrelP" $ parsesValidSpec filterBinRelP binRelText
   describe "filterOrP" $ parsesValidSpec filterOrP orText
   describe "filterAndP" $ parsesValidSpec filterAndP andText
-  describe "filterExactPropertyP" $ parsesValidSpec filterExactPropertyP exactPropertyText
-  describe "filterHasPropertyP" $ parsesValidSpec filterHasPropertyP hasPropertyText
+  describe "filterExactPropertyP" $
+    parsesValidSpec filterExactPropertyP exactPropertyText
+  describe "filterHasPropertyP" $
+    parsesValidSpec filterHasPropertyP hasPropertyText
   describe "renderFilter" $ do
     it "produces valid texts" $ producesValidsOnValids renderFilter
     it "renders filters that parse to the same" $
@@ -92,8 +99,24 @@ spec = do
       , "not:legacy:"
       , "not:not:"
       ]
-    c "tag" ["tag:out", "tag:online", "tag:personal", "tag:offline", "tag:toast", "tag:work"]
-    c "tag:" ["tag:out", "tag:online", "tag:personal", "tag:offline", "tag:toast", "tag:work"]
+    c
+      "tag"
+      [ "tag:out"
+      , "tag:online"
+      , "tag:personal"
+      , "tag:offline"
+      , "tag:toast"
+      , "tag:work"
+      ]
+    c
+      "tag:"
+      [ "tag:out"
+      , "tag:online"
+      , "tag:personal"
+      , "tag:offline"
+      , "tag:toast"
+      , "tag:work"
+      ]
     cp "tag:h" ["tag:home"]
     cp "state:N" ["state:NEXT"]
 
@@ -156,7 +179,8 @@ andText = textPieces [filterText, pure " and ", filterText]
 
 exactPropertyText :: Gen Text
 exactPropertyText =
-  textPieces [pure "exact-property:", propertyNameText, pure ":", propertyValueText]
+  textPieces
+    [pure "exact-property:", propertyNameText, pure ":", propertyValueText]
 
 hasPropertyText :: Gen Text
 hasPropertyText = textPieces [pure "has-property:", propertyNameText]
@@ -181,16 +205,19 @@ textPieces :: [Gen Text] -> Gen Text
 textPieces = fmap T.concat . sequenceA
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
-parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
+parseJustSpec p s res =
+  it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
-parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
+parsesValidSpec p gen =
+  it "only parses valid values" $ forAll gen $ parsesValid p
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
-      expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
+      expectationFailure $
+      unlines ["P failed on input", show s, "with error", parseErrorPretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property

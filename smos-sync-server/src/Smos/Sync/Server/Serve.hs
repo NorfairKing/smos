@@ -31,7 +31,10 @@ serveSmosSyncServer ss@ServeSettings {..} = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   Servant.serve syncAPI $
-  hoistServer syncAPI ((`runReaderT` env) :: SyncHandler a -> Handler a) syncServer
+  hoistServer
+    syncAPI
+    ((`runReaderT` env) :: SyncHandler a -> Handler a)
+    syncServer
 
 syncServer :: ServerT SyncAPI SyncHandler
 syncServer = handlePostSync

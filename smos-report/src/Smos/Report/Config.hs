@@ -63,7 +63,8 @@ defaultReportConfig =
     }
 
 defaultWorkBaseFilter :: Maybe Filter
-defaultWorkBaseFilter = Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
+defaultWorkBaseFilter =
+  Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)
@@ -120,7 +121,8 @@ data ArchivedProjectsDirSpec
 defaultArchivedProjectsDirSpec :: ArchivedProjectsDirSpec
 defaultArchivedProjectsDirSpec = ArchivedProjectsInArchive [reldir|projects|]
 
-resolveArchivedProjectsDir :: Path Abs Dir -> ArchivedProjectsDirSpec -> IO (Path Abs Dir)
+resolveArchivedProjectsDir ::
+     Path Abs Dir -> ArchivedProjectsDirSpec -> IO (Path Abs Dir)
 resolveArchivedProjectsDir ad as =
   case as of
     ArchivedProjectsInArchive ard -> pure $ ad </> ard
@@ -128,7 +130,8 @@ resolveArchivedProjectsDir ad as =
     ArchivedProjectsAbsolute aad -> pure aad
 
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigWorkflowFileSpec
+resolveReportWorkflowDir SmosReportConfig {..} =
+  resolveWorkflowDir smosReportConfigWorkflowFileSpec
 
 resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportArchiveDir SmosReportConfig {..} = do

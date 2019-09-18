@@ -160,7 +160,8 @@ data WorkConfiguration =
 instance FromJSON WorkConfiguration where
   parseJSON =
     withObject "WorkConfiguration" $ \o ->
-      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*> o .:? "sorter"
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*>
+      o .:? "sorter"
 
 data Dispatch
   = DispatchEntry EntrySettings

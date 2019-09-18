@@ -19,7 +19,13 @@ import Smos.Actions.Utils
 
 allHeaderPlainActions :: [Action]
 allHeaderPlainActions =
-  [headerRemove, headerDelete, headerMoveLeft, headerMoveRight, headerMoveToStart, headerMoveToEnd]
+  [ headerRemove
+  , headerDelete
+  , headerMoveLeft
+  , headerMoveRight
+  , headerMoveToStart
+  , headerMoveToEnd
+  ]
 
 allHeaderUsingCharActions :: [ActionUsing Char]
 allHeaderUsingCharActions = [headerInsert, headerAppend]
@@ -28,16 +34,20 @@ headerInsert :: ActionUsing Char
 headerInsert =
   ActionUsing
     { actionUsingName = "headerInsert"
-    , actionUsingFunc = \c -> modifyHeaderCursorWhenSelectedM $ headerCursorInsert c
-    , actionUsingDescription = "Insert a character into the header in front of the cursor"
+    , actionUsingFunc =
+        \c -> modifyHeaderCursorWhenSelectedM $ headerCursorInsert c
+    , actionUsingDescription =
+        "Insert a character into the header in front of the cursor"
     }
 
 headerAppend :: ActionUsing Char
 headerAppend =
   ActionUsing
     { actionUsingName = "headerAppend"
-    , actionUsingFunc = \c -> modifyHeaderCursorWhenSelectedM $ headerCursorAppend c
-    , actionUsingDescription = "Append a character into the header in front of the cursor"
+    , actionUsingFunc =
+        \c -> modifyHeaderCursorWhenSelectedM $ headerCursorAppend c
+    , actionUsingDescription =
+        "Append a character into the header in front of the cursor"
     }
 
 headerRemove :: Action

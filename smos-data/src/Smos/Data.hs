@@ -94,7 +94,8 @@ prettySmosForest :: Forest Entry -> String
 prettySmosForest ts = unlines $ map prettySmosTree ts
 
 prettySmosTree :: Tree Entry -> String
-prettySmosTree Node {..} = unlines [prettySmosEntry rootLabel, prettySmosForest subForest]
+prettySmosTree Node {..} =
+  unlines [prettySmosEntry rootLabel, prettySmosForest subForest]
 
 prettySmosEntry :: Entry -> String
 prettySmosEntry Entry {..} = T.unpack $ headerText entryHeader
@@ -106,10 +107,12 @@ smosFileClockOutEverywhere now (SmosFile f) = SmosFile $ goF f
     goF = map goT
 
 entryClockIn :: UTCTime -> Entry -> Entry
-entryClockIn now e = maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockIn now (entryLogbook e)
+entryClockIn now e =
+  maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockIn now (entryLogbook e)
 
 entryClockOut :: UTCTime -> Entry -> Entry
-entryClockOut now e = maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockOut now (entryLogbook e)
+entryClockOut now e =
+  maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockOut now (entryLogbook e)
 
 logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
 logbookClockIn now lb =
@@ -136,9 +139,11 @@ stateHistoryState (StateHistory tups) =
     [] -> Nothing
     (StateHistoryEntry mts _:_) -> mts
 
-stateHistorySetState :: UTCTime -> Maybe TodoState -> StateHistory -> Maybe StateHistory
+stateHistorySetState ::
+     UTCTime -> Maybe TodoState -> StateHistory -> Maybe StateHistory
 stateHistorySetState now mts sh =
-  constructValid $ sh {unStateHistory = StateHistoryEntry mts now : unStateHistory sh}
+  constructValid $
+  sh {unStateHistory = StateHistoryEntry mts now : unStateHistory sh}
 
 entryState :: Entry -> Maybe TodoState
 entryState = stateHistoryState . entryStateHistory

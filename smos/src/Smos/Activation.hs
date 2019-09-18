@@ -31,12 +31,14 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
           map ((,) SpecificMatcher) $
           case helpCursorSelection of
             HelpCursorHelpSelected -> helpKeyMapHelpMatchers keyMapHelpKeyMap
-            HelpCursorSearchSelected -> helpKeyMapSearchMatchers keyMapHelpKeyMap
+            HelpCursorSearchSelected ->
+              helpKeyMapSearchMatchers keyMapHelpKeyMap
     FileSelected ->
       let FileKeyMap {..} = keyMapFileKeyMap
           with :: KeyMappings -> [(Precedence, KeyMapping)]
           with specificMappings =
-            map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers
+            map ((,) SpecificMatcher) specificMappings ++
+            map ((,) AnyMatcher) fileKeyMapAnyMatchers
        in case editorCursorFileCursor of
             Nothing -> with fileKeyMapEmptyMatchers
             Just sfc ->
@@ -53,9 +55,11 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
       let ReportsKeyMap {..} = keyMapReportsKeyMap
        in map ((,) SpecificMatcher) reportsKeymapNextActionReportMatchers
 
-findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
+findActivations ::
+     Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =
-  sortActivations $ concatMap (`findExactActivations` mappings) $ tails $ toList $ history |> kp
+  sortActivations $
+  concatMap (`findExactActivations` mappings) $ tails $ toList $ history |> kp
 
 findExactActivations :: [KeyPress] -> [(Precedence, KeyMapping)] -> [Activation]
 findExactActivations history mappings =
@@ -151,7 +155,8 @@ findExactActivations history mappings =
          in go history mc Seq.empty
 
 keyPressMatch :: KeyPress -> KeyPress -> Bool
-keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) = k1 == k2 && sort mods1 == sort mods2
+keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) =
+  k1 == k2 && sort mods1 == sort mods2
 
 data Activation =
   Activation

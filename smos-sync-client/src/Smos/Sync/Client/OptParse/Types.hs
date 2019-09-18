@@ -57,7 +57,8 @@ data Configuration =
 
 instance FromJSON Configuration where
   parseJSON v =
-    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "sync"
+    flip (withObject "Configuration") v $ \o ->
+      Configuration <$> parseJSON v <*> o .:? "sync"
 
 data SyncConfiguration =
   SyncConfiguration
@@ -70,7 +71,8 @@ data SyncConfiguration =
 instance FromJSON SyncConfiguration where
   parseJSON =
     withObject "SyncConfiguration" $ \o ->
-      SyncConfiguration <$> o .: "server-url" <*> o .: "contents-dir" <*> o .: "metadata-file"
+      SyncConfiguration <$> o .: "server-url" <*> o .: "contents-dir" <*>
+      o .: "metadata-file"
 
 newtype Dispatch =
   DispatchSync SyncSettings

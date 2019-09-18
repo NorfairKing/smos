@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Actions.Help
-  ( allHelpPlainActions, allHelpUsingCharActions,helpUp
+  ( allHelpPlainActions
+  , allHelpUsingCharActions
+  , helpUp
   , helpDown
   , helpStart
   , helpEnd
@@ -118,6 +120,7 @@ helpToggleSelection :: Action
 helpToggleSelection =
   Action
     { actionName = "helpToggleSelection"
-    , actionDescription = "Toggle between selecting and deselecting the search bar"
+    , actionDescription =
+        "Toggle between selecting and deselecting the search bar"
     , actionFunc = modifyHelpCursor helpCursorToggleSelection
     }

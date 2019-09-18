@@ -17,7 +17,8 @@ spec =
         saveSmosFile emptySmosFile Nothing p
         b' <- doesFileExist p
         b' `shouldBe` False
-    it "Does not create a file if an empty file is not changed and did not exist yet" $
+    it
+      "Does not create a file if an empty file is not changed and did not exist yet" $
       withSystemTempDir "smos-test" $ \d -> do
         p <- resolveFile d "test.smos"
         writeFile (toFilePath p) mempty
