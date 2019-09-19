@@ -4,20 +4,13 @@ with final.haskell.lib;
 {
   smosPackages =
     let
-      pathFor =
-        name:
-          builtins.path {
-            inherit name;
-            path = ../. + "/${name}";
-            filter =
-              path: type:
-                !final.lib.hasPrefix "." (baseNameOf path);
-          };
       smosPkg =
         name:
           addBuildDepend (
             failOnAllWarnings (
-              disableLibraryProfiling ( final.haskellPackages.callCabal2nix name ( pathFor name ) {} )
+              disableLibraryProfiling (
+                final.haskellPackages.callCabal2nix name ( final.gitignoreSource ( ../. + "/${name}" ) ) {}
+              )
             )
           ) ( final.haskellPackages.autoexporter );
     in
@@ -46,7 +39,7 @@ with final.haskell.lib;
   smosDocumentationSite =
     final.stdenv.mkDerivation rec {
       name = "smosDocumentationSite";
-      src = ../smos-docs-site;
+      src = final.gitignoreSource ../smos-docs-site;
       phases = "unpackPhase buildPhase";
       version = "0.0";
       buildInputs =
