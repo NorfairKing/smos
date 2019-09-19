@@ -24,6 +24,8 @@ library:
   - http-client
   - http-client-tls
   - mergeful
+  - monad-logger
+  - mtl
   - optparse-applicative
   - path
   - path-io

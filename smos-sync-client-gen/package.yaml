@@ -50,12 +50,15 @@ tests:
     - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
-    - hspec-core
     - hspec
+    - hspec-core
     - mergeful
+    - monad-logger
     - path
     - path-io
+    - pretty-show
     - servant-client
+    - smos-report
     - smos-sync-api
     - smos-sync-client
     - smos-sync-client-gen

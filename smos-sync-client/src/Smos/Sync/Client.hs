@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Sync.Client
   ( smosSyncClient
   ) where
@@ -9,6 +7,6 @@ import Smos.Sync.Client.Sync
 
 smosSyncClient :: IO ()
 smosSyncClient = do
-  Instructions dispatch Settings {..} <- getInstructions
+  Instructions dispatch sets <- getInstructions
   case dispatch of
-    DispatchSync ss -> syncSmosSyncClient ss
+    DispatchSync ss -> syncSmosSyncClient sets ss

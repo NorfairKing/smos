@@ -7,11 +7,10 @@ import GHC.Generics (Generic)
 
 import Data.Yaml as Yaml
 
+import Control.Monad.Logger
 import Path
-
 import Servant.Client (BaseUrl)
 
-import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 
 data Arguments =
@@ -33,9 +32,10 @@ data SyncFlags =
     }
   deriving (Show, Eq)
 
-newtype Flags =
+data Flags =
   Flags
     { flagReportFlags :: Report.Flags
+    , flagLogLevel :: Maybe LogLevel
     }
   deriving (Show, Eq, Generic)
 
@@ -86,6 +86,6 @@ data SyncSettings =
 
 newtype Settings =
   Settings
-    { setReportConfig :: SmosReportConfig
+    { setLogLevel :: LogLevel
     }
   deriving (Show, Eq, Generic)

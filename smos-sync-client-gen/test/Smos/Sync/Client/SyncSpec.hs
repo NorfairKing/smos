@@ -6,7 +6,14 @@ module Smos.Sync.Client.SyncSpec
   ( spec
   ) where
 
+import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+import Test.Validity
+import Test.Validity.Aeson
+
 import Control.Monad
+import Control.Monad.Logger
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -18,15 +25,11 @@ import Data.UUID
 import GHC.Generics (Generic)
 import Path
 import Servant.Client
+
 import Smos.Sync.API
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Server.TestUtils
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Test.Validity
-import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
@@ -38,33 +41,33 @@ spec = do
   jsonSpecOnValid @SyncFileMeta
   serverSpec $ do
     describe "single client" $ do
-      describe "runInitialSync" $
+      describe "testInitialSync" $
         it "succesfully gets a valid clientStore from an empty server" $ \cenv -> do
-          clientStore <- runInitialSync cenv
+          clientStore <- testInitialSync cenv
           shouldBeValid clientStore
-      describe "runSync" $ do
+      describe "testSync" $ do
         it "succesfully syncs with an empty server" $ \cenv -> do
-          cstore <- runInitialSync cenv
-          cstore' <- runSync cenv cstore
+          cstore <- testInitialSync cenv
+          cstore' <- testSync cenv cstore
           shouldBeValid cstore'
         modifyMaxSuccess (* 10) $
           modifyMaxSize (* 10) $ do
             it "succesfully syncs a list of operations" $ \cenv ->
               forAll genTestOps $ \ops -> do
-                initial <- runInitialSync cenv
+                initial <- testInitialSync cenv
                 let go :: ClientStore -> TestOp -> IO ClientStore
                     go cstore op = do
                       let cstore' = applyTestOpStore cstore op
-                      runSync cenv cstore'
+                      testSync cenv cstore'
                 result <- foldM go initial ops
                 shouldBeValid result
             it "succesfully syncs a list of phases of operations" $ \cenv ->
               forAll genTestOpsPhases $ \opss -> do
-                initial <- runInitialSync cenv
+                initial <- testInitialSync cenv
                 let go :: ClientStore -> [TestOp] -> IO ClientStore
                     go cstore ops = do
                       let cstore' = applyTestOpsStore cstore ops
-                      runSync cenv cstore'
+                      testSync cenv cstore'
                 result <- foldM go initial opss
                 shouldBeValid result
     describe "multi client" $ do
@@ -72,8 +75,8 @@ spec = do
         forAllValid $ \units -> do
           stores <-
             forM (units :: [()]) $ \() -> do
-              cstore <- runInitialSync cenv
-              runSync cenv cstore
+              cstore <- testInitialSync cenv
+              testSync cenv cstore
           shouldBeValid stores
       modifyMaxSuccess (* 20) $
         modifyMaxSize (* 20) $
@@ -158,13 +161,13 @@ applyCTestOp :: ClientEnv -> Map Int ClientStore -> CTestOp -> IO (Map Int Clien
 applyCTestOp cenv m (CTestOp i cop) =
   case cop of
     ClientNew -> do
-      initial <- runInitialSync cenv
+      initial <- testInitialSync cenv
       pure $ M.insert i initial m
     ClientSync ->
       case M.lookup i m of
         Nothing -> pure m
         Just cstore -> do
-          cstore' <- runSync cenv cstore
+          cstore' <- testSync cenv cstore
           pure $ M.adjust (const cstore') i m
     ClientTestOps ops ->
       case M.lookup i m of
@@ -172,6 +175,15 @@ applyCTestOp cenv m (CTestOp i cop) =
         Just cstore -> do
           let cstore' = applyTestOpsStore cstore ops
           pure $ M.adjust (const cstore') i m
+
+testInitialSync :: ClientEnv -> IO ClientStore
+testInitialSync cenv = testLogging $ runInitialSync cenv
+
+testSync :: ClientEnv -> ClientStore -> IO ClientStore
+testSync cenv cs = testLogging $ runSync cenv cs
+
+testLogging :: C a -> IO a
+testLogging = runStderrLoggingT . filterLogger (\_ ll -> ll >= LevelWarn)
 
 data TestOp
   = AddFile SyncFile

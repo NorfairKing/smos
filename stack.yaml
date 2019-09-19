@@ -24,7 +24,7 @@ extra-deps:
 - thyme-0.3.5.5
 - hakyll-sass-0.2.3
 - git: https://github.com/NorfairKing/mergeful
-  commit: 5370b8c2a6e8f532450ef6f814787002530095e1
+  commit: db7bfbb2926a986222552a93c285250b4fba29ed
   subdirs:
     - mergeful
     - genvalidity-mergeful

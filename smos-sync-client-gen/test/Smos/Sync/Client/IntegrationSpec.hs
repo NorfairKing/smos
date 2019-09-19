@@ -3,23 +3,28 @@ module Smos.Sync.Client.IntegrationSpec
   ) where
 
 import qualified Data.Map as M
-import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
-import Smos.Sync.Client.Sync.Gen ()
-import Smos.Sync.Client.TestUtils
-import Smos.Sync.Server.TestUtils
+
+import Control.Monad.Logger
+
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
 
+import Smos.Sync.Client.OptParse.Types
+
+import Smos.Sync.Client.Sync
+import Smos.Sync.Client.Sync.Gen ()
+import Smos.Sync.Client.TestUtils
+import Smos.Sync.Server.TestUtils
+
 spec :: Spec
 spec =
   serverSpec $
-  describe "syncSmosSyncClient" $ do
+  describe "testSyncSmosClient" $ do
     describe "single client" $ do
       it "succesfully syncs an empty directory" $ \cenv ->
         withClient cenv $ \c -> do
-          syncSmosSyncClient c
+          testSyncSmosClient c
           assertClientContents c M.empty
       describe "addition" $ do
         it "succesfully syncs a directory with one file" $ \cenv ->
@@ -27,13 +32,13 @@ spec =
             withClient cenv $ \c -> do
               let m = M.singleton rp contents
               setupClientContents c m
-              syncSmosSyncClient c
+              testSyncSmosClient c
               assertClientContents c m
         it "succesfully syncs a directory with any number of files" $ \cenv ->
           forAllValid $ \m ->
             withClient cenv $ \c -> do
               setupClientContents c m
-              syncSmosSyncClient c
+              testSyncSmosClient c
               assertClientContents c m
       describe "changes" $ do
         it "succesfully syncs a change" $ \cenv ->
@@ -41,10 +46,10 @@ spec =
             withClient cenv $ \c -> do
               let m1 = M.singleton rp contents1
               setupClientContents c m1
-              syncSmosSyncClient c
+              testSyncSmosClient c
               let m2 = M.singleton rp contents2
               setupClientContents c m2
-              syncSmosSyncClient c
+              testSyncSmosClient c
               assertClientContents c m2
         it "succesfully syncs a change from a set of files" $ \cenv ->
           forAllValid $ \(rp, contents1, contents2) ->
@@ -52,19 +57,19 @@ spec =
               withClient cenv $ \c -> do
                 let m1 = M.insert rp contents1 m
                 setupClientContents c m1
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 let m2 = M.insert rp contents2 m
                 setupClientContents c m2
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 assertClientContents c m2
         it "succesfully syncs a change of any number of files" $ \cenv ->
           forAllValid $ \m1 ->
             forAll (changedMap m1) $ \m2 ->
               withClient cenv $ \c -> do
                 setupClientContents c m1
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 setupClientContents c m2
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 assertClientContents c m2
         it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
           forAllValid $ \m1' ->
@@ -74,9 +79,9 @@ spec =
                   let m1 = M.union m1' m
                   let m2 = M.union m2' m
                   setupClientContents c m1
-                  syncSmosSyncClient c
+                  testSyncSmosClient c
                   setupClientContents c m2
-                  syncSmosSyncClient c
+                  testSyncSmosClient c
                   assertClientContents c m2
       describe "deletion" $ do
         it "succesfully syncs a single deletion" $ \cenv ->
@@ -84,10 +89,10 @@ spec =
             withClient cenv $ \c -> do
               let m = M.singleton rp contents
               setupClientContents c m
-              syncSmosSyncClient c
+              testSyncSmosClient c
               let m' = M.empty
               setupClientContents c m'
-              syncSmosSyncClient c
+              testSyncSmosClient c
               assertClientContents c m'
         it "succesfully syncs a single deletion from a set of files" $ \cenv ->
           forAllValid $ \(rp, contents) ->
@@ -95,18 +100,18 @@ spec =
               withClient cenv $ \c -> do
                 let m' = M.insert rp contents m
                 setupClientContents c m'
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 setupClientContents c m
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 assertClientContents c m
         it "succesfully syncs a deletion of any number of files" $ \cenv ->
           forAllValid $ \m ->
             withClient cenv $ \c -> do
               setupClientContents c m
-              syncSmosSyncClient c
+              testSyncSmosClient c
               let m' = M.empty
               setupClientContents c m'
-              syncSmosSyncClient c
+              testSyncSmosClient c
               assertClientContents c m'
         it "succesfully syncs a single deletion from a set of files" $ \cenv ->
           forAllValid $ \m1 ->
@@ -114,16 +119,16 @@ spec =
               withClient cenv $ \c -> do
                 let m = M.union m1 m2
                 setupClientContents c m
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 setupClientContents c m1
-                syncSmosSyncClient c
+                testSyncSmosClient c
                 assertClientContents c m1
     describe "two clients" $ do
       it "succesfully syncs empty directories" $ \cenv ->
         withClient cenv $ \c1 ->
           withClient cenv $ \c2 -> do
-            syncSmosSyncClient c1
-            syncSmosSyncClient c2
+            testSyncSmosClient c1
+            testSyncSmosClient c2
             assertClientContents c1 M.empty
             assertClientContents c2 M.empty
       describe "From one client" $ do
@@ -424,38 +429,47 @@ spec =
         describe "conflicts" $
           describe "both changed" $ do
             it "succesfully syncs a single conflicting change" $ \cenv ->
-              forAllValid $ \(rp, contents1, contents2, contents3) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
-                    let m = M.singleton rp contents3
-                    setupClientContents c1 m
-                    setupClientContents c1 m
-                    fullySyncTwoClients c1 c2
-                    let m1 = M.singleton rp contents1
-                    let m2 = M.singleton rp contents2
-                    setupClientContents c1 m1
-                    setupClientContents c2 m2
-                    fullySyncTwoClients c1 c2
-                    let m' = M.singleton rp contents1 -- client 1 synced first
-                    assertClientContents c1 m'
-                    assertClientContents c2 m'
+              forAllValid $ \rp ->
+                forAllValid $ \contents3 ->
+                  forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                    forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                      withClient cenv $ \c1 ->
+                        withClient cenv $ \c2 -> do
+                          let m = M.singleton rp contents3
+                          setupClientContents c1 m
+                          setupClientContents c2 m
+                          fullySyncTwoClients c1 c2
+                          let m1 = M.singleton rp contents1
+                          let m2 = M.singleton rp contents2
+                          setupClientContents c1 m1
+                          setupClientContents c2 m2
+                          fullySyncTwoClients c1 c2
+                          let m' = M.singleton rp contents1 -- client 1 synced first
+                          assertClientContents c1 m'
+                          assertClientContents c2 m'
             it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
-              forAllValid $ \(rp, contents1, contents2, contents3) ->
-                forAllValid $ \m ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
-                      let ma = M.insert rp contents3 m
-                      setupClientContents c1 ma
-                      setupClientContents c1 ma
-                      fullySyncTwoClients c1 c2
-                      let m1 = M.insert rp contents1 m
-                      let m2 = M.insert rp contents2 m
-                      setupClientContents c1 m1
-                      setupClientContents c2 m2
-                      fullySyncTwoClients c1 c2
-                      let mb = M.insert rp contents1 m -- client 1 synced first
-                      assertClientContents c1 mb
-                      assertClientContents c2 mb
+              forAllValid $ \rp ->
+                forAllValid $ \contents3 ->
+                  forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                    forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                      forAllValid $ \m ->
+                        withClient cenv $ \c1 ->
+                          withClient cenv $ \c2 -> do
+                            let ma = M.insert rp contents3 m
+                            setupClientContents c1 ma
+                            setupClientContents c2 ma
+                            fullySyncTwoClients c1 c2
+                            let m1 = M.insert rp contents1 m
+                            let m2 = M.insert rp contents2 m
+                            setupClientContents c1 m1
+                            setupClientContents c2 m2
+                            fullySyncTwoClients c1 c2
+                            let mb = M.insert rp contents1 m -- client 1 synced first
+                            assertClientContents c1 mb
+                            assertClientContents c2 mb
+
+testSyncSmosClient :: SyncSettings -> IO ()
+testSyncSmosClient = syncSmosSyncClient $ Settings {setLogLevel = LevelWarn}
 
 fullySyncTwoClients :: SyncSettings -> SyncSettings -> IO ()
 fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
@@ -463,4 +477,4 @@ fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
 fullySyncClients :: [SyncSettings] -> IO ()
 fullySyncClients cs = do
   let twice f = f >> f
-  twice $ mapM_ syncSmosSyncClient cs
+  twice $ mapM_ testSyncSmosClient cs

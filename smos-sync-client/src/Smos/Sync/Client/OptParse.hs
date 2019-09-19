@@ -13,8 +13,10 @@ import Data.Maybe
 
 import qualified System.Environment as System
 
+import Control.Monad.Logger
 import Path
 import Path.IO
+import Text.Read
 
 import Options.Applicative
 
@@ -34,13 +36,19 @@ getInstructions = do
 
 combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
+  src <-
+    Report.combineToConfig
+      Report.defaultReportConfig
+      flagReportFlags
+      envReportEnvironment
+      (confReportConf <$> mc)
   s <- getSettings
-  d <- getDispatch s
+  d <- getDispatch src
   pure $ Instructions d s
   where
     cM :: (SyncConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSyncConf >>= func
-    getDispatch Settings {..} =
+    getDispatch src =
       case c of
         CommandSync SyncFlags {..} -> do
           syncSetServerUrl <-
@@ -49,21 +57,14 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
             syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-              Nothing -> Report.resolveReportWorkflowDir setReportConfig
+              Nothing -> Report.resolveReportWorkflowDir src
               Just d -> resolveDir' d
           syncSetMetadataFile <-
             case syncFlagMetadataFile <|> envMetadataFile <|> cM syncConfMetadataFile of
               Nothing -> defaultMetadataFile
               Just d -> resolveFile' d
           pure $ DispatchSync SyncSettings {..}
-    getSettings = do
-      src <-
-        Report.combineToConfig
-          Report.defaultReportConfig
-          flagReportFlags
-          envReportEnvironment
-          (confReportConf <$> mc)
-      pure $ Settings {setReportConfig = src}
+    getSettings = pure $ Settings {setLogLevel = fromMaybe LevelInfo flagLogLevel}
 
 defaultMetadataFile :: IO (Path Abs File)
 defaultMetadataFile = do
@@ -140,4 +141,19 @@ parseCommandSync = info parser modifier
             ]))
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> Report.parseFlags
+parseFlags =
+  Flags <$> Report.parseFlags <*>
+  option
+    (Just <$> maybeReader parseLogLevel)
+    (mconcat
+       [ long "log-level"
+       , help $
+         unwords
+           [ "The log level to use, options:"
+           , show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+           ]
+       , value Nothing
+       ])
+  where
+    parseLogLevel s = readMaybe $ "Level" <> s
+    renderLogLevel = drop 5 . show
