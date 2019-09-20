@@ -6,7 +6,6 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
-import Data.Maybe
 import qualified Data.Set as S
 
 import Control.Monad
@@ -94,9 +93,3 @@ withClient cenv func =
               , syncSetIgnoreFiles = IgnoreNothing
               }
       func ss
-
--- Remove this after upgrading to path-0.6.0
-listDirRecurRel :: Path Abs Dir -> IO ([Path Rel Dir], [Path Rel File])
-listDirRecurRel d = do
-  (ds, fs) <- listDirRecur d
-  pure (mapMaybe (stripProperPrefix d) ds, mapMaybe (stripProperPrefix d) fs)

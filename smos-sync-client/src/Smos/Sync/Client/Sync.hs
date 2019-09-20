@@ -17,6 +17,7 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.UUID as UUID (UUID)
@@ -42,14 +43,13 @@ import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 
-import Smos.Report.Path
 import Smos.Report.Streaming
 
 import Smos.Sync.API
 
 import Smos.Sync.Client.OptParse
+import Smos.Sync.Client.OptParse.Types
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
@@ -60,7 +60,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     let cenv = mkClientEnv man syncSetServerUrl
     mMeta <- liftIO $ readStoreMeta syncSetMetadataFile
     logDebugData "READ STORED METADATA" mMeta
-    files <- liftIO $ readSyncFiles syncSetContentsDir
+    files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
     logDebugData "READ FILE CONTENTS" files
     clientStore <-
       case mMeta of
@@ -77,7 +77,8 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     logDebugData "CLIENT STORE BEFORE SYNC" clientStore
     newClientStore <- runSync cenv clientStore
     logDebugData "CLIENT STORE AFTER SYNC" newClientStore
-    liftIO $ saveClientStore syncSetMetadataFile syncSetContentsDir newClientStore
+    liftIO $
+      saveClientStore syncSetIgnoreFiles syncSetMetadataFile syncSetContentsDir newClientStore
     logDebugN "CLIENT END"
 
 type C = LoggingT IO
@@ -196,19 +197,26 @@ readStoreMeta p = do
       Left err -> die err
       Right store -> pure store
 
+readFilteredSyncFiles :: IgnoreFiles -> Path Abs Dir -> IO (Map (Path Rel File) ByteString)
+readFilteredSyncFiles igf dir = filterContentsMap igf <$> readSyncFiles dir
+
 readSyncFiles :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
-readSyncFiles dir =
+readSyncFiles dir = do
+  fs <- snd <$> listDirRecurRel dir
   fmap M.fromList $
-  sourceToList $
-  sourceFilesInNonHiddenDirsRecursively dir .|
-  C.mapM
-    (\rp -> do
-       let rel =
-             case rp of
-               Relative _ r -> r
-               _ -> error "should not happen: absolute file" -- TODO get rid of this.
-       contents <- SB.readFile (fromAbsFile $ resolveRootedPath rp)
-       pure (rel, contents))
+    forM fs $ \rp -> do
+      contents <- SB.readFile (fromAbsFile $ dir </> rp)
+      pure (rp, contents)
+
+-- Remove this after upgrading to path-0.6.0
+listDirRecurRel :: Path Abs Dir -> IO ([Path Rel Dir], [Path Rel File])
+listDirRecurRel d = do
+  (ds, fs) <- listDirRecur d
+  pure (mapMaybe (stripProperPrefix d) ds, mapMaybe (stripProperPrefix d) fs)
+
+filterContentsMap :: IgnoreFiles -> Map (Path Rel File) v -> Map (Path Rel File) v
+filterContentsMap IgnoreNothing = id
+filterContentsMap IgnoreHiddenFiles = M.filterWithKey (\p _ -> not $ isHidden p)
 
 consolidateInitialStoreWithFiles :: ClientStore -> Map (Path Rel File) ByteString -> ClientStore
 consolidateInitialStoreWithFiles cs contentsMap =
@@ -323,15 +331,15 @@ isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
 
 -- TODO this could be optimised using the sync response
-saveClientStore :: Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
-saveClientStore metaFile dir store = do
-  saveMeta metaFile $ makeClientMetaData store
-  saveSyncFiles dir $ clientStoreItems store
+saveClientStore :: IgnoreFiles -> Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
+saveClientStore igf metaFile dir store = do
+  saveMeta metaFile $ makeClientMetaData igf store
+  saveSyncFiles igf dir $ clientStoreItems store
 
 -- | We only check the synced items, because it should be the case that
 -- they're the only ones that are not empty.
-makeClientMetaData :: ClientStore -> ClientMetaData
-makeClientMetaData ClientStore {..} =
+makeClientMetaData :: IgnoreFiles -> ClientStore -> ClientMetaData
+makeClientMetaData igf ClientStore {..} =
   let Mergeful.ClientStore {..} = clientStoreItems
    in if not
            (null clientStoreAddedItems &&
@@ -344,22 +352,29 @@ makeClientMetaData ClientStore {..} =
                    -> Map (Path Rel File) SyncFileMeta
                  go m u Mergeful.Timed {..} =
                    let SyncFile {..} = timedValue
-                    in M.insert
-                         syncFilePath
-                         SyncFileMeta
-                           { syncFileMetaUUID = u
-                           , syncFileMetaTime = timedTime
-                           , syncFileMetaHash = hash syncFileContents
-                           }
-                         m
+                       goOn =
+                         M.insert
+                           syncFilePath
+                           SyncFileMeta
+                             { syncFileMetaUUID = u
+                             , syncFileMetaTime = timedTime
+                             , syncFileMetaHash = hash syncFileContents
+                             }
+                           m
+                    in case igf of
+                         IgnoreNothing -> goOn
+                         IgnoreHiddenFiles ->
+                           if isHidden syncFilePath
+                             then m
+                             else goOn
               in ClientMetaData clientStoreServerUUID $
                  M.foldlWithKey go M.empty clientStoreSyncedItems
 
 saveMeta :: Path Abs File -> ClientMetaData -> IO ()
 saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
 
-saveSyncFiles :: Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
-saveSyncFiles dir store = saveContentsMap dir $ makeContentsMap store
+saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
+saveSyncFiles igf dir store = saveContentsMap dir $ filterContentsMap igf $ makeContentsMap store
 
 saveContentsMap :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
 saveContentsMap dir cm = do
