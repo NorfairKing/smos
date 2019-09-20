@@ -388,3 +388,11 @@ makeContentsMap Mergeful.ClientStore {..} =
     , M.elems $ M.map Mergeful.timedValue clientStoreSyncedItems
     , M.elems $ M.map Mergeful.timedValue clientStoreSyncedButChangedItems
     ]
+
+isHidden :: Path b t -> Bool
+isHidden = go
+  where
+    go :: Path b t -> Bool
+    go f =
+      let p = parent f
+       in isHiddenIn p f || go p

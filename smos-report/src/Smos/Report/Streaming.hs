@@ -100,11 +100,11 @@ rootedIn dir ap =
     Nothing -> Absolute ap
     Just rd -> Relative dir rd
 
-isHiddenIn :: Path r Dir -> Path r Dir -> Bool
+isHiddenIn :: Path b Dir -> Path b t -> Bool
 isHiddenIn curdir ad =
   case stripProperPrefix curdir ad of
-    Nothing -> True
-    Just rd -> "." `isPrefixOf` fromRelDir rd
+    Nothing -> False
+    Just rd -> "." `isPrefixOf` toFilePath rd
 
 filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
 filterSmosFiles =

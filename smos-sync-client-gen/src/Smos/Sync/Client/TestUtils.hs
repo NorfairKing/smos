@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Smos.Sync.Client.TestUtils where
 
 import Data.ByteString (ByteString)
@@ -19,6 +21,7 @@ import Test.Validity
 
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
@@ -63,7 +66,22 @@ resetDir dir = do
   removeDirRecur dir
   ensureDir dir
 
-withClient :: ClientEnv -> (SyncSettings -> IO ()) -> IO ()
+forAllHidden :: (Testable prop) => (Path Rel File -> prop) -> Property
+forAllHidden = forAllShrink (genProbablyHidden `suchThat` isHidden) (filter isHidden . shrinkValid)
+  where
+    genProbablyHidden = do
+      hiddenThing <- genValid
+      case parseRelFile $ "." ++ fromRelFile hiddenThing of
+        Nothing -> genProbablyHidden
+        Just f -> do
+          base <- genValid
+          pure $ base </> f
+
+withHiddenFilesClient :: ClientEnv -> (SyncSettings -> IO a) -> IO a
+withHiddenFilesClient cenv func =
+  withClient cenv $ \ss -> func ss {syncSetIgnoreFiles = IgnoreHiddenFiles}
+
+withClient :: ClientEnv -> (SyncSettings -> IO a) -> IO a
 withClient cenv func =
   withSystemTempDir "smos-sync-client-test-contents" $ \tmpDir1 ->
     withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 -> do

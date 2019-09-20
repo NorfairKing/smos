@@ -40,6 +40,14 @@ spec =
               setupClientContents c m
               testSyncSmosClient c
               assertClientContents c m
+        it "does not remove a hidden file that is ignored" $ \cenv ->
+          forAllHidden $ \rp ->
+            forAllValid $ \contents ->
+              withHiddenFilesClient cenv $ \c -> do
+                let m = M.singleton rp contents
+                setupClientContents c m
+                testSyncSmosClient c
+                assertClientContents c m
       describe "changes" $ do
         it "succesfully syncs a change" $ \cenv ->
           forAllValid $ \(rp, contents1, contents2) ->
@@ -132,7 +140,7 @@ spec =
             assertClientContents c1 M.empty
             assertClientContents c2 M.empty
       describe "From one client" $ do
-        describe "Additions only from one client" $ do
+        describe "additions" $ do
           it "succesfully syncs a file accross two clients" $ \cenv ->
             forAllValid $ \(rp, contents) ->
               withClient cenv $ \c1 ->
@@ -150,6 +158,16 @@ spec =
                   fullySyncTwoClients c1 c2
                   assertClientContents c1 m
                   assertClientContents c2 m
+          it "does not sync over a hidden file that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents ->
+                withHiddenFilesClient cenv $ \c1 ->
+                  withHiddenFilesClient cenv $ \c2 -> do
+                    let m = M.singleton rp contents
+                    setupClientContents c1 m
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m
+                    assertClientContents c2 M.empty
         describe "changes" $ do
           it "succesfully syncs a single change" $ \cenv ->
             forAllValid $ \(rp, contents1, contents2) ->
@@ -205,6 +223,24 @@ spec =
                       fullySyncTwoClients c1 c2
                       assertClientContents c1 m2
                       assertClientContents c2 m2
+          it "does not sync changes in a hidden file that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents3 ->
+                forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                  forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                    withHiddenFilesClient cenv $ \c1 ->
+                      withHiddenFilesClient cenv $ \c2 -> do
+                        let m = M.singleton rp contents3
+                        setupClientContents c1 m
+                        setupClientContents c2 m
+                        fullySyncTwoClients c1 c2
+                        let m1 = M.singleton rp contents1
+                        let m2 = M.singleton rp contents2
+                        setupClientContents c1 m1
+                        setupClientContents c2 m2
+                        fullySyncTwoClients c1 c2
+                        assertClientContents c1 m1
+                        assertClientContents c2 m2
         describe "Deletions" $ do
           it "succesfully syncs a single deletion" $ \cenv ->
             forAllValid $ \(rp, contents) ->
@@ -257,6 +293,20 @@ spec =
                     fullySyncTwoClients c1 c2
                     assertClientContents c1 m1
                     assertClientContents c2 m1
+          it "does not sync a deletion of a hidden filed that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents ->
+                withHiddenFilesClient cenv $ \c1 ->
+                  withHiddenFilesClient cenv $ \c2 -> do
+                    let m = M.singleton rp contents
+                    setupClientContents c1 m
+                    setupClientContents c2 m
+                    fullySyncTwoClients c1 c2
+                    let m' = M.empty
+                    setupClientContents c1 m'
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m'
+                    assertClientContents c2 m
       describe "From both clients" $ do
         describe "Additions only" $ do
           it "succesfully syncs a file accross two clients" $ \cenv ->
