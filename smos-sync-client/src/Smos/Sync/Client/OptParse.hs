@@ -63,6 +63,9 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
             case syncFlagMetadataFile <|> envMetadataFile <|> cM syncConfMetadataFile of
               Nothing -> defaultMetadataFile
               Just d -> resolveFile' d
+          let syncSetIgnoreFiles =
+                fromMaybe IgnoreHiddenFiles $
+                syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
           pure $ DispatchSync SyncSettings {..}
     getSettings = pure $ Settings {setLogLevel = fromMaybe LevelInfo flagLogLevel}
 
@@ -81,6 +84,13 @@ getEnvironment = do
   let envServerUrl = getEnv "SERVER_URL"
       envContentsDir = getEnv "CONTENTS_DIR"
       envMetadataFile = getEnv "METADATA_FILE"
+  envIgnoreFiles <-
+    case getEnv "IGNORE_FILES" of
+      Just "nothing" -> pure $ Just IgnoreNothing
+      Just "no" -> pure $ Just IgnoreNothing
+      Just "hidden" -> pure $ Just IgnoreHiddenFiles
+      Just s -> fail $ "Unknown 'IgnoreFiles' value: " <> s
+      Nothing -> pure Nothing
   envReportEnvironment <- Report.getEnvironment
   pure Environment {..}
 
@@ -138,7 +148,14 @@ parseCommandSync = info parser modifier
             [ long "metadata-file"
             , help "The file to store synchronisation metadata in"
             , value Nothing
-            ]))
+            ]) <*>
+       parseIgnoreFilesFlag)
+
+parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)
+parseIgnoreFilesFlag =
+  flag' (Just IgnoreNothing) (mconcat [long "ignore-nothing", help "Do not ignore hidden files"]) <|>
+  flag' (Just IgnoreHiddenFiles) (mconcat [long "ignore-hidden-files", help "Ignore hidden files"]) <|>
+  pure Nothing
 
 parseFlags :: Parser Flags
 parseFlags =

@@ -1,20 +1,25 @@
 module Smos.Sync.Client.TestUtils where
 
-import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
 import qualified Data.Set as S
+
+import Control.Monad
+
 import Path
 import Path.IO
 import Servant.Client
-import Smos.Sync.Client.OptParse
-import Smos.Sync.Client.Sync.Gen ()
+
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
+
+import Smos.Sync.Client.OptParse
+import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.Sync.Gen ()
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = around $ withSystemTempDir "smos-sync-client-save-test"
@@ -68,6 +73,7 @@ withClient cenv func =
               { syncSetServerUrl = baseUrl cenv
               , syncSetContentsDir = tmpDir1
               , syncSetMetadataFile = m
+              , syncSetIgnoreFiles = IgnoreNothing
               }
       func ss
 
