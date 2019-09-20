@@ -22,9 +22,10 @@ import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
+import Smos.Sync.Server.TestUtils
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
-withTestDir = around $ withSystemTempDir "smos-sync-client-save-test"
+withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")
 
 disjunctMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
 disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')

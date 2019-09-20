@@ -9,6 +9,7 @@
       - "Smos.Draw.drawEntryCursor"
       - "Smos.IntegrationSpec.spec"
       - "Smos.Sync.Client.IntegrationSpec.spec"
+      - "Smos.Sync.Client.SaveSpec.spec"
 - ignore:
     name: "Use ++"
     within: 

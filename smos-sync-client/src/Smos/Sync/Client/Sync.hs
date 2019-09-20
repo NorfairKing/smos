@@ -374,10 +374,10 @@ saveMeta :: Path Abs File -> ClientMetaData -> IO ()
 saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
 
 saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
-saveSyncFiles igf dir store = saveContentsMap dir $ filterContentsMap igf $ makeContentsMap store
+saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store
 
-saveContentsMap :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
-saveContentsMap dir cm = do
+saveContentsMap :: IgnoreFiles -> Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
+saveContentsMap _ dir cm = do
   tmpDir1 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
   tmpDir2 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
   writeAllTo tmpDir1
