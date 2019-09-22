@@ -38,6 +38,12 @@ spec = do
     forAllValid $ \bs1 ->
       forAllValid $ \bs2 ->
         genGeneratesValid (twoDistinctPathsThatFitAndTheirUnion bs1 bs2) (const [])
+  describe "twoDistinctPathsThatFitAndTheirUnionWith" $
+    it "generates valid values" $
+    forAllValid $ \m ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionWith m bs1 bs2) (const [])
   describe "disjunctContentsMap" $
     it "generates valid values" $
     forAllValid $ \cm -> genGeneratesValid (disjunctContentsMap cm) (const [])

@@ -60,9 +60,32 @@ mapWithAdditions (ContentsMap m) = do
 twoDistinctPathsThatFitAndTheirUnion ::
      ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
 twoDistinctPathsThatFitAndTheirUnion contents1 contents2 = do
+  (rp1, rp2, func) <- twoDistinctPathsThatFitAndTheirUnionFunc
+  pure (rp1, rp2, func contents1 contents2)
+
+-- TODO this will not satisfy the constraints
+twoDistinctPathsThatFitAndTheirUnionFunc ::
+     Gen (Path Rel File, Path Rel File, (ByteString -> ByteString -> ContentsMap))
+twoDistinctPathsThatFitAndTheirUnionFunc = twoDistinctPathsThatFitAndTheirUnionWithFunc CM.empty
+
+-- TODO this will not satisfy the constraints
+twoDistinctPathsThatFitAndTheirUnionWith ::
+     ContentsMap -> ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
+twoDistinctPathsThatFitAndTheirUnionWith m contents1 contents2 = do
+  (rp1, rp2, func) <- twoDistinctPathsThatFitAndTheirUnionWithFunc m
+  pure (rp1, rp2, func contents1 contents2)
+
+-- TODO this will not satisfy the constraints
+twoDistinctPathsThatFitAndTheirUnionWithFunc ::
+     ContentsMap -> Gen (Path Rel File, Path Rel File, (ByteString -> ByteString -> ContentsMap))
+twoDistinctPathsThatFitAndTheirUnionWithFunc (ContentsMap m) = do
   rp1 <- genValid
   rp2 <- (genValid `suchThat` (/= rp1))
-  pure (rp1, rp2, ContentsMap $ M.union (M.singleton rp1 contents1) (M.singleton rp2 contents2))
+  pure
+    ( rp1
+    , rp2
+    , \contents1 contents2 ->
+        ContentsMap $ M.unions [(M.singleton rp1 contents1), (M.singleton rp2 contents2), m])
 
 -- TODO this will not satisfy the constraints
 disjunctContentsMap :: ContentsMap -> Gen ContentsMap

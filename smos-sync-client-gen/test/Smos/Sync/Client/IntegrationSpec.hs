@@ -325,40 +325,43 @@ spec =
                     assertClientContents c2 m
         describe "changes" $ do
           it "succesfully syncs a single change" $ \cenv ->
-            forAllValid $ \(rp1, contents1a, contents1b) ->
-              forAllValid $ \(rp2, contents2a, contents2b) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
-                    let m = M.insert rp1 contents1a $ M.singleton rp2 contents2a
-                    setupClientContents c1 m
-                    setupClientContents c1 m
-                    fullySyncTwoClients c1 c2
-                    let m1 = M.insert rp1 contents1b $ M.singleton rp2 contents2a
-                    let m2 = M.insert rp1 contents1a $ M.singleton rp2 contents2b
-                    setupClientContents c1 m1
-                    setupClientContents c2 m2
-                    fullySyncTwoClients c1 c2
-                    let m' = M.insert rp1 contents1b $ M.singleton rp2 contents2b
-                    assertClientContents c1 m'
-                    assertClientContents c2 m'
-          it "succesfully syncs a change from a set of files" $ \cenv ->
-            forAllValid $ \(rp1, contents1a, contents1b) ->
-              forAllValid $ \(rp2, contents2a, contents2b) ->
-                forAllValid $ \m ->
+            forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(rp1, rp2, unionFunc) ->
+              forAllValid $ \(contents1a, contents1b) ->
+                forAllValid $ \(contents2a, contents2b) ->
                   withClient cenv $ \c1 ->
                     withClient cenv $ \c2 -> do
-                      let ma = M.insert rp1 contents1a $ M.insert rp2 contents2a m
-                      setupClientContents c1 ma
-                      setupClientContents c1 ma
+                      let m = unionFunc contents1a contents2a
+                      setupClientContents c1 m
+                      setupClientContents c1 m
                       fullySyncTwoClients c1 c2
-                      let m1 = M.insert rp1 contents1b $ M.insert rp2 contents2a m
-                      let m2 = M.insert rp1 contents1a $ M.insert rp2 contents2b m
+                      let m1 = unionFunc contents1b contents2a
+                      let m2 = unionFunc contents1a contents2b
                       setupClientContents c1 m1
                       setupClientContents c2 m2
                       fullySyncTwoClients c1 c2
-                      let mb = M.insert rp1 contents1b $ M.insert rp2 contents2b m
-                      assertClientContents c1 mb
-                      assertClientContents c2 mb
+                      let m' = unionFunc contents1b contents2b
+                      assertClientContents c1 m'
+                      assertClientContents c2 m'
+          it "succesfully syncs a change from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (twoDistinctPathsThatFitAndTheirUnionWithFunc m) $ \(rp1, rp2, unionFunc) ->
+                forAllValid $ \(contents1a, contents1b) ->
+                  forAllValid $ \(contents2a, contents2b) ->
+                    forAllValid $ \m ->
+                      withClient cenv $ \c1 ->
+                        withClient cenv $ \c2 -> do
+                          let ma = unionFunc contents1a contents2a
+                          setupClientContents c1 ma
+                          setupClientContents c1 ma
+                          fullySyncTwoClients c1 c2
+                          let m1 = unionFunc contents1b contents2a
+                          let m2 = unionFunc contents1a contents2b
+                          setupClientContents c1 m1
+                          setupClientContents c2 m2
+                          fullySyncTwoClients c1 c2
+                          let mb = unionFunc contents1b contents2b
+                          assertClientContents c1 mb
+                          assertClientContents c2 mb
           it "succesfully syncs a change of any number of files" $ \cenv ->
             forAllValid $ \m1a ->
               forAll (changedMap m1a) $ \m1b ->
@@ -436,17 +439,16 @@ spec =
                         assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files" $ \cenv ->
             forAllValid $ \m1 ->
-              forAll (disjunctMap m1) $ \m2 ->
+              forAll (mapWithDisjunctUnion m1) $ \(m2, m) ->
                 withClient cenv $ \c1 ->
                   withClient cenv $ \c2 -> do
-                    let m = M.union m1 m2
                     setupClientContents c1 m
                     setupClientContents c2 m
                     fullySyncTwoClients c1 c2
                     setupClientContents c1 m2
                     setupClientContents c2 m1
                     fullySyncTwoClients c1 c2
-                    let m' = M.empty
+                    let m' = CM.empty
                     assertClientContents c1 m'
                     assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
