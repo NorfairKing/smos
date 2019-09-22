@@ -69,5 +69,6 @@ spec =
     describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
     describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 CM.insert
     describe "union" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.union
+    describe "unions" $ it "produces valid contents maps" $ producesValidsOnValids CM.unions
     describe "makeDirForest" $
       it "produces valid DirForests" $ producesValidsOnValids CM.makeDirForest

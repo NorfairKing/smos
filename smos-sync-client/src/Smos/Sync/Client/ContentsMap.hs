@@ -12,6 +12,7 @@ module Smos.Sync.Client.ContentsMap
   , singleton
   , insert
   , union
+  , unions
   , DirForest(..)
   , makeDirForest
   ) where
@@ -77,6 +78,9 @@ insert k v (ContentsMap m) = constructValid $ ContentsMap $ M.insert k v m
 
 union :: ContentsMap -> ContentsMap -> Maybe ContentsMap
 union (ContentsMap m1) (ContentsMap m2) = constructValid $ ContentsMap $ M.union m1 m2
+
+unions :: [ContentsMap] -> Maybe ContentsMap
+unions = foldM union empty
 
 newtype DirForest =
   DirForest
