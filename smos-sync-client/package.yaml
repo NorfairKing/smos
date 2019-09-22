@@ -17,6 +17,7 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
+  - microlens
   - conduit
   - containers
   - filepath
@@ -37,6 +38,9 @@ library:
   - text
   - uuid
   - validity
+  - validity-bytestring
+  - validity-containers
+  - validity-path
   - validity-uuid
   - yaml
 

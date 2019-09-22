@@ -18,9 +18,10 @@ import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
 
+import Smos.Sync.Client.Contents
+import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Server.TestUtils
 
@@ -30,27 +31,27 @@ withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-
 disjunctMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
 disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
 
-changedMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
-changedMap = traverse (const genValid)
+changedMap :: (Ord k, GenValid k, Eq v, GenValid v) => Map k v -> Gen (Map k v)
+changedMap = traverse (\v -> genValid `suchThat` (/= v))
 
-assertClientContents :: SyncSettings -> Map (Path Rel File) ByteString -> IO ()
+assertClientContents :: SyncSettings -> ContentsMap -> IO ()
 assertClientContents ss = assertContents (syncSetContentsDir ss)
 
-assertContents :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
+assertContents :: Path Abs Dir -> ContentsMap -> IO ()
 assertContents dir m = do
   m' <- readContents dir
   m' `shouldBe` m
 
-readContents :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
+readContents :: Path Abs Dir -> IO ContentsMap
 readContents dir = do
   fs <- snd <$> listDirRecurRel dir
-  fmap M.fromList $ forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
+  fmap (ContentsMap . M.fromList) $ forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
 
-setupClientContents :: SyncSettings -> Map (Path Rel File) ByteString -> IO ()
+setupClientContents :: SyncSettings -> ContentsMap -> IO ()
 setupClientContents ss = setupContents (syncSetContentsDir ss)
 
-setupContents :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
-setupContents dir m = do
+setupContents :: Path Abs Dir -> ContentsMap -> IO ()
+setupContents dir (ContentsMap m) = do
   resetDir dir
   let parents = S.map (parent . (dir </>)) (M.keysSet m)
   forM_ parents ensureDir

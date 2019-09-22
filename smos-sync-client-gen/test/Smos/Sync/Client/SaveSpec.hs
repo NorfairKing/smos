@@ -7,6 +7,7 @@ import qualified Data.Map as M
 import Test.Hspec
 import Test.Validity
 
+import Smos.Sync.Client.Contents
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync
 
