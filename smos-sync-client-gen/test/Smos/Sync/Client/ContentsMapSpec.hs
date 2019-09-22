@@ -44,12 +44,25 @@ spec = do
       forAllValid $ \bs1 ->
         forAllValid $ \bs2 ->
           genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionWith m bs1 bs2) (const [])
+  describe "twoDistinctPathsThatFitAndTheirUnionsWith" $
+    it "generates valid values" $
+    forAllValid $ \m ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionsWith m bs1 bs2) (const [])
   describe "disjunctContentsMap" $
     it "generates valid values" $
     forAllValid $ \cm -> genGeneratesValid (disjunctContentsMap cm) (const [])
   describe "mapWithDisjunctUnion" $
     it "generates valid values" $
     forAllValid $ \cm -> genGeneratesValid (mapWithDisjunctUnion cm) (const [])
+  describe "twoChangedMapsAndTheirUnions" $
+    it "generates valid values" $ genGeneratesValid twoChangedMapsAndTheirUnions (const [])
+  describe "twoChangedMapsAndTheirUnionsWith" $
+    it "generates valid values" $
+    forAllValid $ \cm -> genGeneratesValid (twoChangedMapsAndTheirUnionsWith cm) (const [])
+  describe "threeDisjunctMapsAndTheirUnions" $
+    it "generates valid values" $ genGeneratesValid threeDisjunctMapsAndTheirUnions (const [])
   describe "contentsMapL" $ lensSpecOnValid contentsMapL
   describe "empty" $ it "is valid" $ shouldBeValid CM.empty
   describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
