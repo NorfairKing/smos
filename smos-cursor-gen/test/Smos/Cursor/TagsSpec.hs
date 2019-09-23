@@ -59,9 +59,17 @@ spec = do
                   if elem t $ rebuildTagsCursor tc
                     then tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
                     else tc' `shouldSatisfy` (elem t . rebuildTagsCursor)
-  describe "tagsCursorInsert" $
+  describe "tagsCursorInsert" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ tagsCursorInsert '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ tagsCursorInsert '\55810' tsc
     it "produces valid tags cursors" $ producesValidsOnValids2 tagsCursorInsert
-  describe "tagsCursorAppend" $
+  describe "tagsCursorAppend" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ tagsCursorAppend '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ tagsCursorAppend '\55810' tsc
     it "produces valid tags cursors" $ producesValidsOnValids2 tagsCursorAppend
   describe "tagsCursorInsertTag" $
     it "produces valid tags cursors" $ producesValidsOnValids2 tagsCursorInsertTag

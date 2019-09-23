@@ -65,9 +65,17 @@ spec = do
     it "produces valid cursors" $ producesValidsOnValids contentsCursorIndexOnLine
   describe "contentsCursorSelectIndexOnLine" $
     it "produces valid cursors" $ producesValidsOnValids2 contentsCursorSelectIndexOnLine
-  describe "contentsCursorInsertChar" $
+  describe "contentsCursorInsertChar" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ contentsCursorInsertChar '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ contentsCursorInsertChar '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 contentsCursorInsertChar
-  describe "contentsCursorAppendChar" $
+  describe "contentsCursorAppendChar" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ contentsCursorAppendChar '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ contentsCursorAppendChar '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 contentsCursorAppendChar
   describe "contentsCursorInsertNewline" $
     it "produces valid cursors" $ producesValidsOnValids contentsCursorInsertNewline
