@@ -2,12 +2,18 @@
 
 module Smos.Cursor.ContentsSpec where
 
+import Test.Hspec
+import Test.Validity
+
+import Text.Show.Pretty (ppShow)
+
+import Control.Monad
+
 import Cursor.Types
+
 import Smos.Cursor.Contents
 import Smos.Cursor.Contents.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
 
 spec :: Spec
 spec = do
@@ -24,7 +30,23 @@ spec = do
     it "rebuilds the current cursor when given the current selection" $
       forAllValid $ \cc ->
         let (x, y) = contentsCursorSelection cc
-         in makeContentsCursorWithSelection x y (rebuildContentsCursor cc) `shouldBe` Just cc
+            c = rebuildContentsCursor cc
+         in case makeContentsCursorWithSelection x y c of
+              Nothing ->
+                expectationFailure "makeContentsCursorWithSelection should not have failed."
+              Just cc' ->
+                unless (cc' == cc) $
+                expectationFailure $
+                unlines
+                  [ "expected"
+                  , ppShow cc
+                  , "actual"
+                  , ppShow cc'
+                  , "The selection of the original (expected) cursor was:"
+                  , show (x, y)
+                  , "The rebuilt contents were:"
+                  , ppShow c
+                  ]
   describe "contentsCursorSelection" $
     it "produces valid cursors" $ producesValidsOnValids contentsCursorSelection
   describe "contentsCursorSelectPrevLine" $
