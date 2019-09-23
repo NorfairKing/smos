@@ -12,6 +12,8 @@
  - modifyXXXD :: (X -> DeleteOrUpdate X) -> SmosM ()                 -- Modify purely, possibly delete
  - modifyXXX :: (X -> X) -> SmosM ()                                 -- Modify purely
  - modifyXXXS :: (X -> S X) -> SmosM ()                              -- Modify in SmosM
+ - modifyXXXRaw :: (Y -> Y) -> SmosM ()                            -- Modify the raw field in SmosM
+ - modifyXXXRawS :: (Y -> S Y) -> SmosM ()                            -- Modify the raw field in SmosM
  -}
 module Smos.Actions.Utils
   ( module Smos.Actions.Utils
@@ -83,19 +85,32 @@ modifyContentsCursorWhenSelectedM func =
 modifyContentsCursorWhenSelected :: (ContentsCursor -> ContentsCursor) -> SmosM ()
 modifyContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ fmap func
 
+modifyMContentsCursorWhenSelectedM :: (Maybe ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
+modifyMContentsCursorWhenSelectedM func =
+  modifyMContentsCursorRaw $ \mcc ->
+    case func mcc of
+      Nothing -> mcc
+      Just mcc' -> Just mcc'
+
 modifyMContentsCursorWhenSelected :: (Maybe ContentsCursor -> ContentsCursor) -> SmosM ()
 modifyMContentsCursorWhenSelected func = modifyMContentsCursorWhenSelectedM $ Just . func
 
-modifyMContentsCursorWhenSelectedM :: (Maybe ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
-modifyMContentsCursorWhenSelectedM func =
-  modifyEntryCursor $ \ec ->
+modifyMContentsCursorRaw :: (Maybe ContentsCursor -> Maybe ContentsCursor) -> SmosM ()
+modifyMContentsCursorRaw func = modifyMContentsCursorRawS $ pure . func
+
+modifyMContentsCursorRawS :: (Maybe ContentsCursor -> SmosM (Maybe ContentsCursor)) -> SmosM ()
+modifyMContentsCursorRawS func =
+  modifyEntryCursorS $ \ec ->
     case entryCursorSelected ec of
-      ContentsSelected ->
-        let ec' = ec & entryCursorContentsCursorL %~ func
-         in if isNothing $ entryCursorContentsCursor ec'
-              then ec' {entryCursorSelected = WholeEntrySelected}
-              else ec'
-      _ -> ec
+      ContentsSelected -> do
+        let mcc = entryCursorContentsCursor ec
+        mcc' <- func mcc
+        let ec' = ec {entryCursorContentsCursor = mcc'}
+        pure $
+          if isNothing mcc'
+            then ec' {entryCursorSelected = WholeEntrySelected}
+            else ec'
+      _ -> pure ec
 
 modifyTagsCursorMD :: (TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)) -> SmosM ()
 modifyTagsCursorMD func = modifyMTagsCursorMD (>>= func)

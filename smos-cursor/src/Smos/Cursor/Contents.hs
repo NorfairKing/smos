@@ -73,10 +73,10 @@ contentsCursorIndexOnLine = textFieldCursorIndexOnLine
 contentsCursorSelectIndexOnLine :: Int -> ContentsCursor -> ContentsCursor
 contentsCursorSelectIndexOnLine = textFieldCursorSelectIndexOnLine
 
-contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> ContentsCursor
+contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
 contentsCursorInsertChar = textFieldCursorInsertChar
 
-contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> ContentsCursor
+contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
 contentsCursorAppendChar = textFieldCursorAppendChar
 
 contentsCursorInsertNewline :: Maybe ContentsCursor -> ContentsCursor
