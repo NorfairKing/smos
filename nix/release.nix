@@ -11,6 +11,8 @@ in
         nativeBuildInputs =
           pkgs.lib.attrsets.attrValues pkgs.smosPackages
         ++ [pkgs.smosDocumentationSite]
+        ++ pkgs.lib.attrsets.attrValues pkgs.validityPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.mergefulPackages
         ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages
         ++ pkgs.lib.attrsets.attrValues pkgs.fuzzyTimePackages
         ++ pkgs.lib.attrsets.attrValues pkgs.cursorFuzzyTimePackages;

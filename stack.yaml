@@ -24,7 +24,7 @@ extra-deps:
 - thyme-0.3.5.5
 - hakyll-sass-0.2.3
 - git: https://github.com/NorfairKing/mergeful
-  commit: db7bfbb2926a986222552a93c285250b4fba29ed
+  commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
   subdirs:
     - mergeful
     - genvalidity-mergeful
@@ -52,7 +52,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 8a13a23696115845133d87118b81c47fa1f9b04b
+  commit: 8dadb0d710529b84c3b2903fdffd371ff3eabb1a
   subdirs:
   - genvalidity
   - genvalidity-aeson

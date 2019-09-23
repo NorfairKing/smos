@@ -88,7 +88,6 @@ twoDistinctPathsThatFitAndTheirUnionsWith cm contents1 contents2 = do
   (rp1, rp2, Hidden func) <- twoDistinctPathsThatFitAndTheirUnionsWithFunc cm
   pure (rp1, rp2, func contents1 contents2)
 
--- TODO this will not satisfy the constraints
 twoDistinctPathsThatFitAndTheirUnionsWithFunc ::
      ContentsMap
   -> Gen ( Path Rel File
@@ -107,15 +106,12 @@ twoDistinctPathsThatFitAndTheirUnionsWithFunc cm@(ContentsMap m) = do
         , ContentsMap $ M.insert rp2 contents2 m
         , ContentsMap $ M.unions [M.singleton rp1 contents1, M.singleton rp2 contents2, m]))
 
--- TODO this will not satisfy the constraints
 disjunctContentsMap :: ContentsMap -> Gen ContentsMap
 disjunctContentsMap (ContentsMap m) = (ContentsMap <$> disjunctMap m) `suchThat` isValid
 
--- TODO this will not satisfy the constraints
 mapWithDisjunctUnion :: ContentsMap -> Gen (ContentsMap, ContentsMap)
 mapWithDisjunctUnion cm = disjunctContentsMap cm `suchThatMap` (\cm' -> (,) cm' <$> CM.union cm' cm)
 
--- TODO this will not satisfy the constraints
 twoChangedMapsAndTheirUnions ::
      Gen ( ( ContentsMap
             -- ^ m1

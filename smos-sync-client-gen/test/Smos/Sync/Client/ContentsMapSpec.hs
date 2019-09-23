@@ -6,9 +6,7 @@ module Smos.Sync.Client.ContentsMapSpec
 
 import Test.Hspec
 import Test.Hspec.QuickCheck
-import Test.QuickCheck
 import Test.Validity
-import Test.Validity.Optics
 
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
@@ -21,50 +19,47 @@ spec =
     genValidSpec @ContentsMap
     describe "mapWithNewPath" $
       it "generates valid values" $
-      forAllValid $ \cm -> forAllValid $ \bs -> forAll (mapWithNewPath cm bs) shouldBeValid
+      forAllValid $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewPath cm bs)
     describe "mapsWithDifferentContentsAtNewPath" $
       it "generates valid values" $
-      forAllValid $ \cm -> forAll (mapsWithDifferentContentsAtNewPath cm) shouldBeValid
+      forAllValid $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath cm)
     describe "mapsWithDifferentContentsAtNewPath3" $
       it "generates valid values" $
-      forAllValid $ \cm -> forAll (mapsWithDifferentContentsAtNewPath3 cm) shouldBeValid
+      forAllValid $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath3 cm)
     describe "changedContentsMap" $
-      it "generates valid values" $
-      forAllValid $ \cm -> forAll (changedContentsMap cm) shouldBeValid
+      it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (changedContentsMap cm)
     describe "changedMapsWithUnionOf" $
       it "generates valid values" $
-      forAllValid $ \cm -> forAll (changedMapsWithUnionOf cm) shouldBeValid
+      forAllValid $ \cm -> genGeneratesValid (changedMapsWithUnionOf cm)
     describe "mapWithAdditions" $
-      it "generates valid values" $ forAllValid $ \cm -> forAll (mapWithAdditions cm) shouldBeValid
+      it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (mapWithAdditions cm)
     describe "twoDistinctPathsThatFitAndTheirUnion" $
       it "generates valid values" $
       forAllValid $ \bs1 ->
-        forAllValid $ \bs2 -> forAll (twoDistinctPathsThatFitAndTheirUnion bs1 bs2) shouldBeValid
+        forAllValid $ \bs2 -> genGeneratesValid (twoDistinctPathsThatFitAndTheirUnion bs1 bs2)
     describe "twoDistinctPathsThatFitAndTheirUnionWith" $
       it "generates valid values" $
       forAllValid $ \m ->
         forAllValid $ \bs1 ->
           forAllValid $ \bs2 ->
-            forAll (twoDistinctPathsThatFitAndTheirUnionWith m bs1 bs2) shouldBeValid
+            genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionWith m bs1 bs2)
     describe "twoDistinctPathsThatFitAndTheirUnionsWith" $
       it "generates valid values" $
       forAllValid $ \m ->
         forAllValid $ \bs1 ->
           forAllValid $ \bs2 ->
-            forAll (twoDistinctPathsThatFitAndTheirUnionsWith m bs1 bs2) shouldBeValid
+            genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionsWith m bs1 bs2)
     describe "disjunctContentsMap" $
-      it "generates valid values" $
-      forAllValid $ \cm -> forAll (disjunctContentsMap cm) shouldBeValid
+      it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (disjunctContentsMap cm)
     describe "mapWithDisjunctUnion" $
-      it "generates valid values" $
-      forAllValid $ \cm -> forAll (mapWithDisjunctUnion cm) shouldBeValid
+      it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (mapWithDisjunctUnion cm)
     describe "twoChangedMapsAndTheirUnions" $
-      it "generates valid values" $ forAll twoChangedMapsAndTheirUnions shouldBeValid
+      it "generates valid values" $ genGeneratesValid twoChangedMapsAndTheirUnions
     describe "twoChangedMapsAndTheirUnionsWith" $
       it "generates valid values" $
-      forAllValid $ \cm -> forAll (twoChangedMapsAndTheirUnionsWith cm) shouldBeValid
+      forAllValid $ \cm -> genGeneratesValid (twoChangedMapsAndTheirUnionsWith cm)
     describe "threeDisjunctMapsAndTheirUnions" $
-      it "generates valid values" $ forAll threeDisjunctMapsAndTheirUnions shouldBeValid
+      it "generates valid values" $ genGeneratesValid threeDisjunctMapsAndTheirUnions
     describe "empty" $ it "is valid" $ shouldBeValid CM.empty
     describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
     describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 CM.insert

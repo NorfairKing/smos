@@ -28,7 +28,7 @@ import Smos.Sync.Server.TestUtils
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")
 
-disjunctMap :: (Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
+disjunctMap :: (Show k, Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
 disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
 
 changedMap :: (Ord k, GenValid k, Eq v, GenValid v) => Map k v -> Gen (Map k v)
