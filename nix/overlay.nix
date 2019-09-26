@@ -73,14 +73,14 @@ with final.haskell.lib;
                     final.fetchFromGitHub {
                       owner = "ixmatus";
                       repo = "orgmode-parse";
-                      rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
+                      rev = "ce152776307e3a019c2047e459a74eeab05566df";
                       sha256 =
-                        "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
+                        "0sqhk1vyycbcaav251xnqgizf71lsly474f2md7508h0nzy8ir5s";
                     };
                 in
                   final.smosPackages // {
-                thyme = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "thyme" "0.3.5.5" {});
-                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.3" {});
+                hakyll = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll" "4.13.0.0" {});
+                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.4" {});
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
               }
             );
