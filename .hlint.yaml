@@ -53,4 +53,6 @@
 - ignore: 
     name: "Eta reduce"
     within: "Smos.Report.Sorter.sorterOrdering"
-
+- ignore:
+    name: "Redundant if"
+    within: "Smos.Sync.Client.Contents"

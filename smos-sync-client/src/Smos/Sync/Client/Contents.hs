@@ -80,13 +80,15 @@ saveContentsMap _ dir cm = do
           ensureDir $ parent f
           SB.writeFile (fromAbsFile f) bs
 
-isHidden :: Path b t -> Bool
+isHidden :: Path Rel File -> Bool
 isHidden = go
   where
-    go :: Path b t -> Bool
+    go :: Path Rel t -> Bool
     go f =
-      let p = parent f
-       in isHiddenIn p f || go p
+      if toFilePath f == "./"
+        then False
+        else let p = parent f
+              in isHiddenIn p f || go p
 
 -- Remove this after upgrading to path-0.6.0
 listDirRecurRel :: Path Abs Dir -> IO ([Path Rel Dir], [Path Rel File])

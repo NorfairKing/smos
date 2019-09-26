@@ -5,6 +5,7 @@ module Smos.Sync.Client.SaveSpec
 import qualified Data.Map as M
 
 import Test.Hspec
+import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 
@@ -21,7 +22,7 @@ import Smos.Sync.Client.TestUtils
 spec :: Spec
 spec =
   withTestDir $
-  describe "saveContents" $ do
+  describe "saveContentsMap" $ do
     describe "Any IgnoreFiles" $ do
       it "puts a single file in the right place with the right contents" $ \d ->
         forAllValid $ \igf ->
@@ -44,10 +45,12 @@ spec =
             assertContents d m1
     describe "IgnoreHiddenFiles" $
       it "leaves any hidden files, even if they are not in the map" $ \d ->
-        forAllValid $ \m1 ->
-          forAll (mapWithAdditions m1) $ \m -> do
-            setupContents d m
-            saveContentsMap IgnoreNothing d m1
-            m3 <- readContents d
-            let shouldBeHiddenFiles = contentsMapFiles m3 `M.difference` contentsMapFiles m1
-            M.keysSet shouldBeHiddenFiles `shouldSatisfy` all isHidden
+        forAllValid $ \m2 ->
+          forAll (mapWithAdditions m2) $ \m1 ->
+            cover False 10 "has any hidden files" $ do
+              let hiddenFilesBefore = M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m1
+              setupContents d m1
+              saveContentsMap IgnoreHiddenFiles d m2
+              m3 <- readContents d
+              let hiddenFilesAfter = M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m3
+              hiddenFilesAfter `shouldBe` hiddenFilesBefore
