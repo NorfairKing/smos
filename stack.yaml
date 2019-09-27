@@ -1,4 +1,4 @@
-resolver: lts-12.10
+resolver: lts-14.7
 packages:
 - smos
 - smos-data
@@ -21,8 +21,9 @@ packages:
 - smos-sync-client
 - smos-sync-client-gen
 extra-deps:
-- thyme-0.3.5.5
-- hakyll-sass-0.2.3
+- hakyll-4.13.0.0
+- hakyll-sass-0.2.4
+
 - git: https://github.com/NorfairKing/mergeful
   commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
   subdirs:
@@ -38,7 +39,7 @@ extra-deps:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: e496ad8924cebea70dd81f85325e92a6a658475d
+  commit: 794427b7d4675910474068c8a0534d07b8eda83d
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -85,4 +86,4 @@ extra-deps:
   - validity-uuid
   - validity-vector
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/a0248a0b6819153e3fdbc62ce32d7f4e61695c99.tar.gz" ]
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e6b93257b0ba070bd12810eeacbe281396c24316.tar.gz" ]

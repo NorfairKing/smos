@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    hackage: thyme-0.3.5.5@sha256:a723192fd26240b38589029fbc05fc25ba7c0b105042601e554db18e69860931,4716
+    hackage: hakyll-4.13.0.0@sha256:bb5cea5e4f88fd3e6818b86437cddf49755afb176d7675ff50c78c31a2f9c687,8751
     pantry-tree:
-      size: 1890
-      sha256: e9d6b3817f0b4c134f678c9f42ce6fe81737ab0cafeb97d394fbe507c0220d2c
+      size: 7703
+      sha256: 17524533799bfa128be0a135f25ff0973e850e050a7969542e94fa123c6f4466
   original:
-    hackage: thyme-0.3.5.5
+    hackage: hakyll-4.13.0.0
 - completed:
-    hackage: hakyll-sass-0.2.3@sha256:be00ce113a00f28794b607fd08866068c47c782b47d7a91ea6ada04b69cb4671,939
+    hackage: hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
     pantry-tree:
       size: 217
-      sha256: 227755ab4be56968d80883ab7c40241d8d2be5f7cb90cae343153c8708938595
+      sha256: c03e74e71d010f009b8d972efc31fbd6dd25183e6d9afbec55f4b7f0d4a74b47
   original:
-    hackage: hakyll-sass-0.2.3
+    hackage: hakyll-sass-0.2.4
 - completed:
     subdir: mergeful
     cabal-file:
@@ -121,11 +121,11 @@ packages:
     pantry-tree:
       size: 415
       sha256: df8ab800792ec9e012c68f8235c0d3835ec6e49ed337b97640475bc7c79babd2
-    commit: e496ad8924cebea70dd81f85325e92a6a658475d
+    commit: 794427b7d4675910474068c8a0534d07b8eda83d
   original:
     subdir: fuzzy-time
     git: https://github.com/NorfairKing/fuzzy-time.git
-    commit: e496ad8924cebea70dd81f85325e92a6a658475d
+    commit: 794427b7d4675910474068c8a0534d07b8eda83d
 - completed:
     subdir: fuzzy-time-gen
     cabal-file:
@@ -136,12 +136,12 @@ packages:
     git: https://github.com/NorfairKing/fuzzy-time.git
     pantry-tree:
       size: 493
-      sha256: dc6dea4284c0b39f2c314b17b1f0c24a7f3ca1fbf0019016202dfb4103785af9
-    commit: e496ad8924cebea70dd81f85325e92a6a658475d
+      sha256: f192c1094d6784fd0b66bc54b41c7aac7c94474006f05b48eab0bf6a1ab9ca1d
+    commit: 794427b7d4675910474068c8a0534d07b8eda83d
   original:
     subdir: fuzzy-time-gen
     git: https://github.com/NorfairKing/fuzzy-time.git
-    commit: e496ad8924cebea70dd81f85325e92a6a658475d
+    commit: 794427b7d4675910474068c8a0534d07b8eda83d
 - completed:
     subdir: cursor-brick
     cabal-file:
@@ -672,7 +672,7 @@ packages:
     commit: 8dadb0d710529b84c3b2903fdffd371ff3eabb1a
 snapshots:
 - completed:
-    size: 503674
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/12/10.yaml
-    sha256: 3f6a3139a4fe86c154496156ba9bc45328debae508485f0e314609eb9cc7e467
-  original: lts-12.10
+    size: 523700
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/7.yaml
+    sha256: 8e3f3c894be74d71fa4bf085e0a8baae7e4d7622d07ea31a52736b80f8b9bb1a
+  original: lts-14.7

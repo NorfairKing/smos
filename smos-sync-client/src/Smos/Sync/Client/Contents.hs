@@ -89,9 +89,3 @@ isHidden = go
         then False
         else let p = parent f
               in isHiddenIn p f || go p
-
--- Remove this after upgrading to path-0.6.0
-listDirRecurRel :: Path Abs Dir -> IO ([Path Rel Dir], [Path Rel File])
-listDirRecurRel d = do
-  (ds, fs) <- listDirRecur d
-  pure (mapMaybe (stripProperPrefix d) ds, mapMaybe (stripProperPrefix d) fs)
