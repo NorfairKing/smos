@@ -47,6 +47,7 @@ tests:
     - genvalidity-hspec-optics
     - hspec
     - hspec-core
+    - pretty-show
     - smos-cursor
     - smos-cursor-gen
     - smos-data

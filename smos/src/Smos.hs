@@ -54,9 +54,11 @@ startSmosOn p sc@SmosConfig {..} = do
       zt <- getZonedTime
       let s = initState zt p fl startF
       chan <- Brick.newBChan maxBound
+      let vtyBuilder = mkVty defaultConfig
+      initialVty <- vtyBuilder
       Left s' <-
         race
-          (Brick.customMain (Vty.mkVty Vty.defaultConfig) (Just chan) (mkSmosApp sc) s)
+          (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
           (eventPusher chan)
       forM_ (smosStateAsyncs s') wait
       saveSmosFile

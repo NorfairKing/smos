@@ -21,9 +21,17 @@ spec = do
     it "produces valid cursors" $ producesValidsOnValids rebuildHeaderCursor
     it "is the inverse of makeHeaderCursor" $
       inverseFunctionsOnValid makeHeaderCursor rebuildHeaderCursor
-  describe "headerCursorInsert" $
+  describe "headerCursorInsert" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ headerCursorInsert '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ headerCursorInsert '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 headerCursorInsert
-  describe "headerCursorAppend" $
+  describe "headerCursorAppend" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ headerCursorAppend '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ headerCursorAppend '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 headerCursorAppend
   describe "headerCursorRemove" $
     it "produces valid cursors" $ producesValidsOnValids headerCursorRemove

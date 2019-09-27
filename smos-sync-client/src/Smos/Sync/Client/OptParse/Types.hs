@@ -6,6 +6,7 @@ module Smos.Sync.Client.OptParse.Types where
 import GHC.Generics (Generic)
 
 import qualified Data.Text as T
+import Data.Validity
 import Data.Yaml as Yaml
 
 import Control.Monad.Logger
@@ -94,6 +95,8 @@ data IgnoreFiles
   = IgnoreNothing
   | IgnoreHiddenFiles
   deriving (Show, Eq, Generic)
+
+instance Validity IgnoreFiles
 
 instance FromJSON IgnoreFiles where
   parseJSON =

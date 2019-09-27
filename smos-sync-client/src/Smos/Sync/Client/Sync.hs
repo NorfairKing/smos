@@ -12,7 +12,6 @@ import GHC.Generics (Generic)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Hashable
 import Data.Map (Map)
@@ -28,7 +27,6 @@ import Control.Monad
 import Control.Monad.Logger
 
 import System.Exit
-import qualified System.FilePath as FP
 
 import Servant.Client
 
@@ -42,14 +40,13 @@ import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
-
-import Smos.Report.Path
-import Smos.Report.Streaming
 
 import Smos.Sync.API
 
+import Smos.Sync.Client.Contents
+import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.OptParse
+import Smos.Sync.Client.OptParse.Types
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
@@ -60,7 +57,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     let cenv = mkClientEnv man syncSetServerUrl
     mMeta <- liftIO $ readStoreMeta syncSetMetadataFile
     logDebugData "READ STORED METADATA" mMeta
-    files <- liftIO $ readSyncFiles syncSetContentsDir
+    files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
     logDebugData "READ FILE CONTENTS" files
     clientStore <-
       case mMeta of
@@ -77,7 +74,8 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     logDebugData "CLIENT STORE BEFORE SYNC" clientStore
     newClientStore <- runSync cenv clientStore
     logDebugData "CLIENT STORE AFTER SYNC" newClientStore
-    liftIO $ saveClientStore syncSetMetadataFile syncSetContentsDir newClientStore
+    liftIO $
+      saveClientStore syncSetIgnoreFiles syncSetMetadataFile syncSetContentsDir newClientStore
     logDebugN "CLIENT END"
 
 type C = LoggingT IO
@@ -124,7 +122,7 @@ runSync cenv clientStore = do
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
-runClient :: ClientEnv -> ClientM a -> IO (Either ServantError a)
+runClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 runClient = flip runClientM
 
 runClientOrDie :: ClientEnv -> ClientM a -> IO a
@@ -196,21 +194,7 @@ readStoreMeta p = do
       Left err -> die err
       Right store -> pure store
 
-readSyncFiles :: Path Abs Dir -> IO (Map (Path Rel File) ByteString)
-readSyncFiles dir =
-  fmap M.fromList $
-  sourceToList $
-  sourceFilesInNonHiddenDirsRecursively dir .|
-  C.mapM
-    (\rp -> do
-       let rel =
-             case rp of
-               Relative _ r -> r
-               _ -> error "should not happen: absolute file" -- TODO get rid of this.
-       contents <- SB.readFile (fromAbsFile $ resolveRootedPath rp)
-       pure (rel, contents))
-
-consolidateInitialStoreWithFiles :: ClientStore -> Map (Path Rel File) ByteString -> ClientStore
+consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> ClientStore
 consolidateInitialStoreWithFiles cs contentsMap =
   let Mergeful.ClientStore {..} = clientStoreItems cs
    in if not
@@ -223,11 +207,10 @@ consolidateInitialStoreWithFiles cs contentsMap =
                }
 
 consolidateInitialSyncedItemsWithFiles ::
-     Map UUID (Mergeful.Timed SyncFile)
-  -> Map (Path Rel File) ByteString
-  -> Mergeful.ClientStore UUID SyncFile
+     Map UUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
 consolidateInitialSyncedItemsWithFiles syncedItems =
-  M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems})
+  M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems}) .
+  contentsMapFiles
   where
     alreadySyncedMap = makeAlreadySyncedMap syncedItems
     go ::
@@ -253,14 +236,12 @@ makeAlreadySyncedMap m = M.fromList $ map go $ M.toList m
   where
     go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, (i, syncFileContents))
 
-consolidateMetaWithFiles :: ClientMetaData -> Map (Path Rel File) ByteString -> ClientStore
+consolidateMetaWithFiles :: ClientMetaData -> ContentsMap -> ClientStore
 consolidateMetaWithFiles ClientMetaData {..} contentsMap =
   ClientStore clientMetaDataServerId $ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
 
 consolidateMetaMapWithFiles ::
-     Map (Path Rel File) SyncFileMeta
-  -> Map (Path Rel File) ByteString
-  -> Mergeful.ClientStore UUID SyncFile
+     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
 consolidateMetaMapWithFiles clientMetaDataMap contentsMap
       -- The existing files need to be checked for deletions and changes.
  =
@@ -270,7 +251,7 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
         -> SyncFileMeta
         -> Mergeful.ClientStore UUID SyncFile
       go1 s rf sfm@SyncFileMeta {..} =
-        case M.lookup rf contentsMap of
+        case M.lookup rf $ contentsMapFiles contentsMap of
           Nothing
                -- The file is not there, that means that it must have been deleted.
                -- so we will mark it as such
@@ -316,22 +297,25 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
       go2 s rf contents =
         let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
          in Mergeful.addItemToClientStore sf s
-   in M.foldlWithKey go2 syncedChangedAndDeleted (contentsMap `M.difference` clientMetaDataMap)
+   in M.foldlWithKey
+        go2
+        syncedChangedAndDeleted
+        (contentsMapFiles contentsMap `M.difference` clientMetaDataMap)
 
 -- We will trust hashing. (TODO do we need to fix that?)
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
 
 -- TODO this could be optimised using the sync response
-saveClientStore :: Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
-saveClientStore metaFile dir store = do
-  saveMeta metaFile $ makeClientMetaData store
-  saveSyncFiles dir $ clientStoreItems store
+saveClientStore :: IgnoreFiles -> Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
+saveClientStore igf metaFile dir store = do
+  saveMeta metaFile $ makeClientMetaData igf store
+  saveSyncFiles igf dir $ clientStoreItems store
 
 -- | We only check the synced items, because it should be the case that
 -- they're the only ones that are not empty.
-makeClientMetaData :: ClientStore -> ClientMetaData
-makeClientMetaData ClientStore {..} =
+makeClientMetaData :: IgnoreFiles -> ClientStore -> ClientMetaData
+makeClientMetaData igf ClientStore {..} =
   let Mergeful.ClientStore {..} = clientStoreItems
    in if not
            (null clientStoreAddedItems &&
@@ -344,47 +328,26 @@ makeClientMetaData ClientStore {..} =
                    -> Map (Path Rel File) SyncFileMeta
                  go m u Mergeful.Timed {..} =
                    let SyncFile {..} = timedValue
-                    in M.insert
-                         syncFilePath
-                         SyncFileMeta
-                           { syncFileMetaUUID = u
-                           , syncFileMetaTime = timedTime
-                           , syncFileMetaHash = hash syncFileContents
-                           }
-                         m
+                       goOn =
+                         M.insert
+                           syncFilePath
+                           SyncFileMeta
+                             { syncFileMetaUUID = u
+                             , syncFileMetaTime = timedTime
+                             , syncFileMetaHash = hash syncFileContents
+                             }
+                           m
+                    in case igf of
+                         IgnoreNothing -> goOn
+                         IgnoreHiddenFiles ->
+                           if isHidden syncFilePath
+                             then m
+                             else goOn
               in ClientMetaData clientStoreServerUUID $
                  M.foldlWithKey go M.empty clientStoreSyncedItems
 
 saveMeta :: Path Abs File -> ClientMetaData -> IO ()
 saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
 
-saveSyncFiles :: Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
-saveSyncFiles dir store = saveContentsMap dir $ makeContentsMap store
-
-saveContentsMap :: Path Abs Dir -> Map (Path Rel File) ByteString -> IO ()
-saveContentsMap dir cm = do
-  tmpDir1 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
-  tmpDir2 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
-  writeAllTo tmpDir1
-  renameDir dir tmpDir2
-  renameDir tmpDir1 dir
-  removeDirRecur tmpDir2
-  where
-    writeAllTo d = do
-      ensureDir d
-      void $ M.traverseWithKey go cm
-      where
-        go p bs = do
-          let f = d </> p
-          ensureDir $ parent f
-          SB.writeFile (fromAbsFile f) bs
-
-makeContentsMap :: Mergeful.ClientStore UUID SyncFile -> Map (Path Rel File) ByteString
-makeContentsMap Mergeful.ClientStore {..} =
-  M.fromList $
-  map (\SyncFile {..} -> (syncFilePath, syncFileContents)) $
-  concat
-    [ M.elems clientStoreAddedItems
-    , M.elems $ M.map Mergeful.timedValue clientStoreSyncedItems
-    , M.elems $ M.map Mergeful.timedValue clientStoreSyncedButChangedItems
-    ]
+saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
+saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store

@@ -50,6 +50,7 @@ tests:
     - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
+    - genvalidity-hspec-optics
     - hspec
     - hspec-core
     - mergeful

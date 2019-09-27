@@ -38,7 +38,7 @@ contentsInsert :: ActionUsing Char
 contentsInsert =
   ActionUsing
     { actionUsingName = "contentsInsert"
-    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelected (contentsCursorInsertChar c)
+    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelectedM (contentsCursorInsertChar c)
     , actionUsingDescription = "Insert a character into the contents in front of the cursor"
     }
 
@@ -54,7 +54,7 @@ contentsAppend :: ActionUsing Char
 contentsAppend =
   ActionUsing
     { actionUsingName = "contentsAppend"
-    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelected (contentsCursorAppendChar c)
+    , actionUsingFunc = \c -> modifyMContentsCursorWhenSelectedM (contentsCursorAppendChar c)
     , actionUsingDescription = "Append a character into the contents in front of the cursor"
     }
 

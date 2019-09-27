@@ -54,10 +54,10 @@ The file format is very easy to work with programmatically, and convenience
 functions in the `smos-data` library are provided to operate on Smos data.
 You can write your own tools to operate on these files.
 
-## Great for synchronise
+## Great for synchronisation
 
 Files are made to make diffs easy and disjoint.
-Derived data is never stored, but instead computed or rendered with `smos-report`.
+Derived data is never stored, but instead computed or rendered.
 
 ## A replacement for emacs org mode
 

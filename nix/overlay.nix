@@ -79,8 +79,8 @@ with final.haskell.lib;
                     };
                 in
                   final.smosPackages // {
-                thyme = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "thyme" "0.3.5.5" {});
-                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.3" {});
+                hakyll = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll" "4.13.0.0" {});
+                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.4" {});
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
               }
             );

@@ -38,9 +38,17 @@ spec = do
   describe "propertiesCursorSelectNextProperty" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectNextProperty
     it "is a movement" pending
-  describe "propertiesCursorInsert" $
+  describe "propertiesCursorInsert" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ propertiesCursorInsert '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ propertiesCursorInsert '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 propertiesCursorInsert
-  describe "propertiesCursorAppend" $
+  describe "propertiesCursorAppend" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ propertiesCursorAppend '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ propertiesCursorAppend '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 propertiesCursorAppend
   describe "propertiesCursorRemove" $
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorRemove
