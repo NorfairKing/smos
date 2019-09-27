@@ -6,8 +6,13 @@ module Smos.Sync.Client.ContentsMapSpec
 
 import Test.Hspec
 import Test.Hspec.QuickCheck
+import Test.QuickCheck
 import Test.Validity
 
+import qualified Data.Map as M
+import Path
+
+import Smos.Sync.Client.Contents
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.ContentsMap.Gen
@@ -17,9 +22,25 @@ spec =
   modifyMaxSize (* 10) $
   modifyMaxSuccess (* 10) $ do
     genValidSpec @ContentsMap
+    describe "hideFile" $ do
+      it "produces valid paths" $ forAllValid $ shouldBeValid . hideFile
+      it "hides a file" $ forAllValid $ isHidden . hideFile
+    describe "hideDir" $ do
+      it "produces valid paths" $ forAllValid $ shouldBeValid . hideDir
+      it "hides a dir" $ forAllValid $ \(d, f) -> isHidden $ hideDir d </> f
+    describe "genHiddenFile" $ it "generates hidden files" $ forAll genHiddenFile isHidden
     describe "mapWithNewPath" $
       it "generates valid values" $
       forAllValid $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewPath cm bs)
+    describe "mapWithNewHiddenPath" $ do
+      it "generates valid values" $
+        forAllValid $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewHiddenPath cm bs)
+      it "generates a contentsmap where at least one path is hidden" $
+        forAllValid $ \cm ->
+          forAllValid $ \bs ->
+            forAll (mapWithNewHiddenPath cm bs) $ \(hp, m) ->
+              isHidden hp &&
+              not (M.null $ M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m)
     describe "mapsWithDifferentContentsAtNewPath" $
       it "generates valid values" $
       forAllValid $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath cm)

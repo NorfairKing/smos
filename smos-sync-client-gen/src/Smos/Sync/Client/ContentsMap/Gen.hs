@@ -3,6 +3,8 @@
 
 module Smos.Sync.Client.ContentsMap.Gen where
 
+import Debug.Trace
+
 import Data.ByteString
 import Data.GenValidity
 import qualified Data.Map as M
@@ -14,16 +16,45 @@ import Test.QuickCheck
 
 import Smos.Sync.API.Gen ()
 
+import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.TestUtils
+
+hideFile :: Path Rel File -> Path Rel File
+hideFile f = fromJust $ parseRelFile $ '.' : toFilePath f
+
+hideDir :: Path Rel Dir -> Path Rel Dir
+hideDir d = fromJust $ parseRelDir $ '.' : toFilePath d
+
+genHiddenFile :: Gen (Path Rel File)
+genHiddenFile =
+  oneof
+    [ do d1 <- genValid
+         d2 <- genValid
+         f <- genValid
+         pure $ d1 </> hideDir d2 </> f
+    , do d <- genValid
+         f <- genValid
+         pure $ d </> hideFile f
+    ]
+
+filterHiddenFiles :: ContentsMap -> ContentsMap
+filterHiddenFiles = ContentsMap . M.filterWithKey (\p _ -> isHidden p) . contentsMapFiles
 
 instance GenValid ContentsMap where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
 mapWithNewPath :: ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
-mapWithNewPath cm bs = genValid `suchThatMap` (\p -> (,) p <$> CM.insert p bs cm)
+mapWithNewPath = mapWithNewByGen genValid
+
+mapWithNewHiddenPath :: ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
+mapWithNewHiddenPath = mapWithNewByGen genHiddenFile
+
+mapWithNewByGen ::
+     Gen (Path Rel File) -> ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
+mapWithNewByGen gen cm bs = gen `suchThatMap` (\p -> (,) p <$> CM.insert p bs cm)
 
 mapsWithDifferentContentsAtNewPath :: ContentsMap -> Gen (ContentsMap, ContentsMap)
 mapsWithDifferentContentsAtNewPath cm = do

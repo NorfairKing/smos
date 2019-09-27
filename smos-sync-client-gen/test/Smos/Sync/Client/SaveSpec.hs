@@ -43,14 +43,30 @@ spec =
             setupContents d m
             saveContentsMap IgnoreNothing d m1
             assertContents d m1
-    describe "IgnoreHiddenFiles" $
+    describe "IgnoreHiddenFiles" $ do
+      it "leaves the hidden file, even if they are not in the map" $ \d ->
+        checkCoverage $
+        forAllValid $ \m2 ->
+          forAllValid $ \contents ->
+            forAll (mapWithNewHiddenPath m2 contents) $ \(hp, m1) ->
+              let anyHidden = not $ M.null $ contentsMapFiles $ filterHiddenFiles m1
+               in cover 10.0 anyHidden "has any hidden files" $ do
+                    let hiddenFilesBefore = contentsMapFiles $ filterHiddenFiles m1
+                    setupContents d m1
+                    saveContentsMap IgnoreHiddenFiles d m2
+                    m3 <- readContents d
+                    let hiddenFilesAfter = contentsMapFiles $ filterHiddenFiles m3
+                    hiddenFilesAfter `shouldBe` M.singleton hp contents
+                    hiddenFilesAfter `shouldBe` hiddenFilesBefore
       it "leaves any hidden files, even if they are not in the map" $ \d ->
+        checkCoverage $
         forAllValid $ \m2 ->
           forAll (mapWithAdditions m2) $ \m1 ->
-            cover False 10 "has any hidden files" $ do
-              let hiddenFilesBefore = M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m1
-              setupContents d m1
-              saveContentsMap IgnoreHiddenFiles d m2
-              m3 <- readContents d
-              let hiddenFilesAfter = M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m3
-              hiddenFilesAfter `shouldBe` hiddenFilesBefore
+            let anyHidden = not $ M.null $ contentsMapFiles $ filterHiddenFiles m1
+             in cover 10.0 anyHidden "has any hidden files" $ do
+                  let hiddenFilesBefore = contentsMapFiles $ filterHiddenFiles m1
+                  setupContents d m1
+                  saveContentsMap IgnoreHiddenFiles d m2
+                  m3 <- readContents d
+                  let hiddenFilesAfter = contentsMapFiles $ filterHiddenFiles m3
+                  hiddenFilesAfter `shouldBe` hiddenFilesBefore
