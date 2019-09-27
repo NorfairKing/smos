@@ -190,7 +190,8 @@ parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
-      expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
+      expectationFailure $
+      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property

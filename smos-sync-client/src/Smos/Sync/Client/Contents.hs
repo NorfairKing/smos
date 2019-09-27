@@ -11,6 +11,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
+import qualified Data.Set as S
 import Data.UUID
 import Data.Validity
 import Data.Validity.ByteString ()
@@ -36,7 +37,19 @@ import Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.OptParse.Types
 
 readFilteredSyncFiles :: IgnoreFiles -> Path Abs Dir -> IO ContentsMap
-readFilteredSyncFiles igf dir = filterContentsMap igf <$> readSyncFiles dir
+readFilteredSyncFiles igf dir = do
+  let filePred =
+        case igf of
+          IgnoreNothing -> const True
+          IgnoreHiddenFiles -> not . isHidden
+  fs <- snd <$> listDirRecurRel dir
+  fmap (ContentsMap . M.fromList . catMaybes) $
+    forM fs $ \rp ->
+      if filePred rp
+        then Just <$> do
+               contents <- SB.readFile (fromAbsFile $ dir </> rp)
+               pure (rp, contents)
+        else pure Nothing -- No need to even read the file, right
 
 readSyncFiles :: Path Abs Dir -> IO ContentsMap
 readSyncFiles dir = do
@@ -63,22 +76,32 @@ makeContentsMap Mergeful.ClientStore {..} =
     ]
 
 saveContentsMap :: IgnoreFiles -> Path Abs Dir -> ContentsMap -> IO ()
-saveContentsMap _ dir cm = do
-  tmpDir1 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp1"
-  tmpDir2 <- resolveDir' $ FP.dropTrailingPathSeparator (toFilePath dir) ++ "-tmp2"
-  writeAllTo tmpDir1
-  renameDir dir tmpDir2
-  renameDir tmpDir1 dir
-  removeDirRecur tmpDir2
+saveContentsMap igf dir cm = do
+  let filePred =
+        case igf of
+          IgnoreNothing -> const True
+          IgnoreHiddenFiles -> not . isHidden
+      filterFunc =
+        case igf of
+          IgnoreNothing -> id
+          IgnoreHiddenFiles -> M.filterWithKey (\p _ -> not $ isHidden p)
+  let files = filterFunc $ contentsMapFiles cm
+  found <- snd <$> listDirRecurRel dir
+  forM_ found $ \p ->
+    case M.lookup p files of
+      Nothing ->
+        if filePred p
+          then removeFile (dir </> p) -- Is not supposed to be there anymore
+          else pure () -- We should leave it alone
+      Just bs -> SB.writeFile (toFilePath $ dir </> p) bs -- TODO this seems a bit wasteful ..
+  let leftovers = files `M.difference` M.fromSet (const ()) (S.fromList found)
+  ensureDir dir
+  void $ M.traverseWithKey go leftovers
   where
-    writeAllTo d = do
-      ensureDir d
-      void $ M.traverseWithKey go $ contentsMapFiles cm
-      where
-        go p bs = do
-          let f = d </> p
-          ensureDir $ parent f
-          SB.writeFile (fromAbsFile f) bs
+    go p bs = do
+      let f = dir </> p
+      ensureDir $ parent f
+      SB.writeFile (fromAbsFile f) bs
 
 isHidden :: Path Rel File -> Bool
 isHidden = go
