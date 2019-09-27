@@ -7,7 +7,6 @@
 -- Import this module qualified
 module Smos.Sync.Client.ContentsMap
   ( ContentsMap(..)
-  , contentsMapFiles
   , empty
   , singleton
   , insert
@@ -17,39 +16,21 @@ module Smos.Sync.Client.ContentsMap
   , makeDirForest
   ) where
 
-import Debug.Trace
-
 import GHC.Generics (Generic)
 
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
-import Data.Function
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import qualified Data.Mergeful as Mergeful
-import qualified Data.Mergeful.Timed as Mergeful
-import Data.UUID
 import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
-import Lens.Micro
 
 import qualified System.FilePath as FP
 
 import Control.Monad
 
 import Path
-import Path.IO
-import Path.Internal
-
-import Smos.Report.Streaming
-
-import Smos.Sync.API
-
-import Smos.Sync.Client.OptParse.Types
 
 newtype ContentsMap =
   ContentsMap
@@ -113,6 +94,7 @@ makeDirForest = fmap DirForest . foldM go M.empty . M.toList
     go m' (rp, bs) = go2 m' (FP.splitDirectories $ fromRelFile rp)
       where
         go2 :: Map FilePath DirOrFile -> [FilePath] -> Either FilePath (Map FilePath DirOrFile)
+        go2 m [] = pure m
         go2 m [fp] =
           case M.lookup fp m of
             Nothing -> pure $ M.insert fp (File bs) m
@@ -120,12 +102,9 @@ makeDirForest = fmap DirForest . foldM go M.empty . M.toList
         go2 m (dp:rest) =
           case M.lookup dp m of
             Nothing -> do
-              m' <- go2 M.empty rest
-              pure $ M.insert dp (Dir $ DirForest m') m
+              m'' <- go2 M.empty rest
+              pure $ M.insert dp (Dir $ DirForest m'') m
             Just dof ->
               case dof of
                 Dir (DirForest df) -> go2 df rest
                 File _ -> Left dp
-
-relRoot :: Path Rel Dir
-relRoot = [reldir|.|]

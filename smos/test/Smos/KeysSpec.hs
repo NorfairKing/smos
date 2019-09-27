@@ -232,13 +232,14 @@ parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
 parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
-parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
+parsesValidSpec p gen = it "only parses valid values" $ checkCoverage $ forAll gen $ parsesValid p
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
-      expectationFailure $ unlines ["P failed on input", show s, "with error", parseErrorPretty err]
+      expectationFailure $
+      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
 parseNothing :: (Show a, Eq a) => P a -> Text -> Expectation
@@ -255,4 +256,4 @@ parsesValid p s =
         case parse (p <* eof) "test input" s of
           Left _ -> (False, pure () :: IO ())
           Right out -> (True, shouldBeValid out)
-   in cover useful 10 "useful" $ property ass
+   in cover 10.0 useful "useful" $ property ass

@@ -2,8 +2,6 @@ module Smos.Sync.Client.IntegrationSpec
   ( spec
   ) where
 
-import qualified Data.Map as M
-
 import Control.Monad.Logger
 
 import Test.Hspec
@@ -13,7 +11,6 @@ import Test.Validity
 import Smos.Sync.Client.OptParse.Types
 
 import qualified Smos.Sync.Client.ContentsMap as CM
-import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.ContentsMap.Gen
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
@@ -325,7 +322,7 @@ spec =
                     assertClientContents c2 m
         describe "changes" $ do
           it "succesfully syncs a single change" $ \cenv ->
-            forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(rp1, rp2, Hidden unionFunc) ->
+            forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(_, _, Hidden unionFunc) ->
               forAllValid $ \(contents1a, contents1b) ->
                 forAllValid $ \(contents2a, contents2b) ->
                   withClient cenv $ \c1 ->
@@ -344,7 +341,7 @@ spec =
                       assertClientContents c2 m'
           it "succesfully syncs a change from a set of files" $ \cenv ->
             forAllValid $ \m ->
-              forAll (twoDistinctPathsThatFitAndTheirUnionWithFunc m) $ \(rp1, rp2, Hidden unionFunc) ->
+              forAll (twoDistinctPathsThatFitAndTheirUnionWithFunc m) $ \(_, _, Hidden unionFunc) ->
                 forAllValid $ \(contents1a, contents1b) ->
                   forAllValid $ \(contents2a, contents2b) ->
                     withClient cenv $ \c1 ->
@@ -362,7 +359,7 @@ spec =
                         assertClientContents c1 mb
                         assertClientContents c2 mb
           it "succesfully syncs a change of any number of files" $ \cenv ->
-            forAll twoChangedMapsAndTheirUnions $ \((m1a, m2a), (m1b, m2b), (ma, m1, m2, mb)) ->
+            forAll twoChangedMapsAndTheirUnions $ \(_, _, (ma, m1, m2, mb)) ->
               withClient cenv $ \c1 ->
                 withClient cenv $ \c2 -> do
                   setupClientContents c1 ma
@@ -375,7 +372,7 @@ spec =
                   assertClientContents c2 mb
           it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
             forAllValid $ \m ->
-              forAll (twoChangedMapsAndTheirUnionsWith m) $ \((m1a, m2a), (m1b, m2b), (ma, m1, m2, mb)) ->
+              forAll (twoChangedMapsAndTheirUnionsWith m) $ \(_, _, (ma, m1, m2, mb)) ->
                 withClient cenv $ \c1 ->
                   withClient cenv $ \c2 -> do
                     setupClientContents c1 ma
@@ -408,7 +405,7 @@ spec =
             forAllValid $ \m' ->
               forAllValid $ \contents1 ->
                 forAllValid $ \contents2 ->
-                  forAll (twoDistinctPathsThatFitAndTheirUnionsWith m' contents1 contents2) $ \(rp1, rp2, (m1, m2, m)) ->
+                  forAll (twoDistinctPathsThatFitAndTheirUnionsWith m' contents1 contents2) $ \(_, _, (m1, m2, m)) ->
                     withClient cenv $ \c1 ->
                       withClient cenv $ \c2 -> do
                         setupClientContents c1 m
@@ -434,7 +431,7 @@ spec =
                     assertClientContents c1 m'
                     assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
-            forAll threeDisjunctMapsAndTheirUnions $ \((_, _, m3), (m12, m23, m13, m123)) ->
+            forAll threeDisjunctMapsAndTheirUnions $ \((_, _, m3), (_, m23, m13, m123)) ->
               withClient cenv $ \c1 ->
                 withClient cenv $ \c2 -> do
                   setupClientContents c1 m123

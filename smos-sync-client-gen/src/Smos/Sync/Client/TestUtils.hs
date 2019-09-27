@@ -24,7 +24,6 @@ import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync.Gen ()
-import Smos.Sync.Server.TestUtils
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")

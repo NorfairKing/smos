@@ -5,7 +5,6 @@ module Smos.Sync.Client.SaveSpec
 import qualified Data.Map as M
 
 import Test.Hspec
-import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 
@@ -13,7 +12,6 @@ import Smos.Sync.Client.Contents
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
 
 import Smos.Sync.Client.ContentsMap.Gen
 import Smos.Sync.Client.Sync.Gen ()

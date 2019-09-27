@@ -14,8 +14,6 @@ import Network.Wai.Handler.Warp as Warp (testWithApplication)
 
 import Test.Hspec
 import Test.Hspec.Core.QuickCheck
-import Test.Hspec.Core.Spec
-import Test.QuickCheck
 
 import Smos.Sync.Server.Handler.Import as Server
 import Smos.Sync.Server.Serve as Server

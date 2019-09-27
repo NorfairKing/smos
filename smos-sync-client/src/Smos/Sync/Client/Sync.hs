@@ -45,7 +45,6 @@ import Smos.Sync.API
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
-import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 

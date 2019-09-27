@@ -2,25 +2,16 @@
 
 module Smos.Sync.Client.Contents where
 
-import GHC.Generics (Generic)
-
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import qualified Data.Set as S
 import Data.UUID
-import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
-import Lens.Micro
-
-import qualified System.FilePath as FP
 
 import Control.Monad
 
@@ -32,7 +23,6 @@ import Smos.Report.Streaming
 import Smos.Sync.API
 
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
-import Smos.Sync.Client.ContentsMap as CM
 
 import Smos.Sync.Client.OptParse.Types
 
