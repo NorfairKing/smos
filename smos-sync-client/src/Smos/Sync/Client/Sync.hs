@@ -123,7 +123,7 @@ runSync cenv clientStore = do
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
-runClient :: ClientEnv -> ClientM a -> IO (Either ServantError a)
+runClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 runClient = flip runClientM
 
 runClientOrDie :: ClientEnv -> ClientM a -> IO a

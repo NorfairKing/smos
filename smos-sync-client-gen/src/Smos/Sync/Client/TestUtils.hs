@@ -15,6 +15,7 @@ import Path.IO
 import Servant.Client
 
 import Test.Hspec
+import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 

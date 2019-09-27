@@ -73,9 +73,9 @@ with final.haskell.lib;
                     final.fetchFromGitHub {
                       owner = "ixmatus";
                       repo = "orgmode-parse";
-                      rev = "ce152776307e3a019c2047e459a74eeab05566df";
+                      rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
                       sha256 =
-                        "0sqhk1vyycbcaav251xnqgizf71lsly474f2md7508h0nzy8ir5s";
+                        "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
                     };
                 in
                   final.smosPackages // {
