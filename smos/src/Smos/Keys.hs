@@ -38,6 +38,7 @@ instance Validity Key where
       [ genericValidate k
       , case k of
           KFun i -> declare "The function key index is positive" $ i >= 0
+          KChar c -> validateCharNotUtf16SurrogateCodePoint c
           _ -> valid
       ]
 

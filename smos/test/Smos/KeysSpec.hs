@@ -232,7 +232,7 @@ parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
 parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
-parsesValidSpec p gen = it "only parses valid values" $ checkCoverage $ forAll gen $ parsesValid p
+parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
@@ -252,6 +252,7 @@ parseNothing p s =
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
 parsesValid p s =
+  checkCoverage $
   let (useful, ass) =
         case parse (p <* eof) "test input" s of
           Left _ -> (False, pure () :: IO ())
