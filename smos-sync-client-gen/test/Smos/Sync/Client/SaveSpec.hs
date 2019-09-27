@@ -61,7 +61,7 @@ spec =
       it "leaves any hidden files, even if they are not in the map" $ \d ->
         checkCoverage $
         forAllValid $ \m2 ->
-          forAll (mapWithAdditions m2) $ \m1 ->
+          forAll (mapWithHiddenAdditions m2) $ \m1 ->
             let anyHidden = not $ M.null $ contentsMapFiles $ filterHiddenFiles m1
              in cover 10.0 anyHidden "has any hidden files" $ do
                   let hiddenFilesBefore = contentsMapFiles $ filterHiddenFiles m1

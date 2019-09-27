@@ -3,8 +3,6 @@
 
 module Smos.Sync.Client.ContentsMap.Gen where
 
-import Debug.Trace
-
 import Data.ByteString
 import Data.GenValidity
 import qualified Data.Map as M
@@ -82,7 +80,16 @@ changedMapsWithUnionOf cm =
   (\(cm1, cm2) -> (,) <$> CM.union cm1 cm <*> CM.union cm2 cm)
 
 mapWithAdditions :: ContentsMap -> Gen ContentsMap
-mapWithAdditions cm = genValid `suchThatMap` (\cm' -> CM.union cm' cm)
+mapWithAdditions cm = genValid `suchThatMap` (`CM.union` cm)
+
+mapWithHiddenAdditions :: ContentsMap -> Gen ContentsMap
+mapWithHiddenAdditions cm =
+  (ContentsMap . M.fromList <$> genListOf1 ((,) <$> genHiddenFile <*> genValid)) `suchThatMap`
+  (`CM.union` cm)
+
+-- Not ideal, but oh well
+genListOf1 :: Gen a -> Gen [a]
+genListOf1 g = (:) <$> g <*> genListOf g
 
 twoDistinctPathsThatFitAndTheirUnion ::
      ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)

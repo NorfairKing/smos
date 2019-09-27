@@ -49,7 +49,6 @@
       - "Smos.Actions.Timestamps.timestampsInsert"
       - "Smos.Draw.drawPropertyKVCursor"
       - "Smos.Sync.Client.TestUtils.disjunctMap"
-      - "Smos.Sync.Client.ContentsMap.Gen.mapWithAdditions"
 - ignore: 
     name: "Eta reduce"
     within: "Smos.Report.Sorter.sorterOrdering"
