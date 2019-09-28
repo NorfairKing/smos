@@ -50,7 +50,7 @@ getEnvironment :: IO Environment
 getEnvironment = do
   env <- System.getEnvironment
   let getEnv :: String -> Maybe String
-      getEnv key = ("SMOS_SYNC_SERVER" ++ key) `lookup` env
+      getEnv key = ("SMOS_SYNC_SERVER_" ++ key) `lookup` env
       readEnv :: Read a => String -> Maybe a
       readEnv key = getEnv key >>= readMaybe
   let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
