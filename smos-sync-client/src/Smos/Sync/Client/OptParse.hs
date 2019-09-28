@@ -70,7 +70,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
                 fromMaybe IgnoreHiddenFiles $
                 syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
           pure $ DispatchSync SyncSettings {..}
-    getSettings = pure $ Settings {setLogLevel = fromMaybe LevelInfo flagLogLevel}
+    getSettings = pure $ Settings {setLogLevel = fromMaybe LevelWarn flagLogLevel}
 
 defaultMetadataFile :: IO (Path Abs File)
 defaultMetadataFile = do
