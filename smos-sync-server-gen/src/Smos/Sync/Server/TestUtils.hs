@@ -5,6 +5,7 @@ import Data.UUID.V4 as UUID
 
 import Path.IO
 
+import Control.Concurrent.MVar
 import Control.Concurrent.STM
 
 import Servant.Client
@@ -29,12 +30,14 @@ withTestServer func = do
     let mkApp = do
           uuid <- UUID.nextRandom
           storeVar <- newTVarIO initialServerStore
+          lockVar <- newMVar ()
           pure $
             Server.makeSyncApp
               ServerEnv
                 { serverEnvServerUUID = uuid
                 , serverEnvStoreFile = storeFile
                 , serverEnvStoreVar = storeVar
+                , serverEnvStoreLock = lockVar
                 }
     Warp.testWithApplication mkApp $ \p ->
       let cenv = mkClientEnv man (BaseUrl Http "127.0.0.1" p "")
