@@ -75,7 +75,7 @@ data SyncConfiguration =
 instance FromJSON SyncConfiguration where
   parseJSON =
     withObject "SyncConfiguration" $ \o ->
-      SyncConfiguration <$> o .: "server-url" <*> o .: "contents-dir" <*> o .: "metadata-file" <*>
+      SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "metadata-file" <*>
       o .:? "ignore-files"
 
 newtype Dispatch =

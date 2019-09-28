@@ -12,6 +12,7 @@ module Smos.Sync.Client.OptParse
 import Data.Maybe
 
 import qualified System.Environment as System
+import System.Exit (die)
 
 import Control.Monad.Logger
 import Path
@@ -52,9 +53,11 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
       case c of
         CommandSync SyncFlags {..} -> do
           syncSetServerUrl <-
-            Servant.parseBaseUrl $
-            fromMaybe "sync.api.smos.cs-syd.eu" $
-            syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl
+            case syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
+              Nothing ->
+                die
+                  "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
+              Just s -> Servant.parseBaseUrl s
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
               Nothing -> Report.resolveReportWorkflowDir src
