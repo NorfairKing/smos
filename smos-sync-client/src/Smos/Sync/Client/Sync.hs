@@ -18,6 +18,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text.Encoding as TE
 import Data.UUID as UUID (UUID)
 import Data.Validity
 import Data.Validity.UUID ()
@@ -86,8 +87,10 @@ runInitialSync cenv = do
   let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
   logDebugData "INITIAL SYNC REQUEST" req
+  logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- liftIO $ runClientOrDie cenv $ clientSync req
   logDebugData "INITIAL SYNC RESPONSE" resp
+  logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
   let newClientStore =
         ClientStore {clientStoreServerUUID = syncResponseServerId, clientStoreItems = items}
@@ -101,8 +104,10 @@ runSync cenv clientStore = do
   let items = clientStoreItems clientStore
   let req = Mergeful.makeSyncRequest items
   logDebugData "SYNC REQUEST" req
+  logInfoJsonData "SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- liftIO $ runClientOrDie cenv $ clientSync req
   logDebugData "SYNC RESPONSE" resp
+  logInfoJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $
     unless (syncResponseServerId == clientStoreServerUUID clientStore) $
     die $
@@ -118,6 +123,10 @@ runSync cenv clientStore = do
           }
   logDebugN "SYNC END"
   pure newClientStore
+
+logInfoJsonData :: ToJSON a => Text -> a -> C ()
+logInfoJsonData name a =
+  logInfoN $ T.unwords [name <> ":", TE.decodeUtf8 $ LB.toStrict $ encodePretty a]
 
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
