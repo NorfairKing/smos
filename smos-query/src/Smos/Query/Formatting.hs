@@ -14,7 +14,6 @@ import Path
 import Rainbow
 import Rainbox as Box
 
-
 import Smos.Data
 
 import Smos.Report.Path
@@ -115,7 +114,7 @@ headerChunk :: Header -> Chunk Text
 headerChunk = fore yellow . chunk . headerText
 
 propertyValueChunk :: PropertyName -> PropertyValue -> Chunk Text
-propertyValueChunk pn pv = fore color . chunk . propertyValueText $ pv
+propertyValueChunk pn = fore color . chunk . propertyValueText
   where
     color =
       case propertyNameText pn of

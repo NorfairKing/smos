@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Entry
   ( allEntryPlainActions
@@ -54,8 +53,7 @@ entrySelectHeaderAtStart =
   Action
     { actionName = "entrySelectHeaderAtStart"
     , actionFunc = modifyEntryCursor entryCursorSelectHeaderAtStart
-    , actionDescription =
-        "Select the current Entry's header and select the start"
+    , actionDescription = "Select the current Entry's header and select the start"
     }
 
 entrySelectHeaderAtEnd :: Action

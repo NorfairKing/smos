@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -28,11 +27,12 @@ produceNextActionReport src = do
     smosFileEntries .|
     C.filter (isNextAction . snd) .|
     C.map (uncurry makeNextActionEntry)
+
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
 
 isNextTodoState :: TodoState -> Bool
-isNextTodoState = (`elem` (mapMaybe todoState ["NEXT", "STARTED"]))
+isNextTodoState = (`elem` mapMaybe todoState ["NEXT", "STARTED"])
 
 makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
 makeNextActionEntry rf e =

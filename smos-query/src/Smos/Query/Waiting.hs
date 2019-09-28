@@ -1,5 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Waiting
@@ -20,15 +19,16 @@ import Smos.Report.Streaming
 import Smos.Report.Waiting
 
 import Smos.Query.Config
-import Smos.Query.Streaming
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
+import Smos.Query.Streaming
 
 waiting :: WaitingSettings -> Q ()
 waiting WaitingSettings {..} = do
   tups <-
     sourceToList $
-    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors .|
+    streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
+    smosFileCursors .|
     C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
     smosCursorCurrents .|
     C.filter (isWaitingAction . snd) .|
@@ -43,7 +43,7 @@ renderWaitingActionReport now =
 formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry now WaitingActionEntry {..} =
   [ rootedPathChunk waitingActionEntryFilePath
-  , headerChunk $ waitingActionEntryHeader
+  , headerChunk waitingActionEntryHeader
   , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
   ]
 

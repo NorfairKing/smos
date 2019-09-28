@@ -43,7 +43,7 @@ convRepinged =
     , actionFunc =
         do me <-
              gets
-               (fmap (rebuildEntryCursor . view (smosFileCursorSelectedEntryL)) .
+               (fmap (rebuildEntryCursor . view smosFileCursorSelectedEntryL) .
                 view editorCursorSmosFileCursorL . smosStateCursor)
            case me of
              Nothing -> pure ()
@@ -71,5 +71,4 @@ convRepinged =
     }
 
 insertHeaderString :: String -> SmosM ()
-insertHeaderString s =
-  modifyHeaderCursorWhenSelectedM $ \hc -> foldM (flip headerCursorInsert) hc s
+insertHeaderString s = modifyHeaderCursorWhenSelectedM $ \hc -> foldM (flip headerCursorInsert) hc s

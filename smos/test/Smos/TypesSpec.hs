@@ -10,5 +10,4 @@ import Smos.Types
 import Smos.Types.Gen ()
 
 spec :: Spec
-spec = do
-  functorSpec @MStop
+spec = functorSpec @MStop

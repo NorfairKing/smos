@@ -1,0 +1,50 @@
+name: smos-sync-server-gen
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - QuickCheck
+  - hspec
+  - hspec-core
+  - http-client
+  - http-types
+  - mergeful
+  - path
+  - path-io
+  - servant-client
+  - smos-sync-server
+  - stm
+  - uuid
+  - wai
+  - warp
+
+tests:
+  smos-sync-server-test:
+    main: Spec.hs
+    source-dirs: test/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - genvalidity
+    - genvalidity-hspec
+    - genvalidity-hspec-aeson
+    - hspec
+    - path
+    - path-io
+    - smos-sync-client
+

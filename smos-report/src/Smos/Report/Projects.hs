@@ -1,6 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Projects where
@@ -26,8 +24,7 @@ instance Validity ProjectEntry
 
 makeProjectEntry :: RootedPath -> SmosFile -> ProjectEntry
 makeProjectEntry rp sf =
-  ProjectEntry
-    {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
+  ProjectEntry {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
 
 getCurrentEntry :: SmosFile -> Maybe Entry
 getCurrentEntry = goF . smosFileForest
@@ -41,8 +38,7 @@ getCurrentEntry = goF . smosFileForest
         Just ts ->
           if isDone ts
             then Nothing
-            else (case reverse f of
-                    _ -> goF f) <|>
+            else goF f <|>
                  if isCurrent ts
                    then Just e
                    else Nothing

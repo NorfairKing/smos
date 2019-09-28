@@ -16,7 +16,7 @@ data Arguments =
 data Instructions =
   Instructions Dispatch Settings
 
-data Command =
+newtype Command =
   CommandServe ServeFlags
   deriving (Show, Eq)
 
@@ -27,7 +27,7 @@ data ServeFlags =
     }
   deriving (Show, Eq)
 
-data Flags =
+newtype Flags =
   Flags
     { flagConfigFile :: Maybe FilePath
     }
@@ -51,7 +51,7 @@ data Configuration =
 instance FromJSON Configuration where
   parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .: "store-file" <*> o .: "port"
 
-data Dispatch =
+newtype Dispatch =
   DispatchServe ServeSettings
   deriving (Show, Eq, Generic)
 

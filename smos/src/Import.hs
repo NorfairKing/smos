@@ -19,14 +19,7 @@ import Data.List.NonEmpty as X (NonEmpty(..))
 import Data.Map as X (Map)
 import Data.Maybe as X
 import Data.Monoid as X
-import Data.Sequence as X
-  ( pattern (:<|)
-  , pattern (:|>)
-  , pattern Empty
-  , Seq(..)
-  , (<|)
-  , (|>)
-  )
+import Data.Sequence as X (pattern (:<|), pattern (:|>), pattern Empty, Seq(..), (<|), (|>))
 import Data.String as X
 import Data.Text as X (Text)
 import Data.Validity as X

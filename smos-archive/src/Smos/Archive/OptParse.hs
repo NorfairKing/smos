@@ -5,16 +5,12 @@ module Smos.Archive.OptParse
   ( getSettings
   ) where
 
-import Path.IO
-
-import qualified System.Environment as System
-
 import Options.Applicative
-
+import Path.IO
+import Smos.Archive.OptParse.Types
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-
-import Smos.Archive.OptParse.Types
+import qualified System.Environment as System
 
 getSettings :: IO Settings
 getSettings = do

@@ -44,6 +44,8 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
 
+import Control.Applicative
+
 import Lens.Micro
 
 import Cursor.Forest
@@ -96,10 +98,7 @@ smosFileCursorReadyForStartup = go
         Nothing -> sfc
         Just sfc' ->
           case smosFileCursorSelectNext sfc of
-            Nothing ->
-              case smosFileCursorSelectBelowAtEnd sfc' of
-                Nothing -> sfc'
-                Just sfc'' -> sfc''
+            Nothing -> fromMaybe sfc' $ smosFileCursorSelectBelowAtEnd sfc'
             Just sfc'' -> go sfc''
 
 smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
@@ -209,7 +208,7 @@ smosFileCursorClockOutEverywhere now =
     goEC :: EntryCursor -> EntryCursor
     goEC = entryCursorLogbookCursorL %~ (\lbc -> fromMaybe lbc $ logbookCursorClockOut now lbc)
     goE :: Entry -> Entry
-    goE e = entryClockOut now e
+    goE = entryClockOut now
 
 smosFileCursorClockOutEverywhereAndClockInHere :: UTCTime -> SmosFileCursor -> SmosFileCursor
 smosFileCursorClockOutEverywhereAndClockInHere now sfc =
@@ -231,7 +230,7 @@ smosFileSubtreeSetTodoState now mts = forestCursorSelectedTreeL . treeCursorCurr
       ( ceeec &
         fmap
           (entryCursorStateHistoryCursorL %~
-           (\mshc -> maybe mshc Just (stateHistoryCursorModTodoState now (const mts) mshc)))
+           (\mshc -> stateHistoryCursorModTodoState now (const mts) mshc <|> mshc))
       , goCF cfceec)
     goCF :: CForest (CollapseEntry Entry) -> CForest (CollapseEntry Entry)
     goCF cf = openForest $ map goCT $ unpackCForest cf

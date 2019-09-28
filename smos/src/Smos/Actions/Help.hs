@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Help
-  ( allHelpPlainActions, allHelpUsingCharActions,helpUp
+  ( allHelpPlainActions
+  , allHelpUsingCharActions
+  , helpUp
   , helpDown
   , helpStart
   , helpEnd

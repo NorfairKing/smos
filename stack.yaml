@@ -1,4 +1,4 @@
-resolver: lts-12.10
+resolver: lts-14.7
 packages:
 - smos
 - smos-data
@@ -15,18 +15,22 @@ packages:
 - smos-archive
 - smos-docs-site
 - smos-sync-api
+- smos-sync-api-gen
 - smos-sync-server
+- smos-sync-server-gen
 - smos-sync-client
+- smos-sync-client-gen
 extra-deps:
+- hakyll-4.13.0.0
+- hakyll-sass-0.2.4
+
 - git: https://github.com/NorfairKing/mergeful
-  commit: b14dde7a01cb12d7a2eec180c03de135059e36c6
+  commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
   subdirs:
     - mergeful
     - genvalidity-mergeful
 - git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
-- thyme-0.3.5.5
-- hakyll-sass-0.2.3
 - git: https://github.com/NorfairKing/pretty-relative-time.git
   commit: 21b29c9d729ed91a56819f569de6fdc8582d7e3d
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
@@ -35,7 +39,7 @@ extra-deps:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: e496ad8924cebea70dd81f85325e92a6a658475d
+  commit: 794427b7d4675910474068c8a0534d07b8eda83d
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -44,12 +48,12 @@ extra-deps:
   subdirs:
     - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 0cedf6a4685648d47e82285e2250dd9a6177307d
+  commit: 50e180737e7cddd8a405aff1bc94f0202f2d6561
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 8a13a23696115845133d87118b81c47fa1f9b04b
+  commit: 41fc1d893ad1067884217e09e2dceed5b59604b1
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -82,4 +86,4 @@ extra-deps:
   - validity-uuid
   - validity-vector
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/a0248a0b6819153e3fdbc62ce32d7f4e61695c99.tar.gz" ]
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e6b93257b0ba070bd12810eeacbe281396c24316.tar.gz" ]

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Undo
   ( allUndoPlainActions
@@ -26,8 +25,7 @@ undo =
         modify $ \ss ->
           let go [] = ss
               go (c:cs) =
-                if rebuildEditorCursor c ==
-                   rebuildEditorCursor (smosStateCursor ss)
+                if rebuildEditorCursor c == rebuildEditorCursor (smosStateCursor ss)
                   then go cs
                   else ss {smosStateCursor = c, smosStateCursorHistory = cs}
            in go $ drop 1 $ smosStateCursorHistory ss

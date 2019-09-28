@@ -68,8 +68,7 @@ singletonTagsCursor :: Tag -> TagsCursor
 singletonTagsCursor = TagsCursor . singletonNonEmptyCursor . makeTagCursor
 
 rebuildTagsCursor :: TagsCursor -> NonEmpty Tag
-rebuildTagsCursor =
-  rebuildNonEmptyCursor rebuildTagCursor . tagsCursorNonEmptyCursor
+rebuildTagsCursor = rebuildNonEmptyCursor rebuildTagCursor . tagsCursorNonEmptyCursor
 
 tagsCursorSetTag :: Tag -> Maybe TagsCursor -> Maybe TagsCursor
 tagsCursorSetTag t mtc =
@@ -78,8 +77,7 @@ tagsCursorSetTag t mtc =
     Just tc ->
       if t `elem` rebuildTagsCursor tc
         then Nothing
-        else Just $
-             tc & tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
+        else Just $ tc & tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
 
 tagsCursorUnsetTag :: Tag -> TagsCursor -> Maybe (DeleteOrUpdate TagsCursor)
 tagsCursorUnsetTag t tc =
@@ -104,19 +102,16 @@ tagsCursorToggleTag t mtc =
                   in case NE.nonEmpty ts of
                        Nothing -> Deleted
                        Just ne' -> Updated $ makeTagsCursor ne'
-            else Updated $
-                 tc & tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
+            else Updated $ tc & tagsCursorNonEmptyCursorL %~ nonEmptyCursorAppendAtEnd t
 
 tagsCursorInsert :: Char -> TagsCursor -> Maybe TagsCursor
 tagsCursorInsert '\t' =
-  tagsCursorNonEmptyCursorL $
-  pure . nonEmptyCursorAppendAndSelect rebuildTagCursor emptyTagCursor
+  tagsCursorNonEmptyCursorL $ pure . nonEmptyCursorAppendAndSelect rebuildTagCursor emptyTagCursor
 tagsCursorInsert c = tagsCursorSelectedTagL $ tagCursorInsert c
 
 tagsCursorAppend :: Char -> TagsCursor -> Maybe TagsCursor
 tagsCursorAppend '\t' =
-  tagsCursorNonEmptyCursorL $
-  pure . nonEmptyCursorInsertAndSelect rebuildTagCursor emptyTagCursor
+  tagsCursorNonEmptyCursorL $ pure . nonEmptyCursorInsertAndSelect rebuildTagCursor emptyTagCursor
 tagsCursorAppend c = tagsCursorSelectedTagL $ tagCursorAppend c
 
 tagsCursorInsertTag :: Tag -> TagsCursor -> TagsCursor
@@ -156,12 +151,10 @@ tagsCursorRemove tc =
         (nonEmptyCursorRemoveElemAndSelectPrev makeTagCursor)
 
 tagsCursorSelectPrev :: TagsCursor -> Maybe TagsCursor
-tagsCursorSelectPrev tc =
-  tagsCursorSelectPrevChar tc <|> tagsCursorSelectPrevTag tc
+tagsCursorSelectPrev tc = tagsCursorSelectPrevChar tc <|> tagsCursorSelectPrevTag tc
 
 tagsCursorSelectNext :: TagsCursor -> Maybe TagsCursor
-tagsCursorSelectNext tc =
-  tagsCursorSelectNextChar tc <|> tagsCursorSelectNextTag tc
+tagsCursorSelectNext tc = tagsCursorSelectNextChar tc <|> tagsCursorSelectNextTag tc
 
 tagsCursorSelectOrCreatePrev :: TagsCursor -> TagsCursor
 tagsCursorSelectOrCreatePrev tc =
@@ -172,31 +165,25 @@ tagsCursorSelectOrCreateNext tc =
   fromMaybe (tagsCursorSelectOrCreateNextTag tc) (tagsCursorSelectNextChar tc)
 
 tagsCursorSelectPrevChar :: TagsCursor -> Maybe TagsCursor
-tagsCursorSelectPrevChar = tagsCursorSelectedTagL $ tagCursorSelectPrevChar
+tagsCursorSelectPrevChar = tagsCursorSelectedTagL tagCursorSelectPrevChar
 
 tagsCursorSelectNextChar :: TagsCursor -> Maybe TagsCursor
-tagsCursorSelectNextChar = tagsCursorSelectedTagL $ tagCursorSelectNextChar
+tagsCursorSelectNextChar = tagsCursorSelectedTagL tagCursorSelectNextChar
 
 tagsCursorSelectPrevTag :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectPrevTag =
-  fmap ((tagsCursorSelectedTagL) %~ tagCursorSelectEnd) .
-  tagsCursorNonEmptyCursorL
-    (nonEmptyCursorSelectPrev rebuildTagCursor makeTagCursor)
+  fmap (tagsCursorSelectedTagL %~ tagCursorSelectEnd) .
+  tagsCursorNonEmptyCursorL (nonEmptyCursorSelectPrev rebuildTagCursor makeTagCursor)
 
 tagsCursorSelectNextTag :: TagsCursor -> Maybe TagsCursor
 tagsCursorSelectNextTag =
-  fmap ((tagsCursorSelectedTagL) %~ tagCursorSelectStart) .
-  tagsCursorNonEmptyCursorL
-    (nonEmptyCursorSelectNext rebuildTagCursor makeTagCursor)
+  fmap (tagsCursorSelectedTagL %~ tagCursorSelectStart) .
+  tagsCursorNonEmptyCursorL (nonEmptyCursorSelectNext rebuildTagCursor makeTagCursor)
 
 tagsCursorSelectOrCreatePrevTag :: TagsCursor -> TagsCursor
 tagsCursorSelectOrCreatePrevTag tc =
-  fromMaybe
-    (tagsCursorInsertAndSelectTag emptyTagCursor tc)
-    (tagsCursorSelectPrevTag tc)
+  fromMaybe (tagsCursorInsertAndSelectTag emptyTagCursor tc) (tagsCursorSelectPrevTag tc)
 
 tagsCursorSelectOrCreateNextTag :: TagsCursor -> TagsCursor
 tagsCursorSelectOrCreateNextTag tc =
-  fromMaybe
-    (tagsCursorAppendAndSelectTag emptyTagCursor tc)
-    (tagsCursorSelectNextTag tc)
+  fromMaybe (tagsCursorAppendAndSelectTag emptyTagCursor tc) (tagsCursorSelectNextTag tc)

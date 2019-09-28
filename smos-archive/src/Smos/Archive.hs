@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Archive
   ( smosArchive
@@ -8,18 +7,15 @@ module Smos.Archive
   ) where
 
 import Data.Time
+import Data.Tree
 import Path
 import Path.IO
-import System.Exit
-import System.IO (hFlush, stdout)
-
-import Data.Tree
-
-import Smos.Data
-
 import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
+import Smos.Data
+import System.Exit
+import System.IO (hFlush, stdout)
 
 smosArchive :: SmosArchiveConfig -> IO ()
 smosArchive = runReaderT $ liftIO getSettings >>= archive

@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -44,8 +42,8 @@ zeroOutByFilter f rp sf =
     go fc =
       (if filterPredicate f rp fc
          then id
-         else zeroOutEntry) $
-      (fc ^. (forestCursorSelectedTreeL . treeCursorCurrentL))
+         else zeroOutEntry)
+        (fc ^. (forestCursorSelectedTreeL . treeCursorCurrentL))
 
 zeroOutEntry :: Entry -> Entry
 zeroOutEntry e = e {entryLogbook = emptyLogbook}
@@ -68,7 +66,7 @@ findFileTimes now rp (SmosFile ts) = do
 findHeaderTimes :: UTCTime -> Entry -> HeaderTimes []
 findHeaderTimes now Entry {..} =
   case entryLogbook of
-    LogOpen s es -> (ht $ (LogbookEntry {logbookEntryStart = s, logbookEntryEnd = now}) : es)
+    LogOpen s es -> ht $ (LogbookEntry {logbookEntryStart = s, logbookEntryEnd = now}) : es
     LogClosed es -> ht es
   where
     ht es = HeaderTimes {headerTimesHeader = entryHeader, headerTimesEntries = es}
@@ -133,7 +131,6 @@ trimLogbookEntry now cp =
     thisMonthEnd =
       let (y, m, _) = toGregorian today
        in LocalTime (fromGregorian y m 31) midnight
-
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
     trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
@@ -219,7 +216,7 @@ trimFileTimesToDay tz d fts = (\f -> fts {clockTimeForest = f}) <$> goTF (clockT
       pure $ TLeaf hts'
     goTT (TBranch hts tf) =
       case goTF tf of
-        Nothing -> TLeaf <$> (headerTimesNonEmpty $ goHT hts)
+        Nothing -> TLeaf <$> headerTimesNonEmpty (goHT hts)
         Just f -> pure $ TBranch (goHT hts) f
     goHT :: HeaderTimes [] -> HeaderTimes []
     goHT hts =
@@ -257,7 +254,7 @@ makeClockTableHeaderEntry :: HeaderTimes [] -> ClockTableHeaderEntry
 makeClockTableHeaderEntry HeaderTimes {..} =
   ClockTableHeaderEntry
     { clockTableHeaderEntryHeader = headerTimesHeader
-    , clockTableHeaderEntryTime = sumLogbookEntryTime $ headerTimesEntries
+    , clockTableHeaderEntryTime = sumLogbookEntryTime headerTimesEntries
     }
 
 sumLogbookEntryTime :: [LogbookEntry] -> NominalDiffTime
@@ -274,8 +271,8 @@ trimFileTimes zt cp fts = do
     goF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
     goF tf = NE.nonEmpty $ mapMaybe goT $ NE.toList tf
     goT :: TTree HeaderTimes -> Maybe (TTree HeaderTimes)
-    goT (TLeaf hts) = TLeaf <$> (headerTimesNonEmpty $ trimHeaderTimes zt cp (headerTimesList hts))
+    goT (TLeaf hts) = TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp (headerTimesList hts))
     goT (TBranch hts tf) =
       case goF tf of
-        Nothing -> TLeaf <$> (headerTimesNonEmpty $ trimHeaderTimes zt cp hts)
+        Nothing -> TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp hts)
         Just f -> pure $ TBranch (trimHeaderTimes zt cp hts) f

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Forest
   ( allForestPlainActions
@@ -305,10 +304,10 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
   Action
     { actionName = "forestClockOutEverywhereInAllFilesAndClockInHere"
     , actionFunc =
-        do modifyFileCursorS $ \sfc -> do
-             now <- liftIO getCurrentTime
-             clockOutInAllAgendaFiles now
-             pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
+        modifyFileCursorS $ \sfc -> do
+          now <- liftIO getCurrentTime
+          clockOutInAllAgendaFiles now
+          pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
     , actionDescription = "Clock out everywhere in all files and clock in at the current entry"
     }
 

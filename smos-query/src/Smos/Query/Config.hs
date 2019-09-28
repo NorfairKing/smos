@@ -23,7 +23,7 @@ import Control.Monad.Reader
 import Smos.Report.Archive
 import Smos.Report.Config
 
-data SmosQueryConfig =
+newtype SmosQueryConfig =
   SmosQueryConfig
     { smosQueryConfigReportConfig :: SmosReportConfig
     }

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Smos.Actions.Tags
   ( allTagsPlainActions
@@ -67,8 +66,7 @@ tagsInsert =
   ActionUsing
     { actionUsingName = "tagsInsert"
     , actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorInsert c
-    , actionUsingDescription =
-        "Insert a character at the cursor select the space after it"
+    , actionUsingDescription = "Insert a character at the cursor select the space after it"
     }
 
 tagsAppend :: ActionUsing Char
@@ -76,8 +74,7 @@ tagsAppend =
   ActionUsing
     { actionUsingName = "tagsAppend"
     , actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorAppend c
-    , actionUsingDescription =
-        "Insert a character at the cursor select the space before it"
+    , actionUsingDescription = "Insert a character at the cursor select the space before it"
     }
 
 tagsRemove :: Action

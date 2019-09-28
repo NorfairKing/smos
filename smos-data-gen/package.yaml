@@ -40,7 +40,6 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
-    - base
     - bytestring
     - genvalidity-hspec
     - genvalidity-hspec-aeson

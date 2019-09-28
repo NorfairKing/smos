@@ -38,6 +38,7 @@ instance Validity Key where
       [ genericValidate k
       , case k of
           KFun i -> declare "The function key index is positive" $ i >= 0
+          KChar c -> validateCharNotUtf16SurrogateCodePoint c
           _ -> valid
       ]
 
@@ -48,7 +49,7 @@ instance FromJSON Key where
   parseJSON =
     withText "Key" $ \t ->
       case parse (keyP <* eof) "json text" t of
-        Left err -> fail $ parseErrorPretty err
+        Left err -> fail $ errorBundlePretty err
         Right r -> pure r
 
 instance Validity Modifier where
@@ -61,7 +62,7 @@ instance FromJSON Modifier where
   parseJSON =
     withText "Modifier" $ \t ->
       case parse (modifierP <* eof) "json text" t of
-        Left err -> fail $ parseErrorPretty err
+        Left err -> fail $ errorBundlePretty err
         Right r -> pure r
 
 data KeyPress =
@@ -82,7 +83,7 @@ instance FromJSON KeyPress where
   parseJSON =
     withText "KeyPress" $ \t ->
       case parse (keyPressP <* eof) "json text" t of
-        Left err -> fail $ parseErrorPretty err
+        Left err -> fail $ errorBundlePretty err
         Right r -> pure r
 
 type P = Parsec Void Text
@@ -180,7 +181,7 @@ instance FromJSON MatcherConfig where
   parseJSON =
     withText "MatcherConfig" $ \t ->
       case parse (matcherConfigP <* eof) "json text" t of
-        Left err -> fail $ parseErrorPretty err
+        Left err -> fail $ errorBundlePretty err
         Right r -> pure r
 
 renderMatcherConfig :: MatcherConfig -> Text

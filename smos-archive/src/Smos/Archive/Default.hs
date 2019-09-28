@@ -6,5 +6,4 @@ defaultSmosArchive :: IO ()
 defaultSmosArchive = smosArchive defaultSmosArchiveConfig
 
 defaultSmosArchiveConfig :: SmosArchiveConfig
-defaultSmosArchiveConfig =
-  SmosArchiveConfig {smosArchiveConfigReportConfig = defaultReportConfig}
+defaultSmosArchiveConfig = SmosArchiveConfig {smosArchiveConfigReportConfig = defaultReportConfig}

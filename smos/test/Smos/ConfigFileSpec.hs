@@ -22,7 +22,7 @@ spec = do
 
 configSpecWithExt :: String -> (Path Abs File -> IO (Either String Configuration)) -> Spec
 configSpecWithExt ext parseConf = do
-  rd <- runIO $ resourcesDir
+  rd <- runIO resourcesDir
   extResourcesDir <- runIO $ resourcesFormatDir rd ext
   extFiles <- runIO $ filesWithExtInDir extResourcesDir ext
   describe ext $ do

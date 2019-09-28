@@ -5,13 +5,14 @@ module Smos.Sync.Client.OptParse.Types where
 
 import GHC.Generics (Generic)
 
+import qualified Data.Text as T
+import Data.Validity
 import Data.Yaml as Yaml
 
+import Control.Monad.Logger
 import Path
-
 import Servant.Client (BaseUrl)
 
-import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 
 data Arguments =
@@ -21,7 +22,7 @@ data Arguments =
 data Instructions =
   Instructions Dispatch Settings
 
-data Command =
+newtype Command =
   CommandSync SyncFlags
   deriving (Show, Eq)
 
@@ -30,19 +31,24 @@ data SyncFlags =
     { syncFlagServerUrl :: Maybe String
     , syncFlagContentsDir :: Maybe FilePath
     , syncFlagMetadataFile :: Maybe FilePath
+    , syncFlagIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq)
 
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
+    , flagLogLevel :: Maybe LogLevel
     }
   deriving (Show, Eq, Generic)
 
 data Environment =
   Environment
     { envReportEnvironment :: Report.Environment
-    , envServerUrl :: Maybe String, envContentsDir :: Maybe FilePath, envMetadataFile :: Maybe FilePath
+    , envServerUrl :: Maybe String
+    , envContentsDir :: Maybe FilePath
+    , envMetadataFile :: Maybe FilePath
+    , envIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq, Generic)
 
@@ -62,15 +68,17 @@ data SyncConfiguration =
     { syncConfServerUrl :: Maybe String
     , syncConfContentsDir :: Maybe FilePath
     , syncConfMetadataFile :: Maybe FilePath
+    , syncConfIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON SyncConfiguration where
   parseJSON =
     withObject "SyncConfiguration" $ \o ->
-      SyncConfiguration <$> o .: "server-url" <*> o .: "contents-dir" <*> o .: "metadata-file"
+      SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "metadata-file" <*>
+      o .:? "ignore-files"
 
-data Dispatch =
+newtype Dispatch =
   DispatchSync SyncSettings
   deriving (Show, Eq, Generic)
 
@@ -79,11 +87,28 @@ data SyncSettings =
     { syncSetServerUrl :: BaseUrl
     , syncSetContentsDir :: Path Abs Dir
     , syncSetMetadataFile :: Path Abs File
+    , syncSetIgnoreFiles :: IgnoreFiles
     }
   deriving (Show, Eq, Generic)
 
-data Settings =
+data IgnoreFiles
+  = IgnoreNothing
+  | IgnoreHiddenFiles
+  deriving (Show, Eq, Generic)
+
+instance Validity IgnoreFiles
+
+instance FromJSON IgnoreFiles where
+  parseJSON =
+    withText "IgnoreFiles" $ \t ->
+      case t of
+        "nothing" -> pure IgnoreNothing
+        "no" -> pure IgnoreNothing
+        "hidden" -> pure IgnoreHiddenFiles
+        _ -> fail $ "Unknown 'IgnoreFiles' value: " <> T.unpack t
+
+newtype Settings =
   Settings
-    { setReportConfig :: SmosReportConfig
+    { setLogLevel :: LogLevel
     }
   deriving (Show, Eq, Generic)

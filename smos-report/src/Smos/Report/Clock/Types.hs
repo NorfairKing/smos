@@ -62,33 +62,27 @@ instance ToJSON ClockTableFile where
 
 instance ToYaml ClockTableFile where
   toYaml ClockTableFile {..} =
-    Yaml.mapping
-      [ ("file", toYaml clockTableFile)
-      , ("forest", toYaml $ ForYaml clockTableForest)
-      ]
+    Yaml.mapping [("file", toYaml clockTableFile), ("forest", toYaml $ ForYaml clockTableForest)]
 
 instance FromJSON (ForYaml (Tree ClockTableHeaderEntry)) where
   parseJSON v =
     ForYaml <$>
-    (((withObject "Tree ClockTableHeaderEntry" $ \o ->
-         Node <$> o .: "entry" <*> (unForYaml <$> o .:? "forest" .!= ForYaml []))
-        v) <|>
+    ((withObject "Tree ClockTableHeaderEntry" $ \o ->
+        Node <$> o .: "entry" <*> (unForYaml <$> o .:? "forest" .!= ForYaml []))
+       v <|>
      (Node <$> parseJSON v <*> pure []))
 
 instance ToJSON (ForYaml (Tree ClockTableHeaderEntry)) where
   toJSON (ForYaml Node {..}) =
     if null subForest
       then toJSON rootLabel
-      else object $ [("entry" .= rootLabel), ("forest" .= ForYaml subForest)]
+      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
 
 instance ToYaml (ForYaml (Tree ClockTableHeaderEntry)) where
   toYaml (ForYaml Node {..}) =
     if null subForest
       then toYaml rootLabel
-      else Yaml.mapping
-             [ ("entry", toYaml rootLabel)
-             , ("forest", toYaml (ForYaml subForest))
-             ]
+      else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
 data ClockTableHeaderEntry =
   ClockTableHeaderEntry
@@ -106,17 +100,12 @@ instance FromJSON ClockTableHeaderEntry where
 
 instance ToJSON ClockTableHeaderEntry where
   toJSON ClockTableHeaderEntry {..} =
-    object
-      [ "header" .= clockTableHeaderEntryHeader
-      , "time" .= clockTableHeaderEntryTime
-      ]
+    object ["header" .= clockTableHeaderEntryHeader, "time" .= clockTableHeaderEntryTime]
 
 instance ToYaml ClockTableHeaderEntry where
   toYaml ClockTableHeaderEntry {..} =
     Yaml.mapping
-      [ ("header", toYaml clockTableHeaderEntryHeader)
-      , ("time", toYaml clockTableHeaderEntryTime)
-      ]
+      [("header", toYaml clockTableHeaderEntryHeader), ("time", toYaml clockTableHeaderEntryTime)]
 
 -- Intermediary types
 type ClockTimeBlock a = Block a FileTimes

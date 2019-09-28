@@ -64,14 +64,9 @@ spec =
       , ForestCursor
           { forestCursorListCursor =
               NonEmptyCursor
-                { nonEmptyCursorPrev =
-                    [CNode 'a' (OpenForest (CNode 'b' EmptyCForest :| []))]
+                { nonEmptyCursorPrev = [CNode 'a' (OpenForest (CNode 'b' EmptyCForest :| []))]
                 , nonEmptyCursorCurrent =
-                    TreeCursor
-                      { treeAbove = Nothing
-                      , treeCurrent = 'c'
-                      , treeBelow = EmptyCForest
-                      }
+                    TreeCursor {treeAbove = Nothing, treeCurrent = 'c', treeBelow = EmptyCForest}
                 , nonEmptyCursorNext = []
                 }
           }

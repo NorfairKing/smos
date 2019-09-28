@@ -27,5 +27,9 @@ library:
   - stm
   - text
   - uuid
+  - validity
+  - validity-bytestring
+  - validity-path
+  - validity-uuid
   - wai
   - warp

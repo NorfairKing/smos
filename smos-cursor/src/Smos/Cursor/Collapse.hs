@@ -42,8 +42,7 @@ rebuildCollapseEntry :: CollapseEntry a -> a
 rebuildCollapseEntry = collapseEntryValue
 
 collapseEntryValueL :: Lens (CollapseEntry a) (CollapseEntry b) a b
-collapseEntryValueL =
-  lens collapseEntryValue $ \ct v -> ct {collapseEntryValue = v}
+collapseEntryValueL = lens collapseEntryValue $ \ct v -> ct {collapseEntryValue = v}
 
 collapseEntryShowContentsL :: Lens' (CollapseEntry a) Bool
 collapseEntryShowContentsL =

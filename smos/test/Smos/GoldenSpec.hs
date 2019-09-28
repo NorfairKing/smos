@@ -1,9 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module Smos.GoldenSpec
   ( spec
@@ -199,7 +197,7 @@ eqForTest = forestEqForTest `on` smosFileForest
     forestEq1 :: (a -> a -> Bool) -> Forest a -> Forest a -> Bool
     forestEq1 eq = listEq1 (treeEq1 eq)
     treeEq1 :: (a -> a -> Bool) -> Tree a -> Tree a -> Bool
-    treeEq1 eq (Node n1 fs1) (Node n2 fs2) = (n1 `eq` n2) && (forestEq1 eq fs1 fs2)
+    treeEq1 eq (Node n1 fs1) (Node n2 fs2) = (n1 `eq` n2) && forestEq1 eq fs1 fs2
     listEq1 :: (a -> a -> Bool) -> [a] -> [a] -> Bool
     listEq1 eq as bs = go $ zip (map Just as ++ repeat Nothing) (map Just bs ++ repeat Nothing)
       where

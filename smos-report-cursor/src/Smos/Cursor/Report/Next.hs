@@ -24,9 +24,9 @@ import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 
+import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Next
-import Smos.Report.Archive
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming

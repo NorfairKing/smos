@@ -7,6 +7,8 @@ module Smos.Report.OptParse.Types where
 import GHC.Generics (Generic)
 
 import Data.Map (Map)
+import qualified Data.Text as T
+import Data.Text (Text)
 import Data.Validity
 import Data.Yaml as Yaml
 import Path
@@ -36,10 +38,10 @@ data Environment =
 
 data Configuration =
   Configuration
-    { confWorkflowDir :: Maybe FilePath
-    , confArchiveDir :: Maybe FilePath
-    , confProjectsDir :: Maybe FilePath
-    , confArchivedProjectsDir :: Maybe FilePath
+    { confWorkflowDir :: Maybe Text
+    , confArchiveDir :: Maybe Text
+    , confProjectsDir :: Maybe Text
+    , confArchivedProjectsDir :: Maybe Text
     , confWorkBaseFilter :: Maybe Filter
     , confContexts :: Maybe (Map ContextName Filter)
     }
@@ -52,6 +54,7 @@ backToConfiguration SmosReportConfig {..} =
         if smosReportConfigWorkflowFileSpec == defaultWorkflowDirSpec
           then Nothing
           else Just $
+               T.pack $
                case smosReportConfigWorkflowFileSpec of
                  DirInHome rd -> "~/" <> fromRelDir rd
                  DirAbsolute ad -> fromAbsDir ad
@@ -59,6 +62,7 @@ backToConfiguration SmosReportConfig {..} =
         if smosReportConfigArchiveFileSpec == defaultArchiveDirSpec
           then Nothing
           else Just $
+               T.pack $
                case smosReportConfigArchiveFileSpec of
                  ArchiveInWorkflow ard -> fromRelDir ard
                  ArchiveInHome ard -> "~/" <> fromRelDir ard
@@ -67,6 +71,7 @@ backToConfiguration SmosReportConfig {..} =
         if smosReportConfigProjectsFileSpec == defaultProjectsDirSpec
           then Nothing
           else Just $
+               T.pack $
                case smosReportConfigProjectsFileSpec of
                  ProjectsInWorkflow ard -> fromRelDir ard
                  ProjectsInHome ard -> "~/" <> fromRelDir ard
@@ -75,6 +80,7 @@ backToConfiguration SmosReportConfig {..} =
         if smosReportConfigArchivedProjectsFileSpec == defaultArchivedProjectsDirSpec
           then Nothing
           else Just $
+               T.pack $
                case smosReportConfigArchivedProjectsFileSpec of
                  ArchivedProjectsInArchive ard -> fromRelDir ard
                  ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard

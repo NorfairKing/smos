@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Path where
 
@@ -26,10 +25,7 @@ instance Validity RootedPath
 
 instance FromJSON RootedPath where
   parseJSON v =
-    withObject
-      "RootedPath"
-      (\o -> Relative <$> o .: "root" <*> o .: "relative")
-      v <|>
+    withObject "RootedPath" (\o -> Relative <$> o .: "root" <*> o .: "relative") v <|>
     (Absolute <$> parseJSON v)
 
 instance ToJSON RootedPath where
@@ -38,8 +34,7 @@ instance ToJSON RootedPath where
 
 instance ToYaml RootedPath where
   toYaml (Absolute p) = toYaml p
-  toYaml (Relative ad rf) =
-    Yaml.mapping [("root", toYaml ad), ("relative", toYaml rf)]
+  toYaml (Relative ad rf) = Yaml.mapping [("root", toYaml ad), ("relative", toYaml rf)]
 
 resolveRootedPath :: RootedPath -> Path Abs File
 resolveRootedPath (Relative ad rf) = ad </> rf

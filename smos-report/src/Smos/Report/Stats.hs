@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Stats where
@@ -78,8 +79,9 @@ makeProjectsStatsReport StatsReportContext {..} rp sf =
         else 0
 
 smosFileActiveDuringPeriod :: ZonedTime -> Period -> SmosFile -> Bool
-smosFileActiveDuringPeriod now p sf = if p == AllTime then True else
-  not $ null $ stateHistoryEntriesInPeriod now p $ concatMap flatten $ smosFileForest sf
+smosFileActiveDuringPeriod now p sf =
+  (p == AllTime) ||
+  not (null $ stateHistoryEntriesInPeriod now p $ concatMap flatten $ smosFileForest sf)
 
 stateHistoryEntriesInPeriod :: ZonedTime -> Period -> [Entry] -> [StateHistoryEntry]
 stateHistoryEntriesInPeriod now p = concatMap go
@@ -198,7 +200,7 @@ entryStateInPeriod now p e =
   case (p, unStateHistory $ entryStateHistory e) of
     (AllTime, []) -> Just Nothing
     (_, []) -> Nothing
-    (_, (tse:_)) -> stateHistoryStateInPeriod now p tse
+    (_, tse:_) -> stateHistoryStateInPeriod now p tse
 
 historicalStatesInPeriod :: ZonedTime -> Period -> [Entry] -> [Maybe TodoState]
 historicalStatesInPeriod now p =
@@ -235,7 +237,6 @@ getCount = foldl (flip go) M.empty
   where
     go :: Ord a => a -> Map a Int -> Map a Int
     go i =
-      flip M.alter i $ \mv ->
-        case mv of
-          Nothing -> Just 1
-          Just n -> Just $ n + 1
+      flip M.alter i $ \case
+        Nothing -> Just 1
+        Just n -> Just $ n + 1

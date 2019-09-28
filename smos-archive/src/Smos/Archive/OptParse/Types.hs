@@ -1,7 +1,6 @@
 module Smos.Archive.OptParse.Types where
 
 import Path
-
 import Smos.Report.Config as Report
 import Smos.Report.OptParse.Types as Report
 
@@ -12,13 +11,13 @@ data Flags =
     }
   deriving (Show, Eq)
 
-data Configuration =
+newtype Configuration =
   Configuration
     { confReportConfiguration :: Report.Configuration
     }
   deriving (Show, Eq)
 
-data Environment =
+newtype Environment =
   Environment
     { envReportEnvironment :: Report.Environment
     }

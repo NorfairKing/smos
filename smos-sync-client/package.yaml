@@ -17,12 +17,16 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
+  - microlens
+  - conduit
   - containers
   - filepath
   - hashable
   - http-client
   - http-client-tls
   - mergeful
+  - monad-logger
+  - mtl
   - optparse-applicative
   - path
   - path-io
@@ -33,6 +37,11 @@ library:
   - stm
   - text
   - uuid
+  - validity
+  - validity-bytestring
+  - validity-containers
+  - validity-path
+  - validity-uuid
   - yaml
 
 executables:

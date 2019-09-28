@@ -7,20 +7,17 @@ module Smos.Data.TypesSpec
   ( spec
   ) where
 
+import Control.Monad
 import Data.Aeson as JSON
 import Data.Data
 import Data.Time
-
-import Control.Monad
-
+import Smos.Data.Gen ()
+import Smos.Data.Types
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
 import Test.Validity.Aeson
 import Test.Validity.Utils
-
-import Smos.Data.Gen ()
-import Smos.Data.Types
 
 spec :: Spec
 spec = do

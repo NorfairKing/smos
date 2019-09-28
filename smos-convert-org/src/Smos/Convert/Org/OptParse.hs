@@ -55,9 +55,7 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$>
-  strArgument (mconcat [help "The file to convert", metavar "FILEPATH"]) <*>
+  Flags <$> strArgument (mconcat [help "The file to convert", metavar "FILEPATH"]) <*>
   option
     (Just <$> str)
-    (mconcat
-       [long "to", help "The output file", value Nothing, metavar "FILEPATH"])
+    (mconcat [long "to", help "The output file", value Nothing, metavar "FILEPATH"])

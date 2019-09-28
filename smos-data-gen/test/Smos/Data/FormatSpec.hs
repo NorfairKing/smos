@@ -1,29 +1,25 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Data.FormatSpec where
 
+import Control.Monad
 import Data.Aeson
 import qualified Data.ByteString as SB
 import Data.Maybe
-import Text.Show.Pretty
-
-import Control.Monad
-
 import Path
 import Path.IO
-
+import Smos.Data
 import Test.Hspec
 import Test.Validity
-
-import Smos.Data
+import Text.Show.Pretty
 
 spec :: Spec
 spec = do
-  forFilesIn "test_resources/success/file" $ \tf -> do
-    it (fromAbsFile tf ++ " succesfully parses as .smos") $ do
-      shouldSucceedInParsingAsSmosFile @SmosFile tf
+  forFilesIn "test_resources/success/file" $ \tf ->
+    it (fromAbsFile tf ++ " succesfully parses as .smos") $
+    shouldSucceedInParsingAsSmosFile @SmosFile tf
   successAndFailureTests @SmosFile "file"
   successAndFailureTests @Entry "entry"
   successAndFailureTests @Header "header"
@@ -42,15 +38,14 @@ successAndFailureTests ::
      forall a. (Validity a, Show a, FromJSON a)
   => FilePath
   -> Spec
-successAndFailureTests name = do
+successAndFailureTests name =
   describe name $ do
     forFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
       let ext = fileExtension tf
-      it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $ do
+      it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $
         shouldSucceedInParsingByExtension @a tf
-    forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf -> do
-      it (fromAbsFile tf ++ " successfully fails to parse") $ do
-        shouldFailToParse @a tf
+    forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
+      it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
      forall a. (Validity a, Show a, FromJSON a)
@@ -82,8 +77,7 @@ shouldFailToParse tf = do
   case errOrSmosFile of
     Left _ -> pure ()
     Right sf ->
-      expectationFailure $
-      unwords ["Should have failed, but got this smos file:", ppShow sf]
+      expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
 
 readFileByExtension ::
      forall a. (Show a, FromJSON a)

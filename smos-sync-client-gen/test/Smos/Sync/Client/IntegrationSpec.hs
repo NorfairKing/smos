@@ -1,0 +1,510 @@
+module Smos.Sync.Client.IntegrationSpec
+  ( spec
+  ) where
+
+import Control.Concurrent.Async
+import Control.Monad.Logger
+
+import Test.Hspec
+import Test.QuickCheck
+import Test.Validity
+
+import Smos.Sync.Client.OptParse.Types
+
+import qualified Smos.Sync.Client.ContentsMap as CM
+import Smos.Sync.Client.ContentsMap.Gen
+import Smos.Sync.Client.Sync
+import Smos.Sync.Client.Sync.Gen ()
+import Smos.Sync.Client.TestUtils
+import Smos.Sync.Server.TestUtils
+
+spec :: Spec
+spec =
+  serverSpec $
+  describe "testSyncSmosClient" $ do
+    describe "single client" $ do
+      it "succesfully syncs an empty directory" $ \cenv ->
+        withClient cenv $ \c -> do
+          testSyncSmosClient c
+          assertClientContents c CM.empty
+      describe "addition" $ do
+        it "succesfully syncs a directory with one file" $ \cenv ->
+          forAllValid $ \(rp, contents) ->
+            withClient cenv $ \c -> do
+              let m = CM.singleton rp contents
+              setupClientContents c m
+              testSyncSmosClient c
+              assertClientContents c m
+        it "succesfully syncs a directory with any number of files" $ \cenv ->
+          forAllValid $ \m ->
+            withClient cenv $ \c -> do
+              setupClientContents c m
+              testSyncSmosClient c
+              assertClientContents c m
+        it "does not remove a hidden file that is ignored" $ \cenv ->
+          forAllHidden $ \rp ->
+            forAllValid $ \contents ->
+              withHiddenFilesClient cenv $ \c -> do
+                let m = CM.singleton rp contents
+                setupClientContents c m
+                testSyncSmosClient c
+                assertClientContents c m
+      describe "changes" $ do
+        it "succesfully syncs a change" $ \cenv ->
+          forAllValid $ \(rp, contents1, contents2) ->
+            withClient cenv $ \c -> do
+              let m1 = CM.singleton rp contents1
+              setupClientContents c m1
+              testSyncSmosClient c
+              let m2 = CM.singleton rp contents2
+              setupClientContents c m2
+              testSyncSmosClient c
+              assertClientContents c m2
+        it "succesfully syncs a change from a set of files" $ \cenv ->
+          forAllValid $ \m ->
+            forAll (mapsWithDifferentContentsAtNewPath m) $ \(m1, m2) ->
+              withClient cenv $ \c -> do
+                setupClientContents c m1
+                testSyncSmosClient c
+                setupClientContents c m2
+                testSyncSmosClient c
+                assertClientContents c m2
+        it "succesfully syncs a change of any number of files" $ \cenv ->
+          forAllValid $ \m1 ->
+            forAll (changedContentsMap m1) $ \m2 ->
+              withClient cenv $ \c -> do
+                setupClientContents c m1
+                testSyncSmosClient c
+                setupClientContents c m2
+                testSyncSmosClient c
+                assertClientContents c m2
+        it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
+          forAllValid $ \m ->
+            forAll (changedMapsWithUnionOf m) $ \(m1, m2) ->
+              withClient cenv $ \c -> do
+                setupClientContents c m1
+                testSyncSmosClient c
+                setupClientContents c m2
+                testSyncSmosClient c
+                assertClientContents c m2
+      describe "deletion" $ do
+        it "succesfully syncs a single deletion" $ \cenv ->
+          forAllValid $ \(rp, contents) ->
+            withClient cenv $ \c -> do
+              let m = CM.singleton rp contents
+              setupClientContents c m
+              testSyncSmosClient c
+              let m' = CM.empty
+              setupClientContents c m'
+              testSyncSmosClient c
+              assertClientContents c m'
+        it "succesfully syncs a single deletion from a set of files" $ \cenv ->
+          forAllValid $ \m ->
+            forAllValid $ \contents ->
+              forAll (mapWithNewPath m contents) $ \(_, m') ->
+                withClient cenv $ \c -> do
+                  setupClientContents c m'
+                  testSyncSmosClient c
+                  setupClientContents c m
+                  testSyncSmosClient c
+                  assertClientContents c m
+        it "succesfully syncs a deletion of any number of files" $ \cenv ->
+          forAllValid $ \m ->
+            withClient cenv $ \c -> do
+              setupClientContents c m
+              testSyncSmosClient c
+              let m' = CM.empty
+              setupClientContents c m'
+              testSyncSmosClient c
+              assertClientContents c m'
+        it "succesfully syncs a single deletion from a set of files" $ \cenv ->
+          forAllValid $ \m1 ->
+            forAll (mapWithAdditions m1) $ \m ->
+              withClient cenv $ \c -> do
+                setupClientContents c m
+                testSyncSmosClient c
+                setupClientContents c m1
+                testSyncSmosClient c
+                assertClientContents c m1
+    describe "two clients" $ do
+      it "succesfully syncs empty directories" $ \cenv ->
+        withClient cenv $ \c1 ->
+          withClient cenv $ \c2 -> do
+            testSyncSmosClient c1
+            testSyncSmosClient c2
+            assertClientContents c1 CM.empty
+            assertClientContents c2 CM.empty
+      describe "From one client" $ do
+        describe "additions" $ do
+          it "succesfully syncs a file accross two clients" $ \cenv ->
+            forAllValid $ \(rp, contents) ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  let m = CM.singleton rp contents
+                  setupClientContents c1 m
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m
+                  assertClientContents c2 m
+          it "succesfully syncs any number of files accross two clients" $ \cenv ->
+            forAllValid $ \m ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 m
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m
+                  assertClientContents c2 m
+          it "does not sync over a hidden file that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents ->
+                withHiddenFilesClient cenv $ \c1 ->
+                  withHiddenFilesClient cenv $ \c2 -> do
+                    let m = CM.singleton rp contents
+                    setupClientContents c1 m
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m
+                    assertClientContents c2 CM.empty
+        describe "changes" $ do
+          it "succesfully syncs a single change" $ \cenv ->
+            forAllValid $ \(rp, contents1, contents2) ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  let m1 = CM.singleton rp contents1
+                  setupClientContents c1 m1
+                  setupClientContents c1 m1
+                  fullySyncTwoClients c1 c2
+                  let m2 = CM.singleton rp contents2
+                  setupClientContents c1 m2
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m2
+                  assertClientContents c2 m2
+          it "succesfully syncs a change from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (mapsWithDifferentContentsAtNewPath m) $ \(m1, m2) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m1
+                    setupClientContents c2 m1
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m2
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m2
+                    assertClientContents c2 m2
+          it "succesfully syncs a change of any number of files" $ \cenv ->
+            forAllValid $ \m1 ->
+              forAll (changedContentsMap m1) $ \m2 ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m1
+                    setupClientContents c2 m1
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m2
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m2
+                    assertClientContents c2 m2
+          it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (changedMapsWithUnionOf m) $ \(m1, m2) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m1
+                    setupClientContents c2 m1
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m2
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m2
+                    assertClientContents c2 m2
+          it "does not sync changes in a hidden file that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents3 ->
+                forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                  forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                    withHiddenFilesClient cenv $ \c1 ->
+                      withHiddenFilesClient cenv $ \c2 -> do
+                        let m = CM.singleton rp contents3
+                        setupClientContents c1 m
+                        setupClientContents c2 m
+                        fullySyncTwoClients c1 c2
+                        let m1 = CM.singleton rp contents1
+                        let m2 = CM.singleton rp contents2
+                        setupClientContents c1 m1
+                        setupClientContents c2 m2
+                        fullySyncTwoClients c1 c2
+                        assertClientContents c1 m1
+                        assertClientContents c2 m2
+        describe "Deletions" $ do
+          it "succesfully syncs a single deletion" $ \cenv ->
+            forAllValid $ \(rp, contents) ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  let m = CM.singleton rp contents
+                  setupClientContents c1 m
+                  setupClientContents c2 m
+                  fullySyncTwoClients c1 c2
+                  let m' = CM.empty
+                  setupClientContents c1 m'
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m'
+                  assertClientContents c2 m'
+          it "succesfully syncs a single deletion from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAllValid $ \contents ->
+                forAll (mapWithNewPath m contents) $ \(_, m') ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      setupClientContents c1 m'
+                      setupClientContents c2 m'
+                      fullySyncTwoClients c1 c2
+                      setupClientContents c1 m
+                      fullySyncTwoClients c1 c2
+                      assertClientContents c1 m
+                      assertClientContents c2 m
+          it "succesfully syncs a deletion of any number of files" $ \cenv ->
+            forAllValid $ \m ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 m
+                  setupClientContents c2 m
+                  fullySyncTwoClients c1 c2
+                  let m' = CM.empty
+                  setupClientContents c1 m'
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m'
+                  assertClientContents c2 m'
+          it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
+            forAllValid $ \m1 ->
+              forAll (mapWithAdditions m1) $ \m ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m
+                    setupClientContents c2 m
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m1
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m1
+                    assertClientContents c2 m1
+          it "does not sync a deletion of a hidden filed that is ignored" $ \cenv ->
+            forAllHidden $ \rp ->
+              forAllValid $ \contents ->
+                withHiddenFilesClient cenv $ \c1 ->
+                  withHiddenFilesClient cenv $ \c2 -> do
+                    let m = CM.singleton rp contents
+                    setupClientContents c1 m
+                    setupClientContents c2 m
+                    fullySyncTwoClients c1 c2
+                    let m' = CM.empty
+                    setupClientContents c1 m'
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m'
+                    assertClientContents c2 m
+      describe "From both clients" $ do
+        describe "Additions only" $ do
+          it "succesfully syncs a file accross two clients" $ \cenv ->
+            forAllValid $ \contents1 ->
+              forAllValid $ \contents2 ->
+                forAll (twoDistinctPathsThatFitAndTheirUnion contents1 contents2) $ \(rp1, rp2, m) ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      let m1 = CM.singleton rp1 contents1
+                      let m2 = CM.singleton rp2 contents2
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      assertClientContents c1 m
+                      assertClientContents c2 m
+          it "succesfully syncs any number of files accross two clients" $ \cenv ->
+            forAllValid $ \m1 ->
+              forAll (mapWithDisjunctUnion m1) $ \(m2, m) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m1
+                    setupClientContents c2 m2
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 m
+                    assertClientContents c2 m
+        describe "changes" $ do
+          it "succesfully syncs a single change" $ \cenv ->
+            forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(_, _, Hidden unionFunc) ->
+              forAllValid $ \(contents1a, contents1b) ->
+                forAllValid $ \(contents2a, contents2b) ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      let m = unionFunc contents1a contents2a
+                      setupClientContents c1 m
+                      setupClientContents c1 m
+                      fullySyncTwoClients c1 c2
+                      let m1 = unionFunc contents1b contents2a
+                      let m2 = unionFunc contents1a contents2b
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      let m' = unionFunc contents1b contents2b
+                      assertClientContents c1 m'
+                      assertClientContents c2 m'
+          it "succesfully syncs a change from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (twoDistinctPathsThatFitAndTheirUnionWithFunc m) $ \(_, _, Hidden unionFunc) ->
+                forAllValid $ \(contents1a, contents1b) ->
+                  forAllValid $ \(contents2a, contents2b) ->
+                    withClient cenv $ \c1 ->
+                      withClient cenv $ \c2 -> do
+                        let ma = unionFunc contents1a contents2a
+                        setupClientContents c1 ma
+                        setupClientContents c1 ma
+                        fullySyncTwoClients c1 c2
+                        let m1 = unionFunc contents1b contents2a
+                        let m2 = unionFunc contents1a contents2b
+                        setupClientContents c1 m1
+                        setupClientContents c2 m2
+                        fullySyncTwoClients c1 c2
+                        let mb = unionFunc contents1b contents2b
+                        assertClientContents c1 mb
+                        assertClientContents c2 mb
+          it "succesfully syncs a change of any number of files" $ \cenv ->
+            forAll twoChangedMapsAndTheirUnions $ \(_, _, (ma, m1, m2, mb)) ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 ma
+                  setupClientContents c2 ma
+                  fullySyncTwoClients c1 c2
+                  setupClientContents c1 m1
+                  setupClientContents c2 m2
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 mb
+                  assertClientContents c2 mb
+          it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (twoChangedMapsAndTheirUnionsWith m) $ \(_, _, (ma, m1, m2, mb)) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 ma
+                    setupClientContents c2 ma
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m1
+                    setupClientContents c2 m2
+                    fullySyncTwoClients c1 c2
+                    assertClientContents c1 mb
+                    assertClientContents c2 mb
+        describe "Deletion" $ do
+          it "succesfully syncs a single deletion" $ \cenv ->
+            forAllValid $ \contents1 ->
+              forAllValid $ \contents2 ->
+                forAll (twoDistinctPathsThatFitAndTheirUnion contents1 contents2) $ \(rp1, rp2, m) ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      setupClientContents c1 m
+                      setupClientContents c2 m
+                      fullySyncTwoClients c1 c2
+                      let m1 = CM.singleton rp2 contents2
+                      let m2 = CM.singleton rp1 contents1
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      let m' = CM.empty
+                      assertClientContents c1 m'
+                      assertClientContents c2 m'
+          it "succesfully syncs a single deletion from a set of files" $ \cenv ->
+            forAllValid $ \m' ->
+              forAllValid $ \contents1 ->
+                forAllValid $ \contents2 ->
+                  forAll (twoDistinctPathsThatFitAndTheirUnionsWith m' contents1 contents2) $ \(_, _, (m1, m2, m)) ->
+                    withClient cenv $ \c1 ->
+                      withClient cenv $ \c2 -> do
+                        setupClientContents c1 m
+                        setupClientContents c2 m
+                        fullySyncTwoClients c1 c2
+                        setupClientContents c1 m1
+                        setupClientContents c2 m2
+                        fullySyncTwoClients c1 c2
+                        assertClientContents c1 m'
+                        assertClientContents c2 m'
+          it "succesfully syncs a deletion of any number of files" $ \cenv ->
+            forAllValid $ \m1 ->
+              forAll (mapWithDisjunctUnion m1) $ \(m2, m) ->
+                withClient cenv $ \c1 ->
+                  withClient cenv $ \c2 -> do
+                    setupClientContents c1 m
+                    setupClientContents c2 m
+                    fullySyncTwoClients c1 c2
+                    setupClientContents c1 m2
+                    setupClientContents c2 m1
+                    fullySyncTwoClients c1 c2
+                    let m' = CM.empty
+                    assertClientContents c1 m'
+                    assertClientContents c2 m'
+          it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
+            forAll threeDisjunctMapsAndTheirUnions $ \((_, _, m3), (_, m23, m13, m123)) ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 m123
+                  setupClientContents c2 m123
+                  fullySyncTwoClients c1 c2
+                  setupClientContents c1 m23
+                  setupClientContents c2 m13
+                  fullySyncTwoClients c1 c2
+                  assertClientContents c1 m3
+                  assertClientContents c2 m3
+        describe "conflicts" $
+          describe "both changed" $ do
+            it "succesfully syncs a single conflicting change" $ \cenv ->
+              forAllValid $ \rp ->
+                forAllValid $ \contents3 ->
+                  forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                    forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                      withClient cenv $ \c1 ->
+                        withClient cenv $ \c2 -> do
+                          let m = CM.singleton rp contents3
+                          setupClientContents c1 m
+                          setupClientContents c2 m
+                          fullySyncTwoClients c1 c2
+                          let m1 = CM.singleton rp contents1
+                          let m2 = CM.singleton rp contents2
+                          setupClientContents c1 m1
+                          setupClientContents c2 m2
+                          fullySyncTwoClients c1 c2
+                          let m' = CM.singleton rp contents1 -- client 1 synced first
+                          assertClientContents c1 m'
+                          assertClientContents c2 m'
+            it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
+              forAllValid $ \m ->
+                forAll (mapsWithDifferentContentsAtNewPath3 m) $ \(m1, m2, m3) ->
+                  withClient cenv $ \c1 ->
+                    withClient cenv $ \c2 -> do
+                      setupClientContents c1 m3
+                      setupClientContents c2 m3
+                      fullySyncTwoClients c1 c2
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      assertClientContents c1 m1
+                      assertClientContents c2 m1
+      describe "From two clients, concurrently" $
+        it "succesfully syncs two clients concurrently" $ \cenv ->
+          forAllValid $ \m1 ->
+            forAllValid $ \m2 ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 m1
+                  setupClientContents c2 m2
+                  fullySyncTwoClientsConcurrently c1 c2
+                  cm1 <- readClientContents c1
+                  cm2 <- readClientContents c2
+                  cm1 `shouldBe` cm2
+
+testSyncSmosClient :: SyncSettings -> IO ()
+testSyncSmosClient = syncSmosSyncClient $ Settings {setLogLevel = LevelWarn}
+
+fullySyncTwoClients :: SyncSettings -> SyncSettings -> IO ()
+fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
+
+fullySyncClients :: [SyncSettings] -> IO ()
+fullySyncClients cs = do
+  let twice f = f >> f
+  twice $ mapM_ testSyncSmosClient cs
+
+fullySyncTwoClientsConcurrently :: SyncSettings -> SyncSettings -> IO ()
+fullySyncTwoClientsConcurrently c1 c2 = fullySyncClientsConcurrently [c1, c2]
+
+fullySyncClientsConcurrently :: [SyncSettings] -> IO ()
+fullySyncClientsConcurrently cs = do
+  let twice f = f >> f
+  twice $ mapConcurrently_ testSyncSmosClient cs

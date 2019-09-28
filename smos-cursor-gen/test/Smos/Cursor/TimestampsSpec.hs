@@ -2,16 +2,13 @@
 
 module Smos.Cursor.TimestampsSpec where
 
+import Cursor.FuzzyLocalTime.Gen ()
+import Smos.Cursor.Timestamps
+import Smos.Cursor.Timestamps.Gen ()
+import Smos.Data.Gen ()
 import Test.Hspec
 import Test.Validity
 import Test.Validity.Optics
-
-import Cursor.FuzzyLocalTime.Gen ()
-
-import Smos.Data.Gen ()
-
-import Smos.Cursor.Timestamps
-import Smos.Cursor.Timestamps.Gen ()
 
 spec :: Spec
 spec = do
@@ -28,9 +25,17 @@ spec = do
   describe "timestampsCursorCurrentTextCursorL" $ lensSpecOnValid timestampsCursorCurrentTextCursorL
   describe "timestampsCursorToggleSelected" $
     it "produces valid cursors" $ producesValidsOnValids timestampsCursorToggleSelected
-  describe "timestampsCursorInsertChar" $
+  describe "timestampsCursorInsertChar" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ timestampsCursorInsertChar '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ timestampsCursorInsertChar '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 timestampsCursorInsertChar
-  describe "timestampsCursorAppendChar" $
+  describe "timestampsCursorAppendChar" $ do
+    it "produces valid cursors when inserting '\n'" $
+      forAllValid $ \tsc -> shouldBeValid $ timestampsCursorAppendChar '\n' tsc
+    it "produces valid cursors when inserting an unsafe character" $
+      forAllValid $ \tsc -> shouldBeValid $ timestampsCursorAppendChar '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 timestampsCursorAppendChar
   describe "timestampsCursorRemoveChar" $
     it "produces valid cursors" $ producesValidsOnValids timestampsCursorRemoveChar

@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -119,9 +120,9 @@ instance Monoid FileKeyMap where
       , fileKeyMapAnyMatchers = mempty
       }
 
-data ReportsKeyMap =
+newtype ReportsKeyMap =
   ReportsKeyMap
-    { reportsKeymapNextActionReportMatchers :: !KeyMappings
+    { reportsKeymapNextActionReportMatchers :: KeyMappings
     }
   deriving (Generic)
 
@@ -190,7 +191,7 @@ data ActionUsing a =
   deriving (Generic)
 
 instance Contravariant ActionUsing where
-  contramap func a = a {actionUsingFunc = \b -> actionUsingFunc a $ func b}
+  contramap func a = a {actionUsingFunc = actionUsingFunc a . func}
 
 data AnyAction
   = PlainAction Action
@@ -230,7 +231,7 @@ runSmosAsync func = do
   a <- liftIO $ async func
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
 
-data DebugInfo =
+newtype DebugInfo =
   DebugInfo
     { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
     }
@@ -340,7 +341,7 @@ helpCursorKeySearchBarL =
     let query = rebuildTextCursor tc
         selected =
           searchHelpCursor query $
-          fromMaybe [] $ (NE.toList . rebuildNonEmptyCursor) <$> helpCursorKeyHelpCursors hc
+          maybe [] (NE.toList . rebuildNonEmptyCursor) (helpCursorKeyHelpCursors hc)
      in hc
           { helpCursorSearchBar = tc
           , helpCursorSelectedKeyHelpCursors = makeNonEmptyCursor <$> NE.nonEmpty selected
@@ -357,16 +358,18 @@ helpCursorSelectedKeyHelpCursorsL =
 helpCursorUp :: HelpCursor -> Maybe HelpCursor
 helpCursorUp =
   helpCursorSelectedKeyHelpCursorsL $ \msc ->
+    Just <$>
     case msc of
-      Nothing -> Just Nothing
-      Just sc -> nonEmptyCursorSelectPrev sc >>= (pure . Just)
+      Nothing -> Nothing
+      Just sc -> nonEmptyCursorSelectPrev sc
 
 helpCursorDown :: HelpCursor -> Maybe HelpCursor
 helpCursorDown =
   helpCursorSelectedKeyHelpCursorsL $ \msc ->
+    Just <$>
     case msc of
-      Nothing -> Just Nothing
-      Just sc -> nonEmptyCursorSelectNext sc >>= (pure . Just)
+      Nothing -> Nothing
+      Just sc -> nonEmptyCursorSelectNext sc
 
 helpCursorStart :: HelpCursor -> HelpCursor
 helpCursorStart = helpCursorSelectedKeyHelpCursorsL %~ fmap nonEmptyCursorSelectFirst
@@ -379,25 +382,22 @@ helpCursorSelectionL = lens helpCursorSelection $ \hc hcs -> hc {helpCursorSelec
 
 helpCursorSelectHelp :: HelpCursor -> Maybe HelpCursor
 helpCursorSelectHelp =
-  helpCursorSelectionL $ \hcs ->
-    case hcs of
-      HelpCursorSearchSelected -> Just HelpCursorHelpSelected
-      HelpCursorHelpSelected -> Nothing
+  helpCursorSelectionL $ \case
+    HelpCursorSearchSelected -> Just HelpCursorHelpSelected
+    HelpCursorHelpSelected -> Nothing
 
 helpCursorSelectSearch :: HelpCursor -> Maybe HelpCursor
 helpCursorSelectSearch =
-  helpCursorSelectionL $ \hcs ->
-    case hcs of
-      HelpCursorHelpSelected -> Just HelpCursorSearchSelected
-      HelpCursorSearchSelected -> Nothing
+  helpCursorSelectionL $ \case
+    HelpCursorHelpSelected -> Just HelpCursorSearchSelected
+    HelpCursorSearchSelected -> Nothing
 
 helpCursorToggleSelection :: HelpCursor -> HelpCursor
 helpCursorToggleSelection =
   helpCursorSelectionL %~
-  (\hcs ->
-     case hcs of
-       HelpCursorHelpSelected -> HelpCursorSearchSelected
-       HelpCursorSearchSelected -> HelpCursorHelpSelected)
+  (\case
+     HelpCursorHelpSelected -> HelpCursorSearchSelected
+     HelpCursorSearchSelected -> HelpCursorHelpSelected)
 
 helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
 helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c
@@ -472,15 +472,13 @@ instance Validity EditorSelection
 
 makeEditorCursor :: SmosFile -> EditorCursor
 makeEditorCursor sf =
-  (\ec ->
-     ec {editorCursorFileCursor = fmap smosFileCursorReadyForStartup $ editorCursorFileCursor ec})
+  (\ec -> ec {editorCursorFileCursor = smosFileCursorReadyForStartup <$> editorCursorFileCursor ec})
     (makeEditorCursorClosed sf)
 
 makeEditorCursorClosed :: SmosFile -> EditorCursor
 makeEditorCursorClosed sf =
   EditorCursor
-    { editorCursorFileCursor =
-        fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
+    { editorCursorFileCursor = fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
     , editorCursorReportCursor = Nothing
     , editorCursorHelpCursor = Nothing
     , editorCursorSelection = FileSelected

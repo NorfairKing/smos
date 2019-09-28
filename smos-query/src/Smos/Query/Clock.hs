@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -144,13 +142,15 @@ renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap
                 ]
               ]
         BlockTotalRow t ->
-          [ map (cell . fore blue) $
-            [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
+          [ map
+              (cell . fore blue)
+              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
           , replicate 5 emptyCell
           ]
         AllTotalRow t ->
-          [ map (cell . fore blue) $
-            [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
+          [ map
+              (cell . fore blue)
+              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
           ]
     blockTitleChunk :: Text -> Chunk Text
     blockTitleChunk = fore blue . chunk

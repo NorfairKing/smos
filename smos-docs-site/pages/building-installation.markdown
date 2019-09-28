@@ -31,7 +31,7 @@ If you are building with nix, you probably know what you are doing.
 Start with a regular build, and go from there using the multiple results:
 
 ```
-$ nix-build
+$ nix-build nix/release.nix
 ```
 
 #### Troubleshooting

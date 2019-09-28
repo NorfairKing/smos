@@ -2,15 +2,11 @@
 
 module Smos.Cursor.Report.Next.Gen where
 
+import Cursor.Forest.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
-
-import Smos.Data.Gen ()
-
-import Cursor.Forest.Gen ()
-
 import Smos.Cursor.Report.Next
-
+import Smos.Data.Gen ()
 import Smos.Report.Path.Gen ()
 
 instance GenValid NextActionEntryCursor where

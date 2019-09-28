@@ -13,6 +13,7 @@ import Control.Monad
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 
 import Path
@@ -28,25 +29,29 @@ combineToConfig ::
      SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
   wfs <-
-    case msum [flagWorkflowDir, envWorkflowDir, mc >>= confWorkflowDir] of
+    case msum [flagWorkflowDir, envWorkflowDir, mc >>= (fmap T.unpack . confWorkflowDir)] of
       Nothing -> pure $ smosReportConfigWorkflowFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
         pure $ DirAbsolute ad
   afs <-
-    case msum [flagArchiveDir, envArchiveDir, mc >>= confArchiveDir] of
+    case msum [flagArchiveDir, envArchiveDir, mc >>= (fmap T.unpack . confArchiveDir)] of
       Nothing -> pure $ smosReportConfigArchiveFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchiveAbsolute ad
   pfs <-
-    case msum [flagProjectsDir, envProjectsDir, mc >>= confProjectsDir] of
+    case msum [flagProjectsDir, envProjectsDir, mc >>= (fmap T.unpack . confProjectsDir)] of
       Nothing -> pure $ smosReportConfigProjectsFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ProjectsAbsolute ad
   apfs <-
-    case msum [flagArchivedProjectsDir, envArchivedProjectsDir, mc >>= confArchivedProjectsDir] of
+    case msum
+           [ flagArchivedProjectsDir
+           , envArchivedProjectsDir
+           , mc >>= (fmap T.unpack . confArchivedProjectsDir)
+           ] of
       Nothing -> pure $ smosReportConfigArchivedProjectsFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
@@ -58,7 +63,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
       , smosReportConfigProjectsFileSpec = pfs
       , smosReportConfigArchivedProjectsFileSpec = apfs
       , smosReportConfigWorkBaseFilter =
-          (mc >>= confWorkBaseFilter) <|> (smosReportConfigWorkBaseFilter src)
+          (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src
       , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
@@ -154,8 +159,7 @@ parseYamlConfig configFile =
   fmap (left prettyPrintParseException) $ decodeFileEither $ fromAbsFile configFile
 
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
-parseJSONConfig configFile = do
-  JSON.eitherDecodeFileStrict $ fromAbsFile configFile
+parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
 getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do

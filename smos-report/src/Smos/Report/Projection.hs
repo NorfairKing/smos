@@ -18,7 +18,6 @@ import Control.Monad
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
-
 import Smos.Data
 
 import Smos.Report.Path
@@ -85,8 +84,7 @@ ontoStateP = do
 ontoPropertyP :: P Projection
 ontoPropertyP = do
   void $ string' "property:"
-  pn <- propertyNameP
-  pure $ OntoProperty pn
+  OntoProperty <$> propertyNameP
 
 propertyNameP :: P PropertyName
 propertyNameP = do
