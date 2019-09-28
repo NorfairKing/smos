@@ -21,6 +21,7 @@ import Path
 
 import System.Exit
 
+import Control.Concurrent.MVar
 import Control.Concurrent.STM
 import Control.Monad.Reader
 
@@ -39,6 +40,7 @@ data ServerEnv =
     { serverEnvServerUUID :: UUID
     , serverEnvStoreFile :: Path Abs File
     , serverEnvStoreVar :: TVar (Mergeful.ServerStore UUID SyncFile)
+    , serverEnvStoreLock :: MVar ()
     }
   deriving (Generic)
 
