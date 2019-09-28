@@ -34,6 +34,9 @@ disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
 changedMap :: (Ord k, GenValid k, Eq v, GenValid v) => Map k v -> Gen (Map k v)
 changedMap = traverse (\v -> genValid `suchThat` (/= v))
 
+readClientContents :: SyncSettings -> IO ContentsMap
+readClientContents ss = readContents (syncSetContentsDir ss)
+
 assertClientContents :: SyncSettings -> ContentsMap -> IO ()
 assertClientContents ss = assertContents (syncSetContentsDir ss)
 

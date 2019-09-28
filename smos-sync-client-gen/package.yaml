@@ -45,6 +45,7 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - async
     - bytestring
     - containers
     - genvalidity

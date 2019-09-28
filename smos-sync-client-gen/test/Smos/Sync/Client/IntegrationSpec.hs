@@ -2,6 +2,7 @@ module Smos.Sync.Client.IntegrationSpec
   ( spec
   ) where
 
+import Control.Concurrent.Async
 import Control.Monad.Logger
 
 import Test.Hspec
@@ -476,6 +477,18 @@ spec =
                       fullySyncTwoClients c1 c2
                       assertClientContents c1 m1
                       assertClientContents c2 m1
+      describe "From two clients, concurrently" $
+        it "succesfully syncs two clients concurrently" $ \cenv ->
+          forAllValid $ \m1 ->
+            forAllValid $ \m2 ->
+              withClient cenv $ \c1 ->
+                withClient cenv $ \c2 -> do
+                  setupClientContents c1 m1
+                  setupClientContents c2 m2
+                  fullySyncTwoClientsConcurrently c1 c2
+                  cm1 <- readClientContents c1
+                  cm2 <- readClientContents c2
+                  cm1 `shouldBe` cm2
 
 testSyncSmosClient :: SyncSettings -> IO ()
 testSyncSmosClient = syncSmosSyncClient $ Settings {setLogLevel = LevelWarn}
@@ -487,3 +500,11 @@ fullySyncClients :: [SyncSettings] -> IO ()
 fullySyncClients cs = do
   let twice f = f >> f
   twice $ mapM_ testSyncSmosClient cs
+
+fullySyncTwoClientsConcurrently :: SyncSettings -> SyncSettings -> IO ()
+fullySyncTwoClientsConcurrently c1 c2 = fullySyncClientsConcurrently [c1, c2]
+
+fullySyncClientsConcurrently :: [SyncSettings] -> IO ()
+fullySyncClientsConcurrently cs = do
+  let twice f = f >> f
+  twice $ mapConcurrently_ testSyncSmosClient cs
