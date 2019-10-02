@@ -1,5 +1,5 @@
 let
-  pkgs = import ( ../nix/pkgs.nix );
+  pkgs = import ( ./pkgs.nix );
 in
   pkgs.stdenv.mkDerivation {
     name = "smos-release";
