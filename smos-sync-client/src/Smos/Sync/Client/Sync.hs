@@ -356,7 +356,9 @@ makeClientMetaData igf ClientStore {..} =
                  M.foldlWithKey go M.empty clientStoreSyncedItems
 
 saveMeta :: Path Abs File -> ClientMetaData -> IO ()
-saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
+saveMeta p store = do
+  ensureDir (parent p)
+  LB.writeFile (toFilePath p) $ encodePretty store
 
 saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
 saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store

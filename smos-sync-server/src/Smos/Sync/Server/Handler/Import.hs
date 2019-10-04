@@ -71,4 +71,6 @@ readStore p = do
         Right store -> pure store
 
 saveStore :: Path Abs File -> ServerStore -> IO ()
-saveStore p = LB.writeFile (fromAbsFile p) . encodePretty
+saveStore p ss = do
+  ensureDir (parent p)
+  LB.writeFile (fromAbsFile p) $ encodePretty ss
