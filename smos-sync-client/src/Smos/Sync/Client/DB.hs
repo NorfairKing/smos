@@ -10,8 +10,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Sync.Server.DB
-  ( module Smos.Sync.Server.DB
+module Smos.Sync.Client.DB
+  ( module Smos.Sync.Client.DB
   , module Database.Persist
   , module Database.Persist.Sql
   ) where
@@ -34,7 +34,7 @@ share
   [persistLowerCase|
 
 
-ServerFile
+ClientFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
     contents ByteString

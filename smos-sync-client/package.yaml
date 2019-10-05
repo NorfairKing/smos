@@ -30,6 +30,9 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
   - pretty-show
   - servant-client
   - smos-report

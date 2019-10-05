@@ -21,6 +21,8 @@ library:
   - mtl
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
   - pretty-show
   - servant
   - servant-server

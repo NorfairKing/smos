@@ -30,7 +30,8 @@ data SyncFlags =
   SyncFlags
     { syncFlagServerUrl :: Maybe String
     , syncFlagContentsDir :: Maybe FilePath
-    , syncFlagMetadataFile :: Maybe FilePath
+    , syncFlagUUIDFile :: Maybe FilePath
+    , syncFlagMetadataDB :: Maybe FilePath
     , syncFlagIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq)
@@ -47,7 +48,8 @@ data Environment =
     { envReportEnvironment :: Report.Environment
     , envServerUrl :: Maybe String
     , envContentsDir :: Maybe FilePath
-    , envMetadataFile :: Maybe FilePath
+    , envUUIDFile :: Maybe FilePath
+    , envMetadataDB :: Maybe FilePath
     , envIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq, Generic)
@@ -67,7 +69,8 @@ data SyncConfiguration =
   SyncConfiguration
     { syncConfServerUrl :: Maybe String
     , syncConfContentsDir :: Maybe FilePath
-    , syncConfMetadataFile :: Maybe FilePath
+    , syncConfUUIDFile :: Maybe FilePath
+    , syncConfMetadataDB :: Maybe FilePath
     , syncConfIgnoreFiles :: Maybe IgnoreFiles
     }
   deriving (Show, Eq, Generic)
@@ -75,7 +78,8 @@ data SyncConfiguration =
 instance FromJSON SyncConfiguration where
   parseJSON =
     withObject "SyncConfiguration" $ \o ->
-      SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "metadata-file" <*>
+      SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "uuid-file" <*>
+      o .:? "metadata-db" <*>
       o .:? "ignore-files"
 
 newtype Dispatch =
@@ -86,7 +90,8 @@ data SyncSettings =
   SyncSettings
     { syncSetServerUrl :: BaseUrl
     , syncSetContentsDir :: Path Abs Dir
-    , syncSetMetadataFile :: Path Abs File
+    , syncSetUUIDFile :: Path Abs File
+    , syncSetMetadataDB :: Path Abs File
     , syncSetIgnoreFiles :: IgnoreFiles
     }
   deriving (Show, Eq, Generic)
