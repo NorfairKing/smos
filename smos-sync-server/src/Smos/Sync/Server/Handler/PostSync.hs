@@ -7,7 +7,6 @@ module Smos.Sync.Server.Handler.PostSync
 import Smos.Sync.Server.Handler.Import
 
 import Control.Concurrent.MVar
-import Control.Concurrent.STM
 import Control.Monad.Reader
 
 import Database.Persist.Sql as DB

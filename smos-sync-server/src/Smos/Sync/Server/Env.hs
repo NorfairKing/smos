@@ -6,19 +6,9 @@ module Smos.Sync.Server.Env where
 
 import GHC.Generics (Generic)
 
-import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
-import Data.UUID as X
-import Data.UUID.V4 as UUID
-
-import Path
-
-import System.Exit
 
 import Control.Concurrent.MVar
-import Control.Concurrent.STM
 import Control.Monad.Reader
 
 import Database.Persist as DB
@@ -30,12 +20,9 @@ import Data.Mergeful.Timed (Timed(..))
 
 import Servant
 
-import Path.IO
-
 import Smos.Sync.API
 
 import Smos.Sync.Server.DB
-import Smos.Sync.Server.Data
 
 type SyncHandler = ReaderT ServerEnv Handler
 

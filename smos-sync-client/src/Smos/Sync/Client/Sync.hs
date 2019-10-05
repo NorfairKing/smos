@@ -19,7 +19,6 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
-import Data.UUID.Typed as UUID
 import Data.Validity
 import Data.Validity.UUID ()
 import Text.Show.Pretty

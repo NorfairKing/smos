@@ -8,7 +8,6 @@ import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import qualified Data.Set as S
-import Data.UUID.Typed
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()

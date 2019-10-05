@@ -1,12 +1,9 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -24,11 +21,8 @@ import Path.Internal
 
 import Database.Persist
 import Database.Persist.Sql
-import Database.Persist.TH
 
 import Data.Mergeful.Timed
-
-import Smos.Sync.API
 
 deriving instance PersistFieldSql (Path Rel File) -- TODO Not entirely safe
 
@@ -37,7 +31,6 @@ deriving instance PersistField (Path Rel File) -- TODO Not entirely safe
 deriving instance PersistFieldSql ServerTime
 
 deriving instance PersistField ServerTime
-
 
 instance PersistField (UUID a) where
   toPersistValue (UUID uuid) = PersistByteString $ LB.toStrict $ UUID.toByteString uuid
