@@ -6,8 +6,6 @@ module Smos.Sync.Server.Handler.PostSync
 
 import Smos.Sync.Server.Handler.Import
 
-import Data.UUID.V4 as UUID
-
 import Control.Concurrent.MVar
 import Control.Concurrent.STM
 import Control.Monad.Reader
@@ -22,7 +20,7 @@ handlePostSync request = do
   respItems <-
     liftIO $
     modifyMVar serverEnvStoreCache $ \store -> do
-      (resp, newStore) <- Mergeful.processServerSync (liftIO UUID.nextRandom) store request
+      (resp, newStore) <- Mergeful.processServerSync nextRandomUUID store request
       DB.runSqlPool (saveStore newStore) serverEnvConnection
       pure (newStore, resp)
   let resp =

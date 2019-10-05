@@ -6,6 +6,7 @@ import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.Mergeful ()
 import Data.GenValidity.Path ()
+import Data.GenValidity.UUID.Typed ()
 import Data.GenValidity.UUID ()
 import Smos.Sync.API
 

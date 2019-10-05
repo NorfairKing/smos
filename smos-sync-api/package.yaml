@@ -26,6 +26,7 @@ library:
   - servant-server
   - stm
   - text
+  - typed-uuid
   - uuid
   - validity
   - validity-bytestring

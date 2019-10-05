@@ -6,7 +6,6 @@ import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy as LB
 import Data.Text as T
-import Data.UUID.V4 as UUID
 import Path
 import Path.IO
 import System.Exit
@@ -52,17 +51,17 @@ makeSyncApp env =
 syncServer :: ServerT SyncAPI SyncHandler
 syncServer = handlePostSync
 
-readUUID :: Path Abs File -> IO UUID
+readUUID :: Path Abs File -> IO ServerUUID
 readUUID p = do
   mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile p
   case mContents of
-    Nothing -> UUID.nextRandom
+    Nothing -> nextRandomUUID
     Just contents ->
       case JSON.eitherDecode contents of
         Left err -> die err
         Right u -> pure u
 
-writeUUID :: Path Abs File -> UUID -> IO ()
+writeUUID :: Path Abs File -> ServerUUID -> IO ()
 writeUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ encodePretty u

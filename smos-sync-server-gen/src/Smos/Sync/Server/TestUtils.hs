@@ -2,7 +2,6 @@ module Smos.Sync.Server.TestUtils where
 
 import Data.Mergeful
 import Data.Text as T
-import Data.UUID.V4 as UUID
 
 import Control.Monad.IO.Class
 
@@ -37,7 +36,7 @@ withTestServer func = do
       DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool ->
         liftIO $ do
           let mkApp = do
-                uuid <- UUID.nextRandom
+                uuid <- nextRandomUUID
                 cacheVar <- newMVar initialServerStore
                 let env =
                       ServerEnv

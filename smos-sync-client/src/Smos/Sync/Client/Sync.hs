@@ -19,7 +19,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
-import Data.UUID as UUID (UUID)
+import Data.UUID.Typed as UUID
 import Data.Validity
 import Data.Validity.UUID ()
 import Text.Show.Pretty
@@ -84,7 +84,7 @@ type C = LoggingT IO
 runInitialSync :: ClientEnv -> C ClientStore
 runInitialSync cenv = do
   logDebugN "INITIAL SYNC START"
-  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
+  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore FileUUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
@@ -146,8 +146,8 @@ clientSync = client syncAPI
 
 data ClientStore =
   ClientStore
-    { clientStoreServerUUID :: UUID
-    , clientStoreItems :: Mergeful.ClientStore UUID SyncFile
+    { clientStoreServerUUID :: ServerUUID
+    , clientStoreItems :: Mergeful.ClientStore FileUUID SyncFile
     }
   deriving (Show, Eq, Generic)
 
@@ -162,7 +162,7 @@ instance ToJSON ClientStore where
 
 data ClientMetaData =
   ClientMetaData
-    { clientMetaDataServerId :: UUID
+    { clientMetaDataServerId :: ServerUUID
     , clientMetaDataMap :: Map (Path Rel File) SyncFileMeta
     }
   deriving (Show, Eq, Generic)
@@ -179,7 +179,7 @@ instance ToJSON ClientMetaData where
 
 data SyncFileMeta =
   SyncFileMeta
-    { syncFileMetaUUID :: UUID
+    { syncFileMetaUUID :: FileUUID
     , syncFileMetaHash :: Int
     , syncFileMetaTime :: Mergeful.ServerTime
     }
@@ -216,17 +216,17 @@ consolidateInitialStoreWithFiles cs contentsMap =
                }
 
 consolidateInitialSyncedItemsWithFiles ::
-     Map UUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
+     Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
 consolidateInitialSyncedItemsWithFiles syncedItems =
   M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems}) .
   contentsMapFiles
   where
     alreadySyncedMap = makeAlreadySyncedMap syncedItems
     go ::
-         Mergeful.ClientStore UUID SyncFile
+         Mergeful.ClientStore FileUUID SyncFile
       -> Path Rel File
       -> ByteString
-      -> Mergeful.ClientStore UUID SyncFile
+      -> Mergeful.ClientStore FileUUID SyncFile
     go s rf contents =
       let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
        in case M.lookup rf alreadySyncedMap of
@@ -250,15 +250,15 @@ consolidateMetaWithFiles ClientMetaData {..} contentsMap =
   ClientStore clientMetaDataServerId $ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
 
 consolidateMetaMapWithFiles ::
-     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
+     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
 consolidateMetaMapWithFiles clientMetaDataMap contentsMap
       -- The existing files need to be checked for deletions and changes.
  =
   let go1 ::
-           Mergeful.ClientStore UUID SyncFile
+           Mergeful.ClientStore FileUUID SyncFile
         -> Path Rel File
         -> SyncFileMeta
-        -> Mergeful.ClientStore UUID SyncFile
+        -> Mergeful.ClientStore FileUUID SyncFile
       go1 s rf sfm@SyncFileMeta {..} =
         case M.lookup rf $ contentsMapFiles contentsMap of
           Nothing
@@ -299,10 +299,10 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
                      }
       syncedChangedAndDeleted = M.foldlWithKey go1 Mergeful.initialClientStore clientMetaDataMap
       go2 ::
-           Mergeful.ClientStore UUID SyncFile
+           Mergeful.ClientStore FileUUID SyncFile
         -> Path Rel File
         -> ByteString
-        -> Mergeful.ClientStore UUID SyncFile
+        -> Mergeful.ClientStore FileUUID SyncFile
       go2 s rf contents =
         let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
          in Mergeful.addItemToClientStore sf s
@@ -332,7 +332,7 @@ makeClientMetaData igf ClientStore {..} =
         then error "Should not happen: make meta"
         else let go ::
                       Map (Path Rel File) SyncFileMeta
-                   -> UUID
+                   -> FileUUID
                    -> Mergeful.Timed SyncFile
                    -> Map (Path Rel File) SyncFileMeta
                  go m u Mergeful.Timed {..} =
@@ -360,5 +360,5 @@ saveMeta p store = do
   ensureDir (parent p)
   LB.writeFile (toFilePath p) $ encodePretty store
 
-saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
+saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore FileUUID SyncFile -> IO ()
 saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store

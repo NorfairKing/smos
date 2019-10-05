@@ -9,10 +9,9 @@ import GHC.Generics (Generic)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.Map as M
 import Data.UUID as X
 import Data.UUID.V4 as UUID
-
-import Text.Show.Pretty as X
 
 import Path
 
@@ -26,21 +25,24 @@ import Database.Persist as DB
 import Database.Persist.Sql as DB
 
 import qualified Data.Mergeful as Mergeful
+import Data.Mergeful.Timed (Timed(..))
+import Data.Mergeful.Collection (ServerStore(..))
 
 import Servant
 
 import Path.IO
 
-import Smos.Sync.API as X
+import Smos.Sync.API
 
+import Smos.Sync.Server.DB
 import Smos.Sync.Server.Data
 
 type SyncHandler = ReaderT ServerEnv Handler
 
 data ServerEnv =
   ServerEnv
-    { serverEnvServerUUID :: UUID
-    , serverEnvStoreCache :: MVar (Mergeful.ServerStore UUID SyncFile)
+    { serverEnvServerUUID :: ServerUUID
+    , serverEnvStoreCache :: MVar (Mergeful.ServerStore FileUUID SyncFile)
     , serverEnvConnection :: DB.ConnectionPool
     }
   deriving (Generic)
@@ -50,8 +52,21 @@ runDB func = do
   pool <- asks serverEnvConnection
   liftIO $ DB.runSqlPool func pool
 
-readServerStore :: MonadIO m => SqlPersistT m (Mergeful.ServerStore UUID SyncFile)
-readServerStore = undefined
+readServerStore :: MonadIO m => SqlPersistT m (Mergeful.ServerStore FileUUID SyncFile)
+readServerStore = do
+  sfs <- selectList [] []
+  pure $
+    ServerStore $
+    M.fromList $
+    map
+      (\(Entity _ ServerFile {..}) ->
+         ( serverFileUuid
+         , Timed
+             { timedValue =
+                 SyncFile {syncFilePath = serverFilePath, syncFileContents = serverFileContents}
+             , timedTime = serverFileTime
+             }))
+      sfs
 
-saveStore :: MonadIO m => Mergeful.ServerStore UUID SyncFile -> SqlPersistT m ()
+saveStore :: MonadIO m => Mergeful.ServerStore FileUUID SyncFile -> SqlPersistT m ()
 saveStore = undefined

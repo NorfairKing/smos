@@ -16,7 +16,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.Text as T
-import Data.UUID as UUID
+import Data.UUID.Typed as UUID
 import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Path ()
@@ -27,6 +27,12 @@ import Servant
 import Path
 
 import qualified Data.Mergeful as Mergeful
+
+type FileUUID = UUID SyncFile
+
+data SyncServer
+
+type ServerUUID = UUID SyncServer
 
 instance FromJSONKey (Path Rel File) where
   fromJSONKey =
@@ -63,12 +69,12 @@ instance ToJSON SyncFile where
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
 
-type SyncRequest = Mergeful.SyncRequest UUID SyncFile
+type SyncRequest = Mergeful.SyncRequest FileUUID SyncFile
 
 data SyncResponse =
   SyncResponse
-    { syncResponseServerId :: UUID
-    , syncResponseItems :: Mergeful.SyncResponse UUID SyncFile
+    { syncResponseServerId :: ServerUUID
+    , syncResponseItems :: Mergeful.SyncResponse FileUUID SyncFile
     }
   deriving (Show, Eq, Generic)
 

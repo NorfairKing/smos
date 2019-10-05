@@ -36,6 +36,7 @@ library:
   - smos-sync-api
   - stm
   - text
+  - typed-uuid
   - uuid
   - validity
   - validity-bytestring

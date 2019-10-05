@@ -21,7 +21,6 @@ import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.UUID
 import GHC.Generics (Generic)
 import Path
 import Servant.Client
@@ -253,7 +252,8 @@ applyTestOpStore cstore op =
       s' = applyTestOp s op
    in cstore {clientStoreItems = s'}
 
-applyTestOp :: Mergeful.ClientStore UUID SyncFile -> TestOp -> Mergeful.ClientStore UUID SyncFile
+applyTestOp ::
+     Mergeful.ClientStore FileUUID SyncFile -> TestOp -> Mergeful.ClientStore FileUUID SyncFile
 applyTestOp cs op =
   case op of
     AddFile sf -> Mergeful.addItemToClientStore sf cs

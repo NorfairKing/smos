@@ -19,6 +19,20 @@ packages:
   original:
     hackage: hakyll-sass-0.2.4
 - completed:
+    hackage: typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
+    pantry-tree:
+      size: 315
+      sha256: dd9becba36b5b51f47d882049b5b29d9e41dcebffc33fe648e0dd3b0a4775017
+  original:
+    hackage: typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
+- completed:
+    hackage: genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+    pantry-tree:
+      size: 456
+      sha256: 7f0ca8077fa9335840ac7780a535bda3054c98df71dcc6dac5ac98c6c86ff47a
+  original:
+    hackage: genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+- completed:
     subdir: mergeful
     cabal-file:
       size: 1235
