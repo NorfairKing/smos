@@ -20,11 +20,14 @@ library:
   - http-client
   - http-types
   - mergeful
+  - monad-logger
   - path
   - path-io
+  - persistent-sqlite
   - servant-client
   - smos-sync-server
   - stm
+  - text
   - uuid
   - wai
   - warp

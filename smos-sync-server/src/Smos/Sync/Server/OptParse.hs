@@ -39,9 +39,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
       case c of
         CommandServe ServeFlags {..} -> do
           let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
-          serveSetStoreFile <-
-            case serveFlagStoreFile <|> envStoreFile <|> (mc >>= confStoreFile) of
-              Nothing -> resolveFile' "smos-sync-server-store.json"
+          serveSetUUIDFile <-
+            case serveFlagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
+              Nothing -> resolveFile' "smos-sync-server-uuid.json"
+              Just fp -> resolveFile' fp
+          serveSetDatabaseFile <-
+            case serveFlagDatabaseFile <|> envDatabaseFile <|> (mc >>= confDatabaseFile) of
+              Nothing -> resolveFile' "smos-sync-server-database.sqlite3"
               Just fp -> resolveFile' fp
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
@@ -55,7 +59,8 @@ getEnvironment = do
       readEnv key = getEnv key >>= readMaybe
   let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
       envPort = readEnv "PORT"
-      envStoreFile = getEnv "STORE_FILE" <|> getEnv "STORE"
+      envUUIDFile = getEnv "UUID_FILE" <|> getEnv "UUID"
+      envDatabaseFile = getEnv "DATABASE_FILE" <|> getEnv "DATABASE"
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -109,8 +114,16 @@ parseCommandServe = info parser modifier
        option
          (Just <$> str)
          (mconcat
-            [ long "store-file"
-            , help "The file to use for the server store"
+            [ long "uuid-file"
+            , help "The file to use for the server uuid"
+            , metavar "FILEPATH"
+            , value Nothing
+            ]) <*>
+       option
+         (Just <$> str)
+         (mconcat
+            [ long "database-file"
+            , help "The file to use for the server database"
             , metavar "FILEPATH"
             , value Nothing
             ]) <*>

@@ -19,10 +19,14 @@ library:
   - base64-bytestring
   - bytestring
   - mergeful
+  - monad-logger
   - mtl
   - optparse-applicative
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
   - pretty-show
   - servant
   - servant-server

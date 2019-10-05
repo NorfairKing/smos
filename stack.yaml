@@ -25,7 +25,7 @@ extra-deps:
 - hakyll-sass-0.2.4
 
 - git: https://github.com/NorfairKing/mergeful
-  commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+  commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
   subdirs:
     - mergeful
     - genvalidity-mergeful

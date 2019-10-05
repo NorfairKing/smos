@@ -28,28 +28,28 @@ packages:
     git: https://github.com/NorfairKing/mergeful
     pantry-tree:
       size: 583
-      sha256: d751947a54a409aeb0a670519d02920f1f9926691a4cf7e2296b00357db02928
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+      sha256: 00d4defd13c8dc9d7903b0f22ea9192867b3be1a67f9973f8fd1d11b21b6afdc
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
   original:
     subdir: mergeful
     git: https://github.com/NorfairKing/mergeful
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
 - completed:
     subdir: genvalidity-mergeful
     cabal-file:
       size: 1942
-      sha256: 28916cd4a6c3937836a32469b8d7b117c8699f2bbb53bb0c8a31c845444fa810
+      sha256: 96e3acbe635795dd56216c24ba2390a8a1b9689520046337c6dea1a3185f9408
     name: genvalidity-mergeful
-    version: 0.0.0.0
+    version: 0.1.0.0
     git: https://github.com/NorfairKing/mergeful
     pantry-tree:
       size: 984
-      sha256: 004a947364015d39fdb72cb79fe7b466a3df7fe79f0aa14b5cb03554c2dfc8ca
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+      sha256: c882350a28a7360e7a21b4fd30ff15cdabcde37b57e279c063fa124c347da535
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
   original:
     subdir: genvalidity-mergeful
     git: https://github.com/NorfairKing/mergeful
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
 - completed:
     cabal-file:
       size: 3674
