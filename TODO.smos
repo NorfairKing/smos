@@ -5,7 +5,7 @@
       timestamp: 2018-09-21 08:04:59.815408341000+0000
   forest:
   - entry:
-      header: ! 'For first dogfooding:'
+      header: 'For first dogfooding:'
       state-history:
       - new-state: DONE
         timestamp: 2018-10-11 22:45:52.502883322000+0000
@@ -426,7 +426,7 @@
           - new-state: TODO
             timestamp: 2018-10-03 23:26:56.832181999000+0000
         - header: Something aware of 'SCHEDULED' and 'DEADLINE'?
-          contents: ! 'This should show scheduled for today, and anything in the past
+          contents: 'This should show scheduled for today, and anything in the past
 
             This should show deadlined for anything up to some number of days into
             the future'
@@ -444,11 +444,15 @@
     - entry:
         header: Data format
         state-history:
+        - new-state: DONE
+          timestamp: 2019-10-05 10:50:57.663457893000+0000
         - new-state: TODO
           timestamp: 2018-12-02 18:13:37.222482363000+0000
       forest:
       - header: Add a comment with the smos version in a data file
         state-history:
+        - new-state: CANCELLED
+          timestamp: 2019-10-05 10:50:57.267076819000+0000
         - new-state: TODO
           timestamp: 2018-12-02 18:13:47.376342258000+0000
     - entry:
@@ -458,7 +462,7 @@
           timestamp: 2018-10-03 23:25:30.776212621000+0000
       forest:
       - header: Lock files to make sure edits don't go missing
-        contents: ! 'Imagine this scenario:
+        contents: 'Imagine this scenario:
 
           Open file A (A1)
 
@@ -482,8 +486,8 @@
         - new-state: TODO
           timestamp: 2018-10-07 17:12:51.588908229000+0000
       - header: The archive
-        contents: ! 'The idea here is that you should never have to remove data to
-          have a clear overview.
+        contents: 'The idea here is that you should never have to remove data to have
+          a clear overview.
 
           One idea is to allow for archive files.
 
@@ -517,7 +521,7 @@
         - new-state: TODO
           timestamp: 2018-10-11 22:08:06.398627323000+0000
       - header: Archiving
-        contents: ! 'A way to put away an entire smos file such that it never conflicts
+        contents: 'A way to put away an entire smos file such that it never conflicts
           with another file.
 
           If we have two projects (over a long timespan) that both were called p.smos
@@ -536,8 +540,8 @@
         - new-state: TODO
           timestamp: 2018-10-16 08:46:44.583579437000+0000
       - header: Copy-pasting
-        contents: ! 'also not critical, because the user can just use swapping and
-          promoting/demoting to move the entry to the desired place.
+        contents: 'also not critical, because the user can just use swapping and promoting/demoting
+          to move the entry to the desired place.
 
           When it comes to multiple entries to move, that''s a bit cumbersome, but
           still not critical.'
@@ -545,7 +549,7 @@
         - new-state: TODO
           timestamp: 2018-09-29 10:42:19.961781171000+0000
       - header: Auto-save and auto-reload
-        contents: ! 'Smos should be able to save periodically automatically but:
+        contents: 'Smos should be able to save periodically automatically but:
 
           - It should also be able to reload if anything has changed in the meantime
 
@@ -576,14 +580,14 @@
           - new-state: TODO
             timestamp: 2018-10-11 22:10:17.270628908000+0000
         - header: Moving to the node below, uncollapsing as necessary
-          contents: ! 'Keyboard shortcut: arrow right or l'
+          contents: 'Keyboard shortcut: arrow right or l'
           state-history:
           - new-state: DONE
             timestamp: 2018-12-12 06:07:50.721315028000+0000
           - new-state: TODO
             timestamp: 2018-10-07 17:17:49.037011535000+0000
         - header: moving to the node above
-          contents: ! "Example start\n - a\n   - b\n   - c <-\n   - d\nExample end\n
+          contents: "Example start\n - a\n   - b\n   - c <-\n   - d\nExample end\n
             - a <-\n   - b\n   - c\n   - d\n\nKeyboard shortcut: arrow left h"
           state-history:
           - new-state: DONE
@@ -592,7 +596,7 @@
             timestamp: 2018-10-07 17:16:29.612880939000+0000
         - header: Inserting an entry below the current one, but above the current
             level
-          contents: ! 'This is not critical because the user can user can just start
+          contents: 'This is not critical because the user can user can just start
             a new heading
 
             with ''h'' or so, and then promote it until the desired level.'
@@ -700,6 +704,8 @@
               timestamp: 2018-09-30 02:08:48.814851189000+0000
           - header: +3d should work like +3
             state-history:
+            - new-state: DONE
+              timestamp: 2019-10-05 10:51:31.943937411000+0000
             - new-state: TODO
               timestamp: 2018-10-08 16:47:36.613506648000+0000
       - entry:
@@ -710,7 +716,7 @@
           - new-state: TODO
             timestamp: 2018-10-14 13:55:00.856012672000+0000
         forest:
-        - header: ! 'Cancel the current waiting task, make a new task that is DONE:
+        - header: 'Cancel the current waiting task, make a new task that is DONE:
             ping about this, and open a new waiting task that is the same as the one
             that was cancelled'
           state-history:
@@ -725,7 +731,7 @@
           timestamp: 2018-09-29 13:12:58.362708848000+0000
       forest:
       - header: contents newline
-        contents: ! 'When contents end with a newline, the newline doesn''t take up
+        contents: 'When contents end with a newline, the newline doesn''t take up
           a new line on screen.
 
           However, the blinking cursor is still in the right place.'
@@ -750,7 +756,7 @@
         state-history:
         - new-state: DONE
           timestamp: 2018-12-02 18:06:54.182502733000+0000
-      - header: ! 'When typing ''t'' for the todo state, show which options are possible:
+      - header: 'When typing ''t'' for the todo state, show which options are possible:
           t: TODO, w: WAITING, etc'
         state-history:
         - new-state: TODO
@@ -772,7 +778,7 @@
         - new-state: TODO
           timestamp: 2018-10-19 12:55:24.585079022000+0000
       - header: Line wrapping cursor placement bug
-        contents: ! 'Both for headers and for cursors: when the line wraps, then the
+        contents: 'Both for headers and for cursors: when the line wraps, then the
           cursor is still shown on the previous cursor'
         state-history:
         - new-state: TODO
@@ -793,7 +799,7 @@
           timestamp: 2018-09-29 13:15:10.450683682000+0000
       forest:
       - header: A way to select which parts of debugging options are shown
-        contents: ! 'We probably want to be able to select which parts of the following
+        contents: 'We probably want to be able to select which parts of the following
           are shown:
 
           - The entire state
@@ -832,6 +838,8 @@
       - entry:
           header: smos-query reports
           state-history:
+          - new-state: DONE
+            timestamp: 2019-10-04 23:04:16.850928419000+0000
           - new-state: TODO
             timestamp: 2018-10-11 22:42:23.703390501000+0000
         forest:
@@ -855,7 +863,7 @@
               timestamp: 2018-10-12 23:31:56.382801567000+0000
             - new-state: TODO
               timestamp: 2018-10-03 23:36:23.488277355000+0000
-        - header: ! 'Stats: how many new todos? How many did I finish?'
+        - header: 'Stats: how many new todos? How many did I finish?'
           state-history:
           - new-state: DONE
             timestamp: 2018-10-14 17:31:40.393000729000+0000
@@ -867,20 +875,22 @@
             timestamp: 2018-11-25 17:35:30.601656757000+0000
           - new-state: TODO
             timestamp: 2018-10-14 10:24:30.190843122000+0000
-        - header: ! 'Clock: nicer day format for humans in reports'
+        - header: 'Clock: nicer day format for humans in reports'
           state-history:
           - new-state: DONE
             timestamp: 2018-11-25 17:46:26.161572484000+0000
           - new-state: TODO
             timestamp: 2018-10-14 11:05:41.471081520000+0000
-        - header: ! 'Clock: mention open clocks'
+        - header: 'Clock: mention open clocks'
           state-history:
           - new-state: DONE
             timestamp: 2018-11-25 17:46:23.657704956000+0000
           - new-state: TODO
             timestamp: 2018-10-14 14:04:37.552167601000+0000
-        - header: ! 'Stats: perioud to filter'
+        - header: 'Stats: perioud to filter'
           state-history:
+          - new-state: DONE
+            timestamp: 2019-10-04 23:04:16.334007133000+0000
           - new-state: TODO
             timestamp: 2018-10-14 17:31:48.569204767000+0000
       - entry:
@@ -963,9 +973,10 @@
         timestamp: 2019-07-20 15:29:16.144475997000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:12:55.062378588000+0000
-    - header: ! 'Build all smos packages: nix-env --file default.nix -iA smosPackages'
+    - header: 'Build all smos packages: nix-env --file default.nix -iA smosPackages'
       state-history:
       - new-state: DONE
         timestamp: 2019-07-20 15:29:16.470726752000+0000
       - new-state: TODO
         timestamp: 2018-12-02 18:13:29.822523378000+0000
+
