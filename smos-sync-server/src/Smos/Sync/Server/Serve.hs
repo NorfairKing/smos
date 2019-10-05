@@ -32,7 +32,11 @@ serveSmosSyncServer ss@ServeSettings {..} = do
     DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
       liftIO $ do
         uuid <- readUUID serveSetUUIDFile
-        store <- DB.runSqlPool readServerStore pool
+        writeUUID serveSetUUIDFile uuid
+        store <-
+          flip DB.runSqlPool pool $ do
+            DB.runMigration migrateAll
+            readServerStore
         cacheVar <- newMVar store
         let env =
               ServerEnv
@@ -40,7 +44,6 @@ serveSmosSyncServer ss@ServeSettings {..} = do
                 , serverEnvStoreCache = cacheVar
                 , serverEnvConnection = pool
                 }
-        writeUUID serveSetUUIDFile uuid
         Warp.run serveSetPort $ makeSyncApp env
 
 makeSyncApp :: ServerEnv -> Wai.Application

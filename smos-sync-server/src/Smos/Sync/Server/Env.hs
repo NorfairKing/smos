@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Sync.Server.Env where
 
@@ -25,8 +25,8 @@ import Database.Persist as DB
 import Database.Persist.Sql as DB
 
 import qualified Data.Mergeful as Mergeful
-import Data.Mergeful.Timed (Timed(..))
 import Data.Mergeful.Collection (ServerStore(..))
+import Data.Mergeful.Timed (Timed(..))
 
 import Servant
 
@@ -68,5 +68,22 @@ readServerStore = do
              }))
       sfs
 
-saveStore :: MonadIO m => Mergeful.ServerStore FileUUID SyncFile -> SqlPersistT m ()
-saveStore = undefined
+saveStore ::
+     forall m. MonadIO m
+  => Mergeful.ServerStore FileUUID SyncFile
+  -> SqlPersistT m ()
+saveStore = void . M.traverseWithKey go . serverStoreItems
+  where
+    go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
+    go u Timed {..} =
+      let SyncFile {..} = timedValue
+       in void $
+          upsertBy
+            (UniquePath syncFilePath)
+            (ServerFile
+               { serverFileUuid = u
+               , serverFilePath = syncFilePath
+               , serverFileContents = syncFileContents
+               , serverFileTime = timedTime
+               })
+            [ServerFileContents =. syncFileContents, ServerFileTime =. timedTime]

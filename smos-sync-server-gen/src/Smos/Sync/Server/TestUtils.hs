@@ -1,6 +1,5 @@
 module Smos.Sync.Server.TestUtils where
 
-import Data.Mergeful
 import Data.Text as T
 
 import Control.Monad.IO.Class
@@ -9,6 +8,7 @@ import Path
 import Path.IO
 
 import Control.Concurrent.MVar
+import Control.Monad
 import Control.Monad.Logger
 
 import Servant.Client
@@ -37,7 +37,11 @@ withTestServer func = do
         liftIO $ do
           let mkApp = do
                 uuid <- nextRandomUUID
-                cacheVar <- newMVar initialServerStore
+                store <-
+                  flip DB.runSqlPool pool $ do
+                    void $ DB.runMigrationSilent migrateAll
+                    readServerStore
+                cacheVar <- newMVar store
                 let env =
                       ServerEnv
                         { serverEnvServerUUID = uuid
