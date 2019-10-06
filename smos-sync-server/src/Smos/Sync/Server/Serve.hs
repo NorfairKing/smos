@@ -3,7 +3,7 @@
 module Smos.Sync.Server.Serve where
 
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty (encodePretty)
+import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
 import Data.Text as T
 import Path
@@ -31,8 +31,7 @@ serveSmosSyncServer ss@ServeSettings {..} = do
   runStderrLoggingT $
     DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
       liftIO $ do
-        uuid <- readUUID serveSetUUIDFile
-        writeUUID serveSetUUIDFile uuid
+        uuid <- readServerUUID serveSetUUIDFile
         store <-
           flip DB.runSqlPool pool $ do
             DB.runMigration migrateAll
@@ -54,17 +53,20 @@ makeSyncApp env =
 syncServer :: ServerT SyncAPI SyncHandler
 syncServer = handlePostSync
 
-readUUID :: Path Abs File -> IO ServerUUID
-readUUID p = do
+readServerUUID :: Path Abs File -> IO ServerUUID
+readServerUUID p = do
   mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile p
   case mContents of
-    Nothing -> nextRandomUUID
+    Nothing -> do
+      u <- nextRandomUUID
+      writeServerUUID p u
+      pure u
     Just contents ->
       case JSON.eitherDecode contents of
         Left err -> die err
         Right u -> pure u
 
-writeUUID :: Path Abs File -> ServerUUID -> IO ()
-writeUUID p u = do
+writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
+writeServerUUID p u = do
   ensureDir (parent p)
-  LB.writeFile (fromAbsFile p) $ encodePretty u
+  LB.writeFile (fromAbsFile p) $ JSON.encodePretty u

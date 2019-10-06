@@ -89,12 +89,14 @@ withClient :: ClientEnv -> (SyncSettings -> IO a) -> IO a
 withClient cenv func =
   withSystemTempDir "smos-sync-client-test-contents" $ \tmpDir1 ->
     withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 -> do
-      m <- resolveFile tmpDir2 "metadata.json"
+      m <- resolveFile tmpDir2 "metadata.sqlite3"
+      u <- resolveFile tmpDir2 "uuid.json"
       let ss =
             SyncSettings
               { syncSetServerUrl = baseUrl cenv
               , syncSetContentsDir = tmpDir1
-              , syncSetMetadataFile = m
+              , syncSetMetadataDB = m
+              , syncSetUUIDFile = u
               , syncSetIgnoreFiles = IgnoreNothing
               }
       func ss

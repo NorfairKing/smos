@@ -16,6 +16,7 @@ import Smos.Sync.API
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.Env
 import Smos.Sync.Client.Sync
 
 import Smos.Sync.Client.ContentsMap.Gen ()

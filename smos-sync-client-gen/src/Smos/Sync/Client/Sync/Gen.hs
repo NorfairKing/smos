@@ -6,6 +6,7 @@ import Data.GenValidity
 
 import Smos.Sync.API.Gen ()
 
+import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync
 
@@ -14,10 +15,6 @@ instance GenValid IgnoreFiles where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid ClientStore where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid ClientMetaData where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
