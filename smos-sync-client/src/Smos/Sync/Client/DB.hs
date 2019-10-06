@@ -18,7 +18,6 @@ module Smos.Sync.Client.DB
 
 import GHC.Generics (Generic)
 
-import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
 
 import Path
@@ -37,10 +36,11 @@ share
 ClientFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
-    contents ByteString
+    hash Int
     time ServerTime
 
     UniquePath path
+    UniqueUUID uuid
 
     deriving Show
     deriving Eq

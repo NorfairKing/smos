@@ -41,6 +41,7 @@ ServerFile
     time ServerTime
 
     UniquePath path
+    UniqueUUID uuid
 
     deriving Show
     deriving Eq

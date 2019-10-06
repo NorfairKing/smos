@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -10,7 +9,6 @@ module Smos.Sync.Client.Sync where
 import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
@@ -49,6 +47,7 @@ import Smos.Sync.API
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
@@ -63,6 +62,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     let cenv = mkClientEnv man syncSetServerUrl
     let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
     flip runReaderT env $ do
+      void $ runDB $ runMigrationSilent migrateAll
       mUUID <- liftIO $ readServerUUID syncSetUUIDFile
       logDebugData "READ STORED UUID" mUUID
       files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
@@ -263,7 +263,7 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
 
--- TODO this could be optimised using the sync response
+-- TODO this could be probably optimised using the sync response
 saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()
 saveClientStore igf dir store = do
   runDB $ writeClientMetadata $ makeClientMetaData igf store

@@ -28,6 +28,8 @@ import Database.Persist.Sql as DB
 
 import Smos.Sync.API
 
+import Smos.Sync.Client.DB
+
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
 data SyncClientEnv =
@@ -55,10 +57,40 @@ runDB func = do
   liftIO $ DB.runSqlPool func pool
 
 readClientMetadata :: MonadIO m => SqlPersistT m (Map (Path Rel File) SyncFileMeta)
-readClientMetadata = undefined
+readClientMetadata = do
+  cfs <- selectList [] []
+  pure $
+    M.fromList $
+    map
+      (\(Entity _ ClientFile {..}) ->
+         ( clientFilePath
+         , SyncFileMeta
+             { syncFileMetaUUID = clientFileUuid
+             , syncFileMetaHash = clientFileHash
+             , syncFileMetaTime = clientFileTime
+             }))
+      cfs
 
-writeClientMetadata :: MonadIO m => Map (Path Rel File) SyncFileMeta -> SqlPersistT m ()
-writeClientMetadata = undefined
+writeClientMetadata ::
+     forall m. MonadIO m
+  => Map (Path Rel File) SyncFileMeta
+  -> SqlPersistT m ()
+writeClientMetadata m = do
+  deleteWhere [ClientFilePath /<-. M.keys m]
+  void $ M.traverseWithKey go m
+  where
+    go :: Path Rel File -> SyncFileMeta -> SqlPersistT m ()
+    go path SyncFileMeta {..} =
+      void $
+      upsertBy
+        (UniquePath path)
+        (ClientFile
+           { clientFileUuid = syncFileMetaUUID
+           , clientFilePath = path
+           , clientFileHash = syncFileMetaHash
+           , clientFileTime = syncFileMetaTime
+           })
+        [ClientFileHash =. syncFileMetaHash, ClientFileTime =. syncFileMetaTime]
 
 data ClientStore =
   ClientStore
