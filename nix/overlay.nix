@@ -99,7 +99,7 @@ with final.haskell.lib;
                     name:
                       disableLibraryProfiling (
                         dontCheck (
-                          final.haskellPackages.callCabal2nix name ( persistentRepo + "/${name}" ) {}
+                          super.callCabal2nix name ( persistentRepo + "/${name}" ) {}
                         )
                       );
                   persistentPackages =
@@ -110,9 +110,9 @@ with final.haskell.lib;
                     ] persistentPkg;
                 in
                   final.smosPackages // {
-                hakyll = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll" "4.13.0.0" {});
-                hakyll-sass = final.haskell.lib.dontCheck (final.haskellPackages.callHackage "hakyll-sass" "0.2.4" {});
-                sqlite = final.haskell.lib.dontCheck (super.callCabal2nix "sqlite" sqliteRepo {});
+                hakyll = dontCheck (super.callHackage "hakyll" "4.13.0.0" {});
+                hakyll-sass = dontCheck (super.callHackage "hakyll-sass" "0.2.4" {});
+                sqlite = addBuildDepend (dontCheck (super.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
               } // persistentPackages
             );

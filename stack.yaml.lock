@@ -79,22 +79,6 @@ packages:
     git: https://github.com/NorfairKing/persistent
     commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
 - completed:
-    subdir: persistent-test
-    cabal-file:
-      size: 3648
-      sha256: 44eb2e8bcf9881c21659073dd7fbed806a59436330c812ffeb598213ebd29c67
-    name: persistent-test
-    version: 2.0.3.0
-    git: https://github.com/NorfairKing/persistent
-    pantry-tree:
-      size: 2432
-      sha256: 22ccb2efcbe9fe3287cb7be698a7fbaaacc07b72b87ebc6645c1dc350adc0d3d
-    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
-  original:
-    subdir: persistent-test
-    git: https://github.com/NorfairKing/persistent
-    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
-- completed:
     subdir: persistent-sqlite
     cabal-file:
       size: 4519
