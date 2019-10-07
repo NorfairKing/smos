@@ -44,6 +44,7 @@ let
           ( import ./overlay.nix )
         ];
       config.allowUnfree = true;
+      config.allowBroken = true;
     };
 in
   smosPkgs
