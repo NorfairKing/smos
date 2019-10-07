@@ -8,7 +8,6 @@ import Smos.Sync.API.Gen ()
 
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
 
 instance GenValid IgnoreFiles where
   genValid = genValidStructurally

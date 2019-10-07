@@ -6,8 +6,6 @@
 
 module Smos.Sync.Client.Sync where
 
-import GHC.Generics (Generic)
-
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
@@ -18,7 +16,6 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
-import Data.Validity
 import Data.Validity.UUID ()
 import Text.Show.Pretty
 
@@ -27,6 +24,7 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 
 import System.Exit
+import System.FileLock
 
 import Servant.Client
 
@@ -41,8 +39,6 @@ import Network.HTTP.Client.TLS as HTTP
 
 import Database.Persist.Sqlite as DB
 
-import Conduit
-
 import Smos.Sync.API
 
 import Smos.Sync.Client.Contents
@@ -54,40 +50,42 @@ import Smos.Sync.Client.OptParse.Types
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
-  runStderrLoggingT $
-  filterLogger (\_ ll -> ll >= setLogLevel) $
-  DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool -> do
-    logDebugN "CLIENT START"
-    man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
-    let cenv = mkClientEnv man syncSetServerUrl
-    let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-    flip runReaderT env $ do
-      void $ runDB $ runMigrationSilent migrateAll
-      mUUID <- liftIO $ readServerUUID syncSetUUIDFile
-      logDebugData "READ STORED UUID" mUUID
-      files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
-      logDebugData "READ FILE CONTENTS" files
-      clientStore <-
-        case mUUID of
-          Nothing
+  withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
+    runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= setLogLevel) $
+    DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool -> do
+      logDebugN "CLIENT START"
+      man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
+      let cenv = mkClientEnv man syncSetServerUrl
+      let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+      flip runReaderT env $ do
+        void $ runDB $ runMigrationSilent migrateAll
+        mUUID <- liftIO $ readServerUUID syncSetUUIDFile
+        logDebugData "READ STORED UUID" mUUID
+        files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
+        logDebugData "READ FILE CONTENTS" files
+        clientStore <-
+          case mUUID of
+            Nothing
            -- Never synced yet
            --
            -- That means we need to run an initial sync first.
-           -> do
-            initialStore <- runInitialSync
-            pure $ consolidateInitialStoreWithFiles initialStore files
-          Just uuid
+             -> do
+              initialStore <- runInitialSync
+              liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
+              pure $ consolidateInitialStoreWithFiles initialStore files
+            Just uuid
            -- We have synced before.
-           -> do
-            liftIO $ writeServerUUID syncSetUUIDFile uuid
-            meta <- runDB readClientMetadata
-            let store = consolidateMetaMapWithFiles meta files
-            pure $ ClientStore {clientStoreServerUUID = uuid, clientStoreItems = store}
-      logDebugData "CLIENT STORE BEFORE SYNC" clientStore
-      newClientStore <- runSync clientStore
-      logDebugData "CLIENT STORE AFTER SYNC" newClientStore
-      saveClientStore syncSetIgnoreFiles syncSetContentsDir newClientStore
-      logDebugN "CLIENT END"
+             -> do
+              meta <- runDB readClientMetadata
+              logDebugData "CLIENT META MAP BEFORE SYNC" meta
+              let store = consolidateMetaMapWithFiles meta files
+              pure $ ClientStore {clientStoreServerUUID = uuid, clientStoreItems = store}
+        logDebugData "CLIENT STORE BEFORE SYNC" clientStore
+        newClientStore <- runSync clientStore
+        logDebugData "CLIENT STORE AFTER SYNC" newClientStore
+        saveClientStore syncSetIgnoreFiles syncSetContentsDir newClientStore
+        logDebugN "CLIENT END"
 
 runInitialSync :: C ClientStore
 runInitialSync = do

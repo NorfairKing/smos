@@ -19,7 +19,6 @@ import System.Exit
 import Servant.Client as Servant
 
 import Path
-import Path.IO
 
 import Control.Monad.Logger
 import Control.Monad.Reader

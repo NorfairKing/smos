@@ -17,14 +17,15 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
-  - microlens
   - conduit
   - containers
+  - filelock
   - filepath
   - hashable
   - http-client
   - http-client-tls
   - mergeful
+  - microlens
   - monad-logger
   - mtl
   - optparse-applicative
