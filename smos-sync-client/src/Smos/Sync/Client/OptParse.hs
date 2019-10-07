@@ -62,9 +62,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
               Nothing -> Report.resolveReportWorkflowDir src
               Just d -> resolveDir' d
-          syncSetMetadataFile <-
-            case syncFlagMetadataFile <|> envMetadataFile <|> cM syncConfMetadataFile of
-              Nothing -> defaultMetadataFile
+          syncSetUUIDFile <-
+            case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
+              Nothing -> defaultUUIDFile
+              Just d -> resolveFile' d
+          syncSetMetadataDB <-
+            case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
+              Nothing -> defaultMetadataDB
               Just d -> resolveFile' d
           let syncSetIgnoreFiles =
                 fromMaybe IgnoreHiddenFiles $
@@ -72,10 +76,15 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
           pure $ DispatchSync SyncSettings {..}
     getSettings = pure $ Settings {setLogLevel = fromMaybe LevelWarn flagLogLevel}
 
-defaultMetadataFile :: IO (Path Abs File)
-defaultMetadataFile = do
+defaultUUIDFile :: IO (Path Abs File)
+defaultUUIDFile = do
   home <- getHomeDir
-  resolveFile home ".smos/sync-metadata.json"
+  resolveFile home ".smos/server-uuid.json"
+
+defaultMetadataDB :: IO (Path Abs File)
+defaultMetadataDB = do
+  home <- getHomeDir
+  resolveFile home ".smos/sync-metadata.sqlite3"
 
 getEnvironment :: IO Environment
 getEnvironment = do
@@ -86,7 +95,8 @@ getEnvironment = do
       -- readEnv key = getEnv key >>= readMaybe
   let envServerUrl = getEnv "SERVER_URL"
       envContentsDir = getEnv "CONTENTS_DIR"
-      envMetadataFile = getEnv "METADATA_FILE"
+      envUUIDFile = getEnv "UUID_FILE"
+      envMetadataDB = getEnv "METADATA_DATABASE"
   envIgnoreFiles <-
     case getEnv "IGNORE_FILES" of
       Just "nothing" -> pure $ Just IgnoreNothing
@@ -147,9 +157,12 @@ parseCommandSync = info parser modifier
          (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing]) <*>
        option
          (Just <$> str)
+         (mconcat [long "uuid-file", help "The file to store the server uuid in", value Nothing]) <*>
+       option
+         (Just <$> str)
          (mconcat
-            [ long "metadata-file"
-            , help "The file to store synchronisation metadata in"
+            [ long "metadata-db"
+            , help "The file to store the synchronisation metadata database in"
             , value Nothing
             ]) <*>
        parseIgnoreFilesFlag)

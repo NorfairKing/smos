@@ -2,12 +2,22 @@
 
 module Smos.Sync.Server.Serve where
 
+import Data.Aeson as JSON
+import Data.Aeson.Encode.Pretty as JSON (encodePretty)
+import qualified Data.ByteString.Lazy as LB
+import Data.Text as T
+import Path
+import Path.IO
+import System.Exit
+
 import Control.Concurrent.MVar
-import Control.Concurrent.STM
+import Control.Monad.Logger
 import Control.Monad.Reader
 
 import Network.Wai as Wai
 import Network.Wai.Handler.Warp as Warp
+
+import Database.Persist.Sqlite as DB
 
 import Servant
 
@@ -18,18 +28,22 @@ import Smos.Sync.Server.OptParse
 serveSmosSyncServer :: ServeSettings -> IO ()
 serveSmosSyncServer ss@ServeSettings {..} = do
   pPrint ss
-  store@ServerStore {..} <- readStore serveSetStoreFile
-  var <- newTVarIO serverStoreItems
-  lockVar <- newMVar ()
-  let env =
-        ServerEnv
-          { serverEnvServerUUID = serverStoreServerUUID
-          , serverEnvStoreFile = serveSetStoreFile
-          , serverEnvStoreVar = var
-          , serverEnvStoreLock = lockVar
-          }
-  saveStore serveSetStoreFile store
-  Warp.run serveSetPort $ makeSyncApp env
+  runStderrLoggingT $
+    DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
+      liftIO $ do
+        uuid <- readServerUUID serveSetUUIDFile
+        store <-
+          flip DB.runSqlPool pool $ do
+            DB.runMigration migrateAll
+            readServerStore
+        cacheVar <- newMVar store
+        let env =
+              ServerEnv
+                { serverEnvServerUUID = uuid
+                , serverEnvStoreCache = cacheVar
+                , serverEnvConnection = pool
+                }
+        Warp.run serveSetPort $ makeSyncApp env
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
@@ -38,3 +52,21 @@ makeSyncApp env =
 
 syncServer :: ServerT SyncAPI SyncHandler
 syncServer = handlePostSync
+
+readServerUUID :: Path Abs File -> IO ServerUUID
+readServerUUID p = do
+  mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile p
+  case mContents of
+    Nothing -> do
+      u <- nextRandomUUID
+      writeServerUUID p u
+      pure u
+    Just contents ->
+      case JSON.eitherDecode contents of
+        Left err -> die err
+        Right u -> pure u
+
+writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
+writeServerUUID p u = do
+  ensureDir (parent p)
+  LB.writeFile (fromAbsFile p) $ JSON.encodePretty u

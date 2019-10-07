@@ -15,17 +15,21 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - aeson-pretty
   - base64-bytestring
   - bytestring
   - mergeful
   - mtl
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
   - pretty-show
   - servant
   - servant-server
   - stm
   - text
+  - typed-uuid
   - uuid
   - validity
   - validity-bytestring

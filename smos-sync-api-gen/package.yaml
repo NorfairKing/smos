@@ -18,6 +18,7 @@ library:
     - genvalidity-bytestring
     - genvalidity-mergeful
     - genvalidity-path
+    - genvalidity-typed-uuid
     - genvalidity-uuid
     - smos-sync-api
 

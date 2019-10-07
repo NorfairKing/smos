@@ -1,13 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Smos.Sync.Client.Sync where
-
-import GHC.Generics (Generic)
 
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
@@ -19,15 +16,15 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
-import Data.UUID as UUID (UUID)
-import Data.Validity
 import Data.Validity.UUID ()
 import Text.Show.Pretty
 
 import Control.Monad
 import Control.Monad.Logger
+import Control.Monad.Reader
 
 import System.Exit
+import System.FileLock
 
 import Servant.Client
 
@@ -40,55 +37,64 @@ import qualified Data.Mergeful.Timed as Mergeful
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 
-import Conduit
+import Database.Persist.Sqlite as DB
 
 import Smos.Sync.API
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.DB
+import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
-  runStderrLoggingT $
-  filterLogger (\_ ll -> ll >= setLogLevel) $ do
-    logDebugN "CLIENT START"
-    man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
-    let cenv = mkClientEnv man syncSetServerUrl
-    mMeta <- liftIO $ readStoreMeta syncSetMetadataFile
-    logDebugData "READ STORED METADATA" mMeta
-    files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
-    logDebugData "READ FILE CONTENTS" files
-    clientStore <-
-      case mMeta of
-        Nothing
-       -- Never synced yet
-       --
-       -- That means we need to run an initial sync first.
-         -> do
-          initialStore <- runInitialSync cenv
-          pure $ consolidateInitialStoreWithFiles initialStore files
-        Just meta
-       -- We have synced before.
-         -> pure $ consolidateMetaWithFiles meta files
-    logDebugData "CLIENT STORE BEFORE SYNC" clientStore
-    newClientStore <- runSync cenv clientStore
-    logDebugData "CLIENT STORE AFTER SYNC" newClientStore
-    liftIO $
-      saveClientStore syncSetIgnoreFiles syncSetMetadataFile syncSetContentsDir newClientStore
-    logDebugN "CLIENT END"
+  withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
+    runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= setLogLevel) $
+    DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool -> do
+      logDebugN "CLIENT START"
+      man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
+      let cenv = mkClientEnv man syncSetServerUrl
+      let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+      flip runReaderT env $ do
+        void $ runDB $ runMigrationSilent migrateAll
+        mUUID <- liftIO $ readServerUUID syncSetUUIDFile
+        logDebugData "READ STORED UUID" mUUID
+        files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
+        logDebugData "READ FILE CONTENTS" files
+        clientStore <-
+          case mUUID of
+            Nothing
+           -- Never synced yet
+           --
+           -- That means we need to run an initial sync first.
+             -> do
+              initialStore <- runInitialSync
+              liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
+              pure $ consolidateInitialStoreWithFiles initialStore files
+            Just uuid
+           -- We have synced before.
+             -> do
+              meta <- runDB readClientMetadata
+              logDebugData "CLIENT META MAP BEFORE SYNC" meta
+              let store = consolidateMetaMapWithFiles meta files
+              pure $ ClientStore {clientStoreServerUUID = uuid, clientStoreItems = store}
+        logDebugData "CLIENT STORE BEFORE SYNC" clientStore
+        newClientStore <- runSync clientStore
+        logDebugData "CLIENT STORE AFTER SYNC" newClientStore
+        saveClientStore syncSetIgnoreFiles syncSetContentsDir newClientStore
+        logDebugN "CLIENT END"
 
-type C = LoggingT IO
-
-runInitialSync :: ClientEnv -> C ClientStore
-runInitialSync cenv = do
+runInitialSync :: C ClientStore
+runInitialSync = do
   logDebugN "INITIAL SYNC START"
-  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore UUID SyncFile
+  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore FileUUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- liftIO $ runClientOrDie cenv $ clientSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientSync req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
@@ -98,14 +104,14 @@ runInitialSync cenv = do
   logDebugN "INITIAL SYNC END"
   pure newClientStore
 
-runSync :: ClientEnv -> ClientStore -> C ClientStore
-runSync cenv clientStore = do
+runSync :: ClientStore -> C ClientStore
+runSync clientStore = do
   logDebugN "SYNC START"
   let items = clientStoreItems clientStore
   let req = Mergeful.makeSyncRequest items
   logDebugData "SYNC REQUEST" req
   logInfoJsonData "SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- liftIO $ runClientOrDie cenv $ clientSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientSync req
   logDebugData "SYNC RESPONSE" resp
   logInfoJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $
@@ -131,77 +137,21 @@ logInfoJsonData name a =
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
-runClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
-runClient = flip runClientM
-
-runClientOrDie :: ClientEnv -> ClientM a -> IO a
-runClientOrDie cenv func = do
-  errOrResp <- runClient cenv func
-  case errOrResp of
-    Left err -> die $ show err
-    Right resp -> pure resp
-
 clientSync :: SyncRequest -> ClientM SyncResponse
 clientSync = client syncAPI
 
-data ClientStore =
-  ClientStore
-    { clientStoreServerUUID :: UUID
-    , clientStoreItems :: Mergeful.ClientStore UUID SyncFile
-    }
-  deriving (Show, Eq, Generic)
-
-instance Validity ClientStore
-
-instance FromJSON ClientStore where
-  parseJSON = withObject "ClientStore" $ \o -> ClientStore <$> o .: "server-id" <*> o .: "items"
-
-instance ToJSON ClientStore where
-  toJSON ClientStore {..} =
-    object ["server-id" .= clientStoreServerUUID, "items" .= clientStoreItems]
-
-data ClientMetaData =
-  ClientMetaData
-    { clientMetaDataServerId :: UUID
-    , clientMetaDataMap :: Map (Path Rel File) SyncFileMeta
-    }
-  deriving (Show, Eq, Generic)
-
-instance Validity ClientMetaData
-
-instance FromJSON ClientMetaData where
-  parseJSON =
-    withObject "ClientMetaData" $ \o -> ClientMetaData <$> o .: "server-id" <*> o .: "items"
-
-instance ToJSON ClientMetaData where
-  toJSON ClientMetaData {..} =
-    object ["server-id" .= clientMetaDataServerId, "items" .= clientMetaDataMap]
-
-data SyncFileMeta =
-  SyncFileMeta
-    { syncFileMetaUUID :: UUID
-    , syncFileMetaHash :: Int
-    , syncFileMetaTime :: Mergeful.ServerTime
-    }
-  deriving (Show, Eq, Generic)
-
-instance Validity SyncFileMeta
-
-instance FromJSON SyncFileMeta where
-  parseJSON =
-    withObject "SyncFileMeta" $ \o -> SyncFileMeta <$> o .: "uuid" <*> o .: "hash" <*> o .: "time"
-
-instance ToJSON SyncFileMeta where
-  toJSON SyncFileMeta {..} =
-    object ["uuid" .= syncFileMetaUUID, "hash" .= syncFileMetaHash, "time" .= syncFileMetaTime]
-
-readStoreMeta :: Path Abs File -> IO (Maybe ClientMetaData)
-readStoreMeta p = do
+readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)
+readServerUUID p = do
   mContents <- forgivingAbsence $ LB.readFile $ toFilePath p
   forM mContents $ \contents ->
     case JSON.eitherDecode contents of
       Left err -> die err
       Right store -> pure store
+
+writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
+writeServerUUID p u = do
+  ensureDir (parent p)
+  LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
 consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> ClientStore
 consolidateInitialStoreWithFiles cs contentsMap =
@@ -216,17 +166,17 @@ consolidateInitialStoreWithFiles cs contentsMap =
                }
 
 consolidateInitialSyncedItemsWithFiles ::
-     Map UUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
+     Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
 consolidateInitialSyncedItemsWithFiles syncedItems =
   M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems}) .
   contentsMapFiles
   where
     alreadySyncedMap = makeAlreadySyncedMap syncedItems
     go ::
-         Mergeful.ClientStore UUID SyncFile
+         Mergeful.ClientStore FileUUID SyncFile
       -> Path Rel File
       -> ByteString
-      -> Mergeful.ClientStore UUID SyncFile
+      -> Mergeful.ClientStore FileUUID SyncFile
     go s rf contents =
       let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
        in case M.lookup rf alreadySyncedMap of
@@ -245,20 +195,16 @@ makeAlreadySyncedMap m = M.fromList $ map go $ M.toList m
   where
     go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, (i, syncFileContents))
 
-consolidateMetaWithFiles :: ClientMetaData -> ContentsMap -> ClientStore
-consolidateMetaWithFiles ClientMetaData {..} contentsMap =
-  ClientStore clientMetaDataServerId $ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
-
 consolidateMetaMapWithFiles ::
-     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore UUID SyncFile
+     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
 consolidateMetaMapWithFiles clientMetaDataMap contentsMap
       -- The existing files need to be checked for deletions and changes.
  =
   let go1 ::
-           Mergeful.ClientStore UUID SyncFile
+           Mergeful.ClientStore FileUUID SyncFile
         -> Path Rel File
         -> SyncFileMeta
-        -> Mergeful.ClientStore UUID SyncFile
+        -> Mergeful.ClientStore FileUUID SyncFile
       go1 s rf sfm@SyncFileMeta {..} =
         case M.lookup rf $ contentsMapFiles contentsMap of
           Nothing
@@ -299,10 +245,10 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
                      }
       syncedChangedAndDeleted = M.foldlWithKey go1 Mergeful.initialClientStore clientMetaDataMap
       go2 ::
-           Mergeful.ClientStore UUID SyncFile
+           Mergeful.ClientStore FileUUID SyncFile
         -> Path Rel File
         -> ByteString
-        -> Mergeful.ClientStore UUID SyncFile
+        -> Mergeful.ClientStore FileUUID SyncFile
       go2 s rf contents =
         let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
          in Mergeful.addItemToClientStore sf s
@@ -315,15 +261,15 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
 
--- TODO this could be optimised using the sync response
-saveClientStore :: IgnoreFiles -> Path Abs File -> Path Abs Dir -> ClientStore -> IO ()
-saveClientStore igf metaFile dir store = do
-  saveMeta metaFile $ makeClientMetaData igf store
-  saveSyncFiles igf dir $ clientStoreItems store
+-- TODO this could be probably optimised using the sync response
+saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()
+saveClientStore igf dir store = do
+  runDB $ writeClientMetadata $ makeClientMetaData igf store
+  liftIO $ saveSyncFiles igf dir $ clientStoreItems store
 
 -- | We only check the synced items, because it should be the case that
 -- they're the only ones that are not empty.
-makeClientMetaData :: IgnoreFiles -> ClientStore -> ClientMetaData
+makeClientMetaData :: IgnoreFiles -> ClientStore -> Map (Path Rel File) SyncFileMeta
 makeClientMetaData igf ClientStore {..} =
   let Mergeful.ClientStore {..} = clientStoreItems
    in if not
@@ -332,7 +278,7 @@ makeClientMetaData igf ClientStore {..} =
         then error "Should not happen: make meta"
         else let go ::
                       Map (Path Rel File) SyncFileMeta
-                   -> UUID
+                   -> FileUUID
                    -> Mergeful.Timed SyncFile
                    -> Map (Path Rel File) SyncFileMeta
                  go m u Mergeful.Timed {..} =
@@ -352,11 +298,7 @@ makeClientMetaData igf ClientStore {..} =
                            if isHidden syncFilePath
                              then m
                              else goOn
-              in ClientMetaData clientStoreServerUUID $
-                 M.foldlWithKey go M.empty clientStoreSyncedItems
+              in M.foldlWithKey go M.empty clientStoreSyncedItems
 
-saveMeta :: Path Abs File -> ClientMetaData -> IO ()
-saveMeta p store = LB.writeFile (toFilePath p) $ encodePretty store
-
-saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore UUID SyncFile -> IO ()
+saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore FileUUID SyncFile -> IO ()
 saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store

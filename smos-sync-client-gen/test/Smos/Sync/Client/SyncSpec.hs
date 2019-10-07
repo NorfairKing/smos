@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -6,14 +7,14 @@ module Smos.Sync.Client.SyncSpec
   ( spec
   ) where
 
+import GHC.Generics (Generic)
+
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 import Test.Validity.Aeson
 
-import Control.Monad
-import Control.Monad.Logger
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -21,12 +22,18 @@ import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.UUID
-import GHC.Generics (Generic)
+
+import Control.Monad
+import Control.Monad.Logger
+import Control.Monad.Reader
+
 import Path
 import Servant.Client
 
+import Database.Persist.Sqlite as DB
+
 import Smos.Sync.API
+import Smos.Sync.Client.Env
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Server.TestUtils
@@ -34,9 +41,6 @@ import Smos.Sync.Server.TestUtils
 spec :: Spec
 spec = do
   genValidSpec @ClientStore
-  jsonSpecOnValid @ClientStore
-  genValidSpec @ClientMetaData
-  jsonSpecOnValid @ClientMetaData
   genValidSpec @SyncFileMeta
   jsonSpecOnValid @SyncFileMeta
   serverSpec $ do
@@ -177,12 +181,19 @@ applyCTestOp cenv m (CTestOp i cop) =
           pure $ M.adjust (const cstore') i m
 
 testInitialSync :: ClientEnv -> IO ClientStore
-testInitialSync cenv = testLogging $ runInitialSync cenv
+testInitialSync cenv = testC cenv runInitialSync
 
 testSync :: ClientEnv -> ClientStore -> IO ClientStore
-testSync cenv cs = testLogging $ runSync cenv cs
+testSync cenv cs = testC cenv $ runSync cs
 
-testLogging :: C a -> IO a
+testC :: ClientEnv -> C a -> IO a
+testC cenv func =
+  testLogging $
+  DB.withSqlitePool ":memory:" 1 $ \pool -> do
+    let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+    runReaderT func env
+
+testLogging :: LoggingT IO a -> IO a
 testLogging = runStderrLoggingT . filterLogger (\_ ll -> ll >= LevelWarn)
 
 data TestOp
@@ -253,7 +264,8 @@ applyTestOpStore cstore op =
       s' = applyTestOp s op
    in cstore {clientStoreItems = s'}
 
-applyTestOp :: Mergeful.ClientStore UUID SyncFile -> TestOp -> Mergeful.ClientStore UUID SyncFile
+applyTestOp ::
+     Mergeful.ClientStore FileUUID SyncFile -> TestOp -> Mergeful.ClientStore FileUUID SyncFile
 applyTestOp cs op =
   case op of
     AddFile sf -> Mergeful.addItemToClientStore sf cs

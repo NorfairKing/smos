@@ -56,8 +56,11 @@ tests:
     - hspec-core
     - mergeful
     - monad-logger
+    - mtl
     - path
     - path-io
+    - persistent
+    - persistent-sqlite
     - pretty-show
     - servant-client
     - smos-report
@@ -66,4 +69,5 @@ tests:
     - smos-sync-client-gen
     - smos-sync-server
     - smos-sync-server-gen
+    - text
     - uuid

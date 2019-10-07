@@ -7,6 +7,7 @@ import Data.GenValidity.ByteString ()
 import Data.GenValidity.Mergeful ()
 import Data.GenValidity.Path ()
 import Data.GenValidity.UUID ()
+import Data.GenValidity.UUID.Typed ()
 import Smos.Sync.API
 
 instance GenValid SyncFile where

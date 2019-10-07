@@ -477,8 +477,15 @@ spec =
                       fullySyncTwoClients c1 c2
                       assertClientContents c1 m1
                       assertClientContents c2 m1
-      describe "From two clients, concurrently" $
-        it "succesfully syncs two clients concurrently" $ \cenv ->
+      describe "From two clients, concurrently" $ do
+        it "succesfully syncs two of the same client concurrently" $ \cenv ->
+          forAllValid $ \m1 ->
+            withClient cenv $ \c1 -> do
+              setupClientContents c1 m1
+              fullySyncTwoClientsConcurrently c1 c1
+              cm1 <- readClientContents c1
+              shouldBeValid cm1
+        it "succesfully syncs two different clients concurrently" $ \cenv ->
           forAllValid $ \m1 ->
             forAllValid $ \m2 ->
               withClient cenv $ \c1 ->

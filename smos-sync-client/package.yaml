@@ -17,25 +17,30 @@ library:
   - aeson
   - aeson-pretty
   - bytestring
-  - microlens
   - conduit
   - containers
+  - filelock
   - filepath
   - hashable
   - http-client
   - http-client-tls
   - mergeful
+  - microlens
   - monad-logger
   - mtl
   - optparse-applicative
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
   - pretty-show
   - servant-client
   - smos-report
   - smos-sync-api
   - stm
   - text
+  - typed-uuid
   - uuid
   - validity
   - validity-bytestring

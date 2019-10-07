@@ -22,7 +22,8 @@ newtype Command =
 
 data ServeFlags =
   ServeFlags
-    { serveFlagStoreFile :: Maybe FilePath
+    { serveFlagUUIDFile :: Maybe FilePath
+    , serveFlagDatabaseFile :: Maybe FilePath
     , serveFlagPort :: Maybe Int
     }
   deriving (Show, Eq)
@@ -36,20 +37,24 @@ newtype Flags =
 data Environment =
   Environment
     { envConfigFile :: Maybe FilePath
-    , envStoreFile :: Maybe FilePath
+    , envUUIDFile :: Maybe FilePath
+    , envDatabaseFile :: Maybe FilePath
     , envPort :: Maybe Int
     }
   deriving (Show, Eq, Generic)
 
 data Configuration =
   Configuration
-    { confStoreFile :: Maybe FilePath
+    { confUUIDFile :: Maybe FilePath
+    , confDatabaseFile :: Maybe FilePath
     , confPort :: Maybe Int
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON = withObject "Configuration" $ \o -> Configuration <$> o .: "store-file" <*> o .: "port"
+  parseJSON =
+    withObject "Configuration" $ \o ->
+      Configuration <$> o .:? "uuid-file" <*> o .:? "database-file" <*> o .:? "port"
 
 newtype Dispatch =
   DispatchServe ServeSettings
@@ -57,7 +62,8 @@ newtype Dispatch =
 
 data ServeSettings =
   ServeSettings
-    { serveSetStoreFile :: Path Abs File
+    { serveSetUUIDFile :: Path Abs File
+    , serveSetDatabaseFile :: Path Abs File
     , serveSetPort :: Int
     }
   deriving (Show, Eq, Generic)

@@ -18,11 +18,16 @@ library:
   - aeson-pretty
   - base64-bytestring
   - bytestring
+  - containers
   - mergeful
+  - monad-logger
   - mtl
   - optparse-applicative
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
   - pretty-show
   - servant
   - servant-server
@@ -30,6 +35,7 @@ library:
   - stm
   - text
   - uuid
+  - typed-uuid
   - wai
   - warp
   - yaml

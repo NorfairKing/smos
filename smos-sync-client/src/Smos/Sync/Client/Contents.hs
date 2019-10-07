@@ -8,7 +8,6 @@ import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import qualified Data.Set as S
-import Data.UUID
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
@@ -54,7 +53,7 @@ filterContentsMap IgnoreNothing = id
 filterContentsMap IgnoreHiddenFiles =
   ContentsMap . M.filterWithKey (\p _ -> not $ isHidden p) . contentsMapFiles
 
-makeContentsMap :: Mergeful.ClientStore UUID SyncFile -> ContentsMap
+makeContentsMap :: Mergeful.ClientStore FileUUID SyncFile -> ContentsMap
 makeContentsMap Mergeful.ClientStore {..} =
   ContentsMap $
   M.fromList $
