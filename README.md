@@ -23,12 +23,13 @@ smos-single              ; The smos-single tool; to make a single-task project
 smos-query               : The smos-query tool; to query your workflow
 smos-archive             : The smos-archive tool: to archive smos files
 smos-docs-site           : The generator for the documentation website.
-smos-sync-api            : The API for the sync server
-smos-sync-api-gen        : Generators for the API for the sync server
+smos-api                 : The API for the smos server
+smos-api-gen             : Generators for the API for the smos server
+smos-client              : The smos client library
+smos-client-gen          : Generators for the smos client library
+smos-server              : The smos server
+smos-server-gen          : Generators for the smos server
 smos-sync-client         : The sync client tool
-smos-sync-client-gen     : Generators for the sync client
-smos-sync-server         : The sync server
-smos-sync-server-gen     : Generators for the sync server
 ```
 
 ## Sponsor this project

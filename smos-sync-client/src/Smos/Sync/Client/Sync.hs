@@ -26,8 +26,6 @@ import Control.Monad.Reader
 import System.Exit
 import System.FileLock
 
-import Servant.API
-import Servant.API.Flatten
 import Servant.Client
 
 import Path
@@ -41,7 +39,7 @@ import Network.HTTP.Client.TLS as HTTP
 
 import Database.Persist.Sqlite as DB
 
-import Smos.Sync.API
+import Smos.Client
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
@@ -138,12 +136,6 @@ logInfoJsonData name a =
 
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
-
-clientPostRegister :: Register -> ClientM NoContent
-clientPostRegister = client (flatten syncUnprotectedAPI)
-
-clientPostSync :: SyncRequest -> ClientM SyncResponse
-clientPostSync = client (flatten syncProtectedAPI)
 
 readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)
 readServerUUID p = do

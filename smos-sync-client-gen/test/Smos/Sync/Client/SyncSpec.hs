@@ -32,11 +32,12 @@ import Servant.Client
 
 import Database.Persist.Sqlite as DB
 
-import Smos.Sync.API
+import Smos.API
+import Smos.Server.TestUtils
+
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
-import Smos.Sync.Server.TestUtils
 
 spec :: Spec
 spec = do

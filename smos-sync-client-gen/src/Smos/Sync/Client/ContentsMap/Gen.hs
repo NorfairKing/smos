@@ -12,7 +12,7 @@ import Path
 
 import Test.QuickCheck
 
-import Smos.Sync.API.Gen ()
+import Smos.API.Gen ()
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap

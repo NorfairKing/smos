@@ -25,7 +25,7 @@ import Control.Monad.Reader
 
 import Database.Persist.Sql as DB
 
-import Smos.Sync.API
+import Smos.API
 
 import Smos.Sync.Client.DB
 

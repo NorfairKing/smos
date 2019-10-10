@@ -10,15 +10,17 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Sync.Client.DB
-  ( module Smos.Sync.Client.DB
+module Smos.Server.DB
+  ( module Smos.Server.DB
   , module Database.Persist
   , module Database.Persist.Sql
   ) where
 
 import GHC.Generics (Generic)
 
+import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
+import Data.Time
 
 import Path
 
@@ -32,11 +34,22 @@ share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
 
+User
+    username Username
+    hashedPassword HashedPassword
+    created UTCTime
 
-ClientFile
+    UniqueUsername username
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+ServerFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
-    hash Int
+    contents ByteString
     time ServerTime
 
     UniquePath path
