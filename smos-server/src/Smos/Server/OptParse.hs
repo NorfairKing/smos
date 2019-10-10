@@ -41,11 +41,11 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
           let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
           serveSetUUIDFile <-
             case serveFlagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
-              Nothing -> resolveFile' "smos-sync-server-uuid.json"
+              Nothing -> resolveFile' "smos-server-uuid.json"
               Just fp -> resolveFile' fp
           serveSetDatabaseFile <-
             case serveFlagDatabaseFile <|> envDatabaseFile <|> (mc >>= confDatabaseFile) of
-              Nothing -> resolveFile' "smos-sync-server-database.sqlite3"
+              Nothing -> resolveFile' "smos-server-database.sqlite3"
               Just fp -> resolveFile' fp
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
