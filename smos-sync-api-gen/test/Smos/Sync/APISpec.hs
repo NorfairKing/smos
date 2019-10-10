@@ -12,6 +12,10 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
+  genValidSpec @Username
+  jsonSpecOnValid @Username
+  genValidSpec @Register
+  jsonSpecOnValid @Register
   genValidSpec @SyncFile
   jsonSpecOnValid @SyncFile
   genValidSpec @SyncRequest

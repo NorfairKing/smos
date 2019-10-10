@@ -18,9 +18,11 @@ library:
     - genvalidity-bytestring
     - genvalidity-mergeful
     - genvalidity-path
+    - genvalidity-text
     - genvalidity-typed-uuid
     - genvalidity-uuid
     - smos-sync-api
+    - text
 
 tests:
   smos-sync-api-test:

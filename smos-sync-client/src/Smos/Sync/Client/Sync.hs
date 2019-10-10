@@ -140,9 +140,9 @@ logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
 clientPostRegister :: Register -> ClientM NoContent
-clientPostSync :: SyncRequest -> ClientM SyncResponse
 clientPostRegister = client (flatten syncUnprotectedAPI)
 
+clientPostSync :: SyncRequest -> ClientM SyncResponse
 clientPostSync = client (flatten syncProtectedAPI)
 
 readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)

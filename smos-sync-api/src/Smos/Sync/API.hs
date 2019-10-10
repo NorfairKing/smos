@@ -41,7 +41,7 @@ import Database.Persist.Sql
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Timed
 
-import Servant.API
+import Servant.API as X
 import Servant.API.Generic
 
 import Smos.Sync.API.HashedPassword as X
@@ -64,7 +64,7 @@ syncUnprotectedAPI = Proxy
 
 type SyncUnprotectedAPI = ToServantApi UnprotectedRoutes
 
-data UnprotectedRoutes route =
+newtype UnprotectedRoutes route =
   UnprotectedRoutes
     { postRegister :: !(route :- PostRegister)
     }
@@ -75,7 +75,7 @@ syncProtectedAPI = Proxy
 
 type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
-data ProtectedRoutes route =
+newtype ProtectedRoutes route =
   ProtectedRoutes
     { postSync :: !(route :- PostSync)
     }
