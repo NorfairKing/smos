@@ -19,7 +19,7 @@ import Path.IO
 
 import Smos.Report.Streaming
 
-import Smos.Sync.API
+import Smos.API
 
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 

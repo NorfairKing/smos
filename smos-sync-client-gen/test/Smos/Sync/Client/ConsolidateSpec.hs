@@ -12,7 +12,7 @@ import Data.Mergeful.Timed
 import qualified Data.Set as S
 import Text.Show.Pretty
 
-import Smos.Sync.API
+import Smos.API
 
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))

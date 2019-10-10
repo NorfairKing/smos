@@ -9,14 +9,14 @@ import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
 
-import Smos.Sync.Client.OptParse.Types
+import Smos.Server.TestUtils
 
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
+import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Client.TestUtils
-import Smos.Sync.Server.TestUtils
 
 spec :: Spec
 spec =

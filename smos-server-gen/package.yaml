@@ -1,4 +1,4 @@
-name: smos-sync-client-gen
+name: smos-server-gen
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -15,29 +15,28 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
-  - bytestring
-  - containers
-  - genvalidity
-  - genvalidity-hspec
   - hspec
   - hspec-core
   - http-client
+  - http-types
   - mergeful
+  - monad-logger
   - path
   - path-io
+  - persistent-sqlite
   - servant-client
-  - smos-api
   - smos-api-gen
   - smos-client
-  - smos-server-gen
-  - smos-sync-client
+  - smos-client-gen
+  - smos-server
   - stm
+  - text
   - uuid
   - wai
   - warp
 
 tests:
-  smos-sync-client-test:
+  smos-server-test:
     main: Spec.hs
     source-dirs: test/
     ghc-options:
@@ -47,31 +46,13 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - async
-    - bytestring
-    - containers
     - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
-    - genvalidity-hspec-optics
     - hspec
-    - hspec-core
-    - mergeful
-    - monad-logger
-    - mtl
     - path
     - path-io
-    - persistent
-    - persistent-sqlite
-    - pretty-show
     - servant-client
-    - smos-api
     - smos-client
     - smos-client-gen
-    - smos-report
-    - smos-server
     - smos-server-gen
-    - smos-sync-client
-    - smos-sync-client-gen
-    - text
-    - uuid

@@ -1,4 +1,4 @@
-name: smos-sync-client
+name: smos-server
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -16,16 +16,10 @@ library:
   dependencies:
   - aeson
   - aeson-pretty
+  - base64-bytestring
   - bytestring
-  - conduit
   - containers
-  - filelock
-  - filepath
-  - hashable
-  - http-client
-  - http-client-tls
   - mergeful
-  - microlens
   - monad-logger
   - mtl
   - optparse-applicative
@@ -36,25 +30,20 @@ library:
   - persistent-template
   - pretty-show
   - servant
-  - servant-client
-  - servant-flatten
-  - smos-report
+  - servant-server
   - smos-api
-  - smos-client
   - stm
   - text
+  - time
   - typed-uuid
   - uuid
-  - validity
-  - validity-bytestring
-  - validity-containers
-  - validity-path
-  - validity-uuid
+  - wai
+  - warp
   - yaml
 
 executables:
-  smos-sync-client:
+  smos-server:
     main: Main.hs
     source-dirs: app
     dependencies:
-    - smos-sync-client
+    - smos-server

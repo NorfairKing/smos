@@ -1,4 +1,4 @@
-name: smos-sync-client-gen
+name: smos-client-gen
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -26,18 +26,15 @@ library:
   - path
   - path-io
   - servant-client
-  - smos-api
   - smos-api-gen
   - smos-client
-  - smos-server-gen
-  - smos-sync-client
   - stm
   - uuid
   - wai
   - warp
 
 tests:
-  smos-sync-client-test:
+  smos-client-test:
     main: Spec.hs
     source-dirs: test/
     ghc-options:
@@ -65,13 +62,9 @@ tests:
     - persistent-sqlite
     - pretty-show
     - servant-client
+    - smos-report
     - smos-api
     - smos-client
     - smos-client-gen
-    - smos-report
-    - smos-server
-    - smos-server-gen
-    - smos-sync-client
-    - smos-sync-client-gen
     - text
     - uuid

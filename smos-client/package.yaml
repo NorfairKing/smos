@@ -1,4 +1,4 @@
-name: smos-sync-client
+name: smos-client
 version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
@@ -40,7 +40,6 @@ library:
   - servant-flatten
   - smos-report
   - smos-api
-  - smos-client
   - stm
   - text
   - typed-uuid
@@ -51,10 +50,3 @@ library:
   - validity-path
   - validity-uuid
   - yaml
-
-executables:
-  smos-sync-client:
-    main: Main.hs
-    source-dirs: app
-    dependencies:
-    - smos-sync-client
