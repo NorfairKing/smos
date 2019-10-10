@@ -33,6 +33,13 @@ packages:
   original:
     hackage: genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
 - completed:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+    pantry-tree:
+      size: 325
+      sha256: 04f12c7bef2c3f9a25d94eb9489752ed498db8e243069fe95838dbb51df1dcb3
+  original:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+- completed:
     cabal-file:
       size: 1917
       sha256: 68c625360fc4b5c12e242f62704d9f345bfc5080e26c706f44b1422859fee3d2

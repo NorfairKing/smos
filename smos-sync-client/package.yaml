@@ -36,6 +36,7 @@ library:
   - persistent-template
   - pretty-show
   - servant-client
+  - servant-flatten
   - smos-report
   - smos-sync-api
   - stm

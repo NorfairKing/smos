@@ -26,6 +26,7 @@ import Control.Monad.Reader
 import System.Exit
 import System.FileLock
 
+import Servant.API.Flatten
 import Servant.Client
 
 import Path
@@ -94,7 +95,7 @@ runInitialSync = do
   let req = Mergeful.makeSyncRequest clientStore
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runClientOrDie $ clientSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
@@ -111,7 +112,7 @@ runSync clientStore = do
   let req = Mergeful.makeSyncRequest items
   logDebugData "SYNC REQUEST" req
   logInfoJsonData "SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runClientOrDie $ clientSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync req
   logDebugData "SYNC RESPONSE" resp
   logInfoJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $
@@ -137,8 +138,8 @@ logInfoJsonData name a =
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
-clientSync :: SyncRequest -> ClientM SyncResponse
-clientSync = client syncAPI
+clientPostSync :: SyncRequest -> ClientM SyncResponse
+clientPostSync = client (flatten syncAPI)
 
 readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)
 readServerUUID p = do

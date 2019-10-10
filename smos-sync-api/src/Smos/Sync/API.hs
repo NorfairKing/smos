@@ -18,6 +18,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
+import Data.Proxy
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
@@ -35,7 +36,32 @@ import Database.Persist.Sql
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Timed
 
-import Servant
+import Servant.API
+import Servant.API.Generic
+
+syncAPI :: Proxy SyncAPI
+syncAPI = Proxy
+
+type SyncAPI = ToServantApi APIRoutes
+
+data APIRoutes route =
+  APIRoutes
+    -- { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes
+    { protectedRoutes :: route :- ToServantApi ProtectedRoutes
+    }
+  deriving (Generic)
+
+data UnprotectedRoutes route =
+  UnprotectedRoutes
+  deriving (Generic)
+
+data ProtectedRoutes route =
+  ProtectedRoutes
+    { postSync :: !(route :- PostSync)
+    }
+  deriving (Generic)
+
+type PostSync = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
 
 type FileUUID = UUID SyncFile
 
@@ -94,9 +120,6 @@ instance ToJSON SyncFile where
   toJSON SyncFile {..} =
     object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-syncAPI :: Proxy SyncAPI
-syncAPI = Proxy
-
 type SyncRequest = Mergeful.SyncRequest FileUUID SyncFile
 
 data SyncResponse =
@@ -114,5 +137,3 @@ instance FromJSON SyncResponse where
 instance ToJSON SyncResponse where
   toJSON SyncResponse {..} =
     object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
-
-type SyncAPI = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse

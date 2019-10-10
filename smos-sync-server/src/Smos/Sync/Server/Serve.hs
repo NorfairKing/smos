@@ -19,7 +19,9 @@ import Network.Wai.Handler.Warp as Warp
 
 import Database.Persist.Sqlite as DB
 
-import Servant
+import Servant.API.Generic
+import Servant.Server as Servant
+import Servant.Server.Generic
 
 import Smos.Sync.API
 import Smos.Sync.Server.Handler
@@ -48,10 +50,19 @@ serveSmosSyncServer ss@ServeSettings {..} = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   Servant.serve syncAPI $
-  hoistServer syncAPI ((`runReaderT` env) :: SyncHandler a -> Handler a) syncServer
+  hoistServer syncAPI ((`runReaderT` env) :: SyncHandler a -> Handler a) syncServantServer
 
-syncServer :: ServerT SyncAPI SyncHandler
-syncServer = handlePostSync
+syncServantServer :: ServerT SyncAPI SyncHandler
+syncServantServer = toServant syncServerRecord
+
+syncServerRecord :: APIRoutes (AsServerT SyncHandler)
+syncServerRecord = APIRoutes {protectedRoutes = toServant syncServerProtectedRoutes}
+
+syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT SyncHandler)
+syncServerUnprotectedRoutes = UnprotectedRoutes
+
+syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
+syncServerProtectedRoutes = ProtectedRoutes {postSync = handlePostSync}
 
 readServerUUID :: Path Abs File -> IO ServerUUID
 readServerUUID p = do

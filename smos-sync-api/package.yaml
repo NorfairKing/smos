@@ -26,7 +26,6 @@ library:
   - persistent-sqlite
   - pretty-show
   - servant
-  - servant-server
   - stm
   - text
   - typed-uuid

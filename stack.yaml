@@ -26,6 +26,7 @@ extra-deps:
 
 - typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
 - genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+- servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
 - git: https://github.com/GaloisInc/sqlite.git
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
