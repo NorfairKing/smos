@@ -34,8 +34,9 @@ library:
   - smos-sync-api
   - stm
   - text
-  - uuid
+  - time
   - typed-uuid
+  - uuid
   - wai
   - warp
   - yaml

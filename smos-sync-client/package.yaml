@@ -35,6 +35,7 @@ library:
   - persistent-sqlite
   - persistent-template
   - pretty-show
+  - servant
   - servant-client
   - servant-flatten
   - smos-report

@@ -6,6 +6,11 @@ import Data.UUID.Typed as X
 
 import Text.Show.Pretty as X
 
+import Servant.API as X
+import Servant.Server as X
+
+import Control.Monad.Except as X
+
 import Smos.Sync.API as X
 
 import Smos.Sync.Server.DB as X

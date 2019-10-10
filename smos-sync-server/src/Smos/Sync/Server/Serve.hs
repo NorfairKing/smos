@@ -56,10 +56,14 @@ syncServantServer :: ServerT SyncAPI SyncHandler
 syncServantServer = toServant syncServerRecord
 
 syncServerRecord :: APIRoutes (AsServerT SyncHandler)
-syncServerRecord = APIRoutes {protectedRoutes = toServant syncServerProtectedRoutes}
+syncServerRecord =
+  APIRoutes
+    { unprotectedRoutes = toServant syncServerUnprotectedRoutes
+    , protectedRoutes = toServant syncServerProtectedRoutes
+    }
 
 syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT SyncHandler)
-syncServerUnprotectedRoutes = UnprotectedRoutes
+syncServerUnprotectedRoutes = UnprotectedRoutes {postRegister = handlePostRegister}
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
 syncServerProtectedRoutes = ProtectedRoutes {postSync = handlePostSync}

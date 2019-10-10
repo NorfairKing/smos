@@ -20,6 +20,7 @@ import GHC.Generics (Generic)
 
 import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
+import Data.Time
 
 import Path
 
@@ -32,6 +33,17 @@ import Smos.Sync.API
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
+
+User
+    username Username
+    hashedPassword HashedPassword
+    created UTCTime
+
+    UniqueUsername username
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 
 
 ServerFile

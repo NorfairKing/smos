@@ -26,6 +26,7 @@ import Control.Monad.Reader
 import System.Exit
 import System.FileLock
 
+import Servant.API
 import Servant.API.Flatten
 import Servant.Client
 
@@ -138,8 +139,11 @@ logInfoJsonData name a =
 logDebugData :: Show a => Text -> a -> C ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
+clientPostRegister :: Register -> ClientM NoContent
 clientPostSync :: SyncRequest -> ClientM SyncResponse
-clientPostSync = client (flatten syncAPI)
+clientPostRegister = client (flatten syncUnprotectedAPI)
+
+clientPostSync = client (flatten syncProtectedAPI)
 
 readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)
 readServerUUID p = do

@@ -8,7 +8,10 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Sync.API where
+module Smos.Sync.API
+  ( module Smos.Sync.API
+  , module X
+  ) where
 
 import GHC.Generics (Generic)
 
@@ -20,11 +23,13 @@ import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import Data.Proxy
 import qualified Data.Text as T
+import Data.Text (Text)
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
 import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Path ()
+import Data.Validity.Text ()
 import Data.Validity.UUID ()
 
 import Path
@@ -39,6 +44,9 @@ import Data.Mergeful.Timed
 import Servant.API
 import Servant.API.Generic
 
+import Smos.Sync.API.HashedPassword as X
+import Smos.Sync.API.Username as X
+
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
 
@@ -46,20 +54,47 @@ type SyncAPI = ToServantApi APIRoutes
 
 data APIRoutes route =
   APIRoutes
-    -- { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes
-    { protectedRoutes :: route :- ToServantApi ProtectedRoutes
+    { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes
+    , protectedRoutes :: route :- ToServantApi ProtectedRoutes
     }
   deriving (Generic)
 
+syncUnprotectedAPI :: Proxy SyncUnprotectedAPI
+syncUnprotectedAPI = Proxy
+
+type SyncUnprotectedAPI = ToServantApi UnprotectedRoutes
+
 data UnprotectedRoutes route =
   UnprotectedRoutes
+    { postRegister :: !(route :- PostRegister)
+    }
   deriving (Generic)
+
+syncProtectedAPI :: Proxy SyncProtectedAPI
+syncProtectedAPI = Proxy
+
+type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route =
   ProtectedRoutes
     { postSync :: !(route :- PostSync)
     }
   deriving (Generic)
+
+type PostRegister = "register" :> ReqBody '[ JSON] Register :> PostNoContent '[ JSON] NoContent
+
+data Register =
+  Register
+    { registerUsername :: Username
+    , registerPassword :: Text
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity Register
+
+instance ToJSON Register
+
+instance FromJSON Register
 
 type PostSync = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
 
