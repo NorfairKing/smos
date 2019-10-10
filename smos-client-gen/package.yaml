@@ -28,7 +28,6 @@ library:
   - servant-client
   - smos-api-gen
   - smos-client
-  - smos-server-gen
   - stm
   - uuid
   - wai
@@ -67,7 +66,5 @@ tests:
     - smos-api
     - smos-client
     - smos-client-gen
-    - smos-server
-    - smos-server-gen
     - text
     - uuid

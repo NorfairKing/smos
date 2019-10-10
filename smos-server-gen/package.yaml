@@ -25,6 +25,9 @@ library:
   - path-io
   - persistent-sqlite
   - servant-client
+  - smos-api-gen
+  - smos-client
+  - smos-client-gen
   - smos-server
   - stm
   - text
@@ -49,5 +52,7 @@ tests:
     - hspec
     - path
     - path-io
+    - servant-client
     - smos-client
-
+    - smos-client-gen
+    - smos-server-gen

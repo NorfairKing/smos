@@ -21,6 +21,8 @@ import Network.Wai.Handler.Warp as Warp (testWithApplication)
 import Test.Hspec
 import Test.Hspec.Core.QuickCheck
 
+import Smos.API.Gen ()
+
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
 
@@ -52,3 +54,15 @@ withTestServer func = do
           Warp.testWithApplication mkApp $ \p ->
             let cenv = mkClientEnv man (BaseUrl Http "127.0.0.1" p "")
              in func cenv
+
+testClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
+testClient = flip runClientM
+
+testClientOrErr :: ClientEnv -> ClientM a -> IO a
+testClientOrErr cenv func = do
+  res <- testClient cenv func
+  case res of
+    Left err -> do
+      expectationFailure $ show err
+      undefined
+    Right r -> pure r
