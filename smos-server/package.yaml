@@ -19,6 +19,7 @@ library:
   - base64-bytestring
   - bytestring
   - containers
+  - jose
   - mergeful
   - monad-logger
   - mtl
@@ -30,6 +31,8 @@ library:
   - persistent-template
   - pretty-show
   - servant
+  - servant-auth
+  - servant-auth-server
   - servant-server
   - smos-api
   - stm

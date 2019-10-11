@@ -24,6 +24,7 @@ library:
   - path
   - path-io
   - persistent-sqlite
+  - servant-auth-server
   - servant-client
   - smos-api-gen
   - smos-client

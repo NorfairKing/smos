@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Server.Handler.PostRegister
-  ( handlePostRegister
+  ( servePostRegister
   ) where
 
 import Smos.Server.Handler.Import
@@ -12,8 +12,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 
-handlePostRegister :: Register -> SyncHandler NoContent
-handlePostRegister Register {..} = do
+servePostRegister :: Register -> SyncHandler NoContent
+servePostRegister Register {..} = do
   maybeHashedPassword <- liftIO $ passwordHash registerPassword
   case maybeHashedPassword of
     Nothing -> throwError err400 {errBody = "Failed to hash password."}
@@ -21,11 +21,8 @@ handlePostRegister Register {..} = do
       now <- liftIO getCurrentTime
       let user =
             User
-              { userUsername = registerUsername
-              , userHashedPassword = hashedPassword
-              , userCreated = now
-              }
-      maybeUserEntity <- runDB . getBy $ UniqueUsername $ userUsername user
+              {userName = registerUsername, userHashedPassword = hashedPassword, userCreated = now}
+      maybeUserEntity <- runDB . getBy $ UniqueUsername $ userName user
       case maybeUserEntity of
         Nothing -> runDB $ insert_ user
         Just _ ->

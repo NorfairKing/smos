@@ -10,6 +10,7 @@ import Servant.API as X
 import Servant.Server as X
 
 import Control.Monad.Except as X
+import Control.Monad.Reader as X
 
 import Smos.API as X
 

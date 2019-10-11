@@ -44,6 +44,9 @@ import Data.Mergeful.Timed
 import Servant.API as X
 import Servant.API.Generic
 
+import Servant.Auth
+import Servant.Auth.Server
+
 import Smos.API.HashedPassword as X
 import Smos.API.Username as X
 
@@ -64,14 +67,31 @@ syncUnprotectedAPI = Proxy
 
 type SyncUnprotectedAPI = ToServantApi UnprotectedRoutes
 
-newtype UnprotectedRoutes route =
+data UnprotectedRoutes route =
   UnprotectedRoutes
-    { postRegister :: route :- PostRegister
+    { postRegister :: !(route :- PostRegister)
+    , postLogin :: !(route :- PostLogin)
     }
   deriving (Generic)
 
 syncProtectedAPI :: Proxy SyncProtectedAPI
 syncProtectedAPI = Proxy
+
+type ProtectAPI = Auth '[ JWT] AuthCookie
+
+newtype AuthCookie =
+  AuthCookie
+    { authCookieUsername :: Username
+    }
+  deriving (Show, Eq, Ord, Generic)
+
+instance FromJSON AuthCookie
+
+instance ToJSON AuthCookie
+
+instance FromJWT AuthCookie
+
+instance ToJWT AuthCookie
 
 type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
@@ -95,6 +115,22 @@ instance Validity Register
 instance ToJSON Register
 
 instance FromJSON Register
+
+type PostLogin
+   = "login" :> ReqBody '[ JSON] Login :> PostNoContent '[ JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+
+data Login =
+  Login
+    { loginUsername :: Username
+    , loginPassword :: Text
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity Login
+
+instance ToJSON Login
+
+instance FromJSON Login
 
 type PostSync = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
 

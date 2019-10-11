@@ -19,6 +19,7 @@ import Data.Mergeful.Collection (ServerStore(..))
 import Data.Mergeful.Timed (Timed(..))
 
 import Servant
+import Servant.Auth.Server
 
 import Smos.API
 
@@ -31,6 +32,8 @@ data ServerEnv =
     { serverEnvServerUUID :: ServerUUID
     , serverEnvStoreCache :: MVar (Mergeful.ServerStore FileUUID SyncFile)
     , serverEnvConnection :: DB.ConnectionPool
+    , serverEnvCookieSettings :: CookieSettings
+    , serverEnvJWTSettings :: JWTSettings
     }
   deriving (Generic)
 
@@ -66,7 +69,7 @@ saveStore = void . M.traverseWithKey go . serverStoreItems
       let SyncFile {..} = timedValue
        in void $
           upsertBy
-            (UniquePath syncFilePath)
+            (UniqueServerFilePath syncFilePath)
             (ServerFile
                { serverFileUuid = u
                , serverFilePath = syncFilePath

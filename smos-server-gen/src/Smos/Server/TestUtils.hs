@@ -8,6 +8,7 @@ import Control.Concurrent.MVar
 import Control.Monad
 import Control.Monad.Logger
 
+import Servant.Auth.Server as Auth
 import Servant.Client
 
 import Database.Persist.Sqlite as DB
@@ -39,11 +40,14 @@ withTestServer func = do
                   void $ DB.runMigrationSilent migrateAll
                   readServerStore
               cacheVar <- newMVar store
+              jwtKey <- Auth.generateKey
               let env =
                     ServerEnv
                       { serverEnvServerUUID = uuid
                       , serverEnvStoreCache = cacheVar
                       , serverEnvConnection = pool
+                      , serverEnvCookieSettings = defaultCookieSettings
+                      , serverEnvJWTSettings = defaultJWTSettings jwtKey
                       }
               pure $ Server.makeSyncApp env
         Warp.testWithApplication mkApp $ \p ->

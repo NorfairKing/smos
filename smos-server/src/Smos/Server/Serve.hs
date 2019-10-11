@@ -2,10 +2,11 @@
 
 module Smos.Server.Serve where
 
+import Crypto.JOSE.JWK (JWK)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
-import Data.Text as T
+import qualified Data.Text as T
 import Path
 import Path.IO
 import System.Exit
@@ -20,6 +21,7 @@ import Network.Wai.Handler.Warp as Warp
 import Database.Persist.Sqlite as DB
 
 import Servant.API.Generic
+import Servant.Auth.Server as Auth
 import Servant.Server as Servant
 import Servant.Server.Generic
 
@@ -39,13 +41,38 @@ serveSmosSyncServer ss@ServeSettings {..} = do
             DB.runMigration migrateAll
             readServerStore
         cacheVar <- newMVar store
+        jwtKey <- loadSigningKey
         let env =
               ServerEnv
                 { serverEnvServerUUID = uuid
                 , serverEnvStoreCache = cacheVar
                 , serverEnvConnection = pool
+                , serverEnvCookieSettings = defaultCookieSettings
+                , serverEnvJWTSettings = defaultJWTSettings jwtKey
                 }
         Warp.run serveSetPort $ makeSyncApp env
+
+-- TODO put this file in settings
+signingKeyFile :: IO (Path Abs File)
+signingKeyFile = resolveFile' "signing-key.json"
+
+storeSigningKey :: JWK -> IO ()
+storeSigningKey key_ = do
+  skf <- signingKeyFile
+  LB.writeFile (toFilePath skf) (JSON.encodePretty key_)
+
+loadSigningKey :: IO JWK
+loadSigningKey = do
+  skf <- signingKeyFile
+  mErrOrKey <- forgivingAbsence $ JSON.eitherDecode <$> LB.readFile (toFilePath skf)
+  case mErrOrKey of
+    Nothing -> do
+      key_ <- Auth.generateKey
+      storeSigningKey key_
+      pure key_
+    Just (Left err) ->
+      die $ unlines ["Failed to load signing key from file", fromAbsFile skf, "with error:", err]
+    Just (Right r) -> pure r
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
@@ -63,10 +90,11 @@ syncServerRecord =
     }
 
 syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT SyncHandler)
-syncServerUnprotectedRoutes = UnprotectedRoutes {postRegister = handlePostRegister}
+syncServerUnprotectedRoutes =
+  UnprotectedRoutes {postRegister = servePostRegister, postLogin = servePostLogin}
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
-syncServerProtectedRoutes = ProtectedRoutes {postSync = handlePostSync}
+syncServerProtectedRoutes = ProtectedRoutes {postSync = servePostSync}
 
 readServerUUID :: Path Abs File -> IO ServerUUID
 readServerUUID p = do

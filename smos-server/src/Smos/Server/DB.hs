@@ -35,11 +35,11 @@ share
   [persistLowerCase|
 
 User
-    username Username
+    name Username
     hashedPassword HashedPassword
     created UTCTime
 
-    UniqueUsername username
+    UniqueUsername name
 
     deriving Show
     deriving Eq
@@ -52,8 +52,8 @@ ServerFile
     contents ByteString
     time ServerTime
 
-    UniquePath path
-    UniqueUUID uuid
+    UniqueServerFilePath path
+    UniqueServerFileUUID uuid
 
     deriving Show
     deriving Eq

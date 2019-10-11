@@ -50,3 +50,5 @@ library:
   - validity-path
   - validity-uuid
   - yaml
+  - servant-auth
+  - servant-auth-server

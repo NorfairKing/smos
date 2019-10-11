@@ -1,20 +1,19 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PostSync
-  ( handlePostSync
+  ( servePostSync
   ) where
 
 import Smos.Server.Handler.Import
 
 import Control.Concurrent.MVar
-import Control.Monad.Reader
 
 import Database.Persist.Sql as DB
 
 import qualified Data.Mergeful as Mergeful
 
-handlePostSync :: SyncRequest -> SyncHandler SyncResponse
-handlePostSync request = do
+servePostSync :: SyncRequest -> SyncHandler SyncResponse
+servePostSync request = do
   ServerEnv {..} <- ask
   respItems <-
     liftIO $
