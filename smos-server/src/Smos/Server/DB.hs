@@ -47,6 +47,7 @@ User
 
 
 ServerFile
+    user UserId
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
     contents ByteString

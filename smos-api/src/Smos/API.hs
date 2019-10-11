@@ -97,7 +97,7 @@ type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
 newtype ProtectedRoutes route =
   ProtectedRoutes
-    { postSync :: route :- PostSync
+    { postSync :: route :- ProtectAPI :> PostSync
     }
   deriving (Generic)
 

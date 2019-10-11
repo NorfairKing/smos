@@ -60,9 +60,10 @@ readServerStore = do
 
 saveStore ::
      forall m. MonadIO m
-  => Mergeful.ServerStore FileUUID SyncFile
+  => UserId -> Mergeful.ServerStore FileUUID SyncFile
   -> SqlPersistT m ()
-saveStore = void . M.traverseWithKey go . serverStoreItems
+saveStore uid=
+  void . M.traverseWithKey go . serverStoreItems
   where
     go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
     go u Timed {..} =
@@ -71,7 +72,7 @@ saveStore = void . M.traverseWithKey go . serverStoreItems
           upsertBy
             (UniqueServerFilePath syncFilePath)
             (ServerFile
-               { serverFileUuid = u
+               { serverFileUser = uid, serverFileUuid = u
                , serverFilePath = syncFilePath
                , serverFileContents = syncFileContents
                , serverFileTime = timedTime

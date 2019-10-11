@@ -12,8 +12,8 @@ import Database.Persist.Sql as DB
 
 import qualified Data.Mergeful as Mergeful
 
-servePostSync :: SyncRequest -> SyncHandler SyncResponse
-servePostSync request = do
+servePostSync :: AuthCookie -> SyncRequest -> SyncHandler SyncResponse
+servePostSync (AuthCookie un) request = do
   ServerEnv {..} <- ask
   respItems <-
     liftIO $

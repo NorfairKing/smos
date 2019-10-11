@@ -25,7 +25,7 @@ clientPostLogin ::
   -> ClientM (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
 clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
 
-clientPostSync :: SyncRequest -> ClientM SyncResponse
+clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientPostSync = client (flatten syncProtectedAPI)
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)

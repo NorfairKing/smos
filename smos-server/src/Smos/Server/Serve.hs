@@ -76,8 +76,13 @@ loadSigningKey = do
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
-  Servant.serve syncAPI $
-  hoistServer syncAPI ((`runReaderT` env) :: SyncHandler a -> Handler a) syncServantServer
+  let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
+   in Servant.serveWithcontext syncAPI cfg $
+      hoistServerWithContext
+        syncAPI
+        (Proxy :: Proxy '[ CookieSettings, JWTSettings])
+        ((`runReaderT` env) :: SyncHandler a -> Handler a)
+        syncServantServer
 
 syncServantServer :: ServerT SyncAPI SyncHandler
 syncServantServer = toServant syncServerRecord
