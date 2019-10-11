@@ -28,6 +28,10 @@ instance GenValid Register where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid Login where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid SyncFile where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

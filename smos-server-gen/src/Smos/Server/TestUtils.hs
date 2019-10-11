@@ -9,7 +9,9 @@ import Control.Monad
 import Control.Monad.Logger
 
 import Servant.Auth.Server as Auth
+import Servant.Auth.Client as Auth
 import Servant.Client
+
 
 import Database.Persist.Sqlite as DB
 
@@ -20,6 +22,7 @@ import Test.Hspec
 import Test.Hspec.Core.QuickCheck
 
 import Smos.API.Gen ()
+import Smos.Client
 
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
@@ -65,3 +68,19 @@ testClientOrErr cenv func = do
       expectationFailure $ show err
       undefined
     Right r -> pure r
+
+registerLogin :: Register -> Login
+registerLogin register =
+  Login {loginUsername = registerUsername register, loginPassword = registerPassword register}
+
+testLogin :: ClientEnv -> Login -> IO Token
+testLogin cenv lf = do
+  errOrRes <- login cenv lf
+  case errOrRes of
+    Left err -> failure $ "Failed to login: " <> show err
+    Right t -> pure t
+
+failure :: String -> IO a
+failure s = do
+  expectationFailure s
+  error "Won't get here anyway"
