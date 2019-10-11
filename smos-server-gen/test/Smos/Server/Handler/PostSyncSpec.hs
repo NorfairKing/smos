@@ -15,6 +15,7 @@ spec =
   serverSpec $
   describe "PostSync" $
   it "produces valid resuls" $ \cenv ->
-    forAllValid $ \request -> do
-      response <- testClientOrErr cenv (clientPostSync request)
-      shouldBeValid response
+    forAllValid $ \request ->
+      withNewUser cenv $ \t -> do
+        response <- testClientOrErr cenv (clientPostSync t request)
+        shouldBeValid response

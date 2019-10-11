@@ -4,14 +4,12 @@ module Smos.Server.TestUtils where
 
 import Control.Monad.IO.Class
 
-import Control.Concurrent.MVar
 import Control.Monad
 import Control.Monad.Logger
 
-import Servant.Auth.Server as Auth
 import Servant.Auth.Client as Auth
+import Servant.Auth.Server as Auth
 import Servant.Client
-
 
 import Database.Persist.Sqlite as DB
 
@@ -38,16 +36,11 @@ withTestServer func = do
       liftIO $ do
         let mkApp = do
               uuid <- nextRandomUUID
-              store <-
-                flip DB.runSqlPool pool $ do
-                  void $ DB.runMigrationSilent migrateAll
-                  readServerStore
-              cacheVar <- newMVar store
+              flip DB.runSqlPool pool $ void $ DB.runMigrationSilent migrateAll
               jwtKey <- Auth.generateKey
               let env =
                     ServerEnv
                       { serverEnvServerUUID = uuid
-                      , serverEnvStoreCache = cacheVar
                       , serverEnvConnection = pool
                       , serverEnvCookieSettings = defaultCookieSettings
                       , serverEnvJWTSettings = defaultJWTSettings jwtKey
@@ -84,3 +77,26 @@ failure :: String -> IO a
 failure s = do
   expectationFailure s
   error "Won't get here anyway"
+
+withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
+withNewUser cenv func = withNewUserAndData cenv $ const func
+
+withNewUserAndData :: ClientEnv -> (Register -> Token -> IO ()) -> Expectation
+withNewUserAndData cenv func = do
+  r <- randomRegistration
+  withNewGivenUser cenv r $ func r
+
+randomRegistration :: IO Register
+randomRegistration = do
+  u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
+  u2 <- nextRandomUUID :: IO (UUID a)
+  un <- parseUsername $ uuidText u1
+  pure Register {registerUsername = un, registerPassword = uuidText u2}
+
+withNewGivenUser :: MonadIO m => ClientEnv -> Register -> (Token -> m a) -> m a
+withNewGivenUser cenv r func = do
+  t <-
+    liftIO $ do
+      NoContent <- testClientOrErr cenv $ clientPostRegister r
+      testLogin cenv (registerLogin r)
+  func t

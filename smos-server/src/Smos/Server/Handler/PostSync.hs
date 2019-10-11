@@ -6,21 +6,18 @@ module Smos.Server.Handler.PostSync
 
 import Smos.Server.Handler.Import
 
-import Control.Concurrent.MVar
-
-import Database.Persist.Sql as DB
-
 import qualified Data.Mergeful as Mergeful
 
 servePostSync :: AuthCookie -> SyncRequest -> SyncHandler SyncResponse
 servePostSync (AuthCookie un) request = do
-  ServerEnv {..} <- ask
-  respItems <-
-    liftIO $
-    modifyMVar serverEnvStoreCache $ \store -> do
-      (resp, newStore) <- Mergeful.processServerSync nextRandomUUID store request
-      DB.runSqlPool (saveStore newStore) serverEnvConnection
-      pure (newStore, resp)
-  let resp =
-        SyncResponse {syncResponseServerId = serverEnvServerUUID, syncResponseItems = respItems}
-  pure resp
+  mu <- runDB $ getBy $ UniqueUsername un
+  case mu of
+    Nothing -> throwError err404
+    Just (Entity uid _) -> do
+      ServerEnv {..} <- ask
+      store <- runDB $ readServerStore uid
+      (respItems, newStore) <- Mergeful.processServerSync nextRandomUUID store request
+      runDB $ saveStore uid newStore
+      let resp =
+            SyncResponse {syncResponseServerId = serverEnvServerUUID, syncResponseItems = respItems}
+      pure resp

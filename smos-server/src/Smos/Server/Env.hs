@@ -8,7 +8,6 @@ import GHC.Generics (Generic)
 
 import qualified Data.Map as M
 
-import Control.Concurrent.MVar
 import Control.Monad.Reader
 
 import Database.Persist as DB
@@ -30,7 +29,6 @@ type SyncHandler = ReaderT ServerEnv Handler
 data ServerEnv =
   ServerEnv
     { serverEnvServerUUID :: ServerUUID
-    , serverEnvStoreCache :: MVar (Mergeful.ServerStore FileUUID SyncFile)
     , serverEnvConnection :: DB.ConnectionPool
     , serverEnvCookieSettings :: CookieSettings
     , serverEnvJWTSettings :: JWTSettings
@@ -42,9 +40,9 @@ runDB func = do
   pool <- asks serverEnvConnection
   liftIO $ DB.runSqlPool func pool
 
-readServerStore :: MonadIO m => SqlPersistT m (Mergeful.ServerStore FileUUID SyncFile)
-readServerStore = do
-  sfs <- selectList [] []
+readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore FileUUID SyncFile)
+readServerStore uid = do
+  sfs <- selectList [ServerFileUser ==. uid] []
   pure $
     ServerStore $
     M.fromList $
@@ -60,10 +58,10 @@ readServerStore = do
 
 saveStore ::
      forall m. MonadIO m
-  => UserId -> Mergeful.ServerStore FileUUID SyncFile
+  => UserId
+  -> Mergeful.ServerStore FileUUID SyncFile
   -> SqlPersistT m ()
-saveStore uid=
-  void . M.traverseWithKey go . serverStoreItems
+saveStore uid = void . M.traverseWithKey go . serverStoreItems
   where
     go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
     go u Timed {..} =
@@ -72,7 +70,8 @@ saveStore uid=
           upsertBy
             (UniqueServerFilePath syncFilePath)
             (ServerFile
-               { serverFileUser = uid, serverFileUuid = u
+               { serverFileUser = uid
+               , serverFileUuid = u
                , serverFilePath = syncFilePath
                , serverFileContents = syncFileContents
                , serverFileTime = timedTime

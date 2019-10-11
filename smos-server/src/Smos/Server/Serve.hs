@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Serve where
@@ -6,12 +7,12 @@ import Crypto.JOSE.JWK (JWK)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
+import Data.Proxy
 import qualified Data.Text as T
 import Path
 import Path.IO
 import System.Exit
 
-import Control.Concurrent.MVar
 import Control.Monad.Logger
 import Control.Monad.Reader
 
@@ -36,16 +37,11 @@ serveSmosSyncServer ss@ServeSettings {..} = do
     DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
       liftIO $ do
         uuid <- readServerUUID serveSetUUIDFile
-        store <-
-          flip DB.runSqlPool pool $ do
-            DB.runMigration migrateAll
-            readServerStore
-        cacheVar <- newMVar store
+        flip DB.runSqlPool pool $ DB.runMigration migrateAll
         jwtKey <- loadSigningKey
         let env =
               ServerEnv
                 { serverEnvServerUUID = uuid
-                , serverEnvStoreCache = cacheVar
                 , serverEnvConnection = pool
                 , serverEnvCookieSettings = defaultCookieSettings
                 , serverEnvJWTSettings = defaultJWTSettings jwtKey
@@ -77,7 +73,7 @@ loadSigningKey = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
-   in Servant.serveWithcontext syncAPI cfg $
+   in Servant.serveWithContext syncAPI cfg $
       hoistServerWithContext
         syncAPI
         (Proxy :: Proxy '[ CookieSettings, JWTSettings])
@@ -99,7 +95,7 @@ syncServerUnprotectedRoutes =
   UnprotectedRoutes {postRegister = servePostRegister, postLogin = servePostLogin}
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
-syncServerProtectedRoutes = ProtectedRoutes {postSync = servePostSync}
+syncServerProtectedRoutes = ProtectedRoutes {postSync = withAuthResult servePostSync}
 
 readServerUUID :: Path Abs File -> IO ServerUUID
 readServerUUID p = do
@@ -118,3 +114,9 @@ writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
 writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
+
+withAuthResult :: ThrowAll a => (AuthCookie -> a) -> (AuthResult AuthCookie -> a)
+withAuthResult func ar =
+  case ar of
+    Authenticated ac -> func ac
+    _ -> throwAll err401
