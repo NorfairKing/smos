@@ -10,11 +10,14 @@ module Smos.Sync.Client.OptParse
   ) where
 
 import Data.Maybe
+import qualified Data.Text as T
 
 import qualified System.Environment as System
 import System.Exit (die)
 
+import Control.Monad
 import Control.Monad.Logger
+
 import Path
 import Path.IO
 import Text.Read
@@ -25,6 +28,8 @@ import Servant.Client as Servant
 
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+
+import Smos.API
 
 import Smos.Sync.Client.OptParse.Types
 
@@ -74,7 +79,14 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
                 fromMaybe IgnoreHiddenFiles $
                 syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
           pure $ DispatchSync SyncSettings {..}
-    getSettings = pure $ Settings {setLogLevel = fromMaybe LevelWarn flagLogLevel}
+    getSettings = do
+      let setLogLevel = fromMaybe LevelWarn flagLogLevel
+      let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
+      setSessionPath <-
+        case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
+          Nothing -> defaultSessionPath
+          Just f -> resolveFile' f
+      pure $ Settings {..}
 
 defaultUUIDFile :: IO (Path Abs File)
 defaultUUIDFile = do
@@ -86,8 +98,14 @@ defaultMetadataDB = do
   home <- getHomeDir
   resolveFile home ".smos/sync-metadata.sqlite3"
 
+defaultSessionPath :: IO (Path Abs File)
+defaultSessionPath = do
+  home <- getHomeDir
+  resolveFile home ".smos/sync-session.dat"
+
 getEnvironment :: IO Environment
 getEnvironment = do
+  envReportEnvironment <- Report.getEnvironment
   env <- System.getEnvironment
   let getEnv :: String -> Maybe String
       getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
@@ -104,7 +122,12 @@ getEnvironment = do
       Just "hidden" -> pure $ Just IgnoreHiddenFiles
       Just s -> fail $ "Unknown 'IgnoreFiles' value: " <> s
       Nothing -> pure Nothing
-  envReportEnvironment <- Report.getEnvironment
+  let envSessionPath = getEnv "SESSION_PATH"
+  envUsername <-
+    forM (getEnv "USERNAME") $ \s ->
+      case parseUsername (T.pack s) of
+        Nothing -> fail $ "Invalid username: " <> s
+        Just un -> pure un
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -186,7 +209,13 @@ parseFlags =
            , show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
            ]
        , value Nothing
-       ])
+       ]) <*>
+  option
+    (Just <$> maybeReader (parseUsername . T.pack))
+    (mconcat [long "username", help "The username to login to the sync server", value Nothing]) <*>
+  option
+    (Just <$> str)
+    (mconcat [long "session-path", help "The path to store the login session", value Nothing])
   where
     parseLogLevel s = readMaybe $ "Level" <> s
     renderLogLevel = drop 5 . show

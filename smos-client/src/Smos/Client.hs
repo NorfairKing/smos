@@ -5,6 +5,8 @@
 module Smos.Client
   ( module Smos.Client
   , module X
+  , Token
+  , SetCookie
   ) where
 
 import GHC.Generics

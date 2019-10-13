@@ -47,6 +47,8 @@ import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.Query
+import Smos.Sync.Client.Session
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
@@ -58,43 +60,44 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
       man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
       let cenv = mkClientEnv man syncSetServerUrl
       let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-      flip runReaderT env $ do
-        void $ runDB $ runMigrationSilent migrateAll
-        mUUID <- liftIO $ readServerUUID syncSetUUIDFile
-        logDebugData "READ STORED UUID" mUUID
-        files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
-        logDebugData "READ FILE CONTENTS" files
-        clientStore <-
-          case mUUID of
-            Nothing
-           -- Never synced yet
-           --
-           -- That means we need to run an initial sync first.
-             -> do
-              initialStore <- runInitialSync
-              liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
-              pure $ consolidateInitialStoreWithFiles initialStore files
-            Just uuid
-           -- We have synced before.
-             -> do
-              meta <- runDB readClientMetadata
-              logDebugData "CLIENT META MAP BEFORE SYNC" meta
-              let store = consolidateMetaMapWithFiles meta files
-              pure $ ClientStore {clientStoreServerUUID = uuid, clientStoreItems = store}
-        logDebugData "CLIENT STORE BEFORE SYNC" clientStore
-        newClientStore <- runSync clientStore
-        logDebugData "CLIENT STORE AFTER SYNC" newClientStore
-        saveClientStore syncSetIgnoreFiles syncSetContentsDir newClientStore
-        logDebugN "CLIENT END"
+      flip runReaderT env $
+        withToken setSessionPath $ \token -> do
+          void $ runDB $ runMigrationSilent migrateAll
+          mUUID <- liftIO $ readServerUUID syncSetUUIDFile
+          logDebugData "READ STORED UUID" mUUID
+          files <- liftIO $ readFilteredSyncFiles syncSetIgnoreFiles syncSetContentsDir
+          logDebugData "READ FILE CONTENTS" files
+          clientStore <-
+            case mUUID of
+              Nothing
+             -- Never synced yet
+             --
+             -- That means we need to run an initial sync first.
+               -> do
+                initialStore <- runInitialSync token
+                liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
+                pure $ consolidateInitialStoreWithFiles initialStore files
+              Just uuid
+             -- We have synced before.
+               -> do
+                meta <- runDB readClientMetadata
+                logDebugData "CLIENT META MAP BEFORE SYNC" meta
+                let store = consolidateMetaMapWithFiles meta files
+                pure $ ClientStore {clientStoreServerUUID = uuid, clientStoreItems = store}
+          logDebugData "CLIENT STORE BEFORE SYNC" clientStore
+          newClientStore <- runSync token clientStore
+          logDebugData "CLIENT STORE AFTER SYNC" newClientStore
+          saveClientStore syncSetIgnoreFiles syncSetContentsDir newClientStore
+          logDebugN "CLIENT END"
 
-runInitialSync :: C ClientStore
-runInitialSync = do
+runInitialSync :: Token -> C ClientStore
+runInitialSync token = do
   logDebugN "INITIAL SYNC START"
   let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore FileUUID SyncFile
   let req = Mergeful.makeSyncRequest clientStore
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync token req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   let items = Mergeful.mergeSyncResponseFromServer Mergeful.initialClientStore syncResponseItems
@@ -104,14 +107,14 @@ runInitialSync = do
   logDebugN "INITIAL SYNC END"
   pure newClientStore
 
-runSync :: ClientStore -> C ClientStore
-runSync clientStore = do
+runSync :: Token -> ClientStore -> C ClientStore
+runSync token clientStore = do
   logDebugN "SYNC START"
   let items = clientStoreItems clientStore
   let req = Mergeful.makeSyncRequest items
   logDebugData "SYNC REQUEST" req
   logInfoJsonData "SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync req
+  resp@SyncResponse {..} <- runClientOrDie $ clientPostSync token req
   logDebugData "SYNC RESPONSE" resp
   logInfoJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $

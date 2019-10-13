@@ -13,6 +13,8 @@ import Control.Monad.Logger
 import Path
 import Servant.Client (BaseUrl)
 
+import Smos.API
+
 import qualified Smos.Report.OptParse.Types as Report
 
 data Arguments =
@@ -40,6 +42,8 @@ data Flags =
   Flags
     { flagReportFlags :: Report.Flags
     , flagLogLevel :: Maybe LogLevel
+    , flagUsername :: Maybe Username
+    , flagSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -51,6 +55,8 @@ data Environment =
     , envUUIDFile :: Maybe FilePath
     , envMetadataDB :: Maybe FilePath
     , envIgnoreFiles :: Maybe IgnoreFiles
+    , envSessionPath :: Maybe FilePath
+    , envUsername :: Maybe Username
     }
   deriving (Show, Eq, Generic)
 
@@ -72,6 +78,8 @@ data SyncConfiguration =
     , syncConfUUIDFile :: Maybe FilePath
     , syncConfMetadataDB :: Maybe FilePath
     , syncConfIgnoreFiles :: Maybe IgnoreFiles
+    , syncConfUsername :: Maybe Username
+    , syncConfSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -80,7 +88,9 @@ instance FromJSON SyncConfiguration where
     withObject "SyncConfiguration" $ \o ->
       SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "uuid-file" <*>
       o .:? "metadata-db" <*>
-      o .:? "ignore-files"
+      o .:? "ignore-files" <*>
+      o .:? "username" <*>
+      o .:? "session-path"
 
 newtype Dispatch =
   DispatchSync SyncSettings
@@ -112,8 +122,10 @@ instance FromJSON IgnoreFiles where
         "hidden" -> pure IgnoreHiddenFiles
         _ -> fail $ "Unknown 'IgnoreFiles' value: " <> T.unpack t
 
-newtype Settings =
+data Settings =
   Settings
     { setLogLevel :: LogLevel
+    , setUsername :: Maybe Username
+    , setSessionPath :: Path Abs File
     }
   deriving (Show, Eq, Generic)

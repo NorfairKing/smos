@@ -1,0 +1,42 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module Smos.Sync.Client.Prompt
+  ( promptUntil
+  , promptSecret
+  , prompt
+  ) where
+
+import Data.Text
+
+import Control.Exception
+import Control.Monad
+
+import qualified Data.Text.IO as T
+
+import System.IO
+
+promptUntil :: Text -> (Text -> Maybe a) -> IO a
+promptUntil p func = do
+  s <- prompt p
+  case func s of
+    Nothing -> promptUntil p func
+    Just a -> pure a
+
+prompt :: Text -> IO Text
+prompt = promptRaw True . (<> " > ")
+
+promptSecret :: Text -> IO Text
+promptSecret = promptRaw False . (<> " > ")
+
+promptRaw :: Bool -> Text -> IO Text
+promptRaw b p = do
+  T.putStr p
+  hFlush stdout
+  pass <- withEcho b T.getLine
+  unless b $ putChar '\n'
+  return pass
+
+withEcho :: Bool -> IO a -> IO a
+withEcho echo action = do
+  old <- hGetEcho stdin
+  bracket_ (hSetEcho stdin echo) (hSetEcho stdin old) action

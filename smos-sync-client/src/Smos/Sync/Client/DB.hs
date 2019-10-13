@@ -32,7 +32,6 @@ share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
 
-
 ClientFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)

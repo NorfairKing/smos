@@ -2,9 +2,6 @@ module Smos.Sync.Client.IntegrationSpec
   ( spec
   ) where
 
-import Control.Concurrent.Async
-import Control.Monad.Logger
-
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
@@ -13,8 +10,6 @@ import Smos.Server.TestUtils
 
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
-import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Client.TestUtils
 
@@ -496,22 +491,3 @@ spec =
                   cm1 <- readClientContents c1
                   cm2 <- readClientContents c2
                   cm1 `shouldBe` cm2
-
-testSyncSmosClient :: SyncSettings -> IO ()
-testSyncSmosClient = syncSmosSyncClient $ Settings {setLogLevel = LevelWarn}
-
-fullySyncTwoClients :: SyncSettings -> SyncSettings -> IO ()
-fullySyncTwoClients c1 c2 = fullySyncClients [c1, c2]
-
-fullySyncClients :: [SyncSettings] -> IO ()
-fullySyncClients cs = do
-  let twice f = f >> f
-  twice $ mapM_ testSyncSmosClient cs
-
-fullySyncTwoClientsConcurrently :: SyncSettings -> SyncSettings -> IO ()
-fullySyncTwoClientsConcurrently c1 c2 = fullySyncClientsConcurrently [c1, c2]
-
-fullySyncClientsConcurrently :: [SyncSettings] -> IO ()
-fullySyncClientsConcurrently cs = do
-  let twice f = f >> f
-  twice $ mapConcurrently_ testSyncSmosClient cs

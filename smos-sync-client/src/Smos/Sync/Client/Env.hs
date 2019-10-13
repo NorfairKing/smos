@@ -8,17 +8,14 @@ module Smos.Sync.Client.Env where
 import GHC.Generics (Generic)
 
 import Data.Aeson
-import Data.Map (Map)
-import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
+import Data.Text (Text)
 import Data.Validity
 
 import System.Exit
 
 import Servant.Client as Servant
-
-import Path
 
 import Control.Monad.Logger
 import Control.Monad.Reader
@@ -27,7 +24,7 @@ import Database.Persist.Sql as DB
 
 import Smos.API
 
-import Smos.Sync.Client.DB
+import Smos.Sync.Client.Prompt
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
@@ -37,6 +34,12 @@ data SyncClientEnv =
     , syncClientEnvConnection :: DB.ConnectionPool
     }
   deriving (Generic)
+
+promptUsername :: C Username
+promptUsername = liftIO $ promptUntil "username" parseUsername
+
+promptPassword :: C Text
+promptPassword = liftIO $ promptSecret "password"
 
 runClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
 runClient func = do
@@ -54,42 +57,6 @@ runDB :: DB.SqlPersistT IO a -> C a
 runDB func = do
   pool <- asks syncClientEnvConnection
   liftIO $ DB.runSqlPool func pool
-
-readClientMetadata :: MonadIO m => SqlPersistT m (Map (Path Rel File) SyncFileMeta)
-readClientMetadata = do
-  cfs <- selectList [] []
-  pure $
-    M.fromList $
-    map
-      (\(Entity _ ClientFile {..}) ->
-         ( clientFilePath
-         , SyncFileMeta
-             { syncFileMetaUUID = clientFileUuid
-             , syncFileMetaHash = clientFileHash
-             , syncFileMetaTime = clientFileTime
-             }))
-      cfs
-
-writeClientMetadata ::
-     forall m. MonadIO m
-  => Map (Path Rel File) SyncFileMeta
-  -> SqlPersistT m ()
-writeClientMetadata m = do
-  deleteWhere [ClientFilePath /<-. M.keys m]
-  void $ M.traverseWithKey go m
-  where
-    go :: Path Rel File -> SyncFileMeta -> SqlPersistT m ()
-    go path SyncFileMeta {..} =
-      void $
-      upsertBy
-        (UniquePath path)
-        (ClientFile
-           { clientFileUuid = syncFileMetaUUID
-           , clientFilePath = path
-           , clientFileHash = syncFileMetaHash
-           , clientFileTime = syncFileMetaTime
-           })
-        [ClientFileHash =. syncFileMetaHash, ClientFileTime =. syncFileMetaTime]
 
 data ClientStore =
   ClientStore

@@ -28,6 +28,8 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 
 import Path
+
+import Servant.Auth.Client
 import Servant.Client
 
 import Database.Persist.Sqlite as DB
@@ -47,50 +49,56 @@ spec = do
   serverSpec $ do
     describe "single client" $ do
       describe "testInitialSync" $
-        it "succesfully gets a valid clientStore from an empty server" $ \cenv -> do
-          clientStore <- testInitialSync cenv
-          shouldBeValid clientStore
+        it "succesfully gets a valid clientStore from an empty server" $ \cenv ->
+          withNewUser cenv $ \token -> do
+            clientStore <- testInitialSync cenv token
+            shouldBeValid clientStore
       describe "testSync" $ do
-        it "succesfully syncs with an empty server" $ \cenv -> do
-          cstore <- testInitialSync cenv
-          cstore' <- testSync cenv cstore
-          shouldBeValid cstore'
+        it "succesfully syncs with an empty server" $ \cenv ->
+          withNewUser cenv $ \token -> do
+            cstore <- testInitialSync cenv token
+            cstore' <- testSync cenv token cstore
+            shouldBeValid cstore'
         modifyMaxSuccess (* 10) $
           modifyMaxSize (* 10) $ do
             it "succesfully syncs a list of operations" $ \cenv ->
-              forAll genTestOps $ \ops -> do
-                initial <- testInitialSync cenv
-                let go :: ClientStore -> TestOp -> IO ClientStore
-                    go cstore op = do
-                      let cstore' = applyTestOpStore cstore op
-                      testSync cenv cstore'
-                result <- foldM go initial ops
-                shouldBeValid result
+              forAll genTestOps $ \ops ->
+                withNewUser cenv $ \token -> do
+                  initial <- testInitialSync cenv token
+                  let go :: ClientStore -> TestOp -> IO ClientStore
+                      go cstore op = do
+                        let cstore' = applyTestOpStore cstore op
+                        testSync cenv token cstore'
+                  result <- foldM go initial ops
+                  shouldBeValid result
             it "succesfully syncs a list of phases of operations" $ \cenv ->
-              forAll genTestOpsPhases $ \opss -> do
-                initial <- testInitialSync cenv
-                let go :: ClientStore -> [TestOp] -> IO ClientStore
-                    go cstore ops = do
-                      let cstore' = applyTestOpsStore cstore ops
-                      testSync cenv cstore'
-                result <- foldM go initial opss
-                shouldBeValid result
+              forAll genTestOpsPhases $ \opss ->
+                withNewUser cenv $ \token -> do
+                  initial <- testInitialSync cenv token
+                  let go :: ClientStore -> [TestOp] -> IO ClientStore
+                      go cstore ops = do
+                        let cstore' = applyTestOpsStore cstore ops
+                        testSync cenv token cstore'
+                  result <- foldM go initial opss
+                  shouldBeValid result
     describe "multi client" $ do
       it "succesfully syncs multiple clients with an empty server" $ \cenv ->
-        forAllValid $ \units -> do
-          stores <-
-            forM (units :: [()]) $ \() -> do
-              cstore <- testInitialSync cenv
-              testSync cenv cstore
-          shouldBeValid stores
+        forAllValid $ \units ->
+          withNewUser cenv $ \token -> do
+            stores <-
+              forM (units :: [()]) $ \() -> do
+                cstore <- testInitialSync cenv token
+                testSync cenv token cstore
+            shouldBeValid stores
       modifyMaxSuccess (* 20) $
         modifyMaxSize (* 20) $
         it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
-          forAll genCTestOps $ \cops -> do
-            let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
-                go = applyCTestOp cenv
-            result <- foldM go M.empty cops
-            shouldBeValid result
+          forAll genCTestOps $ \cops ->
+            withNewUser cenv $ \token -> do
+              let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
+                  go = applyCTestOp cenv token
+              result <- foldM go M.empty cops
+              shouldBeValid result
 
 data CTestOp =
   CTestOp Int ClientOp
@@ -162,17 +170,17 @@ applySync ts i =
        in TestSituation
             {testSituationClients = M.insert i u (testSituationClients ts), testSituationServer = u}
 
-applyCTestOp :: ClientEnv -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
-applyCTestOp cenv m (CTestOp i cop) =
+applyCTestOp :: ClientEnv -> Token -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
+applyCTestOp cenv token m (CTestOp i cop) =
   case cop of
     ClientNew -> do
-      initial <- testInitialSync cenv
+      initial <- testInitialSync cenv token
       pure $ M.insert i initial m
     ClientSync ->
       case M.lookup i m of
         Nothing -> pure m
         Just cstore -> do
-          cstore' <- testSync cenv cstore
+          cstore' <- testSync cenv token cstore
           pure $ M.adjust (const cstore') i m
     ClientTestOps ops ->
       case M.lookup i m of
@@ -181,11 +189,11 @@ applyCTestOp cenv m (CTestOp i cop) =
           let cstore' = applyTestOpsStore cstore ops
           pure $ M.adjust (const cstore') i m
 
-testInitialSync :: ClientEnv -> IO ClientStore
-testInitialSync cenv = testC cenv runInitialSync
+testInitialSync :: ClientEnv -> Token -> IO ClientStore
+testInitialSync cenv token = testC cenv $ runInitialSync token
 
-testSync :: ClientEnv -> ClientStore -> IO ClientStore
-testSync cenv cs = testC cenv $ runSync cs
+testSync :: ClientEnv -> Token -> ClientStore -> IO ClientStore
+testSync cenv token cs = testC cenv $ runSync token cs
 
 testC :: ClientEnv -> C a -> IO a
 testC cenv func =

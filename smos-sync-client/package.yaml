@@ -19,6 +19,7 @@ library:
   - bytestring
   - conduit
   - containers
+  - cookie
   - filelock
   - filepath
   - hashable
@@ -36,11 +37,13 @@ library:
   - persistent-template
   - pretty-show
   - servant
+  - servant-auth-client
+  - servant-auth-server
   - servant-client
   - servant-flatten
-  - smos-report
   - smos-api
   - smos-client
+  - smos-report
   - stm
   - text
   - typed-uuid
