@@ -24,6 +24,7 @@ library:
   - path
   - path-io
   - persistent-sqlite
+  - resource-pool
   - servant-auth-client
   - servant-auth-server
   - servant-client
@@ -55,7 +56,10 @@ tests:
     - http-types
     - path
     - path-io
+    - persistent-sqlite
+    - resource-pool
     - servant-client
     - smos-client
     - smos-client-gen
+    - smos-server
     - smos-server-gen

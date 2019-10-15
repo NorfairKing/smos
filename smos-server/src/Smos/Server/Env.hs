@@ -56,12 +56,12 @@ readServerStore uid = do
              }))
       sfs
 
-saveStore ::
+writeServerStore ::
      forall m. MonadIO m
   => UserId
   -> Mergeful.ServerStore FileUUID SyncFile
   -> SqlPersistT m ()
-saveStore uid = void . M.traverseWithKey go . serverStoreItems
+writeServerStore uid = void . M.traverseWithKey go . serverStoreItems
   where
     go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
     go u Timed {..} =

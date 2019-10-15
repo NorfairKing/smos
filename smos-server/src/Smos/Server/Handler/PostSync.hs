@@ -17,7 +17,7 @@ servePostSync (AuthCookie un) request = do
       ServerEnv {..} <- ask
       store <- runDB $ readServerStore uid
       (respItems, newStore) <- Mergeful.processServerSync nextRandomUUID store request
-      runDB $ saveStore uid newStore
+      runDB $ writeServerStore uid newStore
       let resp =
             SyncResponse {syncResponseServerId = serverEnvServerUUID, syncResponseItems = respItems}
       pure resp
