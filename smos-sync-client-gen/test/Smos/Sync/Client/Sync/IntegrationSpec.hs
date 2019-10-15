@@ -19,20 +19,20 @@ spec =
   describe "testSyncSmosClient" $ do
     describe "single client" $ do
       it "succesfully syncs an empty directory" $ \cenv ->
-        withClient cenv $ \c -> do
+        withSyncClient cenv $ \c -> do
           testSyncSmosClient c
           assertClientContents c CM.empty
       describe "addition" $ do
         it "succesfully syncs a directory with one file" $ \cenv ->
           forAllValid $ \(rp, contents) ->
-            withClient cenv $ \c -> do
+            withSyncClient cenv $ \c -> do
               let m = CM.singleton rp contents
               setupClientContents c m
               testSyncSmosClient c
               assertClientContents c m
         it "succesfully syncs a directory with any number of files" $ \cenv ->
           forAllValid $ \m ->
-            withClient cenv $ \c -> do
+            withSyncClient cenv $ \c -> do
               setupClientContents c m
               testSyncSmosClient c
               assertClientContents c m
@@ -47,7 +47,7 @@ spec =
       describe "changes" $ do
         it "succesfully syncs a change" $ \cenv ->
           forAllValid $ \(rp, contents1, contents2) ->
-            withClient cenv $ \c -> do
+            withSyncClient cenv $ \c -> do
               let m1 = CM.singleton rp contents1
               setupClientContents c m1
               testSyncSmosClient c
@@ -58,7 +58,7 @@ spec =
         it "succesfully syncs a change from a set of files" $ \cenv ->
           forAllValid $ \m ->
             forAll (mapsWithDifferentContentsAtNewPath m) $ \(m1, m2) ->
-              withClient cenv $ \c -> do
+              withSyncClient cenv $ \c -> do
                 setupClientContents c m1
                 testSyncSmosClient c
                 setupClientContents c m2
@@ -67,7 +67,7 @@ spec =
         it "succesfully syncs a change of any number of files" $ \cenv ->
           forAllValid $ \m1 ->
             forAll (changedContentsMap m1) $ \m2 ->
-              withClient cenv $ \c -> do
+              withSyncClient cenv $ \c -> do
                 setupClientContents c m1
                 testSyncSmosClient c
                 setupClientContents c m2
@@ -76,7 +76,7 @@ spec =
         it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
           forAllValid $ \m ->
             forAll (changedMapsWithUnionOf m) $ \(m1, m2) ->
-              withClient cenv $ \c -> do
+              withSyncClient cenv $ \c -> do
                 setupClientContents c m1
                 testSyncSmosClient c
                 setupClientContents c m2
@@ -85,7 +85,7 @@ spec =
       describe "deletion" $ do
         it "succesfully syncs a single deletion" $ \cenv ->
           forAllValid $ \(rp, contents) ->
-            withClient cenv $ \c -> do
+            withSyncClient cenv $ \c -> do
               let m = CM.singleton rp contents
               setupClientContents c m
               testSyncSmosClient c
@@ -97,7 +97,7 @@ spec =
           forAllValid $ \m ->
             forAllValid $ \contents ->
               forAll (mapWithNewPath m contents) $ \(_, m') ->
-                withClient cenv $ \c -> do
+                withSyncClient cenv $ \c -> do
                   setupClientContents c m'
                   testSyncSmosClient c
                   setupClientContents c m
@@ -105,7 +105,7 @@ spec =
                   assertClientContents c m
         it "succesfully syncs a deletion of any number of files" $ \cenv ->
           forAllValid $ \m ->
-            withClient cenv $ \c -> do
+            withSyncClient cenv $ \c -> do
               setupClientContents c m
               testSyncSmosClient c
               let m' = CM.empty
@@ -115,7 +115,7 @@ spec =
         it "succesfully syncs a single deletion from a set of files" $ \cenv ->
           forAllValid $ \m1 ->
             forAll (mapWithAdditions m1) $ \m ->
-              withClient cenv $ \c -> do
+              withSyncClient cenv $ \c -> do
                 setupClientContents c m
                 testSyncSmosClient c
                 setupClientContents c m1
@@ -123,8 +123,8 @@ spec =
                 assertClientContents c m1
     describe "two clients" $ do
       it "succesfully syncs empty directories" $ \cenv ->
-        withClient cenv $ \c1 ->
-          withClient cenv $ \c2 -> do
+        withSyncClient cenv $ \c1 ->
+          withSyncClient cenv $ \c2 -> do
             testSyncSmosClient c1
             testSyncSmosClient c2
             assertClientContents c1 CM.empty
@@ -133,8 +133,8 @@ spec =
         describe "additions" $ do
           it "succesfully syncs a file accross two clients" $ \cenv ->
             forAllValid $ \(rp, contents) ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   let m = CM.singleton rp contents
                   setupClientContents c1 m
                   fullySyncTwoClients c1 c2
@@ -142,8 +142,8 @@ spec =
                   assertClientContents c2 m
           it "succesfully syncs any number of files accross two clients" $ \cenv ->
             forAllValid $ \m ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   setupClientContents c1 m
                   fullySyncTwoClients c1 c2
                   assertClientContents c1 m
@@ -161,8 +161,8 @@ spec =
         describe "changes" $ do
           it "succesfully syncs a single change" $ \cenv ->
             forAllValid $ \(rp, contents1, contents2) ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   let m1 = CM.singleton rp contents1
                   setupClientContents c1 m1
                   setupClientContents c1 m1
@@ -175,8 +175,8 @@ spec =
           it "succesfully syncs a change from a set of files" $ \cenv ->
             forAllValid $ \m ->
               forAll (mapsWithDifferentContentsAtNewPath m) $ \(m1, m2) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m1
                     setupClientContents c2 m1
                     fullySyncTwoClients c1 c2
@@ -187,8 +187,8 @@ spec =
           it "succesfully syncs a change of any number of files" $ \cenv ->
             forAllValid $ \m1 ->
               forAll (changedContentsMap m1) $ \m2 ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m1
                     setupClientContents c2 m1
                     fullySyncTwoClients c1 c2
@@ -199,8 +199,8 @@ spec =
           it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
             forAllValid $ \m ->
               forAll (changedMapsWithUnionOf m) $ \(m1, m2) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m1
                     setupClientContents c2 m1
                     fullySyncTwoClients c1 c2
@@ -229,8 +229,8 @@ spec =
         describe "Deletions" $ do
           it "succesfully syncs a single deletion" $ \cenv ->
             forAllValid $ \(rp, contents) ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   let m = CM.singleton rp contents
                   setupClientContents c1 m
                   setupClientContents c2 m
@@ -244,8 +244,8 @@ spec =
             forAllValid $ \m ->
               forAllValid $ \contents ->
                 forAll (mapWithNewPath m contents) $ \(_, m') ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
+                  withSyncClient cenv $ \c1 ->
+                    withSyncClient cenv $ \c2 -> do
                       setupClientContents c1 m'
                       setupClientContents c2 m'
                       fullySyncTwoClients c1 c2
@@ -255,8 +255,8 @@ spec =
                       assertClientContents c2 m
           it "succesfully syncs a deletion of any number of files" $ \cenv ->
             forAllValid $ \m ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   setupClientContents c1 m
                   setupClientContents c2 m
                   fullySyncTwoClients c1 c2
@@ -268,8 +268,8 @@ spec =
           it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
             forAllValid $ \m1 ->
               forAll (mapWithAdditions m1) $ \m ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m
                     setupClientContents c2 m
                     fullySyncTwoClients c1 c2
@@ -297,8 +297,8 @@ spec =
             forAllValid $ \contents1 ->
               forAllValid $ \contents2 ->
                 forAll (twoDistinctPathsThatFitAndTheirUnion contents1 contents2) $ \(rp1, rp2, m) ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
+                  withSyncClient cenv $ \c1 ->
+                    withSyncClient cenv $ \c2 -> do
                       let m1 = CM.singleton rp1 contents1
                       let m2 = CM.singleton rp2 contents2
                       setupClientContents c1 m1
@@ -309,8 +309,8 @@ spec =
           it "succesfully syncs any number of files accross two clients" $ \cenv ->
             forAllValid $ \m1 ->
               forAll (mapWithDisjunctUnion m1) $ \(m2, m) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m1
                     setupClientContents c2 m2
                     fullySyncTwoClients c1 c2
@@ -321,8 +321,8 @@ spec =
             forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(_, _, Hidden unionFunc) ->
               forAllValid $ \(contents1a, contents1b) ->
                 forAllValid $ \(contents2a, contents2b) ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
+                  withSyncClient cenv $ \c1 ->
+                    withSyncClient cenv $ \c2 -> do
                       let m = unionFunc contents1a contents2a
                       setupClientContents c1 m
                       setupClientContents c1 m
@@ -340,8 +340,8 @@ spec =
               forAll (twoDistinctPathsThatFitAndTheirUnionWithFunc m) $ \(_, _, Hidden unionFunc) ->
                 forAllValid $ \(contents1a, contents1b) ->
                   forAllValid $ \(contents2a, contents2b) ->
-                    withClient cenv $ \c1 ->
-                      withClient cenv $ \c2 -> do
+                    withSyncClient cenv $ \c1 ->
+                      withSyncClient cenv $ \c2 -> do
                         let ma = unionFunc contents1a contents2a
                         setupClientContents c1 ma
                         setupClientContents c1 ma
@@ -356,8 +356,8 @@ spec =
                         assertClientContents c2 mb
           it "succesfully syncs a change of any number of files" $ \cenv ->
             forAll twoChangedMapsAndTheirUnions $ \(_, _, (ma, m1, m2, mb)) ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   setupClientContents c1 ma
                   setupClientContents c2 ma
                   fullySyncTwoClients c1 c2
@@ -369,8 +369,8 @@ spec =
           it "succesfully syncs a change of any number of files from a set of files" $ \cenv ->
             forAllValid $ \m ->
               forAll (twoChangedMapsAndTheirUnionsWith m) $ \(_, _, (ma, m1, m2, mb)) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 ma
                     setupClientContents c2 ma
                     fullySyncTwoClients c1 c2
@@ -384,8 +384,8 @@ spec =
             forAllValid $ \contents1 ->
               forAllValid $ \contents2 ->
                 forAll (twoDistinctPathsThatFitAndTheirUnion contents1 contents2) $ \(rp1, rp2, m) ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
+                  withSyncClient cenv $ \c1 ->
+                    withSyncClient cenv $ \c2 -> do
                       setupClientContents c1 m
                       setupClientContents c2 m
                       fullySyncTwoClients c1 c2
@@ -402,8 +402,8 @@ spec =
               forAllValid $ \contents1 ->
                 forAllValid $ \contents2 ->
                   forAll (twoDistinctPathsThatFitAndTheirUnionsWith m' contents1 contents2) $ \(_, _, (m1, m2, m)) ->
-                    withClient cenv $ \c1 ->
-                      withClient cenv $ \c2 -> do
+                    withSyncClient cenv $ \c1 ->
+                      withSyncClient cenv $ \c2 -> do
                         setupClientContents c1 m
                         setupClientContents c2 m
                         fullySyncTwoClients c1 c2
@@ -415,8 +415,8 @@ spec =
           it "succesfully syncs a deletion of any number of files" $ \cenv ->
             forAllValid $ \m1 ->
               forAll (mapWithDisjunctUnion m1) $ \(m2, m) ->
-                withClient cenv $ \c1 ->
-                  withClient cenv $ \c2 -> do
+                withSyncClient cenv $ \c1 ->
+                  withSyncClient cenv $ \c2 -> do
                     setupClientContents c1 m
                     setupClientContents c2 m
                     fullySyncTwoClients c1 c2
@@ -428,8 +428,8 @@ spec =
                     assertClientContents c2 m'
           it "succesfully syncs a deletion of any number of files from a set of files" $ \cenv ->
             forAll threeDisjunctMapsAndTheirUnions $ \((_, _, m3), (_, m23, m13, m123)) ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   setupClientContents c1 m123
                   setupClientContents c2 m123
                   fullySyncTwoClients c1 c2
@@ -445,8 +445,8 @@ spec =
                 forAllValid $ \contents3 ->
                   forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
                     forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
-                      withClient cenv $ \c1 ->
-                        withClient cenv $ \c2 -> do
+                      withSyncClient cenv $ \c1 ->
+                        withSyncClient cenv $ \c2 -> do
                           let m = CM.singleton rp contents3
                           setupClientContents c1 m
                           setupClientContents c2 m
@@ -462,8 +462,8 @@ spec =
             it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
               forAllValid $ \m ->
                 forAll (mapsWithDifferentContentsAtNewPath3 m) $ \(m1, m2, m3) ->
-                  withClient cenv $ \c1 ->
-                    withClient cenv $ \c2 -> do
+                  withSyncClient cenv $ \c1 ->
+                    withSyncClient cenv $ \c2 -> do
                       setupClientContents c1 m3
                       setupClientContents c2 m3
                       fullySyncTwoClients c1 c2
@@ -475,7 +475,7 @@ spec =
       describe "From two clients, concurrently" $ do
         it "succesfully syncs two of the same client concurrently" $ \cenv ->
           forAllValid $ \m1 ->
-            withClient cenv $ \c1 -> do
+            withSyncClient cenv $ \c1 -> do
               setupClientContents c1 m1
               fullySyncTwoClientsConcurrently c1 c1
               cm1 <- readClientContents c1
@@ -483,8 +483,8 @@ spec =
         it "succesfully syncs two different clients concurrently" $ \cenv ->
           forAllValid $ \m1 ->
             forAllValid $ \m2 ->
-              withClient cenv $ \c1 ->
-                withClient cenv $ \c2 -> do
+              withSyncClient cenv $ \c1 ->
+                withSyncClient cenv $ \c2 -> do
                   setupClientContents c1 m1
                   setupClientContents c2 m2
                   fullySyncTwoClientsConcurrently c1 c2

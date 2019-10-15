@@ -56,11 +56,12 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $
     DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool ->
-      withClientEnv setServerUrl $ \cenv -> withLogin cenv setSessionPath setUsername setPassword $ \token -> do
-        logDebugN "CLIENT START"
-        let env =
-              SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-        flip runReaderT env $ do
+      withClientEnv setServerUrl $ \cenv -> do
+        withLogin cenv setSessionPath setUsername setPassword $ \token -> do
+          logDebugN "CLIENT START"
+          let env =
+                SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+          flip runReaderT env $ do
             void $ runDB $ runMigrationSilent migrateAll
             mUUID <- liftIO $ readServerUUID syncSetUUIDFile
             logDebugData "READ STORED UUID" mUUID
@@ -69,15 +70,15 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
             clientStore <-
               case mUUID of
                 Nothing
-             -- Never synced yet
-             --
-             -- That means we need to run an initial sync first.
+                 -- Never synced yet
+                 --
+                 -- That means we need to run an initial sync first.
                  -> do
                   initialStore <- runInitialSync token
                   liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
                   pure $ consolidateInitialStoreWithFiles initialStore files
                 Just uuid
-             -- We have synced before.
+                 -- We have synced before.
                  -> do
                   meta <- runDB readClientMetadata
                   logDebugData "CLIENT META MAP BEFORE SYNC" meta

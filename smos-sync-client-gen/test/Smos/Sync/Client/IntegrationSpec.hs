@@ -34,11 +34,17 @@ spec =
               let t = test cenv tmpDir
               t ["register", "--username", usernameString un, "--password", passwordString pw]
               t ["login", "--username", usernameString un, "--password", passwordString pw]
-              up <- resolveFile tdir "uuid.jon"
-              mp <- resolveFile tdir "metadata.db"
-              t ["sync", "--contents-dir", fromAbsDir contentsDir, "--metadata-db", fromAbsFile mp
+              up <- resolveFile tmpDir "uuid.jon"
+              mp <- resolveFile tmpDir "metadata.db"
+              t
+                [ "sync"
+                , "--contents-dir"
+                , fromAbsDir contentsDir
+                , "--metadata-db"
+                , fromAbsFile mp
                 , "--uuid-file"
-                , fromAbsFile up]
+                , fromAbsFile up
+                ]
     it "just works (tm) without manual login" $ \cenv ->
       forAllValid $ \un ->
         forAllValid $ \pw ->
@@ -46,14 +52,14 @@ spec =
             withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
               let t = test cenv tmpDir
               t ["register", "--username", usernameString un, "--password", passwordString pw]
-              up <- resolveFile tdir "uuid.jon"
-              mp <- resolveFile tdir "metadata.db"
+              up <- resolveFile tmpDir "uuid.jon"
+              mp <- resolveFile tmpDir "metadata.db"
               t
-                [ "sync"
-                , "--username"
+                [ "--username"
                 , usernameString un
                 , "--password"
                 , passwordString pw
+                , "sync"
                 , "--contents-dir"
                 , fromAbsDir contentsDir
                 , "--metadata-db"
@@ -63,8 +69,8 @@ spec =
                 ]
 
 test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
-test cenv tdir args = do
-  sp <- resolveFile tdir "session.dat"
+test cenv tmpDir args = do
+  sp <- resolveFile tmpDir "session.dat"
   let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--session-path", fromAbsFile sp]
   putStrLn $ unwords $ ["running", unwords $ map show $ "smos-sync-client" : args']
   withArgs args' smosSyncClient

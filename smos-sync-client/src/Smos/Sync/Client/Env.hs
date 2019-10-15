@@ -65,10 +65,14 @@ withLogin cenv sessionPath mun mpw func = do
     Nothing -> do
       un <- liftIO $ promptUsername mun
       pw <- liftIO $ promptPassword mpw
-      errOrToken <- liftIO $ login cenv $ Login {loginUsername = un, loginPassword = pw}
-      case errOrToken of
-        Left le -> liftIO $ die $ unlines ["Failed to login: ", show le]
-        Right t -> func t
+      errOrErrOrSession <-
+        liftIO $
+        runClientOrDie cenv $ clientLoginSession Login {loginUsername = un, loginPassword = pw}
+      case errOrErrOrSession of
+        Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
+        Right cookie -> do
+          saveSession sessionPath cookie
+          func $ sessionToToken cookie
 
 promptUsername :: Maybe Username -> IO Username
 promptUsername mun =

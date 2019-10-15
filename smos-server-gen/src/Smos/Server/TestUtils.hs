@@ -81,7 +81,7 @@ failure s = do
 withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
 withNewUser cenv func = withNewUserAndData cenv $ const func
 
-withNewUserAndData :: ClientEnv -> (Register -> Token -> IO ()) -> Expectation
+withNewUserAndData :: ClientEnv -> (Register -> Token -> IO a) -> IO a
 withNewUserAndData cenv func = do
   r <- randomRegistration
   withNewGivenUser cenv r $ func r

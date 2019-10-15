@@ -8,7 +8,6 @@ import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
 import qualified Data.Set as S
-import Data.UUID.Typed
 
 import Control.Concurrent.Async
 import Control.Monad
@@ -24,6 +23,8 @@ import Test.QuickCheck
 import Test.Validity
 
 import Smos.API
+
+import Smos.Server.TestUtils
 
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
@@ -91,38 +92,35 @@ forAllHidden = forAllShrink (genProbablyHidden `suchThat` isHidden) (filter isHi
 data SyncClientSettings =
   SyncClientSettings SyncSettings Settings
 
-withClient :: ClientEnv -> (SyncClientSettings -> IO a) -> IO a
-withClient cenv func =
+withSyncClient :: ClientEnv -> (SyncClientSettings -> IO a) -> IO a
+withSyncClient cenv func =
   withSystemTempDir "smos-sync-client-test-contents" $ \tmpDir1 ->
-    withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 -> do
-      mp <- resolveFile tmpDir2 "metadata.sqlite3"
-      up <- resolveFile tmpDir2 "uuid.json"
-      sp <- resolveFile tmpDir2 "session.dat"
-      let ss =
-            SyncSettings
-              { syncSetContentsDir = tmpDir1
-              , syncSetMetadataDB = mp
-              , syncSetUUIDFile = up
-              , syncSetIgnoreFiles = IgnoreNothing
-              }
-      u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
-      u2 <- nextRandomUUID :: IO (UUID Password)
-      un <- parseUsername $ uuidText u1
-      pw <- parsePassword $ uuidText u2
-      let s =
-            Settings
-              { setServerUrl = baseUrl cenv
-              , setLogLevel = LevelWarn
-              , setUsername = Just un
-              , setPassword = Just pw
-              , setSessionPath = sp
-              }
-      let scs = SyncClientSettings ss s
-      func scs
+    withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 ->
+      withNewUserAndData cenv $ \r _ -> do
+        mp <- resolveFile tmpDir2 "metadata.sqlite3"
+        up <- resolveFile tmpDir2 "uuid.json"
+        sp <- resolveFile tmpDir2 "session.dat"
+        let ss =
+              SyncSettings
+                { syncSetContentsDir = tmpDir1
+                , syncSetMetadataDB = mp
+                , syncSetUUIDFile = up
+                , syncSetIgnoreFiles = IgnoreNothing
+                }
+        let s =
+              Settings
+                { setServerUrl = baseUrl cenv
+                , setLogLevel = LevelWarn
+                , setUsername = Just $ registerUsername r
+                , setPassword = Just $ registerPassword r
+                , setSessionPath = sp
+                }
+        let scs = SyncClientSettings ss s
+        func scs
 
 withHiddenFilesClient :: ClientEnv -> (SyncClientSettings -> IO a) -> IO a
 withHiddenFilesClient cenv func =
-  withClient cenv $ \(SyncClientSettings ss s) ->
+  withSyncClient cenv $ \(SyncClientSettings ss s) ->
     let scs' = SyncClientSettings (ss {syncSetIgnoreFiles = IgnoreHiddenFiles}) s
      in func scs'
 
