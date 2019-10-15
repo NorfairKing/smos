@@ -99,14 +99,19 @@ withClient cenv func =
       sp <- resolveFile tmpDir2 "session.dat"
       let ss =
             SyncSettings
-              { syncSetServerUrl = baseUrl cenv
-              , syncSetContentsDir = tmpDir1
+              { syncSetContentsDir = tmpDir1
               , syncSetMetadataDB = mp
               , syncSetUUIDFile = up
               , syncSetIgnoreFiles = IgnoreNothing
               }
       un <- parseUsername "test"
-      let s = Settings {setLogLevel = LevelWarn, setUsername = Just un, setSessionPath = sp}
+      let s =
+            Settings
+              { setServerUrl = baseUrl cenv
+              , setLogLevel = LevelWarn
+              , setUsername = Just un
+              , setSessionPath = sp
+              }
       let scs = SyncClientSettings ss s
       func scs
 

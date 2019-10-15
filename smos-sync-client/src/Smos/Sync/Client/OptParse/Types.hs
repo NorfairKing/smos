@@ -24,14 +24,18 @@ data Arguments =
 data Instructions =
   Instructions Dispatch Settings
 
-newtype Command =
-  CommandSync SyncFlags
+data Command
+  = CommandRegister RegisterFlags
+  | CommandSync SyncFlags
+  deriving (Show, Eq)
+
+data RegisterFlags =
+  RegisterFlags
   deriving (Show, Eq)
 
 data SyncFlags =
   SyncFlags
-    { syncFlagServerUrl :: Maybe String
-    , syncFlagContentsDir :: Maybe FilePath
+    { syncFlagContentsDir :: Maybe FilePath
     , syncFlagUUIDFile :: Maybe FilePath
     , syncFlagMetadataDB :: Maybe FilePath
     , syncFlagIgnoreFiles :: Maybe IgnoreFiles
@@ -41,6 +45,7 @@ data SyncFlags =
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
+    , flagServerUrl :: Maybe String
     , flagLogLevel :: Maybe LogLevel
     , flagUsername :: Maybe Username
     , flagSessionPath :: Maybe FilePath
@@ -92,18 +97,22 @@ instance FromJSON SyncConfiguration where
       o .:? "username" <*>
       o .:? "session-path"
 
-newtype Dispatch =
-  DispatchSync SyncSettings
+data Dispatch
+  = DispatchRegister RegisterSettings
+  | DispatchSync SyncSettings
   deriving (Show, Eq, Generic)
 
 data SyncSettings =
   SyncSettings
-    { syncSetServerUrl :: BaseUrl
-    , syncSetContentsDir :: Path Abs Dir
+    { syncSetContentsDir :: Path Abs Dir
     , syncSetUUIDFile :: Path Abs File
     , syncSetMetadataDB :: Path Abs File
     , syncSetIgnoreFiles :: IgnoreFiles
     }
+  deriving (Show, Eq, Generic)
+
+data RegisterSettings =
+  RegisterSettings
   deriving (Show, Eq, Generic)
 
 data IgnoreFiles
@@ -124,7 +133,8 @@ instance FromJSON IgnoreFiles where
 
 data Settings =
   Settings
-    { setLogLevel :: LogLevel
+    { setServerUrl :: BaseUrl
+    , setLogLevel :: LogLevel
     , setUsername :: Maybe Username
     , setSessionPath :: Path Abs File
     }

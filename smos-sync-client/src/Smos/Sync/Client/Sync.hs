@@ -58,7 +58,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool -> do
       logDebugN "CLIENT START"
       man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
-      let cenv = mkClientEnv man syncSetServerUrl
+      let cenv = mkClientEnv man setServerUrl
       let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
       flip runReaderT env $
         withToken setSessionPath $ \token -> do

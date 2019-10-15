@@ -57,12 +57,6 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
     getDispatch src =
       case c of
         CommandSync SyncFlags {..} -> do
-          syncSetServerUrl <-
-            case syncFlagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
-              Nothing ->
-                die
-                  "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
-              Just s -> Servant.parseBaseUrl s
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
               Nothing -> Report.resolveReportWorkflowDir src
@@ -80,6 +74,12 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
                 syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
           pure $ DispatchSync SyncSettings {..}
     getSettings = do
+      setServerUrl <-
+        case flagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
+          Nothing ->
+            die
+              "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
+          Just s -> Servant.parseBaseUrl s
       let setLogLevel = fromMaybe LevelWarn flagLogLevel
       let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
       setSessionPath <-
@@ -163,7 +163,14 @@ parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags
 
 parseCommand :: Parser Command
-parseCommand = hsubparser $ mconcat [command "sync" parseCommandSync]
+parseCommand =
+  hsubparser $ mconcat [command "register" parseCommandRegister, command "sync" parseCommandSync]
+
+parseCommandRegister :: ParserInfo Command
+parseCommandRegister = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Register at a sync server"
+    parser = CommandRegister <$> pure RegisterFlags
 
 parseCommandSync :: ParserInfo Command
 parseCommandSync = info parser modifier
@@ -172,9 +179,6 @@ parseCommandSync = info parser modifier
     parser =
       CommandSync <$>
       (SyncFlags <$>
-       option
-         (Just <$> str)
-         (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
        option
          (Just <$> str)
          (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing]) <*>
@@ -199,6 +203,7 @@ parseIgnoreFilesFlag =
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> Report.parseFlags <*>
+  option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
   option
     (Just <$> maybeReader parseLogLevel)
     (mconcat
