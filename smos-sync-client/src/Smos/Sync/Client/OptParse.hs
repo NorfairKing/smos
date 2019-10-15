@@ -57,6 +57,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
     getDispatch src =
       case c of
         CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
+        CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
         CommandSync SyncFlags {..} -> do
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
@@ -184,13 +185,24 @@ parseArgs = Arguments <$> parseCommand <*> parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
-  hsubparser $ mconcat [command "register" parseCommandRegister, command "sync" parseCommandSync]
+  hsubparser $
+  mconcat
+    [ command "register" parseCommandRegister
+    , command "login" parseCommandLogin
+    , command "sync" parseCommandSync
+    ]
 
 parseCommandRegister :: ParserInfo Command
 parseCommandRegister = info parser modifier
   where
     modifier = fullDesc <> progDesc "Register at a sync server"
     parser = CommandRegister <$> pure RegisterFlags
+
+parseCommandLogin :: ParserInfo Command
+parseCommandLogin = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Login at a sync server"
+    parser = CommandLogin <$> pure LoginFlags
 
 parseCommandSync :: ParserInfo Command
 parseCommandSync = info parser modifier

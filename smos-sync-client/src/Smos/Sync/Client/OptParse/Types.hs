@@ -27,11 +27,16 @@ data Instructions =
 
 data Command
   = CommandRegister RegisterFlags
+  | CommandLogin LoginFlags
   | CommandSync SyncFlags
   deriving (Show, Eq)
 
 data RegisterFlags =
   RegisterFlags
+  deriving (Show, Eq)
+
+data LoginFlags =
+  LoginFlags
   deriving (Show, Eq)
 
 data SyncFlags =
@@ -104,6 +109,7 @@ instance FromJSON SyncConfiguration where
 
 data Dispatch
   = DispatchRegister RegisterSettings
+  | DispatchLogin LoginSettings
   | DispatchSync SyncSettings
   deriving (Show, Eq, Generic)
 
@@ -118,6 +124,10 @@ data SyncSettings =
 
 data RegisterSettings =
   RegisterSettings
+  deriving (Show, Eq, Generic)
+
+data LoginSettings =
+  LoginSettings
   deriving (Show, Eq, Generic)
 
 data IgnoreFiles

@@ -22,13 +22,20 @@ import Smos.Sync.Client.TestUtils
 spec :: Spec
 spec =
   serverSpec $
-  describe "smos-sync-client" $
-  it "just works (tm)" $ \cenv ->
-    forAllValid $ \un ->
-      forAllValid $ \pw -> do
-        let t = test cenv
-        t ["register", "--username", usernameString un, "--password", passwordString pw]
-        t ["sync", "--username", usernameString un, "--password", passwordString pw]
+  describe "smos-sync-client" $ do
+    it "just works (tm) with manual login" $ \cenv ->
+      forAllValid $ \un ->
+        forAllValid $ \pw -> do
+          let t = test cenv
+          t ["register", "--username", usernameString un, "--password", passwordString pw]
+          t ["login", "--username", usernameString un, "--password", passwordString pw]
+          t ["sync"]
+    it "just works (tm) without manual login" $ \cenv ->
+      forAllValid $ \un ->
+        forAllValid $ \pw -> do
+          let t = test cenv
+          t ["register", "--username", usernameString un, "--password", passwordString pw]
+          t ["sync", "--username", usernameString un, "--password", passwordString pw]
 
 test :: ClientEnv -> [String] -> IO ()
 test cenv args =

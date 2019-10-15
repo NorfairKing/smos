@@ -56,12 +56,11 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $
     DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool ->
-      withClientEnv setServerUrl $ \cenv -> do
+      withClientEnv setServerUrl $ \cenv -> withLogin cenv setUsername setPassword $ \token -> do
         logDebugN "CLIENT START"
         let env =
               SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-        flip runReaderT env $
-          withToken setSessionPath $ \token -> do
+        flip runReaderT env $ do
             void $ runDB $ runMigrationSilent migrateAll
             mUUID <- liftIO $ readServerUUID syncSetUUIDFile
             logDebugData "READ STORED UUID" mUUID

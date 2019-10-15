@@ -18,6 +18,7 @@ import Network.HTTP.Client.TLS as HTTP
 
 import System.Exit
 
+import Servant.Auth.Client as Auth
 import Servant.Client as Servant
 
 import Control.Monad.Logger
@@ -44,6 +45,11 @@ withClientEnv burl func = do
   man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
   let cenv = mkClientEnv man burl
   func cenv
+
+withLogin ::
+     MonadIO m => ClientEnv -> Maybe Username -> Maybe Password -> (Auth.Token -> m a) -> m a
+withLogin cenv mun mpw func = do
+  func undefined
 
 runSyncClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
 runSyncClient func = do
