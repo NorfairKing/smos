@@ -3,10 +3,7 @@ module Smos.Sync.Client.IntegrationSpec
   ) where
 
 import Test.Hspec
-import Test.QuickCheck
 import Test.Validity
-
-import qualified Data.Text as T
 
 import Path
 import Path.IO
@@ -20,7 +17,6 @@ import Smos.API
 import Smos.Server.TestUtils
 
 import Smos.Sync.Client
-import Smos.Sync.Client.TestUtils
 
 spec :: Spec
 spec =
@@ -48,7 +44,7 @@ spec =
     it "just works (tm) without manual login" $ \cenv ->
       forAllValid $ \un ->
         forAllValid $ \pw ->
-          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir -> do
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
             withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
               let t = test cenv tmpDir
               t ["register", "--username", usernameString un, "--password", passwordString pw]
@@ -72,5 +68,5 @@ test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
 test cenv tmpDir args = do
   sp <- resolveFile tmpDir "session.dat"
   let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--session-path", fromAbsFile sp]
-  putStrLn $ unwords $ ["running", unwords $ map show $ "smos-sync-client" : args']
+  putStrLn $ unwords ["running", unwords $ map show $ "smos-sync-client" : args']
   withArgs args' smosSyncClient

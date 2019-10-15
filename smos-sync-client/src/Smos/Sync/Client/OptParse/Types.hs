@@ -6,7 +6,6 @@ module Smos.Sync.Client.OptParse.Types where
 import GHC.Generics (Generic)
 
 import qualified Data.Text as T
-import Data.Text (Text)
 import Data.Validity
 import Data.Yaml as Yaml
 

@@ -26,16 +26,11 @@ import Control.Monad.Reader
 import System.Exit
 import System.FileLock
 
-import Servant.Client
-
 import Path
 import Path.IO
 
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
-
-import Network.HTTP.Client as HTTP
-import Network.HTTP.Client.TLS as HTTP
 
 import Database.Persist.Sqlite as DB
 
@@ -48,7 +43,6 @@ import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Query
-import Smos.Sync.Client.Session
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
@@ -56,7 +50,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $
     DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool ->
-      withClientEnv setServerUrl $ \cenv -> do
+      withClientEnv setServerUrl $ \cenv ->
         withLogin cenv setSessionPath setUsername setPassword $ \token -> do
           logDebugN "CLIENT START"
           let env =

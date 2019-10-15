@@ -10,7 +10,6 @@ import GHC.Generics (Generic)
 import Data.Aeson
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
-import Data.Text (Text)
 import Data.Validity
 
 import Path
@@ -31,7 +30,6 @@ import Database.Persist.Sql as DB
 import Smos.API
 import Smos.Client
 
-import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
 

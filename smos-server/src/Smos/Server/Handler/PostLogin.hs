@@ -7,8 +7,6 @@ module Smos.Server.Handler.PostLogin where
 
 import Smos.Server.Handler.Import
 
-import qualified Data.Text.Encoding as TE
-
 import Servant.Auth.Server
 
 servePostLogin ::

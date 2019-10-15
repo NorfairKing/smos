@@ -13,10 +13,8 @@ import GHC.Generics (Generic)
 import Data.Validity
 
 import Data.ByteString (ByteString)
-import Data.Text (Text)
 
 import qualified Crypto.BCrypt as BCrypt
-import qualified Data.Text.Encoding as TE
 
 import Database.Persist.Sql
 
