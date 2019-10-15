@@ -13,6 +13,8 @@ import qualified Data.Mergeful.Timed as Mergeful
 import Data.Text (Text)
 import Data.Validity
 
+import Path
+
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 
@@ -27,9 +29,11 @@ import Control.Monad.Reader
 import Database.Persist.Sql as DB
 
 import Smos.API
+import Smos.Client
 
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Prompt
+import Smos.Sync.Client.Session
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
@@ -47,9 +51,36 @@ withClientEnv burl func = do
   func cenv
 
 withLogin ::
-     MonadIO m => ClientEnv -> Maybe Username -> Maybe Password -> (Auth.Token -> m a) -> m a
-withLogin cenv mun mpw func = do
-  func undefined
+     MonadIO m
+  => ClientEnv
+  -> Path Abs File
+  -> Maybe Username
+  -> Maybe Password
+  -> (Auth.Token -> m a)
+  -> m a
+withLogin cenv sessionPath mun mpw func = do
+  mToken <- loadToken sessionPath
+  case mToken of
+    Just token -> func token
+    Nothing -> do
+      un <- liftIO $ promptUsername mun
+      pw <- liftIO $ promptPassword mpw
+      errOrToken <- liftIO $ login cenv $ Login {loginUsername = un, loginPassword = pw}
+      case errOrToken of
+        Left le -> liftIO $ die $ unlines ["Failed to login: ", show le]
+        Right t -> func t
+
+promptUsername :: Maybe Username -> IO Username
+promptUsername mun =
+  case mun of
+    Nothing -> promptUntil "username" parseUsername
+    Just un -> pure un
+
+promptPassword :: Maybe Password -> IO Password
+promptPassword mpw =
+  case mpw of
+    Nothing -> promptSecretUntil "password" parsePassword
+    Just pw -> pure pw
 
 runSyncClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
 runSyncClient func = do

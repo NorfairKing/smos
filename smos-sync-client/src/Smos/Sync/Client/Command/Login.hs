@@ -52,4 +52,5 @@ import Smos.Sync.Client.Session
 
 loginSmosSyncClient :: Settings -> LoginSettings -> IO ()
 loginSmosSyncClient Settings {..} LoginSettings =
-  withClientEnv setServerUrl $ \cenv -> withLogin cenv setUsername setPassword (const$ pure ())
+  withClientEnv setServerUrl $ \cenv ->
+    withLogin cenv setSessionPath setUsername setPassword (const $ pure ())

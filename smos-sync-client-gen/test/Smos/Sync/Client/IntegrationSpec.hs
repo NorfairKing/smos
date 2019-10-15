@@ -8,6 +8,9 @@ import Test.Validity
 
 import qualified Data.Text as T
 
+import Path
+import Path.IO
+
 import System.Environment
 
 import Servant.Client
@@ -25,19 +28,43 @@ spec =
   describe "smos-sync-client" $ do
     it "just works (tm) with manual login" $ \cenv ->
       forAllValid $ \un ->
-        forAllValid $ \pw -> do
-          let t = test cenv
-          t ["register", "--username", usernameString un, "--password", passwordString pw]
-          t ["login", "--username", usernameString un, "--password", passwordString pw]
-          t ["sync"]
+        forAllValid $ \pw ->
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
+            withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
+              let t = test cenv tmpDir
+              t ["register", "--username", usernameString un, "--password", passwordString pw]
+              t ["login", "--username", usernameString un, "--password", passwordString pw]
+              up <- resolveFile tdir "uuid.jon"
+              mp <- resolveFile tdir "metadata.db"
+              t ["sync", "--contents-dir", fromAbsDir contentsDir, "--metadata-db", fromAbsFile mp
+                , "--uuid-file"
+                , fromAbsFile up]
     it "just works (tm) without manual login" $ \cenv ->
       forAllValid $ \un ->
-        forAllValid $ \pw -> do
-          let t = test cenv
-          t ["register", "--username", usernameString un, "--password", passwordString pw]
-          t ["sync", "--username", usernameString un, "--password", passwordString pw]
+        forAllValid $ \pw ->
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir -> do
+            withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
+              let t = test cenv tmpDir
+              t ["register", "--username", usernameString un, "--password", passwordString pw]
+              up <- resolveFile tdir "uuid.jon"
+              mp <- resolveFile tdir "metadata.db"
+              t
+                [ "sync"
+                , "--username"
+                , usernameString un
+                , "--password"
+                , passwordString pw
+                , "--contents-dir"
+                , fromAbsDir contentsDir
+                , "--metadata-db"
+                , fromAbsFile mp
+                , "--uuid-file"
+                , fromAbsFile up
+                ]
 
-test :: ClientEnv -> [String] -> IO ()
-test cenv args =
-  let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv]
-   in withArgs args' smosSyncClient
+test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
+test cenv tdir args = do
+  sp <- resolveFile tdir "session.dat"
+  let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--session-path", fromAbsFile sp]
+  putStrLn $ unwords $ ["running", unwords $ map show $ "smos-sync-client" : args']
+  withArgs args' smosSyncClient

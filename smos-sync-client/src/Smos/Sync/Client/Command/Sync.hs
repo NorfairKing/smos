@@ -56,7 +56,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
     runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $
     DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $ \pool ->
-      withClientEnv setServerUrl $ \cenv -> withLogin cenv setUsername setPassword $ \token -> do
+      withClientEnv setServerUrl $ \cenv -> withLogin cenv setSessionPath setUsername setPassword $ \token -> do
         logDebugN "CLIENT START"
         let env =
               SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
