@@ -6,6 +6,7 @@
 
 module Smos.API.Username
   ( Username(..)
+  , usernameString
   , parseUsername
   , parseUsernameWithError
   , validUsernameChar
@@ -61,6 +62,9 @@ instance FromJSON Username where
 instance PathPiece Username where
   fromPathPiece = parseUsername
   toPathPiece = usernameText
+
+usernameString :: Username -> String
+usernameString = T.unpack . usernameText
 
 parseUsername :: MonadFail m => Text -> m Username
 parseUsername t =
