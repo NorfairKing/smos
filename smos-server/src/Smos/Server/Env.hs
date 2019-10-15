@@ -68,7 +68,7 @@ writeServerStore uid = void . M.traverseWithKey go . serverStoreItems
       let SyncFile {..} = timedValue
        in void $
           upsertBy
-            (UniqueServerFilePath syncFilePath)
+            (UniqueServerFilePath uid syncFilePath)
             (ServerFile
                { serverFileUser = uid
                , serverFileUuid = u

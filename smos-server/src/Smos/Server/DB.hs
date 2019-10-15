@@ -53,8 +53,8 @@ ServerFile
     contents ByteString
     time ServerTime
 
-    UniqueServerFilePath path
-    UniqueServerFileUUID uuid
+    UniqueServerFilePath user path
+    UniqueServerFileUUID user uuid
 
     deriving Show
     deriving Eq

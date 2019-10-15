@@ -20,6 +20,7 @@ library:
   - http-client
   - http-types
   - mergeful
+  - microlens
   - monad-logger
   - path
   - path-io
