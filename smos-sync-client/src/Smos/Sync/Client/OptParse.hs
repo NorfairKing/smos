@@ -56,6 +56,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
     cM func = mc >>= confSyncConf >>= func
     getDispatch src =
       case c of
+        CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
         CommandSync SyncFlags {..} -> do
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
@@ -82,6 +83,21 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
           Just s -> Servant.parseBaseUrl s
       let setLogLevel = fromMaybe LevelWarn flagLogLevel
       let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
+      setPassword <-
+        fmap T.pack <$>
+        case flagSessionPath of
+          Just p -> do
+            putStrLn "WARNING: Plaintext password in flags may end up in shell history."
+            pure (Just p)
+          Nothing ->
+            case envPassword of
+              Just p -> pure (Just p)
+              Nothing ->
+                case cM syncConfPassword of
+                  Just p -> do
+                    putStrLn "WARNING: Plaintext password in config file."
+                    pure (Just p)
+                  Nothing -> pure Nothing
       setSessionPath <-
         case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
           Nothing -> defaultSessionPath
@@ -122,12 +138,13 @@ getEnvironment = do
       Just "hidden" -> pure $ Just IgnoreHiddenFiles
       Just s -> fail $ "Unknown 'IgnoreFiles' value: " <> s
       Nothing -> pure Nothing
-  let envSessionPath = getEnv "SESSION_PATH"
   envUsername <-
     forM (getEnv "USERNAME") $ \s ->
       case parseUsername (T.pack s) of
         Nothing -> fail $ "Invalid username: " <> s
         Just un -> pure un
+  let envPassword = getEnv "PASSWORD"
+  let envSessionPath = getEnv "SESSION_PATH"
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -218,6 +235,17 @@ parseFlags =
   option
     (Just <$> maybeReader (parseUsername . T.pack))
     (mconcat [long "username", help "The username to login to the sync server", value Nothing]) <*>
+  option
+    (Just <$> str)
+    (mconcat
+       [ long "password"
+       , help $
+         unlines
+           [ "The password to login to the sync server"
+           , "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
+           ]
+       , value Nothing
+       ]) <*>
   option
     (Just <$> str)
     (mconcat [long "session-path", help "The path to store the login session", value Nothing])

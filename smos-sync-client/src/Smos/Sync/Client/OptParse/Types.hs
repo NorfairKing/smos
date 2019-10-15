@@ -6,6 +6,7 @@ module Smos.Sync.Client.OptParse.Types where
 import GHC.Generics (Generic)
 
 import qualified Data.Text as T
+import Data.Text (Text)
 import Data.Validity
 import Data.Yaml as Yaml
 
@@ -48,6 +49,7 @@ data Flags =
     , flagServerUrl :: Maybe String
     , flagLogLevel :: Maybe LogLevel
     , flagUsername :: Maybe Username
+    , flagPassword :: Maybe String
     , flagSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
@@ -60,8 +62,9 @@ data Environment =
     , envUUIDFile :: Maybe FilePath
     , envMetadataDB :: Maybe FilePath
     , envIgnoreFiles :: Maybe IgnoreFiles
-    , envSessionPath :: Maybe FilePath
     , envUsername :: Maybe Username
+    , envPassword :: Maybe String
+    , envSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
 
@@ -84,6 +87,7 @@ data SyncConfiguration =
     , syncConfMetadataDB :: Maybe FilePath
     , syncConfIgnoreFiles :: Maybe IgnoreFiles
     , syncConfUsername :: Maybe Username
+    , syncConfPassword :: Maybe String
     , syncConfSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
@@ -95,6 +99,7 @@ instance FromJSON SyncConfiguration where
       o .:? "metadata-db" <*>
       o .:? "ignore-files" <*>
       o .:? "username" <*>
+      o .:? "password" <*>
       o .:? "session-path"
 
 data Dispatch
@@ -136,6 +141,7 @@ data Settings =
     { setServerUrl :: BaseUrl
     , setLogLevel :: LogLevel
     , setUsername :: Maybe Username
+    , setPassword :: Maybe Text
     , setSessionPath :: Path Abs File
     }
   deriving (Show, Eq, Generic)
