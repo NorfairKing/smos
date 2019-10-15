@@ -100,14 +100,6 @@ withNewUserAndData cenv func = do
   r <- randomRegistration
   withNewGivenUser cenv r $ func r
 
-randomRegistration :: IO Register
-randomRegistration = do
-  u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
-  u2 <- nextRandomUUID :: IO (UUID Password)
-  un <- parseUsername $ uuidText u1
-  pw <- parsePassword $ uuidText u2
-  pure Register {registerUsername = un, registerPassword = pw}
-
 withNewGivenUser :: MonadIO m => ClientEnv -> Register -> (Token -> m a) -> m a
 withNewGivenUser cenv r func = do
   t <-
@@ -115,3 +107,17 @@ withNewGivenUser cenv r func = do
       NoContent <- testClientOrErr cenv $ clientPostRegister r
       testLogin cenv (registerLogin r)
   func t
+
+withNewRegisteredUser :: MonadIO m => ClientEnv -> (Register -> m a) -> m a
+withNewRegisteredUser cenv func = do
+  r <- liftIO randomRegistration
+  liftIO $ testClientOrErr cenv $ clientPostRegister r
+  func r
+
+randomRegistration :: IO Register
+randomRegistration = do
+  u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
+  u2 <- nextRandomUUID :: IO (UUID Password)
+  un <- parseUsername $ uuidText u1
+  pw <- parsePassword $ uuidText u2
+  pure Register {registerUsername = un, registerPassword = pw}

@@ -24,8 +24,6 @@ import Test.Validity
 
 import Smos.API
 
-import Smos.Server.TestUtils
-
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
@@ -92,35 +90,34 @@ forAllHidden = forAllShrink (genProbablyHidden `suchThat` isHidden) (filter isHi
 data SyncClientSettings =
   SyncClientSettings SyncSettings Settings
 
-withSyncClient :: ClientEnv -> (SyncClientSettings -> IO a) -> IO a
-withSyncClient cenv func =
+withSyncClient :: ClientEnv -> Register -> (SyncClientSettings -> IO a) -> IO a
+withSyncClient cenv reg func =
   withSystemTempDir "smos-sync-client-test-contents" $ \tmpDir1 ->
-    withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 ->
-      withNewUserAndData cenv $ \r _ -> do
-        mp <- resolveFile tmpDir2 "metadata.sqlite3"
-        up <- resolveFile tmpDir2 "uuid.json"
-        sp <- resolveFile tmpDir2 "session.dat"
-        let ss =
-              SyncSettings
-                { syncSetContentsDir = tmpDir1
-                , syncSetMetadataDB = mp
-                , syncSetUUIDFile = up
-                , syncSetIgnoreFiles = IgnoreNothing
-                }
-        let s =
-              Settings
-                { setServerUrl = baseUrl cenv
-                , setLogLevel = LevelWarn
-                , setUsername = Just $ registerUsername r
-                , setPassword = Just $ registerPassword r
-                , setSessionPath = sp
-                }
-        let scs = SyncClientSettings ss s
-        func scs
+    withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir2 -> do
+      mp <- resolveFile tmpDir2 "metadata.sqlite3"
+      up <- resolveFile tmpDir2 "uuid.json"
+      sp <- resolveFile tmpDir2 "session.dat"
+      let ss =
+            SyncSettings
+              { syncSetContentsDir = tmpDir1
+              , syncSetMetadataDB = mp
+              , syncSetUUIDFile = up
+              , syncSetIgnoreFiles = IgnoreNothing
+              }
+      let s =
+            Settings
+              { setServerUrl = baseUrl cenv
+              , setLogLevel = LevelWarn
+              , setUsername = Just $ registerUsername reg
+              , setPassword = Just $ registerPassword reg
+              , setSessionPath = sp
+              }
+      let scs = SyncClientSettings ss s
+      func scs
 
-withHiddenFilesClient :: ClientEnv -> (SyncClientSettings -> IO a) -> IO a
-withHiddenFilesClient cenv func =
-  withSyncClient cenv $ \(SyncClientSettings ss s) ->
+withHiddenFilesClient :: ClientEnv -> Register -> (SyncClientSettings -> IO a) -> IO a
+withHiddenFilesClient cenv reg func =
+  withSyncClient cenv reg $ \(SyncClientSettings ss s) ->
     let scs' = SyncClientSettings (ss {syncSetIgnoreFiles = IgnoreHiddenFiles}) s
      in func scs'
 
