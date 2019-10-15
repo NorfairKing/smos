@@ -17,10 +17,10 @@ import Smos.Sync.Client.Contents
 import Smos.Sync.Client.DirForest
 import Smos.Sync.Client.TestUtils
 
-instance GenValid DirForest where
+instance GenValid a => GenValid (DirForest a) where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
-instance GenValid DirOrFile where
+instance GenValid a => GenValid (DirOrFile a) where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

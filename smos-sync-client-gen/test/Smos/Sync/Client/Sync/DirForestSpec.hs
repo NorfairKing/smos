@@ -18,6 +18,6 @@ import Smos.Sync.Client.DirForest.Gen
 
 spec :: Spec
 spec = do
-  genValidSpec @DirForest
+  genValidSpec @(DirForest Int)
   describe "makeDirForest" $
-    it "produces valid DirForests" $ producesValidsOnValids DF.makeDirForest
+    it "produces valid DirForests" $ producesValidsOnValids (DF.makeDirForest @Int)
