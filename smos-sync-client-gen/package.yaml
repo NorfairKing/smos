@@ -24,9 +24,13 @@ library:
   - hspec-core
   - http-client
   - mergeful
+  - microlens
   - monad-logger
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - resource-pool
   - servant-client
   - smos-api
   - smos-api-gen
@@ -67,6 +71,7 @@ tests:
     - persistent
     - persistent-sqlite
     - pretty-show
+    - resource-pool
     - servant-auth-client
     - servant-client
     - smos-api

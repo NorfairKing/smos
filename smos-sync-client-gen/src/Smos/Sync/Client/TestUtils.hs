@@ -7,12 +7,15 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
+import Data.Pool
 import qualified Data.Set as S
 
 import Control.Concurrent.Async
 import Control.Monad
+import Control.Monad.IO.Class
 import Control.Monad.Logger
 
+import Lens.Micro
 import Path
 import Path.IO
 import Servant.Client
@@ -22,14 +25,27 @@ import Test.Hspec.QuickCheck
 import Test.QuickCheck
 import Test.Validity
 
+import Database.Persist.Sqlite as DB
+
 import Smos.API
 
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync.Gen ()
+
+clientDBSpec :: SpecWith (Pool SqlBackend) -> Spec
+clientDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withClientDB
+
+withClientDB :: (Pool SqlBackend -> IO a) -> IO a
+withClientDB func =
+  runNoLoggingT $
+  DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $ \pool -> do
+    DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+    liftIO $ func pool
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")

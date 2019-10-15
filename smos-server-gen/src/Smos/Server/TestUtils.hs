@@ -29,11 +29,11 @@ import Smos.Client
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
 
-dbSpec :: SpecWith (Pool SqlBackend) -> Spec
-dbSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withDB
+serverDBSpec :: SpecWith (Pool SqlBackend) -> Spec
+serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerDB
 
-withDB :: (Pool SqlBackend -> IO a) -> IO a
-withDB func =
+withServerDB :: (Pool SqlBackend -> IO a) -> IO a
+withServerDB func =
   runNoLoggingT $
   DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $ \pool -> do
     DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
