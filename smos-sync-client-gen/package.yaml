@@ -34,6 +34,7 @@ library:
   - smos-server-gen
   - smos-sync-client
   - stm
+  - typed-uuid
   - uuid
   - wai
   - warp

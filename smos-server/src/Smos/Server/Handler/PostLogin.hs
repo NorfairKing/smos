@@ -19,7 +19,7 @@ servePostLogin Login {..} = do
   case me of
     Nothing -> throwError err401
     Just (Entity _ user) ->
-      if validatePassword (userHashedPassword user) (TE.encodeUtf8 loginPassword)
+      if validatePassword (userHashedPassword user) loginPassword
         then setLoggedIn (userName user)
         else throwError err401
   where

@@ -3,6 +3,7 @@
 module Smos.Sync.Client.Prompt
   ( promptUntil
   , promptSecret
+  , promptSecretUntil
   , prompt
   ) where
 
@@ -16,8 +17,14 @@ import qualified Data.Text.IO as T
 import System.IO
 
 promptUntil :: Text -> (Text -> Maybe a) -> IO a
-promptUntil p func = do
-  s <- prompt p
+promptUntil p = promptRawUntil p prompt
+
+promptSecretUntil :: Text -> (Text -> Maybe a) -> IO a
+promptSecretUntil p = promptRawUntil p promptSecret
+
+promptRawUntil :: Text -> (Text -> IO Text) -> (Text -> Maybe a) -> IO a
+promptRawUntil p pf func = do
+  s <- pf p
   case func s of
     Nothing -> promptUntil p func
     Just a -> pure a

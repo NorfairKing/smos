@@ -11,7 +11,9 @@ module Smos.Client
 
 import GHC.Generics
 
+import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
+import System.Exit
 import Web.Cookie
 
 import Servant.API.Flatten
@@ -68,3 +70,10 @@ data LoginError
 
 runClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 runClient = flip runClientM
+
+runClientOrDie :: ClientEnv -> ClientM a -> IO a
+runClientOrDie cenv func = do
+  errOrResp <- runClient cenv func
+  case errOrResp of
+    Left err -> liftIO $ die $ show err
+    Right resp -> pure resp

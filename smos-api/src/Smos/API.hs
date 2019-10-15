@@ -23,7 +23,6 @@ import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import Data.Proxy
 import qualified Data.Text as T
-import Data.Text (Text)
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
 import Data.Validity
@@ -48,6 +47,7 @@ import Servant.Auth
 import Servant.Auth.Server
 
 import Smos.API.HashedPassword as X
+import Smos.API.Password as X
 import Smos.API.Username as X
 
 syncAPI :: Proxy SyncAPI
@@ -106,7 +106,7 @@ type PostRegister = "register" :> ReqBody '[ JSON] Register :> PostNoContent '[ 
 data Register =
   Register
     { registerUsername :: Username
-    , registerPassword :: Text
+    , registerPassword :: Password
     }
   deriving (Show, Eq, Generic)
 
@@ -122,7 +122,7 @@ type PostLogin
 data Login =
   Login
     { loginUsername :: Username
-    , loginPassword :: Text
+    , loginPassword :: Password
     }
   deriving (Show, Eq, Generic)
 

@@ -84,8 +84,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
       let setLogLevel = fromMaybe LevelWarn flagLogLevel
       let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
       setPassword <-
-        fmap T.pack <$>
-        case flagSessionPath of
+        case flagPassword of
           Just p -> do
             putStrLn "WARNING: Plaintext password in flags may end up in shell history."
             pure (Just p)
@@ -143,7 +142,11 @@ getEnvironment = do
       case parseUsername (T.pack s) of
         Nothing -> fail $ "Invalid username: " <> s
         Just un -> pure un
-  let envPassword = getEnv "PASSWORD"
+  envPassword <-
+    forM (getEnv "PASSWORD") $ \s ->
+      case parsePassword (T.pack s) of
+        Nothing -> fail $ "Invalid password: " <> s
+        Just pw -> pure pw
   let envSessionPath = getEnv "SESSION_PATH"
   pure Environment {..}
 
@@ -236,7 +239,7 @@ parseFlags =
     (Just <$> maybeReader (parseUsername . T.pack))
     (mconcat [long "username", help "The username to login to the sync server", value Nothing]) <*>
   option
-    (Just <$> str)
+    (Just <$> maybeReader (parsePassword . T.pack))
     (mconcat
        [ long "password"
        , help $

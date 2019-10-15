@@ -49,7 +49,7 @@ data Flags =
     , flagServerUrl :: Maybe String
     , flagLogLevel :: Maybe LogLevel
     , flagUsername :: Maybe Username
-    , flagPassword :: Maybe String
+    , flagPassword :: Maybe Password
     , flagSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
@@ -63,7 +63,7 @@ data Environment =
     , envMetadataDB :: Maybe FilePath
     , envIgnoreFiles :: Maybe IgnoreFiles
     , envUsername :: Maybe Username
-    , envPassword :: Maybe String
+    , envPassword :: Maybe Password
     , envSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
@@ -87,7 +87,7 @@ data SyncConfiguration =
     , syncConfMetadataDB :: Maybe FilePath
     , syncConfIgnoreFiles :: Maybe IgnoreFiles
     , syncConfUsername :: Maybe Username
-    , syncConfPassword :: Maybe String
+    , syncConfPassword :: Maybe Password
     , syncConfSessionPath :: Maybe FilePath
     }
   deriving (Show, Eq, Generic)
@@ -141,7 +141,7 @@ data Settings =
     { setServerUrl :: BaseUrl
     , setLogLevel :: LogLevel
     , setUsername :: Maybe Username
-    , setPassword :: Maybe Text
+    , setPassword :: Maybe Password
     , setSessionPath :: Path Abs File
     }
   deriving (Show, Eq, Generic)

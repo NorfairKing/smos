@@ -20,6 +20,8 @@ import qualified Data.Text.Encoding as TE
 
 import Database.Persist.Sql
 
+import Smos.API.Password
+
 newtype HashedPassword =
   HashedPassword ByteString
   deriving (Show, Eq, Read, Generic, PersistField, PersistFieldSql)
@@ -32,9 +34,9 @@ instance Validity HashedPassword where
 hashingpolicy :: BCrypt.HashingPolicy
 hashingpolicy = BCrypt.fastBcryptHashingPolicy
 
-passwordHash :: Text -> IO (Maybe HashedPassword)
+passwordHash :: Password -> IO (Maybe HashedPassword)
 passwordHash =
-  fmap (fmap HashedPassword) . BCrypt.hashPasswordUsingPolicy hashingpolicy . TE.encodeUtf8
+  fmap (fmap HashedPassword) . BCrypt.hashPasswordUsingPolicy hashingpolicy . passwordByteString
 
-validatePassword :: HashedPassword -> ByteString -> Bool
-validatePassword (HashedPassword hp) = BCrypt.validatePassword hp
+validatePassword :: HashedPassword -> Password -> Bool
+validatePassword (HashedPassword hp) = BCrypt.validatePassword hp . passwordByteString

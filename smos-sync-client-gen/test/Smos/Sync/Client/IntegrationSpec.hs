@@ -27,9 +27,10 @@ spec =
     forAllValid $ \un ->
       forAllValid $ \pw -> do
         let t = test cenv
-        t ["register", "--username", usernameString un, "--password", T.unpack pw]
-        t ["sync", "--username", usernameString un, "--password", T.unpack pw]
+        t ["register", "--username", usernameString un, "--password", passwordString pw]
+        t ["sync", "--username", usernameString un, "--password", passwordString pw]
 
+test :: ClientEnv -> [String] -> IO ()
 test cenv args =
   let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv]
    in withArgs args' smosSyncClient

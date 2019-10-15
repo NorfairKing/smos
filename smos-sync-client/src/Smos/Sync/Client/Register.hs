@@ -17,7 +17,6 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Data.Validity.UUID ()
-import Text.Show.Pretty
 
 import Control.Monad
 import Control.Monad.Logger
@@ -47,9 +46,21 @@ import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Query
 import Smos.Sync.Client.Session
 
 registerSmosSyncClient :: Settings -> RegisterSettings -> IO ()
-registerSmosSyncClient Settings {..} RegisterSettings = do
-  pure ()
+registerSmosSyncClient Settings {..} RegisterSettings =
+  withClientEnv setServerUrl $ \cenv -> do
+    un <-
+      case setUsername of
+        Nothing -> promptUntil "username" parseUsername
+        Just un -> pure un
+    pw <-
+      case setPassword of
+        Nothing -> promptSecretUntil "password" parsePassword
+        Just pw -> pure pw
+    let reg = Register {registerUsername = un, registerPassword = pw}
+    NoContent <- runClientOrDie cenv $ clientPostRegister reg
+    pure ()

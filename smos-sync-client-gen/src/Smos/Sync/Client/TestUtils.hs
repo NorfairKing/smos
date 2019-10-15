@@ -8,6 +8,7 @@ import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
 import qualified Data.Set as S
+import Data.UUID.Typed
 
 import Control.Concurrent.Async
 import Control.Monad
@@ -104,12 +105,16 @@ withClient cenv func =
               , syncSetUUIDFile = up
               , syncSetIgnoreFiles = IgnoreNothing
               }
-      un <- parseUsername "test"
+      u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
+      u2 <- nextRandomUUID :: IO (UUID Password)
+      un <- parseUsername $ uuidText u1
+      pw <- parsePassword $ uuidText u2
       let s =
             Settings
               { setServerUrl = baseUrl cenv
               , setLogLevel = LevelWarn
               , setUsername = Just un
+              , setPassword = Just pw
               , setSessionPath = sp
               }
       let scs = SyncClientSettings ss s

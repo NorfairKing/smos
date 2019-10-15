@@ -13,6 +13,9 @@ import qualified Data.Mergeful.Timed as Mergeful
 import Data.Text (Text)
 import Data.Validity
 
+import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.TLS as HTTP
+
 import System.Exit
 
 import Servant.Client as Servant
@@ -24,6 +27,7 @@ import Database.Persist.Sql as DB
 
 import Smos.API
 
+import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Prompt
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
@@ -35,20 +39,20 @@ data SyncClientEnv =
     }
   deriving (Generic)
 
-promptUsername :: C Username
-promptUsername = liftIO $ promptUntil "username" parseUsername
+withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
+withClientEnv burl func = do
+  man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
+  let cenv = mkClientEnv man burl
+  func cenv
 
-promptPassword :: C Text
-promptPassword = liftIO $ promptSecret "password"
-
-runClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
-runClient func = do
+runSyncClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
+runSyncClient func = do
   cenv <- asks syncClientEnvServantClientEnv
   liftIO $ Servant.runClientM func cenv
 
-runClientOrDie :: Servant.ClientM a -> C a
-runClientOrDie func = do
-  errOrResp <- runClient func
+runSyncClientOrDie :: Servant.ClientM a -> C a
+runSyncClientOrDie func = do
+  errOrResp <- runSyncClient func
   case errOrResp of
     Left err -> liftIO $ die $ show err
     Right resp -> pure resp
