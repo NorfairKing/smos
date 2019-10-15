@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Smos.Sync.Client.Sync where
+module Smos.Sync.Client.Command.Sync where
 
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON

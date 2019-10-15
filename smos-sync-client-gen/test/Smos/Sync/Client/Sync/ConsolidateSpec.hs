@@ -14,10 +14,10 @@ import Text.Show.Pretty
 
 import Smos.API
 
+import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.Env
-import Smos.Sync.Client.Sync
 
 import Smos.Sync.Client.ContentsMap.Gen ()
 import Smos.Sync.Client.Sync.Gen ()

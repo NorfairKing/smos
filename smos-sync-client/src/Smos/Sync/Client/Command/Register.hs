@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Smos.Sync.Client.Login where
+module Smos.Sync.Client.Command.Register where
 
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
@@ -50,6 +50,17 @@ import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Query
 import Smos.Sync.Client.Session
 
-loginSmosSyncClient :: Settings -> LoginSettings -> IO ()
-loginSmosSyncClient Settings {..} LoginSettings =
-  withClientEnv setServerUrl $ \cenv -> withLogin cenv setUsername setPassword (const$ pure ())
+registerSmosSyncClient :: Settings -> RegisterSettings -> IO ()
+registerSmosSyncClient Settings {..} RegisterSettings =
+  withClientEnv setServerUrl $ \cenv -> do
+    un <-
+      case setUsername of
+        Nothing -> promptUntil "username" parseUsername
+        Just un -> pure un
+    pw <-
+      case setPassword of
+        Nothing -> promptSecretUntil "password" parsePassword
+        Just pw -> pure pw
+    let reg = Register {registerUsername = un, registerPassword = pw}
+    NoContent <- runClientOrDie cenv $ clientPostRegister reg
+    pure ()

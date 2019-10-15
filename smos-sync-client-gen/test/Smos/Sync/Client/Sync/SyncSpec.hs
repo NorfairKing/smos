@@ -38,7 +38,7 @@ import Smos.API
 import Smos.Server.TestUtils
 
 import Smos.Sync.Client.Env
-import Smos.Sync.Client.Sync
+import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Sync.Gen ()
 
 spec :: Spec

@@ -25,11 +25,11 @@ import Test.Validity
 
 import Smos.API
 
+import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
 import Smos.Sync.Client.Sync.Gen ()
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec

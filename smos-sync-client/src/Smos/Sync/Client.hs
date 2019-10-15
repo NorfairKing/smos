@@ -4,9 +4,7 @@ module Smos.Sync.Client
 
 import Smos.Sync.Client.OptParse
 
-import Smos.Sync.Client.Register
-import Smos.Sync.Client.Login
-import Smos.Sync.Client.Sync
+import Smos.Sync.Client.Command
 
 smosSyncClient :: IO ()
 smosSyncClient = do
