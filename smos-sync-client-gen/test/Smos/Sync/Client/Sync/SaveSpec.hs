@@ -1,4 +1,4 @@
-module Smos.Sync.Client.SaveSpec
+module Smos.Sync.Client.Sync.SaveSpec
   ( spec
   ) where
 

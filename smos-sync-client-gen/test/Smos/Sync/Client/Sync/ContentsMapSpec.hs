@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Sync.Client.ContentsMapSpec
+module Smos.Sync.Client.Sync.ContentsMapSpec
   ( spec
   ) where
 

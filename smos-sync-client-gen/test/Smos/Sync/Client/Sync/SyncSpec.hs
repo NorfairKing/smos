@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Sync.Client.SyncSpec
+module Smos.Sync.Client.Sync.SyncSpec
   ( spec
   ) where
 

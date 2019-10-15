@@ -1,4 +1,4 @@
-module Smos.Sync.Client.IntegrationSpec
+module Smos.Sync.Client.Sync.IntegrationSpec
   ( spec
   ) where
 

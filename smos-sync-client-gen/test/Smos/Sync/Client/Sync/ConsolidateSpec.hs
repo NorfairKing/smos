@@ -1,4 +1,4 @@
-module Smos.Sync.Client.ConsolidateSpec
+module Smos.Sync.Client.Sync.ConsolidateSpec
   ( spec
   ) where
 
