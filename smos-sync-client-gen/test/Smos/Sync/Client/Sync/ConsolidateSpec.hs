@@ -18,8 +18,10 @@ import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.Env
+import Smos.Sync.Client.MetaMap (MetaMap(..))
 
 import Smos.Sync.Client.ContentsMap.Gen ()
+import Smos.Sync.Client.MetaMap.Gen ()
 import Smos.Sync.Client.Sync.Gen ()
 
 spec :: Spec
@@ -72,17 +74,17 @@ spec = do
               , ppShow cs'
               ]
     it "contains all the items that were added, marked as added" $
-      forAllValid $ \syncedItems ->
+      forAllValid $ \metaMap ->
         forAllValid $ \contents -> do
-          let cs' = consolidateMetaMapWithFiles syncedItems contents
+          let cs' = consolidateMetaMapWithFiles metaMap contents
           let addedItems =
                 map (uncurry SyncFile) $
-                M.toList $ contentsMapFiles contents `M.difference` syncedItems
+                M.toList $ contentsMapFiles contents `M.difference` metaMapFiles metaMap
           M.elems (clientStoreAddedItems cs') `shouldBe` addedItems
     it "contains all the items that were changed, marked as unchanged" $
-      forAllValid $ \syncedItems ->
+      forAllValid $ \metaMap ->
         forAllValid $ \contents -> do
-          let cs' = consolidateMetaMapWithFiles syncedItems contents
+          let cs' = consolidateMetaMapWithFiles metaMap contents
           let changedItems =
                 M.mapMaybe id $
                 M.intersectionWithKey
@@ -90,13 +92,13 @@ spec = do
                      if isUnchanged sfm bs
                        then Just (SyncFile path bs)
                        else Nothing)
-                  syncedItems
+                  (metaMapFiles metaMap)
                   (contentsMapFiles contents)
           M.elems (M.map timedValue $ clientStoreSyncedItems cs') `shouldBe` M.elems changedItems
     it "contains all the items that were changed, marked as changed" $
-      forAllValid $ \syncedItems ->
+      forAllValid $ \metaMap ->
         forAllValid $ \contents -> do
-          let cs' = consolidateMetaMapWithFiles syncedItems contents
+          let cs' = consolidateMetaMapWithFiles metaMap contents
           let changedItems =
                 M.mapMaybe id $
                 M.intersectionWithKey
@@ -104,14 +106,14 @@ spec = do
                      if isUnchanged sfm bs
                        then Nothing
                        else Just (SyncFile path bs))
-                  syncedItems
+                  (metaMapFiles metaMap)
                   (contentsMapFiles contents)
           M.elems (M.map timedValue $ clientStoreSyncedButChangedItems cs') `shouldBe`
             M.elems changedItems
     it "contains all the items that were deleted, marked as deleted" $
-      forAllValid $ \syncedItems ->
+      forAllValid $ \metaMap ->
         forAllValid $ \contents -> do
-          let cs' = consolidateMetaMapWithFiles syncedItems contents
-          let deletedItems = syncedItems `M.difference` contentsMapFiles contents
+          let cs' = consolidateMetaMapWithFiles metaMap contents
+          let deletedItems = metaMapFiles metaMap `M.difference` contentsMapFiles contents
               deletedItemsKeys = S.fromList $ M.elems $ M.map syncFileMetaUUID deletedItems
           M.keysSet (clientStoreDeletedItems cs') `shouldBe` deletedItemsKeys

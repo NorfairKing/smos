@@ -40,9 +40,11 @@ import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap(..))
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
+import Smos.Sync.Client.Meta
+import Smos.Sync.Client.MetaMap (MetaMap(..))
+import qualified Smos.Sync.Client.MetaMap as MM
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Query
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} =
@@ -189,8 +191,7 @@ makeAlreadySyncedMap m = M.fromList $ map go $ M.toList m
   where
     go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, (i, syncFileContents))
 
-consolidateMetaMapWithFiles ::
-     Map (Path Rel File) SyncFileMeta -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
+consolidateMetaMapWithFiles :: MetaMap -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
 consolidateMetaMapWithFiles clientMetaDataMap contentsMap
       -- The existing files need to be checked for deletions and changes.
  =
@@ -237,7 +238,8 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
                               })
                            (Mergeful.clientStoreSyncedButChangedItems s)
                      }
-      syncedChangedAndDeleted = M.foldlWithKey go1 Mergeful.initialClientStore clientMetaDataMap
+      syncedChangedAndDeleted =
+        M.foldlWithKey go1 Mergeful.initialClientStore $ metaMapFiles clientMetaDataMap
       go2 ::
            Mergeful.ClientStore FileUUID SyncFile
         -> Path Rel File
@@ -249,7 +251,7 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
    in M.foldlWithKey
         go2
         syncedChangedAndDeleted
-        (contentsMapFiles contentsMap `M.difference` clientMetaDataMap)
+        (contentsMapFiles contentsMap `M.difference` metaMapFiles clientMetaDataMap)
 
 -- We will trust hashing. (TODO do we need to fix that?)
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
@@ -260,39 +262,6 @@ saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()
 saveClientStore igf dir store = do
   runDB $ writeClientMetadata $ makeClientMetaData igf store
   liftIO $ saveSyncFiles igf dir $ clientStoreItems store
-
--- | We only check the synced items, because it should be the case that
--- they're the only ones that are not empty.
-makeClientMetaData :: IgnoreFiles -> ClientStore -> Map (Path Rel File) SyncFileMeta
-makeClientMetaData igf ClientStore {..} =
-  let Mergeful.ClientStore {..} = clientStoreItems
-   in if not
-           (null clientStoreAddedItems &&
-            null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
-        then error "Should not happen: make meta"
-        else let go ::
-                      Map (Path Rel File) SyncFileMeta
-                   -> FileUUID
-                   -> Mergeful.Timed SyncFile
-                   -> Map (Path Rel File) SyncFileMeta
-                 go m u Mergeful.Timed {..} =
-                   let SyncFile {..} = timedValue
-                       goOn =
-                         M.insert
-                           syncFilePath
-                           SyncFileMeta
-                             { syncFileMetaUUID = u
-                             , syncFileMetaTime = timedTime
-                             , syncFileMetaHash = hash syncFileContents
-                             }
-                           m
-                    in case igf of
-                         IgnoreNothing -> goOn
-                         IgnoreHiddenFiles ->
-                           if isHidden syncFilePath
-                             then m
-                             else goOn
-              in M.foldlWithKey go M.empty clientStoreSyncedItems
 
 saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore FileUUID SyncFile -> IO ()
 saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store

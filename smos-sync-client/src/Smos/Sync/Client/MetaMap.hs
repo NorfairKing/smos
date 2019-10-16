@@ -7,6 +7,7 @@ module Smos.Sync.Client.MetaMap
   ( MetaMap(..)
   , empty
   , singleton
+  , fromList
   , insert
   , union
   , unions
@@ -56,6 +57,9 @@ empty = MetaMap M.empty
 
 singleton :: Path Rel File -> SyncFileMeta -> MetaMap
 singleton k v = MetaMap $ M.singleton k v
+
+fromList :: [(Path Rel File, SyncFileMeta)] -> Maybe MetaMap
+fromList = constructValid . MetaMap . M.fromList
 
 insert :: Path Rel File -> SyncFileMeta -> MetaMap -> Maybe MetaMap
 insert k v (MetaMap m) = constructValid $ MetaMap $ M.insert k v m

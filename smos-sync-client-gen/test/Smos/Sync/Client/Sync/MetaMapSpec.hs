@@ -20,6 +20,7 @@ spec = do
   genValidSpec @MetaMap
   describe "empty" $ it "is valid" $ shouldBeValid MM.empty
   describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 MM.singleton
+  describe "fromList" $ it "produces valid contents maps" $ producesValidsOnValids MM.fromList
   describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 MM.insert
   describe "union" $ it "produces valid contents maps" $ producesValidsOnValids2 MM.union
   describe "unions" $ it "produces valid contents maps" $ producesValidsOnValids MM.unions
