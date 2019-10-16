@@ -26,12 +26,11 @@ import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
 
-import Smos.Sync.API
+import Smos.API
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   [persistLowerCase|
-
 
 ClientFile
     uuid FileUUID sqltype=uuid

@@ -10,13 +10,18 @@ in
       ) pkgs.smosPackages;
     # Just to make sure that the test suites in these pass:
     nativeBuildInputs =
-      pkgs.lib.attrsets.attrValues pkgs.validityPackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.cursorBrickPackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.fuzzyTimePackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.cursorFuzzyTimePackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.prettyRelativeTimePackages
-    ++ pkgs.lib.attrsets.attrValues pkgs.mergefulPackages;
+      let
+        dependencyPkg = pkg: pkgs.haskell.lib.disableLibraryProfiling pkg;
+      in
+        map dependencyPkg (
+          pkgs.lib.attrsets.attrValues pkgs.validityPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorBrickPackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.fuzzyTimePackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.cursorFuzzyTimePackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.prettyRelativeTimePackages
+        ++ pkgs.lib.attrsets.attrValues pkgs.mergefulPackages
+        );
     buildCommand =
       ''
       mkdir -p $out/bin

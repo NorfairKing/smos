@@ -1,0 +1,56 @@
+name: smos-client
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - aeson
+  - aeson-pretty
+  - bytestring
+  - conduit
+  - containers
+  - cookie
+  - filelock
+  - filepath
+  - hashable
+  - http-client
+  - http-client-tls
+  - mergeful
+  - microlens
+  - monad-logger
+  - mtl
+  - optparse-applicative
+  - path
+  - path-io
+  - persistent
+  - persistent-sqlite
+  - persistent-template
+  - pretty-show
+  - servant
+  - servant-auth-client
+  - servant-client
+  - servant-flatten
+  - smos-report
+  - smos-api
+  - stm
+  - text
+  - typed-uuid
+  - uuid
+  - validity
+  - validity-bytestring
+  - validity-containers
+  - validity-path
+  - validity-uuid
+  - yaml
+  - servant-auth
+  - servant-auth-server

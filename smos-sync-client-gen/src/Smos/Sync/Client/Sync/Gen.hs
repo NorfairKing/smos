@@ -4,7 +4,7 @@ module Smos.Sync.Client.Sync.Gen where
 
 import Data.GenValidity
 
-import Smos.Sync.API.Gen ()
+import Smos.API.Gen ()
 
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse.Types
