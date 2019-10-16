@@ -15,10 +15,12 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
+  - containers
   - hspec
   - hspec-core
   - http-client
   - http-types
+  - mergeful
   - mergeful
   - microlens
   - monad-logger
@@ -50,11 +52,13 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - containers
     - genvalidity
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - hspec
     - http-types
+    - mergeful
     - path
     - path-io
     - persistent-sqlite

@@ -5,15 +5,11 @@ module Smos.Sync.Client.Sync.MetaMapSpec
   ) where
 
 import Test.Hspec
-import Test.QuickCheck
 import Test.Validity
-
-import qualified Data.Map as M
-import Path
 
 import qualified Smos.Sync.Client.MetaMap as MM
 import Smos.Sync.Client.MetaMap (MetaMap(..))
-import Smos.Sync.Client.MetaMap.Gen
+import Smos.Sync.Client.MetaMap.Gen ()
 
 spec :: Spec
 spec = do

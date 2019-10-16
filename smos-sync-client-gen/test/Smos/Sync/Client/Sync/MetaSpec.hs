@@ -5,21 +5,9 @@ module Smos.Sync.Client.Sync.MetaSpec
 import Test.Hspec
 import Test.Validity
 
-import Control.Monad.IO.Class
 import Data.Pool
 import Database.Persist.Sqlite as DB
-import Path
-import Path.IO
 
-import System.Environment
-
-import Servant.Client
-
-import Smos.API
-
-import Smos.Server.TestUtils
-
-import Smos.Sync.Client
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap.Gen ()
 import Smos.Sync.Client.TestUtils

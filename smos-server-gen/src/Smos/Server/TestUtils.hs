@@ -111,7 +111,7 @@ withNewGivenUser cenv r func = do
 withNewRegisteredUser :: MonadIO m => ClientEnv -> (Register -> m a) -> m a
 withNewRegisteredUser cenv func = do
   r <- liftIO randomRegistration
-  liftIO $ testClientOrErr cenv $ clientPostRegister r
+  NoContent <- liftIO $ testClientOrErr cenv $ clientPostRegister r
   func r
 
 randomRegistration :: IO Register

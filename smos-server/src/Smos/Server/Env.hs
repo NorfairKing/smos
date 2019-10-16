@@ -61,7 +61,9 @@ writeServerStore ::
   => UserId
   -> Mergeful.ServerStore FileUUID SyncFile
   -> SqlPersistT m ()
-writeServerStore uid = void . M.traverseWithKey go . serverStoreItems
+writeServerStore uid ss = do
+  deleteWhere [ServerFileUser ==. uid, ServerFileUuid /<-. M.keys (serverStoreItems ss)]
+  void $ M.traverseWithKey go $ serverStoreItems ss
   where
     go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
     go u Timed {..} =

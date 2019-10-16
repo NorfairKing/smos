@@ -24,6 +24,7 @@ library:
   - hspec-core
   - http-client
   - mergeful
+  - mergeful
   - microlens
   - monad-logger
   - path
@@ -63,6 +64,7 @@ tests:
     - genvalidity-hspec-optics
     - hspec
     - hspec-core
+    - mergeful
     - mergeful
     - monad-logger
     - mtl

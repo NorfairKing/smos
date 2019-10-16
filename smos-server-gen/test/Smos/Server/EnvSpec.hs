@@ -5,13 +5,14 @@ module Smos.Server.EnvSpec
   ) where
 
 import Test.Hspec
+import Test.QuickCheck
 import Test.Validity
 
-import Control.Monad.IO.Class
+import qualified Data.Map as M
+
+import Data.Mergeful.Collection (ServerStore(..))
 import Data.Pool
 import Database.Persist.Sqlite as DB
-
-import Smos.Client
 
 import Smos.Server.Env
 import Smos.Server.TestUtils
@@ -32,7 +33,9 @@ spec =
     it "can read exactly what was just written, even if something else has been written first" $ \pool ->
       forAllValid $ \i ->
         forAllValid $ \serverStore1 ->
-          forAllValid $ \serverStore2 -> do
+          forAll
+            (genValid `suchThat`
+             (\ss2 -> serverStoreItems serverStore1 `M.intersection` serverStoreItems ss2 == M.empty)) $ \serverStore2 -> do
             let uid = DB.toSqlKey i
             serverStore' <-
               testDB pool $ do
