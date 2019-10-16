@@ -15,7 +15,6 @@ module Smos.Sync.Client.MetaMap
 
 import GHC.Generics (Generic)
 
-import Data.ByteString (ByteString)
 import Data.List (nub)
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -23,8 +22,6 @@ import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
-import qualified System.FilePath as FP
 
 import Control.Monad
 

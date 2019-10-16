@@ -22,8 +22,6 @@ import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
 
-import qualified System.FilePath as FP
-
 import Control.Monad
 
 import Path

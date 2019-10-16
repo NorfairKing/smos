@@ -5,7 +5,6 @@ module Smos.Sync.Client.Meta where
 
 import Data.Hashable
 import qualified Data.Map as M
-import Data.Map (Map)
 import Data.Maybe (fromJust)
 
 import qualified Data.Mergeful as Mergeful
