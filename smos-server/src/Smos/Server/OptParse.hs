@@ -11,6 +11,7 @@ module Smos.Server.OptParse
 
 import Control.Arrow
 import Control.Monad
+import Control.Monad.Logger
 import Data.Maybe
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 import Path
@@ -38,6 +39,8 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
     getDispatch =
       case c of
         CommandServe ServeFlags {..} -> do
+          let serveSetLogLevel =
+                fromMaybe LevelWarn $ serveFlagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
           let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
           serveSetUUIDFile <-
             case serveFlagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
@@ -57,6 +60,11 @@ getEnvironment = do
       getEnv key = ("SMOS_SYNC_SERVER_" ++ key) `lookup` env
       readEnv :: Read a => String -> Maybe a
       readEnv key = getEnv key >>= readMaybe
+  envLogLevel <-
+    forM (getEnv "LOG_LEVEL") $ \s ->
+      case parseLogLevel s of
+        Nothing -> fail $ "Unknown log level: " <> s
+        Just ll -> pure ll
   let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
       envPort = readEnv "PORT"
       envUUIDFile = getEnv "UUID_FILE" <|> getEnv "UUID"
@@ -111,6 +119,17 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe <$>
       (ServeFlags <$>
+       option
+         (Just <$> maybeReader parseLogLevel)
+         (mconcat
+            [ long "log-level"
+            , help $
+              unwords
+                [ "The log level to use, options:"
+                , show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                ]
+            , value Nothing
+            ]) <*>
        option
          (Just <$> str)
          (mconcat

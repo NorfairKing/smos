@@ -8,6 +8,7 @@ import GHC.Generics (Generic)
 import qualified Data.Text as T
 import Data.Validity
 import Data.Yaml as Yaml
+import Text.Read
 
 import Control.Monad.Logger
 import Path
@@ -50,8 +51,8 @@ data SyncFlags =
 data Flags =
   Flags
     { flagReportFlags :: Report.Flags
-    , flagServerUrl :: Maybe String
     , flagLogLevel :: Maybe LogLevel
+    , flagServerUrl :: Maybe String
     , flagUsername :: Maybe Username
     , flagPassword :: Maybe Password
     , flagSessionPath :: Maybe FilePath
@@ -61,6 +62,7 @@ data Flags =
 data Environment =
   Environment
     { envReportEnvironment :: Report.Environment
+    , envLogLevel :: Maybe LogLevel
     , envServerUrl :: Maybe String
     , envContentsDir :: Maybe FilePath
     , envUUIDFile :: Maybe FilePath
@@ -85,7 +87,8 @@ instance FromJSON Configuration where
 
 data SyncConfiguration =
   SyncConfiguration
-    { syncConfServerUrl :: Maybe String
+    { syncConfLogLevel :: Maybe LogLevel
+    , syncConfServerUrl :: Maybe String
     , syncConfContentsDir :: Maybe FilePath
     , syncConfUUIDFile :: Maybe FilePath
     , syncConfMetadataDB :: Maybe FilePath
@@ -99,7 +102,17 @@ data SyncConfiguration =
 instance FromJSON SyncConfiguration where
   parseJSON =
     withObject "SyncConfiguration" $ \o ->
-      SyncConfiguration <$> o .:? "server-url" <*> o .:? "contents-dir" <*> o .:? "uuid-file" <*>
+      SyncConfiguration <$>
+      (do ms <- o .:? "log-level"
+          case ms of
+            Nothing -> pure Nothing
+            Just s ->
+              case parseLogLevel s of
+                Nothing -> fail $ "Unknown log level: " <> s
+                Just ll -> pure $ Just ll) <*>
+      o .:? "server-url" <*>
+      o .:? "contents-dir" <*>
+      o .:? "uuid-file" <*>
       o .:? "metadata-db" <*>
       o .:? "ignore-files" <*>
       o .:? "username" <*>
@@ -144,6 +157,12 @@ instance FromJSON IgnoreFiles where
         "no" -> pure IgnoreNothing
         "hidden" -> pure IgnoreHiddenFiles
         _ -> fail $ "Unknown 'IgnoreFiles' value: " <> T.unpack t
+
+parseLogLevel :: String -> Maybe LogLevel
+parseLogLevel s = readMaybe $ "Level" <> s
+
+renderLogLevel :: LogLevel -> String
+renderLogLevel = drop 5 . show
 
 data Settings =
   Settings

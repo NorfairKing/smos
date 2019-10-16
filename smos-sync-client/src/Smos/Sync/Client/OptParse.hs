@@ -20,7 +20,6 @@ import Control.Monad.Logger
 
 import Path
 import Path.IO
-import Text.Read
 
 import Options.Applicative
 
@@ -82,7 +81,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
             die
               "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
           Just s -> Servant.parseBaseUrl s
-      let setLogLevel = fromMaybe LevelWarn flagLogLevel
+      let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
       let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
       setPassword <-
         case flagPassword of
@@ -127,6 +126,11 @@ getEnvironment = do
       getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
       -- readEnv :: Read a => String -> Maybe a
       -- readEnv key = getEnv key >>= readMaybe
+  envLogLevel <-
+    forM (getEnv "LOG_LEVEL") $ \s ->
+      case parseLogLevel s of
+        Nothing -> fail $ "Unknown log level: " <> s
+        Just ll -> pure ll
   let envServerUrl = getEnv "SERVER_URL"
       envContentsDir = getEnv "CONTENTS_DIR"
       envUUIDFile = getEnv "UUID_FILE"
@@ -235,7 +239,6 @@ parseIgnoreFilesFlag =
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> Report.parseFlags <*>
-  option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
   option
     (Just <$> maybeReader parseLogLevel)
     (mconcat
@@ -247,6 +250,7 @@ parseFlags =
            ]
        , value Nothing
        ]) <*>
+  option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
   option
     (Just <$> maybeReader (parseUsername . T.pack))
     (mconcat [long "username", help "The username to login to the sync server", value Nothing]) <*>
@@ -264,6 +268,3 @@ parseFlags =
   option
     (Just <$> str)
     (mconcat [long "session-path", help "The path to store the login session", value Nothing])
-  where
-    parseLogLevel s = readMaybe $ "Level" <> s
-    renderLogLevel = drop 5 . show

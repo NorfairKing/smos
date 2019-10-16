@@ -5,7 +5,9 @@ module Smos.Server.OptParse.Types where
 
 import GHC.Generics (Generic)
 
+import Control.Monad.Logger
 import Data.Yaml as Yaml
+import Text.Read
 
 import Path
 
@@ -22,7 +24,8 @@ newtype Command =
 
 data ServeFlags =
   ServeFlags
-    { serveFlagUUIDFile :: Maybe FilePath
+    { serveFlagLogLevel :: Maybe LogLevel
+    , serveFlagUUIDFile :: Maybe FilePath
     , serveFlagDatabaseFile :: Maybe FilePath
     , serveFlagPort :: Maybe Int
     }
@@ -37,6 +40,7 @@ newtype Flags =
 data Environment =
   Environment
     { envConfigFile :: Maybe FilePath
+    , envLogLevel :: Maybe LogLevel
     , envUUIDFile :: Maybe FilePath
     , envDatabaseFile :: Maybe FilePath
     , envPort :: Maybe Int
@@ -45,7 +49,8 @@ data Environment =
 
 data Configuration =
   Configuration
-    { confUUIDFile :: Maybe FilePath
+    { confLogLevel :: Maybe LogLevel
+    , confUUIDFile :: Maybe FilePath
     , confDatabaseFile :: Maybe FilePath
     , confPort :: Maybe Int
     }
@@ -54,7 +59,17 @@ data Configuration =
 instance FromJSON Configuration where
   parseJSON =
     withObject "Configuration" $ \o ->
-      Configuration <$> o .:? "uuid-file" <*> o .:? "database-file" <*> o .:? "port"
+      Configuration <$>
+      (do ms <- o .:? "log-level"
+          case ms of
+            Nothing -> pure Nothing
+            Just s ->
+              case parseLogLevel s of
+                Nothing -> fail $ "Unknown log level: " <> s
+                Just ll -> pure $ Just ll) <*>
+      o .:? "uuid-file" <*>
+      o .:? "database-file" <*>
+      o .:? "port"
 
 newtype Dispatch =
   DispatchServe ServeSettings
@@ -62,7 +77,8 @@ newtype Dispatch =
 
 data ServeSettings =
   ServeSettings
-    { serveSetUUIDFile :: Path Abs File
+    { serveSetLogLevel :: LogLevel
+    , serveSetUUIDFile :: Path Abs File
     , serveSetDatabaseFile :: Path Abs File
     , serveSetPort :: Int
     }
@@ -71,3 +87,9 @@ data ServeSettings =
 data Settings =
   Settings
   deriving (Show, Eq, Generic)
+
+parseLogLevel :: String -> Maybe LogLevel
+parseLogLevel s = readMaybe $ "Level" <> s
+
+renderLogLevel :: LogLevel -> String
+renderLogLevel = drop 5 . show
