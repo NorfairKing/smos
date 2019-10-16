@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Sync.Client.Env where
 
@@ -11,6 +12,7 @@ import Data.Aeson
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import Data.Validity
+import Pantry.SHA256
 
 import Path
 
@@ -113,7 +115,8 @@ instance Validity ClientStore
 data SyncFileMeta =
   SyncFileMeta
     { syncFileMetaUUID :: FileUUID
-    , syncFileMetaHash :: Int
+    , syncFileMetaHashOld :: Maybe Int
+    , syncFileMetaHash :: Maybe SHA256
     , syncFileMetaTime :: Mergeful.ServerTime
     }
   deriving (Show, Eq, Generic)
@@ -122,8 +125,17 @@ instance Validity SyncFileMeta
 
 instance FromJSON SyncFileMeta where
   parseJSON =
-    withObject "SyncFileMeta" $ \o -> SyncFileMeta <$> o .: "uuid" <*> o .: "hash" <*> o .: "time"
+    withObject "SyncFileMeta" $ \o ->
+      SyncFileMeta <$> o .: "uuid" <*> o .:? "hash" <*> o .:? "sha256" <*> o .: "time"
 
 instance ToJSON SyncFileMeta where
   toJSON SyncFileMeta {..} =
-    object ["uuid" .= syncFileMetaUUID, "hash" .= syncFileMetaHash, "time" .= syncFileMetaTime]
+    object
+      [ "uuid" .= syncFileMetaUUID
+      , "hash" .= syncFileMetaHashOld
+      , "sha256" .= syncFileMetaHash
+      , "time" .= syncFileMetaTime
+      ]
+
+instance Validity SHA256 where
+  validate = trivialValidation

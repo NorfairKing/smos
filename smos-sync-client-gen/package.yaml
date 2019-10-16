@@ -35,6 +35,7 @@ library:
   - servant-client
   - smos-api
   - smos-api-gen
+  - pantry
   - smos-client
   - smos-server-gen
   - smos-sync-client

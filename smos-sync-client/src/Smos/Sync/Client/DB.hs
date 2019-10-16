@@ -19,6 +19,7 @@ module Smos.Sync.Client.DB
 import GHC.Generics (Generic)
 
 import Data.Mergeful.Timed
+import Pantry.SHA256
 
 import Path
 
@@ -35,7 +36,8 @@ share
 ClientFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
-    hash Int
+    hash Int Maybe default=NULL
+    sha256 SHA256 Maybe default=NULL
     time ServerTime
 
     UniquePath path
