@@ -66,18 +66,17 @@ writeClientMetadata mm = do
 
 -- | We only check the synced items, because it should be the case that
 -- they're the only ones that are not empty.
-makeClientMetaData :: IgnoreFiles -> ClientStore -> MetaMap
+makeClientMetaData :: IgnoreFiles -> ClientStore -> Maybe MetaMap
 makeClientMetaData igf ClientStore {..} =
   let Mergeful.ClientStore {..} = clientStoreItems
    in if not
            (null clientStoreAddedItems &&
             null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
-        then error "Should not happen: make meta"
-        else let go :: MetaMap -> FileUUID -> Mergeful.Timed SyncFile -> MetaMap
+        then Nothing
+        else let go :: MetaMap -> FileUUID -> Mergeful.Timed SyncFile -> Maybe MetaMap
                  go m u Mergeful.Timed {..} =
                    let SyncFile {..} = timedValue
                        goOn =
-                         fromJust $ -- Safe because of validity constraints
                          MM.insert
                            syncFilePath
                            SyncFileMeta
@@ -90,6 +89,6 @@ makeClientMetaData igf ClientStore {..} =
                          IgnoreNothing -> goOn
                          IgnoreHiddenFiles ->
                            if isHidden syncFilePath
-                             then m
+                             then Just m
                              else goOn
-              in M.foldlWithKey go MM.empty clientStoreSyncedItems
+              in foldM (\m (f, t) -> go m f t) MM.empty $ M.toList clientStoreSyncedItems

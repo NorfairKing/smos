@@ -42,7 +42,6 @@ import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap (MetaMap(..))
-import qualified Smos.Sync.Client.MetaMap as MM
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 
@@ -259,9 +258,12 @@ isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
 
 -- TODO this could be probably optimised using the sync response
 saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()
-saveClientStore igf dir store = do
-  runDB $ writeClientMetadata $ makeClientMetaData igf store
-  liftIO $ saveSyncFiles igf dir $ clientStoreItems store
+saveClientStore igf dir store =
+  case makeClientMetaData igf store of
+    Nothing -> liftIO $ die "Something went wrong while building the metadata store"
+    Just mm -> do
+      runDB $ writeClientMetadata mm
+      liftIO $ saveSyncFiles igf dir $ clientStoreItems store
 
 saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore FileUUID SyncFile -> IO ()
 saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store
