@@ -34,6 +34,7 @@ serveSmosSyncServer :: ServeSettings -> IO ()
 serveSmosSyncServer ss@ServeSettings {..} = do
   pPrint ss
   runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= serveSetLogLevel) $
     DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
       liftIO $ do
         uuid <- readServerUUID serveSetUUIDFile
