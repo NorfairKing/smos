@@ -71,7 +71,9 @@ syncSmosSyncClient Settings {..} SyncSettings {..} =
                  -> do
                   initialStore <- runInitialSync token
                   liftIO $ writeServerUUID syncSetUUIDFile (clientStoreServerUUID initialStore)
-                  pure $ consolidateInitialStoreWithFiles initialStore files
+                  case consolidateInitialStoreWithFiles initialStore files of
+                    Nothing -> liftIO $ die "Something went wrong during the initial sync."
+                    Just cs -> pure cs
                 Just uuid
                  -- We have synced before.
                  -> do
@@ -148,17 +150,18 @@ writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
-consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> ClientStore
+consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> Maybe ClientStore
 consolidateInitialStoreWithFiles cs contentsMap =
   let Mergeful.ClientStore {..} = clientStoreItems cs
    in if not
            (null clientStoreAddedItems &&
             null clientStoreDeletedItems && null clientStoreSyncedButChangedItems)
-        then error "should not happen: initial"
-        else cs
-               { clientStoreItems =
-                   consolidateInitialSyncedItemsWithFiles clientStoreSyncedItems contentsMap
-               }
+        then Nothing
+        else Just
+               cs
+                 { clientStoreItems =
+                     consolidateInitialSyncedItemsWithFiles clientStoreSyncedItems contentsMap
+                 }
 
 consolidateInitialSyncedItemsWithFiles ::
      Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore FileUUID SyncFile
