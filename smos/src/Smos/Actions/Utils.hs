@@ -69,7 +69,7 @@ modifyHeaderCursorWhenSelected func =
 modifyContentsCursorWhenSelectedDM ::
      (ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)) -> SmosM ()
 modifyContentsCursorWhenSelectedDM func =
-  modifyMContentsCursorWhenSelectedM $ \mcc -> do
+  modifyMContentsCursorRaw $ \mcc -> do
     cc <- mcc
     case func cc of
       Nothing -> Just cc
