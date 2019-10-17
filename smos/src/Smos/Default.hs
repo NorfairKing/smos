@@ -105,7 +105,7 @@ defaultFileKeyMap =
                   -- Convenience
           , exactString " nw" convDoneAndWaitForResponse
           , exactString " rp" convRepinged
-          , exactString " ec" convNewEntryAndClockIn
+          , exactString " ce" convNewEntryAndClockIn
                   -- Collapsing
           , exactChar '?' selectHelp
           , exactChar '\t' forestToggleCollapse

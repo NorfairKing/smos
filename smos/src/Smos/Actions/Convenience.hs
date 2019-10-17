@@ -84,5 +84,6 @@ convNewEntryAndClockIn =
         do actionFunc forestInsertEntryAfterAndSelectHeader
            actionFunc entrySelectWhole
            actionFunc forestClockOutEverywhereInAllFilesAndClockInHere
+           actionFunc entrySelectHeaderAtEnd
     , actionDescription = "Create a new entry and clock in immediately"
     }
