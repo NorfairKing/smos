@@ -4,6 +4,7 @@ module Smos.Actions.Convenience
   ( allConveniencePlainActions
   , convDoneAndWaitForResponse
   , convRepinged
+  , convNewEntryAndClockIn
   ) where
 
 import Control.Monad
@@ -17,8 +18,8 @@ import Smos.Types
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 
-import Smos.Actions.Forest
 import Smos.Actions.Entry
+import Smos.Actions.Forest
 import Smos.Actions.Utils
 
 allConveniencePlainActions :: [Action]
