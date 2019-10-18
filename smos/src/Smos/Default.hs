@@ -148,7 +148,9 @@ defaultFileKeyMap =
           , exactKey KUp contentsMoveUp
           , exactKey KDown contentsMoveDown
           , exactKey KHome contentsMoveToStartOfLine
+          , modifiedChar 'a' [MCtrl] contentsMoveToStartOfLine
           , exactKey KEnd contentsMoveToEndOfLine
+          , modifiedChar 'e' [MCtrl] contentsMoveToEndOfLine
           , modifiedChar 'k' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry
