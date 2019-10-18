@@ -126,7 +126,9 @@ defaultFileKeyMap =
           , exactKey KLeft headerMoveLeft
           , exactKey KRight headerMoveRight
           , exactKey KHome headerMoveToStart
+          , modifiedChar 'a' [MCtrl] headerMoveToStart
           , exactKey KEnd headerMoveToEnd
+          , modifiedChar 'e' [MCtrl] headerMoveToEnd
           , modifiedChar 'k' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry
