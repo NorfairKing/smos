@@ -74,6 +74,7 @@ defaultFileKeyMap =
           , exactString "tw" $ entrySetTodoState "WAITING"
           , exactString "td" $ entrySetTodoState "DONE"
           , exactString "tc" $ entrySetTodoState "CANCELLED"
+          , exactString "tf" $ entrySetTodoState "FAILED"
           , exactString "t " entryUnsetTodoState
           , exactString "Tt" $ subtreeSetTodoState "TODO"
           , exactString "Tn" $ subtreeSetTodoState "NEXT"
@@ -82,6 +83,7 @@ defaultFileKeyMap =
           , exactString "Tw" $ subtreeSetTodoState "WAITING"
           , exactString "Td" $ subtreeSetTodoState "DONE"
           , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
+          , exactString "Tf" $ subtreeSetTodoState "FAILED"
           , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
           , exactString "gh" $ tagsToggle "home"

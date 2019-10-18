@@ -92,6 +92,7 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
         "READY" -> brown
         "DONE" -> green
         "CANCELLED" -> green
+        "FAILED" -> brightRed
         _ -> mempty
       where
         orange = color256 214
