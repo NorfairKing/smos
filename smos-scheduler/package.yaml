@@ -1,0 +1,31 @@
+name: smos-scheduler
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+    - base
+    - mtl
+    - optparse-applicative
+    - path
+    - path-io
+    - pretty-show
+    - smos-data
+    - smos-report
+    - text
+    - time
+
+executables:
+  smos-scheduler:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - base
+    - smos-scheduler
