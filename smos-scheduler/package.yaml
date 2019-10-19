@@ -12,6 +12,7 @@ library:
   ghc-options: -Wall
   dependencies:
     - base
+    - aeson
     - mtl
     - optparse-applicative
     - path

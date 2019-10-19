@@ -5,8 +5,11 @@ module Smos.Scheduler.OptParse
   ( getSettings
   ) where
 
+import Data.Maybe
 import qualified Data.Text as T
+
 import Path
+import Path.IO
 
 import Control.Monad
 
@@ -26,12 +29,8 @@ getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
   env <- getEnvironment
-  config <- getConfig flags env
+  config <- getConfiguration flags env
   deriveSettings flags env config
-
-getConfig :: Flags -> Environment -> IO (Maybe Configuration)
-getConfig Flags {..} Environment {..} =
-  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
@@ -41,7 +40,36 @@ deriveSettings Flags {..} Environment {..} mc = do
       flagReportFlags
       envReportEnvironment
       (confReportConfiguration <$> mc)
+  setStateFile <-
+    case flagStateFile <|> envStateFile <|> cM schedulerConfStateFile of
+      Nothing -> defaultStateFile
+      Just fp -> resolveFile' fp
+  let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
   pure Settings {..}
+  where
+    cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
+    cM func = mc >>= confSchedulerConfiguration >>= func
+
+-- TODO make sure this is in the workflow dir, so that it gets synced.
+defaultStateFile :: IO (Path Abs File)
+defaultStateFile = do
+  home <- getHomeDir
+  resolveFile home ".smos/scheduler-state.json"
+
+getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
+getConfiguration Flags {..} Environment {..} =
+  Report.getConfiguration flagReportFlags envReportEnvironment
+
+getEnvironment :: IO Environment
+getEnvironment = do
+  envReportEnvironment <- Report.getEnvironment
+  env <- System.getEnvironment
+  let getEnv :: String -> Maybe String
+      getEnv key = ("SMOS_SCHEDULER" ++ key) `lookup` env
+      -- readEnv :: Read a => String -> Maybe a
+      -- readEnv key = getEnv key >>= readMaybe
+  let envStateFile = getEnv "STATE_FILE"
+  pure Environment {..}
 
 getFlags :: IO Flags
 getFlags = do
@@ -69,7 +97,6 @@ flagsParser = info (helper <*> parseFlags) help_
     description = "smos-report"
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> Report.parseFlags
-
-getEnvironment :: IO Environment
-getEnvironment = Environment <$> Report.getEnvironment
+parseFlags =
+  Flags <$> Report.parseFlags <*>
+  option (Just <$> str) (mconcat [long "state-file", help "The state file to use", value Nothing])
