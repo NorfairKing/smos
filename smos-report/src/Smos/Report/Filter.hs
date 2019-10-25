@@ -11,6 +11,7 @@ import GHC.Generics (Generic)
 
 import Data.Aeson
 import Data.Char as Char
+import Data.Foldable
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty(..))
@@ -39,7 +40,7 @@ import Cursor.Simple.Tree
 import Smos.Data
 
 import Smos.Report.Path
-import Smos.Report.Time
+import Smos.Report.Time hiding (P)
 
 type EntryFilter = Filter (RootedPath, ForestCursor Entry)
 
@@ -170,7 +171,16 @@ instance FilterArgument Time where
   parseArgument = parseTime
 
 instance Validity (Filter a) where
-  validate = trivialValidation
+  validate f =
+    case f of
+      FilterFile s ->
+        mconcat
+          [ validate s
+          , declare "The filenames are restricted" $
+            all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
+            fromRelFile s
+          ]
+      _ -> trivialValidation f
 
 deriving instance Show (Filter a)
 
@@ -178,11 +188,11 @@ deriving instance Eq (Filter a)
 
 deriving instance Ord (Filter a)
 
-instance FromJSON (Filter a) where
+instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
   parseJSON =
-    withText "Filter" $ \t ->
-      case parseFilter t of
-        Nothing -> fail "could not parse filter."
+    withText "EntryFilter" $ \t ->
+      case parseEntryFilter t of
+        Nothing -> fail "could not parse EntryFilter."
         Just f -> pure f
 
 instance ToJSON (Filter a) where
@@ -294,48 +304,65 @@ renderFilter = go
             FilterOr f1 f2 -> p2 f1 "or" f2
             FilterAnd f1 f2 -> p2 f1 "and" f2
 
-parseFilter :: Text -> Maybe (Filter a)
-parseFilter = undefined
--- data Filter
---   = FilterHasTag Tag
---   | FilterTodoState TodoState
---   | FilterFile (Path Rel File) -- Substring of the filename
---   | FilterLevel Word -- The level of the entry in the tree (0 is top)
---   | FilterHeader Header -- Substring of the headder
---   | FilterExactProperty PropertyName PropertyValue
---   | FilterHasProperty PropertyName
---   | FilterParent Filter -- Match direct parent
---   | FilterAncestor Filter -- Match self, parent or parent of parents recursively
---   | FilterChild Filter -- Match any direct child
---   | FilterLegacy Filter -- Match self, any direct child or their children
---   | FilterNot Filter
---   | FilterAnd Filter Filter
---   | FilterOr Filter Filter
---   deriving (Show, Eq, Ord, Generic)
---
--- instance Validity Filter where
---   validate f =
---     mconcat
---       [ genericValidate f
---       , case f of
---           FilterFile s ->
---             declare "The filenames are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
---             fromRelFile s
---           FilterHeader h ->
---             declare "The header characters are restricted" $
---             all (\c -> not (Char.isSpace c) && c /= ')') $
---             T.unpack $
---             headerText h
---           _ -> valid
---       ]
---
---
---
--- parseFilter :: Text -> Maybe Filter
--- parseFilter = parseMaybe filterP
---
--- filterP :: P Filter
--- filterP =
+type P = Parsec Void Text
+
+parseEntryFilter :: Text -> Maybe EntryFilter
+parseEntryFilter = parseMaybe entryFilterP
+
+entryFilterP :: P EntryFilter
+entryFilterP = FilterFst <$> filterRootedPathP
+
+filterRootedPathP :: P (Filter RootedPath)
+filterRootedPathP =
+  withTopLevelBranchesP $ do
+    pieceP "file"
+    s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
+    r <- either (fail . show) (pure . FilterFile) $ parseRelFile s
+    case prettyValidate r of
+      Left err -> fail err
+      Right f -> pure f
+
+pieceP :: Text -> P ()
+pieceP t = void $ string' $ t <> ":"
+
+argumentP :: FilterArgument a => P a
+argumentP = do
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  either fail pure $ parseArgument $ T.pack s
+
+withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
+withTopLevelBranchesP parser = asum [try $ filterNotP parser, try $ filterBinRelP parser, parser]
+
+filterNotP :: P (Filter a) -> P (Filter a)
+filterNotP parser = do
+  void $ string' "not:"
+  FilterNot <$> parser
+
+filterBinRelP :: P (Filter a) -> P (Filter a)
+filterBinRelP parser = do
+  void $ char '('
+  f <- try (filterOrP parser) <|> filterAndP parser
+  void $ char ')'
+  pure f
+  where
+    filterOrP :: P (Filter a) -> P (Filter a)
+    filterOrP parser = do
+      f1 <- parser
+      void $ string' " or "
+      f2 <- parser
+      pure $ FilterOr f1 f2
+    filterAndP :: P (Filter a) -> P (Filter a)
+    filterAndP parser = do
+      f1 <- parser
+      void $ string' " and "
+      f2 <- parser
+      pure $ FilterAnd f1 f2
+-- filterAndP :: P Filter
+-- filterAndP = do
+--   f1 <- filterP
+--   void $ string' " and "
+--   f2 <- filterP
+--   pure $ FilterAnd f1 f2
 --   try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
 --   try filterHeaderP <|>
 --   try filterExactPropertyP <|>
@@ -399,32 +426,6 @@ parseFilter = undefined
 --   void $ string' "legacy:"
 --   FilterLegacy <$> filterP
 --
--- filterNotP :: P Filter
--- filterNotP = do
---   void $ string' "not:"
---   FilterNot <$> filterP
---
--- filterBinRelP :: P Filter
--- filterBinRelP = do
---   void $ char '('
---   f <- try filterOrP <|> filterAndP
---   void $ char ')'
---   pure f
---
--- filterOrP :: P Filter
--- filterOrP = do
---   f1 <- filterP
---   void $ string' " or "
---   f2 <- filterP
---   pure $ FilterOr f1 f2
---
--- filterAndP :: P Filter
--- filterAndP = do
---   f1 <- filterP
---   void $ string' " and "
---   f2 <- filterP
---   pure $ FilterAnd f1 f2
---
 -- filterHasPropertyP :: P Filter
 -- filterHasPropertyP = do
 --   void $ string' "has-property:"
@@ -447,6 +448,14 @@ parseFilter = undefined
 -- propertyValueP = do
 --   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
 --   either fail pure $ parsePropertyValue $ T.pack s
+--
+--
+--
+--
+--
+--
+--
+--
 -- filterCompleter :: String -> [String]
 -- filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions
 --

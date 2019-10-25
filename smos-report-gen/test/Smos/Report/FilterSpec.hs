@@ -1,4 +1,6 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.FilterSpec
@@ -25,28 +27,55 @@ import Cursor.Simple.Forest
 
 import Smos.Report.Path.Gen ()
 
-import Smos.Report.Path
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
+import Smos.Report.Path
 
 spec :: Spec
 spec = do
   eqSpecOnValid @EntryFilter
   genValidSpec @EntryFilter
-  jsonSpecOnValid @EntryFilter
+  -- jsonSpecOnValid @EntryFilter
   describe "foldFilterAnd" $
     it "produces valid results" $
     producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))
   describe "filterPredicate" $
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
---   describe "filterP" $ do
---     parsesValidSpec filterP filterText
---     parseJustSpec filterP "tag:work" (FilterHasTag "work")
---     parseJustSpec filterP "state:NEXT" (FilterTodoState "NEXT")
---     parseJustSpec filterP "level:5" (FilterLevel 5)
---     parseJustSpec filterP "exact-property:effort:30m" (FilterExactProperty "effort" "30m")
---     parseJustSpec filterP "has-property:effort" (FilterHasProperty "effort")
+  describe "filterRootedPathP" $ do
+    parsesValidSpec filterRootedPathP filterRootedPathText
+    describe "renderFilter" $ do
+      it "produces valid texts" $ producesValidsOnValids (renderFilter @RootedPath)
+      it "renders filters that parse to the same" $
+        forAllValid $ \f -> parseJust filterRootedPathP (renderFilter f) f
+  -- describe "entryFilterP" $ do
+  --   parsesValidSpec entryFilterP entryFilterText
+  --   -- parseJustSpec filterP "tag:work" (FilterHasTag "work")
+  --   -- parseJustSpec filterP "state:NEXT" (FilterTodoState "NEXT")
+  --   -- parseJustSpec filterP "level:5" (FilterLevel 5)
+  --   -- parseJustSpec filterP "exact-property:effort:30m" (FilterExactProperty "effort" "30m")
+  --   -- parseJustSpec filterP "has-property:effort" (FilterHasProperty "effort")
+  --   describe "renderFilter" $ do
+  --     it "produces valid texts" $
+  --       producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
+  --     it "renders filters that parse to the same" $
+  --       forAllValid $ \f -> parseJust entryFilterP (renderFilter f) f
+
+renderFilterSpecFor ::
+     forall a. GenValid (Filter a)
+  => P (Filter a)
+  -> Spec
+renderFilterSpecFor p =
+  describe "renderFilter" $ do
+    it "produces valid texts" $ producesValidsOnValids (renderFilter @a)
+    it "renders filters that parse to the same" $ forAllValid $ \f -> parseJust p (renderFilter f) f
+
+filterRootedPathText :: Gen Text
+filterRootedPathText = textPieces [pure "file:", genValid]
+
+entryFilterText :: Gen Text
+entryFilterText = filterRootedPathText
+
 --   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
 --   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText
 --   describe "filterFileP" $ parsesValidSpec filterFileP fileText
@@ -62,9 +91,6 @@ spec = do
 --   describe "filterAndP" $ parsesValidSpec filterAndP andText
 --   describe "filterExactPropertyP" $ parsesValidSpec filterExactPropertyP exactPropertyText
 --   describe "filterHasPropertyP" $ parsesValidSpec filterHasPropertyP hasPropertyText
-  describe "renderFilter" $ do it "produces valid texts" $ producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
---    it "renders filters that parse to the same" $
---      forAllValid $ \f -> parseJust filterP (renderFilter f) f
 --   describe "filterCompleter" $ do
 --     let c s ss =
 --           it (unwords ["completes", show s, "to", show ss]) $
@@ -206,28 +232,28 @@ spec = do
 --     (genValid `suchThat`
 --      (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))
 --
--- textPieces :: [Gen Text] -> Gen Text
--- textPieces = fmap T.concat . sequenceA
---
--- parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
--- parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
---
--- parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
--- parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
---
--- parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
--- parseJust p s res =
---   case parse (p <* eof) "test input" s of
---     Left err ->
---       expectationFailure $
---       unlines ["P failed on input", show s, "with error", errorBundlePretty err]
---     Right out -> out `shouldBe` res
---
--- parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
--- parsesValid p s =
---   checkCoverage $
---   let (useful, ass) =
---         case parse (p <* eof) "test input" s of
---           Left _ -> (False, pure () :: IO ())
---           Right out -> (True, shouldBeValid out)
---    in cover 10.0 useful "useful" $ property ass
+textPieces :: [Gen Text] -> Gen Text
+textPieces = fmap T.concat . sequenceA
+
+parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
+parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
+
+parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
+parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
+
+parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
+parseJust p s res =
+  case parse (p <* eof) "test input" s of
+    Left err ->
+      expectationFailure $
+      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
+    Right out -> out `shouldBe` res
+
+parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
+parsesValid p s =
+  checkCoverage $
+  let (useful, ass) =
+        case parse (p <* eof) "test input" s of
+          Left _ -> (False, pure () :: IO ())
+          Right out -> (True, shouldBeValid out)
+   in cover 10.0 useful "useful" $ property ass

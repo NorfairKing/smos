@@ -29,9 +29,7 @@
     name: "Use <$>"
     within: 
       - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
-      - "Smos.Report.Filter.filterAndP"
-      - "Smos.Report.Filter.filterExactPropertyP"
-      - "Smos.Report.Filter.filterOrP"
+      - "Smos.Report.Filter.filterBinRelP"
 - ignore:
     name: "Avoid lambda"
     within:
