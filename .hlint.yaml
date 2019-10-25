@@ -30,6 +30,7 @@
     within: 
       - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
       - "Smos.Report.Filter.filterBinRelP"
+      - "Smos.Report.Filter.ordP"
 - ignore:
     name: "Avoid lambda"
     within:

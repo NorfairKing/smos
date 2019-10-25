@@ -105,7 +105,6 @@ data Filter a where
   -- Comparison filters
   FilterSub :: (Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
   FilterOrd :: (Show a, Ord a, FilterArgument a) => Ordering -> a -> Filter a
-  FilterEq :: (Show a, Ord a, FilterArgument a) => a -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
@@ -243,7 +242,6 @@ filterPredicate = go
             -- Comparison filters
             FilterSub t -> t `filterSubString` t
             FilterOrd o a' -> compare a a' == o
-            FilterEq a' -> a == a'
             -- Boolean filters
             FilterNot f' -> not $ goF f'
             FilterAnd f1 f2 -> goF f1 && goF f2
@@ -298,7 +296,6 @@ renderFilter = go
                    LT -> "lt"
                    GT -> "gt")
                 (renderArgument a)
-            FilterEq a -> p "eq" $ renderArgument a
                 -- Boolean filters
             FilterNot f' -> p1 "not" f'
             FilterOr f1 f2 -> p2 f1 "or" f2
@@ -322,8 +319,23 @@ filterRootedPathP =
       Left err -> fail err
       Right f -> pure f
 
+filterTimeP :: P (Filter Time)
+filterTimeP = withTopLevelBranchesP eqAndOrdP
+
 pieceP :: Text -> P ()
 pieceP t = void $ string' $ t <> ":"
+
+maybeP :: P (Filter a) -> P (Filter (Maybe a))
+maybeP = undefined
+
+eqAndOrdP :: (Show a, Ord a, FilterArgument a) => P (Filter a)
+eqAndOrdP = ordP
+
+ordP :: (Show a, Ord a, FilterArgument a) => P (Filter a)
+ordP = do
+  o <- asum [try (pieceP "eq" >> pure EQ), try (pieceP "lt" >> pure LT), pieceP "gt" >> pure GT]
+  a <- argumentP
+  pure $ FilterOrd o a
 
 argumentP :: FilterArgument a => P a
 argumentP = do

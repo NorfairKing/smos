@@ -44,10 +44,10 @@ spec = do
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
   describe "filterRootedPathP" $ do
     parsesValidSpec filterRootedPathP filterRootedPathText
-    describe "renderFilter" $ do
-      it "produces valid texts" $ producesValidsOnValids (renderFilter @RootedPath)
-      it "renders filters that parse to the same" $
-        forAllValid $ \f -> parseJust filterRootedPathP (renderFilter f) f
+    renderFilterSpecFor filterRootedPathP
+  describe "filterTimeP" $ do
+    parsesValidSpec filterTimeP filterTimeText
+    renderFilterSpecFor filterTimeP
   -- describe "entryFilterP" $ do
   --   parsesValidSpec entryFilterP entryFilterText
   --   -- parseJustSpec filterP "tag:work" (FilterHasTag "work")
@@ -70,11 +70,37 @@ renderFilterSpecFor p =
     it "produces valid texts" $ producesValidsOnValids (renderFilter @a)
     it "renders filters that parse to the same" $ forAllValid $ \f -> parseJust p (renderFilter f) f
 
-filterRootedPathText :: Gen Text
-filterRootedPathText = textPieces [pure "file:", genValid]
-
 entryFilterText :: Gen Text
 entryFilterText = filterRootedPathText
+
+filterRootedPathText :: Gen Text
+filterRootedPathText = withTopLevelBranchesText $ textPieces [pieceText "file", genValid]
+
+filterTimeText :: Gen Text
+filterTimeText =
+  withTopLevelBranchesText $
+  eqAndOrdText $
+  textPieces [T.pack . show <$> (genValid :: Gen Word), elements ["s", "m", "h", "d", "w"]]
+
+eqAndOrdText :: Gen Text -> Gen Text
+eqAndOrdText gen = textPieces [oneof [pieceText "eq", pieceText "lt", pieceText "gt"], gen]
+
+withTopLevelBranchesText :: Gen Text -> Gen Text
+withTopLevelBranchesText gen = oneof [notText gen, binRelText gen, gen]
+
+notText :: Gen Text -> Gen Text
+notText gen = textPieces [pure "not:", gen]
+
+binRelText :: Gen Text -> Gen Text
+binRelText gen = textPieces [pure "(", oneof [orText, andText], pure ")"]
+  where
+    orText :: Gen Text
+    orText = textPieces [gen, pure " or ", gen]
+    andText :: Gen Text
+    andText = textPieces [gen, pure " and ", gen]
+
+pieceText :: Text -> Gen Text
+pieceText t = pure $ t <> ":"
 
 --   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
 --   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText
@@ -197,17 +223,6 @@ entryFilterText = filterRootedPathText
 -- legacyText :: Gen Text
 -- legacyText = textPieces [pure "legacy:", filterText]
 --
--- notText :: Gen Text
--- notText = textPieces [pure "not:", filterText]
---
--- binRelText :: Gen Text
--- binRelText = textPieces [pure "(", oneof [orText, andText], pure ")"]
---
--- orText :: Gen Text
--- orText = textPieces [filterText, pure " or ", filterText]
---
--- andText :: Gen Text
--- andText = textPieces [filterText, pure " and ", filterText]
 --
 -- exactPropertyText :: Gen Text
 -- exactPropertyText =

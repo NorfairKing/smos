@@ -116,7 +116,7 @@ subEqOrd :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => 
 subEqOrd = oneof [eqAndOrd, sub]
 
 eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a) => Gen (Filter a)
-eqAndOrd = oneof [FilterOrd <$> genValid <*> genValid, FilterEq <$> genValid]
+eqAndOrd = FilterOrd <$> genValid <*> genValid
 
 sub :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => Gen (Filter a)
 sub = FilterSub <$> genValid
