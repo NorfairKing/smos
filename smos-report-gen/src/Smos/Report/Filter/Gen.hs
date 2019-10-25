@@ -60,7 +60,6 @@ instance GenValid (Filter Entry) where
     oneof
       [ FilterEntryHeader <$> genValid
       , FilterEntryTodoState <$> genValid
-      , FilterEntryTimestamps <$> genValid
       , FilterEntryProperties <$> genValid
       , FilterEntryTags <$> genValid
       ]
@@ -116,10 +115,10 @@ subEqOrd :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => 
 subEqOrd = oneof [eqAndOrd, sub]
 
 eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a) => Gen (Filter a)
-eqAndOrd = FilterOrd <$> genValid <*> genValid
+eqAndOrd = (FilterOrd <$> genValid <*> genValid) `suchThat` isValid
 
 sub :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => Gen (Filter a)
-sub = FilterSub <$> genValid
+sub = (FilterSub <$> genValid) `suchThat` isValid
 
 withTopLevelBranches :: Gen (Filter a) -> Gen (Filter a)
 withTopLevelBranches gen =

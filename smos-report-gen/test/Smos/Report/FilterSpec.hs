@@ -30,11 +30,18 @@ import Smos.Report.Path.Gen ()
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Path
+import Smos.Report.Time hiding (P)
 
 spec :: Spec
 spec = do
   eqSpecOnValid @EntryFilter
   genValidSpec @EntryFilter
+  genValidSpec @(Filter RootedPath)
+  genValidSpec @(Filter Time)
+  genValidSpec @(Filter Tag)
+  genValidSpec @(Filter Header)
+  genValidSpec @(Filter TodoState)
+  genValidSpec @(Filter PropertyValue)
   -- jsonSpecOnValid @EntryFilter
   describe "foldFilterAnd" $
     it "produces valid results" $
@@ -48,6 +55,21 @@ spec = do
   describe "filterTimeP" $ do
     parsesValidSpec filterTimeP filterTimeText
     renderFilterSpecFor filterTimeP
+  describe "filterTagP" $ do
+    parsesValidSpec filterTagP filterTagText
+    renderFilterSpecFor filterTagP
+  describe "filterHeaderP" $ do
+    parsesValidSpec filterHeaderP filterHeaderText
+    renderFilterSpecFor filterHeaderP
+  describe "filterTodoStateP" $ do
+    parsesValidSpec filterTodoStateP filterTodoStateText
+    renderFilterSpecFor filterTodoStateP
+  -- describe "filterTimestampP" $ do
+  --   parsesValidSpec filterTimestampP filterTimestampText
+  --   renderFilterSpecFor filterTimestampP
+  describe "filterPropertyValueP" $ do
+    parsesValidSpec filterPropertyValueP filterPropertyValueText
+    renderFilterSpecFor filterPropertyValueP
   -- describe "entryFilterP" $ do
   --   parsesValidSpec entryFilterP entryFilterText
   --   -- parseJustSpec filterP "tag:work" (FilterHasTag "work")
@@ -82,6 +104,24 @@ filterTimeText =
   eqAndOrdText $
   textPieces [T.pack . show <$> (genValid :: Gen Word), elements ["s", "m", "h", "d", "w"]]
 
+filterTagText :: Gen Text
+filterTagText = withTopLevelBranchesText $ subEqOrdText argumentText
+
+filterHeaderText :: Gen Text
+filterHeaderText = withTopLevelBranchesText $ subEqOrdText argumentText
+
+filterTodoStateText :: Gen Text
+filterTodoStateText = withTopLevelBranchesText $ subEqOrdText argumentText
+
+filterTimestampText :: Gen Text
+filterTimestampText = withTopLevelBranchesText $ eqAndOrdText argumentText
+
+filterPropertyValueText :: Gen Text
+filterPropertyValueText = withTopLevelBranchesText $ subEqOrdText argumentText
+
+subEqOrdText :: Gen Text -> Gen Text
+subEqOrdText gen = oneof [eqAndOrdText gen, gen]
+
 eqAndOrdText :: Gen Text -> Gen Text
 eqAndOrdText gen = textPieces [oneof [pieceText "eq", pieceText "lt", pieceText "gt"], gen]
 
@@ -101,6 +141,13 @@ binRelText gen = textPieces [pure "(", oneof [orText, andText], pure ")"]
 
 pieceText :: Text -> Gen Text
 pieceText t = pure $ t <> ":"
+
+argumentText :: Gen Text
+argumentText =
+  T.pack <$>
+  genListOf
+    (genValid `suchThat`
+     (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))
 
 --   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
 --   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText

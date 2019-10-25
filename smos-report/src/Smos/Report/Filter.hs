@@ -80,7 +80,6 @@ data Filter a where
   -- Entry mapping filters
   FilterEntryHeader :: Filter Header -> Filter Entry
   FilterEntryTodoState :: Filter (Maybe TodoState) -> Filter Entry
-  FilterEntryTimestamps :: Filter (Map TimestampName Timestamp) -> Filter Entry
   FilterEntryProperties :: Filter (Map PropertyName PropertyValue) -> Filter Entry
   FilterEntryTags :: Filter [Tag] -> Filter Entry
   -- Cursor-related filters
@@ -91,20 +90,21 @@ data Filter a where
   FilterChild :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterLegacy :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   -- List filters
-  FilterListHas :: (Show a, Ord a, FilterArgument a) => a -> Filter [a]
+  FilterListHas :: (Validity a, Show a, Ord a, FilterArgument a) => a -> Filter [a]
   FilterAny :: Filter a -> Filter [a]
   FilterAll :: Filter a -> Filter [a]
   -- Map filters
-  FilterMapHas :: (Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
-  FilterMapVal :: (Show k, Ord k, FilterArgument k) => k -> Filter (Maybe v) -> Filter (Map k v)
+  FilterMapHas :: (Validity k, Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
+  FilterMapVal
+    :: (Validity k, Show k, Ord k, FilterArgument k) => k -> Filter (Maybe v) -> Filter (Map k v)
   -- Tuple filters
   FilterFst :: Filter a -> Filter (a, b)
   FilterSnd :: Filter b -> Filter (a, b)
   -- Maybe filters
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
-  FilterSub :: (Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
-  FilterOrd :: (Show a, Ord a, FilterArgument a) => Ordering -> a -> Filter a
+  FilterSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
+  FilterOrd :: (Validity a, Show a, Ord a, FilterArgument a) => Ordering -> a -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
@@ -179,6 +179,23 @@ instance Validity (Filter a) where
             all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
             fromRelFile s
           ]
+      FilterOrd o a ->
+        mconcat
+          [ validate o
+          , validate a
+          , declare "The characters are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
+            T.unpack $
+            renderArgument a
+          , declare "The argument is not empty" $ not $ T.null $ renderArgument a
+          ]
+      FilterSub a ->
+        mconcat
+          [ validate a
+          , declare "The characters are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
+            T.unpack $
+            renderArgument a
+          , declare "The argument is not empty" $ not $ T.null $ renderArgument a
+          ]
       _ -> trivialValidation f
 
 deriving instance Show (Filter a)
@@ -215,7 +232,6 @@ filterPredicate = go
             -- Entry mapping filters
             FilterEntryHeader f' -> goProj entryHeader f'
             FilterEntryTodoState f' -> goProj entryState f'
-            FilterEntryTimestamps f' -> goProj entryTimestamps f'
             FilterEntryProperties f' -> goProj entryProperties f'
             FilterEntryTags f' -> goProj entryTags f'
             -- Cursor-related filters
@@ -265,7 +281,6 @@ renderFilter = go
                 -- Entry mapping filters
             FilterEntryHeader f' -> p1 "header" f'
             FilterEntryTodoState f' -> p1 "state" f'
-            FilterEntryTimestamps f' -> p1 "timestamps" f'
             FilterEntryProperties f' -> p1 "properties" f'
             FilterEntryTags f' -> p1 "tags" f'
                 -- Cursor-related filters
@@ -322,16 +337,37 @@ filterRootedPathP =
 filterTimeP :: P (Filter Time)
 filterTimeP = withTopLevelBranchesP eqAndOrdP
 
+filterTagP :: P (Filter Tag)
+filterTagP = withTopLevelBranchesP subEqOrdP
+
+filterHeaderP :: P (Filter Header)
+filterHeaderP = withTopLevelBranchesP subEqOrdP
+
+filterTodoStateP :: P (Filter TodoState)
+filterTodoStateP = withTopLevelBranchesP subEqOrdP
+
+filterTimestampP :: P (Filter Timestamp)
+filterTimestampP = withTopLevelBranchesP eqAndOrdP
+
+filterPropertyValueP :: P (Filter PropertyValue)
+filterPropertyValueP = withTopLevelBranchesP subEqOrdP
+
 pieceP :: Text -> P ()
 pieceP t = void $ string' $ t <> ":"
 
 maybeP :: P (Filter a) -> P (Filter (Maybe a))
 maybeP = undefined
 
-eqAndOrdP :: (Show a, Ord a, FilterArgument a) => P (Filter a)
+subEqOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
+subEqOrdP = try eqAndOrdP <|> subP
+
+subP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
+subP = FilterSub <$> argumentP
+
+eqAndOrdP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
 eqAndOrdP = ordP
 
-ordP :: (Show a, Ord a, FilterArgument a) => P (Filter a)
+ordP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
 ordP = do
   o <- asum [try (pieceP "eq" >> pure EQ), try (pieceP "lt" >> pure LT), pieceP "gt" >> pure GT]
   a <- argumentP
@@ -339,7 +375,7 @@ ordP = do
 
 argumentP :: FilterArgument a => P a
 argumentP = do
-  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
   either fail pure $ parseArgument $ T.pack s
 
 withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
@@ -350,21 +386,21 @@ filterNotP parser = do
   void $ string' "not:"
   FilterNot <$> parser
 
-filterBinRelP :: P (Filter a) -> P (Filter a)
+filterBinRelP :: forall a. P (Filter a) -> P (Filter a)
 filterBinRelP parser = do
   void $ char '('
-  f <- try (filterOrP parser) <|> filterAndP parser
+  f <- try filterOrP <|> filterAndP
   void $ char ')'
   pure f
   where
-    filterOrP :: P (Filter a) -> P (Filter a)
-    filterOrP parser = do
+    filterOrP :: P (Filter a)
+    filterOrP = do
       f1 <- parser
       void $ string' " or "
       f2 <- parser
       pure $ FilterOr f1 f2
-    filterAndP :: P (Filter a) -> P (Filter a)
-    filterAndP parser = do
+    filterAndP :: P (Filter a)
+    filterAndP = do
       f1 <- parser
       void $ string' " and "
       f2 <- parser
