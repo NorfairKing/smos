@@ -82,7 +82,8 @@ instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) 
   genValid = withTopLevelBranches $ oneof [FilterFst <$> genValid, FilterSnd <$> genValid]
   shrinkValid _ = []
 
-instance (Show k, Ord k, GenValid k, GenValid (Filter v)) => GenValid (Filter (Map k v)) where
+instance (Show k, Ord k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
+         GenValid (Filter (Map k v)) where
   genValid =
     withTopLevelBranches $ oneof [FilterMapHas <$> genValid, FilterMapVal <$> genValid <*> genValid]
   shrinkValid _ = []

@@ -22,7 +22,9 @@ import Data.Text (Text)
 import Data.Validity
 import Data.Void
 import Path
+import Text.Read
 
+import Control.Arrow
 import Control.Monad
 
 import Lens.Micro
@@ -58,6 +60,18 @@ forestCursorChildren a =
     (let CNode _ cf = rebuildTreeCursor $ a ^. forestCursorSelectedTreeL
       in [0 .. length (rebuildCForest cf) - 1])
 
+forestCursorLevel :: ForestCursor a -> Word
+forestCursorLevel fc = go' $ fc ^. forestCursorSelectedTreeL
+  where
+    go' tc =
+      case tc ^. treeCursorAboveL of
+        Nothing -> 0
+        Just tc' -> 1 + goA' tc'
+    goA' ta =
+      case treeAboveAbove ta of
+        Nothing -> 0
+        Just ta' -> 1 + goA' ta'
+
 data Filter a where
   FilterFile :: Path Rel File -> Filter RootedPath
   -- Parsing filters
@@ -80,8 +94,8 @@ data Filter a where
   FilterAny :: Filter a -> Filter [a]
   FilterAll :: Filter a -> Filter [a]
   -- Map filters
-  FilterMapHas :: (Show k, Ord k) => k -> Filter (Map k v)
-  FilterMapVal :: (Show k, Ord k) => k -> Filter (Maybe v) -> Filter (Map k v)
+  FilterMapHas :: (Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
+  FilterMapVal :: (Show k, Ord k, FilterArgument k) => k -> Filter (Maybe v) -> Filter (Map k v)
   -- Tuple filters
   FilterFst :: Filter a -> Filter (a, b)
   FilterSnd :: Filter b -> Filter (a, b)
@@ -115,6 +129,14 @@ class FilterArgument a where
   renderArgument :: a -> Text
   parseArgument :: Text -> Either String a
 
+instance FilterArgument Word where
+  renderArgument = T.pack . show
+  parseArgument = maybe (Left "Invalid word") Right . readMaybe . T.unpack
+
+instance FilterArgument (Path Rel File) where
+  renderArgument = T.pack . fromRelFile
+  parseArgument = left show . parseRelFile . T.unpack
+
 instance FilterArgument Header where
   renderArgument = headerText
   parseArgument = parseHeader
@@ -123,9 +145,17 @@ instance FilterArgument TodoState where
   renderArgument = todoStateText
   parseArgument = parseTodoState
 
+instance FilterArgument PropertyName where
+  renderArgument = propertyNameText
+  parseArgument = parsePropertyName
+
 instance FilterArgument PropertyValue where
   renderArgument = propertyValueText
   parseArgument = parsePropertyValue
+
+instance FilterArgument TimestampName where
+  renderArgument = timestampNameText
+  parseArgument = parseTimestampName
 
 instance FilterArgument Timestamp where
   renderArgument = timestampText
@@ -181,12 +211,13 @@ filterPredicate = go
             FilterEntryTags f' -> goProj entryTags f'
             -- Cursor-related filters
             FilterWithinCursor f' -> go f' (forestCursorCurrent a)
+            FilterLevel l -> l == forestCursorLevel a
             FilterAncestor f' ->
               maybe False (\fc_ -> go f' fc_ || go f fc_) (forestCursorSelectAbove a) || go f' a
             FilterLegacy f' ->
               any (\fc_ -> go f' fc_ || go f fc_) (forestCursorChildren a) || go f' a
             FilterParent f' -> maybe False (go f') (forestCursorSelectAbove a)
-            FilterChild f' -> any (\fc_ -> go f' fc_) (forestCursorChildren a)
+            FilterChild f' -> any (go f') (forestCursorChildren a)
             -- List filters
             FilterListHas a' -> a' `elem` a
             FilterAny f' -> any (go f') a
@@ -209,38 +240,59 @@ filterPredicate = go
             FilterOr f1 f2 -> goF f1 || goF f2
 
 renderFilter :: Filter a -> Text
-renderFilter f =
-  let p0 p = p
-      p1 p f' = p <> ":" <> renderFilter f'
-      p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
-   in case f
-        -- Comparison filters
-            of
-        FilterSub t -> p0 $ renderArgument t
-        FilterOrd o a ->
-          (case o of
-             EQ -> "eq"
-             LT -> "lt"
-             GT -> "gt") <>
-          ":" <>
-          T.pack (show a) -- TODO this is wrong.
-        FilterEq a -> T.pack (show a) -- TODO this is wrong.
-        -- Boolean filters
-        FilterNot f' -> p1 "not" f'
-        FilterOr f1 f2 -> p2 f1 "or" f2
-        FilterAnd f1 f2 -> p2 f1 "and" f2
-    -- FilterHasTag t -> "tag:" <> tagText t
-    -- FilterTodoState ts -> "state:" <> todoStateText ts
-    -- FilterFile t -> "file:" <> T.pack (fromRelFile t)
-    -- FilterLevel l -> "level:" <> T.pack (show l)
-    -- FilterHeader h -> "header:" <> headerText h
-    -- FilterExactProperty pn pv ->
-    --   "exact-property:" <> propertyNameText pn <> ":" <> propertyValueText pv
-    -- FilterHasProperty pn -> "has-property:" <> propertyNameText pn
-    -- FilterParent f' -> "parent:" <> renderFilter f'
-    -- FilterAncestor f' -> "ancestor:" <> renderFilter f'
-    -- FilterChild f' -> "child:" <> renderFilter f'
-    -- FilterLegacy f' -> "legacy:" <> renderFilter f'
+renderFilter = go
+  where
+    go :: Filter a -> Text
+    go f =
+      let p t1 t2 = t1 <> ":" <> t2
+          p1 t f' = p t $ go f'
+          p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
+          bt b =
+            if b
+              then "true"
+              else "false"
+       in case f of
+            FilterFile rp -> p "file" $ renderArgument rp
+            FilterPropertyTime f' -> p1 "time" f'
+                -- Entry mapping filters
+            FilterEntryHeader f' -> p1 "header" f'
+            FilterEntryTodoState f' -> p1 "state" f'
+            FilterEntryTimestamps f' -> p1 "timestamps" f'
+            FilterEntryProperties f' -> p1 "properties" f'
+            FilterEntryTags f' -> p1 "tags" f'
+                -- Cursor-related filters
+            FilterWithinCursor f' -> go f'
+            FilterLevel l -> p "level" $ renderArgument l
+            FilterAncestor f' -> p1 "ancestor" f'
+            FilterLegacy f' -> p1 "legacy" f'
+            FilterParent f' -> p1 "parent" f'
+            FilterChild f' -> p1 "child" f'
+                -- List filters
+            FilterListHas k -> p "has" $ renderArgument k
+            FilterAny f' -> p1 "any" f'
+            FilterAll f' -> p1 "all" f'
+                -- Map filters
+            FilterMapHas k -> p "has" $ renderArgument k
+            FilterMapVal k f' -> p1 (renderArgument k) f'
+                -- Tuple filters
+            FilterFst f' -> go f'
+            FilterSnd f' -> go f'
+                -- Maybe filters
+            FilterMaybe b f' -> p "maybe" $ p1 (bt b) f'
+                -- Comparison filters
+            FilterSub t -> renderArgument t
+            FilterOrd o a ->
+              p
+                (case o of
+                   EQ -> "eq"
+                   LT -> "lt"
+                   GT -> "gt")
+                (renderArgument a)
+            FilterEq a -> p "eq" $ renderArgument a
+                -- Boolean filters
+            FilterNot f' -> p1 "not" f'
+            FilterOr f1 f2 -> p2 f1 "or" f2
+            FilterAnd f1 f2 -> p2 f1 "and" f2
 
 parseFilter :: Text -> Maybe (Filter a)
 parseFilter = undefined
