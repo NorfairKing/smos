@@ -188,6 +188,13 @@ smosCursorCurrent (rf, fc) = (rf, forestCursorCurrent fc)
 forestCursorCurrent :: ForestCursor a -> a
 forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
+forestCursorChildren :: ForestCursor a -> [ForestCursor a]
+forestCursorChildren a =
+  mapMaybe
+    (\i -> a & forestCursorSelectBelowAtPos i)
+    (let CNode _ cf = rebuildTreeCursor $ a ^. forestCursorSelectedTreeL
+      in [0 .. length (rebuildCForest cf) - 1])
+
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest
 
