@@ -68,6 +68,8 @@ data Filter a where
   FilterLegacy :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   -- List filters
   FilterListHas :: (Show a, Eq a) => a -> Filter [a]
+  FilterAny :: Filter a -> Filter [a]
+  FilterAll :: Filter a -> Filter [a]
   -- Map filters
   FilterMapHas :: (Show k, Ord k) => k -> Filter (Map k v)
   FilterMapVal :: (Show k, Ord k) => k -> Filter (Maybe v) -> Filter (Map k v)
@@ -122,6 +124,8 @@ filterPredicate = go
             FilterChild f' -> any (\fc_ -> go f' fc_) (forestCursorChildren a)
             -- List filters
             FilterListHas a' -> a' `elem` a
+            FilterAny f' -> any (go f') a
+            FilterAll f' -> all (go f') a
             -- Map filters
             FilterMapHas k -> M.member k a
             FilterMapVal k f' -> goProj (M.lookup k) f'
