@@ -57,7 +57,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
         ByFile -> comparing resolveRootedPath rpa rpb
         ByPropertyTime pn ->
           comparing
-            (\e -> M.lookup pn (entryProperties e) >>= (parseTime . propertyValueText))
+            (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText))
             ea
             eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb

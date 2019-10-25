@@ -40,7 +40,7 @@ zeroOutByFilter f rp sf =
   where
     go :: ForestCursor Entry -> Entry
     go fc =
-      (if filterPredicate f rp fc
+      (if filterPredicate f( rp ,fc)
          then id
          else zeroOutEntry)
         (fc ^. (forestCursorSelectedTreeL . treeCursorCurrentL))

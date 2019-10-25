@@ -67,7 +67,7 @@ defaultWorkBaseFilter =
   FilterSnd $
   FilterWithinCursor $
   FilterEntryTodoState $
-  FilterMaybe False $ FilterTodoStateText $ FilterOr (FilterEq "NEXT") (FilterEq "STARTED")
+  FilterMaybe False $  FilterOr (FilterEq "NEXT") (FilterEq "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)

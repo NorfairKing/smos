@@ -22,7 +22,6 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Path
 import Smos.Report.Sorter
-import Smos.Report.Streaming
 
 data WorkReport =
   WorkReport
@@ -75,15 +74,15 @@ makeWorkReport WorkReportContext {..} rp fc =
       currentFilter =
         filterWithBase $
         combineFilter workReportContextCurrentContext workReportContextAdditionalFilter
-      matchesSelectedContext = filterPredicate currentFilter rp fc
+      matchesSelectedContext = filterPredicate currentFilter (rp, fc)
       matchesAnyContext =
-        any (\f -> filterPredicate (filterWithBase f) rp fc) $ M.elems workReportContextContexts
+        any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext
         , workReportEntriesWithoutContext =
             match $
-            maybe True (\f -> filterPredicate f rp fc) workReportContextBaseFilter &&
+            maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter &&
             matchesNoContext
         , workReportAgendaEntries =
             let go ae =
@@ -96,9 +95,9 @@ makeWorkReport WorkReportContext {..} rp fc =
              in filter go $ makeAgendaEntry rp cur
         , workReportCheckViolations =
             if matchesAnyContext
-              then let go :: Filter -> Maybe (RootedPath, Entry)
+              then let go :: EntryFilter -> Maybe (RootedPath, Entry)
                        go f =
-                         if filterPredicate (filterWithBase f) rp fc
+                         if filterPredicate (filterWithBase f) (rp, fc)
                            then Nothing
                            else Just (rp, cur)
                     in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -60,27 +61,22 @@ forestCursorChildren a =
 data Filter a where
   FilterFile :: Path Rel File -> Filter RootedPath
   -- Parsing filters
-  FilterPropertyTime :: Filter (Maybe Time) -> Filter Text
-  -- Text mapping filters
-  FilterHeaderText :: Filter Text -> Filter Header
-  FilterTodoStateText :: Filter Text -> Filter TodoState
-  FilterPropertyValueText :: Filter Text -> Filter PropertyValue
-  FilterTagText :: Filter Text -> Filter Tag
+  FilterPropertyTime :: Filter (Maybe Time) -> Filter PropertyValue
   -- Entry mapping filters
   FilterEntryHeader :: Filter Header -> Filter Entry
-  FilterEntryContents :: Filter (Maybe Contents) -> Filter Entry
   FilterEntryTodoState :: Filter (Maybe TodoState) -> Filter Entry
   FilterEntryTimestamps :: Filter (Map TimestampName Timestamp) -> Filter Entry
   FilterEntryProperties :: Filter (Map PropertyName PropertyValue) -> Filter Entry
   FilterEntryTags :: Filter [Tag] -> Filter Entry
   -- Cursor-related filters
   FilterWithinCursor :: Filter a -> Filter (ForestCursor a)
+  FilterLevel :: Word -> Filter (ForestCursor a)
   FilterParent :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterAncestor :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterChild :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterLegacy :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   -- List filters
-  FilterListHas :: (Show a, Eq a) => a -> Filter [a]
+  FilterListHas :: (Show a, Ord a, FilterArgument a) => a -> Filter [a]
   FilterAny :: Filter a -> Filter [a]
   FilterAll :: Filter a -> Filter [a]
   -- Map filters
@@ -92,17 +88,65 @@ data Filter a where
   -- Maybe filters
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
-  FilterSubtext :: Text -> Filter Text
-  FilterOrd :: (Show a, Ord a) => Ordering -> a -> Filter a
-  FilterEq :: (Show a, Eq a) => a -> Filter a
+  FilterSub :: (Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
+  FilterOrd :: (Show a, Ord a, FilterArgument a) => Ordering -> a -> Filter a
+  FilterEq :: (Show a, Ord a, FilterArgument a) => a -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
   FilterOr :: Filter a -> Filter a -> Filter a
 
+class FilterSubString a where
+  filterSubString :: a -> a -> Bool
+
+instance FilterSubString Header where
+  filterSubString = T.isInfixOf `on` renderArgument
+
+instance FilterSubString TodoState where
+  filterSubString = T.isInfixOf `on` renderArgument
+
+instance FilterSubString PropertyValue where
+  filterSubString = T.isInfixOf `on` renderArgument
+
+instance FilterSubString Tag where
+  filterSubString = T.isInfixOf `on` renderArgument
+
+class FilterArgument a where
+  renderArgument :: a -> Text
+  parseArgument :: Text -> Either String a
+
+instance FilterArgument Header where
+  renderArgument = headerText
+  parseArgument = parseHeader
+
+instance FilterArgument TodoState where
+  renderArgument = todoStateText
+  parseArgument = parseTodoState
+
+instance FilterArgument PropertyValue where
+  renderArgument = propertyValueText
+  parseArgument = parsePropertyValue
+
+instance FilterArgument Timestamp where
+  renderArgument = timestampText
+  parseArgument = maybe (Left "Invalid timestamp") Right . parseTimestampText
+
+instance FilterArgument Tag where
+  renderArgument = tagText
+  parseArgument = parseTag
+
+instance FilterArgument Time where
+  renderArgument = renderTime
+  parseArgument = parseTime
+
+instance Validity (Filter a) where
+  validate = trivialValidation
+
 deriving instance Show (Filter a)
 
 deriving instance Eq (Filter a)
+
+deriving instance Ord (Filter a)
 
 instance FromJSON (Filter a) where
   parseJSON =
@@ -113,6 +157,9 @@ instance FromJSON (Filter a) where
 
 instance ToJSON (Filter a) where
   toJSON = toJSON . renderFilter
+
+foldFilterAnd :: NonEmpty (Filter a) -> Filter a
+foldFilterAnd = foldl1 FilterAnd
 
 filterPredicate :: Filter a -> a -> Bool
 filterPredicate = go
@@ -125,15 +172,9 @@ filterPredicate = go
        in case f of
             FilterFile rp -> fromRelFile rp `isInfixOf` fromAbsFile (resolveRootedPath a)
             -- Parsing filters
-            FilterPropertyTime f' -> goProj parseTime f'
-            -- Text mapping filters
-            FilterHeaderText f' -> goProj headerText f'
-            FilterTagText f' -> goProj tagText f'
-            FilterPropertyValueText f' -> goProj propertyValueText f'
-            FilterTodoStateText f' -> goProj todoStateText f'
+            FilterPropertyTime f' -> goProj (time . propertyValueText) f'
             -- Entry mapping filters
             FilterEntryHeader f' -> goProj entryHeader f'
-            FilterEntryContents f' -> goProj entryContents f'
             FilterEntryTodoState f' -> goProj entryState f'
             FilterEntryTimestamps f' -> goProj entryTimestamps f'
             FilterEntryProperties f' -> goProj entryProperties f'
@@ -159,13 +200,50 @@ filterPredicate = go
             -- Maybe filters
             FilterMaybe b f' -> maybe b (go f') a
             -- Comparison filters
-            FilterSubtext t -> t `T.isInfixOf` t
+            FilterSub t -> t `filterSubString` t
             FilterOrd o a' -> compare a a' == o
             FilterEq a' -> a == a'
-            -- Boolean
+            -- Boolean filters
             FilterNot f' -> not $ goF f'
             FilterAnd f1 f2 -> goF f1 && goF f2
             FilterOr f1 f2 -> goF f1 || goF f2
+
+renderFilter :: Filter a -> Text
+renderFilter f =
+  let p0 p = p
+      p1 p f' = p <> ":" <> renderFilter f'
+      p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
+   in case f
+        -- Comparison filters
+            of
+        FilterSub t -> p0 $ renderArgument t
+        FilterOrd o a ->
+          (case o of
+             EQ -> "eq"
+             LT -> "lt"
+             GT -> "gt") <>
+          ":" <>
+          T.pack (show a) -- TODO this is wrong.
+        FilterEq a -> T.pack (show a) -- TODO this is wrong.
+        -- Boolean filters
+        FilterNot f' -> p1 "not" f'
+        FilterOr f1 f2 -> p2 f1 "or" f2
+        FilterAnd f1 f2 -> p2 f1 "and" f2
+    -- FilterHasTag t -> "tag:" <> tagText t
+    -- FilterTodoState ts -> "state:" <> todoStateText ts
+    -- FilterFile t -> "file:" <> T.pack (fromRelFile t)
+    -- FilterLevel l -> "level:" <> T.pack (show l)
+    -- FilterHeader h -> "header:" <> headerText h
+    -- FilterExactProperty pn pv ->
+    --   "exact-property:" <> propertyNameText pn <> ":" <> propertyValueText pv
+    -- FilterHasProperty pn -> "has-property:" <> propertyNameText pn
+    -- FilterParent f' -> "parent:" <> renderFilter f'
+    -- FilterAncestor f' -> "ancestor:" <> renderFilter f'
+    -- FilterChild f' -> "child:" <> renderFilter f'
+    -- FilterLegacy f' -> "legacy:" <> renderFilter f'
+
+parseFilter :: Text -> Maybe (Filter a)
+parseFilter = undefined
 -- data Filter
 --   = FilterHasTag Tag
 --   | FilterTodoState TodoState
@@ -199,55 +277,7 @@ filterPredicate = go
 --           _ -> valid
 --       ]
 --
--- foldFilterAnd :: NonEmpty Filter -> Filter
--- foldFilterAnd = foldl1 FilterAnd
 --
--- filterPredicate :: Filter -> RootedPath -> ForestCursor Entry -> Bool
--- filterPredicate f_ rp = go f_
---   where
---     go f fc =
---       let parent_ :: Maybe (ForestCursor Entry)
---           parent_ = fc & forestCursorSelectedTreeL treeCursorSelectAbove
---           children_ :: [ForestCursor Entry]
---           children_ =
---             mapMaybe
---               (\i -> fc & forestCursorSelectBelowAtPos i)
---               (let CNode _ cf = rebuildTreeCursor $ fc ^. forestCursorSelectedTreeL
---                 in [0 .. length (rebuildCForest cf) - 1])
---           cur :: Entry
---           cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
---        in case f of
---             FilterHasTag t -> t `elem` entryTags cur
---             FilterTodoState mts -> Just mts == entryState cur
---             FilterFile t -> fromRelFile t `isInfixOf` fromAbsFile (resolveRootedPath rp)
---             FilterHeader h ->
---               T.toCaseFold (headerText h) `T.isInfixOf` T.toCaseFold (headerText (entryHeader cur))
---             FilterExactProperty pn pv ->
---               case M.lookup pn $ entryProperties cur of
---                 Nothing -> False
---                 Just pv' -> pv == pv'
---             FilterHasProperty pn -> isJust $ M.lookup pn $ entryProperties cur
---             FilterLevel l -> l == level fc
---             FilterParent f' -> maybe False (go f') parent_
---             FilterAncestor f' -> maybe False (\fc_ -> go f' fc_ || go f fc_) parent_ || go f' fc
---             FilterChild f' -> any (go f') children_
---             FilterLegacy f' -> any (\fc_ -> go f' fc_ || go f fc_) children_ || go f' fc
---             FilterNot f' -> not $ go f' fc
---             FilterAnd f1 f2 -> go f1 fc && go f2 fc
---             FilterOr f1 f2 -> go f1 fc || go f2 fc
---     level :: ForestCursor a -> Word
---     level fc = go' $ fc ^. forestCursorSelectedTreeL
---       where
---         go' tc =
---           case tc ^. treeCursorAboveL of
---             Nothing -> 0
---             Just tc' -> 1 + goA' tc'
---         goA' ta =
---           case treeAboveAbove ta of
---             Nothing -> 0
---             Just ta' -> 1 + goA' ta'
---
--- type P = Parsec Void Text
 --
 -- parseFilter :: Text -> Maybe Filter
 -- parseFilter = parseMaybe filterP
@@ -365,26 +395,6 @@ filterPredicate = go
 -- propertyValueP = do
 --   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
 --   either fail pure $ parsePropertyValue $ T.pack s
---
--- renderFilter :: Filter -> Text
--- renderFilter f =
---   case f of
---     FilterHasTag t -> "tag:" <> tagText t
---     FilterTodoState ts -> "state:" <> todoStateText ts
---     FilterFile t -> "file:" <> T.pack (fromRelFile t)
---     FilterLevel l -> "level:" <> T.pack (show l)
---     FilterHeader h -> "header:" <> headerText h
---     FilterExactProperty pn pv ->
---       "exact-property:" <> propertyNameText pn <> ":" <> propertyValueText pv
---     FilterHasProperty pn -> "has-property:" <> propertyNameText pn
---     FilterParent f' -> "parent:" <> renderFilter f'
---     FilterAncestor f' -> "ancestor:" <> renderFilter f'
---     FilterChild f' -> "child:" <> renderFilter f'
---     FilterLegacy f' -> "legacy:" <> renderFilter f'
---     FilterNot f' -> "not:" <> renderFilter f'
---     FilterOr f1 f2 -> T.concat ["(", renderFilter f1, " or ", renderFilter f2, ")"]
---     FilterAnd f1 f2 -> T.concat ["(", renderFilter f1, " and ", renderFilter f2, ")"]
---
 -- filterCompleter :: String -> [String]
 -- filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions
 --
