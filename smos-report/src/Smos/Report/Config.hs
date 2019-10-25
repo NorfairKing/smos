@@ -46,8 +46,8 @@ data SmosReportConfig =
     , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
     , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
-    , smosReportConfigWorkBaseFilter :: Maybe Filter
-    , smosReportConfigContexts :: Map ContextName Filter
+    , smosReportConfigWorkBaseFilter :: Maybe EntryFilter
+    , smosReportConfigContexts :: Map ContextName EntryFilter
     }
   deriving (Show, Eq, Generic)
 
@@ -58,12 +58,16 @@ defaultReportConfig =
     , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
     , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
     , smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
-    , smosReportConfigWorkBaseFilter = defaultWorkBaseFilter
+    , smosReportConfigWorkBaseFilter = Just defaultWorkBaseFilter
     , smosReportConfigContexts = M.fromList []
     }
 
-defaultWorkBaseFilter :: Maybe Filter
-defaultWorkBaseFilter = Just $ FilterOr (FilterTodoState "NEXT") (FilterTodoState "STARTED")
+defaultWorkBaseFilter :: EntryFilter
+defaultWorkBaseFilter =
+  FilterSnd $
+  FilterWithinCursor $
+  FilterEntryTodoState $
+  FilterMaybe False $ FilterTodoStateText $ FilterOr (FilterEq "NEXT") (FilterEq "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)

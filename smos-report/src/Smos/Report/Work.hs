@@ -29,7 +29,7 @@ data WorkReport =
     { workReportResultEntries :: [(RootedPath, Entry)]
     , workReportEntriesWithoutContext :: [(RootedPath, Entry)]
     , workReportAgendaEntries :: [AgendaEntry]
-    , workReportCheckViolations :: Map Filter [(RootedPath, Entry)]
+    , workReportCheckViolations :: Map EntryFilter [(RootedPath, Entry)]
     }
   deriving (Show, Eq, Generic)
 
@@ -58,11 +58,11 @@ instance Monoid WorkReport where
 data WorkReportContext =
   WorkReportContext
     { workReportContextNow :: ZonedTime
-    , workReportContextBaseFilter :: Maybe Filter
-    , workReportContextCurrentContext :: Filter
-    , workReportContextAdditionalFilter :: Maybe Filter
-    , workReportContextContexts :: Map ContextName Filter
-    , workReportContextChecks :: Set Filter
+    , workReportContextBaseFilter :: Maybe EntryFilter
+    , workReportContextCurrentContext :: EntryFilter
+    , workReportContextAdditionalFilter :: Maybe EntryFilter
+    , workReportContextContexts :: Map ContextName EntryFilter
+    , workReportContextChecks :: Set EntryFilter
     }
   deriving (Show, Generic)
 

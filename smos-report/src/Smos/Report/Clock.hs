@@ -33,7 +33,7 @@ import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 -- | Reset the timers of every entry that doesn't match the filter to zero
-zeroOutByFilter :: Filter -> RootedPath -> SmosFile -> SmosFile
+zeroOutByFilter :: EntryFilter -> RootedPath -> SmosFile -> SmosFile
 zeroOutByFilter f rp sf =
   let cursors = forestCursors $ smosFileForest sf
    in SmosFile $ map (fmap go) cursors
