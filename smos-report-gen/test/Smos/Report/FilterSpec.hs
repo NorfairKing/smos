@@ -59,21 +59,32 @@ spec = do
     parsesValidSpec filterRootedPathP filterRootedPathText
     renderFilterSpecFor filterRootedPathP
   describe "filterTimeP" $ do
+    parseJustSpec filterTimeP "eq:15m" (FilterOrd EQC $ Minutes 15)
+    parseJustSpec filterTimeP "lt:2h" (FilterOrd LTC $ Hours 2)
+    parseJustSpec filterTimeP "le:8d" (FilterOrd LEC $ Days 8)
     parsesValidSpec filterTimeP filterTimeText
     renderFilterSpecFor filterTimeP
   describe "filterTagP" $ do
+    parseJustSpec filterTagP "test" (FilterSub "test")
+    parseJustSpec filterTagP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterTagP filterTagText
     renderFilterSpecFor filterTagP
   describe "filterHeaderP" $ do
+    parseJustSpec filterHeaderP "test" (FilterSub "test")
+    parseJustSpec filterHeaderP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterHeaderP filterHeaderText
     renderFilterSpecFor filterHeaderP
   describe "filterTodoStateP" $ do
+    parseJustSpec filterTodoStateP "test" (FilterSub "test")
+    parseJustSpec filterTodoStateP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterTodoStateP filterTodoStateText
     renderFilterSpecFor filterTodoStateP
   -- describe "filterTimestampP" $ do
   --   parsesValidSpec filterTimestampP filterTimestampText
   --   renderFilterSpecFor filterTimestampP
   describe "filterPropertyValueP" $ do
+    parseJustSpec filterPropertyValueP "test" (FilterSub "test")
+    parseJustSpec filterPropertyValueP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterPropertyValueP filterPropertyValueText
     renderFilterSpecFor filterPropertyValueP
   -- describe "entryFilterP" $ do

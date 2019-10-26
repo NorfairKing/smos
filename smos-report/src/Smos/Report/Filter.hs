@@ -211,7 +211,8 @@ instance Validity (Filter a) where
         mconcat
           [ validate o
           , validate a
-          , declare "The characters are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
+          , declare "The characters are restricted" $
+            all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= ')') $
             T.unpack $
             renderArgument a
           , declare "The argument is not empty" $ not $ T.null $ renderArgument a
@@ -219,7 +220,8 @@ instance Validity (Filter a) where
       FilterSub a ->
         mconcat
           [ validate a
-          , declare "The characters are restricted" $ all (\c -> not (Char.isSpace c) && c /= ')') $
+          , declare "The characters are restricted" $
+            all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= ')') $
             T.unpack $
             renderArgument a
           , declare "The argument is not empty" $ not $ T.null $ renderArgument a
@@ -381,7 +383,7 @@ maybeP :: P (Filter a) -> P (Filter (Maybe a))
 maybeP = undefined
 
 subEqOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
-subEqOrdP = try eqAndOrdP <|> subP
+subEqOrdP = label "subEqOrd" $ try eqAndOrdP <|> subP
 
 subP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
 subP =
@@ -398,6 +400,7 @@ ordP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
 ordP =
   label "comparison filter" $ do
     o <- comparisonP
+    void $ string' ":"
     a <- argumentP
     pure $ FilterOrd o a
 

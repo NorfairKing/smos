@@ -139,6 +139,8 @@ withTopLevelBranches gen =
 shrinkValidFilter :: Filter a -> [Filter a]
 shrinkValidFilter = go
   where
+    goA :: FilterArgument a => a -> [a]
+    goA a = [a' | Right a' <- parseArgument <$> shrinkValid (renderArgument a)]
     go :: Filter a -> [Filter a]
     go f =
       case f of
@@ -154,16 +156,16 @@ shrinkValidFilter = go
         FilterAncestor f' -> f' : FilterParent f' : (FilterAncestor <$> go f')
         FilterChild f' -> f' : (FilterChild <$> go f')
         FilterLegacy f' -> f' : FilterChild f' : (FilterLegacy <$> go f')
-        FilterListHas _ -> []
+        FilterListHas a -> FilterListHas <$> goA a
         FilterAny f' -> FilterAny <$> go f'
         FilterAll f' -> FilterAny f' : (FilterAll <$> go f')
-        FilterMapHas _ -> []
+        FilterMapHas a -> FilterMapHas <$> goA a
         FilterMapVal v f' -> FilterMapHas v : (FilterMapVal v <$> go f')
         FilterFst f' -> FilterFst <$> go f'
         FilterSnd f' -> FilterSnd <$> go f'
         FilterMaybe b f' -> FilterMaybe <$> shrinkValid b <*> go f'
-        FilterSub a -> [FilterOrd EQC a]
-        FilterOrd o a -> FilterOrd <$> shrinkValid o <*> pure a
+        FilterSub a -> FilterOrd EQC a : (FilterSub <$> goA a)
+        FilterOrd o a -> FilterOrd <$> shrinkValid o <*> goA a
         FilterNot f' -> f' : (FilterNot <$> go f')
         FilterAnd f1 f2 -> f1 : f2 : [FilterAnd f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]
         FilterOr f1 f2 -> f1 : f2 : [FilterOr f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]
