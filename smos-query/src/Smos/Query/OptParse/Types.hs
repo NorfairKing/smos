@@ -50,7 +50,7 @@ data Command
 
 data EntryFlags =
   EntryFlags
-    { entryFlagFilter :: Maybe Filter
+    { entryFlagFilter :: Maybe EntryFilter
     , entryFlagProjection :: Maybe (NonEmpty Projection)
     , entryFlagSorter :: Maybe Sorter
     , entryFlagHideArchive :: Maybe HideArchive
@@ -60,7 +60,7 @@ data EntryFlags =
 data WorkFlags =
   WorkFlags
     { workFlagContext :: ContextName
-    , workFlagFilter :: Maybe Filter
+    , workFlagFilter :: Maybe EntryFilter
     , workFlagProjection :: Maybe (NonEmpty Projection)
     , workFlagSorter :: Maybe Sorter
     , workFlagHideArchive :: Maybe HideArchive
@@ -69,21 +69,21 @@ data WorkFlags =
 
 data WaitingFlags =
   WaitingFlags
-    { waitingFlagFilter :: Maybe Filter
+    { waitingFlagFilter :: Maybe EntryFilter
     , waitingFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
 data NextFlags =
   NextFlags
-    { nextFlagFilter :: Maybe Filter
+    { nextFlagFilter :: Maybe EntryFilter
     , nextFlagHideArchive :: Maybe HideArchive
     }
   deriving (Show, Eq)
 
 data ClockFlags =
   ClockFlags
-    { clockFlagFilter :: Maybe Filter
+    { clockFlagFilter :: Maybe EntryFilter
     , clockFlagPeriodFlags :: Maybe Period
     , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
@@ -95,7 +95,7 @@ data ClockFlags =
 
 data AgendaFlags =
   AgendaFlags
-    { agendaFlagFilter :: Maybe Filter
+    { agendaFlagFilter :: Maybe EntryFilter
     , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
     , agendaFlagHideArchive :: Maybe HideArchive
@@ -104,7 +104,7 @@ data AgendaFlags =
 
 data LogFlags =
   LogFlags
-    { logFlagFilter :: Maybe Filter
+    { logFlagFilter :: Maybe EntryFilter
     , logFlagPeriodFlags :: Maybe Period
     , logFlagBlockFlags :: Maybe TimeBlock
     , logFlagHideArchive :: Maybe HideArchive
@@ -119,7 +119,7 @@ newtype StatsFlags =
 
 newtype TagsFlags =
   TagsFlags
-    { tagsFlagFilter :: Maybe Filter
+    { tagsFlagFilter :: Maybe EntryFilter
     }
   deriving (Show, Eq, Generic)
 
@@ -151,7 +151,7 @@ instance FromJSON Configuration where
 
 data WorkConfiguration =
   WorkConfiguration
-    { workConfChecks :: Set Filter
+    { workConfChecks :: Set EntryFilter
     , workConfProjection :: Maybe (NonEmpty Projection)
     , workConfSorter :: Maybe Sorter
     }
@@ -177,7 +177,7 @@ data Dispatch
 
 data EntrySettings =
   EntrySettings
-    { entrySetFilter :: Maybe Filter
+    { entrySetFilter :: Maybe EntryFilter
     , entrySetProjection :: NonEmpty Projection
     , entrySetSorter :: Maybe Sorter
     , entrySetHideArchive :: HideArchive
@@ -187,8 +187,8 @@ data EntrySettings =
 data WorkSettings =
   WorkSettings
     { workSetContext :: ContextName
-    , workSetFilter :: Maybe Filter
-    , workSetChecks :: Set Filter
+    , workSetFilter :: Maybe EntryFilter
+    , workSetChecks :: Set EntryFilter
     , workSetProjection :: NonEmpty Projection
     , workSetSorter :: Maybe Sorter
     , workSetHideArchive :: HideArchive
@@ -197,21 +197,21 @@ data WorkSettings =
 
 data WaitingSettings =
   WaitingSettings
-    { waitingSetFilter :: Maybe Filter
+    { waitingSetFilter :: Maybe EntryFilter
     , waitingSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
 data NextSettings =
   NextSettings
-    { nextSetFilter :: Maybe Filter
+    { nextSetFilter :: Maybe EntryFilter
     , nextSetHideArchive :: HideArchive
     }
   deriving (Show, Eq, Generic)
 
 data ClockSettings =
   ClockSettings
-    { clockSetFilter :: Maybe Filter
+    { clockSetFilter :: Maybe EntryFilter
     , clockSetPeriod :: Period
     , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
@@ -223,7 +223,7 @@ data ClockSettings =
 
 data AgendaSettings =
   AgendaSettings
-    { agendaSetFilter :: Maybe Filter
+    { agendaSetFilter :: Maybe EntryFilter
     , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
     , agendaSetHideArchive :: HideArchive
@@ -232,7 +232,7 @@ data AgendaSettings =
 
 data LogSettings =
   LogSettings
-    { logSetFilter :: Maybe Filter
+    { logSetFilter :: Maybe EntryFilter
     , logSetPeriod :: Period
     , logSetBlock :: TimeBlock
     , logSetHideArchive :: HideArchive
@@ -247,7 +247,7 @@ newtype StatsSettings =
 
 newtype TagsSettings =
   TagsSettings
-    { tagsSetFilter :: Maybe Filter
+    { tagsSetFilter :: Maybe EntryFilter
     }
   deriving (Show, Eq, Generic)
 

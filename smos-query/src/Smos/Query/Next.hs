@@ -24,7 +24,7 @@ next NextSettings {..} = do
     sourceToList $
     streamSmosFiles nextSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) nextSetFilter) .|
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) nextSetFilter) .|
     smosCursorCurrents .|
     C.filter (isNextAction . snd) .|
     C.map (uncurry makeNextActionEntry)

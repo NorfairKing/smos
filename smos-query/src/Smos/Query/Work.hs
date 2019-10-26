@@ -48,9 +48,9 @@ produceWorkReport ::
      SmosReportConfig
   -> HideArchive
   -> ContextName
-  -> Maybe Filter
+  -> Maybe EntryFilter
   -> Maybe Sorter
-  -> Set Filter
+  -> Set EntryFilter
   -> Q WorkReport
 produceWorkReport src ha cn mf ms checks = do
   let contexts = smosReportConfigContexts src

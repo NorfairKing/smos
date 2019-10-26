@@ -30,7 +30,7 @@ tags TagsSettings {..} = do
     sourceToList $
     streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) tagsSetFilter) .|
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) tagsSetFilter) .|
     smosCursorCurrents .|
     C.map snd
   let tr = makeTagsReport es

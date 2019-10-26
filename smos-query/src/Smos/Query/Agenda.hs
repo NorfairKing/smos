@@ -34,7 +34,7 @@ agenda AgendaSettings {..} = do
     sourceToList $
     streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) agendaSetFilter) .|
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
     C.filter (fitsHistoricity now agendaSetHistoricity)

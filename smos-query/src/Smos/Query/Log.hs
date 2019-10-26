@@ -29,7 +29,7 @@ log LogSettings {..} = do
     sourceToList $
     streamSmosFiles logSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) logSetFilter) .|
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) logSetFilter) .|
     smosCursorCurrents
   liftIO $ putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 

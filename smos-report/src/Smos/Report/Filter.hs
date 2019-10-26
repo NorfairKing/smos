@@ -89,7 +89,7 @@ comparisonFunc c =
     LTC -> (<)
     LEC -> (<=)
     EQC -> (==)
-    GEC -> (<=)
+    GEC -> (>=)
     GTC -> (<)
 
 renderComparison :: Comparison -> Text
@@ -207,34 +207,46 @@ instance FilterArgument Time where
 
 instance Validity (Filter a) where
   validate f =
-    case f of
-      FilterFile s ->
-        mconcat
-          [ validate s
-          , declare "The filenames are restricted" $
-            all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
-            fromRelFile s
-          ]
-      FilterOrd o a ->
-        mconcat
-          [ validate o
-          , validate a
-          , declare "The characters are restricted" $
-            all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= ')') $
-            T.unpack $
-            renderArgument a
-          , declare "The argument is not empty" $ not $ T.null $ renderArgument a
-          ]
-      FilterSub a ->
-        mconcat
-          [ validate a
-          , declare "The characters are restricted" $
-            all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= ')') $
-            T.unpack $
-            renderArgument a
-          , declare "The argument is not empty" $ not $ T.null $ renderArgument a
-          ]
-      _ -> trivialValidation f
+    let validateArgument a =
+          mconcat
+            [ validate a
+            , declare "The characters are restricted" $
+              all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
+              T.unpack $
+              renderArgument a
+            , declare "The argument is not empty" $ not $ T.null $ renderArgument a
+            ]
+     in case f of
+          FilterFile s ->
+            mconcat
+              [ validate s
+              , declare "The filenames are restricted" $
+                all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
+                fromRelFile s
+              ]
+          FilterPropertyTime f' -> validate f'
+          FilterEntryHeader f' -> validate f'
+          FilterEntryTodoState f' -> validate f'
+          FilterEntryProperties f' -> validate f'
+          FilterEntryTags f' -> validate f'
+          FilterWithinCursor f' -> validate f'
+          FilterLevel w -> validate w
+          FilterParent f' -> validate f'
+          FilterAncestor f' -> validate f'
+          FilterChild f' -> validate f'
+          FilterLegacy f' -> validate f'
+          FilterAny f' -> validate f'
+          FilterAll f' -> validate f'
+          FilterMapHas a -> mconcat [validate a, validateArgument a]
+          FilterMapVal a f' -> mconcat [validate a, validateArgument a, validate f']
+          FilterFst f' -> validate f'
+          FilterSnd f' -> validate f'
+          FilterMaybe b f' -> mconcat [validate b, validate f']
+          FilterSub a -> mconcat [validate a, validateArgument a]
+          FilterOrd o a -> mconcat [validate o, validateArgument a]
+          FilterNot f' -> validate f'
+          FilterAnd f1 f2 -> mconcat [validate f1, validate f2]
+          FilterOr f1 f2 -> mconcat [validate f1, validate f2]
 
 deriving instance Show (Filter a)
 
@@ -245,9 +257,9 @@ deriving instance Ord (Filter a)
 instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
   parseJSON =
     withText "EntryFilter" $ \t ->
-      case parseEntryFilter t of
-        Nothing -> fail "could not parse EntryFilter."
-        Just f -> pure f
+      case parse (entryFilterP <* eof) "JSON String" t of
+        Left err -> fail $ unwords ["Could not parse EntryFilter:", errorBundlePretty err]
+        Right f -> pure f
 
 instance ToJSON (Filter a) where
   toJSON = toJSON . renderFilter
@@ -293,7 +305,7 @@ filterPredicate = go
             -- Maybe filters
             FilterMaybe b f' -> maybe b (go f') a
             -- Comparison filters
-            FilterSub t -> t `filterSubString` t
+            FilterSub t -> t `filterSubString` a
             FilterOrd o a' -> comparisonFunc o a a'
             -- Boolean filters
             FilterNot f' -> not $ goF f'
@@ -308,10 +320,6 @@ renderFilter = go
       let p t1 t2 = t1 <> ":" <> t2
           p1 t f' = p t $ go f'
           p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
-          bt b =
-            if b
-              then "true"
-              else "false"
        in case f of
             FilterFile rp -> p "file" $ renderArgument rp
             FilterPropertyTime f' -> p1 "time" f'
@@ -328,7 +336,7 @@ renderFilter = go
             FilterParent f' -> p1 "parent" f'
             FilterChild f' -> p1 "child" f'
                 -- List filters
-            FilterAny f' -> go f'
+            FilterAny f' -> p1 "any" f'
             FilterAll f' -> p1 "all" f'
                 -- Map filters
             FilterMapHas k -> p "has" $ renderArgument k
@@ -337,7 +345,10 @@ renderFilter = go
             FilterFst f' -> go f'
             FilterSnd f' -> go f'
                 -- Maybe filters
-            FilterMaybe b f' -> p "maybe" $ p1 (bt b) f'
+            FilterMaybe b f' ->
+              if b
+                then p1 "maybe:true" f'
+                else go f'
                 -- Comparison filters
             FilterSub t -> renderArgument t
             FilterOrd o a -> p (renderComparison o) (renderArgument a)
@@ -352,17 +363,14 @@ parseEntryFilter :: Text -> Maybe EntryFilter
 parseEntryFilter = parseMaybe entryFilterP
 
 entryFilterP :: P EntryFilter
-entryFilterP = FilterFst <$> filterRootedPathP
+entryFilterP = filterTupleP filterRootedPathP (filterForestCursorP filterEntryP)
 
 filterRootedPathP :: P (Filter RootedPath)
 filterRootedPathP =
-  withTopLevelBranchesP $ do
+  withTopLevelBranchesP $ validP $ do
     pieceP "file"
     s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
-    r <- either (fail . show) (pure . FilterFile) $ parseRelFile s
-    case prettyValidate r of
-      Left err -> fail err
-      Right f -> pure f
+    either (fail . show) (pure . FilterFile) $ parseRelFile s
 
 filterTimeP :: P (Filter Time)
 filterTimeP = withTopLevelBranchesP eqAndOrdP
@@ -380,7 +388,13 @@ filterTimestampP :: P (Filter Timestamp)
 filterTimestampP = withTopLevelBranchesP eqAndOrdP
 
 filterPropertyValueP :: P (Filter PropertyValue)
-filterPropertyValueP = withTopLevelBranchesP subP
+filterPropertyValueP =
+  withTopLevelBranchesP $
+  parseChoices
+    [ do pieceP "time"
+         FilterPropertyTime <$> filterMaybeP filterTimeP
+    , subP
+    ]
 
 filterEntryHeaderP :: P (Filter Entry)
 filterEntryHeaderP = do
@@ -390,28 +404,67 @@ filterEntryHeaderP = do
 filterEntryTodoStateP :: P (Filter Entry)
 filterEntryTodoStateP = do
   pieceP "state"
-  FilterEntryTodoState <$> filterMaybeP undefined --  pieceP "state" >> FilterEntryTodoState <$> FilterTodoStateP
+  FilterEntryTodoState <$> filterMaybeP filterTodoStateP
 
 filterEntryPropertiesP :: P (Filter Entry)
 filterEntryPropertiesP = do
-  pieceP "property"
-  FilterEntryProperties <$> undefined
+  parseChoices [pieceP "properties", pieceP "property"]
+  FilterEntryProperties <$> filterMapP filterPropertyValueP
 
 filterEntryTagsP :: P (Filter Entry)
 filterEntryTagsP = do
   pieceP "tag"
-  FilterEntryTags <$> undefined
+  FilterEntryTags <$> filterListP filterTagP
 
 filterEntryP :: P (Filter Entry)
 filterEntryP =
   withTopLevelBranchesP $
-  choices [filterEntryHeaderP, filterEntryTodoStateP, filterEntryPropertiesP, filterEntryTagsP]
+  parseChoices [filterEntryHeaderP, filterEntryTodoStateP, filterEntryPropertiesP, filterEntryTagsP]
 
 pieceP :: Text -> P ()
 pieceP t = void $ string' $ t <> ":"
 
+filterForestCursorP :: P (Filter a) -> P (Filter (ForestCursor a))
+filterForestCursorP parser =
+  parseChoices
+    [ pieceP "parent" >> FilterParent <$> filterForestCursorP parser
+    , pieceP "ancestor" >> FilterAncestor <$> filterForestCursorP parser
+    , pieceP "child" >> FilterChild <$> filterForestCursorP parser
+    , pieceP "legacy" >> FilterLegacy <$> filterForestCursorP parser
+    , pieceP "level" >> FilterLevel <$> argumentP
+    , pieceP "current" >> FilterWithinCursor <$> parser
+    , FilterWithinCursor <$> parser
+    ]
+
+filterMapP :: (Validity k, Show k, Ord k, FilterArgument k) => P (Filter v) -> P (Filter (Map k v))
+filterMapP parser =
+  parseChoices
+    [ pieceP "val" >> validP (FilterMapVal <$> (argumentP <* string' ":") <*> filterMaybeP parser)
+    , pieceP "has" >> validP (FilterMapHas <$> argumentP)
+    , validP $ FilterMapVal <$> (argumentP <* string' ":") <*> filterMaybeP parser
+    , validP $ FilterMapHas <$> argumentP
+    ]
+
+filterTupleP :: P (Filter a) -> P (Filter b) -> P (Filter (a, b))
+filterTupleP p1 p2 =
+  parseChoices
+    [ pieceP "fst" >> FilterFst <$> p1
+    , pieceP "snd" >> FilterSnd <$> p2
+    , FilterFst <$> p1
+    , FilterSnd <$> p2
+    ]
+
+filterListP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a) -> P (Filter [a])
+filterListP parser =
+  parseChoices [pieceP "any" >> FilterAny <$> parser, pieceP "all" >> FilterAll <$> parser]
+
 filterMaybeP :: P (Filter a) -> P (Filter (Maybe a))
-filterMaybeP parser = choices []
+filterMaybeP parser =
+  parseChoices
+    [ pieceP "maybe:true" >> FilterMaybe True <$> parser
+    , pieceP "maybe:false" >> FilterMaybe False <$> parser
+    , FilterMaybe False <$> parser
+    ]
 
 subEqOrdP ::
      (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a, FilterOrd a) => P (Filter a)
@@ -433,7 +486,7 @@ ordP =
 
 comparisonP :: P Comparison
 comparisonP =
-  choices
+  parseChoices
     [ string' "lt" >> pure LTC
     , string' "le" >> pure LEC
     , string' "eq" >> pure EQC
@@ -441,20 +494,25 @@ comparisonP =
     , string' "gt" >> pure GTC
     ]
 
-argumentP :: (Validity a, FilterArgument a) => P a
+argumentP :: (Validity a, Show a, FilterArgument a) => P a
 argumentP = do
-  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')')
+  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')' && c /= ':')
   validP $ either fail pure $ parseArgument $ T.pack s
 
-validP :: Validity a => P a -> P a
+validP :: (Validity a, Show a) => P a -> P a
 validP parser = do
   a <- parser
   case prettyValidate a of
-    Left err -> fail err
+    Left err -> fail $ unlines ["Parsed as", show a, "but this value is not valid:", err]
     Right a' -> pure a'
 
 withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
-withTopLevelBranchesP parser = choices [filterNotP parser, filterBinRelP parser, parser]
+withTopLevelBranchesP parser =
+  parseChoices
+    [ filterNotP $ withTopLevelBranchesP parser
+    , filterBinRelP $ withTopLevelBranchesP parser
+    , parser
+    ]
 
 filterNotP :: P (Filter a) -> P (Filter a)
 filterNotP parser = do
@@ -481,109 +539,12 @@ filterBinRelP parser = do
       f2 <- parser
       pure $ FilterAnd f1 f2
 
-choices :: [P a] -> P a
-choices [] = fail "no choices"
-choices [p] = p
-choices (p:ps) = try p <|> choices ps
--- filterAndP :: P Filter
--- filterAndP = do
---   f1 <- filterP
---   void $ string' " and "
---   f2 <- filterP
---   pure $ FilterAnd f1 f2
---   try filterHasTagP <|> try filterTodoStateP <|> try filterFileP <|> try filterLevelP <|>
---   try filterHeaderP <|>
---   try filterExactPropertyP <|>
---   try filterHasPropertyP <|>
---   try filterParentP <|>
---   try filterAncestorP <|>
---   try filterChildP <|>
---   try filterLegacyP <|>
---   try filterNotP <|>
---   filterBinRelP
+parseChoices :: [P a] -> P a
+parseChoices [] = fail "no parseChoices"
+parseChoices [p] = p
+parseChoices (p:ps) = try p <|> parseChoices ps
 --
--- filterHasTagP :: P Filter
--- filterHasTagP = do
---   void $ string' "tag:"
---   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
---   either fail (pure . FilterHasTag) $ parseTag $ T.pack s
---
--- filterTodoStateP :: P Filter
--- filterTodoStateP = do
---   void $ string' "state:"
---   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
---   either fail (pure . FilterTodoState) $ parseTodoState $ T.pack s
---
--- filterFileP :: P Filter
--- filterFileP = do
---   void $ string' "file:"
---   s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
---   r <- either (fail . show) (pure . FilterFile) $ parseRelFile s
---   case prettyValidate r of
---     Left err -> fail err
---     Right f -> pure f
---
--- filterLevelP :: P Filter
--- filterLevelP = do
---   void $ string' "level:"
---   FilterLevel <$> decimal
---
--- filterHeaderP :: P Filter
--- filterHeaderP = do
---   void $ string' "header:"
---   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')')
---   either fail (pure . FilterHeader) $ parseHeader $ T.pack s
---
--- filterParentP :: P Filter
--- filterParentP = do
---   void $ string' "parent:"
---   FilterParent <$> filterP
---
--- filterAncestorP :: P Filter
--- filterAncestorP = do
---   void $ string' "ancestor:"
---   FilterAncestor <$> filterP
---
--- filterChildP :: P Filter
--- filterChildP = do
---   void $ string' "child:"
---   FilterChild <$> filterP
---
--- filterLegacyP :: P Filter
--- filterLegacyP = do
---   void $ string' "legacy:"
---   FilterLegacy <$> filterP
---
--- filterHasPropertyP :: P Filter
--- filterHasPropertyP = do
---   void $ string' "has-property:"
---   FilterHasProperty <$> propertyNameP
---
--- filterExactPropertyP :: P Filter
--- filterExactPropertyP = do
---   void $ string' "exact-property:"
---   pn <- propertyNameP
---   void $ string' ":"
---   pv <- propertyValueP
---   pure $ FilterExactProperty pn pv
---
--- propertyNameP :: P PropertyName
--- propertyNameP = do
---   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
---   either fail pure $ parsePropertyName $ T.pack s
---
--- propertyValueP :: P PropertyValue
--- propertyValueP = do
---   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
---   either fail pure $ parsePropertyValue $ T.pack s
---
---
---
---
---
---
---
---
+----
 -- filterCompleter :: String -> [String]
 -- filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions
 --

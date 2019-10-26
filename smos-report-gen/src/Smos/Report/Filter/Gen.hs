@@ -83,7 +83,11 @@ instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) 
 instance (Show k, Ord k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
          GenValid (Filter (Map k v)) where
   genValid =
-    withTopLevelBranches $ oneof [FilterMapHas <$> genValid, FilterMapVal <$> genValid <*> genValid]
+    withTopLevelBranches $
+    oneof
+      [ (FilterMapHas <$> genValid) `suchThat` isValid
+      , (FilterMapVal <$> genValid <*> genValid) `suchThat` isValid
+      ]
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter a) => GenValid (Filter (Maybe a)) where
@@ -129,8 +133,12 @@ withTopLevelBranches gen =
       _ ->
         let bin f = do
               (a, b) <- genSplit n
-              f <$> resize a gen <*> resize b gen
-         in oneof [FilterNot <$> gen, bin FilterAnd, bin FilterOr]
+              f <$> resize a (withTopLevelBranches gen) <*> resize b (withTopLevelBranches gen)
+         in oneof
+              [ FilterNot <$> scale (\x -> x - 1) (withTopLevelBranches gen)
+              , bin FilterAnd
+              , bin FilterOr
+              ]
 
 shrinkValidFilter :: Filter a -> [Filter a]
 shrinkValidFilter = go

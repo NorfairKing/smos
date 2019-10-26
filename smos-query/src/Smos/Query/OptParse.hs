@@ -308,27 +308,27 @@ parseContextNameArg :: Parser ContextName
 parseContextNameArg =
   argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
-parseFilterArgs :: Parser (Maybe Filter)
+parseFilterArgs :: Parser (Maybe EntryFilter)
 parseFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty <$>
   many
     (argument
-       (maybeReader (parseFilter . T.pack))
+       (maybeReader (parseEntryFilter . T.pack))
        (mconcat
           [ metavar "FILTER"
           , help "A filter to filter entries by"
-          , completer $ mkCompleter $ pure . filterCompleter
+          -- , completer $ mkCompleter $ pure . filterCompleter
           ]))
 
-parseFilterArg :: Parser (Maybe Filter)
+parseFilterArg :: Parser (Maybe EntryFilter)
 parseFilterArg =
   argument
-    (Just <$> maybeReader (parseFilter . T.pack))
+    (Just <$> maybeReader (parseEntryFilter . T.pack))
     (mconcat
        [ value Nothing
        , metavar "FILTER"
        , help "A filter to filter entries by"
-       , completer $ mkCompleter $ pure . filterCompleter
+       -- , completer $ mkCompleter $ pure . filterCompleter
        ])
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))

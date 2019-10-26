@@ -29,7 +29,7 @@ waiting WaitingSettings {..} = do
     sourceToList $
     streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) waitingSetFilter) .|
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) waitingSetFilter) .|
     smosCursorCurrents .|
     C.filter (isWaitingAction . snd) .|
     C.map (uncurry makeWaitingActionEntry)

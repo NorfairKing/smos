@@ -20,13 +20,14 @@ import Test.QuickCheck as QC
 import Test.Validity
 import Test.Validity.Aeson
 
+import Control.Monad
+
 import Text.Megaparsec
 
 import Cursor.Forest.Gen ()
+import Cursor.Simple.Forest
 
 import Smos.Data
-
-import Cursor.Simple.Forest
 
 import Smos.Report.Path.Gen ()
 
@@ -108,6 +109,14 @@ spec = do
     let p = parseJustSpec filterEntryP
     p "header:test" (FilterEntryHeader $ FilterSub "test")
     p "state:NEXT" (FilterEntryTodoState $ FilterMaybe False $ FilterSub "NEXT")
+    p
+      "state:(NEXT or READY)"
+      (FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "READY"))
+    p
+      "state:(STARTED or (NEXT or READY))"
+      (FilterEntryTodoState $
+       FilterMaybe False $
+       FilterOr (FilterSub "STARTED") $ FilterOr (FilterSub "NEXT") (FilterSub "READY"))
     p "property:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
     p "properties:has:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
     p
@@ -143,7 +152,25 @@ renderFilterSpecFor ::
 renderFilterSpecFor p =
   describe "renderFilter" $ do
     it "produces valid texts" $ producesValidsOnValids (renderFilter @a)
-    it "renders filters that parse to the same" $ forAllValid $ \f -> parseJust p (renderFilter f) f
+    it "renders filters that parse to the same" $
+      forAllValid $ \f -> do
+        let t = renderFilter f
+        case parse (p <* eof) "test input" t of
+          Left err ->
+            expectationFailure $
+            unlines ["P failed on input", show t, "with error", errorBundlePretty err]
+          Right f' ->
+            unless (f == f') $
+            expectationFailure $
+            unlines
+              [ "Rendered and parsed the value, but parsed to a different value"
+              , "expected:"
+              , show f
+              , "actual:"
+              , show f'
+              , "rendered text:"
+              , T.unpack t
+              ]
 
 filterArgumentSpec ::
      forall a. (Show a, Eq a, GenValid a, FilterArgument a)
@@ -359,19 +386,22 @@ argumentText =
 textPieces :: [Gen Text] -> Gen Text
 textPieces = fmap T.concat . sequenceA
 
-parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
+parseJustSpec :: (Validity a, Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
 parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
 parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
 
-parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
+parseJust :: (Validity a, Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
       expectationFailure $
       unlines ["P failed on input", show s, "with error", errorBundlePretty err]
-    Right out -> out `shouldBe` res
+    Right out -> do
+      shouldBeValid res
+      shouldBeValid out
+      out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
 parsesValid p s =

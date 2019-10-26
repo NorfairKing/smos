@@ -24,6 +24,6 @@ entry EntrySettings {..} = do
     sourceToList $
     streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
+    C.filter (\t -> maybe True (\f -> filterPredicate f t) entrySetFilter)
   let ees = maybe id sorterSortList entrySetSorter $ map (second forestCursorCurrent) tups
   liftIO $ putTableLn $ renderEntryTable entrySetProjection ees
