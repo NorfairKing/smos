@@ -27,6 +27,10 @@ import Smos.Report.Path
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 
+instance GenUnchecked Comparison
+
+instance GenValid Comparison
+
 instance GenValid (Filter RootedPath) where
   genValid = withTopLevelBranches $ FilterFile <$> genValid
   shrinkValid = shrinkValidFilter
@@ -158,7 +162,7 @@ shrinkValidFilter = go
         FilterFst f' -> FilterFst <$> go f'
         FilterSnd f' -> FilterSnd <$> go f'
         FilterMaybe b f' -> FilterMaybe <$> shrinkValid b <*> go f'
-        FilterSub a -> [FilterOrd EQ a]
+        FilterSub a -> [FilterOrd EQC a]
         FilterOrd o a -> FilterOrd <$> shrinkValid o <*> pure a
         FilterNot f' -> f' : (FilterNot <$> go f')
         FilterAnd f1 f2 -> f1 : f2 : [FilterAnd f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]

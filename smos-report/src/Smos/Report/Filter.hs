@@ -73,6 +73,34 @@ forestCursorLevel fc = go' $ fc ^. forestCursorSelectedTreeL
         Nothing -> 0
         Just ta' -> 1 + goA' ta'
 
+data Comparison
+  = LTC
+  | LEC
+  | EQC
+  | GEC
+  | GTC
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity Comparison
+
+comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
+comparisonFunc c =
+  case c of
+    LTC -> (<)
+    LEC -> (<=)
+    EQC -> (==)
+    GEC -> (<=)
+    GTC -> (<)
+
+renderComparison :: Comparison -> Text
+renderComparison c =
+  case c of
+    LTC -> "lt"
+    LEC -> "le"
+    EQC -> "eq"
+    GEC -> "ge"
+    GTC -> "gt"
+
 data Filter a where
   FilterFile :: Path Rel File -> Filter RootedPath
   -- Parsing filters
@@ -104,7 +132,7 @@ data Filter a where
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
   FilterSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
-  FilterOrd :: (Validity a, Show a, Ord a, FilterArgument a) => Ordering -> a -> Filter a
+  FilterOrd :: (Validity a, Show a, Ord a, FilterArgument a) => Comparison -> a -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
@@ -257,7 +285,7 @@ filterPredicate = go
             FilterMaybe b f' -> maybe b (go f') a
             -- Comparison filters
             FilterSub t -> t `filterSubString` t
-            FilterOrd o a' -> compare a a' == o
+            FilterOrd o a' -> comparisonFunc o a a'
             -- Boolean filters
             FilterNot f' -> not $ goF f'
             FilterAnd f1 f2 -> goF f1 && goF f2
@@ -304,13 +332,7 @@ renderFilter = go
             FilterMaybe b f' -> p "maybe" $ p1 (bt b) f'
                 -- Comparison filters
             FilterSub t -> renderArgument t
-            FilterOrd o a ->
-              p
-                (case o of
-                   EQ -> "eq"
-                   LT -> "lt"
-                   GT -> "gt")
-                (renderArgument a)
+            FilterOrd o a -> p (renderComparison o) (renderArgument a)
                 -- Boolean filters
             FilterNot f' -> p1 "not" f'
             FilterOr f1 f2 -> p2 f1 "or" f2
@@ -375,9 +397,19 @@ eqAndOrdP = ordP
 ordP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
 ordP =
   label "comparison filter" $ do
-    o <- asum [try (pieceP "eq" >> pure EQ), try (pieceP "lt" >> pure LT), pieceP "gt" >> pure GT]
+    o <- comparisonP
     a <- argumentP
     pure $ FilterOrd o a
+
+comparisonP :: P Comparison
+comparisonP =
+  asum
+    [ try $ string' "lt" >> pure LTC
+    , try $ string' "le" >> pure LEC
+    , try $ string' "eq" >> pure EQC
+    , try $ string' "ge" >> pure GEC
+    , string' "gt" >> pure GTC
+    ]
 
 argumentP :: FilterArgument a => P a
 argumentP = do
