@@ -118,7 +118,6 @@ data Filter a where
   FilterChild :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterLegacy :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   -- List filters
-  FilterListHas :: (Validity a, Show a, Ord a, FilterArgument a) => a -> Filter [a]
   FilterAny :: Filter a -> Filter [a]
   FilterAll :: Filter a -> Filter [a]
   -- Map filters
@@ -283,7 +282,6 @@ filterPredicate = go
             FilterParent f' -> maybe False (go f') (forestCursorSelectAbove a)
             FilterChild f' -> any (go f') (forestCursorChildren a)
             -- List filters
-            FilterListHas a' -> a' `elem` a
             FilterAny f' -> any (go f') a
             FilterAll f' -> all (go f') a
             -- Map filters
@@ -320,8 +318,8 @@ renderFilter = go
                 -- Entry mapping filters
             FilterEntryHeader f' -> p1 "header" f'
             FilterEntryTodoState f' -> p1 "state" f'
-            FilterEntryProperties f' -> p1 "properties" f'
-            FilterEntryTags f' -> p1 "tags" f'
+            FilterEntryProperties f' -> p1 "property" f'
+            FilterEntryTags f' -> p1 "tag" f'
                 -- Cursor-related filters
             FilterWithinCursor f' -> go f'
             FilterLevel l -> p "level" $ renderArgument l
@@ -330,8 +328,7 @@ renderFilter = go
             FilterParent f' -> p1 "parent" f'
             FilterChild f' -> p1 "child" f'
                 -- List filters
-            FilterListHas k -> p "has" $ renderArgument k
-            FilterAny f' -> p1 "any" f'
+            FilterAny f' -> go f'
             FilterAll f' -> p1 "all" f'
                 -- Map filters
             FilterMapHas k -> p "has" $ renderArgument k
@@ -385,11 +382,36 @@ filterTimestampP = withTopLevelBranchesP eqAndOrdP
 filterPropertyValueP :: P (Filter PropertyValue)
 filterPropertyValueP = withTopLevelBranchesP subP
 
+filterEntryHeaderP :: P (Filter Entry)
+filterEntryHeaderP = do
+  pieceP "header"
+  FilterEntryHeader <$> filterHeaderP
+
+filterEntryTodoStateP :: P (Filter Entry)
+filterEntryTodoStateP = do
+  pieceP "state"
+  FilterEntryTodoState <$> filterMaybeP undefined --  pieceP "state" >> FilterEntryTodoState <$> FilterTodoStateP
+
+filterEntryPropertiesP :: P (Filter Entry)
+filterEntryPropertiesP = do
+  pieceP "property"
+  FilterEntryProperties <$> undefined
+
+filterEntryTagsP :: P (Filter Entry)
+filterEntryTagsP = do
+  pieceP "tag"
+  FilterEntryTags <$> undefined
+
+filterEntryP :: P (Filter Entry)
+filterEntryP =
+  withTopLevelBranchesP $
+  choices [filterEntryHeaderP, filterEntryTodoStateP, filterEntryPropertiesP, filterEntryTagsP]
+
 pieceP :: Text -> P ()
 pieceP t = void $ string' $ t <> ":"
 
-maybeP :: P (Filter a) -> P (Filter (Maybe a))
-maybeP = undefined
+filterMaybeP :: P (Filter a) -> P (Filter (Maybe a))
+filterMaybeP parser = choices []
 
 subEqOrdP ::
      (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a, FilterOrd a) => P (Filter a)
@@ -411,11 +433,11 @@ ordP =
 
 comparisonP :: P Comparison
 comparisonP =
-  asum
-    [ try $ string' "lt" >> pure LTC
-    , try $ string' "le" >> pure LEC
-    , try $ string' "eq" >> pure EQC
-    , try $ string' "ge" >> pure GEC
+  choices
+    [ string' "lt" >> pure LTC
+    , string' "le" >> pure LEC
+    , string' "eq" >> pure EQC
+    , string' "ge" >> pure GEC
     , string' "gt" >> pure GTC
     ]
 
@@ -432,7 +454,7 @@ validP parser = do
     Right a' -> pure a'
 
 withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
-withTopLevelBranchesP parser = asum [try $ filterNotP parser, try $ filterBinRelP parser, parser]
+withTopLevelBranchesP parser = choices [filterNotP parser, filterBinRelP parser, parser]
 
 filterNotP :: P (Filter a) -> P (Filter a)
 filterNotP parser = do
@@ -458,6 +480,11 @@ filterBinRelP parser = do
       void $ string' " and "
       f2 <- parser
       pure $ FilterAnd f1 f2
+
+choices :: [P a] -> P a
+choices [] = fail "no choices"
+choices [p] = p
+choices (p:ps) = try p <|> choices ps
 -- filterAndP :: P Filter
 -- filterAndP = do
 --   f1 <- filterP

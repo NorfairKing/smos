@@ -68,9 +68,11 @@ spec = do
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
   describe "argumentP" $ do
+    parseJustSpec argumentP "." ("." :: Header)
     parseJustSpec argumentP "a" ("a" :: Header)
     parseJustSpec argumentP "\68339" ("\68339" :: Header)
   describe "subP" $ do
+    parseJustSpec subP "." (FilterSub ("." :: Header))
     parseJustSpec subP "a" (FilterSub ("a" :: Header))
     parseJustSpec subP "\68339" (FilterSub ("\68339" :: Header))
   describe "filterRootedPathP" $ do
@@ -102,6 +104,25 @@ spec = do
     parseJustSpec filterPropertyValueP "test" (FilterSub "test")
     parsesValidSpec filterPropertyValueP filterPropertyValueText
     renderFilterSpecFor filterPropertyValueP
+  describe "filterEntryP" $ do
+    let p = parseJustSpec filterEntryP
+    p "header:test" (FilterEntryHeader $ FilterSub "test")
+    p "state:NEXT" (FilterEntryTodoState $ FilterMaybe False $ FilterSub "NEXT")
+    p "property:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
+    p "properties:has:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
+    p
+      "property:client:fpco"
+      (FilterEntryProperties $ FilterMapVal "client" $ FilterMaybe False $ FilterSub "fpco")
+    p
+      "properties:client:fpco"
+      (FilterEntryProperties $ FilterMapVal "client" $ FilterMaybe False $ FilterSub "fpco")
+    p
+      "property:timewindow:time:lt:5h"
+      (FilterEntryProperties $
+       FilterMapVal "timewindow" $
+       FilterMaybe False $ FilterPropertyTime $ FilterMaybe False $ FilterOrd LTC $ Hours 5)
+    parsesValidSpec filterEntryP filterEntryText
+    renderFilterSpecFor filterEntryP
   -- describe "entryFilterP" $ do
   --   parsesValidSpec entryFilterP entryFilterText
   --   -- parseJustSpec filterP "tag:work" (FilterHasTag "work")
@@ -157,6 +178,11 @@ filterTimestampText = withTopLevelBranchesText $ eqAndOrdText argumentText
 
 filterPropertyValueText :: Gen Text
 filterPropertyValueText = withTopLevelBranchesText $ subEqOrdText argumentText
+
+filterEntryText :: Gen Text
+filterEntryText =
+  withTopLevelBranchesText $
+  oneof [filterHeaderText] -- TODO , maybeText filterTodoStateText, filterPropertiesText, filterTagsText]
 
 subEqOrdText :: Gen Text -> Gen Text
 subEqOrdText gen = oneof [eqAndOrdText gen, gen]

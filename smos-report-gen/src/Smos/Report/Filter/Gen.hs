@@ -73,13 +73,7 @@ instance GenValid (Filter Entry) where
 -- TODO this doesn't allow for `FilterAll` non-FilterArgument a ...
 instance (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
          GenValid (Filter [a]) where
-  genValid =
-    withTopLevelBranches $
-    sized $ \n ->
-      let withoutRecursion = FilterListHas <$> genValid
-       in case n of
-            0 -> withoutRecursion
-            _ -> oneof [withoutRecursion, FilterAny <$> genValid, FilterAll <$> genValid]
+  genValid = withTopLevelBranches $ oneof [FilterAny <$> genValid, FilterAll <$> genValid]
   shrinkValid = shrinkValidFilter
 
 instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) where
@@ -159,7 +153,6 @@ shrinkValidFilter = go
         FilterAncestor f' -> f' : FilterParent f' : (FilterAncestor <$> go f')
         FilterChild f' -> f' : (FilterChild <$> go f')
         FilterLegacy f' -> f' : FilterChild f' : (FilterLegacy <$> go f')
-        FilterListHas a -> FilterListHas <$> goA a
         FilterAny f' -> FilterAny <$> go f'
         FilterAll f' -> FilterAny f' : (FilterAll <$> go f')
         FilterMapHas a -> FilterMapHas <$> goA a
