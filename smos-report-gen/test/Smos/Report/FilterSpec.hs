@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -11,6 +12,8 @@ import Data.Char as Char
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
+
+import Path
 
 import Test.Hspec
 import Test.QuickCheck as QC
@@ -34,6 +37,15 @@ import Smos.Report.Time hiding (P)
 
 spec :: Spec
 spec = do
+  filterArgumentSpec @Time
+  filterArgumentSpec @Tag
+  filterArgumentSpec @Header
+  filterArgumentSpec @TodoState
+  filterArgumentSpec @PropertyName
+  filterArgumentSpec @PropertyValue
+  filterArgumentSpec @TimestampName
+  filterArgumentSpec @Timestamp
+  filterArgumentSpec @(Path Rel File)
   eqSpecOnValid @EntryFilter
   genValidSpec @EntryFilter
   eqSpecOnValid @(Filter RootedPath)
@@ -55,6 +67,12 @@ spec = do
   describe "filterPredicate" $
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
+  describe "argumentP" $ do
+    parseJustSpec argumentP "a" ("a" :: Header)
+    parseJustSpec argumentP "\68339" ("\68339" :: Header)
+  describe "subP" $ do
+    parseJustSpec subP "a" (FilterSub ("a" :: Header))
+    parseJustSpec subP "\68339" (FilterSub ("\68339" :: Header))
   describe "filterRootedPathP" $ do
     parsesValidSpec filterRootedPathP filterRootedPathText
     renderFilterSpecFor filterRootedPathP
@@ -66,17 +84,15 @@ spec = do
     renderFilterSpecFor filterTimeP
   describe "filterTagP" $ do
     parseJustSpec filterTagP "test" (FilterSub "test")
-    parseJustSpec filterTagP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterTagP filterTagText
     renderFilterSpecFor filterTagP
   describe "filterHeaderP" $ do
+    parseJustSpec filterHeaderP "\68339" (FilterSub "\68339")
     parseJustSpec filterHeaderP "test" (FilterSub "test")
-    parseJustSpec filterHeaderP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterHeaderP filterHeaderText
     renderFilterSpecFor filterHeaderP
   describe "filterTodoStateP" $ do
     parseJustSpec filterTodoStateP "test" (FilterSub "test")
-    parseJustSpec filterTodoStateP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterTodoStateP filterTodoStateText
     renderFilterSpecFor filterTodoStateP
   -- describe "filterTimestampP" $ do
@@ -84,7 +100,6 @@ spec = do
   --   renderFilterSpecFor filterTimestampP
   describe "filterPropertyValueP" $ do
     parseJustSpec filterPropertyValueP "test" (FilterSub "test")
-    parseJustSpec filterPropertyValueP "eq:test" (FilterOrd EQC "test")
     parsesValidSpec filterPropertyValueP filterPropertyValueText
     renderFilterSpecFor filterPropertyValueP
   -- describe "entryFilterP" $ do
@@ -108,6 +123,13 @@ renderFilterSpecFor p =
   describe "renderFilter" $ do
     it "produces valid texts" $ producesValidsOnValids (renderFilter @a)
     it "renders filters that parse to the same" $ forAllValid $ \f -> parseJust p (renderFilter f) f
+
+filterArgumentSpec ::
+     forall a. (Show a, Eq a, GenValid a, FilterArgument a)
+  => Spec
+filterArgumentSpec =
+  specify "parseArgument and renderArgument are inverses" $
+  forAllValid $ \a -> parseArgument (renderArgument (a :: a)) `shouldBe` Right (a :: a)
 
 entryFilterText :: Gen Text
 entryFilterText = filterRootedPathText
@@ -161,10 +183,7 @@ pieceText t = pure $ t <> ":"
 
 argumentText :: Gen Text
 argumentText =
-  T.pack <$>
-  genListOf
-    (genValid `suchThat`
-     (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))
+  T.pack <$> genListOf (genValid `suchThat` (\c -> Char.isPrint c && not (Char.isSpace c)))
 
 --   describe "filterHasTagP" $ parsesValidSpec filterHasTagP tagText
 --   describe "filterTodoStateP" $ parsesValidSpec filterTodoStateP todoStateText

@@ -132,7 +132,8 @@ data Filter a where
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
   FilterSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
-  FilterOrd :: (Validity a, Show a, Ord a, FilterArgument a) => Comparison -> a -> Filter a
+  FilterOrd
+    :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => Comparison -> a -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
@@ -152,6 +153,14 @@ instance FilterSubString PropertyValue where
 
 instance FilterSubString Tag where
   filterSubString = T.isInfixOf `on` renderArgument
+
+class FilterOrd a
+
+instance FilterOrd Word
+
+instance FilterOrd Time
+
+instance FilterOrd Timestamp
 
 class FilterArgument a where
   renderArgument :: a -> Text
@@ -362,19 +371,19 @@ filterTimeP :: P (Filter Time)
 filterTimeP = withTopLevelBranchesP eqAndOrdP
 
 filterTagP :: P (Filter Tag)
-filterTagP = withTopLevelBranchesP subEqOrdP
+filterTagP = withTopLevelBranchesP subP
 
 filterHeaderP :: P (Filter Header)
-filterHeaderP = withTopLevelBranchesP subEqOrdP
+filterHeaderP = withTopLevelBranchesP subP
 
 filterTodoStateP :: P (Filter TodoState)
-filterTodoStateP = withTopLevelBranchesP subEqOrdP
+filterTodoStateP = withTopLevelBranchesP subP
 
 filterTimestampP :: P (Filter Timestamp)
 filterTimestampP = withTopLevelBranchesP eqAndOrdP
 
 filterPropertyValueP :: P (Filter PropertyValue)
-filterPropertyValueP = withTopLevelBranchesP subEqOrdP
+filterPropertyValueP = withTopLevelBranchesP subP
 
 pieceP :: Text -> P ()
 pieceP t = void $ string' $ t <> ":"
@@ -382,23 +391,19 @@ pieceP t = void $ string' $ t <> ":"
 maybeP :: P (Filter a) -> P (Filter (Maybe a))
 maybeP = undefined
 
-subEqOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
-subEqOrdP = label "subEqOrd" $ try eqAndOrdP <|> subP
+subEqOrdP ::
+     (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a, FilterOrd a) => P (Filter a)
+subEqOrdP = try eqAndOrdP <|> subP
 
 subP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
-subP =
-  label "substring filter" $ do
-    f <- FilterSub <$> argumentP
-    case prettyValidate f of
-      Left err -> fail err
-      Right f' -> pure f'
+subP = validP $ FilterSub <$> argumentP
 
-eqAndOrdP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
+eqAndOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => P (Filter a)
 eqAndOrdP = ordP
 
-ordP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
+ordP :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => P (Filter a)
 ordP =
-  label "comparison filter" $ do
+  validP $ do
     o <- comparisonP
     void $ string' ":"
     a <- argumentP
@@ -414,10 +419,17 @@ comparisonP =
     , string' "gt" >> pure GTC
     ]
 
-argumentP :: FilterArgument a => P a
+argumentP :: (Validity a, FilterArgument a) => P a
 argumentP = do
-  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
-  either fail pure $ parseArgument $ T.pack s
+  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c))
+  validP $ either fail pure $ parseArgument $ T.pack s
+
+validP :: Validity a => P a -> P a
+validP parser = do
+  a <- parser
+  case prettyValidate a of
+    Left err -> fail err
+    Right a' -> pure a'
 
 withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
 withTopLevelBranchesP parser = asum [try $ filterNotP parser, try $ filterBinRelP parser, parser]

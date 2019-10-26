@@ -40,15 +40,15 @@ instance GenValid (Filter Time) where
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Tag) where
-  genValid = withTopLevelBranches subEqOrd
+  genValid = withTopLevelBranches sub
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Header) where
-  genValid = withTopLevelBranches subEqOrd
+  genValid = withTopLevelBranches sub
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter TodoState) where
-  genValid = withTopLevelBranches subEqOrd
+  genValid = withTopLevelBranches sub
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Timestamp) where
@@ -56,7 +56,7 @@ instance GenValid (Filter Timestamp) where
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter PropertyValue) where
-  genValid = withTopLevelBranches subEqOrd
+  genValid = withTopLevelBranches sub
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Entry) where
@@ -113,16 +113,18 @@ instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
                 ]
   shrinkValid = shrinkValidFilter
 
-withEqAndOrToo :: (Show a, Ord a, GenValid a, FilterArgument a) => Gen (Filter a) -> Gen (Filter a)
+withEqAndOrToo ::
+     (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a) -> Gen (Filter a)
 withEqAndOrToo gen = frequency [(4, gen), (1, eqAndOrd)]
 
-subEqOrd :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => Gen (Filter a)
+subEqOrd ::
+     (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a) => Gen (Filter a)
 subEqOrd = oneof [eqAndOrd, sub]
 
-eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a) => Gen (Filter a)
+eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
 eqAndOrd = (FilterOrd <$> genValid <*> genValid) `suchThat` isValid
 
-sub :: (Show a, Ord a, FilterArgument a, FilterSubString a, GenValid a) => Gen (Filter a)
+sub :: (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
 sub = (FilterSub <$> genValid) `suchThat` isValid
 
 withTopLevelBranches :: Gen (Filter a) -> Gen (Filter a)
@@ -143,6 +145,7 @@ shrinkValidFilter = go
     goA a = [a' | Right a' <- parseArgument <$> shrinkValid (renderArgument a)]
     go :: Filter a -> [Filter a]
     go f =
+      filter isValid $
       case f of
         FilterFile rf -> FilterFile <$> shrinkValid rf
         FilterPropertyTime f' -> FilterPropertyTime <$> go f'
@@ -164,7 +167,7 @@ shrinkValidFilter = go
         FilterFst f' -> FilterFst <$> go f'
         FilterSnd f' -> FilterSnd <$> go f'
         FilterMaybe b f' -> FilterMaybe <$> shrinkValid b <*> go f'
-        FilterSub a -> FilterOrd EQC a : (FilterSub <$> goA a)
+        FilterSub a -> FilterSub <$> goA a
         FilterOrd o a -> FilterOrd <$> shrinkValid o <*> goA a
         FilterNot f' -> f' : (FilterNot <$> go f')
         FilterAnd f1 f2 -> f1 : f2 : [FilterAnd f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]
