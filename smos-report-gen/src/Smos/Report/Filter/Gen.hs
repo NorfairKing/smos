@@ -1,8 +1,9 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Report.Filter.Gen where
@@ -132,4 +133,33 @@ withTopLevelBranches gen =
          in oneof [FilterNot <$> gen, bin FilterAnd, bin FilterOr]
 
 shrinkValidFilter :: Filter a -> [Filter a]
-shrinkValidFilter = undefined
+shrinkValidFilter = go
+  where
+    go :: Filter a -> [Filter a]
+    go f =
+      case f of
+        FilterFile rf -> FilterFile <$> shrinkValid rf
+        FilterPropertyTime f' -> FilterPropertyTime <$> go f'
+        FilterEntryHeader f' -> FilterEntryHeader <$> go f'
+        FilterEntryTodoState f' -> FilterEntryTodoState <$> go f'
+        FilterEntryProperties f' -> FilterEntryProperties <$> go f'
+        FilterEntryTags f' -> FilterEntryTags <$> go f'
+        FilterWithinCursor f' -> FilterWithinCursor <$> go f'
+        FilterLevel w -> FilterLevel <$> shrinkValid w
+        FilterParent f' -> f' : (FilterParent <$> go f')
+        FilterAncestor f' -> f' : FilterParent f' : (FilterAncestor <$> go f')
+        FilterChild f' -> f' : (FilterChild <$> go f')
+        FilterLegacy f' -> f' : FilterChild f' : (FilterLegacy <$> go f')
+        FilterListHas _ -> []
+        FilterAny f' -> FilterAny <$> go f'
+        FilterAll f' -> FilterAny f' : (FilterAll <$> go f')
+        FilterMapHas _ -> []
+        FilterMapVal v f' -> FilterMapHas v : (FilterMapVal v <$> go f')
+        FilterFst f' -> FilterFst <$> go f'
+        FilterSnd f' -> FilterSnd <$> go f'
+        FilterMaybe b f' -> FilterMaybe <$> shrinkValid b <*> go f'
+        FilterSub a -> [FilterOrd EQ a]
+        FilterOrd o a -> FilterOrd <$> shrinkValid o <*> pure a
+        FilterNot f' -> f' : (FilterNot <$> go f')
+        FilterAnd f1 f2 -> f1 : f2 : [FilterAnd f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]
+        FilterOr f1 f2 -> f1 : f2 : [FilterOr f1' f2' | (f1', f2') <- shrinkT2 go (f1, f2)]
