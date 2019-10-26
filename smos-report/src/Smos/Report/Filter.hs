@@ -421,7 +421,7 @@ comparisonP =
 
 argumentP :: (Validity a, FilterArgument a) => P a
 argumentP = do
-  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c))
+  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')')
   validP $ either fail pure $ parseArgument $ T.pack s
 
 validP :: Validity a => P a -> P a
