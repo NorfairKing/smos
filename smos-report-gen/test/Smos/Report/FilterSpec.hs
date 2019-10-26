@@ -36,11 +36,17 @@ spec :: Spec
 spec = do
   eqSpecOnValid @EntryFilter
   genValidSpec @EntryFilter
+  eqSpecOnValid @(Filter RootedPath)
   genValidSpec @(Filter RootedPath)
+  eqSpecOnValid @(Filter Time)
   genValidSpec @(Filter Time)
+  eqSpecOnValid @(Filter Tag)
   genValidSpec @(Filter Tag)
+  eqSpecOnValid @(Filter Header)
   genValidSpec @(Filter Header)
+  eqSpecOnValid @(Filter TodoState)
   genValidSpec @(Filter TodoState)
+  eqSpecOnValid @(Filter PropertyValue)
   genValidSpec @(Filter PropertyValue)
   -- jsonSpecOnValid @EntryFilter
   describe "foldFilterAnd" $

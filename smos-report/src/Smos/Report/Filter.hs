@@ -362,16 +362,22 @@ subEqOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) =>
 subEqOrdP = try eqAndOrdP <|> subP
 
 subP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
-subP = FilterSub <$> argumentP
+subP =
+  label "substring filter" $ do
+    f <- FilterSub <$> argumentP
+    case prettyValidate f of
+      Left err -> fail err
+      Right f' -> pure f'
 
 eqAndOrdP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
 eqAndOrdP = ordP
 
 ordP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a)
-ordP = do
-  o <- asum [try (pieceP "eq" >> pure EQ), try (pieceP "lt" >> pure LT), pieceP "gt" >> pure GT]
-  a <- argumentP
-  pure $ FilterOrd o a
+ordP =
+  label "comparison filter" $ do
+    o <- asum [try (pieceP "eq" >> pure EQ), try (pieceP "lt" >> pure LT), pieceP "gt" >> pure GT]
+    a <- argumentP
+    pure $ FilterOrd o a
 
 argumentP :: FilterArgument a => P a
 argumentP = do
@@ -383,7 +389,7 @@ withTopLevelBranchesP parser = asum [try $ filterNotP parser, try $ filterBinRel
 
 filterNotP :: P (Filter a) -> P (Filter a)
 filterNotP parser = do
-  void $ string' "not:"
+  pieceP "not"
   FilterNot <$> parser
 
 filterBinRelP :: forall a. P (Filter a) -> P (Filter a)

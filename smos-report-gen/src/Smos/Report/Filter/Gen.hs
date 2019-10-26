@@ -28,31 +28,31 @@ import Smos.Report.Time.Gen ()
 
 instance GenValid (Filter RootedPath) where
   genValid = withTopLevelBranches $ FilterFile <$> genValid
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Time) where
   genValid = withTopLevelBranches eqAndOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Tag) where
   genValid = withTopLevelBranches subEqOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Header) where
   genValid = withTopLevelBranches subEqOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter TodoState) where
   genValid = withTopLevelBranches subEqOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Timestamp) where
   genValid = withTopLevelBranches eqAndOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter PropertyValue) where
   genValid = withTopLevelBranches subEqOrd
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Entry) where
   genValid =
@@ -63,7 +63,7 @@ instance GenValid (Filter Entry) where
       , FilterEntryProperties <$> genValid
       , FilterEntryTags <$> genValid
       ]
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 -- TODO this doesn't allow for `FilterAll` non-FilterArgument a ...
 instance (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
@@ -75,21 +75,21 @@ instance (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
        in case n of
             0 -> withoutRecursion
             _ -> oneof [withoutRecursion, FilterAny <$> genValid, FilterAll <$> genValid]
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) where
   genValid = withTopLevelBranches $ oneof [FilterFst <$> genValid, FilterSnd <$> genValid]
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance (Show k, Ord k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
          GenValid (Filter (Map k v)) where
   genValid =
     withTopLevelBranches $ oneof [FilterMapHas <$> genValid, FilterMapVal <$> genValid <*> genValid]
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter a) => GenValid (Filter (Maybe a)) where
   genValid = withTopLevelBranches $ FilterMaybe <$> genValid <*> genValid
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
   genValid =
@@ -106,7 +106,7 @@ instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
                 , FilterChild <$> genValid
                 , FilterLegacy <$> genValid
                 ]
-  shrinkValid _ = []
+  shrinkValid = shrinkValidFilter
 
 withEqAndOrToo :: (Show a, Ord a, GenValid a, FilterArgument a) => Gen (Filter a) -> Gen (Filter a)
 withEqAndOrToo gen = frequency [(4, gen), (1, eqAndOrd)]
@@ -130,3 +130,6 @@ withTopLevelBranches gen =
               (a, b) <- genSplit n
               f <$> resize a gen <*> resize b gen
          in oneof [FilterNot <$> gen, bin FilterAnd, bin FilterOr]
+
+shrinkValidFilter :: Filter a -> [Filter a]
+shrinkValidFilter = undefined
