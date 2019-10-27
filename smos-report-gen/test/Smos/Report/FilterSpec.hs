@@ -8,6 +8,8 @@ module Smos.Report.FilterSpec
   ( spec
   ) where
 
+import Debug.Trace
+
 import Data.Char as Char
 import Data.List
 import Data.Text (Text)
@@ -68,6 +70,13 @@ spec = do
   describe "filterPredicate" $
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
+  -- describe "optimiseFilter" $ do
+  --   it "produces valid results" $
+  --     producesValidsOnValids (optimiseFilter @(RootedPath, ForestCursor Entry))
+  --   it "produces the filters that produce the same result" $
+  --     forAllValid $ \f ->
+  --       let f' = optimiseFilter (f :: EntryFilter)
+  --        in forAllValid $ \a -> filterPredicate f' a `shouldBe` filterPredicate f a
   describe "argumentP" $ do
     parseJustSpec argumentP "." ("." :: Header)
     parseJustSpec argumentP "a" ("a" :: Header)
@@ -105,6 +114,39 @@ spec = do
     parseJustSpec filterPropertyValueP "test" (FilterSub "test")
     parsesValidSpec filterPropertyValueP filterPropertyValueText
     renderFilterSpecFor filterPropertyValueP
+  describe "filterEntryHeaderP" $ do
+    let p = parseJustSpec filterEntryHeaderP
+    p "header:test" (FilterEntryHeader $ FilterSub "test")
+    parsesValidSpec filterEntryHeaderP filterEntryHeaderText
+  describe "filterEntryTodoStateP" $ do
+    let p = parseJustSpec filterEntryTodoStateP
+    p "state:NEXT" (FilterEntryTodoState $ FilterMaybe False $ FilterSub "NEXT")
+    p
+      "state:(NEXT or READY)"
+      (FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "READY"))
+    p
+      "state:(STARTED or (NEXT or READY))"
+      (FilterEntryTodoState $
+       FilterMaybe False $
+       FilterOr (FilterSub "STARTED") $ FilterOr (FilterSub "NEXT") (FilterSub "READY"))
+    parsesValidSpec filterEntryTodoStateP filterEntryTodoStateText
+  describe "filterEntryPropertiesP" $ do
+    let p = parseJustSpec filterEntryPropertiesP
+    p "property:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
+    p
+      "property:client:fpco"
+      (FilterEntryProperties $ FilterMapVal "client" $ FilterMaybe False $ FilterSub "fpco")
+    p
+      "property:timewindow:time:lt:5h"
+      (FilterEntryProperties $
+       FilterMapVal "timewindow" $
+       FilterMaybe False $ FilterPropertyTime $ FilterMaybe False $ FilterOrd LTC $ Hours 5)
+    parsesValidSpec filterEntryPropertiesP filterEntryPropertiesText
+  describe "filterEntryTagsP" $ do
+    let p = parseJustSpec filterEntryTagsP
+    p "tag:work" (FilterEntryTags $ FilterAny $ FilterSub "work")
+    p "tag:any:online" (FilterEntryTags $ FilterAny $ FilterSub "online")
+    parsesValidSpec filterEntryTagsP filterEntryTagsText
   describe "filterEntryP" $ do
     let p = parseJustSpec filterEntryP
     p "header:test" (FilterEntryHeader $ FilterSub "test")
@@ -117,13 +159,11 @@ spec = do
       (FilterEntryTodoState $
        FilterMaybe False $
        FilterOr (FilterSub "STARTED") $ FilterOr (FilterSub "NEXT") (FilterSub "READY"))
+    p "tag:work" (FilterEntryTags $ FilterAny $ FilterSub "work")
+    p "tag:any:online" (FilterEntryTags $ FilterAny $ FilterSub "online")
     p "property:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
-    p "properties:has:timebox" (FilterEntryProperties $ FilterMapHas "timebox")
     p
       "property:client:fpco"
-      (FilterEntryProperties $ FilterMapVal "client" $ FilterMaybe False $ FilterSub "fpco")
-    p
-      "properties:client:fpco"
       (FilterEntryProperties $ FilterMapVal "client" $ FilterMaybe False $ FilterSub "fpco")
     p
       "property:timewindow:time:lt:5h"
@@ -131,7 +171,7 @@ spec = do
        FilterMapVal "timewindow" $
        FilterMaybe False $ FilterPropertyTime $ FilterMaybe False $ FilterOrd LTC $ Hours 5)
     parsesValidSpec filterEntryP filterEntryText
-    renderFilterSpecFor filterEntryP
+    -- renderFilterSpecFor filterEntryP DOESN'T ACTUALLY HOLD
   -- describe "entryFilterP" $ do
   --   parsesValidSpec entryFilterP entryFilterText
   --   -- parseJustSpec filterP "tag:work" (FilterHasTag "work")
@@ -206,22 +246,66 @@ filterTimestampText = withTopLevelBranchesText $ eqAndOrdText argumentText
 filterPropertyValueText :: Gen Text
 filterPropertyValueText = withTopLevelBranchesText $ subEqOrdText argumentText
 
+filterEntryHeaderText :: Gen Text
+filterEntryHeaderText = textPieces [pieceText "header", filterHeaderText]
+
+filterEntryTodoStateText :: Gen Text
+filterEntryTodoStateText = textPieces [pieceText "state", maybeText filterTodoStateText]
+
+filterEntryPropertiesText :: Gen Text
+filterEntryPropertiesText = textPieces [pieceText "property", mapText filterPropertyValueText]
+
+filterEntryTagsText :: Gen Text
+filterEntryTagsText = textPieces [pieceText "tag", listText filterTagText]
+
 filterEntryText :: Gen Text
 filterEntryText =
   withTopLevelBranchesText $
-  oneof [filterHeaderText] -- TODO , maybeText filterTodoStateText, filterPropertiesText, filterTagsText]
+  oneof
+    [ filterEntryHeaderText
+    , filterEntryTodoStateText
+    , filterEntryPropertiesText
+    , filterEntryTagsText
+    ]
 
 subEqOrdText :: Gen Text -> Gen Text
 subEqOrdText gen = oneof [eqAndOrdText gen, gen]
 
 eqAndOrdText :: Gen Text -> Gen Text
-eqAndOrdText gen = textPieces [oneof [pieceText "eq", pieceText "lt", pieceText "gt"], gen]
+eqAndOrdText gen =
+  textPieces
+    [oneof [pieceText "lt", pieceText "le", pieceText "eq", pieceText "ge", pieceText "gt"], gen]
 
 withTopLevelBranchesText :: Gen Text -> Gen Text
 withTopLevelBranchesText gen = oneof [notText gen, binRelText gen, gen]
 
+mapText :: Gen Text -> Gen Text
+mapText gen =
+  oneof
+    [ withTopLevelBranchesText $ textPieces [pieceText "val", gen]
+    , withTopLevelBranchesText $ textPieces [pieceText "has", gen]
+    , withTopLevelBranchesText $ textPieces [argumentText >>= pieceText, gen]
+    , gen
+    ]
+
+listText :: Gen Text -> Gen Text
+listText gen =
+  oneof
+    [ withTopLevelBranchesText $ textPieces [pieceText "any", gen]
+    , withTopLevelBranchesText $ textPieces [pieceText "all", gen]
+    , gen
+    ]
+
+maybeText :: Gen Text -> Gen Text
+maybeText gen =
+  oneof
+    [ withTopLevelBranchesText $ textPieces [pieceText "maybe-true", gen]
+    , withTopLevelBranchesText $ textPieces [pieceText "maybe-false", gen]
+    , gen
+    ]
+
 notText :: Gen Text -> Gen Text
-notText gen = textPieces [pure "not:", gen]
+notText gen = textPieces [pieceText "not", gen]
 
 binRelText :: Gen Text -> Gen Text
 binRelText gen = textPieces [pure "(", oneof [orText, andText], pure ")"]

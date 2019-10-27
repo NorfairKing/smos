@@ -135,7 +135,8 @@ withTopLevelBranches gen =
               (a, b) <- genSplit n
               f <$> resize a (withTopLevelBranches gen) <*> resize b (withTopLevelBranches gen)
          in oneof
-              [ FilterNot <$> scale (\x -> x - 1) (withTopLevelBranches gen)
+              [ gen
+              , FilterNot <$> scale (\x -> x - 1) (withTopLevelBranches gen)
               , bin FilterAnd
               , bin FilterOr
               ]

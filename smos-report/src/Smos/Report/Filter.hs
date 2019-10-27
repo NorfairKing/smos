@@ -336,19 +336,19 @@ renderFilter = go
             FilterParent f' -> p1 "parent" f'
             FilterChild f' -> p1 "child" f'
                 -- List filters
-            FilterAny f' -> p1 "any" f'
+            FilterAny f' -> go f'
             FilterAll f' -> p1 "all" f'
                 -- Map filters
             FilterMapHas k -> p "has" $ renderArgument k
-            FilterMapVal k f' -> p1 (renderArgument k) f'
+            FilterMapVal k f' -> p "val" $ p1 (renderArgument k) f'
                 -- Tuple filters
             FilterFst f' -> go f'
             FilterSnd f' -> go f'
                 -- Maybe filters
             FilterMaybe b f' ->
               if b
-                then p1 "maybe:true" f'
-                else go f'
+                then p1 "maybe-true" f'
+                else go f' -- p1 "maybe-false" f'
                 -- Comparison filters
             FilterSub t -> renderArgument t
             FilterOrd o a -> p (renderComparison o) (renderArgument a)
@@ -408,7 +408,7 @@ filterEntryTodoStateP = do
 
 filterEntryPropertiesP :: P (Filter Entry)
 filterEntryPropertiesP = do
-  parseChoices [pieceP "properties", pieceP "property"]
+  pieceP "property"
   FilterEntryProperties <$> filterMapP filterPropertyValueP
 
 filterEntryTagsP :: P (Filter Entry)
@@ -427,17 +427,18 @@ pieceP t = void $ string' $ t <> ":"
 filterForestCursorP :: P (Filter a) -> P (Filter (ForestCursor a))
 filterForestCursorP parser =
   parseChoices
-    [ pieceP "parent" >> FilterParent <$> filterForestCursorP parser
-    , pieceP "ancestor" >> FilterAncestor <$> filterForestCursorP parser
-    , pieceP "child" >> FilterChild <$> filterForestCursorP parser
-    , pieceP "legacy" >> FilterLegacy <$> filterForestCursorP parser
-    , pieceP "level" >> FilterLevel <$> argumentP
-    , pieceP "current" >> FilterWithinCursor <$> parser
+    [ withTopLevelBranchesP $ pieceP "parent" >> FilterParent <$> filterForestCursorP parser
+    , withTopLevelBranchesP $ pieceP "ancestor" >> FilterAncestor <$> filterForestCursorP parser
+    , withTopLevelBranchesP $ pieceP "child" >> FilterChild <$> filterForestCursorP parser
+    , withTopLevelBranchesP $ pieceP "legacy" >> FilterLegacy <$> filterForestCursorP parser
+    , withTopLevelBranchesP $ pieceP "level" >> FilterLevel <$> argumentP
+    , withTopLevelBranchesP $ pieceP "current" >> FilterWithinCursor <$> parser
     , FilterWithinCursor <$> parser
     ]
 
 filterMapP :: (Validity k, Show k, Ord k, FilterArgument k) => P (Filter v) -> P (Filter (Map k v))
 filterMapP parser =
+  withTopLevelBranchesP $
   parseChoices
     [ pieceP "val" >> validP (FilterMapVal <$> (argumentP <* string' ":") <*> filterMaybeP parser)
     , pieceP "has" >> validP (FilterMapHas <$> argumentP)
@@ -448,21 +449,25 @@ filterMapP parser =
 filterTupleP :: P (Filter a) -> P (Filter b) -> P (Filter (a, b))
 filterTupleP p1 p2 =
   parseChoices
-    [ pieceP "fst" >> FilterFst <$> p1
-    , pieceP "snd" >> FilterSnd <$> p2
+    [ withTopLevelBranchesP $ pieceP "fst" >> FilterFst <$> p1
+    , withTopLevelBranchesP $ pieceP "snd" >> FilterSnd <$> p2
     , FilterFst <$> p1
     , FilterSnd <$> p2
     ]
 
 filterListP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a) -> P (Filter [a])
 filterListP parser =
-  parseChoices [pieceP "any" >> FilterAny <$> parser, pieceP "all" >> FilterAll <$> parser]
+  parseChoices
+    [ withTopLevelBranchesP $ pieceP "any" >> FilterAny <$> parser
+    , withTopLevelBranchesP $ pieceP "all" >> FilterAll <$> parser
+    , FilterAny <$> parser
+    ]
 
 filterMaybeP :: P (Filter a) -> P (Filter (Maybe a))
 filterMaybeP parser =
   parseChoices
-    [ pieceP "maybe:true" >> FilterMaybe True <$> parser
-    , pieceP "maybe:false" >> FilterMaybe False <$> parser
+    [ withTopLevelBranchesP $ pieceP "maybe-true" >> FilterMaybe True <$> parser
+    , withTopLevelBranchesP $ pieceP "maybe-false" >> FilterMaybe False <$> parser
     , FilterMaybe False <$> parser
     ]
 
