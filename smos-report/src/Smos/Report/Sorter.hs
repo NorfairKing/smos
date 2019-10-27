@@ -56,10 +56,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
       case s of
         ByFile -> comparing resolveRootedPath rpa rpb
         ByPropertyTime pn ->
-          comparing
-            (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText))
-            ea
-            eb
+          comparing (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText)) ea eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
         Reverse s' ->
           (\case

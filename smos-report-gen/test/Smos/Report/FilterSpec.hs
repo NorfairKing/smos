@@ -8,10 +8,7 @@ module Smos.Report.FilterSpec
   ( spec
   ) where
 
-import Debug.Trace
-
 import Data.Char as Char
-import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -51,6 +48,7 @@ spec = do
   filterArgumentSpec @(Path Rel File)
   eqSpecOnValid @EntryFilter
   genValidSpec @EntryFilter
+  jsonSpecOnValid @EntryFilter
   eqSpecOnValid @(Filter RootedPath)
   genValidSpec @(Filter RootedPath)
   eqSpecOnValid @(Filter Time)
@@ -63,7 +61,6 @@ spec = do
   genValidSpec @(Filter TodoState)
   eqSpecOnValid @(Filter PropertyValue)
   genValidSpec @(Filter PropertyValue)
-  -- jsonSpecOnValid @EntryFilter
   describe "foldFilterAnd" $
     it "produces valid results" $
     producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))
@@ -219,9 +216,6 @@ filterArgumentSpec =
   specify "parseArgument and renderArgument are inverses" $
   forAllValid $ \a -> parseArgument (renderArgument (a :: a)) `shouldBe` Right (a :: a)
 
-entryFilterText :: Gen Text
-entryFilterText = filterRootedPathText
-
 filterRootedPathText :: Gen Text
 filterRootedPathText = withTopLevelBranchesText $ textPieces [pieceText "file", genValid]
 
@@ -239,9 +233,6 @@ filterHeaderText = withTopLevelBranchesText $ subEqOrdText argumentText
 
 filterTodoStateText :: Gen Text
 filterTodoStateText = withTopLevelBranchesText $ subEqOrdText argumentText
-
-filterTimestampText :: Gen Text
-filterTimestampText = withTopLevelBranchesText $ eqAndOrdText argumentText
 
 filterPropertyValueText :: Gen Text
 filterPropertyValueText = withTopLevelBranchesText $ subEqOrdText argumentText

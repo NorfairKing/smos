@@ -9,10 +9,8 @@ import qualified Data.Text as T
 import Data.Time
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Report.Filter
 import Smos.Report.Log
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
@@ -29,7 +27,7 @@ log LogSettings {..} = do
     sourceToList $
     streamSmosFiles logSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\t -> maybe True (\f -> filterPredicate f t) logSetFilter) .|
+    smosMFilter logSetFilter .|
     smosCursorCurrents
   liftIO $ putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 

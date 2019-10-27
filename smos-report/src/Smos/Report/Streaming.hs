@@ -136,6 +136,12 @@ parseSmosFiles =
                 Right sf -> Right sf
     pure (p, ei)
 
+smosFilter :: Monad m => Filter a -> ConduitT a a m ()
+smosFilter f = Conduit.filter (filterPredicate f)
+
+smosMFilter :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
+smosMFilter = maybe (Conduit.map id) smosFilter
+
 printShouldPrint ::
      MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =

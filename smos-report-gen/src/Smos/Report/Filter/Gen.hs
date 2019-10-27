@@ -9,7 +9,6 @@
 module Smos.Report.Filter.Gen where
 
 import Data.Map (Map)
-import Data.Text (Text)
 
 import Data.GenValidity
 import Data.GenValidity.Path ()
@@ -70,7 +69,6 @@ instance GenValid (Filter Entry) where
       ]
   shrinkValid = shrinkValidFilter
 
--- TODO this doesn't allow for `FilterAll` non-FilterArgument a ...
 instance (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
          GenValid (Filter [a]) where
   genValid = withTopLevelBranches $ oneof [FilterAny <$> genValid, FilterAll <$> genValid]

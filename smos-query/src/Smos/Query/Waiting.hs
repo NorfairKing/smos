@@ -14,7 +14,6 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.Waiting
 
@@ -29,7 +28,7 @@ waiting WaitingSettings {..} = do
     sourceToList $
     streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\t -> maybe True (\f -> filterPredicate f t) waitingSetFilter) .|
+    smosMFilter waitingSetFilter .|
     smosCursorCurrents .|
     C.filter (isWaitingAction . snd) .|
     C.map (uncurry makeWaitingActionEntry)

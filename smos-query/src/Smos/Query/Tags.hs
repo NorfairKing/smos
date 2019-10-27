@@ -15,7 +15,6 @@ import Rainbow
 
 import Smos.Data
 
-import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.Tags
 
@@ -30,7 +29,7 @@ tags TagsSettings {..} = do
     sourceToList $
     streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\t -> maybe True (\f -> filterPredicate f t) tagsSetFilter) .|
+    smosMFilter tagsSetFilter .|
     smosCursorCurrents .|
     C.map snd
   let tr = makeTagsReport es
