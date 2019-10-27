@@ -64,3 +64,9 @@ Derived data is never stored, but instead computed or rendered.
 Smos intends to deprecate Emacs org mode by being more robust, more
 customisable, by providing a better and more tool-friendly file
 format and by using a more sane configuration language.
+
+## A replacement for taskwarrior
+
+The machine-interaction capabilities of [taskwarrior](https://taskwarrior.org)
+are great, and have inspired smos greatly.
+See also [TaskLite](https://tasklite.org/) for a more taskwarrior-like alternative for Smos.
