@@ -17,6 +17,8 @@ import Data.Yaml as Yaml
 
 import qualified Smos.Report.OptParse.Types as Report
 
+import Smos.Data
+
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
@@ -24,6 +26,7 @@ import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
+import Smos.Report.Time
 import Smos.Report.TimeBlock
 
 import Smos.Query.Config
@@ -60,6 +63,7 @@ data EntryFlags =
 data WorkFlags =
   WorkFlags
     { workFlagContext :: ContextName
+    , workFlagTimeFilter :: Filter Time
     , workFlagFilter :: Maybe EntryFilter
     , workFlagProjection :: Maybe (NonEmpty Projection)
     , workFlagSorter :: Maybe Sorter
@@ -152,6 +156,7 @@ instance FromJSON Configuration where
 data WorkConfiguration =
   WorkConfiguration
     { workConfChecks :: Set EntryFilter
+    , workConfTimeFilterProperty :: Maybe PropertyName
     , workConfProjection :: Maybe (NonEmpty Projection)
     , workConfSorter :: Maybe Sorter
     }
@@ -160,7 +165,8 @@ data WorkConfiguration =
 instance FromJSON WorkConfiguration where
   parseJSON =
     withObject "WorkConfiguration" $ \o ->
-      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "columns" <*> o .:? "sorter"
+      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "time-filter" <*> o .:? "columns" <*>
+      o .:? "sorter"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -187,6 +193,7 @@ data EntrySettings =
 data WorkSettings =
   WorkSettings
     { workSetContext :: ContextName
+    , workSetTimeFilter :: Maybe (Filter Entry)
     , workSetFilter :: Maybe EntryFilter
     , workSetChecks :: Set EntryFilter
     , workSetProjection :: NonEmpty Projection

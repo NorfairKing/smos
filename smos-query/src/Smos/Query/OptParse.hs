@@ -11,10 +11,11 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Data.Time
+import Data.Time hiding (parseTime)
 import Text.Read (readMaybe)
 
 import qualified System.Environment as System
+import System.Exit
 
 import Options.Applicative
 
@@ -24,6 +25,7 @@ import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
+import Smos.Report.Time
 import Smos.Report.TimeBlock
 
 import Smos.Query.Config
@@ -100,10 +102,19 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                   (Just a, Nothing) -> Just a
                   (Nothing, Just a) -> Just a
                   (Just a1, Just a2) -> Just $ f a1 a2
+          mtf <-
+            case (workFlagTimeFilter, mwc workConfTimeFilterProperty) of
+              (_, Nothing) -> die "No time filter property configured."
+              (tf, Just pn) ->
+                pure $
+                Just $
+                FilterEntryProperties $
+                FilterMapVal pn $ FilterMaybe False $ FilterPropertyTime $ FilterMaybe False tf
           pure $
             DispatchWork
               WorkSettings
                 { workSetContext = workFlagContext
+                , workSetTimeFilter = mtf
                 , workSetFilter = workFlagFilter
                 , workSetChecks = fromMaybe S.empty $ wc workConfChecks
                 , workSetProjection =
@@ -213,7 +224,8 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork <$>
-      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseProjectionArgs <*>
+      (WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs <*>
+       parseProjectionArgs <*>
        parseSorterArgs <*>
        parseHideArchiveFlag)
 
@@ -308,12 +320,18 @@ parseContextNameArg :: Parser ContextName
 parseContextNameArg =
   argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
+parseTimeFilterArg :: Parser (Filter Time)
+parseTimeFilterArg =
+  argument
+    (eitherReader (fmap (FilterOrd LEC) . parseTime . T.pack))
+    (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
+
 parseFilterArgs :: Parser (Maybe EntryFilter)
 parseFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty <$>
   many
     (argument
-       (maybeReader (parseEntryFilter . T.pack))
+       (eitherReader (parseEntryFilter . T.pack))
        (mconcat
           [ metavar "FILTER"
           , help "A filter to filter entries by"
@@ -323,7 +341,7 @@ parseFilterArgs =
 parseFilterArg :: Parser (Maybe EntryFilter)
 parseFilterArg =
   argument
-    (Just <$> maybeReader (parseEntryFilter . T.pack))
+    (Just <$> eitherReader (parseEntryFilter . T.pack))
     (mconcat
        [ value Nothing
        , metavar "FILTER"

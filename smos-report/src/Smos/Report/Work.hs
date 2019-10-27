@@ -59,6 +59,7 @@ data WorkReportContext =
     { workReportContextNow :: ZonedTime
     , workReportContextBaseFilter :: Maybe EntryFilter
     , workReportContextCurrentContext :: EntryFilter
+    , workReportContextTimeFilter :: Maybe (Filter Entry)
     , workReportContextAdditionalFilter :: Maybe EntryFilter
     , workReportContextContexts :: Map ContextName EntryFilter
     , workReportContextChecks :: Set EntryFilter
@@ -71,9 +72,10 @@ makeWorkReport WorkReportContext {..} rp fc =
       match b = [(rp, cur) | b]
       combineFilter f = maybe f (FilterAnd f)
       filterWithBase f = combineFilter f workReportContextBaseFilter
-      currentFilter =
-        filterWithBase $
-        combineFilter workReportContextCurrentContext workReportContextAdditionalFilter
+      totalCurrent =
+        combineFilter workReportContextCurrentContext $
+        FilterSnd . FilterWithinCursor <$> workReportContextTimeFilter
+      currentFilter = filterWithBase $ combineFilter totalCurrent workReportContextAdditionalFilter
       matchesSelectedContext = filterPredicate currentFilter (rp, fc)
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts

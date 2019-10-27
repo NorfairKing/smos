@@ -11,7 +11,6 @@ import GHC.Generics (Generic)
 
 import Data.Aeson
 import Data.Char as Char
-import Data.Foldable
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty(..))
@@ -32,7 +31,6 @@ import Lens.Micro
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -359,8 +357,8 @@ renderFilter = go
 
 type P = Parsec Void Text
 
-parseEntryFilter :: Text -> Maybe EntryFilter
-parseEntryFilter = parseMaybe entryFilterP
+parseEntryFilter :: Text -> Either String EntryFilter
+parseEntryFilter = left errorBundlePretty . parse entryFilterP "entry filter string"
 
 entryFilterP :: P EntryFilter
 entryFilterP = filterTupleP filterRootedPathP (filterForestCursorP filterEntryP)
