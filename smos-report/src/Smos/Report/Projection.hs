@@ -25,8 +25,9 @@ import Smos.Report.Path
 data Projection
   = OntoFile
   | OntoHeader
-  | OntoProperty PropertyName
   | OntoState
+  | OntoTag Tag
+  | OntoProperty PropertyName
   deriving (Show, Eq, Generic)
 
 instance Validity Projection
@@ -45,6 +46,7 @@ data Projectee
   = FileProjection RootedPath
   | HeaderProjection Header
   | StateProjection (Maybe TodoState)
+  | TagProjection (Maybe Tag)
   | PropertyProjection PropertyName (Maybe PropertyValue)
   deriving (Show, Eq, Generic)
 
@@ -56,6 +58,11 @@ performProjection p rp cur =
     OntoFile -> FileProjection rp
     OntoHeader -> HeaderProjection $ entryHeader cur
     OntoState -> StateProjection $ entryState cur
+    OntoTag t ->
+      TagProjection $
+      if t `elem` entryTags cur
+        then Just t
+        else Nothing
     OntoProperty pn -> PropertyProjection pn $ M.lookup pn $ entryProperties cur
 
 type P = Parsec Void Text
@@ -64,7 +71,8 @@ parseProjection :: Text -> Maybe Projection
 parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
-projectionP = try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoPropertyP
+projectionP =
+  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoTagP <|> ontoPropertyP
 
 ontoFileP :: P Projection
 ontoFileP = do
@@ -76,6 +84,11 @@ ontoHeaderP = do
   void $ string' "header"
   pure OntoHeader
 
+ontoTagP :: P Projection
+ontoTagP = do
+  void $ string' "tag:"
+  OntoTag <$> tagP
+
 ontoStateP :: P Projection
 ontoStateP = do
   void $ string' "state"
@@ -85,6 +98,11 @@ ontoPropertyP :: P Projection
 ontoPropertyP = do
   void $ string' "property:"
   OntoProperty <$> propertyNameP
+
+tagP :: P Tag
+tagP = do
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  either fail pure $ parseTag $ T.pack s
 
 propertyNameP :: P PropertyName
 propertyNameP = do
@@ -97,4 +115,5 @@ renderProjection f =
     OntoFile -> "file"
     OntoHeader -> "header"
     OntoState -> "state"
+    OntoTag t -> "tag:" <> tagText t
     OntoProperty pn -> "property:" <> propertyNameText pn

@@ -64,6 +64,7 @@ renderProjectionHeader p =
     OntoFile -> chunk "file"
     OntoHeader -> chunk "header"
     OntoProperty pn -> chunk $ propertyNameText pn
+    OntoTag t -> tagChunk t
     OntoState -> chunk "state"
 
 renderProjectees :: [Projectee] -> [Chunk Text]
@@ -75,6 +76,7 @@ projecteeChunk p =
     FileProjection rp -> rootedPathChunk rp
     HeaderProjection h -> headerChunk h
     StateProjection s -> maybe (chunk "") todoStateChunk s
+    TagProjection mt -> maybe (chunk "") tagChunk mt
     PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
 
 mTodoStateChunk :: Maybe TodoState -> Chunk Text

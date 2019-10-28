@@ -17,14 +17,22 @@ import Smos.Report.Sorter
 instance GenValid Sorter where
   genValid =
     sized $ \n ->
-      case n of
-        0 -> oneof [pure ByFile, ByProperty <$> genValid]
-        _ ->
-          oneof
-            [ Reverse <$> scale pred genValid
-            , do (a, b) <- genSplit n
-                 s1 <- resize a genValid
-                 s2 <- resize b genValid
-                 pure $ AndThen s1 s2
-            ]
+      let withoutRecursion =
+            oneof
+              [ pure ByFile
+              , ByTag <$> genValid
+              , ByProperty <$> genValid
+              , ByPropertyTime <$> genValid
+              ]
+       in case n of
+            0 -> withoutRecursion
+            _ ->
+              oneof
+                [ withoutRecursion
+                , Reverse <$> scale pred genValid
+                , do (a, b) <- genSplit n
+                     s1 <- resize a genValid
+                     s2 <- resize b genValid
+                     pure $ AndThen s1 s2
+                ]
   shrinkValid = shrinkValidStructurally
