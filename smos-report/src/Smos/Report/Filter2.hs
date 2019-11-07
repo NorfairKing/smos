@@ -29,7 +29,7 @@ import Data.Text (Text)
 import Data.Validity
 import Data.Void
 import Path
-import Text.Read
+import Text.Read (readMaybe)
 
 import Control.Arrow
 import Control.Monad
@@ -37,9 +37,11 @@ import Control.Monad
 import Lens.Micro
 
 import Text.Parsec.Combinator
-import Text.Parsec.Pos
 import Text.Parsec.Error
+import Text.Parsec.Pos
 import Text.Parsec.Prim
+import Text.ParserCombinators.Parsec.Char
+import Text.ParserCombinators.Parsec.Combinator
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -66,6 +68,7 @@ instance Validity BinOp
 data Part
   = PartParen Paren
   | PartSpace
+  | PartColumn
   | PartPiece Text
   | PartBinOp BinOp
   deriving (Show, Eq, Generic)
@@ -82,8 +85,25 @@ instance Validity Part where
           _ -> valid
       ]
 
-parseParts :: Text -> Maybe [Part]
-parseParts = undefined
+parseParts :: Text -> Either ParseError [Part]
+parseParts = parse partsP "parts"
+
+partsP :: TP [Part]
+partsP = many partP
+
+partP :: TP Part
+partP =
+  choice
+    [ void (char ':') >> pure PartColumn
+    , void (char '(') >> pure (PartParen OpenParen)
+    , void (char ')') >> pure (PartParen ClosedParen)
+    , void (char ' ') >> pure PartSpace
+    , void (string "and") >> pure (PartBinOp AndOp)
+    , void (string "or") >> pure (PartBinOp OrOp)
+    , PartPiece . T.pack <$> many1 (noneOf ":() ")
+    ]
+
+type TP = Parsec Text ()
 
 data KeyWord
   = KeyWordFile
@@ -148,9 +168,9 @@ instance Validity Ast
 parseAst :: [Part] -> Either ParseError Ast
 parseAst = parse astP "ast"
 
-type P = Parsec [Part] ()
+type PP = Parsec [Part] ()
 
-astP :: P Ast
+astP :: PP Ast
 astP = undefined
 
 part :: Monad m => (Part -> Bool) -> ParsecT [Part] u m Part
@@ -169,6 +189,7 @@ part func = tokenPrim showPart nextPos testPart
                 case p of
                   PartParen _ -> 1
                   PartSpace -> 1
+                  PartColumn -> 1
                   PartPiece t -> T.length t
                   PartBinOp bo ->
                     case bo of
