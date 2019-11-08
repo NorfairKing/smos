@@ -64,12 +64,26 @@ spec = do
       , PartPiece "3"
       , PartParen ClosedParen
       ]
-  describe "astP" $
+  describe "astP" $ do
     parseSuccessSpec
       astP
       [PartPiece "file", PartColumn, PartPiece "side"]
-
       (AstUnOp (KeyWordPiece KeyWordFile) (AstPiece (FilePiece [relfile|"side"|])))
+    parseSuccessSpec
+      astP
+      [ PartParen OpenParen
+      , PartPiece "file"
+      , PartColumn
+      , PartPiece "side"
+      , PartSpace
+      , PartBinOp AndOp
+      , PartSpace
+      , PartPiece "level"
+      , PartColumn
+      , PartPiece "3"
+      , PartParen ClosedParen
+      ]
+      (AstBinOp AndOp (AstUnOp (KeyWordPiece KeyWordFile) (AstPiece (FilePiece [relfile|"side"|]))) (AstUnOp (KeyWordPiece KeyWordLevel) (AstPiece (LevelPiece 3))))
 
 parseSuccessSpec :: (Show a, Eq a, Show s, Stream s Identity m) => Parsec s () a -> s -> a -> Spec
 parseSuccessSpec parser input expected =
