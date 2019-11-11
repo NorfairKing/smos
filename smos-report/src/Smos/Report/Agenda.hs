@@ -30,8 +30,9 @@ data AgendaEntry =
 instance Validity AgendaEntry
 
 isDone :: Maybe TodoState -> Bool
-isDone (Just "DONE") = True
 isDone (Just "CANCELLED") = True
+isDone (Just "DONE") = True
+isDone (Just "FAILED") = True
 isDone _ = False
 
 makeAgendaEntry :: RootedPath -> Entry -> [AgendaEntry]

@@ -74,6 +74,7 @@ checkFromFile from = do
 isDone :: Maybe TodoState -> Bool
 isDone (Just "DONE") = True
 isDone (Just "CANCELLED") = True
+isDone (Just "FAILED") = True
 isDone _ = True
 
 promptYesNo :: YesNo -> String -> IO YesNo

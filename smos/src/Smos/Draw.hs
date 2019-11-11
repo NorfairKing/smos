@@ -39,7 +39,6 @@ import Cursor.Brick.Map
 import Cursor.Brick.Map.KeyValue
 import Cursor.Brick.Text
 import Cursor.Brick.TextField
-import Cursor.Brick.Tree
 
 import Smos.Data
 
@@ -238,46 +237,162 @@ drawSmosFileCursor s =
 
 drawSmosTreeCursor ::
      Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
-drawSmosTreeCursor s = treeCursorWidgetM wrap cur
+drawSmosTreeCursor s tc = fst <$> traverseTreeCursor wrap cur tc
   where
-    cur :: CollapseEntry EntryCursor -> CForest (CollapseEntry Entry) -> Drawer
+    cur ::
+         CollapseEntry EntryCursor
+      -> CForest (CollapseEntry Entry)
+      -> Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
     cur ec cf =
       case cf of
-        EmptyCForest -> drawEntryCursor s TreeIsNotCollapsed ec
-        ClosedForest _ -> drawEntryCursor s TreeIsCollapsed ec
+        EmptyCForest ->
+          let edc = emptyEntryDrawContext
+           in (,) <$> drawEntryCursor s TreeIsNotCollapsed edc ec <*>
+              pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
+        ClosedForest ts ->
+          let edc = makeClosedEntryDrawContext ts
+           in (,) <$> drawEntryCursor s TreeIsCollapsed edc ec <*>
+              pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
         OpenForest ts -> do
-          ecw <- drawEntryCursor s TreeIsNotCollapsed ec
+          let edc = makeOpenEntryDrawContext ts
+          ecw <- drawEntryCursor s TreeIsNotCollapsed edc ec
           etws <- mapM drawEntryCTree $ NE.toList ts
-          pure $ ecw <=> padLeft defaultPadding (vBox etws)
+          pure
+            ( ecw <=> padLeft defaultPadding (vBox etws)
+            , (rebuildEntryCursor $ collapseEntryValue ec, edc))
     wrap ::
          [CTree (CollapseEntry Entry)]
       -> CollapseEntry Entry
       -> [CTree (CollapseEntry Entry)]
-      -> Widget ResourceName
-      -> Drawer
-    wrap tsl e tsr w = do
+      -> (Widget ResourceName, (Entry, EntryDrawContext))
+      -> Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
+    wrap tsl e tsr (w, (b, edc)) = do
+      let edc' = completeEntryDrawContext tsl b edc tsr
       befores <- mapM drawEntryCTree tsl
-      ew <- drawEntry TreeIsNotCollapsed e
+      ew <- drawEntry TreeIsNotCollapsed edc' e
       afters <- mapM drawEntryCTree tsr
-      pure $ ew <=> padLeft defaultPadding (vBox $ concat [befores, [w], afters])
+      pure
+        ( ew <=> padLeft defaultPadding (vBox $ concat [befores, [w], afters])
+        , (collapseEntryValue e, edc'))
+
+emptyEntryDrawContext :: EntryDrawContext
+emptyEntryDrawContext = EntryDrawContext []
+
+makeClosedEntryDrawContext :: NonEmpty (Tree (CollapseEntry Entry)) -> EntryDrawContext
+makeClosedEntryDrawContext = EntryDrawContext . map (fmap collapseEntryValue) . NE.toList
+
+makeOpenEntryDrawContext :: NonEmpty (CTree (CollapseEntry Entry)) -> EntryDrawContext
+makeOpenEntryDrawContext =
+  EntryDrawContext . map (fmap collapseEntryValue . rebuildCTree) . NE.toList
+
+completeEntryDrawContext ::
+     [CTree (CollapseEntry Entry)]
+  -> Entry
+  -> EntryDrawContext
+  -> [CTree (CollapseEntry Entry)]
+  -> EntryDrawContext
+completeEntryDrawContext lts e (EntryDrawContext f) rts =
+  let toTrees = map $ fmap collapseEntryValue . rebuildCTree
+   in EntryDrawContext $ concat [toTrees lts, [Node e f], toTrees rts]
+
+newtype EntryDrawContext =
+  EntryDrawContext
+    { entryDrawContextForest :: Forest Entry
+    }
+  deriving (Show, Eq)
+
+entryDrawContextDirectChildren :: EntryDrawContext -> Word
+entryDrawContextDirectChildren = genericLength . entryDrawContextForest
+
+entryDrawContextLegacy :: EntryDrawContext -> Word
+entryDrawContextLegacy = forestSize . entryDrawContextForest
+  where
+    forestSize :: Forest a -> Word
+    forestSize = sum . map treeSize
+    treeSize :: Tree a -> Word
+    treeSize (Node _ f) = 1 + forestSize f
 
 drawEntryCTree :: CTree (CollapseEntry Entry) -> Drawer
 drawEntryCTree (CNode t cf) =
   case cf of
-    EmptyCForest -> drawEntry TreeIsNotCollapsed t
-    ClosedForest _ -> drawEntry TreeIsCollapsed t
+    EmptyCForest -> drawEntry TreeIsNotCollapsed emptyEntryDrawContext t
+    ClosedForest ts -> drawEntry TreeIsCollapsed (makeClosedEntryDrawContext ts) t
     OpenForest ts -> do
-      ew <- drawEntry TreeIsNotCollapsed t
+      let edc = makeOpenEntryDrawContext ts
+      ew <- drawEntry TreeIsNotCollapsed edc t
       etws <- mapM drawEntryCTree $ NE.toList ts
-      pure $ ew <=> padLeft defaultPadding (vBox etws)
+      pure $
+        ew <=> padLeft defaultPadding (vBox etws)
+
+completedForestNumbersWidget :: Maybe TodoState -> EntryDrawContext -> Maybe (Widget t)
+completedForestNumbersWidget mts edc =
+  let es@EntryStats {..} = goF (entryDrawContextForest edc) <> countTodo mts
+   in if es == mempty
+        then Nothing
+        else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
+  where
+    countDone :: Maybe TodoState -> Word
+    countDone (Just "DONE") = 1
+    countDone (Just "CANCELLED") = 1
+    countDone (Just "FAILED") = 1
+    countDone Nothing = 0
+    countDone _ = 0
+    countTotal :: Maybe TodoState -> Word
+    countTotal m =
+      if isJust m
+        then 1
+        else 0
+    countTodo :: Maybe TodoState -> EntryStats
+    countTodo m = EntryStats {entryStatsDone = countDone m, entryStatsTotal = countTotal m}
+    countEntry :: Entry -> EntryStats
+    countEntry = countTodo . entryState
+    goT :: Tree Entry -> EntryStats
+    goT (Node e f) = countEntry e <> goF f
+    goF :: Forest Entry -> EntryStats
+    goF = mconcat . map goT
+
+data EntryStats =
+  EntryStats
+    { entryStatsDone :: !Word
+    , entryStatsTotal :: !Word
+    }
+  deriving (Show, Eq)
+
+instance Semigroup EntryStats where
+  es1 <> es2 =
+    EntryStats
+      { entryStatsDone = entryStatsDone es1 + entryStatsDone es2
+      , entryStatsTotal = entryStatsTotal es1 + entryStatsTotal es2
+      }
+
+instance Monoid EntryStats where
+  mempty = EntryStats 0 0
+  mappend = (<>)
+
+collapsedForestNumbersWidget :: TreeCollapsing -> EntryDrawContext -> Maybe (Widget t)
+collapsedForestNumbersWidget tc edc =
+  case tc of
+    TreeIsNotCollapsed -> Nothing
+    TreeIsCollapsed ->
+      Just $
+      str $
+      unwords
+        [ "+++"
+        , bracketed $
+          concat [show $ entryDrawContextDirectChildren edc, "|", show $ entryDrawContextLegacy edc]
+        ]
+
+bracketed :: String -> String
+bracketed s = "[" ++ s ++ "]"
 
 data TreeCollapsing
   = TreeIsNotCollapsed
   | TreeIsCollapsed
   deriving (Show, Eq)
 
-drawEntryCursor :: Select -> TreeCollapsing -> CollapseEntry EntryCursor -> Drawer
-drawEntryCursor s tc e = do
+drawEntryCursor ::
+     Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer
+drawEntryCursor s tc edc e = do
   tscw <- forM entryCursorTimestampsCursor $ drawTimestampsCursor (selectWhen TimestampsSelected)
   lbcw <- drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
   shcw <-
@@ -309,7 +424,8 @@ drawEntryCursor s tc e = do
                     , not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
                     ]
             ]
-          , [str "+++" | tc == TreeIsCollapsed]
+          , maybeToList $ completedForestNumbersWidget (entryState $ rebuildEntryCursor ec) edc
+          , maybeToList $ collapsedForestNumbersWidget tc edc
           ]
       , drawIfM collapseEntryShowContents $
         drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor
@@ -334,8 +450,8 @@ drawEntryCursor s tc e = do
          then MaybeSelected
          else NotSelected)
 
-drawEntry :: TreeCollapsing -> CollapseEntry Entry -> Drawer
-drawEntry tc e = do
+drawEntry :: TreeCollapsing -> EntryDrawContext -> CollapseEntry Entry -> Drawer
+drawEntry tc edc e = do
   tsw <- drawTimestamps entryTimestamps
   lbw <- drawLogbook entryLogbook
   shw <- drawStateHistory entryStateHistory
@@ -357,7 +473,8 @@ drawEntry tc e = do
                 , not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
                 ]
             ]
-          , [str "+++" | tc == TreeIsCollapsed]
+          , maybeToList $ completedForestNumbersWidget (entryState $ collapseEntryValue e) edc
+          , maybeToList $ collapsedForestNumbersWidget tc edc
           ]
       , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
       , tsw
@@ -670,4 +787,6 @@ type DrawEnv = ZonedTime
 
 type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
 
-type Drawer = Reader DrawEnv (Widget ResourceName)
+type Drawer = Drawer' (Widget ResourceName)
+
+type Drawer' = Reader DrawEnv
