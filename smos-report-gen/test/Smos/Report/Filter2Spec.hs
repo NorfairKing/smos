@@ -42,48 +42,54 @@ spec :: Spec
 spec = do
   describe "partP" $ do
     parseSuccessSpec partP ":" PartColumn
-    parseSuccessSpec partP "file" (PartPiece "file")
+    parseSuccessSpec partP "file" (PartPiece (Piece "file"))
     parseSuccessSpec partP "(" (PartParen OpenParen)
     parseSuccessSpec partP ")" (PartParen ClosedParen)
     parseSuccessSpec partP " " PartSpace
     parseSuccessSpec partP "and" (PartBinOp AndOp)
   describe "partsP" $ do
-    parseSuccessSpec partsP "file:side" [PartPiece "file", PartColumn, PartPiece "side"]
+    parseSuccessSpec
+      partsP
+      "file:side"
+      [PartPiece (Piece "file"), PartColumn, PartPiece (Piece "side")]
     parseSuccessSpec
       partsP
       "(file:side and level:3)"
       [ PartParen OpenParen
-      , PartPiece "file"
+      , PartPiece (Piece "file")
       , PartColumn
-      , PartPiece "side"
+      , PartPiece (Piece "side")
       , PartSpace
       , PartBinOp AndOp
       , PartSpace
-      , PartPiece "level"
+      , PartPiece (Piece "level")
       , PartColumn
-      , PartPiece "3"
+      , PartPiece (Piece "3")
       , PartParen ClosedParen
       ]
   describe "astP" $ do
     parseSuccessSpec
       astP
-      [PartPiece "file", PartColumn, PartPiece "side"]
-      (AstUnOp (KeyWordPiece KeyWordFile) (AstPiece (FilePiece [relfile|"side"|])))
+      [PartPiece (Piece "file"), PartColumn, PartPiece (Piece "side")]
+      (AstUnOp (Piece "file") (AstPiece (Piece "side")))
     parseSuccessSpec
       astP
       [ PartParen OpenParen
-      , PartPiece "file"
+      , PartPiece (Piece "file")
       , PartColumn
-      , PartPiece "side"
+      , PartPiece (Piece "side")
       , PartSpace
       , PartBinOp AndOp
       , PartSpace
-      , PartPiece "level"
+      , PartPiece (Piece "level")
       , PartColumn
-      , PartPiece "3"
+      , PartPiece (Piece "3")
       , PartParen ClosedParen
       ]
-      (AstBinOp AndOp (AstUnOp (KeyWordPiece KeyWordFile) (AstPiece (FilePiece [relfile|"side"|]))) (AstUnOp (KeyWordPiece KeyWordLevel) (AstPiece (LevelPiece 3))))
+      (AstBinOp
+         (AstUnOp (Piece "file") (AstPiece (Piece "side")))
+         AndOp
+         (AstUnOp (Piece "level") (AstPiece (Piece "3"))))
 
 parseSuccessSpec :: (Show a, Eq a, Show s, Stream s Identity m) => Parsec s () a -> s -> a -> Spec
 parseSuccessSpec parser input expected =
