@@ -321,8 +321,7 @@ drawEntryCTree (CNode t cf) =
       let edc = makeOpenEntryDrawContext ts
       ew <- drawEntry TreeIsNotCollapsed edc t
       etws <- mapM drawEntryCTree $ NE.toList ts
-      pure $
-        ew <=> padLeft defaultPadding (vBox etws)
+      pure $ ew <=> padLeft defaultPadding (vBox etws)
 
 completedForestNumbersWidget :: Maybe TodoState -> EntryDrawContext -> Maybe (Widget t)
 completedForestNumbersWidget mts edc =
@@ -374,13 +373,21 @@ collapsedForestNumbersWidget tc edc =
   case tc of
     TreeIsNotCollapsed -> Nothing
     TreeIsCollapsed ->
-      Just $
-      str $
-      unwords
-        [ "+++"
-        , bracketed $
-          concat [show $ entryDrawContextDirectChildren edc, "|", show $ entryDrawContextLegacy edc]
-        ]
+      let direct = entryDrawContextDirectChildren edc
+          legacy = entryDrawContextLegacy edc
+       in Just $
+          str $
+          unwords
+            [ "+++"
+            , bracketed $
+              if direct == legacy
+                then show direct
+                else concat
+                       [ show $ entryDrawContextDirectChildren edc
+                       , "|"
+                       , show $ entryDrawContextLegacy edc
+                       ]
+            ]
 
 bracketed :: String -> String
 bracketed s = "[" ++ s ++ "]"
