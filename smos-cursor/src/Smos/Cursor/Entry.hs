@@ -32,6 +32,7 @@ import GHC.Generics (Generic)
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Time
 import Data.Validity
 
@@ -69,7 +70,7 @@ makeEntryCursor Entry {..} =
     , entryCursorContentsCursor = makeContentsCursor <$> entryContents
     , entryCursorTimestampsCursor = makeTimestampsCursor entryTimestamps
     , entryCursorPropertiesCursor = makePropertiesCursor <$> NE.nonEmpty (M.toList entryProperties)
-    , entryCursorTagsCursor = makeTagsCursor <$> NE.nonEmpty entryTags
+    , entryCursorTagsCursor = makeTagsCursor <$> NE.nonEmpty (S.toList entryTags)
     , entryCursorStateHistoryCursor = makeStateHistoryCursor entryStateHistory
     , entryCursorLogbookCursor = makeLogbookCursor entryLogbook
     , entryCursorSelected = WholeEntrySelected
@@ -88,7 +89,7 @@ rebuildEntryCursor EntryCursor {..} =
         maybe M.empty (M.fromList . NE.toList) $
         rebuildPropertiesCursor <$> entryCursorPropertiesCursor
     , entryStateHistory = rebuildStateHistoryCursor entryCursorStateHistoryCursor
-    , entryTags = maybe [] NE.toList $ rebuildTagsCursor <$> entryCursorTagsCursor
+    , entryTags = maybe S.empty (S.fromList . NE.toList) $ rebuildTagsCursor <$> entryCursorTagsCursor
     , entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
     }
 

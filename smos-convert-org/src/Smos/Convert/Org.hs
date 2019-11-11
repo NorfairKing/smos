@@ -21,6 +21,7 @@ import Data.Maybe
 import Data.Ord
 import Data.OrgMode.Parse as Org (parseDocument)
 import Data.OrgMode.Types as Org
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Time
@@ -94,7 +95,7 @@ convertHeadline h = do
   entryTimestamps <- convertPlannings $ Org.sectionPlannings s
   entryProperties <- convertProperties $ Org.sectionProperties s
   entryStateHistory <- convertStateHistory $ Org.stateKeyword h
-  entryTags <- mapM convertTag $ Org.tags h
+  entryTags <- S.fromList <$> mapM convertTag (Org.tags h)
   entryLogbook <- convertLogbook $ Org.sectionLogbook s
   let e = Entry {..}
   subForest <- mapM convertHeadline $ Org.subHeadlines h

@@ -11,6 +11,8 @@ import Import hiding ((<+>))
 import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Time
 import Text.Time.Pretty
@@ -548,10 +550,11 @@ drawTagsCursor s =
     (\t -> drawTag t <+> str ":") .
   tagsCursorNonEmptyCursor
 
-drawTags :: [Tag] -> Maybe (Widget ResourceName)
+drawTags :: Set Tag -> Maybe (Widget ResourceName)
 drawTags ts
-  | null ts = Nothing
-  | otherwise = Just $ str ":" <+> hBox (intersperse (str ":") (map drawTag ts)) <+> str ":"
+  | S.null ts = Nothing
+  | otherwise =
+    Just $ str ":" <+> hBox (intersperse (str ":") (map drawTag $ S.toList ts)) <+> str ":"
 
 drawTagCursor :: Select -> TagCursor -> Widget ResourceName
 drawTagCursor s =
