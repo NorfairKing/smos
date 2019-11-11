@@ -9,6 +9,7 @@
 module Smos.Report.Filter.Gen where
 
 import Data.Map (Map)
+import Data.Set (Set)
 
 import Data.GenValidity
 import Data.GenValidity.Path ()
@@ -70,7 +71,7 @@ instance GenValid (Filter Entry) where
   shrinkValid = shrinkValidFilter
 
 instance (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
-         GenValid (Filter [a]) where
+         GenValid (Filter (Set a)) where
   genValid = withTopLevelBranches $ oneof [FilterAny <$> genValid, FilterAll <$> genValid]
   shrinkValid = shrinkValidFilter
 

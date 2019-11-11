@@ -17,6 +17,7 @@ import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
+import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
@@ -107,7 +108,7 @@ data Filter a where
   FilterEntryHeader :: Filter Header -> Filter Entry
   FilterEntryTodoState :: Filter (Maybe TodoState) -> Filter Entry
   FilterEntryProperties :: Filter (Map PropertyName PropertyValue) -> Filter Entry
-  FilterEntryTags :: Filter [Tag] -> Filter Entry
+  FilterEntryTags :: Filter (Set Tag) -> Filter Entry
   -- Cursor-related filters
   FilterWithinCursor :: Filter a -> Filter (ForestCursor a)
   FilterLevel :: Word -> Filter (ForestCursor a)
@@ -116,8 +117,8 @@ data Filter a where
   FilterChild :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   FilterLegacy :: Filter (ForestCursor a) -> Filter (ForestCursor a)
   -- List filters
-  FilterAny :: Filter a -> Filter [a]
-  FilterAll :: Filter a -> Filter [a]
+  FilterAny :: Filter a -> Filter (Set a)
+  FilterAll :: Filter a -> Filter (Set a)
   -- Map filters
   FilterMapHas :: (Validity k, Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
   FilterMapVal
@@ -412,7 +413,7 @@ filterEntryPropertiesP = do
 filterEntryTagsP :: P (Filter Entry)
 filterEntryTagsP = do
   pieceP "tag"
-  FilterEntryTags <$> filterListP filterTagP
+  FilterEntryTags <$> filterSetP filterTagP
 
 filterEntryP :: P (Filter Entry)
 filterEntryP =
@@ -453,8 +454,8 @@ filterTupleP p1 p2 =
     , FilterSnd <$> p2
     ]
 
-filterListP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a) -> P (Filter [a])
-filterListP parser =
+filterSetP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a) -> P (Filter (Set a))
+filterSetP parser =
   parseChoices
     [ withTopLevelBranchesP $ pieceP "any" >> FilterAny <$> parser
     , withTopLevelBranchesP $ pieceP "all" >> FilterAll <$> parser
