@@ -11,6 +11,7 @@ module Smos.Report.Comparison
 
 import GHC.Generics (Generic)
 
+import Data.Aeson
 import Data.Text (Text)
 import Data.Validity
 
@@ -23,6 +24,10 @@ data Comparison
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Comparison
+
+instance ToJSON Comparison
+
+instance FromJSON Comparison
 
 comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
 comparisonFunc c =
