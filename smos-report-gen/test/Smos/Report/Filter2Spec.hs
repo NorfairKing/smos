@@ -33,8 +33,7 @@ import Smos.Data
 import Smos.Report.Path.Gen ()
 
 import Smos.Report.Filter2
-
--- import Smos.Report.Filter2.Gen ()
+import Smos.Report.Filter2.Gen ()
 import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 
@@ -90,6 +89,36 @@ spec = do
          (AstUnOp (Piece "file") (AstPiece (Piece "side")))
          AndOp
          (AstUnOp (Piece "level") (AstPiece (Piece "3"))))
+  filterArgumentSpec @Time
+  filterArgumentSpec @Tag
+  filterArgumentSpec @Header
+  filterArgumentSpec @TodoState
+  filterArgumentSpec @PropertyName
+  filterArgumentSpec @PropertyValue
+  filterArgumentSpec @TimestampName
+  filterArgumentSpec @Timestamp
+  filterArgumentSpec @(Path Rel File)
+  eqSpecOnValid @EntryFilter
+  genValidSpec @EntryFilter
+  jsonSpecOnValid @EntryFilter
+  eqSpecOnValid @(Filter RootedPath)
+  genValidSpec @(Filter RootedPath)
+  eqSpecOnValid @(Filter Time)
+  genValidSpec @(Filter Time)
+  eqSpecOnValid @(Filter Tag)
+  genValidSpec @(Filter Tag)
+  eqSpecOnValid @(Filter Header)
+  genValidSpec @(Filter Header)
+  eqSpecOnValid @(Filter TodoState)
+  genValidSpec @(Filter TodoState)
+  eqSpecOnValid @(Filter PropertyValue)
+  genValidSpec @(Filter PropertyValue)
+  describe "foldFilterAnd" $
+    it "produces valid results" $
+    producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))
+  describe "filterPredicate" $
+    it "produces valid results" $
+    producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
 
 parseSuccessSpec :: (Show a, Eq a, Show s, Stream s Identity m) => Parsec s () a -> s -> a -> Spec
 parseSuccessSpec parser input expected =
@@ -101,3 +130,10 @@ parseSuccess parser input expected =
   case parse parser "test input" input of
     Left pe -> expectationFailure $ show pe
     Right actual -> actual `shouldBe` expected
+
+filterArgumentSpec ::
+     forall a. (Show a, Eq a, GenValid a, FilterArgument a)
+  => Spec
+filterArgumentSpec =
+  specify "parseArgument and renderArgument are inverses" $
+  forAllValid $ \a -> parseArgument (renderArgument (a :: a)) `shouldBe` Right (a :: a)
