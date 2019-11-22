@@ -1,7 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Report.Comparison where
+module Smos.Report.Comparison
+  ( Comparison(..)
+  , comparisonFunc
+  , parseComparison
+  , renderComparison
+  ) where
 
 import GHC.Generics (Generic)
 
@@ -26,6 +32,16 @@ comparisonFunc c =
     EQC -> (==)
     GEC -> (>=)
     GTC -> (<)
+
+parseComparison :: Text -> Maybe Comparison
+parseComparison =
+  \case
+    "lt" -> Just LTC
+    "le" -> Just LEC
+    "eq" -> Just EQC
+    "ge" -> Just GEC
+    "gt" -> Just GTC
+    _ -> Nothing
 
 renderComparison :: Comparison -> Text
 renderComparison c =
