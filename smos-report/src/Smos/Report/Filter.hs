@@ -38,6 +38,7 @@ import Cursor.Simple.Tree
 
 import Smos.Data
 
+import Smos.Report.Comparison
 import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 
@@ -71,34 +72,6 @@ forestCursorLevel fc = go' $ fc ^. forestCursorSelectedTreeL
       case treeAboveAbove ta of
         Nothing -> 0
         Just ta' -> 1 + goA' ta'
-
-data Comparison
-  = LTC
-  | LEC
-  | EQC
-  | GEC
-  | GTC
-  deriving (Show, Eq, Ord, Generic)
-
-instance Validity Comparison
-
-comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
-comparisonFunc c =
-  case c of
-    LTC -> (<)
-    LEC -> (<=)
-    EQC -> (==)
-    GEC -> (>=)
-    GTC -> (<)
-
-renderComparison :: Comparison -> Text
-renderComparison c =
-  case c of
-    LTC -> "lt"
-    LEC -> "le"
-    EQC -> "eq"
-    GEC -> "ge"
-    GTC -> "gt"
 
 data Filter a where
   FilterFile :: Path Rel File -> Filter RootedPath

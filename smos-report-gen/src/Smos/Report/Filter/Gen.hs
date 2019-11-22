@@ -23,13 +23,11 @@ import Smos.Data.Gen ()
 
 import Smos.Report.Filter
 
+import Smos.Report.Comparison
+import Smos.Report.Comparison.Gen ()
 import Smos.Report.Path
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
-
-instance GenUnchecked Comparison
-
-instance GenValid Comparison
 
 instance GenValid (Filter RootedPath) where
   genValid = withTopLevelBranches $ FilterFile <$> genValid

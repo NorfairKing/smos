@@ -30,6 +30,8 @@ import Smos.Data
 
 import Smos.Report.Path.Gen ()
 
+import Smos.Report.Comparison
+import Smos.Report.Comparison.Gen ()
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Path
