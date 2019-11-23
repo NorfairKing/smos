@@ -44,9 +44,24 @@ instance GenValid Paren
 instance GenValid Part where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+
 instance GenValid Parts where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+
+instance GenValid Ast where
+  shrinkValid = shrinkValidStructurally
+  genValid = sized $ \n -> case n of
+    0 -> AstPiece <$> genValid
+    _ -> oneof
+      [do
+          (a, b) <- genSplit n
+          AstUnOp <$> resize a genValid <*> resize b genValid
+      , do
+          (a, b, c) <- genSplit3 n
+          AstBinOp <$> resize a genValid <*> resize b genValid <*> resize c genValid ]
+
+
 
 instance GenValid (Filter RootedPath) where
   genValid = withTopLevelBranches $ FilterFile <$> genValid

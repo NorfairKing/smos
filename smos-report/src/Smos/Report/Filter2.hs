@@ -303,8 +303,24 @@ data Ast
 
 instance Validity Ast
 
-parseAst :: [Part] -> Either ParseError Ast
-parseAst = parse astP "ast"
+renderAst :: Ast -> Parts
+renderAst = Parts . go
+  where
+    go =
+      \case
+        AstPiece p -> [PartPiece p]
+        AstUnOp p a -> PartPiece p : PartColumn : go a
+        AstBinOp a1 bo a2 ->
+          concat
+            [ [PartParen OpenParen]
+            , go a1
+            , [PartSpace, PartBinOp bo, PartSpace]
+            , go a2
+            , [PartParen ClosedParen]
+            ]
+
+parseAst :: Parts -> Either ParseError Ast
+parseAst = parse astP "ast" . unParts
 
 astP :: PP Ast
 astP = choice [try astBinOpP, try astUnOpP, AstPiece <$> pieceP]

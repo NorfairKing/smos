@@ -39,6 +39,8 @@ import Smos.Report.Time hiding (P)
 
 spec :: Spec
 spec = do
+  genValidSpec @Part
+  genValidSpec @Parts
   describe "renderParts" $ it "produces valid texts" $ producesValidsOnValids renderParts
   describe "partP" $ do
     parseSuccessSpec partP ":" PartColumn
@@ -85,6 +87,7 @@ spec = do
          in case parseParts t of
               Left err -> expectationFailure $ show err
               Right parts' -> parts' `shouldBe` parts
+  genValidSpec @Ast
   describe "astP" $ do
     parseSuccessSpec
       astP
@@ -108,6 +111,13 @@ spec = do
          (AstUnOp (Piece "file") (AstPiece (Piece "side")))
          AndOp
          (AstUnOp (Piece "level") (AstPiece (Piece "3"))))
+    parsesValidSpec astP
+    it "parses back whatever 'renderAst' renders" $
+      forAllValid $ \ast ->
+        let t = renderAst ast
+         in case parseAst t of
+              Left err -> expectationFailure $ show err
+              Right ast' -> ast' `shouldBe` ast
   filterArgumentSpec @Time
   filterArgumentSpec @Tag
   filterArgumentSpec @Header
@@ -144,9 +154,9 @@ parsesValidSpec ::
 parsesValidSpec parser =
   it "produces valid values whenever parsing succeeds" $
   forAllValid $ \input ->
-    let   isRight (Right _) = True
-          isRight _ = False
-          res = parse parser "test input" input
+    let isRight (Right _) = True
+        isRight _ = False
+        res = parse parser "test input" input
      in cover 10 (isRight res) "parses" $
         case res of
           Left _ -> pure ()
