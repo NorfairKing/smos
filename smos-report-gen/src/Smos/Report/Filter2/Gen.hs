@@ -29,6 +29,25 @@ import Smos.Report.Path
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 
+instance GenValid Piece where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenUnchecked BinOp
+
+instance GenValid BinOp
+
+instance GenUnchecked Paren
+
+instance GenValid Paren
+
+instance GenValid Part where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+instance GenValid Parts where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid (Filter RootedPath) where
   genValid = withTopLevelBranches $ FilterFile <$> genValid
   shrinkValid = shrinkValidFilter

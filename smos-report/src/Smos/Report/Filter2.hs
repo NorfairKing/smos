@@ -62,12 +62,24 @@ data Paren
 
 instance Validity Paren
 
+renderParen :: Paren -> Char
+renderParen =
+  \case
+    OpenParen -> '('
+    ClosedParen -> ')'
+
 data BinOp
   = AndOp
   | OrOp
   deriving (Show, Eq, Generic)
 
 instance Validity BinOp
+
+renderBinOp :: BinOp -> Text
+renderBinOp =
+  \case
+    AndOp -> "and"
+    OrOp -> "or"
 
 newtype Piece =
   Piece
@@ -79,6 +91,7 @@ instance Validity Piece where
   validate p@(Piece t) =
     mconcat
       [ genericValidate p
+      , declare "The piece is not empty" $ not $ T.null t
       , declare "The characters are restricted" $
         all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
         T.unpack t
@@ -94,11 +107,52 @@ data Part
 
 instance Validity Part
 
-parseParts :: Text -> Either ParseError [Part]
+renderPart :: Part -> Text
+renderPart =
+  \case
+    PartParen p -> T.singleton $ renderParen p
+    PartSpace -> " "
+    PartColumn -> ":"
+    PartPiece p -> pieceText p
+    PartBinOp bo -> renderBinOp bo
+
+newtype Parts =
+  Parts
+    { unParts :: [Part]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity Parts where
+  validate p@(Parts ps) =
+    mconcat
+      [ genericValidate p
+      , declare "There are no two unfitting consequtive pieces" $
+        let go [] = True
+            go [_] = True
+            go (p1:p2:ps) =
+              let b =
+                    case p1 of
+                      PartPiece _ ->
+                        case p2 of
+                          PartPiece _ -> False
+                          PartBinOp _ -> False
+                          _ -> True
+                      _ -> True
+               in b && go (p2 : ps)
+         in go ps
+      ]
+
+renderParts :: Parts -> Text
+renderParts = T.concat . map renderPart . unParts
+
+parseParts :: Text -> Either ParseError Parts
 parseParts = parse partsP "parts"
 
-partsP :: TP [Part]
-partsP = many partP
+partsP :: TP Parts
+partsP = Parts <$> many partP
+
+parsePart :: Text -> Either ParseError Part
+parsePart = parse partP "part"
 
 partP :: TP Part
 partP =
@@ -107,9 +161,11 @@ partP =
     , void (char '(') >> pure (PartParen OpenParen)
     , void (char ')') >> pure (PartParen ClosedParen)
     , void (char ' ') >> pure PartSpace
-    , void (string "and") >> pure (PartBinOp AndOp)
-    , void (string "or") >> pure (PartBinOp OrOp)
-    , PartPiece . Piece . T.pack <$> many1 (noneOf ":() ")
+    , try $ void (string "and") >> pure (PartBinOp AndOp)
+    , try $ void (string "or") >> pure (PartBinOp OrOp)
+    , PartPiece . Piece . T.pack <$>
+      many1
+        (satisfy (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':'))
     ]
 
 type TP = Parsec Text ()
