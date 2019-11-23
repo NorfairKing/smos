@@ -210,6 +210,7 @@ data KeyWord
   | KeyWordTodoState
   | KeyWordProperties
   | KeyWordTags
+  | KeyWordCursor
   | KeyWordLevel
   | KeyWordParent
   | KeyWordAncestor
@@ -221,7 +222,7 @@ data KeyWord
   | KeyWordVal
   | KeyWordFst
   | KeyWordSnd
-  | KeyWordMaybe
+  | KeyWordMaybe Bool
   | KeyWordSub
   | KeyWordOrd
   | KeyWordNot
@@ -249,7 +250,8 @@ parseKeyword =
     "val" -> Just KeyWordVal
     "fst" -> Just KeyWordFst
     "snd" -> Just KeyWordSnd
-    "maybe" -> Just KeyWordMaybe
+    "maybe-true" -> Just $ KeyWordMaybe True
+    "maybe-false" -> Just $ KeyWordMaybe False
     "sub" -> Just KeyWordSub
     "ord" -> Just KeyWordOrd
     "not" -> Just KeyWordNot
@@ -275,7 +277,8 @@ renderKeyWord =
     KeyWordVal -> "val"
     KeyWordFst -> "fst"
     KeyWordSnd -> "snd"
-    KeyWordMaybe -> "maybe"
+    KeyWordMaybe True -> "maybe-true"
+    KeyWordMaybe False -> "maybe-false"
     KeyWordSub -> "sub"
     KeyWordOrd -> "ord"
     KeyWordNot -> "not"
@@ -482,6 +485,10 @@ instance FilterArgument Word where
   renderArgument = T.pack . show
   parseArgument = maybe (Left "Invalid word") Right . readMaybe . T.unpack
 
+instance FilterArgument Comparison where
+  renderArgument = renderComparison
+  parseArgument = maybe (Left "Invalid comparison") Right . parseComparison
+
 instance FilterArgument (Path Rel File) where
   renderArgument = T.pack . fromRelFile
   parseArgument = left show . parseRelFile . T.unpack
@@ -533,8 +540,10 @@ instance Validity (Filter a) where
           FilterFile s ->
             mconcat
               [ validate s
+              , validateArgument s
               , declare "The filenames are restricted" $
-                all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
+                all
+                  (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
                 fromRelFile s
               ]
           FilterPropertyTime f' -> validate f'
@@ -571,7 +580,8 @@ instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
   parseJSON =
     withText "EntryFilter" $ \t ->
       case parseEntryFilter t of
-        Left err -> fail $ unwords ["Could not parse EntryFilter:", err]
+        Left err ->
+          fail $ unwords ["Could not parse EntryFilter:", T.unpack $ prettyFilterParseError err]
         Right f -> pure f
 
 instance ToJSON (Filter a) where
@@ -626,52 +636,72 @@ filterPredicate = go
             FilterOr f1 f2 -> goF f1 || goF f2
 
 renderFilter :: Filter a -> Text
-renderFilter = go
-  where
-    go :: Filter a -> Text
-    go f =
-      let p t1 t2 = t1 <> ":" <> t2
-          p1 t f' = p t $ go f'
-          p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
-       in case f of
-            FilterFile rp -> p "file" $ renderArgument rp
-            FilterPropertyTime f' -> p1 "time" f'
-                -- Entry mapping filters
-            FilterEntryHeader f' -> p1 "header" f'
-            FilterEntryTodoState f' -> p1 "state" f'
-            FilterEntryProperties f' -> p1 "property" f'
-            FilterEntryTags f' -> p1 "tag" f'
-                -- Cursor-related filters
-            FilterWithinCursor f' -> go f'
-            FilterLevel l -> p "level" $ renderArgument l
-            FilterAncestor f' -> p1 "ancestor" f'
-            FilterLegacy f' -> p1 "legacy" f'
-            FilterParent f' -> p1 "parent" f'
-            FilterChild f' -> p1 "child" f'
-                -- List filters
-            FilterAny f' -> go f'
-            FilterAll f' -> p1 "all" f'
-                -- Map filters
-            FilterMapHas k -> p "has" $ renderArgument k
-            FilterMapVal k f' -> p "val" $ p1 (renderArgument k) f'
-                -- Tuple filters
-            FilterFst f' -> go f'
-            FilterSnd f' -> go f'
-                -- Maybe filters
-            FilterMaybe b f' ->
-              if b
-                then p1 "maybe-true" f'
-                else go f' -- p1 "maybe-false" f'
-                -- Comparison filters
-            FilterSub t -> renderArgument t
-            FilterOrd o a -> p (renderComparison o) (renderArgument a)
-                -- Boolean filters
-            FilterNot f' -> p1 "not" f'
-            FilterOr f1 f2 -> p2 f1 "or" f2
-            FilterAnd f1 f2 -> p2 f1 "and" f2
+renderFilter = renderParts . renderAst . renderFilterAst
 
-parseEntryFilter :: Text -> Either String EntryFilter
-parseEntryFilter = undefined
+renderFilterAst :: Filter a -> Ast
+renderFilterAst = go
+  where
+    go :: Filter a -> Ast
+    go =
+      let pa :: FilterArgument a => a -> Ast
+          pa a = AstPiece $ Piece $ renderArgument a
+          paa :: FilterArgument a => a -> Ast -> Ast
+          paa a ast = AstUnOp (Piece $ renderArgument a) ast
+          pkw :: KeyWord -> Ast -> Ast
+          pkw kw ast = AstUnOp (Piece $ renderKeyWord kw) ast
+          kwa :: KeyWord -> Filter a -> Ast
+          kwa kw f' = pkw kw $ go f'
+          kwp :: FilterArgument a => KeyWord -> a -> Ast
+          kwp kw a = pkw kw $ pa a
+          kwb :: Filter a -> BinOp -> Filter a -> Ast
+          kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
+       in \case
+            FilterFile rp -> kwp KeyWordFile rp
+            FilterPropertyTime f' -> kwa KeyWordTime f'
+            FilterEntryHeader f' -> kwa KeyWordHeader f'
+            FilterEntryTodoState f' -> kwa KeyWordTodoState f'
+            FilterEntryProperties f' -> kwa KeyWordProperties f'
+            FilterEntryTags f' -> kwa KeyWordTags f'
+            FilterWithinCursor f' -> kwa KeyWordCursor f'
+            FilterLevel l -> kwp KeyWordLevel l
+            FilterAncestor f' -> kwa KeyWordAncestor f'
+            FilterLegacy f' -> kwa KeyWordLegacy f'
+            FilterParent f' -> kwa KeyWordParent f'
+            FilterChild f' -> kwa KeyWordChild f'
+            FilterAny f' -> kwa KeyWordAny f'
+            FilterAll f' -> kwa KeyWordAll f'
+            FilterMapHas k -> pkw KeyWordHas $ pa k
+            FilterMapVal k f' -> pkw KeyWordVal $ paa k $ go f'
+            FilterFst f' -> kwa KeyWordFst f'
+            FilterSnd f' -> kwa KeyWordSnd f'
+            FilterMaybe b f' -> kwa (KeyWordMaybe b) f'
+            FilterSub t -> kwp KeyWordSub t
+            FilterOrd o a -> pkw KeyWordOrd $ paa o $ pa a
+            FilterNot f' -> kwa KeyWordNot f'
+            FilterOr f1 f2 -> kwb f1 OrOp f2
+            FilterAnd f1 f2 -> kwb f1 AndOp f2
+
+data FilterParseError
+  = TokenisationError ParseError
+  | ParsingError ParseError
+  | TypeCheckingError Text
+  deriving (Show, Eq, Generic)
+
+prettyFilterParseError :: FilterParseError -> Text
+prettyFilterParseError =
+  \case
+    TokenisationError pe -> T.pack $ show pe
+    ParsingError pe -> T.pack $ show pe
+    TypeCheckingError t -> t
+
+parseEntryFilter :: Text -> Either FilterParseError EntryFilter
+parseEntryFilter t = do
+  ps <- left TokenisationError $ parseParts t
+  ast <- left ParsingError $ parseAst ps
+  left TypeCheckingError $ parseEntryFilterAst ast
+
+parseEntryFilterAst :: Ast -> Either Text EntryFilter
+parseEntryFilterAst = undefined
 
 data DerivationError =
   DerivationError

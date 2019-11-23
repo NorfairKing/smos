@@ -127,6 +127,26 @@ spec = do
   filterArgumentSpec @TimestampName
   filterArgumentSpec @Timestamp
   filterArgumentSpec @(Path Rel File)
+  describe "renderFilterAst" $
+    it "produces valid asts" $
+    producesValidsOnValids (renderFilterAst @(RootedPath, ForestCursor Entry))
+  describe "parseEntryFilterAst" $
+    it "parses back whatever 'renderFilterAst' renders" $
+    forAllValid $ \filter ->
+      let t = renderFilterAst filter
+       in case parseEntryFilterAst t of
+            Left err -> expectationFailure $ show err
+            Right filter' -> filter' `shouldBe` filter
+  describe "renderFilter" $
+    it "produces valid text" $
+    producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
+  describe "parseEntryFilter" $
+    it "parses back whatever 'renderFilter' renders" $
+    forAllValid $ \filter ->
+      let t = renderFilter filter
+       in case parseEntryFilter t of
+            Left err -> expectationFailure $ show err
+            Right filter' -> filter' `shouldBe` filter
   -- eqSpecOnValid @EntryFilter
   -- genValidSpec @EntryFilter
   -- jsonSpecOnValid @EntryFilter
