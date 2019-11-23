@@ -127,6 +127,21 @@ spec = do
   filterArgumentSpec @TimestampName
   filterArgumentSpec @Timestamp
   filterArgumentSpec @(Path Rel File)
+  eqSpecOnValid @EntryFilter
+  genValidSpec @EntryFilter
+  jsonSpecOnValid @EntryFilter
+  eqSpecOnValid @(Filter RootedPath)
+  genValidSpec @(Filter RootedPath)
+  eqSpecOnValid @(Filter Time)
+  genValidSpec @(Filter Time)
+  eqSpecOnValid @(Filter Tag)
+  genValidSpec @(Filter Tag)
+  eqSpecOnValid @(Filter Header)
+  genValidSpec @(Filter Header)
+  eqSpecOnValid @(Filter TodoState)
+  genValidSpec @(Filter TodoState)
+  eqSpecOnValid @(Filter PropertyValue)
+  genValidSpec @(Filter PropertyValue)
   describe "renderFilterAst" $
     it "produces valid asts" $
     producesValidsOnValids (renderFilterAst @(RootedPath, ForestCursor Entry))
@@ -147,21 +162,6 @@ spec = do
        in case parseEntryFilter t of
             Left err -> expectationFailure $ show err
             Right filter' -> filter' `shouldBe` filter
-  -- eqSpecOnValid @EntryFilter
-  -- genValidSpec @EntryFilter
-  -- jsonSpecOnValid @EntryFilter
-  -- eqSpecOnValid @(Filter RootedPath)
-  -- genValidSpec @(Filter RootedPath)
-  -- eqSpecOnValid @(Filter Time)
-  -- genValidSpec @(Filter Time)
-  -- eqSpecOnValid @(Filter Tag)
-  -- genValidSpec @(Filter Tag)
-  -- eqSpecOnValid @(Filter Header)
-  -- genValidSpec @(Filter Header)
-  -- eqSpecOnValid @(Filter TodoState)
-  -- genValidSpec @(Filter TodoState)
-  -- eqSpecOnValid @(Filter PropertyValue)
-  -- genValidSpec @(Filter PropertyValue)
   -- describe "foldFilterAnd" $
   --   it "produces valid results" $
   --   producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))

@@ -239,6 +239,7 @@ parseKeyword =
     "todoState" -> Just KeyWordTodoState
     "properties" -> Just KeyWordProperties
     "tags" -> Just KeyWordTags
+    "cursor" -> Just KeyWordCursor
     "level" -> Just KeyWordLevel
     "parent" -> Just KeyWordParent
     "ancestor" -> Just KeyWordAncestor
@@ -266,6 +267,7 @@ renderKeyWord =
     KeyWordTodoState -> "todoState"
     KeyWordProperties -> "properties"
     KeyWordTags -> "tags"
+    KeyWordCursor -> "cursor"
     KeyWordLevel -> "level"
     KeyWordParent -> "parent"
     KeyWordAncestor -> "ancestor"
@@ -540,11 +542,10 @@ instance Validity (Filter a) where
           FilterFile s ->
             mconcat
               [ validate s
-              , validateArgument s
               , declare "The filenames are restricted" $
-                all
-                  (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
+                all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
                 fromRelFile s
+              , validateArgument s
               ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'

@@ -51,20 +51,20 @@ instance GenValid Parts where
 
 instance GenValid Ast where
   shrinkValid = shrinkValidStructurally
-  genValid = sized $ \n -> case n of
-    0 -> AstPiece <$> genValid
-    _ -> oneof
-      [do
-          (a, b) <- genSplit n
-          AstUnOp <$> resize a genValid <*> resize b genValid
-      , do
-          (a, b, c) <- genSplit3 n
-          AstBinOp <$> resize a genValid <*> resize b genValid <*> resize c genValid ]
-
-
+  genValid =
+    sized $ \n ->
+      case n of
+        0 -> AstPiece <$> genValid
+        _ ->
+          oneof
+            [ do (a, b) <- genSplit n
+                 AstUnOp <$> resize a genValid <*> resize b genValid
+            , do (a, b, c) <- genSplit3 n
+                 AstBinOp <$> resize a genValid <*> resize b genValid <*> resize c genValid
+            ]
 
 instance GenValid (Filter RootedPath) where
-  genValid = withTopLevelBranches $ FilterFile <$> genValid
+  genValid = withTopLevelBranches $ (FilterFile <$> genValid) `suchThat` isValid
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Time) where
