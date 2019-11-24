@@ -770,6 +770,59 @@ tcThisKeyWordOp kw' func =
       then func a
       else Left $ FTEThisKeyWordExpected kw' kw
 
+tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
+tcSub =
+  tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
+    case parseArgumentPiece p of
+      Right a -> pure (FilterSub a)
+      _ -> Left FilterTypeError
+
+tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
+tcOrd =
+  tcThisKeyWordOp KeyWordOrd $ tcArgumentOp $ \comparison ->
+    tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
+
+tcTimeFilter :: TC (Filter Time)
+tcTimeFilter = tcWithTopLevelBranches tcOrd
+
+tcTagFilter :: TC (Filter Tag)
+tcTagFilter = tcWithTopLevelBranches tcSub
+
+tcHeaderFilter :: TC (Filter Header)
+tcHeaderFilter = tcWithTopLevelBranches tcSub
+
+tcTodoStateFilter :: TC (Filter TodoState)
+tcTodoStateFilter = tcWithTopLevelBranches tcSub
+
+tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
+tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
+
+tcTagsFilter :: TC (Filter (Set Tag))
+tcTagsFilter = tcSetFilter tcTagFilter
+
+tcPropertyValueFilter :: TC (Filter PropertyValue)
+tcPropertyValueFilter =
+  tcWithTopLevelBranches $
+  tcChoices
+    [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
+
+tcRootedPathFilter :: TC (Filter RootedPath)
+tcRootedPathFilter =
+  tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
+    case parseArgumentPiece p2 of
+      Right rp -> Right $ FilterFile rp
+      _ -> Left FilterTypeError
+
+tcEntryFilter :: TC (Filter Entry)
+tcEntryFilter =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
+    case kw of
+      KeyWordHeader -> FilterEntryHeader <$> tcHeaderFilter a
+      KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
+      KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
+      KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
+      _ -> Left FilterTypeError
+
 tcWithTopLevelBranches :: TC (Filter a) -> TC (Filter a)
 tcWithTopLevelBranches func ast =
   case ast of
@@ -818,13 +871,6 @@ tcSetFilter func =
       KeyWordAll -> fmap FilterAll . func
       _ -> const $ Left FilterTypeError
 
-tcRootedPathFilter :: TC (Filter RootedPath)
-tcRootedPathFilter =
-  tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
-    case parseArgumentPiece p2 of
-      Right rp -> Right $ FilterFile rp
-      _ -> Left FilterTypeError
-
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
   tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
@@ -836,52 +882,6 @@ tcForestCursorFilter tc =
       KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
       KeyWordCursor -> FilterWithinCursor <$> tc a
       _ -> Left FilterTypeError
-
-tcEntryFilter :: TC (Filter Entry)
-tcEntryFilter =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
-    case kw of
-      KeyWordHeader -> FilterEntryHeader <$> tcHeaderFilter a
-      KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
-      KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
-      KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
-      _ -> Left FilterTypeError
-
-tcTimeFilter :: TC (Filter Time)
-tcTimeFilter = tcWithTopLevelBranches tcOrd
-
-tcTagFilter :: TC (Filter Tag)
-tcTagFilter = tcWithTopLevelBranches tcSub
-
-tcHeaderFilter :: TC (Filter Header)
-tcHeaderFilter = tcWithTopLevelBranches tcSub
-
-tcTodoStateFilter :: TC (Filter TodoState)
-tcTodoStateFilter = tcWithTopLevelBranches tcSub
-
-tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
-tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
-
-tcTagsFilter :: TC (Filter (Set Tag))
-tcTagsFilter = tcSetFilter tcTagFilter
-
-tcPropertyValueFilter :: TC (Filter PropertyValue)
-tcPropertyValueFilter =
-  tcWithTopLevelBranches $
-  tcChoices
-    [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
-
-tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
-tcSub =
-  tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
-    case parseArgumentPiece p of
-      Right a -> pure (FilterSub a)
-      _ -> Left FilterTypeError
-
-tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
-tcOrd =
-  tcThisKeyWordOp KeyWordOrd $ tcArgumentOp $ \comparison ->
-    tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
 
 tcChoices :: [TC a] -> TC a
 tcChoices [] = const $ Left FilterTypeError

@@ -11,6 +11,7 @@ module Smos.Report.Filter2Spec
 
 import Data.Char as Char
 import Data.Functor.Identity
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -32,6 +33,7 @@ import Smos.Data
 
 import Smos.Report.Path.Gen ()
 
+import Smos.Report.Comparison
 import Smos.Report.Filter2
 import Smos.Report.Filter2.Gen ()
 import Smos.Report.Path
@@ -158,6 +160,48 @@ spec = do
     describe "renderFilter" $
       it "produces valid text" $
       producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
+    describe "tcSub" $ do
+      tcSpec
+        tcSub
+        (AstUnOp (Piece "sub") (AstPiece (Piece "toast")))
+        (FilterSub (fromJust $ tag "toast"))
+      tcSpec
+        tcSub
+        (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
+        (FilterSub (fromJust $ header "header"))
+      tcSpec
+        tcSub
+        (AstUnOp (Piece "sub") (AstPiece (Piece "TODO")))
+        (FilterSub (fromJust $ todoState "TODO"))
+    describe "tcOrd" $ do
+      tcSpec
+        tcOrd
+        (AstUnOp (Piece "ord") (AstUnOp (Piece "lt") (AstPiece (Piece "5m"))))
+        (FilterOrd LTC (Minutes 5))
+      tcSpec
+        tcOrd
+        (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "6h"))))
+        (FilterOrd GTC (Hours 6))
+    describe "tcTimeFilter" $ do
+      tcSpec
+        tcTimeFilter
+        (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "6h"))))
+        (FilterOrd GTC (Hours 6))
+    describe "tcTagFilter" $ do
+      tcSpec
+        tcTagFilter
+        (AstUnOp (Piece "sub") (AstPiece (Piece "toast")))
+        (FilterSub (fromJust $ tag "toast"))
+    describe "tcHeaderFilter" $ do
+      tcSpec
+        tcHeaderFilter
+        (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
+        (FilterSub (fromJust $ header "header"))
+    describe "tcTodoStateFilter" $ do
+      tcSpec
+        tcTodoStateFilter
+        (AstUnOp (Piece "sub") (AstPiece (Piece "TODO")))
+        (FilterSub (fromJust $ todoState "TODO"))
     describe "tcRootedPathFilter" $
       tcSpec
         tcRootedPathFilter
@@ -174,7 +218,7 @@ spec = do
         (FilterSnd $ FilterFile [relfile|side|])
     describe "tcForestCursorFilter" $ do
       tcSpec
-        (tcForestCursorFilter tcEntryFilter )
+        (tcForestCursorFilter tcEntryFilter)
         (AstUnOp (Piece "level") (AstPiece (Piece "1")))
         (FilterLevel 1)
     describe "parseEntryFilter" $
