@@ -258,6 +258,9 @@ parseKeyword =
     "not" -> Just KeyWordNot
     _ -> Nothing
 
+parseKeywordPiece :: Piece -> Maybe KeyWord
+parseKeywordPiece = parseKeyword . pieceText
+
 renderKeyWord :: KeyWord -> Text
 renderKeyWord =
   \case
@@ -287,18 +290,20 @@ renderKeyWord =
 
 anyKeyWordP :: PP KeyWord
 anyKeyWordP = do
-  Piece t <- pieceP
-  case parseKeyword t of
+  p <- pieceP
+  case parseKeywordPiece p of
     Just kw -> pure kw
-    Nothing -> fail $ "not a keyword: " <> T.unpack t
+    Nothing -> fail $ "not a keyword: " <> T.unpack (pieceText p)
 
 keyWordP :: KeyWord -> PP ()
 keyWordP kw = do
-  Piece t <- pieceP
-  case parseKeyword t of
+  p <- pieceP
+  case parseKeywordPiece p of
     Just kw'
       | kw' == kw' -> pure ()
-    _ -> fail $ "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: " <> T.unpack t
+    _ ->
+      fail $ "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: " <>
+      T.unpack (pieceText p)
 
 data Ast
   = AstBinOp Ast BinOp Ast
@@ -482,6 +487,9 @@ instance FilterOrd Timestamp
 class FilterArgument a where
   renderArgument :: a -> Text
   parseArgument :: Text -> Either String a
+
+parseArgumentPiece :: FilterArgument a => Piece -> Either String a
+parseArgumentPiece = parseArgument . pieceText
 
 instance FilterArgument Word where
   renderArgument = T.pack . show
@@ -685,7 +693,7 @@ renderFilterAst = go
 data FilterParseError
   = TokenisationError ParseError
   | ParsingError ParseError
-  | TypeCheckingError Text
+  | TypeCheckingError FilterTypeError
   deriving (Show, Eq, Generic)
 
 prettyFilterParseError :: FilterParseError -> Text
@@ -693,7 +701,7 @@ prettyFilterParseError =
   \case
     TokenisationError pe -> T.pack $ show pe
     ParsingError pe -> T.pack $ show pe
-    TypeCheckingError t -> t
+    TypeCheckingError te -> renderFilterTypeError te
 
 parseEntryFilter :: Text -> Either FilterParseError EntryFilter
 parseEntryFilter t = do
@@ -701,14 +709,107 @@ parseEntryFilter t = do
   ast <- left ParsingError $ parseAst ps
   left TypeCheckingError $ parseEntryFilterAst ast
 
-parseEntryFilterAst :: Ast -> Either Text EntryFilter
-parseEntryFilterAst = undefined
-
-data DerivationError =
-  DerivationError
+data FilterTypeError =
+  FilterTypeError
   deriving (Show, Eq, Generic)
 
-instance Validity DerivationError
+renderFilterTypeError :: FilterTypeError -> Text
+renderFilterTypeError = T.pack . show
 
-deriveFilterFromAst :: Ast -> Either DerivationError EntryFilter
-deriveFilterFromAst = undefined
+type TC a = Ast -> Either FilterTypeError a
+
+parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
+parseEntryFilterAst = tcTupleFilter tcRootedPathFilter (tcForestCursorFilter tcEntryFilter)
+
+tcPiece :: (Piece -> Either FilterTypeError a) -> TC a
+tcPiece func =
+  \case
+    AstPiece p -> func p
+    _ -> Left FilterTypeError
+
+tcArgumentPiece :: FilterArgument a => (a -> Either FilterTypeError a) -> TC a
+tcArgumentPiece func =
+  tcPiece $ \p ->
+    case parseArgumentPiece p of
+      Right a -> func a
+      _ -> Left FilterTypeError
+
+tcUnOp :: (Piece -> TC a) -> TC a
+tcUnOp func =
+  \case
+    AstUnOp p a -> func p a
+    _ -> Left FilterTypeError
+
+tcKeyWord :: (KeyWord -> Either FilterTypeError a) -> Piece -> Either FilterTypeError a
+tcKeyWord func p =
+  case parseKeywordPiece p of
+    Just kw -> func kw
+    _ -> Left FilterTypeError
+
+tcThisKeyWord :: KeyWord -> TC a -> TC a
+tcThisKeyWord kw' func =
+  tcUnOp $ \p a ->
+    flip tcKeyWord p $ \kw ->
+      if kw == kw'
+        then func a
+        else Left FilterTypeError
+
+tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
+tcTupleFilter fstTC sndTC =
+  tcUnOp $ \p a ->
+    flip tcKeyWord p $ \kw ->
+      case kw of
+        KeyWordFst -> FilterFst <$> fstTC a
+        KeyWordSnd -> FilterSnd <$> sndTC a
+        _ -> Left FilterTypeError
+
+tcRootedPathFilter :: TC (Filter RootedPath)
+tcRootedPathFilter =
+  tcThisKeyWord KeyWordFile $ tcPiece $ \p2 ->
+    case parseArgumentPiece p2 of
+      Right rp -> Right $ FilterFile rp
+      _ -> Left FilterTypeError
+
+tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
+tcForestCursorFilter tc =
+  tcUnOp $ \p a ->
+    flip tcKeyWord p $ \kw ->
+      case kw of
+        KeyWordParent -> FilterParent <$> tcForestCursorFilter tc a
+        KeyWordAncestor -> FilterAncestor <$> tcForestCursorFilter tc a
+        KeyWordChild -> FilterChild <$> tcForestCursorFilter tc a
+        KeyWordLegacy -> FilterLegacy <$> tcForestCursorFilter tc a
+        KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
+        KeyWordCursor -> FilterWithinCursor <$> tc a
+        _ -> Left FilterTypeError
+
+tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
+tcMaybeFilter tc =
+  tcUnOp $ \p a ->
+    flip tcKeyWord p $ \kw ->
+      case kw of
+        KeyWordMaybe b -> FilterMaybe b <$> tc a
+        _ -> Left FilterTypeError
+
+tcEntryFilter :: TC (Filter Entry)
+tcEntryFilter =
+  tcUnOp $ \p a ->
+    flip tcKeyWord p $ \kw ->
+      case kw of
+        KeyWordHeader -> FilterEntryHeader <$> tcHeaderFilter a
+        KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
+        KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
+        KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
+        _ -> Left FilterTypeError
+
+tcHeaderFilter :: TC (Filter Header)
+tcHeaderFilter = undefined
+
+tcTodoStateFilter :: TC (Filter TodoState)
+tcTodoStateFilter = undefined
+
+tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
+tcPropertiesFilter = undefined
+
+tcTagsFilter :: TC (Filter (Set Tag))
+tcTagsFilter = undefined
