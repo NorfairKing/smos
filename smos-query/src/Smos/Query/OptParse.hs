@@ -21,6 +21,7 @@ import Options.Applicative
 
 import qualified Smos.Report.OptParse as Report
 
+import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection

@@ -5,7 +5,6 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -25,8 +24,6 @@ import Data.Map (Map)
 import Data.Maybe
 import Data.Proxy
 import Data.Set (Set)
-import qualified Data.Text as T
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
@@ -222,7 +219,7 @@ data KeyWord
   | KeyWordVal
   | KeyWordFst
   | KeyWordSnd
-  | KeyWordMaybe Bool
+  | KeyWordMaybe
   | KeyWordSub
   | KeyWordOrd
   | KeyWordNot
@@ -236,7 +233,7 @@ parseKeyword =
     "file" -> Just KeyWordFile
     "time" -> Just KeyWordTime
     "header" -> Just KeyWordHeader
-    "todoState" -> Just KeyWordTodoState
+    "state" -> Just KeyWordTodoState
     "properties" -> Just KeyWordProperties
     "tags" -> Just KeyWordTags
     "cursor" -> Just KeyWordCursor
@@ -251,8 +248,7 @@ parseKeyword =
     "val" -> Just KeyWordVal
     "fst" -> Just KeyWordFst
     "snd" -> Just KeyWordSnd
-    "maybe-true" -> Just $ KeyWordMaybe True
-    "maybe-false" -> Just $ KeyWordMaybe False
+    "maybe" -> Just KeyWordMaybe
     "sub" -> Just KeyWordSub
     "ord" -> Just KeyWordOrd
     "not" -> Just KeyWordNot
@@ -267,7 +263,7 @@ renderKeyWord =
     KeyWordFile -> "file"
     KeyWordTime -> "time"
     KeyWordHeader -> "header"
-    KeyWordTodoState -> "todoState"
+    KeyWordTodoState -> "state"
     KeyWordProperties -> "properties"
     KeyWordTags -> "tags"
     KeyWordCursor -> "cursor"
@@ -282,8 +278,7 @@ renderKeyWord =
     KeyWordVal -> "val"
     KeyWordFst -> "fst"
     KeyWordSnd -> "snd"
-    KeyWordMaybe True -> "maybe-true"
-    KeyWordMaybe False -> "maybe-false"
+    KeyWordMaybe -> "maybe"
     KeyWordSub -> "sub"
     KeyWordOrd -> "ord"
     KeyWordNot -> "not"
@@ -491,6 +486,16 @@ class FilterArgument a where
 parseArgumentPiece :: FilterArgument a => Piece -> Either String a
 parseArgumentPiece = parseArgument . pieceText
 
+instance FilterArgument Bool where
+  renderArgument = T.pack . show
+  parseArgument =
+    \case
+      "true" -> pure True
+      "false" -> pure False
+      "True" -> pure True
+      "False" -> pure False
+      _ -> Left "Invalid bool"
+
 instance FilterArgument Word where
   renderArgument = T.pack . show
   parseArgument = maybe (Left "Invalid word") Right . readMaybe . T.unpack
@@ -655,9 +660,9 @@ renderFilterAst = go
       let pa :: FilterArgument a => a -> Ast
           pa a = AstPiece $ Piece $ renderArgument a
           paa :: FilterArgument a => a -> Ast -> Ast
-          paa a ast = AstUnOp (Piece $ renderArgument a) ast
+          paa a = AstUnOp (Piece $ renderArgument a)
           pkw :: KeyWord -> Ast -> Ast
-          pkw kw ast = AstUnOp (Piece $ renderKeyWord kw) ast
+          pkw kw = AstUnOp (Piece $ renderKeyWord kw)
           kwa :: KeyWord -> Filter a -> Ast
           kwa kw f' = pkw kw $ go f'
           kwp :: FilterArgument a => KeyWord -> a -> Ast
@@ -683,7 +688,7 @@ renderFilterAst = go
             FilterMapVal k f' -> pkw KeyWordVal $ paa k $ go f'
             FilterFst f' -> kwa KeyWordFst f'
             FilterSnd f' -> kwa KeyWordSnd f'
-            FilterMaybe b f' -> kwa (KeyWordMaybe b) f'
+            FilterMaybe b f' -> pkw KeyWordMaybe $ paa b $ go f'
             FilterSub t -> kwp KeyWordSub t
             FilterOrd o a -> pkw KeyWordOrd $ paa o $ pa a
             FilterNot f' -> kwa KeyWordNot f'
@@ -770,6 +775,27 @@ tcThisKeyWordOp kw' func =
       then func a
       else Left $ FTEThisKeyWordExpected kw' kw
 
+tcWithTopLevelBranches :: TC (Filter a) -> TC (Filter a)
+tcWithTopLevelBranches func ast =
+  case ast of
+    AstBinOp a1 bo a2 ->
+      let f = tcWithTopLevelBranches func
+       in case bo of
+            AndOp -> FilterAnd <$> f a1 <*> f a2
+            OrOp -> FilterOr <$> f a1 <*> f a2
+    AstUnOp p a ->
+      case parseKeywordPiece p of
+        Just KeyWordNot -> FilterNot <$> tcWithTopLevelBranches func a
+        _ -> func ast
+    _ -> func ast
+
+tcRootedPathFilter :: TC (Filter RootedPath)
+tcRootedPathFilter =
+  tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
+    case parseArgumentPiece p2 of
+      Right rp -> Right $ FilterFile rp
+      _ -> Left FilterTypeError
+
 tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
 tcSub =
   tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
@@ -794,11 +820,13 @@ tcHeaderFilter = tcWithTopLevelBranches tcSub
 tcTodoStateFilter :: TC (Filter TodoState)
 tcTodoStateFilter = tcWithTopLevelBranches tcSub
 
-tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
-tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
-
-tcTagsFilter :: TC (Filter (Set Tag))
-tcTagsFilter = tcSetFilter tcTagFilter
+tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
+tcMaybeFilter tc =
+  tcWithTopLevelBranches $
+  tcChoices
+    [ tcThisKeyWordOp KeyWordMaybe $ tcArgumentOp $ \b a -> FilterMaybe b <$> tc a
+    , fmap (FilterMaybe False) . tc
+    ]
 
 tcPropertyValueFilter :: TC (Filter PropertyValue)
 tcPropertyValueFilter =
@@ -806,12 +834,26 @@ tcPropertyValueFilter =
   tcChoices
     [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
 
-tcRootedPathFilter :: TC (Filter RootedPath)
-tcRootedPathFilter =
-  tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
-    case parseArgumentPiece p2 of
-      Right rp -> Right $ FilterFile rp
-      _ -> Left FilterTypeError
+tcMapFilter ::
+     (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
+tcMapFilter func =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \case
+    KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+    KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+    _ -> const $ Left FilterTypeError
+
+tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
+tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
+
+tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
+tcSetFilter func =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \case
+    KeyWordAny -> fmap FilterAny . func
+    KeyWordAll -> fmap FilterAll . func
+    _ -> const $ Left FilterTypeError
+
+tcTagsFilter :: TC (Filter (Set Tag))
+tcTagsFilter = tcSetFilter tcTagFilter
 
 tcEntryFilter :: TC (Filter Entry)
 tcEntryFilter =
@@ -822,54 +864,6 @@ tcEntryFilter =
       KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
       KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
       _ -> Left FilterTypeError
-
-tcWithTopLevelBranches :: TC (Filter a) -> TC (Filter a)
-tcWithTopLevelBranches func ast =
-  case ast of
-    AstBinOp a1 bo a2 ->
-      let f = tcWithTopLevelBranches func
-       in case bo of
-            AndOp -> FilterAnd <$> f a1 <*> f a2
-            OrOp -> FilterOr <$> f a1 <*> f a2
-    AstUnOp p a ->
-      case parseKeywordPiece p of
-        Just KeyWordNot -> FilterNot <$> tcWithTopLevelBranches func a
-        _ -> func ast
-    _ -> func ast
-
-tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
-tcTupleFilter fstTC sndTC =
-  tcWithTopLevelBranches $ \ast ->
-    flip tcKeyWordOp ast $ \kw a ->
-      case kw of
-        KeyWordFst -> FilterFst <$> fstTC a
-        KeyWordSnd -> FilterSnd <$> sndTC a
-        _ -> tcChoices [fmap FilterFst . fstTC, fmap FilterSnd . sndTC] ast
-
-tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
-tcMaybeFilter tc =
-  tcWithTopLevelBranches $ \ast ->
-    flip tcKeyWordOp ast $ \kw a ->
-      case kw of
-        KeyWordMaybe b -> FilterMaybe b <$> tc a
-        _ -> FilterMaybe False <$> tc ast
-
-tcMapFilter ::
-     (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
-tcMapFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
-    case kw of
-      KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
-      KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
-      _ -> const $ Left FilterTypeError
-
-tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
-tcSetFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
-    case kw of
-      KeyWordAny -> fmap FilterAny . func
-      KeyWordAll -> fmap FilterAll . func
-      _ -> const $ Left FilterTypeError
 
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
@@ -882,6 +876,15 @@ tcForestCursorFilter tc =
       KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
       KeyWordCursor -> FilterWithinCursor <$> tc a
       _ -> Left FilterTypeError
+
+tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
+tcTupleFilter fstTC sndTC =
+  tcWithTopLevelBranches $ \ast ->
+    flip tcKeyWordOp ast $ \kw a ->
+      case kw of
+        KeyWordFst -> FilterFst <$> fstTC a
+        KeyWordSnd -> FilterSnd <$> sndTC a
+        _ -> tcChoices [fmap FilterFst . fstTC, fmap FilterSnd . sndTC] ast
 
 tcChoices :: [TC a] -> TC a
 tcChoices [] = const $ Left FilterTypeError

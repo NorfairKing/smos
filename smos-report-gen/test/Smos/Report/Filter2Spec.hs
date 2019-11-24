@@ -160,6 +160,38 @@ spec = do
     describe "renderFilter" $
       it "produces valid text" $
       producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
+    describe "tcWithTopLevelBranches" $ do
+      tcSpec
+        (tcWithTopLevelBranches tcSub)
+        (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
+        (FilterSub (fromJust $ header "header"))
+      tcSpec
+        (tcWithTopLevelBranches tcSub)
+        (AstUnOp (Piece "not") (AstUnOp (Piece "sub") (AstPiece (Piece "header"))))
+        (FilterNot (FilterSub (fromJust $ header "header")))
+      tcSpec
+        (tcWithTopLevelBranches tcSub)
+        (AstBinOp
+           (AstUnOp (Piece "sub") (AstPiece (Piece "header1")))
+           AndOp
+           (AstUnOp (Piece "sub") (AstPiece (Piece "header2"))))
+        (FilterAnd
+           (FilterSub (fromJust $ header "header1"))
+           (FilterSub (fromJust $ header "header2")))
+      tcSpec
+        (tcWithTopLevelBranches tcSub)
+        (AstBinOp
+           (AstUnOp (Piece "sub") (AstPiece (Piece "header1")))
+           OrOp
+           (AstUnOp (Piece "sub") (AstPiece (Piece "header2"))))
+        (FilterOr
+           (FilterSub (fromJust $ header "header1"))
+           (FilterSub (fromJust $ header "header2")))
+    describe "tcRootedPathFilter" $
+      tcSpec
+        tcRootedPathFilter
+        (AstUnOp (Piece "file") (AstPiece (Piece "side")))
+        (FilterFile [relfile|side|])
     describe "tcSub" $ do
       tcSpec
         tcSub
@@ -182,45 +214,148 @@ spec = do
         tcOrd
         (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "6h"))))
         (FilterOrd GTC (Hours 6))
-    describe "tcTimeFilter" $ do
+    describe "tcTimeFilter" $
       tcSpec
         tcTimeFilter
         (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "6h"))))
         (FilterOrd GTC (Hours 6))
-    describe "tcTagFilter" $ do
+    describe "tcTagFilter" $
       tcSpec
         tcTagFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "toast")))
         (FilterSub (fromJust $ tag "toast"))
-    describe "tcHeaderFilter" $ do
+    describe "tcHeaderFilter" $
       tcSpec
         tcHeaderFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
         (FilterSub (fromJust $ header "header"))
-    describe "tcTodoStateFilter" $ do
+    describe "tcTodoStateFilter" $
       tcSpec
         tcTodoStateFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "TODO")))
         (FilterSub (fromJust $ todoState "TODO"))
-    describe "tcRootedPathFilter" $
+    describe "tcMaybeFilter" $
       tcSpec
-        tcRootedPathFilter
-        (AstUnOp (Piece "file") (AstPiece (Piece "side")))
-        (FilterFile [relfile|side|])
-    describe "tcTupleFilter" $ do
+        (tcMaybeFilter tcTimeFilter)
+        (AstUnOp
+           (Piece "maybe")
+           (AstUnOp
+              (Piece "false")
+              (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "7s"))))))
+        (FilterMaybe False (FilterOrd GTC (Seconds 7)))
+    describe "tcPropertyValueFilter" $ do
       tcSpec
-        (tcTupleFilter tcRootedPathFilter tcRootedPathFilter)
-        (AstUnOp (Piece "fst") (AstUnOp (Piece "file") (AstPiece (Piece "side"))))
-        (FilterFst $ FilterFile [relfile|side|])
+        tcPropertyValueFilter
+        (AstUnOp (Piece "sub") (AstPiece (Piece "propertyValue")))
+        (FilterSub (fromJust $ propertyValue "propertyValue"))
       tcSpec
-        (tcTupleFilter tcRootedPathFilter tcRootedPathFilter)
-        (AstUnOp (Piece "snd") (AstUnOp (Piece "file") (AstPiece (Piece "side"))))
-        (FilterSnd $ FilterFile [relfile|side|])
+        tcPropertyValueFilter
+        (AstUnOp
+           (Piece "time")
+           (AstUnOp
+              (Piece "maybe")
+              (AstUnOp
+                 (Piece "false")
+                 (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "7s")))))))
+        (FilterPropertyTime (FilterMaybe False (FilterOrd GTC (Seconds 7))))
+    describe "tcMapFilter" $
+      tcSpec
+        (tcMapFilter tcPropertyValueFilter)
+        (AstUnOp
+           (Piece "val")
+           (AstUnOp
+              (Piece "client")
+              (AstUnOp
+                 (Piece "maybe")
+                 (AstUnOp (Piece "false") (AstUnOp (Piece "sub") (AstPiece (Piece "cssyd")))))))
+        (FilterMapVal
+           (fromJust $ propertyName "client")
+           (FilterMaybe False (FilterSub (fromJust $ propertyValue "cssyd"))))
+    describe "tcPropertiesFilter" $
+      tcSpec
+        tcPropertiesFilter
+        (AstUnOp
+           (Piece "val")
+           (AstUnOp
+              (Piece "client")
+              (AstUnOp
+                 (Piece "maybe")
+                 (AstUnOp (Piece "false") (AstUnOp (Piece "sub") (AstPiece (Piece "cssyd")))))))
+        (FilterMapVal
+           (fromJust $ propertyName "client")
+           (FilterMaybe False (FilterSub (fromJust $ propertyValue "cssyd"))))
+    describe "tcSetFilter" $ do
+      tcSpec
+        (tcSetFilter tcTagFilter)
+        (AstUnOp (Piece "any") (AstUnOp (Piece "sub") (AstPiece (Piece "toast"))))
+        (FilterAny (FilterSub (fromJust $ tag "toast")))
+      tcSpec
+        (tcSetFilter tcTagFilter)
+        (AstUnOp (Piece "all") (AstUnOp (Piece "sub") (AstPiece (Piece "a"))))
+        (FilterAll (FilterSub (fromJust $ tag "a")))
+    describe "tcTagsFilter" $ do
+      tcSpec
+        tcTagsFilter
+        (AstUnOp (Piece "any") (AstUnOp (Piece "sub") (AstPiece (Piece "toast"))))
+        (FilterAny (FilterSub (fromJust $ tag "toast")))
+      tcSpec
+        tcTagsFilter
+        (AstUnOp (Piece "all") (AstUnOp (Piece "sub") (AstPiece (Piece "a"))))
+        (FilterAll (FilterSub (fromJust $ tag "a")))
+    describe "tcEntryFilter" $ do
+      tcSpec
+        tcEntryFilter
+        (AstUnOp (Piece "header") (AstUnOp (Piece "sub") (AstPiece (Piece "header"))))
+        (FilterEntryHeader (FilterSub (fromJust $ header "header")))
+      tcSpec
+        tcEntryFilter
+        (AstUnOp
+           (Piece "state")
+           (AstUnOp
+              (Piece "maybe")
+              (AstUnOp (Piece "false") (AstUnOp (Piece "sub") (AstPiece (Piece "TODO"))))))
+        (FilterEntryTodoState (FilterMaybe False (FilterSub (fromJust $ todoState "TODO"))))
+      tcSpec
+        tcEntryFilter
+        (AstUnOp
+           (Piece "tags")
+           (AstUnOp (Piece "all") (AstUnOp (Piece "sub") (AstPiece (Piece "a")))))
+        (FilterEntryTags (FilterAll (FilterSub (fromJust $ tag "a"))))
+      tcSpec
+        tcEntryFilter
+        (AstUnOp
+           (Piece "properties")
+           (AstUnOp
+              (Piece "val")
+              (AstUnOp
+                 (Piece "client")
+                 (AstUnOp
+                    (Piece "maybe")
+                    (AstUnOp (Piece "false") (AstUnOp (Piece "sub") (AstPiece (Piece "cssyd"))))))))
+        (FilterEntryProperties
+           (FilterMapVal
+              (fromJust $ propertyName "client")
+              (FilterMaybe False (FilterSub (fromJust $ propertyValue "cssyd")))))
     describe "tcForestCursorFilter" $ do
       tcSpec
         (tcForestCursorFilter tcEntryFilter)
         (AstUnOp (Piece "level") (AstPiece (Piece "1")))
         (FilterLevel 1)
+      tcSpec
+        (tcForestCursorFilter tcSub)
+        (AstUnOp
+           (Piece "parent")
+           (AstUnOp (Piece "cursor") (AstUnOp (Piece "sub") (AstPiece (Piece "header")))))
+        (FilterParent (FilterWithinCursor (FilterSub (fromJust $ header "header"))))
+    describe "tcTupleFilter" $ do
+      tcSpec
+        (tcTupleFilter tcRootedPathFilter tcEntryFilter)
+        (AstUnOp (Piece "fst") (AstUnOp (Piece "file") (AstPiece (Piece "side"))))
+        (FilterFst (FilterFile [relfile|side|]))
+      tcSpec
+        (tcTupleFilter tcEntryFilter tcSub)
+        (AstUnOp (Piece "snd") (AstUnOp (Piece "sub") (AstPiece (Piece "header"))))
+        (FilterSnd (FilterSub (fromJust $ header "header")))
     describe "parseEntryFilter" $
       it "parses back whatever 'renderFilter' renders" $
       forAllValid $ \filter ->
