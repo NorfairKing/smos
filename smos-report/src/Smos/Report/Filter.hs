@@ -1,9 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Smos.Report.Filter where
 
@@ -21,17 +25,19 @@ import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
-import Data.Void
 import Path
-import Text.Read
+import Text.Read (readMaybe)
 
 import Control.Arrow
 import Control.Monad
 
 import Lens.Micro
 
-import Text.Megaparsec
-import Text.Megaparsec.Char
+import Text.Parsec.Combinator
+import Text.Parsec.Error
+import Text.Parsec.Pos
+import Text.Parsec.Prim
+import Text.ParserCombinators.Parsec.Char
 
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -42,6 +48,342 @@ import Smos.Report.Comparison
 import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 
+data Paren
+  = OpenParen
+  | ClosedParen
+  deriving (Show, Eq, Generic)
+
+instance Validity Paren
+
+renderParen :: Paren -> Char
+renderParen =
+  \case
+    OpenParen -> '('
+    ClosedParen -> ')'
+
+data BinOp
+  = AndOp
+  | OrOp
+  deriving (Show, Eq, Generic)
+
+instance Validity BinOp
+
+renderBinOp :: BinOp -> Text
+renderBinOp =
+  \case
+    AndOp -> "and"
+    OrOp -> "or"
+
+newtype Piece =
+  Piece
+    { pieceText :: Text
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity Piece where
+  validate p@(Piece t) =
+    mconcat
+      [ genericValidate p
+      , declare "The piece is not empty" $ not $ T.null t
+      , declare "The characters are restricted" $
+        all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
+        T.unpack t
+      ]
+
+data Part
+  = PartParen Paren
+  | PartSpace
+  | PartColumn
+  | PartPiece Piece
+  | PartBinOp BinOp
+  deriving (Show, Eq, Generic)
+
+instance Validity Part
+
+renderPart :: Part -> Text
+renderPart =
+  \case
+    PartParen p -> T.singleton $ renderParen p
+    PartSpace -> " "
+    PartColumn -> ":"
+    PartPiece p -> pieceText p
+    PartBinOp bo -> renderBinOp bo
+
+newtype Parts =
+  Parts
+    { unParts :: [Part]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity Parts where
+  validate p@(Parts ps) =
+    mconcat
+      [ genericValidate p
+      , declare "There are no two unfitting consequtive pieces" $
+        let go [] = True
+            go [_] = True
+            go (p1:p2:rest) =
+              let b =
+                    case p1 of
+                      PartPiece _ ->
+                        case p2 of
+                          PartPiece _ -> False
+                          PartBinOp _ -> False
+                          _ -> True
+                      _ -> True
+               in b && go (p2 : rest)
+         in go ps
+      ]
+
+renderParts :: Parts -> Text
+renderParts = T.concat . map renderPart . unParts
+
+parseParts :: Text -> Either ParseError Parts
+parseParts = parse partsP "parts"
+
+partsP :: TP Parts
+partsP = Parts <$> many partP
+
+parsePart :: Text -> Either ParseError Part
+parsePart = parse partP "part"
+
+partP :: TP Part
+partP =
+  choice
+    [ void (char ':') >> pure PartColumn
+    , void (char '(') >> pure (PartParen OpenParen)
+    , void (char ')') >> pure (PartParen ClosedParen)
+    , void (char ' ') >> pure PartSpace
+    , try $ void (string "and") >> pure (PartBinOp AndOp)
+    , try $ void (string "or") >> pure (PartBinOp OrOp)
+    , PartPiece . Piece . T.pack <$>
+      many1
+        (satisfy (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':'))
+    ]
+
+type TP = Parsec Text ()
+
+type PP = Parsec [Part] ()
+
+part :: Monad m => (Part -> Bool) -> ParsecT [Part] u m Part
+part func = tokenPrim showPart nextPos testPart
+  where
+    showPart = show
+    testPart x =
+      if func x
+        then Just x
+        else Nothing
+    nextPos pos x _ = updatePosPart pos x
+      where
+        updatePosPart :: SourcePos -> Part -> SourcePos
+        updatePosPart sp p =
+          let l =
+                case p of
+                  PartParen _ -> 1
+                  PartSpace -> 1
+                  PartColumn -> 1
+                  PartPiece (Piece t) -> T.length t
+                  PartBinOp bo ->
+                    case bo of
+                      AndOp -> 3
+                      OrOp -> 2
+           in incSourceColumn sp l
+
+pieceP :: PP Piece
+pieceP = do
+  p <- part (const True)
+  case p of
+    PartPiece t -> pure t
+    _ -> fail "expected piece"
+
+data KeyWord
+  = KeyWordFile
+  | KeyWordTime
+  | KeyWordHeader
+  | KeyWordTodoState
+  | KeyWordProperties
+  | KeyWordTags
+  | KeyWordCursor
+  | KeyWordLevel
+  | KeyWordParent
+  | KeyWordAncestor
+  | KeyWordChild
+  | KeyWordLegacy
+  | KeyWordAny
+  | KeyWordAll
+  | KeyWordHas
+  | KeyWordVal
+  | KeyWordFst
+  | KeyWordSnd
+  | KeyWordMaybe
+  | KeyWordSub
+  | KeyWordOrd
+  | KeyWordNot
+  deriving (Show, Eq, Generic)
+
+instance Validity KeyWord
+
+parseKeyword :: Text -> Maybe KeyWord
+parseKeyword =
+  \case
+    "file" -> Just KeyWordFile
+    "time" -> Just KeyWordTime
+    "header" -> Just KeyWordHeader
+    "state" -> Just KeyWordTodoState
+    "properties" -> Just KeyWordProperties
+    "tags" -> Just KeyWordTags
+    "cursor" -> Just KeyWordCursor
+    "level" -> Just KeyWordLevel
+    "parent" -> Just KeyWordParent
+    "ancestor" -> Just KeyWordAncestor
+    "child" -> Just KeyWordChild
+    "legacy" -> Just KeyWordLegacy
+    "any" -> Just KeyWordAny
+    "all" -> Just KeyWordAll
+    "has" -> Just KeyWordHas
+    "val" -> Just KeyWordVal
+    "fst" -> Just KeyWordFst
+    "snd" -> Just KeyWordSnd
+    "maybe" -> Just KeyWordMaybe
+    "sub" -> Just KeyWordSub
+    "ord" -> Just KeyWordOrd
+    "not" -> Just KeyWordNot
+    _ -> Nothing
+
+parseKeywordPiece :: Piece -> Maybe KeyWord
+parseKeywordPiece = parseKeyword . pieceText
+
+renderKeyWord :: KeyWord -> Text
+renderKeyWord =
+  \case
+    KeyWordFile -> "file"
+    KeyWordTime -> "time"
+    KeyWordHeader -> "header"
+    KeyWordTodoState -> "state"
+    KeyWordProperties -> "properties"
+    KeyWordTags -> "tags"
+    KeyWordCursor -> "cursor"
+    KeyWordLevel -> "level"
+    KeyWordParent -> "parent"
+    KeyWordAncestor -> "ancestor"
+    KeyWordChild -> "child"
+    KeyWordLegacy -> "legacy"
+    KeyWordAny -> "any"
+    KeyWordAll -> "all"
+    KeyWordHas -> "has"
+    KeyWordVal -> "val"
+    KeyWordFst -> "fst"
+    KeyWordSnd -> "snd"
+    KeyWordMaybe -> "maybe"
+    KeyWordSub -> "sub"
+    KeyWordOrd -> "ord"
+    KeyWordNot -> "not"
+
+anyKeyWordP :: PP KeyWord
+anyKeyWordP = do
+  p <- pieceP
+  case parseKeywordPiece p of
+    Just kw -> pure kw
+    Nothing -> fail $ "not a keyword: " <> T.unpack (pieceText p)
+
+keyWordP :: KeyWord -> PP ()
+keyWordP kw = do
+  p <- pieceP
+  case parseKeywordPiece p of
+    Just kw'
+      | kw' == kw' -> pure ()
+    _ ->
+      fail $ "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: " <>
+      T.unpack (pieceText p)
+
+data Ast
+  = AstBinOp Ast BinOp Ast
+  | AstUnOp Piece Ast
+  | AstPiece Piece
+  deriving (Show, Eq, Generic)
+
+instance Validity Ast
+
+renderAst :: Ast -> Parts
+renderAst = Parts . go
+  where
+    go =
+      \case
+        AstPiece p -> [PartPiece p]
+        AstUnOp p a -> PartPiece p : PartColumn : go a
+        AstBinOp a1 bo a2 ->
+          concat
+            [ [PartParen OpenParen]
+            , go a1
+            , [PartSpace, PartBinOp bo, PartSpace]
+            , go a2
+            , [PartParen ClosedParen]
+            ]
+
+parseAst :: Parts -> Either ParseError Ast
+parseAst = parse astP "ast" . unParts
+
+astP :: PP Ast
+astP = choice [try astBinOpP, try astUnOpP, AstPiece <$> pieceP]
+
+astBinOpP :: PP Ast
+astBinOpP = do
+  parenP OpenParen
+  void $ optional spaceP
+  a1 <- astP
+  void $ optional spaceP
+  bo <- binOpP
+  void $ optional spaceP
+  a2 <- astP
+  void $ optional spaceP
+  parenP ClosedParen
+  pure $ AstBinOp a1 bo a2
+
+binOpP :: PP BinOp
+binOpP = do
+  PartBinOp bo <-
+    part
+      (\case
+         PartBinOp _ -> True
+         _ -> False)
+  pure bo
+
+astUnOpP :: PP Ast
+astUnOpP = do
+  p <- pieceP
+  columnP
+  a <- astP
+  pure $ AstUnOp p a
+
+parenP :: Paren -> PP ()
+parenP p =
+  void $
+  part
+    (\case
+       PartParen p' -> p' == p
+       _ -> False)
+
+columnP :: PP ()
+columnP =
+  void $
+  part
+    (\case
+       PartColumn -> True
+       _ -> False)
+
+spaceP :: PP ()
+spaceP =
+  void $
+  part
+    (\case
+       PartSpace -> True
+       _ -> False)
+
+--
+--
+--
+--
+--
 type EntryFilter = Filter (RootedPath, ForestCursor Entry)
 
 data SmosFileAtPath =
@@ -137,9 +479,26 @@ class FilterArgument a where
   renderArgument :: a -> Text
   parseArgument :: Text -> Either String a
 
+parseArgumentPiece :: FilterArgument a => Piece -> Either String a
+parseArgumentPiece = parseArgument . pieceText
+
+instance FilterArgument Bool where
+  renderArgument = T.pack . show
+  parseArgument =
+    \case
+      "true" -> pure True
+      "false" -> pure False
+      "True" -> pure True
+      "False" -> pure False
+      _ -> Left "Invalid bool"
+
 instance FilterArgument Word where
   renderArgument = T.pack . show
   parseArgument = maybe (Left "Invalid word") Right . readMaybe . T.unpack
+
+instance FilterArgument Comparison where
+  renderArgument = renderComparison
+  parseArgument = maybe (Left "Invalid comparison") Right . parseComparison
 
 instance FilterArgument (Path Rel File) where
   renderArgument = T.pack . fromRelFile
@@ -195,6 +554,7 @@ instance Validity (Filter a) where
               , declare "The filenames are restricted" $
                 all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
                 fromRelFile s
+              , validateArgument s
               ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'
@@ -229,8 +589,9 @@ deriving instance Ord (Filter a)
 instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
   parseJSON =
     withText "EntryFilter" $ \t ->
-      case parse (entryFilterP <* eof) "JSON String" t of
-        Left err -> fail $ unwords ["Could not parse EntryFilter:", errorBundlePretty err]
+      case parseEntryFilter t of
+        Left err ->
+          fail $ unwords ["Could not parse EntryFilter:", T.unpack $ prettyFilterParseError err]
         Right f -> pure f
 
 instance ToJSON (Filter a) where
@@ -285,310 +646,255 @@ filterPredicate = go
             FilterOr f1 f2 -> goF f1 || goF f2
 
 renderFilter :: Filter a -> Text
-renderFilter = go
+renderFilter = renderParts . renderAst . renderFilterAst
+
+renderFilterAst :: Filter a -> Ast
+renderFilterAst = go
   where
-    go :: Filter a -> Text
-    go f =
-      let p t1 t2 = t1 <> ":" <> t2
-          p1 t f' = p t $ go f'
-          p2 f1 o f2 = T.concat ["(", renderFilter f1, " ", o, " ", renderFilter f2, ")"]
-       in case f of
-            FilterFile rp -> p "file" $ renderArgument rp
-            FilterPropertyTime f' -> p1 "time" f'
-                -- Entry mapping filters
-            FilterEntryHeader f' -> p1 "header" f'
-            FilterEntryTodoState f' -> p1 "state" f'
-            FilterEntryProperties f' -> p1 "property" f'
-            FilterEntryTags f' -> p1 "tag" f'
-                -- Cursor-related filters
-            FilterWithinCursor f' -> go f'
-            FilterLevel l -> p "level" $ renderArgument l
-            FilterAncestor f' -> p1 "ancestor" f'
-            FilterLegacy f' -> p1 "legacy" f'
-            FilterParent f' -> p1 "parent" f'
-            FilterChild f' -> p1 "child" f'
-                -- List filters
-            FilterAny f' -> go f'
-            FilterAll f' -> p1 "all" f'
-                -- Map filters
-            FilterMapHas k -> p "has" $ renderArgument k
-            FilterMapVal k f' -> p "val" $ p1 (renderArgument k) f'
-                -- Tuple filters
-            FilterFst f' -> go f'
-            FilterSnd f' -> go f'
-                -- Maybe filters
-            FilterMaybe b f' ->
-              if b
-                then p1 "maybe-true" f'
-                else go f' -- p1 "maybe-false" f'
-                -- Comparison filters
-            FilterSub t -> renderArgument t
-            FilterOrd o a -> p (renderComparison o) (renderArgument a)
-                -- Boolean filters
-            FilterNot f' -> p1 "not" f'
-            FilterOr f1 f2 -> p2 f1 "or" f2
-            FilterAnd f1 f2 -> p2 f1 "and" f2
+    go :: Filter a -> Ast
+    go =
+      let pa :: FilterArgument a => a -> Ast
+          pa a = AstPiece $ Piece $ renderArgument a
+          paa :: FilterArgument a => a -> Ast -> Ast
+          paa a = AstUnOp (Piece $ renderArgument a)
+          pkw :: KeyWord -> Ast -> Ast
+          pkw kw = AstUnOp (Piece $ renderKeyWord kw)
+          kwa :: KeyWord -> Filter a -> Ast
+          kwa kw f' = pkw kw $ go f'
+          kwp :: FilterArgument a => KeyWord -> a -> Ast
+          kwp kw a = pkw kw $ pa a
+          kwb :: Filter a -> BinOp -> Filter a -> Ast
+          kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
+       in \case
+            FilterFile rp -> kwp KeyWordFile rp
+            FilterPropertyTime f' -> kwa KeyWordTime f'
+            FilterEntryHeader f' -> kwa KeyWordHeader f'
+            FilterEntryTodoState f' -> kwa KeyWordTodoState f'
+            FilterEntryProperties f' -> kwa KeyWordProperties f'
+            FilterEntryTags f' -> kwa KeyWordTags f'
+            FilterWithinCursor f' -> kwa KeyWordCursor f'
+            FilterLevel l -> kwp KeyWordLevel l
+            FilterAncestor f' -> kwa KeyWordAncestor f'
+            FilterLegacy f' -> kwa KeyWordLegacy f'
+            FilterParent f' -> kwa KeyWordParent f'
+            FilterChild f' -> kwa KeyWordChild f'
+            FilterAny f' -> kwa KeyWordAny f'
+            FilterAll f' -> kwa KeyWordAll f'
+            FilterMapHas k -> pkw KeyWordHas $ pa k
+            FilterMapVal k f' -> pkw KeyWordVal $ paa k $ go f'
+            FilterFst f' -> kwa KeyWordFst f'
+            FilterSnd f' -> kwa KeyWordSnd f'
+            FilterMaybe b f' -> pkw KeyWordMaybe $ paa b $ go f'
+            FilterSub t -> kwp KeyWordSub t
+            FilterOrd o a -> pkw KeyWordOrd $ paa o $ pa a
+            FilterNot f' -> kwa KeyWordNot f'
+            FilterOr f1 f2 -> kwb f1 OrOp f2
+            FilterAnd f1 f2 -> kwb f1 AndOp f2
 
-type P = Parsec Void Text
+data FilterParseError
+  = TokenisationError ParseError
+  | ParsingError ParseError
+  | TypeCheckingError FilterTypeError
+  deriving (Show, Eq, Generic)
 
-parseEntryFilter :: Text -> Either String EntryFilter
-parseEntryFilter = left errorBundlePretty . parse entryFilterP "entry filter string"
+prettyFilterParseError :: FilterParseError -> Text
+prettyFilterParseError =
+  \case
+    TokenisationError pe -> T.pack $ show pe
+    ParsingError pe -> T.pack $ show pe
+    TypeCheckingError te -> renderFilterTypeError te
 
-entryFilterP :: P EntryFilter
-entryFilterP = filterTupleP filterRootedPathP (filterForestCursorP filterEntryP)
+parseEntryFilter :: Text -> Either FilterParseError EntryFilter
+parseEntryFilter t = do
+  ps <- left TokenisationError $ parseParts t
+  ast <- left ParsingError $ parseAst ps
+  left TypeCheckingError $ parseEntryFilterAst ast
 
-filterRootedPathP :: P (Filter RootedPath)
-filterRootedPathP =
-  withTopLevelBranchesP $ validP $ do
-    pieceP "file"
-    s <- many (satisfy $ \c -> not (Char.isSpace c) && c /= ')')
-    either (fail . show) (pure . FilterFile) $ parseRelFile s
+data FilterTypeError
+  = FTEPieceExpected Ast
+  | FTEUnOpExpected Ast
+  | FTEKeyWordExpected Piece
+  | FTEThisKeyWordExpected [KeyWord] KeyWord -- Expected, actual
+  | FTEArgumentExpected Piece String
+  | FTENoChoices
+  deriving (Show, Eq, Generic)
 
-filterTimeP :: P (Filter Time)
-filterTimeP = withTopLevelBranchesP eqAndOrdP
+renderFilterTypeError :: FilterTypeError -> Text
+renderFilterTypeError = T.pack . show
 
-filterTagP :: P (Filter Tag)
-filterTagP = withTopLevelBranchesP subP
+type TCE a = Either FilterTypeError a
 
-filterHeaderP :: P (Filter Header)
-filterHeaderP = withTopLevelBranchesP subP
+type TC a = Ast -> TCE a
 
-filterTodoStateP :: P (Filter TodoState)
-filterTodoStateP = withTopLevelBranchesP subP
+parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
+parseEntryFilterAst = tcTupleFilter tcRootedPathFilter (tcForestCursorFilter tcEntryFilter)
 
-filterTimestampP :: P (Filter Timestamp)
-filterTimestampP = withTopLevelBranchesP eqAndOrdP
+tcPiece :: (Piece -> TCE a) -> TC a
+tcPiece func =
+  \case
+    AstPiece p -> func p
+    ast -> Left $ FTEPieceExpected ast
 
-filterPropertyValueP :: P (Filter PropertyValue)
-filterPropertyValueP =
-  withTopLevelBranchesP $
-  parseChoices
-    [ do pieceP "time"
-         FilterPropertyTime <$> filterMaybeP filterTimeP
-    , subP
+tcArgumentPiece :: FilterArgument a => (a -> TCE b) -> TC b
+tcArgumentPiece func =
+  tcPiece $ \p ->
+    case parseArgumentPiece p of
+      Right a -> func a
+      Left s -> Left $ FTEArgumentExpected p s
+
+tcUnOp :: (Piece -> TC a) -> TC a
+tcUnOp func =
+  \case
+    AstUnOp p a -> func p a
+    ast -> Left $ FTEUnOpExpected ast
+
+tcArgumentOp :: FilterArgument a => (a -> TC b) -> TC b
+tcArgumentOp func =
+  tcUnOp $ \p a ->
+    case parseArgumentPiece p of
+      Right arg -> func arg a
+      Left err -> Left $ FTEArgumentExpected p err
+
+tcKeyWord :: (KeyWord -> TCE a) -> Piece -> TCE a
+tcKeyWord func p =
+  case parseKeywordPiece p of
+    Just kw -> func kw
+    Nothing -> Left $ FTEKeyWordExpected p
+
+tcKeyWordOp :: (KeyWord -> TC a) -> TC a
+tcKeyWordOp func = tcUnOp $ \p a -> flip tcKeyWord p $ \kw -> func kw a
+
+tcThisKeyWordOp :: KeyWord -> TC a -> TC a
+tcThisKeyWordOp kw' func =
+  tcKeyWordOp $ \kw a ->
+    if kw == kw'
+      then func a
+      else Left $ FTEThisKeyWordExpected [kw'] kw
+
+tcWithTopLevelBranches :: TC (Filter a) -> TC (Filter a)
+tcWithTopLevelBranches func ast =
+  case ast of
+    AstBinOp a1 bo a2 ->
+      let f = tcWithTopLevelBranches func
+       in case bo of
+            AndOp -> FilterAnd <$> f a1 <*> f a2
+            OrOp -> FilterOr <$> f a1 <*> f a2
+    AstUnOp p a ->
+      case parseKeywordPiece p of
+        Just KeyWordNot -> FilterNot <$> tcWithTopLevelBranches func a
+        _ -> func ast
+    _ -> func ast
+
+tcRootedPathFilter :: TC (Filter RootedPath)
+tcRootedPathFilter =
+  tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
+    case parseArgumentPiece p2 of
+      Right rp -> Right $ FilterFile rp
+      Left err -> Left $ FTEArgumentExpected p2 err
+
+tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
+tcSub =
+  tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
+    case parseArgumentPiece p of
+      Right a -> pure (FilterSub a)
+      Left err -> Left $ FTEArgumentExpected p err
+
+tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
+tcOrd =
+  tcThisKeyWordOp KeyWordOrd $ tcArgumentOp $ \comparison ->
+    tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
+
+tcTimeFilter :: TC (Filter Time)
+tcTimeFilter = tcWithTopLevelBranches tcOrd
+
+tcTagFilter :: TC (Filter Tag)
+tcTagFilter = tcWithTopLevelBranches tcSub
+
+tcHeaderFilter :: TC (Filter Header)
+tcHeaderFilter = tcWithTopLevelBranches tcSub
+
+tcTodoStateFilter :: TC (Filter TodoState)
+tcTodoStateFilter = tcWithTopLevelBranches tcSub
+
+tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
+tcMaybeFilter tc =
+  tcWithTopLevelBranches $
+  tcChoices
+    [ tcThisKeyWordOp KeyWordMaybe $ tcArgumentOp $ \b a -> FilterMaybe b <$> tc a
+    , fmap (FilterMaybe False) . tc
     ]
 
-filterEntryHeaderP :: P (Filter Entry)
-filterEntryHeaderP = do
-  pieceP "header"
-  FilterEntryHeader <$> filterHeaderP
+tcPropertyValueFilter :: TC (Filter PropertyValue)
+tcPropertyValueFilter =
+  tcWithTopLevelBranches $
+  tcChoices
+    [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
 
-filterEntryTodoStateP :: P (Filter Entry)
-filterEntryTodoStateP = do
-  pieceP "state"
-  FilterEntryTodoState <$> filterMaybeP filterTodoStateP
+tcMapFilter ::
+     (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
+tcMapFilter func =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
+    case kw of
+      KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+      KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw
 
-filterEntryPropertiesP :: P (Filter Entry)
-filterEntryPropertiesP = do
-  pieceP "property"
-  FilterEntryProperties <$> filterMapP filterPropertyValueP
+tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
+tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 
-filterEntryTagsP :: P (Filter Entry)
-filterEntryTagsP = do
-  pieceP "tag"
-  FilterEntryTags <$> filterSetP filterTagP
+tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
+tcSetFilter func =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
+    case kw of
+      KeyWordAny -> fmap FilterAny . func
+      KeyWordAll -> fmap FilterAll . func
+      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw
 
-filterEntryP :: P (Filter Entry)
-filterEntryP =
-  withTopLevelBranchesP $
-  parseChoices [filterEntryHeaderP, filterEntryTodoStateP, filterEntryPropertiesP, filterEntryTagsP]
+tcTagsFilter :: TC (Filter (Set Tag))
+tcTagsFilter = tcSetFilter tcTagFilter
 
-pieceP :: Text -> P ()
-pieceP t = void $ string' $ t <> ":"
+tcEntryFilter :: TC (Filter Entry)
+tcEntryFilter =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
+    case kw of
+      KeyWordHeader -> FilterEntryHeader <$> tcHeaderFilter a
+      KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
+      KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
+      KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
+      _ ->
+        Left $
+        FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
 
-filterForestCursorP :: P (Filter a) -> P (Filter (ForestCursor a))
-filterForestCursorP parser =
-  parseChoices
-    [ withTopLevelBranchesP $ pieceP "parent" >> FilterParent <$> filterForestCursorP parser
-    , withTopLevelBranchesP $ pieceP "ancestor" >> FilterAncestor <$> filterForestCursorP parser
-    , withTopLevelBranchesP $ pieceP "child" >> FilterChild <$> filterForestCursorP parser
-    , withTopLevelBranchesP $ pieceP "legacy" >> FilterLegacy <$> filterForestCursorP parser
-    , withTopLevelBranchesP $ pieceP "level" >> FilterLevel <$> argumentP
-    , withTopLevelBranchesP $ pieceP "current" >> FilterWithinCursor <$> parser
-    , FilterWithinCursor <$> parser
-    ]
+tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
+tcForestCursorFilter tc =
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
+    case kw of
+      KeyWordParent -> FilterParent <$> tcForestCursorFilter tc a
+      KeyWordAncestor -> FilterAncestor <$> tcForestCursorFilter tc a
+      KeyWordChild -> FilterChild <$> tcForestCursorFilter tc a
+      KeyWordLegacy -> FilterLegacy <$> tcForestCursorFilter tc a
+      KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
+      KeyWordCursor -> FilterWithinCursor <$> tc a
+      _ ->
+        Left $
+        FTEThisKeyWordExpected
+          [KeyWordParent, KeyWordAncestor, KeyWordChild, KeyWordLegacy, KeyWordLevel, KeyWordCursor]
+          kw
 
-filterMapP :: (Validity k, Show k, Ord k, FilterArgument k) => P (Filter v) -> P (Filter (Map k v))
-filterMapP parser =
-  withTopLevelBranchesP $
-  parseChoices
-    [ pieceP "val" >> validP (FilterMapVal <$> (argumentP <* string' ":") <*> filterMaybeP parser)
-    , pieceP "has" >> validP (FilterMapHas <$> argumentP)
-    , validP $ FilterMapVal <$> (argumentP <* string' ":") <*> filterMaybeP parser
-    , validP $ FilterMapHas <$> argumentP
-    ]
+tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
+tcTupleFilter fstTC sndTC =
+  tcWithTopLevelBranches $ \ast ->
+    flip tcKeyWordOp ast $ \kw a ->
+      case kw of
+        KeyWordFst -> FilterFst <$> fstTC a
+        KeyWordSnd -> FilterSnd <$> sndTC a
+        _ -> tcChoices [fmap FilterFst . fstTC, fmap FilterSnd . sndTC] ast
 
-filterTupleP :: P (Filter a) -> P (Filter b) -> P (Filter (a, b))
-filterTupleP p1 p2 =
-  parseChoices
-    [ withTopLevelBranchesP $ pieceP "fst" >> FilterFst <$> p1
-    , withTopLevelBranchesP $ pieceP "snd" >> FilterSnd <$> p2
-    , FilterFst <$> p1
-    , FilterSnd <$> p2
-    ]
-
-filterSetP :: (Validity a, Show a, Ord a, FilterArgument a) => P (Filter a) -> P (Filter (Set a))
-filterSetP parser =
-  parseChoices
-    [ withTopLevelBranchesP $ pieceP "any" >> FilterAny <$> parser
-    , withTopLevelBranchesP $ pieceP "all" >> FilterAll <$> parser
-    , FilterAny <$> parser
-    ]
-
-filterMaybeP :: P (Filter a) -> P (Filter (Maybe a))
-filterMaybeP parser =
-  parseChoices
-    [ withTopLevelBranchesP $ pieceP "maybe-true" >> FilterMaybe True <$> parser
-    , withTopLevelBranchesP $ pieceP "maybe-false" >> FilterMaybe False <$> parser
-    , FilterMaybe False <$> parser
-    ]
-
-subEqOrdP ::
-     (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a, FilterOrd a) => P (Filter a)
-subEqOrdP = try eqAndOrdP <|> subP
-
-subP :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => P (Filter a)
-subP = validP $ FilterSub <$> argumentP
-
-eqAndOrdP :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => P (Filter a)
-eqAndOrdP = ordP
-
-ordP :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => P (Filter a)
-ordP =
-  validP $ do
-    o <- comparisonP
-    void $ string' ":"
-    a <- argumentP
-    pure $ FilterOrd o a
-
-comparisonP :: P Comparison
-comparisonP =
-  parseChoices
-    [ string' "lt" >> pure LTC
-    , string' "le" >> pure LEC
-    , string' "eq" >> pure EQC
-    , string' "ge" >> pure GEC
-    , string' "gt" >> pure GTC
-    ]
-
-argumentP :: (Validity a, Show a, FilterArgument a) => P a
-argumentP = do
-  s <- some (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && c /= ')' && c /= ':')
-  validP $ either fail pure $ parseArgument $ T.pack s
-
-validP :: (Validity a, Show a) => P a -> P a
-validP parser = do
-  a <- parser
-  case prettyValidate a of
-    Left err -> fail $ unlines ["Parsed as", show a, "but this value is not valid:", err]
-    Right a' -> pure a'
-
-withTopLevelBranchesP :: P (Filter a) -> P (Filter a)
-withTopLevelBranchesP parser =
-  parseChoices
-    [ filterNotP $ withTopLevelBranchesP parser
-    , filterBinRelP $ withTopLevelBranchesP parser
-    , parser
-    ]
-
-filterNotP :: P (Filter a) -> P (Filter a)
-filterNotP parser = do
-  pieceP "not"
-  FilterNot <$> parser
-
-filterBinRelP :: forall a. P (Filter a) -> P (Filter a)
-filterBinRelP parser = do
-  void $ char '('
-  f <- try filterOrP <|> filterAndP
-  void $ char ')'
-  pure f
-  where
-    filterOrP :: P (Filter a)
-    filterOrP = do
-      f1 <- parser
-      void $ string' " or "
-      f2 <- parser
-      pure $ FilterOr f1 f2
-    filterAndP :: P (Filter a)
-    filterAndP = do
-      f1 <- parser
-      void $ string' " and "
-      f2 <- parser
-      pure $ FilterAnd f1 f2
-
-parseChoices :: [P a] -> P a
-parseChoices [] = fail "no parseChoices"
-parseChoices [p] = p
-parseChoices (p:ps) = try p <|> parseChoices ps
---
-----
--- filterCompleter :: String -> [String]
--- filterCompleter = makeCompleterFromOptions ':' filterCompleterOptions
---
--- data CompleterOption
---   = Nullary String [String]
---   | Unary String
---   deriving (Show, Eq)
---
--- filterCompleterOptions :: [CompleterOption]
--- filterCompleterOptions =
---   [ Nullary "tag" ["out", "online", "offline", "toast", "personal", "work"]
---   , Nullary "state" ["CANCELLED", "DONE", "NEXT", "READY", "STARTED", "TODO", "WAITING"]
---   , Nullary "file" []
---   , Nullary "level" []
---   , Nullary "property" []
---   , Unary "parent"
---   , Unary "ancestor"
---   , Unary "child"
---   , Unary "legacy"
---   , Unary "not"
---   ]
---
--- makeCompleterFromOptions :: Char -> [CompleterOption] -> String -> [String]
--- makeCompleterFromOptions separator os s =
---   case separate separator (dropSeparatorAtEnd s) of
---     [] -> allOptions
---     pieces ->
---       let l = last pieces
---           prefix = intercalate [separator] pieces :: String
---           searchResults =
---             mapMaybe (\o -> (,) o <$> searchString l (renderCompletionOption o)) os :: [( CompleterOption
---                                                                                         , SearchResult)]
---        in flip concatMap searchResults $ \(o, sr) ->
---             case sr of
---               PrefixFound _ -> [renderCompletionOption o <> [separator]]
---               ExactFound ->
---                 case o of
---                   Unary _ -> map ((prefix <> [separator]) <>) allOptions
---                   Nullary _ rest -> map ((prefix <> [separator]) <>) rest
---   where
---     allOptions :: [String]
---     allOptions = map ((<> [separator]) . renderCompletionOption) os
---     dropSeparatorAtEnd :: String -> String
---     dropSeparatorAtEnd = reverse . dropWhile (== separator) . reverse
---
--- data SearchResult
---   = PrefixFound String
---   | ExactFound
---
--- searchString :: String -> String -> Maybe SearchResult
--- searchString needle haystack =
---   if needle `isPrefixOf` haystack
---     then Just $
---          if needle == haystack
---            then ExactFound
---            else PrefixFound needle
---     else Nothing
---
--- renderCompletionOption :: CompleterOption -> String
--- renderCompletionOption co =
---   case co of
---     Nullary s _ -> s
---     Unary s -> s
---
--- separate :: Char -> String -> [String]
--- separate c s =
---   case dropWhile (== c) s of
---     "" -> []
---     s' -> w : words s''
---       where (w, s'') = break (== c) s'
+tcChoices :: [TC a] -> TC a
+tcChoices [] = const $ Left FTENoChoices
+tcChoices [tc] = tc
+tcChoices (tc:tcs) =
+  \ast ->
+    case tc ast of
+      Right r -> pure r
+      Left _ -> tcChoices tcs ast

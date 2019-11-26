@@ -23,14 +23,47 @@ import Smos.Data.Gen ()
 
 import Smos.Report.Filter
 
-import Smos.Report.Comparison
 import Smos.Report.Comparison.Gen ()
 import Smos.Report.Path
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 
+instance GenValid Piece where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenUnchecked BinOp
+
+instance GenValid BinOp
+
+instance GenUnchecked Paren
+
+instance GenValid Paren
+
+instance GenValid Part where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Parts where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenValid Ast where
+  shrinkValid = shrinkValidStructurally
+  genValid =
+    sized $ \n ->
+      case n of
+        0 -> AstPiece <$> genValid
+        _ ->
+          oneof
+            [ do (a, b) <- genSplit n
+                 AstUnOp <$> resize a genValid <*> resize b genValid
+            , do (a, b, c) <- genSplit3 n
+                 AstBinOp <$> resize a genValid <*> resize b genValid <*> resize c genValid
+            ]
+
 instance GenValid (Filter RootedPath) where
-  genValid = withTopLevelBranches $ FilterFile <$> genValid
+  genValid = withTopLevelBranches $ (FilterFile <$> genValid) `suchThat` isValid
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Time) where
