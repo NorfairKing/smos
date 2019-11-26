@@ -20,7 +20,6 @@ import Test.QuickCheck as QC
 import Test.Validity
 import Test.Validity.Aeson
 
-
 import Text.Parsec
 
 import Cursor.Forest.Gen ()
@@ -366,6 +365,30 @@ spec = do
   describe "filterPredicate" $
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
+  describe "parseEntryFilter" $ do
+    let pe input expected =
+          it (unwords ["succesfully parses", show input, "into", show expected]) $
+          parseEntryFilter input `shouldBe` Right expected
+        pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
+    pe "file:side" (FilterFst $ FilterFile [relfile|"side"|])
+    pee "header:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
+    pee "tag:toast" (FilterEntryTags $ FilterAny $ FilterSub $ fromJust $ tag "toast")
+    pee
+      "state:DONE"
+      (FilterEntryTodoState $ FilterMaybe False $ FilterSub $ fromJust $ todoState "DONE")
+    pee
+      "property:timewindow"
+      (FilterEntryProperties $ FilterMapHas $ fromJust $ propertyName "timewindow")
+    pee
+      "property:client:nasa"
+      (FilterEntryProperties $
+       FilterMapVal (fromJust $ propertyName "client") $
+       FilterMaybe False $ FilterSub $ fromJust $ propertyValue "nasa")
+    pee
+      "property:timewindow:time:lt:2h"
+      (FilterEntryProperties $
+       FilterMapVal (fromJust $ propertyName "timewindow") $
+       FilterMaybe False $ FilterPropertyTime $ FilterMaybe False $ FilterOrd LTC $ Hours 2)
 
 tcSpec :: (Show a, Eq a) => TC a -> Ast -> a -> Spec
 tcSpec tc ast a =
