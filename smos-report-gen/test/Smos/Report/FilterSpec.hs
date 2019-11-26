@@ -389,6 +389,16 @@ spec = do
       (FilterEntryProperties $
        FilterMapVal (fromJust $ propertyName "timewindow") $
        FilterMaybe False $ FilterPropertyTime $ FilterMaybe False $ FilterOrd LTC $ Hours 2)
+    pe
+      "ancestor:tag:(home or (online or offline))"
+      (FilterSnd $
+       FilterAncestor $
+       FilterWithinCursor $
+       FilterEntryTags $
+       FilterAny $
+       FilterOr
+         (FilterSub (fromJust $ tag "home"))
+         (FilterOr (FilterSub (fromJust $ tag "online")) (FilterSub (fromJust $ tag "offline"))))
 
 tcSpec :: (Show a, Eq a) => TC a -> Ast -> a -> Spec
 tcSpec tc ast a =
