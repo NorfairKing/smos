@@ -715,12 +715,12 @@ parseEntryFilter t = do
   left TypeCheckingError $ parseEntryFilterAst ast
 
 data FilterTypeError
-  = FilterTypeError
-  | FTEPieceExpected Ast
+  = FTEPieceExpected Ast
   | FTEUnOpExpected Ast
   | FTEKeyWordExpected Piece
-  | FTEThisKeyWordExpected KeyWord KeyWord -- Expected, actual
+  | FTEThisKeyWordExpected [KeyWord] KeyWord -- Expected, actual
   | FTEArgumentExpected Piece String
+  | FTENoChoices
   deriving (Show, Eq, Generic)
 
 renderFilterTypeError :: FilterTypeError -> Text
@@ -773,7 +773,7 @@ tcThisKeyWordOp kw' func =
   tcKeyWordOp $ \kw a ->
     if kw == kw'
       then func a
-      else Left $ FTEThisKeyWordExpected kw' kw
+      else Left $ FTEThisKeyWordExpected [kw'] kw
 
 tcWithTopLevelBranches :: TC (Filter a) -> TC (Filter a)
 tcWithTopLevelBranches func ast =
@@ -794,14 +794,14 @@ tcRootedPathFilter =
   tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
     case parseArgumentPiece p2 of
       Right rp -> Right $ FilterFile rp
-      _ -> Left FilterTypeError
+      Left err -> Left $ FTEArgumentExpected p2 err
 
 tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
 tcSub =
   tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
     case parseArgumentPiece p of
       Right a -> pure (FilterSub a)
-      _ -> Left FilterTypeError
+      Left err -> Left $ FTEArgumentExpected p err
 
 tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
 tcOrd =
@@ -837,20 +837,22 @@ tcPropertyValueFilter =
 tcMapFilter ::
      (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
 tcMapFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \case
-    KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
-    KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
-    _ -> const $ Left FilterTypeError
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
+    case kw of
+      KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+      KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw
 
 tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
 tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 
 tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
 tcSetFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \case
-    KeyWordAny -> fmap FilterAny . func
-    KeyWordAll -> fmap FilterAll . func
-    _ -> const $ Left FilterTypeError
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
+    case kw of
+      KeyWordAny -> fmap FilterAny . func
+      KeyWordAll -> fmap FilterAll . func
+      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw
 
 tcTagsFilter :: TC (Filter (Set Tag))
 tcTagsFilter = tcSetFilter tcTagFilter
@@ -863,7 +865,9 @@ tcEntryFilter =
       KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
       KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
       KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
-      _ -> Left FilterTypeError
+      _ ->
+        Left $
+        FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
 
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
@@ -875,7 +879,11 @@ tcForestCursorFilter tc =
       KeyWordLegacy -> FilterLegacy <$> tcForestCursorFilter tc a
       KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
       KeyWordCursor -> FilterWithinCursor <$> tc a
-      _ -> Left FilterTypeError
+      _ ->
+        Left $
+        FTEThisKeyWordExpected
+          [KeyWordParent, KeyWordAncestor, KeyWordChild, KeyWordLegacy, KeyWordLevel, KeyWordCursor]
+          kw
 
 tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
 tcTupleFilter fstTC sndTC =
@@ -887,7 +895,7 @@ tcTupleFilter fstTC sndTC =
         _ -> tcChoices [fmap FilterFst . fstTC, fmap FilterSnd . sndTC] ast
 
 tcChoices :: [TC a] -> TC a
-tcChoices [] = const $ Left FilterTypeError
+tcChoices [] = const $ Left FTENoChoices
 tcChoices [tc] = tc
 tcChoices (tc:tcs) =
   \ast ->
