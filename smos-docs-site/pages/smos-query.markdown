@@ -286,8 +286,9 @@ state:<state>                                      -- state:TODO
 file:<file>                                        -- file:my-client.smos
 level:<level>                                      -- level:5
 header:<header>                                    -- header:find
-has-property:<property-name>                       -- property:has:effort
-exact-property:<property-name>:<property-value>    -- property:exact:effort:15min
+property:<property-name>                           -- property:effort
+property:<property-name>:<property-value>          -- property:effort:high
+property:<property-name>:time:<comparison>:<time>  -- property:timewindow:time:lt:2h
 parent:<filter>                                    -- parent:tag:work
 ancestor:<filter>                                  -- ancestor:state:DONE
 child:<filter>                                     -- child:tag:work
