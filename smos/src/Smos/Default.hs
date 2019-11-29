@@ -28,6 +28,7 @@ defaultFileKeyMap =
           , exactChar 'e' startHeaderFromEmptyAndSelectHeader
           , exactChar 'E' startHeaderFromEmptyAndSelectHeader
           , exactChar '?' selectHelp
+          , exactString "co" forestClockOutEverywhereInAllFiles
                   -- Reports
           , exactString "rn" reportNextActions
           ]

@@ -239,6 +239,10 @@
                     "key": "?"
                 },
                 {
+                    "action": "forestClockOutEverywhereInAllFiles",
+                    "key": "co"
+                },
+                {
                     "action": "reportNextActions",
                     "key": "rn"
                 }

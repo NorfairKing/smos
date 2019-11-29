@@ -121,6 +121,8 @@ keys:
       key: E
     - action: selectHelp
       key: '?'
+    - action: forestClockOutEverywhereInAllFiles
+      key: co
     - action: reportNextActions
       key: rn
     logbook:

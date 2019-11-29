@@ -281,9 +281,9 @@ forestClockOutEverywhereInAllFiles =
   Action
     { actionName = "forestClockOutEverywhereInAllFiles"
     , actionFunc =
-        modifyFileCursorS $ \sfc -> do
-          now <- liftIO getCurrentTime
-          pure $ smosFileCursorClockOutEverywhere now sfc
+        do now <- liftIO getCurrentTime
+           clockOutInAllAgendaFiles now
+           modifyFileCursorS $ \sfc -> pure $ smosFileCursorClockOutEverywhere now sfc
     , actionDescription = "Clock out everywhere in all files"
     }
 
@@ -294,7 +294,6 @@ forestClockOutEverywhereInThisFileAndClockInHere =
     , actionFunc =
         modifyFileCursorS $ \sfc -> do
           now <- liftIO getCurrentTime
-          clockOutInAllAgendaFiles now
           pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
     , actionDescription = "Clock out everywhere in this file and clock in at the current entry"
     }
@@ -304,10 +303,9 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
   Action
     { actionName = "forestClockOutEverywhereInAllFilesAndClockInHere"
     , actionFunc =
-        modifyFileCursorS $ \sfc -> do
-          now <- liftIO getCurrentTime
-          clockOutInAllAgendaFiles now
-          pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
+        do now <- liftIO getCurrentTime
+           clockOutInAllAgendaFiles now
+           modifyFileCursorS $ \sfc -> pure $ smosFileCursorClockOutEverywhereAndClockInHere now sfc
     , actionDescription = "Clock out everywhere in all files and clock in at the current entry"
     }
 
