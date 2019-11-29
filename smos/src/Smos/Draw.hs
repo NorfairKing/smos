@@ -329,11 +329,9 @@ completedForestNumbersWidget mts edc =
       es'@EntryStats {..} = es <> countTodo mts
    in if es == mempty
         then Nothing
-        else
-              if es' == mempty || (justOne es' && es /= es)
-                   then Nothing
-                   else Just $
-                        str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
+        else if es' == mempty || (justOne es' && es /= es)
+               then Nothing
+               else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
   where
     countDone :: Maybe TodoState -> Word
     countDone (Just "DONE") = 1

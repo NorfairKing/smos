@@ -89,7 +89,8 @@ rebuildEntryCursor EntryCursor {..} =
         maybe M.empty (M.fromList . NE.toList) $
         rebuildPropertiesCursor <$> entryCursorPropertiesCursor
     , entryStateHistory = rebuildStateHistoryCursor entryCursorStateHistoryCursor
-    , entryTags = maybe S.empty (S.fromList . NE.toList) $ rebuildTagsCursor <$> entryCursorTagsCursor
+    , entryTags =
+        maybe S.empty (S.fromList . NE.toList) $ rebuildTagsCursor <$> entryCursorTagsCursor
     , entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
     }
 

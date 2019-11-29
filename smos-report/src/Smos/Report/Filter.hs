@@ -733,6 +733,7 @@ type TC a = Ast -> TCE a
 
 parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
 parseEntryFilterAst = tcTupleFilter tcRootedPathFilter (tcForestCursorFilter tcEntryFilter)
+
 parseProjectFilterAst :: Ast -> Either FilterTypeError ProjectFilter
 parseProjectFilterAst = tcRootedPathFilter
 

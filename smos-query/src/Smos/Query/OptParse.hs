@@ -125,7 +125,7 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 , workSetSorter = mwc workConfSorter <|> workFlagSorter
                 , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
-        CommandProjects ProjectsFlags{..}->
+        CommandProjects ProjectsFlags {..} ->
           pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
         CommandLog LogFlags {..} ->
           pure $

@@ -395,10 +395,11 @@ spec = do
        FilterAncestor $
        FilterWithinCursor $
        FilterEntryTags $
-
        FilterOr
          (FilterAny $ FilterSub (fromJust $ tag "home"))
-         (FilterOr (FilterAny $ FilterSub (fromJust $ tag "online")) (FilterAny $ FilterSub (fromJust $ tag "offline"))))
+         (FilterOr
+            (FilterAny $ FilterSub (fromJust $ tag "online"))
+            (FilterAny $ FilterSub (fromJust $ tag "offline"))))
 
 tcSpec :: (Show a, Eq a) => TC a -> Ast -> a -> Spec
 tcSpec tc ast a =

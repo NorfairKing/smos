@@ -1,6 +1,8 @@
 - ignore:
     name: "Use tuple-section"
 - ignore:
+    name: "Use newtype instead of data"
+- ignore:
     name: "Reduce duplication"
     within: 
       - "Smos.Actions.Forest.forestClockOutEverywhereInAllFilesAndClockInHere"
@@ -30,8 +32,7 @@
     name: "Use <$>"
     within: 
       - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
-      - "Smos.Report.Filter.filterBinRelP"
-      - "Smos.Report.Filter.ordP"
+      - "Smos.Report.Filter.astUnOpP"
 - ignore:
     name: "Avoid lambda"
     within:
@@ -54,4 +55,7 @@
     within: "Smos.Report.Sorter.sorterOrdering"
 - ignore:
     name: "Redundant if"
-    within: "Smos.Sync.Client.Contents"
+    within:
+      - "Smos.Draw.completedForestNumbersWidget"
+      - "Smos.Sync.Client.Contents"
+      - "Smos.Sync.Client.isHidden"
