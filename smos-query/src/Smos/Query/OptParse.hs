@@ -4,6 +4,7 @@
 
 module Smos.Query.OptParse where
 
+import Control.Arrow
 import Data.Foldable
 import Data.Functor
 import Data.List.NonEmpty (NonEmpty(..))
@@ -11,19 +12,22 @@ import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Data.Time
+import Data.Time hiding (parseTime)
 import Text.Read (readMaybe)
 
 import qualified System.Environment as System
+import System.Exit
 
 import Options.Applicative
 
 import qualified Smos.Report.OptParse as Report
 
+import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
+import Smos.Report.Time
 import Smos.Report.TimeBlock
 
 import Smos.Query.Config
@@ -100,10 +104,19 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                   (Just a, Nothing) -> Just a
                   (Nothing, Just a) -> Just a
                   (Just a1, Just a2) -> Just $ f a1 a2
+          mtf <-
+            case (workFlagTimeFilter, mwc workConfTimeFilterProperty) of
+              (_, Nothing) -> die "No time filter property configured."
+              (tf, Just pn) ->
+                pure $
+                Just $
+                FilterEntryProperties $
+                FilterMapVal pn $ FilterMaybe False $ FilterPropertyTime $ FilterMaybe False tf
           pure $
             DispatchWork
               WorkSettings
                 { workSetContext = workFlagContext
+                , workSetTimeFilter = mtf
                 , workSetFilter = workFlagFilter
                 , workSetChecks = fromMaybe S.empty $ wc workConfChecks
                 , workSetProjection =
@@ -112,7 +125,8 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 , workSetSorter = mwc workConfSorter <|> workFlagSorter
                 , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
-        CommandProjects -> pure DispatchProjects
+        CommandProjects ProjectsFlags {..} ->
+          pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
         CommandLog LogFlags {..} ->
           pure $
           DispatchLog
@@ -213,7 +227,8 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork <$>
-      (WorkFlags <$> parseContextNameArg <*> parseFilterArgs <*> parseProjectionArgs <*>
+      (WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs <*>
+       parseProjectionArgs <*>
        parseSorterArgs <*>
        parseHideArchiveFlag)
 
@@ -265,7 +280,7 @@ parseCommandProjects :: ParserInfo Command
 parseCommandProjects = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the projects overview"
-    parser = pure CommandProjects
+    parser = CommandProjects <$> (ProjectsFlags <$> parseProjectFilterArgs)
 
 parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier
@@ -308,28 +323,33 @@ parseContextNameArg :: Parser ContextName
 parseContextNameArg =
   argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
-parseFilterArgs :: Parser (Maybe Filter)
+parseTimeFilterArg :: Parser (Filter Time)
+parseTimeFilterArg =
+  argument
+    (eitherReader (fmap (FilterOrd LEC) . parseTime . T.pack))
+    (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
+
+parseFilterArgs :: Parser (Maybe EntryFilter)
 parseFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty <$>
   many
     (argument
-       (maybeReader (parseFilter . T.pack))
-       (mconcat
-          [ metavar "FILTER"
-          , help "A filter to filter entries by"
-          , completer $ mkCompleter $ pure . filterCompleter
-          ]))
+       (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
+       (mconcat [metavar "FILTER", help "A filter to filter entries by"]))
 
-parseFilterArg :: Parser (Maybe Filter)
+parseFilterArg :: Parser (Maybe EntryFilter)
 parseFilterArg =
   argument
-    (Just <$> maybeReader (parseFilter . T.pack))
-    (mconcat
-       [ value Nothing
-       , metavar "FILTER"
-       , help "A filter to filter entries by"
-       , completer $ mkCompleter $ pure . filterCompleter
-       ])
+    (Just <$> eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
+    (mconcat [value Nothing, metavar "FILTER", help "A filter to filter entries by"])
+
+parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
+parseProjectFilterArgs =
+  fmap foldFilterAnd . NE.nonEmpty <$>
+  many
+    (argument
+       (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
+       (mconcat [metavar "FILTER", help "A filter to filter projects by"]))
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
 parseProjectionArgs =

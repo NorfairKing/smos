@@ -12,6 +12,8 @@ import Data.Text (Text)
 import Data.Validity
 import Data.Void
 
+import Control.Arrow
+
 import Text.Megaparsec
 import Text.Megaparsec.Char.Lexer
 
@@ -35,8 +37,8 @@ instance FromJSON Time where
   parseJSON v =
     flip (withText "Time") v $ \t ->
       case parseTime t of
-        Nothing -> fail "could not parse time."
-        Just f -> pure f
+        Left err -> fail $ "could not parse time: " <> err
+        Right f -> pure f
 
 instance ToJSON Time where
   toJSON = toJSON . renderTime
@@ -52,8 +54,11 @@ timeSeconds t =
     Days i -> timeSeconds $ Hours (24 * i)
     Weeks i -> timeSeconds $ Days (7 * i)
 
-parseTime :: Text -> Maybe Time
-parseTime = parseMaybe timeP
+time :: Text -> Maybe Time
+time = parseMaybe timeP
+
+parseTime :: Text -> Either String Time
+parseTime = left errorBundlePretty . parse timeP "time string"
 
 timeP :: P Time
 timeP = do

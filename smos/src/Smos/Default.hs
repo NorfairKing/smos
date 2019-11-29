@@ -91,6 +91,7 @@ defaultFileKeyMap =
           , exactString "gof" $ tagsToggle "offline"
           , exactString "gt" $ tagsToggle "toast"
           , exactString "gw" $ tagsToggle "work"
+          , exactString "ge" $ tagsToggle "external"
                   -- Fast timestamps manipulation
           , exactString "sb" $ timestampsSelect "BEGIN"
           , exactString "se" $ timestampsSelect "END"

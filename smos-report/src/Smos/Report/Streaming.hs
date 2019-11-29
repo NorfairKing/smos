@@ -25,6 +25,7 @@ import Smos.Data
 
 import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.Filter
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
@@ -135,6 +136,12 @@ parseSmosFiles =
                 Right sf -> Right sf
     pure (p, ei)
 
+smosFilter :: Monad m => Filter a -> ConduitT a a m ()
+smosFilter f = Conduit.filter (filterPredicate f)
+
+smosMFilter :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
+smosMFilter = maybe (Conduit.map id) smosFilter
+
 printShouldPrint ::
      MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
@@ -184,9 +191,6 @@ smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
 smosCursorCurrent (rf, fc) = (rf, forestCursorCurrent fc)
-
-forestCursorCurrent :: ForestCursor a -> a
-forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest

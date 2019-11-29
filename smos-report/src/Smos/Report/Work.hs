@@ -22,14 +22,13 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Path
 import Smos.Report.Sorter
-import Smos.Report.Streaming
 
 data WorkReport =
   WorkReport
     { workReportResultEntries :: [(RootedPath, Entry)]
     , workReportEntriesWithoutContext :: [(RootedPath, Entry)]
     , workReportAgendaEntries :: [AgendaEntry]
-    , workReportCheckViolations :: Map Filter [(RootedPath, Entry)]
+    , workReportCheckViolations :: Map EntryFilter [(RootedPath, Entry)]
     }
   deriving (Show, Eq, Generic)
 
@@ -58,11 +57,12 @@ instance Monoid WorkReport where
 data WorkReportContext =
   WorkReportContext
     { workReportContextNow :: ZonedTime
-    , workReportContextBaseFilter :: Maybe Filter
-    , workReportContextCurrentContext :: Filter
-    , workReportContextAdditionalFilter :: Maybe Filter
-    , workReportContextContexts :: Map ContextName Filter
-    , workReportContextChecks :: Set Filter
+    , workReportContextBaseFilter :: Maybe EntryFilter
+    , workReportContextCurrentContext :: EntryFilter
+    , workReportContextTimeFilter :: Maybe (Filter Entry)
+    , workReportContextAdditionalFilter :: Maybe EntryFilter
+    , workReportContextContexts :: Map ContextName EntryFilter
+    , workReportContextChecks :: Set EntryFilter
     }
   deriving (Show, Generic)
 
@@ -72,18 +72,19 @@ makeWorkReport WorkReportContext {..} rp fc =
       match b = [(rp, cur) | b]
       combineFilter f = maybe f (FilterAnd f)
       filterWithBase f = combineFilter f workReportContextBaseFilter
-      currentFilter =
-        filterWithBase $
-        combineFilter workReportContextCurrentContext workReportContextAdditionalFilter
-      matchesSelectedContext = filterPredicate currentFilter rp fc
+      totalCurrent =
+        combineFilter workReportContextCurrentContext $
+        FilterSnd . FilterWithinCursor <$> workReportContextTimeFilter
+      currentFilter = filterWithBase $ combineFilter totalCurrent workReportContextAdditionalFilter
+      matchesSelectedContext = filterPredicate currentFilter (rp, fc)
       matchesAnyContext =
-        any (\f -> filterPredicate (filterWithBase f) rp fc) $ M.elems workReportContextContexts
+        any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext
         , workReportEntriesWithoutContext =
             match $
-            maybe True (\f -> filterPredicate f rp fc) workReportContextBaseFilter &&
+            maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter &&
             matchesNoContext
         , workReportAgendaEntries =
             let go ae =
@@ -96,9 +97,9 @@ makeWorkReport WorkReportContext {..} rp fc =
              in filter go $ makeAgendaEntry rp cur
         , workReportCheckViolations =
             if matchesAnyContext
-              then let go :: Filter -> Maybe (RootedPath, Entry)
+              then let go :: EntryFilter -> Maybe (RootedPath, Entry)
                        go f =
-                         if filterPredicate (filterWithBase f) rp fc
+                         if filterPredicate (filterWithBase f) (rp, fc)
                            then Nothing
                            else Just (rp, cur)
                     in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks

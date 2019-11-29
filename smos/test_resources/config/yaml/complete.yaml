@@ -1,10 +1,6 @@
-workflow-dir: null
-projects-dir: null
-archive-dir: null
-archived-projects-dir: null
-work-filter: null
 contexts: {}
-work: null
+archive-dir: null
+workflow-dir: null
 keys:
   reports:
     next-action:
@@ -31,7 +27,7 @@ keys:
     - action: enterNextActionFile
       key: <Enter>
     - action: selectHelp
-      key: ! '?'
+      key: '?'
     - action: selectHelp
       key: M-?
   help:
@@ -96,8 +92,12 @@ keys:
       key: <Down>
     - action: contentsMoveToStartOfLine
       key: <Home>
+    - action: contentsMoveToStartOfLine
+      key: C-a
     - action: contentsMoveToEndOfLine
       key: <End>
+    - action: contentsMoveToEndOfLine
+      key: C-e
     - action: forestSwapUp
       key: M-k
     - action: forestSwapDown
@@ -120,7 +120,7 @@ keys:
     - action: startHeaderFromEmptyAndSelectHeader
       key: E
     - action: selectHelp
-      key: ! '?'
+      key: '?'
     - action: reportNextActions
       key: rn
     logbook:
@@ -197,6 +197,8 @@ keys:
       key: td
     - action: entrySetTodoState_CANCELLED
       key: tc
+    - action: entrySetTodoState_FAILED
+      key: tf
     - action: entryUnsetTodoState
       key: t<space>
     - action: subtreeSetTodoState_TODO
@@ -213,6 +215,8 @@ keys:
       key: Td
     - action: subtreeSetTodoState_CANCELLED
       key: Tc
+    - action: subtreeSetTodoState_FAILED
+      key: Tf
     - action: subtreeUnsetTodoState
       key: T<space>
     - action: tagsToggle_home
@@ -225,6 +229,8 @@ keys:
       key: gt
     - action: tagsToggle_work
       key: gw
+    - action: tagsToggle_external
+      key: ge
     - action: timestampsSelect_BEGIN
       key: sb
     - action: timestampsSelect_END
@@ -249,8 +255,10 @@ keys:
       key: <space>nw
     - action: convRepinged
       key: <space>rp
+    - action: convNewEntryAndClockIn
+      key: <space>ce
     - action: selectHelp
-      key: ! '?'
+      key: '?'
     - action: forestToggleCollapse
       key: <tab>
     - action: forestToggleCollapseRecursively
@@ -278,8 +286,12 @@ keys:
       key: <Right>
     - action: headerMoveToStart
       key: <Home>
+    - action: headerMoveToStart
+      key: C-a
     - action: headerMoveToEnd
       key: <End>
+    - action: headerMoveToEnd
+      key: C-e
     - action: forestSwapUp
       key: M-k
     - action: forestSwapDown

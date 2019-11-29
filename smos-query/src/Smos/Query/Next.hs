@@ -9,7 +9,6 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
-import Smos.Report.Filter
 import Smos.Report.Next
 import Smos.Report.Streaming
 
@@ -24,7 +23,7 @@ next NextSettings {..} = do
     sourceToList $
     streamSmosFiles nextSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) nextSetFilter) .|
+    smosMFilter nextSetFilter .|
     smosCursorCurrents .|
     C.filter (isNextAction . snd) .|
     C.map (uncurry makeNextActionEntry)
