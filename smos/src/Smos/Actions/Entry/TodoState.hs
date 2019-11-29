@@ -27,7 +27,7 @@ allTodoStatePlainActions =
     s <- states
     pure $ a s
   where
-    states = ["TODO", "NEXT", "STARTED", "READY", "WAITING", "DONE", "CANCELLED"]
+    states = ["TODO", "NEXT", "STARTED", "READY", "WAITING", "DONE", "CANCELLED", "FAILED"]
 
 allTodoStateUsingCharActions :: [ActionUsing Char]
 allTodoStateUsingCharActions = []

@@ -21,6 +21,7 @@ library:
   - megaparsec
   - microlens
   - optparse-applicative
+  - parsec
   - path
   - path-io
   - pretty-show

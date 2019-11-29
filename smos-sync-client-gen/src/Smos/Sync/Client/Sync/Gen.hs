@@ -4,20 +4,22 @@ module Smos.Sync.Client.Sync.Gen where
 
 import Data.GenValidity
 
-import Smos.Sync.API.Gen ()
+import Pantry.SHA256
 
+import Smos.API.Gen ()
+
+import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse.Types
-import Smos.Sync.Client.Sync
+
+instance GenValid SHA256 where
+  genValid = hashBytes <$> genValid
+  shrinkValid _ = [] --No point in shrinking a hash, I think.
 
 instance GenValid IgnoreFiles where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
 instance GenValid ClientStore where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid ClientMetaData where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 

@@ -1,0 +1,9 @@
+before:
+- Hello
+commands:
+- convNewEntryAndClockIn
+after:
+- Hello
+- header: ''
+  logbook:
+  - start: 2019-10-17 16:42:38.588649983000+0000

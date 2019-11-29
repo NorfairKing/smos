@@ -86,6 +86,8 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -170,7 +172,7 @@ data Entry =
     , entryTimestamps :: Map TimestampName Timestamp -- SCHEDULED, DEADLINE, etc.
     , entryProperties :: Map PropertyName PropertyValue
     , entryStateHistory :: StateHistory -- TODO, DONE, etc.
-    , entryTags :: [Tag] -- '@home', 'toast', etc.
+    , entryTags :: Set Tag -- '@home', 'toast', etc.
     , entryLogbook :: Logbook
     }
   deriving (Show, Eq, Ord, Generic)
@@ -183,7 +185,7 @@ newEntry h =
     , entryTimestamps = M.empty
     , entryProperties = M.empty
     , entryStateHistory = emptyStateHistory
-    , entryTags = []
+    , entryTags = S.empty
     , entryLogbook = emptyLogbook
     }
 
@@ -201,7 +203,7 @@ instance FromJSON Entry where
        o .:? "timestamps" .!= M.empty <*>
        o .:? "properties" .!= M.empty <*>
        o .:? "state-history" .!= StateHistory [] <*>
-       o .:? "tags" .!= [] <*>
+       o .:? "tags" .!= S.empty <*>
        o .:? "logbook" .!= emptyLogbook)
       v
 
@@ -248,7 +250,7 @@ instance ToYaml Entry where
            [ ("state-history", toYaml entryStateHistory)
            | not $ null $ unStateHistory entryStateHistory
            ] ++
-           [("tags", toYaml entryTags) | not $ null entryTags] ++
+           [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags] ++
            [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
 
 newtype Header =

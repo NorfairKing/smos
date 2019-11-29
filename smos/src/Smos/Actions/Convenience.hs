@@ -4,6 +4,7 @@ module Smos.Actions.Convenience
   ( allConveniencePlainActions
   , convDoneAndWaitForResponse
   , convRepinged
+  , convNewEntryAndClockIn
   ) where
 
 import Control.Monad
@@ -17,10 +18,12 @@ import Smos.Types
 import Smos.Cursor.Entry
 import Smos.Cursor.Header
 
+import Smos.Actions.Entry
+import Smos.Actions.Forest
 import Smos.Actions.Utils
 
 allConveniencePlainActions :: [Action]
-allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged]
+allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged, convNewEntryAndClockIn]
 
 convDoneAndWaitForResponse :: Action
 convDoneAndWaitForResponse =
@@ -72,3 +75,15 @@ convRepinged =
 
 insertHeaderString :: String -> SmosM ()
 insertHeaderString s = modifyHeaderCursorWhenSelectedM $ \hc -> foldM (flip headerCursorInsert) hc s
+
+convNewEntryAndClockIn :: Action
+convNewEntryAndClockIn =
+  Action
+    { actionName = "convNewEntryAndClockIn"
+    , actionFunc =
+        do actionFunc forestInsertEntryAfterAndSelectHeader
+           actionFunc entrySelectWhole
+           actionFunc forestClockOutEverywhereInAllFilesAndClockInHere
+           actionFunc entrySelectHeaderAtEnd
+    , actionDescription = "Create a new entry and clock in immediately"
+    }

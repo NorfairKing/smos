@@ -1,11 +1,7 @@
 {
-    "workflow-dir": null,
-    "projects-dir": null,
-    "archive-dir": null,
-    "archived-projects-dir": null,
-    "work-filter": null,
     "contexts": {},
-    "work": null,
+    "archive-dir": null,
+    "workflow-dir": null,
     "keys": {
         "reports": {
             "next-action": [
@@ -185,8 +181,16 @@
                     "key": "<Home>"
                 },
                 {
+                    "action": "contentsMoveToStartOfLine",
+                    "key": "C-a"
+                },
+                {
                     "action": "contentsMoveToEndOfLine",
                     "key": "<End>"
+                },
+                {
+                    "action": "contentsMoveToEndOfLine",
+                    "key": "C-e"
                 },
                 {
                     "action": "forestSwapUp",
@@ -387,6 +391,10 @@
                     "key": "tc"
                 },
                 {
+                    "action": "entrySetTodoState_FAILED",
+                    "key": "tf"
+                },
+                {
                     "action": "entryUnsetTodoState",
                     "key": "t<space>"
                 },
@@ -419,6 +427,10 @@
                     "key": "Tc"
                 },
                 {
+                    "action": "subtreeSetTodoState_FAILED",
+                    "key": "Tf"
+                },
+                {
                     "action": "subtreeUnsetTodoState",
                     "key": "T<space>"
                 },
@@ -441,6 +453,10 @@
                 {
                     "action": "tagsToggle_work",
                     "key": "gw"
+                },
+                {
+                    "action": "tagsToggle_external",
+                    "key": "ge"
                 },
                 {
                     "action": "timestampsSelect_BEGIN",
@@ -489,6 +505,10 @@
                 {
                     "action": "convRepinged",
                     "key": "<space>rp"
+                },
+                {
+                    "action": "convNewEntryAndClockIn",
+                    "key": "<space>ce"
                 },
                 {
                     "action": "selectHelp",
@@ -549,8 +569,16 @@
                     "key": "<Home>"
                 },
                 {
+                    "action": "headerMoveToStart",
+                    "key": "C-a"
+                },
+                {
                     "action": "headerMoveToEnd",
                     "key": "<End>"
+                },
+                {
+                    "action": "headerMoveToEnd",
+                    "key": "C-e"
                 },
                 {
                     "action": "forestSwapUp",
@@ -728,5 +756,8 @@
                 }
             ]
         }
-    }
+    },
+    "projects-dir": null,
+    "work-filter": null,
+    "archived-projects-dir": null
 }

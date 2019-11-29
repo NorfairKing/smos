@@ -48,6 +48,7 @@ defaultAttrMap _ =
         , (todoStateSpecificAttr "READY", fg brown)
         , (todoStateSpecificAttr "DONE", fg green)
         , (todoStateSpecificAttr "CANCELLED", fg green)
+        , (todoStateSpecificAttr "FAILED", fg brightRed)
         , (timestampNameSpecificAttr "BEGIN", fg brown)
         , (timestampNameSpecificAttr "END", fg brown)
         , (timestampNameSpecificAttr "SCHEDULED", fg orange)

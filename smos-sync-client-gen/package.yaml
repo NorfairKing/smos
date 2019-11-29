@@ -15,6 +15,7 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
+  - async
   - bytestring
   - containers
   - genvalidity
@@ -23,13 +24,23 @@ library:
   - hspec-core
   - http-client
   - mergeful
+  - mergeful
+  - microlens
+  - monad-logger
   - path
   - path-io
+  - persistent
+  - persistent-sqlite
+  - resource-pool
   - servant-client
-  - smos-sync-api-gen
+  - smos-api
+  - smos-api-gen
+  - pantry
+  - smos-client
+  - smos-server-gen
   - smos-sync-client
-  - smos-sync-server-gen
   - stm
+  - typed-uuid
   - uuid
   - wai
   - warp
@@ -55,15 +66,24 @@ tests:
     - hspec
     - hspec-core
     - mergeful
+    - mergeful
     - monad-logger
+    - mtl
     - path
     - path-io
+    - persistent
+    - persistent-sqlite
     - pretty-show
+    - resource-pool
+    - servant-auth-client
     - servant-client
+    - smos-api
+    - smos-client
+    - smos-client-gen
     - smos-report
-    - smos-sync-api
+    - smos-server
+    - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen
-    - smos-sync-server
-    - smos-sync-server-gen
+    - text
     - uuid

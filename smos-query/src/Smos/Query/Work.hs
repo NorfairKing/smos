@@ -18,6 +18,8 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
 
+import Smos.Data
+
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
@@ -39,6 +41,7 @@ work WorkSettings {..} = do
       src
       workSetHideArchive
       workSetContext
+      workSetTimeFilter
       workSetFilter
       workSetSorter
       workSetChecks
@@ -48,11 +51,12 @@ produceWorkReport ::
      SmosReportConfig
   -> HideArchive
   -> ContextName
-  -> Maybe Filter
+  -> Maybe (Filter Entry)
+  -> Maybe EntryFilter
   -> Maybe Sorter
-  -> Set Filter
+  -> Set EntryFilter
   -> Q WorkReport
-produceWorkReport src ha cn mf ms checks = do
+produceWorkReport src ha cn mtf mf ms checks = do
   let contexts = smosReportConfigContexts src
   case M.lookup cn contexts of
     Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
@@ -63,6 +67,7 @@ produceWorkReport src ha cn mf ms checks = do
               { workReportContextNow = now
               , workReportContextBaseFilter = smosReportConfigWorkBaseFilter src
               , workReportContextCurrentContext = cf
+              , workReportContextTimeFilter = mtf
               , workReportContextAdditionalFilter = mf
               , workReportContextContexts = contexts
               , workReportContextChecks = checks

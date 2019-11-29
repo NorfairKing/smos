@@ -74,6 +74,7 @@ defaultFileKeyMap =
           , exactString "tw" $ entrySetTodoState "WAITING"
           , exactString "td" $ entrySetTodoState "DONE"
           , exactString "tc" $ entrySetTodoState "CANCELLED"
+          , exactString "tf" $ entrySetTodoState "FAILED"
           , exactString "t " entryUnsetTodoState
           , exactString "Tt" $ subtreeSetTodoState "TODO"
           , exactString "Tn" $ subtreeSetTodoState "NEXT"
@@ -82,6 +83,7 @@ defaultFileKeyMap =
           , exactString "Tw" $ subtreeSetTodoState "WAITING"
           , exactString "Td" $ subtreeSetTodoState "DONE"
           , exactString "Tc" $ subtreeSetTodoState "CANCELLED"
+          , exactString "Tf" $ subtreeSetTodoState "FAILED"
           , exactString "T " subtreeUnsetTodoState
                   -- Fast tag manipulation
           , exactString "gh" $ tagsToggle "home"
@@ -89,6 +91,7 @@ defaultFileKeyMap =
           , exactString "gof" $ tagsToggle "offline"
           , exactString "gt" $ tagsToggle "toast"
           , exactString "gw" $ tagsToggle "work"
+          , exactString "ge" $ tagsToggle "external"
                   -- Fast timestamps manipulation
           , exactString "sb" $ timestampsSelect "BEGIN"
           , exactString "se" $ timestampsSelect "END"
@@ -105,6 +108,7 @@ defaultFileKeyMap =
                   -- Convenience
           , exactString " nw" convDoneAndWaitForResponse
           , exactString " rp" convRepinged
+          , exactString " ce" convNewEntryAndClockIn
                   -- Collapsing
           , exactChar '?' selectHelp
           , exactChar '\t' forestToggleCollapse
@@ -125,7 +129,9 @@ defaultFileKeyMap =
           , exactKey KLeft headerMoveLeft
           , exactKey KRight headerMoveRight
           , exactKey KHome headerMoveToStart
+          , modifiedChar 'a' [MCtrl] headerMoveToStart
           , exactKey KEnd headerMoveToEnd
+          , modifiedChar 'e' [MCtrl] headerMoveToEnd
           , modifiedChar 'k' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry
@@ -145,7 +151,9 @@ defaultFileKeyMap =
           , exactKey KUp contentsMoveUp
           , exactKey KDown contentsMoveDown
           , exactKey KHome contentsMoveToStartOfLine
+          , modifiedChar 'a' [MCtrl] contentsMoveToStartOfLine
           , exactKey KEnd contentsMoveToEndOfLine
+          , modifiedChar 'e' [MCtrl] contentsMoveToEndOfLine
           , modifiedChar 'k' [MMeta] forestSwapUp
           , modifiedChar 'j' [MMeta] forestSwapDown
           , modifiedChar 'h' [MMeta] forestPromoteEntry

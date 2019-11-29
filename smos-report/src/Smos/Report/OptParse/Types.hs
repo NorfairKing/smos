@@ -42,8 +42,8 @@ data Configuration =
     , confArchiveDir :: Maybe Text
     , confProjectsDir :: Maybe Text
     , confArchivedProjectsDir :: Maybe Text
-    , confWorkBaseFilter :: Maybe Filter
-    , confContexts :: Maybe (Map ContextName Filter)
+    , confWorkBaseFilter :: Maybe EntryFilter
+    , confContexts :: Maybe (Map ContextName EntryFilter)
     }
   deriving (Show, Eq, Generic)
 
@@ -86,9 +86,9 @@ backToConfiguration SmosReportConfig {..} =
                  ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
                  ArchivedProjectsAbsolute aad -> fromAbsDir aad
     , confWorkBaseFilter =
-        if smosReportConfigWorkBaseFilter == defaultWorkBaseFilter
+        if smosReportConfigWorkBaseFilter == Just defaultWorkBaseFilter
           then Nothing
-          else defaultWorkBaseFilter
+          else Just defaultWorkBaseFilter
     , confContexts = Just smosReportConfigContexts
     }
 

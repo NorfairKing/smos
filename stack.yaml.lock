@@ -19,6 +19,89 @@ packages:
   original:
     hackage: hakyll-sass-0.2.4
 - completed:
+    hackage: typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
+    pantry-tree:
+      size: 315
+      sha256: dd9becba36b5b51f47d882049b5b29d9e41dcebffc33fe648e0dd3b0a4775017
+  original:
+    hackage: typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
+- completed:
+    hackage: genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+    pantry-tree:
+      size: 456
+      sha256: 7f0ca8077fa9335840ac7780a535bda3054c98df71dcc6dac5ac98c6c86ff47a
+  original:
+    hackage: genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+- completed:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+    pantry-tree:
+      size: 325
+      sha256: 04f12c7bef2c3f9a25d94eb9489752ed498db8e243069fe95838dbb51df1dcb3
+  original:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+- completed:
+    cabal-file:
+      size: 1917
+      sha256: 68c625360fc4b5c12e242f62704d9f345bfc5080e26c706f44b1422859fee3d2
+    name: sqlite
+    version: 0.5.5
+    git: https://github.com/GaloisInc/sqlite.git
+    pantry-tree:
+      size: 2723
+      sha256: c5cf2f53919a1e7752478206de73c0af5cb993e7e6021c059ab41bbd2c16d0fb
+    commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
+  original:
+    git: https://github.com/GaloisInc/sqlite.git
+    commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
+- completed:
+    subdir: persistent
+    cabal-file:
+      size: 4678
+      sha256: bd4bfa1e0ae713620eef9de88f0331e0e9aae1daeb91ccccee90e12b9142c3e3
+    name: persistent
+    version: 2.10.0
+    git: https://github.com/NorfairKing/persistent
+    pantry-tree:
+      size: 2094
+      sha256: a3e3ce95eb03de7cb5cb2e5d9ad61ca2670ff0f94a193ca7321978985663e7b0
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+  original:
+    subdir: persistent
+    git: https://github.com/NorfairKing/persistent
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+- completed:
+    subdir: persistent-template
+    cabal-file:
+      size: 2703
+      sha256: 6705bd3063fdc9dcb83515f9c748f948b8f2d3316a178ea20a775f7003272463
+    name: persistent-template
+    version: 2.7.1
+    git: https://github.com/NorfairKing/persistent
+    pantry-tree:
+      size: 619
+      sha256: 2fe219a4a045bcbf4c7e3778ee383acda2f8c931dbeb3cf0d7505e958b10248a
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+  original:
+    subdir: persistent-template
+    git: https://github.com/NorfairKing/persistent
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+- completed:
+    subdir: persistent-sqlite
+    cabal-file:
+      size: 4519
+      sha256: 9d24756cab89e079286a3030ee490e2595203aba879e639450e66d3b604fd381
+    name: persistent-sqlite
+    version: 2.10.0
+    git: https://github.com/NorfairKing/persistent
+    pantry-tree:
+      size: 824
+      sha256: 1af1fb315905b8cc0513e2117d02c9b75f16209c42e0ceec78afde8c754dfcb4
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+  original:
+    subdir: persistent-sqlite
+    git: https://github.com/NorfairKing/persistent
+    commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
+- completed:
     subdir: mergeful
     cabal-file:
       size: 1235
@@ -28,28 +111,28 @@ packages:
     git: https://github.com/NorfairKing/mergeful
     pantry-tree:
       size: 583
-      sha256: d751947a54a409aeb0a670519d02920f1f9926691a4cf7e2296b00357db02928
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+      sha256: 00d4defd13c8dc9d7903b0f22ea9192867b3be1a67f9973f8fd1d11b21b6afdc
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
   original:
     subdir: mergeful
     git: https://github.com/NorfairKing/mergeful
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
 - completed:
     subdir: genvalidity-mergeful
     cabal-file:
       size: 1942
-      sha256: 28916cd4a6c3937836a32469b8d7b117c8699f2bbb53bb0c8a31c845444fa810
+      sha256: 96e3acbe635795dd56216c24ba2390a8a1b9689520046337c6dea1a3185f9408
     name: genvalidity-mergeful
-    version: 0.0.0.0
+    version: 0.1.0.0
     git: https://github.com/NorfairKing/mergeful
     pantry-tree:
       size: 984
-      sha256: 004a947364015d39fdb72cb79fe7b466a3df7fe79f0aa14b5cb03554c2dfc8ca
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+      sha256: c882350a28a7360e7a21b4fd30ff15cdabcde37b57e279c063fa124c347da535
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
   original:
     subdir: genvalidity-mergeful
     git: https://github.com/NorfairKing/mergeful
-    commit: b6e20794d196e9abc1cff0ea07594ef0d04307d6
+    commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
 - completed:
     cabal-file:
       size: 3674

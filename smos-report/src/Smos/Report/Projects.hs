@@ -45,6 +45,7 @@ getCurrentEntry = goF . smosFileForest
     isDone :: TodoState -> Bool
     isDone "DONE" = True
     isDone "CANCELLED" = True
+    isDone "FAILED" = True
     isDone _ = False
     isCurrent :: TodoState -> Bool
     isCurrent "TODO" = False

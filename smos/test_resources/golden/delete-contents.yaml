@@ -1,0 +1,9 @@
+before:
+- entry:
+    header: hello world
+    contents: ''
+commands:
+- entrySelectContents
+- contentsRemove
+after:
+- entry: hello world

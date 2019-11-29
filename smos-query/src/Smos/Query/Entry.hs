@@ -7,7 +7,6 @@ module Smos.Query.Entry
 import Control.Arrow
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 
 import Smos.Report.Filter
 import Smos.Report.Sorter
@@ -24,6 +23,6 @@ entry EntrySettings {..} = do
     sourceToList $
     streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) entrySetFilter)
+    smosMFilter entrySetFilter
   let ees = maybe id sorterSortList entrySetSorter $ map (second forestCursorCurrent) tups
   liftIO $ putTableLn $ renderEntryTable entrySetProjection ees

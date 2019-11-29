@@ -28,6 +28,7 @@ import Smos.Report.Time hiding (P)
 
 data Sorter
   = ByFile
+  | ByTag Tag
   | ByProperty PropertyName
   | ByPropertyTime PropertyName
   | Reverse Sorter
@@ -55,11 +56,9 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
     go s ea eb =
       case s of
         ByFile -> comparing resolveRootedPath rpa rpb
+        ByTag t -> comparing ((t `elem`) . entryTags) ea eb
         ByPropertyTime pn ->
-          comparing
-            (\e -> M.lookup pn (entryProperties e) >>= (parseTime . propertyValueText))
-            ea
-            eb
+          comparing (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText)) ea eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
         Reverse s' ->
           (\case
@@ -75,12 +74,19 @@ parseSorter = parseMaybe sorterP
 type P = Parsec Void Text
 
 sorterP :: P Sorter
-sorterP = try byFileP <|> try byPropertyAsTimeP <|> try byPropertyP <|> try reverseP <|> andThenP
+sorterP =
+  try byFileP <|> try byTagP <|> try byPropertyAsTimeP <|> try byPropertyP <|> try reverseP <|>
+  andThenP
 
 byFileP :: P Sorter
 byFileP = do
   void $ string' "file"
   pure ByFile
+
+byTagP :: P Sorter
+byTagP = do
+  void $ string' "tag:"
+  ByTag <$> tagP
 
 byPropertyP :: P Sorter
 byPropertyP = do
@@ -106,6 +112,11 @@ andThenP = do
   void $ char ')'
   pure $ AndThen s1 s2
 
+tagP :: P Tag
+tagP = do
+  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  either fail pure $ parseTag $ T.pack s
+
 propertyNameP :: P PropertyName
 propertyNameP = do
   s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
@@ -115,6 +126,7 @@ renderSorter :: Sorter -> Text
 renderSorter f =
   case f of
     ByFile -> "file"
+    ByTag t -> "tag:" <> tagText t
     ByProperty pn -> "property:" <> propertyNameText pn
     ByPropertyTime pn -> "property-as-time:" <> propertyNameText pn
     Reverse s' -> "reverse:" <> renderSorter s'

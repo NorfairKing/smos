@@ -18,7 +18,6 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Agenda
-import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
@@ -34,7 +33,7 @@ agenda AgendaSettings {..} = do
     sourceToList $
     streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
-    C.filter (\(rp, fc) -> maybe True (\f -> filterPredicate f rp fc) agendaSetFilter) .|
+    smosMFilter agendaSetFilter .|
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
     C.filter (fitsHistoricity now agendaSetHistoricity)
