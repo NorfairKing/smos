@@ -125,7 +125,8 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 , workSetSorter = mwc workConfSorter <|> workFlagSorter
                 , workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
-        CommandProjects -> pure DispatchProjects
+        CommandProjects ProjectsFlags{..}->
+          pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
         CommandLog LogFlags {..} ->
           pure $
           DispatchLog
@@ -279,7 +280,7 @@ parseCommandProjects :: ParserInfo Command
 parseCommandProjects = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the projects overview"
-    parser = pure CommandProjects
+    parser = CommandProjects <$> (ProjectsFlags <$> parseProjectFilterArgs)
 
 parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier
@@ -334,20 +335,21 @@ parseFilterArgs =
   many
     (argument
        (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-       (mconcat
-          [ metavar "FILTER"
-          , help "A filter to filter entries by"
-          ]))
+       (mconcat [metavar "FILTER", help "A filter to filter entries by"]))
 
 parseFilterArg :: Parser (Maybe EntryFilter)
 parseFilterArg =
   argument
     (Just <$> eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-    (mconcat
-       [ value Nothing
-       , metavar "FILTER"
-       , help "A filter to filter entries by"
-       ])
+    (mconcat [value Nothing, metavar "FILTER", help "A filter to filter entries by"])
+
+parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
+parseProjectFilterArgs =
+  fmap foldFilterAnd . NE.nonEmpty <$>
+  many
+    (argument
+       (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
+       (mconcat [metavar "FILTER", help "A filter to filter projects by"]))
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
 parseProjectionArgs =

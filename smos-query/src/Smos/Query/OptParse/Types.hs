@@ -45,7 +45,7 @@ data Command
   | CommandNext NextFlags
   | CommandClock ClockFlags
   | CommandAgenda AgendaFlags
-  | CommandProjects
+  | CommandProjects ProjectsFlags
   | CommandLog LogFlags
   | CommandStats StatsFlags
   | CommandTags TagsFlags
@@ -103,6 +103,12 @@ data AgendaFlags =
     , agendaFlagHistoricity :: Maybe AgendaHistoricity
     , agendaFlagBlock :: Maybe TimeBlock
     , agendaFlagHideArchive :: Maybe HideArchive
+    }
+  deriving (Show, Eq)
+
+data ProjectsFlags =
+  ProjectsFlags
+    { projectsFlagFilter :: Maybe ProjectFilter
     }
   deriving (Show, Eq)
 
@@ -175,7 +181,7 @@ data Dispatch
   | DispatchNext NextSettings
   | DispatchClock ClockSettings
   | DispatchAgenda AgendaSettings
-  | DispatchProjects
+  | DispatchProjects ProjectsSettings
   | DispatchLog LogSettings
   | DispatchStats StatsSettings
   | DispatchTags TagsSettings
@@ -234,6 +240,12 @@ data AgendaSettings =
     , agendaSetHistoricity :: AgendaHistoricity
     , agendaSetBlock :: TimeBlock
     , agendaSetHideArchive :: HideArchive
+    }
+  deriving (Show, Eq, Generic)
+
+data ProjectsSettings =
+  ProjectsSettings
+    { projectsSetFilter :: Maybe ProjectFilter
     }
   deriving (Show, Eq, Generic)
 

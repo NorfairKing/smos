@@ -381,12 +381,9 @@ spaceP =
        PartSpace -> True
        _ -> False)
 
---
---
---
---
---
 type EntryFilter = Filter (RootedPath, ForestCursor Entry)
+
+type ProjectFilter = Filter RootedPath
 
 data SmosFileAtPath =
   SmosFileAtPath
@@ -707,10 +704,16 @@ prettyFilterParseError =
     TypeCheckingError te -> renderFilterTypeError te
 
 parseEntryFilter :: Text -> Either FilterParseError EntryFilter
-parseEntryFilter t = do
+parseEntryFilter = parseTextFilter parseEntryFilterAst
+
+parseProjectFilter :: Text -> Either FilterParseError ProjectFilter
+parseProjectFilter = parseTextFilter parseProjectFilterAst
+
+parseTextFilter :: TC a -> Text -> Either FilterParseError a
+parseTextFilter tc t = do
   ps <- left TokenisationError $ parseParts t
   ast <- left ParsingError $ parseAst ps
-  left TypeCheckingError $ parseEntryFilterAst ast
+  left TypeCheckingError $ tc ast
 
 data FilterTypeError
   = FTEPieceExpected Ast
@@ -730,6 +733,8 @@ type TC a = Ast -> TCE a
 
 parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
 parseEntryFilterAst = tcTupleFilter tcRootedPathFilter (tcForestCursorFilter tcEntryFilter)
+parseProjectFilterAst :: Ast -> Either FilterTypeError ProjectFilter
+parseProjectFilterAst = tcRootedPathFilter
 
 tcPiece :: (Piece -> TCE a) -> TC a
 tcPiece func =
