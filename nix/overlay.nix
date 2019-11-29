@@ -113,6 +113,7 @@ with final.haskell.lib;
                 in
                   final.smosPackages // {
                 hakyll = dontCheck (super.callHackage "hakyll" "4.13.0.0" {});
+                pantry = disableLibraryProfiling (dontCheck (super.callHackage "pantry" "0.1.1.2" {}));
                 hakyll-sass = dontCheck (super.callHackage "hakyll-sass" "0.2.4" {});
                 sqlite = addBuildDepend (dontCheck (super.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
