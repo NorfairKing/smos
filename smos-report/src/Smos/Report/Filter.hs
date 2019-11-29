@@ -230,7 +230,9 @@ parseKeyword =
     "time" -> Just KeyWordTime
     "header" -> Just KeyWordHeader
     "state" -> Just KeyWordTodoState
+    "property" -> Just KeyWordProperties
     "properties" -> Just KeyWordProperties
+    "tag" -> Just KeyWordTags
     "tags" -> Just KeyWordTags
     "cursor" -> Just KeyWordCursor
     "level" -> Just KeyWordLevel
@@ -794,15 +796,14 @@ tcRootedPathFilter =
 
 tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
 tcSub =
-  tcThisKeyWordOp KeyWordSub $ tcPiece $ \p ->
-    case parseArgumentPiece p of
-      Right a -> pure (FilterSub a)
-      Left err -> Left $ FTEArgumentExpected p err
+  let subTC = fmap FilterSub . tcArgumentPiece pure
+   in tcChoices [tcThisKeyWordOp KeyWordSub subTC, subTC]
 
 tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
 tcOrd =
-  tcThisKeyWordOp KeyWordOrd $ tcArgumentOp $ \comparison ->
-    tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
+  let ordTC =
+        tcArgumentOp $ \comparison -> tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
+   in tcChoices [tcThisKeyWordOp KeyWordOrd ordTC, ordTC]
 
 tcTimeFilter :: TC (Filter Time)
 tcTimeFilter = tcWithTopLevelBranches tcOrd
@@ -833,62 +834,89 @@ tcPropertyValueFilter =
 tcMapFilter ::
      (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
 tcMapFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
-    case kw of
-      KeyWordVal -> tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
-      KeyWordHas -> tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
-      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw
+  tcWithTopLevelBranches $ tcChoices $
+  let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+      hasTC = tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+   in [ tcKeyWordOp $ \kw ->
+          case kw of
+            KeyWordVal -> valTC
+            KeyWordHas -> hasTC
+            _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw
+      , valTC
+      , hasTC
+      ]
 
 tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
 tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 
 tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
 tcSetFilter func =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
-    case kw of
-      KeyWordAny -> fmap FilterAny . func
-      KeyWordAll -> fmap FilterAll . func
-      _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw
+  tcWithTopLevelBranches $ tcChoices $
+  let anyTC = fmap FilterAny . func
+      allTC = fmap FilterAll . func
+   in [ tcKeyWordOp $ \kw ->
+          case kw of
+            KeyWordAny -> anyTC
+            KeyWordAll -> allTC
+            _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw
+      , anyTC
+      ]
 
 tcTagsFilter :: TC (Filter (Set Tag))
 tcTagsFilter = tcSetFilter tcTagFilter
 
 tcEntryFilter :: TC (Filter Entry)
 tcEntryFilter =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
+  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
     case kw of
-      KeyWordHeader -> FilterEntryHeader <$> tcHeaderFilter a
-      KeyWordTodoState -> FilterEntryTodoState <$> tcMaybeFilter tcTodoStateFilter a
-      KeyWordProperties -> FilterEntryProperties <$> tcPropertiesFilter a
-      KeyWordTags -> FilterEntryTags <$> tcTagsFilter a
+      KeyWordHeader -> fmap FilterEntryHeader . tcHeaderFilter
+      KeyWordTodoState -> fmap FilterEntryTodoState . tcMaybeFilter tcTodoStateFilter
+      KeyWordProperties -> fmap FilterEntryProperties . tcPropertiesFilter
+      KeyWordTags -> fmap FilterEntryTags . tcTagsFilter
       _ ->
-        Left $
+        const $ Left $
         FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
 
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw a ->
-    case kw of
-      KeyWordParent -> FilterParent <$> tcForestCursorFilter tc a
-      KeyWordAncestor -> FilterAncestor <$> tcForestCursorFilter tc a
-      KeyWordChild -> FilterChild <$> tcForestCursorFilter tc a
-      KeyWordLegacy -> FilterLegacy <$> tcForestCursorFilter tc a
-      KeyWordLevel -> FilterLevel <$> tcArgumentPiece pure a
-      KeyWordCursor -> FilterWithinCursor <$> tc a
-      _ ->
-        Left $
-        FTEThisKeyWordExpected
-          [KeyWordParent, KeyWordAncestor, KeyWordChild, KeyWordLegacy, KeyWordLevel, KeyWordCursor]
-          kw
+  tcWithTopLevelBranches $ tcChoices $
+  let withinCursorTC = fmap FilterWithinCursor . tc
+   in [ tcKeyWordOp $ \kw ->
+          case kw of
+            KeyWordParent -> fmap FilterParent . tcForestCursorFilter tc
+            KeyWordAncestor -> fmap FilterAncestor . tcForestCursorFilter tc
+            KeyWordChild -> fmap FilterChild . tcForestCursorFilter tc
+            KeyWordLegacy -> fmap FilterLegacy . tcForestCursorFilter tc
+            KeyWordLevel -> fmap FilterLevel . tcArgumentPiece pure
+            KeyWordCursor -> withinCursorTC
+            _ ->
+              const $ Left $
+              FTEThisKeyWordExpected
+                [ KeyWordParent
+                , KeyWordAncestor
+                , KeyWordChild
+                , KeyWordLegacy
+                , KeyWordLevel
+                , KeyWordCursor
+                ]
+                kw
+      , withinCursorTC
+      ]
 
 tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
-tcTupleFilter fstTC sndTC =
-  tcWithTopLevelBranches $ \ast ->
-    flip tcKeyWordOp ast $ \kw a ->
-      case kw of
-        KeyWordFst -> FilterFst <$> fstTC a
-        KeyWordSnd -> FilterSnd <$> sndTC a
-        _ -> tcChoices [fmap FilterFst . fstTC, fmap FilterSnd . sndTC] ast
+tcTupleFilter tc1 tc2 =
+  tcWithTopLevelBranches $
+  let fstTC = fmap FilterFst . tc1
+      sndTC = fmap FilterSnd . tc2
+   in tcChoices
+        [ tcKeyWordOp $ \kw ->
+            case kw of
+              KeyWordFst -> fstTC
+              KeyWordSnd -> sndTC
+              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordFst, KeyWordSnd] kw
+        , fstTC
+        , sndTC
+        ]
 
 tcChoices :: [TC a] -> TC a
 tcChoices [] = const $ Left FTENoChoices

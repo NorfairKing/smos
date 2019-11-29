@@ -4,6 +4,7 @@
 
 module Smos.Query.OptParse where
 
+import Control.Arrow
 import Data.Foldable
 import Data.Functor
 import Data.List.NonEmpty (NonEmpty(..))
@@ -332,22 +333,20 @@ parseFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty <$>
   many
     (argument
-       (eitherReader (parseEntryFilter . T.pack))
+       (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
        (mconcat
           [ metavar "FILTER"
           , help "A filter to filter entries by"
-          -- , completer $ mkCompleter $ pure . filterCompleter
           ]))
 
 parseFilterArg :: Parser (Maybe EntryFilter)
 parseFilterArg =
   argument
-    (Just <$> eitherReader (parseEntryFilter . T.pack))
+    (Just <$> eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
     (mconcat
        [ value Nothing
        , metavar "FILTER"
        , help "A filter to filter entries by"
-       -- , completer $ mkCompleter $ pure . filterCompleter
        ])
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))

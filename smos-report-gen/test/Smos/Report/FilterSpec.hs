@@ -370,7 +370,7 @@ spec = do
           it (unwords ["succesfully parses", show input, "into", show expected]) $
           parseEntryFilter input `shouldBe` Right expected
         pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
-    pe "file:side" (FilterFst $ FilterFile [relfile|"side"|])
+    pe "file:side" (FilterFst $ FilterFile [relfile|side|])
     pee "header:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "tag:toast" (FilterEntryTags $ FilterAny $ FilterSub $ fromJust $ tag "toast")
     pee
@@ -395,10 +395,10 @@ spec = do
        FilterAncestor $
        FilterWithinCursor $
        FilterEntryTags $
-       FilterAny $
+
        FilterOr
-         (FilterSub (fromJust $ tag "home"))
-         (FilterOr (FilterSub (fromJust $ tag "online")) (FilterSub (fromJust $ tag "offline"))))
+         (FilterAny $ FilterSub (fromJust $ tag "home"))
+         (FilterOr (FilterAny $ FilterSub (fromJust $ tag "online")) (FilterAny $ FilterSub (fromJust $ tag "offline"))))
 
 tcSpec :: (Show a, Eq a) => TC a -> Ast -> a -> Spec
 tcSpec tc ast a =
