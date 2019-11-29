@@ -10,6 +10,8 @@ import Data.Maybe (fromJust)
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 
+import Pantry.SHA256 as SHA256
+
 import Path
 
 import Control.Monad.Reader
@@ -36,7 +38,8 @@ readClientMetadata = do
          ( clientFilePath
          , SyncFileMeta
              { syncFileMetaUUID = clientFileUuid
-             , syncFileMetaHash = clientFileHash
+             , syncFileMetaHashOld = clientFileHash
+             , syncFileMetaHash = clientFileSha256
              , syncFileMetaTime = clientFileTime
              }))
       cfs
@@ -58,10 +61,14 @@ writeClientMetadata mm = do
         (ClientFile
            { clientFileUuid = syncFileMetaUUID
            , clientFilePath = path
-           , clientFileHash = syncFileMetaHash
+           , clientFileSha256 = syncFileMetaHash
+           , clientFileHash = syncFileMetaHashOld
            , clientFileTime = syncFileMetaTime
            })
-        [ClientFileHash =. syncFileMetaHash, ClientFileTime =. syncFileMetaTime]
+        [ ClientFileHash =. syncFileMetaHashOld
+        , ClientFileSha256 =. syncFileMetaHash
+        , ClientFileTime =. syncFileMetaTime
+        ]
 
 -- | We only check the synced items, because it should be the case that
 -- they're the only ones that are not empty.
@@ -81,7 +88,8 @@ makeClientMetaData igf ClientStore {..} =
                            SyncFileMeta
                              { syncFileMetaUUID = u
                              , syncFileMetaTime = timedTime
-                             , syncFileMetaHash = hash syncFileContents
+                             , syncFileMetaHashOld = Just $ hash syncFileContents
+                             , syncFileMetaHash = Just $ SHA256.hashBytes syncFileContents
                              }
                            m
                     in case igf of

@@ -19,6 +19,8 @@ import qualified Data.Text.Encoding as TE
 import Data.Validity.UUID ()
 import Text.Show.Pretty
 
+import Pantry.SHA256 as SHA256
+
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
@@ -257,7 +259,11 @@ consolidateMetaMapWithFiles clientMetaDataMap contentsMap
 
 -- We will trust hashing. (TODO do we need to fix that?)
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
-isUnchanged SyncFileMeta {..} contents = hash contents == syncFileMetaHash
+isUnchanged SyncFileMeta {..} contents =
+  case (syncFileMetaHashOld, syncFileMetaHash) of
+    (Nothing, Nothing) -> False -- Mark as changed, then we'll get a new hash later.
+    (Just i, Nothing) -> hash contents == i
+    (_, Just sha) -> SHA256.hashBytes contents == sha
 
 -- TODO this could be probably optimised using the sync response
 saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()

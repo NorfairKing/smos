@@ -12,10 +12,12 @@ import Data.GenValidity.UUID.Typed ()
 
 import qualified Data.Text as T
 
+import Test.QuickCheck
+
 import Smos.API
 
 instance GenValid UsernameChar where
-  genValid = genValidStructurally
+  genValid = UsernameChar <$> elements (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Username where
@@ -25,7 +27,7 @@ instance GenValid Username where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PasswordChar where
-  genValid = genValidStructurally
+  genValid = PasswordChar <$> elements (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Password where
