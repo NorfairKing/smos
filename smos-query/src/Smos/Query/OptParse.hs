@@ -79,9 +79,17 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
             ClockSettings
               { clockSetFilter = clockFlagFilter
               , clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags
-              , clockSetResolution = fromMaybe MinutesResolution clockFlagResolutionFlags
               , clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags
               , clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat
+              , clockSetClockFormat =
+                  case clockFlagClockFormat of
+                    Nothing -> ClockFormatTemporal TemporalMinutesResolution
+                    Just cffs ->
+                      case cffs of
+                        ClockFormatTemporalFlag res ->
+                          ClockFormatTemporal $ fromMaybe TemporalMinutesResolution res
+                        ClockFormatDecimalFlag res ->
+                          ClockFormatDecimal $ fromMaybe (DecimalResolution 2) res
               , clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle
               , clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
               }
@@ -250,17 +258,32 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock <$>
-      (ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseResolution <*> parseTimeBlock <*>
-       parseOutputFormat <*>
+      (ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*> parseOutputFormat <*>
+       parseClockFormatFlags <*>
        parseClockReportStyle <*>
        parseHideArchiveFlag)
 
-parseResolution :: Parser (Maybe ClockResolution)
-parseResolution =
+parseClockFormatFlags :: Parser (Maybe ClockFormatFlags)
+parseClockFormatFlags =
   Just <$>
-  (flag' SecondsResolution (long "seconds-resolution") <|>
-   flag' MinutesResolution (long "minutes-resolution") <|>
-   flag' HoursResolution (long "hours-resolution")) <|>
+  ((flag' ClockFormatTemporalFlag (long "temporal") <*> parseTemporalClockResolution) <|>
+   flag' ClockFormatDecimalFlag (long "decimal") <*> parseDecimalClockResolution) <|>
+  pure Nothing
+
+parseTemporalClockResolution :: Parser (Maybe TemporalClockResolution)
+parseTemporalClockResolution =
+  Just <$>
+  (flag' TemporalSecondsResolution (long "seconds-resolution") <|>
+   flag' TemporalMinutesResolution (long "minutes-resolution") <|>
+   flag' TemporalHoursResolution (long "hours-resolution")) <|>
+  pure Nothing
+
+parseDecimalClockResolution :: Parser (Maybe DecimalClockResolution)
+parseDecimalClockResolution =
+  Just <$>
+  (flag' DecimalQuarterResolution (long "quarters-resolution") <|>
+   (flag' DecimalResolution (long "resolution") <*> argument auto (help "significant digits")) <|>
+   flag' DecimalHoursResolution (long "hours-resolution")) <|>
   pure Nothing
 
 parseClockReportStyle :: Parser (Maybe ClockReportStyle)

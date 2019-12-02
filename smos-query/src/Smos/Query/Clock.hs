@@ -51,7 +51,7 @@ clock ClockSettings {..} = do
     case clockSetOutputFormat of
       OutputPretty ->
         putBoxLn $
-        renderClockTable clockSetReportStyle clockSetResolution $ clockTableRows clockTable
+        renderClockTable clockSetReportStyle clockSetClockFormat $ clockTableRows clockTable
       OutputYaml -> SB.putStr $ Yaml.toByteString clockTable
       OutputJSON -> LB.putStr $ JSON.encode clockTable
       OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
@@ -96,8 +96,8 @@ clockTableRows ctbs =
 -- block title
 -- file name    headers and   time
 --                           total time
-renderClockTable :: ClockReportStyle -> ClockResolution -> [ClockTableRow] -> Box Vertical
-renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap renderRows
+renderClockTable :: ClockReportStyle -> ClockFormat -> [ClockTableRow] -> Box Vertical
+renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap renderRows
   where
     renderRows :: ClockTableRow -> [[Cell]]
     renderRows ctr =
@@ -110,7 +110,7 @@ renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap
               , chunk ""
               , chunk ""
               , chunk ""
-              , fore green $ chunk $ renderNominalDiffTime res ndt
+              , fore green $ chunk $ renderNominalDiffTime fmt ndt
               ]
           ]
         EntryRow i h ndt ndtt ->
@@ -121,7 +121,7 @@ renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap
                   else [ cell $ chunk ""
                        , separator mempty 1
                        , cell $ headerChunk h
-                       , cell $ chunk $ renderNominalDiffTime res ndt
+                       , cell $ chunk $ renderNominalDiffTime fmt ndt
                        ]
               ]
             ClockForest ->
@@ -132,25 +132,25 @@ renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap
                   chunk $
                   if ndt == 0
                     then ""
-                    else renderNominalDiffTime res ndt
+                    else renderNominalDiffTime fmt ndt
                 , cell $
                   fore brown $
                   chunk $
                   if ndt == ndtt
                     then ""
-                    else renderNominalDiffTime res ndtt
+                    else renderNominalDiffTime fmt ndtt
                 ]
               ]
         BlockTotalRow t ->
           [ map
               (cell . fore blue)
-              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
+              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t]
           , replicate 5 emptyCell
           ]
         AllTotalRow t ->
           [ map
               (cell . fore blue)
-              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime res t]
+              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t]
           ]
     blockTitleChunk :: Text -> Chunk Text
     blockTitleChunk = fore blue . chunk
@@ -160,15 +160,24 @@ renderClockTable crs res = tableByRows . S.fromList . map S.fromList . concatMap
     cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
     brown = color256 166
 
-renderNominalDiffTime :: ClockResolution -> NominalDiffTime -> Text
-renderNominalDiffTime res ndt =
-  T.intercalate ":" $
-  concat
-    [ [T.pack $ printf "%5.2d" hours | res <= HoursResolution]
-    , [T.pack $ printf "%.2d" minutes | res <= MinutesResolution]
-    , [T.pack $ printf "%.2d" seconds | res <= SecondsResolution]
-    ]
+renderNominalDiffTime :: ClockFormat -> NominalDiffTime -> Text
+renderNominalDiffTime fmt ndt =
+  case fmt of
+    ClockFormatTemporal res ->
+      T.intercalate ":" $
+      concat
+        [ [T.pack $ printf "%5.2d" hours | res <= TemporalHoursResolution]
+        , [T.pack $ printf "%.2d" minutes | res <= TemporalMinutesResolution]
+        , [T.pack $ printf "%.2d" seconds | res <= TemporalSecondsResolution]
+        ]
+    ClockFormatDecimal res ->
+      case res of
+        DecimalHoursResolution -> T.pack $ printf "%5.0f" fractionalHours
+        DecimalQuarterResolution -> T.pack $ printf "%5.2f" quarters
+        DecimalResolution w -> T.pack $ printf ("%5." ++ show w ++ "f") fractionalHours
   where
+    fractionalHours = realToFrac ndt / (60 * 60) :: Double
+    quarters = fromIntegral (round (fractionalHours * 4) :: Int) / 4 :: Double
     totalSeconds = round ndt :: Int
     totalMinutes = totalSeconds `div` secondsInAMinute
     totalHours = totalMinutes `div` minutesInAnHour

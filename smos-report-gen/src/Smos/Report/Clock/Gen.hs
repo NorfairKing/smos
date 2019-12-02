@@ -13,7 +13,20 @@ import Smos.Report.Path.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.TimeBlock.Gen ()
 
-instance GenUnchecked ClockResolution
+instance GenUnchecked DecimalClockResolution
 
-instance GenValid ClockResolution where
+instance GenValid DecimalClockResolution where
   genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenUnchecked TemporalClockResolution
+
+instance GenValid TemporalClockResolution where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
+instance GenUnchecked ClockFormat
+
+instance GenValid ClockFormat where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally

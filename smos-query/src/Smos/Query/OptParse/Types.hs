@@ -89,12 +89,17 @@ data ClockFlags =
   ClockFlags
     { clockFlagFilter :: Maybe EntryFilter
     , clockFlagPeriodFlags :: Maybe Period
-    , clockFlagResolutionFlags :: Maybe ClockResolution
     , clockFlagBlockFlags :: Maybe TimeBlock
     , clockFlagOutputFormat :: Maybe OutputFormat
+    , clockFlagClockFormat :: Maybe ClockFormatFlags
     , clockFlagReportStyle :: Maybe ClockReportStyle
     , clockFlagHideArchive :: Maybe HideArchive
     }
+  deriving (Show, Eq)
+
+data ClockFormatFlags
+  = ClockFormatTemporalFlag (Maybe TemporalClockResolution)
+  | ClockFormatDecimalFlag (Maybe DecimalClockResolution)
   deriving (Show, Eq)
 
 data AgendaFlags =
@@ -226,9 +231,9 @@ data ClockSettings =
   ClockSettings
     { clockSetFilter :: Maybe EntryFilter
     , clockSetPeriod :: Period
-    , clockSetResolution :: ClockResolution
     , clockSetBlock :: TimeBlock
     , clockSetOutputFormat :: OutputFormat
+    , clockSetClockFormat :: ClockFormat
     , clockSetReportStyle :: ClockReportStyle
     , clockSetHideArchive :: HideArchive
     }
