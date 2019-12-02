@@ -13,6 +13,8 @@ library:
   dependencies:
     - base
     - aeson
+    - bytestring
+    - containers
     - mtl
     - optparse-applicative
     - path
@@ -22,6 +24,7 @@ library:
     - smos-report
     - text
     - time
+    - yaml
 
 executables:
   smos-scheduler:
