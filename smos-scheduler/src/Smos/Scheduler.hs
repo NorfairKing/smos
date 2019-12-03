@@ -76,16 +76,22 @@ scheduler sets@Settings {..} = do
 handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
 handleScheduleItem mState wdir now se = do
   let s = scheduleItemCronSchedule se
-  let goAhead =
+  let mScheduledTime =
         case mState of
-          Nothing -> scheduleMatches s now
+          Nothing ->
+            if scheduleMatches s now
+              then Just now
+              else Nothing
           Just ScheduleState {..} ->
             case nextMatch s scheduleStateLastRun of
-              Nothing -> False
-              Just scheduled -> scheduleStateLastRun <= scheduled && scheduled <= now
-  if goAhead
-    then performScheduleItem wdir now se
-    else putStrLn $ unwords ["Not activating ", show s, "at current time", show now]
+              Nothing -> Nothing
+              Just scheduled ->
+                if scheduleStateLastRun <= scheduled && scheduled <= now
+                  then Just scheduled
+                  else Nothing
+  case mScheduledTime of
+    Nothing -> putStrLn $ unwords ["Not activating ", show s, "at current time", show now]
+    Just scheduledTime -> performScheduleItem wdir scheduledTime se
 
 performScheduleItem :: Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
 performScheduleItem wdir now ScheduleItem {..} = do
