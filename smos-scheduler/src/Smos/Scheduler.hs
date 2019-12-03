@@ -47,38 +47,47 @@ scheduler sets@Settings {..} = do
 handleScheduleItem :: Path Abs Dir -> ScheduleItem -> IO ()
 handleScheduleItem wdir ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
-  let to = wdir </> scheduleItemDestination
-  pPrint (from, to)
-  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
-  case mContents of
-    Nothing -> putStrLn $ unwords ["WARNING: template does not exist:", fromAbsFile from]
-    Just contents ->
-      case Yaml.decodeEither' contents of
-        Left err ->
-          putStrLn $
-          unlines
-            [ unwords ["WARNING: Does not look like a smos template file:", fromAbsFile from]
-            , prettyPrintParseException err
-            ]
-        Right template -> do
-          SB.putStrLn contents
-          now <- getCurrentTime
-          let ctx = RenderContext {renderContextTime = now}
-          let vRendered = runReaderT (renderTemplate template) ctx
-          case vRendered of
-            Failure errs ->
+  now <- getCurrentTime
+  let ctx = RenderContext {renderContextTime = now}
+  case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
+    Failure errs ->
+      putStrLn $
+      unlines $
+      "WARNING: Validation errors while rendering template destination file name:" :
+      map prettyRenderError errs
+    Success destination -> do
+      let to = wdir </> destination
+      pPrint from
+      pPrint to
+      mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
+      case mContents of
+        Nothing -> putStrLn $ unwords ["WARNING: template does not exist:", fromAbsFile from]
+        Just contents ->
+          case Yaml.decodeEither' contents of
+            Left err ->
               putStrLn $
-              unlines $
-              "WARNING: Validation errors while rendering template:" : map prettyRenderError errs
-            Success rendered -> do
-              destinationExists <- doesFileExist to
-              when destinationExists $
-                putStrLn $
-                unwords ["WARNING: destination already exists:", fromAbsFile to, "overwriting."]
-              ensureDir $ parent to
-              writeSmosFile to rendered
-              cs <- SB.readFile $ fromAbsFile to
-              SB.putStrLn cs
+              unlines
+                [ unwords ["WARNING: Does not look like a smos template file:", fromAbsFile from]
+                , prettyPrintParseException err
+                ]
+            Right template -> do
+              SB.putStrLn contents
+              let vRendered = runReaderT (renderTemplate template) ctx
+              case vRendered of
+                Failure errs ->
+                  putStrLn $
+                  unlines $
+                  "WARNING: Validation errors while rendering template:" :
+                  map prettyRenderError errs
+                Success rendered -> do
+                  destinationExists <- doesFileExist to
+                  when destinationExists $
+                    putStrLn $
+                    unwords ["WARNING: destination already exists:", fromAbsFile to, "overwriting."]
+                  ensureDir $ parent to
+                  writeSmosFile to rendered
+                  cs <- SB.readFile $ fromAbsFile to
+                  SB.putStrLn cs
 
 renderTemplate :: ScheduleTemplate -> Render SmosFile
 renderTemplate (ScheduleTemplate f) = fmap SmosFile $ traverse (traverse renderEntryTemplate) f
@@ -98,7 +107,7 @@ renderHeaderTemplate h = do
   t <- renderTextTemplate (headerText h)
   case header t of
     Nothing -> lift $ Failure [RenderErrorHeaderValidity h t]
-    Just h -> pure h
+    Just h' -> pure h'
 
 renderContentsTemplate :: Maybe Contents -> Render (Maybe Contents)
 renderContentsTemplate =
@@ -106,7 +115,7 @@ renderContentsTemplate =
     t <- renderTextTemplate (contentsText cs)
     case contents t of
       Nothing -> lift $ Failure [RenderErrorContentsValidity cs t]
-      Just c -> pure c
+      Just cs' -> pure cs'
 
 renderTimestampsTemplate ::
      Map TimestampName TimestampTemplate -> Render (Map TimestampName Timestamp)
@@ -144,8 +153,18 @@ renderTagTemplate tg = do
     Just tg' -> pure tg'
 
 renderTextTemplate :: Text -> Render Text
-renderTextTemplate t =
-  asks renderContextTime <&> (\now -> T.pack $ formatTime defaultTimeLocale (T.unpack t) now)
+renderTextTemplate t = do
+  now <- asks renderContextTime
+  pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
+
+renderPathTemplate :: Path Rel File -> Render (Path Rel File)
+renderPathTemplate rf = do
+  now <- asks renderContextTime
+  let s = fromRelFile rf
+  let s' = formatTime defaultTimeLocale s now
+  case parseRelFile s' of
+    Nothing -> lift $ Failure [RenderErrorPathValidity rf s]
+    Just rf' -> pure rf'
 
 type Render a = ReaderT RenderContext RenderValidation a
 
@@ -166,7 +185,8 @@ instance Monad RenderValidation where
   (Failure errs) >>= _ = Failure errs
 
 data RenderError
-  = RenderErrorHeaderValidity Header Text
+  = RenderErrorPathValidity (Path Rel File) String
+  | RenderErrorHeaderValidity Header Text
   | RenderErrorContentsValidity Contents Text
   | RenderErrorTagValidity Tag Text
   | RenderErrorPropertyValueValidity PropertyValue Text
