@@ -22,6 +22,8 @@ import Data.Time
 import Data.Yaml as Yaml
 import Text.Show.Pretty
 
+import System.Cron (scheduleMatches)
+
 import Control.Monad
 import Control.Monad.Reader
 
@@ -40,14 +42,20 @@ smosScheduler = getSettings >>= scheduler
 
 scheduler :: Settings -> IO ()
 scheduler sets@Settings {..} = do
-  pPrint sets
   wd <- Report.resolveReportWorkflowDir setReportSettings
   mapM_ (handleScheduleItem wd) $ scheduleItems setSchedule
 
 handleScheduleItem :: Path Abs Dir -> ScheduleItem -> IO ()
-handleScheduleItem wdir ScheduleItem {..} = do
-  let from = wdir </> scheduleItemTemplate
+handleScheduleItem wdir se = do
   now <- getCurrentTime
+  let s = scheduleItemCronSchedule se
+  if scheduleMatches s now
+    then performScheduleItem now wdir se
+    else putStrLn $ unwords ["Schedule ", show s, "did not match current time", show now]
+
+performScheduleItem :: UTCTime -> Path Abs Dir -> ScheduleItem -> IO ()
+performScheduleItem now wdir ScheduleItem {..} = do
+  let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
     Failure errs ->

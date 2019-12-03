@@ -11,10 +11,11 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
-    - base
     - aeson
+    - base
     - bytestring
     - containers
+    - cron
     - mtl
     - optparse-applicative
     - path

@@ -18,6 +18,8 @@ import Path
 
 import Control.Applicative
 
+import System.Cron (CronSchedule, parseCronSchedule)
+
 import Smos.Data
 
 import Smos.Report.Config as Report
@@ -63,12 +65,18 @@ data ScheduleItem =
   ScheduleItem
     { scheduleItemTemplate :: Path Rel File
     , scheduleItemDestination :: Path Rel File
+    , scheduleItemCronSchedule :: CronSchedule
     }
   deriving (Show, Eq, Generic)
 
 instance FromJSON ScheduleItem where
   parseJSON =
-    withObject "ScheduleItem" $ \o -> ScheduleItem <$> o .: "template" <*> o .: "destination"
+    withObject "ScheduleItem" $ \o ->
+      ScheduleItem <$> o .: "template" <*> o .: "destination" <*>
+      (do t <- o .: "schedule"
+          case parseCronSchedule t of
+            Left err -> fail err
+            Right cs -> pure cs)
 
 data Environment =
   Environment
