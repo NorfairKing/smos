@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler.OptParse.Types where
 
@@ -13,6 +14,7 @@ import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
+import Data.Time
 import Data.Tree
 import Path
 
@@ -92,6 +94,18 @@ data Settings =
     , setSchedule :: Schedule
     }
   deriving (Show, Eq)
+
+data ScheduleState =
+  ScheduleState
+    { scheduleStateLastRun :: UTCTime
+    }
+  deriving (Show, Eq, Generic)
+
+instance ToJSON ScheduleState where
+  toJSON ScheduleState {..} = object ["last-run" .= scheduleStateLastRun]
+
+instance FromJSON ScheduleState where
+  parseJSON = withObject "ScheduleState" $ \o -> ScheduleState <$> o .: "last-run"
 
 newtype ScheduleTemplate =
   ScheduleTemplate

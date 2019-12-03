@@ -22,7 +22,9 @@ import Data.Time
 import Data.Yaml as Yaml
 import Text.Show.Pretty
 
-import System.Cron (scheduleMatches)
+import System.Exit
+
+import System.Cron (nextMatch, scheduleMatches)
 
 import Control.Monad
 import Control.Monad.Reader
@@ -43,18 +45,50 @@ smosScheduler = getSettings >>= scheduler
 scheduler :: Settings -> IO ()
 scheduler sets@Settings {..} = do
   wd <- Report.resolveReportWorkflowDir setReportSettings
-  mapM_ (handleScheduleItem wd) $ scheduleItems setSchedule
-
-handleScheduleItem :: Path Abs Dir -> ScheduleItem -> IO ()
-handleScheduleItem wdir se = do
+  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile setStateFile
+  mState <-
+    case mContents of
+      Nothing -> pure Nothing
+      Just contents ->
+        case Yaml.decodeEither' contents of
+          Left err ->
+            die $
+            unlines
+              [ unwords ["WARNING: unable to decode state file:", fromAbsFile setStateFile]
+              , prettyPrintParseException err
+              ]
+          Right state -> pure $ Just state
   now <- getCurrentTime
-  let s = scheduleItemCronSchedule se
-  if scheduleMatches s now
-    then performScheduleItem now wdir se
-    else putStrLn $ unwords ["Schedule ", show s, "did not match current time", show now]
+  let goAhead =
+        case mState of
+          Nothing -> True
+          Just ScheduleState {..} -> diffUTCTime now scheduleStateLastRun >= 60
+  if goAhead
+    then do
+      mapM_ (handleScheduleItem mState wd now) $ scheduleItems setSchedule
+      let state' =
+            case mState of
+              Nothing -> ScheduleState {scheduleStateLastRun = now}
+              Just state -> state {scheduleStateLastRun = now}
+      SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
+    else putStrLn "Not running because it's been run too recently already."
 
-performScheduleItem :: UTCTime -> Path Abs Dir -> ScheduleItem -> IO ()
-performScheduleItem now wdir ScheduleItem {..} = do
+handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
+handleScheduleItem mState wdir now se = do
+  let s = scheduleItemCronSchedule se
+  let goAhead =
+        case mState of
+          Nothing -> scheduleMatches s now
+          Just ScheduleState {..} ->
+            case nextMatch s scheduleStateLastRun of
+              Nothing -> False
+              Just scheduled -> scheduleStateLastRun <= scheduled && scheduled <= now
+  if goAhead
+    then performScheduleItem wdir now se
+    else putStrLn $ unwords ["Not activating ", show s, "at current time", show now]
+
+performScheduleItem :: Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
+performScheduleItem wdir now ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
