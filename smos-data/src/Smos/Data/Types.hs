@@ -100,6 +100,7 @@ import Path
 
 import Control.Applicative
 import Control.Arrow
+import Control.DeepSeq
 
 newtype SmosFile =
   SmosFile
@@ -108,6 +109,8 @@ newtype SmosFile =
   deriving (Show, Eq, Generic)
 
 instance Validity SmosFile
+
+instance NFData SmosFile
 
 instance FromJSON SmosFile where
   parseJSON v = SmosFile . unForYaml <$> parseJSON v
@@ -125,6 +128,8 @@ newtype ForYaml a =
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity a => Validity (ForYaml a)
+
+instance NFData a => NFData (ForYaml a)
 
 instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
   parseJSON v = do
@@ -178,22 +183,9 @@ data Entry =
     }
   deriving (Show, Eq, Ord, Generic)
 
-newEntry :: Header -> Entry
-newEntry h =
-  Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = emptyStateHistory
-    , entryTags = S.empty
-    , entryLogbook = emptyLogbook
-    }
-
-emptyEntry :: Entry
-emptyEntry = newEntry emptyHeader
-
 instance Validity Entry
+
+instance NFData Entry
 
 instance FromJSON Entry where
   parseJSON v =
@@ -254,6 +246,21 @@ instance ToYaml Entry where
            [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags] ++
            [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
 
+newEntry :: Header -> Entry
+newEntry h =
+  Entry
+    { entryHeader = h
+    , entryContents = Nothing
+    , entryTimestamps = M.empty
+    , entryProperties = M.empty
+    , entryStateHistory = emptyStateHistory
+    , entryTags = S.empty
+    , entryLogbook = emptyLogbook
+    }
+
+emptyEntry :: Entry
+emptyEntry = newEntry emptyHeader
+
 newtype Header =
   Header
     { headerText :: Text
@@ -267,6 +274,8 @@ instance Validity Header where
       , decorateList (T.unpack t) $ \c ->
           declare "The character is a valid header character" $ validHeaderChar c
       ]
+
+instance NFData Header
 
 instance FromJSON Header where
   parseJSON =
@@ -301,6 +310,8 @@ instance Validity Contents where
           declare "The character is a valid contents character" $ validContentsChar c
       ]
 
+instance NFData Contents
+
 emptyContents :: Contents
 emptyContents = Contents ""
 
@@ -329,6 +340,8 @@ instance Validity PropertyName where
       , decorateList (T.unpack t) $ \c ->
           declare "The character is a valid property name character" $ validPropertyNameChar c
       ]
+
+instance NFData PropertyName
 
 instance FromJSON PropertyName where
   parseJSON = withText "PropertyName" parseJSONPropertyName
@@ -368,6 +381,8 @@ instance Validity PropertyValue where
           declare "The character is a valid property value character" $ validPropertyValueChar c
       ]
 
+instance NFData PropertyValue
+
 instance FromJSON PropertyValue where
   parseJSON = withText "PropertyValue" parseJSONPropertyValue
 
@@ -406,6 +421,8 @@ instance Validity TimestampName where
           declare "The character is a valid timestamp name character" $ validTimestampNameChar c
       ]
 
+instance NFData TimestampName
+
 instance FromJSON TimestampName where
   parseJSON = withText "TimestampName" parseJSONTimestampName
 
@@ -436,6 +453,8 @@ data Timestamp
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Timestamp
+
+instance NFData Timestamp
 
 instance FromJSON Timestamp where
   parseJSON v = do
@@ -511,6 +530,8 @@ instance Validity TodoState where
           declare "The character is a valid todo state character" $ validTodoStateChar c
       ]
 
+instance NFData TodoState
+
 instance FromJSON TodoState where
   parseJSON =
     withText "TodoState" $ \t ->
@@ -538,6 +559,8 @@ instance Validity StateHistory where
     genericValidate st <>
     declare "The entries are stored in reverse chronological order" (hs <= sort hs)
 
+instance NFData StateHistory
+
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
 
@@ -552,6 +575,8 @@ data StateHistoryEntry =
   deriving (Show, Eq, Generic)
 
 instance Validity StateHistoryEntry
+
+instance NFData StateHistoryEntry
 
 instance Ord StateHistoryEntry where
   compare =
@@ -586,6 +611,8 @@ instance Validity Tag where
       , decorateList (T.unpack t) $ \c ->
           declare "The character is a valid tag character" $ validTagChar c
       ]
+
+instance NFData Tag
 
 instance FromJSON Tag where
   parseJSON =
@@ -638,6 +665,8 @@ conseqs [] = []
 conseqs [_] = []
 conseqs (a:b:as) = (a, b) : conseqs (b : as)
 
+instance NFData Logbook
+
 instance FromJSON Logbook where
   parseJSON v = do
     els <- parseJSON v
@@ -686,6 +715,8 @@ instance Validity LogbookEntry where
       [ genericValidate lbe
       , declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
       ]
+
+instance NFData LogbookEntry
 
 instance FromJSON LogbookEntry where
   parseJSON =

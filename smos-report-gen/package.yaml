@@ -7,15 +7,17 @@ copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+dependencies:
+  - base >=4.9 && <=5
   
 library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
   - QuickCheck
-  - base >=4.9 && <=5
   - containers
   - cursor
+  - deepseq
   - genvalidity
   - genvalidity-containers
   - genvalidity-path
@@ -38,7 +40,6 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - base
     - containers
     - cursor
     - cursor-gen
@@ -58,3 +59,23 @@ tests:
     - smos-report-gen
     - text
     - time
+
+
+benchmarks:
+  smos-report-bench:
+    main: Main.hs
+    source-dirs: bench/
+    ghc-options:
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - criterion
+    - genvalidity-containers
+    - genvalidity-criterion
+    - genvalidity
+    - smos-data
+    - smos-data-gen
+    - smos-report
+    - smos-report-gen
+    - containers
+    - cursor

@@ -31,3 +31,4 @@ library:
   - validity-time
   - validity-unordered-containers
   - yaml
+  - deepseq

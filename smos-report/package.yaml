@@ -7,16 +7,19 @@ copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+dependencies:
+- base
+
 library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
   - aeson
-  - base
   - bytestring
   - conduit
   - containers
   - cursor
+  - deepseq
   - filepath
   - megaparsec
   - microlens

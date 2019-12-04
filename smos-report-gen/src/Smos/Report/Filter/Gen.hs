@@ -14,6 +14,8 @@ import Data.Set (Set)
 import Data.GenValidity
 import Data.GenValidity.Path ()
 
+import Control.DeepSeq
+
 import Test.QuickCheck
 
 import Cursor.Simple.Forest
@@ -110,7 +112,7 @@ instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) 
   genValid = withTopLevelBranches $ oneof [FilterFst <$> genValid, FilterSnd <$> genValid]
   shrinkValid = shrinkValidFilter
 
-instance (Show k, Ord k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
+instance (Show k, Ord k, NFData k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
          GenValid (Filter (Map k v)) where
   genValid =
     withTopLevelBranches $
@@ -142,17 +144,20 @@ instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
   shrinkValid = shrinkValidFilter
 
 withEqAndOrToo ::
-     (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a) -> Gen (Filter a)
+     (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a)
+  => Gen (Filter a)
+  -> Gen (Filter a)
 withEqAndOrToo gen = frequency [(4, gen), (1, eqAndOrd)]
 
 subEqOrd ::
-     (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a) => Gen (Filter a)
+     (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a)
+  => Gen (Filter a)
 subEqOrd = oneof [eqAndOrd, sub]
 
-eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
+eqAndOrd :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
 eqAndOrd = (FilterOrd <$> genValid <*> genValid) `suchThat` isValid
 
-sub :: (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
+sub :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
 sub = (FilterSub <$> genValid) `suchThat` isValid
 
 withTopLevelBranches :: Gen (Filter a) -> Gen (Filter a)

@@ -13,6 +13,7 @@ import qualified Data.Yaml.Builder as Yaml
 import Path
 
 import Control.Applicative
+import Control.DeepSeq
 
 import Smos.Data.Types ()
 
@@ -22,6 +23,8 @@ data RootedPath
   deriving (Show, Eq, Generic)
 
 instance Validity RootedPath
+
+instance NFData RootedPath
 
 instance FromJSON RootedPath where
   parseJSON v =
