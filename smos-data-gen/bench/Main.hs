@@ -8,8 +8,8 @@ import Data.Map (Map)
 import Data.Set (Set)
 import Data.Typeable
 
-import Data.GenValidity
 import Data.GenValidity.Containers ()
+import Data.GenValidity.Criterion
 import Test.QuickCheck
 
 import Criterion.Main as Criterion
@@ -40,8 +40,3 @@ main =
     , genValidBench @(Forest Entry)
     , genValidBench @SmosFile
     ]
-
-genValidBench ::
-     forall a. (Typeable a, GenValid a)
-  => Benchmark
-genValidBench = bench (show $ typeRep (Proxy @a)) $ whnfIO $ generate (resize 30 $ genValid @a)

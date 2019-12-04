@@ -69,12 +69,13 @@ extra-deps:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 2eea9d7ff309a999b2ab1a00e9b6c6e1ae9dc947
+  commit: ac1c50ea01572d714e3d64c3b95856f05cc8e185
   subdirs:
   - genvalidity
   - genvalidity-aeson
   - genvalidity-bytestring
   - genvalidity-containers
+  - genvalidity-criterion
   - genvalidity-hspec
   - genvalidity-hspec-aeson
   - genvalidity-hspec-binary

@@ -60,8 +60,9 @@ benchmarks:
     - -Wall
     dependencies:
     - QuickCheck
-    - criterion # gauge
+    - criterion
     - genvalidity-containers
+    - genvalidity-criterion
     - genvalidity
     - smos-data
     - smos-data-gen
