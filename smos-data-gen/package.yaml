@@ -51,3 +51,16 @@ tests:
     - smos-data-gen
     - text
     - time
+
+benchmarks:
+  smos-data-bench:
+    main: Main.hs
+    source-dirs: bench/
+    ghc-options:
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - gauge
+    - genvalidity
+    - smos-data
+    - smos-data-gen
