@@ -31,22 +31,19 @@ instance GenValid Header where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Contents where
-  genValid = genValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid PropertyName where
-  genValid =
-    (T.pack <$> genListOf (genValid `suchThat` validPropertyNameChar)) `suchThatMap` propertyName
+  genValid = PropertyName . T.pack <$> genListOf (genValid `suchThat` validPropertyNameChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyValue where
-  genValid =
-    (T.pack <$> genListOf (genValid `suchThat` validPropertyValueChar)) `suchThatMap` propertyValue
+  genValid = PropertyValue . T.pack <$> genListOf (genValid `suchThat` validPropertyValueChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid TimestampName where
-  genValid =
-    (T.pack <$> genListOf (genValid `suchThat` validTimestampNameChar)) `suchThatMap` timestampName
+  genValid = TimestampName . T.pack <$> genListOf (genValid `suchThat` validTimestampNameChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Timestamp
@@ -56,22 +53,22 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid = (T.pack <$> genListOf (genValid `suchThat` validTodoStateChar)) `suchThatMap` todoState
+  genValid = TodoState . T.pack <$> genListOf (genValid `suchThat` validTodoStateChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid StateHistory where
-  genValid = (StateHistory . sort) <$> genValid
+  genValid = StateHistory . sort <$> genValid
   shrinkValid =
     fmap StateHistory .
     shrinkList (\(StateHistoryEntry mts ts) -> StateHistoryEntry <$> shrinkValid mts <*> pure ts) .
     unStateHistory
 
 instance GenValid StateHistoryEntry where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Tag where
-  genValid = (T.pack <$> genListOf (genValid `suchThat` validTagChar)) `suchThatMap` tag
+  genValid = Tag . T.pack <$> genListOf (genValid `suchThat` validTagChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Logbook

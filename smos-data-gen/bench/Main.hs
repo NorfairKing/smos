@@ -8,8 +8,8 @@ import Data.Map (Map)
 import Data.Set (Set)
 import Data.Typeable
 
-import Data.GenValidity.Containers()
 import Data.GenValidity
+import Data.GenValidity.Containers ()
 import Test.QuickCheck
 
 import Gauge.Main as Gauge
@@ -27,6 +27,7 @@ main =
     , genValidBench @TimestampName
     , genValidBench @Timestamp
     , genValidBench @TodoState
+    , genValidBench @StateHistoryEntry
     , genValidBench @StateHistory
     , genValidBench @LogbookEntry
     , genValidBench @Logbook

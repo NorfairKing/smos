@@ -13,8 +13,7 @@ module Smos.Data.Types
   , Entry(..)
   , newEntry
   , emptyEntry
-  , Header
-  , headerText
+  , Header(..)
   , emptyHeader
   , header
   , parseHeader
@@ -24,14 +23,12 @@ module Smos.Data.Types
   , nullContents
   , contents
   , parseContents
-  , PropertyName
-  , propertyNameText
+  , PropertyName(..)
   , emptyPropertyName
   , propertyName
   , parsePropertyName
   , validPropertyNameChar
-  , PropertyValue
-  , propertyValueText
+  , PropertyValue(..)
   , emptyPropertyValue
   , propertyValue
   , parsePropertyValue
@@ -44,8 +41,7 @@ module Smos.Data.Types
   , StateHistoryEntry(..)
   , emptyStateHistory
   , nullStateHistory
-  , Tag
-  , tagText
+  , Tag(..)
   , emptyTag
   , tag
   , parseTag
@@ -55,8 +51,7 @@ module Smos.Data.Types
   , nullLogbook
   , LogbookEntry(..)
   , logbookEntryDiffTime
-  , TimestampName
-  , timestampNameText
+  , TimestampName(..)
   , timestampName
   , parseTimestampName
   , emptyTimestampName

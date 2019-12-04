@@ -6,13 +6,15 @@ with final.haskell.lib;
     let
       smosPkg =
         name:
-          addBuildDepend (
-            failOnAllWarnings (
-              disableLibraryProfiling (
-                final.haskellPackages.callCabal2nix name ( final.gitignoreSource ( ../. + "/${name}" ) ) {}
+          doBenchmark (
+            addBuildDepend (
+              failOnAllWarnings (
+                disableLibraryProfiling (
+                  final.haskellPackages.callCabal2nix name ( final.gitignoreSource ( ../. + "/${name}" ) ) {}
+                )
               )
-            )
-          ) ( final.haskellPackages.autoexporter );
+            ) ( final.haskellPackages.autoexporter )
+          );
     in
       final.lib.genAttrs [
         "smos"
