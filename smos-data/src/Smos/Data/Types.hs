@@ -265,7 +265,7 @@ instance Validity Header where
     mconcat
       [ delve "headerText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a newline character" $ validHeaderChar c
+          declare "The character is a valid header character" $ validHeaderChar c
       ]
 
 instance FromJSON Header where
@@ -285,7 +285,7 @@ parseHeader :: Text -> Either String Header
 parseHeader = prettyValidate . Header
 
 validHeaderChar :: Char -> Bool
-validHeaderChar c = Char.isPrint c && c /= '\n'
+validHeaderChar c = c /= '\n'
 
 newtype Contents =
   Contents
@@ -293,7 +293,13 @@ newtype Contents =
     }
   deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
 
-instance Validity Contents
+instance Validity Contents where
+  validate (Contents t) =
+    mconcat
+      [ delve "contentsText" t
+      , decorateList (T.unpack t) $ \c ->
+          declare "The character is a valid contents character" $ validContentsChar c
+      ]
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -307,6 +313,9 @@ contents = constructValid . Contents
 parseContents :: Text -> Either String Contents
 parseContents = prettyValidate . Contents
 
+validContentsChar :: Char -> Bool
+validContentsChar = const True
+
 newtype PropertyName =
   PropertyName
     { propertyNameText :: Text
@@ -318,8 +327,7 @@ instance Validity PropertyName where
     mconcat
       [ delve "propertyNameText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          validPropertyNameChar c
+          declare "The character is a valid property name character" $ validPropertyNameChar c
       ]
 
 instance FromJSON PropertyName where
@@ -344,7 +352,7 @@ parsePropertyName :: Text -> Either String PropertyName
 parsePropertyName = prettyValidate . PropertyName
 
 validPropertyNameChar :: Char -> Bool
-validPropertyNameChar c = Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+validPropertyNameChar c = not (Char.isSpace c)
 
 newtype PropertyValue =
   PropertyValue
@@ -357,8 +365,7 @@ instance Validity PropertyValue where
     mconcat
       [ delve "propertyValueText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          validPropertyValueChar c
+          declare "The character is a valid property value character" $ validPropertyValueChar c
       ]
 
 instance FromJSON PropertyValue where
@@ -396,7 +403,7 @@ instance Validity TimestampName where
     mconcat
       [ delve "timestampNameText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is not a newline character" $ c /= '\n'
+          declare "The character is a valid timestamp name character" $ validTimestampNameChar c
       ]
 
 instance FromJSON TimestampName where
@@ -501,8 +508,7 @@ instance Validity TodoState where
     mconcat
       [ delve "todoStateText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          validTodoStateChar c
+          declare "The character is a valid todo state character" $ validTodoStateChar c
       ]
 
 instance FromJSON TodoState where
@@ -578,8 +584,7 @@ instance Validity Tag where
     mconcat
       [ delve "tagText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          validTagChar c
+          declare "The character is a valid tag character" $ validTagChar c
       ]
 
 instance FromJSON Tag where

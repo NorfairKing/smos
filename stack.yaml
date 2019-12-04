@@ -68,69 +68,38 @@ extra-deps:
   subdirs:
     - cursor
     - cursor-gen
-- /home/syd/src/validity/genvalidity
-- /home/syd/src/validity/genvalidity-aeson
-- /home/syd/src/validity/genvalidity-bytestring
-- /home/syd/src/validity/genvalidity-containers
-- /home/syd/src/validity/genvalidity-hspec
-- /home/syd/src/validity/genvalidity-hspec-aeson
-- /home/syd/src/validity/genvalidity-hspec-binary
-- /home/syd/src/validity/genvalidity-hspec-cereal
-- /home/syd/src/validity/genvalidity-hspec-hashable
-- /home/syd/src/validity/genvalidity-hspec-optics
-- /home/syd/src/validity/genvalidity-path
-- /home/syd/src/validity/genvalidity-property
-- /home/syd/src/validity/genvalidity-scientific
-- /home/syd/src/validity/genvalidity-text
-- /home/syd/src/validity/genvalidity-time
-- /home/syd/src/validity/genvalidity-unordered-containers
-- /home/syd/src/validity/genvalidity-uuid
-- /home/syd/src/validity/genvalidity-vector
-- /home/syd/src/validity/validity
-- /home/syd/src/validity/validity-aeson
-- /home/syd/src/validity/validity-bytestring
-- /home/syd/src/validity/validity-containers
-- /home/syd/src/validity/validity-path
-- /home/syd/src/validity/validity-primitive
-- /home/syd/src/validity/validity-scientific
-- /home/syd/src/validity/validity-text
-- /home/syd/src/validity/validity-time
-- /home/syd/src/validity/validity-unordered-containers
-- /home/syd/src/validity/validity-uuid
-- /home/syd/src/validity/validity-vector
-
-      # - git: https://github.com/NorfairKing/validity.git
-      #   commit: 41fc1d893ad1067884217e09e2dceed5b59604b1
-      #   subdirs:
-      #   - genvalidity
-      #   - genvalidity-aeson
-      #   - genvalidity-bytestring
-      #   - genvalidity-containers
-      #   - genvalidity-hspec
-      #   - genvalidity-hspec-aeson
-      #   - genvalidity-hspec-binary
-      #   - genvalidity-hspec-cereal
-      #   - genvalidity-hspec-hashable
-      #   - genvalidity-hspec-optics
-      #   - genvalidity-path
-      #   - genvalidity-property
-      #   - genvalidity-scientific
-      #   - genvalidity-text
-      #   - genvalidity-time
-      #   - genvalidity-unordered-containers
-      #   - genvalidity-uuid
-      #   - genvalidity-vector
-      #   - validity
-      #   - validity-aeson
-      #   - validity-bytestring
-      #   - validity-containers
-      #   - validity-path
-      #   - validity-primitive
-      #   - validity-scientific
-      #   - validity-text
-      #   - validity-time
-      #   - validity-unordered-containers
-      #   - validity-uuid
-      #   - validity-vector
+- git: https://github.com/NorfairKing/validity.git
+  commit: 2eea9d7ff309a999b2ab1a00e9b6c6e1ae9dc947
+  subdirs:
+  - genvalidity
+  - genvalidity-aeson
+  - genvalidity-bytestring
+  - genvalidity-containers
+  - genvalidity-hspec
+  - genvalidity-hspec-aeson
+  - genvalidity-hspec-binary
+  - genvalidity-hspec-cereal
+  - genvalidity-hspec-hashable
+  - genvalidity-hspec-optics
+  - genvalidity-path
+  - genvalidity-property
+  - genvalidity-scientific
+  - genvalidity-text
+  - genvalidity-time
+  - genvalidity-unordered-containers
+  - genvalidity-uuid
+  - genvalidity-vector
+  - validity
+  - validity-aeson
+  - validity-bytestring
+  - validity-containers
+  - validity-path
+  - validity-primitive
+  - validity-scientific
+  - validity-text
+  - validity-time
+  - validity-unordered-containers
+  - validity-uuid
+  - validity-vector
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e6b93257b0ba070bd12810eeacbe281396c24316.tar.gz" ]

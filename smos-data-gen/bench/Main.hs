@@ -12,14 +12,14 @@ import Data.GenValidity
 import Data.GenValidity.Containers ()
 import Test.QuickCheck
 
-import Gauge.Main as Gauge
+import Criterion.Main as Criterion
 
 import Smos.Data
 import Smos.Data.Gen ()
 
 main :: IO ()
 main =
-  Gauge.defaultMain
+  Criterion.defaultMain
     [ genValidBench @Header
     , genValidBench @Contents
     , genValidBench @PropertyName
