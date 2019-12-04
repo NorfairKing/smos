@@ -61,6 +61,8 @@ benchmarks:
     dependencies:
     - QuickCheck
     - gauge
+    - genvalidity-containers
     - genvalidity
     - smos-data
     - smos-data-gen
+    - containers

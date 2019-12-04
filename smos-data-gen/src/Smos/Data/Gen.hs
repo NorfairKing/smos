@@ -2,11 +2,11 @@
 
 module Smos.Data.Gen where
 
-import Data.Char as Char
 import Data.GenValidity
 import Data.GenValidity.Containers ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
+import Data.List
 import qualified Data.Text as T
 import Data.Time
 import Smos.Data
@@ -23,13 +23,11 @@ instance GenValid a => GenValid (ForYaml a) where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Entry where
-  genValid = genValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid =
-    (T.pack <$> genListOf (genValid `suchThat` (\c -> Char.isPrint c && c /= '\n'))) `suchThatMap`
-    header
+  genValid = (T.pack <$> genListOf (genValid `suchThat` validHeaderChar)) `suchThatMap` header
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Contents where
@@ -38,29 +36,17 @@ instance GenValid Contents where
 
 instance GenValid PropertyName where
   genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    propertyName
+    (T.pack <$> genListOf (genValid `suchThat` validPropertyNameChar)) `suchThatMap` propertyName
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyValue where
   genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    propertyValue
+    (T.pack <$> genListOf (genValid `suchThat` validPropertyValueChar)) `suchThatMap` propertyValue
   shrinkValid = shrinkValidStructurally
 
 instance GenValid TimestampName where
   genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    timestampName
+    (T.pack <$> genListOf (genValid `suchThat` validTimestampNameChar)) `suchThatMap` timestampName
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Timestamp
@@ -70,29 +56,22 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    todoState
+  genValid = (T.pack <$> genListOf (genValid `suchThat` validTodoStateChar)) `suchThatMap` todoState
   shrinkValid = shrinkValidStructurally
 
 instance GenValid StateHistory where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = (StateHistory . sort) <$> genValid
+  shrinkValid =
+    fmap StateHistory .
+    shrinkList (\(StateHistoryEntry mts ts) -> StateHistoryEntry <$> shrinkValid mts <*> pure ts) .
+    unStateHistory
 
 instance GenValid StateHistoryEntry where
   genValid = genValidStructurally
-  shrinkValid (StateHistoryEntry mts ts) = StateHistoryEntry <$> shrinkValid mts <*> pure ts
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid Tag where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    tag
+  genValid = (T.pack <$> genListOf (genValid `suchThat` validTagChar)) `suchThatMap` tag
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Logbook

@@ -13,14 +13,12 @@ module Smos.Data.Types
   , Entry(..)
   , newEntry
   , emptyEntry
-  , TodoState(..)
-  , todoState
-  , parseTodoState
   , Header
   , headerText
   , emptyHeader
   , header
   , parseHeader
+  , validHeaderChar
   , Contents(..)
   , emptyContents
   , nullContents
@@ -31,11 +29,17 @@ module Smos.Data.Types
   , emptyPropertyName
   , propertyName
   , parsePropertyName
+  , validPropertyNameChar
   , PropertyValue
   , propertyValueText
   , emptyPropertyValue
   , propertyValue
   , parsePropertyValue
+  , validPropertyValueChar
+  , TodoState(..)
+  , todoState
+  , parseTodoState
+  , validTodoStateChar
   , StateHistory(..)
   , StateHistoryEntry(..)
   , emptyStateHistory
@@ -45,6 +49,7 @@ module Smos.Data.Types
   , emptyTag
   , tag
   , parseTag
+  , validTagChar
   , Logbook(..)
   , emptyLogbook
   , nullLogbook
@@ -55,6 +60,7 @@ module Smos.Data.Types
   , timestampName
   , parseTimestampName
   , emptyTimestampName
+  , validTimestampNameChar
   , Timestamp(..)
   , timestampString
   , timestampText
@@ -264,8 +270,7 @@ instance Validity Header where
     mconcat
       [ delve "headerText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a newline character" $
-          Char.isPrint c && c /= '\n'
+          declare "The character is printable but not a newline character" $ validHeaderChar c
       ]
 
 instance FromJSON Header where
@@ -283,6 +288,9 @@ header = constructValid . Header
 
 parseHeader :: Text -> Either String Header
 parseHeader = prettyValidate . Header
+
+validHeaderChar :: Char -> Bool
+validHeaderChar c = Char.isPrint c && c /= '\n'
 
 newtype Contents =
   Contents
@@ -316,7 +324,7 @@ instance Validity PropertyName where
       [ delve "propertyNameText" t
       , decorateList (T.unpack t) $ \c ->
           declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+          validPropertyNameChar c
       ]
 
 instance FromJSON PropertyName where
@@ -340,6 +348,9 @@ propertyName = constructValid . PropertyName
 parsePropertyName :: Text -> Either String PropertyName
 parsePropertyName = prettyValidate . PropertyName
 
+validPropertyNameChar :: Char -> Bool
+validPropertyNameChar c = Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+
 newtype PropertyValue =
   PropertyValue
     { propertyValueText :: Text
@@ -352,7 +363,7 @@ instance Validity PropertyValue where
       [ delve "propertyValueText" t
       , decorateList (T.unpack t) $ \c ->
           declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+          validPropertyValueChar c
       ]
 
 instance FromJSON PropertyValue where
@@ -375,6 +386,9 @@ propertyValue = constructValid . PropertyValue
 
 parsePropertyValue :: Text -> Either String PropertyValue
 parsePropertyValue = prettyValidate . PropertyValue
+
+validPropertyValueChar :: Char -> Bool
+validPropertyValueChar = validPropertyNameChar
 
 newtype TimestampName =
   TimestampName
@@ -410,6 +424,9 @@ timestampName = constructValid . TimestampName
 
 parseTimestampName :: Text -> Either String TimestampName
 parseTimestampName = prettyValidate . TimestampName
+
+validTimestampNameChar :: Char -> Bool
+validTimestampNameChar = validPropertyNameChar
 
 data Timestamp
   = TimestampDay Day
@@ -490,7 +507,7 @@ instance Validity TodoState where
       [ delve "todoStateText" t
       , decorateList (T.unpack t) $ \c ->
           declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+          validTodoStateChar c
       ]
 
 instance FromJSON TodoState where
@@ -505,6 +522,9 @@ todoState = constructValid . TodoState
 
 parseTodoState :: Text -> Either String TodoState
 parseTodoState = prettyValidate . TodoState
+
+validTodoStateChar :: Char -> Bool
+validTodoStateChar = validPropertyNameChar
 
 newtype StateHistory =
   StateHistory
@@ -564,7 +584,7 @@ instance Validity Tag where
       [ delve "tagText" t
       , decorateList (T.unpack t) $ \c ->
           declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+          validTagChar c
       ]
 
 instance FromJSON Tag where
@@ -582,6 +602,9 @@ tag = constructValid . Tag
 
 parseTag :: Text -> Either String Tag
 parseTag = prettyValidate . Tag
+
+validTagChar :: Char -> Bool
+validTagChar = validPropertyNameChar
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]
