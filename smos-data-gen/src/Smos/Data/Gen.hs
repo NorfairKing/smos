@@ -27,12 +27,12 @@ instance GenValid Entry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid = (T.pack <$> genListOf (genValid `suchThat` validHeaderChar)) `suchThatMap` header
+  genValid = Header . T.pack <$> genListOf (genValid `suchThat` validHeaderChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Contents where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = Contents . T.pack <$> genListOf (genValid `suchThat` validContentsChar)
+  shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyName where
   genValid = PropertyName . T.pack <$> genListOf (genValid `suchThat` validPropertyNameChar)

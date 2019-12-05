@@ -9,9 +9,11 @@ module Smos.Report.FilterSpec
   ( spec
   ) where
 
+import Control.Monad
 import Data.Functor.Identity
 import Data.Maybe
 import qualified Data.Text as T
+import Text.Show.Pretty
 
 import Path
 
@@ -128,34 +130,14 @@ spec = do
     filterArgumentSpec @TimestampName
     filterArgumentSpec @Timestamp
     filterArgumentSpec @(Path Rel File)
-    eqSpecOnValid @EntryFilter
+    genValidSpec @(Filter RootedPath)
+    genValidSpec @(Filter Time)
+    genValidSpec @(Filter Tag)
+    genValidSpec @(Filter Header)
+    genValidSpec @(Filter TodoState)
+    genValidSpec @(Filter PropertyValue)
     genValidSpec @EntryFilter
     jsonSpecOnValid @EntryFilter
-    eqSpecOnValid @(Filter RootedPath)
-    genValidSpec @(Filter RootedPath)
-    eqSpecOnValid @(Filter Time)
-    genValidSpec @(Filter Time)
-    eqSpecOnValid @(Filter Tag)
-    genValidSpec @(Filter Tag)
-    eqSpecOnValid @(Filter Header)
-    genValidSpec @(Filter Header)
-    eqSpecOnValid @(Filter TodoState)
-    genValidSpec @(Filter TodoState)
-    eqSpecOnValid @(Filter PropertyValue)
-    genValidSpec @(Filter PropertyValue)
-    describe "renderFilterAst" $
-      it "produces valid asts" $
-      producesValidsOnValids (renderFilterAst @(RootedPath, ForestCursor Entry))
-    describe "parseEntryFilterAst" $
-      it "parses back whatever 'renderFilterAst' renders" $
-      forAllValid $ \f ->
-        let t = renderFilterAst f
-         in case parseEntryFilterAst t of
-              Left err -> expectationFailure $ show err
-              Right f' -> f' `shouldBe` f
-    describe "renderFilter" $
-      it "produces valid text" $
-      producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
     describe "tcWithTopLevelBranches" $ do
       tcSpec
         (tcWithTopLevelBranches tcSub)
@@ -193,14 +175,17 @@ spec = do
         tcSub
         (AstUnOp (Piece "sub") (AstPiece (Piece "toast")))
         (FilterSub (fromJust $ tag "toast"))
+      tcSpec tcSub (AstPiece (Piece "toast")) (FilterSub (fromJust $ tag "toast"))
       tcSpec
         tcSub
         (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
         (FilterSub (fromJust $ header "header"))
+      tcSpec tcSub (AstPiece (Piece "header")) (FilterSub (fromJust $ header "header"))
       tcSpec
         tcSub
         (AstUnOp (Piece "sub") (AstPiece (Piece "TODO")))
         (FilterSub (fromJust $ todoState "TODO"))
+      tcSpec tcSub (AstPiece (Piece "TODO")) (FilterSub (fromJust $ todoState "TODO"))
     describe "tcOrd" $ do
       tcSpec
         tcOrd
@@ -215,21 +200,24 @@ spec = do
         tcTimeFilter
         (AstUnOp (Piece "ord") (AstUnOp (Piece "gt") (AstPiece (Piece "6h"))))
         (FilterOrd GTC (Hours 6))
-    describe "tcTagFilter" $
+    describe "tcTagFilter" $ do
       tcSpec
         tcTagFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "toast")))
         (FilterSub (fromJust $ tag "toast"))
-    describe "tcHeaderFilter" $
+      tcSpec tcTagFilter (AstPiece (Piece "toast")) (FilterSub (fromJust $ tag "toast"))
+    describe "tcHeaderFilter" $ do
       tcSpec
         tcHeaderFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "header")))
         (FilterSub (fromJust $ header "header"))
-    describe "tcTodoStateFilter" $
+      tcSpec tcHeaderFilter (AstPiece (Piece "header")) (FilterSub (fromJust $ header "header"))
+    describe "tcTodoStateFilter" $ do
       tcSpec
         tcTodoStateFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "TODO")))
         (FilterSub (fromJust $ todoState "TODO"))
+      tcSpec tcTodoStateFilter (AstPiece (Piece "TODO")) (FilterSub (fromJust $ todoState "TODO"))
     describe "tcMaybeFilter" $
       tcSpec
         (tcMaybeFilter tcTimeFilter)
@@ -243,6 +231,10 @@ spec = do
       tcSpec
         tcPropertyValueFilter
         (AstUnOp (Piece "sub") (AstPiece (Piece "propertyValue")))
+        (FilterSub (fromJust $ propertyValue "propertyValue"))
+      tcSpec
+        tcPropertyValueFilter
+        (AstPiece (Piece "propertyValue"))
         (FilterSub (fromJust $ propertyValue "propertyValue"))
       tcSpec
         tcPropertyValueFilter
@@ -352,13 +344,67 @@ spec = do
         (tcTupleFilter tcEntryFilter tcSub)
         (AstUnOp (Piece "snd") (AstUnOp (Piece "sub") (AstPiece (Piece "header"))))
         (FilterSnd (FilterSub (fromJust $ header "header")))
+    describe "renderFilterAst" $ do
+      it "produces valid asts for header filters" $ producesValidsOnValids (renderFilterAst @Header)
+      it "produces valid asts for file filters" $
+        producesValidsOnValids (renderFilterAst @RootedPath)
+      it "produces valid asts for entryFilters" $
+        producesValidsOnValids (renderFilterAst @(RootedPath, ForestCursor Entry))
+    describe "parseEntryFilterAst" $
+      it "parses back whatever 'renderFilterAst' renders" $
+      forAllValid $ \f ->
+        let t = renderFilterAst f
+         in case parseEntryFilterAst t of
+              Left err ->
+                expectationFailure $
+                unlines
+                  [ "Original filter:"
+                  , ppShow f
+                  , "rendered ast:"
+                  , ppShow t
+                  , "parse failure:"
+                  , show err
+                  ]
+              Right f' ->
+                unless (f == f') $
+                expectationFailure $
+                unlines
+                  [ "Original filter:"
+                  , ppShow f
+                  , "rendered ast:"
+                  , ppShow t
+                  , "parsed filter:"
+                  , ppShow f'
+                  ]
+    describe "renderFilter" $
+      it "produces valid text" $
+      producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
     describe "parseEntryFilter" $
       it "parses back whatever 'renderFilter' renders" $
       forAllValid $ \f ->
         let t = renderFilter f
          in case parseEntryFilter t of
-              Left err -> expectationFailure $ show err
-              Right f' -> f' `shouldBe` f
+              Left err ->
+                expectationFailure $
+                unlines
+                  [ "Original filter:"
+                  , ppShow f
+                  , "rendered text:"
+                  , show t
+                  , "parse failure:"
+                  , show err
+                  ]
+              Right f' ->
+                unless (f == f') $
+                expectationFailure $
+                unlines
+                  [ "Original filter:"
+                  , ppShow f
+                  , "rendered text:"
+                  , show t
+                  , "parsed filter:"
+                  , ppShow f'
+                  ]
   describe "foldFilterAnd" $
     it "produces valid results" $
     producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))
@@ -370,8 +416,10 @@ spec = do
           it (unwords ["succesfully parses", show input, "into", show expected]) $
           parseEntryFilter input `shouldBe` Right expected
         pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
+    pe "fst:file:side" (FilterFst $ FilterFile [relfile|side|])
     pe "file:side" (FilterFst $ FilterFile [relfile|side|])
     pee "header:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
+    pee "header:sub:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "tag:toast" (FilterEntryTags $ FilterAny $ FilterSub $ fromJust $ tag "toast")
     pee
       "state:DONE"

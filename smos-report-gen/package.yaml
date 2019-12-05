@@ -51,6 +51,7 @@ tests:
     - megaparsec
     - parsec
     - path
+    - pretty-show
     - smos-cursor
     - smos-cursor-gen
     - smos-data
@@ -69,13 +70,13 @@ benchmarks:
     - -Wall
     dependencies:
     - QuickCheck
+    - containers
     - criterion
+    - cursor
+    - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
-    - genvalidity
     - smos-data
     - smos-data-gen
     - smos-report
     - smos-report-gen
-    - containers
-    - cursor

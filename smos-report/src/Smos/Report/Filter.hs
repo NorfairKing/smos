@@ -91,10 +91,27 @@ instance Validity Piece where
     mconcat
       [ genericValidate p
       , declare "The piece is not empty" $ not $ T.null t
-      , declare "The characters are restricted" $
-        all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
-        T.unpack t
+      , decorate "The characters are restricted" $ decorateList (T.unpack t) $
+        validateRestrictedChar
       ]
+
+validateRestrictedChar :: Char -> Validation
+validateRestrictedChar c =
+  decorate "The character is restricted" $
+  mconcat
+      -- declare "The character is not a UTF16 surrogate codepoint" $ not $ isUtf16SurrogateCodePoint c
+      -- Only need to check one of these.
+    [declare "The character is printable" $ Char.isPrint c, validateExtraRestrictedChar c]
+
+validateExtraRestrictedChar :: Char -> Validation
+validateExtraRestrictedChar c =
+  decorate "The character is restricted" $
+  mconcat
+    [ declare "The character is not a space" $ not $ Char.isSpace c
+    , declare "The character is not an open bracket" $ c /= '('
+    , declare "The character is not an close bracket" $ c /= ')'
+    , declare "The character is not a column" $ c /= ':'
+    ]
 
 instance NFData Piece
 
@@ -168,9 +185,7 @@ partP =
     , void (char ' ') >> pure PartSpace
     , try $ void (string "and") >> pure (PartBinOp AndOp)
     , try $ void (string "or") >> pure (PartBinOp OrOp)
-    , PartPiece . Piece . T.pack <$>
-      many1
-        (satisfy (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':'))
+    , PartPiece . Piece . T.pack <$> many1 (satisfy (validationIsValid . validateRestrictedChar))
     ]
 
 type TP = Parsec Text ()
@@ -590,23 +605,20 @@ instance FilterArgument Time where
 
 instance Validity (Filter a) where
   validate f =
-    let validateArgument a =
+    let validateArgumentStr s = decorateList s validateRestrictedChar
+        validateArgument a =
           mconcat
             [ validate a
-            , declare "The characters are restricted" $
-              all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
-              T.unpack $
-              renderArgument a
             , declare "The argument is not empty" $ not $ T.null $ renderArgument a
+            , decorate "The characters are extra restricted" $
+              decorateList (T.unpack $ renderArgument a) validateExtraRestrictedChar
             ]
      in case f of
           FilterFile s ->
             mconcat
               [ validate s
-              , declare "The filenames are restricted" $
-                all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
-                fromRelFile s
-              , validateArgument s
+              , declare "The argument is not empty" $ not $ null $ fromRelFile s
+              , decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
               ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'
@@ -626,7 +638,7 @@ instance Validity (Filter a) where
           FilterFst f' -> validate f'
           FilterSnd f' -> validate f'
           FilterMaybe b f' -> mconcat [validate b, validate f']
-          FilterSub a -> mconcat [validate a, validateArgument a]
+          FilterSub a -> mconcat [validateArgument a]
           FilterOrd o a -> mconcat [validate o, validateArgument a]
           FilterNot f' -> validate f'
           FilterAnd f1 f2 -> mconcat [validate f1, validate f2]

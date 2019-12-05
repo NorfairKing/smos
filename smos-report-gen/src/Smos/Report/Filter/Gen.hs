@@ -10,6 +10,7 @@ module Smos.Report.Filter.Gen where
 
 import Data.Map (Map)
 import Data.Set (Set)
+import qualified Data.Text as T
 
 import Data.GenValidity
 import Data.GenValidity.Path ()
@@ -31,7 +32,10 @@ import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 
 instance GenValid Piece where
-  genValid = genValidStructurally
+  genValid =
+    Piece . T.pack <$>
+    (genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar)) `suchThat`
+     (not . null))
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked BinOp

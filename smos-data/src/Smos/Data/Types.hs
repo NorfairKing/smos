@@ -18,11 +18,14 @@ module Smos.Data.Types
   , header
   , parseHeader
   , validHeaderChar
+  , validateHeaderChar
   , Contents(..)
   , emptyContents
   , nullContents
   , contents
   , parseContents
+  , validContentsChar
+  , validateContentsChar
   , PropertyName(..)
   , emptyPropertyName
   , propertyName
@@ -37,6 +40,7 @@ module Smos.Data.Types
   , todoState
   , parseTodoState
   , validTodoStateChar
+  , validateTodoStateChar
   , StateHistory(..)
   , StateHistoryEntry(..)
   , emptyStateHistory
@@ -46,6 +50,7 @@ module Smos.Data.Types
   , tag
   , parseTag
   , validTagChar
+  , validateTagChar
   , Logbook(..)
   , emptyLogbook
   , nullLogbook
@@ -56,6 +61,7 @@ module Smos.Data.Types
   , parseTimestampName
   , emptyTimestampName
   , validTimestampNameChar
+  , validateTimestampNameChar
   , Timestamp(..)
   , timestampString
   , timestampText
@@ -268,12 +274,7 @@ newtype Header =
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Header where
-  validate (Header t) =
-    mconcat
-      [ delve "headerText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid header character" $ validHeaderChar c
-      ]
+  validate (Header t) = mconcat [delve "headerText" t, decorateList (T.unpack t) validateHeaderChar]
 
 instance NFData Header
 
@@ -294,23 +295,33 @@ parseHeader :: Text -> Either String Header
 parseHeader = prettyValidate . Header
 
 validHeaderChar :: Char -> Bool
-validHeaderChar c = c /= '\n'
+validHeaderChar = validationIsValid . validateHeaderChar
+
+validateHeaderChar :: Char -> Validation
+validateHeaderChar c =
+  mconcat
+    [ declare "The character is printable" $ isPrint c
+    , declare "The character is not a newline" $ c /= '\n'
+    ]
 
 newtype Contents =
   Contents
     { contentsText :: Text
     }
-  deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Contents where
   validate (Contents t) =
-    mconcat
-      [ delve "contentsText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid contents character" $ validContentsChar c
-      ]
+    mconcat [delve "contentsText" t, decorateList (T.unpack t) validateContentsChar]
 
 instance NFData Contents
+
+instance FromJSON Contents where
+  parseJSON =
+    withText "Contents" $ \t ->
+      case contents t of
+        Nothing -> fail $ "Invalid contents: " <> T.unpack t
+        Just h -> pure h
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -325,7 +336,10 @@ parseContents :: Text -> Either String Contents
 parseContents = prettyValidate . Contents
 
 validContentsChar :: Char -> Bool
-validContentsChar = const True
+validContentsChar = validationIsValid . validateContentsChar
+
+validateContentsChar :: Char -> Validation
+validateContentsChar c = declare "The character is a valid contents character" $ Char.isPrint c
 
 newtype PropertyName =
   PropertyName
@@ -335,11 +349,7 @@ newtype PropertyName =
 
 instance Validity PropertyName where
   validate (PropertyName t) =
-    mconcat
-      [ delve "propertyNameText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid property name character" $ validPropertyNameChar c
-      ]
+    mconcat [delve "propertyNameText" t, decorateList (T.unpack t) validatePropertyNameChar]
 
 instance NFData PropertyName
 
@@ -365,7 +375,10 @@ parsePropertyName :: Text -> Either String PropertyName
 parsePropertyName = prettyValidate . PropertyName
 
 validPropertyNameChar :: Char -> Bool
-validPropertyNameChar c = not (Char.isSpace c)
+validPropertyNameChar = validationIsValid . validatePropertyNameChar
+
+validatePropertyNameChar :: Char -> Validation
+validatePropertyNameChar = validateHeaderChar
 
 newtype PropertyValue =
   PropertyValue
@@ -415,11 +428,7 @@ newtype TimestampName =
 
 instance Validity TimestampName where
   validate (TimestampName t) =
-    mconcat
-      [ delve "timestampNameText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid timestamp name character" $ validTimestampNameChar c
-      ]
+    mconcat [delve "timestampNameText" t, decorateList (T.unpack t) validateTimestampNameChar]
 
 instance NFData TimestampName
 
@@ -445,7 +454,10 @@ parseTimestampName :: Text -> Either String TimestampName
 parseTimestampName = prettyValidate . TimestampName
 
 validTimestampNameChar :: Char -> Bool
-validTimestampNameChar = validPropertyNameChar
+validTimestampNameChar = validationIsValid . validateTimestampNameChar
+
+validateTimestampNameChar :: Char -> Validation
+validateTimestampNameChar = validateHeaderChar
 
 data Timestamp
   = TimestampDay Day
@@ -524,11 +536,7 @@ newtype TodoState =
 
 instance Validity TodoState where
   validate (TodoState t) =
-    mconcat
-      [ delve "todoStateText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid todo state character" $ validTodoStateChar c
-      ]
+    mconcat [delve "todoStateText" t, decorateList (T.unpack t) validateTodoStateChar]
 
 instance NFData TodoState
 
@@ -546,7 +554,10 @@ parseTodoState :: Text -> Either String TodoState
 parseTodoState = prettyValidate . TodoState
 
 validTodoStateChar :: Char -> Bool
-validTodoStateChar = validPropertyNameChar
+validTodoStateChar = validationIsValid . validateTodoStateChar
+
+validateTodoStateChar :: Char -> Validation
+validateTodoStateChar = validateHeaderChar
 
 newtype StateHistory =
   StateHistory
@@ -605,12 +616,7 @@ newtype Tag =
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Tag where
-  validate (Tag t) =
-    mconcat
-      [ delve "tagText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is a valid tag character" $ validTagChar c
-      ]
+  validate (Tag t) = mconcat [delve "tagText" t, decorateList (T.unpack t) validateTagChar]
 
 instance NFData Tag
 
@@ -631,7 +637,10 @@ parseTag :: Text -> Either String Tag
 parseTag = prettyValidate . Tag
 
 validTagChar :: Char -> Bool
-validTagChar = validPropertyNameChar
+validTagChar = validationIsValid . validateTagChar
+
+validateTagChar :: Char -> Validation
+validateTagChar = validateHeaderChar
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]
