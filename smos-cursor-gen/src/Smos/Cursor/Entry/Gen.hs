@@ -37,5 +37,5 @@ instance GenValid EntryCursor where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid EntryCursorSelection where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

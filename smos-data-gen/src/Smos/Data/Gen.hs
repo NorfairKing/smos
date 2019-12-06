@@ -36,20 +36,29 @@ instance GenValid Contents where
   genValid = Contents <$> genTextBy (choose (minBound, maxBound) `suchThat` validContentsChar)
   shrinkValid = shrinkValidStructurally
 
+genContentsChar :: Gen Char
+genContentsChar = choose (minBound, maxBound) `suchThat` validContentsChar
+
 instance GenValid PropertyName where
-  genValid =
-    PropertyName <$> genTextBy (choose (minBound, maxBound) `suchThat` validPropertyNameChar)
+  genValid = PropertyName <$> genTextBy genPropertyNameChar
   shrinkValid = shrinkValidStructurally
+
+genPropertyNameChar :: Gen Char
+genPropertyNameChar = choose (minBound, maxBound) `suchThat` validPropertyNameChar
 
 instance GenValid PropertyValue where
-  genValid =
-    PropertyValue <$> genTextBy (choose (minBound, maxBound) `suchThat` validPropertyValueChar)
+  genValid = PropertyValue <$> genTextBy genPropertyValueChar
   shrinkValid = shrinkValidStructurally
 
+genPropertyValueChar :: Gen Char
+genPropertyValueChar = choose (minBound, maxBound) `suchThat` validPropertyValueChar
+
 instance GenValid TimestampName where
-  genValid =
-    TimestampName <$> genTextBy (choose (minBound, maxBound) `suchThat` validTimestampNameChar)
+  genValid = TimestampName <$> genTextBy genTimestampNameChar
   shrinkValid = shrinkValidStructurally
+
+genTimestampNameChar :: Gen Char
+genTimestampNameChar = choose (minBound, maxBound) `suchThat` validTimestampNameChar
 
 instance GenUnchecked Timestamp
 
@@ -58,8 +67,11 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid = TodoState <$> genTextBy (choose (minBound, maxBound) `suchThat` validTodoStateChar)
+  genValid = TodoState <$> genTextBy genTodoStateChar
   shrinkValid = shrinkValidStructurally
+
+genTodoStateChar :: Gen Char
+genTodoStateChar = choose (minBound, maxBound) `suchThat` validTodoStateChar
 
 instance GenValid StateHistory where
   genValid = StateHistory . sort <$> genValid
