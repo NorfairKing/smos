@@ -4,10 +4,9 @@ module Smos.Data.Gen where
 
 import Data.GenValidity
 import Data.GenValidity.Containers ()
-import Data.GenValidity.Text ()
+import Data.GenValidity.Text
 import Data.GenValidity.Time ()
 import Data.List
-import qualified Data.Text as T
 import Data.Time
 import Smos.Data
 import Test.QuickCheck
@@ -27,23 +26,26 @@ instance GenValid Entry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid = Header . T.pack <$> genListOf (genValid `suchThat` validHeaderChar)
+  genValid = Header <$> genTextBy (choose (minBound, maxBound) `suchThat` validHeaderChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Contents where
-  genValid = Contents . T.pack <$> genListOf (genValid `suchThat` validContentsChar)
+  genValid = Contents <$> genTextBy (choose (minBound, maxBound) `suchThat` validContentsChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyName where
-  genValid = PropertyName . T.pack <$> genListOf (genValid `suchThat` validPropertyNameChar)
+  genValid =
+    PropertyName <$> genTextBy (choose (minBound, maxBound) `suchThat` validPropertyNameChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PropertyValue where
-  genValid = PropertyValue . T.pack <$> genListOf (genValid `suchThat` validPropertyValueChar)
+  genValid =
+    PropertyValue <$> genTextBy (choose (minBound, maxBound) `suchThat` validPropertyValueChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid TimestampName where
-  genValid = TimestampName . T.pack <$> genListOf (genValid `suchThat` validTimestampNameChar)
+  genValid =
+    TimestampName <$> genTextBy (choose (minBound, maxBound) `suchThat` validTimestampNameChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Timestamp
@@ -53,7 +55,7 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid = TodoState . T.pack <$> genListOf (genValid `suchThat` validTodoStateChar)
+  genValid = TodoState <$> genTextBy (choose (minBound, maxBound) `suchThat` validTodoStateChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenValid StateHistory where
@@ -68,7 +70,7 @@ instance GenValid StateHistoryEntry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Tag where
-  genValid = Tag . T.pack <$> genListOf (genValid `suchThat` validTagChar)
+  genValid = Tag <$> genTextBy (choose (minBound, maxBound) `suchThat` validTagChar)
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked Logbook

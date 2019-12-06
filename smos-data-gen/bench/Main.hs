@@ -6,11 +6,9 @@ module Main where
 
 import Data.Map (Map)
 import Data.Set (Set)
-import Data.Typeable
 
 import Data.GenValidity.Containers ()
 import Data.GenValidity.Criterion
-import Test.QuickCheck
 
 import Criterion.Main as Criterion
 
