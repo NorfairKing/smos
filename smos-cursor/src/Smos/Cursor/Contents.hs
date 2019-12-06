@@ -32,7 +32,6 @@ import GHC.Generics
 import Data.Validity
 
 import Control.DeepSeq
-import Control.Monad
 
 import Cursor.TextField
 import Cursor.Types
