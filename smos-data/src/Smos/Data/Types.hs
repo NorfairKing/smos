@@ -378,7 +378,7 @@ validPropertyNameChar :: Char -> Bool
 validPropertyNameChar = validationIsValid . validatePropertyNameChar
 
 validatePropertyNameChar :: Char -> Validation
-validatePropertyNameChar = validateHeaderChar
+validatePropertyNameChar = validateTagChar
 
 newtype PropertyValue =
   PropertyValue
@@ -418,7 +418,7 @@ parsePropertyValue :: Text -> Either String PropertyValue
 parsePropertyValue = prettyValidate . PropertyValue
 
 validPropertyValueChar :: Char -> Bool
-validPropertyValueChar = validPropertyNameChar
+validPropertyValueChar = validTagChar
 
 newtype TimestampName =
   TimestampName
@@ -640,7 +640,8 @@ validTagChar :: Char -> Bool
 validTagChar = validationIsValid . validateTagChar
 
 validateTagChar :: Char -> Validation
-validateTagChar = validateHeaderChar
+validateTagChar c =
+  mconcat [validateHeaderChar c, declare "The character is not a space" $ not $ Char.isSpace c]
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]

@@ -91,8 +91,7 @@ instance Validity Piece where
     mconcat
       [ genericValidate p
       , declare "The piece is not empty" $ not $ T.null t
-      , decorate "The characters are restricted" $ decorateList (T.unpack t) $
-        validateRestrictedChar
+      , decorate "The characters are restricted" $ decorateList (T.unpack t) validateRestrictedChar
       ]
 
 validateRestrictedChar :: Char -> Validation

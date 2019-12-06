@@ -23,25 +23,25 @@ import Smos.Report.Time
 
 main :: IO ()
 main =
-  Criterion.defaultMain $
-  [ bgroup
-      "Filter"
-      [ genValidBench @Part
-      , genValidBench @Piece
-      , genValidBench @Ast
-      , genValidBench @(Filter RootedPath)
-      , genValidBench @(Filter Time)
-      , genValidBench @(Filter Tag)
-      , genValidBench @(Filter Header)
-      , genValidBench @(Filter TodoState)
-      , genValidBench @(Filter Timestamp)
-      , genValidBench @(Filter PropertyValue)
-      , genValidBench @(Filter Entry)
-      , genValidBench @(Filter (Maybe PropertyValue))
-      , genValidBench @(Filter (Set Tag))
-      , genValidBench @(Filter (Map PropertyName PropertyValue))
-      , genValidBench @(Filter (ForestCursor Header))
-      , genValidBench @(Filter (ForestCursor Entry))
-      , genValidBench @(Filter (RootedPath, ForestCursor Entry))
-      ]
-  ]
+  Criterion.defaultMain
+    [ bgroup
+        "Filter"
+        [ genValidBench @Part
+        , genValidBench @Piece
+        , genValidBench @Ast
+        , genValidBench @(Filter RootedPath)
+        , genValidBench @(Filter Time)
+        , genValidBench @(Filter Tag)
+        , genValidBench @(Filter Header)
+        , genValidBench @(Filter TodoState)
+        , genValidBench @(Filter Timestamp)
+        , genValidBench @(Filter PropertyValue)
+        , genValidBench @(Filter Entry)
+        , genValidBench @(Filter (Maybe PropertyValue))
+        , genValidBench @(Filter (Set Tag))
+        , genValidBench @(Filter (Map PropertyName PropertyValue))
+        , genValidBench @(Filter (ForestCursor Header))
+        , genValidBench @(Filter (ForestCursor Entry))
+        , genValidBench @(Filter (RootedPath, ForestCursor Entry))
+        ]
+    ]

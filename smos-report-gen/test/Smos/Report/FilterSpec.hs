@@ -406,8 +406,7 @@ spec = do
                   , ppShow f'
                   ]
   describe "foldFilterAnd" $
-    it "produces valid results" $
-    producesValidsOnValids (foldFilterAnd @(RootedPath, ForestCursor Entry))
+    it "produces valid results" $ producesValidsOnValids (foldFilterAnd @Header)
   describe "filterPredicate" $
     it "produces valid results" $
     producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))

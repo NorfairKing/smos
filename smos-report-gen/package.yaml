@@ -23,6 +23,7 @@ library:
   - genvalidity-path
   - genvalidity-text
   - genvalidity-time
+  - path
   - smos-data
   - smos-data-gen
   - smos-report

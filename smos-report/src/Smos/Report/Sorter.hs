@@ -7,7 +7,6 @@ module Smos.Report.Sorter where
 import GHC.Generics (Generic)
 
 import Data.Aeson
-import Data.Char as Char
 import Data.List
 import qualified Data.Map as M
 import Data.Ord
@@ -114,12 +113,12 @@ andThenP = do
 
 tagP :: P Tag
 tagP = do
-  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy (\c -> validTagChar c && c /= ')'))
   either fail pure $ parseTag $ T.pack s
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy (\c -> validPropertyNameChar c && c /= ')'))
   either fail pure $ parsePropertyName $ T.pack s
 
 renderSorter :: Sorter -> Text

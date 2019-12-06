@@ -12,6 +12,8 @@ import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Text as T
 
+import Path
+
 import Data.GenValidity
 import Data.GenValidity.Path ()
 
@@ -69,7 +71,13 @@ instance GenValid Ast where
             ]
 
 instance GenValid (Filter RootedPath) where
-  genValid = withTopLevelBranches $ (FilterFile <$> genValid) `suchThat` isValid
+  genValid =
+    withTopLevelBranches $
+    (FilterFile <$>
+     (genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar)) `suchThat`
+      (not . null)) `suchThatMap`
+     parseRelFile) `suchThat`
+    isValid
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Time) where

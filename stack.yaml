@@ -50,12 +50,12 @@ extra-deps:
 - git: https://github.com/NorfairKing/pretty-relative-time.git
   commit: 21b29c9d729ed91a56819f569de6fdc8582d7e3d
 - git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-  commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
+  commit: ed00bd205d45ce80bab31bc81fb25ff02cf6ed5a
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: 794427b7d4675910474068c8a0534d07b8eda83d
+  commit: 2122037216d64972303f6a26d8b10598c85fb14f
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -64,12 +64,12 @@ extra-deps:
   subdirs:
     - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 50e180737e7cddd8a405aff1bc94f0202f2d6561
+  commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
   subdirs:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 56e12d3c521ae21c3332b757a2ff558aed9b3c80
+  commit: c5a6efb92d96941308f55220a6f42f399acb1951
   subdirs:
   - genvalidity
   - genvalidity-aeson
