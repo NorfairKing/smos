@@ -26,8 +26,11 @@ instance GenValid Entry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid = Header <$> genTextBy (choose (minBound, maxBound) `suchThat` validHeaderChar)
+  genValid = Header <$> genTextBy genHeaderChar
   shrinkValid = shrinkValidStructurally
+
+genHeaderChar :: Gen Char
+genHeaderChar = choose (minBound, maxBound) `suchThat` validHeaderChar
 
 instance GenValid Contents where
   genValid = Contents <$> genTextBy (choose (minBound, maxBound) `suchThat` validContentsChar)
@@ -70,8 +73,11 @@ instance GenValid StateHistoryEntry where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Tag where
-  genValid = Tag <$> genTextBy (choose (minBound, maxBound) `suchThat` validTagChar)
+  genValid = Tag <$> genTextBy genTagChar
   shrinkValid = shrinkValidStructurally
+
+genTagChar :: Gen Char
+genTagChar = choose (minBound, maxBound) `suchThat` validTagChar
 
 instance GenUnchecked Logbook
 

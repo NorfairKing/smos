@@ -20,6 +20,7 @@ import GHC.Generics (Generic)
 import Data.Maybe
 import Data.Validity
 
+import Control.DeepSeq
 import Control.Monad
 
 import Lens.Micro
@@ -44,6 +45,8 @@ instance Validity HeaderCursor where
           Left err -> invalid err
           Right t -> validate t
       ]
+
+instance NFData HeaderCursor
 
 headerCursorTextCursorL :: Lens' HeaderCursor TextCursor
 headerCursorTextCursorL =

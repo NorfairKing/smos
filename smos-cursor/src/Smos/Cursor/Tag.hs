@@ -22,6 +22,8 @@ import Control.Monad
 import Data.Maybe
 import Data.Validity
 
+import Control.DeepSeq
+
 import Lens.Micro
 
 import Cursor.Text
@@ -44,6 +46,8 @@ instance Validity TagCursor where
           Left err -> invalid err
           Right t -> validate t
       ]
+
+instance NFData TagCursor
 
 tagCursorTextCursorL :: Lens' TagCursor TextCursor
 tagCursorTextCursorL = lens tagCursorTextCursor $ \tagc textc -> tagc {tagCursorTextCursor = textc}

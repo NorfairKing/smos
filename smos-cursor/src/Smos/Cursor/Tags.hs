@@ -36,6 +36,7 @@ import Data.Maybe
 import Data.Validity
 
 import Control.Applicative
+import Control.DeepSeq
 
 import Lens.Micro
 
@@ -53,6 +54,8 @@ newtype TagsCursor =
   deriving (Show, Eq, Generic)
 
 instance Validity TagsCursor
+
+instance NFData TagsCursor
 
 tagsCursorNonEmptyCursorL :: Lens' TagsCursor (NonEmptyCursor TagCursor Tag)
 tagsCursorNonEmptyCursorL =
