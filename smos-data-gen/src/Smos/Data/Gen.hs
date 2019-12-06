@@ -33,7 +33,7 @@ genHeaderChar :: Gen Char
 genHeaderChar = choose (minBound, maxBound) `suchThat` validHeaderChar
 
 instance GenValid Contents where
-  genValid = Contents <$> genTextBy (choose (minBound, maxBound) `suchThat` validContentsChar)
+  genValid = Contents <$> genTextBy genContentsChar
   shrinkValid = shrinkValidStructurally
 
 genContentsChar :: Gen Char

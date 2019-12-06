@@ -339,7 +339,8 @@ validContentsChar :: Char -> Bool
 validContentsChar = validationIsValid . validateContentsChar
 
 validateContentsChar :: Char -> Validation
-validateContentsChar c = declare "The character is a valid contents character" $ Char.isPrint c
+validateContentsChar c =
+  declare "The character is a printable or space" $ Char.isPrint c || Char.isSpace c
 
 newtype PropertyName =
   PropertyName
