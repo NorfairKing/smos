@@ -23,6 +23,7 @@ import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
 
+import Control.DeepSeq
 import Control.Monad
 
 import Path
@@ -48,6 +49,8 @@ instance Validity MetaMap where
         let distinct ls = nub ls == ls
          in distinct $ map syncFileMetaUUID $ M.elems $ metaMapFiles mm
       ]
+
+instance NFData MetaMap
 
 empty :: MetaMap
 empty = MetaMap M.empty

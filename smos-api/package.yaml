@@ -19,6 +19,7 @@ library:
   - base64-bytestring
   - bcrypt
   - bytestring
+  - deepseq
   - hashable
   - mergeful
   - mtl

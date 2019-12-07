@@ -41,7 +41,7 @@ extra-deps:
     - persistent-sqlite
 
 - git: https://github.com/NorfairKing/mergeful
-  commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
+  commit: e6ec622320d030d147c4dab76575666ef0f4991e
   subdirs:
     - mergeful
     - genvalidity-mergeful

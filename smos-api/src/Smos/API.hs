@@ -31,6 +31,8 @@ import Data.Validity.Path ()
 import Data.Validity.Text ()
 import Data.Validity.UUID ()
 
+import Control.DeepSeq
+
 import Path
 import Path.Internal
 
@@ -177,6 +179,8 @@ data SyncFile =
   deriving (Show, Eq, Generic)
 
 instance Validity SyncFile
+
+instance NFData SyncFile
 
 instance FromJSON SyncFile where
   parseJSON =

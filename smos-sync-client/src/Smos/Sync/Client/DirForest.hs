@@ -21,6 +21,7 @@ import Data.Validity.Path ()
 
 import qualified System.FilePath as FP
 
+import Control.DeepSeq
 import Control.Monad
 
 import Path
@@ -39,12 +40,16 @@ instance Validity a => Validity (DirForest a) where
           declare "does not conain separators" $ length (FP.splitDirectories fp) == 1
       ]
 
+instance NFData a => NFData (DirForest a)
+
 data DirOrFile a
   = Dir (DirForest a)
   | File a
   deriving (Show, Eq, Generic)
 
 instance Validity a => Validity (DirOrFile a)
+
+instance NFData a => NFData (DirOrFile a)
 
 makeDirForest :: forall a. Map (Path Rel File) a -> Either FilePath (DirForest a)
 makeDirForest = fmap DirForest . foldM go M.empty . M.toList
