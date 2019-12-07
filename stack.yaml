@@ -64,7 +64,7 @@ extra-deps:
   subdirs:
     - cursor-brick
 - git: https://github.com/NorfairKing/cursor.git
-  commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
+  commit: 452e43cb466f8ac010da8318f84836e8ceca1efe
   subdirs:
     - cursor
     - cursor-gen

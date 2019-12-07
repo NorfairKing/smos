@@ -251,12 +251,12 @@ packages:
     git: https://github.com/NorfairKing/cursor.git
     pantry-tree:
       size: 1811
-      sha256: ea9381de195ef2706a44dc440ccd685323e59c1da51cd7a0e12c243f617c5ea5
-    commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
+      sha256: e3751444ba329de6da8e3139c5de47d7a4c277797dae90569dc8c47c99fcc6f7
+    commit: 452e43cb466f8ac010da8318f84836e8ceca1efe
   original:
     subdir: cursor
     git: https://github.com/NorfairKing/cursor.git
-    commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
+    commit: 452e43cb466f8ac010da8318f84836e8ceca1efe
 - completed:
     subdir: cursor-gen
     cabal-file:
@@ -267,12 +267,12 @@ packages:
     git: https://github.com/NorfairKing/cursor.git
     pantry-tree:
       size: 2716
-      sha256: 7ed73a412ba178d1fb6022f579cd52e6961c138cc56191f1eb1f6cdbb88ed726
-    commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
+      sha256: c84813dcebf87e9639433a5659fedc21fda69b2c1452414e260d67cd4d2f0f22
+    commit: 452e43cb466f8ac010da8318f84836e8ceca1efe
   original:
     subdir: cursor-gen
     git: https://github.com/NorfairKing/cursor.git
-    commit: 41d71c624c7cdac9e807c8e3679960ba91198e0b
+    commit: 452e43cb466f8ac010da8318f84836e8ceca1efe
 - completed:
     subdir: genvalidity
     cabal-file:
