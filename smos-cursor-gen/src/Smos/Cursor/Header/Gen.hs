@@ -8,7 +8,6 @@ import Cursor.Text.Gen
 
 import Smos.Cursor.Header
 
-import Smos.Data
 import Smos.Data.Gen
 
 instance GenUnchecked HeaderCursor

@@ -4,14 +4,8 @@ module Smos.Cursor.Properties.Gen where
 
 import Data.GenValidity
 
-import Cursor.List.NonEmpty
-import Cursor.Map
 import Cursor.Map.Gen
 import Cursor.Text.Gen
-
-import Control.Monad
-
-import Test.QuickCheck
 
 import Smos.Data.Gen
 

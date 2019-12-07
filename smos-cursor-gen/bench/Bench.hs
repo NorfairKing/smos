@@ -41,9 +41,11 @@ main =
     , genValidBench @TagCursor
     , genValidBench @TagsCursor
     , genValidBench @TimestampsCursor
+    , genValidBench @LogbookCursor
     , genValidBench @PropertiesCursor
     , genValidBench @StateHistoryCursor
     , genValidBench @(CollapseEntry Entry)
     , genValidBench @EntryCursor
     , genValidBench @(CollapseEntry EntryCursor)
+    , genValidBench @SmosFileCursor
     ]

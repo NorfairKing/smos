@@ -519,14 +519,15 @@ drawCurrentState stateHistory =
   stateHistoryState stateHistory <&> \ts -> withAttr todoStateAttr $ drawTodoState ts
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
-drawContentsCursor = drawTextFieldCursor
+drawContentsCursor s = drawTextFieldCursor s . contentsCursorTextFieldCursor
 
 drawContents :: Contents -> Widget ResourceName
 drawContents = textWidget . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
+  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair .
+  timestampsCursorMapCursor
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
