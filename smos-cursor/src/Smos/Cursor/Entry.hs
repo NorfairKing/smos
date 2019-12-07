@@ -36,6 +36,8 @@ import qualified Data.Set as S
 import Data.Time
 import Data.Validity
 
+import Control.DeepSeq
+
 import Lens.Micro
 
 import Smos.Data.Types
@@ -62,6 +64,8 @@ data EntryCursor =
   deriving (Show, Eq, Generic)
 
 instance Validity EntryCursor
+
+instance NFData EntryCursor
 
 makeEntryCursor :: Entry -> EntryCursor
 makeEntryCursor Entry {..} =
@@ -172,6 +176,8 @@ data EntryCursorSelection
   deriving (Show, Eq, Generic)
 
 instance Validity EntryCursorSelection
+
+instance NFData EntryCursorSelection
 
 entryCursorUpdateTime :: ZonedTime -> EntryCursor -> EntryCursor
 entryCursorUpdateTime zt = entryCursorTimestampsCursorL %~ fmap (timestampsCursorUpdateTime zt)

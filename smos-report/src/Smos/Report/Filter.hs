@@ -42,6 +42,8 @@ import Text.ParserCombinators.Parsec.Char
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 
+import Control.DeepSeq
+
 import Smos.Data
 
 import Smos.Report.Comparison
@@ -55,6 +57,8 @@ data Paren
 
 instance Validity Paren
 
+instance NFData Paren
+
 renderParen :: Paren -> Char
 renderParen =
   \case
@@ -67,6 +71,8 @@ data BinOp
   deriving (Show, Eq, Generic)
 
 instance Validity BinOp
+
+instance NFData BinOp
 
 renderBinOp :: BinOp -> Text
 renderBinOp =
@@ -85,10 +91,28 @@ instance Validity Piece where
     mconcat
       [ genericValidate p
       , declare "The piece is not empty" $ not $ T.null t
-      , declare "The characters are restricted" $
-        all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
-        T.unpack t
+      , decorate "The characters are restricted" $ decorateList (T.unpack t) validateRestrictedChar
       ]
+
+validateRestrictedChar :: Char -> Validation
+validateRestrictedChar c =
+  decorate "The character is restricted" $
+  mconcat
+      -- declare "The character is not a UTF16 surrogate codepoint" $ not $ isUtf16SurrogateCodePoint c
+      -- Only need to check one of these.
+    [declare "The character is printable" $ Char.isPrint c, validateExtraRestrictedChar c]
+
+validateExtraRestrictedChar :: Char -> Validation
+validateExtraRestrictedChar c =
+  decorate "The character is restricted" $
+  mconcat
+    [ declare "The character is not a space" $ not $ Char.isSpace c
+    , declare "The character is not an open bracket" $ c /= '('
+    , declare "The character is not an close bracket" $ c /= ')'
+    , declare "The character is not a column" $ c /= ':'
+    ]
+
+instance NFData Piece
 
 data Part
   = PartParen Paren
@@ -99,6 +123,8 @@ data Part
   deriving (Show, Eq, Generic)
 
 instance Validity Part
+
+instance NFData Part
 
 renderPart :: Part -> Text
 renderPart =
@@ -135,6 +161,8 @@ instance Validity Parts where
          in go ps
       ]
 
+instance NFData Parts
+
 renderParts :: Parts -> Text
 renderParts = T.concat . map renderPart . unParts
 
@@ -156,9 +184,7 @@ partP =
     , void (char ' ') >> pure PartSpace
     , try $ void (string "and") >> pure (PartBinOp AndOp)
     , try $ void (string "or") >> pure (PartBinOp OrOp)
-    , PartPiece . Piece . T.pack <$>
-      many1
-        (satisfy (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':'))
+    , PartPiece . Piece . T.pack <$> many1 (satisfy (validationIsValid . validateRestrictedChar))
     ]
 
 type TP = Parsec Text ()
@@ -222,6 +248,8 @@ data KeyWord
   deriving (Show, Eq, Generic)
 
 instance Validity KeyWord
+
+instance NFData KeyWord
 
 parseKeyword :: Text -> Maybe KeyWord
 parseKeyword =
@@ -305,6 +333,8 @@ data Ast
   deriving (Show, Eq, Generic)
 
 instance Validity Ast
+
+instance NFData Ast
 
 renderAst :: Ast -> Parts
 renderAst = Parts . go
@@ -392,6 +422,8 @@ data SmosFileAtPath =
     }
   deriving (Show, Eq, Generic)
 
+instance NFData SmosFileAtPath
+
 forestCursorCurrent :: ForestCursor a -> a
 forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
@@ -434,22 +466,57 @@ data Filter a where
   FilterAny :: Filter a -> Filter (Set a)
   FilterAll :: Filter a -> Filter (Set a)
   -- Map filters
-  FilterMapHas :: (Validity k, Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
+  FilterMapHas :: (Validity k, NFData k, Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
   FilterMapVal
-    :: (Validity k, Show k, Ord k, FilterArgument k) => k -> Filter (Maybe v) -> Filter (Map k v)
+    :: (Validity k, NFData k, Show k, Ord k, FilterArgument k)
+    => k
+    -> Filter (Maybe v)
+    -> Filter (Map k v)
   -- Tuple filters
   FilterFst :: Filter a -> Filter (a, b)
   FilterSnd :: Filter b -> Filter (a, b)
   -- Maybe filters
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
-  FilterSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
+  FilterSub
+    :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
   FilterOrd
-    :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => Comparison -> a -> Filter a
+    :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterOrd a)
+    => Comparison
+    -> a
+    -> Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
   FilterOr :: Filter a -> Filter a -> Filter a
+
+instance NFData (Filter a) where
+  rnf =
+    \case
+      FilterFile f -> rnf f
+      FilterPropertyTime f' -> rnf f'
+      FilterEntryHeader f' -> rnf f'
+      FilterEntryTodoState f' -> rnf f'
+      FilterEntryProperties f' -> rnf f'
+      FilterEntryTags f' -> rnf f'
+      FilterWithinCursor f' -> rnf f'
+      FilterLevel w -> rnf w
+      FilterParent f' -> rnf f'
+      FilterAncestor f' -> rnf f'
+      FilterChild f' -> rnf f'
+      FilterLegacy f' -> rnf f'
+      FilterAny f' -> rnf f'
+      FilterAll f' -> rnf f'
+      FilterMapHas k -> rnf k
+      FilterMapVal k mf -> deepseq k $ rnf mf
+      FilterFst f' -> rnf f'
+      FilterSnd f' -> rnf f'
+      FilterMaybe b f' -> seq b $ rnf f'
+      FilterSub a -> rnf a
+      FilterOrd o a -> seq o $ rnf a
+      FilterNot f' -> rnf f'
+      FilterAnd f1 f2 -> deepseq f1 $ rnf f2
+      FilterOr f1 f2 -> deepseq f1 $ rnf f2
 
 class FilterSubString a where
   filterSubString :: a -> a -> Bool
@@ -537,23 +604,20 @@ instance FilterArgument Time where
 
 instance Validity (Filter a) where
   validate f =
-    let validateArgument a =
+    let validateArgumentStr s = decorateList s validateRestrictedChar
+        validateArgument a =
           mconcat
             [ validate a
-            , declare "The characters are restricted" $
-              all (\c -> not (Char.isSpace c) && Char.isPrint c && c /= '(' && c /= ')' && c /= ':') $
-              T.unpack $
-              renderArgument a
             , declare "The argument is not empty" $ not $ T.null $ renderArgument a
+            , decorate "The characters are extra restricted" $
+              decorateList (T.unpack $ renderArgument a) validateExtraRestrictedChar
             ]
      in case f of
           FilterFile s ->
             mconcat
               [ validate s
-              , declare "The filenames are restricted" $
-                all (\c -> not (Char.isSpace c) && c /= ')' && not (isUtf16SurrogateCodePoint c)) $
-                fromRelFile s
-              , validateArgument s
+              , declare "The argument is not empty" $ not $ null $ fromRelFile s
+              , decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
               ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'
@@ -573,7 +637,7 @@ instance Validity (Filter a) where
           FilterFst f' -> validate f'
           FilterSnd f' -> validate f'
           FilterMaybe b f' -> mconcat [validate b, validate f']
-          FilterSub a -> mconcat [validate a, validateArgument a]
+          FilterSub a -> mconcat [validateArgument a]
           FilterOrd o a -> mconcat [validate o, validateArgument a]
           FilterNot f' -> validate f'
           FilterAnd f1 f2 -> mconcat [validate f1, validate f2]
@@ -800,12 +864,12 @@ tcRootedPathFilter =
       Right rp -> Right $ FilterFile rp
       Left err -> Left $ FTEArgumentExpected p2 err
 
-tcSub :: (Validity a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
+tcSub :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
 tcSub =
   let subTC = fmap FilterSub . tcArgumentPiece pure
    in tcChoices [tcThisKeyWordOp KeyWordSub subTC, subTC]
 
-tcOrd :: (Validity a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
+tcOrd :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
 tcOrd =
   let ordTC =
         tcArgumentOp $ \comparison -> tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
@@ -838,7 +902,9 @@ tcPropertyValueFilter =
     [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
 
 tcMapFilter ::
-     (Validity k, Show k, Ord k, FilterArgument k) => TC (Filter v) -> TC (Filter (Map k v))
+     (Validity k, NFData k, Show k, Ord k, FilterArgument k)
+  => TC (Filter v)
+  -> TC (Filter (Map k v))
 tcMapFilter func =
   tcWithTopLevelBranches $ tcChoices $
   let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func

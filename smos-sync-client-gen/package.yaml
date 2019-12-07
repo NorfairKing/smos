@@ -27,6 +27,7 @@ library:
   - mergeful
   - microlens
   - monad-logger
+  - pantry
   - path
   - path-io
   - persistent
@@ -35,7 +36,6 @@ library:
   - servant-client
   - smos-api
   - smos-api-gen
-  - pantry
   - smos-client
   - smos-server-gen
   - smos-sync-client
@@ -87,3 +87,25 @@ tests:
     - smos-sync-client-gen
     - text
     - uuid
+
+benchmarks:
+  smos-sync-client-bench:
+    main: Bench.hs
+    source-dirs: bench/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - criterion
+    - genvalidity-criterion
+    - smos-api
+    - smos-client
+    - smos-client-gen
+    - smos-report
+    - smos-server
+    - smos-server-gen
+    - smos-sync-client
+    - smos-sync-client-gen

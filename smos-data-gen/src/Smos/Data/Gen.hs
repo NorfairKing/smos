@@ -1,13 +1,13 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Gen where
 
-import Data.Char as Char
 import Data.GenValidity
 import Data.GenValidity.Containers ()
-import Data.GenValidity.Text ()
+import Data.GenValidity.Text
 import Data.GenValidity.Time ()
-import qualified Data.Text as T
+import Data.List
 import Data.Time
 import Smos.Data
 import Test.QuickCheck
@@ -23,45 +23,53 @@ instance GenValid a => GenValid (ForYaml a) where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Entry where
-  genValid = genValidStructurally
+  genValid =
+    sized $ \size -> do
+      (a, b, c, d, e, f, g) <- genSplit7 size
+      entryHeader <- resize a genValid
+      entryContents <- resize b genValid
+      entryTimestamps <- resize c genValid
+      entryProperties <- resize d genValid
+      entryStateHistory <- resize e genValid
+      entryTags <- resize f genValid
+      entryLogbook <- resize g genValid
+      pure Entry {..}
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where
-  genValid =
-    (T.pack <$> genListOf (genValid `suchThat` (\c -> Char.isPrint c && c /= '\n'))) `suchThatMap`
-    header
+  genValid = Header <$> genTextBy genHeaderChar
   shrinkValid = shrinkValidStructurally
+
+genHeaderChar :: Gen Char
+genHeaderChar = choose (minBound, maxBound) `suchThat` validHeaderChar
 
 instance GenValid Contents where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = Contents <$> genTextBy genContentsChar
+  shrinkValid = shrinkValidStructurally
+
+genContentsChar :: Gen Char
+genContentsChar = choose (minBound, maxBound) `suchThat` validContentsChar
 
 instance GenValid PropertyName where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    propertyName
+  genValid = PropertyName <$> genTextBy genPropertyNameChar
   shrinkValid = shrinkValidStructurally
+
+genPropertyNameChar :: Gen Char
+genPropertyNameChar = choose (minBound, maxBound) `suchThat` validPropertyNameChar
 
 instance GenValid PropertyValue where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    propertyValue
+  genValid = PropertyValue <$> genTextBy genPropertyValueChar
   shrinkValid = shrinkValidStructurally
 
+genPropertyValueChar :: Gen Char
+genPropertyValueChar = choose (minBound, maxBound) `suchThat` validPropertyValueChar
+
 instance GenValid TimestampName where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    timestampName
+  genValid = TimestampName <$> genTextBy genTimestampNameChar
   shrinkValid = shrinkValidStructurally
+
+genTimestampNameChar :: Gen Char
+genTimestampNameChar = choose (minBound, maxBound) `suchThat` validTimestampNameChar
 
 instance GenUnchecked Timestamp
 
@@ -70,30 +78,29 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    todoState
+  genValid = TodoState <$> genTextBy genTodoStateChar
   shrinkValid = shrinkValidStructurally
+
+genTodoStateChar :: Gen Char
+genTodoStateChar = choose (minBound, maxBound) `suchThat` validTodoStateChar
 
 instance GenValid StateHistory where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = StateHistory . sort <$> genValid
+  shrinkValid =
+    fmap StateHistory .
+    shrinkList (\(StateHistoryEntry mts ts) -> StateHistoryEntry <$> shrinkValid mts <*> pure ts) .
+    unStateHistory
 
 instance GenValid StateHistoryEntry where
-  genValid = genValidStructurally
-  shrinkValid (StateHistoryEntry mts ts) = StateHistoryEntry <$> shrinkValid mts <*> pure ts
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Tag where
-  genValid =
-    (T.pack <$>
-     genListOf
-       (genValid `suchThat`
-        (\c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)))) `suchThatMap`
-    tag
+  genValid = Tag <$> genTextBy genTagChar
   shrinkValid = shrinkValidStructurally
+
+genTagChar :: Gen Char
+genTagChar = choose (minBound, maxBound) `suchThat` validTagChar
 
 instance GenUnchecked Logbook
 

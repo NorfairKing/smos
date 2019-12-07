@@ -13,48 +13,55 @@ module Smos.Data.Types
   , Entry(..)
   , newEntry
   , emptyEntry
-  , TodoState(..)
-  , todoState
-  , parseTodoState
-  , Header
-  , headerText
+  , Header(..)
   , emptyHeader
   , header
   , parseHeader
+  , validHeaderChar
+  , validateHeaderChar
   , Contents(..)
   , emptyContents
   , nullContents
   , contents
   , parseContents
-  , PropertyName
-  , propertyNameText
+  , validContentsChar
+  , validateContentsChar
+  , PropertyName(..)
   , emptyPropertyName
   , propertyName
   , parsePropertyName
-  , PropertyValue
-  , propertyValueText
+  , validPropertyNameChar
+  , PropertyValue(..)
   , emptyPropertyValue
   , propertyValue
   , parsePropertyValue
+  , validPropertyValueChar
+  , TodoState(..)
+  , todoState
+  , parseTodoState
+  , validTodoStateChar
+  , validateTodoStateChar
   , StateHistory(..)
   , StateHistoryEntry(..)
   , emptyStateHistory
   , nullStateHistory
-  , Tag
-  , tagText
+  , Tag(..)
   , emptyTag
   , tag
   , parseTag
+  , validTagChar
+  , validateTagChar
   , Logbook(..)
   , emptyLogbook
   , nullLogbook
   , LogbookEntry(..)
   , logbookEntryDiffTime
-  , TimestampName
-  , timestampNameText
+  , TimestampName(..)
   , timestampName
   , parseTimestampName
   , emptyTimestampName
+  , validTimestampNameChar
+  , validateTimestampNameChar
   , Timestamp(..)
   , timestampString
   , timestampText
@@ -99,6 +106,7 @@ import Path
 
 import Control.Applicative
 import Control.Arrow
+import Control.DeepSeq
 
 newtype SmosFile =
   SmosFile
@@ -107,6 +115,8 @@ newtype SmosFile =
   deriving (Show, Eq, Generic)
 
 instance Validity SmosFile
+
+instance NFData SmosFile
 
 instance FromJSON SmosFile where
   parseJSON v = SmosFile . unForYaml <$> parseJSON v
@@ -124,6 +134,8 @@ newtype ForYaml a =
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity a => Validity (ForYaml a)
+
+instance NFData a => NFData (ForYaml a)
 
 instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
   parseJSON v = do
@@ -177,22 +189,9 @@ data Entry =
     }
   deriving (Show, Eq, Ord, Generic)
 
-newEntry :: Header -> Entry
-newEntry h =
-  Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = emptyStateHistory
-    , entryTags = S.empty
-    , entryLogbook = emptyLogbook
-    }
-
-emptyEntry :: Entry
-emptyEntry = newEntry emptyHeader
-
 instance Validity Entry
+
+instance NFData Entry
 
 instance FromJSON Entry where
   parseJSON v =
@@ -253,6 +252,21 @@ instance ToYaml Entry where
            [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags] ++
            [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
 
+newEntry :: Header -> Entry
+newEntry h =
+  Entry
+    { entryHeader = h
+    , entryContents = Nothing
+    , entryTimestamps = M.empty
+    , entryProperties = M.empty
+    , entryStateHistory = emptyStateHistory
+    , entryTags = S.empty
+    , entryLogbook = emptyLogbook
+    }
+
+emptyEntry :: Entry
+emptyEntry = newEntry emptyHeader
+
 newtype Header =
   Header
     { headerText :: Text
@@ -260,13 +274,9 @@ newtype Header =
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Header where
-  validate (Header t) =
-    mconcat
-      [ delve "headerText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a newline character" $
-          Char.isPrint c && c /= '\n'
-      ]
+  validate (Header t) = mconcat [delve "headerText" t, decorateList (T.unpack t) validateHeaderChar]
+
+instance NFData Header
 
 instance FromJSON Header where
   parseJSON =
@@ -284,13 +294,34 @@ header = constructValid . Header
 parseHeader :: Text -> Either String Header
 parseHeader = prettyValidate . Header
 
+validHeaderChar :: Char -> Bool
+validHeaderChar = validationIsValid . validateHeaderChar
+
+validateHeaderChar :: Char -> Validation
+validateHeaderChar c =
+  mconcat
+    [ declare "The character is printable" $ isPrint c
+    , declare "The character is not a newline" $ c /= '\n'
+    ]
+
 newtype Contents =
   Contents
     { contentsText :: Text
     }
-  deriving (Show, Eq, Ord, Generic, IsString, FromJSON, ToJSON, ToYaml)
+  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
-instance Validity Contents
+instance Validity Contents where
+  validate (Contents t) =
+    mconcat [delve "contentsText" t, decorateList (T.unpack t) validateContentsChar]
+
+instance NFData Contents
+
+instance FromJSON Contents where
+  parseJSON =
+    withText "Contents" $ \t ->
+      case contents t of
+        Nothing -> fail $ "Invalid contents: " <> T.unpack t
+        Just h -> pure h
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -304,6 +335,13 @@ contents = constructValid . Contents
 parseContents :: Text -> Either String Contents
 parseContents = prettyValidate . Contents
 
+validContentsChar :: Char -> Bool
+validContentsChar = validationIsValid . validateContentsChar
+
+validateContentsChar :: Char -> Validation
+validateContentsChar c =
+  declare "The character is a printable or space" $ Char.isPrint c || Char.isSpace c
+
 newtype PropertyName =
   PropertyName
     { propertyNameText :: Text
@@ -312,12 +350,9 @@ newtype PropertyName =
 
 instance Validity PropertyName where
   validate (PropertyName t) =
-    mconcat
-      [ delve "propertyNameText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
-      ]
+    mconcat [delve "propertyNameText" t, decorateList (T.unpack t) validatePropertyNameChar]
+
+instance NFData PropertyName
 
 instance FromJSON PropertyName where
   parseJSON = withText "PropertyName" parseJSONPropertyName
@@ -340,6 +375,12 @@ propertyName = constructValid . PropertyName
 parsePropertyName :: Text -> Either String PropertyName
 parsePropertyName = prettyValidate . PropertyName
 
+validPropertyNameChar :: Char -> Bool
+validPropertyNameChar = validationIsValid . validatePropertyNameChar
+
+validatePropertyNameChar :: Char -> Validation
+validatePropertyNameChar = validateTagChar
+
 newtype PropertyValue =
   PropertyValue
     { propertyValueText :: Text
@@ -351,9 +392,10 @@ instance Validity PropertyValue where
     mconcat
       [ delve "propertyValueText" t
       , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
+          declare "The character is a valid property value character" $ validPropertyValueChar c
       ]
+
+instance NFData PropertyValue
 
 instance FromJSON PropertyValue where
   parseJSON = withText "PropertyValue" parseJSONPropertyValue
@@ -376,6 +418,9 @@ propertyValue = constructValid . PropertyValue
 parsePropertyValue :: Text -> Either String PropertyValue
 parsePropertyValue = prettyValidate . PropertyValue
 
+validPropertyValueChar :: Char -> Bool
+validPropertyValueChar = validTagChar
+
 newtype TimestampName =
   TimestampName
     { timestampNameText :: Text
@@ -384,11 +429,9 @@ newtype TimestampName =
 
 instance Validity TimestampName where
   validate (TimestampName t) =
-    mconcat
-      [ delve "timestampNameText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is not a newline character" $ c /= '\n'
-      ]
+    mconcat [delve "timestampNameText" t, decorateList (T.unpack t) validateTimestampNameChar]
+
+instance NFData TimestampName
 
 instance FromJSON TimestampName where
   parseJSON = withText "TimestampName" parseJSONTimestampName
@@ -411,12 +454,20 @@ timestampName = constructValid . TimestampName
 parseTimestampName :: Text -> Either String TimestampName
 parseTimestampName = prettyValidate . TimestampName
 
+validTimestampNameChar :: Char -> Bool
+validTimestampNameChar = validationIsValid . validateTimestampNameChar
+
+validateTimestampNameChar :: Char -> Validation
+validateTimestampNameChar = validateHeaderChar
+
 data Timestamp
   = TimestampDay Day
   | TimestampLocalTime LocalTime
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Timestamp
+
+instance NFData Timestamp
 
 instance FromJSON Timestamp where
   parseJSON v = do
@@ -486,12 +537,9 @@ newtype TodoState =
 
 instance Validity TodoState where
   validate (TodoState t) =
-    mconcat
-      [ delve "todoStateText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
-      ]
+    mconcat [delve "todoStateText" t, decorateList (T.unpack t) validateTodoStateChar]
+
+instance NFData TodoState
 
 instance FromJSON TodoState where
   parseJSON =
@@ -506,6 +554,12 @@ todoState = constructValid . TodoState
 parseTodoState :: Text -> Either String TodoState
 parseTodoState = prettyValidate . TodoState
 
+validTodoStateChar :: Char -> Bool
+validTodoStateChar = validationIsValid . validateTodoStateChar
+
+validateTodoStateChar :: Char -> Validation
+validateTodoStateChar = validateHeaderChar
+
 newtype StateHistory =
   StateHistory
     { unStateHistory :: [StateHistoryEntry]
@@ -516,6 +570,8 @@ instance Validity StateHistory where
   validate st@(StateHistory hs) =
     genericValidate st <>
     declare "The entries are stored in reverse chronological order" (hs <= sort hs)
+
+instance NFData StateHistory
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -531,6 +587,8 @@ data StateHistoryEntry =
   deriving (Show, Eq, Generic)
 
 instance Validity StateHistoryEntry
+
+instance NFData StateHistoryEntry
 
 instance Ord StateHistoryEntry where
   compare =
@@ -559,13 +617,9 @@ newtype Tag =
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Tag where
-  validate (Tag t) =
-    mconcat
-      [ delve "tagText" t
-      , decorateList (T.unpack t) $ \c ->
-          declare "The character is printable but not a whitespace character or punctuation" $
-          Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c)
-      ]
+  validate (Tag t) = mconcat [delve "tagText" t, decorateList (T.unpack t) validateTagChar]
+
+instance NFData Tag
 
 instance FromJSON Tag where
   parseJSON =
@@ -582,6 +636,13 @@ tag = constructValid . Tag
 
 parseTag :: Text -> Either String Tag
 parseTag = prettyValidate . Tag
+
+validTagChar :: Char -> Bool
+validTagChar = validationIsValid . validateTagChar
+
+validateTagChar :: Char -> Validation
+validateTagChar c =
+  mconcat [validateHeaderChar c, declare "The character is not a space" $ not $ Char.isSpace c]
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]
@@ -614,6 +675,8 @@ conseqs :: [a] -> [(a, a)]
 conseqs [] = []
 conseqs [_] = []
 conseqs (a:b:as) = (a, b) : conseqs (b : as)
+
+instance NFData Logbook
 
 instance FromJSON Logbook where
   parseJSON v = do
@@ -663,6 +726,8 @@ instance Validity LogbookEntry where
       [ genericValidate lbe
       , declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
       ]
+
+instance NFData LogbookEntry
 
 instance FromJSON LogbookEntry where
   parseJSON =

@@ -17,6 +17,7 @@ library:
   - containers
   - cursor
   - cursor-fuzzy-time
+  - deepseq
   - fuzzy-time
   - microlens
   - smos-data

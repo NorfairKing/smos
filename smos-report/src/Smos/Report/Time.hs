@@ -13,6 +13,7 @@ import Data.Validity
 import Data.Void
 
 import Control.Arrow
+import Control.DeepSeq
 
 import Text.Megaparsec
 import Text.Megaparsec.Char.Lexer
@@ -26,6 +27,8 @@ data Time
   deriving (Show, Generic)
 
 instance Validity Time
+
+instance NFData Time
 
 instance Eq Time where
   (==) = (==) `on` timeSeconds

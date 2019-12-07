@@ -1,5 +1,8 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module Smos.Cursor.Contents
-  ( ContentsCursor
+  ( ContentsCursor(..)
   , makeContentsCursor
   , makeContentsCursorWithSelection
   , rebuildContentsCursor
@@ -24,75 +27,114 @@ module Smos.Cursor.Contents
   , contentsCursorSelectEndOfLine
   ) where
 
+import GHC.Generics
+
+import Data.Validity
+
+import Control.DeepSeq
+
 import Cursor.TextField
 import Cursor.Types
 
+import Lens.Micro
+
 import Smos.Data.Types
 
-type ContentsCursor = TextFieldCursor
+newtype ContentsCursor =
+  ContentsCursor
+    { contentsCursorTextFieldCursor :: TextFieldCursor
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity ContentsCursor where
+  validate cc@ContentsCursor {..} =
+    mconcat
+      [ genericValidate cc
+      , decorate "The resulting Contents is valid" $
+        case parseContents (rebuildTextFieldCursor contentsCursorTextFieldCursor) of
+          Left err -> invalid err
+          Right t -> validate t
+      ]
+
+instance NFData ContentsCursor
+
+contentsCursorTextFieldCursorL :: Lens' ContentsCursor TextFieldCursor
+contentsCursorTextFieldCursorL =
+  lens contentsCursorTextFieldCursor $ \contentsc textc ->
+    contentsc {contentsCursorTextFieldCursor = textc}
 
 makeContentsCursor :: Contents -> ContentsCursor
-makeContentsCursor = makeTextFieldCursor . contentsText
+makeContentsCursor = ContentsCursor . makeTextFieldCursor . contentsText
 
 makeContentsCursorWithSelection :: Int -> Int -> Contents -> Maybe ContentsCursor
-makeContentsCursorWithSelection x y = makeTextFieldCursorWithSelection x y . contentsText
+makeContentsCursorWithSelection x y =
+  fmap ContentsCursor . makeTextFieldCursorWithSelection x y . contentsText
 
 rebuildContentsCursor :: ContentsCursor -> Contents
-rebuildContentsCursor = Contents . rebuildTextFieldCursor
+rebuildContentsCursor = Contents . rebuildTextFieldCursor . contentsCursorTextFieldCursor
 
 emptyContentsCursor :: ContentsCursor
-emptyContentsCursor = emptyTextFieldCursor
+emptyContentsCursor = ContentsCursor emptyTextFieldCursor
 
 nullContentsCursor :: ContentsCursor -> Bool
-nullContentsCursor = nullTextFieldCursor
+nullContentsCursor = nullTextFieldCursor . contentsCursorTextFieldCursor
 
 contentsCursorSelection :: ContentsCursor -> (Int, Int)
-contentsCursorSelection = textFieldCursorSelection
+contentsCursorSelection = textFieldCursorSelection . contentsCursorTextFieldCursor
 
 contentsCursorSelectPrevLine :: ContentsCursor -> Maybe ContentsCursor
-contentsCursorSelectPrevLine = textFieldCursorSelectPrevLine
+contentsCursorSelectPrevLine = contentsCursorTextFieldCursorL textFieldCursorSelectPrevLine
 
 contentsCursorSelectNextLine :: ContentsCursor -> Maybe ContentsCursor
-contentsCursorSelectNextLine = textFieldCursorSelectNextLine
+contentsCursorSelectNextLine = contentsCursorTextFieldCursorL textFieldCursorSelectNextLine
 
 contentsCursorSelectFirstLine :: ContentsCursor -> ContentsCursor
-contentsCursorSelectFirstLine = textFieldCursorSelectFirstLine
+contentsCursorSelectFirstLine = contentsCursorTextFieldCursorL %~ textFieldCursorSelectFirstLine
 
 contentsCursorSelectLastLine :: ContentsCursor -> ContentsCursor
-contentsCursorSelectLastLine = textFieldCursorSelectLastLine
+contentsCursorSelectLastLine = contentsCursorTextFieldCursorL %~ textFieldCursorSelectLastLine
 
 contentsCursorSelectPrevChar :: ContentsCursor -> Maybe ContentsCursor
-contentsCursorSelectPrevChar = textFieldCursorSelectPrevChar
+contentsCursorSelectPrevChar = contentsCursorTextFieldCursorL textFieldCursorSelectPrevChar
 
 contentsCursorSelectNextChar :: ContentsCursor -> Maybe ContentsCursor
-contentsCursorSelectNextChar = textFieldCursorSelectNextChar
+contentsCursorSelectNextChar = contentsCursorTextFieldCursorL textFieldCursorSelectNextChar
 
 contentsCursorIndexOnLine :: ContentsCursor -> Int
-contentsCursorIndexOnLine = textFieldCursorIndexOnLine
+contentsCursorIndexOnLine = textFieldCursorIndexOnLine . contentsCursorTextFieldCursor
 
 contentsCursorSelectIndexOnLine :: Int -> ContentsCursor -> ContentsCursor
-contentsCursorSelectIndexOnLine = textFieldCursorSelectIndexOnLine
+contentsCursorSelectIndexOnLine i =
+  contentsCursorTextFieldCursorL %~ textFieldCursorSelectIndexOnLine i
 
 contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
-contentsCursorInsertChar = textFieldCursorInsertChar
+contentsCursorInsertChar c mcc =
+  constructValid =<<
+  ContentsCursor <$> textFieldCursorInsertChar c (contentsCursorTextFieldCursor <$> mcc)
 
 contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
-contentsCursorAppendChar = textFieldCursorAppendChar
+contentsCursorAppendChar c mcc =
+  constructValid =<<
+  ContentsCursor <$> textFieldCursorAppendChar c (contentsCursorTextFieldCursor <$> mcc)
 
 contentsCursorInsertNewline :: Maybe ContentsCursor -> ContentsCursor
-contentsCursorInsertNewline = textFieldCursorInsertNewline
+contentsCursorInsertNewline cc =
+  ContentsCursor $ textFieldCursorInsertNewline $ contentsCursorTextFieldCursor <$> cc
 
 contentsCursorAppendNewline :: Maybe ContentsCursor -> ContentsCursor
-contentsCursorAppendNewline = textFieldCursorAppendNewline
+contentsCursorAppendNewline cc =
+  ContentsCursor $ textFieldCursorAppendNewline $ contentsCursorTextFieldCursor <$> cc
 
 contentsCursorRemove :: ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)
-contentsCursorRemove = textFieldCursorRemove
+contentsCursorRemove =
+  focusPossibleDeleteOrUpdate contentsCursorTextFieldCursorL textFieldCursorRemove
 
 contentsCursorDelete :: ContentsCursor -> Maybe (DeleteOrUpdate ContentsCursor)
-contentsCursorDelete = textFieldCursorDelete
+contentsCursorDelete =
+  focusPossibleDeleteOrUpdate contentsCursorTextFieldCursorL textFieldCursorDelete
 
 contentsCursorSelectStartOfLine :: ContentsCursor -> ContentsCursor
-contentsCursorSelectStartOfLine = textFieldCursorSelectStartOfLine
+contentsCursorSelectStartOfLine = contentsCursorTextFieldCursorL %~ textFieldCursorSelectStartOfLine
 
 contentsCursorSelectEndOfLine :: ContentsCursor -> ContentsCursor
-contentsCursorSelectEndOfLine = textFieldCursorSelectEndOfLine
+contentsCursorSelectEndOfLine = contentsCursorTextFieldCursorL %~ textFieldCursorSelectEndOfLine

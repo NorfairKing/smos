@@ -24,6 +24,7 @@ import System.Exit
 import Servant.Auth.Client as Auth
 import Servant.Client as Servant
 
+import Control.DeepSeq
 import Control.Monad.Logger
 import Control.Monad.Reader
 
@@ -112,6 +113,8 @@ data ClientStore =
 
 instance Validity ClientStore
 
+instance NFData ClientStore
+
 data SyncFileMeta =
   SyncFileMeta
     { syncFileMetaUUID :: FileUUID
@@ -122,6 +125,8 @@ data SyncFileMeta =
   deriving (Show, Eq, Generic)
 
 instance Validity SyncFileMeta
+
+instance NFData SyncFileMeta
 
 instance FromJSON SyncFileMeta where
   parseJSON =

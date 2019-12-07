@@ -2,13 +2,14 @@
 
 module Smos.Cursor.TimestampsSpec where
 
+import Test.Hspec
+import Test.Validity
+
 import Cursor.FuzzyLocalTime.Gen ()
+
 import Smos.Cursor.Timestamps
 import Smos.Cursor.Timestamps.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Optics
 
 spec :: Spec
 spec = do
@@ -22,7 +23,6 @@ spec = do
     it "produces valid cursors" $ producesValidsOnValids rebuildTimestampsCursor
     it "is the inverse of makeTimestampsCursor" $
       inverseFunctionsOnValid makeTimestampsCursor rebuildTimestampsCursor
-  describe "timestampsCursorCurrentTextCursorL" $ lensSpecOnValid timestampsCursorCurrentTextCursorL
   describe "timestampsCursorToggleSelected" $
     it "produces valid cursors" $ producesValidsOnValids timestampsCursorToggleSelected
   describe "timestampsCursorInsertChar" $ do

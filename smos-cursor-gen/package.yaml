@@ -25,6 +25,7 @@ library:
   - fuzzy-time
   - fuzzy-time-gen
   - genvalidity
+  - genvalidity-text
   - genvalidity-time
   - smos-cursor
   - smos-data
@@ -48,6 +49,25 @@ tests:
     - hspec
     - hspec-core
     - pretty-show
+    - smos-cursor
+    - smos-cursor-gen
+    - smos-data
+    - smos-data-gen
+
+benchmarks:
+  smos-cursor-bench:
+    main:                Bench.hs
+    source-dirs:         bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - criterion
+    - cursor
+    - cursor-fuzzy-time
+    - cursor-fuzzy-time-gen
+    - genvalidity-criterion
     - smos-cursor
     - smos-cursor-gen
     - smos-data

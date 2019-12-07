@@ -59,3 +59,5 @@
       - "Smos.Draw.completedForestNumbersWidget"
       - "Smos.Sync.Client.Contents"
       - "Smos.Sync.Client.isHidden"
+- ignore:
+    name: "Replace case with maybe"

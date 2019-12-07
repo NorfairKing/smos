@@ -7,13 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: cachix/install-nix-action@v3
+    - uses: cachix/install-nix-action@v6
     - uses: cachix/cachix-action@v2
       with:
-        name: cssyd
+        name: smos
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - uses: cachix/cachix-action@v2
       with:
-        name: cssyd
+        name: smos
         file: nix/release.nix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'

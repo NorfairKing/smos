@@ -1,8 +1,20 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Smos.Cursor.Timestamps.Gen where
 
-import Cursor.Map.Gen ()
+import Data.GenValidity
 
-import Smos.Data.Gen ()
+import Cursor.Map.Gen
 
-import Cursor.FuzzyDay.Gen ()
-import Cursor.Text.Gen ()
+import Smos.Data.Gen
+
+import Cursor.FuzzyLocalTime.Gen ()
+import Cursor.Text.Gen
+
+import Smos.Cursor.Timestamps
+
+instance GenValid TimestampsCursor where
+  genValid =
+    let tsnc = textCursorWithGen genTimestampNameChar
+     in TimestampsCursor <$> genMapCursorBy tsnc genValid genValid genValid
+  shrinkValid = shrinkValidStructurally

@@ -28,10 +28,12 @@ module Smos.Cursor.Properties
 
 import GHC.Generics (Generic)
 
-import Control.Monad
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
 import Data.Validity
+
+import Control.DeepSeq
+import Control.Monad
 
 import Lens.Micro
 
@@ -57,6 +59,8 @@ instance Validity PropertiesCursor where
           KeyValueCursorKey tc _ -> isJust $ propertyName $ rebuildTextCursor tc
           KeyValueCursorValue _ tc -> isJust $ propertyValue $ rebuildTextCursor tc
       ]
+
+instance NFData PropertiesCursor
 
 propertiesCursorMapCursorL ::
      Lens' PropertiesCursor (MapCursor TextCursor TextCursor PropertyName PropertyValue)
