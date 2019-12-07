@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Gen where
@@ -22,7 +23,17 @@ instance GenValid a => GenValid (ForYaml a) where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Entry where
-  genValid = genValidStructurallyWithoutExtraChecking
+  genValid =
+    sized $ \size -> do
+      (a, b, c, d, e, f, g) <- genSplit7 size
+      entryHeader <- resize a genValid
+      entryContents <- resize b genValid
+      entryTimestamps <- resize c genValid
+      entryProperties <- resize d genValid
+      entryStateHistory <- resize e genValid
+      entryTags <- resize f genValid
+      entryLogbook <- resize g genValid
+      pure Entry {..}
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Header where

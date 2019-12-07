@@ -45,4 +45,5 @@ main =
     , genValidBench @StateHistoryCursor
     , genValidBench @(CollapseEntry Entry)
     , genValidBench @EntryCursor
+    , genValidBench @(CollapseEntry EntryCursor)
     ]
