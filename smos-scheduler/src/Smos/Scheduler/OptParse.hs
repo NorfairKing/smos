@@ -54,7 +54,7 @@ deriveSettings Flags {..} Environment {..} mc = do
 defaultStateFile :: IO (Path Abs File)
 defaultStateFile = do
   home <- getHomeDir
-  resolveFile home ".smos/scheduler-state.json"
+  resolveFile home ".smos/scheduler-state.yaml"
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
