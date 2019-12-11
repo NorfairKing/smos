@@ -6,19 +6,13 @@ module Smos.Scheduler.OptParse
   ) where
 
 import Data.Maybe
-import qualified Data.Text as T
 
 import Path
 import Path.IO
 
-import Control.Monad
-
 import qualified System.Environment as System
-import System.Exit
 
 import Options.Applicative
-
-import Smos.Data
 
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report

@@ -9,11 +9,8 @@ module Smos.Scheduler
 import GHC.Generics (Generic)
 
 import qualified Data.ByteString as SB
-import Data.Char as Char
-import Data.Function
-import Data.Functor
+import qualified Data.ByteString.Char8 as SB8
 import Data.Map (Map)
-import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Text (Text)
@@ -43,14 +40,14 @@ smosScheduler :: IO ()
 smosScheduler = getSettings >>= scheduler
 
 scheduler :: Settings -> IO ()
-scheduler sets@Settings {..} = do
+scheduler Settings {..} = do
   wd <- Report.resolveReportWorkflowDir setReportSettings
   mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile setStateFile
   mState <-
     case mContents of
       Nothing -> pure Nothing
-      Just contents ->
-        case Yaml.decodeEither' contents of
+      Just cts ->
+        case Yaml.decodeEither' cts of
           Left err ->
             die $
             unlines
@@ -110,8 +107,8 @@ performScheduleItem wdir now ScheduleItem {..} = do
       mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
       case mContents of
         Nothing -> putStrLn $ unwords ["WARNING: template does not exist:", fromAbsFile from]
-        Just contents ->
-          case Yaml.decodeEither' contents of
+        Just cts ->
+          case Yaml.decodeEither' cts of
             Left err ->
               putStrLn $
               unlines
@@ -119,7 +116,7 @@ performScheduleItem wdir now ScheduleItem {..} = do
                 , prettyPrintParseException err
                 ]
             Right template -> do
-              SB.putStrLn contents
+              SB8.putStrLn cts
               let vRendered = runReaderT (renderTemplate template) ctx
               case vRendered of
                 Failure errs ->
@@ -135,10 +132,10 @@ performScheduleItem wdir now ScheduleItem {..} = do
                   ensureDir $ parent to
                   writeSmosFile to rendered
                   cs <- SB.readFile $ fromAbsFile to
-                  SB.putStrLn cs
+                  SB8.putStrLn cs
 
 renderTemplate :: ScheduleTemplate -> Render SmosFile
-renderTemplate (ScheduleTemplate f) = fmap SmosFile $ traverse (traverse renderEntryTemplate) f
+renderTemplate (ScheduleTemplate f) = SmosFile <$> traverse (traverse renderEntryTemplate) f
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
