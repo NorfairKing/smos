@@ -59,39 +59,37 @@ spec = do
             cstore <- testInitialSync cenv token
             cstore' <- testSync cenv token cstore
             shouldBeValid cstore'
-        modifyMaxSuccess (* 10) $
-          modifyMaxSize (* 10) $ do
-            it "succesfully syncs a list of operations" $ \cenv ->
-              forAll genTestOps $ \ops ->
-                withNewUser cenv $ \token -> do
-                  initial <- testInitialSync cenv token
-                  let go :: ClientStore -> TestOp -> IO ClientStore
-                      go cstore op = do
-                        let cstore' = applyTestOpStore cstore op
-                        testSync cenv token cstore'
-                  result <- foldM go initial ops
-                  shouldBeValid result
-            it "succesfully syncs a list of phases of operations" $ \cenv ->
-              forAll genTestOpsPhases $ \opss ->
-                withNewUser cenv $ \token -> do
-                  initial <- testInitialSync cenv token
-                  let go :: ClientStore -> [TestOp] -> IO ClientStore
-                      go cstore ops = do
-                        let cstore' = applyTestOpsStore cstore ops
-                        testSync cenv token cstore'
-                  result <- foldM go initial opss
-                  shouldBeValid result
+        modifyMaxSuccess (* 10) $ do
+          it "succesfully syncs a list of operations" $ \cenv ->
+            forAll genTestOps $ \ops ->
+              withNewUser cenv $ \token -> do
+                initial <- testInitialSync cenv token
+                let go :: ClientStore -> TestOp -> IO ClientStore
+                    go cstore op = do
+                      let cstore' = applyTestOpStore cstore op
+                      testSync cenv token cstore'
+                result <- foldM go initial ops
+                shouldBeValid result
+          it "succesfully syncs a list of phases of operations" $ \cenv ->
+            forAll genTestOpsPhases $ \opss ->
+              withNewUser cenv $ \token -> do
+                initial <- testInitialSync cenv token
+                let go :: ClientStore -> [TestOp] -> IO ClientStore
+                    go cstore ops = do
+                      let cstore' = applyTestOpsStore cstore ops
+                      testSync cenv token cstore'
+                result <- foldM go initial opss
+                shouldBeValid result
     describe "multi client" $ do
       it "succesfully syncs multiple clients with an empty server" $ \cenv ->
-        forAllValid $ \units ->
+        forAll (choose (1, 5)) $ \nbClients ->
           withNewUser cenv $ \token -> do
             stores <-
-              forM (units :: [()]) $ \() -> do
+              replicateM nbClients $ do
                 cstore <- testInitialSync cenv token
                 testSync cenv token cstore
             shouldBeValid stores
       modifyMaxSuccess (* 20) $
-        modifyMaxSize (* 20) $
         it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
           forAll genCTestOps $ \cops ->
             withNewUser cenv $ \token -> do
