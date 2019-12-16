@@ -67,7 +67,12 @@ smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
   let helpCursorWidget = drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
       withHeading hw w =
-        vBox [hBox [str "──[ ", withAttr selectedAttr hw, str " ]──", vLimit 1 $ fill '─'], w]
+        let ts =
+              if smosStateUnsavedChanges
+                then str " | " <+> withAttr unsavedAttr (str "[+]")
+                else emptyWidget
+         in vBox
+              [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
       fileCursorWidget =
         withHeading (drawFilePath smosStateFilePath) $
         maybe drawInfo (drawFileCursor $ selectWhen FileSelected) editorCursorFileCursor

@@ -13,6 +13,7 @@ module Smos.Actions.File
 
 import Data.Maybe
 
+import Data.Time
 import Path
 import Path.IO
 import qualified System.FileLock as FL
@@ -36,7 +37,14 @@ saveCurrentSmosFile = do
   SmosState {..} <- get
   let sf' = rebuildEditorCursor smosStateCursor
   liftIO $ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath
-  modify (\ss -> ss {smosStateStartSmosFile = Just sf'})
+  now <- liftIO getCurrentTime
+  modify
+    (\ss ->
+       ss
+         { smosStateStartSmosFile = Just sf'
+         , smosStateUnsavedChanges = False
+         , smosStateLastSaved = now
+         })
 
 saveSmosFile :: SmosFile -> Maybe SmosFile -> Path Abs File -> IO ()
 saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
@@ -54,15 +62,18 @@ switchToFile path sfc = do
     liftIO $ do
       unlockFile $ smosStateFileLock ss
       lockFile path
-  forM_ mfl $ \fl ->
+  forM_ mfl $ \fl -> do
+    now <- liftIO getCurrentTime
     put $
-    ss
-      { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc)
-      , smosStateFilePath = path
-      , smosStateFileLock = fl
-      , smosStateCursor =
-          editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
-      }
+      ss
+        { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc)
+        , smosStateFilePath = path
+        , smosStateFileLock = fl
+        , smosStateCursor =
+            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
+        , smosStateUnsavedChanges = False
+        , smosStateLastSaved = now
+        }
   pure mfl
 
 lockFile :: Path Abs File -> IO (Maybe FL.FileLock)

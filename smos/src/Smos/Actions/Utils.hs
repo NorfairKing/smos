@@ -310,5 +310,10 @@ modifyEditorCursorS func = do
   ss <- get
   let msc = smosStateCursor ss
   msc' <- func msc
-  let ss' = ss {smosStateCursor = msc'}
+  let ss' =
+        ss
+          { smosStateCursor = msc'
+          , smosStateUnsavedChanges =
+              smosStateUnsavedChanges ss || rebuildEditorCursor msc /= rebuildEditorCursor msc'
+          }
   put ss'
