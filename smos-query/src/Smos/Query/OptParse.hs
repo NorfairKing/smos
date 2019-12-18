@@ -59,13 +59,16 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               , entrySetSorter = entryFlagSorter
               , entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
               }
-        CommandWaiting WaitingFlags {..} ->
+        CommandWaiting WaitingFlags {..} -> do
+          let mwc func = mc >>= confWaitingConfiguration >>= func
           pure $
-          DispatchWaiting
-            WaitingSettings
-              { waitingSetFilter = waitingFlagFilter
-              , waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive
-              }
+            DispatchWaiting
+              WaitingSettings
+                { waitingSetFilter = waitingFlagFilter
+                , waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive
+                , waitingSetThreshold =
+                    fromMaybe 7 $ waitingFlagThreshold <|> mwc waitingConfThreshold
+                }
         CommandNext NextFlags {..} ->
           pure $
           DispatchNext
@@ -244,7 +247,15 @@ parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the \"waiting\" tasks"
-    parser = CommandWaiting <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
+    parser =
+      CommandWaiting <$>
+      (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)
+
+parseThresholdFlag :: Parser (Maybe Word)
+parseThresholdFlag =
+  option
+    (Just <$> auto)
+    (mconcat [long "threshold", value Nothing, help "The threshold at which to color entries red"])
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier

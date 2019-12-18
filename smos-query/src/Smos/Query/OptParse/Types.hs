@@ -75,6 +75,7 @@ data WaitingFlags =
   WaitingFlags
     { waitingFlagFilter :: Maybe EntryFilter
     , waitingFlagHideArchive :: Maybe HideArchive
+    , waitingFlagThreshold :: Maybe Word
     }
   deriving (Show, Eq)
 
@@ -155,6 +156,7 @@ data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
     , confHideArchive :: Maybe HideArchive
+    , confWaitingConfiguration :: Maybe WaitingConfiguration
     , confWorkConfiguration :: Maybe WorkConfiguration
     }
   deriving (Show, Eq, Generic)
@@ -162,7 +164,16 @@ data Configuration =
 instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "work"
+      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "waiting" <*> o .:? "work"
+
+data WaitingConfiguration =
+  WaitingConfiguration
+    { waitingConfThreshold :: Maybe Word
+    }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON WaitingConfiguration where
+  parseJSON = withObject "WaitingConfiguration" $ \o -> WaitingConfiguration <$> o .:? "threshold"
 
 data WorkConfiguration =
   WorkConfiguration
@@ -217,6 +228,7 @@ data WaitingSettings =
   WaitingSettings
     { waitingSetFilter :: Maybe EntryFilter
     , waitingSetHideArchive :: HideArchive
+    , waitingSetThreshold :: Word
     }
   deriving (Show, Eq, Generic)
 
