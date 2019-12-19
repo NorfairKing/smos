@@ -615,18 +615,18 @@ instance Ord StateHistoryEntry where
 instance FromJSON StateHistoryEntry where
   parseJSON =
     withObject "StateHistoryEntry" $ \o ->
-      StateHistoryEntry <$> o .: "new-state" <*> (unForYaml <$> o .: "timestamp")
+      StateHistoryEntry <$> (o .: "state" <|> o .: "new-state") <*>
+      (unForYaml <$> (o .: "time" <|> o .: "timestamp"))
 
 instance ToJSON StateHistoryEntry where
   toJSON StateHistoryEntry {..} =
-    object
-      ["new-state" .= stateHistoryEntryNewState, "timestamp" .= ForYaml stateHistoryEntryTimestamp]
+    object ["state" .= stateHistoryEntryNewState, "time" .= ForYaml stateHistoryEntryTimestamp]
 
 instance ToYaml StateHistoryEntry where
   toYaml StateHistoryEntry {..} =
     Yaml.mapping
-      [ ("new-state", toYaml stateHistoryEntryNewState)
-      , ("timestamp", toYaml (ForYaml stateHistoryEntryTimestamp))
+      [ ("state", toYaml stateHistoryEntryNewState)
+      , ("time", toYaml (ForYaml stateHistoryEntryTimestamp))
       ]
 
 newtype Tag =
