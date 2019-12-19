@@ -76,6 +76,7 @@ module Smos.Data.Types
   , timestampLocalTime
     -- Utils
   , ForYaml(..)
+  , utcFormat
   , getLocalTime
   ) where
 
@@ -176,6 +177,23 @@ instance ToYaml (ForYaml (Tree Entry)) where
     if null subForest
       then toYaml rootLabel
       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
+
+instance FromJSON (ForYaml UTCTime) where
+  parseJSON v =
+    (do s <- parseJSON v
+        case parseTimeM True defaultTimeLocale utcFormat s of
+          Nothing -> fail $ "Invalid UTCTime: " <> s
+          Just u -> pure $ ForYaml u) <|>
+    (ForYaml <$> parseJSON v)
+
+instance ToJSON (ForYaml UTCTime) where
+  toJSON (ForYaml u) = toJSON $ formatTime defaultTimeLocale utcFormat u
+
+instance ToYaml (ForYaml UTCTime) where
+  toYaml (ForYaml u) = Yaml.string $ T.pack $ formatTime defaultTimeLocale utcFormat u
+
+utcFormat :: String
+utcFormat = "%F %H:%M:%S.%q"
 
 data Entry =
   Entry
@@ -597,17 +615,18 @@ instance Ord StateHistoryEntry where
 instance FromJSON StateHistoryEntry where
   parseJSON =
     withObject "StateHistoryEntry" $ \o ->
-      StateHistoryEntry <$> o .: "new-state" <*> o .: "timestamp"
+      StateHistoryEntry <$> o .: "new-state" <*> (unForYaml <$> o .: "timestamp")
 
 instance ToJSON StateHistoryEntry where
   toJSON StateHistoryEntry {..} =
-    object ["new-state" .= stateHistoryEntryNewState, "timestamp" .= stateHistoryEntryTimestamp]
+    object
+      ["new-state" .= stateHistoryEntryNewState, "timestamp" .= ForYaml stateHistoryEntryTimestamp]
 
 instance ToYaml StateHistoryEntry where
   toYaml StateHistoryEntry {..} =
     Yaml.mapping
       [ ("new-state", toYaml stateHistoryEntryNewState)
-      , ("timestamp", toYaml stateHistoryEntryTimestamp)
+      , ("timestamp", toYaml (ForYaml stateHistoryEntryTimestamp))
       ]
 
 newtype Tag =
@@ -685,7 +704,10 @@ instance FromJSON Logbook where
       [] -> pure $ LogClosed []
       (e:es) -> do
         (start, mend) <-
-          withObject "First logbook entry" (\o -> (,) <$> o .: "start" <*> o .:? "end") e
+          withObject
+            "First logbook entry"
+            (\o -> (,) <$> (unForYaml <$> o .: "start") <*> (fmap unForYaml <$> o .:? "end"))
+            e
         rest <- mapM parseJSON es
         let candidate =
               case mend of
@@ -698,13 +720,13 @@ instance FromJSON Logbook where
 instance ToJSON Logbook where
   toJSON = toJSON . go
     where
-      go (LogOpen start rest) = object ["start" .= start] : map toJSON rest
+      go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
       go (LogClosed rest) = map toJSON rest
 
 instance ToYaml Logbook where
   toYaml = toYaml . go
     where
-      go (LogOpen start rest) = Yaml.mapping [("start", toYaml start)] : map toYaml rest
+      go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
       go (LogClosed rest) = map toYaml rest
 
 emptyLogbook :: Logbook
@@ -732,23 +754,22 @@ instance NFData LogbookEntry
 instance FromJSON LogbookEntry where
   parseJSON =
     withObject "LogbookEntry" $ \o -> do
-      candidate <- LogbookEntry <$> o .: "start" <*> o .: "end"
+      candidate <- LogbookEntry <$> (unForYaml <$> o .: "start") <*> (unForYaml <$> o .: "end")
       case prettyValidate candidate of
         Left err -> fail $ unlines ["JSON represented an invalid logbook entry:", err]
         Right r -> pure r
 
 instance ToJSON LogbookEntry where
-  toJSON LogbookEntry {..} = object ["start" .= logbookEntryStart, "end" .= logbookEntryEnd]
+  toJSON LogbookEntry {..} =
+    object ["start" .= ForYaml logbookEntryStart, "end" .= ForYaml logbookEntryEnd]
 
 instance ToYaml LogbookEntry where
   toYaml LogbookEntry {..} =
-    Yaml.mapping [("start", toYaml logbookEntryStart), ("end", toYaml logbookEntryEnd)]
+    Yaml.mapping
+      [("start", toYaml (ForYaml logbookEntryStart)), ("end", toYaml (ForYaml logbookEntryEnd))]
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
-
-instance ToYaml UTCTime where
-  toYaml = Yaml.string . T.pack . formatTime defaultTimeLocale "%F %H:%M:%S.%q%z"
 
 instance ToYaml NominalDiffTime where
   toYaml = Yaml.scientific . realToFrac
