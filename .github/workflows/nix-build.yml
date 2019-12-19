@@ -8,11 +8,15 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: cachix/install-nix-action@v6
-    - uses: cachix/cachix-action@v2
+    - uses: cachix/cachix-action@releases/v3
+      with:
+        name: validity
+        skipNixBuild: true
+    - uses: cachix/cachix-action@v3
       with:
         name: smos
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - uses: cachix/cachix-action@v2
+    - uses: cachix/cachix-action@v3
       with:
         name: smos
         file: nix/release.nix
