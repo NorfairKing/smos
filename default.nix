@@ -8,7 +8,7 @@ in
   pkgs.smosPackages // {
   "smos-docs-site" = pkgs.smosDocumentationSite;
   pre-commit-check = nix-pre-commit-hooks.run {
-    src = pkgs.gitignoreSource ./.;
+    src = ./.;
     hooks = {
       canonix.enable = true;
       hlint.enable = true;
