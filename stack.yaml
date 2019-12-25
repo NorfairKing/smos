@@ -41,7 +41,7 @@ extra-deps:
     - persistent-sqlite
 
 - git: https://github.com/NorfairKing/mergeful
-  commit: 475acb1b65fbb43caa6e149baed5689bfc4b97c1
+  commit: fe3ea69db491250a480f703a3596ae9d6ad8b0ba
   subdirs:
     - mergeful
     - genvalidity-mergeful
@@ -69,7 +69,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - git: https://github.com/NorfairKing/validity.git
-  commit: 04ef274e8be3595f5846645f5922791292653e03
+  commit: a0fcd782138dac7200e6544c2f40208649ecb0e9
   subdirs:
   - genvalidity
   - genvalidity-aeson
