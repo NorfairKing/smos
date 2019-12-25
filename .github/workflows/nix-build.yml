@@ -14,6 +14,10 @@ jobs:
         skipNixBuild: true
     - uses: cachix/cachix-action@releases/v3
       with:
+        name: cursor
+        skipNixBuild: true
+    - uses: cachix/cachix-action@releases/v3
+      with:
         name: mergeful
         skipNixBuild: true
     - uses: cachix/cachix-action@releases/v3
