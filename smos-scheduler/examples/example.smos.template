@@ -1,0 +1,3 @@
+- entry: Example template %F
+  forest:
+  - Subdir %y

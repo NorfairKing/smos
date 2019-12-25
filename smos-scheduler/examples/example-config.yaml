@@ -1,0 +1,10 @@
+# To use this example:
+# smos-scheduler --workflow-dir `pwd` --config-file example-config.yaml --state-file example-state.yaml
+
+
+scheduler:
+  schedule:
+  - template: example.smos.template
+    destination: example-result.smos
+    schedule: "0 10 * * 0" # “At 10:00 on Sunday.”
+

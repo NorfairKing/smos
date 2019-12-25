@@ -18,10 +18,10 @@ import Smos.Single.OptParse
 import Smos.Single.OptParse.Types
 
 smosSingle :: IO ()
-smosSingle = getSettings >>= archive
+smosSingle = getSettings >>= single
 
-archive :: Settings -> IO ()
-archive Settings {..} = do
+single :: Settings -> IO ()
+single Settings {..} = do
   wd <- resolveReportWorkflowDir setReportSettings
   path <-
     (wd </>) <$>

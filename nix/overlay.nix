@@ -28,6 +28,7 @@ with final.haskell.lib;
         "smos-report-cursor-gen"
         "smos-query"
         "smos-single"
+        "smos-scheduler"
         "smos-convert-org"
         "smos-archive"
         "smos-docs-site"
@@ -119,6 +120,7 @@ with final.haskell.lib;
                 hakyll-sass = dontCheck (super.callHackage "hakyll-sass" "0.2.4" {});
                 sqlite = addBuildDepend (dontCheck (super.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = super.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
+                cron = dontCheck (super.callHackage "cron" "0.6.1" {});
               } // persistentPackages
             );
         }
