@@ -313,7 +313,7 @@ clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
   reportConfig <- asks configReportConfig
   runSmosAsync $ do
-    agendaFiles <- sourceToList $ streamSmosFilesFromWorkflow Don'tHideArchive reportConfig
+    agendaFiles <- sourceToList $ streamSmosFilesFromWorkflow HideArchive reportConfig
     forM_ agendaFiles $ \rp -> do
       let af = resolveRootedPath rp
       merrOrFile <- readSmosFile af
