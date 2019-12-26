@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -54,6 +55,8 @@ module Smos.Data.Types
   , Logbook(..)
   , emptyLogbook
   , nullLogbook
+  , logbookOpen
+  , logbookClosed
   , LogbookEntry(..)
   , logbookEntryDiffTime
   , TimestampName(..)
@@ -734,6 +737,18 @@ emptyLogbook = LogClosed []
 
 nullLogbook :: Logbook -> Bool
 nullLogbook = (== emptyLogbook)
+
+logbookOpen :: Logbook -> Bool
+logbookOpen =
+  \case
+    LogOpen _ _ -> True
+    _ -> False
+
+logbookClosed :: Logbook -> Bool
+logbookClosed =
+  \case
+    LogClosed _ -> True
+    _ -> False
 
 data LogbookEntry =
   LogbookEntry

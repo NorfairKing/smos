@@ -19,6 +19,7 @@ library:
   - base
   - bytestring
   - containers
+  - deepseq
   - hashable  
   - path
   - path-io
@@ -31,4 +32,3 @@ library:
   - validity-time
   - validity-unordered-containers
   - yaml
-  - deepseq

@@ -4,8 +4,12 @@
 module Smos.Archive
   ( smosArchive
   , module Smos.Archive.Config
+  -- ** Helper functions
+  , isDone
+  , prepareToArchive
   ) where
 
+import Data.Maybe
 import Data.Time
 import Data.Tree
 
@@ -60,8 +64,10 @@ checkFromFile from = do
   mErrOrSF <- readSmosFile from
   case mErrOrSF of
     Nothing -> die $ unwords ["File does not exist:", fromAbsFile from]
-    Just (Left e) ->
-      die $ unlines [unwords ["Failed to read file to archive:", fromAbsFile from], e]
+    Just (Left err) ->
+      die $
+      unlines
+        [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
     Just (Right sf) ->
       unless (all (isDone . entryState) (concatMap flatten (smosFileForest sf))) $ do
         res <-
@@ -99,4 +105,16 @@ moveToArchive from to = do
           removeFile from
 
 prepareToArchive :: UTCTime -> SmosFile -> SmosFile
-prepareToArchive = smosFileClockOutEverywhere
+prepareToArchive now = smosFileClockOutEverywhere now . setAllUndoneToCancelled now
+
+setAllUndoneToCancelled :: UTCTime -> SmosFile -> SmosFile
+setAllUndoneToCancelled now (SmosFile f) = SmosFile $ map (fmap go) f
+  where
+    go :: Entry -> Entry
+    go e =
+      case entryState e of
+        Nothing -> e
+        Just ts ->
+          if isDone $ Just ts
+            then e
+            else fromMaybe e $ entrySetState now (Just "CANCELLED") e

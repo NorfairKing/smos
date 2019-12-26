@@ -36,7 +36,11 @@ tests:
     main: Spec.hs
     source-dirs: test
     dependencies:
+    - QuickCheck
+    - containers
     - genvalidity-hspec
     - hspec
     - smos-archive
-
+    - smos-data
+    - smos-data-gen
+    - time
