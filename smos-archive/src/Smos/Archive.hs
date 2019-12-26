@@ -27,13 +27,13 @@ smosArchive = runReaderT $ liftIO getSettings >>= archive
 archive :: Settings -> Q ()
 archive Settings {..} = do
   let from = setFile
-  to <- getToFile from
+  to <- determineToFile from
   liftIO $ do
     checkFromFile from
     moveToArchive from to
 
-getToFile :: Path Abs File -> Q (Path Abs File)
-getToFile file = do
+determineToFile :: Path Abs File -> Q (Path Abs File)
+determineToFile file = do
   workflowDir <- askWorkflowDir
   case stripProperPrefix workflowDir file of
     Nothing ->
@@ -84,11 +84,19 @@ isDone _ = True
 moveToArchive :: Path Abs File -> Path Abs File -> IO ()
 moveToArchive from to = do
   ensureDir $ parent to
-  e1 <- doesFileExist from
-  if not e1
-    then die $ unwords ["The file to archive does not exist:", fromAbsFile from]
-    else do
+  mErrOrSmosFile <- readSmosFile from
+  case mErrOrSmosFile of
+    Nothing -> die $ unwords ["The file to archive does not exist:", fromAbsFile from]
+    Just (Left err) -> die $ unlines ["The file to archive doesn't look like a smos file:", err]
+    Just (Right sf) -> do
       e2 <- doesFileExist to
       if e2
         then die $ unwords ["Proposed archive file", fromAbsFile to, "already exists."]
-        else renameFile from to
+        else do
+          now <- liftIO getCurrentTime
+          let archivedSmosFile = prepareToArchive now sf
+          writeSmosFile to archivedSmosFile
+          removeFile from
+
+prepareToArchive :: UTCTime -> SmosFile -> SmosFile
+prepareToArchive = smosFileClockOutEverywhere
