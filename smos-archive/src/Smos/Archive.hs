@@ -8,14 +8,18 @@ module Smos.Archive
 
 import Data.Time
 import Data.Tree
+
+import System.Exit
+
 import Path
 import Path.IO
+
 import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
 import Smos.Data
-import System.Exit
-import System.IO (hFlush, stdout)
+
+import Smos.Archive.Prompt
 
 smosArchive :: SmosArchiveConfig -> IO ()
 smosArchive = runReaderT $ liftIO getSettings >>= archive
@@ -76,31 +80,6 @@ isDone (Just "DONE") = True
 isDone (Just "CANCELLED") = True
 isDone (Just "FAILED") = True
 isDone _ = True
-
-promptYesNo :: YesNo -> String -> IO YesNo
-promptYesNo def p = do
-  let defaultString =
-        case def of
-          Yes -> "[Y/n]"
-          No -> "[y/N]"
-  rs <- promptRawString $ p ++ " " ++ defaultString
-  case rs of
-    "yes" -> pure Yes
-    "y" -> pure Yes
-    "no" -> pure No
-    "n" -> pure No
-    _ -> pure def
-
-data YesNo
-  = Yes
-  | No
-  deriving (Show, Eq)
-
-promptRawString :: String -> IO String
-promptRawString s = do
-  putStr $ s ++ " > "
-  hFlush stdout
-  getLine
 
 moveToArchive :: Path Abs File -> Path Abs File -> IO ()
 moveToArchive from to = do
