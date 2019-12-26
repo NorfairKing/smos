@@ -68,24 +68,27 @@ checkFromFile from = do
       die $
       unlines
         [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
-    Just (Right sf) ->
-      unless (all (isDone . entryState) (concatMap flatten (smosFileForest sf))) $ do
-        res <-
-          promptYesNo No $
-          unwords
-            [ "Not all entries in"
-            , fromAbsFile from
-            , "are done. Are you sure that you want to archive it?"
-            ]
-        case res of
-          Yes -> pure ()
-          No -> die "Not archiving."
+    Just (Right sf) -> do
+      let allDone = all (maybe True isDone . entryState) (concatMap flatten (smosFileForest sf))
+      if allDone
+        then pure ()
+        else do
+          res <-
+            promptYesNo No $
+            unlines
+              [ unwords ["Not all entries in", fromAbsFile from, "are done."]
+              , "Are you sure that you want to archive it?"
+              , "All remaining non-done entries will be set to CANCELLED."
+              ]
+          case res of
+            Yes -> pure ()
+            No -> die "Not archiving."
 
-isDone :: Maybe TodoState -> Bool
-isDone (Just "DONE") = True
-isDone (Just "CANCELLED") = True
-isDone (Just "FAILED") = True
-isDone _ = True
+isDone :: TodoState -> Bool
+isDone "DONE" = True
+isDone "CANCELLED" = True
+isDone "FAILED" = True
+isDone _ = False
 
 moveToArchive :: Path Abs File -> Path Abs File -> IO ()
 moveToArchive from to = do
@@ -115,6 +118,6 @@ setAllUndoneToCancelled now (SmosFile f) = SmosFile $ map (fmap go) f
       case entryState e of
         Nothing -> e
         Just ts ->
-          if isDone $ Just ts
+          if isDone ts
             then e
             else fromMaybe e $ entrySetState now (Just "CANCELLED") e

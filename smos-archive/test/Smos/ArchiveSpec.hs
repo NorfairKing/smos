@@ -26,26 +26,39 @@ spec =
     it "produces valid smos files" $ producesValidsOnValids2 prepareToArchive
     it "produces files with no running clocks" $
       forAllValid $ \sf ->
-        forAll (genLargeEnoughTime sf) $ \t -> do
+        forAll (genLargeEnoughTime sf) $ \t ->
           let prepped = prepareToArchive t sf
-          any (any (logbookOpen . entryLogbook)) (smosFileForest prepped) `shouldBe` False
+           in allClosed prepped
     it "produces files with no un-done tasks" $
       forAllValid $ \sf ->
-        forAll (genLargeEnoughTime sf) $ \t -> do
+        forAll (genLargeEnoughTime sf) $ \t ->
           let prepped = prepareToArchive t sf
-          any (any (not . isDone . entryState)) (smosFileForest prepped) `shouldBe` False
+           in allDone prepped
+
+allClosed :: SmosFile -> Bool
+allClosed = all (all (logbookClosed . entryLogbook)) . smosFileForest
+
+allDone :: SmosFile -> Bool
+allDone = all (all (go . entryState)) . smosFileForest
+  where
+    go :: Maybe TodoState -> Bool
+    go = maybe True isDone
 
 genLargeEnoughTime :: SmosFile -> Gen UTCTime
 genLargeEnoughTime sf =
-  let mMax =
-        NE.nonEmpty . concatMap (map Max . mapMaybe (go . entryLogbook) . flatten) $
-        smosFileForest sf
+  let mMax = NE.nonEmpty . concatMap (mapMaybe go . flatten) $ smosFileForest sf
    in case mMax of
         Nothing -> genValid
         Just us -> genValid `suchThat` (> getMax (sconcat us))
   where
-    go :: Logbook -> Maybe UTCTime
-    go =
+    go :: Entry -> Maybe (Max UTCTime)
+    go e = goL (entryLogbook e) <> goTSH (entryStateHistory e)
+    goTSH :: StateHistory -> Maybe (Max UTCTime)
+    goTSH (StateHistory es) = sconcat <$> NE.nonEmpty (map goSHE es)
+    goSHE :: StateHistoryEntry -> Max UTCTime
+    goSHE = Max . stateHistoryEntryTimestamp
+    goL :: Logbook -> Maybe (Max UTCTime)
+    goL =
       \case
-        LogOpen u _ -> Just u
+        LogOpen u _ -> Just (Max u)
         LogClosed _ -> Nothing
