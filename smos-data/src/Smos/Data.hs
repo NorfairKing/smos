@@ -39,7 +39,6 @@ import Data.Validity
 import Data.Yaml as Yaml
 import Data.Yaml.Builder as Yaml
 
-import Control.Applicative
 import Control.Arrow
 
 import Path
@@ -70,7 +69,14 @@ parseSmosFileJSON :: ByteString -> Either String SmosFile
 parseSmosFileJSON = parseSmosDataJSON
 
 parseSmosData :: FromJSON a => ByteString -> Either String a
-parseSmosData bs = parseSmosDataYaml bs <|> parseSmosDataJSON bs
+parseSmosData bs =
+  let py = parseSmosDataYaml bs
+      pj = parseSmosDataJSON bs
+   in case (py, pj) of
+        (Left pye, Left pje) ->
+          Left $ unlines ["Failed to parse smos data as json:", pje, "and also as yaml:", pye]
+        (Right pyv, _) -> pure pyv
+        (_, Right pjv) -> pure pjv
 
 parseSmosDataYaml :: FromJSON a => ByteString -> Either String a
 parseSmosDataYaml = left show . Yaml.decodeEither'

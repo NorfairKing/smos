@@ -32,6 +32,13 @@ smos-server-gen          : Generators for the smos server
 smos-sync-client         : The sync client tool
 ```
 
+## Cachix cache
+
+There is a [cachix](https://cachix.org) cache for this project.
+
+To use it, use `cachix use smos` or add the appropriate details to your nixos configuration.
+
+
 ## Sponsor this project
 
 Smos is free and open-source software.

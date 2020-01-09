@@ -6,7 +6,6 @@ module Smos.Report.Projection where
 import GHC.Generics (Generic)
 
 import Data.Aeson
-import Data.Char as Char
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -101,12 +100,12 @@ ontoPropertyP = do
 
 tagP :: P Tag
 tagP = do
-  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy validTagChar)
   either fail pure $ parseTag $ T.pack s
 
 propertyNameP :: P PropertyName
 propertyNameP = do
-  s <- many (satisfy $ \c -> Char.isPrint c && not (Char.isSpace c) && not (Char.isPunctuation c))
+  s <- many (satisfy validPropertyNameChar)
   either fail pure $ parsePropertyName $ T.pack s
 
 renderProjection :: Projection -> Text

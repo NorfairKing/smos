@@ -4,18 +4,26 @@
 module Smos.Archive
   ( smosArchive
   , module Smos.Archive.Config
+  -- ** Helper functions
+  , isDone
+  , prepareToArchive
   ) where
 
+import Data.Maybe
 import Data.Time
 import Data.Tree
+
+import System.Exit
+
 import Path
 import Path.IO
+
 import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
 import Smos.Data
-import System.Exit
-import System.IO (hFlush, stdout)
+
+import Smos.Archive.Prompt
 
 smosArchive :: SmosArchiveConfig -> IO ()
 smosArchive = runReaderT $ liftIO getSettings >>= archive
@@ -23,13 +31,13 @@ smosArchive = runReaderT $ liftIO getSettings >>= archive
 archive :: Settings -> Q ()
 archive Settings {..} = do
   let from = setFile
-  to <- getToFile from
+  to <- determineToFile from
   liftIO $ do
     checkFromFile from
     moveToArchive from to
 
-getToFile :: Path Abs File -> Q (Path Abs File)
-getToFile file = do
+determineToFile :: Path Abs File -> Q (Path Abs File)
+determineToFile file = do
   workflowDir <- askWorkflowDir
   case stripProperPrefix workflowDir file of
     Nothing ->
@@ -56,60 +64,60 @@ checkFromFile from = do
   mErrOrSF <- readSmosFile from
   case mErrOrSF of
     Nothing -> die $ unwords ["File does not exist:", fromAbsFile from]
-    Just (Left e) ->
-      die $ unlines [unwords ["Failed to read file to archive:", fromAbsFile from], e]
-    Just (Right sf) ->
-      unless (all (isDone . entryState) (concatMap flatten (smosFileForest sf))) $ do
-        res <-
-          promptYesNo No $
-          unwords
-            [ "Not all entries in"
-            , fromAbsFile from
-            , "are done. Are you sure that you want to archive it?"
-            ]
-        case res of
-          Yes -> pure ()
-          No -> die "Not archiving."
+    Just (Left err) ->
+      die $
+      unlines
+        [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
+    Just (Right sf) -> do
+      let allDone = all (maybe True isDone . entryState) (concatMap flatten (smosFileForest sf))
+      if allDone
+        then pure ()
+        else do
+          res <-
+            promptYesNo No $
+            unlines
+              [ unwords ["Not all entries in", fromAbsFile from, "are done."]
+              , "Are you sure that you want to archive it?"
+              , "All remaining non-done entries will be set to CANCELLED."
+              ]
+          case res of
+            Yes -> pure ()
+            No -> die "Not archiving."
 
-isDone :: Maybe TodoState -> Bool
-isDone (Just "DONE") = True
-isDone (Just "CANCELLED") = True
-isDone (Just "FAILED") = True
-isDone _ = True
-
-promptYesNo :: YesNo -> String -> IO YesNo
-promptYesNo def p = do
-  let defaultString =
-        case def of
-          Yes -> "[Y/n]"
-          No -> "[y/N]"
-  rs <- promptRawString $ p ++ " " ++ defaultString
-  case rs of
-    "yes" -> pure Yes
-    "y" -> pure Yes
-    "no" -> pure No
-    "n" -> pure No
-    _ -> pure def
-
-data YesNo
-  = Yes
-  | No
-  deriving (Show, Eq)
-
-promptRawString :: String -> IO String
-promptRawString s = do
-  putStr $ s ++ " > "
-  hFlush stdout
-  getLine
+isDone :: TodoState -> Bool
+isDone "DONE" = True
+isDone "CANCELLED" = True
+isDone "FAILED" = True
+isDone _ = False
 
 moveToArchive :: Path Abs File -> Path Abs File -> IO ()
 moveToArchive from to = do
   ensureDir $ parent to
-  e1 <- doesFileExist from
-  if not e1
-    then die $ unwords ["The file to archive does not exist:", fromAbsFile from]
-    else do
+  mErrOrSmosFile <- readSmosFile from
+  case mErrOrSmosFile of
+    Nothing -> die $ unwords ["The file to archive does not exist:", fromAbsFile from]
+    Just (Left err) -> die $ unlines ["The file to archive doesn't look like a smos file:", err]
+    Just (Right sf) -> do
       e2 <- doesFileExist to
       if e2
         then die $ unwords ["Proposed archive file", fromAbsFile to, "already exists."]
-        else renameFile from to
+        else do
+          now <- liftIO getCurrentTime
+          let archivedSmosFile = prepareToArchive now sf
+          writeSmosFile to archivedSmosFile
+          removeFile from
+
+prepareToArchive :: UTCTime -> SmosFile -> SmosFile
+prepareToArchive now = smosFileClockOutEverywhere now . setAllUndoneToCancelled now
+
+setAllUndoneToCancelled :: UTCTime -> SmosFile -> SmosFile
+setAllUndoneToCancelled now (SmosFile f) = SmosFile $ map (fmap go) f
+  where
+    go :: Entry -> Entry
+    go e =
+      case entryState e of
+        Nothing -> e
+        Just ts ->
+          if isDone ts
+            then e
+            else fromMaybe e $ entrySetState now (Just "CANCELLED") e

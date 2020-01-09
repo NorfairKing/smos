@@ -1,9 +1,0 @@
-repos:
-- repo: .pre-commit-hooks/
-  rev: master
-  hooks:
-  - id: canonix
-  - id: elm-format
-  - id: hlint
-  - id: shellcheck
-  - id: hindent

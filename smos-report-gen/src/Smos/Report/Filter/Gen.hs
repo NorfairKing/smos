@@ -10,9 +10,14 @@ module Smos.Report.Filter.Gen where
 
 import Data.Map (Map)
 import Data.Set (Set)
+import qualified Data.Text as T
+
+import Path
 
 import Data.GenValidity
 import Data.GenValidity.Path ()
+
+import Control.DeepSeq
 
 import Test.QuickCheck
 
@@ -29,7 +34,10 @@ import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 
 instance GenValid Piece where
-  genValid = genValidStructurally
+  genValid =
+    Piece . T.pack <$>
+    (genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar)) `suchThat`
+     (not . null))
   shrinkValid = shrinkValidStructurally
 
 instance GenUnchecked BinOp
@@ -63,7 +71,13 @@ instance GenValid Ast where
             ]
 
 instance GenValid (Filter RootedPath) where
-  genValid = withTopLevelBranches $ (FilterFile <$> genValid) `suchThat` isValid
+  genValid =
+    withTopLevelBranches $
+    (FilterFile <$>
+     (genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar)) `suchThat`
+      (not . null)) `suchThatMap`
+     parseRelFile) `suchThat`
+    isValid
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter Time) where
@@ -110,7 +124,7 @@ instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) 
   genValid = withTopLevelBranches $ oneof [FilterFst <$> genValid, FilterSnd <$> genValid]
   shrinkValid = shrinkValidFilter
 
-instance (Show k, Ord k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
+instance (Show k, Ord k, NFData k, GenValid k, FilterArgument k, GenValid (Filter v)) =>
          GenValid (Filter (Map k v)) where
   genValid =
     withTopLevelBranches $
@@ -142,17 +156,20 @@ instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
   shrinkValid = shrinkValidFilter
 
 withEqAndOrToo ::
-     (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a) -> Gen (Filter a)
+     (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a)
+  => Gen (Filter a)
+  -> Gen (Filter a)
 withEqAndOrToo gen = frequency [(4, gen), (1, eqAndOrd)]
 
 subEqOrd ::
-     (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a) => Gen (Filter a)
+     (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a)
+  => Gen (Filter a)
 subEqOrd = oneof [eqAndOrd, sub]
 
-eqAndOrd :: (Show a, Ord a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
+eqAndOrd :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
 eqAndOrd = (FilterOrd <$> genValid <*> genValid) `suchThat` isValid
 
-sub :: (Show a, Ord a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
+sub :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
 sub = (FilterSub <$> genValid) `suchThat` isValid
 
 withTopLevelBranches :: Gen (Filter a) -> Gen (Filter a)

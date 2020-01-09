@@ -16,6 +16,8 @@ import GHC.Generics (Generic)
 
 import Data.Validity
 
+import Control.DeepSeq
+
 import Lens.Micro
 
 data CollapseEntry a =
@@ -28,6 +30,8 @@ data CollapseEntry a =
   deriving (Show, Eq, Generic, Functor)
 
 instance Validity a => Validity (CollapseEntry a)
+
+instance NFData a => NFData (CollapseEntry a)
 
 makeCollapseEntry :: a -> CollapseEntry a
 makeCollapseEntry a =

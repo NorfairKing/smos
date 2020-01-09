@@ -19,6 +19,7 @@ library:
   - base
   - bytestring
   - containers
+  - deepseq
   - hashable  
   - path
   - path-io

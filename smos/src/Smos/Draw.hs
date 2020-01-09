@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -57,20 +58,30 @@ import Smos.Cursor.Timestamps
 
 import Smos.Report.Path
 
-import Smos.Draw.Base
-
+import Smos.Actions
 import Smos.Keys
 import Smos.Style
 import Smos.Types
 
+import Smos.Draw.Base
+
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
-  let helpCursorWidget = drawHelpCursor (selectWhen HelpSelected) editorCursorHelpCursor
+  let helpCursorWidget =
+        drawHelpCursor configKeyMap (selectWhen HelpSelected) editorCursorHelpCursor
       withHeading hw w =
-        vBox [hBox [str "──[ ", withAttr selectedAttr hw, str " ]──", vLimit 1 $ fill '─'], w]
+        let ts =
+              if smosStateUnsavedChanges
+                then str " | " <+> withAttr unsavedAttr (str "[+]")
+                else emptyWidget
+         in vBox
+              [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
       fileCursorWidget =
         withHeading (drawFilePath smosStateFilePath) $
-        maybe drawInfo (drawFileCursor $ selectWhen FileSelected) editorCursorFileCursor
+        maybe
+          (drawInfo configKeyMap)
+          (drawFileCursor $ selectWhen FileSelected)
+          editorCursorFileCursor
       reportCursorWidget =
         withHeading (str "Next Action Report") $
         maybe
@@ -95,27 +106,63 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
     drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
     drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
 
-drawInfo :: Widget n
-drawInfo =
+drawInfo :: KeyMap -> Widget n
+drawInfo km =
   withAttr selectedAttr $
   B.vCenterLayer $
   vBox $
-  map
-    B.hCenterLayer
-    [ str "SMOS"
-    , str " "
-    , str "version 0.0.0.0"
-    , str "by Tom Sydney Kerckhove"
-    , str "Smos is open source and freely distributable"
-    , str " "
-    , str "Building smos takes time, energy and money."
-    , str "Please consider supporting the project."
-    , str "https://smos.cs-syd.eu/support.html"
-    ]
+  map B.hCenterLayer $
+  [ str "SMOS"
+  , str " "
+  , str "version 0.0.0.0"
+  , str "by Tom Sydney Kerckhove"
+  , str "Smos is open source and freely distributable"
+  , str " "
+  , str "Building smos takes time, energy and money."
+  , str "Please consider supporting the project."
+  , str "https://smos.cs-syd.eu/support.html"
+  ] ++
+  case lookupStartingActionInKeymap of
+    Nothing -> []
+    Just kpt ->
+      [ str " "
+      , str " "
+      , str "If you don't know what to do,"
+      , hBox
+          [ str "activate the "
+          , withAttr keyAttr $ txt $ actionNameText $ actionName selectHelp
+          , str " command using the "
+          , withAttr keyAttr $ txt kpt
+          , str " key"
+          ]
+      , str "for an overview of the available commands"
+      ]
+  where
+    lookupStartingActionInKeymap :: Maybe Text
+    lookupStartingActionInKeymap =
+      let emptyMatchers = fileKeyMapEmptyMatchers $ keyMapFileKeyMap km
+          matchAction a = actionName a == actionName selectHelp
+          matchActionUsing a = actionUsingName a == actionName selectHelp
+          matchKeyMapping =
+            \case
+              MapVtyExactly kp a ->
+                if matchAction a
+                  then Just (renderKeyPress kp)
+                  else Nothing
+              MapCatchAll a ->
+                if matchAction a
+                  then Just "any"
+                  else Nothing
+              MapAnyTypeableChar au ->
+                if matchActionUsing au
+                  then Just "<char>"
+                  else Nothing
+              MapCombination kp km' -> (renderKeyPress kp <>) <$> matchKeyMapping km'
+       in msum $ map matchKeyMapping emptyMatchers
 
-drawHelpCursor :: Select -> Maybe HelpCursor -> Widget ResourceName
-drawHelpCursor _ Nothing = drawInfo
-drawHelpCursor s (Just HelpCursor {..}) =
+drawHelpCursor :: KeyMap -> Select -> Maybe HelpCursor -> Widget ResourceName
+drawHelpCursor km _ Nothing = drawInfo km
+drawHelpCursor _ s (Just HelpCursor {..}) =
   centerLayer $
   borderWithLabel (withAttr selectedAttr $ txt ("[Help page: " <> helpCursorTitle <> "]")) $
   hBox
@@ -519,14 +566,15 @@ drawCurrentState stateHistory =
   stateHistoryState stateHistory <&> \ts -> withAttr todoStateAttr $ drawTodoState ts
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
-drawContentsCursor = drawTextFieldCursor
+drawContentsCursor s = drawTextFieldCursor s . contentsCursorTextFieldCursor
 
 drawContents :: Contents -> Widget ResourceName
 drawContents = textWidget . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
+  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair .
+  timestampsCursorMapCursor
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m

@@ -1,5 +1,6 @@
 .stack-work/
 result
 result-*
+.pre-commit-config.yaml
 .pre-commit-hooks
 *.cabal

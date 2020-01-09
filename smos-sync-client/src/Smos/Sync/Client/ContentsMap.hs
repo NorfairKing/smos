@@ -22,6 +22,7 @@ import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
 
+import Control.DeepSeq
 import Control.Monad
 
 import Path
@@ -43,6 +44,8 @@ instance Validity ContentsMap where
           Left fp -> invalid $ "Duplicate path: " <> fp
           Right df -> validate df
       ]
+
+instance NFData ContentsMap
 
 empty :: ContentsMap
 empty = ContentsMap M.empty

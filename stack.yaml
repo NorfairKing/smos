@@ -11,6 +11,7 @@ packages:
 - smos-report-cursor-gen
 - smos-query
 - smos-single
+- smos-scheduler
 - smos-convert-org
 - smos-archive
 - smos-docs-site
@@ -29,52 +30,55 @@ extra-deps:
 - typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
 - genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+- Validation-0.2.0@sha256:59c15dd11f509dbea585f590be0e2676de9d764e2812f584d13de86ab939542b,1130
 
-- git: https://github.com/GaloisInc/sqlite.git
+
+- github: GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
 
-- git: https://github.com/NorfairKing/persistent
+- github: NorfairKing/persistent
   commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
   subdirs:
     - persistent
     - persistent-template
     - persistent-sqlite
 
-- git: https://github.com/NorfairKing/mergeful
-  commit: 83dc4d8e9415391aa6a1fde37e6af0bbc8bbf4f0
+- github: NorfairKing/mergeful
+  commit: 475acb1b65fbb43caa6e149baed5689bfc4b97c1
   subdirs:
     - mergeful
     - genvalidity-mergeful
-- git: https://github.com/ixmatus/orgmode-parse
+- github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
-- git: https://github.com/NorfairKing/pretty-relative-time.git
+- github: NorfairKing/pretty-relative-time
   commit: 21b29c9d729ed91a56819f569de6fdc8582d7e3d
-- git: https://github.com/NorfairKing/cursor-fuzzy-time.git
-  commit: 251f53f7bf12997f2f14ff445fdff818f41f03e8
+- github: NorfairKing/cursor-fuzzy-time
+  commit: ed00bd205d45ce80bab31bc81fb25ff02cf6ed5a
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
-- git: https://github.com/NorfairKing/fuzzy-time.git
-  commit: 794427b7d4675910474068c8a0534d07b8eda83d
+- github: NorfairKing/fuzzy-time
+  commit: 2122037216d64972303f6a26d8b10598c85fb14f
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
-- git: https://github.com/NorfairKing/cursor-brick.git
+- github: NorfairKing/cursor-brick
   commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
   subdirs:
     - cursor-brick
-- git: https://github.com/NorfairKing/cursor.git
-  commit: 50e180737e7cddd8a405aff1bc94f0202f2d6561
+- github: NorfairKing/cursor
+  commit: b88cb6f79574fd084f86c322f8e644e10d4cc94e
   subdirs:
     - cursor
     - cursor-gen
-- git: https://github.com/NorfairKing/validity.git
-  commit: 41fc1d893ad1067884217e09e2dceed5b59604b1
+- github: NorfairKing/validity
+  commit: 04ef274e8be3595f5846645f5922791292653e03
   subdirs:
   - genvalidity
   - genvalidity-aeson
   - genvalidity-bytestring
   - genvalidity-containers
+  - genvalidity-criterion
   - genvalidity-hspec
   - genvalidity-hspec-aeson
   - genvalidity-hspec-binary

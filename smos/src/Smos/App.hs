@@ -132,6 +132,8 @@ initState zt p fl msf =
     , smosStateKeyHistory = Empty
     , smosStateCursorHistory = []
     , smosStateAsyncs = []
+    , smosStateUnsavedChanges = False
+    , smosStateLastSaved = zonedTimeToUTC zt
     , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }
 
@@ -146,5 +148,7 @@ initStateWithCursor zt p fl ec =
     , smosStateKeyHistory = Empty
     , smosStateCursorHistory = []
     , smosStateAsyncs = []
+    , smosStateUnsavedChanges = False
+    , smosStateLastSaved = zonedTimeToUTC zt
     , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }

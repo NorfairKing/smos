@@ -1,0 +1,105 @@
+- entry:
+    header: Milestones
+    contents: Inspired by https://hledger.org/ROADMAP.html#milestones
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  forest:
+  - header: 1.0 release
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - entry:
+      header: Packaged in distros
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    forest:
+    - header: Arch linux
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: Debian
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: Ubuntu
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: NixOs
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:29.543295169000
+  - entry:
+      header: Committers
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    forest:
+    - header: '10'
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: '100'
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: '1000'
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+  - entry:
+      header: Github stars
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    forest:
+    - header: '10'
+      state-history:
+      - state: DONE
+        time: 2019-12-19 10:39:16.839724225000
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: '100'
+      state-history:
+      - state: DONE
+        time: 2020-01-09 19:50:03.024359949000
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: '1000'
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+    - header: '10000'
+      state-history:
+      - state: TODO
+        time: 2019-12-19 10:39:06.663413557000
+  - header: Github document viewing support
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Multiple people providing support
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Discussed on hackernews
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Among top github's trending haskell projects
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Nice Tutorial docs
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Multiple people writing blogposts about it
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000
+  - header: Best in class for GTD on the command-line
+    state-history:
+    - state: TODO
+      time: 2019-12-19 10:39:06.663413557000

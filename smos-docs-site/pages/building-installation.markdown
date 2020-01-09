@@ -16,7 +16,8 @@ $ git clone https://github.com/NorfairKing/smos
 Use [Stack](https://haskellstack.org) to install Smos with the default configuration:
 
 ```
-$ stack install smos
+$ stack install autoexporter
+$ stack install
 ```
 
 #### Troubleshooting on Arch linux

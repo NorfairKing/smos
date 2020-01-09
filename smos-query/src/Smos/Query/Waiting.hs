@@ -33,27 +33,30 @@ waiting WaitingSettings {..} = do
     C.filter (isWaitingAction . snd) .|
     C.map (uncurry makeWaitingActionEntry)
   now <- liftIO getCurrentTime
-  liftIO $ putTableLn $ renderWaitingActionReport now tups
+  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now tups
 
-renderWaitingActionReport :: UTCTime -> [WaitingActionEntry] -> Table
-renderWaitingActionReport now =
-  formatAsTable . map (formatWaitingActionEntry now) . sortOn waitingActionEntryTimestamp
+renderWaitingActionReport :: Word -> UTCTime -> [WaitingActionEntry] -> Table
+renderWaitingActionReport threshold now =
+  formatAsTable . map (formatWaitingActionEntry threshold now) . sortOn waitingActionEntryTimestamp
 
-formatWaitingActionEntry :: UTCTime -> WaitingActionEntry -> [Chunk Text]
-formatWaitingActionEntry now WaitingActionEntry {..} =
+formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk Text]
+formatWaitingActionEntry threshold now WaitingActionEntry {..} =
   [ rootedPathChunk waitingActionEntryFilePath
   , headerChunk waitingActionEntryHeader
-  , maybe (chunk "") (showDaysSince now) waitingActionEntryTimestamp
+  , maybe (chunk "") (showDaysSince threshold now) waitingActionEntryTimestamp
   ]
 
-showDaysSince :: UTCTime -> UTCTime -> Chunk Text
-showDaysSince now t = fore color $ chunk $ T.pack $ show i <> " days"
+showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk Text
+showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
   where
+    th1 = fromIntegral threshold :: Int
+    th2 = floor ((fromIntegral threshold :: Double) / 3 * 2) :: Int
+    th3 = floor ((fromIntegral threshold :: Double) / 3) :: Int
     color
-      | i > 21 = red
-      | i > 15 = yellow
-      | i > 5 = blue
-      | otherwise = mempty
+      | i >= th1 = red
+      | i >= th2 = yellow
+      | i >= th3 = blue
+      | otherwise = green
     i = diffInDays now t :: Int
     diffInDays :: UTCTime -> UTCTime -> Int
     diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay

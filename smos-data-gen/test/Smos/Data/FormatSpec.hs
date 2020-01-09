@@ -17,7 +17,7 @@ import Text.Show.Pretty
 
 spec :: Spec
 spec = do
-  forFilesIn "test_resources/success/file" $ \tf ->
+  forMatchingFilesIn "test_resources/success/file" $ \tf ->
     it (fromAbsFile tf ++ " succesfully parses as .smos") $
     shouldSucceedInParsingAsSmosFile @SmosFile tf
   successAndFailureTests @SmosFile "file"
@@ -40,11 +40,11 @@ successAndFailureTests ::
   -> Spec
 successAndFailureTests name =
   describe name $ do
-    forFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
+    forMatchingFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
       let ext = fileExtension tf
       it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $
         shouldSucceedInParsingByExtension @a tf
-    forFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
+    forMatchingFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
       it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
@@ -75,7 +75,22 @@ shouldFailToParse ::
 shouldFailToParse tf = do
   errOrSmosFile <- readFileByExtension @a tf
   case errOrSmosFile of
-    Left _ -> pure ()
+    Left actualErr -> do
+      errFile <- addFileExtension "error" tf
+      expectedErr <- readFile $ fromAbsFile errFile
+      unless (actualErr == expectedErr) $
+        expectationFailure $
+        unlines
+          [ "Actual error for golden test"
+          , fromAbsFile tf
+          , "differs from expected error in"
+          , fromAbsFile errFile
+          , "expected:"
+          , expectedErr
+          , "actual:"
+          , actualErr
+          ]
+      actualErr `shouldBe` expectedErr
     Right sf ->
       expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
 
@@ -94,11 +109,14 @@ readFileByExtension tf = do
   bs <- SB.readFile (fromAbsFile tf)
   pure $ p bs
 
-forFilesIn :: FilePath -> (Path Abs File -> Spec) -> Spec
-forFilesIn d specFunc = do
+forMatchingFilesIn :: FilePath -> (Path Abs File -> Spec) -> Spec
+forMatchingFilesIn d specFunc = do
   tfs <-
     runIO $ do
       trd <- resolveDir' d
       mtfs <- forgivingAbsence (snd <$> listDirRecur trd)
-      pure $ fromMaybe [] mtfs
+      pure $ filter ((`elem` matchingExtensions) . fileExtension) $ fromMaybe [] mtfs
   forM_ tfs specFunc
+
+matchingExtensions :: [String]
+matchingExtensions = [".yaml", ".json", ".smos"]

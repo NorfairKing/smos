@@ -24,15 +24,34 @@ import Smos.Report.Path
 import Smos.Report.TimeBlock
 
 -- Note: the order of these constructors matters
-data ClockResolution
-  = SecondsResolution
-  | MinutesResolution
-  | HoursResolution
+data TemporalClockResolution
+  = TemporalSecondsResolution
+  | TemporalMinutesResolution
+  | TemporalHoursResolution
   deriving (Show, Eq, Ord, Generic)
 
-instance Validity ClockResolution
+instance Validity TemporalClockResolution
 
-instance ToJSON ClockResolution
+instance ToJSON TemporalClockResolution
+
+data DecimalClockResolution
+  = DecimalHoursResolution
+  | DecimalQuarterResolution
+  | DecimalResolution Word -- Number of significant digits
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity DecimalClockResolution
+
+instance ToJSON DecimalClockResolution
+
+data ClockFormat
+  = ClockFormatTemporal TemporalClockResolution
+  | ClockFormatDecimal DecimalClockResolution
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity ClockFormat
+
+instance ToJSON ClockFormat
 
 data ClockReportStyle
   = ClockForest

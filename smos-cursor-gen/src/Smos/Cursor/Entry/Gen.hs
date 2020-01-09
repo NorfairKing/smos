@@ -22,9 +22,7 @@ import Smos.Cursor.Timestamps.Gen ()
 instance GenValid EntryCursor where
   genValid =
     sized $ \n -> do
-      (x, y) <- genSplit n
-      (a, b, c, d) <- genSplit4 x
-      (e, f, g, h) <- genSplit4 y
+      (a, b, c, d, e, f, g) <- genSplit7 n
       entryCursorHeaderCursor <- resize a genValid
       entryCursorContentsCursor <- resize b genValid
       entryCursorTimestampsCursor <- resize c genValid
@@ -32,10 +30,10 @@ instance GenValid EntryCursor where
       entryCursorStateHistoryCursor <- resize e genValid
       entryCursorTagsCursor <- resize f genValid
       entryCursorLogbookCursor <- resize g genValid
-      entryCursorSelected <- resize h genValid
+      entryCursorSelected <- genValid -- Doesn't care about size
       pure EntryCursor {..}
-  shrinkValid = shrinkValidStructurally
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid EntryCursorSelection where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

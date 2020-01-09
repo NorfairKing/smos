@@ -7,13 +7,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: cachix/install-nix-action@v3
-    - uses: cachix/cachix-action@v2
+    - uses: cachix/install-nix-action@v6
+    - uses: cachix/cachix-action@releases/v3
       with:
-        name: cssyd
+        name: validity
+        skipNixBuild: true
+    - uses: cachix/cachix-action@releases/v3
+      with:
+        name: cursor
+        skipNixBuild: true
+    - uses: cachix/cachix-action@releases/v3
+      with:
+        name: mergeful
+        skipNixBuild: true
+    - uses: cachix/cachix-action@releases/v3
+      with:
+        name: smos
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - uses: cachix/cachix-action@v2
+    - uses: cachix/cachix-action@releases/v3
       with:
-        name: cssyd
+        name: smos
         file: nix/release.nix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'

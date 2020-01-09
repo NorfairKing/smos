@@ -38,7 +38,7 @@ import Conduit
 
 import Smos.Data
 
-import Smos.Report.Config
+import Smos.Report.Archive
 import Smos.Report.Path
 import Smos.Report.Streaming
 
@@ -311,10 +311,9 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
 
 clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
-  agendaFileSpec <- asks $ smosReportConfigWorkflowFileSpec . configReportConfig
+  reportConfig <- asks configReportConfig
   runSmosAsync $ do
-    agendaFileDir <- resolveWorkflowDir agendaFileSpec
-    agendaFiles <- sourceToList $ sourceFilesInNonHiddenDirsRecursively agendaFileDir
+    agendaFiles <- sourceToList $ streamSmosFilesFromWorkflow HideArchive reportConfig
     forM_ agendaFiles $ \rp -> do
       let af = resolveRootedPath rp
       merrOrFile <- readSmosFile af

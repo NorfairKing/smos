@@ -17,6 +17,8 @@ import qualified Data.List.NonEmpty as NE
 
 import Data.Time
 
+import Control.DeepSeq
+
 import Cursor.Simple.List.NonEmpty
 
 import Smos.Data.Types
@@ -28,6 +30,8 @@ data LogbookCursor
 
 instance Validity LogbookCursor where
   validate lbc = decorate "It rebuilds to a valid logbook" $ validate $ rebuildLogbookCursor lbc
+
+instance NFData LogbookCursor
 
 makeLogbookCursor :: Logbook -> LogbookCursor
 makeLogbookCursor l =

@@ -19,6 +19,8 @@ import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Time
 
+import Control.DeepSeq
+
 import Cursor.Simple.List.NonEmpty
 
 import Smos.Data.Types
@@ -36,6 +38,8 @@ instance Validity StateHistoryCursor where
       , decorate "it rebuilds to a valid state history" $
         validate $ rebuildStateHistoryCursor (Just shc)
       ]
+
+instance NFData StateHistoryCursor
 
 makeStateHistoryCursor :: StateHistory -> Maybe StateHistoryCursor
 makeStateHistoryCursor sh = do

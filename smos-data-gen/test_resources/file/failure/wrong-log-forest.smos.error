@@ -1,0 +1,4 @@
+Failed to parse smos data as json:
+Error in $: Failed reading: takeWhile1
+and also as yaml:
+AesonException "Error in $.entry.logbook.start: could not parse date: digit: Failed reading: satisfy"

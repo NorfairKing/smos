@@ -11,5 +11,5 @@ import Smos.Cursor.Collapse
 instance GenUnchecked a => GenUnchecked (CollapseEntry a)
 
 instance GenValid a => GenValid (CollapseEntry a) where
-  genValid = genValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
