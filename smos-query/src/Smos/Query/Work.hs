@@ -111,8 +111,8 @@ renderWorkReport now ne WorkReport {..} =
       if null l
         then []
         else r
-    sectionHeading t = heading $ fore white $ chunk t
-    warningHeading t = heading $ fore red $ chunk t
+    sectionHeading t = heading $ underline $ fore white $ chunk t
+    warningHeading t = heading $ underline $ fore red $ chunk t
     heading c = [formatAsTable [[c]]]
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryTable ne
