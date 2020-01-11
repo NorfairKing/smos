@@ -247,6 +247,8 @@ keys:
       key: pc
     - action: propertiesEditProperty_timewindow
       key: pt
+    - action: propertiesEditProperty_brainpower
+      key: pb
     - action: forestClockOutEverywhereInAllFilesAndClockInHere
       key: ci
     - action: forestClockOutEverywhereInAllFiles

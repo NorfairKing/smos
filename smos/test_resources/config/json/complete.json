@@ -491,6 +491,10 @@
                     "key": "pt"
                 },
                 {
+                    "action": "propertiesEditProperty_brainpower",
+                    "key": "pb"
+                },
+                {
                     "action": "forestClockOutEverywhereInAllFilesAndClockInHere",
                     "key": "ci"
                 },
