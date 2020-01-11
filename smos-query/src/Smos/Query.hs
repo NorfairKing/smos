@@ -16,6 +16,7 @@ import Smos.Query.Next
 import Smos.Query.OptParse
 import Smos.Query.OptParse.Types
 import Smos.Query.Projects
+import Smos.Query.Report
 import Smos.Query.Stats
 import Smos.Query.Tags
 import Smos.Query.Waiting
@@ -28,6 +29,7 @@ smosQuery sqc = do
 
 execute :: Dispatch -> Q ()
 execute (DispatchEntry es) = entry es
+execute (DispatchReport es) = report es
 execute (DispatchWork ws) = work ws
 execute (DispatchWaiting ws) = waiting ws
 execute (DispatchNext ns) = next ns

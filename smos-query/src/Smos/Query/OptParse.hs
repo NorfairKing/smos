@@ -9,6 +9,7 @@ import Data.Foldable
 import Data.Functor
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -47,7 +48,6 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
   where
     hideArchiveWithDefault def mflag =
       fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
-    defaultProjection = OntoFile :| [OntoState, OntoHeader]
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -58,6 +58,13 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
               , entrySetProjection = fromMaybe defaultProjection entryFlagProjection
               , entrySetSorter = entryFlagSorter
               , entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
+              }
+        CommandReport ReportFlags {..} ->
+          pure $
+          DispatchReport
+            ReportSettings
+              { reportSetReportName = reportFlagReportName
+              , reportSetAvailableReports = fromMaybe M.empty $ mc >>= confAvailableReports
               }
         CommandWaiting WaitingFlags {..} -> do
           let mwc func = mc >>= confWaitingConfiguration >>= func
@@ -212,6 +219,7 @@ parseCommand =
   hsubparser $
   mconcat
     [ command "entry" parseCommandEntry
+    , command "report" parseCommandReport
     , command "work" parseCommandWork
     , command "waiting" parseCommandWaiting
     , command "next" parseCommandNext
@@ -231,6 +239,15 @@ parseCommandEntry = info parser modifier
       CommandEntry <$>
       (EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs <*>
        parseHideArchiveFlag)
+
+parseCommandReport :: ParserInfo Command
+parseCommandReport = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Run preconfigure reports"
+    parser =
+      CommandReport <$>
+      (ReportFlags <$>
+       strArgument (mconcat [metavar "REPORT", help "The preconfigured report to run"]))
 
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier

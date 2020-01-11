@@ -11,8 +11,10 @@ module Smos.Query.OptParse.Types
 import GHC.Generics (Generic)
 
 import Data.List.NonEmpty (NonEmpty(..))
+import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.Text (Text)
 import Data.Yaml as Yaml
 
 import qualified Smos.Report.OptParse.Types as Report
@@ -24,6 +26,7 @@ import Smos.Report.Clock.Types
 import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Projection
+import Smos.Report.Report
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Time
@@ -40,6 +43,7 @@ data Instructions =
 
 data Command
   = CommandEntry EntryFlags
+  | CommandReport ReportFlags
   | CommandWork WorkFlags
   | CommandWaiting WaitingFlags
   | CommandNext NextFlags
@@ -57,6 +61,12 @@ data EntryFlags =
     , entryFlagProjection :: Maybe (NonEmpty Projection)
     , entryFlagSorter :: Maybe Sorter
     , entryFlagHideArchive :: Maybe HideArchive
+    }
+  deriving (Show, Eq)
+
+data ReportFlags =
+  ReportFlags
+    { reportFlagReportName :: Text
     }
   deriving (Show, Eq)
 
@@ -156,6 +166,7 @@ data Configuration =
   Configuration
     { confReportConf :: Report.Configuration
     , confHideArchive :: Maybe HideArchive
+    , confAvailableReports :: Maybe (Map Text PreparedReport)
     , confWaitingConfiguration :: Maybe WaitingConfiguration
     , confWorkConfiguration :: Maybe WorkConfiguration
     }
@@ -164,7 +175,8 @@ data Configuration =
 instance FromJSON Configuration where
   parseJSON v =
     flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "waiting" <*> o .:? "work"
+      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "reports" <*> o .:? "waiting" <*>
+      o .:? "work"
 
 data WaitingConfiguration =
   WaitingConfiguration
@@ -192,6 +204,7 @@ instance FromJSON WorkConfiguration where
 
 data Dispatch
   = DispatchEntry EntrySettings
+  | DispatchReport ReportSettings
   | DispatchWork WorkSettings
   | DispatchWaiting WaitingSettings
   | DispatchNext NextSettings
@@ -209,6 +222,13 @@ data EntrySettings =
     , entrySetProjection :: NonEmpty Projection
     , entrySetSorter :: Maybe Sorter
     , entrySetHideArchive :: HideArchive
+    }
+  deriving (Show, Eq, Generic)
+
+data ReportSettings =
+  ReportSettings
+    { reportSetReportName :: Text
+    , reportSetAvailableReports :: Map Text PreparedReport
     }
   deriving (Show, Eq, Generic)
 

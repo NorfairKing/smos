@@ -6,6 +6,7 @@ module Smos.Report.Projection where
 import GHC.Generics (Generic)
 
 import Data.Aeson
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -24,6 +25,9 @@ import Text.Megaparsec.Char
 import Smos.Data
 
 import Smos.Report.Path
+
+defaultProjection :: NonEmpty Projection
+defaultProjection = OntoFile :| [OntoState, OntoHeader]
 
 data Projection
   = OntoFile
