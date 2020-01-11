@@ -61,11 +61,12 @@ renderEntryTable ne tups =
 
 renderProjectionHeader :: Projection -> Chunk Text
 renderProjectionHeader p =
+  underline $
   case p of
     OntoFile -> chunk "file"
-    OntoHeader -> headerChunk "header"
-    OntoProperty pn -> propertyNameChunk pn
-    OntoTag t -> tagChunk t
+    OntoHeader -> chunk "header"
+    OntoProperty pn -> chunk $ propertyNameText pn
+    OntoTag t -> chunk $ tagText t
     OntoState -> chunk "state"
     OntoAncestor p' -> renderProjectionHeader p'
 
