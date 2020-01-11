@@ -2,6 +2,7 @@
 
 module Smos.Query.Formatting where
 
+import Cursor.Simple.Forest
 import qualified Data.ByteString as SB
 import Data.Foldable
 import Data.List.NonEmpty (NonEmpty(..))
@@ -47,7 +48,7 @@ rootedPathChunk rp =
     Relative _ rf -> fromRelFile rf
     Absolute af -> fromAbsFile af
 
-renderEntryTable :: NonEmpty Projection -> [(RootedPath, Entry)] -> Table
+renderEntryTable :: NonEmpty Projection -> [(RootedPath, ForestCursor Entry)] -> Table
 renderEntryTable ne tups =
   formatAsTable $
   (\l ->
@@ -62,10 +63,11 @@ renderProjectionHeader :: Projection -> Chunk Text
 renderProjectionHeader p =
   case p of
     OntoFile -> chunk "file"
-    OntoHeader -> chunk "header"
-    OntoProperty pn -> chunk $ propertyNameText pn
+    OntoHeader -> headerChunk "header"
+    OntoProperty pn -> propertyNameChunk pn
     OntoTag t -> tagChunk t
     OntoState -> chunk "state"
+    OntoAncestor p' -> renderProjectionHeader p'
 
 renderProjectees :: [Projectee] -> [Chunk Text]
 renderProjectees = map projecteeChunk
@@ -96,9 +98,6 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
         "CANCELLED" -> green
         "FAILED" -> brightRed
         _ -> mempty
-      where
-        orange = color256 214
-        brown = color256 166
 
 timestampNameChunk :: TimestampName -> Chunk Text
 timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
@@ -110,23 +109,32 @@ timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
         "SCHEDULED" -> orange
         "DEADLINE" -> red
         _ -> mempty
-    orange = color256 214
-    brown = color256 166
 
 headerChunk :: Header -> Chunk Text
 headerChunk = fore yellow . chunk . headerText
 
 propertyValueChunk :: PropertyName -> PropertyValue -> Chunk Text
-propertyValueChunk pn = fore color . chunk . propertyValueText
-  where
-    color =
-      case propertyNameText pn of
-        "timewindow" -> magenta
-        "client" -> green
-        _ -> mempty
+propertyValueChunk pn = fore (propertyNameColor pn) . chunk . propertyValueText
+
+propertyNameChunk :: PropertyName -> Chunk Text
+propertyNameChunk pn = fore (propertyNameColor pn) $ chunk $ propertyNameText pn
+
+propertyNameColor :: PropertyName -> Radiant
+propertyNameColor pn =
+  case propertyNameText pn of
+    "timewindow" -> magenta
+    "client" -> green
+    "brainpower" -> brown
+    _ -> mempty
 
 tagChunk :: Tag -> Chunk Text
 tagChunk = fore cyan . chunk . tagText
 
 intChunk :: Int -> Chunk Text
 intChunk = chunk . T.pack . show
+
+orange :: Radiant
+orange = color256 214
+
+brown :: Radiant
+brown = color256 166

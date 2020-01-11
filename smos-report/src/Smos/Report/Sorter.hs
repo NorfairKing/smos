@@ -14,8 +14,12 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Data.Void
+import Lens.Micro
 
 import Control.Monad
+
+import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -45,6 +49,13 @@ instance FromJSON Sorter where
 
 instance ToJSON Sorter where
   toJSON = toJSON . renderSorter
+
+sorterSortCursorList ::
+     Sorter -> [(RootedPath, ForestCursor Entry)] -> [(RootedPath, ForestCursor Entry)]
+sorterSortCursorList s =
+  sortBy $ \(rpa, fca) (rpb, fcb) -> sorterOrdering s rpa (cur fca) rpb (cur fcb)
+  where
+    cur fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
 sorterSortList :: Sorter -> [(RootedPath, Entry)] -> [(RootedPath, Entry)]
 sorterSortList s = sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb

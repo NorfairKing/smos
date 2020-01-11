@@ -4,11 +4,8 @@ module Smos.Query.Entry
   ( entry
   ) where
 
-import Control.Arrow
-
 import Conduit
 
-import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 
@@ -24,5 +21,5 @@ entry EntrySettings {..} = do
     streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
     smosMFilter entrySetFilter
-  let ees = maybe id sorterSortList entrySetSorter $ map (second forestCursorCurrent) tups
+  let ees = maybe id sorterSortCursorList entrySetSorter tups
   liftIO $ putTableLn $ renderEntryTable entrySetProjection ees

@@ -25,10 +25,10 @@ import Smos.Report.Sorter
 
 data WorkReport =
   WorkReport
-    { workReportResultEntries :: [(RootedPath, Entry)]
-    , workReportEntriesWithoutContext :: [(RootedPath, Entry)]
+    { workReportResultEntries :: [(RootedPath, ForestCursor Entry)]
+    , workReportEntriesWithoutContext :: [(RootedPath, ForestCursor Entry)]
     , workReportAgendaEntries :: [AgendaEntry]
-    , workReportCheckViolations :: Map EntryFilter [(RootedPath, Entry)]
+    , workReportCheckViolations :: Map EntryFilter [(RootedPath, ForestCursor Entry)]
     }
   deriving (Show, Eq, Generic)
 
@@ -68,8 +68,7 @@ data WorkReportContext =
 
 makeWorkReport :: WorkReportContext -> RootedPath -> ForestCursor Entry -> WorkReport
 makeWorkReport WorkReportContext {..} rp fc =
-  let cur = forestCursorCurrent fc
-      match b = [(rp, cur) | b]
+  let match b = [(rp, fc) | b]
       combineFilter f = maybe f (FilterAnd f)
       filterWithBase f = combineFilter f workReportContextBaseFilter
       totalCurrent =
@@ -94,14 +93,14 @@ makeWorkReport WorkReportContext {..} rp fc =
                         "SCHEDULED" -> day <= today
                         "DEADLINE" -> day <= addDays 7 today
                         _ -> day == today
-             in filter go $ makeAgendaEntry rp cur
+             in filter go $ makeAgendaEntry rp $ forestCursorCurrent fc
         , workReportCheckViolations =
             if matchesAnyContext
-              then let go :: EntryFilter -> Maybe (RootedPath, Entry)
+              then let go :: EntryFilter -> Maybe (RootedPath, ForestCursor Entry)
                        go f =
                          if filterPredicate (filterWithBase f) (rp, fc)
                            then Nothing
-                           else Just (rp, cur)
+                           else Just (rp, fc)
                     in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks
               else M.empty
         }
@@ -113,7 +112,8 @@ finishWorkReport ms wr =
     Just s ->
       WorkReport
         { workReportAgendaEntries = workReportAgendaEntries wr
-        , workReportResultEntries = sorterSortList s $ workReportResultEntries wr
-        , workReportEntriesWithoutContext = sorterSortList s $ workReportEntriesWithoutContext wr
+        , workReportResultEntries = sorterSortCursorList s $ workReportResultEntries wr
+        , workReportEntriesWithoutContext =
+            sorterSortCursorList s $ workReportEntriesWithoutContext wr
         , workReportCheckViolations = workReportCheckViolations wr
         }

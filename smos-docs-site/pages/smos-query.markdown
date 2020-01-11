@@ -320,5 +320,7 @@ A projection is something of the following form:
 file
 state
 header
+tag:<tag-name>                    -- tag:toast
 property:<property-name>          -- property:effort
+ancestor:<property-name>          -- ancestor:effort
 ```

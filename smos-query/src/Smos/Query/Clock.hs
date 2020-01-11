@@ -158,7 +158,6 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
     emptyCell = cell $ chunk ""
     cell :: Chunk Text -> Cell
     cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
-    brown = color256 166
 
 renderNominalDiffTime :: ClockFormat -> NominalDiffTime -> Text
 renderNominalDiffTime fmt ndt =

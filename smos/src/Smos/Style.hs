@@ -56,6 +56,7 @@ defaultAttrMap _ =
         , (timestampNameSpecificAttr "SCHEDULED", fg orange)
         , (timestampNameSpecificAttr "DEADLINE", fg red)
         , (propertyNameSpecificAttr "timewindow", fg magenta)
+        , (propertyNameSpecificAttr "brainpower", fg brown)
         , (propertyNameSpecificAttr "client", fg green)
         , (selectedAttr <> tagAttr, fg brightWhite)
         , (selectedAttr <> headerAttr, fg brightWhite)

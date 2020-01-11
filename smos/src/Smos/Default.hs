@@ -101,6 +101,7 @@ defaultFileKeyMap =
           , exactString "pi" entrySelectProperties
           , exactString "pc" $ propertiesEditProperty "client"
           , exactString "pt" $ propertiesEditProperty "timewindow"
+          , exactString "pb" $ propertiesEditProperty "brainpower"
                   -- Clocking
           , exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere
           , exactString "co" forestClockOutEverywhereInAllFiles
