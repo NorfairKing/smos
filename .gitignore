@@ -4,3 +4,4 @@ result-*
 .pre-commit-config.yaml
 .pre-commit-hooks
 *.cabal
+stack.yaml.lock
