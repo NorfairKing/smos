@@ -90,16 +90,27 @@ smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL = smosFileCursorSelectedEntryL . entryCursorSelectionL
 
 smosFileCursorReadyForStartup :: SmosFileCursor -> SmosFileCursor
-smosFileCursorReadyForStartup = go
+smosFileCursorReadyForStartup = unclockStarted . goToEnd
   where
-    go :: SmosFileCursor -> SmosFileCursor
-    go sfc =
+    goToEnd :: SmosFileCursor -> SmosFileCursor
+    goToEnd sfc =
       case forestCursorOpenCurrentForest sfc of
         Nothing -> sfc
         Just sfc' ->
           case smosFileCursorSelectNext sfc of
             Nothing -> fromMaybe sfc' $ smosFileCursorSelectBelowAtEnd sfc'
-            Just sfc'' -> go sfc''
+            Just sfc'' -> goToEnd sfc''
+    unclockStarted :: SmosFileCursor -> SmosFileCursor
+    unclockStarted =
+      mapForestCursor
+        (mapUnclockStarted (logbookOpen . entryLogbook . rebuildEntryCursor))
+        (mapUnclockStarted (logbookOpen . entryLogbook))
+      where
+        mapUnclockStarted :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
+        mapUnclockStarted func ce =
+          if func (collapseEntryValue ce)
+            then ce {collapseEntryShowLogbook = True}
+            else ce
 
 smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleHideEntireEntry =
