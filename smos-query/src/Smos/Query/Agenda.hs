@@ -5,7 +5,6 @@
 module Smos.Query.Agenda where
 
 import Data.List
-import Data.Ord
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -37,63 +36,24 @@ agenda AgendaSettings {..} = do
     smosCursorCurrents .|
     C.concatMap (uncurry makeAgendaEntry) .|
     C.filter (fitsHistoricity now agendaSetHistoricity)
-  liftIO $ putTableLn $ renderAgendaReport now $ divideIntoAgendaTableBlocks agendaSetBlock tups
+  liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetBlock tups
 
-renderAgendaReport :: ZonedTime -> [AgendaTableBlock Text] -> Table
-renderAgendaReport now atbs =
+renderAgendaReport :: ZonedTime -> AgendaReport -> Table
+renderAgendaReport now AgendaReport {..} =
   formatAsTable $
-  case atbs of
-    [] -> []
-    [atb] -> goEntries (blockEntries atb)
-    _ -> concatMap goEntriesWithTitle atbs
+  intercalate [[chunk ""]] $
+  filter
+    (not . null)
+    [goBlocks agendaReportPast, goBlocks agendaReportPresent, goBlocks agendaReportFuture]
   where
-    goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
-    goEntries es = renderSplit . splitUp $ sortAgendaEntries es
-    splitUp =
-      splitList $ \ae ->
-        compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
-    renderSplit (before, during, after) =
-      case (go before, go during, go after) of
-        (xs, [], []) -> xs
-        ([], ys, []) -> ys
-        ([], [], zs) -> zs
-        (xs, ys, []) -> concat [xs, [[chunk ""]], ys]
-        ([], ys, zs) -> concat [ys, [[chunk ""]], zs]
-        (xs, [], zs) -> concat [xs, [[chunk ""]], zs]
-        (xs, ys, zs) -> concat [xs, [[chunk ""]], ys, [[chunk ""]], zs]
-      where
-        go = map (formatAgendaEntry now)
-
-sortAgendaEntries :: [AgendaEntry] -> [AgendaEntry]
-sortAgendaEntries =
-  sortBy
-    (mconcat
-       [ comparing (timestampLocalTime . agendaEntryTimestamp)
-       , comparing agendaEntryTimestampName
-       , comparing agendaEntryTodoState
-       ])
-
-splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
-splitList func = go
-  where
-    go [] = ([], [], [])
-    go (a:as) =
-      case func a of
-        LT ->
-          case go as of
-            (xs, ys, zs) -> (a : xs, ys, zs)
-        EQ ->
-          case go2 as of
-            (ys, zs) -> ([], a : ys, zs)
-        GT -> ([], [], a : as)
-    go2 [] = ([], [])
-    go2 (a:as) =
-      case func a of
-        LT -> error "should not happen"
-        EQ ->
-          case go2 as of
-            (ys, zs) -> (a : ys, zs)
-        GT -> ([], a : as)
+    goBlocks bs =
+      case bs of
+        [] -> []
+        [b] -> goEntries $ blockEntries b
+        _ -> concatMap goBlock bs
+    goBlock Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
+    goEntries :: [AgendaEntry] -> [[Chunk Text]]
+    goEntries = map (formatAgendaEntry now)
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =

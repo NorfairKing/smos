@@ -5,8 +5,10 @@ module Smos.Report.Agenda where
 
 import GHC.Generics (Generic)
 
+import Data.List
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Ord
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
@@ -16,6 +18,70 @@ import Smos.Data
 import Smos.Report.Agenda.Types
 import Smos.Report.Path
 import Smos.Report.TimeBlock
+
+data AgendaReport =
+  AgendaReport
+    { agendaReportPast :: [AgendaTableBlock Text]
+    , agendaReportPresent :: [AgendaTableBlock Text]
+    , agendaReportFuture :: [AgendaTableBlock Text]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity AgendaReport
+
+makeAgendaReport :: ZonedTime -> TimeBlock -> [AgendaEntry] -> AgendaReport
+makeAgendaReport now tb as =
+  let (past, present, future) = divideIntoPastPresentFuture now $ sortAgendaEntries as
+      pastBlocks = divideIntoAgendaTableBlocks tb past
+      presentBlocks = divideIntoAgendaTableBlocks tb present
+      futureBlocks = divideIntoAgendaTableBlocks tb future
+   in AgendaReport
+        { agendaReportPast = pastBlocks
+        , agendaReportPresent = presentBlocks
+        , agendaReportFuture = futureBlocks
+        }
+
+divideIntoPastPresentFuture ::
+     ZonedTime -> [AgendaEntry] -> ([AgendaEntry], [AgendaEntry], [AgendaEntry])
+divideIntoPastPresentFuture now =
+  splitList $ \ae ->
+    compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
+
+splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
+splitList func = go
+  where
+    go [] = ([], [], [])
+    go (a:as) =
+      case func a of
+        LT ->
+          case go as of
+            (xs, ys, zs) -> (a : xs, ys, zs)
+        EQ ->
+          case go2 as of
+            (ys, zs) -> ([], a : ys, zs)
+        GT -> ([], [], a : as)
+    go2 [] = ([], [])
+    go2 (a:as) =
+      case func a of
+        LT -> error "should not happen"
+        EQ ->
+          case go2 as of
+            (ys, zs) -> (a : ys, zs)
+        GT -> ([], a : as)
+
+type AgendaTableBlock a = Block a AgendaEntry
+
+divideIntoAgendaTableBlocks :: TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
+divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimestamp)
+
+sortAgendaEntries :: [AgendaEntry] -> [AgendaEntry]
+sortAgendaEntries =
+  sortBy
+    (mconcat
+       [ comparing (timestampLocalTime . agendaEntryTimestamp)
+       , comparing agendaEntryTimestampName
+       , comparing agendaEntryTodoState
+       ])
 
 data AgendaEntry =
   AgendaEntry
@@ -54,8 +120,3 @@ fitsHistoricity zt ah ae =
   case ah of
     HistoricalAgenda -> True
     FutureAgenda -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime zt
-
-type AgendaTableBlock a = Block a AgendaEntry
-
-divideIntoAgendaTableBlocks :: TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
-divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimestamp)

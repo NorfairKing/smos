@@ -428,6 +428,9 @@ parseTimeBlock =
   Just <$>
   choices
     [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"]
+    , flag' WeekBlock $ mconcat [long "week-block", help "blocks of one week"]
+    , flag' MonthBlock $ mconcat [long "month-block", help "blocks of one month"]
+    , flag' YearBlock $ mconcat [long "year-block", help "blocks of one year"]
     , flag' OneBlock $ mconcat [long "one-block", help "a single block"]
     ] <|>
   pure Nothing
@@ -442,6 +445,8 @@ parsePeriod =
      , flag' LastWeek (mconcat [long "last-week", help "last week"])
      , flag' ThisMonth (mconcat [long "this-month", help "this month"])
      , flag' LastMonth (mconcat [long "last-month", help "last month"])
+     , flag' ThisYear (mconcat [long "this-year", help "this year"])
+     , flag' LastYear (mconcat [long "last-year", help "last year"])
      , flag' AllTime (mconcat [long "all-time", help "all time"])
      ]) <|>
   pure Nothing

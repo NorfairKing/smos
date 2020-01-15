@@ -46,7 +46,7 @@ clock ClockSettings {..} = do
        Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))) .|
     C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now)) .|
     C.mapMaybe (trimFileTimes now clockSetPeriod)
-  let clockTable = makeClockTable $ divideIntoClockTimeBlocks (zonedTimeZone now) clockSetBlock tups
+  let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
   liftIO $
     case clockSetOutputFormat of
       OutputPretty ->

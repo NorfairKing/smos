@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Clock
@@ -15,7 +16,6 @@ import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Set (Set)
-import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
@@ -97,6 +97,8 @@ trimLogbookEntry now cp =
     ThisWeek -> trimToThisWeek
     LastMonth -> trimToLastMonth
     ThisMonth -> trimToThisMonth
+    LastYear -> trimToLastYear
+    ThisYear -> trimToThisYear
     BeginEnd begin end -> trimLogbookEntryTo tz begin end
   where
     tz :: TimeZone
@@ -131,6 +133,18 @@ trimLogbookEntry now cp =
     thisMonthEnd =
       let (y, m, _) = toGregorian today
        in LocalTime (fromGregorian y m 31) midnight
+    lastYearStart :: LocalTime
+    lastYearStart =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- This will fail around newyear
+    thisYearStart :: LocalTime
+    thisYearStart =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian y 1 1) midnight
+    thisYearEnd :: LocalTime
+    thisYearEnd =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian y 12 31) midnight
     trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
     trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
     trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
@@ -139,6 +153,10 @@ trimLogbookEntry now cp =
     trimToThisMonth = trimLogbookEntryTo tz thisMonthStart thisMonthEnd
     trimToLastMonth :: LogbookEntry -> Maybe LogbookEntry
     trimToLastMonth = trimLogbookEntryTo tz lastMonthStart thisMonthStart
+    trimToThisYear :: LogbookEntry -> Maybe LogbookEntry
+    trimToThisYear = trimLogbookEntryTo tz thisYearStart thisYearEnd
+    trimToLastYear :: LogbookEntry -> Maybe LogbookEntry
+    trimToLastYear = trimLogbookEntryTo tz lastYearStart thisYearStart
 
 trimLogbookEntryToDay :: TimeZone -> Day -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
@@ -165,43 +183,55 @@ trimLogbookEntryTo tz begin end LogbookEntry {..} =
     fromLocal :: LocalTime -> UTCTime
     fromLocal = localTimeToUTC tz
 
-divideIntoClockTimeBlocks :: TimeZone -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
-divideIntoClockTimeBlocks tz cb cts =
+divideIntoClockTimeBlocks :: ZonedTime -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
+divideIntoClockTimeBlocks zt cb cts =
   case cb of
     OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
-    DayBlock ->
-      map (mapBlockTitle formatDayTitle) $
-      combineBlocksByName $ concatMap (divideClockTimeIntoDailyBlocks tz) cts
+    YearBlock -> divideClockTimeIntoTimeBlocks formatYearTitle dayYear yearPeriod
+    MonthBlock -> divideClockTimeIntoTimeBlocks formatMonthTitle dayMonth monthPeriod
+    WeekBlock -> divideClockTimeIntoTimeBlocks formatWeekTitle dayWeek weekPeriod
+    DayBlock -> divideClockTimeIntoTimeBlocks formatDayTitle id dayPeriod
   where
-    formatDayTitle :: Day -> Text
-    formatDayTitle = T.pack . formatTime defaultTimeLocale "%F (%A)"
+    divideClockTimeIntoTimeBlocks ::
+         (Ord t, Enum t) => (t -> Text) -> (Day -> t) -> (t -> Period) -> [ClockTimeBlock Text]
+    divideClockTimeIntoTimeBlocks format fromDay toPeriod =
+      map (mapBlockTitle format) $
+      combineBlocksByName $
+      concatMap
+        (divideClockTimeIntoBlocks
+           zt
+           (fromDay . localDay . utcToLocalTime (zonedTimeZone zt))
+           toPeriod)
+        cts
 
-divideClockTimeIntoDailyBlocks :: TimeZone -> FileTimes -> [ClockTimeBlock Day]
-divideClockTimeIntoDailyBlocks tz =
+divideClockTimeIntoBlocks ::
+     forall t. (Enum t, Ord t)
+  => ZonedTime
+  -> (UTCTime -> t)
+  -> (t -> Period)
+  -> FileTimes
+  -> [ClockTimeBlock t]
+divideClockTimeIntoBlocks zt func toPeriod =
   map (uncurry makeClockTimeBlock) . sortAndGroupCombineOrd . divideFileTimes
   where
     makeClockTimeBlock :: a -> [FileTimes] -> ClockTimeBlock a
     makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
-    divideFileTimes :: FileTimes -> [(Day, FileTimes)]
+    divideFileTimes :: FileTimes -> [(t, FileTimes)]
     divideFileTimes fts =
-      mapMaybe (\d -> (,) d <$> trimFileTimesToDay tz d fts) (S.toList $ fileTimesDays fts)
-    fileTimesDays :: FileTimes -> Set Day
+      mapMaybe (\d -> (,) d <$> trimFileTimes zt (toPeriod d) fts) (S.toList $ fileTimesDays fts)
+    fileTimesDays :: FileTimes -> Set t
     fileTimesDays = goTF . clockTimeForest
       where
-        goTF :: TForest HeaderTimes -> Set Day
+        goTF :: TForest HeaderTimes -> Set t
         goTF = S.unions . map goTT . NE.toList
-        goTT :: TTree HeaderTimes -> Set Day
+        goTT :: TTree HeaderTimes -> Set t
         goTT (TLeaf hts) = goHT $ headerTimesList hts
         goTT (TBranch hts tf) = goHT hts `S.union` goTF tf
-        goHT :: HeaderTimes [] -> Set Day
+        goHT :: HeaderTimes [] -> Set t
         goHT = S.unions . map logbookEntryDays . headerTimesEntries
-        logbookEntryDays :: LogbookEntry -> Set Day
+        logbookEntryDays :: LogbookEntry -> Set t
         logbookEntryDays LogbookEntry {..} =
-          S.fromList [utcDay logbookEntryStart .. utcDay logbookEntryEnd]
-        utcDay :: UTCTime -> Day
-        utcDay = localDay . toLocal
-    toLocal :: UTCTime -> LocalTime
-    toLocal = utcToLocalTime tz
+          S.fromList [func logbookEntryStart .. func logbookEntryEnd]
 
 trimFileTimesToDay :: TimeZone -> Day -> FileTimes -> Maybe FileTimes
 trimFileTimesToDay tz d fts = (\f -> fts {clockTimeForest = f}) <$> goTF (clockTimeForest fts)

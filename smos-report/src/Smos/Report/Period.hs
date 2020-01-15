@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Period where
 
@@ -10,17 +11,53 @@ import Data.Validity.Time ()
 import Data.Time
 import Data.Time.Calendar.WeekDate
 
+import Smos.Report.TimeBlock
+
 data Period
   = Today
   | ThisWeek
   | LastWeek
   | ThisMonth
-  | LastMonth
+  | LastMonth -- TODO add year
+  | ThisYear
+  | LastYear
   | AllTime
   | BeginEnd LocalTime LocalTime -- If end is before begin, this matches nothing
   deriving (Show, Eq, Generic)
 
 instance Validity Period
+
+yearPeriod :: YearNumber -> Period
+yearPeriod y = BeginEnd monthStart monthEnd
+  where
+    monthStart :: LocalTime
+    monthStart = LocalTime (fromGregorian y 1 1) midnight
+    monthEnd :: LocalTime
+    monthEnd = LocalTime (fromGregorian (y + 1) 1 1) midnight
+
+monthPeriod :: MonthNumber -> Period
+monthPeriod MonthNumber {..} = BeginEnd monthStart monthEnd
+  where
+    monthStart :: LocalTime
+    monthStart = LocalTime (fromGregorian monthNumberYear monthNumberMonth 1) midnight
+    monthEnd :: LocalTime
+    monthEnd =
+      LocalTime (fromGregorian monthNumberYear (monthNumberMonth + 1) 1) midnight -- FIXME this can wrong at the end of the year
+
+weekPeriod :: WeekNumber -> Period
+weekPeriod WeekNumber {..} = BeginEnd weekStart weekEnd
+  where
+    weekStart :: LocalTime
+    weekStart = LocalTime (fromWeekDate weekNumberYear weekNumberWeek 1) midnight
+    weekEnd :: LocalTime
+    weekEnd =
+      LocalTime (fromWeekDate weekNumberYear (weekNumberWeek + 1) 1) midnight -- FIXME this can wrong at the end of the year
+
+dayPeriod :: Day -> Period
+dayPeriod d = BeginEnd dayStart dayEnd
+  where
+    dayStart = LocalTime {localDay = d, localTimeOfDay = midnight}
+    dayEnd = LocalTime {localDay = addDays 1 d, localTimeOfDay = midnight}
 
 filterPeriod :: ZonedTime -> Period -> UTCTime -> Bool
 filterPeriod now p u =
@@ -31,6 +68,8 @@ filterPeriod now p u =
      ThisWeek -> filterBetween thisWeekStart thisWeekEnd
      LastMonth -> filterBetween lastMonthStart thisMonthStart
      ThisMonth -> filterBetween thisMonthStart thisMonthEnd
+     LastYear -> filterBetween lastYearStart thisYearStart
+     ThisYear -> filterBetween thisYearStart thisYearEnd
      BeginEnd begin end -> filterBetween begin end) $
   utcToLocalTime tz u
   where
@@ -70,3 +109,15 @@ filterPeriod now p u =
     thisMonthEnd =
       let (y, m, _) = toGregorian today
        in LocalTime (fromGregorian y m 31) midnight
+    lastYearStart :: LocalTime
+    lastYearStart =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- This will fail around newyear
+    thisYearStart :: LocalTime
+    thisYearStart =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian y 1 1) midnight
+    thisYearEnd :: LocalTime
+    thisYearEnd =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian y 12 31) midnight

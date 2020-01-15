@@ -20,6 +20,7 @@ import Rainbow
 
 import Smos.Data
 
+import Smos.Report.Agenda
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
