@@ -35,6 +35,16 @@ Start with a regular build, and go from there using the multiple results:
 $ nix-build nix/release.nix
 ```
 
+To install the executables in your user environment directly:
+
+```
+nix-env -if ./nix/release.nix
+```
+
+#### Using the cachix cache
+
+If you use cachix, you can use `cachix use smos` to use the smos cachix cache.
+
 #### Troubleshooting
 
 When you first run a `smos` executable that has been built with Nix, you may
