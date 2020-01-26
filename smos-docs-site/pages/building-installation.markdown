@@ -41,6 +41,43 @@ To install the executables in your user environment directly:
 nix-env -if ./nix/release.nix
 ```
 
+#### Nix home manager module
+
+There is a nix home manager available in the smos repository at `nix/program.nix`, and you can use it as follows:
+
+
+``` nix
+{ pkgs, lib, ... }:
+with lib;
+let
+  smosModule = (builtins.fetchGit {
+    url = "https://github.com/NorfairKing/smos";
+    ref = "master";
+    rev = "0000000000000000000000000000000000000000"; # Add a recent version here.
+  } + "/nix/program.nix");
+in
+{
+  imports = [
+    smosModule
+    # [...]
+  ];
+  smos = {
+    enable = true;
+    backup = {
+      enable = true;
+    };
+    sync = {
+      enable = true;
+      username = "YOURUSERNAMEHERE";
+      password = "YOURPASSWORDHERE";
+    };
+  };
+}
+```
+
+Note that we have to use `builtins.fetchGit` and cannot use `fetchFromGitHub` because this needs to be fetched at evaluation time.
+
+
 #### Using the cachix cache
 
 If you use cachix, you can use `cachix use smos` to use the smos cachix cache.
