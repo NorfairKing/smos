@@ -93,6 +93,7 @@ defaultFileKeyMap =
           , exactString "gt" $ tagsToggle "toast"
           , exactString "gw" $ tagsToggle "work"
           , exactString "ge" $ tagsToggle "external"
+          , exactString "gp" $ tagsToggle "power"
                   -- Fast timestamps manipulation
           , exactString "sb" $ timestampsSelect "BEGIN"
           , exactString "se" $ timestampsSelect "END"

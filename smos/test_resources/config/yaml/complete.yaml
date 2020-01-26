@@ -233,6 +233,8 @@ keys:
       key: gw
     - action: tagsToggle_external
       key: ge
+    - action: tagsToggle_power
+      key: gp
     - action: timestampsSelect_BEGIN
       key: sb
     - action: timestampsSelect_END
