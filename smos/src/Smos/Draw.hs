@@ -230,12 +230,13 @@ drawHistory = txtWrap . T.unwords . map renderKeyPress . toList
 
 drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
-  vBox
-    [ str "Key history: " <+> drawHistory smosStateKeyHistory
-    , str "Last match: " <+>
-      fromMaybe emptyWidget (drawLastMatches (debugInfoLastMatches smosStateDebugInfo))
-    , strWrap $ ppShow smosStateCursor
-    ]
+  let DebugInfo {..} = smosStateDebugInfo
+   in vBox
+        [ hBorderWithLabel (str "[ Debug ]")
+        , str "Key history: " <+> drawHistory smosStateKeyHistory
+        , str "History length: " <+> str (show (length smosStateCursorHistory))
+        , str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches)
+        ]
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
 drawLastMatches Nothing = Nothing

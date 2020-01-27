@@ -233,7 +233,7 @@ runSmosAsync func = do
   a <- liftIO $ async func
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
 
-newtype DebugInfo =
+data DebugInfo =
   DebugInfo
     { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
     }
