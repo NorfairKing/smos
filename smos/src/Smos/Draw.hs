@@ -164,7 +164,8 @@ drawHelpCursor :: KeyMap -> Select -> Maybe HelpCursor -> Widget ResourceName
 drawHelpCursor km _ Nothing = drawInfo km
 drawHelpCursor _ s (Just HelpCursor {..}) =
   centerLayer $
-  borderWithLabel (withAttr selectedAttr $ txt ("[Help page: " <> helpCursorTitle <> "]")) $
+  (hBorderWithLabel
+     (withAttr selectedAttr $ txt ("[Help page for context: " <> helpCursorTitle <> "]")) <=>) $
   hBox
     [ vBox
         [ padAll 1 $
@@ -191,8 +192,7 @@ drawHelpCursor _ s (Just HelpCursor {..}) =
                 [ txt "Name: " <+>
                   withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName)
                 , txt "Description: "
-                , hLimit 75 $
-                  padRight Max $ withAttr helpDescriptionAttr $ textWidget keyHelpCursorDescription
+                , withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
                 ]
     ]
   where
