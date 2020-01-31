@@ -72,7 +72,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: 04ef274e8be3595f5846645f5922791292653e03
+  commit: 738050966d6f10b63a47c7f93d692d0efeee72d8
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -110,3 +110,4 @@ nix:
   add-gc-roots: true
   packages:
   - zlib
+  - haskellPackages.autoexporter
