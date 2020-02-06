@@ -99,6 +99,8 @@ trimLogbookEntry now cp =
     ThisMonth -> trimToThisMonth
     LastYear -> trimToLastYear
     ThisYear -> trimToThisYear
+    BeginOnly begin -> trimLogbookEntryToM tz (Just begin) Nothing
+    EndOnly end -> trimLogbookEntryToM tz Nothing (Just end)
     BeginEnd begin end -> trimLogbookEntryTo tz begin end
   where
     tz :: TimeZone
@@ -165,17 +167,27 @@ trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
     dayEnd = LocalTime (addDays 1 d) midnight
 
 trimLogbookEntryTo :: TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntryTo tz begin end LogbookEntry {..} =
+trimLogbookEntryTo tz begin end = trimLogbookEntryToM tz (Just begin) (Just end)
+
+trimLogbookEntryToM ::
+     TimeZone -> Maybe LocalTime -> Maybe LocalTime -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryToM tz mBegin mEnd LogbookEntry {..} =
   constructValid $
   LogbookEntry
     { logbookEntryStart =
-        if toLocal logbookEntryStart >= begin
-          then logbookEntryStart
-          else fromLocal begin
+        case mBegin of
+          Nothing -> logbookEntryStart
+          Just begin ->
+            if toLocal logbookEntryStart >= begin
+              then logbookEntryStart
+              else fromLocal begin
     , logbookEntryEnd =
-        if toLocal logbookEntryEnd < end
-          then logbookEntryEnd
-          else fromLocal end
+        case mEnd of
+          Nothing -> logbookEntryEnd
+          Just end ->
+            if toLocal logbookEntryEnd < end
+              then logbookEntryEnd
+              else fromLocal end
     }
   where
     toLocal :: UTCTime -> LocalTime

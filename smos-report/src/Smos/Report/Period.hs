@@ -22,6 +22,8 @@ data Period
   | ThisYear
   | LastYear
   | AllTime
+  | BeginOnly LocalTime
+  | EndOnly LocalTime
   | BeginEnd LocalTime LocalTime -- If end is before begin, this matches nothing
   deriving (Show, Eq, Generic)
 
@@ -70,6 +72,8 @@ filterPeriod now p u =
      ThisMonth -> filterBetween thisMonthStart thisMonthEnd
      LastYear -> filterBetween lastYearStart thisYearStart
      ThisYear -> filterBetween thisYearStart thisYearEnd
+     BeginOnly begin -> (begin <=)
+     EndOnly end -> (< end)
      BeginEnd begin end -> filterBetween begin end) $
   utcToLocalTime tz u
   where

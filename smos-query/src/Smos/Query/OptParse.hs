@@ -453,13 +453,18 @@ parsePeriod =
   where
     parseBeginEnd :: Parser Period
     parseBeginEnd =
-      BeginEnd <$>
+      (\mb me ->
+         case (mb, me) of
+           (Nothing, Nothing) -> AllTime
+           (Just begin, Nothing) -> BeginOnly begin
+           (Nothing, Just end) -> EndOnly end
+           (Just begin, Just end) -> BeginEnd begin end) <$>
       option
-        (maybeReader parseLocalBegin)
-        (mconcat [long "begin", metavar "LOCALTIME", help "start time (inclusive)"]) <*>
+        (Just <$> maybeReader parseLocalBegin)
+        (mconcat [value Nothing, long "begin", metavar "LOCALTIME", help "start time (inclusive)"]) <*>
       option
-        (maybeReader parseLocalEnd)
-        (mconcat [long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
+        (Just <$> maybeReader parseLocalEnd)
+        (mconcat [value Nothing, long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
     parseLocalBegin :: String -> Maybe LocalTime
     parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
     parseLocalEnd :: String -> Maybe LocalTime
