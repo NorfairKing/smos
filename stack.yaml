@@ -44,21 +44,21 @@ extra-deps:
     - persistent-sqlite
 
 - github: NorfairKing/mergeful
-  commit: 475acb1b65fbb43caa6e149baed5689bfc4b97c1
+  commit: f1c780066a6279cf5b4a4531df0a5ee4eab78c6a
   subdirs:
     - mergeful
     - genvalidity-mergeful
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - github: NorfairKing/pretty-relative-time
-  commit: 21b29c9d729ed91a56819f569de6fdc8582d7e3d
+  commit: 8662d4c999d27e6723aa4f4013ecf08b9f92b697
 - github: NorfairKing/cursor-fuzzy-time
-  commit: ed00bd205d45ce80bab31bc81fb25ff02cf6ed5a
+  commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - github: NorfairKing/fuzzy-time
-  commit: 2122037216d64972303f6a26d8b10598c85fb14f
+  commit: 0c32a1d2e09f1b7421918a845f0b57eceb6752a8
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -72,7 +72,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: 513a6d8353ff4f01adda4882b92794f518a364ba
+  commit: be40c0a0b0bf6a1d58f4a6a5c6770c4a544c4450
   subdirs:
   - genvalidity
   - genvalidity-aeson
