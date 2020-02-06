@@ -52,7 +52,8 @@ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
   when (e && isNothing smosStateStartSmosFile) $ removeFile smosStateFilePath
   (case smosStateStartSmosFile of
      Nothing -> unless (sf' == emptySmosFile)
-     Just sf'' -> unless (sf'' == sf')) $
+     Just sf'' -> unless (sf'' == sf')) $ do
+    ensureDir $ parent smosStateFilePath
     writeSmosFile smosStateFilePath sf'
 
 switchToFile :: Path Abs File -> SmosFileCursor -> SmosM (Maybe FL.FileLock)
@@ -77,7 +78,9 @@ switchToFile path sfc = do
   pure mfl
 
 lockFile :: Path Abs File -> IO (Maybe FL.FileLock)
-lockFile p = FL.tryLockFile (fromAbsFile p) FL.Exclusive
+lockFile p = do
+  ensureDir $ parent p
+  FL.tryLockFile (fromAbsFile p) FL.Exclusive
 
 unlockFile :: FL.FileLock -> IO ()
 unlockFile = FL.unlockFile
