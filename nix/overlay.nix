@@ -91,6 +91,30 @@ with final.haskell.lib;
                         "1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk";
                     };
 
+                  servantAuthRepo =
+                    final.fetchFromGitHub {
+                      owner = "haskell-servant";
+                      repo = "servant-auth";
+                      rev = "62d3f4b6a7fd7dc38510d4c60982239f94fc1b58";
+                      sha256 =
+                        "sha256:0syp5k2nm1jb1lh3z1ajzpgq35jhbm8qx3xr22s5qv27f6y7f99v";
+                    };
+
+                  servantAuthPkg =
+                    name:
+                      disableLibraryProfiling (
+                        dontCheck (
+                          self.callCabal2nix name ( servantAuthRepo + "/${name}" ) {}
+                        )
+                      );
+                  servantAuthPackages =
+                    final.lib.genAttrs [
+                      "servant-auth-client"
+                      "servant-auth-docs"
+                      "servant-auth-server"
+                      "servant-auth-swagger"
+                    ] servantAuthPkg;
+
                   persistentRepo =
                     final.fetchFromGitHub {
                       owner = "NorfairKing";
@@ -115,13 +139,15 @@ with final.haskell.lib;
                     ] persistentPkg;
                 in
                   final.smosPackages // {
-                hakyll = dontCheck (self.callHackage "hakyll" "4.13.0.0" {});
-                pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
+                hakyll = dontCheck (self.callHackage "hakyll" "4.13.0.1" {});
                 hakyll-sass = dontCheck (self.callHackage "hakyll-sass" "0.2.4" {});
+                warp = dontCheck (self.callHackage "warp" "3.2.28" {});
+                http2 = dontCheck (self.callHackage "http2" "1.6.5" {});
+                pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
                 sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
                 cron = dontCheck (self.callHackage "cron" "0.6.1" {});
-              } // persistentPackages
+              } // persistentPackages // servantAuthPackages
             );
         }
     );

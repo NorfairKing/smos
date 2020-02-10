@@ -10,7 +10,7 @@ import Test.Validity
 
 import qualified Data.Map as M
 
-import Data.Mergeful.Collection (ServerStore(..))
+import Data.Mergeful.Collection (ServerStore(..), initialServerStore)
 import Data.Pool
 import Database.Persist.Sqlite as DB
 
@@ -21,6 +21,19 @@ spec :: Spec
 spec =
   serverDBSpec $
   describe "writeServerStore" $ do
+    it "can read an empty store" $ \pool ->
+      forAllValid $ \i -> do
+        let uid = DB.toSqlKey i
+        serverStore' <- testDB pool $ readServerStore uid
+        serverStore' `shouldBe` initialServerStore
+    it "can write an empty store" $ \pool ->
+      forAllValid $ \i -> do
+        let uid = DB.toSqlKey i
+        serverStore' <-
+          testDB pool $ do
+            writeServerStore uid initialServerStore
+            readServerStore uid
+        serverStore' `shouldBe` initialServerStore
     it "can read exactly what was just written" $ \pool ->
       forAllValid $ \i ->
         forAllValid $ \serverStore -> do
