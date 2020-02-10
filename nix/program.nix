@@ -111,12 +111,12 @@ sync:
               ExecStart =
                 "${pkgs.writeShellScript "backup-smos-service-ExecStart"
             ''
-              export PATH="$PATH:${pkgs.coreutils}/bin"
+              export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
               set -ex
               backupdir="$HOME/${cfg.backup.backupDir}"
-              subdir="$backupdir/''$(date +%F_%T)/"
-              mkdir -p "$subdir"
-              exec ${pkgs.rsync}/bin/rsync --recursive ${cfg.workflowDir}/ "$subdir"
+              mkdir -p "''${backupdir}"
+              backupfile="''${backupdir}/''$(date +%F_%T).tar.gz"
+              tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
             ''}";
               Type = "oneshot";
             };
