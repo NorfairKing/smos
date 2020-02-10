@@ -62,7 +62,7 @@ extra-deps:
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - github: NorfairKing/pretty-relative-time
-  commit: 8662d4c999d27e6723aa4f4013ecf08b9f92b697
+  commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
 - github: NorfairKing/cursor-fuzzy-time
   commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
   subdirs:
