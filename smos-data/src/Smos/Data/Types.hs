@@ -792,10 +792,6 @@ instance ToYaml NominalDiffTime where
 instance ToYaml (Path r d) where
   toYaml = Yaml.string . T.pack . toFilePath
 
-instance (ToYaml a) => ToYaml (Maybe a) where
-  toYaml Nothing = Yaml.null
-  toYaml (Just v) = toYaml v
-
 instance (ToYaml a) => ToYaml (Map Text a) where
   toYaml = Yaml.mapping . map (second toYaml) . M.toList
 

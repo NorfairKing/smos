@@ -1,4 +1,4 @@
-resolver: lts-14.7
+resolver: lts-14.20
 packages:
 - smos
 - smos-data
@@ -26,6 +26,9 @@ packages:
 extra-deps:
 - hakyll-4.13.0.0
 - hakyll-sass-0.2.4
+
+- servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+
 
 - typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
 - genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
@@ -106,7 +109,7 @@ extra-deps:
   - validity-uuid
   - validity-vector
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e6b93257b0ba070bd12810eeacbe281396c24316.tar.gz" ]
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/323fe92057bb38475a446ff5e18d3b388c2e4403.tar.gz" ]
   add-gc-roots: true
   packages:
   - zlib
