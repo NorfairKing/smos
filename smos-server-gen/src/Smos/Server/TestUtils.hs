@@ -34,7 +34,7 @@ serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around
 
 withServerDB :: (Pool SqlBackend -> IO a) -> IO a
 withServerDB func =
-  runStderrLoggingT $
+  runNoLoggingT $
   DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $ \pool -> do
     DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
     liftIO $ func pool

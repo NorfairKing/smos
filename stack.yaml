@@ -24,8 +24,10 @@ packages:
 - smos-sync-client
 - smos-sync-client-gen
 extra-deps:
-- hakyll-4.13.0.0
-- hakyll-sass-0.2.4
+- hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
+- hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
+- warp-3.2.28@sha256:b32fb8fed7ace4bd206fd897c388c00cdb915ec7e34ee61dc6397d518d9e651c,11186
+- http2-1.6.5@sha256:f1743ba4a267f525106c218894e4bd2acf28fa047a9ba660b4a317a97382a877,13999
 
 - github: haskell-servant/servant-auth
   commit: 62d3f4b6a7fd7dc38510d4c60982239f94fc1b58
@@ -53,7 +55,7 @@ extra-deps:
     - persistent-sqlite
 
 - github: NorfairKing/mergeful
-  commit: f1c780066a6279cf5b4a4531df0a5ee4eab78c6a
+  commit: 627f244d81568873f1d44772a96c7afe63a31b71
   subdirs:
     - mergeful
     - genvalidity-mergeful

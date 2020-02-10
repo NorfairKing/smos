@@ -38,11 +38,6 @@ spec =
       forAllValid $ \i ->
         forAllValid $ \serverStore -> do
           let uid = DB.toSqlKey i
-          print uid
-          print $ M.size $ serverStoreItems serverStore
-          print $ M.keys $ serverStoreItems serverStore
-          print $ M.elems $ serverStoreItems serverStore
-          print serverStore
           serverStore' <-
             testDB pool $ do
               writeServerStore uid serverStore
