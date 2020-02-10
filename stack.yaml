@@ -27,7 +27,13 @@ extra-deps:
 - hakyll-4.13.0.0
 - hakyll-sass-0.2.4
 
-- servant-auth-client-0.4.0.0@sha256:2875edeb95854422b87188d8385c5cf04333afcb92d8643f3af2b3a4642bddb8,3426
+- github: haskell-servant/servant-auth
+  commit: 62d3f4b6a7fd7dc38510d4c60982239f94fc1b58
+  subdirs:
+    - servant-auth-client
+    - servant-auth-docs
+    - servant-auth-swagger
+    - servant-auth-server
 
 
 - typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
