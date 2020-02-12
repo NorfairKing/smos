@@ -45,7 +45,7 @@ startSmosOn p sc@SmosConfig {..} = do
     case errOrSF of
       Nothing -> pure Nothing
       Just (Left err) ->
-        die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", show err]
+        die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
       Just (Right sf) -> pure $ Just sf
   lock <- lockFile p
   case lock of
