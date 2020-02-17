@@ -43,6 +43,14 @@ extra-deps:
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 - Validation-0.2.0@sha256:59c15dd11f509dbea585f590be0e2676de9d764e2812f584d13de86ab939542b,1130
 
+# https://github.com/vincenthz/hs-tls/issues/421
+# see also nix/overlay.nix.
+- github: ocheron/hs-tls
+  commit: f785ce66559a09d998bcb5d459cc5ec9d53d54f0
+  subdirs:
+    - core
+    - debug
+    - session
 
 - github: GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f

@@ -115,6 +115,28 @@ with final.haskell.lib;
                       "servant-auth-swagger"
                     ] servantAuthPkg;
 
+                  hsTlsRepo =
+                    final.fetchFromGitHub {
+                      owner = "ocheron";
+                      repo = "hs-tls";
+                      rev = "f785ce66559a09d998bcb5d459cc5ec9d53d54f0";
+                      sha256 =
+                        "13vq1xzwsagxdrbyl6h3fslii4jrvx7fi20h87hdqlzj3y91n1dk";
+                    };
+                  hsTlsPkg =
+                    name: subdir:
+                      dontCheck (
+                        self.callCabal2nix name ( hsTlsRepo + "/${subdir}" ) {}
+                      );
+
+                  hsTlsPackages =
+                    {
+                      "tls" = hsTlsPkg "tls" "core";
+                      "tls-session-manager" =
+                        hsTlsPkg "tls-session-manager" "session";
+                      "tls-debug" = hsTlsPkg "tls-debug" "debug";
+                    };
+
                   persistentRepo =
                     final.fetchFromGitHub {
                       owner = "NorfairKing";
@@ -147,7 +169,7 @@ with final.haskell.lib;
                 sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
                 cron = dontCheck (self.callHackage "cron" "0.6.1" {});
-              } // persistentPackages // servantAuthPackages
+              } // persistentPackages // servantAuthPackages // hsTlsPackages
             );
         }
     );
