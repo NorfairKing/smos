@@ -471,7 +471,7 @@ drawEntryCursor s tc edc e = do
         concat
           [ [ case s of
                 NotSelected -> str "-"
-                MaybeSelected -> withAttr selectedAttr $ str ">"
+                MaybeSelected -> withAttr selectedAttr $ str "❯"
             ]
           , maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
           , [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor]
