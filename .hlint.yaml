@@ -4,15 +4,6 @@
     name: "Use newtype instead of data"
 - ignore:
     name: "Reduce duplication"
-    within: 
-      - "Smos.Actions.Forest.forestClockOutEverywhereInAllFilesAndClockInHere"
-      - "Smos.Actions.Forest.forestClockOutEverywhereInThisFileAndClockInHere"
-      - "Smos.Draw.drawEntry"
-      - "Smos.Draw.drawEntryCursor"
-      - "Smos.IntegrationSpec.spec"
-      - "Smos.Report.FilterSpec.spec"
-      - "Smos.Sync.Client.Sync.IntegrationSpec.spec"
-      - "Smos.Sync.Client.Sync.SaveSpec.spec"
 - ignore:
     name: "Use ++"
     within: 
