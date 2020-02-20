@@ -50,7 +50,7 @@ writeClientMetadata ::
   -> SqlPersistT m ()
 writeClientMetadata mm = do
   let m = metaMapFiles mm
-  deleteWhere [ClientFilePath /<-. M.keys m]
+  deleteWhere ([] :: [Filter ClientFile]) -- Clean slate
   void $ M.traverseWithKey go m
   where
     go :: Path Rel File -> SyncFileMeta -> SqlPersistT m ()
