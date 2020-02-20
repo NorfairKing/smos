@@ -33,6 +33,7 @@ singleClientSpec =
     singleClientAdditionSpec
     singleClientChangeSpec
     singleClientDeletionSpec
+    singleClientLargeSyncSpec
 
 singleClientAdditionSpec :: SpecWith ClientEnv
 singleClientAdditionSpec =
@@ -152,6 +153,16 @@ singleClientDeletionSpec =
               setupClientContents c m1
               testSyncSmosClient c
               assertClientContents c m1
+
+singleClientLargeSyncSpec :: SpecWith ClientEnv
+singleClientLargeSyncSpec =
+  it "can sync a large store" $ \cenv ->
+    forAll (sizedContentsMap 1000) $ \m ->
+      withNewRegisteredUser cenv $ \r ->
+        withSyncClient cenv r $ \c -> do
+          setupClientContents c m
+          testSyncSmosClient c
+          assertClientContents c m
 
 twoClientSpec :: SpecWith ClientEnv
 twoClientSpec =
