@@ -44,6 +44,18 @@ instance GenValid ContentsMap where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+sizedContentsMap :: Int -> Gen ContentsMap
+sizedContentsMap 0 = pure CM.empty
+sizedContentsMap i = do
+  contentsMap <- sizedContentsMap (i - 1)
+  let ins cm = do
+        path <- genValid
+        contents <- genValid
+        case CM.insert path contents cm of
+          Nothing -> ins cm
+          Just cm' -> pure cm'
+  ins contentsMap
+
 mapWithNewPath :: ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
 mapWithNewPath = mapWithNewByGen genValid
 
