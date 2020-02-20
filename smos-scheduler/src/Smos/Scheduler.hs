@@ -1,5 +1,6 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler
@@ -16,6 +17,7 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Traversable
 import Data.Yaml as Yaml
 import Text.Show.Pretty
 
@@ -135,7 +137,15 @@ performScheduleItem wdir now ScheduleItem {..} = do
                   SB8.putStrLn cs
 
 renderTemplate :: ScheduleTemplate -> Render SmosFile
-renderTemplate (ScheduleTemplate f) = SmosFile <$> traverse (traverse renderEntryTemplate) f
+renderTemplate (ScheduleTemplate f) = do
+  now <- asks renderContextTime
+  renderedForest <- traverse (traverse renderEntryTemplate) f
+  fmap SmosFile $
+    for renderedForest $ \tree ->
+      for tree $ \entry ->
+        case entrySetState now (Just "TODO") entry of
+          Nothing -> lift $ Failure [RenderErrorEntrySetState entry now]
+          Just r -> pure r
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
@@ -235,6 +245,7 @@ data RenderError
   | RenderErrorContentsValidity Contents Text
   | RenderErrorTagValidity Tag Text
   | RenderErrorPropertyValueValidity PropertyValue Text
+  | RenderErrorEntrySetState Entry UTCTime
   deriving (Show, Eq, Generic)
 
 prettyRenderError :: RenderError -> String
