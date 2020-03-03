@@ -60,12 +60,25 @@ startSmosOn p sc@SmosConfig {..} = do
         race
           (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
           (eventPusher chan)
-      forM_ (smosStateAsyncs s') wait
+      finalWait $ smosStateAsyncs s'
       saveSmosFile
         (rebuildEditorCursor $ smosStateCursor s')
         (smosStateStartSmosFile s')
         (smosStateFilePath s')
       unlockFile $ smosStateFileLock s'
+
+finalWait :: [Async ()] -> IO ()
+finalWait as = do
+  as' <-
+    fmap catMaybes <$> forM as $ \a -> do
+      mEither <- poll a
+      pure $
+        case mEither of
+          Nothing -> Just a
+          Just _ -> Nothing
+  unless (null as') $ do
+    putStrLn $ unwords ["Waiting for", show (length as'), "asynchronous operations to finish"]
+    mapM_ wait as'
 
 eventPusher :: BChan SmosEvent -> IO ()
 eventPusher chan =
