@@ -2,7 +2,9 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Projects where
+module Smos.Query.Commands.Projects
+  ( projects
+  ) where
 
 import Data.List
 import Data.Text (Text)

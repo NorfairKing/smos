@@ -27,7 +27,6 @@ import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Work
 
-import Smos.Query.Commands.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types

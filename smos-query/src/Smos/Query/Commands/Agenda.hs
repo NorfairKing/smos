@@ -2,19 +2,17 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Agenda where
+module Smos.Query.Commands.Agenda
+  ( agenda
+  ) where
 
 import Data.List
-import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
-import Text.Time.Pretty
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Rainbow
-
-import Smos.Data
 
 import Smos.Report.Agenda
 import Smos.Report.Streaming
@@ -54,21 +52,3 @@ renderAgendaReport now AgendaReport {..} =
     goBlock Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries :: [AgendaEntry] -> [[Chunk Text]]
     goEntries = map (formatAgendaEntry now)
-
-formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
-formatAgendaEntry now AgendaEntry {..} =
-  let d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
-      func =
-        if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-           | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
-           | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
-           | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
-           | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
-           | otherwise -> id
-   in [ func $ rootedPathChunk agendaEntryFilePath
-      , func $ chunk $ timestampPrettyText agendaEntryTimestamp
-      , func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d
-      , timestampNameChunk agendaEntryTimestampName
-      , maybe (chunk "") todoStateChunk agendaEntryTodoState
-      , headerChunk agendaEntryHeader
-      ]

@@ -1,7 +1,9 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Stats where
+module Smos.Query.Commands.Stats
+  ( stats
+  ) where
 
 import qualified Data.Map as M
 import Data.Map (Map)

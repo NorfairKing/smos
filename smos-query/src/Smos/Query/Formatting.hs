@@ -1,4 +1,6 @@
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Formatting where
 
@@ -10,13 +12,16 @@ import qualified Data.Sequence as S
 import Data.Sequence (Seq)
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Time
 import Path
+import Text.Time.Pretty
 
 import Rainbow
 import Rainbox as Box
 
 import Smos.Data
 
+import Smos.Report.Agenda
 import Smos.Report.Path
 import Smos.Report.Projection
 
@@ -39,6 +44,39 @@ putBoxLn :: Orientation a => Box a -> IO ()
 putBoxLn box = do
   printer <- byteStringMakerFromEnvironment
   mapM_ SB.putStr $ chunksToByteStrings printer $ toList $ Box.render box
+
+showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk Text
+showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
+  where
+    th1 = fromIntegral threshold :: Int
+    th2 = floor ((fromIntegral threshold :: Double) / 3 * 2) :: Int
+    th3 = floor ((fromIntegral threshold :: Double) / 3) :: Int
+    color
+      | i >= th1 = red
+      | i >= th2 = yellow
+      | i >= th3 = blue
+      | otherwise = green
+    i = diffInDays now t :: Int
+    diffInDays :: UTCTime -> UTCTime -> Int
+    diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay
+
+formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
+formatAgendaEntry now AgendaEntry {..} =
+  let d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
+      func =
+        if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+           | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
+           | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
+           | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
+           | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
+           | otherwise -> id
+   in [ func $ rootedPathChunk agendaEntryFilePath
+      , func $ chunk $ timestampPrettyText agendaEntryTimestamp
+      , func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d
+      , timestampNameChunk agendaEntryTimestampName
+      , maybe (chunk "") todoStateChunk agendaEntryTodoState
+      , headerChunk agendaEntryHeader
+      ]
 
 rootedPathChunk :: RootedPath -> Chunk Text
 rootedPathChunk rp =

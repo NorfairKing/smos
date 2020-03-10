@@ -1,10 +1,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Waiting where
+module Smos.Query.Commands.Waiting
+  ( waiting
+  ) where
 
 import Data.List
-import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 
@@ -43,18 +44,3 @@ formatWaitingActionEntry threshold now WaitingActionEntry {..} =
   , headerChunk waitingActionEntryHeader
   , maybe (chunk "") (showDaysSince threshold now) waitingActionEntryTimestamp
   ]
-
-showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk Text
-showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
-  where
-    th1 = fromIntegral threshold :: Int
-    th2 = floor ((fromIntegral threshold :: Double) / 3 * 2) :: Int
-    th3 = floor ((fromIntegral threshold :: Double) / 3) :: Int
-    color
-      | i >= th1 = red
-      | i >= th2 = yellow
-      | i >= th3 = blue
-      | otherwise = green
-    i = diffInDays now t :: Int
-    diffInDays :: UTCTime -> UTCTime -> Int
-    diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay

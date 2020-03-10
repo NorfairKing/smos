@@ -2,7 +2,9 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Stuck where
+module Smos.Query.Commands.Stuck
+  ( stuck
+  ) where
 
 import Data.Text (Text)
 import Data.Time
@@ -15,7 +17,6 @@ import Smos.Report.Filter
 import Smos.Report.Streaming
 import Smos.Report.Stuck
 
-import Smos.Query.Commands.Waiting
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types

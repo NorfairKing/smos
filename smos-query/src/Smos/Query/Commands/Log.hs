@@ -1,7 +1,9 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Commands.Log where
+module Smos.Query.Commands.Log
+  ( Smos.Query.Commands.Log.log
+  ) where
 
 import Data.List
 import Data.Text (Text)
