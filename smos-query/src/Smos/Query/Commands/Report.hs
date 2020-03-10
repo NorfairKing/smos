@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Report
-  ( report
+  ( smosQueryReport
   ) where
 
 import Conduit
@@ -19,12 +19,12 @@ import Smos.Query.Commands.Entry
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 
-report :: ReportSettings -> Q ()
-report ReportSettings {..} =
+smosQueryReport :: ReportSettings -> Q ()
+smosQueryReport ReportSettings {..} =
   case M.lookup reportSetReportName reportSetAvailableReports of
     Nothing -> liftIO $ die $ "No such prepared report configured: " <> T.unpack reportSetReportName
     Just PreparedReport {..} ->
-      entry
+      smosQueryEntry
         EntrySettings
           { entrySetFilter = perparedReportFilter
           , entrySetProjection = fromMaybe defaultProjection perparedReportProjection

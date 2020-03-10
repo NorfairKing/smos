@@ -1,15 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Query
   ( smosQuery
   , module Smos.Query.Config
   ) where
 
-import Prelude (IO)
-
 import Smos.Query.Commands
-
 import Smos.Query.Config
 import Smos.Query.OptParse
 import Smos.Query.OptParse.Types
@@ -22,15 +18,15 @@ smosQuery sqc = do
 execute :: Dispatch -> Q ()
 execute =
   \case
-    DispatchEntry es -> entry es
-    DispatchReport es -> report es
-    DispatchWork ws -> work ws
-    DispatchWaiting ws -> waiting ws
-    DispatchNext ns -> next ns
-    DispatchClock cs -> clock cs
-    DispatchAgenda as -> agenda as
-    DispatchProjects ps -> projects ps
-    DispatchStuck ps -> stuck ps
-    DispatchLog ss -> log ss
-    DispatchStats ss -> stats ss
-    DispatchTags ts -> tags ts
+    DispatchEntry es -> smosQueryEntry es
+    DispatchReport es -> smosQueryReport es
+    DispatchWork ws -> smosQueryWork ws
+    DispatchWaiting ws -> smosQueryWaiting ws
+    DispatchNext ns -> smosQueryNext ns
+    DispatchClock cs -> smosQueryClock cs
+    DispatchAgenda as -> smosQueryAgenda as
+    DispatchProjects ps -> smosQueryProjects ps
+    DispatchStuck ps -> smosQueryStuck ps
+    DispatchLog ss -> smosQueryLog ss
+    DispatchStats ss -> smosQueryStats ss
+    DispatchTags ts -> smosQueryTags ts

@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Waiting
-  ( waiting
+  ( smosQueryWaiting
   ) where
 
 import Data.List
@@ -21,8 +21,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-waiting :: WaitingSettings -> Q ()
-waiting WaitingSettings {..} = do
+smosQueryWaiting :: WaitingSettings -> Q ()
+smosQueryWaiting WaitingSettings {..} = do
   tups <-
     sourceToList $
     streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|

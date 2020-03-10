@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Stuck
-  ( stuck
+  ( smosQueryStuck
   ) where
 
 import Data.Text (Text)
@@ -22,8 +22,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-stuck :: StuckSettings -> Q ()
-stuck StuckSettings {..} = do
+smosQueryStuck :: StuckSettings -> Q ()
+smosQueryStuck StuckSettings {..} = do
   stuckReport <-
     fmap makeStuckReport $
     sourceToList $

@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Projects
-  ( projects
+  ( smosQueryProjects
   ) where
 
 import Data.List
@@ -24,8 +24,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-projects :: ProjectsSettings -> Q ()
-projects ProjectsSettings {..} = do
+smosQueryProjects :: ProjectsSettings -> Q ()
+smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
     streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning .|

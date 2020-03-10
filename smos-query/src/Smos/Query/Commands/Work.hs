@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Work
-  ( work
+  ( smosQueryWork
   ) where
 
 import Data.List (intersperse)
@@ -32,8 +32,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-work :: WorkSettings -> Q ()
-work WorkSettings {..} = do
+smosQueryWork :: WorkSettings -> Q ()
+smosQueryWork WorkSettings {..} = do
   now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
   wr <-

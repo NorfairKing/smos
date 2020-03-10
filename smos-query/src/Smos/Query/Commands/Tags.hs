@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Tags
-  ( tags
+  ( smosQueryTags
   ) where
 
 import Data.List
@@ -23,8 +23,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-tags :: TagsSettings -> Q ()
-tags TagsSettings {..} = do
+smosQueryTags :: TagsSettings -> Q ()
+smosQueryTags TagsSettings {..} = do
   es <-
     sourceToList $
     streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|

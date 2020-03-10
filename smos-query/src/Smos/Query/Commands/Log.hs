@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Log
-  ( Smos.Query.Commands.Log.log
+  ( smosQueryLog
   ) where
 
 import Data.List
@@ -22,8 +22,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-log :: LogSettings -> Q ()
-log LogSettings {..} = do
+smosQueryLog :: LogSettings -> Q ()
+smosQueryLog LogSettings {..} = do
   zt <- liftIO getZonedTime
   es <-
     sourceToList $

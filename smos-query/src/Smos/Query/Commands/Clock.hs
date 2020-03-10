@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Clock
-  ( clock
+  ( smosQueryClock
   ) where
 
 import qualified Data.Aeson as JSON
@@ -35,8 +35,8 @@ import Smos.Query.Streaming
 
 import Smos.Query.Clock.Types
 
-clock :: ClockSettings -> Q ()
-clock ClockSettings {..} = do
+smosQueryClock :: ClockSettings -> Q ()
+smosQueryClock ClockSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $

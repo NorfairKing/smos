@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Next
-  ( next
+  ( smosQueryNext
   ) where
 
 import Data.Text (Text)
@@ -19,8 +19,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-next :: NextSettings -> Q ()
-next NextSettings {..} = do
+smosQueryNext :: NextSettings -> Q ()
+smosQueryNext NextSettings {..} = do
   tups <-
     sourceToList $
     streamSmosFiles nextSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|

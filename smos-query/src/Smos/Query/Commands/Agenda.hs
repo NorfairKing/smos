@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Agenda
-  ( agenda
+  ( smosQueryAgenda
   ) where
 
 import Data.List
@@ -23,8 +23,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-agenda :: AgendaSettings -> Q ()
-agenda AgendaSettings {..} = do
+smosQueryAgenda :: AgendaSettings -> Q ()
+smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $

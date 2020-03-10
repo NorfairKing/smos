@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Query.Commands.Stats
-  ( stats
+  ( smosQueryStats
   ) where
 
 import qualified Data.Map as M
@@ -27,8 +27,8 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 
-stats :: StatsSettings -> Q ()
-stats StatsSettings {..} = do
+smosQueryStats :: StatsSettings -> Q ()
+smosQueryStats StatsSettings {..} = do
   now <- liftIO getZonedTime
   ad <- askArchiveDir
   pd <- askProjectsDir
