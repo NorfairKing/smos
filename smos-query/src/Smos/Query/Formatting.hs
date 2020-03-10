@@ -4,10 +4,8 @@
 
 module Smos.Query.Formatting where
 
-import Cursor.Simple.Forest
 import qualified Data.ByteString as SB
 import Data.Foldable
-import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
 import qualified Data.Text as T
@@ -22,6 +20,7 @@ import Rainbox as Box
 import Smos.Data
 
 import Smos.Report.Agenda
+import Smos.Report.Entry
 import Smos.Report.Path
 import Smos.Report.Projection
 
@@ -86,16 +85,11 @@ rootedPathChunk rp =
     Relative _ rf -> fromRelFile rf
     Absolute af -> fromAbsFile af
 
-renderEntryTable :: NonEmpty Projection -> [(RootedPath, ForestCursor Entry)] -> Table
-renderEntryTable ne tups =
+renderEntryReport :: EntryReport -> Table
+renderEntryReport EntryReport {..} =
   formatAsTable $
-  (\l ->
-     if null l
-       then []
-       else map renderProjectionHeader (toList ne) : l) $
-  map renderProjectees $
-  flip map tups $ \(rp, e) ->
-    flip map (toList ne) $ \projection -> performProjection projection rp e
+  map renderProjectionHeader (toList entryReportHeaders) :
+  map (renderProjectees . toList) entryReportCells
 
 renderProjectionHeader :: Projection -> Chunk Text
 renderProjectionHeader p =

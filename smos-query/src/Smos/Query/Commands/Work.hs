@@ -21,6 +21,7 @@ import Rainbow
 import Smos.Data
 
 import Smos.Report.Agenda
+import Smos.Report.Entry
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
@@ -115,4 +116,4 @@ renderWorkReport now ne WorkReport {..} =
     warningHeading t = heading $ underline $ fore red $ chunk t
     heading c = [formatAsTable [[c]]]
     spacer = [formatAsTable [[chunk " "]]]
-    entryTable = renderEntryTable ne
+    entryTable = renderEntryReport . makeEntryReport ne

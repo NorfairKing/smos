@@ -6,6 +6,7 @@ module Smos.Query.Commands.Entry
 
 import Conduit
 
+import Smos.Report.Entry
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 
@@ -21,5 +22,7 @@ smosQueryEntry EntrySettings {..} = do
     streamSmosFiles entrySetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
     smosFileCursors .|
     smosMFilter entrySetFilter
-  let ees = maybe id sorterSortCursorList entrySetSorter tups
-  liftIO $ putTableLn $ renderEntryTable entrySetProjection ees
+  liftIO $
+    putTableLn $
+    renderEntryReport $
+    makeEntryReport entrySetProjection $ maybe id sorterSortCursorList entrySetSorter tups
