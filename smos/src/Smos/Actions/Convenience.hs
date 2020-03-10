@@ -51,6 +51,11 @@ convRepinged =
            case me of
              Nothing -> pure ()
              Just e -> do
+               modifyMTodoStateM $ const $ Just "DONE"
+               modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
+               insertHeaderString "Ping again"
+               modifyMTodoStateM $ const $ Just "DONE"
+               modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
                now <- liftIO getCurrentTime
                let e' =
                      e
@@ -62,11 +67,6 @@ convRepinged =
                                  }
                              ]
                        }
-               modifyMTodoStateM $ const $ Just "DONE"
-               modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
-               insertHeaderString "Ping again"
-               modifyMTodoStateM $ const $ Just "DONE"
-               modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
                modifyEntryCursor $ const $ makeEntryCursor e'
                modifyEntryCursor entryCursorSelectWhole
     , actionDescription =

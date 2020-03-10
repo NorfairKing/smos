@@ -11,6 +11,7 @@ import Smos.Report.Path.Gen ()
 
 spec :: Spec
 spec = do
-  eqSpec @RootedPath
+  eqSpecOnValid @RootedPath
+  ordSpecOnValid @RootedPath
   genValidSpec @RootedPath
   jsonSpecOnValid @RootedPath

@@ -18,6 +18,7 @@ import Smos.Query.OptParse.Types
 import Smos.Query.Projects
 import Smos.Query.Report
 import Smos.Query.Stats
+import Smos.Query.Stuck
 import Smos.Query.Tags
 import Smos.Query.Waiting
 import Smos.Query.Work
@@ -36,6 +37,7 @@ execute (DispatchNext ns) = next ns
 execute (DispatchClock cs) = clock cs
 execute (DispatchAgenda as) = agenda as
 execute (DispatchProjects ps) = projects ps
+execute (DispatchStuck ps) = stuck ps
 execute (DispatchLog ss) = log ss
 execute (DispatchStats ss) = stats ss
 execute (DispatchTags ts) = tags ts

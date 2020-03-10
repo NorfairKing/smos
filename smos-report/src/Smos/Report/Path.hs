@@ -6,6 +6,7 @@ module Smos.Report.Path where
 import GHC.Generics (Generic)
 
 import Data.Aeson
+import Data.Function
 import Data.Validity
 import Data.Validity.Path ()
 import Data.Yaml.Builder (ToYaml(..))
@@ -20,9 +21,15 @@ import Smos.Data.Types ()
 data RootedPath
   = Relative (Path Abs Dir) (Path Rel File)
   | Absolute (Path Abs File)
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity RootedPath
+
+instance Eq RootedPath where
+  (==) = (==) `on` resolveRootedPath
+
+instance Ord RootedPath where
+  compare = compare `on` resolveRootedPath
 
 instance NFData RootedPath
 

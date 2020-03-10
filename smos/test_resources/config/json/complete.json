@@ -467,6 +467,10 @@
                     "key": "gp"
                 },
                 {
+                    "action": "tagsToggle_code",
+                    "key": "gc"
+                },
+                {
                     "action": "timestampsSelect_BEGIN",
                     "key": "sb"
                 },
