@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Waiting where
+module Smos.Query.Commands.Waiting where
 
 import Data.List
 import qualified Data.Text as T

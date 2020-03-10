@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Tags
+module Smos.Query.Commands.Tags
   ( tags
   ) where
 

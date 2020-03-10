@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Clock
+module Smos.Query.Commands.Clock
   ( clock
   ) where
 

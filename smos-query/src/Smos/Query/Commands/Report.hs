@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Report
+module Smos.Query.Commands.Report
   ( report
   ) where
 
@@ -15,8 +15,8 @@ import System.Exit
 import Smos.Report.Projection
 import Smos.Report.Report
 
+import Smos.Query.Commands.Entry
 import Smos.Query.Config
-import Smos.Query.Entry
 import Smos.Query.OptParse.Types
 
 report :: ReportSettings -> Q ()

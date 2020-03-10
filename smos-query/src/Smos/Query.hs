@@ -8,21 +8,11 @@ module Smos.Query
 
 import Prelude (IO)
 
-import Smos.Query.Agenda
-import Smos.Query.Clock
+import Smos.Query.Commands
+
 import Smos.Query.Config
-import Smos.Query.Entry
-import Smos.Query.Log
-import Smos.Query.Next
 import Smos.Query.OptParse
 import Smos.Query.OptParse.Types
-import Smos.Query.Projects
-import Smos.Query.Report
-import Smos.Query.Stats
-import Smos.Query.Stuck
-import Smos.Query.Tags
-import Smos.Query.Waiting
-import Smos.Query.Work
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do

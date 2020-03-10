@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Entry
+module Smos.Query.Commands.Entry
   ( entry
   ) where
 

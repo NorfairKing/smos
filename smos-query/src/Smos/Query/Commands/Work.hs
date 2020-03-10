@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Work
+module Smos.Query.Commands.Work
   ( work
   ) where
 
@@ -27,7 +27,7 @@ import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Work
 
-import Smos.Query.Agenda
+import Smos.Query.Commands.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types

@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Query.Agenda where
+module Smos.Query.Commands.Agenda where
 
 import Data.List
 import qualified Data.Text as T
