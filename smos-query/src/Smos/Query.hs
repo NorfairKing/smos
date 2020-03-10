@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Smos.Query
@@ -29,15 +30,17 @@ smosQuery sqc = do
   runReaderT (execute disp) sqc'
 
 execute :: Dispatch -> Q ()
-execute (DispatchEntry es) = entry es
-execute (DispatchReport es) = report es
-execute (DispatchWork ws) = work ws
-execute (DispatchWaiting ws) = waiting ws
-execute (DispatchNext ns) = next ns
-execute (DispatchClock cs) = clock cs
-execute (DispatchAgenda as) = agenda as
-execute (DispatchProjects ps) = projects ps
-execute (DispatchStuck ps) = stuck ps
-execute (DispatchLog ss) = log ss
-execute (DispatchStats ss) = stats ss
-execute (DispatchTags ts) = tags ts
+execute =
+  \case
+    DispatchEntry es -> entry es
+    DispatchReport es -> report es
+    DispatchWork ws -> work ws
+    DispatchWaiting ws -> waiting ws
+    DispatchNext ns -> next ns
+    DispatchClock cs -> clock cs
+    DispatchAgenda as -> agenda as
+    DispatchProjects ps -> projects ps
+    DispatchStuck ps -> stuck ps
+    DispatchLog ss -> log ss
+    DispatchStats ss -> stats ss
+    DispatchTags ts -> tags ts
