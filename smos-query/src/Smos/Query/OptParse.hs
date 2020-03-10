@@ -145,6 +145,8 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                 }
         CommandProjects ProjectsFlags {..} ->
           pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
+        CommandStuck StuckFlags {..} ->
+          pure $ DispatchStuck StuckSettings {stuckSetFilter = stuckFlagFilter}
         CommandLog LogFlags {..} ->
           pure $
           DispatchLog
@@ -226,6 +228,7 @@ parseCommand =
     , command "clock" parseCommandClock
     , command "agenda" parseCommandAgenda
     , command "projects" parseCommandProjects
+    , command "stuck" parseCommandStuck
     , command "log" parseCommandLog
     , command "stats" parseCommandStats
     , command "tags" parseCommandTags
@@ -332,6 +335,12 @@ parseCommandProjects = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the projects overview"
     parser = CommandProjects <$> (ProjectsFlags <$> parseProjectFilterArgs)
+
+parseCommandStuck :: ParserInfo Command
+parseCommandStuck = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print the stuck projects overview"
+    parser = CommandStuck <$> (StuckFlags <$> parseProjectFilterArgs)
 
 parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier

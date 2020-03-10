@@ -50,6 +50,7 @@ data Command
   | CommandClock ClockFlags
   | CommandAgenda AgendaFlags
   | CommandProjects ProjectsFlags
+  | CommandStuck StuckFlags
   | CommandLog LogFlags
   | CommandStats StatsFlags
   | CommandTags TagsFlags
@@ -125,6 +126,12 @@ data AgendaFlags =
 data ProjectsFlags =
   ProjectsFlags
     { projectsFlagFilter :: Maybe ProjectFilter
+    }
+  deriving (Show, Eq)
+
+data StuckFlags =
+  StuckFlags
+    { stuckFlagFilter :: Maybe ProjectFilter
     }
   deriving (Show, Eq)
 
@@ -211,6 +218,7 @@ data Dispatch
   | DispatchClock ClockSettings
   | DispatchAgenda AgendaSettings
   | DispatchProjects ProjectsSettings
+  | DispatchStuck StuckSettings
   | DispatchLog LogSettings
   | DispatchStats StatsSettings
   | DispatchTags TagsSettings
@@ -283,6 +291,12 @@ data AgendaSettings =
 data ProjectsSettings =
   ProjectsSettings
     { projectsSetFilter :: Maybe ProjectFilter
+    }
+  deriving (Show, Eq, Generic)
+
+data StuckSettings =
+  StuckSettings
+    { stuckSetFilter :: Maybe ProjectFilter
     }
   deriving (Show, Eq, Generic)
 

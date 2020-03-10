@@ -40,3 +40,4 @@ spec = do
            in latestEntryInSmosFile sf `shouldBe` Just e1
   describe "latestStateChange" $
     it "selects a valid entry" $ producesValidsOnValids latestStateChange
+  describe "makeStuckReport" $ it "produces valid reports" $ producesValidsOnValids makeStuckReport

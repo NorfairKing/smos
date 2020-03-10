@@ -26,13 +26,16 @@ instance Validity StuckReport
 data StuckReportEntry =
   StuckReportEntry
     { stuckReportEntryFilePath :: RootedPath
-    , stuckReportEntryHeader :: Header
     , stuckReportEntryState :: Maybe TodoState
+    , stuckReportEntryHeader :: Header
     , stuckReportEntryLatestChange :: Maybe UTCTime
     }
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReportEntry
+
+makeStuckReport :: [StuckReportEntry] -> StuckReport
+makeStuckReport = StuckReport . sortOn stuckReportEntryLatestChange
 
 makeStuckReportEntry :: RootedPath -> SmosFile -> Maybe StuckReportEntry
 makeStuckReportEntry stuckReportEntryFilePath sf = do
