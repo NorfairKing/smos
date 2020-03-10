@@ -25,19 +25,46 @@ spec = do
   describe "latestEntryInSmosFile" $ do
     it "selects a valid entry" $ producesValidsOnValids latestEntryInSmosFile
     it "works for this example with an entry without state" $
-      forAllValid $ \(h1, h2) ->
-        forAllValid $ \(mts, t) ->
-          let e1 =
-                (newEntry h1)
-                  { entryStateHistory =
-                      StateHistory
-                        [ StateHistoryEntry
-                            {stateHistoryEntryNewState = mts, stateHistoryEntryTimestamp = t}
-                        ]
-                  }
-              e2 = newEntry h2
-              sf = SmosFile [Node e1 [], Node e2 []]
-           in latestEntryInSmosFile sf `shouldBe` Just e1
+      forAllValid $ \h1 ->
+        forAllValid $ \h2 ->
+          forAllValid $ \mts ->
+            forAllValid $ \t ->
+              let e1 =
+                    (newEntry h1)
+                      { entryStateHistory =
+                          StateHistory
+                            [ StateHistoryEntry
+                                {stateHistoryEntryNewState = mts, stateHistoryEntryTimestamp = t}
+                            ]
+                      }
+                  e2 = newEntry h2
+                  sf = SmosFile [Node e1 [], Node e2 []]
+               in latestEntryInSmosFile sf `shouldBe` Just e1
+    it
+      "works for this example with two entries with the same modification time. Then it uses the latter" $
+      forAllValid $ \h1 ->
+        forAllValid $ \h2 ->
+          forAllValid $ \mts1 ->
+            forAllValid $ \mts2 ->
+              forAllValid $ \t ->
+                let e1 =
+                      (newEntry h1)
+                        { entryStateHistory =
+                            StateHistory
+                              [ StateHistoryEntry
+                                  {stateHistoryEntryNewState = mts1, stateHistoryEntryTimestamp = t}
+                              ]
+                        }
+                    e2 =
+                      (newEntry h2)
+                        { entryStateHistory =
+                            StateHistory
+                              [ StateHistoryEntry
+                                  {stateHistoryEntryNewState = mts2, stateHistoryEntryTimestamp = t}
+                              ]
+                        }
+                    sf = SmosFile [Node e1 [], Node e2 []]
+                 in latestEntryInSmosFile sf `shouldBe` Just e2
   describe "latestStateChange" $
     it "selects a valid entry" $ producesValidsOnValids latestStateChange
   describe "makeStuckReport" $ it "produces valid reports" $ producesValidsOnValids makeStuckReport

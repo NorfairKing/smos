@@ -5,6 +5,7 @@ module Smos.Report.Stuck where
 
 import GHC.Generics (Generic)
 
+import Data.Function
 import Data.List
 import Data.Ord
 import Data.Time
@@ -17,7 +18,7 @@ import Smos.Report.Path
 
 data StuckReport =
   StuckReport
-    { stucReportEntries :: [StuckReportEntry]
+    { stuckReportEntries :: [StuckReportEntry]
     }
   deriving (Show, Eq, Generic)
 
@@ -47,7 +48,9 @@ makeStuckReportEntry stuckReportEntryFilePath sf = do
 
 latestEntryInSmosFile :: SmosFile -> Maybe Entry
 latestEntryInSmosFile =
+  fmap last .
   headMay .
+  groupBy ((==) `on` latestStateChange . entryStateHistory) .
   sortOn (Down . latestStateChange . entryStateHistory) . concatMap flatten . smosFileForest
   where
     headMay :: [a] -> Maybe a

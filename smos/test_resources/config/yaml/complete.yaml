@@ -235,6 +235,8 @@ keys:
       key: ge
     - action: tagsToggle_power
       key: gp
+    - action: tagsToggle_code
+      key: gc
     - action: timestampsSelect_BEGIN
       key: sb
     - action: timestampsSelect_END

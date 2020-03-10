@@ -35,7 +35,7 @@ stuck StuckSettings {..} = do
     putTableLn $ renderStuckReport now stuckReport
 
 renderStuckReport :: UTCTime -> StuckReport -> Table
-renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stucReportEntries
+renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuckReportEntries
 
 renderStuckReportEntry :: UTCTime -> StuckReportEntry -> [Chunk Text]
 renderStuckReportEntry now StuckReportEntry {..} =
