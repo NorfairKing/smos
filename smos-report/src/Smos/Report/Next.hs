@@ -34,6 +34,9 @@ isNextAction = maybe False isNextTodoState . entryState
 isNextTodoState :: TodoState -> Bool
 isNextTodoState = (`elem` mapMaybe todoState ["NEXT", "STARTED"])
 
+makeNextActionReport :: [(RootedPath, Entry)] -> NextActionReport
+makeNextActionReport = NextActionReport . map (uncurry makeNextActionEntry)
+
 makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
   NextActionEntry
@@ -41,6 +44,14 @@ makeNextActionEntry rf e =
     , nextActionEntryHeader = entryHeader e
     , nextActionEntryFilePath = rf
     }
+
+newtype NextActionReport =
+  NextActionReport
+    { nextActionReportEntries :: [NextActionEntry]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity NextActionReport
 
 data NextActionEntry =
   NextActionEntry

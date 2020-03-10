@@ -27,12 +27,11 @@ smosQueryNext NextSettings {..} = do
     smosFileCursors .|
     smosMFilter nextSetFilter .|
     smosCursorCurrents .|
-    C.filter (isNextAction . snd) .|
-    C.map (uncurry makeNextActionEntry)
-  liftIO $ putTableLn $ renderNextActionReport tups
+    C.filter (isNextAction . snd)
+  liftIO $ putTableLn $ renderNextActionReport $ makeNextActionReport tups
 
-renderNextActionReport :: [NextActionEntry] -> Table
-renderNextActionReport = formatAsTable . map formatNextActionEntry
+renderNextActionReport :: NextActionReport -> Table
+renderNextActionReport = formatAsTable . map formatNextActionEntry . nextActionReportEntries
 
 formatNextActionEntry :: NextActionEntry -> [Chunk Text]
 formatNextActionEntry NextActionEntry {..} =
