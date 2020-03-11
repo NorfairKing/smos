@@ -6,11 +6,9 @@ module Smos.Query.Commands.Projects
   ( smosQueryProjects
   ) where
 
-import Data.List
 import Data.Text (Text)
 
 import Conduit
-import qualified Data.Conduit.List as C
 import Rainbow
 
 import Smos.Data
@@ -29,13 +27,11 @@ smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
     streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning .|
-    smosMFilter (FilterFst <$> projectsSetFilter) .|
-    C.map (uncurry makeProjectEntry)
-  liftIO $
-    putTableLn $ renderProjectsReport $ sortOn (fmap entryState . projectEntryCurrentEntry) projs
+    smosMFilter (FilterFst <$> projectsSetFilter)
+  liftIO $ putTableLn $ renderProjectsReport $ makeProjectsReport projs
 
-renderProjectsReport :: [ProjectEntry] -> Table
-renderProjectsReport = formatAsTable . map renderProjectEntry
+renderProjectsReport :: ProjectsReport -> Table
+renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEntries
 
 renderProjectEntry :: ProjectEntry -> [Chunk Text]
 renderProjectEntry ProjectEntry {..} =

@@ -7,11 +7,25 @@ import GHC.Generics (Generic)
 
 import Control.Applicative
 import Control.Monad
+import Data.List
 import Data.Validity
 
 import Smos.Data
 
 import Smos.Report.Path
+
+newtype ProjectsReport =
+  ProjectsReport
+    { projectsReportEntries :: [ProjectEntry]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity ProjectsReport
+
+makeProjectsReport :: [(RootedPath, SmosFile)] -> ProjectsReport
+makeProjectsReport =
+  ProjectsReport .
+  sortOn (fmap entryState . projectEntryCurrentEntry) . map (uncurry makeProjectEntry)
 
 data ProjectEntry =
   ProjectEntry
