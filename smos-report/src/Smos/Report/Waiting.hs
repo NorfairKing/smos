@@ -6,14 +6,26 @@ module Smos.Report.Waiting where
 
 import GHC.Generics
 
+import Data.List
 import Data.Time
+import Data.Validity
+import Data.Validity.Time ()
 
 import Smos.Data
 
 import Smos.Report.Path
 
-isWaitingAction :: Entry -> Bool
-isWaitingAction entry = entryState entry == Just "WAITING"
+newtype WaitingReport =
+  WaitingReport
+    { waitingReportEntries :: [WaitingActionEntry]
+    }
+  deriving (Show, Eq, Generic)
+
+instance Validity WaitingReport
+
+makeWaitingReport :: [(RootedPath, Entry)] -> WaitingReport
+makeWaitingReport =
+  WaitingReport . sortOn waitingActionEntryTimestamp . map (uncurry makeWaitingActionEntry)
 
 data WaitingActionEntry =
   WaitingActionEntry
@@ -22,6 +34,8 @@ data WaitingActionEntry =
     , waitingActionEntryFilePath :: RootedPath
     }
   deriving (Show, Eq, Generic)
+
+instance Validity WaitingActionEntry
 
 makeWaitingActionEntry :: RootedPath -> Entry -> WaitingActionEntry
 makeWaitingActionEntry rp Entry {..} =
@@ -34,3 +48,6 @@ makeWaitingActionEntry rp Entry {..} =
         , waitingActionEntryTimestamp = time
         , waitingActionEntryFilePath = rp
         }
+
+isWaitingAction :: Entry -> Bool
+isWaitingAction entry = entryState entry == Just "WAITING"

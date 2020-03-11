@@ -5,7 +5,6 @@ module Smos.Query.Commands.Waiting
   ( smosQueryWaiting
   ) where
 
-import Data.List
 import Data.Text (Text)
 import Data.Time
 
@@ -29,14 +28,13 @@ smosQueryWaiting WaitingSettings {..} = do
     smosFileCursors .|
     smosMFilter waitingSetFilter .|
     smosCursorCurrents .|
-    C.filter (isWaitingAction . snd) .|
-    C.map (uncurry makeWaitingActionEntry)
+    C.filter (isWaitingAction . snd)
   now <- liftIO getCurrentTime
-  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now tups
+  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now $ makeWaitingReport tups
 
-renderWaitingActionReport :: Word -> UTCTime -> [WaitingActionEntry] -> Table
+renderWaitingActionReport :: Word -> UTCTime -> WaitingReport -> Table
 renderWaitingActionReport threshold now =
-  formatAsTable . map (formatWaitingActionEntry threshold now) . sortOn waitingActionEntryTimestamp
+  formatAsTable . map (formatWaitingActionEntry threshold now) . waitingReportEntries
 
 formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk Text]
 formatWaitingActionEntry threshold now WaitingActionEntry {..} =
