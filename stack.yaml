@@ -1,5 +1,6 @@
 resolver: lts-14.20
 packages:
+
 - smos
 - smos-data
 - smos-data-gen
