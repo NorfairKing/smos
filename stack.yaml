@@ -1,4 +1,4 @@
-resolver: lts-14.20
+resolver: lts-14.23
 packages:
 
 - smos
