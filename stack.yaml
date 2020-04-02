@@ -73,7 +73,7 @@ extra-deps:
 - github: NorfairKing/pretty-relative-time
   commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
 - github: NorfairKing/cursor-fuzzy-time
-  commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
+  commit: c296b1de29a7795895bb1c68311021ce149406e2
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
@@ -92,7 +92,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: be40c0a0b0bf6a1d58f4a6a5c6770c4a544c4450
+  commit: 0c0804d694b4312c0ede00424b978084160e6eb6
   subdirs:
   - genvalidity
   - genvalidity-aeson
