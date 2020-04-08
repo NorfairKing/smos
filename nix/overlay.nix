@@ -15,32 +15,36 @@ with final.haskell.lib;
               )
             ) ( final.haskellPackages.autoexporter )
           );
-    in
-      final.lib.genAttrs [
-        "smos"
-        "smos-data"
-        "smos-data-gen"
-        "smos-cursor"
-        "smos-cursor-gen"
-        "smos-report"
-        "smos-report-gen"
-        "smos-report-cursor"
-        "smos-report-cursor-gen"
-        "smos-query"
-        "smos-single"
-        "smos-scheduler"
-        "smos-convert-org"
-        "smos-archive"
-        "smos-docs-site"
-        "smos-api"
-        "smos-api-gen"
-        "smos-server"
-        "smos-server-gen"
-        "smos-client"
-        "smos-client-gen"
-        "smos-sync-client"
-        "smos-sync-client-gen"
-      ] smosPkg;
+      smosPkgWithComp =
+        exeName: name:
+          generateOptparseApplicativeCompletion exeName ( smosPkg name );
+      smosPkgWithOwnComp = name: smosPkgWithComp name name;
+
+    in {
+      "smos" = smosPkgWithOwnComp "smos";
+      "smos-data" = smosPkg "smos-data";
+      "smos-data-gen" = smosPkg "smos-data-gen";
+      "smos-cursor" = smosPkg "smos-cursor";
+      "smos-cursor-gen" = smosPkg "smos-cursor-gen";
+      "smos-report" = smosPkg "smos-report";
+      "smos-report-gen" = smosPkg "smos-report-gen";
+      "smos-report-cursor" = smosPkg "smos-report-cursor";
+      "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
+      "smos-query" = smosPkgWithOwnComp "smos-query";
+      "smos-single" = smosPkgWithOwnComp "smos-single";
+      "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
+      "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+      "smos-archive" = smosPkgWithOwnComp "smos-archive";
+      "smos-docs-site" = smosPkgWithOwnComp "smos-docs-site";
+      "smos-api" = smosPkg "smos-api";
+      "smos-api-gen" = smosPkg "smos-api-gen";
+      "smos-server" = smosPkgWithOwnComp "smos-server";
+      "smos-server-gen" = smosPkg "smos-server-gen";
+      "smos-client" = smosPkg "smos-client";
+      "smos-client-gen" = smosPkg "smos-client-gen";
+      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
+      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+    };
   smosDocumentationSite =
     final.stdenv.mkDerivation rec {
       name = "smosDocumentationSite";
