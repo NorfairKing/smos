@@ -450,6 +450,7 @@ parsePeriod =
   (parseBeginEnd <|>
    choices
      [ flag' Today (mconcat [long "today", help "today"])
+     , flag' Yesterday (mconcat [long "yesterday", help "yesterday"])
      , flag' ThisWeek (mconcat [long "this-week", help "this week"])
      , flag' LastWeek (mconcat [long "last-week", help "last week"])
      , flag' ThisMonth (mconcat [long "this-month", help "this month"])
