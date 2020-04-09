@@ -88,7 +88,7 @@ flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-report"
+    description = "smos-scheduler"
 
 parseFlags :: Parser Flags
 parseFlags =
