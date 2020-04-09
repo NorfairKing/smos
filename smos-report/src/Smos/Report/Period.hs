@@ -15,6 +15,7 @@ import Smos.Report.TimeBlock
 
 data Period
   = Today
+  | Yesterday
   | ThisWeek
   | LastWeek
   | ThisMonth
@@ -66,6 +67,7 @@ filterPeriod now p u =
   (case p of
      AllTime -> const True
      Today -> filterBetween todayStart todayEnd
+     Yesterday -> filterBetween yesterdayStart yesterdayEnd
      LastWeek -> filterBetween lastWeekStart thisWeekStart
      ThisWeek -> filterBetween thisWeekStart thisWeekEnd
      LastMonth -> filterBetween lastMonthStart thisMonthStart
@@ -83,12 +85,18 @@ filterPeriod now p u =
     nowLocal = zonedTimeToLocalTime now
     today :: Day
     today = localDay nowLocal
+    yesterday :: Day
+    yesterday = pred today
     filterBetween :: LocalTime -> LocalTime -> LocalTime -> Bool
     filterBetween start end lt = start <= lt && lt < end
     todayStart :: LocalTime
     todayStart = nowLocal {localTimeOfDay = midnight}
     todayEnd :: LocalTime
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
+    yesterdayStart :: LocalTime
+    yesterdayStart = LocalTime {localDay = yesterday, localTimeOfDay = midnight}
+    yesterdayEnd :: LocalTime
+    yesterdayEnd = LocalTime {localDay = today, localTimeOfDay = midnight}
     lastWeekStart :: LocalTime
     lastWeekStart =
       let (y, wn, _) = toWeekDate today
