@@ -109,3 +109,4 @@ benchmarks:
     - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen
+    - genvalidity

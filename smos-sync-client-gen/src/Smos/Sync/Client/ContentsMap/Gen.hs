@@ -7,17 +7,13 @@ import Data.ByteString
 import Data.GenValidity
 import qualified Data.Map as M
 import Data.Maybe
-
 import Path
-
-import Test.QuickCheck
-
 import Smos.API.Gen ()
-
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.TestUtils
+import Test.QuickCheck
 
 hideFile :: Path Rel File -> Path Rel File
 hideFile f = fromJust $ parseRelFile $ '.' : toFilePath f
@@ -41,20 +37,23 @@ filterHiddenFiles :: ContentsMap -> ContentsMap
 filterHiddenFiles = ContentsMap . M.filterWithKey (\p _ -> isHidden p) . contentsMapFiles
 
 instance GenValid ContentsMap where
-  genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
 
 sizedContentsMap :: Int -> Gen ContentsMap
 sizedContentsMap 0 = pure CM.empty
-sizedContentsMap i = do
-  contentsMap <- sizedContentsMap (i - 1)
-  let ins cm = do
-        path <- genValid
-        contents <- genValid
-        case CM.insert path contents cm of
-          Nothing -> ins cm
-          Just cm' -> pure cm'
-  ins contentsMap
+sizedContentsMap i = scale (`div` i) $ go i
+  where
+    go 0 = pure CM.empty
+    go j = do
+      contentsMap <- go (j - 1)
+      let ins cm = do
+            path <- genValid
+            contents <- genValid
+            case CM.insert path contents cm of
+              Nothing -> ins cm
+              Just cm' -> pure cm'
+      ins contentsMap
 
 mapWithNewPath :: ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
 mapWithNewPath = mapWithNewByGen genValid
@@ -164,46 +163,46 @@ mapWithDisjunctUnion cm = disjunctContentsMap cm `suchThatMap` (\cm' -> (,) cm' 
 
 twoChangedMapsAndTheirUnions ::
      Gen ( ( ContentsMap
-             -- m1
+        -- m1
            , ContentsMap
-             -- m2
+        -- m2
             )
          , ( ContentsMap
-             -- m1' = m3
+        -- m1' = m3
            , ContentsMap
-             -- m2' = m4
+        -- m2' = m4
             )
          , ( ContentsMap
-             -- m12
+        -- m12
            , ContentsMap
-             -- m14
+        -- m14
            , ContentsMap
-             -- m23
+        -- m23
            , ContentsMap
-             -- m34
+        -- m34
             ))
 twoChangedMapsAndTheirUnions = twoChangedMapsAndTheirUnionsWith CM.empty
 
 twoChangedMapsAndTheirUnionsWith ::
      ContentsMap
   -> Gen ( ( ContentsMap
-             -- m1
+        -- m1
            , ContentsMap
-             -- m2
+        -- m2
             )
          , ( ContentsMap
-             -- m1' = m3
+        -- m1' = m3
            , ContentsMap
-             -- m2' = m4
+        -- m2' = m4
             )
          , ( ContentsMap
-             -- m12
+        -- m12
            , ContentsMap
-             -- m14
+        -- m14
            , ContentsMap
-             -- m23
+        -- m23
            , ContentsMap
-             -- m34
+        -- m34
             ))
 twoChangedMapsAndTheirUnionsWith cm@(ContentsMap m) = do
   cm1@(ContentsMap m1) <- genValid `suchThat` (\cm1 -> isJust $ CM.union cm1 cm)
@@ -220,19 +219,19 @@ twoChangedMapsAndTheirUnionsWith cm@(ContentsMap m) = do
 
 threeDisjunctMapsAndTheirUnions ::
      Gen ( ( ContentsMap
-          -- m1
+        -- m1
            , ContentsMap
-          -- m2
+        -- m2
            , ContentsMap)
-          -- m3)
+      -- m3)
          , ( ContentsMap
-          -- m1 U m2
+        -- m1 U m2
            , ContentsMap
-          -- m2 U m3
+        -- m2 U m3
            , ContentsMap
-          -- m1 U m3
+        -- m1 U m3
            , ContentsMap
-          -- m1 U m2 U m3
+        -- m1 U m2 U m3
             ))
 threeDisjunctMapsAndTheirUnions = do
   cm1@(ContentsMap m1) <- genValid
