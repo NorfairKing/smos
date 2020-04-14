@@ -48,7 +48,8 @@ import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
-syncSmosSyncClient Settings {..} SyncSettings {..} =
+syncSmosSyncClient Settings {..} SyncSettings {..} = do
+  ensureDir $ parent syncSetMetadataDB
   withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
     runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $

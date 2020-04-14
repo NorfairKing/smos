@@ -31,7 +31,7 @@ readFilteredSyncFiles igf dir = do
         case igf of
           IgnoreNothing -> const True
           IgnoreHiddenFiles -> not . isHidden
-  fs <- snd <$> listDirRecurRel dir
+  fs <- fromMaybe [] <$> forgivingAbsence (snd <$> listDirRecurRel dir)
   fmap (ContentsMap . M.fromList . catMaybes) $
     forM fs $ \rp ->
       if filePred rp
@@ -66,6 +66,7 @@ makeContentsMap Mergeful.ClientStore {..} =
 
 saveContentsMap :: IgnoreFiles -> Path Abs Dir -> ContentsMap -> IO ()
 saveContentsMap igf dir cm = do
+  ensureDir dir
   let filePred =
         case igf of
           IgnoreNothing -> const True
