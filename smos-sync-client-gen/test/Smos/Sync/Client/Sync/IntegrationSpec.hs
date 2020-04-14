@@ -2,18 +2,15 @@ module Smos.Sync.Client.Sync.IntegrationSpec
   ( spec
   ) where
 
-import Test.Hspec
-import Test.QuickCheck
-import Test.Validity
-
 import Servant.Client (ClientEnv)
-
 import Smos.Server.TestUtils
-
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Client.TestUtils
+import Test.Hspec
+import Test.QuickCheck
+import Test.Validity
 
 spec :: Spec
 spec =
@@ -156,7 +153,7 @@ singleClientDeletionSpec =
 
 singleClientLargeSyncSpec :: SpecWith ClientEnv
 singleClientLargeSyncSpec =
-  it "can sync a large store" $ \cenv ->
+  xit "can sync a large store" $ \cenv ->
     forAll (sizedContentsMap 1000) $ \m ->
       withNewRegisteredUser cenv $ \r ->
         withSyncClient cenv r $ \c -> do

@@ -5,14 +5,12 @@
 module Main where
 
 import Criterion.Main as Criterion
-import Data.GenValidity
 import Data.GenValidity.Criterion
 import Smos.Sync.Client.ContentsMap
 import Smos.Sync.Client.ContentsMap.Gen
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.MetaMap
 import Smos.Sync.Client.MetaMap.Gen ()
-import Test.QuickCheck
 
 main :: IO ()
 main =
