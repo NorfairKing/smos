@@ -63,6 +63,75 @@ spec =
                 , "--uuid-file"
                 , fromAbsFile up
                 ]
+    it "just works (tm) when the contents dir doesn't exist yet" $ \cenv ->
+      forAllValid $ \un ->
+        forAllValid $ \pw ->
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
+            withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
+              let t = test cenv tmpDir
+              t ["register", "--username", usernameString un, "--password", passwordString pw]
+              cd <- resolveDir contentsDir "subdir/for/contents"
+              up <- resolveFile tmpDir "uuid.jon"
+              mp <- resolveFile tmpDir "metadata.db"
+              t
+                [ "--username"
+                , usernameString un
+                , "--password"
+                , passwordString pw
+                , "sync"
+                , "--contents-dir"
+                , fromAbsDir cd
+                , "--metadata-db"
+                , fromAbsFile mp
+                , "--uuid-file"
+                , fromAbsFile up
+                ]
+    it "just works (tm) when the directory for the metadata doesn't exist yet" $ \cenv ->
+      forAllValid $ \un ->
+        forAllValid $ \pw ->
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
+            withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
+              let t = test cenv tmpDir
+              t ["register", "--username", usernameString un, "--password", passwordString pw]
+              tmpSubDir <- resolveDir tmpDir "subdir/for/metadata"
+              up <- resolveFile tmpDir "uuid.jon"
+              mp <- resolveFile tmpSubDir "metadata.db"
+              t
+                [ "--username"
+                , usernameString un
+                , "--password"
+                , passwordString pw
+                , "sync"
+                , "--contents-dir"
+                , fromAbsDir contentsDir
+                , "--metadata-db"
+                , fromAbsFile mp
+                , "--uuid-file"
+                , fromAbsFile up
+                ]
+    it "just works (tm) when the directory for the uuid file doesn't exist yet" $ \cenv ->
+      forAllValid $ \un ->
+        forAllValid $ \pw ->
+          withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
+            withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
+              let t = test cenv tmpDir
+              t ["register", "--username", usernameString un, "--password", passwordString pw]
+              tmpSubDir <- resolveDir tmpDir "subdir/for/uuid"
+              up <- resolveFile tmpSubDir "uuid.jon"
+              mp <- resolveFile tmpDir "metadata.db"
+              t
+                [ "--username"
+                , usernameString un
+                , "--password"
+                , passwordString pw
+                , "sync"
+                , "--contents-dir"
+                , fromAbsDir contentsDir
+                , "--metadata-db"
+                , fromAbsFile mp
+                , "--uuid-file"
+                , fromAbsFile up
+                ]
 
 test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
 test cenv tmpDir args = do
