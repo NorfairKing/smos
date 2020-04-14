@@ -45,3 +45,18 @@ tests:
     - smos-api
     - smos-api-gen
 
+benchmarks:
+  smos-api-bench:
+    main: Main.hs
+    source-dirs: bench/
+    ghc-options:
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - criterion
+    - genvalidity
+    - genvalidity-criterion
+    - genvalidity-uuid
+    - smos-api
+    - smos-api-gen
+

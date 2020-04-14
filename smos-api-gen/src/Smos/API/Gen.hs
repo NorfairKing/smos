@@ -9,12 +9,9 @@ import Data.GenValidity.Path ()
 import Data.GenValidity.Text ()
 import Data.GenValidity.UUID ()
 import Data.GenValidity.UUID.Typed ()
-
 import qualified Data.Text as T
-
-import Test.QuickCheck
-
 import Smos.API
+import Test.QuickCheck
 
 instance GenValid UsernameChar where
   genValid = UsernameChar <$> elements (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])
@@ -37,17 +34,17 @@ instance GenValid Password where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Register where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Login where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid SyncFile where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid SyncResponse where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

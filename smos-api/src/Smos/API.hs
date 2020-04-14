@@ -114,6 +114,8 @@ data Register =
 
 instance Validity Register
 
+instance NFData Register
+
 instance ToJSON Register
 
 instance FromJSON Register
@@ -129,6 +131,8 @@ data Login =
   deriving (Show, Eq, Generic)
 
 instance Validity Login
+
+instance NFData Login
 
 instance ToJSON Login
 
@@ -205,6 +209,8 @@ data SyncResponse =
   deriving (Show, Eq, Generic)
 
 instance Validity SyncResponse
+
+instance NFData SyncResponse
 
 instance FromJSON SyncResponse where
   parseJSON = withObject "SyncResponse" $ \o -> SyncResponse <$> o .: "server-id" <*> o .: "items"

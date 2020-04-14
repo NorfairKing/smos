@@ -40,7 +40,7 @@ extra-deps:
 
 
 - github: NorfairKing/typed-uuid
-  commit: 673fb60e059e2ff9598f671c24c01305c383b52b
+  commit: 5415eaeee9817dfc4846fe4d73efce9312281b27
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
@@ -96,7 +96,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: 270dd05134536151ba430174d9f31d8425e56fa4
+  commit: 0ddfd121ed48df95e1f5f9dd6ce99ca82130b53c
   subdirs:
   - genvalidity
   - genvalidity-aeson
