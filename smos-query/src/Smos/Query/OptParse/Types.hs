@@ -8,22 +8,19 @@ module Smos.Query.OptParse.Types
   , module Smos.Report.ShouldPrint
   ) where
 
-import GHC.Generics (Generic)
-
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Yaml as Yaml
-
-import qualified Smos.Report.OptParse.Types as Report
-
+import GHC.Generics (Generic)
 import Smos.Data
-
+import Smos.Query.Config
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Report
@@ -31,8 +28,6 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
-
-import Smos.Query.Config
 
 data Arguments =
   Arguments Command Flags
@@ -67,7 +62,7 @@ data EntryFlags =
 
 data ReportFlags =
   ReportFlags
-    { reportFlagReportName :: Text
+    { reportFlagReportName :: Maybe Text
     }
   deriving (Show, Eq)
 
@@ -235,7 +230,7 @@ data EntrySettings =
 
 data ReportSettings =
   ReportSettings
-    { reportSetReportName :: Text
+    { reportSetReportName :: Maybe Text
     , reportSetAvailableReports :: Map Text PreparedReport
     }
   deriving (Show, Eq, Generic)

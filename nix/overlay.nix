@@ -95,6 +95,27 @@ with final.haskell.lib;
                         "1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk";
                     };
 
+                  typedUUIDRepo =
+                    final.fetchFromGitHub {
+                      owner = "NorfairKing";
+                      repo = "typed-uuid";
+                      rev = "5415eaeee9817dfc4846fe4d73efce9312281b27";
+                      sha256 =
+                        "sha256:1illk01gyhhrjmz19n5wc07n61d0s2d2m348n7ibwf2795pjkrwj";
+                    };
+
+                  typedUUIDPkg =
+                    name:
+                      disableLibraryProfiling (
+                        self.callCabal2nix name ( typedUUIDRepo + "/${name}" ) {}
+                      );
+
+                  typedUUIDPackages =
+                    final.lib.genAttrs [
+                      "typed-uuid"
+                      "genvalidity-typed-uuid"
+                    ] typedUUIDPkg;
+
                   servantAuthRepo =
                     final.fetchFromGitHub {
                       owner = "haskell-servant";
@@ -111,6 +132,7 @@ with final.haskell.lib;
                           self.callCabal2nix name ( servantAuthRepo + "/${name}" ) {}
                         )
                       );
+
                   servantAuthPackages =
                     final.lib.genAttrs [
                       "servant-auth-client"
@@ -173,7 +195,7 @@ with final.haskell.lib;
                 sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
                 orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
                 cron = dontCheck (self.callHackage "cron" "0.6.1" {});
-              } // persistentPackages // servantAuthPackages // hsTlsPackages
+              } // persistentPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
             );
         }
     );

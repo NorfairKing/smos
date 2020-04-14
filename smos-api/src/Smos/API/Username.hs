@@ -15,6 +15,7 @@ module Smos.API.Username
 
 import GHC.Generics (Generic)
 
+import Control.DeepSeq
 import Control.Monad.Fail as Fail
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON (toJSONKeyText)
@@ -39,6 +40,8 @@ instance Validity Username where
       , check (T.length t >= 3) "The username is at least three characters long."
       , decorateList (map UsernameChar $ T.unpack t) validate
       ]
+
+instance NFData Username
 
 instance Hashable Username
 

@@ -124,14 +124,6 @@
                     "key": "<Esc>"
                 },
                 {
-                    "action": "selectEditor",
-                    "key": "q"
-                },
-                {
-                    "action": "helpSelectHelp",
-                    "key": "<Esc>"
-                },
-                {
                     "action": "helpSelectHelp",
                     "key": "<Enter>"
                 }

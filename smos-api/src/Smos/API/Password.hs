@@ -16,6 +16,7 @@ module Smos.API.Password
 
 import GHC.Generics (Generic)
 
+import Control.DeepSeq
 import Control.Monad.Fail as Fail
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON (toJSONKeyText)
@@ -44,6 +45,8 @@ instance Validity Password where
       ]
 
 instance Hashable Password
+
+instance NFData Password
 
 instance PersistField Password where
   toPersistValue (Password t) = PersistText t

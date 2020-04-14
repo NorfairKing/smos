@@ -93,6 +93,7 @@ trimLogbookEntry now cp =
   case cp of
     AllTime -> pure
     Today -> trimToToday
+    Yesterday -> trimToYesterday
     LastWeek -> trimToLastWeek
     ThisWeek -> trimToThisWeek
     LastMonth -> trimToLastMonth
@@ -111,6 +112,8 @@ trimLogbookEntry now cp =
     today = localDay nowLocal
     trimToToday :: LogbookEntry -> Maybe LogbookEntry
     trimToToday = trimLogbookEntryToDay tz today
+    trimToYesterday :: LogbookEntry -> Maybe LogbookEntry
+    trimToYesterday = trimLogbookEntryToDay tz (pred today)
     lastWeekStart :: LocalTime
     lastWeekStart =
       let (y, wn, _) = toWeekDate today

@@ -39,8 +39,12 @@ extra-deps:
     - servant-auth-server
 
 
-- typed-uuid-0.0.0.0@sha256:623b8c37206aa7da887db0e17f590789fd3d602d7a70742b7486fa038981ef90,1272
-- genvalidity-typed-uuid-0.0.0.0@sha256:3f3e43d3a2876c977aca262a57c2bc9a6f7411d9a071677ebb8ac01504e99acb,1703
+- github: NorfairKing/typed-uuid
+  commit: 5415eaeee9817dfc4846fe4d73efce9312281b27
+  subdirs:
+  - typed-uuid
+  - genvalidity-typed-uuid
+
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 - Validation-0.2.0@sha256:59c15dd11f509dbea585f590be0e2676de9d764e2812f584d13de86ab939542b,1130
 
@@ -64,7 +68,7 @@ extra-deps:
     - persistent-sqlite
 
 - github: NorfairKing/mergeful
-  commit: 627f244d81568873f1d44772a96c7afe63a31b71
+  commit: 4e3cf189c76d04daf9c26267a64523ec8bb071aa
   subdirs:
     - mergeful
     - genvalidity-mergeful
@@ -92,7 +96,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: 0c0804d694b4312c0ede00424b978084160e6eb6
+  commit: 0ddfd121ed48df95e1f5f9dd6ce99ca82130b53c
   subdirs:
   - genvalidity
   - genvalidity-aeson

@@ -14,25 +14,20 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
-import Text.Read (readMaybe)
-
-import qualified System.Environment as System
-import System.Exit
-
 import Options.Applicative
-
-import qualified Smos.Report.OptParse as Report
-
+import Smos.Query.Config
+import Smos.Query.OptParse.Types
 import Smos.Report.Comparison
 import Smos.Report.Filter
+import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
-
-import Smos.Query.Config
-import Smos.Query.OptParse.Types
+import qualified System.Environment as System
+import System.Exit
+import Text.Read (readMaybe)
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
@@ -250,7 +245,9 @@ parseCommandReport = info parser modifier
     parser =
       CommandReport <$>
       (ReportFlags <$>
-       strArgument (mconcat [metavar "REPORT", help "The preconfigured report to run"]))
+       argument
+         (Just <$> str)
+         (mconcat [value Nothing, metavar "REPORT", help "The preconfigured report to run"]))
 
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
@@ -450,6 +447,7 @@ parsePeriod =
   (parseBeginEnd <|>
    choices
      [ flag' Today (mconcat [long "today", help "today"])
+     , flag' Yesterday (mconcat [long "yesterday", help "yesterday"])
      , flag' ThisWeek (mconcat [long "this-week", help "this week"])
      , flag' LastWeek (mconcat [long "last-week", help "last week"])
      , flag' ThisMonth (mconcat [long "this-month", help "this month"])
