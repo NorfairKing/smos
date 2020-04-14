@@ -2,10 +2,9 @@
 
 module Smos.Report.Archive where
 
-import GHC.Generics (Generic)
-
 import Data.Aeson
 import Data.Validity
+import GHC.Generics (Generic)
 
 data HideArchive
   = HideArchive
@@ -21,3 +20,7 @@ instance FromJSON HideArchive where
       if b
         then HideArchive
         else Don'tHideArchive
+
+instance ToJSON HideArchive where
+  toJSON HideArchive = Bool True
+  toJSON Don'tHideArchive = Bool False
