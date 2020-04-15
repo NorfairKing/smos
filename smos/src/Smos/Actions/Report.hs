@@ -4,7 +4,6 @@ module Smos.Actions.Report where
 
 import Smos.Actions.File
 import Smos.Actions.Utils
-import Smos.Cursor.Report.Next
 import Smos.Types
 
 reportNextActions :: Action

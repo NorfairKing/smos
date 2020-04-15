@@ -22,7 +22,6 @@ import Smos.Draw
 import Smos.Keys
 import Smos.Style
 import Smos.Types
-import System.FileLock
 
 mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
 mkSmosApp sc@SmosConfig {..} =

@@ -14,8 +14,6 @@ import Lens.Micro.Extras
 import Smos.Actions.Entry
 import Smos.Actions.Forest
 import Smos.Actions.Utils
-import Smos.Cursor.Entry
-import Smos.Cursor.Header
 import Smos.Data
 import Smos.Types
 

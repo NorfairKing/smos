@@ -37,17 +37,7 @@ import Import hiding ((<+>))
 import Lens.Micro
 import Smos.Actions
 import Smos.Cursor.Collapse
-import Smos.Cursor.Contents
-import Smos.Cursor.Entry
-import Smos.Cursor.Header
-import Smos.Cursor.Logbook
-import Smos.Cursor.Properties
-import Smos.Cursor.Report.Next
-import Smos.Cursor.SmosFile
-import Smos.Cursor.StateHistory
 import Smos.Cursor.Tag
-import Smos.Cursor.Tags
-import Smos.Cursor.Timestamps
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Keys
