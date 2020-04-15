@@ -3,12 +3,10 @@
 module Smos.Cursor.Editor.Gen where
 
 import Data.GenValidity
-
-import Smos.Types
-
 import Smos.Cursor.Help.Gen ()
 import Smos.Cursor.Report.Next.Gen ()
 import Smos.Cursor.SmosFile.Gen ()
+import Smos.Types
 
 instance GenValid EditorCursor where
   genValid = genValidStructurally

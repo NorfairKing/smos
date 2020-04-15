@@ -1,32 +1,28 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos
-  ( smos
-  , smosWithoutRuntimeConfig
-  , startSmosOn
-  , module Smos.Config
-  ) where
-
-import Import
-
-import Data.Time
-
-import Control.Concurrent
-import Control.Concurrent.Async
-import System.Exit
+  ( smos,
+    smosWithoutRuntimeConfig,
+    startSmosOn,
+    module Smos.Config,
+  )
+where
 
 import Brick.BChan as Brick
 import Brick.Main as Brick
+import Control.Concurrent
+import Control.Concurrent.Async
+import Data.Time
 import Graphics.Vty as Vty (defaultConfig, mkVty)
-
-import Smos.Data
-
+import Import
 import Smos.Actions.File
 import Smos.App
 import Smos.Config
+import Smos.Data
 import Smos.OptParse
 import Smos.OptParse.Bare
 import Smos.Types
+import System.Exit
 
 smos :: SmosConfig -> IO ()
 smos sc = do

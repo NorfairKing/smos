@@ -1,23 +1,20 @@
 module Smos.Sync.Client.Session
-  ( withToken
-  , loadToken
-  , loadSession
-  , saveSession
-  ) where
+  ( withToken,
+    loadToken,
+    loadSession,
+    saveSession,
+  )
+where
 
+import Control.Monad.IO.Class
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Builder as SBB
 import qualified Data.ByteString.Lazy as LB
-
-import Control.Monad.IO.Class
 import Path
 import Path.IO
-
-import System.Exit
-
-import Web.Cookie
-
 import Servant.Auth.Client
+import System.Exit
+import Web.Cookie
 
 withToken :: MonadIO m => Path Abs File -> (Token -> m a) -> m a
 withToken tp func = do

@@ -2,8 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Single
-  ( smosSingle
-  ) where
+  ( smosSingle,
+  )
+where
 
 import Data.Char as Char
 import qualified Data.Text as T
@@ -23,10 +24,10 @@ single :: Settings -> IO ()
 single Settings {..} = do
   wd <- resolveReportWorkflowDir setReportSettings
   path <-
-    (wd </>) <$>
-    case setTaskFile of
-      Just rp -> pure rp
-      Nothing -> deriveFileName setTask
+    (wd </>)
+      <$> case setTaskFile of
+        Just rp -> pure rp
+        Nothing -> deriveFileName setTask
   exists <- doesFileExist path
   if exists
     then die $ unwords ["There already exists a file at", fromAbsFile path, "not overwriting"]
@@ -52,8 +53,8 @@ makeSingleSmosFile now h = SmosFile {smosFileForest = [Node e []]}
         { entryStateHistory =
             StateHistory
               [ StateHistoryEntry
-                  { stateHistoryEntryTimestamp = now
-                  , stateHistoryEntryNewState = Just $ TodoState "NEXT"
+                  { stateHistoryEntryTimestamp = now,
+                    stateHistoryEntryNewState = Just $ TodoState "NEXT"
                   }
               ]
         }

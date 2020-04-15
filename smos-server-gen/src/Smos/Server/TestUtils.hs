@@ -2,42 +2,34 @@
 
 module Smos.Server.TestUtils where
 
-import Data.Pool
-
-import Lens.Micro
-
-import Control.Monad.IO.Class
-
 import Control.Monad
+import Control.Monad.IO.Class
 import Control.Monad.Logger
-
+import Data.Pool
+import Database.Persist.Sqlite as DB
+import Lens.Micro
+import qualified Network.HTTP.Client as Http
+import Network.Wai.Handler.Warp as Warp (testWithApplication)
 import Servant.Auth.Client as Auth
 import Servant.Auth.Server as Auth
 import Servant.Client
-
-import Database.Persist.Sqlite as DB
-
-import qualified Network.HTTP.Client as Http
-import Network.Wai.Handler.Warp as Warp (testWithApplication)
-
-import Test.Hspec
-import Test.Hspec.Core.QuickCheck
-
 import Smos.API.Gen ()
 import Smos.Client
-
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
+import Test.Hspec
+import Test.Hspec.Core.QuickCheck
 
 serverDBSpec :: SpecWith (Pool SqlBackend) -> Spec
 serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerDB
 
 withServerDB :: (Pool SqlBackend -> IO a) -> IO a
 withServerDB func =
-  runNoLoggingT $
-  DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $ \pool -> do
-    DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
-    liftIO $ func pool
+  runNoLoggingT
+    $ DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1
+    $ \pool -> do
+      DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+      liftIO $ func pool
 
 serverSpec :: SpecWith ClientEnv -> Spec
 serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer
@@ -45,8 +37,9 @@ serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around w
 withTestServer :: (ClientEnv -> IO a) -> IO a
 withTestServer func = do
   man <- Http.newManager Http.defaultManagerSettings
-  runNoLoggingT $
-    DB.withSqlitePool ":memory:" 1 $ \pool ->
+  runNoLoggingT
+    $ DB.withSqlitePool ":memory:" 1
+    $ \pool ->
       liftIO $ do
         let mkApp = do
               uuid <- nextRandomUUID
@@ -54,10 +47,10 @@ withTestServer func = do
               jwtKey <- Auth.generateKey
               let env =
                     ServerEnv
-                      { serverEnvServerUUID = uuid
-                      , serverEnvConnection = pool
-                      , serverEnvCookieSettings = defaultCookieSettings
-                      , serverEnvJWTSettings = defaultJWTSettings jwtKey
+                      { serverEnvServerUUID = uuid,
+                        serverEnvConnection = pool,
+                        serverEnvCookieSettings = defaultCookieSettings,
+                        serverEnvJWTSettings = defaultJWTSettings jwtKey
                       }
               pure $ Server.makeSyncApp env
         Warp.testWithApplication mkApp $ \p ->

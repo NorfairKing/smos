@@ -1,32 +1,30 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Report.SorterSpec
-  ( spec
-  ) where
-
-import Data.Text (Text)
-
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
-
-import Text.Megaparsec
+  ( spec,
+  )
+where
 
 import Cursor.Forest.Gen ()
-
+import Data.Text (Text)
 import Smos.Report.Path.Gen ()
 import Smos.Report.Sorter
 import Smos.Report.Sorter.Gen ()
+import Test.Hspec
+import Test.Validity
+import Test.Validity.Aeson
+import Text.Megaparsec
 
 spec :: Spec
 spec = do
   eqSpecOnValid @Sorter
   genValidSpec @Sorter
   jsonSpecOnValid @Sorter
-  describe "sorterOrdering" $
-    it "produces valid orderings" $
-    forAllValid $ \s ->
+  describe "sorterOrdering"
+    $ it "produces valid orderings"
+    $ forAllValid
+    $ \s ->
       forAllValid $ \(rp1, fc1) ->
         forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s rp1 fc1 rp2 fc2
   describe "byFileP" $ parsesValidSpec byFileP
@@ -42,8 +40,9 @@ spec = do
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
     it "produces valid texts" $ producesValidsOnValids renderSorter
-    it "renders bys that parse to the same" $
-      forAllValid $ \s -> parseJust sorterP (renderSorter s) s
+    it "renders bys that parse to the same"
+      $ forAllValid
+      $ \s -> parseJust sorterP (renderSorter s) s
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
@@ -56,7 +55,7 @@ parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
       expectationFailure $
-      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
+        unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Expectation

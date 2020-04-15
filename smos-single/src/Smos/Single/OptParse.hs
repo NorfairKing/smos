@@ -2,8 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Single.OptParse
-  ( getSettings
-  ) where
+  ( getSettings,
+  )
+where
 
 import Control.Monad
 import qualified Data.Text as T
@@ -53,12 +54,12 @@ runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 flagsParser :: ParserInfo Flags
@@ -69,18 +70,20 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$>
-  some
-    (strArgument
-       (mconcat
-          [ help
-              "The task. Pass any number of arguments and they will be interpreted as the task together."
-          , metavar "TASK"
-          ])) <*>
-  option
-    (Just <$> str)
-    (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing]) <*>
-  Report.parseFlags
+  Flags
+    <$> some
+      ( strArgument
+          ( mconcat
+              [ help
+                  "The task. Pass any number of arguments and they will be interpreted as the task together.",
+                metavar "TASK"
+              ]
+          )
+      )
+    <*> option
+      (Just <$> str)
+      (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing])
+    <*> Report.parseFlags
 
 getEnvironment :: IO Environment
 getEnvironment = Environment <$> Report.getEnvironment

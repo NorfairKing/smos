@@ -1,10 +1,9 @@
 module Main where
 
+import Spec
 import Test.Hspec
 import Test.Hspec.Core.Spec
 import Test.QuickCheck
-
-import Spec
 
 main :: IO ()
 main = hspec $ modifyMaxShrinks (max 100) spec

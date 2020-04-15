@@ -1,13 +1,12 @@
 module Smos.OptParse.Bare
-  ( getPathArgument
-  , editParser
-  ) where
+  ( getPathArgument,
+    editParser,
+  )
+where
 
 import Import
-
-import System.Environment (getArgs)
-
 import Options.Applicative
+import System.Environment (getArgs)
 
 getPathArgument :: IO (Path Abs File)
 getPathArgument = do
@@ -19,12 +18,12 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 argParser :: ParserInfo FilePath
@@ -36,9 +35,10 @@ argParser = info (helper <*> editParser) help_
 editParser :: Parser FilePath
 editParser =
   strArgument
-    (mconcat
-       [ metavar "FILE"
-       , help "the file to edit"
-       , completer $ bashCompleter "file"
-       , value "/tmp/example.smos"
-       ])
+    ( mconcat
+        [ metavar "FILE",
+          help "the file to edit",
+          completer $ bashCompleter "file",
+          value "/tmp/example.smos"
+        ]
+    )

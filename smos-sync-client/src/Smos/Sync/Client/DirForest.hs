@@ -5,38 +5,35 @@
 --
 -- Import this module qualified
 module Smos.Sync.Client.DirForest
-  ( DirForest(..)
-  , DirOrFile(..)
-  , makeDirForest
-  ) where
+  ( DirForest (..),
+    DirOrFile (..),
+    makeDirForest,
+  )
+where
 
-import GHC.Generics (Generic)
-
+import Control.DeepSeq
+import Control.Monad
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
+import GHC.Generics (Generic)
+import Path
 import qualified System.FilePath as FP
 
-import Control.DeepSeq
-import Control.Monad
-
-import Path
-
-newtype DirForest a =
-  DirForest
-    { dirForestMap :: Map FilePath (DirOrFile a)
-    }
+newtype DirForest a
+  = DirForest
+      { dirForestMap :: Map FilePath (DirOrFile a)
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity a => Validity (DirForest a) where
   validate df =
     mconcat
-      [ genericValidate df
-      , decorateList (M.toList (dirForestMap df)) $ \(fp, _) ->
+      [ genericValidate df,
+        decorateList (M.toList (dirForestMap df)) $ \(fp, _) ->
           declare "does not conain separators" $ length (FP.splitDirectories fp) == 1
       ]
 
@@ -55,21 +52,21 @@ makeDirForest :: forall a. Map (Path Rel File) a -> Either FilePath (DirForest a
 makeDirForest = fmap DirForest . foldM go M.empty . M.toList
   where
     go ::
-         Map FilePath (DirOrFile a)
-      -> (Path Rel File, a)
-      -> Either FilePath (Map FilePath (DirOrFile a))
+      Map FilePath (DirOrFile a) ->
+      (Path Rel File, a) ->
+      Either FilePath (Map FilePath (DirOrFile a))
     go m' (rp, bs) = go2 m' (FP.splitDirectories $ fromRelFile rp)
       where
         go2 ::
-             Map FilePath (DirOrFile a)
-          -> [FilePath]
-          -> Either FilePath (Map FilePath (DirOrFile a))
+          Map FilePath (DirOrFile a) ->
+          [FilePath] ->
+          Either FilePath (Map FilePath (DirOrFile a))
         go2 m [] = pure m
         go2 m [fp] =
           case M.lookup fp m of
             Nothing -> pure $ M.insert fp (File bs) m
             Just _ -> Left fp
-        go2 m (dp:rest) =
+        go2 m (dp : rest) =
           case M.lookup dp m of
             Nothing -> do
               m'' <- go2 M.empty rest

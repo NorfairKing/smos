@@ -19,8 +19,8 @@ instance GenValid UsernameChar where
 
 instance GenValid Username where
   genValid =
-    Username . T.pack . map unUsernameChar <$>
-    ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
+    Username . T.pack . map unUsernameChar
+      <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
   shrinkValid = shrinkValidStructurally
 
 instance GenValid PasswordChar where
@@ -29,8 +29,8 @@ instance GenValid PasswordChar where
 
 instance GenValid Password where
   genValid =
-    Password . T.pack . map unPasswordChar <$>
-    ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
+    Password . T.pack . map unPasswordChar
+      <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
   shrinkValid = shrinkValidStructurally
 
 instance GenValid Register where

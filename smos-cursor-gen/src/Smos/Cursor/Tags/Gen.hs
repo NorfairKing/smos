@@ -2,15 +2,12 @@
 
 module Smos.Cursor.Tags.Gen where
 
-import Data.GenValidity
-
 import Cursor.List.NonEmpty.Gen ()
 import Cursor.Text.Gen ()
-
-import Smos.Data.Gen ()
-
+import Data.GenValidity
 import Smos.Cursor.Tag.Gen ()
 import Smos.Cursor.Tags
+import Smos.Data.Gen ()
 
 instance GenValid TagsCursor where
   genValid = genValidStructurally

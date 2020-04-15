@@ -12,11 +12,11 @@ import Smos.API.Gen ()
 main :: IO ()
 main =
   Criterion.defaultMain
-    [ genValidBench @Register
-    , genValidBench @Login
-    , genValidBench @FileUUID
-    , genValidBench @ServerUUID
-    , genValidBench @SyncFile
-    , genValidBench @SyncRequest
-    , genValidBench @SyncResponse
+    [ genValidBench @Register,
+      genValidBench @Login,
+      genValidBench @FileUUID,
+      genValidBench @ServerUUID,
+      genValidBench @SyncFile,
+      genValidBench @SyncRequest,
+      genValidBench @SyncResponse
     ]

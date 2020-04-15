@@ -2,16 +2,14 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Convert.Org.OptParse
-  ( getSettings
-  ) where
-
-import System.Environment
-
-import Path.IO
+  ( getSettings,
+  )
+where
 
 import Options.Applicative
-
+import Path.IO
 import Smos.Convert.Org.OptParse.Types
+import System.Environment
 
 getSettings :: IO Settings
 getSettings = do
@@ -39,12 +37,12 @@ runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 flagsParser :: ParserInfo Flags
@@ -55,7 +53,7 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> strArgument (mconcat [help "The file to convert", metavar "FILEPATH"]) <*>
-  option
-    (Just <$> str)
-    (mconcat [long "to", help "The output file", value Nothing, metavar "FILEPATH"])
+  Flags <$> strArgument (mconcat [help "The file to convert", metavar "FILEPATH"])
+    <*> option
+      (Just <$> str)
+      (mconcat [long "to", help "The output file", value Nothing, metavar "FILEPATH"])

@@ -3,9 +3,7 @@
 module Smos.Sync.Client.DirForest.Gen where
 
 import Data.GenValidity
-
 import Smos.API.Gen ()
-
 import Smos.Sync.Client.DirForest
 
 instance GenValid a => GenValid (DirForest a) where

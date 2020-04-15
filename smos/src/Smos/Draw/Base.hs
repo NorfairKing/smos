@@ -2,12 +2,11 @@
 
 module Smos.Draw.Base where
 
+import Brick.Types as B
+import Brick.Widgets.Core as B
 import Data.Time
 import Path
 import Text.Printf
-
-import Brick.Types as B
-import Brick.Widgets.Core as B
 
 drawFilePath :: Path r d -> Widget n
 drawFilePath = str . toFilePath
@@ -24,11 +23,11 @@ instance Semigroup Select where
 drawNominalDiffTime :: NominalDiffTime -> Widget n
 drawNominalDiffTime ndt =
   hBox
-    [ str $ printf "%.2d" hours
-    , str ":"
-    , str $ printf "%.2d" minutes
-    , str ":"
-    , str $ printf "%.2d" seconds
+    [ str $ printf "%.2d" hours,
+      str ":",
+      str $ printf "%.2d" minutes,
+      str ":",
+      str $ printf "%.2d" seconds
     ]
   where
     totalSeconds = round ndt :: Int

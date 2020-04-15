@@ -2,35 +2,35 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.ArchiveSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Semigroup
 import Data.Time
 import Data.Tree
-
+import Smos.Archive
+import Smos.Data
+import Smos.Data.Gen ()
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
-
-import Smos.Data
-import Smos.Data.Gen ()
-
-import Smos.Archive
 
 spec :: Spec
 spec =
   describe "prepareToArchive" $ do
     it "produces valid smos files" $ producesValidsOnValids2 prepareToArchive
-    it "produces files with no running clocks" $
-      forAllValid $ \sf ->
+    it "produces files with no running clocks"
+      $ forAllValid
+      $ \sf ->
         forAll (genLargeEnoughTime sf) $ \t ->
           let prepped = prepareToArchive t sf
            in allClosed prepped
-    it "produces files with no un-done tasks" $
-      forAllValid $ \sf ->
+    it "produces files with no un-done tasks"
+      $ forAllValid
+      $ \sf ->
         forAll (genLargeEnoughTime sf) $ \t ->
           let prepped = prepareToArchive t sf
            in allDone prepped

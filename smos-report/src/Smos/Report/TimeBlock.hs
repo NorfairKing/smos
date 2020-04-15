@@ -5,8 +5,6 @@
 
 module Smos.Report.TimeBlock where
 
-import GHC.Generics (Generic)
-
 import Data.Aeson
 import Data.Function
 import Data.List
@@ -15,8 +13,9 @@ import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
 import Data.Validity
-import Data.Yaml.Builder (ToYaml(..))
+import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
+import GHC.Generics (Generic)
 import Text.Printf
 
 data TimeBlock
@@ -29,11 +28,11 @@ data TimeBlock
 
 instance Validity TimeBlock
 
-data Block a b =
-  Block
-    { blockTitle :: a
-    , blockEntries :: [b]
-    }
+data Block a b
+  = Block
+      { blockTitle :: a,
+        blockEntries :: [b]
+      }
   deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Block a b)
@@ -74,19 +73,19 @@ dayYear = (\(y, _, _) -> y) . toGregorian
 formatYearTitle :: YearNumber -> Text
 formatYearTitle = T.pack . printf "%04d"
 
-data MonthNumber =
-  MonthNumber
-    { monthNumberYear :: Integer
-    , monthNumberMonth :: Int
-    }
+data MonthNumber
+  = MonthNumber
+      { monthNumberYear :: Integer,
+        monthNumberMonth :: Int
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity MonthNumber where
   validate wn@MonthNumber {..} =
     mconcat
-      [ genericValidate wn
-      , declare "The month number is positive" $ monthNumberMonth >= 0
-      , declare "The month number is less than or equal to 53" $ monthNumberMonth <= 53
+      [ genericValidate wn,
+        declare "The month number is positive" $ monthNumberMonth >= 0,
+        declare "The month number is less than or equal to 53" $ monthNumberMonth <= 53
       ]
 
 instance Enum MonthNumber where
@@ -101,19 +100,19 @@ formatMonthTitle :: MonthNumber -> Text
 formatMonthTitle MonthNumber {..} =
   T.pack $ concat [printf "%04d" monthNumberYear, "-", printf "%02d" monthNumberMonth]
 
-data WeekNumber =
-  WeekNumber
-    { weekNumberYear :: Integer
-    , weekNumberWeek :: Int
-    }
+data WeekNumber
+  = WeekNumber
+      { weekNumberYear :: Integer,
+        weekNumberWeek :: Int
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity WeekNumber where
   validate wn@WeekNumber {..} =
     mconcat
-      [ genericValidate wn
-      , declare "The week number is positive" $ weekNumberWeek >= 0
-      , declare "The week number is less than or equal to 53" $ weekNumberWeek <= 53
+      [ genericValidate wn,
+        declare "The week number is positive" $ weekNumberWeek >= 0,
+        declare "The week number is less than or equal to 53" $ weekNumberWeek <= 53
       ]
 
 instance Enum WeekNumber where
@@ -143,4 +142,4 @@ combineBlocksByName = map comb . groupBy ((==) `on` blockTitle) . sortOn blockTi
   where
     comb :: [Block a b] -> Block a b
     comb [] = error "cannot happen due to 'groupBy' above"
-    comb bs@(b:_) = Block {blockTitle = blockTitle b, blockEntries = concatMap blockEntries bs}
+    comb bs@(b : _) = Block {blockTitle = blockTitle b, blockEntries = concatMap blockEntries bs}

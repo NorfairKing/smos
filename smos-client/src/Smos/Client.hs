@@ -3,30 +3,29 @@
 {-# LANGUAGE GADTs #-}
 
 module Smos.Client
-  ( module Smos.Client
-  , module X
-  , Token
-  , SetCookie
-  ) where
-
-import GHC.Generics
+  ( module Smos.Client,
+    module X,
+    Token,
+    SetCookie,
+  )
+where
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
-import System.Exit
-import Web.Cookie
-
+import GHC.Generics
 import Servant.API.Flatten
 import Servant.Auth.Client
 import Servant.Auth.Server
 import Servant.Client
-
 import Smos.API as X
+import System.Exit
+import Web.Cookie
 
 clientPostRegister :: Register -> ClientM NoContent
+
 clientPostLogin ::
-     Login
-  -> ClientM (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+  Login ->
+  ClientM (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
 clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse

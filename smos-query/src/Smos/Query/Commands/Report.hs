@@ -2,8 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Report
-  ( smosQueryReport
-  ) where
+  ( smosQueryReport,
+  )
+where
 
 import Conduit
 import qualified Data.Map as M
@@ -29,19 +30,21 @@ smosQueryReport ReportSettings {..} =
         Just PreparedReport {..} ->
           smosQueryEntry
             EntrySettings
-              { entrySetFilter = perparedReportFilter
-              , entrySetProjection = fromMaybe defaultProjection perparedReportProjection
-              , entrySetSorter = preparedReportSorter
-              , entrySetHideArchive = fromMaybe HideArchive preparedReportHideArchive
+              { entrySetFilter = perparedReportFilter,
+                entrySetProjection = fromMaybe defaultProjection perparedReportProjection,
+                entrySetSorter = preparedReportSorter,
+                entrySetHideArchive = fromMaybe HideArchive preparedReportHideArchive
               }
 
 availableReportsReport :: Map Text PreparedReport -> Text
 availableReportsReport m =
   if M.null m
     then "No reports configured."
-    else T.intercalate "\n" $
-         "Available reports:" :
-         map
-           (\(n, PreparedReport {..}) ->
-              T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription])
-           (M.toList m)
+    else
+      T.intercalate "\n" $
+        "Available reports:"
+          : map
+            ( \(n, PreparedReport {..}) ->
+                T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription]
+            )
+            (M.toList m)

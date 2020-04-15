@@ -1,14 +1,14 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.GoldenSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
-import TestImport
-
+import Brick hiding (on)
 import qualified Data.ByteString.Char8 as SB8
 import Data.Function
 import Data.List
@@ -17,14 +17,11 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Yaml
 import Data.Yaml.Builder as Yaml
-
-import Brick hiding (on)
-
-import Smos.Data
-
 import Smos
 import Smos.App
+import Smos.Data
 import Smos.Types
+import TestImport
 
 spec :: Spec
 spec = do
@@ -35,16 +32,17 @@ spec = do
       pure $ filter ((== ".yaml") . fileExtension) fs
   describe "Preconditions" $ do
     let distinct ls = sort (nub ls) == sort ls
-    specify "all actions have unique names" $
-      distinct $ concat [map actionName allPlainActions, map actionUsingName allUsingCharActions]
+    specify "all actions have unique names"
+      $ distinct
+      $ concat [map actionName allPlainActions, map actionUsingName allUsingCharActions]
   describe "Golden" $ makeTestcases tfs
 
-data GoldenTestCase =
-  GoldenTestCase
-    { goldenTestCaseBefore :: SmosFile
-    , goldenTestCaseCommands :: [Command]
-    , goldenTestCaseAfter :: SmosFile
-    }
+data GoldenTestCase
+  = GoldenTestCase
+      { goldenTestCaseBefore :: SmosFile,
+        goldenTestCaseCommands :: [Command],
+        goldenTestCaseAfter :: SmosFile
+      }
   deriving (Show, Generic)
 
 instance Validity GoldenTestCase
@@ -106,11 +104,11 @@ parseCommand t =
         _ -> Left "Multichar operand"
     _ -> Left "Unable to parse command: more than two words"
 
-data CommandsRun =
-  CommandsRun
-    { intermidiaryResults :: [(Command, SmosFile)]
-    , finalResult :: SmosFile
-    }
+data CommandsRun
+  = CommandsRun
+      { intermidiaryResults :: [(Command, SmosFile)],
+        finalResult :: SmosFile
+      }
 
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
@@ -125,8 +123,8 @@ runCommandsOn mstart commands =
         (fs, rs) <- foldM go (startState, []) commands
         let cr =
               CommandsRun
-                { intermidiaryResults = reverse rs
-                , finalResult = rebuildEditorCursor $ smosStateCursor fs
+                { intermidiaryResults = reverse rs,
+                  finalResult = rebuildEditorCursor $ smosStateCursor fs
                 }
         unlockFile fl
         pure cr
@@ -154,36 +152,36 @@ runCommandsOn mstart commands =
 
 expectResults :: Path Abs File -> SmosFile -> SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =
-  unless (finalResult `eqForTest` af) $
-  failure $
-  unlines $
-  concat
-    [ [ "The expected result did not match the actual result."
-      , "The starting file looked as follows:"
-      , ppShow bf
-      , "The commands to run were these:"
-      , ppShow $ map fst intermidiaryResults
-      , "The result was supposed to look like this:"
-      , ppShow af
-      , ""
-      , "The intermediary steps built up to the result as follows:"
-      , ""
+  unless (finalResult `eqForTest` af)
+    $ failure
+    $ unlines
+    $ concat
+      [ [ "The expected result did not match the actual result.",
+          "The starting file looked as follows:",
+          ppShow bf,
+          "The commands to run were these:",
+          ppShow $ map fst intermidiaryResults,
+          "The result was supposed to look like this:",
+          ppShow af,
+          "",
+          "The intermediary steps built up to the result as follows:",
+          ""
+        ],
+        concatMap (uncurry go) intermidiaryResults,
+        [ "The expected result was the following:",
+          ppShow af,
+          "The actual result was the following:",
+          ppShow finalResult
+        ],
+        [ unwords
+            [ "If this was intentional, you can replace the contents of the 'after' part in",
+              fromAbsFile p,
+              "by the following:"
+            ],
+          "---[START]---",
+          SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
+        ]
       ]
-    , concatMap (uncurry go) intermidiaryResults
-    , [ "The expected result was the following:"
-      , ppShow af
-      , "The actual result was the following:"
-      , ppShow finalResult
-      ]
-    , [ unwords
-          [ "If this was intentional, you can replace the contents of the 'after' part in"
-          , fromAbsFile p
-          , "by the following:"
-          ]
-      , "---[START]---"
-      , SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
-      ]
-    ]
   where
     go :: Command -> SmosFile -> [String]
     go c isf =
@@ -202,7 +200,7 @@ eqForTest = forestEqForTest `on` smosFileForest
     listEq1 eq as bs = go $ zip (map Just as ++ repeat Nothing) (map Just bs ++ repeat Nothing)
       where
         go [] = True
-        go (a:rest) =
+        go (a : rest) =
           case a of
             (Nothing, Nothing) -> True
             (Just _, Nothing) -> False
@@ -210,12 +208,13 @@ eqForTest = forestEqForTest `on` smosFileForest
             (Just t1, Just t2) -> eq t1 t2 && go rest
     entryEqForTest :: Entry -> Entry -> Bool
     entryEqForTest =
-      ((==) `on` entryHeader) &&&
-      ((==) `on` entryContents) &&&
-      ((==) `on` entryTimestamps) &&&
-      ((==) `on` entryProperties) &&&
-      (stateHistoryEqForTest `on` entryStateHistory) &&&
-      ((==) `on` entryTags) &&& (logbookEqForTest `on` entryLogbook)
+      ((==) `on` entryHeader)
+        &&& ((==) `on` entryContents)
+        &&& ((==) `on` entryTimestamps)
+        &&& ((==) `on` entryProperties)
+        &&& (stateHistoryEqForTest `on` entryStateHistory)
+        &&& ((==) `on` entryTags)
+        &&& (logbookEqForTest `on` entryLogbook)
     stateHistoryEqForTest :: StateHistory -> StateHistory -> Bool
     stateHistoryEqForTest sh1 sh2 =
       listEq1 stateHistoryEntryEqForTest (unStateHistory sh1) (unStateHistory sh2)

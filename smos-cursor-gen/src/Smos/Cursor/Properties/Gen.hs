@@ -2,14 +2,11 @@
 
 module Smos.Cursor.Properties.Gen where
 
-import Data.GenValidity
-
 import Cursor.Map.Gen
 import Cursor.Text.Gen
-
-import Smos.Data.Gen
-
+import Data.GenValidity
 import Smos.Cursor.Properties
+import Smos.Data.Gen
 
 instance GenValid PropertiesCursor where
   genValid =

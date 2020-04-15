@@ -2,34 +2,31 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Actions.File
-  ( saveFile
-  , saveCurrentSmosFile
-  , saveSmosFile
-  , switchToFile
-  , lockFile
-  , unlockFile
-  , FL.FileLock
-  ) where
+  ( saveFile,
+    saveCurrentSmosFile,
+    saveSmosFile,
+    switchToFile,
+    lockFile,
+    unlockFile,
+    FL.FileLock,
+  )
+where
 
 import Data.Maybe
-
 import Data.Time
 import Path
 import Path.IO
-import qualified System.FileLock as FL
-
-import Smos.Data
-
 import Smos.Cursor.SmosFile
-
+import Smos.Data
 import Smos.Types
+import qualified System.FileLock as FL
 
 saveFile :: Action
 saveFile =
   Action
-    { actionName = "saveFile"
-    , actionFunc = saveCurrentSmosFile
-    , actionDescription = "Save the current file"
+    { actionName = "saveFile",
+      actionFunc = saveCurrentSmosFile,
+      actionDescription = "Save the current file"
     }
 
 saveCurrentSmosFile :: SmosM ()
@@ -39,22 +36,25 @@ saveCurrentSmosFile = do
   liftIO $ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath
   now <- liftIO getCurrentTime
   modify
-    (\ss ->
-       ss
-         { smosStateStartSmosFile = Just sf'
-         , smosStateUnsavedChanges = False
-         , smosStateLastSaved = now
-         })
+    ( \ss ->
+        ss
+          { smosStateStartSmosFile = Just sf',
+            smosStateUnsavedChanges = False,
+            smosStateLastSaved = now
+          }
+    )
 
 saveSmosFile :: SmosFile -> Maybe SmosFile -> Path Abs File -> IO ()
 saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
   e <- doesFileExist smosStateFilePath
   when (e && isNothing smosStateStartSmosFile) $ removeFile smosStateFilePath
-  (case smosStateStartSmosFile of
-     Nothing -> unless (sf' == emptySmosFile)
-     Just sf'' -> unless (sf'' == sf')) $ do
-    ensureDir $ parent smosStateFilePath
-    writeSmosFile smosStateFilePath sf'
+  ( case smosStateStartSmosFile of
+      Nothing -> unless (sf' == emptySmosFile)
+      Just sf'' -> unless (sf'' == sf')
+    )
+    $ do
+      ensureDir $ parent smosStateFilePath
+      writeSmosFile smosStateFilePath sf'
 
 switchToFile :: Path Abs File -> SmosFileCursor -> SmosM (Maybe FL.FileLock)
 switchToFile path sfc = do
@@ -67,13 +67,13 @@ switchToFile path sfc = do
     now <- liftIO getCurrentTime
     put $
       ss
-        { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc)
-        , smosStateFilePath = path
-        , smosStateFileLock = fl
-        , smosStateCursor =
-            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc}
-        , smosStateUnsavedChanges = False
-        , smosStateLastSaved = now
+        { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc),
+          smosStateFilePath = path,
+          smosStateFileLock = fl,
+          smosStateCursor =
+            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc},
+          smosStateUnsavedChanges = False,
+          smosStateLastSaved = now
         }
   pure mfl
 

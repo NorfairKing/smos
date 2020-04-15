@@ -6,43 +6,34 @@
 
 module Smos.Sync.Client.Env where
 
-import GHC.Generics (Generic)
-
+import Control.DeepSeq
+import Control.Monad.Logger
+import Control.Monad.Reader
 import Data.Aeson
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import Data.Validity
-import Pantry.SHA256
-
-import Path
-
+import Database.Persist.Sql as DB
+import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
-
-import System.Exit
-
+import Pantry.SHA256
+import Path
 import Servant.Auth.Client as Auth
 import Servant.Client as Servant
-
-import Control.DeepSeq
-import Control.Monad.Logger
-import Control.Monad.Reader
-
-import Database.Persist.Sql as DB
-
 import Smos.API
 import Smos.Client
-
 import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
+import System.Exit
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
-data SyncClientEnv =
-  SyncClientEnv
-    { syncClientEnvServantClientEnv :: Servant.ClientEnv
-    , syncClientEnvConnection :: DB.ConnectionPool
-    }
+data SyncClientEnv
+  = SyncClientEnv
+      { syncClientEnvServantClientEnv :: Servant.ClientEnv,
+        syncClientEnvConnection :: DB.ConnectionPool
+      }
   deriving (Generic)
 
 withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
@@ -52,13 +43,13 @@ withClientEnv burl func = do
   func cenv
 
 withLogin ::
-     MonadIO m
-  => ClientEnv
-  -> Path Abs File
-  -> Maybe Username
-  -> Maybe Password
-  -> (Auth.Token -> m a)
-  -> m a
+  MonadIO m =>
+  ClientEnv ->
+  Path Abs File ->
+  Maybe Username ->
+  Maybe Password ->
+  (Auth.Token -> m a) ->
+  m a
 withLogin cenv sessionPath mun mpw func = do
   mToken <- loadToken sessionPath
   case mToken of
@@ -67,8 +58,9 @@ withLogin cenv sessionPath mun mpw func = do
       un <- liftIO $ promptUsername mun
       pw <- liftIO $ promptPassword mpw
       errOrErrOrSession <-
-        liftIO $
-        runClientOrDie cenv $ clientLoginSession Login {loginUsername = un, loginPassword = pw}
+        liftIO
+          $ runClientOrDie cenv
+          $ clientLoginSession Login {loginUsername = un, loginPassword = pw}
       case errOrErrOrSession of
         Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
         Right cookie -> do
@@ -104,24 +96,24 @@ runDB func = do
   pool <- asks syncClientEnvConnection
   liftIO $ DB.runSqlPool func pool
 
-data ClientStore =
-  ClientStore
-    { clientStoreServerUUID :: ServerUUID
-    , clientStoreItems :: Mergeful.ClientStore FileUUID SyncFile
-    }
+data ClientStore
+  = ClientStore
+      { clientStoreServerUUID :: ServerUUID,
+        clientStoreItems :: Mergeful.ClientStore FileUUID SyncFile
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ClientStore
 
 instance NFData ClientStore
 
-data SyncFileMeta =
-  SyncFileMeta
-    { syncFileMetaUUID :: FileUUID
-    , syncFileMetaHashOld :: Maybe Int
-    , syncFileMetaHash :: Maybe SHA256
-    , syncFileMetaTime :: Mergeful.ServerTime
-    }
+data SyncFileMeta
+  = SyncFileMeta
+      { syncFileMetaUUID :: FileUUID,
+        syncFileMetaHashOld :: Maybe Int,
+        syncFileMetaHash :: Maybe SHA256,
+        syncFileMetaTime :: Mergeful.ServerTime
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncFileMeta
@@ -136,10 +128,10 @@ instance FromJSON SyncFileMeta where
 instance ToJSON SyncFileMeta where
   toJSON SyncFileMeta {..} =
     object
-      [ "uuid" .= syncFileMetaUUID
-      , "hash" .= syncFileMetaHashOld
-      , "sha256" .= syncFileMetaHash
-      , "time" .= syncFileMetaTime
+      [ "uuid" .= syncFileMetaUUID,
+        "hash" .= syncFileMetaHashOld,
+        "sha256" .= syncFileMetaHash,
+        "time" .= syncFileMetaTime
       ]
 
 instance Validity SHA256 where

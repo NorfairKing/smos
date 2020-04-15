@@ -1,31 +1,24 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Draw
-  ( smosDraw
-  ) where
-
-import Import hiding ((<+>))
-
-import Data.FuzzyTime
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Map as M
-import qualified Data.Set as S
-import Data.Set (Set)
-import qualified Data.Text as T
-import Data.Time
-import Text.Time.Pretty
+  ( smosDraw,
+  )
+where
 
 import Brick.Types as B
 import Brick.Widgets.Border as B
 import Brick.Widgets.Center as B
 import Brick.Widgets.Core as B
 import Brick.Widgets.Core ((<+>))
-
-import Lens.Micro
-
+import Cursor.Brick.Forest
+import Cursor.Brick.List.NonEmpty
+import Cursor.Brick.Map
+import Cursor.Brick.Map.KeyValue
+import Cursor.Brick.Text
+import Cursor.Brick.TextField
 import Cursor.FuzzyLocalTime
 import Cursor.List.NonEmpty (NonEmptyCursor)
 import Cursor.Map
@@ -33,16 +26,16 @@ import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
 import Cursor.Text
 import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
-
-import Cursor.Brick.Forest
-import Cursor.Brick.List.NonEmpty
-import Cursor.Brick.Map
-import Cursor.Brick.Map.KeyValue
-import Cursor.Brick.Text
-import Cursor.Brick.TextField
-
-import Smos.Data
-
+import Data.FuzzyTime
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.Set (Set)
+import qualified Data.Text as T
+import Data.Time
+import Import hiding ((<+>))
+import Lens.Micro
+import Smos.Actions
 import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
 import Smos.Cursor.Entry
@@ -55,15 +48,13 @@ import Smos.Cursor.StateHistory
 import Smos.Cursor.Tag
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
-
-import Smos.Report.Path
-
-import Smos.Actions
+import Smos.Data
+import Smos.Draw.Base
 import Smos.Keys
+import Smos.Report.Path
 import Smos.Style
 import Smos.Types
-
-import Smos.Draw.Base
+import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
@@ -78,16 +69,16 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
               [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
       fileCursorWidget =
         withHeading (drawFilePath smosStateFilePath) $
-        maybe
-          (drawInfo configKeyMap)
-          (drawFileCursor $ selectWhen FileSelected)
-          editorCursorFileCursor
+          maybe
+            (drawInfo configKeyMap)
+            (drawFileCursor $ selectWhen FileSelected)
+            editorCursorFileCursor
       reportCursorWidget =
         withHeading (str "Next Action Report") $
-        maybe
-          (str "empty report")
-          (drawReportCursor (selectWhen ReportSelected))
-          editorCursorReportCursor
+          maybe
+            (str "empty report")
+            (drawReportCursor (selectWhen ReportSelected))
+            editorCursorReportCursor
       mainCursorWidget =
         case editorCursorSelection of
           FileSelected -> fileCursorWidget
@@ -108,35 +99,35 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =
-  withAttr selectedAttr $
-  B.vCenterLayer $
-  vBox $
-  map B.hCenterLayer $
-  [ str "SMOS"
-  , str " "
-  , str "version 0.0.0.0"
-  , str "by Tom Sydney Kerckhove"
-  , str "Smos is open source and freely distributable"
-  , str " "
-  , str "Building smos takes time, energy and money."
-  , str "Please consider supporting the project."
-  , str "https://smos.cs-syd.eu/support.html"
-  ] ++
-  case lookupStartingActionInKeymap of
-    Nothing -> []
-    Just kpt ->
-      [ str " "
-      , str " "
-      , str "If you don't know what to do,"
-      , hBox
-          [ str "activate the "
-          , withAttr keyAttr $ txt $ actionNameText $ actionName selectHelp
-          , str " command using the "
-          , withAttr keyAttr $ txt kpt
-          , str " key"
-          ]
-      , str "for an overview of the available commands"
+  withAttr selectedAttr
+    $ B.vCenterLayer
+    $ vBox
+    $ map B.hCenterLayer
+    $ [ str "SMOS",
+        str " ",
+        str "version 0.0.0.0",
+        str "by Tom Sydney Kerckhove",
+        str "Smos is open source and freely distributable",
+        str " ",
+        str "Building smos takes time, energy and money.",
+        str "Please consider supporting the project.",
+        str "https://smos.cs-syd.eu/support.html"
       ]
+      ++ case lookupStartingActionInKeymap of
+        Nothing -> []
+        Just kpt ->
+          [ str " ",
+            str " ",
+            str "If you don't know what to do,",
+            hBox
+              [ str "activate the ",
+                withAttr keyAttr $ txt $ actionNameText $ actionName selectHelp,
+                str " command using the ",
+                withAttr keyAttr $ txt kpt,
+                str " key"
+              ],
+            str "for an overview of the available commands"
+          ]
   where
     lookupStartingActionInKeymap :: Maybe Text
     lookupStartingActionInKeymap =
@@ -163,53 +154,57 @@ drawInfo km =
 drawHelpCursor :: KeyMap -> Select -> Maybe HelpCursor -> Widget ResourceName
 drawHelpCursor km _ Nothing = drawInfo km
 drawHelpCursor _ s (Just HelpCursor {..}) =
-  centerLayer $
-  (hBorderWithLabel
-     (withAttr selectedAttr $ txt ("[Help page for context: " <> helpCursorTitle <> "]")) <=>) $
-  hBox
-    [ vBox
-        [ padAll 1 $
-          viewport ResourceViewport Vertical $
+  centerLayer
+    $ ( hBorderWithLabel
+          (withAttr selectedAttr $ txt ("[Help page for context: " <> helpCursorTitle <> "]"))
+          <=>
+      )
+    $ hBox
+      [ vBox
+          [ padAll 1
+              $ viewport ResourceViewport Vertical
+              $ case helpCursorSelectedKeyHelpCursors of
+                Nothing -> txtWrap "No matching keybindings found."
+                Just hcs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs,
+            ( case helpCursorSelection of
+                HelpCursorSearchSelected -> withAttr selectedAttr
+                _ -> id
+            )
+              $ let ms =
+                      case helpCursorSelection of
+                        HelpCursorSearchSelected -> MaybeSelected
+                        _ -> NotSelected
+                 in hBox [textLineWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
+          ],
+        vBorder,
+        padAll 1 $
           case helpCursorSelectedKeyHelpCursors of
-            Nothing -> txtWrap "No matching keybindings found."
-            Just hcs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs
-        , (case helpCursorSelection of
-             HelpCursorSearchSelected -> withAttr selectedAttr
-             _ -> id) $
-          let ms =
-                case helpCursorSelection of
-                  HelpCursorSearchSelected -> MaybeSelected
-                  _ -> NotSelected
-           in hBox [textLineWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
-        ]
-    , vBorder
-    , padAll 1 $
-      case helpCursorSelectedKeyHelpCursors of
-        Nothing -> emptyWidget
-        Just hcs ->
-          let KeyHelpCursor {..} = nonEmptyCursorCurrent hcs
-           in vBox
-                [ txt "Name: " <+>
-                  withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName)
-                , txt "Description: "
-                , withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
-                ]
-    ]
+            Nothing -> emptyWidget
+            Just hcs ->
+              let KeyHelpCursor {..} = nonEmptyCursorCurrent hcs
+               in vBox
+                    [ txt "Name: "
+                        <+> withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName),
+                      txt "Description: ",
+                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
+                    ]
+      ]
   where
     go :: Select -> KeyHelpCursor -> [Widget n]
     go s_ KeyHelpCursor {..} =
       let msel =
-            (case s_ of
-               MaybeSelected -> forceAttr selectedAttr . visible
-               NotSelected -> id)
-       in [ hBox $
-            intersperse (str ", ") $
-            map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding
-          , msel $ withAttr helpNameAttr $ textWidget $ actionNameText keyHelpCursorName
+            ( case s_ of
+                MaybeSelected -> forceAttr selectedAttr . visible
+                NotSelected -> id
+            )
+       in [ hBox
+              $ intersperse (str ", ")
+              $ map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding,
+            msel $ withAttr helpNameAttr $ textWidget $ actionNameText keyHelpCursorName
           ]
 
 verticalNonEmptyCursorTable ::
-     (b -> [Widget n]) -> (a -> [Widget n]) -> (b -> [Widget n]) -> NonEmptyCursor a b -> Widget n
+  (b -> [Widget n]) -> (a -> [Widget n]) -> (b -> [Widget n]) -> NonEmptyCursor a b -> Widget n
 verticalNonEmptyCursorTable prevFunc curFunc nextFunc =
   nonEmptyCursorWidget (\ps c ns -> drawTable $ map prevFunc ps ++ [curFunc c] ++ map nextFunc ns)
 
@@ -232,10 +227,10 @@ drawDebug :: SmosState -> Widget n
 drawDebug SmosState {..} =
   let DebugInfo {..} = smosStateDebugInfo
    in vBox
-        [ hBorderWithLabel (str "[ Debug ]")
-        , str "Key history: " <+> drawHistory smosStateKeyHistory
-        , str "History length: " <+> str (show (length smosStateCursorHistory))
-        , str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches)
+        [ hBorderWithLabel (str "[ Debug ]"),
+          str "Key history: " <+> drawHistory smosStateKeyHistory,
+          str "History length: " <+> str (show (length smosStateCursorHistory)),
+          str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches)
         ]
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
@@ -248,8 +243,8 @@ defaultPadding = Pad 2
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
 drawReportCursor s rc =
   viewport ResourceViewport Vertical $
-  case rc of
-    ReportNextActions narc -> drawNextActionReportCursor s narc
+    case rc of
+      ReportNextActions narc -> drawNextActionReportCursor s narc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s =
@@ -262,66 +257,69 @@ drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> Widget ResourceN
 drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
   let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
       sel =
-        (case s of
-           MaybeSelected -> forceAttr selectedAttr . visible
-           NotSelected -> id)
+        ( case s of
+            MaybeSelected -> forceAttr selectedAttr . visible
+            NotSelected -> id
+        )
    in hBox $
-      intersperse
-        (str " ")
-        [ hLimit 20 $
-          padRight Max $
-          drawFilePath $
-          case nextActionEntryCursorFilePath of
-            Relative _ rf -> filename rf
-            Absolute af -> filename af
-        , maybe emptyWidget drawTodoState $ entryState e
-        , sel $ drawHeader entryHeader
-        ]
+        intersperse
+          (str " ")
+          [ hLimit 20
+              $ padRight Max
+              $ drawFilePath
+              $ case nextActionEntryCursorFilePath of
+                Relative _ rf -> filename rf
+                Absolute af -> filename af,
+            maybe emptyWidget drawTodoState $ entryState e,
+            sel $ drawHeader entryHeader
+          ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
-  fmap (viewport ResourceViewport Vertical) .
-  verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
+  fmap (viewport ResourceViewport Vertical)
+    . verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
 
 drawSmosTreeCursor ::
-     Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
+  Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer
 drawSmosTreeCursor s tc = fst <$> traverseTreeCursor wrap cur tc
   where
     cur ::
-         CollapseEntry EntryCursor
-      -> CForest (CollapseEntry Entry)
-      -> Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
+      CollapseEntry EntryCursor ->
+      CForest (CollapseEntry Entry) ->
+      Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
     cur ec cf =
       case cf of
         EmptyCForest ->
           let edc = emptyEntryDrawContext
-           in (,) <$> drawEntryCursor s TreeIsNotCollapsed edc ec <*>
-              pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
+           in (,) <$> drawEntryCursor s TreeIsNotCollapsed edc ec
+                <*> pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
         ClosedForest ts ->
           let edc = makeClosedEntryDrawContext ts
-           in (,) <$> drawEntryCursor s TreeIsCollapsed edc ec <*>
-              pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
+           in (,) <$> drawEntryCursor s TreeIsCollapsed edc ec
+                <*> pure (rebuildEntryCursor $ collapseEntryValue ec, edc)
         OpenForest ts -> do
           let edc = makeOpenEntryDrawContext ts
           ecw <- drawEntryCursor s TreeIsNotCollapsed edc ec
           etws <- mapM drawEntryCTree $ NE.toList ts
           pure
-            ( ecw <=> padLeft defaultPadding (vBox etws)
-            , (rebuildEntryCursor $ collapseEntryValue ec, edc))
+            ( ecw <=> padLeft defaultPadding (vBox etws),
+              (rebuildEntryCursor $ collapseEntryValue ec, edc)
+            )
     wrap ::
-         [CTree (CollapseEntry Entry)]
-      -> CollapseEntry Entry
-      -> [CTree (CollapseEntry Entry)]
-      -> (Widget ResourceName, (Entry, EntryDrawContext))
-      -> Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
+      [CTree (CollapseEntry Entry)] ->
+      CollapseEntry Entry ->
+      [CTree (CollapseEntry Entry)] ->
+      (Widget ResourceName, (Entry, EntryDrawContext)) ->
+      Drawer' (Widget ResourceName, (Entry, EntryDrawContext))
     wrap tsl e tsr (w, (b, edc)) = do
       let edc' = completeEntryDrawContext tsl b edc tsr
       befores <- mapM drawEntryCTree tsl
       ew <- drawEntry TreeIsNotCollapsed edc' e
       afters <- mapM drawEntryCTree tsr
       pure
-        ( ew <=> padLeft defaultPadding (vBox $ concat [befores, [w], afters])
-        , (collapseEntryValue e, edc'))
+        ( ew <=> padLeft defaultPadding (vBox $ concat [befores, [w], afters]),
+          (collapseEntryValue e, edc')
+        )
 
 emptyEntryDrawContext :: EntryDrawContext
 emptyEntryDrawContext = EntryDrawContext []
@@ -334,19 +332,19 @@ makeOpenEntryDrawContext =
   EntryDrawContext . map (fmap collapseEntryValue . rebuildCTree) . NE.toList
 
 completeEntryDrawContext ::
-     [CTree (CollapseEntry Entry)]
-  -> Entry
-  -> EntryDrawContext
-  -> [CTree (CollapseEntry Entry)]
-  -> EntryDrawContext
+  [CTree (CollapseEntry Entry)] ->
+  Entry ->
+  EntryDrawContext ->
+  [CTree (CollapseEntry Entry)] ->
+  EntryDrawContext
 completeEntryDrawContext lts e (EntryDrawContext f) rts =
   let toTrees = map $ fmap collapseEntryValue . rebuildCTree
    in EntryDrawContext $ concat [toTrees lts, [Node e f], toTrees rts]
 
-newtype EntryDrawContext =
-  EntryDrawContext
-    { entryDrawContextForest :: Forest Entry
-    }
+newtype EntryDrawContext
+  = EntryDrawContext
+      { entryDrawContextForest :: Forest Entry
+      }
   deriving (Show, Eq)
 
 entryDrawContextDirectChildren :: EntryDrawContext -> Word
@@ -377,9 +375,10 @@ completedForestNumbersWidget mts edc =
       es'@EntryStats {..} = es <> countTodo mts
    in if es == mempty
         then Nothing
-        else if es' == mempty || (justOne es' && es /= es)
-               then Nothing
-               else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
+        else
+          if es' == mempty || (justOne es' && es /= es)
+            then Nothing
+            else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
   where
     countDone :: Maybe TodoState -> Word
     countDone (Just "DONE") = 1
@@ -401,18 +400,18 @@ completedForestNumbersWidget mts edc =
     goF :: Forest Entry -> EntryStats
     goF = mconcat . map goT
 
-data EntryStats =
-  EntryStats
-    { entryStatsDone :: !Word
-    , entryStatsTotal :: !Word
-    }
+data EntryStats
+  = EntryStats
+      { entryStatsDone :: !Word,
+        entryStatsTotal :: !Word
+      }
   deriving (Show, Eq)
 
 instance Semigroup EntryStats where
   es1 <> es2 =
     EntryStats
-      { entryStatsDone = entryStatsDone es1 + entryStatsDone es2
-      , entryStatsTotal = entryStatsTotal es1 + entryStatsTotal es2
+      { entryStatsDone = entryStatsDone es1 + entryStatsDone es2,
+        entryStatsTotal = entryStatsTotal es1 + entryStatsTotal es2
       }
 
 instance Monoid EntryStats where
@@ -429,19 +428,20 @@ collapsedForestNumbersWidget tc edc =
     TreeIsCollapsed ->
       let direct = entryDrawContextDirectChildren edc
           legacy = entryDrawContextLegacy edc
-       in Just $
-          str $
-          unwords
-            [ "+++"
-            , bracketed $
-              if direct == legacy
-                then show direct
-                else concat
-                       [ show $ entryDrawContextDirectChildren edc
-                       , "|"
-                       , show $ entryDrawContextLegacy edc
-                       ]
-            ]
+       in Just
+            $ str
+            $ unwords
+              [ "+++",
+                bracketed $
+                  if direct == legacy
+                    then show direct
+                    else
+                      concat
+                        [ show $ entryDrawContextDirectChildren edc,
+                          "|",
+                          show $ entryDrawContextLegacy edc
+                        ]
+              ]
 
 bracketed :: String -> String
 bracketed s = "[" ++ s ++ "]"
@@ -452,48 +452,50 @@ data TreeCollapsing
   deriving (Show, Eq)
 
 drawEntryCursor ::
-     Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer
+  Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer
 drawEntryCursor s tc edc e = do
   tscw <- forM entryCursorTimestampsCursor $ drawTimestampsCursor (selectWhen TimestampsSelected)
   lbcw <- drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
   shcw <-
-    fmap join $
-    forM entryCursorStateHistoryCursor $ drawStateHistoryCursor (selectWhen StateHistorySelected)
-  pure $
-    (case s of
-       NotSelected -> id
-       MaybeSelected -> visible) $
-    vBox $
-    catMaybes
-      [ Just $
-        hBox $
-        intersperse (str " ") $
-        concat
-          [ [ case s of
-                NotSelected -> str "-"
-                MaybeSelected -> withAttr selectedAttr $ str "❯"
-            ]
-          , maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor)
-          , [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor]
-          , maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor
-          , [ str "..."
-            | let e_ = rebuildEntryCursor ec
-               in or
-                    [ not (collapseEntryShowContents e) && isJust (entryContents e_)
-                    , not (collapseEntryShowHistory e) &&
-                      not (nullStateHistory $ entryStateHistory e_)
-                    , not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
-                    ]
-            ]
-          , maybeToList $ completedForestNumbersWidget (entryState $ rebuildEntryCursor ec) edc
-          , maybeToList $ collapsedForestNumbersWidget tc edc
-          ]
-      , drawIfM collapseEntryShowContents $
-        drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor
-      , tscw
-      , drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor
-      , drawIfM collapseEntryShowHistory shcw
-      , drawIfM collapseEntryShowLogbook lbcw
+    fmap join
+      $ forM entryCursorStateHistoryCursor
+      $ drawStateHistoryCursor (selectWhen StateHistorySelected)
+  pure
+    $ ( case s of
+          NotSelected -> id
+          MaybeSelected -> visible
+      )
+    $ vBox
+    $ catMaybes
+      [ Just
+          $ hBox
+          $ intersperse (str " ")
+          $ concat
+            [ [ case s of
+                  NotSelected -> str "-"
+                  MaybeSelected -> withAttr selectedAttr $ str "❯"
+              ],
+              maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor),
+              [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
+              maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor,
+              [ str "..."
+                | let e_ = rebuildEntryCursor ec
+                   in or
+                        [ not (collapseEntryShowContents e) && isJust (entryContents e_),
+                          not (collapseEntryShowHistory e)
+                            && not (nullStateHistory $ entryStateHistory e_),
+                          not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
+                        ]
+              ],
+              maybeToList $ completedForestNumbersWidget (entryState $ rebuildEntryCursor ec) edc,
+              maybeToList $ collapsedForestNumbersWidget tc edc
+            ],
+        drawIfM collapseEntryShowContents $
+          drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
+        tscw,
+        drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
+        drawIfM collapseEntryShowHistory shcw,
+        drawIfM collapseEntryShowLogbook lbcw
       ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
@@ -506,42 +508,43 @@ drawEntryCursor s tc edc e = do
         else Nothing
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
-      s <>
-      (if ecs == entryCursorSelected
-         then MaybeSelected
-         else NotSelected)
+      s
+        <> ( if ecs == entryCursorSelected
+               then MaybeSelected
+               else NotSelected
+           )
 
 drawEntry :: TreeCollapsing -> EntryDrawContext -> CollapseEntry Entry -> Drawer
 drawEntry tc edc e = do
   tsw <- drawTimestamps entryTimestamps
   lbw <- drawLogbook entryLogbook
   shw <- drawStateHistory entryStateHistory
-  pure $
-    vBox $
-    catMaybes
-      [ Just $
-        hBox $
-        intersperse (str " ") $
-        concat
-          [ [str "-"]
-          , maybeToList (drawCurrentState entryStateHistory)
-          , [drawHeader entryHeader]
-          , maybeToList (drawTags entryTags)
-          , [ str "..."
-            | or
-                [ not (collapseEntryShowContents e) && isJust entryContents
-                , not (collapseEntryShowHistory e) && not (nullStateHistory entryStateHistory)
-                , not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
-                ]
-            ]
-          , maybeToList $ completedForestNumbersWidget (entryState $ collapseEntryValue e) edc
-          , maybeToList $ collapsedForestNumbersWidget tc edc
-          ]
-      , drawIfM collapseEntryShowContents $ drawContents <$> entryContents
-      , tsw
-      , drawProperties entryProperties
-      , drawIfM collapseEntryShowHistory shw
-      , drawIfM collapseEntryShowLogbook lbw
+  pure
+    $ vBox
+    $ catMaybes
+      [ Just
+          $ hBox
+          $ intersperse (str " ")
+          $ concat
+            [ [str "-"],
+              maybeToList (drawCurrentState entryStateHistory),
+              [drawHeader entryHeader],
+              maybeToList (drawTags entryTags),
+              [ str "..."
+                | or
+                    [ not (collapseEntryShowContents e) && isJust entryContents,
+                      not (collapseEntryShowHistory e) && not (nullStateHistory entryStateHistory),
+                      not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
+                    ]
+              ],
+              maybeToList $ completedForestNumbersWidget (entryState $ collapseEntryValue e) edc,
+              maybeToList $ collapsedForestNumbersWidget tc edc
+            ],
+        drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
+        tsw,
+        drawProperties entryProperties,
+        drawIfM collapseEntryShowHistory shw,
+        drawIfM collapseEntryShowLogbook lbw
       ]
   where
     Entry {..} = collapseEntryValue e
@@ -574,8 +577,8 @@ drawContents = textWidget . contentsText
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =
-  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair .
-  timestampsCursorMapCursor
+  verticalMapCursorWidgetM drawTimestampPair (drawTimestampKVCursor s) drawTimestampPair
+    . timestampsCursorMapCursor
 
 drawTimestamps :: Map TimestampName Timestamp -> MDrawer
 drawTimestamps m
@@ -583,7 +586,7 @@ drawTimestamps m
   | otherwise = Just . vBox <$> mapM (uncurry drawTimestampPair) (M.toList m)
 
 drawTimestampKVCursor ::
-     Select -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp -> Drawer
+  Select -> KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp -> Drawer
 drawTimestampKVCursor s = keyValueWidgetM goKey goVal
   where
     goKey tc ts = do
@@ -592,9 +595,9 @@ drawTimestampKVCursor s = keyValueWidgetM goKey goVal
         hBox
           [ case s of
               NotSelected -> drawTimestampName $ rebuildTimestampNameCursor tc
-              MaybeSelected -> drawTextCursor s tc
-          , str ": "
-          , dw
+              MaybeSelected -> drawTextCursor s tc,
+            str ": ",
+            dw
           ]
     goVal tsn fdc = do
       tsw <-
@@ -614,19 +617,20 @@ drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
     case rebuildFuzzyLocalTimeCursor fdc of
       OnlyDaySpecified d -> drawDay d
       BothTimeAndDay lt -> drawLocalTime lt
-  pure $
-    (case s of
-       NotSelected -> id
-       MaybeSelected -> withAttr selectedAttr) $
-    hBox $
-    intersperse (str " ") $
-    drawTextCursor s fuzzyLocalTimeCursorTextCursor :
-    [hBox [str "(", dw, str ")"] | MaybeSelected <- [s]]
+  pure
+    $ ( case s of
+          NotSelected -> id
+          MaybeSelected -> withAttr selectedAttr
+      )
+    $ hBox
+    $ intersperse (str " ")
+    $ drawTextCursor s fuzzyLocalTimeCursorTextCursor
+      : [hBox [str "(", dw, str ")"] | MaybeSelected <- [s]]
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
   withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $
-  timestampNameText tsn
+    timestampNameText tsn
 
 drawTimestamp :: Timestamp -> Drawer
 drawTimestamp ts =
@@ -639,9 +643,9 @@ drawDay d = do
   zt <- ask
   pure $
     hBox
-      [ str $ formatTimestampDay d
-      , str ", "
-      , str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
+      [ str $ formatTimestampDay d,
+        str ", ",
+        str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
       ]
 
 drawLocalTime :: LocalTime -> Drawer
@@ -649,20 +653,20 @@ drawLocalTime lt = do
   zt@(ZonedTime _ tz) <- ask
   pure $
     hBox
-      [ str $ formatTimestampLocalTime lt
-      , str ", "
-      , str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
+      [ str $ formatTimestampLocalTime lt,
+        str ", ",
+        str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
       ]
 
 drawPropertiesCursor :: Select -> PropertiesCursor -> Widget ResourceName
 drawPropertiesCursor s =
-  verticalMapCursorWidget drawPropertyPair (drawPropertyKVCursor s) drawPropertyPair .
-  propertiesCursorMapCursor
+  verticalMapCursorWidget drawPropertyPair (drawPropertyKVCursor s) drawPropertyPair
+    . propertiesCursorMapCursor
 
 drawPropertyKVCursor ::
-     Select
-  -> KeyValueCursor TextCursor TextCursor PropertyName PropertyValue
-  -> Widget ResourceName
+  Select ->
+  KeyValueCursor TextCursor TextCursor PropertyName PropertyValue ->
+  Widget ResourceName
 drawPropertyKVCursor s = keyValueWidget goKey goVal
   where
     sel =
@@ -671,15 +675,16 @@ drawPropertyKVCursor s = keyValueWidget goKey goVal
         MaybeSelected -> withAttr selectedAttr
     goKey tc pv =
       withAttr
-        (maybe
-           id
-           (\pn -> (<>) (propertyNameSpecificAttr pn))
-           (propertyName $ rebuildTextCursor tc)
-           propertyNameAttr) $
-      hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+        ( maybe
+            id
+            (\pn -> (<>) (propertyNameSpecificAttr pn))
+            (propertyName $ rebuildTextCursor tc)
+            propertyNameAttr
+        )
+        $ hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
     goVal pn tc =
       withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
-      hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
+        hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
@@ -689,7 +694,7 @@ drawProperties m
 drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
 drawPropertyPair pn pv =
   withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
-  hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
+    hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
 
 drawPropertyName :: PropertyName -> Widget ResourceName
 drawPropertyName = textLineWidget . propertyNameText
@@ -705,29 +710,30 @@ drawStateHistory (StateHistory ls)
   | null ls = pure Nothing
   | otherwise = do
     zt <- ask
-    pure $
-      Just $
-      withAttr todoStateHistoryAttr $
-      vBox $
-      flip map ls $ \StateHistoryEntry {..} ->
+    pure
+      $ Just
+      $ withAttr todoStateHistoryAttr
+      $ vBox
+      $ flip map ls
+      $ \StateHistoryEntry {..} ->
         hBox $
-        catMaybes
-          [ Just $
-            strWrap $
-            unwords
-              [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp
-              , "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
-              ]
-          , (str " " <+>) . drawTodoState <$> stateHistoryEntryNewState
-          ]
+          catMaybes
+            [ Just
+                $ strWrap
+                $ unwords
+                  [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
+                    "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
+                  ],
+              (str " " <+>) . drawTodoState <$> stateHistoryEntryNewState
+            ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
   horizontalNonEmptyCursorWidget
     (\t -> str ":" <+> drawTag t)
     (drawTagCursor s)
-    (\t -> drawTag t <+> str ":") .
-  tagsCursorNonEmptyCursor
+    (\t -> drawTag t <+> str ":")
+    . tagsCursorNonEmptyCursor
 
 drawTags :: Set Tag -> Maybe (Widget ResourceName)
 drawTags ts
@@ -737,10 +743,14 @@ drawTags ts
 
 drawTagCursor :: Select -> TagCursor -> Widget ResourceName
 drawTagCursor s =
-  (case s of
-     NotSelected -> id
-     MaybeSelected -> withAttr selectedAttr) .
-  (str ":" <+>) . (<+> str ":") . drawTextCursor s . tagCursorTextCursor
+  ( case s of
+      NotSelected -> id
+      MaybeSelected -> withAttr selectedAttr
+  )
+    . (str ":" <+>)
+    . (<+> str ":")
+    . drawTextCursor s
+    . tagCursorTextCursor
 
 drawTag :: Tag -> Widget n
 drawTag = textLineWidget . tagText
@@ -784,13 +794,14 @@ drawLogbookTotal mopen lbes = do
       now <- asks zonedTimeToUTC
       pure $ diffUTCTime now open
   let total = fromMaybe 0 openTime + sum (map logbookEntryDiffTime lbes)
-  pure $
-    Just $
-    hBox
-      [ str "TOTAL: "
-      , hLimit (length ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: String)) $
-        vLimit 1 $ fill ' '
-      , drawNominalDiffTime total
+  pure
+    $ Just
+    $ hBox
+      [ str "TOTAL: ",
+        hLimit (length ("[2018-10-11 00:30:02]--[2018-10-11 00:30:09] = " :: String))
+          $ vLimit 1
+          $ fill ' ',
+        drawNominalDiffTime total
       ]
 
 drawLogbookEntry :: LogbookEntry -> Drawer
@@ -806,16 +817,16 @@ drawLogOpen u = do
   now <- asks zonedTimeToUTC
   sw <- drawLogbookTimestamp u
   ew <- drawLogbookTimestamp now
-  pure $
-    withAttr selectedAttr $
-    hBox
-      [ str "CLOCK: "
-      , sw
-      , str "--"
-      , ew
-      , str " = "
-      , drawNominalDiffTime $ diffUTCTime now u
-      , str " RUNNING"
+  pure
+    $ withAttr selectedAttr
+    $ hBox
+      [ str "CLOCK: ",
+        sw,
+        str "--",
+        ew,
+        str " = ",
+        drawNominalDiffTime $ diffUTCTime now u,
+        str " RUNNING"
       ]
 
 drawLogbookTimestamp :: UTCTime -> Drawer

@@ -3,18 +3,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Archive.Prompt
-  ( YesNo(..)
-  , promptYesNo
-  , yesNoPromptString
-  , parseYesNo
-  , promptRawString
-  ) where
-
-import GHC.Generics (Generic)
+  ( YesNo (..),
+    promptYesNo,
+    yesNoPromptString,
+    parseYesNo,
+    promptRawString,
+  )
+where
 
 import Data.Maybe
 import Data.Validity
-
+import GHC.Generics (Generic)
 import System.IO (hFlush, stdout)
 
 promptYesNo :: YesNo -> String -> IO YesNo

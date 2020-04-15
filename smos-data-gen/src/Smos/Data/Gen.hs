@@ -87,9 +87,9 @@ genTodoStateChar = choose (minBound, maxBound) `suchThat` validTodoStateChar
 instance GenValid StateHistory where
   genValid = StateHistory . sort <$> genValid
   shrinkValid =
-    fmap StateHistory .
-    shrinkList (\(StateHistoryEntry mts ts) -> StateHistoryEntry <$> shrinkValid mts <*> pure ts) .
-    unStateHistory
+    fmap StateHistory
+      . shrinkList (\(StateHistoryEntry mts ts) -> StateHistoryEntry <$> shrinkValid mts <*> pure ts)
+      . unStateHistory
 
 instance GenValid StateHistoryEntry where
   genValid = genValidStructurallyWithoutExtraChecking
@@ -111,32 +111,33 @@ instance GenValid Logbook where
           sized $ \n -> do
             ss <- arbPartition n
             let go [] = pure []
-                go (s:rest) = do
+                go (s : rest) = do
                   lbes <- go rest
                   cur <-
                     resize s $
-                    case lbes of
-                      [] -> genValid
-                      (p:_) ->
-                        sized $ \m -> do
-                          (a, b) <- genSplit m
-                          ndt1 <- resize a genPositiveNominalDiffTime
-                          ndt2 <- resize b genPositiveNominalDiffTime
-                          let start = addUTCTime ndt1 (logbookEntryEnd p)
-                              end = addUTCTime ndt2 start
-                          pure $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+                      case lbes of
+                        [] -> genValid
+                        (p : _) ->
+                          sized $ \m -> do
+                            (a, b) <- genSplit m
+                            ndt1 <- resize a genPositiveNominalDiffTime
+                            ndt2 <- resize b genPositiveNominalDiffTime
+                            let start = addUTCTime ndt1 (logbookEntryEnd p)
+                                end = addUTCTime ndt2 start
+                            pure $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
                   pure $ cur : lbes
             go ss
      in oneof
-          [ LogClosed <$> listOfLogbookEntries
-          , do lbes <- listOfLogbookEntries
-               l <-
-                 case lbes of
-                   [] -> genValid
-                   (lbe:_) -> do
-                     ndt <- genPositiveNominalDiffTime
-                     pure $ addUTCTime ndt $ logbookEntryEnd lbe
-               pure $ LogOpen l lbes
+          [ LogClosed <$> listOfLogbookEntries,
+            do
+              lbes <- listOfLogbookEntries
+              l <-
+                case lbes of
+                  [] -> genValid
+                  (lbe : _) -> do
+                    ndt <- genPositiveNominalDiffTime
+                    pure $ addUTCTime ndt $ logbookEntryEnd lbe
+              pure $ LogOpen l lbes
           ]
 
 instance GenUnchecked LogbookEntry where

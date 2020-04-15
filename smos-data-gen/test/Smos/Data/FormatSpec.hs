@@ -19,7 +19,7 @@ spec :: Spec
 spec = do
   forMatchingFilesIn "test_resources/success/file" $ \tf ->
     it (fromAbsFile tf ++ " succesfully parses as .smos") $
-    shouldSucceedInParsingAsSmosFile @SmosFile tf
+      shouldSucceedInParsingAsSmosFile @SmosFile tf
   successAndFailureTests @SmosFile "file"
   successAndFailureTests @Entry "entry"
   successAndFailureTests @Header "header"
@@ -35,9 +35,10 @@ spec = do
   successAndFailureTests @Timestamp "timestamp"
 
 successAndFailureTests ::
-     forall a. (Validity a, Show a, FromJSON a)
-  => FilePath
-  -> Spec
+  forall a.
+  (Validity a, Show a, FromJSON a) =>
+  FilePath ->
+  Spec
 successAndFailureTests name =
   describe name $ do
     forMatchingFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
@@ -48,9 +49,10 @@ successAndFailureTests name =
       it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
-     forall a. (Validity a, Show a, FromJSON a)
-  => Path Abs File
-  -> IO ()
+  forall a.
+  (Validity a, Show a, FromJSON a) =>
+  Path Abs File ->
+  IO ()
 shouldSucceedInParsingAsSmosFile tf = do
   mErrOrSf <- readSmosFile tf
   case mErrOrSf of
@@ -59,9 +61,10 @@ shouldSucceedInParsingAsSmosFile tf = do
     Just (Right sf) -> shouldBeValid sf
 
 shouldSucceedInParsingByExtension ::
-     forall a. (Validity a, Show a, FromJSON a)
-  => Path Abs File
-  -> IO ()
+  forall a.
+  (Validity a, Show a, FromJSON a) =>
+  Path Abs File ->
+  IO ()
 shouldSucceedInParsingByExtension tf = do
   errOrSmosFile <- readFileByExtension @a tf
   case errOrSmosFile of
@@ -69,35 +72,37 @@ shouldSucceedInParsingByExtension tf = do
     Right sf -> shouldBeValid sf
 
 shouldFailToParse ::
-     forall a. (Show a, FromJSON a)
-  => Path Abs File
-  -> IO ()
+  forall a.
+  (Show a, FromJSON a) =>
+  Path Abs File ->
+  IO ()
 shouldFailToParse tf = do
   errOrSmosFile <- readFileByExtension @a tf
   case errOrSmosFile of
     Left actualErr -> do
       errFile <- addFileExtension "error" tf
       expectedErr <- readFile $ fromAbsFile errFile
-      unless (actualErr == expectedErr) $
-        expectationFailure $
-        unlines
-          [ "Actual error for golden test"
-          , fromAbsFile tf
-          , "differs from expected error in"
-          , fromAbsFile errFile
-          , "expected:"
-          , expectedErr
-          , "actual:"
-          , actualErr
+      unless (actualErr == expectedErr)
+        $ expectationFailure
+        $ unlines
+          [ "Actual error for golden test",
+            fromAbsFile tf,
+            "differs from expected error in",
+            fromAbsFile errFile,
+            "expected:",
+            expectedErr,
+            "actual:",
+            actualErr
           ]
       actualErr `shouldBe` expectedErr
     Right sf ->
       expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
 
 readFileByExtension ::
-     forall a. (Show a, FromJSON a)
-  => Path Abs File
-  -> IO (Either String a)
+  forall a.
+  (Show a, FromJSON a) =>
+  Path Abs File ->
+  IO (Either String a)
 readFileByExtension tf = do
   let ext = fileExtension tf
   let p =

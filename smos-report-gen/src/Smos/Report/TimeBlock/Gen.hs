@@ -3,7 +3,6 @@
 module Smos.Report.TimeBlock.Gen where
 
 import Data.GenValidity
-
 import Smos.Report.TimeBlock
 
 instance GenValid TimeBlock where

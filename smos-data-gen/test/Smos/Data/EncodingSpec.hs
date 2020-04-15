@@ -1,6 +1,7 @@
 module Smos.Data.EncodingSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
 import Control.Monad
 import Data.ByteString (ByteString)
@@ -21,34 +22,35 @@ spec = do
 
 roundtripSpec :: String -> (SmosFile -> ByteString) -> Spec
 roundtripSpec name func =
-  describe name $
-  it "produces bytestrings that can be roundtripped with parseSmosFile" $
-  forAllValid $ \sf ->
-    let bs = func sf
-        prettyBs = T.unpack $ TE.decodeUtf8 bs
-     in case parseSmosFile bs of
-          Left pe ->
-            expectationFailure $
-            unlines
-              [ "Parsing should not have failed"
-              , "encoding the following value:"
-              , ppShow sf
-              , "produced the folling bytestring:"
-              , prettyBs
-              , "but parsing failed with the following error:"
-              , show pe
-              ]
-          Right sf' ->
-            unless (sf' == sf) $
-            expectationFailure $
-            unlines
-              [ name ++ " should have roundtripped with parseSmosFile"
-              , "started with:"
-              , ppShow sf
-              , "encoding produced the following value:"
-              , prettyBs
-              , "expected:"
-              , ppShow sf'
-              , "actual:"
-              , ppShow sf
-              ]
+  describe name
+    $ it "produces bytestrings that can be roundtripped with parseSmosFile"
+    $ forAllValid
+    $ \sf ->
+      let bs = func sf
+          prettyBs = T.unpack $ TE.decodeUtf8 bs
+       in case parseSmosFile bs of
+            Left pe ->
+              expectationFailure $
+                unlines
+                  [ "Parsing should not have failed",
+                    "encoding the following value:",
+                    ppShow sf,
+                    "produced the folling bytestring:",
+                    prettyBs,
+                    "but parsing failed with the following error:",
+                    show pe
+                  ]
+            Right sf' ->
+              unless (sf' == sf)
+                $ expectationFailure
+                $ unlines
+                  [ name ++ " should have roundtripped with parseSmosFile",
+                    "started with:",
+                    ppShow sf,
+                    "encoding produced the following value:",
+                    prettyBs,
+                    "expected:",
+                    ppShow sf',
+                    "actual:",
+                    ppShow sf
+                  ]

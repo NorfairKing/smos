@@ -2,16 +2,12 @@
 
 module Smos.Cursor.Timestamps.Gen where
 
-import Data.GenValidity
-
-import Cursor.Map.Gen
-
-import Smos.Data.Gen
-
 import Cursor.FuzzyLocalTime.Gen ()
+import Cursor.Map.Gen
 import Cursor.Text.Gen
-
+import Data.GenValidity
 import Smos.Cursor.Timestamps
+import Smos.Data.Gen
 
 instance GenValid TimestampsCursor where
   genValid =

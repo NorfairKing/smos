@@ -1,5 +1,5 @@
 let
-  pkgsv = import ( import ./nixpkgs.nix );
+  pkgsv = import (import ./nixpkgs.nix);
   pkgs = pkgsv {};
   validity-overlay =
     import (
@@ -40,11 +40,11 @@ let
           pretty-relative-time-overlay
           cursor-fuzzy-time-overlay
           mergeful-overlay
-          ( import ./gitignore-src.nix )
-          ( import ./overlay.nix )
+          (import ./gitignore-src.nix)
+          (import ./overlay.nix)
         ];
       config.allowUnfree = true;
       config.allowBroken = true;
     };
 in
-  smosPkgs
+smosPkgs

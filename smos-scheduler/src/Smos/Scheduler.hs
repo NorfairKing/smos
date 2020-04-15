@@ -4,11 +4,12 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler
-  ( smosScheduler
-  ) where
+  ( smosScheduler,
+  )
+where
 
-import GHC.Generics (Generic)
-
+import Control.Monad
+import Control.Monad.Reader
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Char8 as SB8
 import Data.Map (Map)
@@ -19,24 +20,16 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Traversable
 import Data.Yaml as Yaml
-import Text.Show.Pretty
-
-import System.Exit
-
-import System.Cron (nextMatch, scheduleMatches)
-
-import Control.Monad
-import Control.Monad.Reader
-
+import GHC.Generics (Generic)
 import Path
 import Path.IO
-
 import Smos.Data
-
 import qualified Smos.Report.Config as Report
-
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.OptParse.Types
+import System.Cron (nextMatch, scheduleMatches)
+import System.Exit
+import Text.Show.Pretty
 
 smosScheduler :: IO ()
 smosScheduler = getSettings >>= scheduler
@@ -52,10 +45,10 @@ scheduler Settings {..} = do
         case Yaml.decodeEither' cts of
           Left err ->
             die $
-            unlines
-              [ unwords ["WARNING: unable to decode state file:", fromAbsFile setStateFile]
-              , prettyPrintParseException err
-              ]
+              unlines
+                [ unwords ["WARNING: unable to decode state file:", fromAbsFile setStateFile],
+                  prettyPrintParseException err
+                ]
           Right state -> pure $ Just state
   now <- getCurrentTime
   let goAhead =
@@ -98,10 +91,10 @@ performScheduleItem wdir now ScheduleItem {..} = do
   let ctx = RenderContext {renderContextTime = now}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
     Failure errs ->
-      putStrLn $
-      unlines $
-      "WARNING: Validation errors while rendering template destination file name:" :
-      map prettyRenderError errs
+      putStrLn
+        $ unlines
+        $ "WARNING: Validation errors while rendering template destination file name:"
+          : map prettyRenderError errs
     Success destination -> do
       let to = wdir </> destination
       pPrint from
@@ -113,24 +106,24 @@ performScheduleItem wdir now ScheduleItem {..} = do
           case Yaml.decodeEither' cts of
             Left err ->
               putStrLn $
-              unlines
-                [ unwords ["WARNING: Does not look like a smos template file:", fromAbsFile from]
-                , prettyPrintParseException err
-                ]
+                unlines
+                  [ unwords ["WARNING: Does not look like a smos template file:", fromAbsFile from],
+                    prettyPrintParseException err
+                  ]
             Right template -> do
               SB8.putStrLn cts
               let vRendered = runReaderT (renderTemplate template) ctx
               case vRendered of
                 Failure errs ->
-                  putStrLn $
-                  unlines $
-                  "WARNING: Validation errors while rendering template:" :
-                  map prettyRenderError errs
+                  putStrLn
+                    $ unlines
+                    $ "WARNING: Validation errors while rendering template:"
+                      : map prettyRenderError errs
                 Success rendered -> do
                   destinationExists <- doesFileExist to
-                  when destinationExists $
-                    putStrLn $
-                    unwords ["WARNING: destination already exists:", fromAbsFile to, "overwriting."]
+                  when destinationExists
+                    $ putStrLn
+                    $ unwords ["WARNING: destination already exists:", fromAbsFile to, "overwriting."]
                   ensureDir $ parent to
                   writeSmosFile to rendered
                   cs <- SB.readFile $ fromAbsFile to
@@ -140,8 +133,9 @@ renderTemplate :: ScheduleTemplate -> Render SmosFile
 renderTemplate (ScheduleTemplate f) = do
   now <- asks renderContextTime
   renderedForest <- traverse (traverse renderEntryTemplate) f
-  fmap SmosFile $
-    for renderedForest $ \tree ->
+  fmap SmosFile
+    $ for renderedForest
+    $ \tree ->
       for tree $ \entry ->
         case entrySetState now (Just "TODO") entry of
           Nothing -> lift $ Failure [RenderErrorEntrySetState entry now]
@@ -149,13 +143,13 @@ renderTemplate (ScheduleTemplate f) = do
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
-  Entry <$> renderHeaderTemplate entryTemplateHeader <*>
-  renderContentsTemplate entryTemplateContents <*>
-  renderTimestampsTemplate entryTemplateTimestamps <*>
-  renderPropertiesTemplate entryTemplateProperties <*>
-  renderStateHistoryTemplate entryTemplateStateHistory <*>
-  renderTagsTemplate entryTemplateTags <*>
-  pure emptyLogbook
+  Entry <$> renderHeaderTemplate entryTemplateHeader
+    <*> renderContentsTemplate entryTemplateContents
+    <*> renderTimestampsTemplate entryTemplateTimestamps
+    <*> renderPropertiesTemplate entryTemplateProperties
+    <*> renderStateHistoryTemplate entryTemplateStateHistory
+    <*> renderTagsTemplate entryTemplateTags
+    <*> pure emptyLogbook
 
 renderHeaderTemplate :: Header -> Render Header
 renderHeaderTemplate h = do
@@ -173,14 +167,14 @@ renderContentsTemplate =
       Just cs' -> pure cs'
 
 renderTimestampsTemplate ::
-     Map TimestampName TimestampTemplate -> Render (Map TimestampName Timestamp)
+  Map TimestampName TimestampTemplate -> Render (Map TimestampName Timestamp)
 renderTimestampsTemplate = traverse renderTimestampTemplate -- TODO
 
 renderTimestampTemplate :: TimestampTemplate -> Render Timestamp
 renderTimestampTemplate = undefined -- TODO
 
 renderPropertiesTemplate ::
-     Map PropertyName PropertyValue -> Render (Map PropertyName PropertyValue)
+  Map PropertyName PropertyValue -> Render (Map PropertyName PropertyValue)
 renderPropertiesTemplate = traverse renderPropertyValueTemplate -- TODO
 
 renderPropertyValueTemplate :: PropertyValue -> Render PropertyValue
@@ -251,8 +245,8 @@ data RenderError
 prettyRenderError :: RenderError -> String
 prettyRenderError = show
 
-data RenderContext =
-  RenderContext
-    { renderContextTime :: UTCTime
-    }
+data RenderContext
+  = RenderContext
+      { renderContextTime :: UTCTime
+      }
   deriving (Show, Eq, Generic)

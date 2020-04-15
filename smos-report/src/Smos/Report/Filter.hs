@@ -11,13 +11,16 @@
 
 module Smos.Report.Filter where
 
-import GHC.Generics (Generic)
-
+import Control.Arrow
+import Control.DeepSeq
+import Control.Monad
+import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 import Data.Aeson
 import Data.Char as Char
 import Data.Function
 import Data.List
-import Data.List.NonEmpty (NonEmpty(..))
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
@@ -25,30 +28,19 @@ import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
-import Path
-import Text.Read (readMaybe)
-
-import Control.Arrow
-import Control.Monad
-
+import GHC.Generics (Generic)
 import Lens.Micro
-
+import Path
+import Smos.Data
+import Smos.Report.Comparison
+import Smos.Report.Path
+import Smos.Report.Time hiding (P)
 import Text.Parsec.Combinator
 import Text.Parsec.Error
 import Text.Parsec.Pos
 import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec.Char
-
-import Cursor.Simple.Forest
-import Cursor.Simple.Tree
-
-import Control.DeepSeq
-
-import Smos.Data
-
-import Smos.Report.Comparison
-import Smos.Report.Path
-import Smos.Report.Time hiding (P)
+import Text.Read (readMaybe)
 
 data Paren
   = OpenParen
@@ -80,37 +72,37 @@ renderBinOp =
     AndOp -> "and"
     OrOp -> "or"
 
-newtype Piece =
-  Piece
-    { pieceText :: Text
-    }
+newtype Piece
+  = Piece
+      { pieceText :: Text
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity Piece where
   validate p@(Piece t) =
     mconcat
-      [ genericValidate p
-      , declare "The piece is not empty" $ not $ T.null t
-      , decorate "The characters are restricted" $ decorateList (T.unpack t) validateRestrictedChar
+      [ genericValidate p,
+        declare "The piece is not empty" $ not $ T.null t,
+        decorate "The characters are restricted" $ decorateList (T.unpack t) validateRestrictedChar
       ]
 
 validateRestrictedChar :: Char -> Validation
 validateRestrictedChar c =
   decorate "The character is restricted" $
-  mconcat
+    mconcat
       -- declare "The character is not a UTF16 surrogate codepoint" $ not $ isUtf16SurrogateCodePoint c
       -- Only need to check one of these.
-    [declare "The character is printable" $ Char.isPrint c, validateExtraRestrictedChar c]
+      [declare "The character is printable" $ Char.isPrint c, validateExtraRestrictedChar c]
 
 validateExtraRestrictedChar :: Char -> Validation
 validateExtraRestrictedChar c =
   decorate "The character is restricted" $
-  mconcat
-    [ declare "The character is not a space" $ not $ Char.isSpace c
-    , declare "The character is not an open bracket" $ c /= '('
-    , declare "The character is not an close bracket" $ c /= ')'
-    , declare "The character is not a column" $ c /= ':'
-    ]
+    mconcat
+      [ declare "The character is not a space" $ not $ Char.isSpace c,
+        declare "The character is not an open bracket" $ c /= '(',
+        declare "The character is not an close bracket" $ c /= ')',
+        declare "The character is not a column" $ c /= ':'
+      ]
 
 instance NFData Piece
 
@@ -135,30 +127,30 @@ renderPart =
     PartPiece p -> pieceText p
     PartBinOp bo -> renderBinOp bo
 
-newtype Parts =
-  Parts
-    { unParts :: [Part]
-    }
+newtype Parts
+  = Parts
+      { unParts :: [Part]
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity Parts where
   validate p@(Parts ps) =
     mconcat
-      [ genericValidate p
-      , declare "There are no two unfitting consequtive pieces" $
-        let go [] = True
-            go [_] = True
-            go (p1:p2:rest) =
-              let b =
-                    case p1 of
-                      PartPiece _ ->
-                        case p2 of
-                          PartPiece _ -> False
-                          PartBinOp _ -> False
-                          _ -> True
-                      _ -> True
-               in b && go (p2 : rest)
-         in go ps
+      [ genericValidate p,
+        declare "There are no two unfitting consequtive pieces" $
+          let go [] = True
+              go [_] = True
+              go (p1 : p2 : rest) =
+                let b =
+                      case p1 of
+                        PartPiece _ ->
+                          case p2 of
+                            PartPiece _ -> False
+                            PartBinOp _ -> False
+                            _ -> True
+                        _ -> True
+                 in b && go (p2 : rest)
+           in go ps
       ]
 
 instance NFData Parts
@@ -178,13 +170,13 @@ parsePart = parse partP "part"
 partP :: TP Part
 partP =
   choice
-    [ void (char ':') >> pure PartColumn
-    , void (char '(') >> pure (PartParen OpenParen)
-    , void (char ')') >> pure (PartParen ClosedParen)
-    , void (char ' ') >> pure PartSpace
-    , try $ void (string "and") >> pure (PartBinOp AndOp)
-    , try $ void (string "or") >> pure (PartBinOp OrOp)
-    , PartPiece . Piece . T.pack <$> many1 (satisfy (validationIsValid . validateRestrictedChar))
+    [ void (char ':') >> pure PartColumn,
+      void (char '(') >> pure (PartParen OpenParen),
+      void (char ')') >> pure (PartParen ClosedParen),
+      void (char ' ') >> pure PartSpace,
+      try $ void (string "and") >> pure (PartBinOp AndOp),
+      try $ void (string "or") >> pure (PartBinOp OrOp),
+      PartPiece . Piece . T.pack <$> many1 (satisfy (validationIsValid . validateRestrictedChar))
     ]
 
 type TP = Parsec Text ()
@@ -323,8 +315,9 @@ keyWordP kw = do
     Just kw'
       | kw' == kw' -> pure ()
     _ ->
-      fail $ "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: " <>
-      T.unpack (pieceText p)
+      fail $
+        "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: "
+          <> T.unpack (pieceText p)
 
 data Ast
   = AstBinOp Ast BinOp Ast
@@ -345,11 +338,11 @@ renderAst = Parts . go
         AstUnOp p a -> PartPiece p : PartColumn : go a
         AstBinOp a1 bo a2 ->
           concat
-            [ [PartParen OpenParen]
-            , go a1
-            , [PartSpace, PartBinOp bo, PartSpace]
-            , go a2
-            , [PartParen ClosedParen]
+            [ [PartParen OpenParen],
+              go a1,
+              [PartSpace, PartBinOp bo, PartSpace],
+              go a2,
+              [PartParen ClosedParen]
             ]
 
 parseAst :: Parts -> Either ParseError Ast
@@ -375,9 +368,10 @@ binOpP :: PP BinOp
 binOpP = do
   PartBinOp bo <-
     part
-      (\case
-         PartBinOp _ -> True
-         _ -> False)
+      ( \case
+          PartBinOp _ -> True
+          _ -> False
+      )
   pure bo
 
 astUnOpP :: PP Ast
@@ -390,36 +384,39 @@ astUnOpP = do
 parenP :: Paren -> PP ()
 parenP p =
   void $
-  part
-    (\case
-       PartParen p' -> p' == p
-       _ -> False)
+    part
+      ( \case
+          PartParen p' -> p' == p
+          _ -> False
+      )
 
 columnP :: PP ()
 columnP =
   void $
-  part
-    (\case
-       PartColumn -> True
-       _ -> False)
+    part
+      ( \case
+          PartColumn -> True
+          _ -> False
+      )
 
 spaceP :: PP ()
 spaceP =
   void $
-  part
-    (\case
-       PartSpace -> True
-       _ -> False)
+    part
+      ( \case
+          PartSpace -> True
+          _ -> False
+      )
 
 type EntryFilter = Filter (RootedPath, ForestCursor Entry)
 
 type ProjectFilter = Filter RootedPath
 
-data SmosFileAtPath =
-  SmosFileAtPath
-    { smosFilePath :: RootedPath
-    , smosFileFile :: SmosFile
-    }
+data SmosFileAtPath
+  = SmosFileAtPath
+      { smosFilePath :: RootedPath,
+        smosFileFile :: SmosFile
+      }
   deriving (Show, Eq, Generic)
 
 instance NFData SmosFileAtPath
@@ -431,8 +428,9 @@ forestCursorChildren :: ForestCursor a -> [ForestCursor a]
 forestCursorChildren a =
   mapMaybe
     (\i -> a & forestCursorSelectBelowAtPos i)
-    (let CNode _ cf = rebuildTreeCursor $ a ^. forestCursorSelectedTreeL
-      in [0 .. length (rebuildCForest cf) - 1])
+    ( let CNode _ cf = rebuildTreeCursor $ a ^. forestCursorSelectedTreeL
+       in [0 .. length (rebuildCForest cf) - 1]
+    )
 
 forestCursorLevel :: ForestCursor a -> Word
 forestCursorLevel fc = go' $ fc ^. forestCursorSelectedTreeL
@@ -467,24 +465,26 @@ data Filter a where
   FilterAll :: Filter a -> Filter (Set a)
   -- Map filters
   FilterMapHas :: (Validity k, NFData k, Show k, Ord k, FilterArgument k) => k -> Filter (Map k v)
-  FilterMapVal
-    :: (Validity k, NFData k, Show k, Ord k, FilterArgument k)
-    => k
-    -> Filter (Maybe v)
-    -> Filter (Map k v)
+  FilterMapVal ::
+    (Validity k, NFData k, Show k, Ord k, FilterArgument k) =>
+    k ->
+    Filter (Maybe v) ->
+    Filter (Map k v)
   -- Tuple filters
   FilterFst :: Filter a -> Filter (a, b)
   FilterSnd :: Filter b -> Filter (a, b)
   -- Maybe filters
   FilterMaybe :: Bool -> Filter a -> Filter (Maybe a)
   -- Comparison filters
-  FilterSub
-    :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterSubString a) => a -> Filter a
-  FilterOrd
-    :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterOrd a)
-    => Comparison
-    -> a
-    -> Filter a
+  FilterSub ::
+    (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterSubString a) =>
+    a ->
+    Filter a
+  FilterOrd ::
+    (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterOrd a) =>
+    Comparison ->
+    a ->
+    Filter a
   -- Boolean filters
   FilterNot :: Filter a -> Filter a
   FilterAnd :: Filter a -> Filter a -> Filter a
@@ -607,17 +607,17 @@ instance Validity (Filter a) where
     let validateArgumentStr s = decorateList s validateRestrictedChar
         validateArgument a =
           mconcat
-            [ validate a
-            , declare "The argument is not empty" $ not $ T.null $ renderArgument a
-            , decorate "The characters are extra restricted" $
-              decorateList (T.unpack $ renderArgument a) validateExtraRestrictedChar
+            [ validate a,
+              declare "The argument is not empty" $ not $ T.null $ renderArgument a,
+              decorate "The characters are extra restricted" $
+                decorateList (T.unpack $ renderArgument a) validateExtraRestrictedChar
             ]
      in case f of
           FilterFile s ->
             mconcat
-              [ validate s
-              , declare "The argument is not empty" $ not $ null $ fromRelFile s
-              , decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
+              [ validate s,
+                declare "The argument is not empty" $ not $ null $ fromRelFile s,
+                decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
               ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'
@@ -890,33 +890,33 @@ tcTodoStateFilter = tcWithTopLevelBranches tcSub
 tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
 tcMaybeFilter tc =
   tcWithTopLevelBranches $
-  tcChoices
-    [ tcThisKeyWordOp KeyWordMaybe $ tcArgumentOp $ \b a -> FilterMaybe b <$> tc a
-    , fmap (FilterMaybe False) . tc
-    ]
+    tcChoices
+      [ tcThisKeyWordOp KeyWordMaybe $ tcArgumentOp $ \b a -> FilterMaybe b <$> tc a,
+        fmap (FilterMaybe False) . tc
+      ]
 
 tcPropertyValueFilter :: TC (Filter PropertyValue)
 tcPropertyValueFilter =
   tcWithTopLevelBranches $
-  tcChoices
-    [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
+    tcChoices
+      [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
 
 tcMapFilter ::
-     (Validity k, NFData k, Show k, Ord k, FilterArgument k)
-  => TC (Filter v)
-  -> TC (Filter (Map k v))
+  (Validity k, NFData k, Show k, Ord k, FilterArgument k) =>
+  TC (Filter v) ->
+  TC (Filter (Map k v))
 tcMapFilter func =
   tcWithTopLevelBranches $ tcChoices $
-  let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
-      hasTC = tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
-   in [ tcKeyWordOp $ \kw ->
-          case kw of
-            KeyWordVal -> valTC
-            KeyWordHas -> hasTC
-            _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw
-      , valTC
-      , hasTC
-      ]
+    let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+        hasTC = tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+     in [ tcKeyWordOp $ \kw ->
+            case kw of
+              KeyWordVal -> valTC
+              KeyWordHas -> hasTC
+              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw,
+          valTC,
+          hasTC
+        ]
 
 tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
 tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
@@ -924,15 +924,15 @@ tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
 tcSetFilter func =
   tcWithTopLevelBranches $ tcChoices $
-  let anyTC = fmap FilterAny . func
-      allTC = fmap FilterAll . func
-   in [ tcKeyWordOp $ \kw ->
-          case kw of
-            KeyWordAny -> anyTC
-            KeyWordAll -> allTC
-            _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw
-      , anyTC
-      ]
+    let anyTC = fmap FilterAny . func
+        allTC = fmap FilterAll . func
+     in [ tcKeyWordOp $ \kw ->
+            case kw of
+              KeyWordAny -> anyTC
+              KeyWordAll -> allTC
+              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw,
+          anyTC
+        ]
 
 tcTagsFilter :: TC (Filter (Set Tag))
 tcTagsFilter = tcSetFilter tcTagFilter
@@ -947,53 +947,53 @@ tcEntryFilter =
       KeyWordTags -> fmap FilterEntryTags . tcTagsFilter
       _ ->
         const $ Left $
-        FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
+          FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
 
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
   tcWithTopLevelBranches $ tcChoices $
-  let withinCursorTC = fmap FilterWithinCursor . tc
-   in [ tcKeyWordOp $ \kw ->
-          case kw of
-            KeyWordParent -> fmap FilterParent . tcForestCursorFilter tc
-            KeyWordAncestor -> fmap FilterAncestor . tcForestCursorFilter tc
-            KeyWordChild -> fmap FilterChild . tcForestCursorFilter tc
-            KeyWordLegacy -> fmap FilterLegacy . tcForestCursorFilter tc
-            KeyWordLevel -> fmap FilterLevel . tcArgumentPiece pure
-            KeyWordCursor -> withinCursorTC
-            _ ->
-              const $ Left $
-              FTEThisKeyWordExpected
-                [ KeyWordParent
-                , KeyWordAncestor
-                , KeyWordChild
-                , KeyWordLegacy
-                , KeyWordLevel
-                , KeyWordCursor
-                ]
-                kw
-      , withinCursorTC
-      ]
+    let withinCursorTC = fmap FilterWithinCursor . tc
+     in [ tcKeyWordOp $ \kw ->
+            case kw of
+              KeyWordParent -> fmap FilterParent . tcForestCursorFilter tc
+              KeyWordAncestor -> fmap FilterAncestor . tcForestCursorFilter tc
+              KeyWordChild -> fmap FilterChild . tcForestCursorFilter tc
+              KeyWordLegacy -> fmap FilterLegacy . tcForestCursorFilter tc
+              KeyWordLevel -> fmap FilterLevel . tcArgumentPiece pure
+              KeyWordCursor -> withinCursorTC
+              _ ->
+                const $ Left $
+                  FTEThisKeyWordExpected
+                    [ KeyWordParent,
+                      KeyWordAncestor,
+                      KeyWordChild,
+                      KeyWordLegacy,
+                      KeyWordLevel,
+                      KeyWordCursor
+                    ]
+                    kw,
+          withinCursorTC
+        ]
 
 tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
 tcTupleFilter tc1 tc2 =
   tcWithTopLevelBranches $
-  let fstTC = fmap FilterFst . tc1
-      sndTC = fmap FilterSnd . tc2
-   in tcChoices
-        [ tcKeyWordOp $ \kw ->
-            case kw of
-              KeyWordFst -> fstTC
-              KeyWordSnd -> sndTC
-              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordFst, KeyWordSnd] kw
-        , fstTC
-        , sndTC
-        ]
+    let fstTC = fmap FilterFst . tc1
+        sndTC = fmap FilterSnd . tc2
+     in tcChoices
+          [ tcKeyWordOp $ \kw ->
+              case kw of
+                KeyWordFst -> fstTC
+                KeyWordSnd -> sndTC
+                _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordFst, KeyWordSnd] kw,
+            fstTC,
+            sndTC
+          ]
 
 tcChoices :: [TC a] -> TC a
 tcChoices [] = const $ Left FTENoChoices
 tcChoices [tc] = tc
-tcChoices (tc:tcs) =
+tcChoices (tc : tcs) =
   \ast ->
     case tc ast of
       Right r -> pure r

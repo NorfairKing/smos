@@ -1,19 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Sync.Client.Prompt
-  ( promptUntil
-  , promptSecret
-  , promptSecretUntil
-  , prompt
-  ) where
-
-import Data.Text
+  ( promptUntil,
+    promptSecret,
+    promptSecretUntil,
+    prompt,
+  )
+where
 
 import Control.Exception
 import Control.Monad
-
+import Data.Text
 import qualified Data.Text.IO as T
-
 import System.IO
 
 promptUntil :: Text -> (Text -> Maybe a) -> IO a

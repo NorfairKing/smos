@@ -4,29 +4,23 @@
 
 module Smos.Report.OptParse where
 
-import qualified System.Environment as System
-import System.Exit
-
 import Control.Arrow
 import Control.Monad
-
 import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
-
+import Options.Applicative
 import Path
 import Path.IO
-
 import Smos.Report.Config
-
-import Options.Applicative
-
 import Smos.Report.OptParse.Types
+import qualified System.Environment as System
+import System.Exit
 
 combineToConfig ::
-     SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
+  SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
   wfs <-
     case msum [flagWorkflowDir, envWorkflowDir, mc >>= (fmap T.unpack . confWorkflowDir)] of
@@ -48,30 +42,30 @@ combineToConfig src Flags {..} Environment {..} mc = do
         pure $ ProjectsAbsolute ad
   apfs <-
     case msum
-           [ flagArchivedProjectsDir
-           , envArchivedProjectsDir
-           , mc >>= (fmap T.unpack . confArchivedProjectsDir)
-           ] of
+      [ flagArchivedProjectsDir,
+        envArchivedProjectsDir,
+        mc >>= (fmap T.unpack . confArchivedProjectsDir)
+      ] of
       Nothing -> pure $ smosReportConfigArchivedProjectsFileSpec src
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchivedProjectsAbsolute ad
   pure $
     SmosReportConfig
-      { smosReportConfigWorkflowFileSpec = wfs
-      , smosReportConfigArchiveFileSpec = afs
-      , smosReportConfigProjectsFileSpec = pfs
-      , smosReportConfigArchivedProjectsFileSpec = apfs
-      , smosReportConfigWorkBaseFilter =
-          (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src
-      , smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
+      { smosReportConfigWorkflowFileSpec = wfs,
+        smosReportConfigArchiveFileSpec = afs,
+        smosReportConfigProjectsFileSpec = pfs,
+        smosReportConfigArchivedProjectsFileSpec = apfs,
+        smosReportConfigWorkBaseFilter =
+          (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src,
+        smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
       }
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag <*>
-  parseProjectsDirFlag <*>
-  parseArchivedProjectsDirFlag
+  Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag
+    <*> parseProjectsDirFlag
+    <*> parseArchivedProjectsDirFlag
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
@@ -83,41 +77,45 @@ parseWorkflowDirFlag :: Parser (Maybe FilePath)
 parseWorkflowDirFlag =
   option
     (Just <$> str)
-    (mconcat
-       [ metavar "FILEPATH"
-       , help "The workflow directory to use"
-       , long "workflow-dir"
-       , value Nothing
-       ])
+    ( mconcat
+        [ metavar "FILEPATH",
+          help "The workflow directory to use",
+          long "workflow-dir",
+          value Nothing
+        ]
+    )
 
 parseArchiveDirFlag :: Parser (Maybe FilePath)
 parseArchiveDirFlag =
   option
     (Just <$> str)
-    (mconcat
-       [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing])
+    ( mconcat
+        [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing]
+    )
 
 parseProjectsDirFlag :: Parser (Maybe FilePath)
 parseProjectsDirFlag =
   option
     (Just <$> str)
-    (mconcat
-       [ metavar "FILEPATH"
-       , help "The projects directory to use"
-       , long "projects-dir"
-       , value Nothing
-       ])
+    ( mconcat
+        [ metavar "FILEPATH",
+          help "The projects directory to use",
+          long "projects-dir",
+          value Nothing
+        ]
+    )
 
 parseArchivedProjectsDirFlag :: Parser (Maybe FilePath)
 parseArchivedProjectsDirFlag =
   option
     (Just <$> str)
-    (mconcat
-       [ metavar "FILEPATH"
-       , help "The archived projects directory to use"
-       , long "archived-projects-dir"
-       , value Nothing
-       ])
+    ( mconcat
+        [ metavar "FILEPATH",
+          help "The archived projects directory to use",
+          long "archived-projects-dir",
+          value Nothing
+        ]
+    )
 
 getEnvironment :: IO Environment
 getEnvironment = do
@@ -126,17 +124,17 @@ getEnvironment = do
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
   pure
     Environment
-      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
-      , envWorkflowDir =
-          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"]
-      , envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"]
-      , envProjectsDir =
-          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"]
-      , envArchivedProjectsDir =
+      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"],
+        envWorkflowDir =
+          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"],
+        envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"],
+        envProjectsDir =
+          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"],
+        envArchivedProjectsDir =
           msum $
-          map
-            getSmosEnv
-            ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
+            map
+              getSmosEnv
+              ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
 
 defaultConfigFiles :: IO [Path Abs File]
@@ -168,7 +166,7 @@ getConfiguration Flags {..} Environment {..} = do
       Nothing -> do
         files <- defaultConfigFiles
         let go [] = pure Nothing
-            go (f:fs) = do
+            go (f : fs) = do
               e <- doesFileExist f
               if e
                 then pure $ Just f
@@ -179,7 +177,7 @@ getConfiguration Flags {..} Environment {..} = do
     errOrConfig <-
       case fileExtension configFile of
         ".json" -> parseJSONConfig configFile
-                -- As Yaml
+        -- As Yaml
         ".yaml" -> parseYamlConfig configFile
         _ -> parseYamlConfig configFile
     case errOrConfig of

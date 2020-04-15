@@ -4,17 +4,13 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.Sync.SyncSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
-import GHC.Generics (Generic)
-
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Test.Validity
-import Test.Validity.Aeson
-
+import Control.Monad
+import Control.Monad.Logger
+import Control.Monad.Reader
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -22,24 +18,21 @@ import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Timed as Mergeful
 import Data.Set (Set)
 import qualified Data.Set as S
-
-import Control.Monad
-import Control.Monad.Logger
-import Control.Monad.Reader
-
+import Database.Persist.Sqlite as DB
+import GHC.Generics (Generic)
 import Path
-
 import Servant.Auth.Client
 import Servant.Client
-
-import Database.Persist.Sqlite as DB
-
 import Smos.API
 import Smos.Server.TestUtils
-
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.Sync.Gen ()
+import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+import Test.Validity
+import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
@@ -48,8 +41,9 @@ spec = do
   jsonSpecOnValid @SyncFileMeta
   serverSpec $ do
     describe "single client" $ do
-      describe "testInitialSync" $
-        it "succesfully gets a valid clientStore from an empty server" $ \cenv ->
+      describe "testInitialSync"
+        $ it "succesfully gets a valid clientStore from an empty server"
+        $ \cenv ->
           withNewUser cenv $ \token -> do
             clientStore <- testInitialSync cenv token
             shouldBeValid clientStore
@@ -89,8 +83,9 @@ spec = do
                 cstore <- testInitialSync cenv token
                 testSync cenv token cstore
             shouldBeValid stores
-      modifyMaxSuccess (* 20) $
-        it "succesfully syncs a list of operations for clients seperately" $ \cenv ->
+      modifyMaxSuccess (* 20)
+        $ it "succesfully syncs a list of operations for clients seperately"
+        $ \cenv ->
           forAll genCTestOps $ \cops ->
             withNewUser cenv $ \token -> do
               let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
@@ -98,8 +93,8 @@ spec = do
               result <- foldM go M.empty cops
               shouldBeValid result
 
-data CTestOp =
-  CTestOp Int ClientOp
+data CTestOp
+  = CTestOp Int ClientOp
   deriving (Show, Eq, Generic)
 
 data ClientOp
@@ -108,11 +103,11 @@ data ClientOp
   | ClientTestOps [TestOp]
   deriving (Show, Eq, Generic)
 
-data TestSituation =
-  TestSituation
-    { testSituationServer :: Set (Path Rel File)
-    , testSituationClients :: Map Int (Set (Path Rel File))
-    }
+data TestSituation
+  = TestSituation
+      { testSituationServer :: Set (Path Rel File),
+        testSituationClients :: Map Int (Set (Path Rel File))
+      }
   deriving (Show, Eq, Generic)
 
 initialSituation :: TestSituation
@@ -136,20 +131,25 @@ validCTestOpsFor initial =
 validCTestOpFor :: TestSituation -> Gen CTestOp
 validCTestOpFor m =
   let addClientGen =
-        CTestOp <$> (genValid `suchThat` (\i -> not $ M.member i (testSituationClients m))) <*>
-        pure ClientNew
+        CTestOp <$> (genValid `suchThat` (\i -> not $ M.member i (testSituationClients m)))
+          <*> pure ClientNew
    in frequency $
-      (1, addClientGen) :
-      if M.null (testSituationClients m)
-        then []
-        else [ ( 3
-               , do (cid, _) <- elements $ M.toList (testSituationClients m)
-                    pure $ CTestOp cid ClientSync)
-             , ( 5
-               , do (cid, cstore) <- elements $ M.toList (testSituationClients m)
+        (1, addClientGen)
+          : if M.null (testSituationClients m)
+            then []
+            else
+              [ ( 3,
+                  do
+                    (cid, _) <- elements $ M.toList (testSituationClients m)
+                    pure $ CTestOp cid ClientSync
+                ),
+                ( 5,
+                  do
+                    (cid, cstore) <- elements $ M.toList (testSituationClients m)
                     ops <- validTestOpsFor cstore
-                    pure $ CTestOp cid $ ClientTestOps ops)
-             ]
+                    pure $ CTestOp cid $ ClientTestOps ops
+                )
+              ]
 
 testApplyCTestOp :: TestSituation -> CTestOp -> TestSituation
 testApplyCTestOp ts (CTestOp i cop) =
@@ -166,7 +166,9 @@ applySync ts i =
     Just s ->
       let u = S.union s (testSituationServer ts)
        in TestSituation
-            {testSituationClients = M.insert i u (testSituationClients ts), testSituationServer = u}
+            { testSituationClients = M.insert i u (testSituationClients ts),
+              testSituationServer = u
+            }
 
 applyCTestOp :: ClientEnv -> Token -> Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
 applyCTestOp cenv token m (CTestOp i cop) =
@@ -195,10 +197,11 @@ testSync cenv token cs = testC cenv $ runSync token cs
 
 testC :: ClientEnv -> C a -> IO a
 testC cenv func =
-  testLogging $
-  DB.withSqlitePool ":memory:" 1 $ \pool -> do
-    let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-    runReaderT func env
+  testLogging
+    $ DB.withSqlitePool ":memory:" 1
+    $ \pool -> do
+      let env = SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+      runReaderT func env
 
 testLogging :: LoggingT IO a -> IO a
 testLogging = runStderrLoggingT . filterLogger (\_ ll -> ll >= LevelWarn)
@@ -240,17 +243,22 @@ validTestOpFor :: Set (Path Rel File) -> Gen TestOp
 validTestOpFor s =
   let addFileGen = AddFile <$> (genValid `suchThat` (\sf -> not $ S.member (syncFilePath sf) s))
    in frequency $
-      (1, addFileGen) :
-      if S.null s
-        then []
-        else [ ( 3
-               , do rf <- elements $ S.toList s
+        (1, addFileGen)
+          : if S.null s
+            then []
+            else
+              [ ( 3,
+                  do
+                    rf <- elements $ S.toList s
                     v' <- genValid
-                    pure $ ChangeFile $ SyncFile {syncFilePath = rf, syncFileContents = v'})
-             , ( 1
-               , do rf <- elements $ S.elems s
-                    pure $ RemoveFile rf)
-             ]
+                    pure $ ChangeFile $ SyncFile {syncFilePath = rf, syncFileContents = v'}
+                ),
+                ( 1,
+                  do
+                    rf <- elements $ S.elems s
+                    pure $ RemoveFile rf
+                )
+              ]
 
 testApplyTestOps :: Set (Path Rel File) -> [TestOp] -> Set (Path Rel File)
 testApplyTestOps = foldl testApplyTestOp
@@ -272,30 +280,32 @@ applyTestOpStore cstore op =
    in cstore {clientStoreItems = s'}
 
 applyTestOp ::
-     Mergeful.ClientStore FileUUID SyncFile -> TestOp -> Mergeful.ClientStore FileUUID SyncFile
+  Mergeful.ClientStore FileUUID SyncFile -> TestOp -> Mergeful.ClientStore FileUUID SyncFile
 applyTestOp cs op =
   case op of
     AddFile sf -> Mergeful.addItemToClientStore sf cs
     ChangeFile sf ->
       case find
-             (\(_, sf') -> syncFilePath sf == (syncFilePath . Mergeful.timedValue) sf')
-             (M.toList $
-              M.union
-                (Mergeful.clientStoreSyncedItems cs)
-                (Mergeful.clientStoreSyncedButChangedItems cs)) of
+        (\(_, sf') -> syncFilePath sf == (syncFilePath . Mergeful.timedValue) sf')
+        ( M.toList $
+            M.union
+              (Mergeful.clientStoreSyncedItems cs)
+              (Mergeful.clientStoreSyncedButChangedItems cs)
+        ) of
         Nothing -> Mergeful.addItemToClientStore sf cs
         Just (u, _) -> Mergeful.changeItemInClientStore u sf cs
     RemoveFile rf ->
       case find
-             (\(_, sf') -> rf == (syncFilePath . Mergeful.timedValue) sf')
-             (M.toList $
-              M.union
-                (Mergeful.clientStoreSyncedItems cs)
-                (Mergeful.clientStoreSyncedButChangedItems cs)) of
+        (\(_, sf') -> rf == (syncFilePath . Mergeful.timedValue) sf')
+        ( M.toList $
+            M.union
+              (Mergeful.clientStoreSyncedItems cs)
+              (Mergeful.clientStoreSyncedButChangedItems cs)
+        ) of
         Just (u, _) -> Mergeful.markItemDeletedInClientStore u cs
         Nothing ->
           case find
-                 (\(_, sf') -> rf == syncFilePath sf')
-                 (M.toList $ Mergeful.clientStoreAddedItems cs) of
+            (\(_, sf') -> rf == syncFilePath sf')
+            (M.toList $ Mergeful.clientStoreAddedItems cs) of
             Nothing -> cs
             Just (i, _) -> Mergeful.deleteItemFromClientStore i cs

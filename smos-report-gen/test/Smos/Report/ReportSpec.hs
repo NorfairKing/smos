@@ -4,8 +4,9 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Report.ReportSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
 import Smos.Report.Report
 import Smos.Report.Report.Gen ()

@@ -1,40 +1,39 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Style
-  ( defaultAttrMap
-  , selectedAttr
-  , unsavedAttr
-  , keyAttr
-  , headerAttr
-  , contentsAttr
-  , todoStateAttr
-  , todoStateSpecificAttr
-  , todoStateHistoryAttr
-  , timestampNameAttr
-  , timestampNameSpecificAttr
-  , propertyNameAttr
-  , propertyNameSpecificAttr
-  , tagAttr
-  , tagSpecificAttr
-  , helpNameAttr
-  , helpKeyCombinationAttr
-  , helpDescriptionAttr
+  ( defaultAttrMap,
+    selectedAttr,
+    unsavedAttr,
+    keyAttr,
+    headerAttr,
+    contentsAttr,
+    todoStateAttr,
+    todoStateSpecificAttr,
+    todoStateHistoryAttr,
+    timestampNameAttr,
+    timestampNameSpecificAttr,
+    propertyNameAttr,
+    propertyNameSpecificAttr,
+    tagAttr,
+    tagSpecificAttr,
+    helpNameAttr,
+    helpKeyCombinationAttr,
+    helpDescriptionAttr,
+
     -- * Re-exports
-  , applyAttrMappings
-  , fg
-  , bg
-  , module Graphics.Vty.Attributes
-  ) where
-
-import Import
-
-import qualified Data.Text as T
+    applyAttrMappings,
+    fg,
+    bg,
+    module Graphics.Vty.Attributes,
+  )
+where
 
 import Brick.AttrMap as B
 import Brick.Util as B
+import qualified Data.Text as T
 import qualified Graphics.Vty as V
 import Graphics.Vty.Attributes
-
+import Import
 import Smos.Data
 
 defaultAttrMap :: s -> AttrMap
@@ -43,34 +42,34 @@ defaultAttrMap _ =
       orange = col 255 175 0 -- 214, #ffaf00
       brown = col 215 95 0 -- 166, #d75f00
    in applyAttrMappings
-        [ (todoStateSpecificAttr "TODO", fg red)
-        , (todoStateSpecificAttr "NEXT", fg orange)
-        , (todoStateSpecificAttr "STARTED", fg orange)
-        , (todoStateSpecificAttr "WAITING", fg blue)
-        , (todoStateSpecificAttr "READY", fg brown)
-        , (todoStateSpecificAttr "DONE", fg green)
-        , (todoStateSpecificAttr "CANCELLED", fg green)
-        , (todoStateSpecificAttr "FAILED", fg brightRed)
-        , (timestampNameSpecificAttr "BEGIN", fg brown)
-        , (timestampNameSpecificAttr "END", fg brown)
-        , (timestampNameSpecificAttr "SCHEDULED", fg orange)
-        , (timestampNameSpecificAttr "DEADLINE", fg red)
-        , (propertyNameSpecificAttr "timewindow", fg magenta)
-        , (propertyNameSpecificAttr "brainpower", fg brown)
-        , (propertyNameSpecificAttr "client", fg green)
-        , (selectedAttr <> tagAttr, fg brightWhite)
-        , (selectedAttr <> headerAttr, fg brightWhite)
-        ] $
-      attrMap
-        defAttr
-        [ (selectedAttr, fg V.white)
-        , (unsavedAttr, fg orange)
-        , (keyAttr, fg orange)
-        , (headerAttr, fg V.yellow)
-        , (helpNameAttr, fg V.yellow)
-        , (helpKeyCombinationAttr, fg V.blue)
-        , (helpDescriptionAttr, fg V.yellow)
+        [ (todoStateSpecificAttr "TODO", fg red),
+          (todoStateSpecificAttr "NEXT", fg orange),
+          (todoStateSpecificAttr "STARTED", fg orange),
+          (todoStateSpecificAttr "WAITING", fg blue),
+          (todoStateSpecificAttr "READY", fg brown),
+          (todoStateSpecificAttr "DONE", fg green),
+          (todoStateSpecificAttr "CANCELLED", fg green),
+          (todoStateSpecificAttr "FAILED", fg brightRed),
+          (timestampNameSpecificAttr "BEGIN", fg brown),
+          (timestampNameSpecificAttr "END", fg brown),
+          (timestampNameSpecificAttr "SCHEDULED", fg orange),
+          (timestampNameSpecificAttr "DEADLINE", fg red),
+          (propertyNameSpecificAttr "timewindow", fg magenta),
+          (propertyNameSpecificAttr "brainpower", fg brown),
+          (propertyNameSpecificAttr "client", fg green),
+          (selectedAttr <> tagAttr, fg brightWhite),
+          (selectedAttr <> headerAttr, fg brightWhite)
         ]
+        $ attrMap
+          defAttr
+          [ (selectedAttr, fg V.white),
+            (unsavedAttr, fg orange),
+            (keyAttr, fg orange),
+            (headerAttr, fg V.yellow),
+            (helpNameAttr, fg V.yellow),
+            (helpKeyCombinationAttr, fg V.blue),
+            (helpDescriptionAttr, fg V.yellow)
+          ]
 
 selectedAttr :: AttrName
 selectedAttr = "selected"

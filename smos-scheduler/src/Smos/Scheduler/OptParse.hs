@@ -2,22 +2,18 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler.OptParse
-  ( getSettings
-  ) where
+  ( getSettings,
+  )
+where
 
 import Data.Maybe
-
+import Options.Applicative
 import Path
 import Path.IO
-
-import qualified System.Environment as System
-
-import Options.Applicative
-
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-
 import Smos.Scheduler.OptParse.Types
+import qualified System.Environment as System
 
 getSettings :: IO Settings
 getSettings = do
@@ -60,8 +56,8 @@ getEnvironment = do
   env <- System.getEnvironment
   let getEnv :: String -> Maybe String
       getEnv key = ("SMOS_SCHEDULER" ++ key) `lookup` env
-      -- readEnv :: Read a => String -> Maybe a
-      -- readEnv key = getEnv key >>= readMaybe
+  -- readEnv :: Read a => String -> Maybe a
+  -- readEnv key = getEnv key >>= readMaybe
   let envStateFile = getEnv "STATE_FILE"
   pure Environment {..}
 
@@ -76,12 +72,12 @@ runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 flagsParser :: ParserInfo Flags
@@ -92,5 +88,5 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseFlags <*>
-  option (Just <$> str) (mconcat [long "state-file", help "The state file to use", value Nothing])
+  Flags <$> Report.parseFlags
+    <*> option (Just <$> str) (mconcat [long "state-file", help "The state file to use", value Nothing])

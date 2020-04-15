@@ -3,7 +3,6 @@
 module Smos.Sync.Client.Command.Register where
 
 import Smos.Client
-
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types

@@ -4,16 +4,17 @@
 --
 -- Import this module qualified
 module Smos.Sync.Client.ContentsMap
-  ( ContentsMap(..)
-  , empty
-  , singleton
-  , insert
-  , union
-  , unions
-  ) where
+  ( ContentsMap (..),
+    empty,
+    singleton,
+    insert,
+    union,
+    unions,
+  )
+where
 
-import GHC.Generics (Generic)
-
+import Control.DeepSeq
+import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -21,28 +22,24 @@ import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
-import Control.DeepSeq
-import Control.Monad
-
+import GHC.Generics (Generic)
 import Path
-
 import Smos.Sync.Client.DirForest
 
-newtype ContentsMap =
-  ContentsMap
-    { contentsMapFiles :: Map (Path Rel File) ByteString
-    }
+newtype ContentsMap
+  = ContentsMap
+      { contentsMapFiles :: Map (Path Rel File) ByteString
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ContentsMap where
   validate cm =
     mconcat
-      [ genericValidate cm
-      , decorate "The map can be translated to a valid DirForest" $
-        case makeDirForest $ contentsMapFiles cm of
-          Left fp -> invalid $ "Duplicate path: " <> fp
-          Right df -> validate df
+      [ genericValidate cm,
+        decorate "The map can be translated to a valid DirForest" $
+          case makeDirForest $ contentsMapFiles cm of
+            Left fp -> invalid $ "Duplicate path: " <> fp
+            Right df -> validate df
       ]
 
 instance NFData ContentsMap

@@ -2,35 +2,28 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Sync.Client.OptParse
-  ( getInstructions
-  , Instructions(..)
-  , Dispatch(..)
-  , SyncSettings(..)
-  , Settings(..)
-  ) where
-
-import Data.Maybe
-import qualified Data.Text as T
-
-import qualified System.Environment as System
-import System.Exit (die)
+  ( getInstructions,
+    Instructions (..),
+    Dispatch (..),
+    SyncSettings (..),
+    Settings (..),
+  )
+where
 
 import Control.Monad
 import Control.Monad.Logger
-
+import Data.Maybe
+import qualified Data.Text as T
+import Options.Applicative
 import Path
 import Path.IO
-
-import Options.Applicative
-
 import Servant.Client as Servant
-
+import Smos.API
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-
-import Smos.API
-
 import Smos.Sync.Client.OptParse.Types
+import qualified System.Environment as System
+import System.Exit (die)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -72,7 +65,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
               Just d -> resolveFile' d
           let syncSetIgnoreFiles =
                 fromMaybe IgnoreHiddenFiles $
-                syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
+                  syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
           pure $ DispatchSync SyncSettings {..}
     getSettings = do
       setServerUrl <-
@@ -124,8 +117,8 @@ getEnvironment = do
   env <- System.getEnvironment
   let getEnv :: String -> Maybe String
       getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
-      -- readEnv :: Read a => String -> Maybe a
-      -- readEnv key = getEnv key >>= readMaybe
+  -- readEnv :: Read a => String -> Maybe a
+  -- readEnv key = getEnv key >>= readMaybe
   envLogLevel <-
     forM (getEnv "LOG_LEVEL") $ \s ->
       case parseLogLevel s of
@@ -170,12 +163,12 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 argParser :: ParserInfo Arguments
@@ -190,11 +183,11 @@ parseArgs = Arguments <$> parseCommand <*> parseFlags
 parseCommand :: Parser Command
 parseCommand =
   hsubparser $
-  mconcat
-    [ command "register" parseCommandRegister
-    , command "login" parseCommandLogin
-    , command "sync" parseCommandSync
-    ]
+    mconcat
+      [ command "register" parseCommandRegister,
+        command "login" parseCommandLogin,
+        command "sync" parseCommandSync
+      ]
 
 parseCommandRegister :: ParserInfo Command
 parseCommandRegister = info parser modifier
@@ -213,58 +206,62 @@ parseCommandSync = info parser modifier
   where
     modifier = fullDesc <> progDesc "Sync with a sync server"
     parser =
-      CommandSync <$>
-      (SyncFlags <$>
-       option
-         (Just <$> str)
-         (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing]) <*>
-       option
-         (Just <$> str)
-         (mconcat [long "uuid-file", help "The file to store the server uuid in", value Nothing]) <*>
-       option
-         (Just <$> str)
-         (mconcat
-            [ long "metadata-db"
-            , help "The file to store the synchronisation metadata database in"
-            , value Nothing
-            ]) <*>
-       parseIgnoreFilesFlag)
+      CommandSync
+        <$> ( SyncFlags
+                <$> option
+                  (Just <$> str)
+                  (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing])
+                <*> option
+                  (Just <$> str)
+                  (mconcat [long "uuid-file", help "The file to store the server uuid in", value Nothing])
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "metadata-db",
+                        help "The file to store the synchronisation metadata database in",
+                        value Nothing
+                      ]
+                  )
+                <*> parseIgnoreFilesFlag
+            )
 
 parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)
 parseIgnoreFilesFlag =
-  flag' (Just IgnoreNothing) (mconcat [long "ignore-nothing", help "Do not ignore hidden files"]) <|>
-  flag' (Just IgnoreHiddenFiles) (mconcat [long "ignore-hidden-files", help "Ignore hidden files"]) <|>
-  pure Nothing
+  flag' (Just IgnoreNothing) (mconcat [long "ignore-nothing", help "Do not ignore hidden files"])
+    <|> flag' (Just IgnoreHiddenFiles) (mconcat [long "ignore-hidden-files", help "Ignore hidden files"])
+    <|> pure Nothing
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseFlags <*>
-  option
-    (Just <$> maybeReader parseLogLevel)
-    (mconcat
-       [ long "log-level"
-       , help $
-         unwords
-           [ "The log level to use, options:"
-           , show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-           ]
-       , value Nothing
-       ]) <*>
-  option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing]) <*>
-  option
-    (Just <$> maybeReader (parseUsername . T.pack))
-    (mconcat [long "username", help "The username to login to the sync server", value Nothing]) <*>
-  option
-    (Just <$> maybeReader (parsePassword . T.pack))
-    (mconcat
-       [ long "password"
-       , help $
-         unlines
-           [ "The password to login to the sync server"
-           , "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
-           ]
-       , value Nothing
-       ]) <*>
-  option
-    (Just <$> str)
-    (mconcat [long "session-path", help "The path to store the login session", value Nothing])
+  Flags <$> Report.parseFlags
+    <*> option
+      (Just <$> maybeReader parseLogLevel)
+      ( mconcat
+          [ long "log-level",
+            help $
+              unwords
+                [ "The log level to use, options:",
+                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                ],
+            value Nothing
+          ]
+      )
+    <*> option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing])
+    <*> option
+      (Just <$> maybeReader (parseUsername . T.pack))
+      (mconcat [long "username", help "The username to login to the sync server", value Nothing])
+    <*> option
+      (Just <$> maybeReader (parsePassword . T.pack))
+      ( mconcat
+          [ long "password",
+            help $
+              unlines
+                [ "The password to login to the sync server",
+                  "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
+                ],
+            value Nothing
+          ]
+      )
+    <*> option
+      (Just <$> str)
+      (mconcat [long "session-path", help "The path to store the login session", value Nothing])

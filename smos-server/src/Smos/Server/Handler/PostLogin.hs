@@ -1,17 +1,16 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PostLogin where
 
+import Servant.Auth.Server
 import Smos.Server.Handler.Import
 
-import Servant.Auth.Server
-
 servePostLogin ::
-     Login
-  -> SyncHandler (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+  Login ->
+  SyncHandler (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
 servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of

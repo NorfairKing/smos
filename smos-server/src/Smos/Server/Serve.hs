@@ -3,49 +3,45 @@
 
 module Smos.Server.Serve where
 
+import Control.Monad.Logger
+import Control.Monad.Reader
 import Crypto.JOSE.JWK (JWK)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
 import Data.Proxy
 import qualified Data.Text as T
-import Path
-import Path.IO
-import System.Exit
-
-import Control.Monad.Logger
-import Control.Monad.Reader
-
+import Database.Persist.Sqlite as DB
 import Network.Wai as Wai
 import Network.Wai.Handler.Warp as Warp
-
-import Database.Persist.Sqlite as DB
-
+import Path
+import Path.IO
 import Servant.API.Generic
 import Servant.Auth.Server as Auth
 import Servant.Server as Servant
 import Servant.Server.Generic
-
 import Smos.API
 import Smos.Server.Handler
 import Smos.Server.OptParse
+import System.Exit
 
 serveSmosSyncServer :: ServeSettings -> IO ()
 serveSmosSyncServer ss@ServeSettings {..} = do
   pPrint ss
-  runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= serveSetLogLevel) $
-    DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1 $ \pool ->
+  runStderrLoggingT
+    $ filterLogger (\_ ll -> ll >= serveSetLogLevel)
+    $ DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1
+    $ \pool ->
       liftIO $ do
         uuid <- readServerUUID serveSetUUIDFile
         flip DB.runSqlPool pool $ DB.runMigration migrateAll
         jwtKey <- loadSigningKey
         let env =
               ServerEnv
-                { serverEnvServerUUID = uuid
-                , serverEnvConnection = pool
-                , serverEnvCookieSettings = defaultCookieSettings
-                , serverEnvJWTSettings = defaultJWTSettings jwtKey
+                { serverEnvServerUUID = uuid,
+                  serverEnvConnection = pool,
+                  serverEnvCookieSettings = defaultCookieSettings,
+                  serverEnvJWTSettings = defaultJWTSettings jwtKey
                 }
         Warp.run serveSetPort $ makeSyncApp env
 
@@ -75,11 +71,11 @@ makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
    in Servant.serveWithContext syncAPI cfg $
-      hoistServerWithContext
-        syncAPI
-        (Proxy :: Proxy '[ CookieSettings, JWTSettings])
-        ((`runReaderT` env) :: SyncHandler a -> Handler a)
-        syncServantServer
+        hoistServerWithContext
+          syncAPI
+          (Proxy :: Proxy '[CookieSettings, JWTSettings])
+          ((`runReaderT` env) :: SyncHandler a -> Handler a)
+          syncServantServer
 
 syncServantServer :: ServerT SyncAPI SyncHandler
 syncServantServer = toServant syncServerRecord
@@ -87,8 +83,8 @@ syncServantServer = toServant syncServerRecord
 syncServerRecord :: APIRoutes (AsServerT SyncHandler)
 syncServerRecord =
   APIRoutes
-    { unprotectedRoutes = toServant syncServerUnprotectedRoutes
-    , protectedRoutes = toServant syncServerProtectedRoutes
+    { unprotectedRoutes = toServant syncServerUnprotectedRoutes,
+      protectedRoutes = toServant syncServerProtectedRoutes
     }
 
 syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT SyncHandler)

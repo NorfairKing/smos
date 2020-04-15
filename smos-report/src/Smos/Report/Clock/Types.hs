@@ -5,21 +5,17 @@
 
 module Smos.Report.Clock.Types where
 
-import GHC.Generics (Generic)
-
+import Control.Applicative
 import Data.Aeson
-import Data.List.NonEmpty (NonEmpty(..))
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
-import Data.Yaml.Builder (ToYaml(..))
+import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
-
-import Control.Applicative
-
+import GHC.Generics (Generic)
 import Smos.Data
-
 import Smos.Report.Path
 import Smos.Report.TimeBlock
 
@@ -66,11 +62,11 @@ type ClockTable = [ClockTableBlock]
 
 type ClockTableBlock = Block Text ClockTableFile
 
-data ClockTableFile =
-  ClockTableFile
-    { clockTableFile :: RootedPath
-    , clockTableForest :: Forest ClockTableHeaderEntry
-    }
+data ClockTableFile
+  = ClockTableFile
+      { clockTableFile :: RootedPath,
+        clockTableForest :: Forest ClockTableHeaderEntry
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ClockTableFile
@@ -85,11 +81,13 @@ instance ToYaml ClockTableFile where
 
 instance FromJSON (ForYaml (Tree ClockTableHeaderEntry)) where
   parseJSON v =
-    ForYaml <$>
-    ((withObject "Tree ClockTableHeaderEntry" $ \o ->
-        Node <$> o .: "entry" <*> (unForYaml <$> o .:? "forest" .!= ForYaml []))
-       v <|>
-     (Node <$> parseJSON v <*> pure []))
+    ForYaml
+      <$> ( ( withObject "Tree ClockTableHeaderEntry" $ \o ->
+                Node <$> o .: "entry" <*> (unForYaml <$> o .:? "forest" .!= ForYaml [])
+            )
+              v
+              <|> (Node <$> parseJSON v <*> pure [])
+          )
 
 instance ToJSON (ForYaml (Tree ClockTableHeaderEntry)) where
   toJSON (ForYaml Node {..}) =
@@ -103,11 +101,11 @@ instance ToYaml (ForYaml (Tree ClockTableHeaderEntry)) where
       then toYaml rootLabel
       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
-data ClockTableHeaderEntry =
-  ClockTableHeaderEntry
-    { clockTableHeaderEntryHeader :: Header
-    , clockTableHeaderEntryTime :: NominalDiffTime
-    }
+data ClockTableHeaderEntry
+  = ClockTableHeaderEntry
+      { clockTableHeaderEntryHeader :: Header,
+        clockTableHeaderEntryTime :: NominalDiffTime
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ClockTableHeaderEntry
@@ -129,18 +127,18 @@ instance ToYaml ClockTableHeaderEntry where
 -- Intermediary types
 type ClockTimeBlock a = Block a FileTimes
 
-data FileTimes =
-  FileTimes
-    { clockTimeFile :: RootedPath
-    , clockTimeForest :: TForest HeaderTimes
-    }
+data FileTimes
+  = FileTimes
+      { clockTimeFile :: RootedPath,
+        clockTimeForest :: TForest HeaderTimes
+      }
   deriving (Generic)
 
-data HeaderTimes f =
-  HeaderTimes
-    { headerTimesHeader :: Header
-    , headerTimesEntries :: f LogbookEntry
-    }
+data HeaderTimes f
+  = HeaderTimes
+      { headerTimesHeader :: Header,
+        headerTimesEntries :: f LogbookEntry
+      }
   deriving (Generic)
 
 type TForest a = NonEmpty (TTree a)

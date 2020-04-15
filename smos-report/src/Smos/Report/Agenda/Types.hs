@@ -2,9 +2,8 @@
 
 module Smos.Report.Agenda.Types where
 
-import GHC.Generics (Generic)
-
 import Data.Validity
+import GHC.Generics (Generic)
 
 data AgendaHistoricity
   = HistoricalAgenda

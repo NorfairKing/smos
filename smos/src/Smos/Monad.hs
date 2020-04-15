@@ -6,22 +6,21 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Monad
-  ( module Smos.Monad
-  , module Control.Monad.Reader
-  , module Control.Monad.State
-  ) where
-
-import Import
-
-import Control.Monad.Reader
-import Control.Monad.State
+  ( module Smos.Monad,
+    module Control.Monad.Reader,
+    module Control.Monad.State,
+  )
+where
 
 import Brick.Types as B hiding (Next)
+import Control.Monad.Reader
+import Control.Monad.State
+import Import
 
-newtype MkSmosM c n s a =
-  MkSmosM
-    { unMkSmosM :: NextT (StateT s (ReaderT c (EventM n))) a
-    }
+newtype MkSmosM c n s a
+  = MkSmosM
+      { unMkSmosM :: NextT (StateT s (ReaderT c (EventM n))) a
+      }
   deriving (Generic, Functor, Applicative, Monad, MonadState s, MonadReader c)
 
 instance MonadIO (MkSmosM c n s) where
@@ -41,10 +40,10 @@ instance Functor MStop where
   fmap _ Stop = Stop
   fmap f (Continue a) = Continue $ f a
 
-newtype NextT m a =
-  NextT
-    { runNextT :: m (MStop a)
-    }
+newtype NextT m a
+  = NextT
+      { runNextT :: m (MStop a)
+      }
 
 instance Functor m => Functor (NextT m) where
   fmap f (NextT func) = NextT $ fmap (f <$>) func

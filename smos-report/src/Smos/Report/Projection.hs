@@ -3,28 +3,22 @@
 
 module Smos.Report.Projection where
 
-import GHC.Generics (Generic)
-
+import Control.Monad
+import Cursor.Simple.Forest
+import Cursor.Simple.Tree
 import Data.Aeson
-import Data.List.NonEmpty (NonEmpty(..))
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Data.Void
+import GHC.Generics (Generic)
 import Lens.Micro
-
-import Control.Monad
-
-import Cursor.Simple.Forest
-import Cursor.Simple.Tree
-
+import Smos.Data
+import Smos.Report.Path
 import Text.Megaparsec
 import Text.Megaparsec.Char
-
-import Smos.Data
-
-import Smos.Report.Path
 
 defaultProjection :: NonEmpty Projection
 defaultProjection = OntoFile :| [OntoState, OntoHeader]
@@ -79,15 +73,16 @@ performProjection p rp fc =
         OntoState -> StateProjection $ entryState cur
         OntoTag t ->
           TagProjection $
-          if t `elem` entryTags cur
-            then Just t
-            else Nothing
+            if t `elem` entryTags cur
+              then Just t
+              else Nothing
         OntoProperty pn -> PropertyProjection pn $ M.lookup pn $ entryProperties cur
         OntoAncestor p' ->
-          (case forestCursorSelectAbove fc of
-             Nothing -> id
-             Just fc' -> (<> performProjection p rp fc')) $
-          performProjection p' rp fc
+          ( case forestCursorSelectAbove fc of
+              Nothing -> id
+              Just fc' -> (<> performProjection p rp fc')
+          )
+            $ performProjection p' rp fc
 
 type P = Parsec Void Text
 
@@ -96,8 +91,8 @@ parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
 projectionP =
-  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoTagP <|> ontoPropertyP <|>
-  ontoAncestorP
+  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoTagP <|> ontoPropertyP
+    <|> ontoAncestorP
 
 ontoFileP :: P Projection
 ontoFileP = do

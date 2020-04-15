@@ -3,18 +3,15 @@
 
 module Smos.Report.Time where
 
-import GHC.Generics (Generic)
-
+import Control.Arrow
+import Control.DeepSeq
 import Data.Aeson
 import Data.Function
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Data.Void
-
-import Control.Arrow
-import Control.DeepSeq
-
+import GHC.Generics (Generic)
 import Text.Megaparsec
 import Text.Megaparsec.Char.Lexer
 

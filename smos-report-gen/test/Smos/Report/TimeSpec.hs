@@ -1,23 +1,20 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Report.TimeSpec
-  ( spec
-  ) where
-
-import Data.Text (Text)
-
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
-
-import Text.Megaparsec
+  ( spec,
+  )
+where
 
 import Cursor.Forest.Gen ()
-
+import Data.Text (Text)
 import Smos.Report.Path.Gen ()
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
+import Test.Hspec
+import Test.Validity
+import Test.Validity.Aeson
+import Text.Megaparsec
 
 spec :: Spec
 spec = do
@@ -38,7 +35,7 @@ parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
       expectationFailure $
-      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
+        unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Expectation

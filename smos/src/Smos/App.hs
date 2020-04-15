@@ -1,42 +1,37 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.App
-  ( mkSmosApp
-  , initState
-  , initStateWithCursor
-  ) where
-
-import Import
-
-import Data.List.NonEmpty (NonEmpty(..))
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Sequence as Seq
-import Data.Time
-import System.FileLock
+  ( mkSmosApp,
+    initState,
+    initStateWithCursor,
+  )
+where
 
 import Brick.Main as B
 import Brick.Types as B
-
+import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Sequence as Seq
+import Data.Time
 import qualified Graphics.Vty as Vty
-
-import Smos.Data
-
+import Import
 import Smos.Actions.File
-
 import Smos.Activation
+import Smos.Data
 import Smos.Draw
 import Smos.Keys
 import Smos.Style
 import Smos.Types
+import System.FileLock
 
 mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
 mkSmosApp sc@SmosConfig {..} =
   App
-    { appDraw = smosDraw sc
-    , appChooseCursor = smosChooseCursor
-    , appHandleEvent = smosHandleEvent sc
-    , appStartEvent = smosStartEvent
-    , appAttrMap = defaultAttrMap
+    { appDraw = smosDraw sc,
+      appChooseCursor = smosChooseCursor,
+      appHandleEvent = smosHandleEvent sc,
+      appStartEvent = smosStartEvent,
+      appAttrMap = defaultAttrMap
     }
 
 smosChooseCursor :: s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
@@ -84,10 +79,11 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
                 Just nems@(a :| _) ->
                   KeyActivated $ do
                     modify
-                      (\ss ->
-                         let dbi = smosStateDebugInfo ss
-                             dbi' = dbi {debugInfoLastMatches = Just $ NE.map activationDebug nems}
-                          in ss {smosStateDebugInfo = dbi'})
+                      ( \ss ->
+                          let dbi = smosStateDebugInfo ss
+                              dbi' = dbi {debugInfoLastMatches = Just $ NE.map activationDebug nems}
+                           in ss {smosStateDebugInfo = dbi'}
+                      )
                     activationFunc a
             _ -> NothingActivated
         AppEvent se ->
@@ -96,11 +92,12 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
               EventActivated $ do
                 now <- liftIO getZonedTime
                 modify
-                  (\s_ ->
-                     s_
-                       { smosStateTime = now
-                       , smosStateCursor = editorCursorUpdateTime now $ smosStateCursor s_
-                       })
+                  ( \s_ ->
+                      s_
+                        { smosStateTime = now,
+                          smosStateCursor = editorCursorUpdateTime now $ smosStateCursor s_
+                        }
+                  )
             SmosSaveFile -> EventActivated saveCurrentSmosFile
         _ -> NothingActivated
 
@@ -112,10 +109,10 @@ data EventResult
 activationDebug :: Activation -> ActivationDebug
 activationDebug Activation {..} =
   ActivationDebug
-    { activationDebugPrecedence = activationPrecedence
-    , activationDebugPriority = activationPriority
-    , activationDebugMatch = activationMatch
-    , activationDebugName = activationName
+    { activationDebugPrecedence = activationPrecedence,
+      activationDebugPriority = activationPriority,
+      activationDebugMatch = activationMatch,
+      activationDebugName = activationName
     }
 
 smosStartEvent :: s -> EventM n s
@@ -124,31 +121,31 @@ smosStartEvent = pure
 initState :: ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
 initState zt p fl msf =
   SmosState
-    { smosStateTime = zt
-    , smosStateStartSmosFile = msf
-    , smosStateFilePath = p
-    , smosStateFileLock = fl
-    , smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf
-    , smosStateKeyHistory = Empty
-    , smosStateCursorHistory = []
-    , smosStateAsyncs = []
-    , smosStateUnsavedChanges = False
-    , smosStateLastSaved = zonedTimeToUTC zt
-    , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
+    { smosStateTime = zt,
+      smosStateStartSmosFile = msf,
+      smosStateFilePath = p,
+      smosStateFileLock = fl,
+      smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf,
+      smosStateKeyHistory = Empty,
+      smosStateCursorHistory = [],
+      smosStateAsyncs = [],
+      smosStateUnsavedChanges = False,
+      smosStateLastSaved = zonedTimeToUTC zt,
+      smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }
 
 initStateWithCursor :: ZonedTime -> Path Abs File -> FileLock -> EditorCursor -> SmosState
 initStateWithCursor zt p fl ec =
   SmosState
-    { smosStateTime = zt
-    , smosStateStartSmosFile = Just $ rebuildEditorCursor ec
-    , smosStateFilePath = p
-    , smosStateFileLock = fl
-    , smosStateCursor = ec
-    , smosStateKeyHistory = Empty
-    , smosStateCursorHistory = []
-    , smosStateAsyncs = []
-    , smosStateUnsavedChanges = False
-    , smosStateLastSaved = zonedTimeToUTC zt
-    , smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
+    { smosStateTime = zt,
+      smosStateStartSmosFile = Just $ rebuildEditorCursor ec,
+      smosStateFilePath = p,
+      smosStateFileLock = fl,
+      smosStateCursor = ec,
+      smosStateKeyHistory = Empty,
+      smosStateCursorHistory = [],
+      smosStateAsyncs = [],
+      smosStateUnsavedChanges = False,
+      smosStateLastSaved = zonedTimeToUTC zt,
+      smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }

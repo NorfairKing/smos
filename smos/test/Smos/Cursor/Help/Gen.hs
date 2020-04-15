@@ -3,11 +3,9 @@
 module Smos.Cursor.Help.Gen where
 
 import Data.GenValidity
-
-import Smos.Types
-
 import Smos.Cursor.SmosFile.Gen ()
 import Smos.Keys.Gen ()
+import Smos.Types
 import Smos.Types.Gen ()
 
 instance GenValid KeyCombination where

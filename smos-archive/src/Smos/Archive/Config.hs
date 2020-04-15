@@ -1,14 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Archive.Config
-  ( SmosArchiveConfig(..)
-  , Q
-  , askWorkflowDir
-  , askArchiveDir
-  , module Smos.Report.Config
-  , module Control.Monad.IO.Class
-  , module Control.Monad.Reader
-  ) where
+  ( SmosArchiveConfig (..),
+    Q,
+    askWorkflowDir,
+    askArchiveDir,
+    module Smos.Report.Config,
+    module Control.Monad.IO.Class,
+    module Control.Monad.Reader,
+  )
+where
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
@@ -16,10 +17,10 @@ import GHC.Generics
 import Path
 import Smos.Report.Config
 
-newtype SmosArchiveConfig =
-  SmosArchiveConfig
-    { smosArchiveConfigReportConfig :: SmosReportConfig
-    }
+newtype SmosArchiveConfig
+  = SmosArchiveConfig
+      { smosArchiveConfigReportConfig :: SmosReportConfig
+      }
   deriving (Generic)
 
 type Q = ReaderT SmosArchiveConfig IO

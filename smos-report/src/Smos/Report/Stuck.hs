@@ -1,9 +1,7 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Stuck where
-
-import GHC.Generics (Generic)
 
 import Data.Function
 import Data.List
@@ -11,26 +9,25 @@ import Data.Ord
 import Data.Time
 import Data.Tree
 import Data.Validity
-
+import GHC.Generics (Generic)
 import Smos.Data
-
 import Smos.Report.Path
 
-data StuckReport =
-  StuckReport
-    { stuckReportEntries :: [StuckReportEntry]
-    }
+data StuckReport
+  = StuckReport
+      { stuckReportEntries :: [StuckReportEntry]
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReport
 
-data StuckReportEntry =
-  StuckReportEntry
-    { stuckReportEntryFilePath :: RootedPath
-    , stuckReportEntryState :: Maybe TodoState
-    , stuckReportEntryHeader :: Header
-    , stuckReportEntryLatestChange :: Maybe UTCTime
-    }
+data StuckReportEntry
+  = StuckReportEntry
+      { stuckReportEntryFilePath :: RootedPath,
+        stuckReportEntryState :: Maybe TodoState,
+        stuckReportEntryHeader :: Header,
+        stuckReportEntryLatestChange :: Maybe UTCTime
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReportEntry
@@ -48,17 +45,19 @@ makeStuckReportEntry stuckReportEntryFilePath sf = do
 
 latestEntryInSmosFile :: SmosFile -> Maybe Entry
 latestEntryInSmosFile =
-  fmap last .
-  headMay .
-  groupBy ((==) `on` latestStateChange . entryStateHistory) .
-  sortOn (Down . latestStateChange . entryStateHistory) . concatMap flatten . smosFileForest
+  fmap last
+    . headMay
+    . groupBy ((==) `on` latestStateChange . entryStateHistory)
+    . sortOn (Down . latestStateChange . entryStateHistory)
+    . concatMap flatten
+    . smosFileForest
   where
     headMay :: [a] -> Maybe a
     headMay [] = Nothing
-    headMay (h:_) = Just h
+    headMay (h : _) = Just h
 
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =
   case shes of
     [] -> Nothing
-    (she:_) -> Just $ stateHistoryEntryTimestamp she
+    (she : _) -> Just $ stateHistoryEntryTimestamp she

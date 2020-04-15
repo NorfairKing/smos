@@ -8,122 +8,114 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Smos.Types
-  ( module Smos.Types
-  , module Smos.Monad
-  ) where
+  ( module Smos.Types,
+    module Smos.Monad,
+  )
+where
 
-import Import
-
+import Brick.Types as B hiding (Next)
 import Control.Concurrent.Async
+import Control.Monad.Reader
+import Control.Monad.State
+import Cursor.Simple.List.NonEmpty
+import Cursor.Text
+import Cursor.Types
 import Data.Aeson
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.Text as T
 import Data.Time
-import System.FileLock
-
+import Import
 import Lens.Micro
-
-import Control.Monad.Reader
-import Control.Monad.State
-
-import Brick.Types as B hiding (Next)
-
-import Cursor.Simple.List.NonEmpty
-import Cursor.Text
-import Cursor.Types
-
-import Smos.Data
-
 import Smos.Cursor.Entry
-import Smos.Cursor.SmosFile
-
 import Smos.Cursor.Report.Next
-import Smos.Report.Config
-
+import Smos.Cursor.SmosFile
+import Smos.Data
 import Smos.Keys
 import Smos.Monad
+import Smos.Report.Config
+import System.FileLock
 
-data SmosConfig =
-  SmosConfig
-    { configKeyMap :: !KeyMap
-    , configReportConfig :: !SmosReportConfig
-    }
+data SmosConfig
+  = SmosConfig
+      { configKeyMap :: !KeyMap,
+        configReportConfig :: !SmosReportConfig
+      }
   deriving (Generic)
 
-data KeyMap =
-  KeyMap
-    { keyMapFileKeyMap :: !FileKeyMap
-    , keyMapReportsKeyMap :: !ReportsKeyMap
-    , keyMapHelpKeyMap :: !HelpKeyMap
-    }
+data KeyMap
+  = KeyMap
+      { keyMapFileKeyMap :: !FileKeyMap,
+        keyMapReportsKeyMap :: !ReportsKeyMap,
+        keyMapHelpKeyMap :: !HelpKeyMap
+      }
   deriving (Generic)
 
 instance Semigroup KeyMap where
   (<>) km1 km2 =
     KeyMap
-      { keyMapFileKeyMap = keyMapFileKeyMap km1 <> keyMapFileKeyMap km2
-      , keyMapReportsKeyMap = keyMapReportsKeyMap km1 <> keyMapReportsKeyMap km2
-      , keyMapHelpKeyMap = keyMapHelpKeyMap km1 <> keyMapHelpKeyMap km2
+      { keyMapFileKeyMap = keyMapFileKeyMap km1 <> keyMapFileKeyMap km2,
+        keyMapReportsKeyMap = keyMapReportsKeyMap km1 <> keyMapReportsKeyMap km2,
+        keyMapHelpKeyMap = keyMapHelpKeyMap km1 <> keyMapHelpKeyMap km2
       }
 
 instance Monoid KeyMap where
   mempty =
     KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpKeyMap = mempty}
 
-data FileKeyMap =
-  FileKeyMap
-    { fileKeyMapEmptyMatchers :: !KeyMappings
-    , fileKeyMapEntryMatchers :: !KeyMappings
-    , fileKeyMapHeaderMatchers :: !KeyMappings
-    , fileKeyMapContentsMatchers :: !KeyMappings
-    , fileKeyMapTimestampsMatchers :: !KeyMappings
-    , fileKeyMapPropertiesMatchers :: !KeyMappings
-    , fileKeyMapStateHistoryMatchers :: !KeyMappings
-    , fileKeyMapTagsMatchers :: !KeyMappings
-    , fileKeyMapLogbookMatchers :: !KeyMappings
-    , fileKeyMapAnyMatchers :: !KeyMappings
-    }
+data FileKeyMap
+  = FileKeyMap
+      { fileKeyMapEmptyMatchers :: !KeyMappings,
+        fileKeyMapEntryMatchers :: !KeyMappings,
+        fileKeyMapHeaderMatchers :: !KeyMappings,
+        fileKeyMapContentsMatchers :: !KeyMappings,
+        fileKeyMapTimestampsMatchers :: !KeyMappings,
+        fileKeyMapPropertiesMatchers :: !KeyMappings,
+        fileKeyMapStateHistoryMatchers :: !KeyMappings,
+        fileKeyMapTagsMatchers :: !KeyMappings,
+        fileKeyMapLogbookMatchers :: !KeyMappings,
+        fileKeyMapAnyMatchers :: !KeyMappings
+      }
   deriving (Generic)
 
 instance Semigroup FileKeyMap where
   (<>) km1 km2 =
     FileKeyMap
-      { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers km1 <> fileKeyMapEmptyMatchers km2
-      , fileKeyMapEntryMatchers = fileKeyMapEntryMatchers km1 <> fileKeyMapEntryMatchers km2
-      , fileKeyMapHeaderMatchers = fileKeyMapHeaderMatchers km1 <> fileKeyMapHeaderMatchers km2
-      , fileKeyMapContentsMatchers =
-          fileKeyMapContentsMatchers km1 <> fileKeyMapContentsMatchers km2
-      , fileKeyMapTimestampsMatchers =
-          fileKeyMapTimestampsMatchers km1 <> fileKeyMapTimestampsMatchers km2
-      , fileKeyMapPropertiesMatchers =
-          fileKeyMapPropertiesMatchers km1 <> fileKeyMapPropertiesMatchers km2
-      , fileKeyMapStateHistoryMatchers =
-          fileKeyMapStateHistoryMatchers km1 <> fileKeyMapStateHistoryMatchers km2
-      , fileKeyMapTagsMatchers = fileKeyMapTagsMatchers km1 <> fileKeyMapTagsMatchers km2
-      , fileKeyMapLogbookMatchers = fileKeyMapLogbookMatchers km1 <> fileKeyMapLogbookMatchers km2
-      , fileKeyMapAnyMatchers = fileKeyMapAnyMatchers km1 <> fileKeyMapAnyMatchers km2
+      { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers km1 <> fileKeyMapEmptyMatchers km2,
+        fileKeyMapEntryMatchers = fileKeyMapEntryMatchers km1 <> fileKeyMapEntryMatchers km2,
+        fileKeyMapHeaderMatchers = fileKeyMapHeaderMatchers km1 <> fileKeyMapHeaderMatchers km2,
+        fileKeyMapContentsMatchers =
+          fileKeyMapContentsMatchers km1 <> fileKeyMapContentsMatchers km2,
+        fileKeyMapTimestampsMatchers =
+          fileKeyMapTimestampsMatchers km1 <> fileKeyMapTimestampsMatchers km2,
+        fileKeyMapPropertiesMatchers =
+          fileKeyMapPropertiesMatchers km1 <> fileKeyMapPropertiesMatchers km2,
+        fileKeyMapStateHistoryMatchers =
+          fileKeyMapStateHistoryMatchers km1 <> fileKeyMapStateHistoryMatchers km2,
+        fileKeyMapTagsMatchers = fileKeyMapTagsMatchers km1 <> fileKeyMapTagsMatchers km2,
+        fileKeyMapLogbookMatchers = fileKeyMapLogbookMatchers km1 <> fileKeyMapLogbookMatchers km2,
+        fileKeyMapAnyMatchers = fileKeyMapAnyMatchers km1 <> fileKeyMapAnyMatchers km2
       }
 
 instance Monoid FileKeyMap where
   mempty =
     FileKeyMap
-      { fileKeyMapEmptyMatchers = mempty
-      , fileKeyMapEntryMatchers = mempty
-      , fileKeyMapHeaderMatchers = mempty
-      , fileKeyMapContentsMatchers = mempty
-      , fileKeyMapTimestampsMatchers = mempty
-      , fileKeyMapPropertiesMatchers = mempty
-      , fileKeyMapStateHistoryMatchers = mempty
-      , fileKeyMapTagsMatchers = mempty
-      , fileKeyMapLogbookMatchers = mempty
-      , fileKeyMapAnyMatchers = mempty
+      { fileKeyMapEmptyMatchers = mempty,
+        fileKeyMapEntryMatchers = mempty,
+        fileKeyMapHeaderMatchers = mempty,
+        fileKeyMapContentsMatchers = mempty,
+        fileKeyMapTimestampsMatchers = mempty,
+        fileKeyMapPropertiesMatchers = mempty,
+        fileKeyMapStateHistoryMatchers = mempty,
+        fileKeyMapTagsMatchers = mempty,
+        fileKeyMapLogbookMatchers = mempty,
+        fileKeyMapAnyMatchers = mempty
       }
 
-newtype ReportsKeyMap =
-  ReportsKeyMap
-    { reportsKeymapNextActionReportMatchers :: KeyMappings
-    }
+newtype ReportsKeyMap
+  = ReportsKeyMap
+      { reportsKeymapNextActionReportMatchers :: KeyMappings
+      }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
@@ -141,18 +133,18 @@ keyMapHelpMatchers km =
   let HelpKeyMap {..} = keyMapHelpKeyMap km
    in helpKeyMapHelpMatchers <> helpKeyMapSearchMatchers
 
-data HelpKeyMap =
-  HelpKeyMap
-    { helpKeyMapHelpMatchers :: !KeyMappings
-    , helpKeyMapSearchMatchers :: !KeyMappings
-    }
+data HelpKeyMap
+  = HelpKeyMap
+      { helpKeyMapHelpMatchers :: !KeyMappings,
+        helpKeyMapSearchMatchers :: !KeyMappings
+      }
   deriving (Generic)
 
 instance Semigroup HelpKeyMap where
   hkm1 <> hkm2 =
     HelpKeyMap
-      { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2
-      , helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2
+      { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2,
+        helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2
       }
 
 instance Monoid HelpKeyMap where
@@ -166,28 +158,28 @@ data KeyMapping
   | MapCatchAll !Action
   | MapCombination !KeyPress !KeyMapping
 
-newtype ActionName =
-  ActionName
-    { actionNameText :: Text
-    }
+newtype ActionName
+  = ActionName
+      { actionNameText :: Text
+      }
   deriving (Show, Read, Eq, Ord, Generic, IsString, Semigroup, Monoid, FromJSON, ToJSON)
 
 instance Validity ActionName
 
-data Action =
-  Action
-    { actionName :: ActionName
-    , actionFunc :: SmosM ()
-    , actionDescription :: Text
-    }
+data Action
+  = Action
+      { actionName :: ActionName,
+        actionFunc :: SmosM (),
+        actionDescription :: Text
+      }
   deriving (Generic)
 
-data ActionUsing a =
-  ActionUsing
-    { actionUsingName :: ActionName
-    , actionUsingFunc :: a -> SmosM ()
-    , actionUsingDescription :: Text
-    }
+data ActionUsing a
+  = ActionUsing
+      { actionUsingName :: ActionName,
+        actionUsingFunc :: a -> SmosM (),
+        actionUsingDescription :: Text
+      }
   deriving (Generic)
 
 instance Contravariant ActionUsing where
@@ -212,20 +204,20 @@ type SmosM = MkSmosM SmosConfig ResourceName SmosState
 runSmosM :: SmosConfig -> SmosState -> SmosM a -> EventM ResourceName (MStop a, SmosState)
 runSmosM = runMkSmosM
 
-data SmosState =
-  SmosState
-    { smosStateTime :: !ZonedTime
-    , smosStateStartSmosFile :: !(Maybe SmosFile)
-    , smosStateFilePath :: !(Path Abs File)
-    , smosStateFileLock :: !FileLock
-    , smosStateCursor :: !EditorCursor
-    , smosStateKeyHistory :: !(Seq KeyPress)
-    , smosStateCursorHistory :: ![EditorCursor] -- From youngest to oldest, TODO make bounded?
-    , smosStateAsyncs :: ![Async ()]
-    , smosStateLastSaved :: !UTCTime
-    , smosStateUnsavedChanges :: !Bool
-    , smosStateDebugInfo :: !DebugInfo
-    }
+data SmosState
+  = SmosState
+      { smosStateTime :: !ZonedTime,
+        smosStateStartSmosFile :: !(Maybe SmosFile),
+        smosStateFilePath :: !(Path Abs File),
+        smosStateFileLock :: !FileLock,
+        smosStateCursor :: !EditorCursor,
+        smosStateKeyHistory :: !(Seq KeyPress),
+        smosStateCursorHistory :: ![EditorCursor], -- From youngest to oldest, TODO make bounded?
+        smosStateAsyncs :: ![Async ()],
+        smosStateLastSaved :: !UTCTime,
+        smosStateUnsavedChanges :: !Bool,
+        smosStateDebugInfo :: !DebugInfo
+      }
   deriving (Generic)
 
 runSmosAsync :: IO () -> SmosM ()
@@ -233,19 +225,19 @@ runSmosAsync func = do
   a <- liftIO $ async func
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
 
-data DebugInfo =
-  DebugInfo
-    { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
-    }
+data DebugInfo
+  = DebugInfo
+      { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
+      }
   deriving (Show, Eq, Generic)
 
-data ActivationDebug =
-  ActivationDebug
-    { activationDebugPrecedence :: Precedence
-    , activationDebugPriority :: Priority
-    , activationDebugMatch :: Seq KeyPress
-    , activationDebugName :: ActionName
-    }
+data ActivationDebug
+  = ActivationDebug
+      { activationDebugPrecedence :: Precedence,
+        activationDebugPriority :: Priority,
+        activationDebugMatch :: Seq KeyPress,
+        activationDebugName :: ActionName
+      }
   deriving (Show, Eq, Generic)
 
 data Priority
@@ -267,7 +259,10 @@ data ResourceName
 stop :: Action
 stop =
   Action
-    {actionName = "stop", actionDescription = "Stop Smos", actionFunc = MkSmosM $ NextT $ pure Stop}
+    { actionName = "stop",
+      actionDescription = "Stop Smos",
+      actionFunc = MkSmosM $ NextT $ pure Stop
+    }
 
 -- [ Help Cursor ] --
 -- I cannot factor this out because of the following circular dependency:
@@ -278,14 +273,14 @@ stop =
 -- SmosState <- SmosM
 --
 -- and EditorCursor depends on HelpCursor, so that has the same problem
-data HelpCursor =
-  HelpCursor
-    { helpCursorTitle :: Text
-    , helpCursorSearchBar :: TextCursor
-    , helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor)
-    , helpCursorKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor)
-    , helpCursorSelection :: HelpCursorSelection
-    }
+data HelpCursor
+  = HelpCursor
+      { helpCursorTitle :: Text,
+        helpCursorSearchBar :: TextCursor,
+        helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
+        helpCursorKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
+        helpCursorSelection :: HelpCursorSelection
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity HelpCursor
@@ -300,42 +295,44 @@ instance Validity HelpCursorSelection
 makeHelpCursor :: Text -> KeyMappings -> HelpCursor
 makeHelpCursor title kms =
   HelpCursor
-    { helpCursorTitle = title
-    , helpCursorSearchBar = emptyTextCursor
-    , helpCursorSelectedKeyHelpCursors = hcs
-    , helpCursorKeyHelpCursors = hcs
-    , helpCursorSelection = HelpCursorHelpSelected
+    { helpCursorTitle = title,
+      helpCursorSearchBar = emptyTextCursor,
+      helpCursorSelectedKeyHelpCursors = hcs,
+      helpCursorKeyHelpCursors = hcs,
+      helpCursorSelection = HelpCursorHelpSelected
     }
   where
     hcs = makeNonEmptyCursor <$> NE.nonEmpty (combine $ map go kms)
     combine =
-      map (combineKeyHelpCursors . NE.fromList) . -- Safe because of 'groupBy'
-      groupBy ((==) `on` keyHelpCursorName) . sortBy (compare `on` keyHelpCursorName)
+      map (combineKeyHelpCursors . NE.fromList)
+        . groupBy ((==) `on` keyHelpCursorName) -- Safe because of 'groupBy'
+        . sortBy (compare `on` keyHelpCursorName)
     go :: KeyMapping -> KeyHelpCursor
     go km =
       case km of
         MapVtyExactly kp a ->
           KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressExactly kp]
-            , keyHelpCursorName = actionName a
-            , keyHelpCursorDescription = actionDescription a
+            { keyHelpCursorKeyBinding = [PressExactly kp],
+              keyHelpCursorName = actionName a,
+              keyHelpCursorDescription = actionDescription a
             }
         MapAnyTypeableChar au ->
           KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressAnyChar]
-            , keyHelpCursorName = actionUsingName au
-            , keyHelpCursorDescription = actionUsingDescription au
+            { keyHelpCursorKeyBinding = [PressAnyChar],
+              keyHelpCursorName = actionUsingName au,
+              keyHelpCursorDescription = actionUsingDescription au
             }
         MapCatchAll a ->
           KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressAny]
-            , keyHelpCursorName = actionName a
-            , keyHelpCursorDescription = actionDescription a
+            { keyHelpCursorKeyBinding = [PressAny],
+              keyHelpCursorName = actionName a,
+              keyHelpCursorDescription = actionDescription a
             }
         MapCombination kp km_ ->
           let khc = go km_
            in khc
-                {keyHelpCursorKeyBinding = map (PressCombination kp) (keyHelpCursorKeyBinding khc)}
+                { keyHelpCursorKeyBinding = map (PressCombination kp) (keyHelpCursorKeyBinding khc)
+                }
 
 helpCursorKeySearchBarL :: Lens' HelpCursor TextCursor
 helpCursorKeySearchBarL =
@@ -343,10 +340,10 @@ helpCursorKeySearchBarL =
     let query = rebuildTextCursor tc
         selected =
           searchHelpCursor query $
-          maybe [] (NE.toList . rebuildNonEmptyCursor) (helpCursorKeyHelpCursors hc)
+            maybe [] (NE.toList . rebuildNonEmptyCursor) (helpCursorKeyHelpCursors hc)
      in hc
-          { helpCursorSearchBar = tc
-          , helpCursorSelectedKeyHelpCursors = makeNonEmptyCursor <$> NE.nonEmpty selected
+          { helpCursorSearchBar = tc,
+            helpCursorSelectedKeyHelpCursors = makeNonEmptyCursor <$> NE.nonEmpty selected
           }
 
 searchHelpCursor :: Text -> [KeyHelpCursor] -> [KeyHelpCursor]
@@ -360,18 +357,18 @@ helpCursorSelectedKeyHelpCursorsL =
 helpCursorUp :: HelpCursor -> Maybe HelpCursor
 helpCursorUp =
   helpCursorSelectedKeyHelpCursorsL $ \msc ->
-    Just <$>
-    case msc of
-      Nothing -> Nothing
-      Just sc -> nonEmptyCursorSelectPrev sc
+    Just
+      <$> case msc of
+        Nothing -> Nothing
+        Just sc -> nonEmptyCursorSelectPrev sc
 
 helpCursorDown :: HelpCursor -> Maybe HelpCursor
 helpCursorDown =
   helpCursorSelectedKeyHelpCursorsL $ \msc ->
-    Just <$>
-    case msc of
-      Nothing -> Nothing
-      Just sc -> nonEmptyCursorSelectNext sc
+    Just
+      <$> case msc of
+        Nothing -> Nothing
+        Just sc -> nonEmptyCursorSelectNext sc
 
 helpCursorStart :: HelpCursor -> HelpCursor
 helpCursorStart = helpCursorSelectedKeyHelpCursorsL %~ fmap nonEmptyCursorSelectFirst
@@ -396,10 +393,11 @@ helpCursorSelectSearch =
 
 helpCursorToggleSelection :: HelpCursor -> HelpCursor
 helpCursorToggleSelection =
-  helpCursorSelectionL %~
-  (\case
-     HelpCursorHelpSelected -> HelpCursorSearchSelected
-     HelpCursorSearchSelected -> HelpCursorHelpSelected)
+  helpCursorSelectionL
+    %~ ( \case
+           HelpCursorHelpSelected -> HelpCursorSearchSelected
+           HelpCursorSearchSelected -> HelpCursorHelpSelected
+       )
 
 helpCursorInsert :: Char -> HelpCursor -> Maybe HelpCursor
 helpCursorInsert c = helpCursorKeySearchBarL $ textCursorInsert c
@@ -423,12 +421,12 @@ helpCursorDelete =
       Just Deleted -> Nothing
       Just (Updated hc) -> Just hc
 
-data KeyHelpCursor =
-  KeyHelpCursor
-    { keyHelpCursorKeyBinding :: [KeyCombination]
-    , keyHelpCursorName :: ActionName
-    , keyHelpCursorDescription :: Text
-    }
+data KeyHelpCursor
+  = KeyHelpCursor
+      { keyHelpCursorKeyBinding :: [KeyCombination],
+        keyHelpCursorName :: ActionName,
+        keyHelpCursorDescription :: Text
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity KeyHelpCursor
@@ -449,14 +447,14 @@ data KeyCombination
 
 instance Validity KeyCombination
 
-data EditorCursor =
-  EditorCursor
-    { editorCursorFileCursor :: Maybe SmosFileCursor
-    , editorCursorReportCursor :: Maybe ReportCursor
-    , editorCursorHelpCursor :: Maybe HelpCursor
-    , editorCursorSelection :: EditorSelection
-    , editorCursorDebug :: Bool
-    }
+data EditorCursor
+  = EditorCursor
+      { editorCursorFileCursor :: Maybe SmosFileCursor,
+        editorCursorReportCursor :: Maybe ReportCursor,
+        editorCursorHelpCursor :: Maybe HelpCursor,
+        editorCursorSelection :: EditorSelection,
+        editorCursorDebug :: Bool
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity EditorCursor
@@ -480,11 +478,11 @@ makeEditorCursor sf =
 makeEditorCursorClosed :: SmosFile -> EditorCursor
 makeEditorCursorClosed sf =
   EditorCursor
-    { editorCursorFileCursor = fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf
-    , editorCursorReportCursor = Nothing
-    , editorCursorHelpCursor = Nothing
-    , editorCursorSelection = FileSelected
-    , editorCursorDebug = False
+    { editorCursorFileCursor = fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf,
+      editorCursorReportCursor = Nothing,
+      editorCursorHelpCursor = Nothing,
+      editorCursorSelection = FileSelected,
+      editorCursorDebug = False
     }
 
 rebuildEditorCursor :: EditorCursor -> SmosFile
@@ -520,21 +518,21 @@ editorCursorToggleDebug = editorCursorDebugL %~ not
 editorCursorSwitchToFile :: EditorCursor -> EditorCursor
 editorCursorSwitchToFile ec =
   ec
-    { editorCursorHelpCursor = Nothing
-    , editorCursorReportCursor = Nothing
-    , editorCursorSelection = FileSelected
+    { editorCursorHelpCursor = Nothing,
+      editorCursorReportCursor = Nothing,
+      editorCursorSelection = FileSelected
     }
 
 editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
 editorCursorSwitchToHelp km@KeyMap {..} ec =
   ec
-    { editorCursorHelpCursor =
-        case editorCursorSelection ec of
-          FileSelected ->
-            let FileKeyMap {..} = keyMapFileKeyMap
-             in (\(t, ms) ->
-                   Just $ makeHelpCursor t $ ms ++ fileKeyMapAnyMatchers ++ keyMapHelpMatchers km) $
-                case editorCursorFileCursor ec of
+    { editorCursorHelpCursor = case editorCursorSelection ec of
+        FileSelected ->
+          let FileKeyMap {..} = keyMapFileKeyMap
+           in ( \(t, ms) ->
+                  Just $ makeHelpCursor t $ ms ++ fileKeyMapAnyMatchers ++ keyMapHelpMatchers km
+              )
+                $ case editorCursorFileCursor ec of
                   Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
                   Just sfc ->
                     case sfc ^. smosFileCursorEntrySelectionL of
@@ -546,26 +544,26 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                       StateHistorySelected -> ("State History", fileKeyMapStateHistoryMatchers)
                       TagsSelected -> ("Tags", fileKeyMapTagsMatchers)
                       LogbookSelected -> ("Logbook", fileKeyMapLogbookMatchers)
-          ReportSelected ->
-            let ReportsKeyMap {..} = keyMapReportsKeyMap
-             in Just <$> makeHelpCursor "Next Action Report" $ reportsKeymapNextActionReportMatchers
-          HelpSelected -> Nothing -- Should not happen
-    , editorCursorSelection = HelpSelected
+        ReportSelected ->
+          let ReportsKeyMap {..} = keyMapReportsKeyMap
+           in Just <$> makeHelpCursor "Next Action Report" $ reportsKeymapNextActionReportMatchers
+        HelpSelected -> Nothing, -- Should not happen
+      editorCursorSelection = HelpSelected
     }
 
 editorCursorSwitchToNextActionReport :: NextActionReportCursor -> EditorCursor -> EditorCursor
 editorCursorSwitchToNextActionReport narc ec =
   ec
-    { editorCursorReportCursor = Just $ ReportNextActions narc
-    , editorCursorSelection = ReportSelected
+    { editorCursorReportCursor = Just $ ReportNextActions narc,
+      editorCursorSelection = ReportSelected
     }
 
 editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
 editorCursorUpdateTime zt ec =
   ec {editorCursorFileCursor = smosFileCursorUpdateTime zt <$> editorCursorFileCursor ec}
 
-newtype ReportCursor =
-  ReportNextActions NextActionReportCursor
+newtype ReportCursor
+  = ReportNextActions NextActionReportCursor
   deriving (Show, Eq, Generic)
 
 instance Validity ReportCursor

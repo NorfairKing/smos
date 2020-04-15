@@ -4,17 +4,18 @@
 --
 -- Import this module qualified
 module Smos.Sync.Client.MetaMap
-  ( MetaMap(..)
-  , empty
-  , singleton
-  , fromList
-  , insert
-  , union
-  , unions
-  ) where
+  ( MetaMap (..),
+    empty,
+    singleton,
+    fromList,
+    insert,
+    union,
+    unions,
+  )
+where
 
-import GHC.Generics (Generic)
-
+import Control.DeepSeq
+import Control.Monad
 import Data.List (nub)
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -22,32 +23,28 @@ import Data.Validity
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-
-import Control.DeepSeq
-import Control.Monad
-
+import GHC.Generics (Generic)
 import Path
-
 import Smos.Sync.Client.DirForest
 import Smos.Sync.Client.Env
 
-newtype MetaMap =
-  MetaMap
-    { metaMapFiles :: Map (Path Rel File) SyncFileMeta
-    }
+newtype MetaMap
+  = MetaMap
+      { metaMapFiles :: Map (Path Rel File) SyncFileMeta
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity MetaMap where
   validate mm =
     mconcat
-      [ genericValidate mm
-      , decorate "The map can be translated to a valid DirForest" $
-        case makeDirForest $ metaMapFiles mm of
-          Left fp -> invalid $ "Duplicate path: " <> fp
-          Right df -> validate df
-      , declare "The uuids are distinct" $
-        let distinct ls = nub ls == ls
-         in distinct $ map syncFileMetaUUID $ M.elems $ metaMapFiles mm
+      [ genericValidate mm,
+        decorate "The map can be translated to a valid DirForest" $
+          case makeDirForest $ metaMapFiles mm of
+            Left fp -> invalid $ "Duplicate path: " <> fp
+            Right df -> validate df,
+        declare "The uuids are distinct" $
+          let distinct ls = nub ls == ls
+           in distinct $ map syncFileMetaUUID $ M.elems $ metaMapFiles mm
       ]
 
 instance NFData MetaMap

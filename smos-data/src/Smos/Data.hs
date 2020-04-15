@@ -1,32 +1,34 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Data
-  ( module Smos.Data.Types
-  , readSmosFile
-  , writeSmosFile
-  , parseSmosFile
-  , parseSmosFileYaml
-  , parseSmosFileJSON
-  , parseSmosData
-  , parseSmosDataYaml
-  , parseSmosDataJSON
-  , smosFileYamlBS
-  , smosFileJSONBS
-  , smosFileJSONPrettyBS
-  , emptySmosFile
-  , prettySmosForest
-  , smosFileClockOutEverywhere
-  , entryClockIn
-  , entryClockOut
-  , logbookClockIn
-  , logbookClockOut
-  , stateHistoryState
-  , stateHistorySetState
-  , entryState
-  , entrySetState
-  ) where
+  ( module Smos.Data.Types,
+    readSmosFile,
+    writeSmosFile,
+    parseSmosFile,
+    parseSmosFileYaml,
+    parseSmosFileJSON,
+    parseSmosData,
+    parseSmosDataYaml,
+    parseSmosDataJSON,
+    smosFileYamlBS,
+    smosFileJSONBS,
+    smosFileJSONPrettyBS,
+    emptySmosFile,
+    prettySmosForest,
+    smosFileClockOutEverywhere,
+    entryClockIn,
+    entryClockOut,
+    logbookClockIn,
+    logbookClockOut,
+    stateHistoryState,
+    stateHistorySetState,
+    entryState,
+    entrySetState,
+  )
+where
 
+import Control.Arrow
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
@@ -38,12 +40,8 @@ import Data.Tree
 import Data.Validity
 import Data.Yaml as Yaml
 import Data.Yaml.Builder as Yaml
-
-import Control.Arrow
-
 import Path
 import Path.IO
-
 import Smos.Data.Types
 
 readSmosFile :: Path Abs File -> IO (Maybe (Either String SmosFile))
@@ -124,7 +122,7 @@ logbookClockIn now lb =
       let d = constructValid $ LogOpen now es
        in case es of
             [] -> d
-            (LogbookEntry {..}:rest) ->
+            (LogbookEntry {..} : rest) ->
               if logbookEntryEnd == now
                 then Just $ LogOpen logbookEntryStart rest
                 else d
@@ -140,7 +138,7 @@ stateHistoryState :: StateHistory -> Maybe TodoState
 stateHistoryState (StateHistory tups) =
   case tups of
     [] -> Nothing
-    (StateHistoryEntry mts _:_) -> mts
+    (StateHistoryEntry mts _ : _) -> mts
 
 stateHistorySetState :: UTCTime -> Maybe TodoState -> StateHistory -> Maybe StateHistory
 stateHistorySetState now mts sh =

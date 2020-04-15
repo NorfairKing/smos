@@ -15,9 +15,9 @@ import Smos.Sync.Client.MetaMap.Gen ()
 main :: IO ()
 main =
   Criterion.defaultMain
-    [ genValidBench @SyncFileMeta
-    , genValidBench @MetaMap
-    , genValidBench @ContentsMap
-    , genValidBench @ClientStore
-    , genBench "sizedContentsMap 1000" (sizedContentsMap 1000)
+    [ genValidBench @SyncFileMeta,
+      genValidBench @MetaMap,
+      genValidBench @ContentsMap,
+      genValidBench @ClientStore,
+      genBench "sizedContentsMap 1000" (sizedContentsMap 1000)
     ]

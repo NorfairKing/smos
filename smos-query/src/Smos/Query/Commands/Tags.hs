@@ -1,37 +1,34 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Tags
-  ( smosQueryTags
-  ) where
+  ( smosQueryTags,
+  )
+where
 
+import Conduit
+import qualified Data.Conduit.Combinators as C
 import Data.List
 import qualified Data.Map as M
 import Data.Ord
 import Data.Text (Text)
-
-import Conduit
-import qualified Data.Conduit.Combinators as C
 import Rainbow
-
 import Smos.Data
-
-import Smos.Report.Streaming
-import Smos.Report.Tags
-
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
+import Smos.Report.Streaming
+import Smos.Report.Tags
 
 smosQueryTags :: TagsSettings -> Q ()
 smosQueryTags TagsSettings {..} = do
   es <-
     sourceToList $
-    streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
-    smosFileCursors .|
-    smosMFilter tagsSetFilter .|
-    smosCursorCurrents .|
-    C.map snd
+      streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
+        .| smosFileCursors
+        .| smosMFilter tagsSetFilter
+        .| smosCursorCurrents
+        .| C.map snd
   let tr = makeTagsReport es
   liftIO $ putTableLn $ renderTagsReport tr
 

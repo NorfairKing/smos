@@ -1,32 +1,30 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Query.Config
-  ( SmosQueryConfig(..)
-  , HideArchive(..)
-  , Q
-  , askWorkflowDir
-  , askArchiveDir
-  , askProjectsDir
-  , askArchivedProjectsDir
-  , module Smos.Report.Config
-  , module Control.Monad.IO.Class
-  , module Control.Monad.Reader
-  ) where
-
-import GHC.Generics (Generic)
-
-import Path
+  ( SmosQueryConfig (..),
+    HideArchive (..),
+    Q,
+    askWorkflowDir,
+    askArchiveDir,
+    askProjectsDir,
+    askArchivedProjectsDir,
+    module Smos.Report.Config,
+    module Control.Monad.IO.Class,
+    module Control.Monad.Reader,
+  )
+where
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
-
+import GHC.Generics (Generic)
+import Path
 import Smos.Report.Archive
 import Smos.Report.Config
 
-newtype SmosQueryConfig =
-  SmosQueryConfig
-    { smosQueryConfigReportConfig :: SmosReportConfig
-    }
+newtype SmosQueryConfig
+  = SmosQueryConfig
+      { smosQueryConfigReportConfig :: SmosReportConfig
+      }
   deriving (Show, Eq, Generic)
 
 type Q = ReaderT SmosQueryConfig IO

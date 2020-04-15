@@ -1,23 +1,20 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Report.ProjectionSpec
-  ( spec
-  ) where
-
-import Data.Text (Text)
-
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
-
-import Text.Megaparsec
+  ( spec,
+  )
+where
 
 import Cursor.Forest.Gen ()
-
+import Data.Text (Text)
 import Smos.Report.Path.Gen ()
 import Smos.Report.Projection
 import Smos.Report.Projection.Gen ()
+import Test.Hspec
+import Test.Validity
+import Test.Validity.Aeson
+import Text.Megaparsec
 
 spec :: Spec
 spec = do
@@ -26,9 +23,10 @@ spec = do
   jsonSpecOnValid @Projection
   eqSpecOnValid @Projectee
   genValidSpec @Projectee
-  describe "performProjection" $
-    it "produces valid projections" $
-    forAllValid $ \s ->
+  describe "performProjection"
+    $ it "produces valid projections"
+    $ forAllValid
+    $ \s ->
       forAllValid $ \rp -> forAllValid $ \fc -> shouldBeValid $ performProjection s rp fc
   describe "ontoFileP" $ parsesValidSpec ontoFileP
   describe "ontoPropertyP" $ parsesValidSpec ontoPropertyP
@@ -42,8 +40,9 @@ spec = do
     parseJustSpec projectionP "state" OntoState
   describe "renderProjection" $ do
     it "produces valid texts" $ producesValidsOnValids renderProjection
-    it "renders bys that parse to the same" $
-      forAllValid $ \s -> parseJust projectionP (renderProjection s) s
+    it "renders bys that parse to the same"
+      $ forAllValid
+      $ \s -> parseJust projectionP (renderProjection s) s
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
@@ -56,7 +55,7 @@ parseJust p s res =
   case parse (p <* eof) "test input" s of
     Left err ->
       expectationFailure $
-      unlines ["P failed on input", show s, "with error", errorBundlePretty err]
+        unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
 parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Expectation

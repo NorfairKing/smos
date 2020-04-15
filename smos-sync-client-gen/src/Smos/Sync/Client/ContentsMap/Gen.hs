@@ -24,13 +24,15 @@ hideDir d = fromJust $ parseRelDir $ '.' : toFilePath d
 genHiddenFile :: Gen (Path Rel File)
 genHiddenFile =
   oneof
-    [ do d1 <- genValid
-         d2 <- genValid
-         f <- genValid
-         pure $ d1 </> hideDir d2 </> f
-    , do d <- genValid
-         f <- genValid
-         pure $ d </> hideFile f
+    [ do
+        d1 <- genValid
+        d2 <- genValid
+        f <- genValid
+        pure $ d1 </> hideDir d2 </> f,
+      do
+        d <- genValid
+        f <- genValid
+        pure $ d </> hideFile f
     ]
 
 filterHiddenFiles :: ContentsMap -> ContentsMap
@@ -62,7 +64,7 @@ mapWithNewHiddenPath :: ContentsMap -> ByteString -> Gen (Path Rel File, Content
 mapWithNewHiddenPath = mapWithNewByGen genHiddenFile
 
 mapWithNewByGen ::
-     Gen (Path Rel File) -> ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
+  Gen (Path Rel File) -> ContentsMap -> ByteString -> Gen (Path Rel File, ContentsMap)
 mapWithNewByGen gen cm bs = gen `suchThatMap` (\p -> (,) p <$> CM.insert p bs cm)
 
 mapsWithDifferentContentsAtNewPath :: ContentsMap -> Gen (ContentsMap, ContentsMap)
@@ -76,51 +78,54 @@ mapsWithDifferentContentsAtNewPath3 cm = do
   contents1 <- genValid
   contents2 <- genValid `suchThat` (/= contents1)
   contents3 <- genValid `suchThat` (/= contents1) `suchThat` (/= contents2)
-  genValid `suchThatMap`
-    (\p ->
-       (,,) <$> CM.insert p contents1 cm <*> CM.insert p contents2 cm <*> CM.insert p contents3 cm)
+  genValid
+    `suchThatMap` ( \p ->
+                      (,,) <$> CM.insert p contents1 cm <*> CM.insert p contents2 cm <*> CM.insert p contents3 cm
+                  )
 
 changedContentsMap :: ContentsMap -> Gen ContentsMap
 changedContentsMap (ContentsMap m) = ContentsMap <$> changedMap m
 
 changedMapsWithUnionOf :: ContentsMap -> Gen (ContentsMap, ContentsMap)
 changedMapsWithUnionOf cm =
-  (do cm1 <- genValid
+  ( do
+      cm1 <- genValid
       cm2 <- changedContentsMap cm1
-      pure (cm1, cm2)) `suchThatMap`
-  (\(cm1, cm2) -> (,) <$> CM.union cm1 cm <*> CM.union cm2 cm)
+      pure (cm1, cm2)
+  )
+    `suchThatMap` (\(cm1, cm2) -> (,) <$> CM.union cm1 cm <*> CM.union cm2 cm)
 
 mapWithAdditions :: ContentsMap -> Gen ContentsMap
 mapWithAdditions cm = genValid `suchThatMap` (`CM.union` cm)
 
 mapWithHiddenAdditions :: ContentsMap -> Gen ContentsMap
 mapWithHiddenAdditions cm =
-  (ContentsMap . M.fromList <$> genListOf1 ((,) <$> genHiddenFile <*> genValid)) `suchThatMap`
-  (`CM.union` cm)
+  (ContentsMap . M.fromList <$> genListOf1 ((,) <$> genHiddenFile <*> genValid))
+    `suchThatMap` (`CM.union` cm)
 
 -- Not ideal, but oh well
 genListOf1 :: Gen a -> Gen [a]
 genListOf1 g = (:) <$> g <*> genListOf g
 
 twoDistinctPathsThatFitAndTheirUnion ::
-     ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
+  ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
 twoDistinctPathsThatFitAndTheirUnion contents1 contents2 = do
   (rp1, rp2, Hidden func) <- twoDistinctPathsThatFitAndTheirUnionFunc
   pure (rp1, rp2, func contents1 contents2)
 
 twoDistinctPathsThatFitAndTheirUnionFunc ::
-     Gen (Path Rel File, Path Rel File, Hidden (ByteString -> ByteString -> ContentsMap))
+  Gen (Path Rel File, Path Rel File, Hidden (ByteString -> ByteString -> ContentsMap))
 twoDistinctPathsThatFitAndTheirUnionFunc = twoDistinctPathsThatFitAndTheirUnionWithFunc CM.empty
 
 twoDistinctPathsThatFitAndTheirUnionWith ::
-     ContentsMap -> ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
+  ContentsMap -> ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
 twoDistinctPathsThatFitAndTheirUnionWith m contents1 contents2 = do
   (rp1, rp2, Hidden func) <- twoDistinctPathsThatFitAndTheirUnionWithFunc m
   pure (rp1, rp2, func contents1 contents2)
 
 twoDistinctPathsThatFitAndTheirUnionWithFunc ::
-     ContentsMap
-  -> Gen (Path Rel File, Path Rel File, Hidden (ByteString -> ByteString -> ContentsMap))
+  ContentsMap ->
+  Gen (Path Rel File, Path Rel File, Hidden (ByteString -> ByteString -> ContentsMap))
 twoDistinctPathsThatFitAndTheirUnionWithFunc cm = do
   (rp1, rp2, Hidden func) <- twoDistinctPathsThatFitAndTheirUnionsWithFunc cm
   let func' contents1 contents2 =
@@ -129,31 +134,35 @@ twoDistinctPathsThatFitAndTheirUnionWithFunc cm = do
   pure (rp1, rp2, Hidden func')
 
 twoDistinctPathsThatFitAndTheirUnionsWith ::
-     ContentsMap
-  -> ByteString
-  -> ByteString
-  -> Gen (Path Rel File, Path Rel File, (ContentsMap, ContentsMap, ContentsMap))
+  ContentsMap ->
+  ByteString ->
+  ByteString ->
+  Gen (Path Rel File, Path Rel File, (ContentsMap, ContentsMap, ContentsMap))
 twoDistinctPathsThatFitAndTheirUnionsWith cm contents1 contents2 = do
   (rp1, rp2, Hidden func) <- twoDistinctPathsThatFitAndTheirUnionsWithFunc cm
   pure (rp1, rp2, func contents1 contents2)
 
 twoDistinctPathsThatFitAndTheirUnionsWithFunc ::
-     ContentsMap
-  -> Gen ( Path Rel File
-         , Path Rel File
-         , Hidden (ByteString -> ByteString -> (ContentsMap, ContentsMap, ContentsMap)))
+  ContentsMap ->
+  Gen
+    ( Path Rel File,
+      Path Rel File,
+      Hidden (ByteString -> ByteString -> (ContentsMap, ContentsMap, ContentsMap))
+    )
 twoDistinctPathsThatFitAndTheirUnionsWithFunc cm@(ContentsMap m) = do
   rp1 <- genValid `suchThat` (\rp -> isJust $ CM.insert rp "" cm)
   rp2 <-
-    genValid `suchThat` (/= rp1) `suchThat`
-    (\rp -> isJust $ CM.insert rp1 "" cm >>= CM.insert rp "")
+    genValid `suchThat` (/= rp1)
+      `suchThat` (\rp -> isJust $ CM.insert rp1 "" cm >>= CM.insert rp "")
   pure
-    ( rp1
-    , rp2
-    , Hidden $ \contents1 contents2 ->
-        ( ContentsMap $ M.insert rp1 contents1 m
-        , ContentsMap $ M.insert rp2 contents2 m
-        , ContentsMap $ M.unions [M.singleton rp1 contents1, M.singleton rp2 contents2, m]))
+    ( rp1,
+      rp2,
+      Hidden $ \contents1 contents2 ->
+        ( ContentsMap $ M.insert rp1 contents1 m,
+          ContentsMap $ M.insert rp2 contents2 m,
+          ContentsMap $ M.unions [M.singleton rp1 contents1, M.singleton rp2 contents2, m]
+        )
+    )
 
 disjunctContentsMap :: ContentsMap -> Gen ContentsMap
 disjunctContentsMap (ContentsMap m) = (ContentsMap <$> disjunctMap m) `suchThat` isValid
@@ -162,48 +171,52 @@ mapWithDisjunctUnion :: ContentsMap -> Gen (ContentsMap, ContentsMap)
 mapWithDisjunctUnion cm = disjunctContentsMap cm `suchThatMap` (\cm' -> (,) cm' <$> CM.union cm' cm)
 
 twoChangedMapsAndTheirUnions ::
-     Gen ( ( ContentsMap
+  Gen
+    ( ( ContentsMap,
         -- m1
-           , ContentsMap
+        ContentsMap
         -- m2
-            )
-         , ( ContentsMap
+      ),
+      ( ContentsMap,
         -- m1' = m3
-           , ContentsMap
+        ContentsMap
         -- m2' = m4
-            )
-         , ( ContentsMap
+      ),
+      ( ContentsMap,
         -- m12
-           , ContentsMap
+        ContentsMap,
         -- m14
-           , ContentsMap
+        ContentsMap,
         -- m23
-           , ContentsMap
+        ContentsMap
         -- m34
-            ))
+      )
+    )
 twoChangedMapsAndTheirUnions = twoChangedMapsAndTheirUnionsWith CM.empty
 
 twoChangedMapsAndTheirUnionsWith ::
-     ContentsMap
-  -> Gen ( ( ContentsMap
+  ContentsMap ->
+  Gen
+    ( ( ContentsMap,
         -- m1
-           , ContentsMap
+        ContentsMap
         -- m2
-            )
-         , ( ContentsMap
+      ),
+      ( ContentsMap,
         -- m1' = m3
-           , ContentsMap
+        ContentsMap
         -- m2' = m4
-            )
-         , ( ContentsMap
+      ),
+      ( ContentsMap,
         -- m12
-           , ContentsMap
+        ContentsMap,
         -- m14
-           , ContentsMap
+        ContentsMap,
         -- m23
-           , ContentsMap
+        ContentsMap
         -- m34
-            ))
+      )
+    )
 twoChangedMapsAndTheirUnionsWith cm@(ContentsMap m) = do
   cm1@(ContentsMap m1) <- genValid `suchThat` (\cm1 -> isJust $ CM.union cm1 cm)
   cm2@(ContentsMap m2) <- genValid `suchThat` (\cm2 -> isJust $ CM.unions [cm2, cm1, cm])
@@ -218,21 +231,24 @@ twoChangedMapsAndTheirUnionsWith cm@(ContentsMap m) = do
   pure ((cm1, cm2), (cm3, cm4), (cm12, cm14, cm23, cm34))
 
 threeDisjunctMapsAndTheirUnions ::
-     Gen ( ( ContentsMap
+  Gen
+    ( ( ContentsMap,
         -- m1
-           , ContentsMap
+        ContentsMap,
         -- m2
-           , ContentsMap)
+        ContentsMap
+      ),
       -- m3)
-         , ( ContentsMap
+      ( ContentsMap,
         -- m1 U m2
-           , ContentsMap
+        ContentsMap,
         -- m2 U m3
-           , ContentsMap
+        ContentsMap,
         -- m1 U m3
-           , ContentsMap
+        ContentsMap
         -- m1 U m2 U m3
-            ))
+      )
+    )
 threeDisjunctMapsAndTheirUnions = do
   cm1@(ContentsMap m1) <- genValid
   cm2@(ContentsMap m2) <- disjunctContentsMap cm1 `suchThat` (\cm2 -> isJust $ CM.union cm2 cm1)
@@ -244,8 +260,8 @@ threeDisjunctMapsAndTheirUnions = do
   let cm123 = ContentsMap $ M.unions [m1, m2, m3]
   pure ((cm1, cm2, cm3), (cm12, cm23, cm13, cm123))
 
-newtype Hidden a =
-  Hidden a
+newtype Hidden a
+  = Hidden a
   deriving (Eq, Ord)
 
 instance Show (Hidden a) where

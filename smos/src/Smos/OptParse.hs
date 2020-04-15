@@ -3,26 +3,22 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.OptParse
-  ( getInstructions
-  , Instructions(..)
-  ) where
-
-import Import
+  ( getInstructions,
+    Instructions (..),
+  )
+where
 
 import qualified Data.Text as T
-
-import qualified System.Environment as System
-import System.Exit (die)
-
+import Import
 import Options.Applicative
-
+import Smos.Actions
+import Smos.Keys
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
-
-import Smos.Actions
-import Smos.Keys
 import Smos.Types
+import qualified System.Environment as System
+import System.Exit (die)
 
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
@@ -32,7 +28,7 @@ getInstructions conf = do
   combineToInstructions conf args env config
 
 combineToInstructions ::
-     SmosConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
+  SmosConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
   p <- resolveFile' fp
   src <-
@@ -62,9 +58,9 @@ combineKeymap km (Just kbc) = do
   keyMapHelpKeyMap <- combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
   return
     startingPoint
-      { keyMapFileKeyMap = keyMapFileKeyMap
-      , keyMapReportsKeyMap = keyMapReportsKeyMap
-      , keyMapHelpKeyMap = keyMapHelpKeyMap
+      { keyMapFileKeyMap = keyMapFileKeyMap,
+        keyMapReportsKeyMap = keyMapReportsKeyMap,
+        keyMapHelpKeyMap = keyMapHelpKeyMap
       }
 
 combineFileKeymap :: FileKeyMap -> Maybe FileKeyConfigs -> Comb FileKeyMap
@@ -88,16 +84,16 @@ combineFileKeymap fkm (Just fkc) = do
   fileKeyMapAnyMatchers <- combineKeyMappings (fileKeyMapAnyMatchers fkm) (anyKeyConfigs fkc)
   return $
     fkm
-      { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers
-      , fileKeyMapEntryMatchers = fileKeyMapEntryMatchers
-      , fileKeyMapHeaderMatchers = fileKeyMapHeaderMatchers
-      , fileKeyMapContentsMatchers = fileKeyMapContentsMatchers
-      , fileKeyMapTimestampsMatchers = fileKeyMapTimestampsMatchers
-      , fileKeyMapPropertiesMatchers = fileKeyMapPropertiesMatchers
-      , fileKeyMapStateHistoryMatchers = fileKeyMapStateHistoryMatchers
-      , fileKeyMapTagsMatchers = fileKeyMapTagsMatchers
-      , fileKeyMapLogbookMatchers = fileKeyMapLogbookMatchers
-      , fileKeyMapAnyMatchers = fileKeyMapAnyMatchers
+      { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers,
+        fileKeyMapEntryMatchers = fileKeyMapEntryMatchers,
+        fileKeyMapHeaderMatchers = fileKeyMapHeaderMatchers,
+        fileKeyMapContentsMatchers = fileKeyMapContentsMatchers,
+        fileKeyMapTimestampsMatchers = fileKeyMapTimestampsMatchers,
+        fileKeyMapPropertiesMatchers = fileKeyMapPropertiesMatchers,
+        fileKeyMapStateHistoryMatchers = fileKeyMapStateHistoryMatchers,
+        fileKeyMapTagsMatchers = fileKeyMapTagsMatchers,
+        fileKeyMapLogbookMatchers = fileKeyMapLogbookMatchers,
+        fileKeyMapAnyMatchers = fileKeyMapAnyMatchers
       }
 
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
@@ -122,45 +118,45 @@ combineKeyMappings kms (Just kcs) = (++ kms) <$> traverse go (keyConfigs kcs)
     go KeyConfig {..} =
       case keyConfigMatcher of
         MatchConfKeyPress kp ->
-          MapVtyExactly kp <$>
-          case findAction keyConfigAction of
-            Just (PlainAction a) -> pure a
-            Just _ -> CombErr [ActionWrongType keyConfigAction]
-            Nothing -> CombErr [ActionNotFound keyConfigAction]
+          MapVtyExactly kp
+            <$> case findAction keyConfigAction of
+              Just (PlainAction a) -> pure a
+              Just _ -> CombErr [ActionWrongType keyConfigAction]
+              Nothing -> CombErr [ActionNotFound keyConfigAction]
         MatchConfCatchAll ->
-          MapCatchAll <$>
-          case findAction keyConfigAction of
-            Just (PlainAction a) -> pure a
-            Just _ -> CombErr [ActionWrongType keyConfigAction]
-            Nothing -> CombErr [ActionNotFound keyConfigAction]
+          MapCatchAll
+            <$> case findAction keyConfigAction of
+              Just (PlainAction a) -> pure a
+              Just _ -> CombErr [ActionWrongType keyConfigAction]
+              Nothing -> CombErr [ActionNotFound keyConfigAction]
         MatchConfAnyChar ->
-          MapAnyTypeableChar <$>
-          case findAction keyConfigAction of
-            Just (UsingCharAction a) -> pure a
-            Just _ -> CombErr [ActionWrongType keyConfigAction]
-            Nothing -> CombErr [ActionNotFound keyConfigAction]
+          MapAnyTypeableChar
+            <$> case findAction keyConfigAction of
+              Just (UsingCharAction a) -> pure a
+              Just _ -> CombErr [ActionWrongType keyConfigAction]
+              Nothing -> CombErr [ActionNotFound keyConfigAction]
         MatchConfCombination kp mc ->
           let go' :: MatcherConfig -> Comb KeyMapping
               go' mc_ =
                 case mc_ of
                   MatchConfKeyPress kp_ ->
-                    MapVtyExactly kp_ <$>
-                    case findAction keyConfigAction of
-                      Just (PlainAction a) -> pure a
-                      Just _ -> CombErr [ActionWrongType keyConfigAction]
-                      Nothing -> CombErr [ActionNotFound keyConfigAction]
+                    MapVtyExactly kp_
+                      <$> case findAction keyConfigAction of
+                        Just (PlainAction a) -> pure a
+                        Just _ -> CombErr [ActionWrongType keyConfigAction]
+                        Nothing -> CombErr [ActionNotFound keyConfigAction]
                   MatchConfAnyChar ->
-                    MapAnyTypeableChar <$>
-                    case findAction keyConfigAction of
-                      Just (UsingCharAction a) -> pure a
-                      Just _ -> CombErr [ActionWrongType keyConfigAction]
-                      Nothing -> CombErr [ActionNotFound keyConfigAction]
+                    MapAnyTypeableChar
+                      <$> case findAction keyConfigAction of
+                        Just (UsingCharAction a) -> pure a
+                        Just _ -> CombErr [ActionWrongType keyConfigAction]
+                        Nothing -> CombErr [ActionNotFound keyConfigAction]
                   MatchConfCatchAll ->
-                    MapCatchAll <$>
-                    case findAction keyConfigAction of
-                      Just (PlainAction a) -> pure a
-                      Just _ -> CombErr [ActionWrongType keyConfigAction]
-                      Nothing -> CombErr [ActionNotFound keyConfigAction]
+                    MapCatchAll
+                      <$> case findAction keyConfigAction of
+                        Just (PlainAction a) -> pure a
+                        Just _ -> CombErr [ActionWrongType keyConfigAction]
+                        Nothing -> CombErr [ActionNotFound keyConfigAction]
                   MatchConfCombination kp_ mc__ -> MapCombination kp_ <$> go' mc__
            in MapCombination kp <$> go' mc
     findAction :: ActionName -> Maybe AnyAction
@@ -186,12 +182,12 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 argParser :: ParserInfo Arguments

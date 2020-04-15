@@ -2,13 +2,10 @@
 
 module Smos.Query.Clock.Types where
 
-import GHC.Generics (Generic)
-
 import Data.Text (Text)
 import Data.Time
-
+import GHC.Generics (Generic)
 import Smos.Data
-
 import Smos.Report.Path
 
 data ClockTableRow

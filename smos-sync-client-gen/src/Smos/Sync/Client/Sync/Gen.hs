@@ -3,11 +3,8 @@
 module Smos.Sync.Client.Sync.Gen where
 
 import Data.GenValidity
-
 import Pantry.SHA256
-
 import Smos.API.Gen ()
-
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse.Types
 

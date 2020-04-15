@@ -2,58 +2,54 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Contents
-  ( ContentsCursor(..)
-  , makeContentsCursor
-  , makeContentsCursorWithSelection
-  , rebuildContentsCursor
-  , emptyContentsCursor
-  , nullContentsCursor
-  , contentsCursorSelection
-  , contentsCursorSelectPrevLine
-  , contentsCursorSelectNextLine
-  , contentsCursorSelectFirstLine
-  , contentsCursorSelectLastLine
-  , contentsCursorSelectPrevChar
-  , contentsCursorSelectNextChar
-  , contentsCursorIndexOnLine
-  , contentsCursorSelectIndexOnLine
-  , contentsCursorInsertChar
-  , contentsCursorAppendChar
-  , contentsCursorInsertNewline
-  , contentsCursorAppendNewline
-  , contentsCursorRemove
-  , contentsCursorDelete
-  , contentsCursorSelectStartOfLine
-  , contentsCursorSelectEndOfLine
-  ) where
-
-import GHC.Generics
-
-import Data.Validity
+  ( ContentsCursor (..),
+    makeContentsCursor,
+    makeContentsCursorWithSelection,
+    rebuildContentsCursor,
+    emptyContentsCursor,
+    nullContentsCursor,
+    contentsCursorSelection,
+    contentsCursorSelectPrevLine,
+    contentsCursorSelectNextLine,
+    contentsCursorSelectFirstLine,
+    contentsCursorSelectLastLine,
+    contentsCursorSelectPrevChar,
+    contentsCursorSelectNextChar,
+    contentsCursorIndexOnLine,
+    contentsCursorSelectIndexOnLine,
+    contentsCursorInsertChar,
+    contentsCursorAppendChar,
+    contentsCursorInsertNewline,
+    contentsCursorAppendNewline,
+    contentsCursorRemove,
+    contentsCursorDelete,
+    contentsCursorSelectStartOfLine,
+    contentsCursorSelectEndOfLine,
+  )
+where
 
 import Control.DeepSeq
-
 import Cursor.TextField
 import Cursor.Types
-
+import Data.Validity
+import GHC.Generics
 import Lens.Micro
-
 import Smos.Data.Types
 
-newtype ContentsCursor =
-  ContentsCursor
-    { contentsCursorTextFieldCursor :: TextFieldCursor
-    }
+newtype ContentsCursor
+  = ContentsCursor
+      { contentsCursorTextFieldCursor :: TextFieldCursor
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ContentsCursor where
   validate cc@ContentsCursor {..} =
     mconcat
-      [ genericValidate cc
-      , decorate "The resulting Contents is valid" $
-        case parseContents (rebuildTextFieldCursor contentsCursorTextFieldCursor) of
-          Left err -> invalid err
-          Right t -> validate t
+      [ genericValidate cc,
+        decorate "The resulting Contents is valid" $
+          case parseContents (rebuildTextFieldCursor contentsCursorTextFieldCursor) of
+            Left err -> invalid err
+            Right t -> validate t
       ]
 
 instance NFData ContentsCursor
@@ -109,13 +105,13 @@ contentsCursorSelectIndexOnLine i =
 
 contentsCursorInsertChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
 contentsCursorInsertChar c mcc =
-  constructValid =<<
-  ContentsCursor <$> textFieldCursorInsertChar c (contentsCursorTextFieldCursor <$> mcc)
+  constructValid
+    =<< ContentsCursor <$> textFieldCursorInsertChar c (contentsCursorTextFieldCursor <$> mcc)
 
 contentsCursorAppendChar :: Char -> Maybe ContentsCursor -> Maybe ContentsCursor
 contentsCursorAppendChar c mcc =
-  constructValid =<<
-  ContentsCursor <$> textFieldCursorAppendChar c (contentsCursorTextFieldCursor <$> mcc)
+  constructValid
+    =<< ContentsCursor <$> textFieldCursorAppendChar c (contentsCursorTextFieldCursor <$> mcc)
 
 contentsCursorInsertNewline :: Maybe ContentsCursor -> ContentsCursor
 contentsCursorInsertNewline cc =

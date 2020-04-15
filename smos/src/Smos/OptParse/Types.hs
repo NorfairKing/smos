@@ -8,35 +8,32 @@
 
 module Smos.OptParse.Types where
 
-import Import
-
 import Data.Aeson as JSON
-
-import qualified Smos.Report.OptParse.Types as Report
-
+import Import
 import Smos.Keys
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Types
 
-data Arguments =
-  Arguments FilePath Flags
+data Arguments
+  = Arguments FilePath Flags
 
-newtype Flags =
-  Flags
-    { flagReportFlags :: Report.Flags
-    }
+newtype Flags
+  = Flags
+      { flagReportFlags :: Report.Flags
+      }
   deriving (Show, Eq)
 
-newtype Environment =
-  Environment
-    { envReportEnvironment :: Report.Environment
-    }
+newtype Environment
+  = Environment
+      { envReportEnvironment :: Report.Environment
+      }
   deriving (Show, Eq)
 
-data Configuration =
-  Configuration
-    { confReportConf :: !Report.Configuration
-    , confKeybindingsConf :: !(Maybe KeybindingsConfiguration)
-    }
+data Configuration
+  = Configuration
+      { confReportConf :: !Report.Configuration,
+        confKeybindingsConf :: !(Maybe KeybindingsConfiguration)
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity Configuration
@@ -52,17 +49,17 @@ instance FromJSON Configuration where
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
   Configuration
-    { confReportConf = Report.backToConfiguration configReportConfig
-    , confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
+    { confReportConf = Report.backToConfiguration configReportConfig,
+      confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
     }
 
-data KeybindingsConfiguration =
-  KeybindingsConfiguration
-    { confReset :: !(Maybe Bool)
-    , confFileKeyConfig :: !(Maybe FileKeyConfigs)
-    , confReportsKeyConfig :: !(Maybe ReportsKeyConfigs)
-    , confHelpKeyConfig :: !(Maybe HelpKeyConfigs)
-    }
+data KeybindingsConfiguration
+  = KeybindingsConfiguration
+      { confReset :: !(Maybe Bool),
+        confFileKeyConfig :: !(Maybe FileKeyConfigs),
+        confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
+        confHelpKeyConfig :: !(Maybe HelpKeyConfigs)
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity KeybindingsConfiguration
@@ -70,40 +67,41 @@ instance Validity KeybindingsConfiguration
 instance ToJSON KeybindingsConfiguration where
   toJSON KeybindingsConfiguration {..} =
     object
-      [ "reset" .= confReset
-      , "file" .= confFileKeyConfig
-      , "reports" .= confReportsKeyConfig
-      , "help" .= confHelpKeyConfig
+      [ "reset" .= confReset,
+        "file" .= confFileKeyConfig,
+        "reports" .= confReportsKeyConfig,
+        "help" .= confHelpKeyConfig
       ]
 
 instance FromJSON KeybindingsConfiguration where
   parseJSON =
     withObject "KeybindingsConfiguration" $ \o ->
-      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports" <*>
-      o .:? "help"
+      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports"
+        <*> o
+        .:? "help"
 
 backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
 backToKeybindingsConfiguration KeyMap {..} =
   KeybindingsConfiguration
-    { confReset = Just True
-    , confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap
-    , confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap
-    , confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap
+    { confReset = Just True,
+      confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap,
+      confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap,
+      confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap
     }
 
-data FileKeyConfigs =
-  FileKeyConfigs
-    { emptyKeyConfigs :: !(Maybe KeyConfigs)
-    , entryKeyConfigs :: !(Maybe KeyConfigs)
-    , headerKeyConfigs :: !(Maybe KeyConfigs)
-    , contentsKeyConfigs :: !(Maybe KeyConfigs)
-    , timestampsKeyConfigs :: !(Maybe KeyConfigs)
-    , propertiesKeyConfigs :: !(Maybe KeyConfigs)
-    , stateHistoryKeyConfigs :: !(Maybe KeyConfigs)
-    , tagsKeyConfigs :: !(Maybe KeyConfigs)
-    , logbookKeyConfigs :: !(Maybe KeyConfigs)
-    , anyKeyConfigs :: !(Maybe KeyConfigs)
-    }
+data FileKeyConfigs
+  = FileKeyConfigs
+      { emptyKeyConfigs :: !(Maybe KeyConfigs),
+        entryKeyConfigs :: !(Maybe KeyConfigs),
+        headerKeyConfigs :: !(Maybe KeyConfigs),
+        contentsKeyConfigs :: !(Maybe KeyConfigs),
+        timestampsKeyConfigs :: !(Maybe KeyConfigs),
+        propertiesKeyConfigs :: !(Maybe KeyConfigs),
+        stateHistoryKeyConfigs :: !(Maybe KeyConfigs),
+        tagsKeyConfigs :: !(Maybe KeyConfigs),
+        logbookKeyConfigs :: !(Maybe KeyConfigs),
+        anyKeyConfigs :: !(Maybe KeyConfigs)
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity FileKeyConfigs
@@ -111,48 +109,48 @@ instance Validity FileKeyConfigs
 instance ToJSON FileKeyConfigs where
   toJSON FileKeyConfigs {..} =
     object
-      [ "empty" .= emptyKeyConfigs
-      , "entry" .= entryKeyConfigs
-      , "header" .= headerKeyConfigs
-      , "contents" .= contentsKeyConfigs
-      , "timestamps" .= timestampsKeyConfigs
-      , "properties" .= propertiesKeyConfigs
-      , "state-history" .= stateHistoryKeyConfigs
-      , "tags" .= tagsKeyConfigs
-      , "logbook" .= logbookKeyConfigs
-      , "any" .= anyKeyConfigs
+      [ "empty" .= emptyKeyConfigs,
+        "entry" .= entryKeyConfigs,
+        "header" .= headerKeyConfigs,
+        "contents" .= contentsKeyConfigs,
+        "timestamps" .= timestampsKeyConfigs,
+        "properties" .= propertiesKeyConfigs,
+        "state-history" .= stateHistoryKeyConfigs,
+        "tags" .= tagsKeyConfigs,
+        "logbook" .= logbookKeyConfigs,
+        "any" .= anyKeyConfigs
       ]
 
 instance FromJSON FileKeyConfigs where
   parseJSON =
     withObject "FileKeyConfigs" $ \o ->
-      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*> o .:? "contents" <*>
-      o .:? "timestamps" <*>
-      o .:? "properties" <*>
-      o .:? "state-history" <*>
-      o .:? "tags" <*>
-      o .:? "logbook" <*>
-      o .:? "any"
+      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*> o .:? "contents"
+        <*> o .:? "timestamps"
+        <*> o .:? "properties"
+        <*> o .:? "state-history"
+        <*> o .:? "tags"
+        <*> o .:? "logbook"
+        <*> o .:? "any"
 
 backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
 backToFileKeyConfigs FileKeyMap {..} =
   FileKeyConfigs
-    { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers
-    , entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers
-    , headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers
-    , contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers
-    , timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers
-    , propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers
-    , stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers
-    , tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers
-    , logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers
-    , anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
+    { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers,
+      entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers,
+      headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers,
+      contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers,
+      timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers,
+      propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers,
+      stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers,
+      tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers,
+      logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers,
+      anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
     }
 
-newtype ReportsKeyConfigs =
-  ReportsKeyConfigs
-    { nextActionReportKeyConfigs :: Maybe KeyConfigs
-    }
+newtype ReportsKeyConfigs
+  = ReportsKeyConfigs
+      { nextActionReportKeyConfigs :: Maybe KeyConfigs
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity ReportsKeyConfigs
@@ -166,13 +164,14 @@ instance FromJSON ReportsKeyConfigs where
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
   ReportsKeyConfigs
-    {nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers}
-
-data HelpKeyConfigs =
-  HelpKeyConfigs
-    { helpHelpKeyConfigs :: !(Maybe KeyConfigs)
-    , helpSearchKeyConfigs :: !(Maybe KeyConfigs)
+    { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
     }
+
+data HelpKeyConfigs
+  = HelpKeyConfigs
+      { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
+        helpSearchKeyConfigs :: !(Maybe KeyConfigs)
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity HelpKeyConfigs
@@ -187,24 +186,24 @@ instance FromJSON HelpKeyConfigs where
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =
   HelpKeyConfigs
-    { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers
-    , helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
+    { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers,
+      helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
     }
 
-newtype KeyConfigs =
-  KeyConfigs
-    { keyConfigs :: [KeyConfig]
-    }
+newtype KeyConfigs
+  = KeyConfigs
+      { keyConfigs :: [KeyConfig]
+      }
   deriving (Show, Eq, Generic, Validity, ToJSON, FromJSON)
 
 backToKeyConfigs :: KeyMappings -> KeyConfigs
 backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
 
-data KeyConfig =
-  KeyConfig
-    { keyConfigMatcher :: !MatcherConfig
-    , keyConfigAction :: !ActionName
-    }
+data KeyConfig
+  = KeyConfig
+      { keyConfigMatcher :: !MatcherConfig,
+        keyConfigAction :: !ActionName
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity KeyConfig
@@ -236,8 +235,8 @@ backToKeyConfig km =
           (mc, a) = go km_
        in KeyConfig {keyConfigMatcher = MatchConfCombination kp_ mc, keyConfigAction = a}
 
-data Instructions =
-  Instructions (Path Abs File) SmosConfig
+data Instructions
+  = Instructions (Path Abs File) SmosConfig
 
 data CombineError
   = ActionNotFound ActionName

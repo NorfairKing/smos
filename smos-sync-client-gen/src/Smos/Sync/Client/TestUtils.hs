@@ -3,49 +3,44 @@
 
 module Smos.Sync.Client.TestUtils where
 
+import Control.Concurrent.Async
+import Control.Monad
+import Control.Monad.IO.Class
+import Control.Monad.Logger
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Pool
 import qualified Data.Set as S
-
-import Control.Concurrent.Async
-import Control.Monad
-import Control.Monad.IO.Class
-import Control.Monad.Logger
-
+import Database.Persist.Sqlite as DB
 import Lens.Micro
 import Path
 import Path.IO
 import Servant.Client
-
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import Test.Validity
-
-import Database.Persist.Sqlite as DB
-
 import Smos.API
-
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
-import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync.Gen ()
+import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+import Test.Validity
 
 clientDBSpec :: SpecWith (Pool SqlBackend) -> Spec
 clientDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withClientDB
 
 withClientDB :: (Pool SqlBackend -> IO a) -> IO a
 withClientDB func =
-  runNoLoggingT $
-  DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $ \pool -> do
-    DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
-    liftIO $ func pool
+  runNoLoggingT
+    $ DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1
+    $ \pool -> do
+      DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+      liftIO $ func pool
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")
@@ -103,8 +98,8 @@ forAllHidden = forAllShrink (genProbablyHidden `suchThat` isHidden) (filter isHi
           base <- genValid
           pure $ base </> f
 
-data SyncClientSettings =
-  SyncClientSettings SyncSettings Settings
+data SyncClientSettings
+  = SyncClientSettings SyncSettings Settings
 
 withSyncClient :: ClientEnv -> Register -> (SyncClientSettings -> IO a) -> IO a
 withSyncClient cenv reg func =
@@ -115,18 +110,18 @@ withSyncClient cenv reg func =
       sp <- resolveFile tmpDir2 "session.dat"
       let ss =
             SyncSettings
-              { syncSetContentsDir = tmpDir1
-              , syncSetMetadataDB = mp
-              , syncSetUUIDFile = up
-              , syncSetIgnoreFiles = IgnoreNothing
+              { syncSetContentsDir = tmpDir1,
+                syncSetMetadataDB = mp,
+                syncSetUUIDFile = up,
+                syncSetIgnoreFiles = IgnoreNothing
               }
       let s =
             Settings
-              { setServerUrl = baseUrl cenv
-              , setLogLevel = LevelWarn
-              , setUsername = Just $ registerUsername reg
-              , setPassword = Just $ registerPassword reg
-              , setSessionPath = sp
+              { setServerUrl = baseUrl cenv,
+                setLogLevel = LevelWarn,
+                setUsername = Just $ registerUsername reg,
+                setPassword = Just $ registerPassword reg,
+                setSessionPath = sp
               }
       let scs = SyncClientSettings ss s
       func scs

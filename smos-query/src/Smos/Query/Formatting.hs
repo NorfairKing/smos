@@ -12,24 +12,23 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
 import Path
-import Text.Time.Pretty
-
 import Rainbow
 import Rainbox as Box
-
 import Smos.Data
-
 import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Path
 import Smos.Report.Projection
+import Text.Time.Pretty
 
 type Table = Seq (Chunk Text)
 
 formatAsTable :: [[Chunk Text]] -> Seq (Chunk Text)
 formatAsTable =
-  Box.render .
-  tableByRows . S.fromList . map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
+  Box.render
+    . tableByRows
+    . S.fromList
+    . map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
 
 mkCell :: Chunk Text -> Cell
 mkCell c = Cell (S.singleton (S.singleton c)) center left mempty
@@ -63,44 +62,44 @@ formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
   let d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
       func =
-        if | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-           | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
-           | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
-           | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
-           | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
-           | otherwise -> id
-   in [ func $ rootedPathChunk agendaEntryFilePath
-      , func $ chunk $ timestampPrettyText agendaEntryTimestamp
-      , func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d
-      , timestampNameChunk agendaEntryTimestampName
-      , maybe (chunk "") todoStateChunk agendaEntryTodoState
-      , headerChunk agendaEntryHeader
+        if  | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+            | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
+            | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
+            | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
+            | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
+            | otherwise -> id
+   in [ func $ rootedPathChunk agendaEntryFilePath,
+        func $ chunk $ timestampPrettyText agendaEntryTimestamp,
+        func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d,
+        timestampNameChunk agendaEntryTimestampName,
+        maybe (chunk "") todoStateChunk agendaEntryTodoState,
+        headerChunk agendaEntryHeader
       ]
 
 rootedPathChunk :: RootedPath -> Chunk Text
 rootedPathChunk rp =
-  chunk $
-  T.pack $
-  case rp of
-    Relative _ rf -> fromRelFile rf
-    Absolute af -> fromAbsFile af
+  chunk
+    $ T.pack
+    $ case rp of
+      Relative _ rf -> fromRelFile rf
+      Absolute af -> fromAbsFile af
 
 renderEntryReport :: EntryReport -> Table
 renderEntryReport EntryReport {..} =
   formatAsTable $
-  map renderProjectionHeader (toList entryReportHeaders) :
-  map (renderProjectees . toList) entryReportCells
+    map renderProjectionHeader (toList entryReportHeaders)
+      : map (renderProjectees . toList) entryReportCells
 
 renderProjectionHeader :: Projection -> Chunk Text
 renderProjectionHeader p =
   underline $
-  case p of
-    OntoFile -> chunk "file"
-    OntoHeader -> chunk "header"
-    OntoProperty pn -> chunk $ propertyNameText pn
-    OntoTag t -> chunk $ tagText t
-    OntoState -> chunk "state"
-    OntoAncestor p' -> renderProjectionHeader p'
+    case p of
+      OntoFile -> chunk "file"
+      OntoHeader -> chunk "header"
+      OntoProperty pn -> chunk $ propertyNameText pn
+      OntoTag t -> chunk $ tagText t
+      OntoState -> chunk "state"
+      OntoAncestor p' -> renderProjectionHeader p'
 
 renderProjectees :: [Projectee] -> [Chunk Text]
 renderProjectees = map projecteeChunk

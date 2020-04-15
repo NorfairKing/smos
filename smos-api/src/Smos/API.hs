@@ -9,18 +9,20 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.API
-  ( module Smos.API
-  , module X
-  ) where
+  ( module Smos.API,
+    module X,
+  )
+where
 
-import GHC.Generics (Generic)
-
+import Control.DeepSeq
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.Mergeful as Mergeful
+import Data.Mergeful.Timed
 import Data.Proxy
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
@@ -30,24 +32,15 @@ import Data.Validity.ByteString ()
 import Data.Validity.Path ()
 import Data.Validity.Text ()
 import Data.Validity.UUID ()
-
-import Control.DeepSeq
-
-import Path
-import Path.Internal
-
 import Database.Persist
 import Database.Persist.Sql
-
-import qualified Data.Mergeful as Mergeful
-import Data.Mergeful.Timed
-
+import GHC.Generics (Generic)
+import Path
+import Path.Internal
 import Servant.API as X
 import Servant.API.Generic
-
 import Servant.Auth
 import Servant.Auth.Server
-
 import Smos.API.HashedPassword as X
 import Smos.API.Password as X
 import Smos.API.Username as X
@@ -57,11 +50,11 @@ syncAPI = Proxy
 
 type SyncAPI = ToServantApi APIRoutes
 
-data APIRoutes route =
-  APIRoutes
-    { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes
-    , protectedRoutes :: route :- ToServantApi ProtectedRoutes
-    }
+data APIRoutes route
+  = APIRoutes
+      { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes,
+        protectedRoutes :: route :- ToServantApi ProtectedRoutes
+      }
   deriving (Generic)
 
 syncUnprotectedAPI :: Proxy SyncUnprotectedAPI
@@ -69,22 +62,22 @@ syncUnprotectedAPI = Proxy
 
 type SyncUnprotectedAPI = ToServantApi UnprotectedRoutes
 
-data UnprotectedRoutes route =
-  UnprotectedRoutes
-    { postRegister :: !(route :- PostRegister)
-    , postLogin :: !(route :- PostLogin)
-    }
+data UnprotectedRoutes route
+  = UnprotectedRoutes
+      { postRegister :: !(route :- PostRegister),
+        postLogin :: !(route :- PostLogin)
+      }
   deriving (Generic)
 
 syncProtectedAPI :: Proxy SyncProtectedAPI
 syncProtectedAPI = Proxy
 
-type ProtectAPI = Auth '[ JWT] AuthCookie
+type ProtectAPI = Auth '[JWT] AuthCookie
 
-newtype AuthCookie =
-  AuthCookie
-    { authCookieUsername :: Username
-    }
+newtype AuthCookie
+  = AuthCookie
+      { authCookieUsername :: Username
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance FromJSON AuthCookie
@@ -97,19 +90,19 @@ instance ToJWT AuthCookie
 
 type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
-newtype ProtectedRoutes route =
-  ProtectedRoutes
-    { postSync :: route :- ProtectAPI :> PostSync
-    }
+newtype ProtectedRoutes route
+  = ProtectedRoutes
+      { postSync :: route :- ProtectAPI :> PostSync
+      }
   deriving (Generic)
 
-type PostRegister = "register" :> ReqBody '[ JSON] Register :> PostNoContent '[ JSON] NoContent
+type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
-data Register =
-  Register
-    { registerUsername :: Username
-    , registerPassword :: Password
-    }
+data Register
+  = Register
+      { registerUsername :: Username,
+        registerPassword :: Password
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity Register
@@ -120,14 +113,14 @@ instance ToJSON Register
 
 instance FromJSON Register
 
-type PostLogin
-   = "login" :> ReqBody '[ JSON] Login :> PostNoContent '[ JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+type PostLogin =
+  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
 
-data Login =
-  Login
-    { loginUsername :: Username
-    , loginPassword :: Password
-    }
+data Login
+  = Login
+      { loginUsername :: Username,
+        loginPassword :: Password
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity Login
@@ -138,7 +131,7 @@ instance ToJSON Login
 
 instance FromJSON Login
 
-type PostSync = "sync" :> ReqBody '[ JSON] SyncRequest :> Post '[ JSON] SyncResponse
+type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
 type FileUUID = UUID SyncFile
 
@@ -175,11 +168,11 @@ instance PersistField (UUID a) where
 instance PersistFieldSql (UUID a) where
   sqlType Proxy = SqlBlob
 
-data SyncFile =
-  SyncFile
-    { syncFilePath :: Path Rel File
-    , syncFileContents :: ByteString
-    }
+data SyncFile
+  = SyncFile
+      { syncFilePath :: Path Rel File,
+        syncFileContents :: ByteString
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncFile
@@ -189,11 +182,13 @@ instance NFData SyncFile
 instance FromJSON SyncFile where
   parseJSON =
     withObject "SyncFile" $ \o ->
-      SyncFile <$> o .: "path" <*>
-      (do base64Contents <- SB8.pack <$> o .: "contents"
-          case Base64.decode base64Contents of
-            Left err -> fail err
-            Right r -> pure r)
+      SyncFile <$> o .: "path"
+        <*> ( do
+                base64Contents <- SB8.pack <$> o .: "contents"
+                case Base64.decode base64Contents of
+                  Left err -> fail err
+                  Right r -> pure r
+            )
 
 instance ToJSON SyncFile where
   toJSON SyncFile {..} =
@@ -201,11 +196,11 @@ instance ToJSON SyncFile where
 
 type SyncRequest = Mergeful.SyncRequest FileUUID SyncFile
 
-data SyncResponse =
-  SyncResponse
-    { syncResponseServerId :: ServerUUID
-    , syncResponseItems :: Mergeful.SyncResponse FileUUID SyncFile
-    }
+data SyncResponse
+  = SyncResponse
+      { syncResponseServerId :: ServerUUID,
+        syncResponseItems :: Mergeful.SyncResponse FileUUID SyncFile
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncResponse

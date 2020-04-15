@@ -3,21 +3,17 @@
 
 module Smos.Cursor.Entry.Gen where
 
-import Data.GenValidity
-
-import Test.QuickCheck
-
 import Cursor.FuzzyLocalTime.Gen ()
-
-import Smos.Cursor.Entry
-
+import Data.GenValidity
 import Smos.Cursor.Contents.Gen ()
+import Smos.Cursor.Entry
 import Smos.Cursor.Header.Gen ()
 import Smos.Cursor.Logbook.Gen ()
 import Smos.Cursor.Properties.Gen ()
 import Smos.Cursor.StateHistory.Gen ()
 import Smos.Cursor.Tags.Gen ()
 import Smos.Cursor.Timestamps.Gen ()
+import Test.QuickCheck
 
 instance GenValid EntryCursor where
   genValid =

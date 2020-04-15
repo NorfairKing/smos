@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Docs.Site
-  ( smosDocsSite
-  ) where
+  ( smosDocsSite,
+  )
+where
 
 import Hakyll
 import Hakyll.Web.Sass
@@ -19,19 +20,19 @@ smosDocsSite =
     match "pages/*" $ do
       route $ composeRoutes (gsubRoute "pages/" (const "")) (setExtension "html")
       compile $
-        pandocCompiler >>= loadAndApplyTemplate "templates/page.html" pageCtx >>=
-        loadAndApplyTemplate "templates/default.html" pageCtx >>=
-        relativizeUrls
+        pandocCompiler >>= loadAndApplyTemplate "templates/page.html" pageCtx
+          >>= loadAndApplyTemplate "templates/default.html" pageCtx
+          >>= relativizeUrls
     match "index.html" $ do
       route idRoute
       compile $ do
         pages <- recentFirst =<< loadAll "pages/*"
         let indexCtx =
-              listField "pages" pageCtx (return pages) `mappend` constField "title" "Home" `mappend`
-              defaultContext
-        getResourceBody >>= applyAsTemplate indexCtx >>=
-          loadAndApplyTemplate "templates/default.html" indexCtx >>=
-          relativizeUrls
+              listField "pages" pageCtx (return pages) `mappend` constField "title" "Home"
+                `mappend` defaultContext
+        getResourceBody >>= applyAsTemplate indexCtx
+          >>= loadAndApplyTemplate "templates/default.html" indexCtx
+          >>= relativizeUrls
     match "templates/*" $ compile templateCompiler
 
 pageCtx :: Context String

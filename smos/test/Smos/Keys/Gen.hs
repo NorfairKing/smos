@@ -2,14 +2,11 @@
 
 module Smos.Keys.Gen where
 
-import TestImport
-
 import Graphics.Vty.Input.Events
-
 import Smos.Data.Gen ()
-import Smos.Report.OptParse.Gen ()
-
 import Smos.Keys
+import Smos.Report.OptParse.Gen ()
+import TestImport
 
 instance GenValid Key where
   genValid = genValidStructurally

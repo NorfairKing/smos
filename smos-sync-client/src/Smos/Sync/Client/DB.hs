@@ -11,22 +11,19 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Sync.Client.DB
-  ( module Smos.Sync.Client.DB
-  , module Database.Persist
-  , module Database.Persist.Sql
-  ) where
-
-import GHC.Generics (Generic)
+  ( module Smos.Sync.Client.DB,
+    module Database.Persist,
+    module Database.Persist.Sql,
+  )
+where
 
 import Data.Mergeful.Timed
-import Pantry.SHA256
-
-import Path
-
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
-
+import GHC.Generics (Generic)
+import Pantry.SHA256
+import Path
 import Smos.API
 
 share

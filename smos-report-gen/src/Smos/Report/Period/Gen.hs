@@ -4,7 +4,6 @@ module Smos.Report.Period.Gen where
 
 import Data.GenValidity
 import Data.GenValidity.Time ()
-
 import Smos.Report.Period
 
 instance GenUnchecked Period

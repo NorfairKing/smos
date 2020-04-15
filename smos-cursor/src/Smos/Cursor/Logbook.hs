@@ -1,26 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Cursor.Logbook
-  ( LogbookCursor(..)
-  , makeLogbookCursor
-  , rebuildLogbookCursor
-  , logbookCursorClockIn
-  , logbookCursorClockOut
-  ) where
-
-import GHC.Generics (Generic)
-
-import Data.Validity
-import Data.Validity.Time ()
-
-import qualified Data.List.NonEmpty as NE
-
-import Data.Time
+  ( LogbookCursor (..),
+    makeLogbookCursor,
+    rebuildLogbookCursor,
+    logbookCursorClockIn,
+    logbookCursorClockOut,
+  )
+where
 
 import Control.DeepSeq
-
 import Cursor.Simple.List.NonEmpty
-
+import qualified Data.List.NonEmpty as NE
+import Data.Time
+import Data.Validity
+import Data.Validity.Time ()
+import GHC.Generics (Generic)
 import Smos.Data.Types
 
 data LogbookCursor
@@ -55,11 +50,11 @@ logbookCursorClockOut :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockOut utct lbc =
   case lbc of
     LogbookCursorOpen u lbes ->
-      constructValid $
-      LogbookCursorClosed $
-      let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
-       in Just $
-          case lbes of
-            Nothing -> singletonNonEmptyCursor e
-            Just ne -> nonEmptyCursorInsertAtStart e ne
+      constructValid
+        $ LogbookCursorClosed
+        $ let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
+           in Just $
+                case lbes of
+                  Nothing -> singletonNonEmptyCursor e
+                  Just ne -> nonEmptyCursorInsertAtStart e ne
     LogbookCursorClosed _ -> Nothing

@@ -2,18 +2,16 @@
 
 module Smos.ConfigFileSpec where
 
-import TestImport
-
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import Data.Yaml as Yaml
-
 import Smos.Default
 import Smos.OptParse.Types
 import Smos.Report.OptParse
+import TestImport
 
 spec :: Spec
 spec = do
@@ -42,25 +40,26 @@ configSpecWithExt ext parseConf = do
                 ".json" -> LB.toStrict . JSON.encodePretty
                 _ -> error "unknown format"
         expected <-
-          do contents <- SB.readFile $ fromAbsFile defaultConfigFile
-             let decodeFunc =
-                   case ext of
-                     ".yaml" -> Yaml.decodeThrow
-                     ".json" -> JSON.decode . LB.fromStrict
-                     _ -> error "unknown format"
-             case decodeFunc contents of
-               Nothing -> expectationFailure "Failed to decode expected result." >> undefined
-               Just r -> pure r
+          do
+            contents <- SB.readFile $ fromAbsFile defaultConfigFile
+            let decodeFunc =
+                  case ext of
+                    ".yaml" -> Yaml.decodeThrow
+                    ".json" -> JSON.decode . LB.fromStrict
+                    _ -> error "unknown format"
+            case decodeFunc contents of
+              Nothing -> expectationFailure "Failed to decode expected result." >> undefined
+              Just r -> pure r
         unless (actual == expected) $ do
           putStrLn $
             unlines
-              [ "Actual:"
-              , ppShow actual
-              , "differs from expected:"
-              , ppShow expected
-              , "If this was intentional, please copy the following actual to"
-              , fromAbsFile defaultConfigFile
-              , SB8.unpack $ encodeFunc actual
+              [ "Actual:",
+                ppShow actual,
+                "differs from expected:",
+                ppShow expected,
+                "If this was intentional, please copy the following actual to",
+                fromAbsFile defaultConfigFile,
+                SB8.unpack $ encodeFunc actual
               ]
           actual `shouldBe` expected
 

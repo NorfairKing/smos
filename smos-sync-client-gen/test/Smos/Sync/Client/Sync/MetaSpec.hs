@@ -1,23 +1,24 @@
 module Smos.Sync.Client.Sync.MetaSpec
-  ( spec
-  ) where
-
-import Test.Hspec
-import Test.Validity
+  ( spec,
+  )
+where
 
 import Data.Pool
 import Database.Persist.Sqlite as DB
-
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap.Gen ()
 import Smos.Sync.Client.TestUtils
+import Test.Hspec
+import Test.Validity
 
 spec :: Spec
 spec = do
-  describe "makeClientMetaData" $
-    it "produces valid meta maps" $ producesValidsOnValids2 makeClientMetaData
-  clientDBSpec $
-    describe "writeClientMetadata" $ do
+  describe "makeClientMetaData"
+    $ it "produces valid meta maps"
+    $ producesValidsOnValids2 makeClientMetaData
+  clientDBSpec
+    $ describe "writeClientMetadata"
+    $ do
       it "can read exactly what was just written" $ \pool ->
         forAllValid $ \m -> do
           m' <-

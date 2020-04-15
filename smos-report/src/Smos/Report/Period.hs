@@ -3,14 +3,11 @@
 
 module Smos.Report.Period where
 
-import GHC.Generics (Generic)
-
-import Data.Validity
-import Data.Validity.Time ()
-
 import Data.Time
 import Data.Time.Calendar.WeekDate
-
+import Data.Validity
+import Data.Validity.Time ()
+import GHC.Generics (Generic)
 import Smos.Report.TimeBlock
 
 data Period
@@ -64,20 +61,21 @@ dayPeriod d = BeginEnd dayStart dayEnd
 
 filterPeriod :: ZonedTime -> Period -> UTCTime -> Bool
 filterPeriod now p u =
-  (case p of
-     AllTime -> const True
-     Today -> filterBetween todayStart todayEnd
-     Yesterday -> filterBetween yesterdayStart yesterdayEnd
-     LastWeek -> filterBetween lastWeekStart thisWeekStart
-     ThisWeek -> filterBetween thisWeekStart thisWeekEnd
-     LastMonth -> filterBetween lastMonthStart thisMonthStart
-     ThisMonth -> filterBetween thisMonthStart thisMonthEnd
-     LastYear -> filterBetween lastYearStart thisYearStart
-     ThisYear -> filterBetween thisYearStart thisYearEnd
-     BeginOnly begin -> (begin <=)
-     EndOnly end -> (< end)
-     BeginEnd begin end -> filterBetween begin end) $
-  utcToLocalTime tz u
+  ( case p of
+      AllTime -> const True
+      Today -> filterBetween todayStart todayEnd
+      Yesterday -> filterBetween yesterdayStart yesterdayEnd
+      LastWeek -> filterBetween lastWeekStart thisWeekStart
+      ThisWeek -> filterBetween thisWeekStart thisWeekEnd
+      LastMonth -> filterBetween lastMonthStart thisMonthStart
+      ThisMonth -> filterBetween thisMonthStart thisMonthEnd
+      LastYear -> filterBetween lastYearStart thisYearStart
+      ThisYear -> filterBetween thisYearStart thisYearEnd
+      BeginOnly begin -> (begin <=)
+      EndOnly end -> (< end)
+      BeginEnd begin end -> filterBetween begin end
+  )
+    $ utcToLocalTime tz u
   where
     tz :: TimeZone
     tz = zonedTimeZone now

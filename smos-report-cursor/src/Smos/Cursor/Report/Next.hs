@@ -3,27 +3,20 @@
 
 module Smos.Cursor.Report.Next where
 
-import GHC.Generics (Generic)
-
-import Data.Validity
-
-import qualified Data.List.NonEmpty as NE
-
+import Conduit
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Tree
-
-import Conduit
 import qualified Data.Conduit.Combinators as C
+import qualified Data.List.NonEmpty as NE
+import Data.Validity
+import GHC.Generics (Generic)
 import Lens.Micro
 import Path
-
-import Smos.Data
-
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
-
+import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Next
@@ -35,10 +28,10 @@ produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportC
 produceNextActionReportCursor src = do
   naes <-
     sourceToList $
-    streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint .|
-    smosFileCursors .|
-    C.map (uncurry makeNextActionEntryCursor) .|
-    C.filter cursorPointsToNextAction
+      streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint
+        .| smosFileCursors
+        .| C.map (uncurry makeNextActionEntryCursor)
+        .| C.filter cursorPointsToNextAction
   pure $ makeNextActionReportCursor naes
 
 type NextActionReportCursor = NonEmptyCursor NextActionEntryCursor
@@ -72,11 +65,11 @@ nextActionReportCursorFirst = nonEmptyCursorSelectFirst
 nextActionReportCursorLast :: NextActionReportCursor -> NextActionReportCursor
 nextActionReportCursorLast = nonEmptyCursorSelectLast
 
-data NextActionEntryCursor =
-  NextActionEntryCursor
-    { nextActionEntryCursorFilePath :: RootedPath
-    , nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
-    }
+data NextActionEntryCursor
+  = NextActionEntryCursor
+      { nextActionEntryCursorFilePath :: RootedPath,
+        nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor

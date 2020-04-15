@@ -2,13 +2,16 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Clock
-  ( smosQueryClock
-  ) where
+  ( smosQueryClock,
+  )
+where
 
+import Conduit
 import qualified Data.Aeson as JSON
 import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.Conduit.List as C
 import qualified Data.Sequence as S
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -16,42 +19,37 @@ import Data.Time
 import Data.Tree
 import Data.Validity.Path ()
 import qualified Data.Yaml.Builder as Yaml
-import Text.Printf
-
 import Rainbow
 import Rainbox
-
-import Conduit
-import qualified Data.Conduit.List as C
-
-import Smos.Report.Clock
-import Smos.Report.Streaming
-import Smos.Report.TimeBlock
-
+import Smos.Query.Clock.Types
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
-
-import Smos.Query.Clock.Types
+import Smos.Report.Clock
+import Smos.Report.Streaming
+import Smos.Report.TimeBlock
+import Text.Printf
 
 smosQueryClock :: ClockSettings -> Q ()
 smosQueryClock ClockSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-    streamSmosFiles clockSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning .|
-    (case clockSetFilter of
-       Nothing -> C.map id
-       Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))) .|
-    C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now)) .|
-    C.mapMaybe (trimFileTimes now clockSetPeriod)
+      streamSmosFiles clockSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
+        .| ( case clockSetFilter of
+               Nothing -> C.map id
+               Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))
+           )
+        .| C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now))
+        .| C.mapMaybe (trimFileTimes now clockSetPeriod)
   let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
   liftIO $
     case clockSetOutputFormat of
       OutputPretty ->
-        putBoxLn $
-        renderClockTable clockSetReportStyle clockSetClockFormat $ clockTableRows clockTable
+        putBoxLn
+          $ renderClockTable clockSetReportStyle clockSetClockFormat
+          $ clockTableRows clockTable
       OutputYaml -> SB.putStr $ Yaml.toByteString clockTable
       OutputJSON -> LB.putStr $ JSON.encode clockTable
       OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
@@ -78,8 +76,8 @@ clockTableRows ctbs =
         goHF l = concatMap $ goHT l
         goHT :: Int -> Tree ClockTableHeaderEntry -> [ClockTableRow]
         goHT l t@(Node ClockTableHeaderEntry {..} f) =
-          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t) :
-          goHF (l + 1) f
+          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t)
+            : goHF (l + 1) f
     sumTable :: ClockTable -> NominalDiffTime
     sumTable = sum . map sumBlock
     sumBlock :: ClockTableBlock -> NominalDiffTime
@@ -106,11 +104,11 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
         FileRow rp ndt ->
           [ map
               cell
-              [ fore green $ rootedPathChunk rp
-              , chunk ""
-              , chunk ""
-              , chunk ""
-              , fore green $ chunk $ renderNominalDiffTime fmt ndt
+              [ fore green $ rootedPathChunk rp,
+                chunk "",
+                chunk "",
+                chunk "",
+                fore green $ chunk $ renderNominalDiffTime fmt ndt
               ]
           ]
         EntryRow i h ndt ndtt ->
@@ -118,34 +116,35 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
             ClockFlat ->
               [ if ndt == 0
                   then []
-                  else [ cell $ chunk ""
-                       , separator mempty 1
-                       , cell $ headerChunk h
-                       , cell $ chunk $ renderNominalDiffTime fmt ndt
-                       ]
+                  else
+                    [ cell $ chunk "",
+                      separator mempty 1,
+                      cell $ headerChunk h,
+                      cell $ chunk $ renderNominalDiffTime fmt ndt
+                    ]
               ]
             ClockForest ->
-              [ [ cell $ chunk ""
-                , separator mempty 1
-                , cell $ chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h
-                , cell $
-                  chunk $
-                  if ndt == 0
-                    then ""
-                    else renderNominalDiffTime fmt ndt
-                , cell $
-                  fore brown $
-                  chunk $
-                  if ndt == ndtt
-                    then ""
-                    else renderNominalDiffTime fmt ndtt
+              [ [ cell $ chunk "",
+                  separator mempty 1,
+                  cell $ chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h,
+                  cell
+                    $ chunk
+                    $ if ndt == 0
+                      then ""
+                      else renderNominalDiffTime fmt ndt,
+                  cell
+                    $ fore brown
+                    $ chunk
+                    $ if ndt == ndtt
+                      then ""
+                      else renderNominalDiffTime fmt ndtt
                 ]
               ]
         BlockTotalRow t ->
           [ map
               (cell . fore blue)
-              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t]
-          , replicate 5 emptyCell
+              [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t],
+            replicate 5 emptyCell
           ]
         AllTotalRow t ->
           [ map
@@ -164,11 +163,11 @@ renderNominalDiffTime fmt ndt =
   case fmt of
     ClockFormatTemporal res ->
       T.intercalate ":" $
-      concat
-        [ [T.pack $ printf "%5.2d" hours | res <= TemporalHoursResolution]
-        , [T.pack $ printf "%.2d" minutes | res <= TemporalMinutesResolution]
-        , [T.pack $ printf "%.2d" seconds | res <= TemporalSecondsResolution]
-        ]
+        concat
+          [ [T.pack $ printf "%5.2d" hours | res <= TemporalHoursResolution],
+            [T.pack $ printf "%.2d" minutes | res <= TemporalMinutesResolution],
+            [T.pack $ printf "%.2d" seconds | res <= TemporalSecondsResolution]
+          ]
     ClockFormatDecimal res ->
       case res of
         DecimalHoursResolution -> T.pack $ printf "%5.0f" fractionalHours

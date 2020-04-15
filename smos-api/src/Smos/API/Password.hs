@@ -1,20 +1,19 @@
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Smos.API.Password
-  ( Password(..)
-  , passwordString
-  , passwordByteString
-  , parsePassword
-  , parsePasswordWithError
-  , validPasswordChar
-  , PasswordChar(..)
-  ) where
-
-import GHC.Generics (Generic)
+  ( Password (..),
+    passwordString,
+    passwordByteString,
+    parsePassword,
+    parsePasswordWithError,
+    validPasswordChar,
+    PasswordChar (..),
+  )
+where
 
 import Control.DeepSeq
 import Control.Monad.Fail as Fail
@@ -28,20 +27,21 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Data.Validity
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Web.PathPieces
 
-newtype Password =
-  Password
-    { passwordText :: Text
-    }
+newtype Password
+  = Password
+      { passwordText :: Text
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Password where
   validate (Password t) =
     mconcat
-      [ check (not (T.null t)) "The password is not empty."
-      , check (T.length t >= 3) "The password is at least three characters long."
-      , decorateList (map PasswordChar $ T.unpack t) validate
+      [ check (not (T.null t)) "The password is not empty.",
+        check (T.length t >= 3) "The password is at least three characters long.",
+        decorateList (map PasswordChar $ T.unpack t) validate
       ]
 
 instance Hashable Password
@@ -90,10 +90,10 @@ instance ToJSON Password where
 instance ToJSONKey Password where
   toJSONKey = toJSONKeyText passwordText
 
-newtype PasswordChar =
-  PasswordChar
-    { unPasswordChar :: Char
-    }
+newtype PasswordChar
+  = PasswordChar
+      { unPasswordChar :: Char
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity PasswordChar where
@@ -101,9 +101,9 @@ instance Validity PasswordChar where
   validate (PasswordChar '_') = mempty
   validate (PasswordChar c) =
     mconcat
-      [ check (not (Char.isControl c)) "The character is not a control character."
-      , check (Char.isAlphaNum c) "The character is alphanumeric."
-      , check (Char.isLatin1 c) "The character is part of Latin1."
+      [ check (not (Char.isControl c)) "The character is not a control character.",
+        check (Char.isAlphaNum c) "The character is alphanumeric.",
+        check (Char.isLatin1 c) "The character is part of Latin1."
       ]
 
 validPasswordChar :: Char -> Bool

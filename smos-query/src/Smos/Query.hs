@@ -1,9 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Smos.Query
-  ( smosQuery
-  , module Smos.Query.Config
-  ) where
+  ( smosQuery,
+    module Smos.Query.Config,
+  )
+where
 
 import Smos.Query.Commands
 import Smos.Query.Config

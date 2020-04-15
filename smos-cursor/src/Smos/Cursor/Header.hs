@@ -2,48 +2,44 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Header
-  ( HeaderCursor(..)
-  , makeHeaderCursor
-  , rebuildHeaderCursor
-  , headerCursorInsert
-  , headerCursorAppend
-  , headerCursorRemove
-  , headerCursorDelete
-  , headerCursorSelectStart
-  , headerCursorSelectEnd
-  , headerCursorSelectPrev
-  , headerCursorSelectNext
-  ) where
-
-import GHC.Generics (Generic)
-
-import Data.Maybe
-import Data.Validity
+  ( HeaderCursor (..),
+    makeHeaderCursor,
+    rebuildHeaderCursor,
+    headerCursorInsert,
+    headerCursorAppend,
+    headerCursorRemove,
+    headerCursorDelete,
+    headerCursorSelectStart,
+    headerCursorSelectEnd,
+    headerCursorSelectPrev,
+    headerCursorSelectNext,
+  )
+where
 
 import Control.DeepSeq
 import Control.Monad
-
-import Lens.Micro
-
 import Cursor.Text
 import Cursor.Types
-
+import Data.Maybe
+import Data.Validity
+import GHC.Generics (Generic)
+import Lens.Micro
 import Smos.Data.Types
 
-newtype HeaderCursor =
-  HeaderCursor
-    { headerCursorTextCursor :: TextCursor
-    }
+newtype HeaderCursor
+  = HeaderCursor
+      { headerCursorTextCursor :: TextCursor
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity HeaderCursor where
   validate tc@HeaderCursor {..} =
     mconcat
-      [ genericValidate tc
-      , decorate "The resulting Header is valid" $
-        case parseHeader (rebuildTextCursor headerCursorTextCursor) of
-          Left err -> invalid err
-          Right t -> validate t
+      [ genericValidate tc,
+        decorate "The resulting Header is valid" $
+          case parseHeader (rebuildTextCursor headerCursorTextCursor) of
+            Left err -> invalid err
+            Right t -> validate t
       ]
 
 instance NFData HeaderCursor

@@ -1,20 +1,19 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.Sync.ContentsMapSpec
-  ( spec
-  ) where
-
-import Test.Hspec
-import Test.QuickCheck
-import Test.Validity
+  ( spec,
+  )
+where
 
 import qualified Data.Map as M
 import Path
-
 import Smos.Sync.Client.Contents
 import qualified Smos.Sync.Client.ContentsMap as CM
-import Smos.Sync.Client.ContentsMap (ContentsMap(..))
+import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import Smos.Sync.Client.ContentsMap.Gen
+import Test.Hspec
+import Test.QuickCheck
+import Test.Validity
 
 spec :: Spec
 spec = do
@@ -26,61 +25,83 @@ spec = do
     it "produces valid paths" $ forAllValid $ shouldBeValid . hideDir
     it "hides a dir" $ forAllValid $ \(d, f) -> isHidden $ hideDir d </> f
   describe "genHiddenFile" $ it "generates hidden files" $ forAll genHiddenFile isHidden
-  describe "mapWithNewPath" $
-    it "generates valid values" $
-    forAllValid $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewPath cm bs)
+  describe "mapWithNewPath"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewPath cm bs)
   describe "mapWithNewHiddenPath" $ do
-    it "generates valid values" $
-      forAllValid $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewHiddenPath cm bs)
-    it "generates a contentsmap where at least one path is hidden" $
-      forAllValid $ \cm ->
+    it "generates valid values"
+      $ forAllValid
+      $ \cm -> forAllValid $ \bs -> genGeneratesValid (mapWithNewHiddenPath cm bs)
+    it "generates a contentsmap where at least one path is hidden"
+      $ forAllValid
+      $ \cm ->
         forAllValid $ \bs ->
           forAll (mapWithNewHiddenPath cm bs) $ \(hp, m) ->
             isHidden hp && not (M.null $ M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m)
-  describe "mapsWithDifferentContentsAtNewPath" $
-    it "generates valid values" $
-    forAllValid $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath cm)
-  describe "mapsWithDifferentContentsAtNewPath3" $
-    it "generates valid values" $
-    forAllValid $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath3 cm)
-  describe "changedContentsMap" $
-    it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (changedContentsMap cm)
-  describe "changedMapsWithUnionOf" $
-    it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (changedMapsWithUnionOf cm)
-  describe "mapWithAdditions" $
-    it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (mapWithAdditions cm)
+  describe "mapsWithDifferentContentsAtNewPath"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath cm)
+  describe "mapsWithDifferentContentsAtNewPath3"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (mapsWithDifferentContentsAtNewPath3 cm)
+  describe "changedContentsMap"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (changedContentsMap cm)
+  describe "changedMapsWithUnionOf"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (changedMapsWithUnionOf cm)
+  describe "mapWithAdditions"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (mapWithAdditions cm)
   describe "mapWithHiddenAdditions" $ do
     it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (mapWithHiddenAdditions cm)
-    it "generates a contentsmap where at least one path is hidden" $
-      forAllValid $ \cm ->
+    it "generates a contentsmap where at least one path is hidden"
+      $ forAllValid
+      $ \cm ->
         forAll (mapWithHiddenAdditions cm) $ \m ->
           not (M.null $ M.filterWithKey (\p _ -> isHidden p) $ contentsMapFiles m)
-  describe "twoDistinctPathsThatFitAndTheirUnion" $
-    it "generates valid values" $
-    forAllValid $ \bs1 ->
+  describe "twoDistinctPathsThatFitAndTheirUnion"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \bs1 ->
       forAllValid $ \bs2 -> genGeneratesValid (twoDistinctPathsThatFitAndTheirUnion bs1 bs2)
-  describe "twoDistinctPathsThatFitAndTheirUnionWith" $
-    it "generates valid values" $
-    forAllValid $ \m ->
+  describe "twoDistinctPathsThatFitAndTheirUnionWith"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \m ->
       forAllValid $ \bs1 ->
         forAllValid $ \bs2 -> genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionWith m bs1 bs2)
-  describe "twoDistinctPathsThatFitAndTheirUnionsWith" $
-    it "generates valid values" $
-    forAllValid $ \m ->
+  describe "twoDistinctPathsThatFitAndTheirUnionsWith"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \m ->
       forAllValid $ \bs1 ->
         forAllValid $ \bs2 ->
           genGeneratesValid (twoDistinctPathsThatFitAndTheirUnionsWith m bs1 bs2)
-  describe "disjunctContentsMap" $
-    it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (disjunctContentsMap cm)
-  describe "mapWithDisjunctUnion" $
-    it "generates valid values" $ forAllValid $ \cm -> genGeneratesValid (mapWithDisjunctUnion cm)
-  describe "twoChangedMapsAndTheirUnions" $
-    it "generates valid values" $ genGeneratesValid twoChangedMapsAndTheirUnions
-  describe "twoChangedMapsAndTheirUnionsWith" $
-    it "generates valid values" $
-    forAllValid $ \cm -> genGeneratesValid (twoChangedMapsAndTheirUnionsWith cm)
-  describe "threeDisjunctMapsAndTheirUnions" $
-    it "generates valid values" $ genGeneratesValid threeDisjunctMapsAndTheirUnions
+  describe "disjunctContentsMap"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (disjunctContentsMap cm)
+  describe "mapWithDisjunctUnion"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (mapWithDisjunctUnion cm)
+  describe "twoChangedMapsAndTheirUnions"
+    $ it "generates valid values"
+    $ genGeneratesValid twoChangedMapsAndTheirUnions
+  describe "twoChangedMapsAndTheirUnionsWith"
+    $ it "generates valid values"
+    $ forAllValid
+    $ \cm -> genGeneratesValid (twoChangedMapsAndTheirUnionsWith cm)
+  describe "threeDisjunctMapsAndTheirUnions"
+    $ it "generates valid values"
+    $ genGeneratesValid threeDisjunctMapsAndTheirUnions
   describe "empty" $ it "is valid" $ shouldBeValid CM.empty
   describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
   describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 CM.insert

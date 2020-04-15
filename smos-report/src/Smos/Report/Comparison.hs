@@ -3,17 +3,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Comparison
-  ( Comparison(..)
-  , comparisonFunc
-  , parseComparison
-  , renderComparison
-  ) where
-
-import GHC.Generics (Generic)
+  ( Comparison (..),
+    comparisonFunc,
+    parseComparison,
+    renderComparison,
+  )
+where
 
 import Data.Aeson
 import Data.Text (Text)
 import Data.Validity
+import GHC.Generics (Generic)
 
 data Comparison
   = LTC

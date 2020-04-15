@@ -3,10 +3,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Convert.Org
-  ( convertOrg
-  ) where
-
-import GHC.Generics (Generic)
+  ( convertOrg,
+  )
+where
 
 import Control.Arrow
 import Control.Monad
@@ -26,13 +25,12 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Time
 import Data.Validity
+import GHC.Generics (Generic)
 import Path
-import System.Exit
-
-import Smos.Data as Smos
-
 import Smos.Convert.Org.OptParse
 import Smos.Convert.Org.OptParse.Types
+import Smos.Data as Smos
+import System.Exit
 
 convertOrg :: IO ()
 convertOrg = do
@@ -103,19 +101,21 @@ convertHeadline h = do
 
 convertPlannings :: Org.Plannings -> Convert (Map Smos.TimestampName Smos.Timestamp)
 convertPlannings (Plns hm) =
-  fmap M.fromList $
-  forM (HM.toList hm) $ \(kw, ots) -> do
-    tsn <- lleft InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
-    ts <- constructTimestamp $ tsTime ots
-    pure (tsn, ts)
+  fmap M.fromList
+    $ forM (HM.toList hm)
+    $ \(kw, ots) -> do
+      tsn <- lleft InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
+      ts <- constructTimestamp $ tsTime ots
+      pure (tsn, ts)
 
 convertProperties :: Org.Properties -> Convert (Map Smos.PropertyName Smos.PropertyValue)
 convertProperties ps =
-  fmap M.fromList $
-  forM (HM.toList $ unProperties ps) $ \(kt, vt) -> do
-    k <- lleft InvalidPropertyName $ parsePropertyName kt
-    v <- lleft InvalidPropertyValue $ parsePropertyValue vt
-    pure (k, v)
+  fmap M.fromList
+    $ forM (HM.toList $ unProperties ps)
+    $ \(kt, vt) -> do
+      k <- lleft InvalidPropertyName $ parsePropertyName kt
+      v <- lleft InvalidPropertyValue $ parsePropertyValue vt
+      pure (k, v)
 
 convertStateHistory :: Maybe Org.StateKeyword -> Convert Smos.StateHistory
 convertStateHistory mkw = do
@@ -136,7 +136,7 @@ convertLogbook (Org.Logbook cs) = do
   where
     constructLogbook :: [(Org.DateTime, Maybe Org.DateTime)] -> Convert Smos.Logbook
     constructLogbook [] = pure emptyLogbook
-    constructLogbook ((begin, mend):rest) = do
+    constructLogbook ((begin, mend) : rest) = do
       lb <- constructLogbook rest
       case lb of
         LogOpen _ _ -> lift $ Left $ InvalidLogbook "Cannot prepend to an open logbook."
@@ -166,9 +166,10 @@ constructTimestamp DateTime {..} =
   case hourMinute of
     Nothing -> TimestampDay <$> constructDay yearMonthDay
     Just (h, m) ->
-      TimestampLocalTime <$>
-      (LocalTime <$> constructDay yearMonthDay <*>
-       lleft InvalidLocalTime (prettyValidate (TimeOfDay h m 0)))
+      TimestampLocalTime
+        <$> ( LocalTime <$> constructDay yearMonthDay
+                <*> lleft InvalidLocalTime (prettyValidate (TimeOfDay h m 0))
+            )
 
 constructDay :: YearMonthDay -> Convert Day
 constructDay YearMonthDay {..} =

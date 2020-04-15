@@ -3,19 +3,16 @@
 
 module Smos.Report.Path where
 
-import GHC.Generics (Generic)
-
+import Control.Applicative
+import Control.DeepSeq
 import Data.Aeson
 import Data.Function
 import Data.Validity
 import Data.Validity.Path ()
-import Data.Yaml.Builder (ToYaml(..))
+import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
+import GHC.Generics (Generic)
 import Path
-
-import Control.Applicative
-import Control.DeepSeq
-
 import Smos.Data.Types ()
 
 data RootedPath
@@ -35,8 +32,8 @@ instance NFData RootedPath
 
 instance FromJSON RootedPath where
   parseJSON v =
-    withObject "RootedPath" (\o -> Relative <$> o .: "root" <*> o .: "relative") v <|>
-    (Absolute <$> parseJSON v)
+    withObject "RootedPath" (\o -> Relative <$> o .: "root" <*> o .: "relative") v
+      <|> (Absolute <$> parseJSON v)
 
 instance ToJSON RootedPath where
   toJSON (Absolute p) = toJSON p

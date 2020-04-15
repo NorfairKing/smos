@@ -3,24 +3,20 @@
 
 module Smos.Report.Entry where
 
-import GHC.Generics (Generic)
-
+import Cursor.Simple.Forest
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
-
-import Cursor.Simple.Forest
-
+import GHC.Generics (Generic)
 import Smos.Data
-
 import Smos.Report.Path
 import Smos.Report.Projection
 
-data EntryReport =
-  EntryReport
-    { entryReportHeaders :: NonEmpty Projection
-    , entryReportCells :: [NonEmpty Projectee]
-    }
+data EntryReport
+  = EntryReport
+      { entryReportHeaders :: NonEmpty Projection,
+        entryReportCells :: [NonEmpty Projectee]
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity EntryReport

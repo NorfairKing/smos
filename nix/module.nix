@@ -4,8 +4,9 @@ with lib;
 
 let
   cfg = config.services.smos."${envname}";
-  concatAttrs = attrList: fold ( x: y: x // y ) {} attrList;
-in {
+  concatAttrs = attrList: fold (x: y: x // y) {} attrList;
+in
+{
   options.services.smos."${envname}" =
     {
       enable = mkEnableOption "Smos Service";
@@ -41,7 +42,7 @@ in {
                     };
                   hosts =
                     mkOption {
-                      type = types.listOf ( types.str );
+                      type = types.listOf (types.str);
                       example = "api.smos.cs-syd.eu";
                       description = "The host to serve sync requests on";
                     };
@@ -63,31 +64,32 @@ in {
         let
           workingDir = "/www/smos/${envname}/data/";
           smos-server-static =
-            pkgs.haskell.lib.justStaticExecutables ( smosPkgs.smosPackages.smos-server );
-        in {
-          description = "SmosSync ${envname} Service";
-          wantedBy = [ "multi-user.target" ];
-          environment =
-            {
-              "SMOS_SERVER_LOG_LEVEL" =
-                "${builtins.toString cfg.sync-server.log-level}";
-              "SMOS_SERVER_PORT" =
-                "${builtins.toString cfg.sync-server.port}";
-            };
-          script =
-            ''
+            pkgs.haskell.lib.justStaticExecutables (smosPkgs.smosPackages.smos-server);
+        in
+          {
+            description = "SmosSync ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment =
+              {
+                "SMOS_SERVER_LOG_LEVEL" =
+                  "${builtins.toString cfg.sync-server.log-level}";
+                "SMOS_SERVER_PORT" =
+                  "${builtins.toString cfg.sync-server.port}";
+              };
+            script =
+              ''
                 mkdir -p "${workingDir}"
                 cd "${workingDir}"
                 ${smos-server-static}/bin/smos-server \
                   serve
               '';
-          serviceConfig =
-            {
-              Restart = "always";
-              RestartSec = 1;
-              Nice = 15;
-            };
-        };
+            serviceConfig =
+              {
+                Restart = "always";
+                RestartSec = 1;
+                Nice = 15;
+              };
+          };
       docs-site-host =
         with cfg.docs-site;
 
@@ -129,8 +131,8 @@ in {
         services.nginx.virtualHosts =
           optionalAttrs cfg.enable (
             concatAttrs [
-              ( docs-site-host )
-              ( sync-server-host )
+              (docs-site-host)
+              (sync-server-host)
             ]
           );
       };

@@ -1,12 +1,12 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PostSync
-  ( servePostSync
-  ) where
-
-import Smos.Server.Handler.Import
+  ( servePostSync,
+  )
+where
 
 import qualified Data.Mergeful as Mergeful
+import Smos.Server.Handler.Import
 
 servePostSync :: AuthCookie -> SyncRequest -> SyncHandler SyncResponse
 servePostSync (AuthCookie un) request = do

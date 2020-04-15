@@ -2,28 +2,26 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Archive
-  ( smosArchive
-  , module Smos.Archive.Config
-  -- ** Helper functions
-  , isDone
-  , prepareToArchive
-  ) where
+  ( smosArchive,
+    module Smos.Archive.Config,
+
+    -- ** Helper functions
+    isDone,
+    prepareToArchive,
+  )
+where
 
 import Data.Maybe
 import Data.Time
 import Data.Tree
-
-import System.Exit
-
 import Path
 import Path.IO
-
 import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
-import Smos.Data
-
 import Smos.Archive.Prompt
+import Smos.Data
+import System.Exit
 
 smosArchive :: SmosArchiveConfig -> IO ()
 smosArchive = runReaderT $ liftIO getSettings >>= archive
@@ -41,14 +39,14 @@ determineToFile file = do
   workflowDir <- askWorkflowDir
   case stripProperPrefix workflowDir file of
     Nothing ->
-      liftIO $
-      die $
-      unlines
-        [ "The smos file"
-        , fromAbsFile file
-        , "is not in the smos workflow directory"
-        , fromAbsDir workflowDir
-        ]
+      liftIO
+        $ die
+        $ unlines
+          [ "The smos file",
+            fromAbsFile file,
+            "is not in the smos workflow directory",
+            fromAbsDir workflowDir
+          ]
     Just rf -> do
       archiveDir <- askArchiveDir
       let ext = fileExtension rf
@@ -66,8 +64,8 @@ checkFromFile from = do
     Nothing -> die $ unwords ["File does not exist:", fromAbsFile from]
     Just (Left err) ->
       die $
-      unlines
-        [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
+        unlines
+          [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
     Just (Right sf) -> do
       let allDone = all (maybe True isDone . entryState) (concatMap flatten (smosFileForest sf))
       if allDone
@@ -75,11 +73,11 @@ checkFromFile from = do
         else do
           res <-
             promptYesNo No $
-            unlines
-              [ unwords ["Not all entries in", fromAbsFile from, "are done."]
-              , "Are you sure that you want to archive it?"
-              , "All remaining non-done entries will be set to CANCELLED."
-              ]
+              unlines
+                [ unwords ["Not all entries in", fromAbsFile from, "are done."],
+                  "Are you sure that you want to archive it?",
+                  "All remaining non-done entries will be set to CANCELLED."
+                ]
           case res of
             Yes -> pure ()
             No -> die "Not archiving."

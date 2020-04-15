@@ -2,28 +2,26 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.OptParse
-  ( getInstructions
-  , Instructions(..)
-  , Dispatch(..)
-  , ServeSettings(..)
-  , Settings(..)
-  ) where
+  ( getInstructions,
+    Instructions (..),
+    Dispatch (..),
+    ServeSettings (..),
+    Settings (..),
+  )
+where
 
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
+import Options.Applicative
 import Path
 import Path.IO
-import Text.Read (readMaybe)
-
+import Smos.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
-
-import Options.Applicative
-
-import Smos.Server.OptParse.Types
+import Text.Read (readMaybe)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -92,12 +90,12 @@ runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 argParser :: ParserInfo Arguments
@@ -117,42 +115,46 @@ parseCommandServe = info parser modifier
   where
     modifier = fullDesc <> progDesc "Serve as the sync server"
     parser =
-      CommandServe <$>
-      (ServeFlags <$>
-       option
-         (Just <$> maybeReader parseLogLevel)
-         (mconcat
-            [ long "log-level"
-            , help $
-              unwords
-                [ "The log level to use, options:"
-                , show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                ]
-            , value Nothing
-            ]) <*>
-       option
-         (Just <$> str)
-         (mconcat
-            [ long "uuid-file"
-            , help "The file to use for the server uuid"
-            , metavar "FILEPATH"
-            , value Nothing
-            ]) <*>
-       option
-         (Just <$> str)
-         (mconcat
-            [ long "database-file"
-            , help "The file to use for the server database"
-            , metavar "FILEPATH"
-            , value Nothing
-            ]) <*>
-       option
-         (Just <$> auto)
-         (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing]))
+      CommandServe
+        <$> ( ServeFlags
+                <$> option
+                  (Just <$> maybeReader parseLogLevel)
+                  ( mconcat
+                      [ long "log-level",
+                        help $
+                          unwords
+                            [ "The log level to use, options:",
+                              show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                            ],
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "uuid-file",
+                        help "The file to use for the server uuid",
+                        metavar "FILEPATH",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "database-file",
+                        help "The file to use for the server database",
+                        metavar "FILEPATH",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> auto)
+                  (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing])
+            )
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$>
-  option
-    (Just <$> str)
-    (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])
+  Flags
+    <$> option
+      (Just <$> str)
+      (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])

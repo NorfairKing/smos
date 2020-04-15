@@ -2,8 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Archive.OptParse
-  ( getSettings
-  ) where
+  ( getSettings,
+  )
+where
 
 import Options.Applicative
 import Path.IO
@@ -45,12 +46,12 @@ runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
       ParserPrefs
-        { prefMultiSuffix = ""
-        , prefDisambiguate = True
-        , prefShowHelpOnError = True
-        , prefShowHelpOnEmpty = True
-        , prefBacktrack = True
-        , prefColumns = 80
+        { prefMultiSuffix = "",
+          prefDisambiguate = True,
+          prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True,
+          prefBacktrack = True,
+          prefColumns = 80
         }
 
 flagsParser :: ParserInfo Flags
@@ -61,8 +62,8 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"]) <*>
-  Report.parseFlags
+  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"])
+    <*> Report.parseFlags
 
 getEnvironment :: IO Environment
 getEnvironment = Environment <$> Report.getEnvironment

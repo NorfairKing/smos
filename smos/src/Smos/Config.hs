@@ -1,39 +1,37 @@
 module Smos.Config
-  ( SmosConfig(..)
-  , module Smos.Actions
-  , Map
+  ( SmosConfig (..),
+    module Smos.Actions,
+    Map,
     -- Matchers
-  , listMatchers
-  , exactString
-  , combo
-  , exactChar
-  , modifiedChar
-  , exactKey
-  , exactKeyPress
-  , KeyPress(..)
-  , anyChar
-  , catchAll
-  , KeyMap(..)
-  , FileKeyMap(..)
-  , ReportsKeyMap(..)
-  , HelpKeyMap(..)
-  , KeyMapping(..)
-  , KeyMappings
-  , ActionUsing(..)
-  , stop
-  , module Graphics.Vty.Input.Events
+    listMatchers,
+    exactString,
+    combo,
+    exactChar,
+    modifiedChar,
+    exactKey,
+    exactKeyPress,
+    KeyPress (..),
+    anyChar,
+    catchAll,
+    KeyMap (..),
+    FileKeyMap (..),
+    ReportsKeyMap (..),
+    HelpKeyMap (..),
+    KeyMapping (..),
+    KeyMappings,
+    ActionUsing (..),
+    stop,
+    module Graphics.Vty.Input.Events,
     -- Report config
-  , module Smos.Report.Config
-  ) where
+    module Smos.Report.Config,
+  )
+where
 
 import Data.Map (Map)
-
-import Graphics.Vty.Input.Events (Key(..), Modifier(..))
-
-import Smos.Report.Config
-
+import Graphics.Vty.Input.Events (Key (..), Modifier (..))
 import Smos.Actions
 import Smos.Keys
+import Smos.Report.Config
 import Smos.Types
 
 listMatchers :: [KeyMapping] -> KeyMappings
@@ -44,14 +42,14 @@ exactString cs a =
   case cs of
     [] -> error "Cannot have an empty key combination"
     [c] -> exactChar c a
-    (c:cs_) -> MapCombination (KeyPress (KChar c) []) $ exactString cs_ a
+    (c : cs_) -> MapCombination (KeyPress (KChar c) []) $ exactString cs_ a
 
 combo :: [KeyPress] -> Action -> KeyMapping
 combo kps a =
   case kps of
     [] -> error "Cannot have an empty key combination"
     [kp] -> exactKeyPress kp a
-    (kp:kps_) -> MapCombination kp $ combo kps_ a
+    (kp : kps_) -> MapCombination kp $ combo kps_ a
 
 exactChar :: Char -> Action -> KeyMapping
 exactChar c = exactKey (KChar c)

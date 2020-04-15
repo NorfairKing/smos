@@ -2,13 +2,11 @@
 
 module Smos.OptParseSpec where
 
-import TestImport
-
 import Data.Aeson as JSON
-
 import Smos.Default
 import Smos.OptParse.Gen ()
 import Smos.OptParse.Types
+import TestImport
 
 spec :: Spec
 spec = do
@@ -33,7 +31,8 @@ spec = do
   eqSpecOnValid @Configuration
   genValidSpec @Configuration
   jsonSpecOnValid @Configuration
-  describe "FromJSON Configuration" $
-    it "parses the default configuration back into itself" $ do
+  describe "FromJSON Configuration"
+    $ it "parses the default configuration back into itself"
+    $ do
       let config = backToConfiguration defaultConfig
       fromJSON (toJSON config) `shouldBe` JSON.Success config

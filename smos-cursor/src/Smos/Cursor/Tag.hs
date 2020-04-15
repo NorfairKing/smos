@@ -2,49 +2,45 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.Tag
-  ( TagCursor(..)
-  , emptyTagCursor
-  , makeTagCursor
-  , rebuildTagCursor
-  , tagCursorInsert
-  , tagCursorAppend
-  , tagCursorDelete
-  , tagCursorRemove
-  , tagCursorSelectStart
-  , tagCursorSelectEnd
-  , tagCursorSelectPrevChar
-  , tagCursorSelectNextChar
-  ) where
-
-import GHC.Generics (Generic)
-
-import Control.Monad
-import Data.Maybe
-import Data.Validity
+  ( TagCursor (..),
+    emptyTagCursor,
+    makeTagCursor,
+    rebuildTagCursor,
+    tagCursorInsert,
+    tagCursorAppend,
+    tagCursorDelete,
+    tagCursorRemove,
+    tagCursorSelectStart,
+    tagCursorSelectEnd,
+    tagCursorSelectPrevChar,
+    tagCursorSelectNextChar,
+  )
+where
 
 import Control.DeepSeq
-
-import Lens.Micro
-
+import Control.Monad
 import Cursor.Text
 import Cursor.Types
-
+import Data.Maybe
+import Data.Validity
+import GHC.Generics (Generic)
+import Lens.Micro
 import Smos.Data.Types
 
-newtype TagCursor =
-  TagCursor
-    { tagCursorTextCursor :: TextCursor
-    }
+newtype TagCursor
+  = TagCursor
+      { tagCursorTextCursor :: TextCursor
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity TagCursor where
   validate tc@TagCursor {..} =
     mconcat
-      [ genericValidate tc
-      , decorate "The resulting Tag is valid" $
-        case parseTag (rebuildTextCursor tagCursorTextCursor) of
-          Left err -> invalid err
-          Right t -> validate t
+      [ genericValidate tc,
+        decorate "The resulting Tag is valid" $
+          case parseTag (rebuildTextCursor tagCursorTextCursor) of
+            Left err -> invalid err
+            Right t -> validate t
       ]
 
 instance NFData TagCursor

@@ -1,13 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Main where
 
-import Data.GenValidity.Criterion
-
 import Criterion.Main as Criterion
-
+import Data.GenValidity.Criterion
 import Smos.Cursor.Collapse
 import Smos.Cursor.Collapse.Gen ()
 import Smos.Cursor.Contents
@@ -36,16 +34,16 @@ import Smos.Data.Gen ()
 main :: IO ()
 main =
   Criterion.defaultMain
-    [ genValidBench @HeaderCursor
-    , genValidBench @ContentsCursor
-    , genValidBench @TagCursor
-    , genValidBench @TagsCursor
-    , genValidBench @TimestampsCursor
-    , genValidBench @LogbookCursor
-    , genValidBench @PropertiesCursor
-    , genValidBench @StateHistoryCursor
-    , genValidBench @(CollapseEntry Entry)
-    , genValidBench @EntryCursor
-    , genValidBench @(CollapseEntry EntryCursor)
-    , genValidBench @SmosFileCursor
+    [ genValidBench @HeaderCursor,
+      genValidBench @ContentsCursor,
+      genValidBench @TagCursor,
+      genValidBench @TagsCursor,
+      genValidBench @TimestampsCursor,
+      genValidBench @LogbookCursor,
+      genValidBench @PropertiesCursor,
+      genValidBench @StateHistoryCursor,
+      genValidBench @(CollapseEntry Entry),
+      genValidBench @EntryCursor,
+      genValidBench @(CollapseEntry EntryCursor),
+      genValidBench @SmosFileCursor
     ]

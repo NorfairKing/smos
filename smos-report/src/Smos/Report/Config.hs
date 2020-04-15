@@ -5,68 +5,68 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Config
-  ( SmosReportConfig(..)
-  , defaultReportConfig
-  , defaultWorkBaseFilter
-  , WorkflowDirSpec(..)
-  , defaultWorkflowDirSpec
-  , resolveWorkflowDir
-  , ArchiveDirSpec(..)
-  , defaultArchiveDirSpec
-  , resolveArchiveDir
-  , ProjectsDirSpec(..)
-  , defaultProjectsDirSpec
-  , resolveProjectsDir
-  , ArchivedProjectsDirSpec(..)
-  , defaultArchivedProjectsDirSpec
-  , resolveArchivedProjectsDir
-  , resolveReportWorkflowDir
-  , resolveReportArchiveDir
-  , resolveReportProjectsDir
-  , resolveReportArchivedProjectsDir
-  , ContextName(..)
-  ) where
-
-import GHC.Generics (Generic)
+  ( SmosReportConfig (..),
+    defaultReportConfig,
+    defaultWorkBaseFilter,
+    WorkflowDirSpec (..),
+    defaultWorkflowDirSpec,
+    resolveWorkflowDir,
+    ArchiveDirSpec (..),
+    defaultArchiveDirSpec,
+    resolveArchiveDir,
+    ProjectsDirSpec (..),
+    defaultProjectsDirSpec,
+    resolveProjectsDir,
+    ArchivedProjectsDirSpec (..),
+    defaultArchivedProjectsDirSpec,
+    resolveArchivedProjectsDir,
+    resolveReportWorkflowDir,
+    resolveReportArchiveDir,
+    resolveReportProjectsDir,
+    resolveReportArchivedProjectsDir,
+    ContextName (..),
+  )
+where
 
 import Data.Aeson
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Validity
-
+import GHC.Generics (Generic)
 import Path
 import Path.IO
-
 import Smos.Report.Filter
 
-data SmosReportConfig =
-  SmosReportConfig
-    { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec
-    , smosReportConfigArchiveFileSpec :: !ArchiveDirSpec
-    , smosReportConfigProjectsFileSpec :: !ProjectsDirSpec
-    , smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
-    , smosReportConfigWorkBaseFilter :: Maybe EntryFilter
-    , smosReportConfigContexts :: Map ContextName EntryFilter
-    }
+data SmosReportConfig
+  = SmosReportConfig
+      { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec,
+        smosReportConfigArchiveFileSpec :: !ArchiveDirSpec,
+        smosReportConfigProjectsFileSpec :: !ProjectsDirSpec,
+        smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec,
+        smosReportConfigWorkBaseFilter :: Maybe EntryFilter,
+        smosReportConfigContexts :: Map ContextName EntryFilter
+      }
   deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
   SmosReportConfig
-    { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec
-    , smosReportConfigArchiveFileSpec = defaultArchiveDirSpec
-    , smosReportConfigProjectsFileSpec = defaultProjectsDirSpec
-    , smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
-    , smosReportConfigWorkBaseFilter = Just defaultWorkBaseFilter
-    , smosReportConfigContexts = M.fromList []
+    { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec,
+      smosReportConfigArchiveFileSpec = defaultArchiveDirSpec,
+      smosReportConfigProjectsFileSpec = defaultProjectsDirSpec,
+      smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec,
+      smosReportConfigWorkBaseFilter = Just defaultWorkBaseFilter,
+      smosReportConfigContexts = M.fromList []
     }
 
 defaultWorkBaseFilter :: EntryFilter
 defaultWorkBaseFilter =
-  FilterSnd $
-  FilterWithinCursor $
-  FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+  FilterSnd
+    $ FilterWithinCursor
+    $ FilterEntryTodoState
+    $ FilterMaybe False
+    $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 data WorkflowDirSpec
   = DirInHome (Path Rel Dir)
@@ -149,10 +149,10 @@ resolveReportArchivedProjectsDir SmosReportConfig {..} = do
   ad <- resolveArchiveDir wd smosReportConfigArchiveFileSpec
   resolveArchivedProjectsDir ad smosReportConfigArchivedProjectsFileSpec
 
-newtype ContextName =
-  ContextName
-    { contextNameText :: Text
-    }
+newtype ContextName
+  = ContextName
+      { contextNameText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
 
 instance Validity ContextName

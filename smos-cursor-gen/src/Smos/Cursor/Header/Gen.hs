@@ -2,12 +2,9 @@
 
 module Smos.Cursor.Header.Gen where
 
-import Data.GenValidity
-
 import Cursor.Text.Gen
-
+import Data.GenValidity
 import Smos.Cursor.Header
-
 import Smos.Data.Gen
 
 instance GenUnchecked HeaderCursor

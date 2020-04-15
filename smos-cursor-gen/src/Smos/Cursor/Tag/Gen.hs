@@ -2,14 +2,11 @@
 
 module Smos.Cursor.Tag.Gen where
 
-import Data.GenValidity
-
 import Cursor.List.NonEmpty.Gen ()
 import Cursor.Text.Gen
-
-import Smos.Data.Gen
-
+import Data.GenValidity
 import Smos.Cursor.Tag
+import Smos.Data.Gen
 
 instance GenUnchecked TagCursor
 

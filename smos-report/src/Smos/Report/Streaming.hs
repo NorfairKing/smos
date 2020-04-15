@@ -5,24 +5,19 @@
 
 module Smos.Report.Streaming where
 
+import Conduit
 import Control.Exception
+import Cursor.Simple.Forest
+import Cursor.Simple.Tree
+import qualified Data.Conduit.Combinators as Conduit
 import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Tree
-
 import Lens.Micro
-
 import Path
 import Path.IO
-
-import Conduit
-import Cursor.Simple.Forest
-import Cursor.Simple.Tree
-import qualified Data.Conduit.Combinators as Conduit
-
 import Smos.Data
-
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
@@ -35,7 +30,7 @@ streamSmosProjectsFiles src = do
   sourceFilesInNonHiddenDirsRecursively pd .| filterSmosFiles
 
 streamSmosFilesFromWorkflow ::
-     MonadIO m => HideArchive -> SmosReportConfig -> ConduitT i RootedPath m ()
+  MonadIO m => HideArchive -> SmosReportConfig -> ConduitT i RootedPath m ()
 streamSmosFilesFromWorkflow ha src@SmosReportConfig {..} = do
   wd <- liftIO $ resolveReportWorkflowDir src
   case smosReportConfigArchiveFileSpec of
@@ -58,32 +53,34 @@ filterOutDir :: Monad m => Path Abs Dir -> ConduitT RootedPath RootedPath m ()
 filterOutDir ad = Conduit.filter (not . isProperPrefixOf ad . resolveRootedPath)
 
 sourceFilesInNonHiddenDirsRecursively ::
-     forall m i. MonadIO m
-  => Path Abs Dir
-  -> ConduitT i RootedPath m ()
+  forall m i.
+  MonadIO m =>
+  Path Abs Dir ->
+  ConduitT i RootedPath m ()
 sourceFilesInNonHiddenDirsRecursively dir = walkSafe go dir
   where
     go ::
-         Path Abs Dir
-      -> [Path Abs Dir]
-      -> [Path Abs File]
-      -> ConduitT i RootedPath m (WalkAction Abs)
+      Path Abs Dir ->
+      [Path Abs Dir] ->
+      [Path Abs File] ->
+      ConduitT i RootedPath m (WalkAction Abs)
     go curdir subdirs files = do
       Conduit.yieldMany $ map (rootedIn dir) files
       pure $ WalkExclude $ filter (isHiddenIn curdir) subdirs
 
 sourceFilesInNonHiddenDirsRecursivelyExceptSubdir ::
-     forall m i. MonadIO m
-  => Path Rel Dir
-  -> Path Abs Dir
-  -> ConduitT i RootedPath m ()
+  forall m i.
+  MonadIO m =>
+  Path Rel Dir ->
+  Path Abs Dir ->
+  ConduitT i RootedPath m ()
 sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = walkSafe go dir
   where
     go ::
-         Path Abs Dir
-      -> [Path Abs Dir]
-      -> [Path Abs File]
-      -> ConduitT i RootedPath m (WalkAction Abs)
+      Path Abs Dir ->
+      [Path Abs Dir] ->
+      [Path Abs File] ->
+      ConduitT i RootedPath m (WalkAction Abs)
     go curdir subdirs files = do
       let addExtraFilter =
             if curdir == (dir </> subdir)
@@ -93,10 +90,10 @@ sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = walkSafe go dir
       pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
 
 walkSafe ::
-     MonadIO m
-  => (Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> m (WalkAction Abs))
-  -> Path Abs Dir
-  -> m ()
+  MonadIO m =>
+  (Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> m (WalkAction Abs)) ->
+  Path Abs Dir ->
+  m ()
 walkSafe go dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
   if e
@@ -122,7 +119,7 @@ filterSmosFiles =
     Absolute paf -> fileExtension paf == ".smos"
 
 parseSmosFiles ::
-     MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
+  MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
 parseSmosFiles =
   Conduit.mapM $ \p -> do
     let ap = resolveRootedPath p
@@ -143,7 +140,7 @@ smosMFilter :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
 smosMFilter = maybe (Conduit.map id) smosFilter
 
 printShouldPrint ::
-     MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
+  MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
   Conduit.concatMapM $ \(a, errOrB) ->
     case errOrB of
@@ -203,20 +200,23 @@ forestCursors ts =
   where
     goTop :: ForestCursor a -> Forest (ForestCursor a)
     goTop fc =
-      go fc ++
-      (case forestCursorSelectNextTreeCursor fc of
-         Nothing -> []
-         Just fc' -> goTop fc')
+      go fc
+        ++ ( case forestCursorSelectNextTreeCursor fc of
+               Nothing -> []
+               Just fc' -> goTop fc'
+           )
     go :: ForestCursor a -> Forest (ForestCursor a)
     go fc =
       Node
         fc
-        (case forestCursorSelectBelowAtStart fc of
-           Nothing -> []
-           Just fc' -> go fc') :
-      (case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
-         Nothing -> []
-         Just fc' -> go fc')
+        ( case forestCursorSelectBelowAtStart fc of
+            Nothing -> []
+            Just fc' -> go fc'
+        )
+        : ( case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
+              Nothing -> []
+              Just fc' -> go fc'
+          )
 
 accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a Void m a
 accumulateSink operation = go

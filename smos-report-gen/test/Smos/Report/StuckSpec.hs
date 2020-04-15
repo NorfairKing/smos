@@ -2,30 +2,27 @@
 
 module Smos.Report.StuckSpec where
 
-import Test.Hspec
-import Test.Validity
-
-import Data.Tree
-
 import Data.GenValidity.Path ()
-
+import Data.Tree
 import Smos.Data
 import Smos.Data.Gen ()
-
-import Smos.Report.Stuck
-
 import Smos.Report.Filter.Gen ()
+import Smos.Report.Stuck
 import Smos.Report.Stuck.Gen ()
+import Test.Hspec
+import Test.Validity
 
 spec :: Spec
 spec = do
   genValidSpec @StuckReport
-  describe "makeStuckReportEntry" $
-    it "produces valid reports" $ producesValidsOnValids2 makeStuckReportEntry
+  describe "makeStuckReportEntry"
+    $ it "produces valid reports"
+    $ producesValidsOnValids2 makeStuckReportEntry
   describe "latestEntryInSmosFile" $ do
     it "selects a valid entry" $ producesValidsOnValids latestEntryInSmosFile
-    it "works for this example with an entry without state" $
-      forAllValid $ \h1 ->
+    it "works for this example with an entry without state"
+      $ forAllValid
+      $ \h1 ->
         forAllValid $ \h2 ->
           forAllValid $ \mts ->
             forAllValid $ \t ->
@@ -34,15 +31,18 @@ spec = do
                       { entryStateHistory =
                           StateHistory
                             [ StateHistoryEntry
-                                {stateHistoryEntryNewState = mts, stateHistoryEntryTimestamp = t}
+                                { stateHistoryEntryNewState = mts,
+                                  stateHistoryEntryTimestamp = t
+                                }
                             ]
                       }
                   e2 = newEntry h2
                   sf = SmosFile [Node e1 [], Node e2 []]
                in latestEntryInSmosFile sf `shouldBe` Just e1
     it
-      "works for this example with two entries with the same modification time. Then it uses the latter" $
-      forAllValid $ \h1 ->
+      "works for this example with two entries with the same modification time. Then it uses the latter"
+      $ forAllValid
+      $ \h1 ->
         forAllValid $ \h2 ->
           forAllValid $ \mts1 ->
             forAllValid $ \mts2 ->
@@ -52,7 +52,9 @@ spec = do
                         { entryStateHistory =
                             StateHistory
                               [ StateHistoryEntry
-                                  {stateHistoryEntryNewState = mts1, stateHistoryEntryTimestamp = t}
+                                  { stateHistoryEntryNewState = mts1,
+                                    stateHistoryEntryTimestamp = t
+                                  }
                               ]
                         }
                     e2 =
@@ -60,11 +62,14 @@ spec = do
                         { entryStateHistory =
                             StateHistory
                               [ StateHistoryEntry
-                                  {stateHistoryEntryNewState = mts2, stateHistoryEntryTimestamp = t}
+                                  { stateHistoryEntryNewState = mts2,
+                                    stateHistoryEntryTimestamp = t
+                                  }
                               ]
                         }
                     sf = SmosFile [Node e1 [], Node e2 []]
                  in latestEntryInSmosFile sf `shouldBe` Just e2
-  describe "latestStateChange" $
-    it "selects a valid entry" $ producesValidsOnValids latestStateChange
+  describe "latestStateChange"
+    $ it "selects a valid entry"
+    $ producesValidsOnValids latestStateChange
   describe "makeStuckReport" $ it "produces valid reports" $ producesValidsOnValids makeStuckReport

@@ -2,9 +2,8 @@
 
 module Smos.Types.Gen where
 
-import TestImport
-
 import Smos.Types
+import TestImport
 
 instance GenUnchecked a => GenUnchecked (MStop a)
 

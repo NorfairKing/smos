@@ -3,8 +3,6 @@
 
 module Smos.Report.Agenda where
 
-import GHC.Generics (Generic)
-
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
@@ -12,19 +10,18 @@ import Data.Ord
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
-
+import GHC.Generics (Generic)
 import Smos.Data
-
 import Smos.Report.Agenda.Types
 import Smos.Report.Path
 import Smos.Report.TimeBlock
 
-data AgendaReport =
-  AgendaReport
-    { agendaReportPast :: [AgendaTableBlock Text]
-    , agendaReportPresent :: [AgendaTableBlock Text]
-    , agendaReportFuture :: [AgendaTableBlock Text]
-    }
+data AgendaReport
+  = AgendaReport
+      { agendaReportPast :: [AgendaTableBlock Text],
+        agendaReportPresent :: [AgendaTableBlock Text],
+        agendaReportFuture :: [AgendaTableBlock Text]
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaReport
@@ -36,13 +33,13 @@ makeAgendaReport now tb as =
       presentBlocks = divideIntoAgendaTableBlocks tb present
       futureBlocks = divideIntoAgendaTableBlocks tb future
    in AgendaReport
-        { agendaReportPast = pastBlocks
-        , agendaReportPresent = presentBlocks
-        , agendaReportFuture = futureBlocks
+        { agendaReportPast = pastBlocks,
+          agendaReportPresent = presentBlocks,
+          agendaReportFuture = futureBlocks
         }
 
 divideIntoPastPresentFuture ::
-     ZonedTime -> [AgendaEntry] -> ([AgendaEntry], [AgendaEntry], [AgendaEntry])
+  ZonedTime -> [AgendaEntry] -> ([AgendaEntry], [AgendaEntry], [AgendaEntry])
 divideIntoPastPresentFuture now =
   splitList $ \ae ->
     compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
@@ -51,7 +48,7 @@ splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
 splitList func = go
   where
     go [] = ([], [], [])
-    go (a:as) =
+    go (a : as) =
       case func a of
         LT ->
           case go as of
@@ -61,7 +58,7 @@ splitList func = go
             (ys, zs) -> ([], a : ys, zs)
         GT -> ([], [], a : as)
     go2 [] = ([], [])
-    go2 (a:as) =
+    go2 (a : as) =
       case func a of
         LT -> error "should not happen"
         EQ ->
@@ -77,20 +74,21 @@ divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimest
 sortAgendaEntries :: [AgendaEntry] -> [AgendaEntry]
 sortAgendaEntries =
   sortBy
-    (mconcat
-       [ comparing (timestampLocalTime . agendaEntryTimestamp)
-       , comparing agendaEntryTimestampName
-       , comparing agendaEntryTodoState
-       ])
+    ( mconcat
+        [ comparing (timestampLocalTime . agendaEntryTimestamp),
+          comparing agendaEntryTimestampName,
+          comparing agendaEntryTodoState
+        ]
+    )
 
-data AgendaEntry =
-  AgendaEntry
-    { agendaEntryFilePath :: RootedPath
-    , agendaEntryHeader :: Header
-    , agendaEntryTodoState :: Maybe TodoState
-    , agendaEntryTimestampName :: TimestampName
-    , agendaEntryTimestamp :: Timestamp
-    }
+data AgendaEntry
+  = AgendaEntry
+      { agendaEntryFilePath :: RootedPath,
+        agendaEntryHeader :: Header,
+        agendaEntryTodoState :: Maybe TodoState,
+        agendaEntryTimestampName :: TimestampName,
+        agendaEntryTimestamp :: Timestamp
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaEntry
@@ -106,14 +104,15 @@ makeAgendaEntry rp e =
   flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
     if isDone (entryState e)
       then Nothing
-      else Just
-             AgendaEntry
-               { agendaEntryFilePath = rp
-               , agendaEntryHeader = entryHeader e
-               , agendaEntryTodoState = entryState e
-               , agendaEntryTimestampName = tsn
-               , agendaEntryTimestamp = ts
-               }
+      else
+        Just
+          AgendaEntry
+            { agendaEntryFilePath = rp,
+              agendaEntryHeader = entryHeader e,
+              agendaEntryTodoState = entryState e,
+              agendaEntryTimestampName = tsn,
+              agendaEntryTimestamp = ts
+            }
 
 fitsHistoricity :: ZonedTime -> AgendaHistoricity -> AgendaEntry -> Bool
 fitsHistoricity zt ah ae =

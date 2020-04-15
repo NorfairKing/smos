@@ -2,13 +2,12 @@
 
 module Smos.OptParse.Gen where
 
-import TestImport
-
 import Smos.Data.Gen ()
 import Smos.Keys.Gen ()
 import Smos.OptParse.Types
 import Smos.Report.OptParse.Gen ()
 import Smos.Types.Gen ()
+import TestImport
 
 instance GenValid KeyConfig where
   genValid = genValidStructurally

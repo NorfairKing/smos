@@ -1,18 +1,15 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Next where
-
-import GHC.Generics
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import Data.Validity
 import Data.Validity.Path ()
-
+import GHC.Generics
 import Smos.Data
-
 import Smos.Report.Config
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
@@ -22,11 +19,11 @@ produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
 produceNextActionReport src = do
   wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
   sourceToList $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles .|
-    printShouldPrint PrintWarning .|
-    smosFileEntries .|
-    C.filter (isNextAction . snd) .|
-    C.map (uncurry makeNextActionEntry)
+    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles
+      .| printShouldPrint PrintWarning
+      .| smosFileEntries
+      .| C.filter (isNextAction . snd)
+      .| C.map (uncurry makeNextActionEntry)
 
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
@@ -40,25 +37,25 @@ makeNextActionReport = NextActionReport . map (uncurry makeNextActionEntry)
 makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
   NextActionEntry
-    { nextActionEntryTodoState = entryState e
-    , nextActionEntryHeader = entryHeader e
-    , nextActionEntryFilePath = rf
+    { nextActionEntryTodoState = entryState e,
+      nextActionEntryHeader = entryHeader e,
+      nextActionEntryFilePath = rf
     }
 
-newtype NextActionReport =
-  NextActionReport
-    { nextActionReportEntries :: [NextActionEntry]
-    }
+newtype NextActionReport
+  = NextActionReport
+      { nextActionReportEntries :: [NextActionEntry]
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionReport
 
-data NextActionEntry =
-  NextActionEntry
-    { nextActionEntryTodoState :: Maybe TodoState
-    , nextActionEntryHeader :: Header
-    , nextActionEntryFilePath :: RootedPath
-    }
+data NextActionEntry
+  = NextActionEntry
+      { nextActionEntryTodoState :: Maybe TodoState,
+        nextActionEntryHeader :: Header,
+        nextActionEntryFilePath :: RootedPath
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntry

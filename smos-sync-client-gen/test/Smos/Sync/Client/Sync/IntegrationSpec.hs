@@ -1,6 +1,7 @@
 module Smos.Sync.Client.Sync.IntegrationSpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
 import Servant.Client (ClientEnv)
 import Smos.Server.TestUtils
@@ -14,10 +15,11 @@ import Test.Validity
 
 spec :: Spec
 spec =
-  serverSpec $
-  describe "testSyncSmosClient" $ do
-    singleClientSpec
-    twoClientSpec
+  serverSpec
+    $ describe "testSyncSmosClient"
+    $ do
+      singleClientSpec
+      twoClientSpec
 
 singleClientSpec :: SpecWith ClientEnv
 singleClientSpec =
@@ -504,8 +506,9 @@ twoClientSpec =
                   fullySyncTwoClients c1 c2
                   assertClientContents c1 m3
                   assertClientContents c2 m3
-      describe "conflicts" $
-        describe "both changed" $ do
+      describe "conflicts"
+        $ describe "both changed"
+        $ do
           it "succesfully syncs a single conflicting change" $ \cenv ->
             forAllValid $ \rp ->
               forAllValid $ \contents3 ->

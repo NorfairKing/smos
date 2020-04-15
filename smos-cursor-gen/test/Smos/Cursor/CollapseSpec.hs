@@ -13,8 +13,9 @@ spec :: Spec
 spec = do
   eqSpecOnValid @(CollapseEntry Rational)
   genValidSpec @(CollapseEntry Rational)
-  describe "makeCollapseEntry" $
-    it "produces valid collapse's" $ producesValidsOnValids (makeCollapseEntry @Rational)
+  describe "makeCollapseEntry"
+    $ it "produces valid collapse's"
+    $ producesValidsOnValids (makeCollapseEntry @Rational)
   describe "rebuildCollapseEntry" $ do
     it "produces valid values" $ producesValidsOnValids (rebuildCollapseEntry @Rational)
     it "is the inverse of makeCollapseEntry" $
@@ -23,5 +24,6 @@ spec = do
   describe "collapseEntryShowContentsL" $ lensSpecOnValid (collapseEntryShowContentsL @Rational)
   describe "collapseEntryShowHistoryL" $ lensSpecOnValid (collapseEntryShowHistoryL @Rational)
   describe "collapseEntryShowLogbookL" $ lensSpecOnValid (collapseEntryShowLogbookL @Rational)
-  describe "collapseEntrySetShowAll" $
-    it "produces valid collapses" $ producesValidsOnValids2 (collapseEntrySetShowAll @Rational)
+  describe "collapseEntrySetShowAll"
+    $ it "produces valid collapses"
+    $ producesValidsOnValids2 (collapseEntrySetShowAll @Rational)

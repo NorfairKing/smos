@@ -3,40 +3,38 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Keys
-  ( KeyPress(..)
-  , Modifier(..)
-  , Key(..)
-  , MatcherConfig(..)
-  , renderKeyPress
-  , renderKey
-  , renderModifier
-  , renderMatcherConfig
-  , P
-  , keyP
-  , modifierP
-  , keyPressP
-  , matcherConfigP
-  ) where
-
-import Import
+  ( KeyPress (..),
+    Modifier (..),
+    Key (..),
+    MatcherConfig (..),
+    renderKeyPress,
+    renderKey,
+    renderModifier,
+    renderMatcherConfig,
+    P,
+    keyP,
+    modifierP,
+    keyPressP,
+    matcherConfigP,
+  )
+where
 
 import Data.Aeson as JSON
 import Data.Either
 import Data.Functor
 import qualified Data.Text as T
 import Data.Void
-
+import Graphics.Vty.Input.Events as Vty
+import Import
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer
 
-import Graphics.Vty.Input.Events as Vty
-
 instance Validity Key where
   validate k =
     mconcat
-      [ genericValidate k
-      , case k of
+      [ genericValidate k,
+        case k of
           KFun i -> declare "The function key index is positive" $ i >= 0
           KChar c -> validateCharNotUtf16SurrogateCodePoint c
           _ -> valid
@@ -65,11 +63,11 @@ instance FromJSON Modifier where
         Left err -> fail $ errorBundlePretty err
         Right r -> pure r
 
-data KeyPress =
-  KeyPress
-    { keyPressKey :: !Key
-    , keyPressMods :: ![Modifier]
-    }
+data KeyPress
+  = KeyPress
+      { keyPressKey :: !Key,
+        keyPressMods :: ![Modifier]
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity KeyPress where
@@ -94,45 +92,47 @@ renderKey (KChar ' ') = "<space>"
 renderKey (KFun i) = "<F" <> T.pack (show i) <> ">"
 renderKey (KChar c) = T.singleton c
 renderKey k = T.pack $ go $ show k
-    -- Because these constructors all start with 'K'
   where
+    -- Because these constructors all start with 'K'
+
     go [] = []
-    go ('K':s) = "<" <> s <> ">"
+    go ('K' : s) = "<" <> s <> ">"
     go s = "<" <> s <> ">"
 
 keyP :: P Key
 keyP =
   choice'
-    [ string' "<tab>" $> KChar '\t'
-    , string' "<space>" $> KChar ' '
-    , string' "<UpRight>" $> KUpRight
-    , string' "<UpLeft>" $> KUpLeft
-    , string' "<Up>" $> KUp
-    , string' "<Right>" $> KRight
-    , string' "<PrtScr>" $> KPrtScr
-    , string' "<Pause>" $> KPause
-    , string' "<PageUp>" $> KPageUp
-    , string' "<PageDown>" $> KPageDown
-    , string' "<Menu>" $> KMenu
-    , string' "<Left>" $> KLeft
-    , string' "<Ins>" $> KIns
-    , string' "<Home>" $> KHome
-    , string' "<Esc>" $> KEsc
-    , string' "<Enter>" $> KEnter
-    , string' "<End>" $> KEnd
-    , string' "<DownRight>" $> KDownRight
-    , string' "<DownLeft>" $> KDownLeft
-    , string' "<Down>" $> KDown
-    , string' "<Del>" $> KDel
-    , string' "<Center>" $> KCenter
-    , string' "<Begin>" $> KBegin
-    , string' "<BackTab>" $> KBackTab
-    , string' "<BS>" $> KBS
-    , do void $ string' "<F"
-         i <- decimal
-         void $ string' ">"
-         pure $ KFun i
-    , KChar <$> satisfy (const True)
+    [ string' "<tab>" $> KChar '\t',
+      string' "<space>" $> KChar ' ',
+      string' "<UpRight>" $> KUpRight,
+      string' "<UpLeft>" $> KUpLeft,
+      string' "<Up>" $> KUp,
+      string' "<Right>" $> KRight,
+      string' "<PrtScr>" $> KPrtScr,
+      string' "<Pause>" $> KPause,
+      string' "<PageUp>" $> KPageUp,
+      string' "<PageDown>" $> KPageDown,
+      string' "<Menu>" $> KMenu,
+      string' "<Left>" $> KLeft,
+      string' "<Ins>" $> KIns,
+      string' "<Home>" $> KHome,
+      string' "<Esc>" $> KEsc,
+      string' "<Enter>" $> KEnter,
+      string' "<End>" $> KEnd,
+      string' "<DownRight>" $> KDownRight,
+      string' "<DownLeft>" $> KDownLeft,
+      string' "<Down>" $> KDown,
+      string' "<Del>" $> KDel,
+      string' "<Center>" $> KCenter,
+      string' "<Begin>" $> KBegin,
+      string' "<BackTab>" $> KBackTab,
+      string' "<BS>" $> KBS,
+      do
+        void $ string' "<F"
+        i <- decimal
+        void $ string' ">"
+        pure $ KFun i,
+      KChar <$> satisfy (const True)
     ]
 
 renderModifier :: Modifier -> Text
@@ -154,11 +154,12 @@ renderKeyPress (KeyPress key mods) =
 keyPressP :: P KeyPress
 keyPressP = do
   mods <-
-    many $
-    try $ do
-      m <- modifierP
-      void $ string' "-"
-      pure m
+    many
+      $ try
+      $ do
+        m <- modifierP
+        void $ string' "-"
+        pure m
   key <- keyP
   pure $ KeyPress key mods
 
@@ -197,14 +198,14 @@ renderMatcherConfig mc =
               MatchConfKeyPress kp' -> Just kp'
               _ -> Nothing
        in T.concat
-            [ renderKeyPress kp
-            , case mkp' of
+            [ renderKeyPress kp,
+              case mkp' of
                 Nothing -> " "
                 Just kp' ->
                   case keyPressMods kp' of
                     [] -> ""
-                    _ -> " "
-            , renderMatcherConfig rest
+                    _ -> " ",
+              renderMatcherConfig rest
             ]
 
 matcherConfigP :: P MatcherConfig
@@ -226,7 +227,7 @@ multipleMatchersP = go
           (void $ optional $ string' " ")
       case reverse list of
         [] -> pure MatchConfCatchAll
-        (l:rest) ->
+        (l : rest) ->
           if any isLeft rest
             then fail "<char> or <any> not allowed in any position other than the last"
             else do
@@ -240,4 +241,4 @@ multipleMatchersP = go
 choice' :: [P a] -> P a
 choice' [] = empty
 choice' [a] = a
-choice' (a:as) = try a <|> choice' as
+choice' (a : as) = try a <|> choice' as

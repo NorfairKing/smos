@@ -1,16 +1,16 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PostRegister
-  ( servePostRegister
-  ) where
-
-import Smos.Server.Handler.Import
+  ( servePostRegister,
+  )
+where
 
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
+import Smos.Server.Handler.Import
 
 servePostRegister :: Register -> SyncHandler NoContent
 servePostRegister Register {..} = do
@@ -21,7 +21,10 @@ servePostRegister Register {..} = do
       now <- liftIO getCurrentTime
       let user =
             User
-              {userName = registerUsername, userHashedPassword = hashedPassword, userCreated = now}
+              { userName = registerUsername,
+                userHashedPassword = hashedPassword,
+                userCreated = now
+              }
       maybeUserEntity <- runDB . getBy $ UniqueUsername $ userName user
       case maybeUserEntity of
         Nothing -> runDB $ insert_ user
@@ -29,9 +32,9 @@ servePostRegister Register {..} = do
           throwError
             err409
               { errBody =
-                  LB.fromStrict $
-                  TE.encodeUtf8 $
-                  T.unwords
-                    ["Account with the username", usernameText registerUsername, "already exists."]
+                  LB.fromStrict
+                    $ TE.encodeUtf8
+                    $ T.unwords
+                      ["Account with the username", usernameText registerUsername, "already exists."]
               }
   pure NoContent

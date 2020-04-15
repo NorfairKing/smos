@@ -1,32 +1,30 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Smos.Cursor.Collapse
-  ( CollapseEntry(..)
-  , makeCollapseEntry
-  , rebuildCollapseEntry
-  , collapseEntryValueL
-  , collapseEntryShowContentsL
-  , collapseEntryShowHistoryL
-  , collapseEntryShowLogbookL
-  , collapseEntrySetShowAll
-  ) where
-
-import GHC.Generics (Generic)
-
-import Data.Validity
+  ( CollapseEntry (..),
+    makeCollapseEntry,
+    rebuildCollapseEntry,
+    collapseEntryValueL,
+    collapseEntryShowContentsL,
+    collapseEntryShowHistoryL,
+    collapseEntryShowLogbookL,
+    collapseEntrySetShowAll,
+  )
+where
 
 import Control.DeepSeq
-
+import Data.Validity
+import GHC.Generics (Generic)
 import Lens.Micro
 
-data CollapseEntry a =
-  CollapseEntry
-    { collapseEntryValue :: a
-    , collapseEntryShowContents :: Bool
-    , collapseEntryShowHistory :: Bool
-    , collapseEntryShowLogbook :: Bool
-    }
+data CollapseEntry a
+  = CollapseEntry
+      { collapseEntryValue :: a,
+        collapseEntryShowContents :: Bool,
+        collapseEntryShowHistory :: Bool,
+        collapseEntryShowLogbook :: Bool
+      }
   deriving (Show, Eq, Generic, Functor)
 
 instance Validity a => Validity (CollapseEntry a)
@@ -36,10 +34,10 @@ instance NFData a => NFData (CollapseEntry a)
 makeCollapseEntry :: a -> CollapseEntry a
 makeCollapseEntry a =
   CollapseEntry
-    { collapseEntryValue = a
-    , collapseEntryShowContents = True
-    , collapseEntryShowHistory = False
-    , collapseEntryShowLogbook = False
+    { collapseEntryValue = a,
+      collapseEntryShowContents = True,
+      collapseEntryShowHistory = False,
+      collapseEntryShowLogbook = False
     }
 
 rebuildCollapseEntry :: CollapseEntry a -> a
@@ -62,5 +60,6 @@ collapseEntryShowLogbookL =
 
 collapseEntrySetShowAll :: Bool -> CollapseEntry a -> CollapseEntry a
 collapseEntrySetShowAll b e =
-  e & collapseEntryShowContentsL .~ b & collapseEntryShowHistoryL .~ b &
-  collapseEntryShowLogbookL .~ b
+  e & collapseEntryShowContentsL .~ b & collapseEntryShowHistoryL .~ b
+    & collapseEntryShowLogbookL
+    .~ b

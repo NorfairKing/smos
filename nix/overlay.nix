@@ -10,41 +10,42 @@ with final.haskell.lib;
             addBuildDepend (
               failOnAllWarnings (
                 disableLibraryProfiling (
-                  final.haskellPackages.callCabal2nix name ( final.gitignoreSource ( ../. + "/${name}" ) ) {}
+                  final.haskellPackages.callCabal2nix name (final.gitignoreSource (../. + "/${name}")) {}
                 )
               )
-            ) ( final.haskellPackages.autoexporter )
+            ) (final.haskellPackages.autoexporter)
           );
       smosPkgWithComp =
         exeName: name:
-          generateOptparseApplicativeCompletion exeName ( smosPkg name );
+          generateOptparseApplicativeCompletion exeName (smosPkg name);
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
 
-    in {
-      "smos" = smosPkgWithOwnComp "smos";
-      "smos-data" = smosPkg "smos-data";
-      "smos-data-gen" = smosPkg "smos-data-gen";
-      "smos-cursor" = smosPkg "smos-cursor";
-      "smos-cursor-gen" = smosPkg "smos-cursor-gen";
-      "smos-report" = smosPkg "smos-report";
-      "smos-report-gen" = smosPkg "smos-report-gen";
-      "smos-report-cursor" = smosPkg "smos-report-cursor";
-      "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-      "smos-query" = smosPkgWithOwnComp "smos-query";
-      "smos-single" = smosPkgWithOwnComp "smos-single";
-      "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
-      "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
-      "smos-archive" = smosPkgWithOwnComp "smos-archive";
-      "smos-docs-site" = smosPkgWithOwnComp "smos-docs-site";
-      "smos-api" = smosPkg "smos-api";
-      "smos-api-gen" = smosPkg "smos-api-gen";
-      "smos-server" = smosPkgWithOwnComp "smos-server";
-      "smos-server-gen" = smosPkg "smos-server-gen";
-      "smos-client" = smosPkg "smos-client";
-      "smos-client-gen" = smosPkg "smos-client-gen";
-      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
-    };
+    in
+      {
+        "smos" = smosPkgWithOwnComp "smos";
+        "smos-data" = smosPkg "smos-data";
+        "smos-data-gen" = smosPkg "smos-data-gen";
+        "smos-cursor" = smosPkg "smos-cursor";
+        "smos-cursor-gen" = smosPkg "smos-cursor-gen";
+        "smos-report" = smosPkg "smos-report";
+        "smos-report-gen" = smosPkg "smos-report-gen";
+        "smos-report-cursor" = smosPkg "smos-report-cursor";
+        "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
+        "smos-query" = smosPkgWithOwnComp "smos-query";
+        "smos-single" = smosPkgWithOwnComp "smos-single";
+        "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
+        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+        "smos-archive" = smosPkgWithOwnComp "smos-archive";
+        "smos-docs-site" = smosPkgWithOwnComp "smos-docs-site";
+        "smos-api" = smosPkg "smos-api";
+        "smos-api-gen" = smosPkg "smos-api-gen";
+        "smos-server" = smosPkgWithOwnComp "smos-server";
+        "smos-server-gen" = smosPkg "smos-server-gen";
+        "smos-client" = smosPkg "smos-client";
+        "smos-client-gen" = smosPkg "smos-client-gen";
+        "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
+        "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+      };
   smosDocumentationSite =
     final.stdenv.mkDerivation rec {
       name = "smosDocumentationSite";
@@ -53,7 +54,7 @@ with final.haskell.lib;
       version = "0.0";
       buildInputs =
         [
-          ( final.haskellPackages.smos-docs-site )
+          (final.haskellPackages.smos-docs-site)
         ];
       buildPhase =
         ''
@@ -72,9 +73,11 @@ with final.haskell.lib;
         {
           overrides =
             final.lib.composeExtensions (
-              old.overrides or (_:
-            _:
-              {})
+              old.overrides or (
+                _:
+                _:
+                  {}
+              )
             ) (
               self: super:
                 let
@@ -107,7 +110,7 @@ with final.haskell.lib;
                   typedUUIDPkg =
                     name:
                       disableLibraryProfiling (
-                        self.callCabal2nix name ( typedUUIDRepo + "/${name}" ) {}
+                        self.callCabal2nix name (typedUUIDRepo + "/${name}") {}
                       );
 
                   typedUUIDPackages =
@@ -129,7 +132,7 @@ with final.haskell.lib;
                     name:
                       disableLibraryProfiling (
                         dontCheck (
-                          self.callCabal2nix name ( servantAuthRepo + "/${name}" ) {}
+                          self.callCabal2nix name (servantAuthRepo + "/${name}") {}
                         )
                       );
 
@@ -152,7 +155,7 @@ with final.haskell.lib;
                   hsTlsPkg =
                     name: subdir:
                       dontCheck (
-                        self.callCabal2nix name ( hsTlsRepo + "/${subdir}" ) {}
+                        self.callCabal2nix name (hsTlsRepo + "/${subdir}") {}
                       );
 
                   hsTlsPackages =
@@ -176,7 +179,7 @@ with final.haskell.lib;
                     name:
                       disableLibraryProfiling (
                         dontCheck (
-                          self.callCabal2nix name ( persistentRepo + "/${name}" ) {}
+                          self.callCabal2nix name (persistentRepo + "/${name}") {}
                         )
                       );
                   persistentPackages =
@@ -187,15 +190,15 @@ with final.haskell.lib;
                     ] persistentPkg;
                 in
                   final.smosPackages // {
-                hakyll = dontCheck (self.callHackage "hakyll" "4.13.0.1" {});
-                hakyll-sass = dontCheck (self.callHackage "hakyll-sass" "0.2.4" {});
-                warp = dontCheck (self.callHackage "warp" "3.2.28" {});
-                http2 = dontCheck (self.callHackage "http2" "1.6.5" {});
-                pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
-                sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite) ;
-                orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
-                cron = dontCheck (self.callHackage "cron" "0.6.1" {});
-              } // persistentPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
+                    hakyll = dontCheck (self.callHackage "hakyll" "4.13.0.1" {});
+                    hakyll-sass = dontCheck (self.callHackage "hakyll-sass" "0.2.4" {});
+                    warp = dontCheck (self.callHackage "warp" "3.2.28" {});
+                    http2 = dontCheck (self.callHackage "http2" "1.6.5" {});
+                    pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
+                    sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite);
+                    orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
+                    cron = dontCheck (self.callHackage "cron" "0.6.1" {});
+                  } // persistentPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
             );
         }
     );

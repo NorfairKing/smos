@@ -8,88 +8,85 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Types
-  ( SmosFile(..)
-  , Forest
-  , Tree(..)
-  , Entry(..)
-  , newEntry
-  , emptyEntry
-  , Header(..)
-  , emptyHeader
-  , header
-  , parseHeader
-  , validHeaderChar
-  , validateHeaderChar
-  , Contents(..)
-  , emptyContents
-  , nullContents
-  , contents
-  , parseContents
-  , validContentsChar
-  , validateContentsChar
-  , PropertyName(..)
-  , emptyPropertyName
-  , propertyName
-  , parsePropertyName
-  , validPropertyNameChar
-  , PropertyValue(..)
-  , emptyPropertyValue
-  , propertyValue
-  , parsePropertyValue
-  , validPropertyValueChar
-  , TodoState(..)
-  , todoState
-  , parseTodoState
-  , validTodoStateChar
-  , validateTodoStateChar
-  , StateHistory(..)
-  , StateHistoryEntry(..)
-  , emptyStateHistory
-  , nullStateHistory
-  , Tag(..)
-  , emptyTag
-  , tag
-  , parseTag
-  , validTagChar
-  , validateTagChar
-  , Logbook(..)
-  , emptyLogbook
-  , nullLogbook
-  , logbookOpen
-  , logbookClosed
-  , LogbookEntry(..)
-  , logbookEntryDiffTime
-  , TimestampName(..)
-  , timestampName
-  , parseTimestampName
-  , emptyTimestampName
-  , validTimestampNameChar
-  , validateTimestampNameChar
-  , Timestamp(..)
-  , timestampString
-  , timestampText
-  , timestampPrettyString
-  , timestampPrettyText
-  , timestampDayFormat
-  , timestampLocalTimeFormat
-  , timestampLocalTimePrettyFormat
-  , parseTimestampString
-  , parseTimestampText
-  , timestampDay
-  , timestampLocalTime
+  ( SmosFile (..),
+    Forest,
+    Tree (..),
+    Entry (..),
+    newEntry,
+    emptyEntry,
+    Header (..),
+    emptyHeader,
+    header,
+    parseHeader,
+    validHeaderChar,
+    validateHeaderChar,
+    Contents (..),
+    emptyContents,
+    nullContents,
+    contents,
+    parseContents,
+    validContentsChar,
+    validateContentsChar,
+    PropertyName (..),
+    emptyPropertyName,
+    propertyName,
+    parsePropertyName,
+    validPropertyNameChar,
+    PropertyValue (..),
+    emptyPropertyValue,
+    propertyValue,
+    parsePropertyValue,
+    validPropertyValueChar,
+    TodoState (..),
+    todoState,
+    parseTodoState,
+    validTodoStateChar,
+    validateTodoStateChar,
+    StateHistory (..),
+    StateHistoryEntry (..),
+    emptyStateHistory,
+    nullStateHistory,
+    Tag (..),
+    emptyTag,
+    tag,
+    parseTag,
+    validTagChar,
+    validateTagChar,
+    Logbook (..),
+    emptyLogbook,
+    nullLogbook,
+    logbookOpen,
+    logbookClosed,
+    LogbookEntry (..),
+    logbookEntryDiffTime,
+    TimestampName (..),
+    timestampName,
+    parseTimestampName,
+    emptyTimestampName,
+    validTimestampNameChar,
+    validateTimestampNameChar,
+    Timestamp (..),
+    timestampString,
+    timestampText,
+    timestampPrettyString,
+    timestampPrettyText,
+    timestampDayFormat,
+    timestampLocalTimeFormat,
+    timestampLocalTimePrettyFormat,
+    parseTimestampString,
+    parseTimestampText,
+    timestampDay,
+    timestampLocalTime,
     -- Utils
-  , ForYaml(..)
-  , utcFormat
-  , getLocalTime
-  ) where
+    ForYaml (..),
+    utcFormat,
+    getLocalTime,
+  )
+where
 
-import GHC.Generics (Generic)
-
-import Data.Validity
-import Data.Validity.Containers ()
-import Data.Validity.Text ()
-import Data.Validity.Time ()
-
+import Control.Applicative
+import Control.Arrow
+import Control.DeepSeq
 import Data.Aeson as JSON
 import Data.Char as Char
 import Data.List
@@ -104,18 +101,19 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Tree
-import Data.Yaml.Builder (ToYaml(..))
+import Data.Validity
+import Data.Validity.Containers ()
+import Data.Validity.Text ()
+import Data.Validity.Time ()
+import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
+import GHC.Generics (Generic)
 import Path
 
-import Control.Applicative
-import Control.Arrow
-import Control.DeepSeq
-
-newtype SmosFile =
-  SmosFile
-    { smosFileForest :: Forest Entry
-    }
+newtype SmosFile
+  = SmosFile
+      { smosFileForest :: Forest Entry
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity SmosFile
@@ -131,10 +129,10 @@ instance ToJSON SmosFile where
 instance ToYaml SmosFile where
   toYaml = toYaml . ForYaml . smosFileForest
 
-newtype ForYaml a =
-  ForYaml
-    { unForYaml :: a
-    }
+newtype ForYaml a
+  = ForYaml
+      { unForYaml :: a
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity a => Validity (ForYaml a)
@@ -156,18 +154,19 @@ instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
 instance FromJSON (ForYaml (Tree Entry)) where
   parseJSON v =
     fmap ForYaml $
-    case v of
-      Object o -> do
-        mv <- o .:? "entry"
-                -- This marks that we want to be trying to parse a tree and NOT an entry.
-                -- We force the parser to make a decision this way.
-        case mv :: Maybe Value of
-          Nothing -> Node <$> parseJSON v <*> pure []
-          Just _ ->
-            (withObject "Tree Entry" $ \o' ->
-               Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml []))
-              v
-      _ -> Node <$> parseJSON v <*> pure []
+      case v of
+        Object o -> do
+          mv <- o .:? "entry"
+          -- This marks that we want to be trying to parse a tree and NOT an entry.
+          -- We force the parser to make a decision this way.
+          case mv :: Maybe Value of
+            Nothing -> Node <$> parseJSON v <*> pure []
+            Just _ ->
+              ( withObject "Tree Entry" $ \o' ->
+                  Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml [])
+              )
+                v
+        _ -> Node <$> parseJSON v <*> pure []
 
 instance ToJSON (ForYaml (Tree Entry)) where
   toJSON (ForYaml Node {..}) =
@@ -183,11 +182,13 @@ instance ToYaml (ForYaml (Tree Entry)) where
 
 instance FromJSON (ForYaml UTCTime) where
   parseJSON v =
-    (do s <- parseJSON v
+    ( do
+        s <- parseJSON v
         case parseTimeM True defaultTimeLocale utcFormat s of
           Nothing -> fail $ "Invalid UTCTime: " <> s
-          Just u -> pure $ ForYaml u) <|>
-    (ForYaml <$> parseJSON v)
+          Just u -> pure $ ForYaml u
+    )
+      <|> (ForYaml <$> parseJSON v)
 
 instance ToJSON (ForYaml UTCTime) where
   toJSON (ForYaml u) = toJSON $ formatTime defaultTimeLocale utcFormat u
@@ -198,16 +199,16 @@ instance ToYaml (ForYaml UTCTime) where
 utcFormat :: String
 utcFormat = "%F %H:%M:%S.%q"
 
-data Entry =
-  Entry
-    { entryHeader :: Header
-    , entryContents :: Maybe Contents
-    , entryTimestamps :: Map TimestampName Timestamp -- SCHEDULED, DEADLINE, etc.
-    , entryProperties :: Map PropertyName PropertyValue
-    , entryStateHistory :: StateHistory -- TODO, DONE, etc.
-    , entryTags :: Set Tag -- '@home', 'toast', etc.
-    , entryLogbook :: Logbook
-    }
+data Entry
+  = Entry
+      { entryHeader :: Header,
+        entryContents :: Maybe Contents,
+        entryTimestamps :: Map TimestampName Timestamp, -- SCHEDULED, DEADLINE, etc.
+        entryProperties :: Map PropertyName PropertyValue,
+        entryStateHistory :: StateHistory, -- TODO, DONE, etc.
+        entryTags :: Set Tag, -- '@home', 'toast', etc.
+        entryLogbook :: Logbook
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Entry
@@ -216,82 +217,87 @@ instance NFData Entry
 
 instance FromJSON Entry where
   parseJSON v =
-    (do h <- parseJSON v
-        pure $ newEntry h) <|>
-    (withObject "Entry" $ \o ->
-       Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents" <*>
-       o .:? "timestamps" .!= M.empty <*>
-       o .:? "properties" .!= M.empty <*>
-       o .:? "state-history" .!= StateHistory [] <*>
-       o .:? "tags" .!= S.empty <*>
-       o .:? "logbook" .!= emptyLogbook)
-      v
+    ( do
+        h <- parseJSON v
+        pure $ newEntry h
+    )
+      <|> ( withObject "Entry" $ \o ->
+              Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
+                <*> o .:? "timestamps" .!= M.empty
+                <*> o .:? "properties" .!= M.empty
+                <*> o .:? "state-history" .!= StateHistory []
+                <*> o .:? "tags" .!= S.empty
+                <*> o .:? "logbook" .!= emptyLogbook
+          )
+        v
 
 instance ToJSON Entry where
   toJSON Entry {..} =
     if and
-         [ isNothing entryContents
-         , M.null entryTimestamps
-         , M.null entryProperties
-         , null $ unStateHistory entryStateHistory
-         , null entryTags
-         , entryLogbook == emptyLogbook
-         ]
+      [ isNothing entryContents,
+        M.null entryTimestamps,
+        M.null entryProperties,
+        null $ unStateHistory entryStateHistory,
+        null entryTags,
+        entryLogbook == emptyLogbook
+      ]
       then toJSON entryHeader
-      else object $
-           ["header" .= entryHeader] ++
-           ["contents" .= entryContents | isJust entryContents] ++
-           ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps] ++
-           ["properties" .= entryProperties | not $ M.null entryProperties] ++
-           ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory] ++
-           ["tags" .= entryTags | not $ null entryTags] ++
-           ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
+      else
+        object $
+          ["header" .= entryHeader]
+            ++ ["contents" .= entryContents | isJust entryContents]
+            ++ ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps]
+            ++ ["properties" .= entryProperties | not $ M.null entryProperties]
+            ++ ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory]
+            ++ ["tags" .= entryTags | not $ null entryTags]
+            ++ ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
 
 instance ToYaml Entry where
   toYaml Entry {..} =
     if and
-         [ isNothing entryContents
-         , M.null entryTimestamps
-         , M.null entryProperties
-         , null $ unStateHistory entryStateHistory
-         , null entryTags
-         , entryLogbook == emptyLogbook
-         ]
+      [ isNothing entryContents,
+        M.null entryTimestamps,
+        M.null entryProperties,
+        null $ unStateHistory entryStateHistory,
+        null entryTags,
+        entryLogbook == emptyLogbook
+      ]
       then toYaml entryHeader
-      else Yaml.mapping $
-           [("header", toYaml entryHeader)] ++
-           [("contents", toYaml entryContents) | isJust entryContents] ++
-           [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
-           | not $ M.null entryTimestamps
-           ] ++
-           [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
-           | not $ M.null entryProperties
-           ] ++
-           [ ("state-history", toYaml entryStateHistory)
-           | not $ null $ unStateHistory entryStateHistory
-           ] ++
-           [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags] ++
-           [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
+      else
+        Yaml.mapping $
+          [("header", toYaml entryHeader)]
+            ++ [("contents", toYaml entryContents) | isJust entryContents]
+            ++ [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
+                 | not $ M.null entryTimestamps
+               ]
+            ++ [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
+                 | not $ M.null entryProperties
+               ]
+            ++ [ ("state-history", toYaml entryStateHistory)
+                 | not $ null $ unStateHistory entryStateHistory
+               ]
+            ++ [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags]
+            ++ [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
 
 newEntry :: Header -> Entry
 newEntry h =
   Entry
-    { entryHeader = h
-    , entryContents = Nothing
-    , entryTimestamps = M.empty
-    , entryProperties = M.empty
-    , entryStateHistory = emptyStateHistory
-    , entryTags = S.empty
-    , entryLogbook = emptyLogbook
+    { entryHeader = h,
+      entryContents = Nothing,
+      entryTimestamps = M.empty,
+      entryProperties = M.empty,
+      entryStateHistory = emptyStateHistory,
+      entryTags = S.empty,
+      entryLogbook = emptyLogbook
     }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
 
-newtype Header =
-  Header
-    { headerText :: Text
-    }
+newtype Header
+  = Header
+      { headerText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Header where
@@ -321,14 +327,14 @@ validHeaderChar = validationIsValid . validateHeaderChar
 validateHeaderChar :: Char -> Validation
 validateHeaderChar c =
   mconcat
-    [ declare "The character is printable" $ isPrint c
-    , declare "The character is not a newline" $ c /= '\n'
+    [ declare "The character is printable" $ isPrint c,
+      declare "The character is not a newline" $ c /= '\n'
     ]
 
-newtype Contents =
-  Contents
-    { contentsText :: Text
-    }
+newtype Contents
+  = Contents
+      { contentsText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Contents where
@@ -363,10 +369,10 @@ validateContentsChar :: Char -> Validation
 validateContentsChar c =
   declare "The character is a printable or space" $ Char.isPrint c || Char.isSpace c
 
-newtype PropertyName =
-  PropertyName
-    { propertyNameText :: Text
-    }
+newtype PropertyName
+  = PropertyName
+      { propertyNameText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyName where
@@ -402,17 +408,17 @@ validPropertyNameChar = validationIsValid . validatePropertyNameChar
 validatePropertyNameChar :: Char -> Validation
 validatePropertyNameChar = validateTagChar
 
-newtype PropertyValue =
-  PropertyValue
-    { propertyValueText :: Text
-    }
+newtype PropertyValue
+  = PropertyValue
+      { propertyValueText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyValue where
   validate (PropertyValue t) =
     mconcat
-      [ delve "propertyValueText" t
-      , decorateList (T.unpack t) $ \c ->
+      [ delve "propertyValueText" t,
+        decorateList (T.unpack t) $ \c ->
           declare "The character is a valid property value character" $ validPropertyValueChar c
       ]
 
@@ -442,10 +448,10 @@ parsePropertyValue = prettyValidate . PropertyValue
 validPropertyValueChar :: Char -> Bool
 validPropertyValueChar = validTagChar
 
-newtype TimestampName =
-  TimestampName
-    { timestampNameText :: Text
-    }
+newtype TimestampName
+  = TimestampName
+      { timestampNameText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity TimestampName where
@@ -532,8 +538,8 @@ timestampPrettyText = T.pack . timestampPrettyString
 
 parseTimestampString :: String -> Maybe Timestamp
 parseTimestampString s =
-  (TimestampDay <$> parseTimeM False defaultTimeLocale timestampDayFormat s) <|>
-  (TimestampLocalTime <$> parseTimeM False defaultTimeLocale timestampLocalTimeFormat s)
+  (TimestampDay <$> parseTimeM False defaultTimeLocale timestampDayFormat s)
+    <|> (TimestampLocalTime <$> parseTimeM False defaultTimeLocale timestampLocalTimeFormat s)
 
 parseTimestampText :: Text -> Maybe Timestamp
 parseTimestampText = parseTimestampString . T.unpack
@@ -550,10 +556,10 @@ timestampLocalTime ts =
     TimestampDay d -> LocalTime d midnight
     TimestampLocalTime lt -> lt
 
-newtype TodoState =
-  TodoState
-    { todoStateText :: Text
-    }
+newtype TodoState
+  = TodoState
+      { todoStateText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity TodoState where
@@ -581,16 +587,16 @@ validTodoStateChar = validationIsValid . validateTodoStateChar
 validateTodoStateChar :: Char -> Validation
 validateTodoStateChar = validateHeaderChar
 
-newtype StateHistory =
-  StateHistory
-    { unStateHistory :: [StateHistoryEntry]
-    }
+newtype StateHistory
+  = StateHistory
+      { unStateHistory :: [StateHistoryEntry]
+      }
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
 
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
-    genericValidate st <>
-    declare "The entries are stored in reverse chronological order" (hs <= sort hs)
+    genericValidate st
+      <> declare "The entries are stored in reverse chronological order" (hs <= sort hs)
 
 instance NFData StateHistory
 
@@ -600,11 +606,11 @@ emptyStateHistory = StateHistory []
 nullStateHistory :: StateHistory -> Bool
 nullStateHistory = (== emptyStateHistory)
 
-data StateHistoryEntry =
-  StateHistoryEntry
-    { stateHistoryEntryNewState :: Maybe TodoState
-    , stateHistoryEntryTimestamp :: UTCTime
-    }
+data StateHistoryEntry
+  = StateHistoryEntry
+      { stateHistoryEntryNewState :: Maybe TodoState,
+        stateHistoryEntryTimestamp :: UTCTime
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity StateHistoryEntry
@@ -618,8 +624,8 @@ instance Ord StateHistoryEntry where
 instance FromJSON StateHistoryEntry where
   parseJSON =
     withObject "StateHistoryEntry" $ \o ->
-      StateHistoryEntry <$> (o .: "state" <|> o .: "new-state") <*>
-      (unForYaml <$> (o .: "time" <|> o .: "timestamp"))
+      StateHistoryEntry <$> (o .: "state" <|> o .: "new-state")
+        <*> (unForYaml <$> (o .: "time" <|> o .: "timestamp"))
 
 instance ToJSON StateHistoryEntry where
   toJSON StateHistoryEntry {..} =
@@ -628,14 +634,14 @@ instance ToJSON StateHistoryEntry where
 instance ToYaml StateHistoryEntry where
   toYaml StateHistoryEntry {..} =
     Yaml.mapping
-      [ ("state", toYaml stateHistoryEntryNewState)
-      , ("time", toYaml (ForYaml stateHistoryEntryTimestamp))
+      [ ("state", toYaml stateHistoryEntryNewState),
+        ("time", toYaml (ForYaml stateHistoryEntryTimestamp))
       ]
 
-newtype Tag =
-  Tag
-    { tagText :: Text
-    }
+newtype Tag
+  = Tag
+      { tagText :: Text
+      }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Tag where
@@ -674,29 +680,31 @@ data Logbook
 instance Validity Logbook where
   validate lo@(LogOpen utct lbes) =
     mconcat
-      [ genericValidate lo
-      , declare "The open time occurred after the last entry ended" $
-        case lbes of
-          [] -> True
-          (lbe:_) -> utct >= logbookEntryEnd lbe
-      , decorate "The consecutive logbook entries happen after each other" $
-        decorateList (conseqs lbes) $ \(lbe1, lbe2) ->
-          declare "The former happens after the latter" $
-          logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+      [ genericValidate lo,
+        declare "The open time occurred after the last entry ended" $
+          case lbes of
+            [] -> True
+            (lbe : _) -> utct >= logbookEntryEnd lbe,
+        decorate "The consecutive logbook entries happen after each other"
+          $ decorateList (conseqs lbes)
+          $ \(lbe1, lbe2) ->
+            declare "The former happens after the latter" $
+              logbookEntryStart lbe1 >= logbookEntryEnd lbe2
       ]
   validate lc@(LogClosed lbes) =
     mconcat
-      [ genericValidate lc
-      , decorate "The consecutive logbook entries happen after each other" $
-        decorateList (conseqs lbes) $ \(lbe1, lbe2) ->
-          declare "The former happens after the latter" $
-          logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+      [ genericValidate lc,
+        decorate "The consecutive logbook entries happen after each other"
+          $ decorateList (conseqs lbes)
+          $ \(lbe1, lbe2) ->
+            declare "The former happens after the latter" $
+              logbookEntryStart lbe1 >= logbookEntryEnd lbe2
       ]
 
 conseqs :: [a] -> [(a, a)]
 conseqs [] = []
 conseqs [_] = []
-conseqs (a:b:as) = (a, b) : conseqs (b : as)
+conseqs (a : b : as) = (a, b) : conseqs (b : as)
 
 instance NFData Logbook
 
@@ -705,7 +713,7 @@ instance FromJSON Logbook where
     els <- parseJSON v
     case els of
       [] -> pure $ LogClosed []
-      (e:es) -> do
+      (e : es) -> do
         (start, mend) <-
           withObject
             "First logbook entry"
@@ -750,18 +758,18 @@ logbookClosed =
     LogClosed _ -> True
     _ -> False
 
-data LogbookEntry =
-  LogbookEntry
-    { logbookEntryStart :: UTCTime
-    , logbookEntryEnd :: UTCTime
-    }
+data LogbookEntry
+  = LogbookEntry
+      { logbookEntryStart :: UTCTime,
+        logbookEntryEnd :: UTCTime
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity LogbookEntry where
   validate lbe@LogbookEntry {..} =
     mconcat
-      [ genericValidate lbe
-      , declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
+      [ genericValidate lbe,
+        declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
       ]
 
 instance NFData LogbookEntry

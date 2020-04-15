@@ -1,19 +1,18 @@
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Smos.API.Username
-  ( Username(..)
-  , usernameString
-  , parseUsername
-  , parseUsernameWithError
-  , validUsernameChar
-  , UsernameChar(..)
-  ) where
-
-import GHC.Generics (Generic)
+  ( Username (..),
+    usernameString,
+    parseUsername,
+    parseUsernameWithError,
+    validUsernameChar,
+    UsernameChar (..),
+  )
+where
 
 import Control.DeepSeq
 import Control.Monad.Fail as Fail
@@ -25,20 +24,21 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
 import Database.Persist.Sql
+import GHC.Generics (Generic)
 import Web.PathPieces
 
-newtype Username =
-  Username
-    { usernameText :: Text
-    }
+newtype Username
+  = Username
+      { usernameText :: Text
+      }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Username where
   validate (Username t) =
     mconcat
-      [ check (not (T.null t)) "The username is not empty."
-      , check (T.length t >= 3) "The username is at least three characters long."
-      , decorateList (map UsernameChar $ T.unpack t) validate
+      [ check (not (T.null t)) "The username is not empty.",
+        check (T.length t >= 3) "The username is at least three characters long.",
+        decorateList (map UsernameChar $ T.unpack t) validate
       ]
 
 instance NFData Username
@@ -84,10 +84,10 @@ instance ToJSON Username where
 instance ToJSONKey Username where
   toJSONKey = toJSONKeyText usernameText
 
-newtype UsernameChar =
-  UsernameChar
-    { unUsernameChar :: Char
-    }
+newtype UsernameChar
+  = UsernameChar
+      { unUsernameChar :: Char
+      }
   deriving (Show, Eq, Generic)
 
 instance Validity UsernameChar where
@@ -95,9 +95,9 @@ instance Validity UsernameChar where
   validate (UsernameChar '_') = mempty
   validate (UsernameChar c) =
     mconcat
-      [ check (not (Char.isControl c)) "The character is not a control character."
-      , check (Char.isAlphaNum c) "The character is alphanumeric."
-      , check (Char.isLatin1 c) "The character is part of Latin1."
+      [ check (not (Char.isControl c)) "The character is not a control character.",
+        check (Char.isAlphaNum c) "The character is alphanumeric.",
+        check (Char.isLatin1 c) "The character is part of Latin1."
       ]
 
 validUsernameChar :: Char -> Bool

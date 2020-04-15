@@ -1,27 +1,26 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Actions
-  ( Action(..)
-  , ActionUsing(..)
-  , AnyAction(..)
-  , module Smos.Actions
-  , module Smos.Actions.Contents
-  , module Smos.Actions.Convenience
-  , module Smos.Actions.Entry
-  , module Smos.Actions.File
-  , module Smos.Actions.Forest
-  , module Smos.Actions.Header
-  , module Smos.Actions.Help
-  , module Smos.Actions.Logbook
-  , module Smos.Actions.Properties
-  , module Smos.Actions.Report
-  , module Smos.Actions.Tags
-  , module Smos.Actions.Timestamps
-  , module Smos.Actions.Undo
-  , module Smos.Actions.Utils
-  ) where
-
-import Smos.Types
+  ( Action (..),
+    ActionUsing (..),
+    AnyAction (..),
+    module Smos.Actions,
+    module Smos.Actions.Contents,
+    module Smos.Actions.Convenience,
+    module Smos.Actions.Entry,
+    module Smos.Actions.File,
+    module Smos.Actions.Forest,
+    module Smos.Actions.Header,
+    module Smos.Actions.Help,
+    module Smos.Actions.Logbook,
+    module Smos.Actions.Properties,
+    module Smos.Actions.Report,
+    module Smos.Actions.Tags,
+    module Smos.Actions.Timestamps,
+    module Smos.Actions.Undo,
+    module Smos.Actions.Utils,
+  )
+where
 
 import Smos.Actions.Contents
 import Smos.Actions.Convenience
@@ -37,6 +36,7 @@ import Smos.Actions.Tags
 import Smos.Actions.Timestamps
 import Smos.Actions.Undo
 import Smos.Actions.Utils
+import Smos.Types
 
 allActions :: [AnyAction]
 allActions = map PlainAction allPlainActions ++ map UsingCharAction allUsingCharActions
@@ -44,87 +44,86 @@ allActions = map PlainAction allPlainActions ++ map UsingCharAction allUsingChar
 allPlainActions :: [Action]
 allPlainActions =
   concat
-    [ [ startHeaderFromEmptyAndSelectHeader
-      , selectHelp
-      , selectEditor
-      , showDebug
-      , hideDebug
-      , toggleDebug
-      ]
-    , allContentsPlainActions
-    , allEntryPlainActions
-    , allForestPlainActions
-    , allHeaderPlainActions
-    , allLogbookPlainActions
-    , allTagsPlainActions
-    , allPropertiesPlainActions
-    , allTimestampsPlainActions
-    , allUndoPlainActions
-    , allConveniencePlainActions
-    , allHelpPlainActions
+    [ [ startHeaderFromEmptyAndSelectHeader,
+        selectHelp,
+        selectEditor,
+        showDebug,
+        hideDebug,
+        toggleDebug
+      ],
+      allContentsPlainActions,
+      allEntryPlainActions,
+      allForestPlainActions,
+      allHeaderPlainActions,
+      allLogbookPlainActions,
+      allTagsPlainActions,
+      allPropertiesPlainActions,
+      allTimestampsPlainActions,
+      allUndoPlainActions,
+      allConveniencePlainActions,
+      allHelpPlainActions
     ]
 
 allUsingCharActions :: [ActionUsing Char]
 allUsingCharActions =
   concat
-    [ allContentsUsingCharActions
-    , allEntryUsingCharActions
-    , allForestUsingCharActions
-    , allHeaderUsingCharActions
-    , allTimestampsUsingCharActions
-    , allTagsUsingCharActions
-    , allPropertiesUsingCharActions
-    , allUndoUsingCharActions
-    , allHelpUsingCharActions
+    [ allContentsUsingCharActions,
+      allEntryUsingCharActions,
+      allForestUsingCharActions,
+      allHeaderUsingCharActions,
+      allTimestampsUsingCharActions,
+      allTagsUsingCharActions,
+      allPropertiesUsingCharActions,
+      allUndoUsingCharActions,
+      allHelpUsingCharActions
     ]
 
 startHeaderFromEmptyAndSelectHeader :: Action
 startHeaderFromEmptyAndSelectHeader =
   Action
-    { actionName = "startHeaderFromEmptyAndSelectHeader"
-    , actionFunc = modifyEmptyFile startSmosFile
-    , actionDescription = "Start a first header in an empty Smos File"
+    { actionName = "startHeaderFromEmptyAndSelectHeader",
+      actionFunc = modifyEmptyFile startSmosFile,
+      actionDescription = "Start a first header in an empty Smos File"
     }
 
 selectHelp :: Action
 selectHelp =
   Action
-    { actionName = "selectHelp"
-    , actionFunc =
-        modifyEditorCursorS $ \ec -> do
-          km <- asks configKeyMap
-          pure $ editorCursorSwitchToHelp km ec
-    , actionDescription = "Show the (contextual) help screen"
+    { actionName = "selectHelp",
+      actionFunc = modifyEditorCursorS $ \ec -> do
+        km <- asks configKeyMap
+        pure $ editorCursorSwitchToHelp km ec,
+      actionDescription = "Show the (contextual) help screen"
     }
 
 selectEditor :: Action
 selectEditor =
   Action
-    { actionName = "selectEditor"
-    , actionFunc = modifyEditorCursor editorCursorSwitchToFile
-    , actionDescription = "Hide the help screen"
+    { actionName = "selectEditor",
+      actionFunc = modifyEditorCursor editorCursorSwitchToFile,
+      actionDescription = "Hide the help screen"
     }
 
 showDebug :: Action
 showDebug =
   Action
-    { actionName = "showDebug"
-    , actionFunc = modifyEditorCursor editorCursorShowDebug
-    , actionDescription = "Show the debug screen"
+    { actionName = "showDebug",
+      actionFunc = modifyEditorCursor editorCursorShowDebug,
+      actionDescription = "Show the debug screen"
     }
 
 hideDebug :: Action
 hideDebug =
   Action
-    { actionName = "hideDebug"
-    , actionFunc = modifyEditorCursor editorCursorHideDebug
-    , actionDescription = "Hide the debug screen"
+    { actionName = "hideDebug",
+      actionFunc = modifyEditorCursor editorCursorHideDebug,
+      actionDescription = "Hide the debug screen"
     }
 
 toggleDebug :: Action
 toggleDebug =
   Action
-    { actionName = "toggleDebug"
-    , actionFunc = modifyEditorCursor editorCursorToggleDebug
-    , actionDescription = "Toggle the debug page to be shown"
+    { actionName = "toggleDebug",
+      actionFunc = modifyEditorCursor editorCursorToggleDebug,
+      actionDescription = "Toggle the debug page to be shown"
     }

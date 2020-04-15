@@ -6,7 +6,8 @@ let
   cfg = config.programs.smos;
 
 
-in {
+in
+{
   options =
     {
       programs.smos =
@@ -84,7 +85,7 @@ in {
 
       syncConfigContents =
         syncCfg:
-          optionalString ( syncCfg.enable or false ) ''
+          optionalString (syncCfg.enable or false) ''
 
 sync:
   server-url: "${cfg.sync.server-url}"
@@ -95,7 +96,7 @@ sync:
 
       smosConfigContents =
         concatStringsSep "\n" [
-          ( syncConfigContents cfg.sync )
+          (syncConfigContents cfg.sync)
           cfg.extraConfig
         ];
 
@@ -110,14 +111,14 @@ sync:
             {
               ExecStart =
                 "${pkgs.writeShellScript "backup-smos-service-ExecStart"
-            ''
-              export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
-              set -ex
-              backupdir="$HOME/${cfg.backup.backupDir}"
-              mkdir -p "''${backupdir}"
-              backupfile="''${backupdir}/''$(date +%F_%T).tar.gz"
-              tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
-            ''}";
+                  ''
+                    export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
+                    set -ex
+                    backupdir="$HOME/${cfg.backup.backupDir}"
+                    mkdir -p "''${backupdir}"
+                    backupfile="''${backupdir}/''$(date +%F_%T).tar.gz"
+                    tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
+                  ''}";
               Type = "oneshot";
             };
         };
@@ -150,10 +151,10 @@ sync:
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "sync-smos-service-ExecStart" 
-            ''
-              exec ${smosPkgs.smos-sync-client}/bin/smos-sync-client sync
-            ''}";
+                "${pkgs.writeShellScript "sync-smos-service-ExecStart"
+                  ''
+                    exec ${smosPkgs.smos-sync-client}/bin/smos-sync-client sync
+                  ''}";
               Type = "oneshot";
             };
         };
@@ -178,22 +179,20 @@ sync:
       services =
         (
           optionalAttrs (cfg.sync.enable or false) {
-          "${syncSmosName}" = syncSmosService;
-        }
-        //
-        optionalAttrs (cfg.backup.enable or false) {
-          "${backupSmosName}" = backupSmosService;
-        }
+            "${syncSmosName}" = syncSmosService;
+          }
+          // optionalAttrs (cfg.backup.enable or false) {
+            "${backupSmosName}" = backupSmosService;
+          }
         );
       timers =
         (
           optionalAttrs (cfg.sync.enable or false) {
-          "${syncSmosName}" = syncSmosTimer;
-        }
-        //
-        optionalAttrs (cfg.backup.enable or false) {
-          "${backupSmosName}" = backupSmosTimer;
-        }
+            "${syncSmosName}" = syncSmosTimer;
+          }
+          // optionalAttrs (cfg.backup.enable or false) {
+            "${backupSmosName}" = backupSmosTimer;
+          }
         );
       packages =
         [

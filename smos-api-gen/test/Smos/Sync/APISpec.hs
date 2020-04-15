@@ -1,8 +1,9 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.APISpec
-  ( spec
-  ) where
+  ( spec,
+  )
+where
 
 import Smos.API
 import Smos.API.Gen ()

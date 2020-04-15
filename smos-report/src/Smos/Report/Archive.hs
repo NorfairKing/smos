@@ -17,9 +17,9 @@ instance FromJSON HideArchive where
   parseJSON =
     withBool "HideArchive" $ \b ->
       pure $
-      if b
-        then HideArchive
-        else Don'tHideArchive
+        if b
+          then HideArchive
+          else Don'tHideArchive
 
 instance ToJSON HideArchive where
   toJSON HideArchive = Bool True
