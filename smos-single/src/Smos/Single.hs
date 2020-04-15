@@ -1,5 +1,5 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Single
   ( smosSingle
@@ -9,13 +9,12 @@ import Data.Char as Char
 import qualified Data.Text as T
 import Data.Time
 import Path
-
+import Path.IO
 import Smos.Data
-
 import Smos.Report.Config
-
 import Smos.Single.OptParse
 import Smos.Single.OptParse.Types
+import System.Exit
 
 smosSingle :: IO ()
 smosSingle = getSettings >>= single
@@ -28,9 +27,13 @@ single Settings {..} = do
     case setTaskFile of
       Just rp -> pure rp
       Nothing -> deriveFileName setTask
-  now <- getCurrentTime
-  let smosFile = makeSingleSmosFile now setTask
-  writeSmosFile path smosFile
+  exists <- doesFileExist path
+  if exists
+    then die $ unwords ["There already exists a file at", fromAbsFile path, "not overwriting"]
+    else do
+      now <- getCurrentTime
+      let smosFile = makeSingleSmosFile now setTask
+      writeSmosFile path smosFile
 
 deriveFileName :: Header -> IO (Path Rel File)
 deriveFileName h = parseRelFile $ addExtension $ map go $ T.unpack $ headerText h

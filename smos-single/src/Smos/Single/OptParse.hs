@@ -5,22 +5,16 @@ module Smos.Single.OptParse
   ( getSettings
   ) where
 
-import qualified Data.Text as T
-import Path
-
 import Control.Monad
-
-import qualified System.Environment as System
-import System.Exit
-
+import qualified Data.Text as T
 import Options.Applicative
-
+import Path
 import Smos.Data
-
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-
 import Smos.Single.OptParse.Types
+import qualified System.Environment as System
+import System.Exit
 
 getSettings :: IO Settings
 getSettings = do
@@ -75,10 +69,17 @@ flagsParser = info (helper <*> parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> some (strArgument (mconcat [help "The task", metavar "TASK"])) <*>
+  Flags <$>
+  some
+    (strArgument
+       (mconcat
+          [ help
+              "The task. Pass any number of arguments and they will be interpreted as the task together."
+          , metavar "TASK"
+          ])) <*>
   option
     (Just <$> str)
-    (mconcat [help "The file to put the task in", metavar "FILEPATH", value Nothing]) <*>
+    (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing]) <*>
   Report.parseFlags
 
 getEnvironment :: IO Environment
