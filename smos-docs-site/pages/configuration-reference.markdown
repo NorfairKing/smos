@@ -3,7 +3,7 @@ title: Customisation Reference
 date: 2020-04-07
 ---
 
-# Misc #
+## Misc ##
 
 contexts
 
@@ -13,7 +13,7 @@ work-filter
 
 : ???
 
-# Customizing directories #
+## Customizing directories ##
 
 archive-dir
 
@@ -32,11 +32,11 @@ archived-projects-dir
 : the archive projects directory
 
 
-# Customising keybindings #
+## Defining reports ##
 
-<!-- NOTE: It should be nice to be able to generate the reference for
-           the keybingings automatically, since the information are
-           already present in the help screen -->
+<!-- TODO:  -->
+
+## Customising keybindings ##
 
 Keybindings in smos are context sensitive.
 
@@ -50,40 +50,71 @@ keys:
           key: <Esc>
 ```
 
+The syntax for *special* keys follows (the meaning of each should be obvious):
+
+- \<tab\>
+- \<space>
+- \<UpRight>
+- \<UpLeft>
+- \<Up>
+- \<Right>
+- \<PrtScr>
+- \<Pause>
+- \<PageUp>
+- \<PageDown>
+- \<Menu>
+- \<Left>
+- \<Ins>
+- \<Home>
+- \<Esc>
+- \<Enter>
+- \<End>
+- \<DownRight>
+- \<DownLeft>
+- \<Down>
+- \<Del>
+- \<Center>
+- \<Begin>
+- \<BackTab>
+- \<BS>
+- \<F0> .. \<F9>
+
+The full list of available commands can be found in [the Command
+Reference](/commands.html).
+
 The following paragraph lists the valid contexts and the valid
 keybindings.
 
-## reports ##
+### reports ###
 
 In the `reports` context there is only one subcontext: `next-action`.
 
-### reports/next-action ###
+#### reports/next-action ####
 
-## help ##
+### help ###
 
 In the `help` context there are two subcontexts: `help` and `search`.
 
-### help/help ###
+#### help/help ####
 
-### help/search ###
+#### help/search ####
 
-## file ##
+### file ###
 
-### file/empty ###
+#### file/empty ####
 
-### file/logbook ###
+#### file/logbook ####
 
-### file/entry ###
+#### file/entry ####
 
-### file/header ###
+#### file/header ####
 
-### file/timestamps ###
+#### file/timestamps ####
 
-### file/state-history ###
+#### file/state-history ####
 
-### file/any ###
+#### file/any ####
 
-### file/tags ###
+#### file/tags ####
 
-### file/properties ###
-
+#### file/properties ####
