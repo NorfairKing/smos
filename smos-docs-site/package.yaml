@@ -13,6 +13,9 @@ library:
   - base >= 4.7 && < 5
   - hakyll
   - hakyll-sass
+  - smos
+  - text
+  - directory
 
 executables:
   smos-docs-site:
