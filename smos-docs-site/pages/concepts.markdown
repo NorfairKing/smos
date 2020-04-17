@@ -7,27 +7,38 @@ GTD
 : GTD is a time management method by David Allen (see [Getting This
   Done](https://en.wikipedia.org/wiki/Getting_Things_Done) on
   Wikipedia).
-  SMOS is supposed to be a tool to implement GTD.
+
+  SMOS is a personal management tool inspired by GTD.
 
 
 <!-- the next concepts are related to SMOS configuration, but AFAIK
 are not explained -->
 
-Workflow
-: What's the meaning in SMOS and why the need for a directory?
+Workflow Directory
+: SMOS files can be everywhere on your disk, however the `smos-query`
+  command, used to generate reports and gather informations, will
+  consult only the *workflow* directory.  The defalt value is
+  `~/workflow` however the value can be changed to better suite your
+  needs using the configuration file (see te [Configuration
+  reference](/configuration-reference.html)).
 
 
-Projects
-: Whats the meaning in SMOS?  Why the need for a directory in the
-  configuration file?
+Projects Directory
+: The *project* directory is by used the `smos-query projects` command
+  to retrieve information about your projects.  The default value is
+  `~/workflow/projects` (see the [Configuration
+  reference](/configuration-reference.html) for customization).
 
 
-Archive:
-: When task and projects are completed, they are archived (i.e. moved
-  in the archive directory).
+Archive Directory
+: When task and projects are completed, they are archived, moved in
+  the *archive* directory, so that they can be ignored by the
+  `smos-query` command.  The default value is `~/workflow/archive`
+  (see the [Configuration reference](/configuration-reference.html)
+  for customization).
 
-State File
-: ???
+<!-- State File -->
+<!-- : ??? -->
 
 Entry
 : In SMOS each entry can be in one of the following states: <!-- not true. an entry can have no state -->
@@ -41,19 +52,8 @@ Entry
 	- DONE
 	- CANCELLED
 
-
-Forest
-: In SMOS each forest can be in one of the following states: <!-- not true, a forest can have no state  -->
-
-	- WAITING
-	- TODO
-	- STARTED
-	- READY
-	- NEXT
-	- FAILED
-	- DONE
-	- CANCELLED
-
+<!-- TODO: document the order of the states.  The first state should
+be TODO or WAITING.  What the difference between READY and NEXT? -->
 
 Tag
 : It is possible to attach a tag to each entry or forest.  Predefined
