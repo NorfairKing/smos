@@ -5,12 +5,14 @@
 
 module Smos.Server.Handler.PostLogin where
 
+import qualified Data.Text as T
+import Data.Text.Encoding (decodeUtf8)
 import Servant.Auth.Server
 import Smos.Server.Handler.Import
 
 servePostLogin ::
   Login ->
-  SyncHandler (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+  SyncHandler (Headers '[Header "Set-Cookie" T.Text] NoContent)
 servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of
@@ -23,7 +25,7 @@ servePostLogin Login {..} = do
     setLoggedIn un = do
       let cookie = AuthCookie {authCookieUsername = un}
       ServerEnv {..} <- ask
-      mApplyCookies <- liftIO $ acceptLogin serverEnvCookieSettings serverEnvJWTSettings cookie
-      case mApplyCookies of
+      mCookie <- liftIO $ makeSessionCookieBS serverEnvCookieSettings serverEnvJWTSettings cookie
+      case mCookie of
         Nothing -> throwError err401
-        Just applyCookies -> return $ applyCookies NoContent
+        Just setCookie -> return $ addHeader (decodeUtf8 setCookie) NoContent

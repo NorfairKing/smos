@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Client
   ( module Smos.Client,
@@ -12,6 +13,9 @@ where
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
+import Data.List (find)
+import qualified Data.Text as T
+import Data.Text.Encoding (encodeUtf8)
 import GHC.Generics
 import Servant.API.Flatten
 import Servant.Auth.Client
@@ -25,7 +29,7 @@ clientPostRegister :: Register -> ClientM NoContent
 
 clientPostLogin ::
   Login ->
-  ClientM (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+  ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
 clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
@@ -39,11 +43,18 @@ clientLoginSession lf = do
   res <- clientPostLogin lf
   pure $
     case res of
-      Headers NoContent (HCons _ (HCons sessionHeader HNil)) ->
+      Headers NoContent (HCons sessionHeader HNil) ->
         case sessionHeader of
           MissingHeader -> Left ProblemMissingHeader
           UndecodableHeader b -> Left $ ProblemUndecodableHeader b
-          Header session -> Right session
+          Header sessionText ->
+            let cookies =
+                  parseSetCookie . encodeUtf8 <$> T.lines sessionText
+                jwtCookie =
+                  find ((== "JWT-Cookie") . setCookieName) cookies
+             in case jwtCookie of
+                  Nothing -> Left ProblemMissingJWTCookie
+                  Just setCookie -> Right setCookie
 
 sessionToToken :: SetCookie -> Token
 sessionToToken = Token . setCookieValue
@@ -51,6 +62,7 @@ sessionToToken = Token . setCookieValue
 data HeaderProblem
   = ProblemMissingHeader
   | ProblemUndecodableHeader ByteString
+  | ProblemMissingJWTCookie
   deriving (Show, Eq, Generic)
 
 login :: ClientEnv -> Login -> IO (Either LoginError Token)
