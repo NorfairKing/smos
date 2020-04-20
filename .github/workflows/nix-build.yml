@@ -8,6 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: cachix/install-nix-action@v6
+    - name: free disk space
+      run: |
+        sudo rm -rf /opt
     - uses: cachix/cachix-action@releases/v3
       with:
         name: validity
