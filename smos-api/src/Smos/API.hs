@@ -114,7 +114,7 @@ instance ToJSON Register
 instance FromJSON Register
 
 type PostLogin =
-  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
 
 data Login
   = Login
