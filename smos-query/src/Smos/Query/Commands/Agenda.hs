@@ -14,6 +14,7 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
+import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -68,7 +69,7 @@ data AgendaReportLine
 
 makeAgendaReportLines :: AgendaReport -> [AgendaReportLine]
 makeAgendaReportLines AgendaReport {..} =
-  concat $
+  intercalate [SpaceLine] $
     filter
       (not . null)
       [goBlocks agendaReportPast, goBlocks agendaReportPresent, goBlocks agendaReportFuture]
