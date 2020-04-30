@@ -85,6 +85,8 @@ makeAgendaReportLines AgendaReport {..} =
     goEntries :: [AgendaEntry] -> [AgendaReportLine]
     goEntries = map EntryLine
 
+-- TODO: this won't work at the start or the end.
+-- we will want to do some lookahead.
 addNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
 addNowLine now = go
   where
