@@ -3,3 +3,4 @@ _cache/
 _site/
 smos-docs-site.cabal
 *~
+_generated/
