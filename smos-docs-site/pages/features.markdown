@@ -58,6 +58,7 @@ You can write your own tools to operate on these files.
 
 Files are made to make diffs easy and disjoint.
 Derived data is never stored, but instead computed or rendered.
+There is also built-in sychronisation using `smos-sync-client`.
 
 ## A replacement for emacs org mode
 
