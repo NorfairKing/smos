@@ -36,7 +36,7 @@ with final.haskell.lib;
         "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
         "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
-        "smos-docs-site" = smosPkgWithOwnComp "smos-docs-site";
+        "smos-docs-site" = smosPkg "smos-docs-site";
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";
         "smos-server" = smosPkgWithOwnComp "smos-server";
@@ -46,27 +46,6 @@ with final.haskell.lib;
         "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
         "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       };
-  smosDocumentationSite =
-    final.stdenv.mkDerivation rec {
-      name = "smosDocumentationSite";
-      src = final.gitignoreSource ../smos-docs-site;
-      phases = "unpackPhase buildPhase";
-      version = "0.0";
-      buildInputs =
-        [
-          (final.haskellPackages.smos-docs-site)
-        ];
-      buildPhase =
-        ''
-          export LOCALE_ARCHIVE="${final.glibcLocales}/lib/locale/locale-archive";
-          export LANG=en_US.UTF-8
-          smos-docs-site build
-          smos-docs-site check --internal-links
-          
-          mkdir $out
-          cp -r _site/* $out
-        '';
-    };
   haskellPackages =
     previous.haskellPackages.override (
       old:
@@ -177,10 +156,8 @@ with final.haskell.lib;
 
                   persistentPkg =
                     name:
-                      disableLibraryProfiling (
-                        dontCheck (
-                          self.callCabal2nix name (persistentRepo + "/${name}") {}
-                        )
+                      dontCheck (
+                        self.callCabal2nix name (persistentRepo + "/${name}") {}
                       );
                   persistentPackages =
                     final.lib.genAttrs [

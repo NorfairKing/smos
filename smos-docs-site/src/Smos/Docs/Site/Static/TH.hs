@@ -118,7 +118,6 @@ mkDocPages' fp = do
             urlString <- toFilePath <$> setFileExtension "" rp
             let url = T.pack urlString
             let (attributes, contents) = splitContents rawContents
-            let att k = lookup k attributes
             let maybeAtt k =
                   case lookup k attributes of
                     Nothing ->

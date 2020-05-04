@@ -17,11 +17,17 @@ in
               options =
                 {
                   enable = mkEnableOption "Smos Docs Site";
-                  host =
+                  hosts =
                     mkOption {
-                      type = types.str;
+                      type = types.listOf types.str;
                       example = "smos.cs-syd.eu";
                       description = "The host to serve the docs site on";
+                    };
+                  port =
+                    mkOption {
+                      type = types.int;
+                      example = 8000;
+                      description = "The port to serve sync requests on";
                     };
                 };
             };
@@ -49,8 +55,7 @@ in
                   port =
                     mkOption {
                       type = types.int;
-                      default = 8000;
-                      example = 8000;
+                      example = 8001;
                       description = "The port to serve sync requests on";
                     };
                 };
@@ -59,29 +64,21 @@ in
     };
   config =
     let
-      smosPkgs = import ../nix/pkgs.nix;
-      smos-sync-service =
-        let
-          workingDir = "/www/smos/${envname}/data/";
-          smos-server-static =
-            pkgs.haskell.lib.justStaticExecutables (smosPkgs.smosPackages.smos-server);
-        in
-          {
-            description = "SmosSync ${envname} Service";
+      smosPkgs = (import ../nix/pkgs.nix).smosPackages;
+      docs-site-service =
+        with cfg.docs-site;
+        optionalAttrs enable {
+          "smos-docs-${envname}" = {
+            description = "Smos docs site ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SMOS_SERVER_LOG_LEVEL" =
-                  "${builtins.toString cfg.sync-server.log-level}";
-                "SMOS_SERVER_PORT" =
-                  "${builtins.toString cfg.sync-server.port}";
+                "SMOS_DOCS_SITE_PORT" =
+                  "${builtins.toString port}";
               };
             script =
               ''
-                mkdir -p "${workingDir}"
-                cd "${workingDir}"
-                ${smos-server-static}/bin/smos-server \
-                  serve
+                ${smosPkgs.smos-docs-site}/bin/smos-docs-site
               '';
             serviceConfig =
               {
@@ -89,26 +86,63 @@ in
                 RestartSec = 1;
                 Nice = 15;
               };
+            unitConfig =
+              {
+                StartLimitIntervalSec = 0;
+                # ensure Restart=always is always honoured
+              };
           };
+        };
       docs-site-host =
         with cfg.docs-site;
 
         optionalAttrs enable {
-          "${host}" =
+          "${head hosts}" =
             {
               enableACME = true;
               forceSSL = true;
-              locations."/" =
-                {
-                  root = "${smosPkgs.smosDocumentationSite}";
-                  extraConfig =
-                    ''
-                      index index.html;
-                      try_files $uri $uri/ $uri/index.html =404;
-                    '';
-                };
+              locations."/".proxyPass =
+                "http://localhost:${builtins.toString port}";
+              serverAliases = tail hosts;
             };
         };
+      sync-server-service =
+        with cfg.sync-server;
+
+        let
+          workingDir = "/www/smos/${envname}/data/";
+        in
+          optionalAttrs enable {
+            "smos-sync-${envname}" = {
+              description = "Smos sync server ${envname} Service";
+              wantedBy = [ "multi-user.target" ];
+              environment =
+                {
+                  "SMOS_SERVER_LOG_LEVEL" =
+                    "${builtins.toString log-level}";
+                  "SMOS_SERVER_PORT" =
+                    "${builtins.toString port}";
+                };
+              script =
+                ''
+                  mkdir -p "${workingDir}"
+                  cd "${workingDir}"
+                  ${smosPkgs.smos-server}/bin/smos-server \
+                    serve
+                '';
+              serviceConfig =
+                {
+                  Restart = "always";
+                  RestartSec = 1;
+                  Nice = 15;
+                };
+              unitConfig =
+                {
+                  StartLimitIntervalSec = 0;
+                  # ensure Restart=always is always honoured
+                };
+            };
+          };
       sync-server-host =
         with cfg.sync-server;
 
@@ -125,15 +159,18 @@ in
     in
       mkIf cfg.enable {
         systemd.services =
-          { "smos-sync-${envname}" = smos-sync-service; };
-        networking.firewall.allowedTCPPorts =
-          optional cfg.sync-server.enable cfg.sync-server.port;
+          concatAttrs [
+            docs-site-service
+            sync-server-service
+          ];
+        networking.firewall.allowedTCPPorts = builtins.concatLists [
+          (optional cfg.docs-site.enable cfg.docs-site.port)
+          (optional cfg.sync-server.enable cfg.sync-server.port)
+        ];
         services.nginx.virtualHosts =
-          optionalAttrs cfg.enable (
-            concatAttrs [
-              (docs-site-host)
-              (sync-server-host)
-            ]
-          );
+          concatAttrs [
+            docs-site-host
+            sync-server-host
+          ];
       };
 }

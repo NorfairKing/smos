@@ -9,8 +9,6 @@ module Smos.Docs.Site.Foundation where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Smos.Docs.Site.Assets
-import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
 import Yesod
@@ -22,7 +20,6 @@ mkYesodData "App" $(parseRoutesFile "routes")
 
 instance Yesod App where
   defaultLayout widget = do
-    app <- getYesod
     pageContent <-
       widgetToPageContent $ do
         addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css"
