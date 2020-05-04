@@ -81,9 +81,6 @@ in
 }
 ```
 
-Note that we have to use `builtins.fetchGit` and cannot use `fetchFromGitHub` because this needs to be fetched at evaluation time.
-
-
 #### Using the cachix cache
 
 If you use cachix, you can use `cachix use smos` to use the smos cachix cache.
