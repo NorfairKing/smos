@@ -18,6 +18,9 @@ Building smos:
 * [Forest cursor](https://cs-syd.eu/posts/2019-07-28-cursors-forest)
 * [Cursor-brick](https://cs-syd.eu/posts/2019-08-14-cursor-brick)
 * [Millismos](https://cs-syd.eu/posts/2019-08-14-cursor-brick)
+* [Mergeful values](https://cs-syd.eu/posts/2019-10-14-mergeful-value)
+* [Mergeful items](https://cs-syd.eu/posts/2019-11-28-mergeful-item)
+* [Mergeful collections](https://cs-syd.eu/posts/2019-12-28-mergeful-collection)
 
 
 #### Call for contributions
