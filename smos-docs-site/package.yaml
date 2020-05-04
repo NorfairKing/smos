@@ -17,6 +17,7 @@ library:
   - path
   - path-io
   - shakespeare
+  - smos
   - template-haskell
   - text
   - th-lift-instances

@@ -2,5 +2,7 @@
 
 /page/#Text PageR GET
 
+/keybindings KeybindingsR GET
+
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets

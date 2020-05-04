@@ -9,7 +9,7 @@ nice -n19 stack install :smos-docs-site \
   --file-watch \
   --exec='./scripts/restart.sh' \
   --ghc-options="-freverse-errors -O0" \
-  --no-nix-pure
+  --no-nix-pure \
   --fast \
   $@
 

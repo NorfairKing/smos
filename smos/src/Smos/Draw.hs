@@ -202,13 +202,7 @@ drawTable :: [[Widget n]] -> Widget n
 drawTable = hBox . intersperse (str " ") . map vBox . transpose
 
 drawKeyCombination :: KeyCombination -> Widget n
-drawKeyCombination = txt . go
-  where
-    go :: KeyCombination -> Text
-    go (PressExactly kp) = renderKeyPress kp
-    go PressAnyChar = "<any char>"
-    go PressAny = "<any key>"
-    go (PressCombination kp km) = renderKeyPress kp <> go km
+drawKeyCombination = txt . renderKeyCombination
 
 drawHistory :: Seq KeyPress -> Widget n
 drawHistory = txtWrap . T.unwords . map renderKeyPress . toList

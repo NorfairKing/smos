@@ -12,6 +12,10 @@
         Building/Installation
 
     <li>
+      <a href=@{KeybindingsR}>
+        Default Keybindings
+
+    <li>
       <a>
         Customisation
       <ul>
@@ -35,8 +39,7 @@
 
     <li>
       <a href=@{PageR "smos-query"}>
-        <code>
-          smos-query
+        The Smos Query Tool
 
     <li>
       <a href=@{PageR "synchronisation"}>

@@ -1,0 +1,67 @@
+<div .content>
+  <h1 .title>
+    Default Keybindings
+
+  <p>
+    These are the default keybindings of the `smos` TUI.
+  <p>
+    They are listed (and can only be activated) per context.
+  <p>
+    Note that they can all be reconfigured.
+  <p>
+    Also note that you can browse the keybindings that you have currently configured from
+    <b>
+      within Smos
+    using the
+    <code>
+      selectHelp
+    action.
+
+  <h2>
+    File
+  <h3>
+    Empty
+  ^{keyMapTable $ fileKeyMapEmptyMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Entry
+  ^{keyMapTable $ fileKeyMapEntryMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Header
+  ^{keyMapTable $ fileKeyMapHeaderMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Contents
+  ^{keyMapTable $ fileKeyMapContentsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Timestamps
+  ^{keyMapTable $ fileKeyMapTimestampsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Properties
+  ^{keyMapTable $ fileKeyMapPropertiesMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    State History
+  ^{keyMapTable $ fileKeyMapStateHistoryMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Tags
+  ^{keyMapTable $ fileKeyMapTagsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Logbook
+  ^{keyMapTable $ fileKeyMapLogbookMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  <h3>
+    Any
+  ^{keyMapTable $ fileKeyMapAnyMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+
+
+  <h2>
+    Reports
+  <h3>
+    Next Action Report
+  ^{keyMapTable $ reportsKeymapNextActionReportMatchers $ keyMapReportsKeyMap $ defaultKeyMap }
+
+  <h2>
+    Help
+  <h3>
+    List of keybindings
+  ^{keyMapTable $ helpKeyMapHelpMatchers $ keyMapHelpKeyMap $ defaultKeyMap }
+  <h3>
+    Search
+  ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap $ defaultKeyMap }
