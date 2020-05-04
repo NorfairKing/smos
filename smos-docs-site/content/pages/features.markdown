@@ -17,7 +17,7 @@ for an example of a configuration.
 ## Future-proof file format
 
 The Smos file format (`.smos`) is completely future proof because it is just
-a subset of YAML:
+a subset of YAML, which is plain text:
 
 ![Example smos file](/assets/smos.png)
 
@@ -28,19 +28,21 @@ a subset of YAML:
       DEADLINE: 2018-10-30
       SCHEDULED: 2018-10-20
     state-history:
-    - new-state: STARTED
-      timestamp: 2018-10-10 14:19:53.988042844000+0000
+    - state: STARTED
+      time: 2020-05-04 17:40:04.522146420000
     tags:
     - online
   forest:
   - header: Don't mess it up
     state-history:
-    - new-state: DONE
-      timestamp: 2018-10-10 14:19:54.388413954000+0000
+    - state: DONE
+      time: 2020-05-04 17:40:18.177282440000
+    - state: TODO
+      time: 2020-05-04 17:40:17.225761141000
   - header: Be smart about it
     state-history:
-    - new-state: TODO
-      timestamp: 2018-10-10 14:19:54.796427564000+0000
+    - state: TODO
+      time: 2020-05-04 17:40:25.881089668000
     tags:
     - work
 ```
