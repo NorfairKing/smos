@@ -23,8 +23,8 @@
             Customisation in Haskell
 
     <li>
-      <a href=@{PageR "concepts"}>
-        Concepts
+      <a href=@{PageR "directories"}>
+        Directories in a workflow
     <li>
       <a href=@{PageR "smos-file"}>
         Pieces of a Smos file
