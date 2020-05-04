@@ -5,17 +5,17 @@ module Smos.Docs.Site
   )
 where
 
-import           Data.Text (Text)
+import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import           Hakyll
-import           Hakyll.Web.Sass
-import           Smos.Actions
-import           Smos.Default
-import           Smos.Keys
-import           Smos.Types
-import           System.Directory
-import           System.IO
+import Hakyll
+import Hakyll.Web.Sass
+import Smos.Actions
+import Smos.Default
+import Smos.Keys
+import Smos.Types
+import System.Directory
+import System.IO
 
 smosDocsSite :: IO ()
 smosDocsSite = do
@@ -55,7 +55,6 @@ smosDocsSite = do
 pageCtx :: Context String
 pageCtx = defaultContext
 
-
 renderKeyMapping :: KeyMapping -> (Text, Text, Text)
 renderKeyMapping keyMapping =
   case keyMapping of
@@ -63,22 +62,21 @@ renderKeyMapping keyMapping =
     (MapAnyTypeableChar au) -> ("??", actionNameText $ actionUsingName au, actionUsingDescription au)
     (MapCatchAll act) -> ("any char", actionNameText $ actionName act, actionDescription act)
     (MapCombination kp km) ->
-      let (kp', cmd, desc) =  renderKeyMapping km
-      in (renderKeyPress kp <> kp', cmd, desc)
+      let (kp', cmd, desc) = renderKeyMapping km
+       in (renderKeyPress kp <> kp', cmd, desc)
 
 generateKeybindingDocs :: Text -> IO ()
 generateKeybindingDocs label =
   withFile "_generated/keybindings.markdown" WriteMode $ \h -> do
-  T.hPutStrLn h "---"
-  T.hPutStrLn h "title: Key Bindings"
-  T.hPutStrLn h "---"
-  T.hPutStrLn h ""
-  T.hPutStrLn h $ "## " <> label
-  T.hPutStrLn h "Key | Command | Description"
-  T.hPutStrLn h "---:+:-------:+:-----------:"
-  forM_ (keyMapHelpMatchers $ configKeyMap defaultConfig) $ \keyMapping ->
+    T.hPutStrLn h "---"
+    T.hPutStrLn h "title: Key Bindings"
+    T.hPutStrLn h "---"
+    T.hPutStrLn h ""
+    T.hPutStrLn h $ "## " <> label
+    T.hPutStrLn h "Key | Command | Description"
+    T.hPutStrLn h "---:+:-------:+:-----------:"
+    forM_ (keyMapHelpMatchers $ configKeyMap defaultConfig) $ \keyMapping ->
       T.hPutStrLn h $ renderRow $ renderKeyMapping keyMapping
-
   where
     renderRow :: (Text, Text, Text) -> Text
-    renderRow (kb, cmd, desc) = (T.pack $ escapeHtml $ T.unpack kb) <> " | " <> cmd <> " | " <> desc
+    renderRow (kb, cmd, desc) = T.pack (escapeHtml $ T.unpack kb) <> " | " <> cmd <> " | " <> desc
