@@ -4,43 +4,54 @@
 
   <ul .menu-list>
     <li>
-      <a>
+      <a href=@{PageR "features"}>
         Features
+
     <li>
-      <a>
+      <a href=@{PageR "building-installation"}>
         Building/Installation
+
     <li>
       <a>
         Customisation
       <ul>
         <li>
-          <a>
-            Configuration reference
+          <a href=@{PageR "customisation-default"}>
+            Customisation via configuration
         <li>
-          <a>
+          <a href=@{PageR "customisation-haskell"}>
             Customisation in Haskell
 
+    <li>
+      <a href=@{PageR "concepts"}>
+        Concepts
 
-  <p .menu-label>
-    Smos query
+    <li>
+      <a href=@{PageR "configuration-reference"}>
+        Configuration reference
 
+    <li>
+      <a href=@{PageR "smos-query"}>
+        <code>
+          smos-query
 
-  <p .menu-label>
-    Synchronisation
+    <li>
+      <a href=@{PageR "synchronisation"}>
+        Synchronisation
 
   <p .menu-label>
     Support
   
   <ul .menu-list>
     <li>
-      <a>
-        Featured blogposts
-    <li>
-      <a>
+      <a href=@{PageR "support"}>
         Support
     <li>
-      <a>
+      <a href="https://github.com/NorfairKing/smos">
         Smos on Github
+    <li>
+      <a href=@{PageR "blogposts"}>
+        Featured blogposts
     <li>
       <a href="https://cs-syd.eu">
         CS SYD

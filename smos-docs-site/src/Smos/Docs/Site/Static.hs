@@ -8,4 +8,4 @@ where
 
 import Smos.Docs.Site.Static.TH
 
-$mkPages
+$mkDocPages

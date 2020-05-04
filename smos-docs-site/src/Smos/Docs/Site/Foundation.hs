@@ -3,9 +3,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Smos.Docs.Site.Foundation where
 
+import Data.Text (Text)
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
@@ -13,7 +15,7 @@ import Yesod
 
 data App = App
 
-mkYesod "App" $(parseRoutesFile "routes")
+mkYesodData "App" $(parseRoutesFile "routes")
 
 instance Yesod App where
   defaultLayout widget = do
@@ -30,4 +32,6 @@ instance Yesod App where
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
 
 getHomeR :: Handler Html
-getHomeR = defaultLayout $(widgetFile "home")
+getHomeR = defaultLayout $ do
+  setTitle "Smos Documentation"
+  $(widgetFile "home")

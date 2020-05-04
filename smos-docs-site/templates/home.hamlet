@@ -1,2 +1,0 @@
-$forall p <- pages
-  #{docPageTitle p}

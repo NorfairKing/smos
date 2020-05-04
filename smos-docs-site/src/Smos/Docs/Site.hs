@@ -5,6 +5,7 @@ module Smos.Docs.Site
   )
 where
 
+import Smos.Docs.Site.Application
 import Smos.Docs.Site.Foundation
 import Yesod
 

@@ -72,7 +72,7 @@ sourceFilesInNonHiddenDirsRecursively ::
   MonadIO m =>
   Path Abs Dir ->
   ConduitT i (Path Abs File) m ()
-sourceFilesInNonHiddenDirsRecursively dir = walkSafe go dir
+sourceFilesInNonHiddenDirsRecursively = walkSafe go
   where
     go ::
       Path Abs Dir ->
@@ -100,8 +100,8 @@ isHiddenIn curdir ad =
 hidden :: Path r File -> Bool
 hidden f = ".swp" `isSuffixOf` toFilePath f
 
-mkDocPages :: FilePath -> Q [DocPage]
-mkDocPages fp = do
+mkDocPages' :: FilePath -> Q [DocPage]
+mkDocPages' fp = do
   cd <- runIO $ resolveDir' fp
   postFiles <-
     runIO $ Conduit.sourceToList $ sourceFilesInNonHiddenDirsRecursively cd
@@ -161,28 +161,28 @@ splitContents cs =
         [contents] -> ([], contents)
         _ -> error $ "Failed to parse attributes in" <> T.unpack cs
 
-mkPages :: Q [Dec]
-mkPages = do
-  pages <- mkDocPages "content/pages"
+mkDocPages :: Q [Dec]
+mkDocPages = do
+  docPages <- mkDocPages' "content/pages"
   individuals <-
     fmap concat
-      $ forM pages
+      $ forM docPages
       $ \p -> do
         pb <- lift p
-        let name = mkName $ pageName $ T.unpack $ docPageUrl p
+        let name = mkName $ docPageName $ T.unpack $ docPageUrl p
             typ = ConT ''DocPage
             body = NormalB pb
             pat = VarP name
         pure [SigD name typ, ValD pat body []]
-  pagesE <- lift pages
-  let name = mkName "pages"
+  docPagesE <- lift docPages
+  let name = mkName "docPages"
       typ = AppT ListT $ ConT ''DocPage
-      body = NormalB pagesE
+      body = NormalB docPagesE
       pat = VarP name
       allPages = [SigD name typ, ValD pat body []]
   pure $ allPages ++ individuals
   where
-    pageName = map go
+    docPageName = map go
       where
         go '-' = '_'
         go c = c
