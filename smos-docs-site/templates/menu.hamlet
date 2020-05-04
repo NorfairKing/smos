@@ -1,0 +1,46 @@
+<aside class="menu">
+  <p .menu-label>
+    Smos
+
+  <ul .menu-list>
+    <li>
+      <a>
+        Features
+    <li>
+      <a>
+        Building/Installation
+    <li>
+      <a>
+        Customisation
+      <ul>
+        <li>
+          <a>
+            Configuration reference
+        <li>
+          <a>
+            Customisation in Haskell
+
+
+  <p .menu-label>
+    Smos query
+
+
+  <p .menu-label>
+    Synchronisation
+
+  <p .menu-label>
+    Support
+  
+  <ul .menu-list>
+    <li>
+      <a>
+        Featured blogposts
+    <li>
+      <a>
+        Support
+    <li>
+      <a>
+        Smos on Github
+    <li>
+      <a href="https://cs-syd.eu">
+        CS SYD

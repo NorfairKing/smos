@@ -1,0 +1,15 @@
+<section .hero>
+  <div .hero-body>
+    <div .container>
+      <h1 .title>
+        Smos
+      <h2 .subtitle>
+        A comprehensive self-management system
+
+<section .section .container>
+  <div .columns>
+    <div .column .is-3>
+      ^{menu}
+
+    <div .column .is-9>
+      ^{widget}
