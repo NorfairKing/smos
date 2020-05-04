@@ -1,3 +1,6 @@
 / HomeR GET
 
 /page/#Text PageR GET
+
+/assets/*Texts AssetsR GET
+/assets-static AssetsStaticR EmbeddedStatic appAssets

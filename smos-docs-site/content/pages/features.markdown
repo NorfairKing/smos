@@ -19,7 +19,7 @@ for an example of a configuration.
 The Smos file format (`.smos`) is completely future proof because it is just
 a subset of YAML:
 
-![Example](../assets/smos.png)
+![Example smos file](/assets/smos.png)
 
 ``` smos
 - entry:

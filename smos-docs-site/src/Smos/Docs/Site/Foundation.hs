@@ -8,12 +8,15 @@
 module Smos.Docs.Site.Foundation where
 
 import Data.Text (Text)
+import qualified Data.Text as T
+import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
 import Yesod
+import Yesod.EmbeddedStatic
 
-data App = App
+data App = App {appAssets :: EmbeddedStatic}
 
 mkYesodData "App" $(parseRoutesFile "routes")
 
@@ -26,7 +29,7 @@ instance Yesod App where
         addStylesheetRemote
           "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
         toWidgetHead
-          [hamlet|<link rel="icon" href="https://cs-syd.eu/favicon.ico" sizes="32x32" type="image/x-icon">|]
+          [hamlet|<link rel="icon" href="https://cs-syd.eu/logo/res/favicon.ico" sizes="32x32" type="image/x-icon">|]
         let menu = $(widgetFile "menu")
         $(widgetFile "default-body")
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
@@ -35,3 +38,8 @@ getHomeR :: Handler Html
 getHomeR = defaultLayout $ do
   setTitle "Smos Documentation"
   $(widgetFile "home")
+
+getAssetsR :: [Text] -> Handler Html
+getAssetsR t = do
+  neverExpires
+  redirect $ T.intercalate "/" $ "/assets-static/res" : t
