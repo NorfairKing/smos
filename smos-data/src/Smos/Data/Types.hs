@@ -670,7 +670,7 @@ validTagChar = validationIsValid . validateTagChar
 
 validateTagChar :: Char -> Validation
 validateTagChar c =
-  mconcat [validateHeaderChar c, declare "The character is not a space" $ not $ Char.isSpace c]
+  mconcat [validateHeaderChar c, declare "The character is not whitespace" $ not $ Char.isSpace c]
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]

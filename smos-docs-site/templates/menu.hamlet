@@ -25,6 +25,9 @@
     <li>
       <a href=@{PageR "concepts"}>
         Concepts
+    <li>
+      <a href=@{PageR "smos-file"}>
+        Pieces of a Smos file
 
     <li>
       <a href=@{PageR "configuration-reference"}>
