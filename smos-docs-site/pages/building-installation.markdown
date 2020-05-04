@@ -67,7 +67,7 @@ in
     smosModule
     # [...]
   ];
-  smos = {
+  programs.smos = {
     enable = true;
     backup = {
       enable = true;
