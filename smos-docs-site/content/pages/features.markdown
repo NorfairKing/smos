@@ -3,9 +3,9 @@ title: Features
 date: 2018-11-13
 ---
 
-## GTD for power-users
+## Self-management for power-users
 
-Smos is a comprehensive system for GTD with power-users as the audience.
+Smos is a comprehensive system for implementing self-management as a power-user.
 
 ## Completely customisable
 

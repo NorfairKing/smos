@@ -1,14 +1,7 @@
 ---
-title: SMOS Concepts
+title: Smos Concepts
 date: 2020-04-08
 ---
-
-GTD
-: GTD is a time management method by David Allen (see [Getting This
-  Done](https://en.wikipedia.org/wiki/Getting_Things_Done) on
-  Wikipedia).
-
-  SMOS is a personal management tool inspired by GTD.
 
 
 <!-- the next concepts are related to SMOS configuration, but AFAIK
