@@ -1,8 +1,6 @@
 ---
-title: Using smos-query
+title: Standard arguments to `smos-query` commands
 ---
-
-# Standard arguments
 
 ## Filters
 

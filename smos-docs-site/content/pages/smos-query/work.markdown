@@ -6,24 +6,6 @@ date: 2018-12-03
 The work report is the most important report that you will use.
 This report shows you your agenda for the day, and the next actions that you can perform in your current context.
 
-``` plain
-Usage: smos-query work CONTEXT [FILTER]
-                       [--add-column|--project PROJECTION]
-                       [--sort SORTER]
-                       ([--hide-archived] | [-a|--show-archived])
-  Show the work overview
-
-Available options:
-  CONTEXT                  The context that you are in
-  FILTER                   A filter to filter entries by
-  --add-column,--project PROJECTION
-                           A projection to project entries onto fields
-  --sort SORTER            A sorter to sort entries by
-  --hide-archived          ignore archived files.
-  -a,--show-archived       Don't ignore archived files.
-  -h,--help                Show this help text
-```
-
 To set up a work report, you will first need contexts.
 For example, you can use these in your config file:
 

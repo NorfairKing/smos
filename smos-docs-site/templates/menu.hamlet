@@ -42,34 +42,40 @@
         The Smos Query Tool
       <ul>
         <li>
-          <a href=@{PageR "smos-query/next"}>
+          <a href=@{SmosQueryCommandR "next"}>
             Next action report
         <li>
-          <a href=@{PageR "smos-query/work"}>
+          <a href=@{SmosQueryCommandR "work"}>
             Work report
         <li>
-          <a href=@{PageR "smos-query/agenda"}>
+          <a href=@{SmosQueryCommandR "agenda"}>
             Agenda report
         <li>
-          <a href=@{PageR "smos-query/projects"}>
+          <a href=@{SmosQueryCommandR "projects"}>
             Projects report
         <li>
-          <a href=@{PageR "smos-query/waiting"}>
+          <a href=@{SmosQueryCommandR "stuck"}>
+            Stuck Projects report
+        <li>
+          <a href=@{SmosQueryCommandR "waiting"}>
             Waiting report
         <li>
-          <a href=@{PageR "smos-query/clock"}>
+          <a href=@{SmosQueryCommandR "clock"}>
             Clock report
         <li>
-          <a href=@{PageR "smos-query/log"}>
+          <a href=@{SmosQueryCommandR "log"}>
             Log report
         <li>
-          <a href=@{PageR "smos-query/stats"}>
+          <a href=@{SmosQueryCommandR "stats"}>
             Stats report
         <li>
-          <a href=@{PageR "smos-query/tags"}>
+          <a href=@{SmosQueryCommandR "tags"}>
             Tags report
         <li>
-          <a href=@{PageR "smos-query/entry"}>
+          <a href=@{SmosQueryCommandR "report"}>
+            Custom Reports
+        <li>
+          <a href=@{SmosQueryCommandR "entry"}>
             Entry report
         <li>
           <a href=@{PageR "smos-query/standard-arguments"}>

@@ -14,10 +14,12 @@ library:
   - cmark-gfm
   - conduit
   - data-default
+  - optparse-applicative
   - path
   - path-io
   - shakespeare
   - smos
+  - smos-query
   - template-haskell
   - text
   - th-lift-instances
