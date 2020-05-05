@@ -40,6 +40,40 @@
     <li>
       <a href=@{PageR "smos-query"}>
         The Smos Query Tool
+      <ul>
+        <li>
+          <a href=@{PageR "smos-query/next"}>
+            Next action report
+        <li>
+          <a href=@{PageR "smos-query/work"}>
+            Work report
+        <li>
+          <a href=@{PageR "smos-query/agenda"}>
+            Agenda report
+        <li>
+          <a href=@{PageR "smos-query/projects"}>
+            Projects report
+        <li>
+          <a href=@{PageR "smos-query/waiting"}>
+            Waiting report
+        <li>
+          <a href=@{PageR "smos-query/clock"}>
+            Clock report
+        <li>
+          <a href=@{PageR "smos-query/log"}>
+            Log report
+        <li>
+          <a href=@{PageR "smos-query/stats"}>
+            Stats report
+        <li>
+          <a href=@{PageR "smos-query/tags"}>
+            Tags report
+        <li>
+          <a href=@{PageR "smos-query/entry"}>
+            Entry report
+        <li>
+          <a href=@{PageR "smos-query/standard-arguments"}>
+            Standard arguments
 
     <li>
       <a href=@{PageR "synchronisation"}>

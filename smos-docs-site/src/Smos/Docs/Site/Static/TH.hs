@@ -184,4 +184,5 @@ mkDocPages = do
     docPageName = map go
       where
         go '-' = '_'
+        go '/' = '_'
         go c = c
