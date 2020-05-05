@@ -36,7 +36,7 @@ entrySetTodoState ts =
   Action
     { actionName = "entrySetTodoState_" <> ActionName (todoStateText ts),
       actionFunc = modifyMTodoStateM $ const $ Just ts,
-      actionDescription = "Set the given TODO state of the selected current entry"
+      actionDescription = "Set the given TODO state of the selected current entry to " <> todoStateText ts
     }
 
 entryToggleTodoState :: TodoState -> Action
@@ -49,7 +49,7 @@ entryToggleTodoState ts =
           if ts == ts'
             then Nothing
             else Just ts,
-      actionDescription = "Toggle the given TODO state of the selected current entry"
+      actionDescription = "Toggle the given TODO state of the selected current entry to " <> todoStateText ts
     }
 
 entryUnsetTodoState :: Action
@@ -67,7 +67,7 @@ subtreeSetTodoState ts =
       actionFunc = modifyFileCursorS $ \sfc -> do
         now <- liftIO getCurrentTime
         pure $ smosFileSubtreeSetTodoState now (Just ts) sfc,
-      actionDescription = "Set the given TODO state on all of the entries in the current subtree"
+      actionDescription = "Set the given TODO state on all of the entries in the current subtree to " <> todoStateText ts
     }
 
 subtreeUnsetTodoState :: Action
