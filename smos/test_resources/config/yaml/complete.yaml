@@ -276,7 +276,7 @@ keys:
     header:
     - action: entrySelectWhole
       key: <Esc>
-    - action: entrySelectWhole
+    - action: entrySelectContents
       key: <Enter>
     - action: headerInsert
       key: <char>

@@ -549,7 +549,7 @@
                     "key": "<Esc>"
                 },
                 {
-                    "action": "entrySelectWhole",
+                    "action": "entrySelectContents",
                     "key": "<Enter>"
                 },
                 {
