@@ -126,7 +126,7 @@ defaultFileKeyMap =
       fileKeyMapHeaderMatchers =
         listMatchers
           [ exactKey KEsc entrySelectWhole,
-            exactKey KEnter entrySelectWhole,
+            exactKey KEnter entrySelectContents,
             anyChar headerInsert,
             exactKey KBS headerRemove,
             exactKey KDel headerDelete,
