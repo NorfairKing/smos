@@ -8,6 +8,7 @@ import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Text.Read
+import YamlParse.Applicative
 
 data Arguments
   = Arguments Command Flags
@@ -55,21 +56,16 @@ data Configuration
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON =
-    withObject "Configuration" $ \o ->
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema =
+    objectParser "Configuration" $
       Configuration
-        <$> ( do
-                ms <- o .:? "log-level"
-                case ms of
-                  Nothing -> pure Nothing
-                  Just s ->
-                    case parseLogLevel s of
-                      Nothing -> fail $ "Unknown log level: " <> s
-                      Just ll -> pure $ Just ll
-            )
-        <*> o .:? "uuid-file"
-        <*> o .:? "database-file"
-        <*> o .:? "port"
+        <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
+        <*> optionalField "uuid-file" "The file in which to store the server uuid"
+        <*> optionalField "database-file" "The file in which to store the database"
+        <*> optionalField "port" "The port on which to serve api requests"
 
 newtype Dispatch
   = DispatchServe ServeSettings

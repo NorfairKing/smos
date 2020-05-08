@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Scheduler.OptParse
   ( getSettings,
@@ -14,6 +15,7 @@ import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
 import qualified System.Environment as System
+import YamlParse.Applicative (confDesc)
 
 getSettings :: IO Settings
 getSettings = do
@@ -83,7 +85,7 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
+    help_ = fullDesc <> progDesc description <> confDesc @Configuration
     description = "smos-scheduler"
 
 parseFlags :: Parser Flags

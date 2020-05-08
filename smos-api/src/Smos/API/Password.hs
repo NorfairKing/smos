@@ -29,6 +29,7 @@ import Data.Validity
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Web.PathPieces
+import YamlParse.Applicative
 
 newtype Password
   = Password
@@ -63,7 +64,10 @@ instance FromJSONKey Password where
   fromJSONKey = FromJSONKeyTextParser parsePassword
 
 instance FromJSON Password where
-  parseJSON = withText "Password" parsePassword
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Password where
+  yamlSchema = Password <$> yamlSchema
 
 instance PathPiece Password where
   fromPathPiece = parsePassword

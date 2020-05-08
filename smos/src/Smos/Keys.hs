@@ -29,6 +29,7 @@ import Import
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer
+import YamlParse.Applicative
 
 instance Validity Key where
   validate k =
@@ -44,11 +45,10 @@ instance ToJSON Key where
   toJSON kp = toJSON $ renderKey kp
 
 instance FromJSON Key where
-  parseJSON =
-    withText "Key" $ \t ->
-      case parse (keyP <* eof) "json text" t of
-        Left err -> fail $ errorBundlePretty err
-        Right r -> pure r
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Key where
+  yamlSchema = eitherParser (left errorBundlePretty . parse (keyP <* eof) "yaml text") yamlSchema
 
 instance Validity Modifier where
   validate = trivialValidation
@@ -57,11 +57,10 @@ instance ToJSON Modifier where
   toJSON kp = toJSON $ renderModifier kp
 
 instance FromJSON Modifier where
-  parseJSON =
-    withText "Modifier" $ \t ->
-      case parse (modifierP <* eof) "json text" t of
-        Left err -> fail $ errorBundlePretty err
-        Right r -> pure r
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Modifier where
+  yamlSchema = eitherParser (left errorBundlePretty . parse (modifierP <* eof) "yaml text") yamlSchema
 
 data KeyPress
   = KeyPress
@@ -78,11 +77,10 @@ instance ToJSON KeyPress where
   toJSON kp = toJSON $ renderKeyPress kp
 
 instance FromJSON KeyPress where
-  parseJSON =
-    withText "KeyPress" $ \t ->
-      case parse (keyPressP <* eof) "json text" t of
-        Left err -> fail $ errorBundlePretty err
-        Right r -> pure r
+  parseJSON = viaYamlSchema
+
+instance YamlSchema KeyPress where
+  yamlSchema = eitherParser (left errorBundlePretty . parse (keyPressP <* eof) "yaml text") yamlSchema
 
 type P = Parsec Void Text
 
@@ -179,11 +177,10 @@ instance ToJSON MatcherConfig where
   toJSON kp = toJSON $ renderMatcherConfig kp
 
 instance FromJSON MatcherConfig where
-  parseJSON =
-    withText "MatcherConfig" $ \t ->
-      case parse (matcherConfigP <* eof) "json text" t of
-        Left err -> fail $ errorBundlePretty err
-        Right r -> pure r
+  parseJSON = viaYamlSchema
+
+instance YamlSchema MatcherConfig where
+  yamlSchema = eitherParser (left errorBundlePretty . parse (matcherConfigP <* eof) "yaml text") yamlSchema
 
 renderMatcherConfig :: MatcherConfig -> Text
 renderMatcherConfig mc =

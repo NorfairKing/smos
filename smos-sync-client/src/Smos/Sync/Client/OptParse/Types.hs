@@ -4,7 +4,6 @@
 module Smos.Sync.Client.OptParse.Types where
 
 import Control.Monad.Logger
-import qualified Data.Text as T
 import Data.Validity
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -13,6 +12,7 @@ import Servant.Client (BaseUrl)
 import Smos.API
 import qualified Smos.Report.OptParse.Types as Report
 import Text.Read
+import YamlParse.Applicative
 
 data Arguments
   = Arguments Command Flags
@@ -78,8 +78,11 @@ data Configuration
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON v =
-    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "sync"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema =
+    Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "sync" "Synchronisation configuration")
 
 data SyncConfiguration
   = SyncConfiguration
@@ -96,26 +99,21 @@ data SyncConfiguration
   deriving (Show, Eq, Generic)
 
 instance FromJSON SyncConfiguration where
-  parseJSON =
-    withObject "SyncConfiguration" $ \o ->
+  parseJSON = viaYamlSchema
+
+instance YamlSchema SyncConfiguration where
+  yamlSchema =
+    objectParser "SyncConfiguration" $
       SyncConfiguration
-        <$> ( do
-                ms <- o .:? "log-level"
-                case ms of
-                  Nothing -> pure Nothing
-                  Just s ->
-                    case parseLogLevel s of
-                      Nothing -> fail $ "Unknown log level: " <> s
-                      Just ll -> pure $ Just ll
-            )
-        <*> o .:? "server-url"
-        <*> o .:? "contents-dir"
-        <*> o .:? "uuid-file"
-        <*> o .:? "metadata-db"
-        <*> o .:? "ignore-files"
-        <*> o .:? "username"
-        <*> o .:? "password"
-        <*> o .:? "session-path"
+        <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
+        <*> optionalField "server-url" "The url of the sync server. Example: api.smos.cs-syd.eu"
+        <*> optionalField "contents-dir" "The directory of the files to synchronise. By default this will be the workflow directory."
+        <*> optionalField "uuid-file" "The file in which to store the server uuid"
+        <*> optionalField "metadata-db" "The file to store the metadata database in"
+        <*> optionalField "ignore-files" "Which files to ignore"
+        <*> optionalField "username" "The username to log into the sync server"
+        <*> optionalField "password" "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
+        <*> optionalField "session-path" "The file in which to store the login session cookie"
 
 data Dispatch
   = DispatchRegister RegisterSettings
@@ -148,13 +146,14 @@ data IgnoreFiles
 instance Validity IgnoreFiles
 
 instance FromJSON IgnoreFiles where
-  parseJSON =
-    withText "IgnoreFiles" $ \t ->
-      case t of
-        "nothing" -> pure IgnoreNothing
-        "no" -> pure IgnoreNothing
-        "hidden" -> pure IgnoreHiddenFiles
-        _ -> fail $ "Unknown 'IgnoreFiles' value: " <> T.unpack t
+  parseJSON = viaYamlSchema
+
+instance YamlSchema IgnoreFiles where
+  yamlSchema =
+    alternatives
+      [ IgnoreNothing <$ literalString "nothing" <?> "Don't ignore any files",
+        IgnoreNothing <$ literalString "hidden" <?> "Ignore hidden files"
+      ]
 
 parseLogLevel :: String -> Maybe LogLevel
 parseLogLevel s = readMaybe $ "Level" <> s

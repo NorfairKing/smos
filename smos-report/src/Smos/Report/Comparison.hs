@@ -14,6 +14,7 @@ import Data.Aeson
 import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
+import YamlParse.Applicative
 
 data Comparison
   = LTC
@@ -25,9 +26,14 @@ data Comparison
 
 instance Validity Comparison
 
-instance ToJSON Comparison
+instance ToJSON Comparison where
+  toJSON = toJSON . renderComparison
 
-instance FromJSON Comparison
+instance FromJSON Comparison where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Comparison where
+  yamlSchema = maybeParser parseComparison yamlSchema
 
 comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
 comparisonFunc c =

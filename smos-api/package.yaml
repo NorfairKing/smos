@@ -43,3 +43,4 @@ library:
   - validity-uuid
   - wai
   - warp
+  - yamlparse-applicative

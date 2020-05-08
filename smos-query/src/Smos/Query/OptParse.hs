@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Query.OptParse where
 
@@ -28,6 +29,7 @@ import Smos.Report.TimeBlock
 import qualified System.Environment as System
 import System.Exit
 import Text.Read (readMaybe)
+import YamlParse.Applicative (confDesc)
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
@@ -207,7 +209,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
+    help_ = fullDesc <> progDesc description <> confDesc @Configuration
     description = "smos-query"
 
 parseArgs :: Parser Arguments
@@ -256,7 +258,7 @@ parseCommandReport = info parser modifier
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Show the work overview"
+    modifier = fullDesc <> progDesc "Show the work overview" <> confDesc @WorkConfiguration
     parser =
       CommandWork
         <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs
@@ -268,7 +270,7 @@ parseCommandWork = info parser modifier
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Print the \"waiting\" tasks"
+    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks" <> confDesc @WaitingConfiguration
     parser =
       CommandWaiting
         <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)

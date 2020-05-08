@@ -24,6 +24,7 @@ packages:
 - smos-client-gen
 - smos-sync-client
 - smos-sync-client-gen
+
 extra-deps:
 - hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
 - hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
@@ -129,6 +130,10 @@ extra-deps:
   - validity-unordered-containers
   - validity-uuid
   - validity-vector
+- github: NorfairKing/yamlparse-applicative
+  commit: 08369b1b3e1c0ebc0f4e2763e63db48227345081
+  subdirs:
+  - yamlparse-applicative
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/323fe92057bb38475a446ff5e18d3b388c2e4403.tar.gz" ]
   add-gc-roots: true

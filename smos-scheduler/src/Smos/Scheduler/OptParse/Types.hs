@@ -21,6 +21,7 @@ import Smos.Data
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import System.Cron (CronSchedule, parseCronSchedule)
+import YamlParse.Applicative
 
 data Flags
   = Flags
@@ -37,8 +38,10 @@ data Configuration
   deriving (Show, Eq)
 
 instance FromJSON Configuration where
-  parseJSON v =
-    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "scheduler"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema = Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
 
 data SchedulerConfiguration
   = SchedulerConfiguration
@@ -48,15 +51,23 @@ data SchedulerConfiguration
   deriving (Show, Eq)
 
 instance FromJSON SchedulerConfiguration where
-  parseJSON =
-    withObject "SchedulerConfiguration" $ \o ->
-      SchedulerConfiguration <$> o .:? "state-file" <*> o .:? "schedule"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema SchedulerConfiguration where
+  yamlSchema =
+    objectParser "SchedulerConfiguration" $
+      SchedulerConfiguration
+        <$> optionalField "state-file" "The file to store the scheduler state in"
+        <*> optionalField "schedule" "The scheduler schedule"
 
 newtype Schedule
   = Schedule
       { scheduleItems :: [ScheduleItem]
       }
   deriving (Show, Eq, Generic, FromJSON)
+
+instance YamlSchema Schedule where
+  yamlSchema = Schedule <$> yamlSchema
 
 data ScheduleItem
   = ScheduleItem
@@ -76,6 +87,14 @@ instance FromJSON ScheduleItem where
                   Left err -> fail err
                   Right cs -> pure cs
             )
+
+instance YamlSchema ScheduleItem where
+  yamlSchema =
+    objectParser "ScheduleItem" $
+      ScheduleItem
+        <$> requiredField "template" "The file to copy from"
+        <*> requiredField "destination" "The file to copy to"
+        <*> requiredFieldWith "schedule" "The schedule on which to do the copying" (eitherParser parseCronSchedule yamlSchema)
 
 data Environment
   = Environment

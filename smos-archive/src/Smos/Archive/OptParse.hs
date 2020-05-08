@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Archive.OptParse
   ( getSettings,
@@ -11,7 +12,9 @@ import Path.IO
 import Smos.Archive.OptParse.Types
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+import qualified Smos.Report.OptParse.Types as Report
 import qualified System.Environment as System
+import YamlParse.Applicative (confDesc)
 
 getSettings :: IO Settings
 getSettings = do
@@ -57,7 +60,7 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
+    help_ = fullDesc <> progDesc description <> confDesc @Report.Configuration
     description = "smos-archive"
 
 parseFlags :: Parser Flags

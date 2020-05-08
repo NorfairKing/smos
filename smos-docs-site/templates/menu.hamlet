@@ -38,7 +38,7 @@
         Configuration reference
 
     <li>
-      <a href=@{PageR "smos-query"}>
+      <a href=@{SmosQueryR}>
         The Smos Query Tool
       <ul>
         <li>

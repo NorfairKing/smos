@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Report.OptParse where
 
@@ -18,6 +19,7 @@ import Smos.Report.Config
 import Smos.Report.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
+import YamlParse.Applicative hiding (Parser)
 
 combineToConfig ::
   SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
@@ -159,7 +161,7 @@ parseYamlConfig configFile =
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
-getConfiguration :: FromJSON a => Flags -> Environment -> IO (Maybe a)
+getConfiguration :: (FromJSON a, YamlSchema a) => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do
   mConfigFile <-
     case msum [flagConfigFile, envConfigFile] of
@@ -181,5 +183,5 @@ getConfiguration Flags {..} Environment {..} = do
         ".yaml" -> parseYamlConfig configFile
         _ -> parseYamlConfig configFile
     case errOrConfig of
-      Left err -> die err
+      Left err -> die $ unlines [err, "Config format reference:", T.unpack $ prettySchema $ explainParser $ yamlSchema @Configuration]
       Right conf -> pure conf

@@ -109,6 +109,7 @@ import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Path
+import YamlParse.Applicative
 
 newtype SmosFile
   = SmosFile
@@ -386,6 +387,12 @@ instance FromJSON PropertyName where
 
 instance FromJSONKey PropertyName where
   fromJSONKey = FromJSONKeyTextParser parseJSONPropertyName
+
+instance YamlSchema PropertyName where
+  yamlSchema = extraParser parseJSONPropertyName yamlSchema
+
+instance YamlKeySchema PropertyName where
+  yamlKeySchema = extraParser parseJSONPropertyName yamlKeySchema
 
 parseJSONPropertyName :: Monad m => Text -> m PropertyName
 parseJSONPropertyName t =

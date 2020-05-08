@@ -23,6 +23,7 @@ library:
     - smos-report
     - time
     - validity
+    - yamlparse-applicative
 
 executables:
   smos-archive:

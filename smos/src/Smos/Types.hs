@@ -35,6 +35,7 @@ import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
 import System.FileLock
+import YamlParse.Applicative
 
 data SmosConfig
   = SmosConfig
@@ -165,6 +166,9 @@ newtype ActionName
   deriving (Show, Read, Eq, Ord, Generic, IsString, Semigroup, Monoid, FromJSON, ToJSON)
 
 instance Validity ActionName
+
+instance YamlSchema ActionName where
+  yamlSchema = ActionName <$> yamlSchema
 
 data Action
   = Action

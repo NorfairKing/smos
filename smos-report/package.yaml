@@ -37,3 +37,4 @@ library:
   - validity-text
   - validity-time
   - yaml
+  - yamlparse-applicative
