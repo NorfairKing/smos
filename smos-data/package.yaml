@@ -26,6 +26,7 @@ library:
   - text
   - time
   - validity
+  - validity-aeson
   - validity-containers
   - validity-path
   - validity-text

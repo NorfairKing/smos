@@ -102,6 +102,7 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Data.Validity
+import Data.Validity.Aeson
 import Data.Validity.Containers ()
 import Data.Validity.Text ()
 import Data.Validity.Time ()
@@ -716,7 +717,7 @@ conseqs (a : b : as) = (a, b) : conseqs (b : as)
 instance NFData Logbook
 
 instance FromJSON Logbook where
-  parseJSON v = do
+  parseJSON v = parseJSONValid $ do
     els <- parseJSON v
     case els of
       [] -> pure $ LogClosed []
@@ -727,13 +728,9 @@ instance FromJSON Logbook where
             (\o -> (,) <$> (unForYaml <$> o .: "start") <*> (fmap unForYaml <$> o .:? "end"))
             e
         rest <- mapM parseJSON es
-        let candidate =
-              case mend of
-                Nothing -> LogOpen start rest
-                Just end -> LogClosed $ LogbookEntry start end : rest
-        case prettyValidate candidate of
-          Left err -> fail $ unlines ["JSON represented an invalid logbook:", err]
-          Right r -> pure r
+        pure $ case mend of
+          Nothing -> LogOpen start rest
+          Just end -> LogClosed $ LogbookEntry start end : rest
 
 instance ToJSON Logbook where
   toJSON = toJSON . go
@@ -782,12 +779,8 @@ instance Validity LogbookEntry where
 instance NFData LogbookEntry
 
 instance FromJSON LogbookEntry where
-  parseJSON =
-    withObject "LogbookEntry" $ \o -> do
-      candidate <- LogbookEntry <$> (unForYaml <$> o .: "start") <*> (unForYaml <$> o .: "end")
-      case prettyValidate candidate of
-        Left err -> fail $ unlines ["JSON represented an invalid logbook entry:", err]
-        Right r -> pure r
+  parseJSON = parseJSONValidWith . withObject "LogbookEntry" $ \o ->
+    LogbookEntry <$> (unForYaml <$> o .: "start") <*> (unForYaml <$> o .: "end")
 
 instance ToJSON LogbookEntry where
   toJSON LogbookEntry {..} =
