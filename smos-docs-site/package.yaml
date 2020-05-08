@@ -10,9 +10,22 @@ copyright: "2018-2019 Tom Sydney Kerckhove"
 library:
   source-dirs: src
   dependencies:
-  - base >= 4.7 && < 5
-  - hakyll
-  - hakyll-sass
+  - base >= 4.7
+  - cmark-gfm
+  - conduit
+  - data-default
+  - optparse-applicative
+  - path
+  - path-io
+  - shakespeare
+  - smos
+  - smos-query
+  - template-haskell
+  - text
+  - th-lift-instances
+  - time
+  - yesod
+  - yesod-static
 
 executables:
   smos-docs-site:

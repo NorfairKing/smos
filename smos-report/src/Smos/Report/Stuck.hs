@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Stuck where
 
 import Data.Function
 import Data.List
+import Data.Maybe
 import Data.Ord
 import Data.Time
 import Data.Tree
@@ -40,15 +42,15 @@ makeStuckReportEntry stuckReportEntryFilePath sf = do
   e <- latestEntryInSmosFile sf
   let stuckReportEntryHeader = entryHeader e
       stuckReportEntryState = entryState e
-      stuckReportEntryLatestChange = latestStateChange $ entryStateHistory e
+      stuckReportEntryLatestChange = latestTimestampInEntry e
   pure StuckReportEntry {..}
 
 latestEntryInSmosFile :: SmosFile -> Maybe Entry
 latestEntryInSmosFile =
   fmap last
     . headMay
-    . groupBy ((==) `on` latestStateChange . entryStateHistory)
-    . sortOn (Down . latestStateChange . entryStateHistory)
+    . groupBy ((==) `on` latestTimestampInEntry)
+    . sortOn (Down . latestTimestampInEntry)
     . concatMap flatten
     . smosFileForest
   where
@@ -56,8 +58,28 @@ latestEntryInSmosFile =
     headMay [] = Nothing
     headMay (h : _) = Just h
 
+latestTimestampInEntry :: Entry -> Maybe UTCTime
+latestTimestampInEntry Entry {..} =
+  maximumMay $
+    catMaybes
+      [ latestStateChange entryStateHistory,
+        latestClockChange entryLogbook
+      ]
+  where
+    maximumMay :: Ord a => [a] -> Maybe a
+    maximumMay = \case
+      [] -> Nothing
+      l -> Just $ maximum l
+
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =
   case shes of
     [] -> Nothing
     (she : _) -> Just $ stateHistoryEntryTimestamp she
+
+latestClockChange :: Logbook -> Maybe UTCTime
+latestClockChange = \case
+  LogOpen t _ -> Just t
+  LogClosed les -> case les of
+    [] -> Nothing
+    (le : _) -> Just $ logbookEntryEnd le

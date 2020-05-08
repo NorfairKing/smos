@@ -5,35 +5,20 @@ module Smos.Docs.Site
   )
 where
 
-import Hakyll
-import Hakyll.Web.Sass
+import Smos.Docs.Site.Application ()
+import Smos.Docs.Site.Assets
+import Smos.Docs.Site.Foundation
+import System.Environment
+import System.Exit
+import Text.Read
+import Yesod
 
 smosDocsSite :: IO ()
-smosDocsSite =
-  hakyll $ do
-    match "assets/*" $ do
-      route idRoute
-      compile copyFileCompiler
-    match "css/*" $ do
-      route $ setExtension "css"
-      compile (sassCompilerWith sassDefConfig {sassIncludePaths = Just ["_sass"]})
-    match "pages/*" $ do
-      route $ composeRoutes (gsubRoute "pages/" (const "")) (setExtension "html")
-      compile $
-        pandocCompiler >>= loadAndApplyTemplate "templates/page.html" pageCtx
-          >>= loadAndApplyTemplate "templates/default.html" pageCtx
-          >>= relativizeUrls
-    match "index.html" $ do
-      route idRoute
-      compile $ do
-        pages <- recentFirst =<< loadAll "pages/*"
-        let indexCtx =
-              listField "pages" pageCtx (return pages) `mappend` constField "title" "Home"
-                `mappend` defaultContext
-        getResourceBody >>= applyAsTemplate indexCtx
-          >>= loadAndApplyTemplate "templates/default.html" indexCtx
-          >>= relativizeUrls
-    match "templates/*" $ compile templateCompiler
-
-pageCtx :: Context String
-pageCtx = defaultContext
+smosDocsSite = do
+  portVar <- lookupEnv "SMOS_DOCS_SITE_PORT"
+  port <- case portVar of
+    Nothing -> pure 8000
+    Just s -> case readMaybe s of
+      Nothing -> die "Unable to read port environment variable."
+      Just p -> pure p
+  Yesod.warp port App {appAssets = assets}

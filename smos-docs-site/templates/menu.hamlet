@@ -1,0 +1,99 @@
+<aside class="menu">
+  <p .menu-label>
+    Smos
+
+  <ul .menu-list>
+    <li>
+      <a href=@{PageR "features"}>
+        Features
+
+    <li>
+      <a href=@{PageR "building-installation"}>
+        Building/Installation
+
+    <li>
+      <a href=@{KeybindingsR}>
+        Default Keybindings
+
+    <li>
+      <a href=@{SmosR}>
+        Configuration reference
+      <ul>
+        <li>
+          <a href=@{PageR "customisation-default"}>
+            Customisation via configuration
+        <li>
+          <a href=@{PageR "customisation-haskell"}>
+            Customisation in Haskell
+
+    <li>
+      <a href=@{PageR "directories"}>
+        Directories in a workflow
+    <li>
+      <a href=@{PageR "smos-file"}>
+        Pieces of a Smos file
+
+    <li>
+      <a href=@{SmosQueryR}>
+        The Smos Query Tool
+      <ul>
+        <li>
+          <a href=@{SmosQueryCommandR "next"}>
+            Next action report
+        <li>
+          <a href=@{SmosQueryCommandR "work"}>
+            Work report
+        <li>
+          <a href=@{SmosQueryCommandR "agenda"}>
+            Agenda report
+        <li>
+          <a href=@{SmosQueryCommandR "projects"}>
+            Projects report
+        <li>
+          <a href=@{SmosQueryCommandR "stuck"}>
+            Stuck Projects report
+        <li>
+          <a href=@{SmosQueryCommandR "waiting"}>
+            Waiting report
+        <li>
+          <a href=@{SmosQueryCommandR "clock"}>
+            Clock report
+        <li>
+          <a href=@{SmosQueryCommandR "log"}>
+            Log report
+        <li>
+          <a href=@{SmosQueryCommandR "stats"}>
+            Stats report
+        <li>
+          <a href=@{SmosQueryCommandR "tags"}>
+            Tags report
+        <li>
+          <a href=@{SmosQueryCommandR "report"}>
+            Custom Reports
+        <li>
+          <a href=@{SmosQueryCommandR "entry"}>
+            Entry report
+        <li>
+          <a href=@{PageR "smos-query/standard-arguments"}>
+            Standard arguments
+
+    <li>
+      <a href=@{PageR "synchronisation"}>
+        Synchronisation
+
+  <p .menu-label>
+    Support
+  
+  <ul .menu-list>
+    <li>
+      <a href=@{PageR "support"}>
+        Support
+    <li>
+      <a href="https://github.com/NorfairKing/smos">
+        Smos on Github
+    <li>
+      <a href=@{PageR "blogposts"}>
+        Featured blogposts
+    <li>
+      <a href="https://cs-syd.eu">
+        CS SYD

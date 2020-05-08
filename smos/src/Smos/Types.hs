@@ -35,6 +35,7 @@ import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
 import System.FileLock
+import YamlParse.Applicative
 
 data SmosConfig
   = SmosConfig
@@ -165,6 +166,9 @@ newtype ActionName
   deriving (Show, Read, Eq, Ord, Generic, IsString, Semigroup, Monoid, FromJSON, ToJSON)
 
 instance Validity ActionName
+
+instance YamlSchema ActionName where
+  yamlSchema = ActionName <$> yamlSchema
 
 data Action
   = Action
@@ -302,37 +306,42 @@ makeHelpCursor title kms =
       helpCursorSelection = HelpCursorHelpSelected
     }
   where
-    hcs = makeNonEmptyCursor <$> NE.nonEmpty (combine $ map go kms)
+    hcs = makeNonEmptyCursor <$> NE.nonEmpty (makeKeyHelpCursors kms)
+
+makeKeyHelpCursors :: KeyMappings -> [KeyHelpCursor]
+makeKeyHelpCursors = combine . map makeKeyHelpCursor
+  where
     combine =
-      map (combineKeyHelpCursors . NE.fromList)
-        . groupBy ((==) `on` keyHelpCursorName) -- Safe because of 'groupBy'
+      map (combineKeyHelpCursors . NE.fromList) -- Safe because of 'groupBy'
+        . groupBy ((==) `on` keyHelpCursorName)
         . sortBy (compare `on` keyHelpCursorName)
-    go :: KeyMapping -> KeyHelpCursor
-    go km =
-      case km of
-        MapVtyExactly kp a ->
-          KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressExactly kp],
-              keyHelpCursorName = actionName a,
-              keyHelpCursorDescription = actionDescription a
+
+makeKeyHelpCursor :: KeyMapping -> KeyHelpCursor
+makeKeyHelpCursor km =
+  case km of
+    MapVtyExactly kp a ->
+      KeyHelpCursor
+        { keyHelpCursorKeyBinding = [PressExactly kp],
+          keyHelpCursorName = actionName a,
+          keyHelpCursorDescription = actionDescription a
+        }
+    MapAnyTypeableChar au ->
+      KeyHelpCursor
+        { keyHelpCursorKeyBinding = [PressAnyChar],
+          keyHelpCursorName = actionUsingName au,
+          keyHelpCursorDescription = actionUsingDescription au
+        }
+    MapCatchAll a ->
+      KeyHelpCursor
+        { keyHelpCursorKeyBinding = [PressAny],
+          keyHelpCursorName = actionName a,
+          keyHelpCursorDescription = actionDescription a
+        }
+    MapCombination kp km_ ->
+      let khc = makeKeyHelpCursor km_
+       in khc
+            { keyHelpCursorKeyBinding = map (PressCombination kp) (keyHelpCursorKeyBinding khc)
             }
-        MapAnyTypeableChar au ->
-          KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressAnyChar],
-              keyHelpCursorName = actionUsingName au,
-              keyHelpCursorDescription = actionUsingDescription au
-            }
-        MapCatchAll a ->
-          KeyHelpCursor
-            { keyHelpCursorKeyBinding = [PressAny],
-              keyHelpCursorName = actionName a,
-              keyHelpCursorDescription = actionDescription a
-            }
-        MapCombination kp km_ ->
-          let khc = go km_
-           in khc
-                { keyHelpCursorKeyBinding = map (PressCombination kp) (keyHelpCursorKeyBinding khc)
-                }
 
 helpCursorKeySearchBarL :: Lens' HelpCursor TextCursor
 helpCursorKeySearchBarL =
@@ -446,6 +455,15 @@ data KeyCombination
   deriving (Show, Eq, Generic)
 
 instance Validity KeyCombination
+
+renderKeyCombination :: KeyCombination -> Text
+renderKeyCombination = go
+  where
+    go :: KeyCombination -> Text
+    go (PressExactly kp) = renderKeyPress kp
+    go PressAnyChar = "<any char>"
+    go PressAny = "<any key>"
+    go (PressCombination kp km) = renderKeyPress kp <> go km
 
 data EditorCursor
   = EditorCursor

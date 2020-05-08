@@ -16,6 +16,7 @@ import qualified Data.Text as T
 import Data.Time
 import Rainbow
 import Smos.Data
+import Smos.Query.Commands.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
@@ -85,7 +86,7 @@ renderWorkReport now ne WorkReport {..} =
       [ unlessNull
           workReportAgendaEntries
           [ sectionHeading "Today's agenda:",
-            [formatAsTable $ map (formatAgendaEntry now) (sortAgendaEntries workReportAgendaEntries)]
+            [formatAsTable $ renderAgendaReportLines now $ addNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
           ],
         unlessNull
           workReportResultEntries

@@ -41,6 +41,7 @@ import Text.Parsec.Pos
 import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec.Char
 import Text.Read (readMaybe)
+import YamlParse.Applicative
 
 data Paren
   = OpenParen
@@ -650,12 +651,10 @@ deriving instance Eq (Filter a)
 deriving instance Ord (Filter a)
 
 instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
-  parseJSON =
-    withText "EntryFilter" $ \t ->
-      case parseEntryFilter t of
-        Left err ->
-          fail $ unwords ["Could not parse EntryFilter:", T.unpack $ prettyFilterParseError err]
-        Right f -> pure f
+  parseJSON = viaYamlSchema
+
+instance YamlSchema (Filter (RootedPath, ForestCursor Entry)) where
+  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilter) yamlSchema
 
 instance ToJSON (Filter a) where
   toJSON = toJSON . renderFilter

@@ -1,0 +1,16 @@
+<h1 .title .is-1>
+  Introduction to Smos
+
+<div .content>
+  <p>
+    Smos is a purely functional semantic tree-based editor to replace Emacs' Org Mode for Getting Things Done.
+
+  <p>
+    In short:
+
+  <ul>
+    <li>
+      What todoist would have been if it had been written by the people who wrote vim
+    <li>
+      Emacs' Org Mode but without the emacs around it
+

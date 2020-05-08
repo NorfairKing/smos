@@ -1,10 +1,12 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.OptParse
   ( getInstructions,
     Instructions (..),
+    runArgumentsParser,
   )
 where
 
@@ -19,6 +21,7 @@ import qualified Smos.Report.OptParse as Report
 import Smos.Types
 import qualified System.Environment as System
 import System.Exit (die)
+import YamlParse.Applicative (confDesc)
 
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
@@ -193,7 +196,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
+    help_ = fullDesc <> progDesc description <> confDesc @Configuration
     description = "Smos editor"
 
 parseArgs :: Parser Arguments

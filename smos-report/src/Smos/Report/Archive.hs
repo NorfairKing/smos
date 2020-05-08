@@ -5,6 +5,7 @@ module Smos.Report.Archive where
 import Data.Aeson
 import Data.Validity
 import GHC.Generics (Generic)
+import YamlParse.Applicative
 
 data HideArchive
   = HideArchive
@@ -14,12 +15,10 @@ data HideArchive
 instance Validity HideArchive
 
 instance FromJSON HideArchive where
-  parseJSON =
-    withBool "HideArchive" $ \b ->
-      pure $
-        if b
-          then HideArchive
-          else Don'tHideArchive
+  parseJSON = viaYamlSchema
+
+instance YamlSchema HideArchive where
+  yamlSchema = (\b -> if b then HideArchive else Don'tHideArchive) <$> yamlSchema
 
 instance ToJSON HideArchive where
   toJSON HideArchive = Bool True

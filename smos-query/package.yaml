@@ -35,6 +35,7 @@ library:
   - validity
   - validity-path
   - yaml
+  - yamlparse-applicative
 
 executables:
   smos-query:

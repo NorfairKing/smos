@@ -1,4 +1,5 @@
 .stack-work/
+*.html
 result
 result-*
 .pre-commit-config.yaml

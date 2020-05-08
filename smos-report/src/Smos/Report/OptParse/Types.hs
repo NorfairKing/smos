@@ -13,6 +13,7 @@ import GHC.Generics (Generic)
 import Path
 import Smos.Report.Config
 import Smos.Report.Filter
+import YamlParse.Applicative
 
 data Flags
   = Flags
@@ -104,9 +105,15 @@ instance ToJSON Configuration where
       ]
 
 instance FromJSON Configuration where
-  parseJSON =
-    withObject "Configuration" $ \o ->
-      Configuration <$> o .:? "workflow-dir" <*> o .:? "archive-dir" <*> o .:? "projects-dir"
-        <*> o .:? "archived-projects-dir"
-        <*> o .:? "work-filter"
-        <*> o .:? "contexts"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema =
+    objectParser "Configuration" $
+      Configuration
+        <$> optionalField "workflow-dir" "The workflow directory"
+        <*> optionalField "archive-dir" "The archive directory"
+        <*> optionalField "projects-dir" "The projects directory"
+        <*> optionalField "archived-projects-dir" "The archived projects directory"
+        <*> optionalField "work-filter" "The base work filter"
+        <*> optionalField "contexts" "Contexts for the work report"

@@ -19,6 +19,7 @@ import Smos.Data
 import Smos.Report.Path
 import Text.Megaparsec
 import Text.Megaparsec.Char
+import YamlParse.Applicative
 
 defaultProjection :: NonEmpty Projection
 defaultProjection = OntoFile :| [OntoState, OntoHeader]
@@ -35,11 +36,10 @@ data Projection
 instance Validity Projection
 
 instance FromJSON Projection where
-  parseJSON v =
-    flip (withText "Projection") v $ \t ->
-      case parseProjection t of
-        Nothing -> fail "could not parse projection."
-        Just f -> pure f
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Projection where
+  yamlSchema = maybeParser parseProjection yamlSchema
 
 instance ToJSON Projection where
   toJSON = toJSON . renderProjection

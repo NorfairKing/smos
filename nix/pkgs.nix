@@ -29,6 +29,10 @@ let
     import (
       pkgs.fetchFromGitHub (import ./mergeful-version.nix) + "/nix/overlay.nix"
     );
+  yamlparse-applicative-overlay =
+    import (
+      pkgs.fetchFromGitHub (import ./yamlparse-applicative-version.nix) + "/nix/overlay.nix"
+    );
   smosPkgs =
     pkgsv {
       overlays =
@@ -40,6 +44,7 @@ let
           pretty-relative-time-overlay
           cursor-fuzzy-time-overlay
           mergeful-overlay
+          yamlparse-applicative-overlay
           (import ./gitignore-src.nix)
           (import ./overlay.nix)
         ];

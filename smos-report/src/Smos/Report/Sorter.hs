@@ -22,6 +22,7 @@ import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 import Text.Megaparsec
 import Text.Megaparsec.Char
+import YamlParse.Applicative
 
 data Sorter
   = ByFile
@@ -35,11 +36,10 @@ data Sorter
 instance Validity Sorter
 
 instance FromJSON Sorter where
-  parseJSON v =
-    flip (withText "Sorter") v $ \t ->
-      case parseSorter t of
-        Nothing -> fail "could not parse sorter."
-        Just f -> pure f
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Sorter where
+  yamlSchema = maybeParser parseSorter yamlSchema
 
 instance ToJSON Sorter where
   toJSON = toJSON . renderSorter

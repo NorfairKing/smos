@@ -48,6 +48,7 @@ library:
   - validity-unordered-containers
   - vty
   - yaml
+  - yamlparse-applicative
 
 executables:
   smos:

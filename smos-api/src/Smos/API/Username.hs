@@ -26,6 +26,7 @@ import Data.Validity
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Web.PathPieces
+import YamlParse.Applicative
 
 newtype Username
   = Username
@@ -60,7 +61,10 @@ instance FromJSONKey Username where
   fromJSONKey = FromJSONKeyTextParser parseUsername
 
 instance FromJSON Username where
-  parseJSON = withText "Username" parseUsername
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Username where
+  yamlSchema = Username <$> yamlSchema
 
 instance PathPiece Username where
   fromPathPiece = parseUsername

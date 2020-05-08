@@ -37,6 +37,7 @@ import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Smos.Report.Filter
+import YamlParse.Applicative
 
 data SmosReportConfig
   = SmosReportConfig
@@ -156,3 +157,6 @@ newtype ContextName
   deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
 
 instance Validity ContextName
+
+instance YamlKeySchema ContextName where
+  yamlKeySchema = ContextName <$> yamlKeySchema

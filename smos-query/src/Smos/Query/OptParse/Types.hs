@@ -29,6 +29,7 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
+import YamlParse.Applicative
 
 data Arguments
   = Arguments Command Flags
@@ -176,11 +177,19 @@ data Configuration
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
-  parseJSON v =
-    flip (withObject "Configuration") v $ \o ->
-      Configuration <$> parseJSON v <*> o .:? "hide-archive" <*> o .:? "reports" <*> o .:? "waiting"
-        <*> o
-        .:? "work"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema =
+    (\reportConf (a, b, c, d) -> Configuration reportConf a b c d)
+      <$> yamlSchema
+      <*> objectParser
+        "Configuration"
+        ( (,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive"
+            <*> optionalField "report" "Custom reports"
+            <*> optionalField "waiting" "Waiting report config"
+            <*> optionalField "work" "Work report config"
+        )
 
 data WaitingConfiguration
   = WaitingConfiguration
@@ -189,7 +198,10 @@ data WaitingConfiguration
   deriving (Show, Eq, Generic)
 
 instance FromJSON WaitingConfiguration where
-  parseJSON = withObject "WaitingConfiguration" $ \o -> WaitingConfiguration <$> o .:? "threshold"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema WaitingConfiguration where
+  yamlSchema = objectParser "WaitingConfiguration" $ WaitingConfiguration <$> optionalField "threshold" "The number of days before you've been waiting for something for too long"
 
 data WorkConfiguration
   = WorkConfiguration
@@ -201,11 +213,15 @@ data WorkConfiguration
   deriving (Show, Eq, Generic)
 
 instance FromJSON WorkConfiguration where
-  parseJSON =
-    withObject "WorkConfiguration" $ \o ->
-      WorkConfiguration <$> o .:? "checks" .!= S.empty <*> o .:? "time-filter" <*> o .:? "columns"
-        <*> o
-        .:? "sorter"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema WorkConfiguration where
+  yamlSchema =
+    objectParser "WorkConfiguration" $
+      WorkConfiguration <$> optionalFieldWithDefault "checks" S.empty "The checks to perform and to alert about"
+        <*> optionalField "time-filter" "The property to use to filter by time"
+        <*> optionalField "columns" "The columns in the report"
+        <*> optionalField "sorter" "The sorter to use to sort the rows"
 
 data Dispatch
   = DispatchEntry EntrySettings

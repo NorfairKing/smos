@@ -6,7 +6,6 @@ let
     );
 in
 pkgs.smosPackages // {
-  "smos-docs-site" = pkgs.smosDocumentationSite;
   pre-commit-check = nix-pre-commit-hooks.run {
     src = ./.;
     hooks = {

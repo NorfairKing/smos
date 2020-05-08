@@ -13,6 +13,7 @@ import Import
 import Smos.Keys
 import qualified Smos.Report.OptParse.Types as Report
 import Smos.Types
+import YamlParse.Applicative
 
 data Arguments
   = Arguments FilePath Flags
@@ -43,8 +44,13 @@ instance ToJSON Configuration where
     toJSON confReportConf `mergeObjects` object ["keys" .= confKeybindingsConf]
 
 instance FromJSON Configuration where
-  parseJSON v =
-    flip (withObject "Configuration") v $ \o -> Configuration <$> parseJSON v <*> o .:? "keys"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Configuration where
+  yamlSchema =
+    Configuration
+      <$> yamlSchema
+      <*> objectParser "Configuration" (optionalField "keys" "Keybindings")
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
@@ -74,11 +80,12 @@ instance ToJSON KeybindingsConfiguration where
       ]
 
 instance FromJSON KeybindingsConfiguration where
-  parseJSON =
-    withObject "KeybindingsConfiguration" $ \o ->
-      KeybindingsConfiguration <$> o .:? "reset" <*> o .:? "file" <*> o .:? "reports"
-        <*> o
-        .:? "help"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema KeybindingsConfiguration where
+  yamlSchema =
+    objectParser "KeybindingsConfiguration" $
+      KeybindingsConfiguration <$> optionalField "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys." <*> optionalField "file" "Keybindings for the file context" <*> optionalField "reports" "Keybindings for the reports context" <*> optionalField "help" "Keybindings for the help context"
 
 backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
 backToKeybindingsConfiguration KeyMap {..} =
@@ -122,15 +129,22 @@ instance ToJSON FileKeyConfigs where
       ]
 
 instance FromJSON FileKeyConfigs where
-  parseJSON =
-    withObject "FileKeyConfigs" $ \o ->
-      FileKeyConfigs <$> o .:? "empty" <*> o .:? "entry" <*> o .:? "header" <*> o .:? "contents"
-        <*> o .:? "timestamps"
-        <*> o .:? "properties"
-        <*> o .:? "state-history"
-        <*> o .:? "tags"
-        <*> o .:? "logbook"
-        <*> o .:? "any"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema FileKeyConfigs where
+  yamlSchema =
+    objectParser "FileKeyConfigs" $
+      FileKeyConfigs
+        <$> optionalField "empty" "Keybindings for when the file is empty"
+        <*> optionalField "entry" "Keybindings for when an entry is selected"
+        <*> optionalField "header" "Keybindings for when an header is selected"
+        <*> optionalField "contents" "Keybindings for when an contents is selected"
+        <*> optionalField "timestamps" "Keybindings for when a timestamps are selected"
+        <*> optionalField "properties" "Keybindings for when a properties are selected"
+        <*> optionalField "state-history" "Keybindings for when a state history is selected"
+        <*> optionalField "tags" "Keybindings for when a tags are selected"
+        <*> optionalField "logbook" "Keybindings for when a logbook is selected"
+        <*> optionalField "any" "Keybindings that match in any file subcontext"
 
 backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
 backToFileKeyConfigs FileKeyMap {..} =
@@ -159,7 +173,10 @@ instance ToJSON ReportsKeyConfigs where
   toJSON ReportsKeyConfigs {..} = object ["next-action" .= nextActionReportKeyConfigs]
 
 instance FromJSON ReportsKeyConfigs where
-  parseJSON = withObject "ReportsKeyConfigs" $ \o -> ReportsKeyConfigs <$> o .:? "next-action"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema ReportsKeyConfigs where
+  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs <$> optionalField "next-action" "Keybindings for the interactive next action report"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
@@ -181,7 +198,10 @@ instance ToJSON HelpKeyConfigs where
     object ["help" .= helpHelpKeyConfigs, "search" .= helpSearchKeyConfigs]
 
 instance FromJSON HelpKeyConfigs where
-  parseJSON = withObject "HelpKeyConfigs" $ \o -> HelpKeyConfigs <$> o .:? "help" <*> o .:? "search"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema HelpKeyConfigs where
+  yamlSchema = objectParser "HelpKeyConfigs" $ HelpKeyConfigs <$> optionalField "help" "Keybindings for when in the help screen" <*> optionalField "search" "Keybindings for when the search bar is selected within the help screen"
 
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =
@@ -195,6 +215,9 @@ newtype KeyConfigs
       { keyConfigs :: [KeyConfig]
       }
   deriving (Show, Eq, Generic, Validity, ToJSON, FromJSON)
+
+instance YamlSchema KeyConfigs where
+  yamlSchema = KeyConfigs <$> yamlSchema
 
 backToKeyConfigs :: KeyMappings -> KeyConfigs
 backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
@@ -212,7 +235,10 @@ instance ToJSON KeyConfig where
   toJSON KeyConfig {..} = object ["key" .= keyConfigMatcher, "action" .= keyConfigAction]
 
 instance FromJSON KeyConfig where
-  parseJSON = withObject "KeyConfig" $ \o -> KeyConfig <$> o .: "key" <*> o .: "action"
+  parseJSON = viaYamlSchema
+
+instance YamlSchema KeyConfig where
+  yamlSchema = objectParser "KeyConfig" $ KeyConfig <$> requiredField "key" "The key to match" <*> requiredField "action" "The name of the action to perform when the key is matched"
 
 backToKeyConfig :: KeyMapping -> KeyConfig
 backToKeyConfig km =

@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Server.OptParse
   ( getInstructions,
@@ -10,18 +11,15 @@ module Smos.Server.OptParse
   )
 where
 
-import Control.Arrow
 import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
-import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 import Options.Applicative
-import Path
 import Path.IO
 import Smos.Server.OptParse.Types
 import qualified System.Environment as System
-import System.Exit
 import Text.Read (readMaybe)
+import YamlParse.Applicative (confDesc, readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -70,14 +68,10 @@ getEnvironment = do
   pure Environment {..}
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} = do
-  mConfigFile <- forM (msum [flagConfigFile, envConfigFile]) $ \fp -> resolveFile' fp
-  forM mConfigFile $ \configFile -> do
-    errOrConfig <-
-      fmap (left prettyPrintParseException) $ Yaml.decodeFileEither $ fromAbsFile configFile
-    case errOrConfig of
-      Left err -> die err
-      Right conf -> pure conf
+getConfiguration Flags {..} Environment {..} =
+  case flagConfigFile <|> envConfigFile of
+    Nothing -> pure Nothing
+    Just cf -> resolveFile' cf >>= readConfigFile
 
 getArguments :: IO Arguments
 getArguments = do
@@ -101,7 +95,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
+    help_ = fullDesc <> progDesc description <> confDesc @Configuration
     description = "smos-server"
 
 parseArgs :: Parser Arguments

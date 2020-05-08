@@ -32,3 +32,4 @@ library:
   - validity-time
   - validity-unordered-containers
   - yaml
+  - yamlparse-applicative

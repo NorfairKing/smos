@@ -43,6 +43,7 @@ library:
   - wai
   - warp
   - yaml
+  - yamlparse-applicative
 
 executables:
   smos-server:

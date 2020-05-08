@@ -26,6 +26,7 @@ library:
     - text
     - time
     - yaml
+    - yamlparse-applicative
 
 executables:
   smos-scheduler:

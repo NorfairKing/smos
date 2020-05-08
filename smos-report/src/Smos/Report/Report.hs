@@ -13,6 +13,7 @@ import Smos.Report.Archive
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
+import YamlParse.Applicative
 
 data PreparedReport
   = PreparedReport
@@ -26,13 +27,6 @@ data PreparedReport
 
 instance Validity PreparedReport
 
-instance FromJSON PreparedReport where
-  parseJSON =
-    withObject "PreparedReport" $ \o ->
-      PreparedReport <$> o .:? "description" <*> o .:? "filter" <*> o .:? "columns"
-        <*> o .:? "sorter"
-        <*> o .:? "hide-archive"
-
 instance ToJSON PreparedReport where
   toJSON PreparedReport {..} =
     object
@@ -42,3 +36,15 @@ instance ToJSON PreparedReport where
         "sorter" .= preparedReportSorter,
         "hide-archive" .= preparedReportHideArchive
       ]
+
+instance FromJSON PreparedReport where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema PreparedReport where
+  yamlSchema =
+    objectParser "PreparedReport" $
+      PreparedReport <$> optionalField "description" "A description of the report"
+        <*> optionalField "filter" "The entry filter to get the results in the report"
+        <*> optionalField "columns" "The columns of the report"
+        <*> optionalField "sorter" "The sorter to sort the rows of the report by"
+        <*> optionalField "hide-archive" "Whether to consider the archive for the report"
