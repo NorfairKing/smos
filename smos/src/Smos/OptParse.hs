@@ -6,6 +6,7 @@
 module Smos.OptParse
   ( getInstructions,
     Instructions (..),
+    runArgumentsParser,
   )
 where
 

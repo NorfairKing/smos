@@ -1,6 +1,9 @@
 / HomeR GET
 
 /page/#Text PageR GET
+
+/smos SmosR GET
+
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET
 

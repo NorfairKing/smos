@@ -16,8 +16,8 @@
         Default Keybindings
 
     <li>
-      <a>
-        Customisation
+      <a href=@{SmosR}>
+        Configuration reference
       <ul>
         <li>
           <a href=@{PageR "customisation-default"}>
@@ -32,10 +32,6 @@
     <li>
       <a href=@{PageR "smos-file"}>
         Pieces of a Smos file
-
-    <li>
-      <a href=@{PageR "configuration-reference"}>
-        Configuration reference
 
     <li>
       <a href=@{SmosQueryR}>
