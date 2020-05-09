@@ -12,26 +12,25 @@
         Building/Installation
 
     <li>
-      <a href=@{KeybindingsR}>
-        Default Keybindings
+      <a href=@{PageR "directories"}>
+        Directories in a workflow
+    <li>
+      <a href=@{SmosFileR}>
+        Pieces of a Smos file
 
     <li>
       <a href=@{SmosR}>
-        Configuration reference
+        The Smos TUI
       <ul>
+        <li>
+          <a href=@{KeybindingsR}>
+            Default Keybindings
         <li>
           <a href=@{PageR "customisation-default"}>
             Customisation via configuration
         <li>
           <a href=@{PageR "customisation-haskell"}>
             Customisation in Haskell
-
-    <li>
-      <a href=@{PageR "directories"}>
-        Directories in a workflow
-    <li>
-      <a href=@{SmosFileR}>
-        Pieces of a Smos file
 
     <li>
       <a href=@{SmosQueryR}>
