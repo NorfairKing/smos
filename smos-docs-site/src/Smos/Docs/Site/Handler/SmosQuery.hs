@@ -8,36 +8,28 @@ module Smos.Docs.Site.Handler.SmosQuery
   )
 where
 
-import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import Options.Applicative
 import Options.Applicative.Help
-import Smos.Docs.Site.Foundation
-import Smos.Docs.Site.Static
-import Smos.Docs.Site.Widget
+import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse
-import Yesod
 
 getSmosQueryR :: Handler Html
-getSmosQueryR =
-  case find ((== "smos-query") . docPageUrl) docPages of
-    Nothing -> notFound
-    Just DocPage {..} -> do
-      let helpText = getHelpPageOf []
-      defaultLayout $ do
-        setTitle "Smos Documentation - smos-query"
-        $(widgetFile "smos-query")
+getSmosQueryR = do
+  DocPage {..} <- lookupPage "smos-query"
+  let helpText = getHelpPageOf []
+  defaultLayout $ do
+    setTitle "Smos Documentation - smos-query"
+    $(widgetFile "smos-query")
 
 getSmosQueryCommandR :: Text -> Handler Html
-getSmosQueryCommandR cmd =
-  case find ((== ("smos-query/" <> cmd)) . docPageUrl) docPages of
-    Nothing -> notFound
-    Just DocPage {..} -> do
-      let helpText = getHelpPageOf [T.unpack cmd]
-      defaultLayout $ do
-        setTitle $ toHtml $ "Smos Documentation - " <> docPageTitle
-        $(widgetFile "smos-query-command")
+getSmosQueryCommandR cmd = do
+  DocPage {..} <- lookupPage $ "smos-query/" <> cmd
+  let helpText = getHelpPageOf [T.unpack cmd]
+  defaultLayout $ do
+    setTitle $ toHtml $ "Smos Documentation - " <> docPageTitle
+    $(widgetFile "smos-query-command")
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =

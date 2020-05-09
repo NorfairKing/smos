@@ -11,19 +11,24 @@ library:
   source-dirs: src
   dependencies:
   - base >= 4.7
+  - bytestring
   - cmark-gfm
   - conduit
+  - containers
   - data-default
   - optparse-applicative
   - path
   - path-io
   - shakespeare
   - smos
+  - smos-data
   - smos-query
   - template-haskell
   - text
   - th-lift-instances
   - time
+  - yaml
+  - yamlparse-applicative
   - yesod
   - yesod-static
 

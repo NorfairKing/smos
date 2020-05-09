@@ -7,6 +7,5 @@ module Smos.Docs.Site.Application where
 
 import Smos.Docs.Site.Foundation
 import Smos.Docs.Site.Handler
-import Yesod
 
 mkYesodDispatch "App" resourcesApp

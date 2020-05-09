@@ -30,7 +30,7 @@
       <a href=@{PageR "directories"}>
         Directories in a workflow
     <li>
-      <a href=@{PageR "smos-file"}>
+      <a href=@{SmosFileR}>
         Pieces of a Smos file
 
     <li>

@@ -87,7 +87,7 @@ where
 import Control.Applicative
 import Control.Arrow
 import Control.DeepSeq
-import Data.Aeson as JSON
+import Data.Aeson as JSON hiding ((<?>))
 import Data.Char as Char
 import Data.List
 import Data.Map (Map)
@@ -122,14 +122,14 @@ instance Validity SmosFile
 
 instance NFData SmosFile
 
-instance FromJSON SmosFile where
-  parseJSON v = SmosFile . unForYaml <$> parseJSON v
-
 instance ToJSON SmosFile where
   toJSON = toJSON . ForYaml . smosFileForest
 
 instance ToYaml SmosFile where
   toYaml = toYaml . ForYaml . smosFileForest
+
+instance FromJSON SmosFile where
+  parseJSON v = SmosFile . unForYaml <$> parseJSON v
 
 newtype ForYaml a
   = ForYaml
@@ -182,21 +182,21 @@ instance ToYaml (ForYaml (Tree Entry)) where
       then toYaml rootLabel
       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
-instance FromJSON (ForYaml UTCTime) where
-  parseJSON v =
-    ( do
-        s <- parseJSON v
-        case parseTimeM True defaultTimeLocale utcFormat s of
-          Nothing -> fail $ "Invalid UTCTime: " <> s
-          Just u -> pure $ ForYaml u
-    )
-      <|> (ForYaml <$> parseJSON v)
-
 instance ToJSON (ForYaml UTCTime) where
   toJSON (ForYaml u) = toJSON $ formatTime defaultTimeLocale utcFormat u
 
 instance ToYaml (ForYaml UTCTime) where
   toYaml (ForYaml u) = Yaml.string $ T.pack $ formatTime defaultTimeLocale utcFormat u
+
+instance FromJSON (ForYaml UTCTime) where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema (ForYaml UTCTime) where
+  yamlSchema =
+    alternatives
+      [ ForYaml <$> maybeParser (parseTimeM True defaultTimeLocale utcFormat) yamlSchema <?> T.pack utcFormat,
+        ForYaml <$> extraParser parseJSON ParseAny <?> "Whatever the 'time' library wants to parse. (fallback)" -- Fall back on FromJSON
+      ]
 
 utcFormat :: String
 utcFormat = "%F %H:%M:%S.%q"
@@ -216,22 +216,6 @@ data Entry
 instance Validity Entry
 
 instance NFData Entry
-
-instance FromJSON Entry where
-  parseJSON v =
-    ( do
-        h <- parseJSON v
-        pure $ newEntry h
-    )
-      <|> ( withObject "Entry" $ \o ->
-              Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
-                <*> o .:? "timestamps" .!= M.empty
-                <*> o .:? "properties" .!= M.empty
-                <*> o .:? "state-history" .!= StateHistory []
-                <*> o .:? "tags" .!= S.empty
-                <*> o .:? "logbook" .!= emptyLogbook
-          )
-        v
 
 instance ToJSON Entry where
   toJSON Entry {..} =
@@ -281,6 +265,22 @@ instance ToYaml Entry where
             ++ [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags]
             ++ [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
 
+instance FromJSON Entry where
+  parseJSON v =
+    ( do
+        h <- parseJSON v
+        pure $ newEntry h
+    )
+      <|> ( withObject "Entry" $ \o ->
+              Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
+                <*> o .:? "timestamps" .!= M.empty
+                <*> o .:? "properties" .!= M.empty
+                <*> o .:? "state-history" .!= StateHistory []
+                <*> o .:? "tags" .!= S.empty
+                <*> o .:? "logbook" .!= emptyLogbook
+          )
+        v
+
 newEntry :: Header -> Entry
 newEntry h =
   Entry
@@ -308,11 +308,10 @@ instance Validity Header where
 instance NFData Header
 
 instance FromJSON Header where
-  parseJSON =
-    withText "Header" $ \t ->
-      case header t of
-        Nothing -> fail $ "Invalid header: " <> T.unpack t
-        Just h -> pure h
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Header where
+  yamlSchema = maybeParser header yamlSchema
 
 emptyHeader :: Header
 emptyHeader = Header ""
@@ -346,11 +345,10 @@ instance Validity Contents where
 instance NFData Contents
 
 instance FromJSON Contents where
-  parseJSON =
-    withText "Contents" $ \t ->
-      case contents t of
-        Nothing -> fail $ "Invalid contents: " <> T.unpack t
-        Just h -> pure h
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Contents where
+  yamlSchema = maybeParser contents yamlSchema
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -438,6 +436,12 @@ instance FromJSON PropertyValue where
 instance FromJSONKey PropertyValue where
   fromJSONKey = FromJSONKeyTextParser parseJSONPropertyValue
 
+instance YamlSchema PropertyValue where
+  yamlSchema = extraParser parseJSONPropertyValue yamlSchema
+
+instance YamlKeySchema PropertyValue where
+  yamlKeySchema = extraParser parseJSONPropertyValue yamlKeySchema
+
 parseJSONPropertyValue :: Monad m => Text -> m PropertyValue
 parseJSONPropertyValue t =
   case propertyValue t of
@@ -474,6 +478,12 @@ instance FromJSON TimestampName where
 instance FromJSONKey TimestampName where
   fromJSONKey = FromJSONKeyTextParser parseJSONTimestampName
 
+instance YamlSchema TimestampName where
+  yamlSchema = extraParser parseJSONTimestampName yamlSchema
+
+instance YamlKeySchema TimestampName where
+  yamlKeySchema = extraParser parseJSONTimestampName yamlKeySchema
+
 parseJSONTimestampName :: Monad m => Text -> m TimestampName
 parseJSONTimestampName t =
   case timestampName t of
@@ -504,18 +514,21 @@ instance Validity Timestamp
 
 instance NFData Timestamp
 
-instance FromJSON Timestamp where
-  parseJSON v = do
-    s <- parseJSON v
-    case parseTimestampString s of
-      Nothing -> fail $ "Failed to parse a timestamp from" <> s
-      Just ts -> pure ts
-
 instance ToJSON Timestamp where
   toJSON = toJSON . timestampText
 
 instance ToYaml Timestamp where
   toYaml = toYaml . timestampText
+
+instance FromJSON Timestamp where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Timestamp where
+  yamlSchema =
+    alternatives
+      [ TimestampDay <$> maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat,
+        TimestampLocalTime <$> maybeParser (parseTimeM True defaultTimeLocale timestampLocalTimeFormat) yamlSchema <?> T.pack timestampLocalTimeFormat
+      ]
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
@@ -577,11 +590,10 @@ instance Validity TodoState where
 instance NFData TodoState
 
 instance FromJSON TodoState where
-  parseJSON =
-    withText "TodoState" $ \t ->
-      case parseTodoState t of
-        Left err -> fail $ unwords ["Invalid todo state: ", T.unpack t, "  error:", err]
-        Right h -> pure h
+  parseJSON = viaYamlSchema
+
+instance YamlSchema TodoState where
+  yamlSchema = eitherParser parseTodoState yamlSchema
 
 todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
@@ -599,7 +611,7 @@ newtype StateHistory
   = StateHistory
       { unStateHistory :: [StateHistoryEntry]
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, ToYaml)
+  deriving (Show, Eq, Ord, Generic, ToJSON, ToYaml)
 
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
@@ -607,6 +619,12 @@ instance Validity StateHistory where
       <> declare "The entries are stored in reverse chronological order" (hs <= sort hs)
 
 instance NFData StateHistory
+
+instance FromJSON StateHistory where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema StateHistory where
+  yamlSchema = StateHistory <$> yamlSchema <?> "In reverse chronological order"
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -629,12 +647,6 @@ instance Ord StateHistoryEntry where
   compare =
     mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
 
-instance FromJSON StateHistoryEntry where
-  parseJSON =
-    withObject "StateHistoryEntry" $ \o ->
-      StateHistoryEntry <$> (o .: "state" <|> o .: "new-state")
-        <*> (unForYaml <$> (o .: "time" <|> o .: "timestamp"))
-
 instance ToJSON StateHistoryEntry where
   toJSON StateHistoryEntry {..} =
     object ["state" .= stateHistoryEntryNewState, "time" .= ForYaml stateHistoryEntryTimestamp]
@@ -645,6 +657,22 @@ instance ToYaml StateHistoryEntry where
       [ ("state", toYaml stateHistoryEntryNewState),
         ("time", toYaml (ForYaml stateHistoryEntryTimestamp))
       ]
+
+instance FromJSON StateHistoryEntry where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema StateHistoryEntry where
+  yamlSchema =
+    objectParser "StateHistoryEntry" $
+      StateHistoryEntry
+        <$> ( requiredField "state" "The new state"
+                <|> requiredField "new-state" "legacy key"
+            )
+        <*> ( unForYaml
+                <$> ( requiredField "time" "The time at which the change happened"
+                        <|> requiredField "timestamp" "legacy key"
+                    )
+            )
 
 newtype Tag
   = Tag
@@ -658,11 +686,10 @@ instance Validity Tag where
 instance NFData Tag
 
 instance FromJSON Tag where
-  parseJSON =
-    withText "Tag" $ \t ->
-      case parseTag t of
-        Left err -> fail $ unwords ["Invalid tag: ", T.unpack t, "  error:", err]
-        Right h -> pure h
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Tag where
+  yamlSchema = eitherParser parseTag yamlSchema
 
 emptyTag :: Tag
 emptyTag = Tag ""
@@ -716,6 +743,18 @@ conseqs (a : b : as) = (a, b) : conseqs (b : as)
 
 instance NFData Logbook
 
+instance ToJSON Logbook where
+  toJSON = toJSON . go
+    where
+      go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
+      go (LogClosed rest) = map toJSON rest
+
+instance ToYaml Logbook where
+  toYaml = toYaml . go
+    where
+      go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
+      go (LogClosed rest) = map toYaml rest
+
 instance FromJSON Logbook where
   parseJSON v = parseJSONValid $ do
     els <- parseJSON v
@@ -731,18 +770,6 @@ instance FromJSON Logbook where
         pure $ case mend of
           Nothing -> LogOpen start rest
           Just end -> LogClosed $ LogbookEntry start end : rest
-
-instance ToJSON Logbook where
-  toJSON = toJSON . go
-    where
-      go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
-      go (LogClosed rest) = map toJSON rest
-
-instance ToYaml Logbook where
-  toYaml = toYaml . go
-    where
-      go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
-      go (LogClosed rest) = map toYaml rest
 
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []
@@ -778,10 +805,6 @@ instance Validity LogbookEntry where
 
 instance NFData LogbookEntry
 
-instance FromJSON LogbookEntry where
-  parseJSON = parseJSONValidWith . withObject "LogbookEntry" $ \o ->
-    LogbookEntry <$> (unForYaml <$> o .: "start") <*> (unForYaml <$> o .: "end")
-
 instance ToJSON LogbookEntry where
   toJSON LogbookEntry {..} =
     object ["start" .= ForYaml logbookEntryStart, "end" .= ForYaml logbookEntryEnd]
@@ -790,6 +813,17 @@ instance ToYaml LogbookEntry where
   toYaml LogbookEntry {..} =
     Yaml.mapping
       [("start", toYaml (ForYaml logbookEntryStart)), ("end", toYaml (ForYaml logbookEntryEnd))]
+
+instance FromJSON LogbookEntry where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema LogbookEntry where
+  yamlSchema =
+    eitherParser prettyValidate
+      $ objectParser "LogbookEntry"
+      $ LogbookEntry
+        <$> (unForYaml <$> requiredField "start" "The start of the logbook entry")
+        <*> (unForYaml <$> requiredField "end" "The end of the logbook entry.")
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart

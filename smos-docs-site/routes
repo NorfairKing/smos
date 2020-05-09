@@ -3,6 +3,7 @@
 /page/#Text PageR GET
 
 /smos SmosR GET
+/smos/file SmosFileR GET
 
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET

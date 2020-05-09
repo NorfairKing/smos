@@ -1,0 +1,233 @@
+<h1 .title>
+  #{docPageTitle}
+
+
+<div .content>
+  #{preEscapedToMarkup docPageRendered}
+
+  <h2> Entry
+  
+  <p>
+    An entry consists of
+
+  <ul>
+    <li> A header
+    <li> Contents (optionally)
+    <li> Timestamps (optionally)
+    <li> Properties (optionally)
+    <li> Its state and state history (optionally)
+    <li> Tags (optionally)
+    <li> A clock logbook (optionally)
+
+  <h3>
+    Example
+  <pre>
+    #{example exampleEntry}
+
+  <h3>  
+    Yaml Schema
+  <p>
+    There is no yaml schema available for entries because they can contain a logbook. (See below.)
+
+  <h2> Header
+
+  <p>
+    A Smos entry's header consists of a single line of text.
+
+  <p>
+    Headers contain a title-like piece of information about an entry.
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{headerDesc}
+
+  <h3>
+    Example
+  <pre>
+    #{example $ Header "Go to the gym: HITT class"}
+
+
+  <h2> Contents
+
+  <p>
+    A Smos entry's contents consist of an arbitrary piece of text.
+
+  <p>
+    Contents contain details about an entry.
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{contentsDesc}
+
+
+
+  <h2> Timestamps
+
+  <p>
+    A Smos entry's timestamps are a map of timestamp names to timestamps.
+    Timestamps contain time-based information about an entry.
+    
+  <p>
+    Timestamp names are arbitrary pieces of text without whitespace.
+    
+  <p>
+    Standard timestamps are, for example:
+ 
+  <ul>
+    <li>
+      <code> BEGIN
+    <li>
+      <code> END
+    <li>
+      <code> SCHEDULED
+    <li>
+      <code> DEADLINE
+    
+  <p>
+    A timestamp has two possible granularities:
+    
+  <ul>
+    <li> The day level
+    <li> The moment level
+
+  <h3>
+    Example
+  <pre>
+    #{example $ M.singleton (TimestampName "SCHEDULED") (TimestampDay $ fromGregorian 2020 5 9)}
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{timestampsDesc}
+
+
+
+
+  <h2> Properties
+
+  <p>
+    A Smos entry's properties are a map of property names to property values.
+    Properties contain named pieces of information about an entry.
+    Property names are arbitrary pieces of text without whitespace.
+    Property values are arbitrary pieces of text without newlines.
+
+  <p>
+    Properties can be used to filter entries by.
+
+  <p>
+    Standard properties are, for example:
+
+  <ul>
+    <li>
+      <code> timewindow
+    <li>
+      <code> brainpower
+    <li>
+      <code> client
+
+  <h3>
+    Example
+  <pre>
+    #{example $ M.singleton (PropertyName "project") (PropertyValue "smos")}
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{propertiesDesc}
+
+
+  <h2> State and state history
+  <p>
+    A Smos entry can have a state.
+    States contain information about the state of an entry.
+    States are arbitrary pieces of text without whitespace.
+
+  <p>
+    Tags can be used to filter entries by.
+
+  <p>
+    Standard states are, for example:
+
+  <ul>
+    <li>
+      <code> WAITING
+    <li>
+      <code> TODO
+    <li>
+      <code> STARTED
+    <li>
+      <code> READY
+    <li>
+      <code> NEXT
+    <li>
+      <code> FAILED
+    <li>
+      <code> DONE
+    <li>
+      <code> CANCELLED
+
+  <p>
+    A Smos entry also remembers its entire state history.
+
+  <h3>
+    Example
+  <pre>
+    #{example exampleStateHistory}
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{stateHistoryDesc}
+ 
+
+  <h2> Tags
+  <p>
+    A Smos entry can have tags. Tags contain label-like information about an entry. Tags are arbitrary pieces of text without whitespace.
+  <p>
+    Properties can be used to filter entries by.
+  <p>
+    Standard tags are, for example:
+  <ul>
+    <li>
+      <code> code
+    <li>
+      <code> external
+    <li>
+      <code> home
+    <li>
+      <code> online
+    <li>
+      <code> offline
+    <li>
+      <code> power
+    <li>
+      <code> toast
+
+  <h3>
+    Example
+  <pre>
+    #{example exampleTags}
+
+  <h3>
+    Yaml Schema
+  <pre>
+    #{tagsDesc}
+
+
+  <h2> Logbook
+  <p>
+    Each entry can contain information about when a clock was started on it. Clocks can either be closed (have a begin and end time) or open (only a begin time).
+  <p>
+    Logbooks are used to generate timetables.
+
+  <h3>
+    Example
+  <pre>
+    #{example exampleLogbook}
+
+  <h3>  
+    Yaml Schema
+  <p>
+    There is no yaml schema available for logbooks because they are parsed monadically.
