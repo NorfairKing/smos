@@ -37,6 +37,13 @@ spec = do
   genValidSpec @PropertyName
   jsonSpecOnValid @PropertyName
   textLikeJSONValid @PropertyName
+  -- If you remove this, the tests for json for sorters, filters and projections will fail in smos-report-gen
+  describe "validPropertyNameChar" $ do
+    it "says that ')' is invalid" $
+      validPropertyNameChar ')' `shouldBe` False
+    it
+      "says that '(' is invalid"
+      $ validPropertyNameChar '(' `shouldBe` False
   eqSpecOnValid @PropertyValue
   ordSpecOnValid @PropertyValue
   genValidSpec @PropertyValue
@@ -78,6 +85,13 @@ spec = do
   genValidSpec @Tag
   jsonSpecOnValid @Tag
   textLikeJSONValid @Tag
+  -- If you remove this, the tests for json for sorters, filters and projections will fail in smos-report-gen
+  describe "validTagChar" $ do
+    it "says that ')' is invalid" $
+      validTagChar ')' `shouldBe` False
+    it
+      "says that '(' is invalid"
+      $ validTagChar '(' `shouldBe` False
   let genLogbookEntryJSON =
         object
           <$> sequence

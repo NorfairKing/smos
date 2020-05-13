@@ -705,7 +705,11 @@ validTagChar = validationIsValid . validateTagChar
 
 validateTagChar :: Char -> Validation
 validateTagChar c =
-  mconcat [validateHeaderChar c, declare "The character is not whitespace" $ not $ Char.isSpace c]
+  mconcat
+    [ validateHeaderChar c,
+      declare "The character is not whitespace" $ not $ Char.isSpace c,
+      declare "The character is not a parenthesis" $ c `notElem` ['(', ')']
+    ]
 
 data Logbook
   = LogOpen UTCTime [LogbookEntry]
