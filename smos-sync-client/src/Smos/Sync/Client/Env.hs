@@ -10,9 +10,7 @@ import Control.DeepSeq
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson
-import Data.Int
 import qualified Data.Mergeful as Mergeful
-import qualified Data.Mergeful.Timed as Mergeful
 import Data.Validity
 import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
@@ -100,7 +98,7 @@ runDB func = do
 data ClientStore
   = ClientStore
       { clientStoreServerUUID :: ServerUUID,
-        clientStoreItems :: Mergeful.ClientStore Int64 FileUUID SyncFile
+        clientStoreItems :: Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
       }
   deriving (Show, Eq, Generic)
 

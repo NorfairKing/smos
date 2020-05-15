@@ -21,7 +21,6 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
-import Data.Int
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Timed
 import Data.Proxy
@@ -195,12 +194,12 @@ instance ToJSON SyncFile where
   toJSON SyncFile {..} =
     object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-type SyncRequest = Mergeful.SyncRequest Int64 FileUUID SyncFile
+type SyncRequest = Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
 
 data SyncResponse
   = SyncResponse
       { syncResponseServerId :: ServerUUID,
-        syncResponseItems :: Mergeful.SyncResponse Int64 FileUUID SyncFile -- We use Int64 instead of ClientFileId because otherwise we'd have to depend on smos-sync-client
+        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile
       }
   deriving (Show, Eq, Generic)
 

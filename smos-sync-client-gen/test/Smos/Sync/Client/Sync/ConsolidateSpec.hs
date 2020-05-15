@@ -6,7 +6,6 @@ where
 import Control.Monad
 import qualified Data.Map as M
 import Data.Mergeful
-import Data.Mergeful.Timed
 import qualified Data.Set as S
 import Smos.API
 import Smos.Sync.Client.Command.Sync

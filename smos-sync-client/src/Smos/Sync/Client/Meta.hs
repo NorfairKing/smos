@@ -8,7 +8,6 @@ import Data.Hashable
 import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import qualified Data.Mergeful as Mergeful
-import qualified Data.Mergeful.Timed as Mergeful
 import Database.Persist.Sql as DB
 import Pantry.SHA256 as SHA256
 import Path

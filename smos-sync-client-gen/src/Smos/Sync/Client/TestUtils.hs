@@ -118,7 +118,7 @@ withSyncClient cenv reg func =
       let s =
             Settings
               { setServerUrl = baseUrl cenv,
-                setLogLevel = LevelWarn,
+                setLogLevel = LevelDebug,
                 setUsername = Just $ registerUsername reg,
                 setPassword = Just $ registerPassword reg,
                 setSessionPath = sp
