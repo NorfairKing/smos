@@ -72,25 +72,20 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
 runInitialSync :: Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
 runInitialSync contentsDir ignoreFiles token = do
   logDebugN "INITIAL SYNC START"
-  let clientStore = Mergeful.initialClientStore :: Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-  let req = Mergeful.makeSyncRequest clientStore
+  let req = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
-  clientMergeSyncResponse contentsDir ignoreFiles syncResponseItems
+  clientMergeInitialSyncResponse contentsDir ignoreFiles syncResponseItems
   logDebugN "INITIAL SYNC END"
   pure syncResponseServerId
 
 runSync :: Path Abs Dir -> IgnoreFiles -> ServerUUID -> Token -> C ()
 runSync contentsDir ignoreFiles serverUUID token = do
-  files <- liftIO $ readFilteredSyncFiles ignoreFiles contentsDir
-  meta <- runDB readClientMetadata
-  logDebugData "CLIENT META MAP BEFORE SYNC" meta
-  let items = consolidateMetaMapWithFiles meta files
   logDebugN "SYNC START"
-  let req = Mergeful.makeSyncRequest items
+  req <- clientMakeSyncRequest contentsDir ignoreFiles
   logDebugData "SYNC REQUEST" req
   logInfoJsonData "SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
@@ -106,6 +101,165 @@ runSync contentsDir ignoreFiles serverUUID token = do
       ]
   clientMergeSyncResponse contentsDir ignoreFiles syncResponseItems
   logDebugN "SYNC END"
+
+clientMakeSyncRequest :: Path Abs Dir -> IgnoreFiles -> C (Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile)
+clientMakeSyncRequest contentsDir ignoreFiles = do
+  files <- liftIO $ readFilteredSyncFiles ignoreFiles contentsDir
+  meta <- runDB readClientMetadata
+  logDebugData "CLIENT META MAP BEFORE SYNC" meta
+  pure $ consolidateToSyncRequest meta files
+
+consolidateToSyncRequest :: MetaMap -> ContentsMap -> Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+consolidateToSyncRequest clientMetaDataMap contentsMap =
+  -- The existing files need to be checked for deletions and changes.
+  let go1 ::
+        Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile ->
+        Path Rel File ->
+        SyncFileMeta ->
+        Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+      go1 s rf sfm@SyncFileMeta {..} =
+        case M.lookup rf $ contentsMapFiles contentsMap of
+          Nothing ->
+            -- The file is not there, that means that it must have been deleted.
+            -- so we will mark it as such
+            s
+              { Mergeful.syncRequestDeletedItems =
+                  M.insert syncFileMetaUUID syncFileMetaTime $ Mergeful.syncRequestDeletedItems s
+              }
+          Just contents ->
+            -- The file is there, so we need to check if it has changed.
+            if isUnchanged sfm contents
+              then-- If it hasn't changed, it's still synced.
+
+                s
+                  { Mergeful.syncRequestKnownItems =
+                      M.insert
+                        syncFileMetaUUID
+                        syncFileMetaTime
+                        (Mergeful.syncRequestKnownItems s)
+                  }
+              else-- If it has changed, mark it as such
+
+                s
+                  { Mergeful.syncRequestKnownButChangedItems =
+                      M.insert
+                        syncFileMetaUUID
+                        ( Mergeful.Timed
+                            { Mergeful.timedValue =
+                                SyncFile {syncFilePath = rf, syncFileContents = contents},
+                              timedTime = syncFileMetaTime
+                            }
+                        )
+                        (Mergeful.syncRequestKnownButChangedItems s)
+                  }
+      syncedChangedAndDeleted =
+        M.foldlWithKey go1 Mergeful.initialSyncRequest $ metaMapFiles clientMetaDataMap
+      go2 ::
+        Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile ->
+        Path Rel File ->
+        ByteString ->
+        Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+      go2 s rf contents =
+        let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
+         in s {Mergeful.syncRequestNewItems = M.insert rf sf $ Mergeful.syncRequestNewItems s}
+   in M.foldlWithKey
+        go2
+        syncedChangedAndDeleted
+        (contentsMapFiles contentsMap `M.difference` metaMapFiles clientMetaDataMap)
+
+clientMergeInitialSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile -> C ()
+clientMergeInitialSyncResponse contentsDir ignoreFiles Mergeful.SyncResponse {..} = do
+  unless
+    ( and
+        [ null syncResponseClientAdded,
+          null syncResponseClientChanged,
+          null syncResponseClientDeleted,
+          null syncResponseServerChanged,
+          null syncResponseServerDeleted,
+          null syncResponseConflicts,
+          null syncResponseConflictsClientDeleted,
+          null syncResponseConflictsServerDeleted
+        ]
+    )
+    $ liftIO
+    $ die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
+  clientMergeInitialServerAdditions contentsDir ignoreFiles syncResponseServerAdded
+
+clientMergeInitialServerAdditions ::
+  Path Abs Dir ->
+  IgnoreFiles ->
+  Map FileUUID (Mergeful.Timed SyncFile) ->
+  C ()
+clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> do
+  let p = contentsDir </> syncFilePath
+  if filePred syncFilePath
+    then do
+      mContents <- liftIO $ forgivingAbsence $ SB.readFile $ fromAbsFile $ contentsDir </> syncFilePath
+      -- Insert the metadata in any case
+      runDB $
+        insert_
+          ClientFile
+            { clientFileUuid = uuid,
+              clientFilePath = syncFilePath,
+              clientFileHash = Just $ hash syncFileContents,
+              clientFileSha256 = Just $ SHA256.hashBytes syncFileContents,
+              clientFileTime = st
+            }
+      case mContents of
+        -- We don't have this file yet. Save it.
+        Nothing -> do
+          logDebugN $ "Saving file because we got it from the server and we didn't have it yet: " <> T.pack (fromAbsFile p)
+          liftIO $ do
+            ensureDir $ parent p
+            SB.writeFile (fromAbsFile p) syncFileContents
+        -- We already have a file at this path, don't overwrite it. It will be marked as 'changed' in the next sync.
+        Just _ -> pure ()
+    else logDebugN $ "Not considering file because it was supposed to be hidden: " <> T.pack (fromAbsFile p)
+  where
+    filePred = case ignoreFiles of
+      IgnoreNothing -> const True
+      IgnoreHiddenFiles -> not . isHidden
+
+consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> Maybe ClientStore
+consolidateInitialStoreWithFiles cs contentsMap =
+  let Mergeful.ClientStore {..} = clientStoreItems cs
+   in if not
+        ( null clientStoreAddedItems
+            && null clientStoreDeletedItems
+            && null clientStoreSyncedButChangedItems
+        )
+        then Nothing
+        else
+          Just
+            cs
+              { clientStoreItems =
+                  consolidateInitialSyncedItemsWithFiles clientStoreSyncedItems contentsMap
+              }
+
+consolidateInitialSyncedItemsWithFiles ::
+  Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
+consolidateInitialSyncedItemsWithFiles syncedItems =
+  M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems})
+    . contentsMapFiles
+  where
+    alreadySyncedMap = makeAlreadySyncedMap syncedItems
+    go ::
+      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile ->
+      Path Rel File ->
+      ByteString ->
+      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
+    go s rf contents =
+      let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
+       in case M.lookup rf alreadySyncedMap of
+            Nothing ->
+              -- Not in the initial sync, that means it was added
+              s {Mergeful.clientStoreAddedItems = M.insert rf sf $ Mergeful.clientStoreAddedItems s}
+            Just (i, contents') ->
+              if contents == contents'
+                then-- We the same file locally, do nothing.
+                  s
+                else-- We have a different file locally, so we'll mark this as 'synced but changed'.
+                  Mergeful.changeItemInClientStore i sf s
 
 clientMergeSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile -> C ()
 clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResponseCustom Mergeful.mergeFromServerStrategy proc
@@ -192,47 +346,6 @@ writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
 writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
-
-consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> Maybe ClientStore
-consolidateInitialStoreWithFiles cs contentsMap =
-  let Mergeful.ClientStore {..} = clientStoreItems cs
-   in if not
-        ( null clientStoreAddedItems
-            && null clientStoreDeletedItems
-            && null clientStoreSyncedButChangedItems
-        )
-        then Nothing
-        else
-          Just
-            cs
-              { clientStoreItems =
-                  consolidateInitialSyncedItemsWithFiles clientStoreSyncedItems contentsMap
-              }
-
-consolidateInitialSyncedItemsWithFiles ::
-  Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-consolidateInitialSyncedItemsWithFiles syncedItems =
-  M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems})
-    . contentsMapFiles
-  where
-    alreadySyncedMap = makeAlreadySyncedMap syncedItems
-    go ::
-      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile ->
-      Path Rel File ->
-      ByteString ->
-      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-    go s rf contents =
-      let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
-       in case M.lookup rf alreadySyncedMap of
-            Nothing ->
-              -- Not in the initial sync, that means it was added
-              s {Mergeful.clientStoreAddedItems = M.insert rf sf $ Mergeful.clientStoreAddedItems s}
-            Just (i, contents') ->
-              if contents == contents'
-                then-- We the same file locally, do nothing.
-                  s
-                else-- We have a different file locally, so we'll mark this as 'synced but changed'.
-                  Mergeful.changeItemInClientStore i sf s
 
 makeAlreadySyncedMap :: Map i (Mergeful.Timed SyncFile) -> Map (Path Rel File) (i, ByteString)
 makeAlreadySyncedMap m = M.fromList $ map go $ M.toList m
