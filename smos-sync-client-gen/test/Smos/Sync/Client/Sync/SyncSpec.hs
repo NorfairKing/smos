@@ -11,6 +11,7 @@ where
 import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Int
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -64,16 +65,6 @@ spec = do
                       testSync cenv token cstore'
                 result <- foldM go initial ops
                 shouldBeValid result
-          it "succesfully syncs a list of phases of operations" $ \cenv ->
-            forAll genTestOpsPhases $ \opss ->
-              withNewUser cenv $ \token -> do
-                initial <- testInitialSync cenv token
-                let go :: ClientStore -> [TestOp] -> IO ClientStore
-                    go cstore ops = do
-                      let cstore' = applyTestOpsStore cstore ops
-                      testSync cenv token cstore'
-                result <- foldM go initial opss
-                shouldBeValid result
     describe "multi client" $ do
       it "succesfully syncs multiple clients with an empty server" $ \cenv ->
         forAll (choose (1, 5)) $ \nbClients ->
@@ -83,15 +74,6 @@ spec = do
                 cstore <- testInitialSync cenv token
                 testSync cenv token cstore
             shouldBeValid stores
-      modifyMaxSuccess (* 20)
-        $ it "succesfully syncs a list of operations for clients seperately"
-        $ \cenv ->
-          forAll genCTestOps $ \cops ->
-            withNewUser cenv $ \token -> do
-              let go :: Map Int ClientStore -> CTestOp -> IO (Map Int ClientStore)
-                  go = applyCTestOp cenv token
-              result <- foldM go M.empty cops
-              shouldBeValid result
 
 data CTestOp
   = CTestOp Int ClientOp
@@ -280,7 +262,7 @@ applyTestOpStore cstore op =
    in cstore {clientStoreItems = s'}
 
 applyTestOp ::
-  Mergeful.ClientStore FileUUID SyncFile -> TestOp -> Mergeful.ClientStore FileUUID SyncFile
+  Mergeful.ClientStore Int64 FileUUID SyncFile -> TestOp -> Mergeful.ClientStore Int64 FileUUID SyncFile
 applyTestOp cs op =
   case op of
     AddFile sf -> Mergeful.addItemToClientStore sf cs

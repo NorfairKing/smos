@@ -4,6 +4,7 @@ module Smos.Sync.Client.Contents where
 
 import Control.Monad
 import qualified Data.ByteString as SB
+import Data.Int
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
@@ -49,7 +50,7 @@ filterContentsMap IgnoreNothing = id
 filterContentsMap IgnoreHiddenFiles =
   ContentsMap . M.filterWithKey (\p _ -> not $ isHidden p) . contentsMapFiles
 
-makeContentsMap :: Mergeful.ClientStore FileUUID SyncFile -> ContentsMap
+makeContentsMap :: Mergeful.ClientStore Int64 FileUUID SyncFile -> ContentsMap
 makeContentsMap Mergeful.ClientStore {..} =
   ContentsMap
     $ M.fromList

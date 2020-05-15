@@ -5,6 +5,8 @@
 - ignore:
     name: "Reduce duplication"
 - ignore:
+    name: "Redundant do"
+- ignore:
     name: "Use ++"
     within: 
       - "Smos.Actions.Properties.allPropertiesPlainActions"

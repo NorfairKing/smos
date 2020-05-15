@@ -6,6 +6,7 @@ module Smos.Server.Handler.PostSync
 where
 
 import qualified Data.Mergeful as Mergeful
+import qualified Data.Mergeful.Persistent as Mergeful
 import Smos.Server.Handler.Import
 
 servePostSync :: AuthCookie -> SyncRequest -> SyncHandler SyncResponse
@@ -14,10 +15,15 @@ servePostSync (AuthCookie un) request = do
   case mu of
     Nothing -> throwError err404
     Just (Entity uid _) -> do
-      ServerEnv {..} <- ask
-      store <- runDB $ readServerStore uid
-      (respItems, newStore) <- Mergeful.processServerSync nextRandomUUID store request
-      runDB $ writeServerStore uid newStore
-      let resp =
-            SyncResponse {syncResponseServerId = serverEnvServerUUID, syncResponseItems = respItems}
-      pure resp
+      syncResponseServerId <- asks serverEnvServerUUID
+      syncResponseItems <- runDB $ Mergeful.serverProcessSyncWithCustomIdQuery ServerFileUuid nextRandomUUID ServerFileTime [ServerFileUser ==. uid] readSyncFile (writeSyncFile uid) syncFileUpdates request
+      pure SyncResponse {..}
+  where
+    readSyncFile :: ServerFile -> (FileUUID, Mergeful.Timed SyncFile)
+    readSyncFile ServerFile {..} =
+      let sf = SyncFile {syncFilePath = serverFilePath, syncFileContents = serverFileContents}
+       in (serverFileUuid, Mergeful.Timed sf serverFileTime)
+    writeSyncFile :: UserId -> FileUUID -> SyncFile -> ServerFile
+    writeSyncFile uid uuid SyncFile {..} = ServerFile {serverFileUser = uid, serverFileUuid = uuid, serverFilePath = syncFilePath, serverFileContents = syncFileContents, serverFileTime = Mergeful.initialServerTime}
+    syncFileUpdates :: SyncFile -> [Update ServerFile]
+    syncFileUpdates SyncFile {..} = [ServerFilePath =. syncFilePath, ServerFileContents =. syncFileContents]

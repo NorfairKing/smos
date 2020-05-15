@@ -21,6 +21,7 @@ library:
   - containers
   - jose
   - mergeful
+  - mergeful-persistent
   - monad-logger
   - mtl
   - optparse-applicative

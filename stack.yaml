@@ -25,6 +25,10 @@ packages:
 - smos-sync-client
 - smos-sync-client-gen
 
+- /home/syd/src/mergeful/mergeful
+- /home/syd/src/mergeful/mergeful-persistent
+- /home/syd/src/mergeful/genvalidity-mergeful
+
 extra-deps:
 - hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
 - hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
@@ -68,11 +72,11 @@ extra-deps:
     - persistent-template
     - persistent-sqlite
 
-- github: NorfairKing/mergeful
-  commit: 4e3cf189c76d04daf9c26267a64523ec8bb071aa
-  subdirs:
-    - mergeful
-    - genvalidity-mergeful
+# - github: NorfairKing/mergeful
+#   commit: 4e3cf189c76d04daf9c26267a64523ec8bb071aa
+#   subdirs:
+#     - mergeful
+#     - genvalidity-mergeful
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - github: NorfairKing/pretty-relative-time
@@ -97,7 +101,7 @@ extra-deps:
     - cursor
     - cursor-gen
 - github: NorfairKing/validity
-  commit: c236b72925cc76a83a18b2d3c57ab6ff8f93a9c1
+  commit: 95ec39a2535b9c83b1163015fd2ca28317debf42
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -110,7 +114,9 @@ extra-deps:
   - genvalidity-hspec-cereal
   - genvalidity-hspec-hashable
   - genvalidity-hspec-optics
+  - genvalidity-hspec-persistent
   - genvalidity-path
+  - genvalidity-persistent
   - genvalidity-property
   - genvalidity-scientific
   - genvalidity-text
@@ -123,6 +129,7 @@ extra-deps:
   - validity-bytestring
   - validity-containers
   - validity-path
+  - validity-persistent
   - validity-primitive
   - validity-scientific
   - validity-text
