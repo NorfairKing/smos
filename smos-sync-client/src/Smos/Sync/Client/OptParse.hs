@@ -8,6 +8,7 @@ module Smos.Sync.Client.OptParse
     Dispatch (..),
     SyncSettings (..),
     Settings (..),
+    runArgumentsParser,
   )
 where
 

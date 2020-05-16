@@ -77,8 +77,12 @@
             Standard arguments
 
     <li>
-      <a href=@{PageR "synchronisation"}>
-        Synchronisation
+      <a href=@{SmosSyncClientR}>
+        The Smos Sync Client
+      <ul>
+        <li>
+          <a href=@{PageR "synchronisation"}>
+            Synchronisation
 
   <p .menu-label>
     Support

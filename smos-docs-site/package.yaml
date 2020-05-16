@@ -23,6 +23,7 @@ library:
   - smos
   - smos-data
   - smos-query
+  - smos-sync-client
   - template-haskell
   - text
   - th-lift-instances
