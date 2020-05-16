@@ -83,6 +83,9 @@
         <li>
           <a href=@{PageR "synchronisation"}>
             Synchronisation
+        <li>
+          <a href=@{PageR "smos-sync-client/database-migration"}>
+            Database migration: manual intervention required
 
   <p .menu-label>
     Support
