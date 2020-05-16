@@ -21,7 +21,7 @@ getSmosQueryR = do
   let helpText = getHelpPageOf []
   defaultLayout $ do
     setTitle "Smos Documentation - smos-query"
-    $(widgetFile "smos-query")
+    $(widgetFile "args")
 
 getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do
@@ -29,7 +29,7 @@ getSmosQueryCommandR cmd = do
   let helpText = getHelpPageOf [T.unpack cmd]
   defaultLayout $ do
     setTitle $ toHtml $ "Smos Documentation - " <> docPageTitle
-    $(widgetFile "smos-query-command")
+    $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =

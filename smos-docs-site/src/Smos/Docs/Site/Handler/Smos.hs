@@ -32,7 +32,7 @@ getSmosR = do
   let helpText = getHelpPageOf []
   defaultLayout $ do
     setTitle "Smos Documentation - smos"
-    $(widgetFile "smos")
+    $(widgetFile "args")
 
 getSmosFileR :: Handler Html
 getSmosFileR = do

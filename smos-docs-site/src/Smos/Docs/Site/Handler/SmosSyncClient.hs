@@ -20,7 +20,7 @@ getSmosSyncClientR = do
   let helpText = getHelpPageOf []
   defaultLayout $ do
     setTitle "Smos Documentation - smos-sync-client"
-    $(widgetFile "smos-sync-client")
+    $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =
