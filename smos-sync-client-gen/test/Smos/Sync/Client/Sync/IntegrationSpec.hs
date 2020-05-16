@@ -3,7 +3,6 @@ module Smos.Sync.Client.Sync.IntegrationSpec
   )
 where
 
-import Control.Monad
 import Servant.Client (ClientEnv)
 import Smos.Server.TestUtils
 import qualified Smos.Sync.Client.ContentsMap as CM

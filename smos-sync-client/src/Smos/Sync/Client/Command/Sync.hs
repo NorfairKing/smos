@@ -17,7 +17,6 @@ import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
-import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -205,8 +204,7 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
           ClientFile
             { clientFileUuid = uuid,
               clientFilePath = syncFilePath,
-              clientFileHash = Just $ hash syncFileContents,
-              clientFileSha256 = Just $ SHA256.hashBytes syncFileContents,
+              clientFileSha256 = SHA256.hashBytes syncFileContents,
               clientFileTime = st
             }
       case mContents of
@@ -240,7 +238,7 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
               case mContents of
                 Nothing -> pure Nothing
                 Just contents -> do
-                  let sfm = SyncFileMeta {syncFileMetaUUID = u, syncFileMetaHashOld = clientFileHash, syncFileMetaHash = clientFileSha256, syncFileMetaTime = clientFileTime}
+                  let sfm = SyncFileMeta {syncFileMetaUUID = u, syncFileMetaHash = clientFileSha256, syncFileMetaTime = clientFileTime}
                   if isUnchanged sfm contents
                     then pure Nothing
                     else do
@@ -255,7 +253,7 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
             Nothing -> pure ()
             Just contents -> do
               logInfoN $ "Adding a client-added item locally, not on disk (because it's already there) but only its metadata: " <> T.pack (fromAbsFile p)
-              insert_ ClientFile {clientFileUuid = clientAdditionId, clientFilePath = path, clientFileHash = Just $ hash contents, clientFileSha256 = Just $ SHA256.hashBytes contents, clientFileTime = clientAdditionServerTime}
+              insert_ ClientFile {clientFileUuid = clientAdditionId, clientFilePath = path, clientFileSha256 = SHA256.hashBytes contents, clientFileTime = clientAdditionServerTime}
         clientSyncProcessorSyncClientChanged :: Map FileUUID Mergeful.ServerTime -> SqlPersistT C ()
         clientSyncProcessorSyncClientChanged m = forM_ (M.toList m) $ \(uuid, st) -> do
           mcf <- getBy (UniqueUUID uuid)
@@ -268,7 +266,7 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
                 Nothing -> pure ()
                 Just contents -> do
                   logInfoN $ "Updating a client-changed item locally, not on disk (because it's already been changed there) but only its metadata: " <> T.pack (fromAbsFile p)
-                  updateWhere [ClientFileUuid ==. uuid] [ClientFileTime =. st, ClientFileHash =. Just (hash contents), ClientFileSha256 =. Just (SHA256.hashBytes contents)]
+                  updateWhere [ClientFileUuid ==. uuid] [ClientFileTime =. st, ClientFileSha256 =. SHA256.hashBytes contents]
         clientSyncProcessorSyncClientDeleted :: Set FileUUID -> SqlPersistT C ()
         clientSyncProcessorSyncClientDeleted s = forM_ (S.toList s) $ \uuid -> do
           mcf <- getBy (UniqueUUID uuid)
@@ -294,7 +292,7 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
           liftIO $ do
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
-          insert_ ClientFile {clientFileUuid = uuid, clientFilePath = syncFilePath, clientFileHash = Just $ hash syncFileContents, clientFileSha256 = Just $ SHA256.hashBytes syncFileContents, clientFileTime = st}
+          insert_ ClientFile {clientFileUuid = uuid, clientFilePath = syncFilePath, clientFileSha256 = SHA256.hashBytes syncFileContents, clientFileTime = st}
         clientSyncProcessorSyncServerChanged :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncServerChanged m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> when (filePred syncFilePath) $ do
           let p = contentsDir </> syncFilePath
@@ -302,7 +300,7 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
           liftIO $ do
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
-          updateWhere [ClientFileUuid ==. uuid] [ClientFileHash =. Just (hash syncFileContents), ClientFileSha256 =. Just (SHA256.hashBytes syncFileContents), ClientFileTime =. st]
+          updateWhere [ClientFileUuid ==. uuid] [ClientFileSha256 =. SHA256.hashBytes syncFileContents, ClientFileTime =. st]
         clientSyncProcessorSyncServerDeleted :: Set FileUUID -> SqlPersistT C ()
         clientSyncProcessorSyncServerDeleted s = forM_ (S.toList s) $ \uuid -> do
           mcf <- getBy (UniqueUUID uuid)
@@ -340,7 +338,4 @@ writeServerUUID p u = do
 -- We will trust hashing. (TODO do we need to fix that?)
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents =
-  case (syncFileMetaHashOld, syncFileMetaHash) of
-    (Nothing, Nothing) -> False -- Mark as changed, then we'll get a new hash later.
-    (Just i, Nothing) -> hash contents == i
-    (_, Just sha) -> SHA256.hashBytes contents == sha
+  SHA256.hashBytes contents == syncFileMetaHash

@@ -109,8 +109,7 @@ instance NFData ClientStore
 data SyncFileMeta
   = SyncFileMeta
       { syncFileMetaUUID :: FileUUID,
-        syncFileMetaHashOld :: Maybe Int,
-        syncFileMetaHash :: Maybe SHA256,
+        syncFileMetaHash :: SHA256,
         syncFileMetaTime :: Mergeful.ServerTime
       }
   deriving (Show, Eq, Generic)
@@ -122,13 +121,12 @@ instance NFData SyncFileMeta
 instance FromJSON SyncFileMeta where
   parseJSON =
     withObject "SyncFileMeta" $ \o ->
-      SyncFileMeta <$> o .: "uuid" <*> o .:? "hash" <*> o .:? "sha256" <*> o .: "time"
+      SyncFileMeta <$> o .: "uuid" <*> o .: "sha256" <*> o .: "time"
 
 instance ToJSON SyncFileMeta where
   toJSON SyncFileMeta {..} =
     object
       [ "uuid" .= syncFileMetaUUID,
-        "hash" .= syncFileMetaHashOld,
         "sha256" .= syncFileMetaHash,
         "time" .= syncFileMetaTime
       ]

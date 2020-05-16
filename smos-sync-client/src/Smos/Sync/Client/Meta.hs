@@ -4,7 +4,6 @@
 module Smos.Sync.Client.Meta where
 
 import Control.Monad.Reader
-import Data.Hashable
 import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import qualified Data.Mergeful as Mergeful
@@ -30,7 +29,6 @@ readClientMetadata = do
           ( clientFilePath,
             SyncFileMeta
               { syncFileMetaUUID = clientFileUuid,
-                syncFileMetaHashOld = clientFileHash,
                 syncFileMetaHash = clientFileSha256,
                 syncFileMetaTime = clientFileTime
               }
@@ -57,12 +55,10 @@ writeClientMetadata mm = do
               { clientFileUuid = syncFileMetaUUID,
                 clientFilePath = path,
                 clientFileSha256 = syncFileMetaHash,
-                clientFileHash = syncFileMetaHashOld,
                 clientFileTime = syncFileMetaTime
               }
           )
-          [ ClientFileHash =. syncFileMetaHashOld,
-            ClientFileSha256 =. syncFileMetaHash,
+          [ ClientFileSha256 =. syncFileMetaHash,
             ClientFileTime =. syncFileMetaTime
           ]
 
@@ -87,8 +83,7 @@ makeClientMetaData igf ClientStore {..} =
                         SyncFileMeta
                           { syncFileMetaUUID = u,
                             syncFileMetaTime = timedTime,
-                            syncFileMetaHashOld = Just $ hash syncFileContents,
-                            syncFileMetaHash = Just $ SHA256.hashBytes syncFileContents
+                            syncFileMetaHash = SHA256.hashBytes syncFileContents
                           }
                         m
                  in case igf of

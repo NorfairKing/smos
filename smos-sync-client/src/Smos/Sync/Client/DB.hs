@@ -33,8 +33,7 @@ share
 ClientFile
     uuid FileUUID sqltype=uuid
     path (Path Rel File)
-    hash Int Maybe default=NULL
-    sha256 SHA256 Maybe default=NULL
+    sha256 SHA256
     time ServerTime
 
     UniquePath path
