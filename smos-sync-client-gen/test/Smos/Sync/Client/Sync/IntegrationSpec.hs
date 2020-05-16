@@ -213,7 +213,6 @@ twoClientSpec =
             withNewRegisteredUser cenv $ \r ->
               withSyncClient cenv r $ \c1 ->
                 withSyncClient cenv r $ \c2 -> do
-                  replicateM_ 5 $ print "START"
                   let m1 = CM.singleton rp contents1
                   setupClientContents c1 m1
                   setupClientContents c2 m1

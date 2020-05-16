@@ -4,7 +4,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Smos.Sync.Client.Command.Sync where
+module Smos.Sync.Client.Command.Sync
+  ( syncSmosSyncClient,
+  )
+where
 
 import Control.Monad
 import Control.Monad.Logger
@@ -221,47 +224,6 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
       IgnoreNothing -> const True
       IgnoreHiddenFiles -> not . isHidden
 
-consolidateInitialStoreWithFiles :: ClientStore -> ContentsMap -> Maybe ClientStore
-consolidateInitialStoreWithFiles cs contentsMap =
-  let Mergeful.ClientStore {..} = clientStoreItems cs
-   in if not
-        ( null clientStoreAddedItems
-            && null clientStoreDeletedItems
-            && null clientStoreSyncedButChangedItems
-        )
-        then Nothing
-        else
-          Just
-            cs
-              { clientStoreItems =
-                  consolidateInitialSyncedItemsWithFiles clientStoreSyncedItems contentsMap
-              }
-
-consolidateInitialSyncedItemsWithFiles ::
-  Map FileUUID (Mergeful.Timed SyncFile) -> ContentsMap -> Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-consolidateInitialSyncedItemsWithFiles syncedItems =
-  M.foldlWithKey go (Mergeful.initialClientStore {Mergeful.clientStoreSyncedItems = syncedItems})
-    . contentsMapFiles
-  where
-    alreadySyncedMap = makeAlreadySyncedMap syncedItems
-    go ::
-      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile ->
-      Path Rel File ->
-      ByteString ->
-      Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-    go s rf contents =
-      let sf = SyncFile {syncFileContents = contents, syncFilePath = rf}
-       in case M.lookup rf alreadySyncedMap of
-            Nothing ->
-              -- Not in the initial sync, that means it was added
-              s {Mergeful.clientStoreAddedItems = M.insert rf sf $ Mergeful.clientStoreAddedItems s}
-            Just (i, contents') ->
-              if contents == contents'
-                then-- We the same file locally, do nothing.
-                  s
-                else-- We have a different file locally, so we'll mark this as 'synced but changed'.
-                  Mergeful.changeItemInClientStore i sf s
-
 clientMergeSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile -> C ()
 clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResponseCustom Mergeful.mergeFromServerStrategy proc
   where
@@ -375,74 +337,6 @@ writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
-makeAlreadySyncedMap :: Map i (Mergeful.Timed SyncFile) -> Map (Path Rel File) (i, ByteString)
-makeAlreadySyncedMap m = M.fromList $ map go $ M.toList m
-  where
-    go (i, Mergeful.Timed SyncFile {..} _) = (syncFilePath, (i, syncFileContents))
-
-consolidateMetaMapWithFiles :: MetaMap -> ContentsMap -> Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-consolidateMetaMapWithFiles clientMetaDataMap contentsMap =
-  -- The existing files need to be checked for deletions and changes.
-  let go1 ::
-        Mergeful.ClientStore (Path Rel File) FileUUID SyncFile ->
-        Path Rel File ->
-        SyncFileMeta ->
-        Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-      go1 s rf sfm@SyncFileMeta {..} =
-        case M.lookup rf $ contentsMapFiles contentsMap of
-          Nothing ->
-            -- The file is not there, that means that it must have been deleted.
-            -- so we will mark it as such
-            s
-              { Mergeful.clientStoreDeletedItems =
-                  M.insert syncFileMetaUUID syncFileMetaTime $ Mergeful.clientStoreDeletedItems s
-              }
-          Just contents ->
-            -- The file is there, so we need to check if it has changed.
-            if isUnchanged sfm contents
-              then-- If it hasn't changed, it's still synced.
-
-                s
-                  { Mergeful.clientStoreSyncedItems =
-                      M.insert
-                        syncFileMetaUUID
-                        ( Mergeful.Timed
-                            { Mergeful.timedValue =
-                                SyncFile {syncFilePath = rf, syncFileContents = contents},
-                              timedTime = syncFileMetaTime
-                            }
-                        )
-                        (Mergeful.clientStoreSyncedItems s)
-                  }
-              else-- If it has changed, mark it as such
-
-                s
-                  { Mergeful.clientStoreSyncedButChangedItems =
-                      M.insert
-                        syncFileMetaUUID
-                        ( Mergeful.Timed
-                            { Mergeful.timedValue =
-                                SyncFile {syncFilePath = rf, syncFileContents = contents},
-                              timedTime = syncFileMetaTime
-                            }
-                        )
-                        (Mergeful.clientStoreSyncedButChangedItems s)
-                  }
-      syncedChangedAndDeleted =
-        M.foldlWithKey go1 Mergeful.initialClientStore $ metaMapFiles clientMetaDataMap
-      go2 ::
-        Mergeful.ClientStore (Path Rel File) FileUUID SyncFile ->
-        Path Rel File ->
-        ByteString ->
-        Mergeful.ClientStore (Path Rel File) FileUUID SyncFile
-      go2 s rf contents =
-        let sf = SyncFile {syncFilePath = rf, syncFileContents = contents}
-         in s {Mergeful.clientStoreAddedItems = M.insert rf sf $ Mergeful.clientStoreAddedItems s}
-   in M.foldlWithKey
-        go2
-        syncedChangedAndDeleted
-        (contentsMapFiles contentsMap `M.difference` metaMapFiles clientMetaDataMap)
-
 -- We will trust hashing. (TODO do we need to fix that?)
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents =
@@ -450,15 +344,3 @@ isUnchanged SyncFileMeta {..} contents =
     (Nothing, Nothing) -> False -- Mark as changed, then we'll get a new hash later.
     (Just i, Nothing) -> hash contents == i
     (_, Just sha) -> SHA256.hashBytes contents == sha
-
--- TODO this could be probably optimised using the sync response
-saveClientStore :: IgnoreFiles -> Path Abs Dir -> ClientStore -> C ()
-saveClientStore igf dir store =
-  case makeClientMetaData igf store of
-    Nothing -> liftIO $ die "Something went wrong while building the metadata store"
-    Just mm -> do
-      runDB $ writeClientMetadata mm
-      liftIO $ saveSyncFiles igf dir $ clientStoreItems store
-
-saveSyncFiles :: IgnoreFiles -> Path Abs Dir -> Mergeful.ClientStore (Path Rel File) FileUUID SyncFile -> IO ()
-saveSyncFiles igf dir store = saveContentsMap igf dir $ makeContentsMap store
