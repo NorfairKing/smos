@@ -7,8 +7,6 @@ module Smos.Docs.Site.Handler.SmosSyncClient
   )
 where
 
-import Data.Text (Text)
-import qualified Data.Text as T
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
