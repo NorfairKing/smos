@@ -3,6 +3,7 @@ module Smos.Sync.Client.Sync.IntegrationSpec
   )
 where
 
+import Control.Monad
 import Servant.Client (ClientEnv)
 import Smos.Server.TestUtils
 import qualified Smos.Sync.Client.ContentsMap as CM
@@ -212,9 +213,10 @@ twoClientSpec =
             withNewRegisteredUser cenv $ \r ->
               withSyncClient cenv r $ \c1 ->
                 withSyncClient cenv r $ \c2 -> do
+                  replicateM_ 5 $ print "START"
                   let m1 = CM.singleton rp contents1
                   setupClientContents c1 m1
-                  setupClientContents c1 m1
+                  setupClientContents c2 m1
                   fullySyncTwoClients c1 c2
                   let m2 = CM.singleton rp contents2
                   setupClientContents c1 m2

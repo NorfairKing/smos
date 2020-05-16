@@ -105,6 +105,7 @@ runSync contentsDir ignoreFiles serverUUID token = do
 clientMakeSyncRequest :: Path Abs Dir -> IgnoreFiles -> C (Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile)
 clientMakeSyncRequest contentsDir ignoreFiles = do
   files <- liftIO $ readFilteredSyncFiles ignoreFiles contentsDir
+  logDebugData "CLIENT CONTENTS MAP BEFORE SYNC" files
   meta <- runDB readClientMetadata
   logDebugData "CLIENT META MAP BEFORE SYNC" meta
   pure $ consolidateToSyncRequest meta files
@@ -213,7 +214,7 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
         -- We already have a file at this path, don't overwrite it. It will be marked as 'changed' in the next sync.
-        Just _ -> pure ()
+        Just _ -> logDebugN $ "Not writing to file that we got from the server because we already have a file at that path: " <> T.pack (fromAbsFile p)
     else logDebugN $ "Not considering file because it was supposed to be hidden: " <> T.pack (fromAbsFile p)
   where
     filePred = case ignoreFiles of
@@ -264,10 +265,10 @@ consolidateInitialSyncedItemsWithFiles syncedItems =
 clientMergeSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile -> C ()
 clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResponseCustom Mergeful.mergeFromServerStrategy proc
   where
-    proc :: Mergeful.ClientSyncProcessor (Path Rel File) FileUUID SyncFile (SqlPersistT IO)
+    proc :: Mergeful.ClientSyncProcessor (Path Rel File) FileUUID SyncFile (SqlPersistT C)
     proc = Mergeful.ClientSyncProcessor {..}
       where
-        clientSyncProcessorQuerySyncedButChangedValues :: Set FileUUID -> SqlPersistT IO (Map FileUUID (Mergeful.Timed SyncFile))
+        clientSyncProcessorQuerySyncedButChangedValues :: Set FileUUID -> SqlPersistT C (Map FileUUID (Mergeful.Timed SyncFile))
         clientSyncProcessorQuerySyncedButChangedValues s = fmap (M.fromList . catMaybes) $ forM (S.toList s) $ \u -> do
           mcf <- getBy (UniqueUUID u)
           case mcf of
@@ -284,45 +285,72 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
                       let sf = SyncFile {syncFilePath = clientFilePath, syncFileContents = contents}
                       let tsf = Mergeful.Timed sf clientFileTime
                       pure $ Just (u, tsf)
-        clientSyncProcessorSyncClientAdded :: Map (Path Rel File) (Mergeful.ClientAddition FileUUID) -> SqlPersistT IO ()
-        clientSyncProcessorSyncClientAdded m = forM_ (M.toList m) $ \(p, Mergeful.ClientAddition {..}) -> do
-          mContents <- liftIO $ forgivingAbsence $ SB.readFile $ fromAbsFile $ contentsDir </> p
+        clientSyncProcessorSyncClientAdded :: Map (Path Rel File) (Mergeful.ClientAddition FileUUID) -> SqlPersistT C ()
+        clientSyncProcessorSyncClientAdded m = forM_ (M.toList m) $ \(path, Mergeful.ClientAddition {..}) -> do
+          let p = contentsDir </> path
+          mContents <- liftIO $ forgivingAbsence $ SB.readFile $ fromAbsFile p
           case mContents of
             Nothing -> pure ()
             Just contents -> do
-              insert_ ClientFile {clientFileUuid = clientAdditionId, clientFilePath = p, clientFileHash = Just $ hash contents, clientFileSha256 = Just $ SHA256.hashBytes contents, clientFileTime = clientAdditionServerTime}
-        clientSyncProcessorSyncClientChanged :: Map FileUUID Mergeful.ServerTime -> SqlPersistT IO ()
-        clientSyncProcessorSyncClientChanged m = forM_ (M.toList m) $ \(uuid, st) ->
-          updateWhere [ClientFileUuid ==. uuid] [ClientFileTime =. st]
-        clientSyncProcessorSyncClientDeleted :: Set FileUUID -> SqlPersistT IO ()
-        clientSyncProcessorSyncClientDeleted s = forM_ (S.toList s) $ \uuid ->
-          deleteBy (UniqueUUID uuid)
-        clientSyncProcessorSyncMergedConflict :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT IO ()
-        clientSyncProcessorSyncMergedConflict m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> unless (filePred syncFilePath) $ do
+              logInfoN $ "Adding a client-added item locally, not on disk (because it's already there) but only its metadata: " <> T.pack (fromAbsFile p)
+              insert_ ClientFile {clientFileUuid = clientAdditionId, clientFilePath = path, clientFileHash = Just $ hash contents, clientFileSha256 = Just $ SHA256.hashBytes contents, clientFileTime = clientAdditionServerTime}
+        clientSyncProcessorSyncClientChanged :: Map FileUUID Mergeful.ServerTime -> SqlPersistT C ()
+        clientSyncProcessorSyncClientChanged m = forM_ (M.toList m) $ \(uuid, st) -> do
+          mcf <- getBy (UniqueUUID uuid)
+          case mcf of
+            Nothing -> pure ()
+            Just (Entity _ ClientFile {..}) -> do
+              let p = contentsDir </> clientFilePath
+              mContents <- liftIO $ forgivingAbsence $ SB.readFile $ fromAbsFile p
+              case mContents of
+                Nothing -> pure ()
+                Just contents -> do
+                  logInfoN $ "Updating a client-changed item locally, not on disk (because it's already been changed there) but only its metadata: " <> T.pack (fromAbsFile p)
+                  updateWhere [ClientFileUuid ==. uuid] [ClientFileTime =. st, ClientFileHash =. Just (hash contents), ClientFileSha256 =. Just (SHA256.hashBytes contents)]
+        clientSyncProcessorSyncClientDeleted :: Set FileUUID -> SqlPersistT C ()
+        clientSyncProcessorSyncClientDeleted s = forM_ (S.toList s) $ \uuid -> do
+          mcf <- getBy (UniqueUUID uuid)
+          case mcf of
+            Nothing -> pure ()
+            Just (Entity cfid ClientFile {..}) -> do
+              let p = contentsDir </> clientFilePath
+              logInfoN $ "Deleting a client-deleted item locally, not on disk (because it's already gone there) but only its metadata: " <> T.pack (fromAbsFile p)
+              delete cfid
+        clientSyncProcessorSyncMergedConflict :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT C ()
+        clientSyncProcessorSyncMergedConflict m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> when (filePred syncFilePath) $ do
           let p = contentsDir </> syncFilePath
+          logInfoN $ "Updating a merged change-conflict item locally on disk but not its metadata: " <> T.pack (fromAbsFile p)
           liftIO $ do
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
           -- Don't update the hashes so the item stays marked as 'changed'
           updateWhere [ClientFileUuid ==. uuid] [ClientFileTime =. st]
-        clientSyncProcessorSyncServerAdded :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT IO ()
-        clientSyncProcessorSyncServerAdded m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> unless (filePred syncFilePath) $ do
+        clientSyncProcessorSyncServerAdded :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT C ()
+        clientSyncProcessorSyncServerAdded m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> when (filePred syncFilePath) $ do
           let p = contentsDir </> syncFilePath
+          logInfoN $ "Adding a server-added item locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
           liftIO $ do
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
-          -- Don't update the hashes so the item stays marked as 'changed'
           insert_ ClientFile {clientFileUuid = uuid, clientFilePath = syncFilePath, clientFileHash = Just $ hash syncFileContents, clientFileSha256 = Just $ SHA256.hashBytes syncFileContents, clientFileTime = st}
-        clientSyncProcessorSyncServerChanged :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT IO ()
-        clientSyncProcessorSyncServerChanged m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> unless (filePred syncFilePath) $ do
+        clientSyncProcessorSyncServerChanged :: Map FileUUID (Mergeful.Timed SyncFile) -> SqlPersistT C ()
+        clientSyncProcessorSyncServerChanged m = forM_ (M.toList m) $ \(uuid, Mergeful.Timed SyncFile {..} st) -> when (filePred syncFilePath) $ do
           let p = contentsDir </> syncFilePath
+          logInfoN $ "Updating a server-changed item locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
           liftIO $ do
             ensureDir $ parent p
             SB.writeFile (fromAbsFile p) syncFileContents
-          -- Don't update the hashes so the item stays marked as 'changed'
           updateWhere [ClientFileUuid ==. uuid] [ClientFileHash =. Just (hash syncFileContents), ClientFileSha256 =. Just (SHA256.hashBytes syncFileContents), ClientFileTime =. st]
-        clientSyncProcessorSyncServerDeleted :: Set FileUUID -> SqlPersistT IO ()
-        clientSyncProcessorSyncServerDeleted s = forM_ (S.toList s) $ \uuid -> deleteBy (UniqueUUID uuid)
+        clientSyncProcessorSyncServerDeleted :: Set FileUUID -> SqlPersistT C ()
+        clientSyncProcessorSyncServerDeleted s = forM_ (S.toList s) $ \uuid -> do
+          mcf <- getBy (UniqueUUID uuid)
+          case mcf of
+            Nothing -> pure ()
+            Just (Entity cfid ClientFile {..}) -> do
+              let p = contentsDir </> clientFilePath
+              logInfoN $ "Deleting a server-deleted item locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
+              ignoringAbsence $ removeFile p
+              delete cfid
         filePred = case ignoreFiles of
           IgnoreNothing -> const True
           IgnoreHiddenFiles -> not . isHidden

@@ -90,10 +90,10 @@ runSyncClientOrDie func = do
     Left err -> liftIO $ die $ show err
     Right resp -> pure resp
 
-runDB :: DB.SqlPersistT IO a -> C a
+runDB :: DB.SqlPersistT C a -> C a
 runDB func = do
   pool <- asks syncClientEnvConnection
-  liftIO $ DB.runSqlPool func pool
+  DB.runSqlPool func pool
 
 data ClientStore
   = ClientStore

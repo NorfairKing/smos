@@ -49,6 +49,7 @@ library:
   - stm
   - text
   - typed-uuid
+  - unliftio
   - uuid
   - validity
   - validity-bytestring
