@@ -4,7 +4,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Docs.Site.Handler.Keybindings
-  ( getKeybindingsR,
+  ( getSmosKeybindingsR,
   )
 where
 
@@ -14,10 +14,10 @@ import Smos.Docs.Site.Widget
 import Smos.Types
 import Yesod
 
-getKeybindingsR :: Handler Html
-getKeybindingsR =
+getSmosKeybindingsR :: Handler Html
+getSmosKeybindingsR =
   defaultLayout
-    $(widgetFile "keybindings")
+    $(widgetFile "smos-keybindings")
 
 keyMapTable :: KeyMappings -> Widget
 keyMapTable = keyHelpCursorsTable . makeKeyHelpCursors

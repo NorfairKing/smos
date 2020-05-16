@@ -4,11 +4,11 @@
 
 /smos SmosR GET
 /smos/file SmosFileR GET
+/smos/keybindings SmosKeybindingsR GET
+
 
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET
-
-/keybindings KeybindingsR GET
 
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets

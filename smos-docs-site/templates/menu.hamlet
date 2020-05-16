@@ -23,7 +23,7 @@
         The Smos TUI
       <ul>
         <li>
-          <a href=@{KeybindingsR}>
+          <a href=@{SmosKeybindingsR}>
             Default Keybindings
         <li>
           <a href=@{PageR "customisation-default"}>
