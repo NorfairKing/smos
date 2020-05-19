@@ -69,14 +69,6 @@ in
   ];
   programs.smos = {
     enable = true;
-    backup = {
-      enable = true;
-    };
-    sync = {
-      enable = true;
-      username = "YOURUSERNAMEHERE";
-      password = "YOURPASSWORDHERE";
-    };
   };
 }
 ```
