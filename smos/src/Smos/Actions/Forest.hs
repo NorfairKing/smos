@@ -58,6 +58,8 @@ allForestPlainActions =
     forestMoveDown,
     forestMoveLeft,
     forestMoveRight,
+    forestMoveToFirst,
+    forestMoveToLast,
     forestSwapUp,
     forestSwapDown,
     forestPromoteEntry,

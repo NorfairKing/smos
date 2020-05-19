@@ -23,12 +23,16 @@ import Smos.Types
 
 allContentsPlainActions :: [Action]
 allContentsPlainActions =
-  [ contentsRemove,
+  [ contentsInsertNewline,
+    contentsAppendNewline,
+    contentsRemove,
     contentsDelete,
     contentsMoveLeft,
     contentsMoveRight,
     contentsMoveUp,
-    contentsMoveDown
+    contentsMoveDown,
+    contentsMoveToStartOfLine,
+    contentsMoveToEndOfLine
   ]
 
 allContentsUsingCharActions :: [ActionUsing Char]

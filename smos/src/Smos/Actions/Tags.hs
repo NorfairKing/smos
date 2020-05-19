@@ -27,8 +27,22 @@ allTagsPlainActions :: [Action]
 allTagsPlainActions =
   concat
     [ do
-        act <- [tagsSet, tagsUnset, tagsToggle]
-        arg <- catMaybes [tag "work", tag "online"]
+        act <-
+          [ tagsSet,
+            tagsUnset,
+            tagsToggle
+            ]
+        arg <-
+          catMaybes
+            [ tag "work",
+              tag "online",
+              tag "home",
+              tag "offline",
+              tag "toast",
+              tag "external",
+              tag "power",
+              tag "code"
+            ]
         pure $ act arg,
       [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag]
     ]

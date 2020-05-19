@@ -24,7 +24,7 @@ allTimestampsPlainActions =
   concat
     [ do
         act <- [timestampsSelect]
-        arg <- catMaybes [timestampName "SCHEDULED", timestampName "DEADLINE"]
+        arg <- mapMaybe timestampName ["SCHEDULED", "DEADLINE", "BEGIN", "END"]
         pure $ act arg,
       [ timestampsMoveLeft,
         timestampsMoveRight,

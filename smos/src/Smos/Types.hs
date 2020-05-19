@@ -64,6 +64,9 @@ instance Monoid KeyMap where
   mempty =
     KeyMap {keyMapFileKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpKeyMap = mempty}
 
+keyMapActions :: KeyMap -> [AnyAction]
+keyMapActions (KeyMap keyMapFileKeyMap keyMapReportsKeyMap keyMapHelpKeyMap) = concat [fileKeyMapActions keyMapFileKeyMap, reportsKeyMapActions keyMapReportsKeyMap, helpKeyMapActions keyMapHelpKeyMap]
+
 data FileKeyMap
   = FileKeyMap
       { fileKeyMapEmptyMatchers :: !KeyMappings,
@@ -113,6 +116,34 @@ instance Monoid FileKeyMap where
         fileKeyMapAnyMatchers = mempty
       }
 
+fileKeyMapActions :: FileKeyMap -> [AnyAction]
+fileKeyMapActions
+  ( FileKeyMap
+      fileKeyMapEmptyMatchers
+      fileKeyMapEntryMatchers
+      fileKeyMapHeaderMatchers
+      fileKeyMapContentsMatchers
+      fileKeyMapTimestampsMatchers
+      fileKeyMapPropertiesMatchers
+      fileKeyMapStateHistoryMatchers
+      fileKeyMapTagsMatchers
+      fileKeyMapLogbookMatchers
+      fileKeyMapAnyMatchers
+    ) =
+    concatMap
+      keyMappingsActions
+      [ fileKeyMapEmptyMatchers,
+        fileKeyMapEntryMatchers,
+        fileKeyMapHeaderMatchers,
+        fileKeyMapContentsMatchers,
+        fileKeyMapTimestampsMatchers,
+        fileKeyMapPropertiesMatchers,
+        fileKeyMapStateHistoryMatchers,
+        fileKeyMapTagsMatchers,
+        fileKeyMapLogbookMatchers,
+        fileKeyMapAnyMatchers
+      ]
+
 newtype ReportsKeyMap
   = ReportsKeyMap
       { reportsKeymapNextActionReportMatchers :: KeyMappings
@@ -128,6 +159,9 @@ instance Semigroup ReportsKeyMap where
 
 instance Monoid ReportsKeyMap where
   mempty = ReportsKeyMap {reportsKeymapNextActionReportMatchers = mempty}
+
+reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
+reportsKeyMapActions (ReportsKeyMap reportsKeymapNextActionReportMatchers) = concatMap keyMappingsActions [reportsKeymapNextActionReportMatchers]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings
 keyMapHelpMatchers km =
@@ -151,13 +185,26 @@ instance Semigroup HelpKeyMap where
 instance Monoid HelpKeyMap where
   mempty = HelpKeyMap {helpKeyMapHelpMatchers = mempty, helpKeyMapSearchMatchers = mempty}
 
+helpKeyMapActions :: HelpKeyMap -> [AnyAction]
+helpKeyMapActions (HelpKeyMap helpKeyMapHelpMatchers helpKeyMapSearchMatchers) = concatMap keyMappingsActions [helpKeyMapHelpMatchers, helpKeyMapSearchMatchers]
+
 type KeyMappings = [KeyMapping]
+
+keyMappingsActions :: KeyMappings -> [AnyAction]
+keyMappingsActions = map keyMappingAction
 
 data KeyMapping
   = MapVtyExactly !KeyPress !Action
   | MapAnyTypeableChar !(ActionUsing Char)
   | MapCatchAll !Action
   | MapCombination !KeyPress !KeyMapping
+
+keyMappingAction :: KeyMapping -> AnyAction
+keyMappingAction = \case
+  MapVtyExactly _ a -> PlainAction a
+  MapAnyTypeableChar au -> UsingCharAction au
+  MapCatchAll a -> PlainAction a
+  MapCombination _ km -> keyMappingAction km
 
 newtype ActionName
   = ActionName

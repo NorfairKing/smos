@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -30,11 +31,14 @@ spec = do
       resourcesDir <- resolveDir' "test_resources/golden"
       fs <- snd <$> listDirRecur resourcesDir
       pure $ filter ((== ".yaml") . fileExtension) fs
-  describe "Preconditions" $ do
-    let distinct ls = sort (nub ls) == sort ls
-    specify "all actions have unique names"
-      $ distinct
-      $ concat [map actionName allPlainActions, map actionUsingName allUsingCharActions]
+  describe "Preconditions"
+    $ specify "all actions have unique names"
+    $ let allActionNames = map anyActionName allActions
+          grouped = group $ sort allActionNames
+       in forM_ grouped $ \case
+            [] -> pure () -- impossible, but fine
+            [_] -> pure () -- fine
+            (an : _) -> expectationFailure $ unwords ["This action name occurred more than once: ", T.unpack (actionNameText an)]
   describe "Golden" $ makeTestcases tfs
 
 data GoldenTestCase

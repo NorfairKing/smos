@@ -49,7 +49,9 @@ allPlainActions =
         selectEditor,
         showDebug,
         hideDebug,
-        toggleDebug
+        toggleDebug,
+        saveFile,
+        stop
       ],
       allContentsPlainActions,
       allEntryPlainActions,
@@ -61,7 +63,8 @@ allPlainActions =
       allTimestampsPlainActions,
       allUndoPlainActions,
       allConveniencePlainActions,
-      allHelpPlainActions
+      allHelpPlainActions,
+      allPlainReportNextActions
     ]
 
 allUsingCharActions :: [ActionUsing Char]

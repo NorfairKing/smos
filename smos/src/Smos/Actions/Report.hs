@@ -6,6 +6,16 @@ import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Types
 
+allPlainReportNextActions :: [Action]
+allPlainReportNextActions =
+  [ reportNextActions,
+    nextNextAction,
+    prevNextAction,
+    firstNextAction,
+    lastNextAction,
+    enterNextActionFile
+  ]
+
 reportNextActions :: Action
 reportNextActions =
   Action
