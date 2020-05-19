@@ -72,8 +72,7 @@ jobs:
 
       - name: Build
         run: |
-          stack install --system-ghc autoexporter
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+          stack install --system-ghc autoexporter && stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
 
       - name: Test
         run: |

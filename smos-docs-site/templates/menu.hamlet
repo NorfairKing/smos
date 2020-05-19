@@ -111,6 +111,9 @@
       <a href="https://github.com/NorfairKing/smos">
         Smos on Github
     <li>
+      <a href=@{PageR "related-projects"}>
+        Related projects
+    <li>
       <a href=@{PageR "blogposts"}>
         Featured blogposts
     <li>
