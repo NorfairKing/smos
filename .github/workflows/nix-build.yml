@@ -14,7 +14,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          # - macos-latest # Fails with a 'non-portable path to file' error
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
