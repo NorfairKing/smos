@@ -5,6 +5,7 @@
 /smos SmosR GET
 /smos/file SmosFileR GET
 /smos/keybindings SmosKeybindingsR GET
+/smos/actions SmosActionsR GET
 
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET

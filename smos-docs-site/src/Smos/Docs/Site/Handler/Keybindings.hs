@@ -23,9 +23,9 @@ keyMapTable :: KeyMappings -> Widget
 keyMapTable = keyHelpCursorsTable . makeKeyHelpCursors
 
 keyHelpCursorsTable :: [KeyHelpCursor] -> Widget
-keyHelpCursorsTable khs = do
+keyHelpCursorsTable khs =
   let ws = map keyHelpCursorRow khs
-  [whamlet|
+   in [whamlet|
     <table .is-bordered .is-striped .is-fullwidth>
       <colgroup>
         <col span="1" style="width: 15%;">

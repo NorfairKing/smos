@@ -1,0 +1,17 @@
+<div .content>
+  <h1 .title>
+    Actions Reference
+
+  <p>
+    Not all available actions have a default keybinding.
+  <p>
+    This is a list of all actions that you can configure.
+    See
+    <a href=@{PageR "customisation-default"}>
+      the customisation documentation
+    and
+    <a href=@{SmosR}>
+      the reference documentation
+    .
+
+  ^{actionTable $ sortOn anyActionName allActions}

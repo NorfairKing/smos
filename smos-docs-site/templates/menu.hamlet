@@ -31,6 +31,9 @@
         <li>
           <a href=@{SmosKeybindingsR}>
             Default Keybindings
+        <li>
+          <a href=@{SmosActionsR}>
+            Actions Reference
 
     <li>
       <a href=@{SmosQueryR}>

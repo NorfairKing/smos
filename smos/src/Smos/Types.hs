@@ -197,6 +197,10 @@ anyActionName :: AnyAction -> ActionName
 anyActionName (PlainAction a) = actionName a
 anyActionName (UsingCharAction au) = actionUsingName au
 
+anyActionDescription :: AnyAction -> Text
+anyActionDescription (PlainAction a) = actionDescription a
+anyActionDescription (UsingCharAction au) = actionUsingDescription au
+
 type Event = BrickEvent ResourceName SmosEvent
 
 data SmosEvent
