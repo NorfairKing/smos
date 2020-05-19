@@ -5,8 +5,8 @@
 <div .content>
   #{preEscapedToMarkup docPageRendered}
 
-  <h2> Entry
-  
+  <h3> Entry
+
   <p>
     An entry consists of
 
@@ -24,12 +24,25 @@
   <pre>
     #{example exampleEntry}
 
-  <h3>  
+  <h3>
     Yaml Schema
   <p>
-    There is no yaml schema available for entries because they can contain a logbook. (See below.)
+    An entry can either be only a header, in which case it can be represented as a string:
+  <pre>
+    &lt;header&gt;
+  <p>
+    Or it can have more fields, in which case it is an object:
+  <pre>
+    header: &lt;header&gt;
+    contents: &lt;contents&gt;
+    logbook: &lt;logbook&gt;
+    timestamps: &lt;timestamps&gt;
+    state-history: &lt;state-history&gt;
+    tags: &lt;tags&gt;
+    properties: &lt;properties&gt;
 
-  <h2> Header
+
+  <h3> Header
 
   <p>
     A Smos entry's header consists of a single line of text.
@@ -37,18 +50,18 @@
   <p>
     Headers contain a title-like piece of information about an entry.
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{headerDesc}
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example $ Header "Go to the gym: HITT class"}
 
 
-  <h2> Contents
+  <h3> Contents
 
   <p>
     A Smos entry's contents consist of an arbitrary piece of text.
@@ -56,14 +69,14 @@
   <p>
     Contents contain details about an entry.
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{contentsDesc}
 
 
 
-  <h2> Timestamps
+  <h3> Timestamps
 
   <p>
     A Smos entry's timestamps are a map of timestamp names to timestamps.
@@ -92,12 +105,12 @@
     <li> The day level
     <li> The moment level
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example $ M.singleton (TimestampName "SCHEDULED") (TimestampDay $ fromGregorian 2020 5 9)}
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{timestampsDesc}
@@ -105,7 +118,7 @@
 
 
 
-  <h2> Properties
+  <h3> Properties
 
   <p>
     A Smos entry's properties are a map of property names to property values.
@@ -127,18 +140,18 @@
     <li>
       <code> client
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example $ M.singleton (PropertyName "project") (PropertyValue "smos")}
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{propertiesDesc}
 
 
-  <h2> State and state history
+  <h3> State and state history
   <p>
     A Smos entry can have a state.
     States contain information about the state of an entry.
@@ -171,18 +184,18 @@
   <p>
     A Smos entry also remembers its entire state history.
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example exampleStateHistory}
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{stateHistoryDesc}
  
 
-  <h2> Tags
+  <h3> Tags
   <p>
     A Smos entry can have tags. Tags contain label-like information about an entry. Tags are arbitrary pieces of text without whitespace.
   <p>
@@ -205,29 +218,29 @@
     <li>
       <code> toast
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example exampleTags}
 
-  <h3>
+  <h4>
     Yaml Schema
   <pre>
     #{tagsDesc}
 
 
-  <h2> Logbook
+  <h3> Logbook
   <p>
     Each entry can contain information about when a clock was started on it. Clocks can either be closed (have a begin and end time) or open (only a begin time).
   <p>
     Logbooks are used to generate timetables.
 
-  <h3>
+  <h4>
     Example
   <pre>
     #{example exampleLogbook}
 
-  <h3>  
+  <h4>  
     Yaml Schema
   <p>
     There is no yaml schema available for logbooks because they are parsed monadically.

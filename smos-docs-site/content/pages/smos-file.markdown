@@ -31,3 +31,25 @@ A Smos file is a YAML document, for example:
 ```
 
 It consists of a forest of entries.
+
+### Forests of trees
+
+A forest is a list of trees.
+It is parsed as a yaml list:
+
+```
+- <tree>
+```
+
+A tree is parsed as an entry with a subforest:
+
+```
+entry: <entry>
+forest: <forest>
+```
+
+If a tree has no subforest, then it can be represented as just an entry:
+
+```
+<entry>
+```
