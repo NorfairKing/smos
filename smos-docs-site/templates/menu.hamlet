@@ -99,9 +99,14 @@
         <li>
           <a href=@{PageR "smos-sync-client/database-migration"}>
             Database migration: manual intervention required
+
     <li>
       <a href=@{SmosServerR}>
         The Smos Server
+      <ul>
+        <li>
+          <a href=@{PageR "smos-server/nixos"}>
+            Running on NixOs
 
   <p .menu-label>
     Support
