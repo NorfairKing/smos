@@ -56,7 +56,7 @@ jobs:
           - 8.6.5
     steps:
       - uses: actions/checkout@v2
-        if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
+        if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master' || github.event.ref == 'refs/heads/development'
 
       - uses: actions/setup-haskell@v1.1
         name: Setup Haskell Stack

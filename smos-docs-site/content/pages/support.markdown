@@ -1,6 +1,5 @@
 ---
 title: Support
-date: 2018-12-10
 ---
 
 

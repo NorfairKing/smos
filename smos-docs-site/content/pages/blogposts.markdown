@@ -1,6 +1,5 @@
 ---
 title: Featured blogposts
-date: 2019-07-18
 ---
 
 #### CS Syd:

@@ -1,6 +1,5 @@
 ---
 title: Features
-date: 2018-11-13
 ---
 
 ## Self-management for power-users

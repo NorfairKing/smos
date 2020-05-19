@@ -1,6 +1,5 @@
 ---
 title: Directories in a workflow
-date: 2020-05-04
 ---
 
 The `smos` TUI and the `smos-query` executable use certain directories to function correctly and efficiently.

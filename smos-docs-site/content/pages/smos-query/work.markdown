@@ -1,6 +1,5 @@
 ---
 title: Work report
-date: 2018-12-03
 ---
 
 The work report is the most important report that you will use.
