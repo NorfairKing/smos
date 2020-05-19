@@ -97,6 +97,9 @@
           <a href=@{PageR "synchronisation"}>
             Synchronisation
         <li>
+          <a href=@{PageR "smos-sync-client/nixos"}>
+            Running on NixOs
+        <li>
           <a href=@{PageR "smos-sync-client/database-migration"}>
             Database migration: manual intervention required
 
