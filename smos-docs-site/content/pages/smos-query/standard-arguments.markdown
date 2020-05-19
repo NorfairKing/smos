@@ -38,9 +38,10 @@ reverse:<sorter>                  -- reverse:file
 (<sorter> then <sorter>)          -- file then property:effort
 ```
 
-## Projections
+## Projections (Columns)
 
 Projections allow you to select which aspects of the entries are shown.
+They usually represent the columns in a report.
 A projection is something of the following form:
 
 ``` plain
