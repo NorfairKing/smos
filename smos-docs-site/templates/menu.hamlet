@@ -10,6 +10,16 @@
     <li>
       <a href=@{PageR "building-installation"}>
         Building/Installation
+      <ul>
+        <li>
+          <a href=@{PageR "installation/stack"}>
+            Building with Stack
+        <li>
+          <a href=@{PageR "installation/nix"}>
+            Building with Nix
+        <li>
+          <a href=@{PageR "installation/nixos"}>
+            Installing on Nixos
 
     <li>
       <a href=@{PageR "directories"}>

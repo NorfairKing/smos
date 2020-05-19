@@ -3,7 +3,7 @@
     Default Keybindings
 
   <p>
-    These are the default keybindings of the `smos` TUI.
+    These are the default keybindings of the Smos TUI.
   <p>
     They are listed (and can only be activated) per context.
   <p>
@@ -15,7 +15,13 @@
     using the
     <code>
       selectHelp
-    action.
+    action which can be activated using 
+    <code>
+      ?
+    or 
+    <code>
+      M-?
+    by default.
 
   <h2>
     File
