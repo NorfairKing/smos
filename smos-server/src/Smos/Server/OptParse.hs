@@ -8,6 +8,7 @@ module Smos.Server.OptParse
     Dispatch (..),
     ServeSettings (..),
     Settings (..),
+    runArgumentsParser,
   )
 where
 

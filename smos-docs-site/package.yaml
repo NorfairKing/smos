@@ -23,6 +23,7 @@ library:
   - smos
   - smos-data
   - smos-query
+  - smos-server
   - smos-sync-client
   - template-haskell
   - text
