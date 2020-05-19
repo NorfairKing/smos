@@ -14,12 +14,16 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macos-latest
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
     - name: free disk space
       run: |
-        sudo rm -rf /opt
+        if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
+        then
+          sudo rm -rf /opt
+        fi
     - uses: cachix/cachix-action@v6
       with:
         name: validity
