@@ -23,14 +23,14 @@
         The Smos TUI
       <ul>
         <li>
-          <a href=@{SmosKeybindingsR}>
-            Default Keybindings
-        <li>
           <a href=@{PageR "customisation-default"}>
             Customisation via configuration
         <li>
           <a href=@{PageR "customisation-haskell"}>
             Customisation in Haskell
+        <li>
+          <a href=@{SmosKeybindingsR}>
+            Default Keybindings
 
     <li>
       <a href=@{SmosQueryR}>

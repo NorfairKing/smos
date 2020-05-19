@@ -18,7 +18,6 @@ import Path.IO
 import Smos.Report.Config
 import Smos.Report.OptParse.Types
 import qualified System.Environment as System
-import System.Exit
 import YamlParse.Applicative hiding (Parser)
 
 combineToConfig ::
@@ -149,10 +148,7 @@ defaultConfigFiles = do
         pure $ d </> [relfile|config|]
   plainFile <- resolveFile home ".smos"
   let files = inDirs ++ [plainFile]
-  pure $ do
-    file <- files
-    ext <- [".yaml", ".json"]
-    addFileExtension ext file
+  pure $ mapMaybe (setFileExtension ".yaml") files
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =
@@ -163,25 +159,6 @@ parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFil
 
 getConfiguration :: (FromJSON a, YamlSchema a) => Flags -> Environment -> IO (Maybe a)
 getConfiguration Flags {..} Environment {..} = do
-  mConfigFile <-
-    case msum [flagConfigFile, envConfigFile] of
-      Nothing -> do
-        files <- defaultConfigFiles
-        let go [] = pure Nothing
-            go (f : fs) = do
-              e <- doesFileExist f
-              if e
-                then pure $ Just f
-                else go fs
-        go files
-      Just fp -> Just <$> resolveFile' fp
-  forM mConfigFile $ \configFile -> do
-    errOrConfig <-
-      case fileExtension configFile of
-        ".json" -> parseJSONConfig configFile
-        -- As Yaml
-        ".yaml" -> parseYamlConfig configFile
-        _ -> parseYamlConfig configFile
-    case errOrConfig of
-      Left err -> die $ unlines [err, "Config format reference:", T.unpack $ prettySchema $ explainParser $ yamlSchema @Configuration]
-      Right conf -> pure conf
+  case flagConfigFile <|> envConfigFile of
+    Just sf -> resolveFile' sf >>= readConfigFile
+    Nothing -> defaultConfigFiles >>= readFirstConfigFile
