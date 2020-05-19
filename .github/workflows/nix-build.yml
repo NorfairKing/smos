@@ -2,10 +2,18 @@ name: "Nix Build"
 on:
   pull_request:
   push:
-    branches: [development, master]
+    branches:
+      - development
+      - master
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
