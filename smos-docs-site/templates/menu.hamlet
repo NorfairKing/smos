@@ -4,25 +4,25 @@
 
   <ul .menu-list>
     <li>
-      <a href=@{PageR "features"}>
+      <a href=@{PageR features}>
         Features
 
     <li>
-      <a href=@{PageR "building-installation"}>
+      <a href=@{PageR building_installation}>
         Building/Installation
       <ul>
         <li>
-          <a href=@{PageR "installation/stack"}>
+          <a href=@{PageR installation_stack}>
             Building with Stack
         <li>
-          <a href=@{PageR "installation/nix"}>
+          <a href=@{PageR installation_nix}>
             Building with Nix
         <li>
-          <a href=@{PageR "installation/nixos"}>
+          <a href=@{PageR installation_nixos}>
             Installing on Nixos
 
     <li>
-      <a href=@{PageR "directories"}>
+      <a href=@{PageR directories}>
         Directories in a workflow
     <li>
       <a href=@{SmosFileR}>
@@ -33,10 +33,10 @@
         The Smos TUI
       <ul>
         <li>
-          <a href=@{PageR "customisation-default"}>
+          <a href=@{PageR customisation_default}>
             Customisation via configuration
         <li>
-          <a href=@{PageR "customisation-haskell"}>
+          <a href=@{PageR customisation_haskell}>
             Customisation in Haskell
         <li>
           <a href=@{SmosKeybindingsR}>
@@ -86,7 +86,7 @@
           <a href=@{SmosQueryCommandR "entry"}>
             Entry report
         <li>
-          <a href=@{PageR "smos-query/standard-arguments"}>
+          <a href=@{PageR smos_query_standard_arguments}>
             Standard arguments
 
     <li>
@@ -94,13 +94,13 @@
         The Smos Sync Client
       <ul>
         <li>
-          <a href=@{PageR "synchronisation"}>
+          <a href=@{PageR synchronisation}>
             Synchronisation
         <li>
-          <a href=@{PageR "smos-sync-client/nixos"}>
+          <a href=@{PageR smos_sync_client_nixos}>
             Running on NixOs
         <li>
-          <a href=@{PageR "smos-sync-client/database-migration"}>
+          <a href=@{PageR smos_sync_client_database_migration}>
             Database migration: manual intervention required
 
     <li>
@@ -108,7 +108,7 @@
         The Smos Server
       <ul>
         <li>
-          <a href=@{PageR "smos-server/nixos"}>
+          <a href=@{PageR smos_server_nixos}>
             Running on NixOs
 
   <p .menu-label>
@@ -116,16 +116,16 @@
   
   <ul .menu-list>
     <li>
-      <a href=@{PageR "support"}>
+      <a href=@{PageR support}>
         Support
     <li>
       <a href="https://github.com/NorfairKing/smos">
         Smos on Github
     <li>
-      <a href=@{PageR "related-projects"}>
+      <a href=@{PageR related_projects}>
         Related projects
     <li>
-      <a href=@{PageR "blogposts"}>
+      <a href=@{PageR blogposts}>
         Featured blogposts
     <li>
       <a href="https://cs-syd.eu">

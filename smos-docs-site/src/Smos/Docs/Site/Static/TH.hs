@@ -115,7 +115,11 @@ mkDocPages' fp = do
         Just rp ->
           Just <$> do
             rawContents <- T.readFile $ toFilePath pf
-            urlString <- toFilePath <$> setFileExtension "" rp
+            let urlClean = map go
+                  where
+                    go '/' = '_'
+                    go c = c
+            urlString <- urlClean . toFilePath <$> setFileExtension "" rp
             let url = T.pack urlString
             let (attributes, contents) = splitContents rawContents
             let maybeAtt k =

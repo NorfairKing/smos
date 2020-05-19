@@ -4,13 +4,23 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Docs.Site.Foundation where
+module Smos.Docs.Site.Foundation
+  ( module Smos.Docs.Site.Foundation,
+    module Smos.Docs.Site.Static,
+    module Smos.Docs.Site.Widget,
+    module Yesod,
+  )
+where
 
+import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
+import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
+import Text.Read
 import Yesod
 import Yesod.EmbeddedStatic
 
@@ -40,3 +50,22 @@ getAssetsR :: [Text] -> Handler Html
 getAssetsR t = do
   neverExpires
   redirect $ T.intercalate "/" $ "/assets-static/res" : t
+
+lookupPage :: Text -> Handler DocPage
+lookupPage url =
+  case find ((== url) . docPageUrl) docPages of
+    Nothing -> notFound
+    Just dp -> pure dp
+
+-- Nice little hack to make this work.
+instance Read DocPage where
+  readPrec = do
+    url <- readPrec
+    case find ((== url) . docPageUrl) docPages of
+      Nothing -> fail "No such page"
+      Just dp -> pure dp
+
+instance PathPiece DocPage where
+  fromPathPiece url =
+    find ((== url) . docPageUrl) docPages
+  toPathPiece = docPageUrl

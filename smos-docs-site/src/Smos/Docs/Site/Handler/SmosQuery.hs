@@ -25,7 +25,7 @@ getSmosQueryR = do
 
 getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do
-  DocPage {..} <- lookupPage $ "smos-query/" <> cmd
+  DocPage {..} <- lookupPage $ "smos-query_" <> cmd
   let helpText = getHelpPageOf [T.unpack cmd]
   defaultLayout $ do
     setTitle $ toHtml $ "Smos Documentation - " <> docPageTitle

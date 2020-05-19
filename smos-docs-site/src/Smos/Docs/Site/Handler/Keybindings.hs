@@ -10,9 +10,7 @@ where
 
 import Smos.Default
 import Smos.Docs.Site.Foundation
-import Smos.Docs.Site.Widget
 import Smos.Types
-import Yesod
 
 getSmosKeybindingsR :: Handler Html
 getSmosKeybindingsR =

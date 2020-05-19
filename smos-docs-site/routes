@@ -1,6 +1,6 @@
 / HomeR GET
 
-/page/#Text PageR GET
+/page/#DocPage PageR GET
 
 /smos SmosR GET
 /smos/file SmosFileR GET
