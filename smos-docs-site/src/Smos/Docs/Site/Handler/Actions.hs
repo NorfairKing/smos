@@ -10,7 +10,6 @@ where
 
 import Data.List
 import Smos.Actions
-import Smos.Default
 import Smos.Docs.Site.Foundation
 import Smos.Docs.Site.Widget
 import Smos.Types
