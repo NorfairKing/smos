@@ -3,7 +3,6 @@
 
 module Smos.Archive
   ( smosArchive,
-    module Smos.Archive.Config,
 
     -- ** Helper functions
     isDone,
@@ -11,24 +10,28 @@ module Smos.Archive
   )
 where
 
+import Control.Monad.Reader
 import Data.Maybe
 import Data.Time
 import Data.Tree
 import Path
 import Path.IO
-import Smos.Archive.Config
 import Smos.Archive.OptParse
 import Smos.Archive.OptParse.Types
 import Smos.Archive.Prompt
 import Smos.Data
+import Smos.Report.Config
 import System.Exit
 
-smosArchive :: SmosArchiveConfig -> IO ()
-smosArchive = runReaderT $ liftIO getSettings >>= archive
+smosArchive :: IO ()
+smosArchive = do
+  Settings {..} <- getSettings
+  runReaderT (archive setFile) setReportSettings
 
-archive :: Settings -> Q ()
-archive Settings {..} = do
-  let from = setFile
+type Q a = ReaderT SmosReportConfig IO a
+
+archive :: Path Abs File -> Q ()
+archive from = do
   to <- determineToFile from
   liftIO $ do
     checkFromFile from
@@ -36,7 +39,8 @@ archive Settings {..} = do
 
 determineToFile :: Path Abs File -> Q (Path Abs File)
 determineToFile file = do
-  workflowDir <- askWorkflowDir
+  getWorkflowDir <- asks resolveReportWorkflowDir
+  workflowDir <- liftIO getWorkflowDir
   case stripProperPrefix workflowDir file of
     Nothing ->
       liftIO
@@ -48,7 +52,8 @@ determineToFile file = do
             fromAbsDir workflowDir
           ]
     Just rf -> do
-      archiveDir <- askArchiveDir
+      getArchiveDir <- asks resolveReportArchiveDir
+      archiveDir <- liftIO getArchiveDir
       let ext = fileExtension rf
       withoutExt <- setFileExtension "" rf
       today <- liftIO $ utctDay <$> getCurrentTime

@@ -1,6 +1,6 @@
 module Main where
 
-import Smos.Archive.Default
+import Smos.Archive
 
 main :: IO ()
-main = defaultSmosArchive
+main = smosArchive

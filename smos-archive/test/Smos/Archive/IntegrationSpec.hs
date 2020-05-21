@@ -2,14 +2,14 @@ module Smos.Archive.IntegrationSpec (spec) where
 
 import Path
 import Path.IO
-import Smos.Archive.Default
+import Smos.Archive
 import Smos.Data
 import System.Environment
 import Test.Hspec
 
 spec :: Spec
 spec = do
-  let archive ls = withArgs ls defaultSmosArchive
+  let archive ls = withArgs ls smosArchive
   it "It 'just works' with a given workflow dir"
     $ withSystemTempDir "smos-archive-test"
     $ \ad -> do
