@@ -1,0 +1,20 @@
+module Smos.Archive.IntegrationSpec (spec) where
+
+import Path
+import Path.IO
+import Smos.Archive.Default
+import Smos.Data
+import System.Environment
+import Test.Hspec
+
+spec :: Spec
+spec = do
+  let archive ls = withArgs ls defaultSmosArchive
+  it "It 'just works' with a given workflow dir"
+    $ withSystemTempDir "smos-archive-test"
+    $ \ad -> do
+      wd <- resolveDir ad "workflow"
+      tf <- resolveFile wd "task"
+      ensureDir $ parent tf
+      writeSmosFile tf emptySmosFile
+      archive [fromAbsFile tf, "--workflow-dir", fromAbsDir wd]

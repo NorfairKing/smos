@@ -24,6 +24,7 @@ library:
     - time
     - validity
     - yamlparse-applicative
+    - smos-data
 
 executables:
   smos-archive:
@@ -45,3 +46,5 @@ tests:
     - smos-data
     - smos-data-gen
     - time
+    - path
+    - path-io
