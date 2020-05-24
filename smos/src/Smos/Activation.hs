@@ -28,6 +28,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             case helpCursorSelection of
               HelpCursorHelpSelected -> helpKeyMapHelpMatchers keyMapHelpKeyMap
               HelpCursorSearchSelected -> helpKeyMapSearchMatchers keyMapHelpKeyMap
+    BrowserSelected -> map ((,) SpecificMatcher) keyMapBrowserKeyMap
     FileSelected ->
       let FileKeyMap {..} = keyMapFileKeyMap
           with :: KeyMappings -> [(Precedence, KeyMapping)]

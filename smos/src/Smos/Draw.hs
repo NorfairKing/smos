@@ -19,6 +19,8 @@ import Cursor.Brick.Map
 import Cursor.Brick.Map.KeyValue
 import Cursor.Brick.Text
 import Cursor.Brick.TextField
+import Cursor.DirForest
+import Cursor.DirForest.Brick
 import Cursor.FuzzyLocalTime
 import Cursor.List.NonEmpty (NonEmptyCursor)
 import Cursor.Map
@@ -63,6 +65,12 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
             (drawInfo configKeyMap)
             (drawFileCursor $ selectWhen FileSelected)
             editorCursorFileCursor
+      browserCursorWidget =
+        withHeading (str "File Browser") $
+          maybe
+            (drawInfo configKeyMap)
+            (drawBrowserCursor (selectWhen BrowserSelected))
+            editorCursorBrowserCursor
       reportCursorWidget =
         withHeading (str "Next Action Report") $
           maybe
@@ -72,6 +80,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
       mainCursorWidget =
         case editorCursorSelection of
           FileSelected -> fileCursorWidget
+          BrowserSelected -> browserCursorWidget
           ReportSelected -> reportCursorWidget
           HelpSelected -> helpCursorWidget
       debugWidget = [drawDebug ss | editorCursorDebug]
@@ -222,7 +231,19 @@ drawLastMatches Nothing = Nothing
 drawLastMatches (Just ts) = Just $ vBox $ map (strWrap . ppShow) $ NE.toList ts
 
 defaultPadding :: Padding
-defaultPadding = Pad 2
+defaultPadding = Pad defaultPaddingAmount
+
+defaultPaddingAmount :: Int
+defaultPaddingAmount = 2
+
+drawBrowserCursor :: Select -> BrowserCursor -> Widget ResourceName
+drawBrowserCursor s = verticalPaddedDirForestCursorWidget (sel . goFod) goFod defaultPaddingAmount
+  where
+    sel = case s of
+      MaybeSelected -> forceAttr selectedAttr . visible
+      NotSelected -> id
+    goFod :: FileOrDir () -> Widget ResourceName
+    goFod = str . show
 
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
 drawReportCursor s rc =

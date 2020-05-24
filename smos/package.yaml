@@ -20,8 +20,11 @@ library:
   - containers
   - contravariant
   - cursor
+  - cursor-dirforest
+  - cursor-dirforest-brick
   - cursor-brick
   - cursor-fuzzy-time
+  - dirforest
   - filelock
   - fuzzy-time
   - megaparsec

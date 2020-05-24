@@ -14,6 +14,7 @@ defaultKeyMap :: KeyMap
 defaultKeyMap =
   KeyMap
     { keyMapFileKeyMap = defaultFileKeyMap,
+      keyMapBrowserKeyMap = defaultBrowserKeyMap,
       keyMapReportsKeyMap = defaultReportsKeyMap,
       keyMapHelpKeyMap = defaultHelpKeyMap
     }
@@ -210,10 +211,24 @@ defaultFileKeyMap =
       fileKeyMapAnyMatchers =
         listMatchers
           [ exactChar 'u' undo,
+            exactString "fb" selectBrowser,
             exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
             exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
           ]
     }
+
+defaultBrowserKeyMap :: KeyMappings
+defaultBrowserKeyMap =
+  listMatchers
+    [ exactKey KDown browserSelectNext,
+      exactChar 'j' browserSelectNext,
+      exactKey KUp browserSelectPrev,
+      exactChar 'k' browserSelectPrev,
+      exactChar 'q' selectEditor,
+      exactChar '\t' browserToggleCollapse,
+      exactKeyPress (KeyPress (KChar '\t') [MMeta]) browserToggleCollapseRecursively,
+      exactKey KEsc selectEditor
+    ]
 
 defaultReportsKeyMap :: ReportsKeyMap
 defaultReportsKeyMap =

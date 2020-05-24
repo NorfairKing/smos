@@ -5,6 +5,7 @@ module Smos.Actions
     ActionUsing (..),
     AnyAction (..),
     module Smos.Actions,
+    module Smos.Actions.Browser,
     module Smos.Actions.Contents,
     module Smos.Actions.Convenience,
     module Smos.Actions.Entry,
@@ -22,6 +23,7 @@ module Smos.Actions
   )
 where
 
+import Smos.Actions.Browser
 import Smos.Actions.Contents
 import Smos.Actions.Convenience
 import Smos.Actions.Entry
@@ -63,6 +65,7 @@ allPlainActions =
       allTimestampsPlainActions,
       allUndoPlainActions,
       allConveniencePlainActions,
+      allPlainBrowserActions,
       allHelpPlainActions,
       allPlainReportNextActions
     ]
@@ -78,6 +81,7 @@ allUsingCharActions =
       allTagsUsingCharActions,
       allPropertiesUsingCharActions,
       allUndoUsingCharActions,
+      allBrowserUsingCharActions,
       allHelpUsingCharActions
     ]
 

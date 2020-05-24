@@ -251,6 +251,18 @@ modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
 modifyMFileCursorMS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
 
+modifyBrowserCursorM :: (BrowserCursor -> Maybe BrowserCursor) -> SmosM ()
+modifyBrowserCursorM func = modifyBrowserCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyBrowserCursor :: (BrowserCursor -> BrowserCursor) -> SmosM ()
+modifyBrowserCursor func = modifyMBrowserCursorM $ fmap func
+
+modifyMBrowserCursorM :: (Maybe BrowserCursor -> Maybe BrowserCursor) -> SmosM ()
+modifyMBrowserCursorM func = modifyMBrowserCursorMS $ pure . func
+
+modifyMBrowserCursorMS :: (Maybe BrowserCursor -> SmosM (Maybe BrowserCursor)) -> SmosM ()
+modifyMBrowserCursorMS func = modifyEditorCursorS $ editorCursorBrowserCursorL func
+
 modifyHelpCursorM :: (HelpCursor -> Maybe HelpCursor) -> SmosM ()
 modifyHelpCursorM func = modifyHelpCursor $ \hc -> fromMaybe hc $ func hc
 
