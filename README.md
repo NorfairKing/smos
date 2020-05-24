@@ -1,6 +1,7 @@
 # Smos
 
-![Build](https://github.com/NorfairKing/smos/workflows/Nix%20Build/badge.svg)
+![Stack Build](https://github.com/NorfairKing/smos/workflows/Nix%20Build/badge.svg)
+![Nix Build](https://github.com/NorfairKing/smos/workflows/Stack%20Build/badge.svg)
 
 A semantic tree-based editor to replace Emacs Org Mode
 
