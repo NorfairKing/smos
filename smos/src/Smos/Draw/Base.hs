@@ -40,3 +40,9 @@ formatTimestampDay = formatTime defaultTimeLocale "%A %F"
 
 formatTimestampLocalTime :: LocalTime -> String
 formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %R"
+
+listerChar :: Char
+listerChar = '-'
+
+pointerChar :: Char
+pointerChar = '❯'

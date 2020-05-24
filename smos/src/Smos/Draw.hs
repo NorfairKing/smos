@@ -238,14 +238,18 @@ defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
 drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor s = maybe emptyScreen (verticalPaddedDirForestCursorWidget (sel . goFod) goFod defaultPaddingAmount) . fileBrowserCursorDirForestCursor
+drawFileBrowserCursor s = maybe emptyScreen (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount) . fileBrowserCursorDirForestCursor
   where
     emptyScreen = str "No files to show."
     sel = case s of
-      MaybeSelected -> forceAttr selectedAttr . visible
-      NotSelected -> id
+      MaybeSelected -> goFodSelected
+      NotSelected -> goFodUnselected
+    goFodSelected :: FileOrDir () -> Widget ResourceName
+    goFodSelected = forceAttr selectedAttr . visible . (str [pointerChar, ' '] <+>) . goFod
+    goFodUnselected :: FileOrDir () -> Widget ResourceName
+    goFodUnselected = (str [listerChar, ' '] <+>) . goFod
     goFod :: FileOrDir () -> Widget ResourceName
-    goFod = \case
+    goFod fod = case fod of
       FodFile rf () ->
         let extraStyle = case fileExtension rf of
               ".smos" -> id -- TODO maybe also something fancy?
@@ -485,8 +489,8 @@ drawEntryCursor s tc edc e = do
           $ intersperse (str " ")
           $ concat
             [ [ case s of
-                  NotSelected -> str "-"
-                  MaybeSelected -> withAttr selectedAttr $ str "❯"
+                  NotSelected -> str [listerChar]
+                  MaybeSelected -> withAttr selectedAttr $ str [pointerChar]
               ],
               maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor),
               [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
@@ -539,7 +543,7 @@ drawEntry tc edc e = do
           $ hBox
           $ intersperse (str " ")
           $ concat
-            [ [str "-"],
+            [ [str [listerChar]],
               maybeToList (drawCurrentState entryStateHistory),
               [drawHeader entryHeader],
               maybeToList (drawTags entryTags),
