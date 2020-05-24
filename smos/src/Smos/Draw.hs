@@ -238,7 +238,10 @@ defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
 drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor s = maybe emptyScreen (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount) . fileBrowserCursorDirForestCursor
+drawFileBrowserCursor s =
+  viewport ResourceViewport Vertical
+    . maybe emptyScreen (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
+    . fileBrowserCursorDirForestCursor
   where
     emptyScreen = str "No files to show."
     sel = case s of
