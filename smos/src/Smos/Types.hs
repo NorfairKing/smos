@@ -613,7 +613,7 @@ editorCursorSwitchToFile ec =
 
 editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
 editorCursorSwitchToHelp km@KeyMap {..} ec =
-  let withHelpBindings n ms = Just $ makeHelpCursor n $ ms ++ keyMapHelpMatchers km
+  let withHelpBindings n ms = Just $ makeHelpCursor n $ ms ++ keyMapHelpMatchers km ++ keyMapAnyKeyMap
    in ec
         { editorCursorHelpCursor = case editorCursorSelection ec of
             FileSelected ->
