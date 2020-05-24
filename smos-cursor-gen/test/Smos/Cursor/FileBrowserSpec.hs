@@ -13,11 +13,12 @@ spec = do
   genValidSpec @FileBrowserCursor
   describe "makeFileBrowserCursor"
     $ it "produces valid cursors"
-    $ producesValidsOnValids makeFileBrowserCursor
+    $ producesValidsOnValids2 makeFileBrowserCursor
   describe "rebuildFileBrowserCursor" $ do
     it "produces valid cursors" $ producesValidsOnValids rebuildFileBrowserCursor
-    it "is the inverse of makeFileBrowserCursor" $
-      inverseFunctionsOnValid makeFileBrowserCursor rebuildFileBrowserCursor
+    it "is the inverse of makeFileBrowserCursor"
+      $ forAllValid
+      $ \base -> inverseFunctionsOnValid (makeFileBrowserCursor base) rebuildFileBrowserCursor
   describe "fileBrowserCursorSelectNext"
     $ it "produces valid cursors"
     $ producesValidsOnValids fileBrowserCursorSelectNext

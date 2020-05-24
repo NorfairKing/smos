@@ -14,14 +14,15 @@ import Path
 
 data FileBrowserCursor
   = FileBrowserCursor
-      { fileBrowserCursorDirForestCursor :: !(Maybe (DirForestCursor ())) -- Nothing means there are no files to display
+      { fileBrowserCursorBase :: Path Abs Dir,
+        fileBrowserCursorDirForestCursor :: !(Maybe (DirForestCursor ())) -- Nothing means there are no files to display
       }
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursor
 
-makeFileBrowserCursor :: DirForest () -> FileBrowserCursor
-makeFileBrowserCursor df = FileBrowserCursor {fileBrowserCursorDirForestCursor = makeDirForestCursor df}
+makeFileBrowserCursor :: Path Abs Dir -> DirForest () -> FileBrowserCursor
+makeFileBrowserCursor base df = FileBrowserCursor {fileBrowserCursorBase = base, fileBrowserCursorDirForestCursor = makeDirForestCursor df}
 
 rebuildFileBrowserCursor :: FileBrowserCursor -> DirForest ()
 rebuildFileBrowserCursor FileBrowserCursor {..} = maybe DF.empty rebuildDirForestCursor fileBrowserCursorDirForestCursor
@@ -49,12 +50,14 @@ fileBrowserCursorToggle = fileBrowserCursorDoMaybe dirForestCursorToggle
 fileBrowserCursorToggleRecursively :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorToggleRecursively = fileBrowserCursorDoMaybe dirForestCursorToggleRecursively
 
-fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Rel Dir, FileOrDir ())
-fileBrowserSelected = fmap dirForestCursorSelected . fileBrowserCursorDirForestCursor
+fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Abs Dir, Path Rel Dir, FileOrDir ())
+fileBrowserSelected FileBrowserCursor {..} = do
+  (rd, fod) <- dirForestCursorSelected <$> fileBrowserCursorDirForestCursor
+  pure (fileBrowserCursorBase, rd, fod)
 
 startFileBrowserCursor :: MonadIO m => Path Abs Dir -> m FileBrowserCursor
 startFileBrowserCursor dir = do
   let filePred fp = fileExtension fp == ".smos"
       dirPred = const True
   df <- DF.readNonHiddenFiltered filePred dirPred dir (\_ -> pure ())
-  pure $ makeFileBrowserCursor df
+  pure $ makeFileBrowserCursor dir df

@@ -1,8 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Browser where
+module Smos.Actions.Browser
+  ( allPlainBrowserActions,
+    allBrowserUsingCharActions,
+    selectBrowserProjects,
+    selectBrowserWorkflow,
+    selectBrowserArchive,
+    browserSelectPrev,
+    browserSelectNext,
+    browserToggleCollapse,
+    browserToggleCollapseRecursively,
+    browserEnter,
+  )
+where
 
 import Cursor.Simple.DirForest
+import Data.Text (Text)
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
@@ -12,7 +25,9 @@ import Smos.Types
 
 allPlainBrowserActions :: [Action]
 allPlainBrowserActions =
-  [ selectBrowser,
+  [ selectBrowserProjects,
+    selectBrowserWorkflow,
+    selectBrowserArchive,
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
@@ -68,24 +83,31 @@ browserEnter =
               Nothing -> pure ()
               Just dfc -> case fileBrowserSelected dfc of
                 Nothing -> pure ()
-                Just (_, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
-                Just (rd, FodFile rf ()) -> do
+                Just (_, _, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
+                Just (base, rd, FodFile rf ()) -> do
                   saveCurrentSmosFile
-                  src <- asks configReportConfig
-                  wd <- liftIO $ resolveReportWorkflowDir src
-                  let path = wd </> rd </> rf
+                  let path = base </> rd </> rf
                   switchToFile path
           _ -> pure (),
       actionDescription = "Enter the file if a file is selected, toggle collapsing the directory if a directory is selected"
     }
 
-selectBrowser :: Action
-selectBrowser =
+selectBrowserWorkflow :: Action
+selectBrowserWorkflow = selectBrowserHelper "Workflow" resolveReportWorkflowDir
+
+selectBrowserProjects :: Action
+selectBrowserProjects = selectBrowserHelper "Projects" resolveReportProjectsDir
+
+selectBrowserArchive :: Action
+selectBrowserArchive = selectBrowserHelper "Archive" resolveReportArchiveDir
+
+selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
+selectBrowserHelper dirName dirFunc =
   Action
-    { actionName = "selectBrowser",
+    { actionName = ActionName $ "selectBrowser" <> dirName,
       actionFunc = modifyEditorCursorS $ \ec -> do
         src <- asks configReportConfig
-        wd <- liftIO $ resolveReportWorkflowDir src
+        wd <- liftIO $ dirFunc src
         dfc' <- startFileBrowserCursor wd
         -- We don't want to move the cursor if the directory hasn't changed.
         -- TODO: We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
@@ -100,5 +122,5 @@ selectBrowser =
             { editorCursorBrowserCursor = Just dfc,
               editorCursorSelection = BrowserSelected
             },
-      actionDescription = "Save the current file and switch to the file browser."
+      actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
     }

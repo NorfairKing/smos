@@ -211,7 +211,9 @@ defaultFileKeyMap =
       fileKeyMapAnyMatchers =
         listMatchers
           [ exactChar 'u' undo,
-            exactString "fb" selectBrowser,
+            exactString "bp" selectBrowserProjects,
+            exactString "bw" selectBrowserWorkflow,
+            exactString "ba" selectBrowserArchive,
             exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
             exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
           ]
