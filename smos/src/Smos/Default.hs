@@ -227,8 +227,9 @@ defaultBrowserKeyMap =
       exactChar 'q' selectEditor,
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
-      exactKeyPress (KeyPress (KChar '\t') [MShift]) browserToggleCollapseRecursively,
-      exactKey KEsc selectEditor
+      exactKey KBackTab browserToggleCollapseRecursively,
+      exactKey KEsc selectEditor,
+      exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
     ]
 
 defaultReportsKeyMap :: ReportsKeyMap
