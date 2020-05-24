@@ -246,7 +246,11 @@ drawFileBrowserCursor s = maybe emptyScreen (verticalPaddedDirForestCursorWidget
       NotSelected -> id
     goFod :: FileOrDir () -> Widget ResourceName
     goFod = \case
-      FodFile rf () -> drawFilePath rf
+      FodFile rf () ->
+        let extraStyle = case fileExtension rf of
+              ".smos" -> id -- TODO maybe also something fancy?
+              _ -> forceAttr nonSmosFileAttr
+         in extraStyle $ drawFilePath rf
       FodDir rd -> drawDirPath rd
 
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName

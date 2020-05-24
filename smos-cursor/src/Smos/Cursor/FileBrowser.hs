@@ -57,7 +57,5 @@ fileBrowserSelected FileBrowserCursor {..} = do
 
 startFileBrowserCursor :: MonadIO m => Path Abs Dir -> m FileBrowserCursor
 startFileBrowserCursor dir = do
-  let filePred fp = fileExtension fp == ".smos"
-      dirPred = const True
-  df <- DF.readNonHiddenFiltered filePred dirPred dir (\_ -> pure ())
+  df <- DF.readNonHidden dir (\_ -> pure ())
   pure $ makeFileBrowserCursor dir df

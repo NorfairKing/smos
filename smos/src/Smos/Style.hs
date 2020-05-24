@@ -6,6 +6,7 @@ module Smos.Style
     unsavedAttr,
     keyAttr,
     fileAttr,
+    nonSmosFileAttr,
     dirAttr,
     headerAttr,
     contentsAttr,
@@ -62,7 +63,8 @@ defaultAttrMap _ =
           (selectedAttr <> tagAttr, fg brightWhite),
           (selectedAttr <> headerAttr, fg brightWhite),
           (fileAttr, fg V.yellow),
-          (dirAttr, fg brown)
+          (dirAttr, fg brown),
+          (nonSmosFileAttr, fg V.green)
         ]
         $ attrMap
           defAttr
@@ -77,6 +79,9 @@ defaultAttrMap _ =
 
 fileAttr :: AttrName
 fileAttr = "file"
+
+nonSmosFileAttr :: AttrName
+nonSmosFileAttr = "non-smos-file"
 
 dirAttr :: AttrName
 dirAttr = "dir"
