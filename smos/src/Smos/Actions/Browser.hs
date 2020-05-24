@@ -5,7 +5,9 @@ module Smos.Actions.Browser where
 import Cursor.Simple.DirForest
 import Data.DirForest
 import Path
+import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Data
 import Smos.Report.Config
 import Smos.Types
 
@@ -53,6 +55,38 @@ browserToggleCollapseRecursively =
       actionDescription = "Select toggle collapsing the currently selected directory recursively"
     }
 
+browserEnter :: Action
+browserEnter =
+  Action
+    { actionName = "browserEnter",
+      actionFunc = do
+        ss <- get
+        let ec = smosStateCursor ss
+        case editorCursorSelection ec of
+          BrowserSelected ->
+            case editorCursorBrowserCursor ec of
+              Nothing -> pure ()
+              Just dfc -> case dirForestCursorSelected dfc of
+                (_, FodDir _) -> modifyBrowserCursorM dirForestCursorToggleRecursively
+                (rd, FodFile rf ()) -> do
+                  saveCurrentSmosFile
+                  src <- asks configReportConfig
+                  wd <- liftIO $ resolveReportWorkflowDir src
+                  let path = wd </> rd </> rf
+                  maybeErrOrSmosFile <- liftIO $ readSmosFile path
+                  case maybeErrOrSmosFile of
+                    Nothing -> pure () -- Shouldn't happen
+                    Just errOrSmosFile -> case errOrSmosFile of
+                      Left _ -> pure () -- Nothing we can do about this
+                      Right sf -> case makeSmosFileCursorEntirely sf of
+                        Nothing -> pure () -- TODO: empty file, not sure what to do with this. We should switch to it, I guess
+                        Just sfcUnprepared -> do
+                          let sfc = smosFileCursorReadyForStartup sfcUnprepared
+                          void $ switchToFile path sfc
+          _ -> pure (),
+      actionDescription = "Enter the file if a file is selected, toggle collapsing the directory if a directory is selected"
+    }
+
 selectBrowser :: Action
 selectBrowser =
   Action
@@ -62,9 +96,7 @@ selectBrowser =
         wd <- liftIO $ resolveReportWorkflowDir src
         ad <- liftIO $ resolveReportArchiveDir src
         let filePred fp = fileExtension fp == ".smos"
-            dirPred fp = case stripProperPrefix ad fp of
-              Nothing -> True
-              Just _ -> False
+            dirPred fp = ad /= fp
         df <- readNonHiddenFiltered filePred dirPred wd (\_ -> pure ())
         let dfc = makeDirForestCursor df
         modifyEditorCursor $ \ec ->
