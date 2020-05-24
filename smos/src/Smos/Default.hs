@@ -16,7 +16,8 @@ defaultKeyMap =
     { keyMapFileKeyMap = defaultFileKeyMap,
       keyMapBrowserKeyMap = defaultBrowserKeyMap,
       keyMapReportsKeyMap = defaultReportsKeyMap,
-      keyMapHelpKeyMap = defaultHelpKeyMap
+      keyMapHelpKeyMap = defaultHelpKeyMap,
+      keyMapAnyKeyMap = defaultAnyKeyMap
     }
 
 defaultFileKeyMap :: FileKeyMap
@@ -29,9 +30,7 @@ defaultFileKeyMap =
             exactChar 'e' startHeaderFromEmptyAndSelectHeader,
             exactChar 'E' startHeaderFromEmptyAndSelectHeader,
             exactChar '?' selectHelp,
-            exactString "co" forestClockOutEverywhereInAllFiles,
-            -- Reports
-            exactString "rn" reportNextActions
+            exactString "co" forestClockOutEverywhereInAllFiles
           ],
       fileKeyMapEntryMatchers =
         listMatchers
@@ -126,8 +125,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapHeaderMatchers =
         listMatchers
-          [ exactKey KEsc entrySelectWhole,
-            exactKey KEnter entrySelectContents,
+          [ exactKey KEnter entrySelectContents,
             anyChar headerInsert,
             exactKey KBS headerRemove,
             exactKey KDel headerDelete,
@@ -146,8 +144,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapContentsMatchers =
         listMatchers
-          [ exactKey KEsc entrySelectWhole,
-            anyChar contentsInsert,
+          [ anyChar contentsInsert,
             exactKey KEnter contentsInsertNewline,
             exactKey KBS contentsRemove,
             exactKey KDel contentsDelete,
@@ -168,8 +165,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapTimestampsMatchers =
         listMatchers
-          [ exactKey KEsc entrySelectWhole,
-            exactKey KEnter entrySelectWhole,
+          [ exactKey KEnter entrySelectWhole,
             anyChar timestampsInsert,
             exactKey KLeft timestampsMoveLeft,
             exactKey KRight timestampsMoveRight,
@@ -179,8 +175,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapPropertiesMatchers =
         listMatchers
-          [ exactKey KEsc entrySelectWhole,
-            exactKey KEnter entrySelectWhole,
+          [ exactKey KEnter entrySelectWhole,
             anyChar propertiesInsert,
             exactKey KLeft propertiesMoveLeft,
             exactKey KRight propertiesMoveRight,
@@ -194,7 +189,7 @@ defaultFileKeyMap =
             exactKeyPress (KeyPress KDown [MMeta]) propertiesAppendNewProperty,
             exactChar '\t' propertiesToggleSelected
           ],
-      fileKeyMapStateHistoryMatchers = listMatchers [exactKey KEsc entrySelectWhole],
+      fileKeyMapStateHistoryMatchers = listMatchers [],
       fileKeyMapTagsMatchers =
         listMatchers
           [ anyChar tagsInsert,
@@ -207,15 +202,11 @@ defaultFileKeyMap =
             exactKey KEnter entrySelectWhole,
             exactKey KEsc entrySelectWhole
           ],
-      fileKeyMapLogbookMatchers = listMatchers [exactKey KEsc entrySelectWhole],
+      fileKeyMapLogbookMatchers = listMatchers [],
       fileKeyMapAnyMatchers =
         listMatchers
           [ exactChar 'u' undo,
-            exactString "bp" selectBrowserProjects,
-            exactString "bw" selectBrowserWorkflow,
-            exactString "ba" selectBrowserArchive,
-            exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
-            exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+            exactKey KEsc entrySelectWhole
           ]
     }
 
@@ -230,8 +221,7 @@ defaultBrowserKeyMap =
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
       exactKey KBackTab browserToggleCollapseRecursively,
-      exactKey KEsc selectEditor,
-      exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug
+      exactKey KEsc selectEditor
     ]
 
 defaultReportsKeyMap :: ReportsKeyMap
@@ -250,8 +240,7 @@ defaultReportsKeyMap =
             exactChar 'G' lastNextAction,
             exactChar 'q' selectEditor,
             exactKey KEnter enterNextActionFile,
-            exactChar '?' selectHelp,
-            exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp
+            exactChar '?' selectHelp
           ]
     }
 
@@ -281,3 +270,16 @@ defaultHelpKeyMap =
             exactKey KEnter helpSelectHelp
           ]
     }
+
+defaultAnyKeyMap :: KeyMappings
+defaultAnyKeyMap =
+  listMatchers
+    [ exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
+      exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug,
+      -- Browser
+      exactString "bp" selectBrowserProjects,
+      exactString "bw" selectBrowserWorkflow,
+      exactString "ba" selectBrowserArchive,
+      -- Reports
+      exactString "rn" reportNextActions
+    ]

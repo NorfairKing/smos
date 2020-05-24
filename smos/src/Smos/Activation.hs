@@ -28,12 +28,12 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             case helpCursorSelection of
               HelpCursorHelpSelected -> helpKeyMapHelpMatchers keyMapHelpKeyMap
               HelpCursorSearchSelected -> helpKeyMapSearchMatchers keyMapHelpKeyMap
-    BrowserSelected -> map ((,) SpecificMatcher) keyMapBrowserKeyMap
+    BrowserSelected -> map ((,) SpecificMatcher) keyMapBrowserKeyMap ++ map ((,) AnyMatcher) keyMapAnyKeyMap
     FileSelected ->
       let FileKeyMap {..} = keyMapFileKeyMap
           with :: KeyMappings -> [(Precedence, KeyMapping)]
           with specificMappings =
-            map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers
+            map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers ++ map ((,) AnyMatcher) keyMapAnyKeyMap
        in case editorCursorFileCursor of
             Nothing -> with fileKeyMapEmptyMatchers
             Just sfc ->
@@ -48,7 +48,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                 LogbookSelected -> with fileKeyMapLogbookMatchers
     ReportSelected ->
       let ReportsKeyMap {..} = keyMapReportsKeyMap
-       in map ((,) SpecificMatcher) reportsKeymapNextActionReportMatchers
+       in map ((,) SpecificMatcher) reportsKeymapNextActionReportMatchers ++ map ((,) AnyMatcher) keyMapAnyKeyMap
 
 findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =

@@ -77,3 +77,7 @@
   <h3>
     Search
   ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap defaultKeyMap }
+
+  <h2>
+    Any
+  ^{keyMapTable $ keyMapAnyKeyMap defaultKeyMap }

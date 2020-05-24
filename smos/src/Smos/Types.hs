@@ -50,7 +50,8 @@ data KeyMap
       { keyMapFileKeyMap :: !FileKeyMap,
         keyMapBrowserKeyMap :: !KeyMappings,
         keyMapReportsKeyMap :: !ReportsKeyMap,
-        keyMapHelpKeyMap :: !HelpKeyMap
+        keyMapHelpKeyMap :: !HelpKeyMap,
+        keyMapAnyKeyMap :: !KeyMappings
       }
   deriving (Generic)
 
@@ -60,20 +61,22 @@ instance Semigroup KeyMap where
       { keyMapFileKeyMap = keyMapFileKeyMap km1 <> keyMapFileKeyMap km2,
         keyMapBrowserKeyMap = keyMapBrowserKeyMap km1 <> keyMapBrowserKeyMap km2,
         keyMapReportsKeyMap = keyMapReportsKeyMap km1 <> keyMapReportsKeyMap km2,
-        keyMapHelpKeyMap = keyMapHelpKeyMap km1 <> keyMapHelpKeyMap km2
+        keyMapHelpKeyMap = keyMapHelpKeyMap km1 <> keyMapHelpKeyMap km2,
+        keyMapAnyKeyMap = keyMapAnyKeyMap km1 <> keyMapAnyKeyMap km2
       }
 
 instance Monoid KeyMap where
   mempty =
-    KeyMap {keyMapFileKeyMap = mempty, keyMapBrowserKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpKeyMap = mempty}
+    KeyMap {keyMapFileKeyMap = mempty, keyMapBrowserKeyMap = mempty, keyMapReportsKeyMap = mempty, keyMapHelpKeyMap = mempty, keyMapAnyKeyMap = mempty}
 
 keyMapActions :: KeyMap -> [AnyAction]
-keyMapActions (KeyMap keyMapFileKeyMap keyMapBrowserKeyMap keyMapReportsKeyMap keyMapHelpKeyMap) =
+keyMapActions (KeyMap keyMapFileKeyMap keyMapBrowserKeyMap keyMapReportsKeyMap keyMapHelpKeyMap keyMapAnyKeyMap) =
   concat
     [ fileKeyMapActions keyMapFileKeyMap,
       keyMappingsActions keyMapBrowserKeyMap,
       reportsKeyMapActions keyMapReportsKeyMap,
-      helpKeyMapActions keyMapHelpKeyMap
+      helpKeyMapActions keyMapHelpKeyMap,
+      keyMappingsActions keyMapAnyKeyMap
     ]
 
 data FileKeyMap
