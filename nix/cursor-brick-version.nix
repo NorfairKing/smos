@@ -1,6 +1,6 @@
 {
   owner = "NorfairKing";
   repo = "cursor-brick";
-  rev = "faa78e78ec750c82a7ef40c2579f4525ad836586";
-  sha256 = "sha256:1fav53h6dqxw355s8340xpsabzq7nh65bxmxajr15y1zbwqdxsna";
+  rev = "58b2c811c721885eaa3c066b41bc4d4883e4566c";
+  sha256 = "sha256:1mdi8bpd9i2l4rcmcr19c5wyghasiwkzymskidn7fan57wmj921v";
 }

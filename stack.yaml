@@ -25,47 +25,6 @@ packages:
 - smos-sync-client
 - smos-sync-client-gen
 
-- ../cursor-dirforest/cursor-dirforest
-- ../cursor-dirforest/cursor-dirforest-gen
-- ../cursor-dirforest/cursor-dirforest-brick
-- ../dirforest/dirforest
-- ../dirforest/genvalidity-dirforest
-- ../cursor/cursor
-- ../cursor/cursor-gen
-- ../cursor-brick/cursor-brick
-- ../validity/genvalidity
-- ../validity/genvalidity-aeson
-- ../validity/genvalidity-bytestring
-- ../validity/genvalidity-containers
-- ../validity/genvalidity-criterion
-- ../validity/genvalidity-hspec
-- ../validity/genvalidity-hspec-aeson
-- ../validity/genvalidity-hspec-binary
-- ../validity/genvalidity-hspec-cereal
-- ../validity/genvalidity-hspec-hashable
-- ../validity/genvalidity-hspec-optics
-- ../validity/genvalidity-hspec-persistent
-- ../validity/genvalidity-path
-- ../validity/genvalidity-property
-- ../validity/genvalidity-scientific
-- ../validity/genvalidity-text
-- ../validity/genvalidity-time
-- ../validity/genvalidity-unordered-containers
-- ../validity/genvalidity-uuid
-- ../validity/genvalidity-vector
-- ../validity/validity
-- ../validity/validity-aeson
-- ../validity/validity-bytestring
-- ../validity/validity-containers
-- ../validity/validity-path
-- ../validity/validity-primitive
-- ../validity/validity-scientific
-- ../validity/validity-text
-- ../validity/validity-time
-- ../validity/validity-unordered-containers
-- ../validity/validity-uuid
-- ../validity/validity-vector
-
 extra-deps:
 - hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
 - hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
@@ -110,7 +69,7 @@ extra-deps:
     - persistent-sqlite
 
 - github: NorfairKing/mergeful
-  commit: 7f6488b400c736511da1570d40edc6a9eeb1168d
+  commit: c1e4c5d65a0e7a4eb82d3680e77867a421ea8c29
   subdirs:
     - mergeful
     - mergeful-persistent
@@ -130,52 +89,68 @@ extra-deps:
     - fuzzy-time
     - fuzzy-time-gen
 
-# - github: NorfairKing/cursor-brick
-#   commit: 178d50eac204cdae3d3aeb92c673b18f6245a4cb
-#   subdirs:
-#     - cursor-brick
-# - github: NorfairKing/cursor
-#   commit: b88cb6f79574fd084f86c322f8e644e10d4cc94e
-#   subdirs:
-#     - cursor
-#     - cursor-gen
-# - github: NorfairKing/validity
-#   commit: 95ec39a2535b9c83b1163015fd2ca28317debf42
-#   subdirs:
-#   - genvalidity
-#   - genvalidity-aeson
-#   - genvalidity-bytestring
-#   - genvalidity-containers
-#   - genvalidity-criterion
-#   - genvalidity-hspec
-#   - genvalidity-hspec-aeson
-#   - genvalidity-hspec-binary
-#   - genvalidity-hspec-cereal
-#   - genvalidity-hspec-hashable
-#   - genvalidity-hspec-optics
-#   - genvalidity-hspec-persistent
-#   - genvalidity-path
-#   - genvalidity-persistent
-#   - genvalidity-property
-#   - genvalidity-scientific
-#   - genvalidity-text
-#   - genvalidity-time
-#   - genvalidity-unordered-containers
-#   - genvalidity-uuid
-#   - genvalidity-vector
-#   - validity
-#   - validity-aeson
-#   - validity-bytestring
-#   - validity-containers
-#   - validity-path
-#   - validity-persistent
-#   - validity-primitive
-#   - validity-scientific
-#   - validity-text
-#   - validity-time
-#   - validity-unordered-containers
-#   - validity-uuid
-#   - validity-vector
+- github: NorfairKing/dirforest
+  commit: c0657315e01683558a8f20b991bc47d4733ed40e
+  subdirs:
+    - dirforest
+    - genvalidity-dirforest
+
+- github: NorfairKing/cursor-dirforest
+  commit: 96a33d84f5b96b753dc763b7535512fab9107f9c
+  subdirs:
+    - cursor-dirforest
+    - cursor-dirforest-gen
+    - cursor-dirforest-brick
+
+- github: NorfairKing/cursor-brick
+  commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
+  subdirs:
+    - cursor-brick
+
+- github: NorfairKing/cursor
+  commit: 6b8d2fab22cf380aaac5f6d0853ec8b3d4cdd0e1
+  subdirs:
+    - cursor
+    - cursor-gen
+
+- github: NorfairKing/validity
+  commit: b8c4cb4cafef7eb2feabaf767eb0d96c5fb5b573
+  subdirs:
+  - genvalidity
+  - genvalidity-aeson
+  - genvalidity-bytestring
+  - genvalidity-containers
+  - genvalidity-criterion
+  - genvalidity-hspec
+  - genvalidity-hspec-aeson
+  - genvalidity-hspec-binary
+  - genvalidity-hspec-cereal
+  - genvalidity-hspec-hashable
+  - genvalidity-hspec-optics
+  - genvalidity-hspec-persistent
+  - genvalidity-path
+  - genvalidity-persistent
+  - genvalidity-property
+  - genvalidity-scientific
+  - genvalidity-text
+  - genvalidity-time
+  - genvalidity-unordered-containers
+  - genvalidity-uuid
+  - genvalidity-vector
+  - validity
+  - validity-aeson
+  - validity-bytestring
+  - validity-containers
+  - validity-path
+  - validity-persistent
+  - validity-primitive
+  - validity-scientific
+  - validity-text
+  - validity-time
+  - validity-unordered-containers
+  - validity-uuid
+  - validity-vector
+
 - github: NorfairKing/yamlparse-applicative
   commit: 08369b1b3e1c0ebc0f4e2763e63db48227345081
   subdirs:

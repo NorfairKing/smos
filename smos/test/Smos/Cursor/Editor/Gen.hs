@@ -2,6 +2,7 @@
 
 module Smos.Cursor.Editor.Gen where
 
+import Cursor.DirForest.Gen ()
 import Data.GenValidity
 import Smos.Cursor.Help.Gen ()
 import Smos.Cursor.Report.Next.Gen ()

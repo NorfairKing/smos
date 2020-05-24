@@ -1,6 +1,6 @@
 {
   owner = "NorfairKing";
   repo = "mergeful";
-  rev = "7f6488b400c736511da1570d40edc6a9eeb1168d";
-  sha256 = "sha256:0h0pdyvxpikp42cvs5l3p6h8bx0g3sra847fjvisd42vrc1qkfbq";
+  rev = "c1e4c5d65a0e7a4eb82d3680e77867a421ea8c29";
+  sha256 = "sha256:0jd4avs89qzcihkalxzbbd8jjsk37k4wp7dq79y8sc61kiw9fiw5";
 }

@@ -17,7 +17,8 @@ allPlainBrowserActions =
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
-    browserToggleCollapseRecursively
+    browserToggleCollapseRecursively,
+    browserEnter
   ]
 
 allBrowserUsingCharActions :: [ActionUsing Char]

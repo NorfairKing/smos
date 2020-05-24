@@ -25,6 +25,14 @@ let
     import (
       pkgs.fetchFromGitHub (import ./cursor-fuzzy-time-version.nix) + "/nix/overlay.nix"
     );
+  dirforest-overlay =
+    import (
+      pkgs.fetchFromGitHub (import ./dirforest-version.nix) + "/nix/overlay.nix"
+    );
+  cursor-dirforest-overlay =
+    import (
+      pkgs.fetchFromGitHub (import ./cursor-dirforest-version.nix) + "/nix/overlay.nix"
+    );
   mergeful-overlay =
     import (
       pkgs.fetchFromGitHub (import ./mergeful-version.nix) + "/nix/overlay.nix"
@@ -43,6 +51,8 @@ let
           fuzzy-time-overlay
           pretty-relative-time-overlay
           cursor-fuzzy-time-overlay
+          dirforest-overlay
+          cursor-dirforest-overlay
           mergeful-overlay
           yamlparse-applicative-overlay
           (import ./gitignore-src.nix)

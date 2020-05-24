@@ -5,7 +5,6 @@ module Smos.Draw.Base where
 import Brick.Types as B
 import Brick.Widgets.Core as B
 import Data.Time
-import Path
 import Text.Printf
 
 data Select
