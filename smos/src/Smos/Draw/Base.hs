@@ -8,9 +8,6 @@ import Data.Time
 import Path
 import Text.Printf
 
-drawFilePath :: Path r d -> Widget n
-drawFilePath = str . toFilePath
-
 data Select
   = MaybeSelected
   | NotSelected

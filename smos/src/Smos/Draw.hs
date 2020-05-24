@@ -60,7 +60,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
          in vBox
               [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
       fileCursorWidget =
-        withHeading (drawFilePath smosStateFilePath) $
+        withHeading (forceAttr selectedAttr $ drawFilePath smosStateFilePath) $
           maybe
             (drawInfo configKeyMap)
             (drawFileCursor $ selectWhen FileSelected)
@@ -243,7 +243,9 @@ drawBrowserCursor s = verticalPaddedDirForestCursorWidget (sel . goFod) goFod de
       MaybeSelected -> forceAttr selectedAttr . visible
       NotSelected -> id
     goFod :: FileOrDir () -> Widget ResourceName
-    goFod = str . show
+    goFod = \case
+      FodFile rf () -> drawFilePath rf
+      FodDir rd -> drawDirPath rd
 
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
 drawReportCursor s rc =
@@ -860,6 +862,12 @@ drawTextCursor s =
   case s of
     MaybeSelected -> selectedTextCursorWidget ResourceTextCursor
     _ -> textCursorWidget
+
+drawFilePath :: Path b File -> Widget n
+drawFilePath = withAttr fileAttr . str . toFilePath
+
+drawDirPath :: Path b Dir -> Widget n
+drawDirPath = withAttr dirAttr . str . toFilePath
 
 type DrawEnv = ZonedTime
 

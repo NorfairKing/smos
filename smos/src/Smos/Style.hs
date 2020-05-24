@@ -5,6 +5,8 @@ module Smos.Style
     selectedAttr,
     unsavedAttr,
     keyAttr,
+    fileAttr,
+    dirAttr,
     headerAttr,
     contentsAttr,
     todoStateAttr,
@@ -58,7 +60,9 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "brainpower", fg brown),
           (propertyNameSpecificAttr "client", fg green),
           (selectedAttr <> tagAttr, fg brightWhite),
-          (selectedAttr <> headerAttr, fg brightWhite)
+          (selectedAttr <> headerAttr, fg brightWhite),
+          (fileAttr, fg V.yellow),
+          (dirAttr, fg brown)
         ]
         $ attrMap
           defAttr
@@ -70,6 +74,12 @@ defaultAttrMap _ =
             (helpKeyCombinationAttr, fg V.blue),
             (helpDescriptionAttr, fg V.yellow)
           ]
+
+fileAttr :: AttrName
+fileAttr = "file"
+
+dirAttr :: AttrName
+dirAttr = "dir"
 
 selectedAttr :: AttrName
 selectedAttr = "selected"
