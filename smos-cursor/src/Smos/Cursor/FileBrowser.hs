@@ -7,7 +7,6 @@ import Control.Monad.IO.Class
 import Cursor.Simple.DirForest
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
-import Data.Maybe
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -35,8 +34,8 @@ fileBrowserCursorDoMaybe func fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> Just fbc
     Just dfc -> do
-      dfc <- func dfc
-      pure $ fbc {fileBrowserCursorDirForestCursor = Just dfc}
+      dfc' <- func dfc
+      pure $ fbc {fileBrowserCursorDirForestCursor = Just dfc'}
 
 fileBrowserCursorSelectNext :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorSelectNext = fileBrowserCursorDoMaybe dirForestCursorSelectNext

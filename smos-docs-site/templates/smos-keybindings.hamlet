@@ -27,47 +27,53 @@
     File
   <h3>
     Empty
-  ^{keyMapTable $ fileKeyMapEmptyMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapEmptyMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Entry
-  ^{keyMapTable $ fileKeyMapEntryMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapEntryMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Header
-  ^{keyMapTable $ fileKeyMapHeaderMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapHeaderMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Contents
-  ^{keyMapTable $ fileKeyMapContentsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapContentsMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Timestamps
-  ^{keyMapTable $ fileKeyMapTimestampsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapTimestampsMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Properties
-  ^{keyMapTable $ fileKeyMapPropertiesMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapPropertiesMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     State History
-  ^{keyMapTable $ fileKeyMapStateHistoryMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapStateHistoryMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Tags
-  ^{keyMapTable $ fileKeyMapTagsMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapTagsMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Logbook
-  ^{keyMapTable $ fileKeyMapLogbookMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapLogbookMatchers $ keyMapFileKeyMap defaultKeyMap }
   <h3>
     Any
-  ^{keyMapTable $ fileKeyMapAnyMatchers $ keyMapFileKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ fileKeyMapAnyMatchers $ keyMapFileKeyMap defaultKeyMap }
 
+
+  <h2>
+    File Browser
+  <h3>
+    Browser
+  ^{keyMapTable $ keyMapBrowserKeyMap defaultKeyMap }
 
   <h2>
     Reports
   <h3>
     Next Action Report
-  ^{keyMapTable $ reportsKeymapNextActionReportMatchers $ keyMapReportsKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ reportsKeymapNextActionReportMatchers $ keyMapReportsKeyMap defaultKeyMap }
 
   <h2>
     Help
   <h3>
     List of keybindings
-  ^{keyMapTable $ helpKeyMapHelpMatchers $ keyMapHelpKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ helpKeyMapHelpMatchers $ keyMapHelpKeyMap defaultKeyMap }
   <h3>
     Search
-  ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap $ defaultKeyMap }
+  ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap defaultKeyMap }
