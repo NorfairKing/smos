@@ -76,7 +76,7 @@ enterNextActionFile =
               Nothing -> pure ()
               Just (ReportNextActions narc) -> do
                 let sfc = nextActionReportCursorBuildSmosFileCursor narc
-                void $ switchToFile (nextActionReportCursorBuildFilePath narc) sfc
+                void $ switchToCursor (nextActionReportCursorBuildFilePath narc) (Just sfc)
           _ -> pure (),
       actionDescription = "Enter the currently selected next action"
     }

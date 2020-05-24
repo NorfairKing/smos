@@ -3,12 +3,10 @@
 module Smos.Actions.Browser where
 
 import Cursor.Simple.DirForest
-import Data.DirForest
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Cursor.FileBrowser
-import Smos.Data
 import Smos.Report.Config
 import Smos.Types
 
@@ -70,22 +68,13 @@ browserEnter =
               Nothing -> pure ()
               Just dfc -> case fileBrowserSelected dfc of
                 Nothing -> pure ()
-                Just (_, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggleRecursively
+                Just (_, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
                 Just (rd, FodFile rf ()) -> do
                   saveCurrentSmosFile
                   src <- asks configReportConfig
                   wd <- liftIO $ resolveReportWorkflowDir src
                   let path = wd </> rd </> rf
-                  maybeErrOrSmosFile <- liftIO $ readSmosFile path
-                  case maybeErrOrSmosFile of
-                    Nothing -> pure () -- Shouldn't happen
-                    Just errOrSmosFile -> case errOrSmosFile of
-                      Left _ -> pure () -- Nothing we can do about this
-                      Right sf -> case makeSmosFileCursorEntirely sf of
-                        Nothing -> pure () -- TODO: empty file, not sure what to do with this. We should switch to it, I guess
-                        Just sfcUnprepared -> do
-                          let sfc = smosFileCursorReadyForStartup sfcUnprepared
-                          void $ switchToFile path sfc
+                  switchToFile path
           _ -> pure (),
       actionDescription = "Enter the file if a file is selected, toggle collapsing the directory if a directory is selected"
     }
@@ -97,11 +86,7 @@ selectBrowser =
       actionFunc = do
         src <- asks configReportConfig
         wd <- liftIO $ resolveReportWorkflowDir src
-        ad <- liftIO $ resolveReportArchiveDir src
-        let filePred fp = fileExtension fp == ".smos"
-            dirPred fp = ad /= fp
-        df <- readNonHiddenFiltered filePred dirPred wd (\_ -> pure ())
-        let dfc = makeFileBrowserCursor df
+        dfc <- startFileBrowserCursor wd
         modifyEditorCursor $ \ec ->
           ec
             { editorCursorBrowserCursor = Just dfc,

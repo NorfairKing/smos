@@ -3,6 +3,7 @@
 
 module Smos.Cursor.FileBrowser where
 
+import Control.Monad.IO.Class
 import Cursor.Simple.DirForest
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
@@ -51,3 +52,10 @@ fileBrowserCursorToggleRecursively = fileBrowserCursorDoMaybe dirForestCursorTog
 
 fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Rel Dir, FileOrDir ())
 fileBrowserSelected = fmap dirForestCursorSelected . fileBrowserCursorDirForestCursor
+
+startFileBrowserCursor :: MonadIO m => Path Abs Dir -> m FileBrowserCursor
+startFileBrowserCursor dir = do
+  let filePred fp = fileExtension fp == ".smos"
+      dirPred = const True
+  df <- DF.readNonHiddenFiltered filePred dirPred dir (\_ -> pure ())
+  pure $ makeFileBrowserCursor df

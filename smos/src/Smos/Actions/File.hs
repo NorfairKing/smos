@@ -6,6 +6,7 @@ module Smos.Actions.File
     saveCurrentSmosFile,
     saveSmosFile,
     switchToFile,
+    switchToCursor,
     lockFile,
     unlockFile,
     FL.FileLock,
@@ -56,8 +57,19 @@ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
       ensureDir $ parent smosStateFilePath
       writeSmosFile smosStateFilePath sf'
 
-switchToFile :: Path Abs File -> SmosFileCursor -> SmosM (Maybe FL.FileLock)
-switchToFile path sfc = do
+switchToFile :: Path Abs File -> SmosM ()
+switchToFile path = do
+  maybeErrOrSmosFile <- liftIO $ readSmosFile path
+  case maybeErrOrSmosFile of
+    Nothing -> pure () -- Do nothing if the file doesn't exist
+    Just errOrSmosFile -> case errOrSmosFile of
+      Left _ -> pure () -- Do nothing if the file is not a smos file
+      Right sf -> do
+        let msfc = smosFileCursorReadyForStartup <$> makeSmosFileCursorEntirely sf
+        void $ switchToCursor path msfc
+
+switchToCursor :: Path Abs File -> Maybe SmosFileCursor -> SmosM (Maybe FL.FileLock)
+switchToCursor path msfc = do
   ss <- get
   mfl <-
     liftIO $ do
@@ -67,11 +79,11 @@ switchToFile path sfc = do
     now <- liftIO getCurrentTime
     put $
       ss
-        { smosStateStartSmosFile = Just (rebuildSmosFileCursorEntirely sfc),
+        { smosStateStartSmosFile = rebuildSmosFileCursorEntirely <$> msfc,
           smosStateFilePath = path,
           smosStateFileLock = fl,
           smosStateCursor =
-            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = Just sfc},
+            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = msfc},
           smosStateUnsavedChanges = False,
           smosStateLastSaved = now
         }
