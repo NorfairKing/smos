@@ -604,7 +604,6 @@ editorCursorSwitchToFile :: EditorCursor -> EditorCursor
 editorCursorSwitchToFile ec =
   ec
     { editorCursorHelpCursor = Nothing,
-      editorCursorBrowserCursor = Nothing,
       editorCursorReportCursor = Nothing,
       editorCursorSelection = FileSelected
     }

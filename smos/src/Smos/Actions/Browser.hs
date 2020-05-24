@@ -83,11 +83,19 @@ selectBrowser :: Action
 selectBrowser =
   Action
     { actionName = "selectBrowser",
-      actionFunc = do
+      actionFunc = modifyEditorCursorS $ \ec -> do
         src <- asks configReportConfig
         wd <- liftIO $ resolveReportWorkflowDir src
-        dfc <- startFileBrowserCursor wd
-        modifyEditorCursor $ \ec ->
+        dfc' <- startFileBrowserCursor wd
+        -- We don't want to move the cursor if the directory hasn't changed.
+        -- TODO: We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
+        let dfc = case editorCursorBrowserCursor ec of
+              Nothing -> dfc'
+              Just dfc'' ->
+                if rebuildFileBrowserCursor dfc'' == rebuildFileBrowserCursor dfc'
+                  then dfc''
+                  else dfc'
+        pure
           ec
             { editorCursorBrowserCursor = Just dfc,
               editorCursorSelection = BrowserSelected
