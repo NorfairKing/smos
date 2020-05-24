@@ -1,5 +1,7 @@
 # Smos
 
+![Build](https://github.com/NorfairKing/smos/workflows/Nix%20Build/badge.svg)
+
 A semantic tree-based editor to replace Emacs Org Mode
 
 See [the documentation site](https://smos.cs-syd.eu) for more information.
