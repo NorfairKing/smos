@@ -39,6 +39,7 @@ import Import hiding ((<+>))
 import Lens.Micro
 import Smos.Actions
 import Smos.Cursor.Collapse
+import Smos.Cursor.FileBrowser
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
@@ -69,7 +70,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
         withHeading (str "File Browser") $
           maybe
             (drawInfo configKeyMap)
-            (drawBrowserCursor (selectWhen BrowserSelected))
+            (drawFileBrowserCursor (selectWhen BrowserSelected))
             editorCursorBrowserCursor
       reportCursorWidget =
         withHeading (str "Next Action Report") $
@@ -236,9 +237,10 @@ defaultPadding = Pad defaultPaddingAmount
 defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
-drawBrowserCursor :: Select -> BrowserCursor -> Widget ResourceName
-drawBrowserCursor s = verticalPaddedDirForestCursorWidget (sel . goFod) goFod defaultPaddingAmount
+drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
+drawFileBrowserCursor s = maybe emptyScreen (verticalPaddedDirForestCursorWidget (sel . goFod) goFod defaultPaddingAmount) . fileBrowserCursorDirForestCursor
   where
+    emptyScreen = str "No files to show."
     sel = case s of
       MaybeSelected -> forceAttr selectedAttr . visible
       NotSelected -> id

@@ -19,6 +19,8 @@ library:
   - QuickCheck
   - base
   - cursor
+  - cursor-dirforest
+  - cursor-dirforest-gen
   - cursor-fuzzy-time
   - cursor-fuzzy-time-gen
   - cursor-gen

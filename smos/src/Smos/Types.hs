@@ -17,7 +17,6 @@ import Brick.Types as B hiding (Next)
 import Control.Concurrent.Async
 import Control.Monad.Reader
 import Control.Monad.State
-import Cursor.Simple.DirForest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
@@ -29,6 +28,7 @@ import Data.Time
 import Import
 import Lens.Micro
 import Smos.Cursor.Entry
+import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Data
@@ -528,7 +528,7 @@ renderKeyCombination = go
 data EditorCursor
   = EditorCursor
       { editorCursorFileCursor :: Maybe SmosFileCursor,
-        editorCursorBrowserCursor :: Maybe BrowserCursor,
+        editorCursorBrowserCursor :: Maybe FileBrowserCursor,
         editorCursorReportCursor :: Maybe ReportCursor,
         editorCursorHelpCursor :: Maybe HelpCursor,
         editorCursorSelection :: EditorSelection,
@@ -573,7 +573,7 @@ editorCursorSmosFileCursorL :: Lens' EditorCursor (Maybe SmosFileCursor)
 editorCursorSmosFileCursorL =
   lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
 
-editorCursorBrowserCursorL :: Lens' EditorCursor (Maybe BrowserCursor)
+editorCursorBrowserCursorL :: Lens' EditorCursor (Maybe FileBrowserCursor)
 editorCursorBrowserCursorL =
   lens editorCursorBrowserCursor $ \ec msfc -> ec {editorCursorBrowserCursor = msfc}
 
@@ -649,8 +649,6 @@ editorCursorSwitchToNextActionReport narc ec =
 editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
 editorCursorUpdateTime zt ec =
   ec {editorCursorFileCursor = smosFileCursorUpdateTime zt <$> editorCursorFileCursor ec}
-
-type BrowserCursor = DirForestCursor ()
 
 newtype ReportCursor
   = ReportNextActions NextActionReportCursor

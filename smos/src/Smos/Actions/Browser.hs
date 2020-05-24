@@ -7,6 +7,7 @@ import Data.DirForest
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Cursor.FileBrowser
 import Smos.Data
 import Smos.Report.Config
 import Smos.Types
@@ -28,7 +29,7 @@ browserSelectPrev :: Action
 browserSelectPrev =
   Action
     { actionName = "browserSelectPrev",
-      actionFunc = modifyBrowserCursorM dirForestCursorSelectPrev,
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectPrev,
       actionDescription = "Select the previous file or directory in the file browser."
     }
 
@@ -36,7 +37,7 @@ browserSelectNext :: Action
 browserSelectNext =
   Action
     { actionName = "browserSelectNext",
-      actionFunc = modifyBrowserCursorM dirForestCursorSelectNext,
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectNext,
       actionDescription = "Select the next file or directory in the file browser."
     }
 
@@ -44,7 +45,7 @@ browserToggleCollapse :: Action
 browserToggleCollapse =
   Action
     { actionName = "browserToggleCollapse",
-      actionFunc = modifyBrowserCursorM dirForestCursorToggle,
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorToggle,
       actionDescription = "Select toggle collapsing the currently selected directory"
     }
 
@@ -52,7 +53,7 @@ browserToggleCollapseRecursively :: Action
 browserToggleCollapseRecursively =
   Action
     { actionName = "browserToggleCollapseRecursively",
-      actionFunc = modifyBrowserCursorM dirForestCursorToggleRecursively,
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorToggleRecursively,
       actionDescription = "Select toggle collapsing the currently selected directory recursively"
     }
 
@@ -67,9 +68,10 @@ browserEnter =
           BrowserSelected ->
             case editorCursorBrowserCursor ec of
               Nothing -> pure ()
-              Just dfc -> case dirForestCursorSelected dfc of
-                (_, FodDir _) -> modifyBrowserCursorM dirForestCursorToggleRecursively
-                (rd, FodFile rf ()) -> do
+              Just dfc -> case fileBrowserSelected dfc of
+                Nothing -> pure ()
+                Just (_, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggleRecursively
+                Just (rd, FodFile rf ()) -> do
                   saveCurrentSmosFile
                   src <- asks configReportConfig
                   wd <- liftIO $ resolveReportWorkflowDir src
@@ -99,10 +101,10 @@ selectBrowser =
         let filePred fp = fileExtension fp == ".smos"
             dirPred fp = ad /= fp
         df <- readNonHiddenFiltered filePred dirPred wd (\_ -> pure ())
-        let dfc = makeDirForestCursor df
+        let dfc = makeFileBrowserCursor df
         modifyEditorCursor $ \ec ->
           ec
-            { editorCursorBrowserCursor = dfc,
+            { editorCursorBrowserCursor = Just dfc,
               editorCursorSelection = BrowserSelected
             },
       actionDescription = "Save the current file and switch to the file browser."

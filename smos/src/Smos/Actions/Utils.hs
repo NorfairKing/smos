@@ -36,6 +36,7 @@ import Data.Time
 import Lens.Micro
 import Smos.Cursor.Contents
 import Smos.Cursor.Entry
+import Smos.Cursor.FileBrowser
 import Smos.Cursor.Header
 import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
@@ -251,17 +252,17 @@ modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
 modifyMFileCursorMS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
 
-modifyBrowserCursorM :: (BrowserCursor -> Maybe BrowserCursor) -> SmosM ()
-modifyBrowserCursorM func = modifyBrowserCursor $ \hc -> fromMaybe hc $ func hc
+modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
+modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc
 
-modifyBrowserCursor :: (BrowserCursor -> BrowserCursor) -> SmosM ()
-modifyBrowserCursor func = modifyMBrowserCursorM $ fmap func
+modifyFileBrowserCursor :: (FileBrowserCursor -> FileBrowserCursor) -> SmosM ()
+modifyFileBrowserCursor func = modifyMFileBrowserCursorM $ fmap func
 
-modifyMBrowserCursorM :: (Maybe BrowserCursor -> Maybe BrowserCursor) -> SmosM ()
-modifyMBrowserCursorM func = modifyMBrowserCursorMS $ pure . func
+modifyMFileBrowserCursorM :: (Maybe FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
+modifyMFileBrowserCursorM func = modifyMFileBrowserCursorMS $ pure . func
 
-modifyMBrowserCursorMS :: (Maybe BrowserCursor -> SmosM (Maybe BrowserCursor)) -> SmosM ()
-modifyMBrowserCursorMS func = modifyEditorCursorS $ editorCursorBrowserCursorL func
+modifyMFileBrowserCursorMS :: (Maybe FileBrowserCursor -> SmosM (Maybe FileBrowserCursor)) -> SmosM ()
+modifyMFileBrowserCursorMS func = modifyEditorCursorS $ editorCursorBrowserCursorL func
 
 modifyHelpCursorM :: (HelpCursor -> Maybe HelpCursor) -> SmosM ()
 modifyHelpCursorM func = modifyHelpCursor $ \hc -> fromMaybe hc $ func hc

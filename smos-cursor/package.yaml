@@ -16,10 +16,14 @@ library:
   - base
   - containers
   - cursor
+  - cursor-dirforest
   - cursor-fuzzy-time
   - deepseq
+  - dirforest
   - fuzzy-time
   - microlens
+  - path
+  - path-io
   - smos-data
   - text
   - time
