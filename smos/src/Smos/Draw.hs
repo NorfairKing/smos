@@ -298,6 +298,7 @@ drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
   fmap (viewport ResourceViewport Vertical)
     . verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
+    . smosFileCursorForestCursor
 
 drawSmosTreeCursor ::
   Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer

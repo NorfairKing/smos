@@ -44,7 +44,7 @@ nextActionReportCursorBuildSmosFileCursor =
   go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
   where
     go :: ForestCursor Entry Entry -> SmosFileCursor
-    go = mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+    go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath narc =
