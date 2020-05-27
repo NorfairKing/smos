@@ -19,7 +19,6 @@ where
 import Control.DeepSeq
 import Cursor.Simple.List.NonEmpty
 import Data.Validity
-import Data.Word
 import GHC.Generics (Generic)
 import Lens.Micro
 

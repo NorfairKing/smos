@@ -30,6 +30,8 @@ import Smos.Cursor.Timestamps
 import Smos.Cursor.Timestamps.Gen ()
 import Smos.Data
 import Smos.Data.Gen ()
+import Smos.History
+import Smos.History.Gen ()
 import Smos.Undo
 import Smos.Undo.Gen ()
 

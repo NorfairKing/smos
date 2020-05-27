@@ -6,11 +6,10 @@ module Smos.HistorySpec
 where
 
 import Control.Monad
-import Cursor.List.NonEmpty
+import Cursor.List.NonEmpty.Gen ()
 import Data.Maybe
-import GHC.Generics (Generic)
 import Smos.History
-import Smos.History.Gen
+import Smos.History.Gen ()
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
@@ -39,9 +38,9 @@ spec = do
       $ forAllValid
       $ \us -> cover 50 (isJust $ (historyRedo >=> historyUndo) us) "non-trivial" $
         case historyRedo @Int us of
-          Nothing -> pure () -- Stack too shont to check anything.
+          Nothing -> pure () -- Stack too short to check anything.
           Just us' -> case historyUndo us' of
-            Nothing -> pure () -- Stack too shont to check anything.
+            Nothing -> pure () -- Stack too short to check anything.
             Just us'' -> us'' `shouldBe` us
   describe "historyRedo" $ do
     it "produces valid results" $
@@ -50,18 +49,18 @@ spec = do
       $ forAllValid
       $ \us -> cover 50 (isJust $ (historyUndo >=> historyRedo) us) "non-trivial" $
         case historyUndo @Int us of
-          Nothing -> pure () -- Stack too shont to check anything.
+          Nothing -> pure () -- Stack too short to check anything.
           Just us' -> case historyRedo us' of
-            Nothing -> pure () -- Stack too shont to check anything.
+            Nothing -> pure () -- Stack too short to check anything.
             Just us'' -> us'' `shouldBe` us
   describe "historyMod" $ do
     let f i = historyMod (+ (i :: Int))
-    it "produces valid results for addition" $ forAllValid $ \i -> producesValidsOnValids (historyMod (+ (i :: Int)))
+    it "produces valid results for addition" $ forAllValid $ \i -> producesValidsOnValids (f i)
     it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
-      let h' = historyMod (+ (i :: Int)) h
+      let h' = f i h
       historyUndoLength h' `shouldBe` (historyUndoLength h + 1)
     it "produces a history with a 0 length redo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
-      let h' = historyMod (+ (i :: Int)) h
+      let h' = f i h
       historyRedoLength h' `shouldBe` 0
   describe "historyModM" $ do
     let f i =

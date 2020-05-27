@@ -26,7 +26,6 @@ import Cursor.Text
 import Cursor.Types
 import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro

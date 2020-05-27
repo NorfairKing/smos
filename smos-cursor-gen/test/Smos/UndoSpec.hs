@@ -7,7 +7,6 @@ module Smos.UndoSpec
   )
 where
 
-import Control.Monad
 import Data.Maybe
 import GHC.Generics (Generic)
 import Smos.Undo
@@ -45,7 +44,7 @@ spec = do
           Nothing -> pure () -- Stack too shont to check anything.
           Just (ua, us') -> case undoStackUndo us' of
             Nothing -> pure () -- Stack too shont to check anything.
-            Just (ra, us'') -> applyIntUndo ra (applyIntRedo ua is) `shouldBe` is
+            Just (ra, _) -> applyIntUndo ra (applyIntRedo ua is) `shouldBe` is
   describe "undoStackRedo" $ do
     it "produces valid results" $
       producesValidsOnValids (undoStackRedo @Int @Int)
@@ -64,7 +63,7 @@ spec = do
           Nothing -> pure () -- Stack too shont to check anything.
           Just (ua, us') -> case undoStackRedo us' of
             Nothing -> pure () -- Stack too shont to check anything.
-            Just (ra, us'') -> applyIntRedo ra (applyIntUndo ua is) `shouldBe` is
+            Just (ra, _) -> applyIntRedo ra (applyIntUndo ua is) `shouldBe` is
 
 composePops :: (a -> Maybe (b, c)) -> (c -> Maybe (d, e)) -> a -> Maybe e
 composePops func1 func2 a = do

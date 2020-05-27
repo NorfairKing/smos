@@ -65,7 +65,6 @@ import Smos.Cursor.Entry
 import Smos.Cursor.Logbook
 import Smos.Cursor.StateHistory
 import Smos.Data
-import Smos.History
 
 type FC = ForestCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
 

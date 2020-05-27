@@ -24,8 +24,6 @@ packages:
 - smos-client-gen
 - smos-sync-client
 - smos-sync-client-gen
-- /home/syd/src/cursor/cursor
-- /home/syd/src/cursor/cursor-gen
 
 extra-deps:
 - hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
@@ -109,11 +107,11 @@ extra-deps:
   subdirs:
     - cursor-brick
 
-      # - github: NorfairKing/cursor
-      #   commit: 6b8d2fab22cf380aaac5f6d0853ec8b3d4cdd0e1
-      #   subdirs:
-      #     - cursor
-      #     - cursor-gen
+- github: NorfairKing/cursor
+  commit: fe8db0a1db98bc3cf858692f8f4c252668556ee3
+  subdirs:
+    - cursor
+    - cursor-gen
 
 - github: NorfairKing/validity
   commit: b8c4cb4cafef7eb2feabaf767eb0d96c5fb5b573
