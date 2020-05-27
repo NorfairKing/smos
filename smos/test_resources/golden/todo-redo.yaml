@@ -4,7 +4,6 @@ commands:
 - entrySetTodoState_TODO
 - entryToggleTodoState_DONE
 - undo
-- undo
 - redo
 after:
 - header: example

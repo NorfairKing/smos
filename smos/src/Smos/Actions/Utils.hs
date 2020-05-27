@@ -251,9 +251,16 @@ modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
 modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorMS func = modifyEditorCursorS $ \ec -> do
-  msfch' <- historyModM func (editorCursorFileCursor ec)
-  pure $ ec {editorCursorFileCursor = msfch'}
+modifyMFileCursorMS func = modifyMFileCursorMHistoryS $ historyModM func -- Record history
+
+modifyMFileCursorMHistoryM :: (History (Maybe SmosFileCursor) -> Maybe (History (Maybe SmosFileCursor))) -> SmosM ()
+modifyMFileCursorMHistoryM func = modifyMFileCursorMHistory $ \h -> fromMaybe h $ func h
+
+modifyMFileCursorMHistory :: (History (Maybe SmosFileCursor) -> History (Maybe SmosFileCursor)) -> SmosM ()
+modifyMFileCursorMHistory func = modifyMFileCursorMHistoryS $ pure . func
+
+modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History (Maybe SmosFileCursor))) -> SmosM ()
+modifyMFileCursorMHistoryS func = modifyEditorCursorS $ editorCursorSmosFileCursorHistoryL func
 
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc

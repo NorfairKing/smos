@@ -555,7 +555,7 @@ instance Validity EditorSelection
 
 makeEditorCursor :: SmosFile -> EditorCursor
 makeEditorCursor =
-  (editorCursorSmosFileCursorL . historyPresentL %~ fmap smosFileCursorReadyForStartup)
+  (editorCursorSmosFileCursorHistoryL . historyPresentL %~ fmap smosFileCursorReadyForStartup)
     . makeEditorCursorClosed
 
 makeEditorCursorClosed :: SmosFile -> EditorCursor
@@ -572,8 +572,8 @@ makeEditorCursorClosed sf =
 rebuildEditorCursor :: EditorCursor -> SmosFile
 rebuildEditorCursor = maybe emptySmosFile rebuildSmosFileCursorEntirely . historyPresent . editorCursorFileCursor
 
-editorCursorSmosFileCursorL :: Lens' EditorCursor (History (Maybe SmosFileCursor))
-editorCursorSmosFileCursorL =
+editorCursorSmosFileCursorHistoryL :: Lens' EditorCursor (History (Maybe SmosFileCursor))
+editorCursorSmosFileCursorHistoryL =
   lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
 
 editorCursorBrowserCursorL :: Lens' EditorCursor (Maybe FileBrowserCursor)
@@ -649,7 +649,7 @@ editorCursorSwitchToNextActionReport narc ec =
     }
 
 editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
-editorCursorUpdateTime zt = editorCursorSmosFileCursorL . historyPresentL %~ fmap (smosFileCursorUpdateTime zt)
+editorCursorUpdateTime zt = editorCursorSmosFileCursorHistoryL . historyPresentL %~ fmap (smosFileCursorUpdateTime zt)
 
 newtype ReportCursor
   = ReportNextActions NextActionReportCursor
