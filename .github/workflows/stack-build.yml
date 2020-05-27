@@ -39,5 +39,5 @@ jobs:
 
       - name: Test
         run: |
-          stack test --system-ghc
+          stack test --system-ghc --jobs 1
 
