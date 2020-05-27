@@ -30,6 +30,8 @@ import Smos.Cursor.Timestamps
 import Smos.Cursor.Timestamps.Gen ()
 import Smos.Data
 import Smos.Data.Gen ()
+import Smos.Undo
+import Smos.Undo.Gen ()
 
 main :: IO ()
 main =
@@ -45,5 +47,7 @@ main =
       genValidBench @(CollapseEntry Entry),
       genValidBench @EntryCursor,
       genValidBench @(CollapseEntry EntryCursor),
-      genValidBench @SmosFileCursor
+      genValidBench @SmosFileCursor,
+      genValidBench @(Undo Int Int),
+      genValidBench @(UndoStack Int Int)
     ]
