@@ -4,6 +4,7 @@ module Smos.Actions.Convenience
   ( allConveniencePlainActions,
     convDoneAndWaitForResponse,
     convRepinged,
+    convRespondedButStillWaiting,
     convNewEntryAndClockIn,
   )
 where
@@ -19,7 +20,7 @@ import Smos.Data
 import Smos.Types
 
 allConveniencePlainActions :: [Action]
-allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged, convNewEntryAndClockIn]
+allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged, convRespondedButStillWaiting, convNewEntryAndClockIn]
 
 convDoneAndWaitForResponse :: Action
 convDoneAndWaitForResponse =
@@ -64,6 +65,32 @@ convRepinged =
         pure $ (f1 >>> f2 >>> f3 >>> f4 >>> f5 >>> f6 >>> f7) sfc,
       actionDescription =
         "Mark the current task as 'done', add a new entry called 'Ping again' and add a new WAITING entry below that, that duplicates the original entry."
+    }
+
+convRespondedButStillWaiting :: Action
+convRespondedButStillWaiting =
+  Action
+    { actionName = "convRespondedButStillWaiting",
+      actionFunc = modifyFileCursorS $ \sfc -> do
+        let e = rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
+        now <- liftIO getCurrentTime
+        let f1 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE"
+            f2 = smosFileCursorInsertEntryAfterAndSelectHeader
+            e' =
+              e
+                { entryStateHistory =
+                    StateHistory
+                      [ StateHistoryEntry
+                          { stateHistoryEntryNewState = entryState e,
+                            stateHistoryEntryTimestamp = now
+                          }
+                      ]
+                }
+            f3 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
+            f4 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
+        pure $ (f1 >>> f2 >>> f3 >>> f4) sfc,
+      actionDescription =
+        "Mark the current task as 'done' and add a new entry below that duplicates the original entry."
     }
 
 convNewEntryAndClockIn :: Action

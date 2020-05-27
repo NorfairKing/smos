@@ -112,6 +112,7 @@ defaultFileKeyMap =
             -- Convenience
             exactString " nw" convDoneAndWaitForResponse,
             exactString " rp" convRepinged,
+            exactString " rw" convRespondedButStillWaiting,
             exactString " ce" convNewEntryAndClockIn,
             -- Collapsing
             exactChar '?' selectHelp,
