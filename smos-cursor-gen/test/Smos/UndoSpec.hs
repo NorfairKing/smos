@@ -11,7 +11,7 @@ import Control.Monad
 import Data.Maybe
 import GHC.Generics (Generic)
 import Smos.Undo
-import Smos.Undo.Gen ()
+import Smos.Undo.Gen
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
@@ -34,7 +34,7 @@ spec = do
             Just (_, us'') -> us'' `shouldBe` us
     it "is the inverse of undoStackRedo for IndoRedo"
       $ forAllValid
-      $ \is -> forAllValid $ \us -> cover 50 (isJust $ composePops undoStackRedo undoStackUndo us) "non-trivial" $
+      $ \is -> forAll genIntUndoStack $ \us -> cover 50 (isJust $ composePops undoStackRedo undoStackUndo us) "non-trivial" $
         case undoStackRedo us of
           Nothing -> pure () -- Stack too shont to check anything.
           Just (ua, us') -> case undoStackUndo us' of
@@ -53,7 +53,7 @@ spec = do
             Just (_, us'') -> us'' `shouldBe` us
     it "is the inverse of undoStackUndo for IndoUndo"
       $ forAllValid
-      $ \is -> forAllValid $ \us -> cover 50 (isJust $ composePops undoStackUndo undoStackRedo us) "non-trivial" $
+      $ \is -> forAll genIntUndoStack $ \us -> cover 50 (isJust $ composePops undoStackUndo undoStackRedo us) "non-trivial" $
         case undoStackUndo us of
           Nothing -> pure () -- Stack too shont to check anything.
           Just (ua, us') -> case undoStackRedo us' of
@@ -93,3 +93,10 @@ applyIntUndo :: IntUndo -> Int -> Int
 applyIntUndo = \case
   UndoAdd i -> (\x -> x - i)
   UndoSub i -> (\x -> x + i)
+
+genIntUndoStack :: Gen (UndoStack IntUndo IntRedo)
+genIntUndoStack = genUndoStackDependent $ do
+  rd <- genValid
+  case rd of
+    RedoAdd i -> pure (UndoAdd i, rd)
+    RedoSub i -> pure (UndoSub i, rd)

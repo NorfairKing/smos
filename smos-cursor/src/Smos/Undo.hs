@@ -14,6 +14,8 @@ import GHC.Generics (Generic)
 -- These two functions must work such that applying an undo after the corresponding redo
 -- results in the same 'c' as not doing anything.
 -- The same must hold in the opposite direction when applying the undo first and then the redo.
+--
+-- See 'Smos.UndoSpec' for an example.
 newtype UndoStack a b
   = UndoStack {undoStackListCursor :: ListCursor (Undo a b)}
   deriving (Show, Eq, Generic)
@@ -29,10 +31,12 @@ emptyUndoStack :: UndoStack a b
 emptyUndoStack = UndoStack {undoStackListCursor = emptyListCursor}
 
 undoStackPush :: Undo a b -> UndoStack a b -> UndoStack a b
-undoStackPush = undefined
+undoStackPush u us = UndoStack {undoStackListCursor = listCursorInsert u (undoStackListCursor us)}
 
 undoStackUndo :: UndoStack a b -> Maybe (a, UndoStack a b)
-undoStackUndo = undefined
+undoStackUndo (UndoStack lc) = do
+  (,) <$> (undoAction <$> listCursorPrevItem lc) <*> (UndoStack <$> listCursorSelectPrev lc)
 
 undoStackRedo :: UndoStack a b -> Maybe (b, UndoStack a b)
-undoStackRedo = undefined
+undoStackRedo (UndoStack lc) = do
+  (,) <$> (redoAction <$> listCursorNextItem lc) <*> (UndoStack <$> listCursorSelectNext lc)
