@@ -280,7 +280,6 @@ data SmosState
         smosStateFileLock :: !FileLock,
         smosStateCursor :: !EditorCursor,
         smosStateKeyHistory :: !(Seq KeyPress),
-        smosStateCursorHistory :: ![EditorCursor], -- From youngest to oldest, TODO make bounded?
         smosStateAsyncs :: ![Async ()],
         smosStateLastSaved :: !UTCTime,
         smosStateUnsavedChanges :: !Bool,

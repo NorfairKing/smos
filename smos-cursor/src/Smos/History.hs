@@ -11,12 +11,15 @@ module Smos.History
     historyModM,
     historyUndo,
     historyRedo,
+    historyUndoLength,
+    historyRedoLength,
   )
 where
 
 import Control.DeepSeq
 import Cursor.Simple.List.NonEmpty
 import Data.Validity
+import Data.Word
 import GHC.Generics (Generic)
 import Lens.Micro
 
@@ -64,10 +67,16 @@ historyMod func h =
 
 historyModM :: Functor f => (s -> f s) -> History s -> f (History s)
 historyModM func h =
-  (\s' -> historyPush s' h) <$> func (historyPresent h)
+  (`historyPush` h) <$> func (historyPresent h)
 
 historyUndo :: History s -> Maybe (History s)
 historyUndo = historyNonEmptyCursorL nonEmptyCursorSelectPrev
 
 historyRedo :: History s -> Maybe (History s)
 historyRedo = historyNonEmptyCursorL nonEmptyCursorSelectNext
+
+historyUndoLength :: History s -> Word
+historyUndoLength = fromIntegral . length . nonEmptyCursorPrev . historyNonEmptyCursor
+
+historyRedoLength :: History s -> Word
+historyRedoLength = fromIntegral . length . nonEmptyCursorPrev . historyNonEmptyCursor
