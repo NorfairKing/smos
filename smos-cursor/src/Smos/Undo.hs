@@ -2,6 +2,7 @@
 
 module Smos.Undo where
 
+import Control.DeepSeq
 import Cursor.List
 import Data.Validity
 import GHC.Generics (Generic)
@@ -22,16 +23,23 @@ newtype UndoStack a b
 
 instance (Validity a, Validity b) => Validity (UndoStack a b)
 
+instance (NFData a, NFData b) => NFData (UndoStack a b)
+
 data Undo a b = Undo {undoAction :: a, redoAction :: b}
   deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Undo a b)
 
+instance (NFData a, NFData b) => NFData (Undo a b)
+
 emptyUndoStack :: UndoStack a b
 emptyUndoStack = UndoStack {undoStackListCursor = emptyListCursor}
 
 undoStackPush :: Undo a b -> UndoStack a b -> UndoStack a b
-undoStackPush u us = UndoStack {undoStackListCursor = listCursorInsert u (undoStackListCursor us)}
+undoStackPush u us =
+  UndoStack
+    { undoStackListCursor = fst $ listCursorSplit $ listCursorInsert u (undoStackListCursor us)
+    }
 
 undoStackUndo :: UndoStack a b -> Maybe (a, UndoStack a b)
 undoStackUndo (UndoStack lc) = do

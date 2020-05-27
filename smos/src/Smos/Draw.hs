@@ -43,6 +43,7 @@ import Smos.Cursor.FileBrowser
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
+import Smos.History
 import Smos.Keys
 import Smos.Report.Path
 import Smos.Style
@@ -298,7 +299,8 @@ drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
   fmap (viewport ResourceViewport Vertical)
     . verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
-    . smosFileCursorForestCursor
+    . historyPresent
+    . smosFileCursorForestCursorHistory
 
 drawSmosTreeCursor ::
   Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer

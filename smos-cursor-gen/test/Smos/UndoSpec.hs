@@ -21,7 +21,13 @@ spec = do
   genValidSpec @(Undo Int Int)
   genValidSpec @(UndoStack Int Int)
   describe "emptyUndoStack" $ it "is valid" $ shouldBeValid (emptyUndoStack @Int @Int)
-  describe "undoStackPush" $ it "produces valid undo stacks" $ producesValidsOnValids2 (undoStackPush @Int @Int)
+  describe "undoStackPush" $ do
+    it "produces valid undo stacks" $ producesValidsOnValids2 (undoStackPush @Int @Int)
+    it "the redo stack is empty after pushing a new undo" $ forAllValid $ \u -> forAllValid $ \us ->
+      let us' = undoStackPush @Int @Int u us
+       in case undoStackRedo us' of
+            Nothing -> pure () -- Great
+            Just _ -> expectationFailure "The undo stack should have been empty."
   describe "undoStackUndo" $ do
     it "produces valid results" $ producesValidsOnValids (undoStackUndo @Int @Int)
     it "is the inverse of undoStackRedo for the undo stack"

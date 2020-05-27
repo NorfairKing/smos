@@ -49,5 +49,6 @@ main =
       genValidBench @(CollapseEntry EntryCursor),
       genValidBench @SmosFileCursor,
       genValidBench @(Undo Int Int),
-      genValidBench @(UndoStack Int Int)
+      genValidBench @(UndoStack Int Int),
+      genValidBench @(History Int)
     ]

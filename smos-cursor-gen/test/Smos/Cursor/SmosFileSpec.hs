@@ -2,17 +2,22 @@
 
 module Smos.Cursor.SmosFileSpec where
 
+import Data.Maybe
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFile.Gen ()
 import Smos.Data.Gen ()
 import Test.Hspec
+import Test.Hspec.QuickCheck
 import Test.Validity
 import Test.Validity.Optics
 
 spec :: Spec
-spec = do
+spec = modifyMaxShrinks (const 1) $ do
   eqSpecOnValid @SmosFileCursor
   genValidSpec @SmosFileCursor
+  lensSpecOnValid smosFileCursorForestCursorHistoryL
+  lensSpecOnValid smosFileCursorForestCursorL
+  lensSpecOnValid smosFileCursorSelectedEntryL
   describe "makeSmosFileCursor"
     $ it "produces valid cursors"
     $ producesValidsOnValids makeSmosFileCursor
@@ -21,8 +26,6 @@ spec = do
     it "is the inverse of makeFileCursor" $
       inverseFunctionsOnValid makeSmosFileCursor rebuildSmosFileCursor
   describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
-  describe "smosFileCursorSelectedEntryL" $ lensSpecOnValid smosFileCursorSelectedEntryL
-  describe "smosFileCursorEntrySelectionL" $ lensSpecOnValid smosFileCursorEntrySelectionL
   describe "smosFileCursorToggleHideEntireEntry"
     $ it "produces valid cursors"
     $ producesValidsOnValids smosFileCursorToggleHideEntireEntry
@@ -46,24 +49,33 @@ spec = do
     $ producesValidsOnValids smosFileCursorToggleCollapseRecursively
   describe "smosFileCursorInsertEntryBefore" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBefore
+    it "produces a cursor in which you can select the next" $ forAllValid $ \sfc ->
+      let sfc' = smosFileCursorInsertEntryBefore sfc
+       in smosFileCursorSelectPrev sfc' `shouldSatisfy` isJust
     it "inserts an entry below the currently selected entry" pending
-  describe "smosFileCursorInsertEntryBeforeAndSelectHeader" $ do
+  describe "smosFileCursorInsertEntryBeforeAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelectHeader
+      producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelect
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryBelow" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelow
+    it "produces a cursor in which you can select below" $ forAllValid $ \sfc ->
+      let sfc' = smosFileCursorInsertEntryBelow sfc
+       in smosFileCursorSelectBelowAtStart sfc' `shouldSatisfy` isJust
     it "inserts an entry below the currently selected entry" pending
-  describe "smosFileCursorInsertEntryBelowAndSelectHeader" $ do
+  describe "smosFileCursorInsertEntryBelowAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBelowAndSelectHeader
+      producesValidsOnValids smosFileCursorInsertEntryBelowAndSelect
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryAfter" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryAfter
+    it "produces a cursor in which you can select the next" $ forAllValid $ \sfc ->
+      let sfc' = smosFileCursorInsertEntryAfter sfc
+       in smosFileCursorSelectNext sfc' `shouldSatisfy` isJust
     it "inserts an entry above the currently selected entry" pending
-  describe "smosFileCursorInsertEntryAfterAndSelectHeader" $ do
+  describe "smosFileCursorInsertEntryAfterAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryAfterAndSelectHeader
+      producesValidsOnValids smosFileCursorInsertEntryAfterAndSelect
     it "inserts an entry above the currently selected entry" pending
   describe "smosFileCursorSwapPrev"
     $ it "produces valid cursors"
@@ -94,3 +106,13 @@ spec = do
       $ forAllValid
       $ \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
     it "produces valid cursors" $ producesValidsOnValids3 smosFileSubtreeSetTodoState
+  describe "smosFileCursorRedo" $ do
+    it "is the inverse of smosFileCursorUndo" $ forAllValid $ \sfc ->
+      case smosFileCursorUndo sfc >>= smosFileCursorRedo of
+        Nothing -> pure ()
+        Just sfc' -> sfc' `shouldBe` sfc
+  describe "smosFileCursorUndo" $ do
+    it "is the inverse of smosFileCursorRedo" $ forAllValid $ \sfc ->
+      case smosFileCursorRedo sfc >>= smosFileCursorUndo of
+        Nothing -> pure ()
+        Just sfc' -> sfc' `shouldBe` sfc
