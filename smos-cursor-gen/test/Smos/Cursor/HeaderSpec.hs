@@ -36,6 +36,10 @@ spec = do
       $ forAllValid
       $ \tsc -> shouldBeValid $ headerCursorAppend '\55810' tsc
     it "produces valid cursors" $ producesValidsOnValids2 headerCursorAppend
+  describe "headerCursorInsertString" $ do
+    it "produces valid cursorsString" $ producesValidsOnValids2 headerCursorInsertString
+  describe "headerCursorAppend" $ do
+    it "produces valid cursorsString" $ producesValidsOnValids2 headerCursorAppendString
   describe "headerCursorRemove"
     $ it "produces valid cursors"
     $ producesValidsOnValids headerCursorRemove

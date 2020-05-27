@@ -9,6 +9,8 @@ module Smos.Cursor.Header
     headerCursorAppend,
     headerCursorInsertString,
     headerCursorAppendString,
+    headerCursorInsertText,
+    headerCursorAppendText,
     headerCursorRemove,
     headerCursorDelete,
     headerCursorSelectStart,
@@ -23,6 +25,8 @@ import Control.Monad
 import Cursor.Text
 import Cursor.Types
 import Data.Maybe
+import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -67,10 +71,16 @@ headerCursorAppend :: Char -> HeaderCursor -> Maybe HeaderCursor
 headerCursorAppend c = headerCursorTextCursorL (textCursorAppend c) >=> constructValid
 
 headerCursorInsertString :: String -> HeaderCursor -> Maybe HeaderCursor
-headerCursorInsertString = undefined
+headerCursorInsertString s = headerCursorTextCursorL (textCursorInsertString s) >=> constructValid
 
 headerCursorAppendString :: String -> HeaderCursor -> Maybe HeaderCursor
-headerCursorAppendString = undefined
+headerCursorAppendString s = headerCursorTextCursorL (textCursorAppendString s) >=> constructValid
+
+headerCursorInsertText :: Text -> HeaderCursor -> Maybe HeaderCursor
+headerCursorInsertText t = headerCursorTextCursorL (textCursorInsertText t) >=> constructValid
+
+headerCursorAppendText :: Text -> HeaderCursor -> Maybe HeaderCursor
+headerCursorAppendText t = headerCursorTextCursorL (textCursorAppendText t) >=> constructValid
 
 headerCursorRemove :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
 headerCursorRemove = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorRemove
