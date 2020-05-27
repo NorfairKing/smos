@@ -8,11 +8,6 @@
     name: "Redundant do"
 - ignore:
     name: "Use ++"
-    within: 
-      - "Smos.Actions.Properties.allPropertiesPlainActions"
-      - "Smos.Actions.Tags.allTagsPlainActions"
-      - "Smos.Actions.Timestamps.allTimestampsPlainActions"
-      - "Smos.GoldenSpec"
 - ignore:
     name: "Use ||"
     within:

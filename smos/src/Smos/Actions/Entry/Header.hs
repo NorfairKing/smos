@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Header
+module Smos.Actions.Entry.Header
   ( allHeaderPlainActions,
     allHeaderUsingCharActions,
     headerInsert,

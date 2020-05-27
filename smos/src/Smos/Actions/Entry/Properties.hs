@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Properties
+module Smos.Actions.Entry.Properties
   ( allPropertiesPlainActions,
     allPropertiesUsingCharActions,
     propertiesToggleSelected,

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Timestamps
+module Smos.Actions.Entry.Timestamps
   ( allTimestampsPlainActions,
     allTimestampsUsingCharActions,
     timestampsSelect,

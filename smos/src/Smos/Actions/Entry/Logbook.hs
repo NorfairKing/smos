@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Logbook
+module Smos.Actions.Entry.Logbook
   ( allLogbookPlainActions,
     allLogbookUsingCharActions,
     logbookClockIn,

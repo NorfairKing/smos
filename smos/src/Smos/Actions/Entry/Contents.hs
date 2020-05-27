@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Contents
+module Smos.Actions.Entry.Contents
   ( allContentsPlainActions,
     allContentsUsingCharActions,
     contentsInsert,

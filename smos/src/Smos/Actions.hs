@@ -6,36 +6,36 @@ module Smos.Actions
     AnyAction (..),
     module Smos.Actions,
     module Smos.Actions.Browser,
-    module Smos.Actions.Contents,
     module Smos.Actions.Convenience,
     module Smos.Actions.Entry,
+    module Smos.Actions.Entry.Contents,
+    module Smos.Actions.Entry.Header,
+    module Smos.Actions.Entry.Logbook,
+    module Smos.Actions.Entry.Properties,
+    module Smos.Actions.Entry.Tags,
+    module Smos.Actions.Entry.Timestamps,
     module Smos.Actions.File,
     module Smos.Actions.Forest,
-    module Smos.Actions.Header,
     module Smos.Actions.Help,
-    module Smos.Actions.Logbook,
-    module Smos.Actions.Properties,
     module Smos.Actions.Report,
-    module Smos.Actions.Tags,
-    module Smos.Actions.Timestamps,
     module Smos.Actions.Undo,
     module Smos.Actions.Utils,
   )
 where
 
 import Smos.Actions.Browser
-import Smos.Actions.Contents
 import Smos.Actions.Convenience
 import Smos.Actions.Entry
+import Smos.Actions.Entry.Contents
+import Smos.Actions.Entry.Header
+import Smos.Actions.Entry.Logbook
+import Smos.Actions.Entry.Properties
+import Smos.Actions.Entry.Tags
+import Smos.Actions.Entry.Timestamps
 import Smos.Actions.File
 import Smos.Actions.Forest
-import Smos.Actions.Header
 import Smos.Actions.Help
-import Smos.Actions.Logbook
-import Smos.Actions.Properties
 import Smos.Actions.Report
-import Smos.Actions.Tags
-import Smos.Actions.Timestamps
 import Smos.Actions.Undo
 import Smos.Actions.Utils
 import Smos.Types

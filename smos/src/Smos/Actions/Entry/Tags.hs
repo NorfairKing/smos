@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Actions.Tags
+module Smos.Actions.Entry.Tags
   ( allTagsPlainActions,
     allTagsUsingCharActions,
     tagsSet,
