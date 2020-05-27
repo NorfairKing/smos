@@ -166,8 +166,8 @@ sortActivations :: [Activation] -> [Activation]
 sortActivations =
   sortOn
     ( \Activation {..} ->
-        ( Ord.Down activationPrecedence,
-          Ord.Down $ length activationMatch,
+        ( Ord.Down $ length activationMatch,
+          Ord.Down activationPrecedence,
           Ord.Down activationPriority
         )
     )
