@@ -15,7 +15,6 @@ spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
   eqSpecOnValid @SmosFileCursor
   genValidSpec @SmosFileCursor
-  lensSpecOnValid smosFileCursorForestCursorHistoryL
   lensSpecOnValid smosFileCursorForestCursorL
   lensSpecOnValid smosFileCursorSelectedEntryL
   describe "makeSmosFileCursor"
@@ -106,13 +105,3 @@ spec = modifyMaxShrinks (const 1) $ do
       $ forAllValid
       $ \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
     it "produces valid cursors" $ producesValidsOnValids3 smosFileSubtreeSetTodoState
-  describe "smosFileCursorRedo" $ do
-    it "is the inverse of smosFileCursorUndo" $ forAllValid $ \sfc ->
-      case smosFileCursorUndo sfc >>= smosFileCursorRedo of
-        Nothing -> pure ()
-        Just sfc' -> sfc' `shouldBe` sfc
-  describe "smosFileCursorUndo" $ do
-    it "is the inverse of smosFileCursorRedo" $ forAllValid $ \sfc ->
-      case smosFileCursorRedo sfc >>= smosFileCursorUndo of
-        Nothing -> pure ()
-        Just sfc' -> sfc' `shouldBe` sfc

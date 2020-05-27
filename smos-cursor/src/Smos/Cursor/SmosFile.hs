@@ -7,7 +7,6 @@ module Smos.Cursor.SmosFile
     rebuildSmosFileCursor,
     rebuildSmosFileCursorEntirely,
     startSmosFile,
-    smosFileCursorForestCursorHistoryL,
     smosFileCursorForestCursorL,
     smosFileCursorSelectedEntryL,
     smosFileCursorEntrySelectionL,
@@ -42,8 +41,6 @@ module Smos.Cursor.SmosFile
     smosFileCursorClockOutEverywhereAndClockInHere,
     smosFileCursorUpdateTime,
     smosFileSubtreeSetTodoState,
-    smosFileCursorUndo,
-    smosFileCursorRedo,
   )
 where
 
@@ -70,7 +67,7 @@ type FC = ForestCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
 
 newtype SmosFileCursor
   = SmosFileCursor
-      { smosFileCursorForestCursorHistory :: History FC
+      { smosFileCursorForestCursor :: FC
       }
   deriving (Show, Eq, Generic)
 
@@ -78,16 +75,12 @@ instance Validity SmosFileCursor
 
 instance NFData SmosFileCursor
 
-smosFileCursorForestCursorHistoryL :: Lens' SmosFileCursor (History FC)
-smosFileCursorForestCursorHistoryL = lens smosFileCursorForestCursorHistory $ \sfc hc -> sfc {smosFileCursorForestCursorHistory = hc}
-
 smosFileCursorForestCursorL :: Lens' SmosFileCursor FC
-smosFileCursorForestCursorL = smosFileCursorForestCursorHistoryL . historyPresentL
+smosFileCursorForestCursorL = lens smosFileCursorForestCursor $ \sfc fc -> sfc {smosFileCursorForestCursor = fc}
 
 makeSmosFileCursor :: NonEmpty (Tree Entry) -> SmosFileCursor
 makeSmosFileCursor =
   SmosFileCursor
-    . startingHistory
     . makeForestCursor (collapseEntryValueL %~ makeEntryCursor)
     . NE.map (fmap makeCollapseEntry . makeCTree)
 
@@ -98,8 +91,7 @@ rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor =
   NE.map (rebuildCTree . fmap rebuildCollapseEntry)
     . rebuildForestCursor (collapseEntryValueL %~ rebuildEntryCursor)
-    . historyPresent
-    . smosFileCursorForestCursorHistory
+    . smosFileCursorForestCursor
 
 rebuildSmosFileCursorEntirely :: SmosFileCursor -> SmosFile
 rebuildSmosFileCursorEntirely = SmosFile . NE.toList . rebuildSmosFileCursor
@@ -289,30 +281,8 @@ smosFileSubtreeSetTodoState now mts = smosFileCursorForestCursorL . forestCursor
             )
             ce
 
-smosFileCursorRedo :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorRedo = smosFileCursorForestCursorHistoryL historyRedo
-
-smosFileCursorUndo :: SmosFileCursor -> Maybe SmosFileCursor
-smosFileCursorUndo = smosFileCursorForestCursorHistoryL historyUndo
-
 rebuild :: CollapseEntry EntryCursor -> CollapseEntry Entry
 rebuild = collapseEntryValueL %~ rebuildEntryCursor
 
 make :: CollapseEntry Entry -> CollapseEntry EntryCursor
 make = collapseEntryValueL %~ makeEntryCursor
-
-withHistoryM :: (SmosFileCursor -> Maybe SmosFileCursor) -> SmosFileCursor -> Maybe SmosFileCursor
-withHistoryM func sf = do
-  sf' <- func sf
-  -- The inner funcion will have modified the present but not but not the undo stack.
-  -- We will pick it out and use historyPush instead.
-  let changed = historyPresent $ smosFileCursorForestCursorHistory sf'
-  pure SmosFileCursor {smosFileCursorForestCursorHistory = historyPush changed (smosFileCursorForestCursorHistory sf)}
-
-withHistory :: (SmosFileCursor -> SmosFileCursor) -> SmosFileCursor -> SmosFileCursor
-withHistory func sf =
-  let sf' = func sf
-      -- The inner funcion will have modified the present but not but not the undo stack.
-      -- We will pick it out and use historyPush instead.
-      changed = historyPresent $ smosFileCursorForestCursorHistory sf'
-   in SmosFileCursor {smosFileCursorForestCursorHistory = historyPush changed (smosFileCursorForestCursorHistory sf)}
