@@ -66,7 +66,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
           maybe
             (drawInfo configKeyMap)
             (drawFileCursor $ selectWhen FileSelected)
-            editorCursorFileCursor
+            (historyPresent editorCursorFileCursor)
       browserCursorWidget =
         withHeading (str "File Browser") $
           maybe
@@ -299,8 +299,7 @@ drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
   fmap (viewport ResourceViewport Vertical)
     . verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
-    . historyPresent
-    . smosFileCursorForestCursorHistory
+    . smosFileCursorForestCursor
 
 drawSmosTreeCursor ::
   Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer

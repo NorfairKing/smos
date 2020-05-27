@@ -7,6 +7,8 @@ module Smos.Cursor.Header
     rebuildHeaderCursor,
     headerCursorInsert,
     headerCursorAppend,
+    headerCursorInsertString,
+    headerCursorAppendString,
     headerCursorRemove,
     headerCursorDelete,
     headerCursorSelectStart,
@@ -63,6 +65,12 @@ headerCursorInsert c = headerCursorTextCursorL (textCursorInsert c) >=> construc
 
 headerCursorAppend :: Char -> HeaderCursor -> Maybe HeaderCursor
 headerCursorAppend c = headerCursorTextCursorL (textCursorAppend c) >=> constructValid
+
+headerCursorInsertString :: String -> HeaderCursor -> Maybe HeaderCursor
+headerCursorInsertString = undefined
+
+headerCursorAppendString :: String -> HeaderCursor -> Maybe HeaderCursor
+headerCursorAppendString = undefined
 
 headerCursorRemove :: HeaderCursor -> Maybe (DeleteOrUpdate HeaderCursor)
 headerCursorRemove = focusPossibleDeleteOrUpdate headerCursorTextCursorL textCursorRemove

@@ -19,6 +19,7 @@ import Path
 import Path.IO
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.History
 import Smos.Types
 import qualified System.FileLock as FL
 
@@ -83,7 +84,7 @@ switchToCursor path msfc = do
           smosStateFilePath = path,
           smosStateFileLock = fl,
           smosStateCursor =
-            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = msfc},
+            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = startingHistory msfc},
           smosStateUnsavedChanges = False,
           smosStateLastSaved = now
         }

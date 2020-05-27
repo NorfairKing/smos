@@ -8,9 +8,11 @@ module Smos.Actions.Convenience
   )
 where
 
+import Control.Category ((>>>))
 import Control.Monad
+import Data.Maybe
 import Data.Time
-import Lens.Micro.Extras
+import Lens.Micro
 import Smos.Actions.Entry
 import Smos.Actions.Forest
 import Smos.Actions.Utils
@@ -38,34 +40,27 @@ convRepinged :: Action
 convRepinged =
   Action
     { actionName = "convRepinged",
-      actionFunc = do
-        me <-
-          gets
-            ( fmap (rebuildEntryCursor . view smosFileCursorSelectedEntryL)
-                . view editorCursorSmosFileCursorL
-                . smosStateCursor
-            )
-        case me of
-          Nothing -> pure ()
-          Just e -> do
-            modifyMTodoStateM $ const $ Just "DONE"
-            modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
-            insertHeaderString "Ping again"
-            modifyMTodoStateM $ const $ Just "DONE"
-            modifyFileCursor smosFileCursorInsertEntryAfterAndSelectHeader
-            now <- liftIO getCurrentTime
-            let e' =
-                  e
-                    { entryStateHistory =
-                        StateHistory
-                          [ StateHistoryEntry
-                              { stateHistoryEntryNewState = entryState e,
-                                stateHistoryEntryTimestamp = now
-                              }
-                          ]
-                    }
-            modifyEntryCursor $ const $ makeEntryCursor e'
-            modifyEntryCursor entryCursorSelectWhole,
+      actionFunc = modifyFileCursorS $ \sfc -> do
+        let e = rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
+        now <- liftIO getCurrentTime
+        let f1 = (smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE")
+            f2 = smosFileCursorInsertEntryAfterAndSelectHeader
+            f3 = smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Ping again" hc)
+            f4 = (smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE")
+            f5 = smosFileCursorInsertEntryAfterAndSelectHeader
+            e' =
+              e
+                { entryStateHistory =
+                    StateHistory
+                      [ StateHistoryEntry
+                          { stateHistoryEntryNewState = entryState e,
+                            stateHistoryEntryTimestamp = now
+                          }
+                      ]
+                }
+            f6 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
+            f7 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
+        pure $ (f1 >>> f2 >>> f3 >>> f4 >>> f5 >>> f6 >>> f7) sfc,
       actionDescription =
         "Mark the current task as 'done', add a new entry called 'Ping again' and add a new WAITING entry below that, that duplicates the original entry."
     }

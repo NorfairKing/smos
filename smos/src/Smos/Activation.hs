@@ -14,6 +14,7 @@ import Import
 import Lens.Micro
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
+import Smos.History
 import Smos.Keys
 import Smos.Types
 
@@ -34,7 +35,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
           with :: KeyMappings -> [(Precedence, KeyMapping)]
           with specificMappings =
             map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers ++ map ((,) AnyMatcher) keyMapAnyKeyMap
-       in case editorCursorFileCursor of
+       in case historyPresent editorCursorFileCursor of
             Nothing -> with fileKeyMapEmptyMatchers
             Just sfc ->
               case sfc ^. smosFileCursorEntrySelectionL of

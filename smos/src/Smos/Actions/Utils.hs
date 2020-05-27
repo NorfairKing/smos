@@ -46,6 +46,7 @@ import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
 import Smos.Data
+import Smos.History
 import Smos.Types
 
 modifyHeaderCursorWhenSelectedMD ::
@@ -250,7 +251,9 @@ modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
 modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorMS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
+modifyMFileCursorMS func = modifyEditorCursorS $ \ec -> do
+  msfch' <- historyModM func (editorCursorFileCursor ec)
+  pure $ ec {editorCursorFileCursor = msfch'}
 
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc

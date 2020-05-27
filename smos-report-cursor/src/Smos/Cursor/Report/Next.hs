@@ -17,7 +17,6 @@ import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 import Smos.Data
-import Smos.History
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Next
@@ -45,7 +44,7 @@ nextActionReportCursorBuildSmosFileCursor =
   go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
   where
     go :: ForestCursor Entry Entry -> SmosFileCursor
-    go = SmosFileCursor . startingHistory . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+    go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath narc =

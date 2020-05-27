@@ -6,6 +6,7 @@ module Smos.HistorySpec
 where
 
 import Control.Monad
+import Cursor.List.NonEmpty
 import Data.Maybe
 import GHC.Generics (Generic)
 import Smos.History
@@ -50,3 +51,25 @@ spec = do
           Just us' -> case historyRedo us' of
             Nothing -> pure () -- Stack too shont to check anything.
             Just us'' -> us'' `shouldBe` us
+  describe "historyMod" $ do
+    let f i = historyMod (+ (i :: Int))
+    it "produces valid results for addition" $ forAllValid $ \i -> producesValidsOnValids (historyMod (+ (i :: Int)))
+    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h ->
+      let h' = historyMod (+ (i :: Int)) h
+          undoStackLength = length . nonEmptyCursorPrev . historyNonEmptyCursor
+       in undoStackLength h' `shouldBe` (undoStackLength h + 1)
+  describe "historyModM" $ do
+    let f i =
+          historyModM
+            ( \j -> case (j :: Int) of
+                0 -> Nothing
+                _ -> Just $ i `div` j
+            )
+    it "produces valid results for division with Maybe" $ forAllValid $ \i ->
+      producesValidsOnValids (f i)
+    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
+      let mh' = f i h
+          undoStackLength = length . nonEmptyCursorPrev . historyNonEmptyCursor
+      case mh' of
+        Nothing -> pure ()
+        Just h' -> undoStackLength h' `shouldBe` (undoStackLength h + 1)

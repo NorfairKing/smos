@@ -7,6 +7,8 @@ module Smos.History
     startingHistory,
     historyPresent,
     historyPush,
+    historyMod,
+    historyModM,
     historyUndo,
     historyRedo,
   )
@@ -19,6 +21,8 @@ import GHC.Generics (Generic)
 import Lens.Micro
 
 -- | An simple state-based history for a state 's'
+--
+-- TODO: make this bounded?
 newtype History s
   = History {historyNonEmptyCursor :: NonEmptyCursor s}
   deriving (Show, Eq, Generic)
@@ -27,9 +31,15 @@ instance Validity s => Validity (History s)
 
 instance NFData s => NFData (History s)
 
+-- |
+--
+-- NOTE: this lens does _NOT_ record history.
 historyNonEmptyCursorL :: Lens' (History s) (NonEmptyCursor s)
 historyNonEmptyCursorL = lens historyNonEmptyCursor $ \h lc -> h {historyNonEmptyCursor = lc}
 
+-- |
+--
+-- NOTE: this lens does _NOT_ record history.
 historyPresentL :: Lens' (History s) s
 historyPresentL = historyNonEmptyCursorL . nonEmptyCursorElemL
 
@@ -47,6 +57,14 @@ historyPush s h =
           { nonEmptyCursorNext = []
           }
     }
+
+historyMod :: (s -> s) -> History s -> History s
+historyMod func h =
+  historyPush (func (historyPresent h)) h
+
+historyModM :: Functor f => (s -> f s) -> History s -> f (History s)
+historyModM func h =
+  (\s' -> historyPush s' h) <$> func (historyPresent h)
 
 historyUndo :: History s -> Maybe (History s)
 historyUndo = historyNonEmptyCursorL nonEmptyCursorSelectPrev
