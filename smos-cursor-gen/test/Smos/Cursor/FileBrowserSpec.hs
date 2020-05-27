@@ -2,6 +2,7 @@
 
 module Smos.Cursor.FileBrowserSpec where
 
+import Path.IO
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.FileBrowser.Gen ()
 import Smos.Data.Gen ()
@@ -31,3 +32,13 @@ spec = do
   describe "fileBrowserCursorToggleRecursively"
     $ it "produces valid cursors"
     $ producesValidsOnValids fileBrowserCursorToggleRecursively
+  describe "fileBrowserRmEmptyDir"
+    $ it "produces the same result as if I had reread the cursor"
+    $ withSystemTempDir "smos-cursor-test-filebrowser"
+    $ \tdir -> do
+      dirToDelete <- resolveDir tdir "dir-to-delete"
+      ensureDir dirToDelete
+      fbc <- startFileBrowserCursor tdir
+      fbc' <- fileBrowserRmEmptyDir fbc
+      fbc'' <- startFileBrowserCursor tdir
+      rebuildFileBrowserCursor fbc' `shouldBe` rebuildFileBrowserCursor fbc''

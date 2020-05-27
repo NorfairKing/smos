@@ -44,13 +44,15 @@ tests:
     dependencies:
     - QuickCheck
     - cursor
-    - cursor-gen
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
+    - cursor-gen
     - genvalidity-hspec
     - genvalidity-hspec-optics
     - hspec
     - hspec-core
+    - path
+    - path-io
     - pretty-show
     - smos-cursor
     - smos-cursor-gen

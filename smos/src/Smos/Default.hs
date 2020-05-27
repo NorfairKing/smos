@@ -222,6 +222,9 @@ defaultBrowserKeyMap =
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
       exactKey KBackTab browserToggleCollapseRecursively,
+      exactString "ded" browserRemoveEmptyDir,
+      exactChar 'u' browserUndo,
+      exactChar 'r' browserRedo,
       exactKey KEsc selectEditor
     ]
 

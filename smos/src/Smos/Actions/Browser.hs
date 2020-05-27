@@ -10,7 +10,12 @@ module Smos.Actions.Browser
     browserSelectNext,
     browserToggleCollapse,
     browserToggleCollapseRecursively,
+    browserRemoveEmptyDir,
     browserEnter,
+    browserUndo,
+    browserUndoAny,
+    browserRedo,
+    browserRedoAny,
   )
 where
 
@@ -32,7 +37,12 @@ allPlainBrowserActions =
     browserSelectNext,
     browserToggleCollapse,
     browserToggleCollapseRecursively,
-    browserEnter
+    browserEnter,
+    browserRemoveEmptyDir,
+    browserUndo,
+    browserUndoAny,
+    browserRedo,
+    browserRedoAny
   ]
 
 allBrowserUsingCharActions :: [ActionUsing Char]
@@ -123,4 +133,44 @@ selectBrowserHelper dirName dirFunc =
               editorCursorSelection = BrowserSelected
             },
       actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
+    }
+
+browserRemoveEmptyDir :: Action
+browserRemoveEmptyDir =
+  Action
+    { actionName = "browserRemoveEmptyDir",
+      actionFunc = modifyFileBrowserCursorS fileBrowserRmEmptyDir,
+      actionDescription = "Remove the currently selected empty directory. This does nothing if the directory is not empty."
+    }
+
+browserUndo :: Action
+browserUndo =
+  Action
+    { actionName = "browserUndo",
+      actionFunc = modifyFileBrowserCursorSM fileBrowserUndo,
+      actionDescription = "Undo the last action non-movement action in the file browser."
+    }
+
+browserUndoAny :: Action
+browserUndoAny =
+  Action
+    { actionName = "browserUndoAny",
+      actionFunc = modifyFileBrowserCursorSM fileBrowserUndoAny,
+      actionDescription = "Undo the last action in the file browser, even if it was a movement."
+    }
+
+browserRedo :: Action
+browserRedo =
+  Action
+    { actionName = "browserRedo",
+      actionFunc = modifyFileBrowserCursorSM fileBrowserRedo,
+      actionDescription = "Redo the last non-movement action in the file browser."
+    }
+
+browserRedoAny :: Action
+browserRedoAny =
+  Action
+    { actionName = "browserRedoAny",
+      actionFunc = modifyFileBrowserCursorSM fileBrowserRedoAny,
+      actionDescription = "Redo the last action in the file browser, even if it was a movement."
     }

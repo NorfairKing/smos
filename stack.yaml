@@ -96,7 +96,7 @@ extra-deps:
     - genvalidity-dirforest
 
 - github: NorfairKing/cursor-dirforest
-  commit: 96a33d84f5b96b753dc763b7535512fab9107f9c
+  commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
@@ -108,7 +108,7 @@ extra-deps:
     - cursor-brick
 
 - github: NorfairKing/cursor
-  commit: fe8db0a1db98bc3cf858692f8f4c252668556ee3
+  commit: ea6724d2a0127614e9062a5ea53de8f042506dd0
   subdirs:
     - cursor
     - cursor-gen

@@ -48,6 +48,7 @@ import Smos.Keys
 import Smos.Report.Path
 import Smos.Style
 import Smos.Types
+import Smos.Undo
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
@@ -225,12 +226,22 @@ drawDebug SmosState {..} =
         [ hBorderWithLabel (str "[ Debug ]"),
           str "Key history: " <+> drawHistory smosStateKeyHistory,
           str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
-          let h = editorCursorFileCursor smosStateCursor
-           in vBox
-                [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
-                  str "Redo stack length: " <+> str (show (historyRedoLength h)),
-                  str (ppShow h)
-                ]
+          case editorCursorSelection smosStateCursor of
+            FileSelected ->
+              let h = editorCursorFileCursor smosStateCursor
+               in vBox
+                    [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
+                      str "Redo stack length: " <+> str (show (historyRedoLength h))
+                    ]
+            BrowserSelected -> case editorCursorBrowserCursor smosStateCursor of
+              Nothing -> emptyWidget
+              Just fbc ->
+                let us = fileBrowserCursorUndoStack fbc
+                 in vBox
+                      [ str "Undo stack length: " <+> str (show (undoStackUndoLength us)),
+                        str "Redo stack length: " <+> str (show (undoStackRedoLength us))
+                      ]
+            _ -> emptyWidget
         ]
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)

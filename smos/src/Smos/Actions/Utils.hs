@@ -271,6 +271,12 @@ modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ 
 modifyFileBrowserCursor :: (FileBrowserCursor -> FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursor func = modifyMFileBrowserCursorM $ fmap func
 
+modifyFileBrowserCursorSM :: (FileBrowserCursor -> Maybe (SmosM FileBrowserCursor)) -> SmosM ()
+modifyFileBrowserCursorSM func = modifyFileBrowserCursorS $ \fbc -> fromMaybe (pure fbc) (func fbc)
+
+modifyFileBrowserCursorS :: (FileBrowserCursor -> SmosM FileBrowserCursor) -> SmosM ()
+modifyFileBrowserCursorS func = modifyMFileBrowserCursorMS $ mapM func
+
 modifyMFileBrowserCursorM :: (Maybe FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyMFileBrowserCursorM func = modifyMFileBrowserCursorMS $ pure . func
 
