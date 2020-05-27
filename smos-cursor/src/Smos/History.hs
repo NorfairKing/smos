@@ -56,7 +56,7 @@ historyPush :: s -> History s -> History s
 historyPush s h =
   h
     { historyNonEmptyCursor =
-        (nonEmptyCursorInsert s (historyNonEmptyCursor h))
+        (nonEmptyCursorAppendAndSelect s (historyNonEmptyCursor h))
           { nonEmptyCursorNext = []
           }
     }
@@ -79,4 +79,4 @@ historyUndoLength :: History s -> Word
 historyUndoLength = fromIntegral . length . nonEmptyCursorPrev . historyNonEmptyCursor
 
 historyRedoLength :: History s -> Word
-historyRedoLength = fromIntegral . length . nonEmptyCursorPrev . historyNonEmptyCursor
+historyRedoLength = fromIntegral . length . nonEmptyCursorNext . historyNonEmptyCursor

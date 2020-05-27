@@ -30,6 +30,9 @@ spec = do
        in case historyRedo us' of
             Nothing -> pure () -- Great
             Just _ -> expectationFailure "The undo stack should have been empty."
+    it "replaces the current present" $ forAllValid $ \i -> forAllValid $ \h ->
+      let h' = historyPush @Int i h
+       in historyPresent h' `shouldBe` i
   describe "historyUndo" $ do
     it "produces valid results" $ producesValidsOnValids (historyUndo @Int)
     it "is the inverse of historyRedo for the history"
@@ -54,9 +57,12 @@ spec = do
   describe "historyMod" $ do
     let f i = historyMod (+ (i :: Int))
     it "produces valid results for addition" $ forAllValid $ \i -> producesValidsOnValids (historyMod (+ (i :: Int)))
-    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h ->
+    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
       let h' = historyMod (+ (i :: Int)) h
-       in historyUndoLength h' `shouldBe` (historyUndoLength h + 1)
+      historyUndoLength h' `shouldBe` (historyUndoLength h + 1)
+    it "produces a history with a 0 length redo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
+      let h' = historyMod (+ (i :: Int)) h
+      historyRedoLength h' `shouldBe` 0
   describe "historyModM" $ do
     let f i =
           historyModM
@@ -66,10 +72,13 @@ spec = do
             )
     it "produces valid results for division with Maybe" $ forAllValid $ \i ->
       producesValidsOnValids (f i)
-    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h -> do
-      let mh' = f i h
-      case mh' of
+    it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h ->
+      case f i h of
         Nothing -> pure ()
         Just h' -> historyUndoLength h' `shouldBe` (historyUndoLength h + 1)
+    it "produces a history with a 0 length redo stack" $ forAllValid $ \i -> forAllValid $ \h ->
+      case f i h of
+        Nothing -> pure ()
+        Just h' -> historyRedoLength h' `shouldBe` 0
   describe "historyUndoLength" $ it "produces valid words" $ producesValidsOnValids (historyUndoLength @Int)
   describe "historyRedoLength" $ it "produces valid words" $ producesValidsOnValids (historyRedoLength @Int)
