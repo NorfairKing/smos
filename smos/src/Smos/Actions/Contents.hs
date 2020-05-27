@@ -42,7 +42,9 @@ contentsInsert :: ActionUsing Char
 contentsInsert =
   ActionUsing
     { actionUsingName = "contentsInsert",
-      actionUsingFunc = \c -> modifyMContentsCursorWhenSelectedM (contentsCursorInsertChar c),
+      actionUsingFunc = \c -> do
+        modifyMContentsCursorWhenSelectedM (contentsCursorInsertChar c)
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character into the contents in front of the cursor"
     }
 
@@ -50,7 +52,9 @@ contentsInsertNewline :: Action
 contentsInsertNewline =
   Action
     { actionName = "contentsInsertNewline",
-      actionFunc = modifyMContentsCursorWhenSelected contentsCursorInsertNewline,
+      actionFunc = do
+        modifyMContentsCursorWhenSelected contentsCursorInsertNewline
+        unrecordFileCursorHistory,
       actionDescription = "Insert a newline into the contents in front of the cursor"
     }
 
@@ -58,7 +62,9 @@ contentsAppend :: ActionUsing Char
 contentsAppend =
   ActionUsing
     { actionUsingName = "contentsAppend",
-      actionUsingFunc = \c -> modifyMContentsCursorWhenSelectedM (contentsCursorAppendChar c),
+      actionUsingFunc = \c -> do
+        modifyMContentsCursorWhenSelectedM (contentsCursorAppendChar c)
+        unrecordFileCursorHistory,
       actionUsingDescription = "Append a character into the contents in front of the cursor"
     }
 
@@ -66,7 +72,9 @@ contentsAppendNewline :: Action
 contentsAppendNewline =
   Action
     { actionName = "contentsAppendNewline",
-      actionFunc = modifyMContentsCursorWhenSelected contentsCursorAppendNewline,
+      actionFunc = do
+        modifyMContentsCursorWhenSelected contentsCursorAppendNewline
+        unrecordFileCursorHistory,
       actionDescription = "Append a newline into the contents in front of the cursor"
     }
 
@@ -74,7 +82,9 @@ contentsRemove :: Action
 contentsRemove =
   Action
     { actionName = "contentsRemove",
-      actionFunc = modifyContentsCursorWhenSelectedDM contentsCursorRemove,
+      actionFunc = do
+        modifyContentsCursorWhenSelectedDM contentsCursorRemove
+        unrecordFileCursorHistory,
       actionDescription = "Remove a character from the contents"
     }
 
@@ -82,7 +92,9 @@ contentsDelete :: Action
 contentsDelete =
   Action
     { actionName = "contentsDelete",
-      actionFunc = modifyContentsCursorWhenSelectedDM contentsCursorDelete,
+      actionFunc = do
+        modifyContentsCursorWhenSelectedDM contentsCursorDelete
+        unrecordFileCursorHistory,
       actionDescription = "Remove a character from the contents"
     }
 

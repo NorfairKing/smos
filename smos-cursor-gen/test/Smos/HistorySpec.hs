@@ -81,3 +81,4 @@ spec = do
         Just h' -> historyRedoLength h' `shouldBe` 0
   describe "historyUndoLength" $ it "produces valid words" $ producesValidsOnValids (historyUndoLength @Int)
   describe "historyRedoLength" $ it "produces valid words" $ producesValidsOnValids (historyRedoLength @Int)
+  describe "historyForget" $ it "produces valid histories" $ producesValidsOnValids (historyForgetLatest @Int)

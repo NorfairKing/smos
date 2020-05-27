@@ -28,7 +28,9 @@ headerInsert :: ActionUsing Char
 headerInsert =
   ActionUsing
     { actionUsingName = "headerInsert",
-      actionUsingFunc = \c -> modifyHeaderCursorWhenSelectedM $ headerCursorInsert c,
+      actionUsingFunc = \c -> do
+        modifyHeaderCursorWhenSelectedM $ headerCursorInsert c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character into the header in front of the cursor"
     }
 
@@ -36,7 +38,9 @@ headerAppend :: ActionUsing Char
 headerAppend =
   ActionUsing
     { actionUsingName = "headerAppend",
-      actionUsingFunc = \c -> modifyHeaderCursorWhenSelectedM $ headerCursorAppend c,
+      actionUsingFunc = \c -> do
+        modifyHeaderCursorWhenSelectedM $ headerCursorAppend c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Append a character into the header in front of the cursor"
     }
 
@@ -44,7 +48,9 @@ headerRemove :: Action
 headerRemove =
   Action
     { actionName = "headerRemove",
-      actionFunc = modifyHeaderCursorWhenSelectedMD headerCursorRemove,
+      actionFunc = do
+        modifyHeaderCursorWhenSelectedMD headerCursorRemove
+        unrecordFileCursorHistory,
       actionDescription = "Remove a character from the header"
     }
 
@@ -52,7 +58,9 @@ headerDelete :: Action
 headerDelete =
   Action
     { actionName = "headerDelete",
-      actionFunc = modifyHeaderCursorWhenSelectedMD headerCursorDelete,
+      actionFunc = do
+        modifyHeaderCursorWhenSelectedMD headerCursorDelete
+        unrecordFileCursorHistory,
       actionDescription = "Remove a character from the header"
     }
 

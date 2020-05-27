@@ -1,0 +1,13 @@
+before:
+- hello world
+commands:
+- entrySelectContents
+- contentsInsert h
+- contentsInsert e
+- contentsInsert l
+- contentsInsert l
+- contentsInsert o
+- entrySelectWhole
+- undo
+after:
+- hello world

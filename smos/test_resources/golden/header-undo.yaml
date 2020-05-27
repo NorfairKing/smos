@@ -1,0 +1,11 @@
+before: []
+commands:
+- startHeaderFromEmptyAndSelectHeader
+- headerInsert h
+- headerInsert e
+- headerInsert l
+- headerInsert l
+- headerInsert o
+- entrySelectWhole
+- undo
+after: []

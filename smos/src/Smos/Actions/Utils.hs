@@ -253,6 +253,9 @@ modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
 modifyMFileCursorMS func = modifyMFileCursorMHistoryS $ historyModM func -- Record history
 
+unrecordFileCursorHistory :: SmosM ()
+unrecordFileCursorHistory = modifyMFileCursorMHistoryM historyForgetLatest
+
 modifyMFileCursorMHistoryM :: (History (Maybe SmosFileCursor) -> Maybe (History (Maybe SmosFileCursor))) -> SmosM ()
 modifyMFileCursorMHistoryM func = modifyMFileCursorMHistory $ \h -> fromMaybe h $ func h
 

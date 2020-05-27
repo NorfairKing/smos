@@ -228,7 +228,8 @@ drawDebug SmosState {..} =
           let h = editorCursorFileCursor smosStateCursor
            in vBox
                 [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
-                  str "Redo stack length: " <+> str (show (historyRedoLength h))
+                  str "Redo stack length: " <+> str (show (historyRedoLength h)),
+                  str (ppShow h)
                 ]
         ]
 

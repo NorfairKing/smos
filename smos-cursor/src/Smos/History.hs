@@ -13,11 +13,14 @@ module Smos.History
     historyRedo,
     historyUndoLength,
     historyRedoLength,
+    historyForgetLatest,
   )
 where
 
 import Control.DeepSeq
+import Control.Monad
 import Cursor.Simple.List.NonEmpty
+import Cursor.Types
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -79,3 +82,7 @@ historyUndoLength = fromIntegral . length . nonEmptyCursorPrev . historyNonEmpty
 
 historyRedoLength :: History s -> Word
 historyRedoLength = fromIntegral . length . nonEmptyCursorNext . historyNonEmptyCursor
+
+-- Nothing if there was nothing to forgot.
+historyForgetLatest :: History s -> Maybe (History s)
+historyForgetLatest = historyNonEmptyCursorL $ nonEmptyCursorSelectPrev >=> dullMDelete . nonEmptyCursorDeleteElemAndSelectNext
