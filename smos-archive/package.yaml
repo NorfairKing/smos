@@ -25,6 +25,7 @@ library:
     - validity
     - yamlparse-applicative
     - smos-data
+    - exceptions
 
 executables:
   smos-archive:
