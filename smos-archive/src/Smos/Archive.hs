@@ -6,7 +6,13 @@ module Smos.Archive
   ( smosArchive,
 
     -- ** Helper functions
+    destinationFile,
+    checkFromFile,
+    ArchiveCheckResult (..),
+    dealWithArchiveCheckResult,
     moveToArchive,
+    ArchiveMoveResult (..),
+    dealWithArchiveMoveResult,
     isDone,
     prepareToArchive,
   )
@@ -37,8 +43,8 @@ archive :: Path Abs File -> Q ()
 archive from = do
   to <- determineToFile from
   liftIO $ do
-    checkFromFile from >>= dealWithArchiveCheckResult from
-    moveToArchive from to >>= dealWithArchiveMoveResult from
+    sf <- checkFromFile from >>= dealWithArchiveCheckResult from
+    moveToArchive from to sf >>= dealWithArchiveMoveResult
 
 determineToFile :: Path Abs File -> Q (Path Abs File)
 determineToFile file = do
@@ -84,8 +90,8 @@ instance Exception NotInWorkflowDir where
 data ArchiveCheckResult
   = CheckFileToArchiveDoesNotExist
   | CheckNotASmosFile String
-  | NotAllDone
-  | ReadyToArchive
+  | NotAllDone SmosFile
+  | ReadyToArchive SmosFile
 
 checkFromFile :: Path Abs File -> IO ArchiveCheckResult
 checkFromFile from = do
@@ -96,15 +102,15 @@ checkFromFile from = do
     Just (Right sf) ->
       let allDone = all (maybe True isDone . entryState) (concatMap flatten (smosFileForest sf))
        in if allDone
-            then ReadyToArchive
-            else NotAllDone
+            then ReadyToArchive sf
+            else NotAllDone sf
 
-dealWithArchiveCheckResult :: Path Abs File -> ArchiveCheckResult -> IO ()
+dealWithArchiveCheckResult :: Path Abs File -> ArchiveCheckResult -> IO SmosFile
 dealWithArchiveCheckResult from = \case
-  ReadyToArchive -> pure ()
+  ReadyToArchive sf -> pure sf
   CheckFileToArchiveDoesNotExist -> die $ unwords ["File does not exist:", fromAbsFile from]
   CheckNotASmosFile err -> die $ unlines [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
-  NotAllDone -> do
+  NotAllDone sf -> do
     res <-
       promptYesNo No $
         unlines
@@ -113,7 +119,7 @@ dealWithArchiveCheckResult from = \case
             "All remaining non-done entries will be set to CANCELLED."
           ]
     case res of
-      Yes -> pure ()
+      Yes -> pure sf
       No -> die "Not archiving."
 
 isDone :: TodoState -> Bool
@@ -123,35 +129,26 @@ isDone "FAILED" = True
 isDone _ = False
 
 data ArchiveMoveResult
-  = MoveFileToArchiveDoesNotExist
-  | MoveNotASmosFile String
-  | MoveDestinationAlreadyExists (Path Abs File)
+  = MoveDestinationAlreadyExists (Path Abs File)
   | ArchivedSuccesfully
   deriving (Show, Eq)
 
-moveToArchive :: Path Abs File -> Path Abs File -> IO ArchiveMoveResult
-moveToArchive from to = do
+moveToArchive :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
+moveToArchive from to sf = do
   ensureDir $ parent to
-  mErrOrSmosFile <- readSmosFile from
-  case mErrOrSmosFile of
-    Nothing -> pure MoveFileToArchiveDoesNotExist
-    Just (Left err) -> pure $ MoveNotASmosFile err
-    Just (Right sf) -> do
-      e2 <- doesFileExist to
-      if e2
-        then pure $ MoveDestinationAlreadyExists to
-        else do
-          now <- liftIO getCurrentTime
-          let archivedSmosFile = prepareToArchive now sf
-          writeSmosFile to archivedSmosFile
-          removeFile from
-          pure ArchivedSuccesfully
+  e2 <- doesFileExist to
+  if e2
+    then pure $ MoveDestinationAlreadyExists to
+    else do
+      now <- liftIO getCurrentTime
+      let archivedSmosFile = prepareToArchive now sf
+      liftIO $ writeSmosFile to archivedSmosFile
+      removeFile from
+      pure ArchivedSuccesfully
 
-dealWithArchiveMoveResult :: Path Abs File -> ArchiveMoveResult -> IO ()
-dealWithArchiveMoveResult from = \case
+dealWithArchiveMoveResult :: ArchiveMoveResult -> IO ()
+dealWithArchiveMoveResult = \case
   ArchivedSuccesfully -> pure ()
-  MoveFileToArchiveDoesNotExist -> die $ unwords ["File does not exist:", fromAbsFile from]
-  MoveNotASmosFile err -> die $ unlines [unwords ["The file to archive doesn't look like a smos file:", fromAbsFile from], err]
   MoveDestinationAlreadyExists dest -> die $ unlines ["The destination file already exists:", fromAbsFile dest]
 
 prepareToArchive :: UTCTime -> SmosFile -> SmosFile

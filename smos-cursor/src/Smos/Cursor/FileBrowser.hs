@@ -8,11 +8,14 @@ import Cursor.Simple.DirForest
 import Cursor.Types
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
+import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
 import Path.IO
+import Smos.Archive as Archive
+import Smos.Data
 import Smos.Undo
 
 data FileBrowserCursor
@@ -98,6 +101,37 @@ fileBrowserRmEmptyDir fbc =
                       }
                 _ -> pure fbc -- The dir is not empty, do nothing
 
+fileBrowserArchiveFile :: MonadIO m => Path Abs Dir -> Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
+fileBrowserArchiveFile workflowDir archiveDir fbc =
+  case fileBrowserCursorDirForestCursor fbc of
+    Nothing -> pure fbc
+    Just dfc ->
+      let (rd, fod) = dirForestCursorSelected dfc
+       in case fod of
+            FodDir _ -> pure fbc
+            FodFile rp _ -> do
+              let src = fileBrowserCursorBase fbc </> rd </> rp
+              today <- liftIO $ utctDay <$> getCurrentTime
+              case destinationFile today workflowDir archiveDir src of
+                Nothing -> pure fbc
+                Just dest -> do
+                  acr <- liftIO $ checkFromFile src
+                  let goOn sf = do
+                        let a = ArchiveSmosFile src dest sf dfc
+                        let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+                        r <- redoArchiveFile src dest sf
+                        pure $ case r of
+                          MoveDestinationAlreadyExists _ -> fbc
+                          ArchivedSuccesfully ->
+                            fbc
+                              { fileBrowserCursorDirForestCursor = dullDelete $ dirForestCursorDeleteCurrent dfc,
+                                fileBrowserCursorUndoStack = us'
+                              }
+                  case acr of
+                    ReadyToArchive sf -> goOn sf
+                    NotAllDone sf -> goOn sf
+                    _ -> pure fbc
+
 -- Fails if there is nothing to undo
 fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserUndo fbc = do
@@ -145,12 +179,17 @@ fileBrowserRedoAny fbc = do
       pure fbc' {fileBrowserCursorDirForestCursor = mdfc'}
 
 fileBrowserRedoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
-fileBrowserRedoAction a _ =
+fileBrowserRedoAction a mdfc =
   case a of
     Movement mdfc' -> pure mdfc'
     RmEmptyDir dir dfc' -> do
       redoRmEmptyDir dir
       pure $ Just dfc'
+    ArchiveSmosFile src dest sf dfc' -> do
+      r <- redoArchiveFile src dest sf
+      case r of
+        MoveDestinationAlreadyExists _ -> pure mdfc
+        ArchivedSuccesfully -> pure $ Just dfc'
 
 fileBrowserUndoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
 fileBrowserUndoAction a _ =
@@ -158,6 +197,9 @@ fileBrowserUndoAction a _ =
     Movement mdfc' -> pure mdfc'
     RmEmptyDir dir dfc' -> do
       undoRmEmptyDir dir
+      pure $ Just dfc'
+    ArchiveSmosFile src dest sf dfc' -> do
+      undoArchiveFile src dest sf
       pure $ Just dfc'
 
 redoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
@@ -171,11 +213,29 @@ redoRmEmptyDir dir = do
 undoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
 undoRmEmptyDir = ensureDir
 
+redoArchiveFile :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
+redoArchiveFile = Archive.moveToArchive
+
+undoArchiveFile :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ()
+undoArchiveFile src dest sf =
+  liftIO $ do
+    removeFile dest
+    writeSmosFile src sf
+
 data FileBrowserCursorAction
   = -- | The previous version, to reset to
     Movement (Maybe (DirForestCursor ()))
   | -- | The directory that was removed and the previous version to reset to
     RmEmptyDir (Path Abs Dir) (DirForestCursor ())
+  | -- The source path,
+    -- The destination path
+    -- The contents of the file that was archived
+    -- The dirforest cursor from before
+    ArchiveSmosFile
+      (Path Abs File)
+      (Path Abs File)
+      SmosFile
+      (DirForestCursor ())
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursorAction

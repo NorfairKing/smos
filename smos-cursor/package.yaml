@@ -24,6 +24,7 @@ library:
   - microlens
   - path
   - path-io
+  - smos-archive
   - smos-data
   - text
   - time

@@ -11,6 +11,7 @@ module Smos.Actions.Browser
     browserToggleCollapse,
     browserToggleCollapseRecursively,
     browserRemoveEmptyDir,
+    browserArchive,
     browserEnter,
     browserUndo,
     browserUndoAny,
@@ -39,6 +40,7 @@ allPlainBrowserActions =
     browserToggleCollapseRecursively,
     browserEnter,
     browserRemoveEmptyDir,
+    browserArchive,
     browserUndo,
     browserUndoAny,
     browserRedo,
@@ -140,6 +142,18 @@ browserRemoveEmptyDir =
   Action
     { actionName = "browserRemoveEmptyDir",
       actionFunc = modifyFileBrowserCursorS fileBrowserRmEmptyDir,
+      actionDescription = "Remove the currently selected empty directory. This does nothing if the directory is not empty."
+    }
+
+browserArchive :: Action
+browserArchive =
+  Action
+    { actionName = "browserArchive",
+      actionFunc = modifyFileBrowserCursorS $ \fbc -> do
+        src <- asks configReportConfig
+        ad <- liftIO $ resolveReportArchiveDir src
+        wd <- liftIO $ resolveReportWorkflowDir src
+        fileBrowserArchiveFile wd ad fbc,
       actionDescription = "Remove the currently selected empty directory. This does nothing if the directory is not empty."
     }
 
