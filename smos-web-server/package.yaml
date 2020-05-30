@@ -1,0 +1,32 @@
+name: smos-web-server
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2020 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - yesod
+  - monad-logger
+  - optparse-applicative
+  - path-io
+  - path
+  - yaml
+  - yamlparse-applicative
+  - envparse
+  - pretty-show
+
+executables:
+  smos-web-server:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - smos-web-server

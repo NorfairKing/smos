@@ -45,6 +45,7 @@ with final.haskell.lib;
         "smos-client-gen" = smosPkg "smos-client-gen";
         "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
         "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+        "smos-web-server" = smosPkgWithOwnComp "smos-web-server";
       };
   haskellPackages =
     previous.haskellPackages.override (
