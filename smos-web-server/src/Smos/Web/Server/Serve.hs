@@ -10,6 +10,6 @@ import qualified Yesod
 
 serveSmosWebServer :: ServeSettings -> IO ()
 serveSmosWebServer ss@ServeSettings {..} = do
-  let app = App {}
+  let app = App {appLogLevel = serveSetLogLevel}
   pPrint ss
   Yesod.warp serveSetPort app

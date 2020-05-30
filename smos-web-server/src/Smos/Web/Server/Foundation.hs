@@ -3,13 +3,15 @@
 
 module Smos.Web.Server.Foundation where
 
+import Control.Monad.Logger
 import Yesod
 
 data App
   = App
-      {
+      { appLogLevel :: LogLevel
       }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
 
-instance Yesod App
+instance Yesod App where
+  shouldLogIO app _ ll = pure $ ll >= appLogLevel app

@@ -5,4 +5,4 @@ killall 'smos-web-server serve' || true
 
 set -e
 
-smos-web-server serve
+smos-web-server serve &
