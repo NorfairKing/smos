@@ -29,6 +29,9 @@ library:
   - yaml
   - yamlparse-applicative
   - yesod
+  - yesod-static
+  - filepath
+
 
 executables:
   smos-web-server:

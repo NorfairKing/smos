@@ -8,12 +8,13 @@ import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
+import Smos.Web.Server.Static
 import Text.Show.Pretty
 import Yesod
 
 serveSmosWebServer :: ServeSettings -> IO ()
 serveSmosWebServer ss@ServeSettings {..} = do
-  let app = App {appLogLevel = serveSetLogLevel}
+  let app = App {appLogLevel = serveSetLogLevel, appStatic = smosWebServerStatic}
   pPrint ss
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =
