@@ -1,6 +1,5 @@
 .stack-work/
 *.aes
-*.html
 result
 result-*
 .pre-commit-config.yaml

@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-lists.git","sha256":"0l0jiqhcjzkg4nv2a6h2vdf4izr9mf7cxc86cq1hf3j4dh6spym1","rev":"62900a56f6864638c952575dfd211a1cc55be7da"},"package":{"version":"v5.4.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-lists.git"},"packageName":"lists"}}}

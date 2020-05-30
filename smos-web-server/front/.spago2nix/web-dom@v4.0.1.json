@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-web/purescript-web-dom.git","sha256":"03awc83ggbwcvklzss48yf1bvm898pyim8zri1vjnnyy9yxyx7g0","rev":"5bbf40aa543c3a3eb18adf1f86ce1c505c762108"},"package":{"version":"v4.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript-web/purescript-web-dom.git"},"packageName":"web-dom"}}}

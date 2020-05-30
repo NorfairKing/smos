@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-math.git","sha256":"1msmy9w7y6fij62sdc55w68gpwkhm6lhgc8qjisjk4sxx1wdg1rr","rev":"8be36d24f9d2d8795adf04791446bbc458297b9b"},"package":{"version":"v2.1.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-math.git"},"packageName":"math"}}}
