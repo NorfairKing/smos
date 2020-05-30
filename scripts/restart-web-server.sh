@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
+set -e
 set -x
 
 killall 'smos-web-server serve' || true
-
-set -e
-
 smos-web-server serve &
