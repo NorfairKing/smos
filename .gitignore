@@ -1,4 +1,5 @@
 .stack-work/
+*.aes
 *.html
 result
 result-*
