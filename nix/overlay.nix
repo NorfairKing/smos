@@ -45,7 +45,15 @@ with final.haskell.lib;
         "smos-client-gen" = smosPkg "smos-client-gen";
         "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
         "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
-        "smos-web-server" = smosPkgWithOwnComp "smos-web-server";
+        "smos-web-server" = overrideCabal (smosPkgWithOwnComp "smos-web-server") (
+          old:
+            {
+              preBuild = ''
+                ${old.preBuild or ""}
+                export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
+              '';
+            }
+        );
       };
   haskellPackages =
     previous.haskellPackages.override (

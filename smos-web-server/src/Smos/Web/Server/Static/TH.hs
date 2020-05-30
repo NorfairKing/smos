@@ -17,7 +17,7 @@ mkStatic = do
         case lookup var env of
           Nothing -> pathLocal
           Just d -> d </> pathNix
-      mFrontF fp = mFront ("front/dist" </> fp ++ ".js") (fp ++ ".js")
+      mFrontF fp = mFront ("front/dist" </> fp ++ ".js") ("dist" </> fp ++ ".js")
   mkEmbeddedStatic
     development
     "smosWebServerStatic"

@@ -56,6 +56,7 @@ let
           mergeful-overlay
           yamlparse-applicative-overlay
           (import ./gitignore-src.nix)
+          (import ../smos-web-server/front/nix/overlay.nix)
           (import ./overlay.nix)
         ];
       config.allowUnfree = true;
