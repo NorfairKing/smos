@@ -7,6 +7,7 @@ export DEVELOPMENT=True
 
 export SMOS_WEB_SERVER_LOG_LEVEL=Debug
 
+
 nice -n19 stack install :smos-web-server \
   --file-watch \
   --exec='./scripts/restart-web-server.sh' \

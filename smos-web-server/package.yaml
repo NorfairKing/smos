@@ -21,6 +21,7 @@ library:
   - path
   - path-io
   - pretty-show
+  - shakespeare
   - template-haskell
   - wai
   - wai-extra

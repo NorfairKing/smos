@@ -5,7 +5,7 @@
     "bootstrap-nix": "yarn && spago init && spago install halogen && yarn2nix > yarn.nix && spago2nix generate",
     "full-clean": "rm -rf node_modules output .spago dist/* *.lock spago-packages.nix yarn.nix .spago2nix .cache spago.dhall packages.dhall",
     "clean": "rm -rf output .spago dist/* node_modules output .cache .spago2nix",
-    "watch": "spago bundle-app --watch --main Main --to dist/app.js",
+    "watch": "spago bundle-app --watch --main Main --to dist/smos-web-server-front.js",
     "dev": "yarn parcel assets/*.html",
     "bundle": "spago bundle-app --main Main --to dist/app.js && parcel build assets/*.html",
     "serve": "yarn bundle && http-server dist",
