@@ -167,10 +167,6 @@ with final.haskell.lib;
                     ] persistentPkg;
                 in
                   final.smosPackages // {
-                    hakyll = dontCheck (self.callHackage "hakyll" "4.13.0.1" {});
-                    hakyll-sass = dontCheck (self.callHackage "hakyll-sass" "0.2.4" {});
-                    warp = dontCheck (self.callHackage "warp" "3.2.28" {});
-                    http2 = dontCheck (self.callHackage "http2" "1.6.5" {});
                     pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
                     sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite);
                     orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
