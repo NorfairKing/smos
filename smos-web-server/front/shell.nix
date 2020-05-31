@@ -13,5 +13,6 @@ pkgs.mkShell {
       purty
       spago
       spago2nix
+      pscid
     ];
 }

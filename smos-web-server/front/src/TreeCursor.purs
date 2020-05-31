@@ -1,45 +1,40 @@
 module TreeCursor where
 
-import CSS as CSS
+import CSS (marginLeft, minHeight, px) as CSS
 import Control.Monad.State (modify_)
-import Control.MonadZero (guard)
-import Cursor.Tree.Base
-import Cursor.Tree.Insert
-import Cursor.Tree.Movement
-import Cursor.Tree.Types
+import Cursor.Tree.Base (foldTreeCursor)
+import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertAndSelect)
+import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
+import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
 import Data.Array as Array
-import Data.Const
-import Data.Foldable (traverse_)
+import Data.Const (Const)
 import Data.List (List(..), (:))
 import Data.List as List
-import Data.List.NonEmpty
+import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NE
-import Data.Maybe
-import Data.Maybe (Maybe(..))
-import Data.NonEmpty
-import Data.Tuple
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.NonEmpty ((:|))
+import Data.Tuple (Tuple(..), snd)
 import Effect.Aff (Aff)
 import Effect.Console as Console
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.CSS as CSS
+import Halogen.HTML.CSS (style) as CSS
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
-import Data.Lens
-import Prelude
-import Unsafe.Coerce
+import Data.Lens ((.~))
+import Prelude (Unit, Void, bind, discard, identity, map, pure, unit, (#), ($), (+), (<<<), (=<<), (==), (||))
 import Web.Event.Event as WEE
 import Web.HTML (window) as Web
 import Web.HTML.HTMLDocument as HTMLDocument
-import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window (document) as Web
 import Web.UIEvent.KeyboardEvent as WUEK
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
 import Web.UIEvent.MouseEvent as WUEM
 import Web.UIEvent.MouseEvent.EventTypes as MET
 import Header as Header
-import Data.Symbol
+import Data.Symbol (SProxy(..))
 
 type State
   = { cursor :: TreeCursor String String
@@ -102,7 +97,7 @@ component =
             }
     }
 
-render :: forall m. State -> H.ComponentHTML Action ChildSlots Aff
+render :: State -> H.ComponentHTML Action ChildSlots Aff
 render state =
   HH.div
     [ HP.ref (H.RefLabel "cursor")
@@ -111,7 +106,6 @@ render state =
     ]
 
 renderTreeCursor ::
-  forall m.
   Maybe Header.StartingPosition ->
   TreeCursor String String ->
   H.ComponentHTML Action ChildSlots Aff

@@ -1,20 +1,20 @@
 module Cursor.Tree.Movement where
 
 import Prelude
-import Data.Generic.Rep
-import Data.Generic.Rep.Show
-import Data.List
-import Data.Maybe
-import Control.Alternative
-import Data.Tuple
-import Cursor.Tree.Base
-import Cursor.Tree.Types
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
+import Data.List (List(..), length, reverse, singleton, (:))
+import Data.Maybe (Maybe(..), maybe)
+import Control.Alternative ((<|>))
+import Data.Tuple (Tuple(..))
+import Cursor.Tree.Base (currentTree, makeTreeCursorWithAbove, makeTreeCursorWithSelection, rebuildTreeCursor, splitAt)
+import Cursor.Tree.Types (CForest(..), CTree(..), TreeAbove(..), TreeCursor, TreeCursorSelection(..), openForest)
 import Data.List.NonEmpty as NE
 
 treeCursorSelection :: forall a b. TreeCursor a b -> TreeCursorSelection
 treeCursorSelection tc = wrap tc.treeAbove SelectNode
   where
-  wrap :: forall a b. Maybe (TreeAbove a) -> TreeCursorSelection -> TreeCursorSelection
+  wrap :: Maybe (TreeAbove b) -> TreeCursorSelection -> TreeCursorSelection
   wrap mta ts = case mta of
     Nothing -> ts
     Just (TreeAbove ta) -> wrap ta.treeAboveAbove (SelectChild (length ta.treeAboveLefts) ts)

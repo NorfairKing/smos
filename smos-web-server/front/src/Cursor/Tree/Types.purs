@@ -1,15 +1,15 @@
 module Cursor.Tree.Types where
 
 import Prelude
-import Data.Maybe
-import Data.Symbol
-import Data.Newtype
+import Data.Maybe (Maybe, maybe)
+import Data.Symbol (SProxy(..))
+import Data.Newtype (class Newtype)
 import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as NE
-import Data.List
+import Data.List (List(..))
 import Data.Lens.Record (prop)
 import Data.Lens.Iso.Newtype (_Newtype)
-import Data.Lens
+import Data.Lens (Lens, Lens', lens)
 
 newtype Tree a
   = Tree { rootLabel :: a, subForest :: Forest a }

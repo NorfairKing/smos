@@ -16,7 +16,6 @@ import Web.HTML.HTMLInputElement as WHHIE
 import Web.UIEvent.KeyboardEvent as WUEK
 import Web.Event.Event as WEE
 import Web.UIEvent.MouseEvent as WUEM
-import Web.UIEvent.MouseEvent.EventTypes as MET
 
 type State
   = { contents :: String, startingPosition :: StartingPosition }

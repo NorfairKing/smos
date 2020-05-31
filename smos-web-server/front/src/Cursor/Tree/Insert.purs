@@ -1,12 +1,12 @@
 module Cursor.Tree.Insert where
 
 import Prelude
-import Data.List
-import Data.Maybe
-import Cursor.Tree.Base
-import Cursor.Tree.Types
+import Data.List (List(..), singleton, (:))
+import Data.Maybe (Maybe(..))
+import Cursor.Tree.Base (currentTree, makeTreeCursorWithAbove, splitAt)
+import Cursor.Tree.Types (CForest(..), Tree(..), TreeAbove(..), TreeCursor, makeCForest, makeCTree, openForest, unpackCForest)
 import Data.List.NonEmpty as NE
-import Data.Tuple
+import Data.Tuple (Tuple(..))
 
 treeCursorInsert :: forall a b. Tree b -> TreeCursor a b -> Maybe (TreeCursor a b)
 treeCursorInsert tree tc = do

@@ -4,8 +4,7 @@ import Prelude
 import Data.List
 import Data.Tuple
 import Data.Maybe
-import Control.Monad
-import Cursor.Tree.Types
+import Cursor.Tree.Types (CForest, CTree(..), TreeAbove(..), TreeCursor, TreeCursorSelection(..), emptyCForest, openForest, unpackCForest)
 
 singletonTreeCursor :: forall a b. a -> TreeCursor a b
 singletonTreeCursor v = { treeAbove: Nothing, treeCurrent: v, treeBelow: emptyCForest }
