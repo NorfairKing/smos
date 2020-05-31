@@ -207,7 +207,7 @@ defaultFileKeyMap =
       fileKeyMapAnyMatchers =
         listMatchers
           [ exactChar 'u' undo,
-            exactChar 'r' redo,
+            modifiedChar 'u' [MMeta] redo,
             exactKey KEsc entrySelectWhole
           ]
     }
