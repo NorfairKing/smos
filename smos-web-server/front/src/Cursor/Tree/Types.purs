@@ -14,6 +14,8 @@ import Data.Lens
 newtype Tree a
   = Tree { rootLabel :: a, subForest :: Forest a }
 
+derive instance functorTree :: Functor Tree
+
 type Forest a
   = List (Tree a)
 
@@ -41,6 +43,8 @@ newtype TreeAbove b
   , treeAboveRights :: List (CTree b)
   }
 
+derive instance functorTreeAbove :: Functor TreeAbove
+
 derive instance newtypeTreeAbove :: Newtype (TreeAbove b) _
 
 treeAboveLeftsL :: forall b. Lens' (TreeAbove b) (List (CTree b))
@@ -62,6 +66,8 @@ data TreeCursorSelection
 newtype CTree a
   = CTree { rootLabel :: a, subForest :: CForest a }
 
+derive instance functorCTree :: Functor CTree
+
 makeCTree :: forall a. Tree a -> CTree a
 makeCTree = cTree false
 
@@ -75,6 +81,8 @@ data CForest a
   = EmptyCForest
   | ClosedForest (NonEmptyList (Tree a))
   | OpenForest (NonEmptyList (CTree a))
+
+derive instance functorCForest :: Functor CForest
 
 makeCForest :: forall a. Forest a -> CForest a
 makeCForest = cForest true
