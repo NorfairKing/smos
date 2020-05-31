@@ -18,7 +18,6 @@ import Data.Maybe
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty
 import Data.Tuple
-import Debug.Trace as Debug
 import Effect.Aff (Aff)
 import Effect.Console as Console
 import Halogen as H
@@ -30,12 +29,15 @@ import Halogen.Query.EventSource as ES
 import Data.Lens
 import Prelude
 import Unsafe.Coerce
+import Web.Event.Event as WEE
 import Web.HTML (window) as Web
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window (document) as Web
 import Web.UIEvent.KeyboardEvent as WUEK
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
+import Web.UIEvent.MouseEvent as WUEM
+import Web.UIEvent.MouseEvent.EventTypes as MET
 import Header as Header
 import Data.Symbol
 
@@ -57,7 +59,8 @@ _header = SProxy
 data Action
   = Init
   | KeyPressed H.SubscriptionId WUEK.KeyboardEvent
-  | EntryClicked PathToClickedEntry
+  | MouseClicked H.SubscriptionId WUEM.MouseEvent
+  | EntryClicked PathToClickedEntry WUEM.MouseEvent
   | HandleHeader String
 
 component :: forall q i o. H.Component HH.HTML q i o Aff
@@ -201,7 +204,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
     HH.p
       [ CSS.style do
           CSS.minHeight (CSS.px 30.0)
-      , HE.onClick (\_ -> Just (EntryClicked p))
+      , HE.onClick (\me -> Just (EntryClicked p me))
       ]
       [ HH.text s
       ]
@@ -213,7 +216,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
       HH.p
         [ CSS.style do
             CSS.minHeight (CSS.px 30.0)
-        , HE.onClick (\_ -> Just (EntryClicked ClickedEqualsSelected))
+        , HE.onClick (\me -> Just (EntryClicked ClickedEqualsSelected me))
         ]
         [ HH.text s
         , HH.text " <--"
@@ -231,16 +234,25 @@ handle =
     case _ of
       Init -> do
         document <- H.liftEffect $ Web.document =<< Web.window
-        H.subscribe' \sid ->
+        H.subscribe' \sid -> do
           ES.eventListenerEventSource
             KET.keyup
             (HTMLDocument.toEventTarget document)
             (map (KeyPressed sid) <<< WUEK.fromEvent)
-      EntryClicked p -> case p of
-        ClickedEqualsSelected -> modify_ (_ { headerSelected = Just Header.End })
-        _ -> do
-          modify_ (_ { headerSelected = Nothing })
-          treeModM (moveUsingPath identity identity p)
+        H.subscribe' \sid -> do
+          ES.eventListenerEventSource
+            MET.click
+            (HTMLDocument.toEventTarget document)
+            (map (MouseClicked sid) <<< WUEM.fromEvent)
+      EntryClicked p me -> do
+        H.liftEffect $ WEE.stopPropagation (WUEM.toEvent me)
+        case p of
+          ClickedEqualsSelected -> modify_ (_ { headerSelected = Just Header.End })
+          _ -> do
+            modify_ (_ { headerSelected = Nothing })
+            treeModM (moveUsingPath identity identity p)
+      MouseClicked _ _ -> do
+        modify_ (_ { headerSelected = Nothing })
       KeyPressed _ ke -> do
         s <- H.get
         let

@@ -14,6 +14,9 @@ import Prelude
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLInputElement as WHHIE
 import Web.UIEvent.KeyboardEvent as WUEK
+import Web.Event.Event as WEE
+import Web.UIEvent.MouseEvent as WUEM
+import Web.UIEvent.MouseEvent.EventTypes as MET
 
 type State
   = { contents :: String, startingPosition :: StartingPosition }
@@ -30,6 +33,7 @@ type Output
 
 data Action
   = Init
+  | Clicked WUEM.MouseEvent
   | ChangeString String
   | Commit
 
@@ -56,6 +60,7 @@ render state =
               $> Commit
         )
     , HP.ref (H.RefLabel "textbox")
+    , HE.onClick \me -> Just (Clicked me)
     , HP.value state.contents
     ]
 
@@ -73,6 +78,7 @@ handle a = case a of
             H.liftEffect do
               WHHE.focus element
               WHHIE.setSelectionEnd index inputElement
+  Clicked me -> H.liftEffect $ WEE.stopPropagation (WUEM.toEvent me)
   ChangeString t -> modify_ (\s -> s { contents = t })
   Commit -> do
     s <- H.get
