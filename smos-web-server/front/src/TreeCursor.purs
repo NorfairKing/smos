@@ -8,6 +8,7 @@ import Web.HTML (window) as Web
 import Halogen.Query.EventSource as ES
 import Control.MonadZero (guard)
 import Cursor.Tree.Base
+import Cursor.Tree.Insert
 import Cursor.Tree.Movement
 import Cursor.Tree.Types
 import Data.Array as Array
@@ -129,13 +130,19 @@ renderTreeCursor = foldTreeCursor wrap cur
 
   goUnseletected :: String -> H.ComponentHTML Action () m
   goUnseletected s =
-    HH.p_
+    HH.p
+      [ CSS.style do
+          CSS.minHeight (CSS.px 30.0)
+      ]
       [ HH.text s
       ]
 
   goSelected :: String -> H.ComponentHTML Action () m
   goSelected s =
-    HH.p_
+    HH.p
+      [ CSS.style do
+          CSS.minHeight (CSS.px 30.0)
+      ]
       [ HH.text s
       , HH.text " <--"
       ]
@@ -165,4 +172,6 @@ handle = case _ of
         | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
         | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
         | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
+        | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "", subForest: Nil }))
+        | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "", subForest: Nil }))
       _ -> pure unit
