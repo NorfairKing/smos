@@ -2,6 +2,8 @@ module TreeCursor where
 
 import Data.Maybe
 import CSS as CSS
+import Debug.Trace as Debug
+import Data.Tuple
 import Control.Monad.State (modify_)
 import Web.HTML.Window (document) as Web
 import Web.HTML (window) as Web
@@ -13,7 +15,8 @@ import Cursor.Tree.Movement
 import Cursor.Tree.Types
 import Data.Array as Array
 import Data.Foldable (traverse_)
-import Data.List
+import Data.List as List
+import Data.List (List(..), (:))
 import Data.List.NonEmpty
 import Data.List.NonEmpty as NE
 import Data.Maybe (Maybe(..))
@@ -38,6 +41,7 @@ type State
 data Action
   = Init
   | KeyPressed H.SubscriptionId WUEK.KeyboardEvent
+  | EntryClicked PathToClickedEntry
 
 component :: forall q i o. H.Component HH.HTML q i o Aff
 component =
@@ -84,55 +88,91 @@ render state =
     ]
 
 renderTreeCursor :: forall m. TreeCursor String String -> H.ComponentHTML Action () m
-renderTreeCursor = foldTreeCursor wrap cur
+renderTreeCursor = snd <<< foldTreeCursor wrap cur
   where
-  wrap :: List (CTree String) -> String -> List (CTree String) -> H.ComponentHTML Action () m -> H.ComponentHTML Action () m
-  wrap lefts above rights current =
-    HH.div_
-      [ goUnseletected above
-      , HH.div
-          [ CSS.style do
-              CSS.marginLeft (CSS.px 30.0)
+  wrap :: List (CTree String) -> String -> List (CTree String) -> Tuple PathToClickedEntry (H.ComponentHTML Action () m) -> Tuple PathToClickedEntry (H.ComponentHTML Action () m)
+  wrap lefts above rights (Tuple p current) =
+    Tuple (GoToParent p)
+      ( HH.div_
+          [ goUnseletected (GoToParent p) above
+          , HH.div
+              [ CSS.style do
+                  CSS.marginLeft (CSS.px 30.0)
+              ]
+              [ HH.div_
+                  ( Array.fromFoldable
+                      ( List.mapWithIndex
+                          ( \i ct ->
+                              goCTree
+                                ( GoToChild i
+                                    ( GoToParent p
+                                    )
+                                )
+                                ct
+                          )
+                          lefts
+                      )
+                  )
+              , current
+              , HH.div_
+                  ( Array.fromFoldable
+                      ( List.mapWithIndex
+                          ( \i ct ->
+                              goCTree
+                                ( GoToChild (i + 1 + List.length lefts)
+                                    ( GoToParent p
+                                    )
+                                )
+                                ct
+                          )
+                          rights
+                      )
+                  )
+              ]
           ]
-          [ HH.div_ (Array.fromFoldable (map goCTree lefts))
-          , current
-          , HH.div_ (Array.fromFoldable (map goCTree rights))
-          ]
-      ]
+      )
 
-  cur :: String -> CForest String -> H.ComponentHTML Action () m
+  cur :: String -> CForest String -> Tuple PathToClickedEntry (H.ComponentHTML Action () m)
   cur current subForest =
-    HH.div_
-      $ [ goSelected current
-        , HH.div
-            [ CSS.style do
-                CSS.marginLeft (CSS.px 30.0)
+    Tuple ClickedEqualsSelected
+      ( HH.div_
+          $ [ goSelected current
+            , HH.div
+                [ CSS.style do
+                    CSS.marginLeft (CSS.px 30.0)
+                ]
+                [ goCForest ClickedEqualsSelected subForest ]
             ]
-            [ goCForest subForest ]
-        ]
+      )
 
-  goCForest :: CForest String -> H.ComponentHTML Action () m
-  goCForest = case _ of
+  goCForest :: PathToClickedEntry -> CForest String -> H.ComponentHTML Action () m
+  goCForest p' = case _ of
     EmptyCForest -> HH.text ""
     ClosedForest _ -> HH.text ""
-    OpenForest ne -> HH.div_ (Array.fromFoldable (map goCTree (NE.toList ne)))
+    OpenForest ne ->
+      HH.div_
+        ( Array.fromFoldable
+            ( NE.mapWithIndex (\i ct -> goCTree (GoToChild i p') ct) ne
+            )
+        )
 
-  goCTree :: CTree String -> H.ComponentHTML Action () m
-  goCTree (CTree cn) =
+  goCTree :: PathToClickedEntry -> CTree String -> H.ComponentHTML Action () m
+  goCTree p (CTree cn) =
     HH.div_
-      [ goUnseletected cn.rootLabel
+      [ goUnseletected p cn.rootLabel
       , HH.div
           [ CSS.style do
               CSS.marginLeft (CSS.px 30.0)
           ]
-          [ goCForest cn.subForest ]
+          [ goCForest p cn.subForest ]
       ]
 
-  goUnseletected :: String -> H.ComponentHTML Action () m
-  goUnseletected s =
+  goUnseletected :: PathToClickedEntry -> String -> H.ComponentHTML Action () m
+  goUnseletected p s =
     HH.p
       [ CSS.style do
           CSS.minHeight (CSS.px 30.0)
+      , HE.onClick (\_ -> Just (EntryClicked p))
       ]
       [ HH.text s
       ]
@@ -142,36 +182,40 @@ renderTreeCursor = foldTreeCursor wrap cur
     HH.p
       [ CSS.style do
           CSS.minHeight (CSS.px 30.0)
+      , HE.onClick (\_ -> Just (EntryClicked ClickedEqualsSelected))
       ]
       [ HH.text s
       , HH.text " <--"
       ]
 
 handle :: forall o. Action -> H.HalogenM State Action () o Aff Unit
-handle = case _ of
-  Init -> do
-    document <- H.liftEffect $ Web.document =<< Web.window
-    H.subscribe' \sid ->
-      ES.eventListenerEventSource
-        KET.keyup
-        (HTMLDocument.toEventTarget document)
-        (map (KeyPressed sid) <<< WUEK.fromEvent)
-  KeyPressed _ ke -> do
-    H.liftEffect (Console.log (WUEK.key ke))
-    let
-      treeMod :: (TreeCursor String String -> TreeCursor String String) -> H.HalogenM State Action () o Aff Unit
-      treeMod func = modify_ func
+handle =
+  let
+    treeMod :: (TreeCursor String String -> TreeCursor String String) -> H.HalogenM State Action () o Aff Unit
+    treeMod func = modify_ func
 
-      treeModM :: (TreeCursor String String -> Maybe (TreeCursor String String)) -> H.HalogenM State Action () o Aff Unit
-      treeModM func = treeMod (\tc -> fromMaybe tc (func tc))
-
-      k = WUEK.key ke
-    case unit of
-      _
-        | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
-        | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
-        | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
-        | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
-        | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "", subForest: Nil }))
-        | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "", subForest: Nil }))
-      _ -> pure unit
+    treeModM :: (TreeCursor String String -> Maybe (TreeCursor String String)) -> H.HalogenM State Action () o Aff Unit
+    treeModM func = treeMod (\tc -> fromMaybe tc (func tc))
+  in
+    case _ of
+      Init -> do
+        document <- H.liftEffect $ Web.document =<< Web.window
+        H.subscribe' \sid ->
+          ES.eventListenerEventSource
+            KET.keyup
+            (HTMLDocument.toEventTarget document)
+            (map (KeyPressed sid) <<< WUEK.fromEvent)
+      EntryClicked p -> treeModM (moveUsingPath identity identity p)
+      KeyPressed _ ke -> do
+        H.liftEffect (Console.log (WUEK.key ke))
+        let
+          k = WUEK.key ke
+        case unit of
+          _
+            | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
+            | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
+            | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
+            | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
+            | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
+            | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
+          _ -> pure unit
