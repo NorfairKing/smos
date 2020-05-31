@@ -2,7 +2,7 @@
 
 Working on this:
 
-Run these commands in separate terminals, in order.
+Run these commands in separate terminals within a `nix-shell`, in order.
 
 ```
 yarn watch
