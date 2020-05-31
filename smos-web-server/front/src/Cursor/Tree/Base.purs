@@ -2,6 +2,7 @@ module Cursor.Tree.Base where
 
 import Prelude
 import Data.List
+import Data.Tuple
 import Data.Maybe
 import Control.Monad
 import Cursor.Tree.Types
@@ -11,6 +12,32 @@ singletonTreeCursor v = { treeAbove: Nothing, treeCurrent: v, treeBelow: emptyCF
 
 makeTreeCursor :: forall a b. (b -> a) -> CTree b -> TreeCursor a b
 makeTreeCursor g (CTree cn) = { treeAbove: Nothing, treeCurrent: g cn.rootLabel, treeBelow: cn.subForest }
+
+makeTreeCursorWithSelection ::
+  forall a b.
+  (a -> b) -> (b -> a) -> TreeCursorSelection -> CTree b -> Maybe (TreeCursor a b)
+makeTreeCursorWithSelection f g sel = walkDown sel <<< makeTreeCursor g
+  where
+  walkDown SelectNode tc = pure tc
+
+  walkDown (SelectChild i s) tc =
+    (walkDown s =<< _)
+      ( case splitAt i (unpackCForest tc.treeBelow) of
+          Tuple _ Nil -> Nothing
+          Tuple lefts (current : rights) ->
+            Just
+              ( makeTreeCursorWithAbove g current
+                  ( Just
+                      ( TreeAbove
+                          { treeAboveLefts: reverse lefts
+                          , treeAboveAbove: tc.treeAbove
+                          , treeAboveNode: f tc.treeCurrent
+                          , treeAboveRights: rights
+                          }
+                      )
+                  )
+              )
+      )
 
 rebuildTreeCursor :: forall a b. (a -> b) -> TreeCursor a b -> CTree b
 rebuildTreeCursor f tc = wrapAbove tc.treeAbove (CTree { rootLabel: f tc.treeCurrent, subForest: tc.treeBelow })
@@ -55,3 +82,6 @@ foldTreeCursor wrapFunc currentFunc tc = wrapAbove tc.treeAbove $ currentFunc tc
 
   goAbove :: TreeAbove b -> c -> c
   goAbove (TreeAbove ta) = wrapAbove ta.treeAboveAbove <<< wrapFunc (reverse ta.treeAboveLefts) ta.treeAboveNode ta.treeAboveRights
+
+splitAt :: forall a. Int -> List a -> Tuple (List a) (List a)
+splitAt i l = Tuple (take i l) (drop i l)
