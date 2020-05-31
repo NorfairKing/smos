@@ -1,26 +1,24 @@
 module TreeCursor where
 
-import Data.Maybe
 import CSS as CSS
-import Debug.Trace as Debug
-import Data.Tuple
 import Control.Monad.State (modify_)
-import Web.HTML.Window (document) as Web
-import Web.HTML (window) as Web
-import Halogen.Query.EventSource as ES
 import Control.MonadZero (guard)
 import Cursor.Tree.Base
 import Cursor.Tree.Insert
 import Cursor.Tree.Movement
 import Cursor.Tree.Types
 import Data.Array as Array
+import Data.Const
 import Data.Foldable (traverse_)
-import Data.List as List
 import Data.List (List(..), (:))
+import Data.List as List
 import Data.List.NonEmpty
 import Data.List.NonEmpty as NE
+import Data.Maybe
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty
+import Data.Tuple
+import Debug.Trace as Debug
 import Effect.Aff (Aff)
 import Effect.Console as Console
 import Halogen as H
@@ -28,47 +26,69 @@ import Halogen.HTML as HH
 import Halogen.HTML.CSS as CSS
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.Query.EventSource as ES
+import Data.Lens
 import Prelude
 import Unsafe.Coerce
-import Web.HTML.HTMLElement as WHHE
+import Web.HTML (window) as Web
 import Web.HTML.HTMLDocument as HTMLDocument
+import Web.HTML.HTMLElement as WHHE
+import Web.HTML.Window (document) as Web
 import Web.UIEvent.KeyboardEvent as WUEK
 import Web.UIEvent.KeyboardEvent.EventTypes as KET
+import Header as Header
+import Data.Symbol
 
 type State
-  = TreeCursor String String
+  = { cursor :: TreeCursor String String
+    , headerSelected :: Boolean
+    }
+
+type ChildSlots
+  = ( header ::
+      H.Slot (Const Void) -- No queries
+        String -- The built header
+        Unit -- Only one slot, so use unit as index
+    )
+
+_header :: SProxy "header"
+_header = SProxy
 
 data Action
   = Init
   | KeyPressed H.SubscriptionId WUEK.KeyboardEvent
   | EntryClicked PathToClickedEntry
+  | HandleHeader String
 
 component :: forall q i o. H.Component HH.HTML q i o Aff
 component =
   H.mkComponent
     { initialState:
       \_ ->
-        -- hello
-        -- |- left
-        -- |- world  <- 
-        -- | |- below
-        -- |- right
-        { treeAbove:
-          Just
-            ( TreeAbove
-                { treeAboveLefts: CTree { rootLabel: "left", subForest: EmptyCForest } : Nil
-                , treeAboveAbove: Nothing
-                , treeAboveNode: "hello"
-                , treeAboveRights: CTree { rootLabel: "right", subForest: EmptyCForest } : Nil
-                }
-            )
-        , treeBelow:
-          OpenForest
-            ( NonEmptyList
-                ( CTree { rootLabel: "below", subForest: EmptyCForest } :| Nil
-                )
-            )
-        , treeCurrent: "world"
+        { cursor:
+          -- hello
+          -- |- left
+          -- |- world  <- 
+          -- | |- below
+          -- |- right
+          { treeAbove:
+            Just
+              ( TreeAbove
+                  { treeAboveLefts: CTree { rootLabel: "left", subForest: EmptyCForest } : Nil
+                  , treeAboveAbove: Nothing
+                  , treeAboveNode: "hello"
+                  , treeAboveRights: CTree { rootLabel: "right", subForest: EmptyCForest } : Nil
+                  }
+              )
+          , treeBelow:
+            OpenForest
+              ( NonEmptyList
+                  ( CTree { rootLabel: "below", subForest: EmptyCForest } :| Nil
+                  )
+              )
+          , treeCurrent: "world"
+          }
+        , headerSelected: false
         }
     , render: render
     , eval:
@@ -79,18 +99,23 @@ component =
             }
     }
 
-render :: forall m. State -> H.ComponentHTML Action () m
+render :: forall m. State -> H.ComponentHTML Action ChildSlots Aff
 render state =
   HH.div
     [ HP.ref (H.RefLabel "cursor")
     ]
-    [ renderTreeCursor state
+    [ renderTreeCursor state.headerSelected state.cursor
     ]
 
-renderTreeCursor :: forall m. TreeCursor String String -> H.ComponentHTML Action () m
-renderTreeCursor = snd <<< foldTreeCursor wrap cur
+renderTreeCursor :: forall m. Boolean -> TreeCursor String String -> H.ComponentHTML Action ChildSlots Aff
+renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
   where
-  wrap :: List (CTree String) -> String -> List (CTree String) -> Tuple PathToClickedEntry (H.ComponentHTML Action () m) -> Tuple PathToClickedEntry (H.ComponentHTML Action () m)
+  wrap ::
+    List (CTree String) ->
+    String ->
+    List (CTree String) ->
+    Tuple PathToClickedEntry (H.ComponentHTML Action ChildSlots Aff) ->
+    Tuple PathToClickedEntry (H.ComponentHTML Action ChildSlots Aff)
   wrap lefts above rights (Tuple p current) =
     Tuple (GoToParent p)
       ( HH.div_
@@ -132,7 +157,7 @@ renderTreeCursor = snd <<< foldTreeCursor wrap cur
           ]
       )
 
-  cur :: String -> CForest String -> Tuple PathToClickedEntry (H.ComponentHTML Action () m)
+  cur :: String -> CForest String -> Tuple PathToClickedEntry (H.ComponentHTML Action ChildSlots Aff)
   cur current subForest =
     Tuple ClickedEqualsSelected
       ( HH.div_
@@ -145,7 +170,7 @@ renderTreeCursor = snd <<< foldTreeCursor wrap cur
             ]
       )
 
-  goCForest :: PathToClickedEntry -> CForest String -> H.ComponentHTML Action () m
+  goCForest :: PathToClickedEntry -> CForest String -> H.ComponentHTML Action ChildSlots Aff
   goCForest p' = case _ of
     EmptyCForest -> HH.text ""
     ClosedForest _ -> HH.text ""
@@ -156,7 +181,7 @@ renderTreeCursor = snd <<< foldTreeCursor wrap cur
             )
         )
 
-  goCTree :: PathToClickedEntry -> CTree String -> H.ComponentHTML Action () m
+  goCTree :: PathToClickedEntry -> CTree String -> H.ComponentHTML Action ChildSlots Aff
   goCTree p (CTree cn) =
     HH.div_
       [ goUnseletected p cn.rootLabel
@@ -167,7 +192,7 @@ renderTreeCursor = snd <<< foldTreeCursor wrap cur
           [ goCForest p cn.subForest ]
       ]
 
-  goUnseletected :: PathToClickedEntry -> String -> H.ComponentHTML Action () m
+  goUnseletected :: PathToClickedEntry -> String -> H.ComponentHTML Action ChildSlots Aff
   goUnseletected p s =
     HH.p
       [ CSS.style do
@@ -177,24 +202,27 @@ renderTreeCursor = snd <<< foldTreeCursor wrap cur
       [ HH.text s
       ]
 
-  goSelected :: String -> H.ComponentHTML Action () m
+  goSelected :: String -> H.ComponentHTML Action ChildSlots Aff
   goSelected s =
-    HH.p
-      [ CSS.style do
-          CSS.minHeight (CSS.px 30.0)
-      , HE.onClick (\_ -> Just (EntryClicked ClickedEqualsSelected))
-      ]
-      [ HH.text s
-      , HH.text " <--"
-      ]
+    if selected then
+      HH.slot _header unit Header.component s (Just <<< HandleHeader) -- TODO fill in component
+    else
+      HH.p
+        [ CSS.style do
+            CSS.minHeight (CSS.px 30.0)
+        , HE.onClick (\_ -> Just (EntryClicked ClickedEqualsSelected))
+        ]
+        [ HH.text s
+        , HH.text " <--"
+        ]
 
-handle :: forall o. Action -> H.HalogenM State Action () o Aff Unit
+handle :: forall o. Action -> H.HalogenM State Action ChildSlots o Aff Unit
 handle =
   let
-    treeMod :: (TreeCursor String String -> TreeCursor String String) -> H.HalogenM State Action () o Aff Unit
-    treeMod func = modify_ func
+    treeMod :: (TreeCursor String String -> TreeCursor String String) -> H.HalogenM State Action ChildSlots o Aff Unit
+    treeMod func = modify_ (\s -> s { cursor = func s.cursor })
 
-    treeModM :: (TreeCursor String String -> Maybe (TreeCursor String String)) -> H.HalogenM State Action () o Aff Unit
+    treeModM :: (TreeCursor String String -> Maybe (TreeCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
     treeModM func = treeMod (\tc -> fromMaybe tc (func tc))
   in
     case _ of
@@ -205,17 +233,28 @@ handle =
             KET.keyup
             (HTMLDocument.toEventTarget document)
             (map (KeyPressed sid) <<< WUEK.fromEvent)
-      EntryClicked p -> treeModM (moveUsingPath identity identity p)
+      EntryClicked p -> case p of
+        ClickedEqualsSelected -> modify_ (_ { headerSelected = true })
+        _ -> do
+          modify_ (_ { headerSelected = false })
+          treeModM (moveUsingPath identity identity p)
       KeyPressed _ ke -> do
-        H.liftEffect (Console.log (WUEK.key ke))
-        let
-          k = WUEK.key ke
-        case unit of
-          _
-            | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
-            | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
-            | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
-            | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
-            | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
-            | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
-          _ -> pure unit
+        s <- H.get
+        if s.headerSelected then
+          pure unit
+        else do
+          H.liftEffect (Console.log (WUEK.key ke))
+          let
+            k = WUEK.key ke
+          case unit of
+            _
+              | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
+              | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
+              | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
+              | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
+              | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
+              | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
+              | k == "a" || k == "A" -> modify_ (_ { headerSelected = true })
+              | k == "i" || k == "I" -> modify_ (_ { headerSelected = true })
+            _ -> pure unit
+      HandleHeader str -> modify_ (\s -> s { headerSelected = false, cursor = s.cursor # treeCursorCurrentL .~ str })
