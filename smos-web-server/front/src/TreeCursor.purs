@@ -41,7 +41,7 @@ import Data.Symbol
 
 type State
   = { cursor :: TreeCursor String String
-    , headerSelected :: Boolean
+    , headerSelected :: Maybe Header.StartingPosition
     }
 
 type ChildSlots
@@ -88,7 +88,7 @@ component =
               )
           , treeCurrent: "world"
           }
-        , headerSelected: false
+        , headerSelected: Nothing
         }
     , render: render
     , eval:
@@ -107,7 +107,11 @@ render state =
     [ renderTreeCursor state.headerSelected state.cursor
     ]
 
-renderTreeCursor :: forall m. Boolean -> TreeCursor String String -> H.ComponentHTML Action ChildSlots Aff
+renderTreeCursor ::
+  forall m.
+  Maybe Header.StartingPosition ->
+  TreeCursor String String ->
+  H.ComponentHTML Action ChildSlots Aff
 renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
   where
   wrap ::
@@ -203,10 +207,9 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
       ]
 
   goSelected :: String -> H.ComponentHTML Action ChildSlots Aff
-  goSelected s =
-    if selected then
-      HH.slot _header unit Header.component s (Just <<< HandleHeader) -- TODO fill in component
-    else
+  goSelected s = case selected of
+    Just sp -> HH.slot _header unit Header.component { contents: s, startingPosition: sp } (Just <<< HandleHeader)
+    Nothing ->
       HH.p
         [ CSS.style do
             CSS.minHeight (CSS.px 30.0)
@@ -234,18 +237,18 @@ handle =
             (HTMLDocument.toEventTarget document)
             (map (KeyPressed sid) <<< WUEK.fromEvent)
       EntryClicked p -> case p of
-        ClickedEqualsSelected -> modify_ (_ { headerSelected = true })
+        ClickedEqualsSelected -> modify_ (_ { headerSelected = Just Header.End })
         _ -> do
-          modify_ (_ { headerSelected = false })
+          modify_ (_ { headerSelected = Nothing })
           treeModM (moveUsingPath identity identity p)
       KeyPressed _ ke -> do
         s <- H.get
-        if s.headerSelected then
+        let
+          k = WUEK.key ke
+        H.liftEffect (Console.log k)
+        if isJust s.headerSelected then
           pure unit
         else do
-          H.liftEffect (Console.log (WUEK.key ke))
-          let
-            k = WUEK.key ke
           case unit of
             _
               | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
@@ -254,7 +257,7 @@ handle =
               | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
               | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
-              | k == "a" || k == "A" -> modify_ (_ { headerSelected = true })
-              | k == "i" || k == "I" -> modify_ (_ { headerSelected = true })
+              | k == "a" || k == "A" -> modify_ (_ { headerSelected = Just Header.End })
+              | k == "i" || k == "I" -> modify_ (_ { headerSelected = Just Header.Beginning })
             _ -> pure unit
-      HandleHeader str -> modify_ (\s -> s { headerSelected = false, cursor = s.cursor # treeCursorCurrentL .~ str })
+      HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # treeCursorCurrentL .~ str })

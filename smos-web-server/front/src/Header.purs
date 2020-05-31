@@ -1,23 +1,29 @@
 module Header where
 
-import Prelude
-import Data.Foldable (traverse_)
-import Control.MonadZero (guard)
 import Control.Monad.State (modify_)
+import Control.MonadZero (guard)
+import Data.Foldable (traverse_, for_)
 import Data.Maybe (Maybe(..))
+import Data.String as String
 import Effect.Aff (Aff)
 import Halogen as H
-import Web.HTML.HTMLElement as WHHE
-import Web.UIEvent.KeyboardEvent as WUEK
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+import Prelude
+import Web.HTML.HTMLElement as WHHE
+import Web.HTML.HTMLInputElement as WHHIE
+import Web.UIEvent.KeyboardEvent as WUEK
 
 type State
-  = { contents :: String }
+  = { contents :: String, startingPosition :: StartingPosition }
 
 type Input
-  = String
+  = { contents :: String, startingPosition :: StartingPosition }
+
+data StartingPosition
+  = Beginning
+  | End
 
 type Output
   = String
@@ -30,7 +36,7 @@ data Action
 component :: forall q. H.Component HH.HTML q Input Output Aff
 component =
   H.mkComponent
-    { initialState: \s -> { contents: s }
+    { initialState: identity
     , render: render
     , eval: H.mkEval $ H.defaultEval { handleAction = handle, initialize = Just Init }
     }
@@ -43,7 +49,7 @@ render state =
         ( \ke ->
             guard
               ( let
-                  k = WUEK.code ke
+                  k = WUEK.key ke
                 in
                   k == "Enter" || k == "Escape"
               )
@@ -57,8 +63,16 @@ handle :: Action -> H.HalogenM State Action () Output Aff Unit
 handle a = case a of
   Init ->
     H.getHTMLElementRef (H.RefLabel "textbox")
-      >>= traverse_ \element -> do
-          H.liftEffect (WHHE.focus element)
+      >>= traverse_ \element ->
+          for_ (WHHIE.fromHTMLElement element) \inputElement -> do
+            s <- H.get
+            let
+              index = case s.startingPosition of
+                Beginning -> 0
+                End -> String.length s.contents
+            H.liftEffect do
+              WHHE.focus element
+              WHHIE.setSelectionEnd index inputElement
   ChangeString t -> modify_ (\s -> s { contents = t })
   Commit -> do
     s <- H.get
