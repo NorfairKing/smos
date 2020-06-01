@@ -7,6 +7,10 @@
 module Smos.Report.Config
   ( SmosReportConfig (..),
     defaultReportConfig,
+    DirectoryConfig (..),
+    defaultDirectoryConfig,
+    WorkReportConfig (..),
+    defaultWorkReportConfig,
     defaultWorkBaseFilter,
     WorkflowDirSpec (..),
     defaultWorkflowDirSpec,
@@ -20,6 +24,10 @@ module Smos.Report.Config
     ArchivedProjectsDirSpec (..),
     defaultArchivedProjectsDirSpec,
     resolveArchivedProjectsDir,
+    resolveDirWorkflowDir,
+    resolveDirArchiveDir,
+    resolveDirProjectsDir,
+    resolveDirArchivedProjectsDir,
     resolveReportWorkflowDir,
     resolveReportArchiveDir,
     resolveReportProjectsDir,
@@ -41,24 +49,48 @@ import YamlParse.Applicative
 
 data SmosReportConfig
   = SmosReportConfig
-      { smosReportConfigWorkflowFileSpec :: !WorkflowDirSpec,
-        smosReportConfigArchiveFileSpec :: !ArchiveDirSpec,
-        smosReportConfigProjectsFileSpec :: !ProjectsDirSpec,
-        smosReportConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec,
-        smosReportConfigWorkBaseFilter :: Maybe EntryFilter,
-        smosReportConfigContexts :: Map ContextName EntryFilter
+      { smosReportConfigDirectoryConfig :: !DirectoryConfig,
+        smosReportConfigWorkConfig :: !WorkReportConfig
       }
   deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
   SmosReportConfig
-    { smosReportConfigWorkflowFileSpec = defaultWorkflowDirSpec,
-      smosReportConfigArchiveFileSpec = defaultArchiveDirSpec,
-      smosReportConfigProjectsFileSpec = defaultProjectsDirSpec,
-      smosReportConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec,
-      smosReportConfigWorkBaseFilter = Just defaultWorkBaseFilter,
-      smosReportConfigContexts = M.fromList []
+    { smosReportConfigDirectoryConfig = defaultDirectoryConfig,
+      smosReportConfigWorkConfig = defaultWorkReportConfig
+    }
+
+data DirectoryConfig
+  = DirectoryConfig
+      { directoryConfigWorkflowFileSpec :: !WorkflowDirSpec,
+        directoryConfigArchiveFileSpec :: !ArchiveDirSpec,
+        directoryConfigProjectsFileSpec :: !ProjectsDirSpec,
+        directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
+      }
+  deriving (Show, Eq, Generic)
+
+defaultDirectoryConfig :: DirectoryConfig
+defaultDirectoryConfig =
+  DirectoryConfig
+    { directoryConfigWorkflowFileSpec = defaultWorkflowDirSpec,
+      directoryConfigArchiveFileSpec = defaultArchiveDirSpec,
+      directoryConfigProjectsFileSpec = defaultProjectsDirSpec,
+      directoryConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
+    }
+
+data WorkReportConfig
+  = WorkReportConfig
+      { workReportConfigWorkBaseFilter :: Maybe EntryFilter,
+        workReportConfigContexts :: Map ContextName EntryFilter
+      }
+  deriving (Show, Eq, Generic)
+
+defaultWorkReportConfig :: WorkReportConfig
+defaultWorkReportConfig =
+  WorkReportConfig
+    { workReportConfigWorkBaseFilter = Just defaultWorkBaseFilter,
+      workReportConfigContexts = M.fromList []
     }
 
 defaultWorkBaseFilter :: EntryFilter
@@ -131,24 +163,36 @@ resolveArchivedProjectsDir ad as =
     ArchivedProjectsInHome ard -> (</> ard) <$> getHomeDir
     ArchivedProjectsAbsolute aad -> pure aad
 
+resolveDirWorkflowDir :: DirectoryConfig -> IO (Path Abs Dir)
+resolveDirWorkflowDir DirectoryConfig {..} = resolveWorkflowDir directoryConfigWorkflowFileSpec
+
+resolveDirArchiveDir :: DirectoryConfig -> IO (Path Abs Dir)
+resolveDirArchiveDir DirectoryConfig {..} = do
+  wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
+  resolveArchiveDir wd directoryConfigArchiveFileSpec
+
+resolveDirProjectsDir :: DirectoryConfig -> IO (Path Abs Dir)
+resolveDirProjectsDir DirectoryConfig {..} = do
+  wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
+  resolveProjectsDir wd directoryConfigProjectsFileSpec
+
+resolveDirArchivedProjectsDir :: DirectoryConfig -> IO (Path Abs Dir)
+resolveDirArchivedProjectsDir DirectoryConfig {..} = do
+  wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
+  ad <- resolveArchiveDir wd directoryConfigArchiveFileSpec
+  resolveArchivedProjectsDir ad directoryConfigArchivedProjectsFileSpec
+
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportWorkflowDir SmosReportConfig {..} = resolveWorkflowDir smosReportConfigWorkflowFileSpec
+resolveReportWorkflowDir = resolveDirWorkflowDir . smosReportConfigDirectoryConfig
 
 resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchiveDir SmosReportConfig {..} = do
-  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
-  resolveArchiveDir wd smosReportConfigArchiveFileSpec
+resolveReportArchiveDir = resolveDirArchiveDir . smosReportConfigDirectoryConfig
 
 resolveReportProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportProjectsDir SmosReportConfig {..} = do
-  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
-  resolveProjectsDir wd smosReportConfigProjectsFileSpec
+resolveReportProjectsDir = resolveDirProjectsDir . smosReportConfigDirectoryConfig
 
 resolveReportArchivedProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchivedProjectsDir SmosReportConfig {..} = do
-  wd <- resolveWorkflowDir smosReportConfigWorkflowFileSpec
-  ad <- resolveArchiveDir wd smosReportConfigArchiveFileSpec
-  resolveArchivedProjectsDir ad smosReportConfigArchivedProjectsFileSpec
+resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportConfigDirectoryConfig
 
 newtype ContextName
   = ContextName

@@ -35,7 +35,7 @@ jobs:
 
       - name: Build
         run: |
-          stack install --system-ghc autoexporter && stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --jobs 1
+          stack install --system-ghc autoexporter && stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --jobs 1 --test-arguments='--seed=42'
 
       - name: Test
         run: |

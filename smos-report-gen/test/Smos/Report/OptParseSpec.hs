@@ -10,6 +10,9 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Configuration
   genValidSpec @Configuration
   jsonSpecOnValid @Configuration
+  genValidSpec @DirectoryConfiguration
+  jsonSpecOnValid @DirectoryConfiguration
+  genValidSpec @WorkReportConfiguration
+  jsonSpecOnValid @WorkReportConfiguration

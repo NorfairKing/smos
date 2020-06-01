@@ -1,6 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Report.Streaming where
@@ -24,16 +23,16 @@ import Smos.Report.Filter
 import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
-streamSmosProjectsFiles :: MonadIO m => SmosReportConfig -> ConduitT i RootedPath m ()
-streamSmosProjectsFiles src = do
-  pd <- liftIO $ resolveReportProjectsDir src
+streamSmosProjectsFiles :: MonadIO m => DirectoryConfig -> ConduitT i RootedPath m ()
+streamSmosProjectsFiles dc = do
+  pd <- liftIO $ resolveDirProjectsDir dc
   sourceFilesInNonHiddenDirsRecursively pd .| filterSmosFiles
 
 streamSmosFilesFromWorkflow ::
-  MonadIO m => HideArchive -> SmosReportConfig -> ConduitT i RootedPath m ()
-streamSmosFilesFromWorkflow ha src@SmosReportConfig {..} = do
-  wd <- liftIO $ resolveReportWorkflowDir src
-  case smosReportConfigArchiveFileSpec of
+  MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i RootedPath m ()
+streamSmosFilesFromWorkflow ha dc = do
+  wd <- liftIO $ resolveDirWorkflowDir dc
+  case directoryConfigArchiveFileSpec dc of
     ArchiveInWorkflow rf -> do
       let source =
             case ha of
@@ -41,7 +40,7 @@ streamSmosFilesFromWorkflow ha src@SmosReportConfig {..} = do
               Don'tHideArchive -> sourceFilesInNonHiddenDirsRecursively wd
       source .| filterSmosFiles
     _ -> do
-      ad <- liftIO $ resolveReportArchiveDir src
+      ad <- liftIO $ resolveDirArchiveDir dc
       let maybeFilterOutArchived =
             case ha of
               HideArchive -> (filterOutDir ad .|)
