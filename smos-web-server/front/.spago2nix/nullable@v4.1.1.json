@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-nullable.git","sha256":"14qaxxga8gqlr4pijyvqycdyhjr6qpz3h4aarficw5j75b7x8nyv","rev":"8d413f02224b8281bfa8037e45fbbf9fe2e254fd"},"package":{"version":"v4.1.1","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-nullable.git"},"packageName":"nullable"}}}
