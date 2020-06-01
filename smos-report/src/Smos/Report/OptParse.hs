@@ -76,7 +76,11 @@ combineToWorkReportConfig wrc mc =
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> parseConfigFileFlag <*> parseDirectoryFlags
+  Flags <$> parseDirectoryFlags
+
+parseFlagsWithConfigFile :: Parser a -> Parser (FlagsWithConfigFile a)
+parseFlagsWithConfigFile p =
+  FlagsWithConfigFile <$> parseConfigFileFlag <*> p
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
@@ -136,27 +140,37 @@ parseArchivedProjectsDirFlag =
 
 getEnvironment :: IO Environment
 getEnvironment = do
+  envDirectoryEnvironment <- getDirectoryEnvironment
+  pure Environment {..}
+
+getDirectoryEnvironment :: IO DirectoryEnvironment
+getDirectoryEnvironment = do
   env <- System.getEnvironment
   let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  let dirEnv =
-        DirectoryEnvironment
-          { dirEnvWorkflowDir =
-              msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"],
-            dirEnvArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"],
-            dirEnvProjectsDir =
-              msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"],
-            dirEnvArchivedProjectsDir =
-              msum $
-                map
-                  getSmosEnv
-                  ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
-          }
+      getSmosEnv = getSmosEnvVar env
   pure
-    Environment
-      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"],
-        envDirectoryEnvironment = dirEnv
+    DirectoryEnvironment
+      { dirEnvWorkflowDir =
+          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"],
+        dirEnvArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"],
+        dirEnvProjectsDir =
+          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"],
+        dirEnvArchivedProjectsDir =
+          msum $
+            map
+              getSmosEnv
+              ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
       }
+
+getEnvWithConfigFile :: IO a -> IO (EnvWithConfigFile a)
+getEnvWithConfigFile func = do
+  env <- System.getEnvironment
+  let envWithConfigFile = msum $ map (getSmosEnvVar env) ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
+  envWithRestEnv <- func
+  pure EnvWithConfigFile {..}
+
+getSmosEnvVar :: [(String, String)] -> String -> Maybe String
+getSmosEnvVar env key = ("SMOS_" ++ key) `lookup` env
 
 defaultConfigFiles :: IO [Path Abs File]
 defaultConfigFiles = do
@@ -177,8 +191,8 @@ parseYamlConfig configFile =
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
-getConfiguration :: (FromJSON a, YamlSchema a) => Flags -> Environment -> IO (Maybe a)
-getConfiguration Flags {..} Environment {..} = do
-  case flagConfigFile <|> envConfigFile of
+getConfiguration :: (FromJSON a, YamlSchema a) => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
+getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
+  case flagWithConfigFile <|> envWithConfigFile of
     Just sf -> resolveFile' sf >>= readConfigFile
     Nothing -> defaultConfigFiles >>= readFirstConfigFile

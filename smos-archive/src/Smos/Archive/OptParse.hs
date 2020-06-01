@@ -21,30 +21,30 @@ getSettings = do
   flags <- getFlags
   env <- getEnvironment
   config <- getConfig flags env
-  deriveSettings flags env config
+  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
-getConfig :: Flags -> Environment -> IO (Maybe Configuration)
-getConfig Flags {..} Environment {..} =
-  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
+getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfig f e =
+  fmap Configuration <$> Report.getConfiguration f e
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
   setFile <- resolveFile' flagFile
-  setReportSettings <-
-    Report.combineToConfig
-      Report.defaultReportConfig
-      flagReportFlags
-      envReportEnvironment
-      (confReportConfiguration <$> mc)
+  setDirectorySettings <-
+    Report.combineToDirectoryConfig
+      Report.defaultDirectoryConfig
+      flagDirectoryFlags
+      envDirectoryEnvironment
+      (confDirectoryConfiguration <$> mc)
   pure Settings {..}
 
-getFlags :: IO Flags
+getFlags :: IO (Report.FlagsWithConfigFile Flags)
 getFlags = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult Flags
+runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
 runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
@@ -57,8 +57,8 @@ runArgumentsParser = execParserPure prefs_ flagsParser
           prefColumns = 80
         }
 
-flagsParser :: ParserInfo Flags
-flagsParser = info (helper <*> parseFlags) help_
+flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
+flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
   where
     help_ = fullDesc <> progDesc description <> confDesc @Report.Configuration
     description = "smos-archive"
@@ -66,7 +66,7 @@ flagsParser = info (helper <*> parseFlags) help_
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"])
-    <*> Report.parseFlags
+    <*> Report.parseDirectoryFlags
 
-getEnvironment :: IO Environment
-getEnvironment = Environment <$> Report.getEnvironment
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Report.getEnvWithConfigFile (Environment <$> Report.getDirectoryEnvironment)

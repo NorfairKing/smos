@@ -7,25 +7,25 @@ import Smos.Report.OptParse.Types as Report
 data Flags
   = Flags
       { flagFile :: FilePath,
-        flagReportFlags :: Report.Flags
+        flagDirectoryFlags :: !Report.DirectoryFlags
       }
   deriving (Show, Eq)
 
-newtype Configuration
+data Configuration
   = Configuration
-      { confReportConfiguration :: Report.Configuration
+      { confDirectoryConfiguration :: !Report.DirectoryConfiguration
       }
   deriving (Show, Eq)
 
-newtype Environment
+data Environment
   = Environment
-      { envReportEnvironment :: Report.Environment
+      { envDirectoryEnvironment :: !Report.DirectoryEnvironment
       }
   deriving (Show, Eq)
 
 data Settings
   = Settings
-      { setFile :: Path Abs File,
-        setReportSettings :: SmosReportConfig
+      { setFile :: !(Path Abs File),
+        setDirectorySettings :: !DirectoryConfig
       }
   deriving (Show, Eq)

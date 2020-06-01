@@ -17,8 +17,14 @@ import YamlParse.Applicative
 
 data Flags
   = Flags
-      { flagConfigFile :: Maybe FilePath,
-        flagDirectoryFlags :: DirectoryFlags
+      { flagDirectoryFlags :: DirectoryFlags
+      }
+  deriving (Show, Eq, Generic)
+
+data FlagsWithConfigFile a
+  = FlagsWithConfigFile
+      { flagWithConfigFile :: Maybe FilePath,
+        flagWithRestFlags :: a
       }
   deriving (Show, Eq, Generic)
 
@@ -33,8 +39,14 @@ data DirectoryFlags
 
 data Environment
   = Environment
-      { envConfigFile :: Maybe FilePath,
-        envDirectoryEnvironment :: DirectoryEnvironment
+      { envDirectoryEnvironment :: DirectoryEnvironment
+      }
+  deriving (Show, Eq, Generic)
+
+data EnvWithConfigFile a
+  = EnvWithConfigFile
+      { envWithConfigFile :: Maybe FilePath,
+        envWithRestEnv :: a
       }
   deriving (Show, Eq, Generic)
 

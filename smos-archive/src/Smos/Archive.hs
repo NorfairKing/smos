@@ -35,9 +35,9 @@ import System.Exit
 smosArchive :: IO ()
 smosArchive = do
   Settings {..} <- getSettings
-  runReaderT (archive setFile) setReportSettings
+  runReaderT (archive setFile) setDirectorySettings
 
-type Q a = ReaderT SmosReportConfig IO a
+type Q a = ReaderT DirectoryConfig IO a
 
 archive :: Path Abs File -> Q ()
 archive from = do
@@ -48,8 +48,8 @@ archive from = do
 
 determineToFile :: Path Abs File -> Q (Path Abs File)
 determineToFile file = do
-  workflowDir <- asks resolveReportWorkflowDir >>= liftIO
-  archiveDir <- asks resolveReportArchiveDir >>= liftIO
+  workflowDir <- asks resolveDirWorkflowDir >>= liftIO
+  archiveDir <- asks resolveDirArchiveDir >>= liftIO
   today <- liftIO $ utctDay <$> getCurrentTime
   destinationFile today workflowDir archiveDir file
 
