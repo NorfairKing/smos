@@ -28,7 +28,9 @@ produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportC
 produceNextActionReportCursor src = do
   naes <-
     sourceToList $
-      streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint
+      streamSmosFilesFromWorkflow HideArchive (smosReportConfigDirectoryConfig src)
+        .| parseSmosFiles
+        .| printShouldPrint DontPrint
         .| smosFileCursors
         .| C.map (uncurry makeNextActionEntryCursor)
         .| C.filter cursorPointsToNextAction

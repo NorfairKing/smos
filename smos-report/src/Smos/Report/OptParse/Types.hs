@@ -165,7 +165,7 @@ backToDirectoryConfiguration DirectoryConfig {..} =
 
 data WorkReportConfiguration
   = WorkReportConfiguration
-      { workReportConfWorkBaseFilter :: !(Maybe EntryFilter),
+      { workReportConfBaseFilter :: !(Maybe EntryFilter),
         workReportConfContexts :: !(Maybe (Map ContextName EntryFilter))
       }
   deriving (Show, Eq, Generic)
@@ -175,7 +175,7 @@ instance Validity WorkReportConfiguration
 instance ToJSON WorkReportConfiguration where
   toJSON WorkReportConfiguration {..} =
     object
-      [ "work-filter" .= workReportConfWorkBaseFilter,
+      [ "work-filter" .= workReportConfBaseFilter,
         "contexts" .= workReportConfContexts
       ]
 
@@ -192,8 +192,8 @@ instance YamlSchema WorkReportConfiguration where
 backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
 backToWorkReportConfiguration WorkReportConfig {..} =
   WorkReportConfiguration
-    { workReportConfWorkBaseFilter =
-        if workReportConfigWorkBaseFilter == Just defaultWorkBaseFilter
+    { workReportConfBaseFilter =
+        if workReportConfigBaseFilter == Just defaultWorkBaseFilter
           then Nothing
           else Just defaultWorkBaseFilter,
       workReportConfContexts = Just workReportConfigContexts

@@ -7,15 +7,15 @@ import Smos.Report.Streaming
 
 streamSmosProjects :: ConduitT i RootedPath Q ()
 streamSmosProjects = do
-  src <- lift $ asks smosQueryConfigReportConfig
+  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   streamSmosProjectsFiles src
 
 streamSmosFiles :: HideArchive -> ConduitT i RootedPath Q ()
 streamSmosFiles ha = do
-  src <- lift $ asks smosQueryConfigReportConfig
+  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   streamSmosFilesFromWorkflow ha src
 
 streamAllSmosFiles :: ConduitT i RootedPath Q ()
 streamAllSmosFiles = do
-  src <- lift $ asks smosQueryConfigReportConfig
+  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   streamSmosFilesFromWorkflow Don'tHideArchive src

@@ -16,7 +16,7 @@ import Smos.Types
 import YamlParse.Applicative
 
 data Arguments
-  = Arguments FilePath Flags
+  = Arguments FilePath (Report.FlagsWithConfigFile Flags)
 
 newtype Flags
   = Flags

@@ -69,8 +69,8 @@ combineToWorkReportConfig :: WorkReportConfig -> Maybe WorkReportConfiguration -
 combineToWorkReportConfig wrc mc =
   pure $
     wrc
-      { workReportConfigWorkBaseFilter =
-          (mc >>= workReportConfWorkBaseFilter) <|> workReportConfigWorkBaseFilter wrc,
+      { workReportConfigBaseFilter =
+          (mc >>= workReportConfBaseFilter) <|> workReportConfigBaseFilter wrc,
         workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts)
       }
 

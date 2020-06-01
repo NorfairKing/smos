@@ -24,6 +24,7 @@ import Smos.Query.OptParse.Types
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse as Report
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
@@ -37,14 +38,14 @@ import qualified YamlParse.Applicative.OptParse as YamlParse
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
-  args@(Arguments _ flags) <- getArguments
+  Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions sqc args env config
+  combineToInstructions sqc c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 combineToInstructions ::
-  SmosQueryConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment {..} mc =
+  SmosQueryConfig -> Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
     hideArchiveWithDefault def mflag =
@@ -174,8 +175,8 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
           (confReportConf <$> mc)
       pure $ SmosQueryConfig {smosQueryConfigReportConfig = src}
 
-getEnvironment :: IO Environment
-getEnvironment = do
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Report.getEnvWithConfigFile $ do
   env <- System.getEnvironment
   let getSmosEnv :: String -> Maybe String
       getSmosEnv key = ("SMOS_" ++ key) `lookup` env
@@ -188,9 +189,8 @@ getEnvironment = do
           False -> HideArchive
   pure Environment {..}
 
-getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} =
-  Report.getConfiguration flagReportFlags envReportEnvironment
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -218,7 +218,7 @@ argParser = info (helper <*> parseArgs) help_
     description = "smos-query"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =

@@ -32,7 +32,7 @@ import Smos.Report.TimeBlock
 import YamlParse.Applicative
 
 data Arguments
-  = Arguments Command Flags
+  = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Instructions
