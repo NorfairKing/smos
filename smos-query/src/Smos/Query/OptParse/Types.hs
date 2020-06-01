@@ -170,7 +170,7 @@ data Configuration
   = Configuration
       { confReportConf :: Report.Configuration,
         confHideArchive :: Maybe HideArchive,
-        confAvailableReports :: Maybe (Map Text PreparedReport),
+        confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
         confWaitingConfiguration :: Maybe WaitingConfiguration,
         confWorkConfiguration :: Maybe WorkConfiguration
       }
@@ -185,11 +185,32 @@ instance YamlSchema Configuration where
       <$> yamlSchema
       <*> objectParser
         "Configuration"
-        ( (,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive"
-            <*> optionalField "report" "Custom reports"
-            <*> optionalField "waiting" "Waiting report config"
-            <*> optionalField "work" "Work report config"
+        ( (,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
+            <*> optionalField preparedReportConfigurationKey "Prepared report config"
+            <*> optionalField waitingConfigurationKey "Waiting report config"
+            <*> optionalField workConfigurationKey "Work report config"
         )
+
+preparedReportConfigurationKey :: Text
+preparedReportConfigurationKey = "report"
+
+waitingConfigurationKey :: Text
+waitingConfigurationKey = "waiting"
+
+workConfigurationKey :: Text
+workConfigurationKey = "work"
+
+data PreparedReportConfiguration
+  = PreparedReportConfiguration
+      { preparedReportConfAvailableReports :: Maybe (Map Text PreparedReport)
+      }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON PreparedReportConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema PreparedReportConfiguration where
+  yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
 data WaitingConfiguration
   = WaitingConfiguration

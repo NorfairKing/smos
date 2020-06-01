@@ -1,6 +1,8 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Query.OptParse where
@@ -13,9 +15,10 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
-import Options.Applicative
+import Options.Applicative as OptParse
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Comparison
@@ -29,7 +32,8 @@ import Smos.Report.TimeBlock
 import qualified System.Environment as System
 import System.Exit
 import Text.Read (readMaybe)
-import YamlParse.Applicative (confDesc)
+import qualified YamlParse.Applicative as YamlParse
+import qualified YamlParse.Applicative.OptParse as YamlParse
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
@@ -56,12 +60,13 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                   entrySetSorter = entryFlagSorter,
                   entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
                 }
-        CommandReport ReportFlags {..} ->
+        CommandReport ReportFlags {..} -> do
+          let mprc func = mc >>= confPreparedReportConfiguration >>= func
           pure $
             DispatchReport
               ReportSettings
                 { reportSetReportName = reportFlagReportName,
-                  reportSetAvailableReports = fromMaybe M.empty $ mc >>= confAvailableReports
+                  reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
                 }
         CommandWaiting WaitingFlags {..} -> do
           let mwc func = mc >>= confWaitingConfiguration >>= func
@@ -209,7 +214,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description <> YamlParse.confDesc @Configuration
     description = "smos-query"
 
 parseArgs :: Parser Arguments
@@ -246,7 +251,7 @@ parseCommandEntry = info parser modifier
 parseCommandReport :: ParserInfo Command
 parseCommandReport = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Run preconfigure reports"
+    modifier = fullDesc <> progDesc "Run preconfigure reports" <> confDescWithKey @PreparedReportConfiguration preparedReportConfigurationKey
     parser =
       CommandReport
         <$> ( ReportFlags
@@ -258,7 +263,7 @@ parseCommandReport = info parser modifier
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Show the work overview" <> confDesc @WorkConfiguration
+    modifier = fullDesc <> progDesc "Show the work overview" <> confDescWithKey @WorkConfiguration workConfigurationKey
     parser =
       CommandWork
         <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs
@@ -270,7 +275,7 @@ parseCommandWork = info parser modifier
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks" <> confDesc @WaitingConfiguration
+    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks" <> confDescWithKey @WaitingConfiguration waitingConfigurationKey
     parser =
       CommandWaiting
         <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)
@@ -370,6 +375,9 @@ parseCommandTags = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print all the tags that are in use"
     parser = CommandTags <$> (TagsFlags <$> parseFilterArgs)
+
+confDescWithKey :: forall o a. YamlParse.YamlSchema o => Text -> OptParse.InfoMod a
+confDescWithKey key = YamlParse.confDescWith $ YamlParse.objectParser "Configuration" $ YamlParse.optionalFieldWith' key (YamlParse.yamlSchema @o)
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags
