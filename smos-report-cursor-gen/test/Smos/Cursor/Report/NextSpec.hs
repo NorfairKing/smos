@@ -9,7 +9,5 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @NextActionReportCursor
   genValidSpec @NextActionReportCursor
-  eqSpecOnValid @NextActionEntryCursor
   genValidSpec @NextActionEntryCursor

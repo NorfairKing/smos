@@ -20,7 +20,6 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Comparison
   genValidSpec @Comparison
   jsonSpecOnValid @Comparison
   describe "parseComparison"

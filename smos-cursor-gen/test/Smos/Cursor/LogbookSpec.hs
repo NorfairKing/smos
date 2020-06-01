@@ -10,7 +10,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpec @LogbookCursor
   genValidSpec @LogbookCursor
   describe "makeLogbookCursor"
     $ it "produces valid cursors"

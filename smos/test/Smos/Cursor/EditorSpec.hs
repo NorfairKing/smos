@@ -11,7 +11,6 @@ import Test.Validity.Optics
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @EditorCursor
   genValidSpec @EditorCursor
   describe "makeEditorCursor"
     $ it "produces valid cursors"

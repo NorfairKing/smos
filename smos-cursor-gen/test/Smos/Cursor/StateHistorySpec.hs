@@ -10,7 +10,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @StateHistoryCursor
   genValidSpec @StateHistoryCursor
   describe "makeStateHistoryCursor"
     $ it "produces valid cursors"

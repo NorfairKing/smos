@@ -13,7 +13,6 @@ import Test.Validity.Optics
 
 spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
-  eqSpecOnValid @SmosFileCursor
   genValidSpec @SmosFileCursor
   lensSpecOnValid smosFileCursorForestCursorL
   lensSpecOnValid smosFileCursorSelectedEntryL

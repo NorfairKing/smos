@@ -129,12 +129,19 @@ spec = do
     filterArgumentSpec @TimestampName
     filterArgumentSpec @Timestamp
     filterArgumentSpec @(Path Rel File)
+    eqSpecOnValid @(Filter RootedPath)
     genValidSpec @(Filter RootedPath)
+    eqSpecOnValid @(Filter Time)
     genValidSpec @(Filter Time)
+    eqSpecOnValid @(Filter Tag)
     genValidSpec @(Filter Tag)
+    eqSpecOnValid @(Filter Header)
     genValidSpec @(Filter Header)
+    eqSpecOnValid @(Filter TodoState)
     genValidSpec @(Filter TodoState)
+    eqSpecOnValid @(Filter PropertyValue)
     genValidSpec @(Filter PropertyValue)
+    eqSpecOnValid @EntryFilter
     genValidSpec @EntryFilter
     jsonSpecOnValid @EntryFilter
     describe "tcWithTopLevelBranches" $ do

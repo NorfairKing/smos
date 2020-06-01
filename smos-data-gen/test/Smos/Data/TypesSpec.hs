@@ -22,18 +22,12 @@ import Test.Validity.Utils
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Header
-  ordSpecOnValid @Header
   genValidSpec @Header
   jsonSpecOnValid @Header
   textLikeJSONValid @Header
-  eqSpecOnValid @Contents
-  ordSpecOnValid @Contents
   genValidSpec @Contents
   jsonSpecOnValid @Contents
   textLikeJSONValid @Contents
-  eqSpecOnValid @PropertyName
-  ordSpecOnValid @PropertyName
   genValidSpec @PropertyName
   jsonSpecOnValid @PropertyName
   textLikeJSONValid @PropertyName
@@ -44,18 +38,12 @@ spec = do
     it
       "says that '(' is invalid"
       $ validPropertyNameChar '(' `shouldBe` False
-  eqSpecOnValid @PropertyValue
-  ordSpecOnValid @PropertyValue
   genValidSpec @PropertyValue
   jsonSpecOnValid @PropertyValue
   textLikeJSONValid @PropertyValue
-  eqSpecOnValid @TimestampName
-  ordSpecOnValid @TimestampName
   genValidSpec @TimestampName
   jsonSpecOnValid @TimestampName
   textLikeJSONValid @TimestampName
-  eqSpecOnValid @Timestamp
-  ordSpecOnValid @Timestamp
   genValidSpec @Timestamp
   jsonSpecOnValid @Timestamp
   textLikeJSONValid @Timestamp
@@ -67,21 +55,15 @@ spec = do
     $ it "parses whatever timestampText outputs"
     $ forAllValid
     $ \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
-  eqSpecOnValid @TodoState
-  ordSpecOnValid @TodoState
   genValidSpec @TodoState
   jsonSpecOnValid @TodoState
   textLikeJSONValid @TodoState
-  eqSpecOnValid @StateHistory
   ordSpecOnValid @StateHistory
   genValidSpec @StateHistory
   jsonSpecOnValid @StateHistory
-  eqSpecOnValid @StateHistoryEntry
   ordSpecOnValid @StateHistoryEntry
   genValidSpec @StateHistoryEntry
   jsonSpecOnValid @StateHistoryEntry
-  eqSpecOnValid @Tag
-  ordSpecOnValid @Tag
   genValidSpec @Tag
   jsonSpecOnValid @Tag
   textLikeJSONValid @Tag
@@ -98,8 +80,6 @@ spec = do
             [ ("start" .=) <$> (toJSON <$> (genValid :: Gen UTCTime)),
               ("end" .=) <$> (toJSON <$> (genValid :: Gen UTCTime))
             ]
-  eqSpecOnValid @Logbook
-  ordSpecOnValid @Logbook
   genValidSpec @Logbook
   jsonSpecOnValid @Logbook
   describe "emptyLogbook" $ it "is valid" $ shouldBeValid emptyLogbook
@@ -120,8 +100,6 @@ spec = do
           end <- genValid `suchThat` (>= start) :: Gen UTCTime
           pure $ object ["start" .= start, "end" .= end]
      in oneof [withGen genLogbookEntryJSON, withGen genOrderedLogbookEntryJSON]
-  eqSpecOnValid @LogbookEntry
-  ordSpecOnValid @LogbookEntry
   genValidSpec @LogbookEntry
   jsonSpecOnValid @LogbookEntry
   genJSONValid @LogbookEntry genLogbookEntryJSON
@@ -129,13 +107,10 @@ spec = do
   ordSpecOnValid @Entry
   genValidSpec @Entry
   jsonSpecOnValid @Entry
-  eqSpecOnValid @(ForYaml (Tree Entry))
   genValidSpec @(ForYaml (Tree Entry))
   jsonSpecOnValid @(ForYaml (Tree Entry))
-  eqSpecOnValid @(ForYaml (Forest Entry))
   genValidSpec @(ForYaml (Forest Entry))
   jsonSpecOnValid @(ForYaml (Forest Entry))
-  eqSpecOnValid @SmosFile
   genValidSpec @SmosFile
   jsonSpecOnValid @SmosFile
 

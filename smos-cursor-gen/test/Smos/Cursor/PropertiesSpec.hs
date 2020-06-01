@@ -11,7 +11,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @PropertiesCursor
   genValidSpec @PropertiesCursor
   describe "emptyPropertiesCursor" $ it "is a valid cursor" $ shouldBeValid emptyPropertiesCursor
   describe "makePropertiesCursor"

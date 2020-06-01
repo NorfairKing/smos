@@ -13,7 +13,6 @@ import Text.Megaparsec
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Key
   genValidSpec @Key
   describe "keyP" $ do
     parsesValidSpec keyP keyText
@@ -36,7 +35,6 @@ spec = do
     $ forAllValid
     $ \k -> parseJust keyP (renderKey k) k
   jsonSpecOnValid @Key
-  eqSpecOnValid @Modifier
   genValidSpec @Modifier
   describe "modifierP" $ do
     parsesValidSpec modifierP modText
@@ -53,7 +51,6 @@ spec = do
     $ forAllValid
     $ \k -> parseJust modifierP (renderModifier k) k
   jsonSpecOnValid @Modifier
-  eqSpecOnValid @KeyPress
   genValidSpec @KeyPress
   describe "keyPressP" $ do
     parsesValidSpec keyPressP keyPressText
@@ -92,7 +89,6 @@ spec = do
     $ forAllValid
     $ \k -> parseJust keyPressP (renderKeyPress k) k
   jsonSpecOnValid @KeyPress
-  eqSpecOnValid @MatcherConfig
   genValidSpec @MatcherConfig
   describe "matcherConfigP" $ do
     parsesValidSpec matcherConfigP matcherConfigText

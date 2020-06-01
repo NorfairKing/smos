@@ -10,7 +10,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpec @HeaderCursor
   genValidSpec @HeaderCursor
   shrinkValidSpecWithLimit @HeaderCursor 100
   describe "makeHeaderCursor"

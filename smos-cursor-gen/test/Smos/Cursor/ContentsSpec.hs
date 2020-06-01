@@ -13,7 +13,6 @@ import Text.Show.Pretty (ppShow)
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @ContentsCursor
   genValidSpec @ContentsCursor
   describe "makeContentsCursor"
     $ it "produces valid cursors"

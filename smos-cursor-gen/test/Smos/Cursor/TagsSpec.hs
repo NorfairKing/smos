@@ -12,7 +12,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @TagsCursor
   genValidSpec @TagsCursor
   describe "makeTagsCursor" $ it "produces valid cursors" $ producesValidsOnValids makeTagsCursor
   describe "singletonTagsCursor"

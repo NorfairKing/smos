@@ -11,9 +11,7 @@ import Test.Validity.Optics
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @EntryCursor
   genValidSpec @EntryCursor
-  eqSpecOnValid @EntryCursorSelection
   genValidSpec @EntryCursorSelection
   describe "makeEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeEntryCursor
   describe "emptyEntryCursor" $ it "is valid" $ shouldBeValid emptyEntryCursor
