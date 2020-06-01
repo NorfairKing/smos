@@ -23,6 +23,7 @@ import Servant.Client as Servant
 import Smos.API
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)
@@ -30,33 +31,33 @@ import YamlParse.Applicative (confDesc)
 
 getInstructions :: IO Instructions
 getInstructions = do
-  args@(Arguments _ flags) <- getArguments
+  Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions args env config
+  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
-combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
-  src <-
-    Report.combineToConfig
-      Report.defaultReportConfig
-      flagReportFlags
-      envReportEnvironment
-      (confReportConf <$> mc)
+combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions c Flags {..} Environment {..} mc = do
+  dc <-
+    Report.combineToDirectoryConfig
+      Report.defaultDirectoryConfig
+      flagDirectoryFlags
+      envDirectoryEnvironment
+      (confDirectoryConf <$> mc)
   s <- getSettings
-  d <- getDispatch src
+  d <- getDispatch dc
   pure $ Instructions d s
   where
     cM :: (SyncConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSyncConf >>= func
-    getDispatch src =
+    getDispatch dc =
       case c of
         CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
         CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
         CommandSync SyncFlags {..} -> do
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-              Nothing -> Report.resolveReportWorkflowDir src
+              Nothing -> Report.resolveDirWorkflowDir dc
               Just d -> resolveDir' d
           syncSetUUIDFile <-
             case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
@@ -114,9 +115,9 @@ defaultSessionPath = do
   home <- getHomeDir
   resolveFile home ".smos/sync-session.dat"
 
-getEnvironment :: IO Environment
-getEnvironment = do
-  envReportEnvironment <- Report.getEnvironment
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Report.getEnvWithConfigFile $ do
+  envDirectoryEnvironment <- Report.getDirectoryEnvironment
   env <- System.getEnvironment
   let getEnv :: String -> Maybe String
       getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
@@ -151,9 +152,8 @@ getEnvironment = do
   let envSessionPath = getEnv "SESSION_PATH"
   pure Environment {..}
 
-getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} =
-  Report.getConfiguration flagReportFlags envReportEnvironment
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -181,7 +181,7 @@ argParser = info (helper <*> parseArgs) help_
     description = "smos-sync-client"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -236,7 +236,7 @@ parseIgnoreFilesFlag =
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseFlags
+  Flags <$> Report.parseDirectoryFlags
     <*> option
       (Just <$> maybeReader parseLogLevel)
       ( mconcat

@@ -13,6 +13,7 @@ import Path
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+import qualified Smos.Report.OptParse.Types as Report
 import Smos.Single.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -22,11 +23,10 @@ getSettings = do
   flags <- getFlags
   env <- getEnvironment
   config <- getConfig flags env
-  deriveSettings flags env config
+  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
-getConfig :: Flags -> Environment -> IO (Maybe Configuration)
-getConfig Flags {..} Environment {..} =
-  fmap Configuration <$> Report.getConfiguration flagReportFlags envReportEnvironment
+getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfig f e = fmap Configuration <$> Report.getConfiguration f e
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
@@ -34,22 +34,22 @@ deriveSettings Flags {..} Environment {..} mc = do
     case parseHeader $ T.pack $ unwords flagTaskPieces of
       Left err -> die $ "Failed to parse header: " <> err
       Right h -> pure h
-  setReportSettings <-
-    Report.combineToConfig
-      Report.defaultReportConfig
-      flagReportFlags
-      envReportEnvironment
-      (confReportConfiguration <$> mc)
+  setDirectorySettings <-
+    Report.combineToDirectoryConfig
+      Report.defaultDirectoryConfig
+      flagDirectoryFlags
+      envDirectoryEnvironment
+      (confDirectoryConfiguration <$> mc)
   setTaskFile <- forM flagTaskFile parseRelFile
   pure Settings {..}
 
-getFlags :: IO Flags
+getFlags :: IO (Report.FlagsWithConfigFile Flags)
 getFlags = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult Flags
+runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
 runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
@@ -62,28 +62,29 @@ runArgumentsParser = execParserPure prefs_ flagsParser
           prefColumns = 80
         }
 
-flagsParser :: ParserInfo Flags
+flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> parseFlags) help_
   where
     help_ = fullDesc <> progDesc description
     description = "smos-single"
 
-parseFlags :: Parser Flags
+parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
-  Flags
-    <$> some
-      ( strArgument
-          ( mconcat
-              [ help
-                  "The task. Pass any number of arguments and they will be interpreted as the task together.",
-                metavar "TASK"
-              ]
-          )
-      )
-    <*> option
-      (Just <$> str)
-      (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing])
-    <*> Report.parseFlags
+  Report.parseFlagsWithConfigFile $
+    Flags
+      <$> some
+        ( strArgument
+            ( mconcat
+                [ help
+                    "The task. Pass any number of arguments and they will be interpreted as the task together.",
+                  metavar "TASK"
+                ]
+            )
+        )
+      <*> option
+        (Just <$> str)
+        (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing])
+      <*> Report.parseDirectoryFlags
 
-getEnvironment :: IO Environment
-getEnvironment = Environment <$> Report.getEnvironment
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Report.getEnvWithConfigFile $ Environment <$> Report.getDirectoryEnvironment

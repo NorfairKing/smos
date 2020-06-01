@@ -36,7 +36,7 @@ smosScheduler = getSettings >>= scheduler
 
 scheduler :: Settings -> IO ()
 scheduler Settings {..} = do
-  wd <- Report.resolveReportWorkflowDir setReportSettings
+  wd <- Report.resolveDirWorkflowDir setDirectorySettings
   mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile setStateFile
   mState <-
     case mContents of

@@ -13,7 +13,7 @@ import GHC.Generics (Generic)
 import Path
 import Smos.Report.Config
 import Smos.Report.Filter
-import YamlParse.Applicative
+import YamlParse.Applicative as YamlParse
 
 data Flags
   = Flags
@@ -61,7 +61,7 @@ data DirectoryEnvironment
 
 data Configuration
   = Configuration
-      { confDirectoryConf :: !(Maybe DirectoryConfiguration),
+      { confDirectoryConf :: !DirectoryConfiguration,
         confWorkReportConf :: !(Maybe WorkReportConfiguration)
       }
   deriving (Show, Eq, Generic)
@@ -70,10 +70,10 @@ instance Validity Configuration
 
 instance ToJSON Configuration where
   toJSON Configuration {..} =
-    object
-      [ "directory" .= confDirectoryConf,
-        "work" .= confWorkReportConf
-      ]
+    object $
+      directoryConfigurationToObject confDirectoryConf
+        ++ [ "work" .= confWorkReportConf
+           ]
 
 instance FromJSON Configuration where
   parseJSON = viaYamlSchema
@@ -81,13 +81,14 @@ instance FromJSON Configuration where
 instance YamlSchema Configuration where
   yamlSchema =
     objectParser "Configuration" $
-      Configuration <$> optionalField "directory" "The relevant directories"
+      Configuration
+        <$> directoryConfigurationObjectParser
         <*> optionalField "work" "The work report configuration"
 
 backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
   Configuration
-    { confDirectoryConf = if smosReportConfigDirectoryConfig == defaultDirectoryConfig then Nothing else Just $ backToDirectoryConfiguration smosReportConfigDirectoryConfig,
+    { confDirectoryConf = backToDirectoryConfiguration smosReportConfigDirectoryConfig,
       confWorkReportConf = if smosReportConfigWorkConfig == defaultWorkReportConfig then Nothing else Just $ backToWorkReportConfiguration smosReportConfigWorkConfig
     }
 
@@ -103,25 +104,31 @@ data DirectoryConfiguration
 instance Validity DirectoryConfiguration
 
 instance ToJSON DirectoryConfiguration where
-  toJSON DirectoryConfiguration {..} =
-    object
-      [ "workflow-dir" .= directoryConfWorkflowDir,
-        "archive-dir" .= directoryConfArchiveDir,
-        "projects-dir" .= directoryConfProjectsDir,
-        "archived-projects-dir" .= directoryConfArchivedProjectsDir
-      ]
+  toJSON =
+    object . directoryConfigurationToObject
+
+directoryConfigurationToObject :: DirectoryConfiguration -> [(Text, Yaml.Value)]
+directoryConfigurationToObject DirectoryConfiguration {..} =
+  [ "workflow-dir" .= directoryConfWorkflowDir,
+    "archive-dir" .= directoryConfArchiveDir,
+    "projects-dir" .= directoryConfProjectsDir,
+    "archived-projects-dir" .= directoryConfArchivedProjectsDir
+  ]
 
 instance FromJSON DirectoryConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema DirectoryConfiguration where
   yamlSchema =
-    objectParser "DirectoryConfiguration" $
-      DirectoryConfiguration
-        <$> optionalField "workflow-dir" "The workflow directory"
-        <*> optionalField "archive-dir" "The archive directory"
-        <*> optionalField "projects-dir" "The projects directory"
-        <*> optionalField "archived-projects-dir" "The archived projects directory"
+    objectParser "DirectoryConfiguration" directoryConfigurationObjectParser
+
+directoryConfigurationObjectParser :: YamlParse.ObjectParser DirectoryConfiguration
+directoryConfigurationObjectParser =
+  DirectoryConfiguration
+    <$> optionalField "workflow-dir" "The workflow directory"
+    <*> optionalField "archive-dir" "The archive directory"
+    <*> optionalField "projects-dir" "The projects directory"
+    <*> optionalField "archived-projects-dir" "The archived projects directory"
 
 backToDirectoryConfiguration :: DirectoryConfig -> DirectoryConfiguration
 backToDirectoryConfiguration DirectoryConfig {..} =

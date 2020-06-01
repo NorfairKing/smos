@@ -23,7 +23,7 @@ import YamlParse.Applicative hiding (Parser)
 combineToConfig ::
   SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
-  smosReportConfigDirectoryConfig <- combineToDirectoryConfig (smosReportConfigDirectoryConfig src) flagDirectoryFlags envDirectoryEnvironment (mc >>= confDirectoryConf)
+  smosReportConfigDirectoryConfig <- combineToDirectoryConfig (smosReportConfigDirectoryConfig src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
   smosReportConfigWorkConfig <- combineToWorkReportConfig (smosReportConfigWorkConfig src) (mc >>= confWorkReportConf)
   pure $ SmosReportConfig {..}
 

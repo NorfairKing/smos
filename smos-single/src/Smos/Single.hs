@@ -22,7 +22,7 @@ smosSingle = getSettings >>= single
 
 single :: Settings -> IO ()
 single Settings {..} = do
-  wd <- resolveReportWorkflowDir setReportSettings
+  wd <- resolveDirWorkflowDir setDirectorySettings
   path <-
     (wd </>)
       <$> case setTaskFile of

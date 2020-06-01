@@ -25,15 +25,15 @@ import YamlParse.Applicative
 
 data Flags
   = Flags
-      { flagReportFlags :: Report.Flags,
-        flagStateFile :: Maybe FilePath
+      { flagDirectoryFlags :: !Report.DirectoryFlags,
+        flagStateFile :: !(Maybe FilePath)
       }
   deriving (Show, Eq)
 
 data Configuration
   = Configuration
-      { confReportConfiguration :: Report.Configuration,
-        confSchedulerConfiguration :: Maybe SchedulerConfiguration
+      { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+        confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
       }
   deriving (Show, Eq)
 
@@ -45,8 +45,8 @@ instance YamlSchema Configuration where
 
 data SchedulerConfiguration
   = SchedulerConfiguration
-      { schedulerConfStateFile :: Maybe FilePath,
-        schedulerConfSchedule :: Maybe Schedule
+      { schedulerConfStateFile :: !(Maybe FilePath),
+        schedulerConfSchedule :: !(Maybe Schedule)
       }
   deriving (Show, Eq)
 
@@ -71,9 +71,9 @@ instance YamlSchema Schedule where
 
 data ScheduleItem
   = ScheduleItem
-      { scheduleItemTemplate :: Path Rel File,
-        scheduleItemDestination :: Path Rel File,
-        scheduleItemCronSchedule :: CronSchedule
+      { scheduleItemTemplate :: !(Path Rel File),
+        scheduleItemDestination :: !(Path Rel File),
+        scheduleItemCronSchedule :: !CronSchedule
       }
   deriving (Show, Eq, Generic)
 
@@ -98,16 +98,16 @@ instance YamlSchema ScheduleItem where
 
 data Environment
   = Environment
-      { envReportEnvironment :: Report.Environment,
-        envStateFile :: Maybe FilePath
+      { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+        envStateFile :: !(Maybe FilePath)
       }
   deriving (Show, Eq)
 
 data Settings
   = Settings
-      { setReportSettings :: SmosReportConfig,
-        setStateFile :: Path Abs File,
-        setSchedule :: Schedule
+      { setDirectorySettings :: !Report.DirectoryConfig,
+        setStateFile :: !(Path Abs File),
+        setSchedule :: !Schedule
       }
   deriving (Show, Eq)
 
