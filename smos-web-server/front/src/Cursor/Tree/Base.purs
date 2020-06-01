@@ -1,9 +1,9 @@
 module Cursor.Tree.Base where
 
 import Prelude
-import Data.List
-import Data.Tuple
-import Data.Maybe
+import Data.List (List(..), concat, drop, fromFoldable, reverse, singleton, take, (:))
+import Data.Tuple (Tuple(..))
+import Data.Maybe (Maybe(..))
 import Cursor.Tree.Types (CForest, CTree(..), TreeAbove(..), TreeCursor, TreeCursorSelection(..), emptyCForest, openForest, unpackCForest)
 
 singletonTreeCursor :: forall a b. a -> TreeCursor a b
