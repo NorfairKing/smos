@@ -1,8 +1,9 @@
 module Smos.Archive.OptParse.Types where
 
 import Path
-import Smos.Report.Config as Report
-import Smos.Report.OptParse.Types as Report
+import qualified Smos.Report.Config as Report
+import qualified Smos.Report.OptParse.Types as Report
+import YamlParse.Applicative
 
 data Flags
   = Flags
@@ -17,6 +18,9 @@ data Configuration
       }
   deriving (Show, Eq)
 
+instance YamlSchema Configuration where
+  yamlSchema = Configuration <$> yamlSchema
+
 data Environment
   = Environment
       { envDirectoryEnvironment :: !Report.DirectoryEnvironment
@@ -26,6 +30,6 @@ data Environment
 data Settings
   = Settings
       { setFile :: !(Path Abs File),
-        setDirectorySettings :: !DirectoryConfig
+        setDirectorySettings :: !Report.DirectoryConfig
       }
   deriving (Show, Eq)

@@ -21,6 +21,7 @@ library:
   - path-io
   - shakespeare
   - smos
+  - smos-archive
   - smos-data
   - smos-query
   - smos-server

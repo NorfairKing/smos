@@ -10,6 +10,8 @@
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET
 
+/smos-archive SmosArchiveR GET
+
 /smos-server SmosServerR GET
 
 /smos-sync-client SmosSyncClientR GET
