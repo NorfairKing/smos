@@ -65,7 +65,7 @@ flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH"])
+  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH", action "file"])
     <*> Report.parseDirectoryFlags
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
