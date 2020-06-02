@@ -149,7 +149,7 @@ extra-deps:
   - validity-vector
 
 - github: NorfairKing/yamlparse-applicative
-  commit: 08369b1b3e1c0ebc0f4e2763e63db48227345081
+  commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
   subdirs:
   - yamlparse-applicative
 nix:

@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Docs.Site.Handler.SmosSyncClient
   ( getSmosSyncClientR,
@@ -11,11 +12,14 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Sync.Client.OptParse
+import Smos.Sync.Client.OptParse.Types as Sync
+import YamlParse.Applicative
 
 getSmosSyncClientR :: Handler Html
 getSmosSyncClientR = do
   DocPage {..} <- lookupPage "smos-sync-client"
-  let helpText = getHelpPageOf []
+  let argsHelpText = getHelpPageOf []
+      confHelpText = prettySchemaDoc @Sync.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-sync-client"
     $(widgetFile "args")

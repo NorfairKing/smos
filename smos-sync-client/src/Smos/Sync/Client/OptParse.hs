@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.OptParse
   ( getInstructions,
@@ -27,7 +26,6 @@ import qualified Smos.Report.OptParse.Types as Report
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)
-import YamlParse.Applicative (confDesc)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -177,7 +175,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-sync-client"
 
 parseArgs :: Parser Arguments

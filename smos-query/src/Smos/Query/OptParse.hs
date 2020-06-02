@@ -3,7 +3,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Query.OptParse where
 
@@ -15,7 +14,6 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
 import Options.Applicative as OptParse
@@ -33,8 +31,6 @@ import Smos.Report.TimeBlock
 import qualified System.Environment as System
 import System.Exit
 import Text.Read (readMaybe)
-import qualified YamlParse.Applicative as YamlParse
-import qualified YamlParse.Applicative.OptParse as YamlParse
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
@@ -214,7 +210,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> YamlParse.confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-query"
 
 parseArgs :: Parser Arguments
@@ -251,7 +247,7 @@ parseCommandEntry = info parser modifier
 parseCommandReport :: ParserInfo Command
 parseCommandReport = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Run preconfigure reports" <> confDescWithKey @PreparedReportConfiguration preparedReportConfigurationKey
+    modifier = fullDesc <> progDesc "Run preconfigure reports"
     parser =
       CommandReport
         <$> ( ReportFlags
@@ -263,7 +259,7 @@ parseCommandReport = info parser modifier
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Show the work overview" <> confDescWithKey @WorkConfiguration workConfigurationKey
+    modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork
         <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs
@@ -275,7 +271,7 @@ parseCommandWork = info parser modifier
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks" <> confDescWithKey @WaitingConfiguration waitingConfigurationKey
+    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
     parser =
       CommandWaiting
         <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)
@@ -375,9 +371,6 @@ parseCommandTags = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print all the tags that are in use"
     parser = CommandTags <$> (TagsFlags <$> parseFilterArgs)
-
-confDescWithKey :: forall o a. YamlParse.YamlSchema o => Text -> OptParse.InfoMod a
-confDescWithKey key = YamlParse.confDescWith $ YamlParse.objectParser "Configuration" $ YamlParse.optionalFieldWith' key (YamlParse.yamlSchema @o)
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags

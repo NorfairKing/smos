@@ -9,10 +9,11 @@ To set up a work report, you will first need contexts.
 For example, you can use these in your config file:
 
 ``` yaml
-contexts:
-  home: 'ancestor:tag:home'
-  office: 'ancestor:tag:office'
-  airplane: 'tag:offline'
+work:
+  contexts:
+    home: 'ancestor:tag:home'
+    office: 'ancestor:tag:office'
+    airplane: 'tag:offline'
 ```
 
 These specify that, when you're at home, you can only do the tasks that are tagged 'home' or whose parents are tagged as 'home'.
@@ -37,4 +38,5 @@ work:
 Here we configure `smos-query` to warn us if any of the entries that should be reported is missing a `timewindow` property.
 We also specify that the collumns in the report should be the file, the todo state, the header and the `timewindow` property for each entry.
 The last line configures `smos-query` to sort these entries by their `timewindow` property value.
+(Checks, columns and sorters are [Standard Arguments](/page/smos-query_standard-arguments).)
 

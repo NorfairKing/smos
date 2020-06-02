@@ -24,12 +24,14 @@ import Options.Applicative.Help
 import Smos.Data
 import Smos.Docs.Site.Handler.Import hiding (Header)
 import Smos.OptParse
+import Smos.OptParse.Types as TUI
 import YamlParse.Applicative
 
 getSmosR :: Handler Html
 getSmosR = do
   DocPage {..} <- lookupPage "smos"
-  let helpText = getHelpPageOf []
+  let argsHelpText = getHelpPageOf []
+      confHelpText = prettySchemaDoc @TUI.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos"
     $(widgetFile "args")

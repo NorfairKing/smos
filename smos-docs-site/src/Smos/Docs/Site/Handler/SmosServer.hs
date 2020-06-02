@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Docs.Site.Handler.SmosServer
   ( getSmosServerR,
@@ -11,11 +12,14 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Server.OptParse
+import Smos.Server.OptParse.Types as Server
+import YamlParse.Applicative
 
 getSmosServerR :: Handler Html
 getSmosServerR = do
   DocPage {..} <- lookupPage "smos-server"
-  let helpText = getHelpPageOf []
+  let argsHelpText = getHelpPageOf []
+      confHelpText = prettySchemaDoc @Server.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-server"
     $(widgetFile "args")
