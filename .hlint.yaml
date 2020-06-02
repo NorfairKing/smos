@@ -34,3 +34,7 @@
       - "Smos.Sync.Client.isHidden"
 - ignore:
     name: "Replace case with maybe"
+- ignore:
+    name: "Use record patterns"
+    within:
+      - "Smos.Docs.Site.Handler.Keybindings"
