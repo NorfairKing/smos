@@ -38,3 +38,4 @@
     name: "Use record patterns"
     within:
       - "Smos.Docs.Site.Handler.Keybindings"
+      - "Smos.OptParse.Types"
