@@ -27,11 +27,18 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           stack-version: ${{ matrix.stack }}
 
+      - uses: cachix/install-nix-action@v8
+
+
       - uses: actions/cache@v1
         name: Cache ~/.stack
         with:
           path: ~/.stack
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack
+
+      - name: Build frontend
+        run: |
+          cd smos-web-server/front && nix-shell --run "yarn bundle"
 
       - name: Build
         run: |
