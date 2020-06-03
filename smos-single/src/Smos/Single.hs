@@ -14,7 +14,6 @@ import Path.IO
 import Smos.Data
 import Smos.Report.Config
 import Smos.Single.OptParse
-import Smos.Single.OptParse.Types
 import System.Exit
 
 smosSingle :: IO ()

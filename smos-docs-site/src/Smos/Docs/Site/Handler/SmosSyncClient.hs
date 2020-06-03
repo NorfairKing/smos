@@ -8,18 +8,18 @@ module Smos.Docs.Site.Handler.SmosSyncClient
   )
 where
 
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
-import Smos.Sync.Client.OptParse
-import Smos.Sync.Client.OptParse.Types as Sync
+import Smos.Sync.Client.OptParse as Sync
 import YamlParse.Applicative
 
 getSmosSyncClientR :: Handler Html
 getSmosSyncClientR = do
   DocPage {..} <- lookupPage "smos-sync-client"
   let argsHelpText = getHelpPageOf []
-      envHelpText = "TODO" :: String
+      envHelpText = Env.helpDoc Sync.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Sync.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-sync-client"

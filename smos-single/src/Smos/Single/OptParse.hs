@@ -2,19 +2,19 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Single.OptParse
-  ( getSettings,
-    runArgumentsParser,
+  ( module Smos.Single.OptParse,
+    module Smos.Single.OptParse.Types,
   )
 where
 
 import Control.Monad
 import qualified Data.Text as T
+import qualified Env
 import Options.Applicative
 import Path
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Single.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -88,4 +88,10 @@ parseFlags =
       <*> Report.parseDirectoryFlags
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
-getEnvironment = Report.getEnvWithConfigFile $ Environment <$> Report.getDirectoryEnvironment
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.directoryEnvironmentParser

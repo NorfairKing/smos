@@ -2,19 +2,15 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Sync.Client.OptParse
-  ( getInstructions,
-    Instructions (..),
-    Dispatch (..),
-    SyncSettings (..),
-    Settings (..),
-    runArgumentsParser,
+  ( module Smos.Sync.Client.OptParse,
+    module Smos.Sync.Client.OptParse.Types,
   )
 where
 
-import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
+import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
@@ -22,7 +18,6 @@ import Servant.Client as Servant
 import Smos.API
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)
@@ -114,41 +109,44 @@ defaultSessionPath = do
   resolveFile home ".smos/sync-session.dat"
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
-getEnvironment = Report.getEnvWithConfigFile $ do
-  envDirectoryEnvironment <- Report.getDirectoryEnvironment
-  env <- System.getEnvironment
-  let getEnv :: String -> Maybe String
-      getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
-  -- readEnv :: Read a => String -> Maybe a
-  -- readEnv key = getEnv key >>= readMaybe
-  envLogLevel <-
-    forM (getEnv "LOG_LEVEL") $ \s ->
-      case parseLogLevel s of
-        Nothing -> fail $ "Unknown log level: " <> s
-        Just ll -> pure ll
-  let envServerUrl = getEnv "SERVER_URL"
-      envContentsDir = getEnv "CONTENTS_DIR"
-      envUUIDFile = getEnv "UUID_FILE"
-      envMetadataDB = getEnv "METADATA_DATABASE"
-  envIgnoreFiles <-
-    case getEnv "IGNORE_FILES" of
-      Just "nothing" -> pure $ Just IgnoreNothing
-      Just "no" -> pure $ Just IgnoreNothing
-      Just "hidden" -> pure $ Just IgnoreHiddenFiles
-      Just s -> fail $ "Unknown 'IgnoreFiles' value: " <> s
-      Nothing -> pure Nothing
-  envUsername <-
-    forM (getEnv "USERNAME") $ \s ->
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.directoryEnvironmentParser
+      <*> Env.var (fmap Just . logLevelReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+      <*> Env.var (fmap Just . Env.str) "SERVER_URL" (mE <> Env.help "The url of the server to sync with")
+      <*> Env.var (fmap Just . Env.str) "CONTENTS_DIR" (mE <> Env.help "The path to the directory to sync")
+      <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The path to the uuid file of the server")
+      <*> Env.var (fmap Just . Env.str) "METADATA_DATABASE" (mE <> Env.help "The path to the database of metadata")
+      <*> Env.var (fmap Just . ignoreFilesReader) "IGNORE_FILES" (mE <> Env.help "Which files to ignore")
+      <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
+      <*> Env.var (fmap Just . passwordReader) "PASSWORD" (mE <> Env.help "The password to sync with")
+      <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
+  where
+    logLevelReader s = case parseLogLevel s of
+      Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
+      Just ll -> pure ll
+    ignoreFilesReader s =
+      case s of
+        "nothing" -> pure IgnoreNothing
+        "no" -> pure IgnoreNothing
+        "hidden" -> pure IgnoreHiddenFiles
+        _ -> Left $ Env.UnreadError $ "Unknown 'IgnoreFiles' value: " <> s
+    usernameReader s =
       case parseUsername (T.pack s) of
-        Nothing -> fail $ "Invalid username: " <> s
+        Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
         Just un -> pure un
-  envPassword <-
-    forM (getEnv "PASSWORD") $ \s ->
+    passwordReader s =
       case parsePassword (T.pack s) of
-        Nothing -> fail $ "Invalid password: " <> s
+        Nothing -> Left $ Env.UnreadError $ "Invalid password: " <> s
         Just pw -> pure pw
-  let envSessionPath = getEnv "SESSION_PATH"
-  pure Environment {..}
+    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

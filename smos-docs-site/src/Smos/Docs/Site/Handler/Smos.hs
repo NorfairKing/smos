@@ -19,19 +19,19 @@ import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Yaml as Yaml
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Data
 import Smos.Docs.Site.Handler.Import hiding (Header)
-import Smos.OptParse
-import Smos.OptParse.Types as TUI
+import Smos.OptParse as TUI
 import YamlParse.Applicative
 
 getSmosR :: Handler Html
 getSmosR = do
   DocPage {..} <- lookupPage "smos"
   let argsHelpText = getHelpPageOf []
-      envHelpText = "TODO" :: String
+      envHelpText = Env.helpDoc TUI.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @TUI.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos"

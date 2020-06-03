@@ -13,11 +13,11 @@ where
 
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
-import Smos.Query.OptParse
-import Smos.Query.OptParse.Types as Query
+import Smos.Query.OptParse as Query
 import Smos.Report.OptParse.Types as Report
 import YamlParse.Applicative as YamlParse
 
@@ -25,7 +25,7 @@ getSmosQueryR :: Handler Html
 getSmosQueryR = do
   DocPage {..} <- lookupPage "smos-query"
   let argsHelpText = getHelpPageOf []
-      envHelpText = "TODO" :: String
+      envHelpText = Env.helpDoc Query.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Query.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-query"
@@ -35,7 +35,7 @@ getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do
   DocPage {..} <- lookupPage $ "smos-query_" <> cmd
   let argsHelpText = getHelpPageOf [T.unpack cmd]
-      envHelpText = "TODO" :: String
+      envHelpText = "This command does not use any extra environment variables." :: String
       confHelpText = case cmd of
         "work" -> confDocsWithKey2 @Report.WorkReportConfiguration @Query.WorkConfiguration workConfigurationKey
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey

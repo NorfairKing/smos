@@ -3,17 +3,18 @@
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Scheduler.OptParse
-  ( getSettings,
+  ( module Smos.Scheduler.OptParse,
+    module Smos.Scheduler.OptParse.Types,
   )
 where
 
 import Data.Maybe
+import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Scheduler.OptParse.Types
 import qualified System.Environment as System
 import YamlParse.Applicative (confDesc)
@@ -53,15 +54,19 @@ getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile
 getConfiguration = Report.getConfiguration
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
-getEnvironment = Report.getEnvWithConfigFile $ do
-  envDirectoryEnvironment <- Report.getDirectoryEnvironment
-  env <- System.getEnvironment
-  let getEnv :: String -> Maybe String
-      getEnv key = ("SMOS_SCHEDULER" ++ key) `lookup` env
-  -- readEnv :: Read a => String -> Maybe a
-  -- readEnv key = getEnv key >>= readMaybe
-  let envStateFile = getEnv "STATE_FILE"
-  pure Environment {..}
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.directoryEnvironmentParser
+      <*> Env.var (fmap Just . Env.str) "STATE_FILE" (mE <> Env.help "The path to the file in which to store the scheduler state")
+  where
+    mE = Env.def Nothing <> Env.keep
 
 getFlags :: IO (Report.FlagsWithConfigFile Flags)
 getFlags = do

@@ -9,7 +9,6 @@ where
 import Smos.Query.Commands
 import Smos.Query.Config
 import Smos.Query.OptParse
-import Smos.Query.OptParse.Types
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do

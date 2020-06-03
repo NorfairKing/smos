@@ -16,6 +16,7 @@ library:
     - bytestring
     - containers
     - cron
+    - envparse
     - mtl
     - optparse-applicative
     - path

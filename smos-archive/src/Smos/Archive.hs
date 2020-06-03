@@ -26,7 +26,6 @@ import Data.Tree
 import Path
 import Path.IO
 import Smos.Archive.OptParse
-import Smos.Archive.OptParse.Types
 import Smos.Archive.Prompt
 import Smos.Data
 import Smos.Report.Config

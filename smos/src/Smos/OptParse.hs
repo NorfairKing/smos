@@ -3,13 +3,13 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.OptParse
-  ( getInstructions,
-    Instructions (..),
-    runArgumentsParser,
+  ( module Smos.OptParse,
+    module Smos.OptParse.Types,
   )
 where
 
 import qualified Data.Text as T
+import qualified Env
 import Import
 import Options.Applicative
 import Smos.Actions
@@ -17,7 +17,6 @@ import Smos.Keys
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Types
 import qualified System.Environment as System
 import System.Exit (die)
@@ -173,7 +172,13 @@ getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile
 getConfiguration = Report.getConfiguration
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
-getEnvironment = Report.getEnvWithConfigFile $ Environment <$> Report.getEnvironment
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.environmentParser
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult

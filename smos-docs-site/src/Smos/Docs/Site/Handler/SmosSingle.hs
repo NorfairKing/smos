@@ -8,18 +8,18 @@ module Smos.Docs.Site.Handler.SmosSingle
   )
 where
 
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
-import Smos.Single.OptParse
-import Smos.Single.OptParse.Types as Single
+import Smos.Single.OptParse as Single
 import YamlParse.Applicative
 
 getSmosSingleR :: Handler Html
 getSmosSingleR = do
   DocPage {..} <- lookupPage "smos-single"
   let argsHelpText = getHelpPageOf []
-      envHelpText = "TODO" :: String
+      envHelpText = Env.helpDoc Single.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Single.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-single"

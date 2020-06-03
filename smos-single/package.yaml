@@ -3,7 +3,7 @@ version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+copyright: ! 'Copyright: (c) 2019-2020 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
@@ -12,6 +12,7 @@ library:
   ghc-options: -Wall
   dependencies:
     - base
+    - envparse
     - mtl
     - optparse-applicative
     - path

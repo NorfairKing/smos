@@ -4,11 +4,14 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Smos.Query.OptParse where
+module Smos.Query.OptParse
+  ( module Smos.Query.OptParse,
+    module Smos.Query.OptParse.Types,
+  )
+where
 
 import Control.Arrow
 import Data.Foldable
-import Data.Functor
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -16,13 +19,13 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
+import qualified Env
 import Options.Applicative as OptParse
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse as Report
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
@@ -30,7 +33,6 @@ import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
 import System.Exit
-import Text.Read (readMaybe)
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
@@ -172,18 +174,23 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
       pure $ SmosQueryConfig {smosQueryConfigReportConfig = src}
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
-getEnvironment = Report.getEnvWithConfigFile $ do
-  env <- System.getEnvironment
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-      readSmosEnv :: Read a => String -> Maybe a
-      readSmosEnv key = getSmosEnv key >>= readMaybe
-  envReportEnvironment <- Report.getEnvironment
-  let envHideArchive =
-        readSmosEnv "IGNORE_ARCHIVE" <&> \case
-          True -> Don'tHideArchive
-          False -> HideArchive
-  pure Environment {..}
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.environmentParser
+      <*> Env.var (fmap Just . ignoreArchiveReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+  where
+    ignoreArchiveReader = \case
+      "True" -> Right HideArchive
+      "False" -> Right Don'tHideArchive
+      _ -> Left $ Env.UnreadError "Must be 'True' or 'False' if set"
+    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

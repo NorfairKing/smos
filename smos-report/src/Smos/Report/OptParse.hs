@@ -3,7 +3,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Report.OptParse where
+module Smos.Report.OptParse
+  ( module Smos.Report.OptParse,
+    module Smos.Report.OptParse.Types,
+  )
+where
 
 import Control.Arrow
 import Control.Monad
@@ -12,12 +16,12 @@ import Data.Aeson (FromJSON)
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
+import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
 import Smos.Report.Config
 import Smos.Report.OptParse.Types
-import qualified System.Environment as System
 import YamlParse.Applicative hiding (Parser)
 
 combineToConfig ::
@@ -139,38 +143,29 @@ parseArchivedProjectsDirFlag =
     )
 
 getEnvironment :: IO Environment
-getEnvironment = do
-  envDirectoryEnvironment <- getDirectoryEnvironment
-  pure Environment {..}
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-getDirectoryEnvironment :: IO DirectoryEnvironment
-getDirectoryEnvironment = do
-  env <- System.getEnvironment
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv = getSmosEnvVar env
-  pure
-    DirectoryEnvironment
-      { dirEnvWorkflowDir =
-          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"],
-        dirEnvArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"],
-        dirEnvProjectsDir =
-          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"],
-        dirEnvArchivedProjectsDir =
-          msum $
-            map
-              getSmosEnv
-              ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
-      }
+prefixedEnvironmentParser :: Env.Parser Env.Error Environment
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-getEnvWithConfigFile :: IO a -> IO (EnvWithConfigFile a)
-getEnvWithConfigFile func = do
-  env <- System.getEnvironment
-  let envWithConfigFile = msum $ map (getSmosEnvVar env) ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"]
-  envWithRestEnv <- func
-  pure EnvWithConfigFile {..}
+environmentParser :: Env.Parser Env.Error Environment
+environmentParser = Environment <$> directoryEnvironmentParser
 
-getSmosEnvVar :: [(String, String)] -> String -> Maybe String
-getSmosEnvVar env key = ("SMOS_" ++ key) `lookup` env
+directoryEnvironmentParser :: Env.Parser Env.Error DirectoryEnvironment
+directoryEnvironmentParser =
+  DirectoryEnvironment
+    <$> Env.var (fmap Just . Env.str) "WORKFLOW_DIR" (mE <> Env.help "Workflow directory")
+    <*> Env.var (fmap Just . Env.str) "ARCHIVE_DIR" (mE <> Env.help "Archive directory")
+    <*> Env.var (fmap Just . Env.str) "PROJECTS_DIR" (mE <> Env.help "Projects directory")
+    <*> Env.var (fmap Just . Env.str) "ARCHIVED_PROJECTS_DIR" (mE <> Env.help "Archived projects directory")
+  where
+    mE = Env.def Nothing <> Env.keep
+
+envWithConfigFileParser :: Env.Parser Env.Error a -> Env.Parser Env.Error (EnvWithConfigFile a)
+envWithConfigFileParser p =
+  EnvWithConfigFile
+    <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (Env.def Nothing <> Env.keep <> Env.help "Workflow directory")
+    <*> p
 
 defaultConfigFiles :: IO [Path Abs File]
 defaultConfigFiles = do

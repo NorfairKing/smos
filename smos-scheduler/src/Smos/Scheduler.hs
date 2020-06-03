@@ -26,7 +26,6 @@ import Path.IO
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
-import Smos.Scheduler.OptParse.Types
 import System.Cron (nextMatch, scheduleMatches)
 import System.Exit
 import Text.Show.Pretty

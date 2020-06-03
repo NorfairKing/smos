@@ -8,10 +8,10 @@ module Smos.Docs.Site.Handler.SmosArchive
   )
 where
 
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
-import Smos.Archive.OptParse
-import Smos.Archive.OptParse.Types as Archive
+import Smos.Archive.OptParse as Archive
 import Smos.Docs.Site.Handler.Import
 import YamlParse.Applicative
 
@@ -19,7 +19,7 @@ getSmosArchiveR :: Handler Html
 getSmosArchiveR = do
   DocPage {..} <- lookupPage "smos-archive"
   let argsHelpText = getHelpPageOf []
-      envHelpText = "TODO" :: String
+      envHelpText = Env.helpDoc Archive.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Archive.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-archive"
