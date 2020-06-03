@@ -19,6 +19,7 @@ getSmosArchiveR :: Handler Html
 getSmosArchiveR = do
   DocPage {..} <- lookupPage "smos-archive"
   let argsHelpText = getHelpPageOf []
+      envHelpText = "TODO" :: String
       confHelpText = prettySchemaDoc @Archive.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-archive"

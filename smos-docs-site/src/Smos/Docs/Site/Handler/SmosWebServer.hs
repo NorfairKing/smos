@@ -8,17 +8,18 @@ module Smos.Docs.Site.Handler.SmosWebServer
   )
 where
 
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
-import Smos.Web.Server.OptParse
-import Smos.Web.Server.OptParse.Types as WebServer
+import Smos.Web.Server.OptParse as WebServer
 import YamlParse.Applicative
 
 getSmosWebServerR :: Handler Html
 getSmosWebServerR = do
   DocPage {..} <- lookupPage "smos-web-server"
   let argsHelpText = getHelpPageOf []
+      envHelpText = Env.helpDoc WebServer.environmentParser
       confHelpText = prettySchemaDoc @WebServer.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-web-server"

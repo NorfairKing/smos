@@ -14,6 +14,12 @@
   <pre>
     #{argsHelpText}
 
+<h3 .title .is-3>
+  Environment
+
+<div .content>
+  <pre>
+    #{envHelpText}
 
 <h3 .title .is-3>
   Configuration

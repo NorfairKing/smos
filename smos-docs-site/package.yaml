@@ -16,6 +16,7 @@ library:
   - conduit
   - containers
   - data-default
+  - envparse
   - optparse-applicative
   - path
   - path-io

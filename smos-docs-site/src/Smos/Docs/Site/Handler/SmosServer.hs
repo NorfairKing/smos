@@ -8,17 +8,18 @@ module Smos.Docs.Site.Handler.SmosServer
   )
 where
 
+import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
-import Smos.Server.OptParse
-import Smos.Server.OptParse.Types as Server
+import Smos.Server.OptParse as Server
 import YamlParse.Applicative
 
 getSmosServerR :: Handler Html
 getSmosServerR = do
   DocPage {..} <- lookupPage "smos-server"
   let argsHelpText = getHelpPageOf []
+      envHelpText = Env.helpDoc Server.environmentParser
       confHelpText = prettySchemaDoc @Server.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-server"

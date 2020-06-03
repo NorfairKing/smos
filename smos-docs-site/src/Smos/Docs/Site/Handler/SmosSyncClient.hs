@@ -19,6 +19,7 @@ getSmosSyncClientR :: Handler Html
 getSmosSyncClientR = do
   DocPage {..} <- lookupPage "smos-sync-client"
   let argsHelpText = getHelpPageOf []
+      envHelpText = "TODO" :: String
       confHelpText = prettySchemaDoc @Sync.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-sync-client"

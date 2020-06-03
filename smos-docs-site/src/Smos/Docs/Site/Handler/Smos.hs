@@ -31,6 +31,7 @@ getSmosR :: Handler Html
 getSmosR = do
   DocPage {..} <- lookupPage "smos"
   let argsHelpText = getHelpPageOf []
+      envHelpText = "TODO" :: String
       confHelpText = prettySchemaDoc @TUI.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos"

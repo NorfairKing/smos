@@ -25,6 +25,7 @@ getSmosQueryR :: Handler Html
 getSmosQueryR = do
   DocPage {..} <- lookupPage "smos-query"
   let argsHelpText = getHelpPageOf []
+      envHelpText = "TODO" :: String
       confHelpText = prettySchemaDoc @Query.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-query"
@@ -34,6 +35,7 @@ getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do
   DocPage {..} <- lookupPage $ "smos-query_" <> cmd
   let argsHelpText = getHelpPageOf [T.unpack cmd]
+      envHelpText = "TODO" :: String
       confHelpText = case cmd of
         "work" -> confDocsWithKey2 @Report.WorkReportConfiguration @Query.WorkConfiguration workConfigurationKey
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey

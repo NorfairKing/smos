@@ -19,6 +19,7 @@ getSmosSingleR :: Handler Html
 getSmosSingleR = do
   DocPage {..} <- lookupPage "smos-single"
   let argsHelpText = getHelpPageOf []
+      envHelpText = "TODO" :: String
       confHelpText = prettySchemaDoc @Single.Configuration
   defaultLayout $ do
     setTitle "Smos Documentation - smos-single"
