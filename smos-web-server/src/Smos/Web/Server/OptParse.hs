@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Web.Server.OptParse
   ( getInstructions,
@@ -19,7 +18,7 @@ import Options.Applicative
 import Path.IO
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
-import YamlParse.Applicative (confDesc, readConfigFile)
+import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -76,7 +75,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-web-server"
 
 parseArgs :: Parser Arguments

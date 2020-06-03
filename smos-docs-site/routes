@@ -14,9 +14,11 @@
 
 /smos-archive SmosArchiveR GET
 
+/smos-sync-client SmosSyncClientR GET
+
 /smos-server SmosServerR GET
 
-/smos-sync-client SmosSyncClientR GET
+/smos-web-server SmosWebServerR GET
 
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets

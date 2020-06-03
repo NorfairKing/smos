@@ -119,6 +119,10 @@
           <a href=@{PageR smos_server_nixos}>
             Running on NixOs
 
+    <li>
+      <a href=@{SmosWebServerR}>
+        The Smos Web Server
+
   <p .menu-label>
     Support
   

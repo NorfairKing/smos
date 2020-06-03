@@ -28,6 +28,7 @@ library:
   - smos-server
   - smos-single
   - smos-sync-client
+  - smos-web-server
   - template-haskell
   - text
   - th-lift-instances
