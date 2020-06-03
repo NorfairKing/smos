@@ -26,8 +26,12 @@ import Smos.Server.OptParse
 import System.Exit
 
 serveSmosServer :: ServeSettings -> IO ()
-serveSmosServer ss@ServeSettings {..} = do
+serveSmosServer ss = do
   pPrint ss
+  runSmosServer ss
+
+runSmosServer :: ServeSettings -> IO ()
+runSmosServer ServeSettings {..} =
   runStderrLoggingT
     $ filterLogger (\_ ll -> ll >= serveSetLogLevel)
     $ DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1

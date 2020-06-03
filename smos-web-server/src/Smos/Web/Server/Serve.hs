@@ -13,9 +13,13 @@ import Text.Show.Pretty
 import Yesod
 
 serveSmosWebServer :: ServeSettings -> IO ()
-serveSmosWebServer ss@ServeSettings {..} = do
-  let app = App {appLogLevel = serveSetLogLevel, appStatic = smosWebServerStatic}
+serveSmosWebServer ss = do
   pPrint ss
+  runSmosWebServer ss
+
+runSmosWebServer :: ServeSettings -> IO ()
+runSmosWebServer ServeSettings {..} = do
+  let app = App {appLogLevel = serveSetLogLevel, appStatic = smosWebServerStatic}
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =
         if development
