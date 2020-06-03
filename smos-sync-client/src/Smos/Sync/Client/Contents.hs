@@ -7,7 +7,6 @@ import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
-import qualified Data.Set as S
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
@@ -58,35 +57,6 @@ makeContentsMap Mergeful.ClientStore {..} =
         M.elems $ M.map Mergeful.timedValue clientStoreSyncedItems,
         M.elems $ M.map Mergeful.timedValue clientStoreSyncedButChangedItems
       ]
-
-saveContentsMap :: IgnoreFiles -> Path Abs Dir -> ContentsMap -> IO ()
-saveContentsMap igf dir cm = do
-  ensureDir dir
-  let filePred =
-        case igf of
-          IgnoreNothing -> const True
-          IgnoreHiddenFiles -> not . isHidden
-      filterFunc =
-        case igf of
-          IgnoreNothing -> id
-          IgnoreHiddenFiles -> M.filterWithKey (\p _ -> not $ isHidden p)
-  let files = filterFunc $ contentsMapFiles cm
-  found <- snd <$> listDirRecurRel dir
-  forM_ found $ \p ->
-    case M.lookup p files of
-      Nothing ->
-        if filePred p
-          then removeFile (dir </> p) -- Is not supposed to be there anymore
-          else pure () -- We should leave it alone
-      Just bs -> SB.writeFile (toFilePath $ dir </> p) bs -- TODO this seems a bit wasteful ..
-  let leftovers = files `M.difference` M.fromSet (const ()) (S.fromList found)
-  ensureDir dir
-  void $ M.traverseWithKey go leftovers
-  where
-    go p bs = do
-      let f = dir </> p
-      ensureDir $ parent f
-      SB.writeFile (fromAbsFile f) bs
 
 isHidden :: Path Rel File -> Bool
 isHidden = go
