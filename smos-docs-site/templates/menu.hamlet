@@ -91,7 +91,11 @@
 
     <li>
       <a href=@{SmosArchiveR}>
-        The Smos Archiving tool
+        The Smos Archiving Tool
+
+    <li>
+      <a href=@{SmosSingleR}>
+        The Smos Single Tool
 
     <li>
       <a href=@{SmosSyncClientR}>

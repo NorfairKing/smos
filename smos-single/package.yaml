@@ -20,6 +20,7 @@ library:
     - smos-report
     - text
     - time
+    - yamlparse-applicative
 
 executables:
   smos-single:

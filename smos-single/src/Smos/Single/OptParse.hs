@@ -3,6 +3,7 @@
 
 module Smos.Single.OptParse
   ( getSettings,
+    runArgumentsParser,
   )
 where
 
