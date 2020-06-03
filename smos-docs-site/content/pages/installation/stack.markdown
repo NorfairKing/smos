@@ -5,14 +5,28 @@ title: Building with stack
 To build Smos using [Stack](https://haskellstack.org), first clone the repository:
 
 ```
-$ git clone https://github.com/NorfairKing/smos
+git clone https://github.com/NorfairKing/smos
+```
+
+Install prerequisites:
+
+```
+stack install autoexporter # Only for compilation
 ```
 
 Now you can install Smos with the default configuration:
 
 ```
-$ stack install autoexporter
-$ stack install
+stack install smos
+```
+
+You probably want to also install related tools:
+
+```
+stack install smos-query
+stack install smos-archive
+stack install smos-install
+stack install smos-sync-client
 ```
 
 #### Troubleshooting on Arch linux
