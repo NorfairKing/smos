@@ -98,6 +98,10 @@
         The Smos Single Tool
 
     <li>
+      <a href=@{SmosSchedulerR}>
+        The Smos Scheduler Tool
+
+    <li>
       <a href=@{SmosSyncClientR}>
         The Smos Sync Client
       <ul>

@@ -27,6 +27,7 @@ library:
   - smos-query
   - smos-report
   - smos-server
+  - smos-scheduler
   - smos-single
   - smos-sync-client
   - smos-web-server

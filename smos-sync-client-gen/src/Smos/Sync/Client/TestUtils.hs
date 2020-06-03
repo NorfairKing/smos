@@ -24,7 +24,6 @@ import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
-import Smos.Sync.Client.OptParse.Types
 import Smos.Sync.Client.Sync.Gen ()
 import Test.Hspec
 import Test.Hspec.QuickCheck
