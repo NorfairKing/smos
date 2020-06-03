@@ -59,13 +59,15 @@ instance FromJSON Configuration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
-      Configuration
-        <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
-        <*> optionalField "uuid-file" "The file in which to store the server uuid"
-        <*> optionalField "database-file" "The file in which to store the database"
-        <*> optionalField "port" "The port on which to serve api requests"
+  yamlSchema = objectParser "Configuration" configurationObjectParser
+
+configurationObjectParser :: ObjectParser Configuration
+configurationObjectParser =
+  Configuration
+    <$> optionalFieldWith "api-log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
+    <*> optionalField "uuid-file" "The file in which to store the server uuid"
+    <*> optionalField "database-file" "The file in which to store the database"
+    <*> optionalField "api-port" "The port on which to serve api requests"
 
 newtype Dispatch
   = DispatchServe ServeSettings

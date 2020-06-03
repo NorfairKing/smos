@@ -5,6 +5,8 @@ set -x
 
 export DEVELOPMENT=True
 
+export SMOS_SERVER_PORT=8001
+export SMOS_WEB_SERVER_PORT=8000
 export SMOS_WEB_SERVER_LOG_LEVEL=Debug
 
 

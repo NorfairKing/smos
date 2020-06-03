@@ -25,8 +25,8 @@ import Smos.Server.Handler
 import Smos.Server.OptParse
 import System.Exit
 
-serveSmosSyncServer :: ServeSettings -> IO ()
-serveSmosSyncServer ss@ServeSettings {..} = do
+serveSmosServer :: ServeSettings -> IO ()
+serveSmosServer ss@ServeSettings {..} = do
   pPrint ss
   runStderrLoggingT
     $ filterLogger (\_ ll -> ll >= serveSetLogLevel)

@@ -2,22 +2,21 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Web.Server.OptParse
-  ( getInstructions,
-    Instructions (..),
-    Dispatch (..),
-    ServeSettings (..),
-    Settings (..),
-    runArgumentsParser,
+  ( module Smos.Web.Server.OptParse,
+    module Smos.Web.Server.OptParse.Types,
   )
 where
 
+import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Env
 import Options.Applicative
 import Path.IO
+import qualified Smos.Server.OptParse as API
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
+import System.Exit
 import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
@@ -29,10 +28,16 @@ getInstructions = do
 
 combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Environment {..} mConf = do
+  API.Instructions (API.DispatchServe serveSetAPISettings) API.Settings <-
+    API.combineToInstructions
+      (API.Arguments (API.CommandServe serveFlagAPIFlags) flagAPIFlags)
+      envAPIEnv
+      (confAPIConfiguration <$> mConf)
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
   let serveSetLogLevel = fromMaybe LevelInfo $ serveFlagLogLevel <|> envLogLevel <|> mc confLogLevel
   let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
+  when (serveSetPort == API.serveSetPort serveSetAPISettings) $ die $ "The port for the api server and the web server are the same: " <> show serveSetPort
   pure (Instructions (DispatchServe ServeSettings {..}) Settings)
 
 getEnvironment :: IO Environment
@@ -40,16 +45,19 @@ getEnvironment = Env.parse (Env.header "Environment") environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
-  Env.prefixed "SMOS_WEB_SERVER_" $
-    Environment <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
-      <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
-      <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
+  (\apiEnv (a, b) -> Environment apiEnv a b) <$> API.environmentParser
+    <*> Env.prefixed
+      "SMOS_WEB_SERVER_"
+      ( (,)
+          <$> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . API.parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+          <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
+      )
   where
     mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
-  case flagConfigFile <|> envConfigFile of
+  case API.flagConfigFile flagAPIFlags <|> API.envConfigFile envAPIEnv of
     Nothing -> pure Nothing
     Just cf -> resolveFile' cf >>= readConfigFile
 
@@ -91,14 +99,15 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe
         <$> ( ServeFlags
-                <$> option
-                  (Just <$> maybeReader parseLogLevel)
+                <$> API.parseServeFlags
+                <*> option
+                  (Just <$> maybeReader API.parseLogLevel)
                   ( mconcat
-                      [ long "log-level",
+                      [ long "web-log-level",
                         help $
                           unwords
                             [ "The log level to use, options:",
-                              show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                              show $ map API.renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
                             ],
                         value Nothing
                       ]
@@ -106,7 +115,7 @@ parseCommandServe = info parser modifier
                 <*> option
                   (Just <$> auto)
                   ( mconcat
-                      [ long "port",
+                      [ long "web-port",
                         metavar "PORT",
                         help "The port to serve web requests on",
                         value Nothing
@@ -116,7 +125,4 @@ parseCommandServe = info parser modifier
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags
-    <$> option
-      (Just <$> str)
-      (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])
+  Flags <$> API.parseFlags

@@ -19,6 +19,7 @@ library:
   - base64-bytestring
   - bytestring
   - containers
+  - envparse
   - jose
   - mergeful
   - mergeful-persistent

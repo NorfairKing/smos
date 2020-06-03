@@ -14,14 +14,17 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - async
   - data-default
   - envparse
+  - filepath
   - monad-logger
   - optparse-applicative
   - path
   - path-io
   - pretty-show
   - shakespeare
+  - smos-server
   - template-haskell
   - wai
   - wai-extra
@@ -30,7 +33,6 @@ library:
   - yamlparse-applicative
   - yesod
   - yesod-static
-  - filepath
 
 executables:
   smos-web-server:
