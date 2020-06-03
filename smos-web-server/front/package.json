@@ -7,7 +7,7 @@
     "clean": "rm -rf output .spago dist/* node_modules output .cache .spago2nix",
     "watch": "spago bundle-app --watch --main Main --to dist/smos-web-server-front.js",
     "dev": "yarn parcel assets/*.html",
-    "bundle": "spago bundle-app --main Main --to dist/app.js && parcel build assets/*.html",
+    "bundle": "mkdir -p dist && spago bundle-app --main Main --to dist/app.js && parcel build assets/*.html",
     "serve": "yarn bundle && http-server dist",
     "test": "spago test"
   },
