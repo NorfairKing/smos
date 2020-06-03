@@ -7,4 +7,4 @@ smosServer :: IO ()
 smosServer = do
   Instructions dispatch Settings <- getInstructions
   case dispatch of
-    DispatchServe ss -> serveSmosSyncServer ss
+    DispatchServe ss -> serveSmosServer ss

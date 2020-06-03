@@ -46,6 +46,7 @@ import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
 import Smos.Data
+import Smos.History
 import Smos.Types
 
 modifyHeaderCursorWhenSelectedMD ::
@@ -250,13 +251,31 @@ modifyMFileCursorM :: (Maybe SmosFileCursor -> Maybe SmosFileCursor) -> SmosM ()
 modifyMFileCursorM func = modifyMFileCursorMS $ pure . func
 
 modifyMFileCursorMS :: (Maybe SmosFileCursor -> SmosM (Maybe SmosFileCursor)) -> SmosM ()
-modifyMFileCursorMS func = modifyEditorCursorS $ editorCursorSmosFileCursorL func
+modifyMFileCursorMS func = modifyMFileCursorMHistoryS $ historyModM func -- Record history
+
+unrecordFileCursorHistory :: SmosM ()
+unrecordFileCursorHistory = modifyMFileCursorMHistoryM historyForgetLatest
+
+modifyMFileCursorMHistoryM :: (History (Maybe SmosFileCursor) -> Maybe (History (Maybe SmosFileCursor))) -> SmosM ()
+modifyMFileCursorMHistoryM func = modifyMFileCursorMHistory $ \h -> fromMaybe h $ func h
+
+modifyMFileCursorMHistory :: (History (Maybe SmosFileCursor) -> History (Maybe SmosFileCursor)) -> SmosM ()
+modifyMFileCursorMHistory func = modifyMFileCursorMHistoryS $ pure . func
+
+modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History (Maybe SmosFileCursor))) -> SmosM ()
+modifyMFileCursorMHistoryS func = modifyEditorCursorS $ editorCursorSmosFileCursorHistoryL func
 
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc
 
 modifyFileBrowserCursor :: (FileBrowserCursor -> FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursor func = modifyMFileBrowserCursorM $ fmap func
+
+modifyFileBrowserCursorSM :: (FileBrowserCursor -> Maybe (SmosM FileBrowserCursor)) -> SmosM ()
+modifyFileBrowserCursorSM func = modifyFileBrowserCursorS $ \fbc -> fromMaybe (pure fbc) (func fbc)
+
+modifyFileBrowserCursorS :: (FileBrowserCursor -> SmosM FileBrowserCursor) -> SmosM ()
+modifyFileBrowserCursorS func = modifyMFileBrowserCursorMS $ mapM func
 
 modifyMFileBrowserCursorM :: (Maybe FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyMFileBrowserCursorM func = modifyMFileBrowserCursorMS $ pure . func

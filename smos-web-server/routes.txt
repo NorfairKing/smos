@@ -1,0 +1,4 @@
+/ HomeR GET
+
+-- Subsites
+/static StaticR EmbeddedStatic appStatic

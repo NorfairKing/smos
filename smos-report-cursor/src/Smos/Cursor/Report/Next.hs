@@ -28,7 +28,9 @@ produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportC
 produceNextActionReportCursor src = do
   naes <-
     sourceToList $
-      streamSmosFilesFromWorkflow HideArchive src .| parseSmosFiles .| printShouldPrint DontPrint
+      streamSmosFilesFromWorkflow HideArchive (smosReportConfigDirectoryConfig src)
+        .| parseSmosFiles
+        .| printShouldPrint DontPrint
         .| smosFileCursors
         .| C.map (uncurry makeNextActionEntryCursor)
         .| C.filter cursorPointsToNextAction
@@ -44,7 +46,7 @@ nextActionReportCursorBuildSmosFileCursor =
   go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
   where
     go :: ForestCursor Entry Entry -> SmosFileCursor
-    go = mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+    go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath narc =

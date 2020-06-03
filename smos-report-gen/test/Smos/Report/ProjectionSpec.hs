@@ -18,10 +18,8 @@ import Text.Megaparsec
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Projection
   genValidSpec @Projection
   jsonSpecOnValid @Projection
-  eqSpecOnValid @Projectee
   genValidSpec @Projectee
   describe "performProjection"
     $ it "produces valid projections"

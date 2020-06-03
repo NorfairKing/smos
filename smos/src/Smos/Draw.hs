@@ -43,10 +43,12 @@ import Smos.Cursor.FileBrowser
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
+import Smos.History
 import Smos.Keys
 import Smos.Report.Path
 import Smos.Style
 import Smos.Types
+import Smos.Undo
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
@@ -65,7 +67,7 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
           maybe
             (drawInfo configKeyMap)
             (drawFileCursor $ selectWhen FileSelected)
-            editorCursorFileCursor
+            (historyPresent editorCursorFileCursor)
       browserCursorWidget =
         withHeading (str "File Browser") $
           maybe
@@ -223,13 +225,37 @@ drawDebug SmosState {..} =
    in vBox
         [ hBorderWithLabel (str "[ Debug ]"),
           str "Key history: " <+> drawHistory smosStateKeyHistory,
-          str "History length: " <+> str (show (length smosStateCursorHistory)),
-          str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches)
+          str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
+          case editorCursorSelection smosStateCursor of
+            FileSelected ->
+              let h = editorCursorFileCursor smosStateCursor
+               in vBox
+                    [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
+                      str "Redo stack length: " <+> str (show (historyRedoLength h))
+                    ]
+            BrowserSelected -> case editorCursorBrowserCursor smosStateCursor of
+              Nothing -> emptyWidget
+              Just fbc ->
+                let us = fileBrowserCursorUndoStack fbc
+                 in vBox
+                      [ str "Undo stack length: " <+> str (show (undoStackUndoLength us)),
+                        str "Redo stack length: " <+> str (show (undoStackRedoLength us))
+                      ]
+            _ -> emptyWidget
         ]
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
 drawLastMatches Nothing = Nothing
-drawLastMatches (Just ts) = Just $ vBox $ map (strWrap . ppShow) $ NE.toList ts
+drawLastMatches (Just ts) = Just $ hBox $ intersperse (str " ") $ map go $ NE.toList ts
+  where
+    go :: ActivationDebug -> Widget n
+    go ActivationDebug {..} =
+      vBox
+        [ str (show activationDebugPrecedence),
+          str (show activationDebugPriority),
+          drawHistory activationDebugMatch,
+          txt $ actionNameText activationDebugName
+        ]
 
 defaultPadding :: Padding
 defaultPadding = Pad defaultPaddingAmount
@@ -298,6 +324,7 @@ drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
   fmap (viewport ResourceViewport Vertical)
     . verticalForestCursorWidgetM drawEntryCTree (drawSmosTreeCursor s) drawEntryCTree
+    . smosFileCursorForestCursor
 
 drawSmosTreeCursor ::
   Select -> TreeCursor (CollapseEntry EntryCursor) (CollapseEntry Entry) -> Drawer

@@ -8,11 +8,6 @@
     name: "Redundant do"
 - ignore:
     name: "Use ++"
-    within: 
-      - "Smos.Actions.Properties.allPropertiesPlainActions"
-      - "Smos.Actions.Tags.allTagsPlainActions"
-      - "Smos.Actions.Timestamps.allTimestampsPlainActions"
-      - "Smos.GoldenSpec"
 - ignore:
     name: "Use ||"
     within:
@@ -26,23 +21,8 @@
     within: 
       - "Smos.Actions.Entry.TodoState.allTodoStatePlainActions"
       - "Smos.Report.Filter.astUnOpP"
-- ignore:
+- ignore: 
     name: "Avoid lambda"
-    within:
-      - "Smos.Actions.Contents.contentsAppend"
-      - "Smos.Actions.Contents.contentsInsert"
-      - "Smos.Actions.Header.headerAppend"
-      - "Smos.Actions.Header.headerInsert"
-      - "Smos.Actions.Help.helpAppend"
-      - "Smos.Actions.Help.helpInsert"
-      - "Smos.Actions.Properties.propertiesAppend"
-      - "Smos.Actions.Properties.propertiesInsert"
-      - "Smos.Actions.Tags.tagsAppend"
-      - "Smos.Actions.Tags.tagsInsert"
-      - "Smos.Actions.Timestamps.timestampsAppend"
-      - "Smos.Actions.Timestamps.timestampsInsert"
-      - "Smos.Draw.drawPropertyKVCursor"
-      - "Smos.Sync.Client.TestUtils.disjunctMap"
 - ignore: 
     name: "Eta reduce"
     within: "Smos.Report.Sorter.sorterOrdering"
@@ -54,3 +34,8 @@
       - "Smos.Sync.Client.isHidden"
 - ignore:
     name: "Replace case with maybe"
+- ignore:
+    name: "Use record patterns"
+    within:
+      - "Smos.Docs.Site.Handler.Keybindings"
+      - "Smos.OptParse.Types"

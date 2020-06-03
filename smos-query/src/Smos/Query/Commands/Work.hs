@@ -55,7 +55,9 @@ produceWorkReport ::
   Set EntryFilter ->
   Q WorkReport
 produceWorkReport src ha cn mtf mf ms checks = do
-  let contexts = smosReportConfigContexts src
+  let wc = smosReportConfigWorkConfig src
+  let contexts = workReportConfigContexts wc
+  let baseFilter = workReportConfigBaseFilter wc
   case M.lookup cn contexts of
     Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
     Just cf -> do
@@ -63,7 +65,7 @@ produceWorkReport src ha cn mtf mf ms checks = do
       let wrc =
             WorkReportContext
               { workReportContextNow = now,
-                workReportContextBaseFilter = smosReportConfigWorkBaseFilter src,
+                workReportContextBaseFilter = baseFilter,
                 workReportContextCurrentContext = cf,
                 workReportContextTimeFilter = mtf,
                 workReportContextAdditionalFilter = mf,

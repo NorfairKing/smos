@@ -1,13 +1,30 @@
-<h1 .title>
+<h1 .title .is-1>
   #{docPageTitle}
 
 <div .content>
   #{preEscapedToMarkup docPageRendered}
 
-<h2 .title>
-  Arguments reference
+<h2 .title .is-2>
+  Reference
+
+<h3 .title .is-3>
+  Arguments
 
 <div .content>
   <pre>
-    #{helpText}
+    #{argsHelpText}
+
+<h3 .title .is-3>
+  Environment
+
+<div .content>
+  <pre>
+    #{envHelpText}
+
+<h3 .title .is-3>
+  Configuration
+
+<div .content>
+  <pre>
+    #{confHelpText}
 

@@ -11,7 +11,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @TimestampsCursor
   genValidSpec @TimestampsCursor
   describe "makeTimestampsCursor"
     $ it "produces valid cursors"

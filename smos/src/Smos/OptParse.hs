@@ -1,16 +1,15 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.OptParse
-  ( getInstructions,
-    Instructions (..),
-    runArgumentsParser,
+  ( module Smos.OptParse,
+    module Smos.OptParse.Types,
   )
 where
 
 import qualified Data.Text as T
+import qualified Env
 import Import
 import Options.Applicative
 import Smos.Actions
@@ -21,18 +20,17 @@ import qualified Smos.Report.OptParse as Report
 import Smos.Types
 import qualified System.Environment as System
 import System.Exit (die)
-import YamlParse.Applicative (confDesc)
 
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
-  args <- getArguments
+  Arguments fp flags <- getArguments
   env <- getEnvironment
-  config <- getConfiguration args env
-  combineToInstructions conf args env config
+  config <- getConfiguration flags env
+  combineToInstructions conf fp (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 combineToInstructions ::
-  SmosConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions sc@SmosConfig {..} (Arguments fp Flags {..}) Environment {..} mc = do
+  SmosConfig -> FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions sc@SmosConfig {..} fp Flags {..} Environment {..} mc = do
   p <- resolveFile' fp
   src <-
     Report.combineToConfig
@@ -170,12 +168,17 @@ prettyCombError (ActionNotFound a) = unwords ["Action not found:", T.unpack $ ac
 prettyCombError (ActionWrongType a) =
   unwords ["Action found, but of the wrong type:", T.unpack $ actionNameText a]
 
-getConfiguration :: Arguments -> Environment -> IO (Maybe Configuration)
-getConfiguration (Arguments _ Flags {..}) Environment {..} =
-  Report.getConfiguration flagReportFlags envReportEnvironment
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
 
-getEnvironment :: IO Environment
-getEnvironment = Environment <$> Report.getEnvironment
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.environmentParser
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
@@ -196,11 +199,11 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "Smos editor"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> editParser <*> parseFlags
+parseArgs = Arguments <$> editParser <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags

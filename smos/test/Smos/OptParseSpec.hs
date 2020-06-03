@@ -10,25 +10,18 @@ import TestImport
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @KeyConfig
   genValidSpec @KeyConfig
   jsonSpecOnValid @KeyConfig
-  eqSpecOnValid @KeyConfigs
   genValidSpec @KeyConfigs
   jsonSpecOnValid @KeyConfigs
-  eqSpecOnValid @FileKeyConfigs
   genValidSpec @FileKeyConfigs
   jsonSpecOnValid @FileKeyConfigs
-  eqSpecOnValid @HelpKeyConfigs
   genValidSpec @HelpKeyConfigs
   jsonSpecOnValid @HelpKeyConfigs
-  eqSpecOnValid @ReportsKeyConfigs
   genValidSpec @ReportsKeyConfigs
   jsonSpecOnValid @ReportsKeyConfigs
-  eqSpecOnValid @KeybindingsConfiguration
   genValidSpec @KeybindingsConfiguration
   jsonSpecOnValid @KeybindingsConfiguration
-  eqSpecOnValid @Configuration
   genValidSpec @Configuration
   jsonSpecOnValid @Configuration
   describe "FromJSON Configuration"

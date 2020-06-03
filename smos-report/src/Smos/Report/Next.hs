@@ -17,7 +17,7 @@ import Smos.Report.Streaming
 
 produceNextActionReport :: SmosReportConfig -> IO [NextActionEntry]
 produceNextActionReport src = do
-  wd <- resolveWorkflowDir $ smosReportConfigWorkflowFileSpec src
+  wd <- resolveReportWorkflowDir src
   sourceToList $
     sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles
       .| printShouldPrint PrintWarning

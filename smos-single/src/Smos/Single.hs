@@ -14,7 +14,6 @@ import Path.IO
 import Smos.Data
 import Smos.Report.Config
 import Smos.Single.OptParse
-import Smos.Single.OptParse.Types
 import System.Exit
 
 smosSingle :: IO ()
@@ -22,7 +21,7 @@ smosSingle = getSettings >>= single
 
 single :: Settings -> IO ()
 single Settings {..} = do
-  wd <- resolveReportWorkflowDir setReportSettings
+  wd <- resolveDirWorkflowDir setDirectorySettings
   path <-
     (wd </>)
       <$> case setTaskFile of

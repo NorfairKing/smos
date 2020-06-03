@@ -21,6 +21,7 @@ library:
   - containers
   - cookie
   - deepseq
+  - envparse
   - filelock
   - filepath
   - hashable

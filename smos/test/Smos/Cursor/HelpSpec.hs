@@ -12,7 +12,6 @@ import Test.Validity.Optics
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @HelpCursor
   genValidSpec @HelpCursor
   -- Can't test this
   -- describe "makeHelpCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeHelpCursor
@@ -51,7 +50,6 @@ spec = do
   describe "helpCursorDelete"
     $ it "produces valid cursors"
     $ producesValidsOnValids helpCursorDelete
-  eqSpecOnValid @KeyHelpCursor
   genValidSpec @KeyHelpCursor
   describe "combineKeyHelpCursors"
     $ it "produces valid cursors"

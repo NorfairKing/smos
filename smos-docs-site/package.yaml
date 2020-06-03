@@ -16,15 +16,21 @@ library:
   - conduit
   - containers
   - data-default
+  - envparse
   - optparse-applicative
   - path
   - path-io
   - shakespeare
   - smos
+  - smos-archive
   - smos-data
   - smos-query
+  - smos-report
   - smos-server
+  - smos-scheduler
+  - smos-single
   - smos-sync-client
+  - smos-web-server
   - template-haskell
   - text
   - th-lift-instances

@@ -1,0 +1,7 @@
+before:
+- hello
+commands:
+- convRepinged
+- undo
+after:
+- hello

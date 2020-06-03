@@ -15,7 +15,7 @@ import Text.Read
 import YamlParse.Applicative
 
 data Arguments
-  = Arguments Command Flags
+  = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Instructions
@@ -46,7 +46,7 @@ data SyncFlags
 
 data Flags
   = Flags
-      { flagReportFlags :: Report.Flags,
+      { flagDirectoryFlags :: Report.DirectoryFlags,
         flagLogLevel :: Maybe LogLevel,
         flagServerUrl :: Maybe String,
         flagUsername :: Maybe Username,
@@ -57,7 +57,7 @@ data Flags
 
 data Environment
   = Environment
-      { envReportEnvironment :: Report.Environment,
+      { envDirectoryEnvironment :: Report.DirectoryEnvironment,
         envLogLevel :: Maybe LogLevel,
         envServerUrl :: Maybe String,
         envContentsDir :: Maybe FilePath,
@@ -72,7 +72,7 @@ data Environment
 
 data Configuration
   = Configuration
-      { confReportConf :: Report.Configuration,
+      { confDirectoryConf :: Report.DirectoryConfiguration,
         confSyncConf :: Maybe SyncConfiguration
       }
   deriving (Show, Eq, Generic)

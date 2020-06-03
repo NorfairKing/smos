@@ -10,9 +10,17 @@
 /smos-query SmosQueryR GET
 /smos-query/#Text SmosQueryCommandR GET
 
-/smos-server SmosServerR GET
+/smos-single SmosSingleR GET
+
+/smos-archive SmosArchiveR GET
+
+/smos-scheduler SmosSchedulerR GET
 
 /smos-sync-client SmosSyncClientR GET
+
+/smos-server SmosServerR GET
+
+/smos-web-server SmosWebServerR GET
 
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets

@@ -18,7 +18,6 @@ import Text.Megaparsec
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Sorter
   genValidSpec @Sorter
   jsonSpecOnValid @Sorter
   describe "sorterOrdering"

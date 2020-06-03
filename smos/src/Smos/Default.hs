@@ -112,6 +112,7 @@ defaultFileKeyMap =
             -- Convenience
             exactString " nw" convDoneAndWaitForResponse,
             exactString " rp" convRepinged,
+            exactString " rw" convRespondedButStillWaiting,
             exactString " ce" convNewEntryAndClockIn,
             -- Collapsing
             exactChar '?' selectHelp,
@@ -206,6 +207,7 @@ defaultFileKeyMap =
       fileKeyMapAnyMatchers =
         listMatchers
           [ exactChar 'u' undo,
+            modifiedChar 'u' [MMeta] redo,
             exactKey KEsc entrySelectWhole
           ]
     }
@@ -221,6 +223,10 @@ defaultBrowserKeyMap =
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
       exactKey KBackTab browserToggleCollapseRecursively,
+      exactString "ded" browserRemoveEmptyDir,
+      exactChar 'a' browserArchive,
+      exactChar 'u' browserUndo,
+      exactChar 'r' browserRedo,
       exactKey KEsc selectEditor
     ]
 

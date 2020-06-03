@@ -1,0 +1,7 @@
+.stack-work/
+smos-server.cabal
+*~
+signing-key.json
+smos-server-database.sqlite3
+smos-server-uuid.json
+

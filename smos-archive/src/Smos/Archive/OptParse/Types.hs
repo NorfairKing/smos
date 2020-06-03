@@ -1,31 +1,35 @@
 module Smos.Archive.OptParse.Types where
 
 import Path
-import Smos.Report.Config as Report
-import Smos.Report.OptParse.Types as Report
+import qualified Smos.Report.Config as Report
+import qualified Smos.Report.OptParse.Types as Report
+import YamlParse.Applicative
 
 data Flags
   = Flags
       { flagFile :: FilePath,
-        flagReportFlags :: Report.Flags
+        flagDirectoryFlags :: !Report.DirectoryFlags
       }
   deriving (Show, Eq)
 
-newtype Configuration
+data Configuration
   = Configuration
-      { confReportConfiguration :: Report.Configuration
+      { confDirectoryConfiguration :: !Report.DirectoryConfiguration
       }
   deriving (Show, Eq)
 
-newtype Environment
+instance YamlSchema Configuration where
+  yamlSchema = Configuration <$> yamlSchema
+
+data Environment
   = Environment
-      { envReportEnvironment :: Report.Environment
+      { envDirectoryEnvironment :: !Report.DirectoryEnvironment
       }
   deriving (Show, Eq)
 
 data Settings
   = Settings
-      { setFile :: Path Abs File,
-        setReportSettings :: SmosReportConfig
+      { setFile :: !(Path Abs File),
+        setDirectorySettings :: !Report.DirectoryConfig
       }
   deriving (Show, Eq)

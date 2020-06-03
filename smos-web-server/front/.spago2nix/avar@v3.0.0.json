@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/slamdata/purescript-avar.git","sha256":"14g05jm2xricy5b9vn4k4lhc9lzi5jvpvv85h10s17kn4wwi9igk","rev":"17914413130490318a475e9de6a9244aaaa097d2"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/slamdata/purescript-avar.git"},"packageName":"avar"}}}

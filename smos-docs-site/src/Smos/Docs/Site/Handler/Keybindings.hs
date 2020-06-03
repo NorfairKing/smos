@@ -2,6 +2,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Docs.Site.Handler.Keybindings
   ( getSmosKeybindingsR,
@@ -13,7 +14,12 @@ import Smos.Docs.Site.Foundation
 import Smos.Types
 
 getSmosKeybindingsR :: Handler Html
-getSmosKeybindingsR =
+getSmosKeybindingsR = do
+  -- Just to force a compilation error if we forget to add new bindings here.
+  let KeyMap _ _ _ _ _ = undefined
+      FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
+      ReportsKeyMap _ = undefined
+      HelpKeyMap _ _ = undefined
   defaultLayout
     $(widgetFile "smos-keybindings")
 

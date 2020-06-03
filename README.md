@@ -33,6 +33,7 @@ smos-client-gen          : Generators for the smos client library
 smos-server              : The smos server
 smos-server-gen          : Generators for the smos server
 smos-sync-client         : The sync client tool
+smos-web-server          : The smos web server
 ```
 
 ## Cachix cache

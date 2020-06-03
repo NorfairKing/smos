@@ -136,12 +136,7 @@ runCommandsOn mstart commands =
     testConf = error "tried to access the config"
     go :: (SmosState, [(Command, SmosFile)]) -> Command -> IO (SmosState, [(Command, SmosFile)])
     go (ss, rs) c = do
-      let recordCursorHistory :: SmosM ()
-          recordCursorHistory =
-            modify $ \ss_ ->
-              ss_ {smosStateCursorHistory = smosStateCursor ss_ : smosStateCursorHistory ss_}
-      let func = do
-            recordCursorHistory
+      let func =
             case c of
               CommandPlain a -> actionFunc a
               CommandUsing a arg -> actionUsingFunc a arg

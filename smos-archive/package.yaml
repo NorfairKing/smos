@@ -3,7 +3,7 @@ version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
+copyright: ! 'Copyright: (c) 2018-2020 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
@@ -15,16 +15,18 @@ library:
   ghc-options: -Wall
   dependencies:
     - containers
+    - envparse
+    - exceptions
     - mtl
     - optparse-applicative
     - path
     - path-io
     - smos-data
+    - smos-data
     - smos-report
     - time
     - validity
     - yamlparse-applicative
-    - smos-data
 
 executables:
   smos-archive:

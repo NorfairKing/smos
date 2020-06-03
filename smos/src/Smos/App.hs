@@ -47,7 +47,6 @@ smosHandleEvent cf s e = do
                  in recordKeyPress kp
               _ -> pure ()
           KeyActivated func_ -> do
-            recordCursorHistory
             func_
             clearKeyHistory
           EventActivated func_ -> func_
@@ -58,9 +57,6 @@ smosHandleEvent cf s e = do
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
-    recordCursorHistory :: SmosM ()
-    recordCursorHistory =
-      modify $ \ss -> ss {smosStateCursorHistory = smosStateCursor ss : smosStateCursorHistory ss}
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
@@ -126,7 +122,6 @@ initState zt p fl msf =
       smosStateFileLock = fl,
       smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf,
       smosStateKeyHistory = Empty,
-      smosStateCursorHistory = [],
       smosStateAsyncs = [],
       smosStateUnsavedChanges = False,
       smosStateLastSaved = zonedTimeToUTC zt,
@@ -142,7 +137,6 @@ initStateWithCursor zt p fl ec =
       smosStateFileLock = fl,
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,
-      smosStateCursorHistory = [],
       smosStateAsyncs = [],
       smosStateUnsavedChanges = False,
       smosStateLastSaved = zonedTimeToUTC zt,

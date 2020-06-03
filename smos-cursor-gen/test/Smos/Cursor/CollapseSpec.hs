@@ -11,7 +11,6 @@ import Test.Validity.Optics
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @(CollapseEntry Rational)
   genValidSpec @(CollapseEntry Rational)
   describe "makeCollapseEntry"
     $ it "produces valid collapse's"

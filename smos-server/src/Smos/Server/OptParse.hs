@@ -1,26 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Server.OptParse
-  ( getInstructions,
-    Instructions (..),
-    Dispatch (..),
-    ServeSettings (..),
-    Settings (..),
-    runArgumentsParser,
+  ( module Smos.Server.OptParse,
+    module Smos.Server.OptParse.Types,
   )
 where
 
-import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
+import qualified Env
 import Options.Applicative
 import Path.IO
 import Smos.Server.OptParse.Types
 import qualified System.Environment as System
-import Text.Read (readMaybe)
-import YamlParse.Applicative (confDesc, readConfigFile)
+import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -51,22 +45,19 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
     getSettings = pure Settings
 
 getEnvironment :: IO Environment
-getEnvironment = do
-  env <- System.getEnvironment
-  let getEnv :: String -> Maybe String
-      getEnv key = ("SMOS_SERVER_" ++ key) `lookup` env
-      readEnv :: Read a => String -> Maybe a
-      readEnv key = getEnv key >>= readMaybe
-  envLogLevel <-
-    forM (getEnv "LOG_LEVEL") $ \s ->
-      case parseLogLevel s of
-        Nothing -> fail $ "Unknown log level: " <> s
-        Just ll -> pure ll
-  let envConfigFile = getEnv "CONFIGURATION_FILE" <|> getEnv "CONFIG_FILE" <|> getEnv "CONFIG"
-      envPort = readEnv "PORT"
-      envUUIDFile = getEnv "UUID_FILE" <|> getEnv "UUID"
-      envDatabaseFile = getEnv "DATABASE_FILE" <|> getEnv "DATABASE"
-  pure Environment {..}
+getEnvironment = Env.parse (Env.header "Enviromnent") environmentParser
+
+environmentParser :: Env.Parser Env.Error Environment
+environmentParser =
+  Env.prefixed "SMOS_SERVER_" $
+    Environment
+      <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
+      <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+      <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The file to store the server uuid in")
+      <*> Env.var (fmap Just . Env.str) "DATABASE_FILE" (mE <> Env.help "The file to store the server database in")
+      <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
+  where
+    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
@@ -96,7 +87,7 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-server"
 
 parseArgs :: Parser Arguments
@@ -110,42 +101,44 @@ parseCommandServe = info parser modifier
   where
     modifier = fullDesc <> progDesc "Serve as the sync server"
     parser =
-      CommandServe
-        <$> ( ServeFlags
-                <$> option
-                  (Just <$> maybeReader parseLogLevel)
-                  ( mconcat
-                      [ long "log-level",
-                        help $
-                          unwords
-                            [ "The log level to use, options:",
-                              show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                            ],
-                        value Nothing
-                      ]
-                  )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "uuid-file",
-                        help "The file to use for the server uuid",
-                        metavar "FILEPATH",
-                        value Nothing
-                      ]
-                  )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "database-file",
-                        help "The file to use for the server database",
-                        metavar "FILEPATH",
-                        value Nothing
-                      ]
-                  )
-                <*> option
-                  (Just <$> auto)
-                  (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing])
-            )
+      CommandServe <$> parseServeFlags
+
+parseServeFlags :: Parser ServeFlags
+parseServeFlags =
+  ServeFlags
+    <$> option
+      (Just <$> maybeReader parseLogLevel)
+      ( mconcat
+          [ long "api-log-level",
+            help $
+              unwords
+                [ "The log level to use, options:",
+                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                ],
+            value Nothing
+          ]
+      )
+    <*> option
+      (Just <$> str)
+      ( mconcat
+          [ long "uuid-file",
+            help "The file to use for the server uuid",
+            metavar "FILEPATH",
+            value Nothing
+          ]
+      )
+    <*> option
+      (Just <$> str)
+      ( mconcat
+          [ long "database-file",
+            help "The file to use for the server database",
+            metavar "FILEPATH",
+            value Nothing
+          ]
+      )
+    <*> option
+      (Just <$> auto)
+      (mconcat [long "api-port", help "The port to serve on", metavar "PORT", value Nothing])
 
 parseFlags :: Parser Flags
 parseFlags =

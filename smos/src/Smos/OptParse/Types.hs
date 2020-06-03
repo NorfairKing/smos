@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.OptParse.Types where
 
@@ -16,7 +17,7 @@ import Smos.Types
 import YamlParse.Applicative
 
 data Arguments
-  = Arguments FilePath Flags
+  = Arguments FilePath (Report.FlagsWithConfigFile Flags)
 
 newtype Flags
   = Flags
@@ -54,17 +55,20 @@ instance YamlSchema Configuration where
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
-  Configuration
-    { confReportConf = Report.backToConfiguration configReportConfig,
-      confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
-    }
+  let SmosConfig _ _ = undefined
+   in Configuration
+        { confReportConf = Report.backToConfiguration configReportConfig,
+          confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
+        }
 
 data KeybindingsConfiguration
   = KeybindingsConfiguration
       { confReset :: !(Maybe Bool),
         confFileKeyConfig :: !(Maybe FileKeyConfigs),
+        confBrowserKeyConfig :: !(Maybe KeyConfigs),
         confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
-        confHelpKeyConfig :: !(Maybe HelpKeyConfigs)
+        confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
+        confAnyKeyConfig :: !(Maybe KeyConfigs)
       }
   deriving (Show, Eq, Generic)
 
@@ -75,8 +79,10 @@ instance ToJSON KeybindingsConfiguration where
     object
       [ "reset" .= confReset,
         "file" .= confFileKeyConfig,
+        "browser" .= confBrowserKeyConfig,
         "reports" .= confReportsKeyConfig,
-        "help" .= confHelpKeyConfig
+        "help" .= confHelpKeyConfig,
+        "any" .= confAnyKeyConfig
       ]
 
 instance FromJSON KeybindingsConfiguration where
@@ -85,16 +91,25 @@ instance FromJSON KeybindingsConfiguration where
 instance YamlSchema KeybindingsConfiguration where
   yamlSchema =
     objectParser "KeybindingsConfiguration" $
-      KeybindingsConfiguration <$> optionalField "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys." <*> optionalField "file" "Keybindings for the file context" <*> optionalField "reports" "Keybindings for the reports context" <*> optionalField "help" "Keybindings for the help context"
+      KeybindingsConfiguration
+        <$> optionalField "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys."
+        <*> optionalField "file" "Keybindings for the file context"
+        <*> optionalField "browser" "Keybindings for the file browser context"
+        <*> optionalField "reports" "Keybindings for the reports context"
+        <*> optionalField "help" "Keybindings for the help context"
+        <*> optionalField "any" "Keybindings for any context"
 
 backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
 backToKeybindingsConfiguration KeyMap {..} =
-  KeybindingsConfiguration
-    { confReset = Just True,
-      confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap,
-      confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap,
-      confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap
-    }
+  let KeyMap _ _ _ _ _ = undefined
+   in KeybindingsConfiguration
+        { confReset = Just True,
+          confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap,
+          confBrowserKeyConfig = Just $ backToKeyConfigs keyMapBrowserKeyMap,
+          confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap,
+          confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap,
+          confAnyKeyConfig = Just $ backToKeyConfigs keyMapAnyKeyMap
+        }
 
 data FileKeyConfigs
   = FileKeyConfigs
@@ -148,18 +163,19 @@ instance YamlSchema FileKeyConfigs where
 
 backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
 backToFileKeyConfigs FileKeyMap {..} =
-  FileKeyConfigs
-    { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers,
-      entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers,
-      headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers,
-      contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers,
-      timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers,
-      propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers,
-      stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers,
-      tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers,
-      logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers,
-      anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
-    }
+  let FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
+   in FileKeyConfigs
+        { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers,
+          entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers,
+          headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers,
+          contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers,
+          timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers,
+          propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers,
+          stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers,
+          tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers,
+          logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers,
+          anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
+        }
 
 newtype ReportsKeyConfigs
   = ReportsKeyConfigs
@@ -180,9 +196,10 @@ instance YamlSchema ReportsKeyConfigs where
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
-  ReportsKeyConfigs
-    { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
-    }
+  let ReportsKeyMap _ = undefined
+   in ReportsKeyConfigs
+        { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
+        }
 
 data HelpKeyConfigs
   = HelpKeyConfigs
@@ -205,10 +222,11 @@ instance YamlSchema HelpKeyConfigs where
 
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =
-  HelpKeyConfigs
-    { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers,
-      helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
-    }
+  let HelpKeyMap _ _ = undefined
+   in HelpKeyConfigs
+        { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers,
+          helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
+        }
 
 newtype KeyConfigs
   = KeyConfigs

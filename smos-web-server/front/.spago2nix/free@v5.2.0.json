@@ -1,0 +1,1 @@
+{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-free.git","sha256":"1bwj0ay7q9lm4ir29jy549m05jvaqik1s615biv23y51ngx3fn49","rev":"f686f5fc07766f3ca9abc83b47b6ad3da326759a"},"package":{"version":"v5.2.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-free.git"},"packageName":"free"}}}

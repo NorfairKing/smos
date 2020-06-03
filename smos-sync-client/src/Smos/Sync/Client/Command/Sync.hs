@@ -39,7 +39,6 @@ import Smos.Sync.Client.Env
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap (MetaMap (..))
 import Smos.Sync.Client.OptParse
-import Smos.Sync.Client.OptParse.Types
 import System.Exit
 import System.FileLock
 import Text.Show.Pretty

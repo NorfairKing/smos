@@ -3,7 +3,11 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Report.OptParse where
+module Smos.Report.OptParse
+  ( module Smos.Report.OptParse,
+    module Smos.Report.OptParse.Types,
+  )
+where
 
 import Control.Arrow
 import Control.Monad
@@ -12,67 +16,87 @@ import Data.Aeson (FromJSON)
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
+import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
 import Smos.Report.Config
 import Smos.Report.OptParse.Types
-import qualified System.Environment as System
 import YamlParse.Applicative hiding (Parser)
 
 combineToConfig ::
   SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
+  smosReportConfigDirectoryConfig <- combineToDirectoryConfig (smosReportConfigDirectoryConfig src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
+  smosReportConfigWorkConfig <- combineToWorkReportConfig (smosReportConfigWorkConfig src) (mc >>= confWorkReportConf)
+  pure $ SmosReportConfig {..}
+
+combineToDirectoryConfig :: DirectoryConfig -> DirectoryFlags -> DirectoryEnvironment -> Maybe DirectoryConfiguration -> IO DirectoryConfig
+combineToDirectoryConfig dc DirectoryFlags {..} DirectoryEnvironment {..} mc = do
   wfs <-
-    case msum [flagWorkflowDir, envWorkflowDir, mc >>= (fmap T.unpack . confWorkflowDir)] of
-      Nothing -> pure $ smosReportConfigWorkflowFileSpec src
+    case msum [dirFlagWorkflowDir, dirEnvWorkflowDir, mc >>= (fmap T.unpack . directoryConfWorkflowDir)] of
+      Nothing -> pure $ directoryConfigWorkflowFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ DirAbsolute ad
   afs <-
-    case msum [flagArchiveDir, envArchiveDir, mc >>= (fmap T.unpack . confArchiveDir)] of
-      Nothing -> pure $ smosReportConfigArchiveFileSpec src
+    case msum [dirFlagArchiveDir, dirEnvArchiveDir, mc >>= (fmap T.unpack . directoryConfArchiveDir)] of
+      Nothing -> pure $ directoryConfigArchiveFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchiveAbsolute ad
   pfs <-
-    case msum [flagProjectsDir, envProjectsDir, mc >>= (fmap T.unpack . confProjectsDir)] of
-      Nothing -> pure $ smosReportConfigProjectsFileSpec src
+    case msum [dirFlagProjectsDir, dirEnvProjectsDir, mc >>= (fmap T.unpack . directoryConfProjectsDir)] of
+      Nothing -> pure $ directoryConfigProjectsFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ProjectsAbsolute ad
   apfs <-
     case msum
-      [ flagArchivedProjectsDir,
-        envArchivedProjectsDir,
-        mc >>= (fmap T.unpack . confArchivedProjectsDir)
+      [ dirFlagArchivedProjectsDir,
+        dirEnvArchivedProjectsDir,
+        mc >>= (fmap T.unpack . directoryConfArchivedProjectsDir)
       ] of
-      Nothing -> pure $ smosReportConfigArchivedProjectsFileSpec src
+      Nothing -> pure $ directoryConfigArchivedProjectsFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchivedProjectsAbsolute ad
   pure $
-    SmosReportConfig
-      { smosReportConfigWorkflowFileSpec = wfs,
-        smosReportConfigArchiveFileSpec = afs,
-        smosReportConfigProjectsFileSpec = pfs,
-        smosReportConfigArchivedProjectsFileSpec = apfs,
-        smosReportConfigWorkBaseFilter =
-          (mc >>= confWorkBaseFilter) <|> smosReportConfigWorkBaseFilter src,
-        smosReportConfigContexts = fromMaybe (smosReportConfigContexts src) (mc >>= confContexts)
+    dc
+      { directoryConfigWorkflowFileSpec = wfs,
+        directoryConfigArchiveFileSpec = afs,
+        directoryConfigProjectsFileSpec = pfs,
+        directoryConfigArchivedProjectsFileSpec = apfs
+      }
+
+combineToWorkReportConfig :: WorkReportConfig -> Maybe WorkReportConfiguration -> IO WorkReportConfig
+combineToWorkReportConfig wrc mc =
+  pure $
+    wrc
+      { workReportConfigBaseFilter =
+          (mc >>= workReportConfBaseFilter) <|> workReportConfigBaseFilter wrc,
+        workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts)
       }
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> parseConfigFileFlag <*> parseWorkflowDirFlag <*> parseArchiveDirFlag
-    <*> parseProjectsDirFlag
-    <*> parseArchivedProjectsDirFlag
+  Flags <$> parseDirectoryFlags
+
+parseFlagsWithConfigFile :: Parser a -> Parser (FlagsWithConfigFile a)
+parseFlagsWithConfigFile p =
+  FlagsWithConfigFile <$> parseConfigFileFlag <*> p
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
   option
     (Just <$> str)
     (mconcat [metavar "FILEPATH", help "The config file to use", long "config-file", value Nothing])
+
+parseDirectoryFlags :: Parser DirectoryFlags
+parseDirectoryFlags =
+  DirectoryFlags <$> parseWorkflowDirFlag <*> parseArchiveDirFlag
+    <*> parseProjectsDirFlag
+    <*> parseArchivedProjectsDirFlag
 
 parseWorkflowDirFlag :: Parser (Maybe FilePath)
 parseWorkflowDirFlag =
@@ -119,24 +143,29 @@ parseArchivedProjectsDirFlag =
     )
 
 getEnvironment :: IO Environment
-getEnvironment = do
-  env <- System.getEnvironment
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-  pure
-    Environment
-      { envConfigFile = msum $ map getSmosEnv ["CONFIGURATION_FILE", "CONFIG_FILE", "CONFIG"],
-        envWorkflowDir =
-          msum $ map getSmosEnv ["WORKFLOW_DIRECTORY", "WORKFLOW_DIR", "WORKFLOW_DIR"],
-        envArchiveDir = msum $ map getSmosEnv ["ARCHIVE_DIRECTORY", "ARCHIVE_DIR", "ARCHIVE_DIR"],
-        envProjectsDir =
-          msum $ map getSmosEnv ["PROJECTS_DIRECTORY", "PROJECTS_DIR", "PROJECTS_DIR"],
-        envArchivedProjectsDir =
-          msum $
-            map
-              getSmosEnv
-              ["ARCHIVED_PROJECTS_DIRECTORY", "ARCHIVED_PROJECTS_DIR", "ARCHIVED_PROJECTS_DIR"]
-      }
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error Environment
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error Environment
+environmentParser = Environment <$> directoryEnvironmentParser
+
+directoryEnvironmentParser :: Env.Parser Env.Error DirectoryEnvironment
+directoryEnvironmentParser =
+  DirectoryEnvironment
+    <$> Env.var (fmap Just . Env.str) "WORKFLOW_DIR" (mE <> Env.help "Workflow directory")
+    <*> Env.var (fmap Just . Env.str) "ARCHIVE_DIR" (mE <> Env.help "Archive directory")
+    <*> Env.var (fmap Just . Env.str) "PROJECTS_DIR" (mE <> Env.help "Projects directory")
+    <*> Env.var (fmap Just . Env.str) "ARCHIVED_PROJECTS_DIR" (mE <> Env.help "Archived projects directory")
+  where
+    mE = Env.def Nothing <> Env.keep
+
+envWithConfigFileParser :: Env.Parser Env.Error a -> Env.Parser Env.Error (EnvWithConfigFile a)
+envWithConfigFileParser p =
+  EnvWithConfigFile
+    <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (Env.def Nothing <> Env.keep <> Env.help "Workflow directory")
+    <*> p
 
 defaultConfigFiles :: IO [Path Abs File]
 defaultConfigFiles = do
@@ -157,8 +186,8 @@ parseYamlConfig configFile =
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
-getConfiguration :: (FromJSON a, YamlSchema a) => Flags -> Environment -> IO (Maybe a)
-getConfiguration Flags {..} Environment {..} = do
-  case flagConfigFile <|> envConfigFile of
+getConfiguration :: (FromJSON a, YamlSchema a) => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
+getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
+  case flagWithConfigFile <|> envWithConfigFile of
     Just sf -> resolveFile' sf >>= readConfigFile
     Nothing -> defaultConfigFiles >>= readFirstConfigFile

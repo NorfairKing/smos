@@ -1,13 +1,17 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-module Smos.Query.OptParse where
+module Smos.Query.OptParse
+  ( module Smos.Query.OptParse,
+    module Smos.Query.OptParse.Types,
+  )
+where
 
 import Control.Arrow
 import Data.Foldable
-import Data.Functor
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -15,7 +19,8 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
-import Options.Applicative
+import qualified Env
+import Options.Applicative as OptParse
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Comparison
@@ -28,19 +33,17 @@ import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
 import System.Exit
-import Text.Read (readMaybe)
-import YamlParse.Applicative (confDesc)
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
-  args@(Arguments _ flags) <- getArguments
+  Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions sqc args env config
+  combineToInstructions sqc c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 combineToInstructions ::
-  SmosQueryConfig -> Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment {..} mc =
+  SmosQueryConfig -> Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
     hideArchiveWithDefault def mflag =
@@ -56,12 +59,13 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
                   entrySetSorter = entryFlagSorter,
                   entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
                 }
-        CommandReport ReportFlags {..} ->
+        CommandReport ReportFlags {..} -> do
+          let mprc func = mc >>= confPreparedReportConfiguration >>= func
           pure $
             DispatchReport
               ReportSettings
                 { reportSetReportName = reportFlagReportName,
-                  reportSetAvailableReports = fromMaybe M.empty $ mc >>= confAvailableReports
+                  reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
                 }
         CommandWaiting WaitingFlags {..} -> do
           let mwc func = mc >>= confWaitingConfiguration >>= func
@@ -169,23 +173,27 @@ combineToInstructions SmosQueryConfig {..} (Arguments c Flags {..}) Environment 
           (confReportConf <$> mc)
       pure $ SmosQueryConfig {smosQueryConfigReportConfig = src}
 
-getEnvironment :: IO Environment
-getEnvironment = do
-  env <- System.getEnvironment
-  let getSmosEnv :: String -> Maybe String
-      getSmosEnv key = ("SMOS_" ++ key) `lookup` env
-      readSmosEnv :: Read a => String -> Maybe a
-      readSmosEnv key = getSmosEnv key >>= readMaybe
-  envReportEnvironment <- Report.getEnvironment
-  let envHideArchive =
-        readSmosEnv "IGNORE_ARCHIVE" <&> \case
-          True -> Don'tHideArchive
-          False -> HideArchive
-  pure Environment {..}
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} =
-  Report.getConfiguration flagReportFlags envReportEnvironment
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.environmentParser
+      <*> Env.var (fmap Just . ignoreArchiveReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+  where
+    ignoreArchiveReader = \case
+      "True" -> Right HideArchive
+      "False" -> Right Don'tHideArchive
+      _ -> Left $ Env.UnreadError "Must be 'True' or 'False' if set"
+    mE = Env.def Nothing <> Env.keep
+
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -209,11 +217,11 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-query"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -258,7 +266,7 @@ parseCommandReport = info parser modifier
 parseCommandWork :: ParserInfo Command
 parseCommandWork = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Show the work overview" <> confDesc @WorkConfiguration
+    modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork
         <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs
@@ -270,7 +278,7 @@ parseCommandWork = info parser modifier
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks" <> confDesc @WaitingConfiguration
+    modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
     parser =
       CommandWaiting
         <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)

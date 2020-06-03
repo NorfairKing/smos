@@ -24,12 +24,12 @@ packages:
 - smos-client-gen
 - smos-sync-client
 - smos-sync-client-gen
+- smos-web-server
 
 extra-deps:
-- hakyll-4.13.0.1@sha256:0f27d74feaedc96648ec5377ecec2b35dd677516c9667d179462a350f2075628,8817
-- hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
-- warp-3.2.28@sha256:b32fb8fed7ace4bd206fd897c388c00cdb915ec7e34ee61dc6397d518d9e651c,11186
-- http2-1.6.5@sha256:f1743ba4a267f525106c218894e4bd2acf28fa047a9ba660b4a317a97382a877,13999
+- envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
+- servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+
 
 - github: haskell-servant/servant-auth
   commit: 62d3f4b6a7fd7dc38510d4c60982239f94fc1b58
@@ -45,9 +45,6 @@ extra-deps:
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
-
-- servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
-- Validation-0.2.0@sha256:59c15dd11f509dbea585f590be0e2676de9d764e2812f584d13de86ab939542b,1130
 
 # https://github.com/vincenthz/hs-tls/issues/421
 # see also nix/overlay.nix.
@@ -96,7 +93,7 @@ extra-deps:
     - genvalidity-dirforest
 
 - github: NorfairKing/cursor-dirforest
-  commit: 96a33d84f5b96b753dc763b7535512fab9107f9c
+  commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
@@ -108,7 +105,7 @@ extra-deps:
     - cursor-brick
 
 - github: NorfairKing/cursor
-  commit: 6b8d2fab22cf380aaac5f6d0853ec8b3d4cdd0e1
+  commit: ea6724d2a0127614e9062a5ea53de8f042506dd0
   subdirs:
     - cursor
     - cursor-gen
@@ -152,7 +149,7 @@ extra-deps:
   - validity-vector
 
 - github: NorfairKing/yamlparse-applicative
-  commit: 08369b1b3e1c0ebc0f4e2763e63db48227345081
+  commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
   subdirs:
   - yamlparse-applicative
 nix:

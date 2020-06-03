@@ -10,7 +10,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  eqSpec @TagCursor
   genValidSpec @TagCursor
   describe "makeTagCursor" $ it "produces valid cursors" $ producesValidsOnValids makeTagCursor
   describe "rebuildTagCursor" $ do

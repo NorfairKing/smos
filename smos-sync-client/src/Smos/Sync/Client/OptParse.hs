@@ -1,21 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.OptParse
-  ( getInstructions,
-    Instructions (..),
-    Dispatch (..),
-    SyncSettings (..),
-    Settings (..),
-    runArgumentsParser,
+  ( module Smos.Sync.Client.OptParse,
+    module Smos.Sync.Client.OptParse.Types,
   )
 where
 
-import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
+import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
@@ -26,37 +21,36 @@ import qualified Smos.Report.OptParse as Report
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)
-import YamlParse.Applicative (confDesc)
 
 getInstructions :: IO Instructions
 getInstructions = do
-  args@(Arguments _ flags) <- getArguments
+  Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions args env config
+  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
-combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments c Flags {..}) Environment {..} mc = do
-  src <-
-    Report.combineToConfig
-      Report.defaultReportConfig
-      flagReportFlags
-      envReportEnvironment
-      (confReportConf <$> mc)
+combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions c Flags {..} Environment {..} mc = do
+  dc <-
+    Report.combineToDirectoryConfig
+      Report.defaultDirectoryConfig
+      flagDirectoryFlags
+      envDirectoryEnvironment
+      (confDirectoryConf <$> mc)
   s <- getSettings
-  d <- getDispatch src
+  d <- getDispatch dc
   pure $ Instructions d s
   where
     cM :: (SyncConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSyncConf >>= func
-    getDispatch src =
+    getDispatch dc =
       case c of
         CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
         CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
         CommandSync SyncFlags {..} -> do
           syncSetContentsDir <-
             case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-              Nothing -> Report.resolveReportWorkflowDir src
+              Nothing -> Report.resolveDirWorkflowDir dc
               Just d -> resolveDir' d
           syncSetUUIDFile <-
             case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
@@ -114,46 +108,48 @@ defaultSessionPath = do
   home <- getHomeDir
   resolveFile home ".smos/sync-session.dat"
 
-getEnvironment :: IO Environment
-getEnvironment = do
-  envReportEnvironment <- Report.getEnvironment
-  env <- System.getEnvironment
-  let getEnv :: String -> Maybe String
-      getEnv key = ("SMOS_SYNC_CLIENT" ++ key) `lookup` env
-  -- readEnv :: Read a => String -> Maybe a
-  -- readEnv key = getEnv key >>= readMaybe
-  envLogLevel <-
-    forM (getEnv "LOG_LEVEL") $ \s ->
-      case parseLogLevel s of
-        Nothing -> fail $ "Unknown log level: " <> s
-        Just ll -> pure ll
-  let envServerUrl = getEnv "SERVER_URL"
-      envContentsDir = getEnv "CONTENTS_DIR"
-      envUUIDFile = getEnv "UUID_FILE"
-      envMetadataDB = getEnv "METADATA_DATABASE"
-  envIgnoreFiles <-
-    case getEnv "IGNORE_FILES" of
-      Just "nothing" -> pure $ Just IgnoreNothing
-      Just "no" -> pure $ Just IgnoreNothing
-      Just "hidden" -> pure $ Just IgnoreHiddenFiles
-      Just s -> fail $ "Unknown 'IgnoreFiles' value: " <> s
-      Nothing -> pure Nothing
-  envUsername <-
-    forM (getEnv "USERNAME") $ \s ->
-      case parseUsername (T.pack s) of
-        Nothing -> fail $ "Invalid username: " <> s
-        Just un -> pure un
-  envPassword <-
-    forM (getEnv "PASSWORD") $ \s ->
-      case parsePassword (T.pack s) of
-        Nothing -> fail $ "Invalid password: " <> s
-        Just pw -> pure pw
-  let envSessionPath = getEnv "SESSION_PATH"
-  pure Environment {..}
+getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} =
-  Report.getConfiguration flagReportFlags envReportEnvironment
+prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+
+environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.directoryEnvironmentParser
+      <*> Env.var (fmap Just . logLevelReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+      <*> Env.var (fmap Just . Env.str) "SERVER_URL" (mE <> Env.help "The url of the server to sync with")
+      <*> Env.var (fmap Just . Env.str) "CONTENTS_DIR" (mE <> Env.help "The path to the directory to sync")
+      <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The path to the uuid file of the server")
+      <*> Env.var (fmap Just . Env.str) "METADATA_DATABASE" (mE <> Env.help "The path to the database of metadata")
+      <*> Env.var (fmap Just . ignoreFilesReader) "IGNORE_FILES" (mE <> Env.help "Which files to ignore")
+      <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
+      <*> Env.var (fmap Just . passwordReader) "PASSWORD" (mE <> Env.help "The password to sync with")
+      <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
+  where
+    logLevelReader s = case parseLogLevel s of
+      Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
+      Just ll -> pure ll
+    ignoreFilesReader s =
+      case s of
+        "nothing" -> pure IgnoreNothing
+        "no" -> pure IgnoreNothing
+        "hidden" -> pure IgnoreHiddenFiles
+        _ -> Left $ Env.UnreadError $ "Unknown 'IgnoreFiles' value: " <> s
+    usernameReader s =
+      case parseUsername (T.pack s) of
+        Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
+        Just un -> pure un
+    passwordReader s =
+      case parsePassword (T.pack s) of
+        Nothing -> Left $ Env.UnreadError $ "Invalid password: " <> s
+        Just pw -> pure pw
+    mE = Env.def Nothing <> Env.keep
+
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -177,11 +173,11 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description <> confDesc @Configuration
+    help_ = fullDesc <> progDesc description
     description = "smos-sync-client"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
+parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -236,7 +232,7 @@ parseIgnoreFilesFlag =
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseFlags
+  Flags <$> Report.parseDirectoryFlags
     <*> option
       (Just <$> maybeReader parseLogLevel)
       ( mconcat
