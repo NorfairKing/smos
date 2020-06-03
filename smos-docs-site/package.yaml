@@ -24,6 +24,7 @@ library:
   - smos-archive
   - smos-data
   - smos-query
+  - smos-report
   - smos-server
   - smos-sync-client
   - template-haskell

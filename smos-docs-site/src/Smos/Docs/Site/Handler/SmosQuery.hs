@@ -18,6 +18,7 @@ import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse
 import Smos.Query.OptParse.Types as Query
+import Smos.Report.OptParse.Types as Report
 import YamlParse.Applicative as YamlParse
 
 getSmosQueryR :: Handler Html
@@ -34,7 +35,7 @@ getSmosQueryCommandR cmd = do
   DocPage {..} <- lookupPage $ "smos-query_" <> cmd
   let argsHelpText = getHelpPageOf [T.unpack cmd]
       confHelpText = case cmd of
-        "work" -> confDocsWithKey @Query.WorkConfiguration workConfigurationKey
+        "work" -> confDocsWithKey2 @Report.WorkReportConfiguration @Query.WorkConfiguration workConfigurationKey
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey
         "waiting" -> confDocsWithKey @Query.WaitingConfiguration waitingConfigurationKey
         _ -> "This command admits no extra configuration."
@@ -53,3 +54,6 @@ getHelpPageOf args =
 
 confDocsWithKey :: forall o. YamlSchema o => Text -> Text
 confDocsWithKey key = prettyParserDoc $ objectParser "Configuration" $ optionalFieldWith' key (yamlSchema @o)
+
+confDocsWithKey2 :: forall o1 o2. (YamlSchema o1, YamlSchema o2) => Text -> Text
+confDocsWithKey2 key = prettyParserDoc $ objectParser "Configuration" $ optionalFieldWith' key $ (,) <$> (yamlSchema @o1) <*> (yamlSchema @o2)

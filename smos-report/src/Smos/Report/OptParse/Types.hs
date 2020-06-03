@@ -182,7 +182,7 @@ instance Validity WorkReportConfiguration
 instance ToJSON WorkReportConfiguration where
   toJSON WorkReportConfiguration {..} =
     object
-      [ "work-filter" .= workReportConfBaseFilter,
+      [ "base-filter" .= workReportConfBaseFilter,
         "contexts" .= workReportConfContexts
       ]
 
@@ -193,7 +193,7 @@ instance YamlSchema WorkReportConfiguration where
   yamlSchema =
     objectParser "WorkReportConfiguration" $
       WorkReportConfiguration
-        <$> optionalField "work-filter" "The base work filter"
+        <$> optionalField "base-filter" "The base work filter"
         <*> optionalField "contexts" "Contexts for the work report"
 
 backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
