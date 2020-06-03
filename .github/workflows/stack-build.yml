@@ -38,7 +38,7 @@ jobs:
 
       - name: Build frontend
         run: |
-          cd smos/smos-web-web-server/front && nix-shell --run "yarn bundle"
+          cd smos-web-web-server/front && nix-shell --run "yarn bundle"
 
       - name: Build
         run: |
