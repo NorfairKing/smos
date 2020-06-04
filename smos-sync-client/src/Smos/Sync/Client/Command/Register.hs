@@ -11,6 +11,6 @@ registerSmosSyncClient Settings {..} RegisterSettings =
   withClientEnv setServerUrl $ \cenv -> do
     un <- promptUsername setUsername
     pw <- promptPassword setPassword
-    let reg = Register {registerUsername = un, registerPassword = pw}
+    let reg = Register {registerUsername = un, registerPassword = unsafeShowPassword pw}
     NoContent <- runClientOrDie cenv $ clientPostRegister reg
     pure ()

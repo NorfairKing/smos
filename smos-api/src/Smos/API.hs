@@ -24,6 +24,7 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Timed
 import Data.Proxy
+import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
@@ -41,7 +42,6 @@ import Servant.API as X
 import Servant.API.Generic
 import Servant.Auth
 import Servant.Auth.Server
-import Smos.API.HashedPassword as X
 import Smos.API.Password as X
 import Smos.API.Username as X
 
@@ -101,7 +101,7 @@ type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JS
 data Register
   = Register
       { registerUsername :: Username,
-        registerPassword :: Password
+        registerPassword :: Text
       }
   deriving (Show, Eq, Generic)
 
@@ -119,7 +119,7 @@ type PostLogin =
 data Login
   = Login
       { loginUsername :: Username,
-        loginPassword :: Password
+        loginPassword :: Text
       }
   deriving (Show, Eq, Generic)
 

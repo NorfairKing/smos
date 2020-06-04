@@ -23,16 +23,6 @@ instance GenValid Username where
       <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
   shrinkValid = shrinkValidStructurally
 
-instance GenValid PasswordChar where
-  genValid = PasswordChar <$> elements (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid Password where
-  genValid =
-    Password . T.pack . map unPasswordChar
-      <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid Register where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
@@ -48,3 +38,7 @@ instance GenValid SyncFile where
 instance GenValid SyncResponse where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenValid Password where
+  genValid = mkPassword <$> genValid
+  shrinkValid _ = [] -- Don't shrink passwords

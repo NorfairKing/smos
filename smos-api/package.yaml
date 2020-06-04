@@ -26,6 +26,8 @@ library:
   - path
   - path-io
   - path-pieces
+  - password
+  - password-instances
   - persistent
   - persistent-sqlite
   - pretty-show

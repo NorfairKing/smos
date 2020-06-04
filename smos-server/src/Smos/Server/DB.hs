@@ -33,7 +33,7 @@ share
 
 User
     name Username
-    hashedPassword HashedPassword
+    hashedPassword (PasswordHash Bcrypt)
     created UTCTime
 
     UniqueUsername name

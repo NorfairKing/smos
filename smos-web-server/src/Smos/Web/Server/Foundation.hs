@@ -106,7 +106,7 @@ usernameField = checkMMap (pure . left T.pack . parseUsernameWithError) username
 
 postLoginR :: AuthHandler App TypedContent
 postLoginR = do
-  let loginInputForm = Login <$> ireq usernameField "user" <*> (Password <$> ireq passwordField "passphrase")
+  let loginInputForm = Login <$> ireq usernameField "user" <*> ireq passwordField "passphrase"
   result <- runInputPostResult loginInputForm
   muser <-
     case result of
@@ -168,7 +168,7 @@ postNewAccountR = do
               Right
                 Register
                   { registerUsername = newAccountUsername d,
-                    registerPassword = Password (newAccountPassword1 d)
+                    registerPassword = newAccountPassword1 d
                   }
             else Left [mr Msg.PassMismatch]
   case mdata of

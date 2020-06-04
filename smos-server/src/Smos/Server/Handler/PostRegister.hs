@@ -14,27 +14,25 @@ import Smos.Server.Handler.Import
 
 servePostRegister :: Register -> SyncHandler NoContent
 servePostRegister Register {..} = do
-  maybeHashedPassword <- liftIO $ passwordHash registerPassword
-  case maybeHashedPassword of
-    Nothing -> throwError err400 {errBody = "Failed to hash password."}
-    Just hashedPassword -> do
-      now <- liftIO getCurrentTime
-      let user =
-            User
-              { userName = registerUsername,
-                userHashedPassword = hashedPassword,
-                userCreated = now
-              }
-      maybeUserEntity <- runDB . getBy $ UniqueUsername $ userName user
-      case maybeUserEntity of
-        Nothing -> runDB $ insert_ user
-        Just _ ->
-          throwError
-            err409
-              { errBody =
-                  LB.fromStrict
-                    $ TE.encodeUtf8
-                    $ T.unwords
-                      ["Account with the username", usernameText registerUsername, "already exists."]
-              }
+  difficulty <- asks serverEnvPasswordDifficulty
+  hashedPassword <- liftIO $ hashPasswordWithParams difficulty $ mkPassword registerPassword
+  now <- liftIO getCurrentTime
+  let user =
+        User
+          { userName = registerUsername,
+            userHashedPassword = hashedPassword,
+            userCreated = now
+          }
+  maybeUserEntity <- runDB . getBy $ UniqueUsername $ userName user
+  case maybeUserEntity of
+    Nothing -> runDB $ insert_ user
+    Just _ ->
+      throwError
+        err409
+          { errBody =
+              LB.fromStrict
+                $ TE.encodeUtf8
+                $ T.unwords
+                  ["Account with the username", usernameText registerUsername, "already exists."]
+          }
   pure NoContent

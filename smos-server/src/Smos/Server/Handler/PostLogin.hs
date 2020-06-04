@@ -18,9 +18,9 @@ servePostLogin Login {..} = do
   case me of
     Nothing -> throwError err401
     Just (Entity _ user) ->
-      if validatePassword (userHashedPassword user) loginPassword
-        then setLoggedIn (userName user)
-        else throwError err401
+      case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
+        PasswordCheckSuccess -> setLoggedIn (userName user)
+        PasswordCheckFail -> throwError err401
   where
     setLoggedIn un = do
       let cookie = AuthCookie {authCookieUsername = un}

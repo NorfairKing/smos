@@ -45,7 +45,8 @@ runSmosServer ServeSettings {..} =
                 { serverEnvServerUUID = uuid,
                   serverEnvConnection = pool,
                   serverEnvCookieSettings = defaultCookieSettings,
-                  serverEnvJWTSettings = defaultJWTSettings jwtKey
+                  serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                  serverEnvPasswordDifficulty = 14 -- Rather slower
                 }
         Warp.run serveSetPort $ makeSyncApp env
 

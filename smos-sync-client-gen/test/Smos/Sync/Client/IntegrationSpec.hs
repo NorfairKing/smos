@@ -3,6 +3,7 @@ module Smos.Sync.Client.IntegrationSpec
   )
 where
 
+import qualified Data.Text as T
 import Path
 import Path.IO
 import Servant.Client
@@ -24,8 +25,8 @@ spec =
             withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
-                t ["register", "--username", usernameString un, "--password", passwordString pw]
-                t ["login", "--username", usernameString un, "--password", passwordString pw]
+                t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
+                t ["login", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 up <- resolveFile tmpDir "uuid.jon"
                 mp <- resolveFile tmpDir "metadata.db"
                 t
@@ -43,14 +44,14 @@ spec =
             withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
-                t ["register", "--username", usernameString un, "--password", passwordString pw]
+                t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 up <- resolveFile tmpDir "uuid.jon"
                 mp <- resolveFile tmpDir "metadata.db"
                 t
                   [ "--username",
                     usernameString un,
                     "--password",
-                    passwordString pw,
+                    T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
                     fromAbsDir contentsDir,
@@ -65,7 +66,7 @@ spec =
             withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
-                t ["register", "--username", usernameString un, "--password", passwordString pw]
+                t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 cd <- resolveDir contentsDir "subdir/for/contents"
                 up <- resolveFile tmpDir "uuid.jon"
                 mp <- resolveFile tmpDir "metadata.db"
@@ -73,7 +74,7 @@ spec =
                   [ "--username",
                     usernameString un,
                     "--password",
-                    passwordString pw,
+                    T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
                     fromAbsDir cd,
@@ -88,7 +89,7 @@ spec =
             withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
-                t ["register", "--username", usernameString un, "--password", passwordString pw]
+                t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 tmpSubDir <- resolveDir tmpDir "subdir/for/metadata"
                 up <- resolveFile tmpDir "uuid.jon"
                 mp <- resolveFile tmpSubDir "metadata.db"
@@ -96,7 +97,7 @@ spec =
                   [ "--username",
                     usernameString un,
                     "--password",
-                    passwordString pw,
+                    T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
                     fromAbsDir contentsDir,
@@ -111,7 +112,7 @@ spec =
             withSystemTempDir "smos-sync-client-test-contents" $ \contentsDir ->
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
-                t ["register", "--username", usernameString un, "--password", passwordString pw]
+                t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 tmpSubDir <- resolveDir tmpDir "subdir/for/uuid"
                 up <- resolveFile tmpSubDir "uuid.jon"
                 mp <- resolveFile tmpDir "metadata.db"
@@ -119,7 +120,7 @@ spec =
                   [ "--username",
                     usernameString un,
                     "--password",
-                    passwordString pw,
+                    T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
                     fromAbsDir contentsDir,

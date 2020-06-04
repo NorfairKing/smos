@@ -50,7 +50,8 @@ withTestServer func = do
                       { serverEnvServerUUID = uuid,
                         serverEnvConnection = pool,
                         serverEnvCookieSettings = defaultCookieSettings,
-                        serverEnvJWTSettings = defaultJWTSettings jwtKey
+                        serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                        serverEnvPasswordDifficulty = 4 -- The lowest
                       }
               pure $ Server.makeSyncApp env
         Warp.testWithApplication mkApp $ \p ->
@@ -112,5 +113,5 @@ randomRegistration = do
   u1 <- nextRandomUUID :: IO (UUID Username) -- Dummy's that are significantly likely to be random enough
   u2 <- nextRandomUUID :: IO (UUID Password)
   un <- parseUsername $ uuidText u1
-  pw <- parsePassword $ uuidText u2
+  let pw = uuidText u2
   pure Register {registerUsername = un, registerPassword = pw}

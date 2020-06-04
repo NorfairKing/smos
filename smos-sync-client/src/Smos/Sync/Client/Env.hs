@@ -59,7 +59,7 @@ withLogin cenv sessionPath mun mpw func = do
       errOrErrOrSession <-
         liftIO
           $ runClientOrDie cenv
-          $ clientLoginSession Login {loginUsername = un, loginPassword = pw}
+          $ clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
       case errOrErrOrSession of
         Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
         Right cookie -> do
@@ -75,7 +75,7 @@ promptUsername mun =
 promptPassword :: Maybe Password -> IO Password
 promptPassword mpw =
   case mpw of
-    Nothing -> promptSecretUntil "password" parsePassword
+    Nothing -> mkPassword <$> promptSecret "password"
     Just pw -> pure pw
 
 runSyncClient :: Servant.ClientM a -> C (Either Servant.ClientError a)

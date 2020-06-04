@@ -16,7 +16,7 @@ import YamlParse.Applicative
 
 data Arguments
   = Arguments Command (Report.FlagsWithConfigFile Flags)
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Instructions
   = Instructions Dispatch Settings
@@ -25,15 +25,15 @@ data Command
   = CommandRegister RegisterFlags
   | CommandLogin LoginFlags
   | CommandSync SyncFlags
-  deriving (Show, Eq)
+  deriving (Show)
 
 data RegisterFlags
   = RegisterFlags
-  deriving (Show, Eq)
+  deriving (Show)
 
 data LoginFlags
   = LoginFlags
-  deriving (Show, Eq)
+  deriving (Show)
 
 data SyncFlags
   = SyncFlags
@@ -42,7 +42,7 @@ data SyncFlags
         syncFlagMetadataDB :: Maybe FilePath,
         syncFlagIgnoreFiles :: Maybe IgnoreFiles
       }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Flags
   = Flags
@@ -53,7 +53,7 @@ data Flags
         flagPassword :: Maybe Password,
         flagSessionPath :: Maybe FilePath
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 data Environment
   = Environment
@@ -68,14 +68,14 @@ data Environment
         envPassword :: Maybe Password,
         envSessionPath :: Maybe FilePath
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 data Configuration
   = Configuration
       { confDirectoryConf :: Report.DirectoryConfiguration,
         confSyncConf :: Maybe SyncConfiguration
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance FromJSON Configuration where
   parseJSON = viaYamlSchema
@@ -96,7 +96,7 @@ data SyncConfiguration
         syncConfPassword :: Maybe Password,
         syncConfSessionPath :: Maybe FilePath
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance FromJSON SyncConfiguration where
   parseJSON = viaYamlSchema
@@ -169,4 +169,4 @@ data Settings
         setPassword :: Maybe Password,
         setSessionPath :: Path Abs File
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)

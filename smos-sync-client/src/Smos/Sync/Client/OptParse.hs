@@ -126,7 +126,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "METADATA_DATABASE" (mE <> Env.help "The path to the database of metadata")
       <*> Env.var (fmap Just . ignoreFilesReader) "IGNORE_FILES" (mE <> Env.help "Which files to ignore")
       <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
-      <*> Env.var (fmap Just . passwordReader) "PASSWORD" (mE <> Env.help "The password to sync with")
+      <*> Env.var (fmap (Just . mkPassword) . Env.str) "PASSWORD" (mE <> Env.help "The password to sync with")
       <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
   where
     logLevelReader s = case parseLogLevel s of
@@ -142,10 +142,6 @@ environmentParser =
       case parseUsername (T.pack s) of
         Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
         Just un -> pure un
-    passwordReader s =
-      case parsePassword (T.pack s) of
-        Nothing -> Left $ Env.UnreadError $ "Invalid password: " <> s
-        Just pw -> pure pw
     mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
@@ -250,7 +246,7 @@ parseFlags =
       (Just <$> maybeReader (parseUsername . T.pack))
       (mconcat [long "username", help "The username to login to the sync server", value Nothing])
     <*> option
-      (Just <$> maybeReader (parsePassword . T.pack))
+      (Just . mkPassword <$> str)
       ( mconcat
           [ long "password",
             help $

@@ -21,10 +21,11 @@ type SyncHandler = ReaderT ServerEnv Handler
 
 data ServerEnv
   = ServerEnv
-      { serverEnvServerUUID :: ServerUUID,
-        serverEnvConnection :: DB.ConnectionPool,
-        serverEnvCookieSettings :: CookieSettings,
-        serverEnvJWTSettings :: JWTSettings
+      { serverEnvServerUUID :: !ServerUUID,
+        serverEnvConnection :: !DB.ConnectionPool,
+        serverEnvCookieSettings :: !CookieSettings,
+        serverEnvJWTSettings :: !JWTSettings,
+        serverEnvPasswordDifficulty :: !Int
       }
   deriving (Generic)
 
