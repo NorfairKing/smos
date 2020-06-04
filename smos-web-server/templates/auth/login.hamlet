@@ -1,0 +1,25 @@
+Login
+<form
+  method="post"
+  action=@{AuthR loginFormPostTargetR}>
+    <input
+      name="user"
+      placeholder="Username or Email"
+      required=""
+      value=""
+      type="text">
+    <input
+      name="passphrase"
+      placeholder="Passphrase"
+      required=""
+      value=""
+      type="password">
+    ^{token}
+    <button>
+      Login
+
+<a href=@{AuthR registerR}>
+  Sign Up
+
+$forall (_, msg) <- msgs
+  #{msg}

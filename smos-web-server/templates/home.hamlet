@@ -1,2 +1,7 @@
+<a href=@{AuthR LoginR}>
+  Login
+<a href=@{AuthR registerR}>
+  Register
+
 <h1>
   Smos Web Server

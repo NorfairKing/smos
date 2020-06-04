@@ -14,24 +14,40 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
+  - aeson-pretty
   - async
+  - base16-bytestring
+  - bytestring
+  - containers
   - data-default
   - envparse
   - filepath
+  - http-client
+  - http-client-tls
+  - http-types
   - monad-logger
   - optparse-applicative
   - path
+  - path
+  - path-io
   - path-io
   - pretty-show
+  - servant-auth-client
+  - servant-client
   - shakespeare
+  - smos-client
   - smos-server
+  - stm
   - template-haskell
+  - text
   - wai
   - wai-extra
   - warp
   - yaml
   - yamlparse-applicative
   - yesod
+  - yesod-auth
   - yesod-static
 
 executables:
@@ -46,11 +62,23 @@ tests:
     main: Spec.hs
     source-dirs: test
     ghc-options:
+    - -Wall
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - containers
+    - genvalidity-hspec
     - hspec
+    - http-client
+    - http-types
     - monad-logger
+    - servant-client
+    - smos-api-gen
+    - smos-client
+    - smos-server-gen
     - smos-web-server
+    - stm
+    - text
+    - yesod-auth
     - yesod-test

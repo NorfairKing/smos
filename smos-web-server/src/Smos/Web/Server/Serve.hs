@@ -2,8 +2,14 @@
 
 module Smos.Web.Server.Serve where
 
+import Control.Concurrent.STM
+import qualified Data.Map as M
+import qualified Network.HTTP.Client as Http
+import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Servant.Client
+import qualified Smos.Server.OptParse.Types as API
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
@@ -19,7 +25,10 @@ serveSmosWebServer ss = do
 
 runSmosWebServer :: ServeSettings -> IO ()
 runSmosWebServer ServeSettings {..} = do
-  let app = App {appLogLevel = serveSetLogLevel, appStatic = smosWebServerStatic}
+  burl <- parseBaseUrl $ "http://localhost:" <> show (API.serveSetPort serveSetAPISettings)
+  man <- liftIO $ Http.newManager Http.tlsManagerSettings
+  loginVar <- liftIO $ newTVarIO M.empty
+  let app = App {appLogLevel = serveSetLogLevel, appStatic = smosWebServerStatic, appAPIBaseUrl = burl, appLoginTokens = loginVar, appHttpManager = man}
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =
         if development
