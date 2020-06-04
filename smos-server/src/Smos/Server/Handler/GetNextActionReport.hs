@@ -11,7 +11,6 @@ import qualified Data.Conduit.Combinators as C
 import Path
 import Smos.Data
 import Smos.Report.Next
-import Smos.Report.Path
 import Smos.Server.Handler.Import
 
 serveGetNextActionReport :: AuthCookie -> SyncHandler NextActionReport
@@ -22,9 +21,10 @@ serveGetNextActionReport (AuthCookie un) = do
     Just (Entity uid _) -> do
       acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
       liftIO $ withAcquire acqSource $ \source ->
-        runConduit $ source .| parseServerFileC .| nextActionReportConduit
+        runConduit $ source .| parseServerFileC .| nextActionReportConduit Nothing
 
-parseServerFileC :: Monad m => ConduitT (Entity ServerFile) (RootedPath, SmosFile) m ()
+-- TODO deal with the archive using 'hideArchive'.
+parseServerFileC :: Monad m => ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
 parseServerFileC = C.concatMap $ \(Entity _ ServerFile {..}) ->
   if isProperPrefixOf [reldir|archive|] serverFilePath
     then Nothing
@@ -32,5 +32,5 @@ parseServerFileC = C.concatMap $ \(Entity _ ServerFile {..}) ->
       if fileExtension serverFilePath == ".smos"
         then case parseSmosFile serverFileContents of
           Left _ -> Nothing
-          Right sf -> Just (Relative [absdir|/|] serverFilePath, sf)
+          Right sf -> Just (serverFilePath, sf)
         else Nothing

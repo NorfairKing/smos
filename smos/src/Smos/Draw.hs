@@ -45,7 +45,6 @@ import Smos.Data
 import Smos.Draw.Base
 import Smos.History
 import Smos.Keys
-import Smos.Report.Path
 import Smos.Style
 import Smos.Types
 import Smos.Undo
@@ -294,12 +293,12 @@ drawReportCursor s rc =
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s =
-  verticalNonEmptyCursorWidget
+  verticalNonEmptyCursorTable
     (drawNextActionEntryCursor NotSelected)
     (drawNextActionEntryCursor s)
     (drawNextActionEntryCursor NotSelected)
 
-drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> Widget ResourceName
+drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> [Widget ResourceName]
 drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
   let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
       sel =
@@ -307,18 +306,10 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-   in hBox $
-        intersperse
-          (str " ")
-          [ hLimit 20
-              $ padRight Max
-              $ drawFilePath
-              $ case nextActionEntryCursorFilePath of
-                Relative _ rf -> filename rf
-                Absolute af -> filename af,
-            maybe emptyWidget drawTodoState $ entryState e,
-            sel $ drawHeader entryHeader
-          ]
+   in [ drawFilePath nextActionEntryCursorFilePath,
+        maybe emptyWidget drawTodoState $ entryState e,
+        sel $ drawHeader entryHeader
+      ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =

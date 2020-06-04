@@ -65,10 +65,23 @@ instance GenValid Ast where
                 AstBinOp <$> resize a genValid <*> resize b genValid <*> resize c genValid
             ]
 
-instance GenValid (Filter RootedPath) where
+instance GenValid (Filter (Path Rel File)) where
   genValid =
     withTopLevelBranches $
       ( FilterFile
+          <$> ( genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar))
+                  `suchThat` (not . null)
+              )
+          `suchThatMap` parseRelFile
+      )
+        `suchThat` isValid
+  shrinkValid = shrinkValidFilter
+
+-- TODO eventually remove this
+instance GenValid (Filter RootedPath) where
+  genValid =
+    withTopLevelBranches $
+      ( FilterRootedPath
           <$> ( genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar))
                   `suchThat` (not . null)
               )
@@ -200,6 +213,7 @@ shrinkValidFilter = go
       filter isValid $
         case f of
           FilterFile rf -> FilterFile <$> shrinkValid rf
+          FilterRootedPath rf -> FilterRootedPath <$> shrinkValid rf
           FilterPropertyTime f' -> FilterPropertyTime <$> go f'
           FilterEntryHeader f' -> FilterEntryHeader <$> go f'
           FilterEntryTodoState f' -> FilterEntryTodoState <$> go f'

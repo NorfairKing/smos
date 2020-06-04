@@ -6,35 +6,50 @@
 module Smos.Report.Next where
 
 import Conduit
+import Cursor.Simple.Forest
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
+import Path
 import Smos.Data
+import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Path
+import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
-produceNextActionReport :: SmosReportConfig -> IO NextActionReport
-produceNextActionReport src = do
-  wd <- resolveReportWorkflowDir src
-  runConduit $
-    sourceFilesInNonHiddenDirsRecursively wd .| filterSmosFiles .| parseSmosFiles
-      .| printShouldPrint PrintWarning
-      .| nextActionReportConduit
+produceNextActionReport :: Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> IO NextActionReport
+produceNextActionReport ef ha dc = do
+  wd <- resolveDirWorkflowDir dc
+  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceNextActionReportFromFiles ef wd
 
-nextActionReportConduit :: Monad m => ConduitT (RootedPath, SmosFile) o m NextActionReport
-nextActionReportConduit =
+produceNextActionReportFromFiles :: MonadIO m => Maybe EntryFilterRel -> Path Abs Dir -> ConduitT (Path Rel File) void m NextActionReport
+produceNextActionReportFromFiles ef wd =
+  filterSmosFilesRel
+    .| parseSmosFilesRel wd
+    .| printShouldPrint PrintWarning
+    .| nextActionReportConduit ef
+
+nextActionReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
+nextActionReportConduit ef =
   NextActionReport
-    <$> ( smosFileEntries
-            .| C.filter (isNextAction . snd)
+    <$> ( nextActionConduitHelper ef
+            .| smosCursorCurrents
             .| C.map (uncurry makeNextActionEntry)
             .| sinkList
         )
+
+nextActionConduitHelper :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+nextActionConduitHelper ef =
+  smosFileCursors
+    .| smosFilter (maybe isNextFilter (FilterAnd isNextFilter) ef)
+  where
+    isNextFilter :: EntryFilterRel
+    isNextFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState
@@ -42,10 +57,10 @@ isNextAction = maybe False isNextTodoState . entryState
 isNextTodoState :: TodoState -> Bool
 isNextTodoState = (`elem` mapMaybe todoState ["NEXT", "STARTED"])
 
-makeNextActionReport :: [(RootedPath, Entry)] -> NextActionReport
+makeNextActionReport :: [(Path Rel File, Entry)] -> NextActionReport
 makeNextActionReport = NextActionReport . map (uncurry makeNextActionEntry)
 
-makeNextActionEntry :: RootedPath -> Entry -> NextActionEntry
+makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
 makeNextActionEntry rf e =
   NextActionEntry
     { nextActionEntryTodoState = entryState e,
@@ -74,7 +89,7 @@ data NextActionEntry
   = NextActionEntry
       { nextActionEntryTodoState :: Maybe TodoState,
         nextActionEntryHeader :: Header,
-        nextActionEntryFilePath :: RootedPath
+        nextActionEntryFilePath :: Path Rel File -- The path within the workflow directory
       }
   deriving (Show, Eq, Generic)
 
@@ -84,7 +99,17 @@ instance FromJSON NextActionEntry where
   parseJSON = viaYamlSchema
 
 instance YamlSchema NextActionEntry where
-  yamlSchema = objectParser "NextActionEntry" $ NextActionEntry <$> requiredField "state" "The TODO state of the entry" <*> requiredField "header" "The header of the entry" <*> requiredField "path" "The path of the file in which this entry was found"
+  yamlSchema =
+    objectParser "NextActionEntry" $
+      NextActionEntry
+        <$> requiredField "state" "The TODO state of the entry"
+        <*> requiredField "header" "The header of the entry"
+        <*> requiredField "path" "The path of the file in which this entry was found"
 
 instance ToJSON NextActionEntry where
-  toJSON NextActionEntry {..} = object ["state" .= nextActionEntryTodoState, "header" .= nextActionEntryHeader, "path" .= nextActionEntryFilePath]
+  toJSON NextActionEntry {..} =
+    object
+      [ "state" .= nextActionEntryTodoState,
+        "header" .= nextActionEntryHeader,
+        "path" .= nextActionEntryFilePath
+      ]

@@ -4,6 +4,7 @@ module Smos.Actions.Report where
 
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Report.Config
 import Smos.Types
 
 allPlainReportNextActions :: [Action]
@@ -22,8 +23,8 @@ reportNextActions =
     { actionName = "reportNextActions",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        rc <- asks configReportConfig
-        mnarc <- liftIO $ produceNextActionReportCursor rc
+        dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+        mnarc <- liftIO $ produceNextActionReportCursor dc
         pure $
           case mnarc of
             Nothing -> ec
@@ -76,7 +77,9 @@ enterNextActionFile =
               Nothing -> pure ()
               Just (ReportNextActions narc) -> do
                 let sfc = nextActionReportCursorBuildSmosFileCursor narc
-                void $ switchToCursor (nextActionReportCursorBuildFilePath narc) (Just sfc)
+                dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+                wd <- liftIO $ resolveDirWorkflowDir dc
+                void $ switchToCursor (nextActionReportCursorBuildFilePath wd narc) (Just sfc)
           _ -> pure (),
       actionDescription = "Enter the currently selected next action"
     }

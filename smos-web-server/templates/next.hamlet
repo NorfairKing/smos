@@ -6,7 +6,7 @@
   $forall e <- nextActionReportEntries report
     <tr>
       <td>
-        #{show $ resolveRootedPath $ nextActionEntryFilePath e}
+        #{fromRelFile $ nextActionEntryFilePath e}
       <td>
         #{maybe "" todoStateText $ nextActionEntryTodoState e}
       <td>

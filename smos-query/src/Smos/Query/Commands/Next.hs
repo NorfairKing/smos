@@ -7,33 +7,26 @@ module Smos.Query.Commands.Next
 where
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Data.Text (Text)
 import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
 import Smos.Report.Next
-import Smos.Report.Streaming
 
 smosQueryNext :: NextSettings -> Q ()
 smosQueryNext NextSettings {..} = do
-  tups <-
-    sourceToList $
-      streamSmosFiles nextSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
-        .| smosFileCursors
-        .| smosMFilter nextSetFilter
-        .| smosCursorCurrents
-        .| C.filter (isNextAction . snd)
-  liftIO $ putTableLn $ renderNextActionReport $ makeNextActionReport tups
+  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  liftIO $ do
+    report <- produceNextActionReport nextSetFilter nextSetHideArchive dc
+    putTableLn $ renderNextActionReport report
 
 renderNextActionReport :: NextActionReport -> Table
 renderNextActionReport = formatAsTable . map formatNextActionEntry . nextActionReportEntries
 
 formatNextActionEntry :: NextActionEntry -> [Chunk Text]
 formatNextActionEntry NextActionEntry {..} =
-  [ rootedPathChunk nextActionEntryFilePath,
+  [ pathChunk nextActionEntryFilePath,
     maybe (chunk "") todoStateChunk nextActionEntryTodoState,
     headerChunk nextActionEntryHeader
   ]

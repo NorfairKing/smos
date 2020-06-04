@@ -20,21 +20,21 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Next
-import Smos.Report.Path
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceNextActionReportCursor :: SmosReportConfig -> IO (Maybe NextActionReportCursor)
-produceNextActionReportCursor src = do
-  naes <-
-    sourceToList $
-      streamSmosFilesFromWorkflow HideArchive (smosReportConfigDirectoryConfig src)
-        .| parseSmosFiles
-        .| printShouldPrint DontPrint
-        .| smosFileCursors
-        .| C.map (uncurry makeNextActionEntryCursor)
-        .| C.filter cursorPointsToNextAction
-  pure $ makeNextActionReportCursor naes
+produceNextActionReportCursor :: DirectoryConfig -> IO (Maybe NextActionReportCursor)
+produceNextActionReportCursor dc = do
+  wd <- resolveDirWorkflowDir dc
+  runConduit
+    $ fmap makeNextActionReportCursor
+    $ streamSmosFilesFromWorkflowRel HideArchive dc
+      .| filterSmosFilesRel
+      .| parseSmosFilesRel wd
+      .| printShouldPrint DontPrint
+      .| nextActionConduitHelper Nothing
+      .| C.map (uncurry makeNextActionEntryCursor)
+      .| sinkList
 
 type NextActionReportCursor = NonEmptyCursor NextActionEntryCursor
 
@@ -48,12 +48,10 @@ nextActionReportCursorBuildSmosFileCursor =
     go :: ForestCursor Entry Entry -> SmosFileCursor
     go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
-nextActionReportCursorBuildFilePath :: NextActionReportCursor -> Path Abs File
-nextActionReportCursorBuildFilePath narc =
+nextActionReportCursorBuildFilePath :: Path Abs Dir -> NextActionReportCursor -> Path Abs File
+nextActionReportCursorBuildFilePath pad narc =
   let NextActionEntryCursor {..} = nonEmptyCursorCurrent narc
-   in case nextActionEntryCursorFilePath of
-        Relative pad prf -> pad </> prf
-        Absolute paf -> paf
+   in pad </> nextActionEntryCursorFilePath
 
 nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
 nextActionReportCursorNext = nonEmptyCursorSelectNext
@@ -69,14 +67,14 @@ nextActionReportCursorLast = nonEmptyCursorSelectLast
 
 data NextActionEntryCursor
   = NextActionEntryCursor
-      { nextActionEntryCursorFilePath :: RootedPath,
+      { nextActionEntryCursorFilePath :: Path Rel File,
         nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
       }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor
 
-makeNextActionEntryCursor :: RootedPath -> ForestCursor Entry Entry -> NextActionEntryCursor
+makeNextActionEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> NextActionEntryCursor
 makeNextActionEntryCursor rp fc =
   NextActionEntryCursor {nextActionEntryCursorFilePath = rp, nextActionEntryCursorForestCursor = fc}
 

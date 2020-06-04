@@ -84,6 +84,9 @@ rootedPathChunk rp =
       Relative _ rf -> fromRelFile rf
       Absolute af -> fromAbsFile af
 
+pathChunk :: Path b t -> Chunk Text
+pathChunk = chunk . T.pack . toFilePath
+
 renderEntryReport :: EntryReport -> Table
 renderEntryReport EntryReport {..} =
   formatAsTable $

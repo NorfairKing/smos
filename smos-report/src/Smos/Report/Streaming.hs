@@ -28,6 +28,7 @@ streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   sourceFilesInNonHiddenDirsRecursively pd .| filterSmosFiles
 
+-- TODO eventually get rid of this
 streamSmosFilesFromWorkflow ::
   MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i RootedPath m ()
 streamSmosFilesFromWorkflow ha dc = do
@@ -51,52 +52,88 @@ streamSmosFilesFromWorkflow ha dc = do
 filterOutDir :: Monad m => Path Abs Dir -> ConduitT RootedPath RootedPath m ()
 filterOutDir ad = Conduit.filter (not . isProperPrefixOf ad . resolveRootedPath)
 
+streamSmosFilesFromWorkflowRel ::
+  MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i (Path Rel File) m ()
+streamSmosFilesFromWorkflowRel ha dc = do
+  wd <- liftIO $ resolveDirWorkflowDir dc
+  case directoryConfigArchiveFileSpec dc of
+    ArchiveInWorkflow rf -> do
+      let source =
+            case ha of
+              HideArchive -> sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel rf wd
+              Don'tHideArchive -> sourceFilesInNonHiddenDirsRecursivelyRel wd
+      source .| filterSmosFilesRel
+    _ -> do
+      ad <- liftIO $ resolveDirArchiveDir dc
+      let maybeFilterOutArchived =
+            case ha of
+              HideArchive -> (Conduit.filter (not . isProperPrefixOf ad . (wd </>)) .|)
+              Don'tHideArchive -> id
+      sourceFilesInNonHiddenDirsRecursivelyRel wd .| maybeFilterOutArchived filterSmosFilesRel
+
+-- TODO eventually remove this one.
 sourceFilesInNonHiddenDirsRecursively ::
   forall m i.
   MonadIO m =>
   Path Abs Dir ->
   ConduitT i RootedPath m ()
-sourceFilesInNonHiddenDirsRecursively dir = walkSafe go dir
+sourceFilesInNonHiddenDirsRecursively dir = sourceFilesInNonHiddenDirsRecursivelyRel dir .| Conduit.map (Relative dir)
+
+sourceFilesInNonHiddenDirsRecursivelyRel ::
+  forall m i.
+  MonadIO m =>
+  Path Abs Dir ->
+  ConduitT i (Path Rel File) m ()
+sourceFilesInNonHiddenDirsRecursivelyRel = walkSafeRel go
   where
     go ::
-      Path Abs Dir ->
-      [Path Abs Dir] ->
-      [Path Abs File] ->
-      ConduitT i RootedPath m (WalkAction Abs)
+      Path Rel Dir ->
+      [Path Rel Dir] ->
+      [Path Rel File] ->
+      ConduitT i (Path Rel File) m (WalkAction Rel)
     go curdir subdirs files = do
-      Conduit.yieldMany $ map (rootedIn dir) files
+      Conduit.yieldMany $ map (curdir </>) files
       pure $ WalkExclude $ filter (isHiddenIn curdir) subdirs
 
+-- TODO eventually remove this one
 sourceFilesInNonHiddenDirsRecursivelyExceptSubdir ::
   forall m i.
   MonadIO m =>
   Path Rel Dir ->
   Path Abs Dir ->
   ConduitT i RootedPath m ()
-sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = walkSafe go dir
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel subdir dir .| Conduit.map (Relative dir)
+
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel ::
+  forall m i.
+  MonadIO m =>
+  Path Rel Dir ->
+  Path Abs Dir ->
+  ConduitT i (Path Rel File) m ()
+sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel subdir = walkSafeRel go
   where
     go ::
-      Path Abs Dir ->
-      [Path Abs Dir] ->
-      [Path Abs File] ->
-      ConduitT i RootedPath m (WalkAction Abs)
+      Path Rel Dir ->
+      [Path Rel Dir] ->
+      [Path Rel File] ->
+      ConduitT i (Path Rel File) m (WalkAction Rel)
     go curdir subdirs files = do
       let addExtraFilter =
-            if curdir == (dir </> subdir)
+            if curdir == subdir
               then const subdirs
               else id
-      Conduit.yieldMany $ map (rootedIn dir) files
+      Conduit.yieldMany $ map (curdir </>) files
       pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
 
-walkSafe ::
+walkSafeRel ::
   MonadIO m =>
-  (Path Abs Dir -> [Path Abs Dir] -> [Path Abs File] -> m (WalkAction Abs)) ->
+  (Path Rel Dir -> [Path Rel Dir] -> [Path Rel File] -> m (WalkAction Rel)) ->
   Path Abs Dir ->
   m ()
-walkSafe go dir = do
+walkSafeRel go dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
   if e
-    then walkDir go dir
+    then walkDirRel go dir
     else pure ()
 
 rootedIn :: Path Abs Dir -> Path Abs File -> RootedPath
@@ -117,6 +154,11 @@ filterSmosFiles =
     Relative _ prf -> fileExtension prf == ".smos"
     Absolute paf -> fileExtension paf == ".smos"
 
+filterSmosFilesRel :: Monad m => ConduitT (Path b File) (Path b File) m ()
+filterSmosFilesRel =
+  Conduit.filter $ (== ".smos") . fileExtension
+
+-- TODO eventually get rid of this
 parseSmosFiles ::
   MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
 parseSmosFiles =
@@ -131,6 +173,21 @@ parseSmosFiles =
                 Left err -> Left $ SmosFileParseError ap err
                 Right sf -> Right sf
     pure (p, ei)
+
+parseSmosFilesRel ::
+  MonadIO m => Path Abs Dir -> ConduitT (Path Rel File) (Path Rel File, Either ParseSmosFileException SmosFile) m ()
+parseSmosFilesRel dir =
+  Conduit.mapM $ \rf -> do
+    let ap = dir </> rf
+    mErrOrSmosFile <- liftIO $ readSmosFile ap
+    let ei =
+          case mErrOrSmosFile of
+            Nothing -> Left $ FileDoesntExist ap
+            Just errOrSmosFile ->
+              case errOrSmosFile of
+                Left err -> Left $ SmosFileParseError ap err
+                Right sf -> Right sf
+    pure (rf, ei)
 
 smosFilter :: Monad m => Filter a -> ConduitT a a m ()
 smosFilter f = Conduit.filter (filterPredicate f)

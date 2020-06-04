@@ -3,10 +3,10 @@
 
 module Smos.Web.Server.Handler.Next where
 
+import Path
 import Smos.Client
 import Smos.Data
 import Smos.Report.Next
-import Smos.Report.Path
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Widget
 import Yesod

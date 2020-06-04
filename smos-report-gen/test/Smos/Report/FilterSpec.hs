@@ -179,6 +179,11 @@ spec = do
       tcSpec
         tcRootedPathFilter
         (AstUnOp (Piece "file") (AstPiece (Piece "side")))
+        (FilterRootedPath [relfile|side|])
+    describe "tcFilePathFilter" $
+      tcSpec
+        tcFilePathFilter
+        (AstUnOp (Piece "file") (AstPiece (Piece "side")))
         (FilterFile [relfile|side|])
     describe "tcSub" $ do
       tcSpec
@@ -370,7 +375,7 @@ spec = do
         (FilterParent (FilterWithinCursor (FilterSub (fromJust $ header "header"))))
     describe "tcTupleFilter" $ do
       tcSpec
-        (tcTupleFilter tcRootedPathFilter tcEntryFilter)
+        (tcTupleFilter tcFilePathFilter tcEntryFilter)
         (AstUnOp (Piece "fst") (AstUnOp (Piece "file") (AstPiece (Piece "side"))))
         (FilterFst (FilterFile [relfile|side|]))
       tcSpec
@@ -451,8 +456,8 @@ spec = do
           it (unwords ["succesfully parses", show input, "into", show expected]) $
             parseEntryFilter input `shouldBe` Right expected
         pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
-    pe "fst:file:side" (FilterFst $ FilterFile [relfile|side|])
-    pe "file:side" (FilterFst $ FilterFile [relfile|side|])
+    pe "fst:file:side" (FilterFst $ FilterRootedPath [relfile|side|])
+    pe "file:side" (FilterFst $ FilterRootedPath [relfile|side|])
     pee "header:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "header:sub:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "tag:toast" (FilterEntryTags $ FilterAny $ FilterSub $ fromJust $ tag "toast")

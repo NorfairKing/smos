@@ -293,7 +293,7 @@ parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the next actions"
-    parser = CommandNext <$> (NextFlags <$> parseFilterArgs <*> parseHideArchiveFlag)
+    parser = CommandNext <$> (NextFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag)
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
@@ -408,12 +408,22 @@ parseTimeFilterArg =
     (eitherReader (fmap (FilterOrd LEC) . parseTime . T.pack))
     (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
 
+-- TODO: eventually get rid of this
 parseFilterArgs :: Parser (Maybe EntryFilter)
 parseFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
       ( argument
           (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
+          (mconcat [metavar "FILTER", help "A filter to filter entries by"])
+      )
+
+parseFilterArgsRel :: Parser (Maybe EntryFilterRel)
+parseFilterArgsRel =
+  fmap foldFilterAnd . NE.nonEmpty
+    <$> many
+      ( argument
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
       )
 

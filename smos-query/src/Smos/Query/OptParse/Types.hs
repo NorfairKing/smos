@@ -89,7 +89,7 @@ data WaitingFlags
 
 data NextFlags
   = NextFlags
-      { nextFlagFilter :: Maybe EntryFilter,
+      { nextFlagFilter :: Maybe EntryFilterRel,
         nextFlagHideArchive :: Maybe HideArchive
       }
   deriving (Show, Eq)
@@ -297,7 +297,7 @@ data WaitingSettings
 
 data NextSettings
   = NextSettings
-      { nextSetFilter :: Maybe EntryFilter,
+      { nextSetFilter :: Maybe EntryFilterRel,
         nextSetHideArchive :: HideArchive
       }
   deriving (Show, Eq, Generic)
