@@ -69,16 +69,23 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - bytestring
     - containers
+    - genvalidity
     - genvalidity-hspec
     - hspec
     - http-client
     - http-types
     - monad-logger
+    - path
+    - path-io
     - servant-client
     - smos-api-gen
     - smos-client
+    - smos-data
+    - smos-data-gen
     - smos-server-gen
+    - smos-sync-client
     - smos-web-server
     - stm
     - text

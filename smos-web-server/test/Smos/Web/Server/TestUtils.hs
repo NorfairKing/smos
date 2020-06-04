@@ -5,12 +5,13 @@ module Smos.Web.Server.TestUtils where
 import Control.Concurrent.STM
 import Control.Monad.IO.Class
 import Control.Monad.Logger
-import Data.Map as M
-import Data.Text
+import qualified Data.Map as M
+import Data.Text (Text)
 import qualified Network.HTTP.Client as Http
 import Network.HTTP.Types
 import Servant.Client
 import Smos.Client
+import Smos.Data.Gen ()
 import qualified Smos.Server.TestUtils as API
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation

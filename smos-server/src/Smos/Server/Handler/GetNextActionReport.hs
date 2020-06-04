@@ -8,7 +8,6 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Data.Time
 import Path
 import Smos.Data
 import Smos.Report.Next
@@ -21,12 +20,9 @@ serveGetNextActionReport (AuthCookie un) = do
   case mu of
     Nothing -> throwError err404
     Just (Entity uid _) -> do
-      liftIO $ getCurrentTime >>= print
       acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
-      report <- liftIO $ withAcquire acqSource $ \source ->
+      liftIO $ withAcquire acqSource $ \source ->
         runConduit $ source .| parseServerFileC .| nextActionReportConduit
-      liftIO $ getCurrentTime >>= print
-      pure report
 
 parseServerFileC :: Monad m => ConduitT (Entity ServerFile) (RootedPath, SmosFile) m ()
 parseServerFileC = C.concatMap $ \(Entity _ ServerFile {..}) ->
