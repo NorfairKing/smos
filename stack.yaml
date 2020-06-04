@@ -13,8 +13,9 @@ packages:
 - smos-query
 - smos-single
 - smos-scheduler
-- smos-convert-org
 - smos-archive
+- smos-convert-org
+- smos-calendar-import
 - smos-docs-site
 - smos-api
 - smos-api-gen
@@ -30,6 +31,8 @@ extra-deps:
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
+
+# Password
 - base64-0.4.2@sha256:e9523e18bdadc3cab9dc32dfe3ac09c718fe792076326d6d353437b8b255cb5b,2888
 - ghc-byteorder-4.11.0.0.10@sha256:5ee4a907279bfec27b0f9de7b8fba4cecfd34395a0235a7784494de70ad4e98f,1535
 - github: cdepillabout/password 
@@ -37,6 +40,14 @@ extra-deps:
   subdirs:
     - password
     - password-instances
+
+
+# Calendar
+- github: chrra/iCalendar
+  commit: 66b408f10b2d87929ecda715109b26093c711823
+- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
+
+
 
 
 - github: haskell-servant/servant-auth
@@ -89,7 +100,7 @@ extra-deps:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
 - github: NorfairKing/fuzzy-time
-  commit: 0c32a1d2e09f1b7421918a845f0b57eceb6752a8
+  commit: c296b1de29a7795895bb1c68311021ce149406e2
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen

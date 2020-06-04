@@ -14,6 +14,8 @@
 
 /smos-archive SmosArchiveR GET
 
+/smos-calendar-import SmosCalendarImportR GET
+
 /smos-scheduler SmosSchedulerR GET
 
 /smos-sync-client SmosSyncClientR GET

@@ -3,6 +3,8 @@
 - ignore:
     name: "Use newtype instead of data"
 - ignore:
+    name: "Use uncurry"
+- ignore:
     name: "Reduce duplication"
 - ignore:
     name: "Redundant do"
@@ -25,7 +27,6 @@
     name: "Avoid lambda"
 - ignore: 
     name: "Eta reduce"
-    within: "Smos.Report.Sorter.sorterOrdering"
 - ignore:
     name: "Redundant if"
     within:

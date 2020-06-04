@@ -34,8 +34,9 @@ with final.haskell.lib;
         "smos-query" = smosPkgWithOwnComp "smos-query";
         "smos-single" = smosPkgWithOwnComp "smos-single";
         "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
-        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
+        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+        "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
         "smos-docs-site" = smosPkg "smos-docs-site";
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";
@@ -175,6 +176,7 @@ with final.haskell.lib;
                       "persistent-sqlite"
                     ] persistentPkg;
 
+                  # Passwords
                   passwordRepo =
                     final.fetchFromGitHub {
                       owner = "cdepillabout";
@@ -188,6 +190,14 @@ with final.haskell.lib;
                       "password"
                       "password-instances"
                     ] passwordPkg;
+                  iCalendarRepo =
+                    final.fetchFromGitHub {
+                      owner = "chrra";
+                      repo = "iCalendar";
+                      rev = "66b408f10b2d87929ecda715109b26093c711823";
+                      sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452l37";
+                    };
+                  iCalendarPkg = dontCheck (self.callCabal2nix "iCalendar" iCalendarRepo {});
                 in
                   final.smosPackages // {
                     pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
@@ -197,6 +207,10 @@ with final.haskell.lib;
                     # Passwords
                     base-64 = self.callHackage "base-64" "0.4.2" {};
                     ghc-byteorder = self.callHackage "ghc-byteorder" "4.11.0.0" {};
+                    # Calendar
+                    iCalendar = iCalendarPkg;
+                    mime = self.callHackage "mime" "0.4.0.2" {};
+
                   } // persistentPackages // passwordPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
             );
         }

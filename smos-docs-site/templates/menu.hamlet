@@ -102,6 +102,14 @@
         The Smos Scheduler Tool
 
     <li>
+      <a href=@{SmosCalendarImportR}>
+        The Smos Calendar Import Tool
+      <ul>
+        <li>
+          <a href=@{PageR smos_calendar_import_nixos}>
+            Running on NixOs
+
+    <li>
       <a href=@{SmosSyncClientR}>
         The Smos Sync Client
       <ul>
