@@ -3,5 +3,11 @@
 <a href=@{AuthR registerR}>
   Register
 
+<br>
+
+Reports:
+<a href=@{ReportNextR}>
+  Next
+
 <h1>
   Smos Web Server

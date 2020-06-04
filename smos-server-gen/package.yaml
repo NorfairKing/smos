@@ -66,5 +66,6 @@ tests:
     - servant-client
     - smos-client
     - smos-client-gen
+    - smos-report
     - smos-server
     - smos-server-gen

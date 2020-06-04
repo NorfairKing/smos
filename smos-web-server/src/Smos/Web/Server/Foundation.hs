@@ -56,6 +56,7 @@ instance Yesod App where
       $(widgetFile "default-body")
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
+  authRoute _ = Just $ AuthR LoginR
 
 instance YesodAuth App where
   type AuthId App = Username

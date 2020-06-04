@@ -3,7 +3,7 @@ version: '0.0.0.0'
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2019 Tom Sydney Kerckhove'
+copyright: ! 'Copyright: (c) 2019-2020 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
@@ -18,11 +18,13 @@ library:
   - aeson-pretty
   - base64-bytestring
   - bytestring
+  - conduit
   - containers
   - envparse
   - jose
   - mergeful
   - mergeful-persistent
+  - microlens
   - monad-logger
   - mtl
   - optparse-applicative
@@ -37,12 +39,16 @@ library:
   - servant-auth-server
   - servant-server
   - smos-api
+  - smos-data
+  - smos-report
   - stm
+  - template-haskell
   - text
   - time
   - typed-uuid
   - uuid
   - wai
+  - wai-extra
   - warp
   - yaml
   - yamlparse-applicative

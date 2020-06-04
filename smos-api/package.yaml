@@ -23,17 +23,18 @@ library:
   - hashable
   - mergeful
   - mtl
+  - password
+  - password-instances
   - path
   - path-io
   - path-pieces
-  - password
-  - password-instances
   - persistent
   - persistent-sqlite
   - pretty-show
   - servant
   - servant-auth
   - servant-auth-server
+  - smos-report
   - stm
   - text
   - typed-uuid

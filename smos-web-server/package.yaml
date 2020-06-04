@@ -36,7 +36,9 @@ library:
   - servant-auth-client
   - servant-client
   - shakespeare
+  - smos-data
   - smos-client
+  - smos-report
   - smos-server
   - stm
   - template-haskell

@@ -9,11 +9,14 @@ import Crypto.JOSE.JWK (JWK)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
+import Data.Function
 import Data.Proxy
 import qualified Data.Text as T
 import Database.Persist.Sqlite as DB
+import Lens.Micro
 import Network.Wai as Wai
 import Network.Wai.Handler.Warp as Warp
+import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Path
 import Path.IO
 import Servant.API.Generic
@@ -21,6 +24,7 @@ import Servant.Auth.Server as Auth
 import Servant.Server as Servant
 import Servant.Server.Generic
 import Smos.API
+import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.OptParse
 import System.Exit
@@ -34,7 +38,7 @@ runSmosServer :: ServeSettings -> IO ()
 runSmosServer ServeSettings {..} =
   runStderrLoggingT
     $ filterLogger (\_ ll -> ll >= serveSetLogLevel)
-    $ DB.withSqlitePool (T.pack $ fromAbsFile serveSetDatabaseFile) 1
+    $ DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1
     $ \pool ->
       liftIO $ do
         uuid <- readServerUUID serveSetUUIDFile
@@ -46,9 +50,13 @@ runSmosServer ServeSettings {..} =
                   serverEnvConnection = pool,
                   serverEnvCookieSettings = defaultCookieSettings,
                   serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                  serverEnvPasswordDifficulty = 14 -- Rather slower
+                  serverEnvPasswordDifficulty = if development then 4 else 14 -- Rather slower
                 }
-        Warp.run serveSetPort $ makeSyncApp env
+        let middles =
+              if development
+                then Wai.logStdoutDev
+                else Wai.logStdout
+        Warp.run serveSetPort $ middles $ makeSyncApp env
 
 -- TODO put this file in settings
 signingKeyFile :: IO (Path Abs File)
@@ -97,7 +105,11 @@ syncServerUnprotectedRoutes =
   UnprotectedRoutes {postRegister = servePostRegister, postLogin = servePostLogin}
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
-syncServerProtectedRoutes = ProtectedRoutes {postSync = withAuthResult servePostSync}
+syncServerProtectedRoutes =
+  ProtectedRoutes
+    { postSync = withAuthResult servePostSync,
+      getNextActionReport = withAuthResult serveGetNextActionReport
+    }
 
 readServerUUID :: Path Abs File -> IO ServerUUID
 readServerUUID p = do

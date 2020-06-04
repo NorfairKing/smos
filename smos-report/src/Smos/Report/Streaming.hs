@@ -217,7 +217,7 @@ forestCursors ts =
               Just fc' -> go fc'
           )
 
-accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a Void m a
+accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a void m a
 accumulateSink operation = go
   where
     go !a = do
@@ -226,5 +226,5 @@ accumulateSink operation = go
         Nothing -> pure a
         Just n -> go $ a `operation` n
 
-accumulateMonoid :: (Monoid a, Monad m) => ConduitT a Void m a
+accumulateMonoid :: (Monoid a, Monad m) => ConduitT a void m a
 accumulateMonoid = accumulateSink mappend mempty

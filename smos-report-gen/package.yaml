@@ -53,6 +53,7 @@ tests:
     - parsec
     - path
     - pretty-show
+    - smos-report
     - smos-cursor
     - smos-cursor-gen
     - smos-data

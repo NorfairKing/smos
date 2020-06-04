@@ -44,6 +44,7 @@ import Servant.Auth
 import Servant.Auth.Server
 import Smos.API.Password as X
 import Smos.API.Username as X
+import Smos.Report.Next
 
 syncAPI :: Proxy SyncAPI
 syncAPI = Proxy
@@ -90,9 +91,10 @@ instance ToJWT AuthCookie
 
 type SyncProtectedAPI = ToServantApi ProtectedRoutes
 
-newtype ProtectedRoutes route
+data ProtectedRoutes route
   = ProtectedRoutes
-      { postSync :: route :- ProtectAPI :> PostSync
+      { postSync :: !(route :- ProtectAPI :> PostSync),
+        getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport)
       }
   deriving (Generic)
 
@@ -213,3 +215,5 @@ instance FromJSON SyncResponse where
 instance ToJSON SyncResponse where
   toJSON SyncResponse {..} =
     object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
+
+type GetNextActionReport = "report" :> "next" :> Get '[JSON] NextActionReport

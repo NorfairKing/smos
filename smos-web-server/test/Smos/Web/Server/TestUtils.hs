@@ -40,6 +40,14 @@ webServerSpec = yesodSpecWithSiteGeneratorAndArgument $ \(ClientEnv _ burl _) ->
           }
   pure app
 
+asDummyUser :: YesodExample App a -> YesodExample App a
+asDummyUser example_ = do
+  let dummyUN = Username "dummy"
+      dummyPW = "password"
+  withFreshAccount dummyUN dummyPW $ do
+    loginTo dummyUN dummyPW
+    example_
+
 loginTo :: Username -> Text -> YesodExample App ()
 loginTo username passphrase = do
   get $ AuthR LoginR

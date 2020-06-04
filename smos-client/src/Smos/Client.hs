@@ -22,6 +22,7 @@ import Servant.Auth.Client
 import Servant.Auth.Server
 import Servant.Client
 import Smos.API as X
+import Smos.Report.Next
 import System.Exit
 import Web.Cookie
 
@@ -33,7 +34,9 @@ clientPostLogin ::
 clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
-clientPostSync = client (flatten syncProtectedAPI)
+
+clientGetNextActionReport :: Token -> ClientM NextActionReport
+clientPostSync :<|> clientGetNextActionReport = client (flatten syncProtectedAPI)
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession

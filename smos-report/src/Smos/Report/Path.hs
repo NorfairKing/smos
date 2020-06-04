@@ -14,6 +14,7 @@ import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Path
 import Smos.Data.Types ()
+import YamlParse.Applicative
 
 data RootedPath
   = Relative (Path Abs Dir) (Path Rel File)
@@ -31,9 +32,12 @@ instance Ord RootedPath where
 instance NFData RootedPath
 
 instance FromJSON RootedPath where
-  parseJSON v =
-    withObject "RootedPath" (\o -> Relative <$> o .: "root" <*> o .: "relative") v
-      <|> (Absolute <$> parseJSON v)
+  parseJSON = viaYamlSchema
+
+instance YamlSchema RootedPath where
+  yamlSchema =
+    objectParser "RootedPath" (Relative <$> requiredField "root" "the root by which to view the relative path" <*> requiredField "relative" "the path starting from the root")
+      <|> (Absolute <$> yamlSchema)
 
 instance ToJSON RootedPath where
   toJSON (Absolute p) = toJSON p

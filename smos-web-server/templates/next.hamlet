@@ -1,0 +1,13 @@
+<table>
+  <tr>
+    <th> File
+    <th> State
+    <th> Header
+  $forall e <- nextActionReportEntries report
+    <tr>
+      <td>
+        #{show $ resolveRootedPath $ nextActionEntryFilePath e}
+      <td>
+        #{maybe "" todoStateText $ nextActionEntryTodoState e}
+      <td>
+        #{headerText $ nextActionEntryHeader e}

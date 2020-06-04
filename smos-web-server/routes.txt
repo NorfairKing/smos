@@ -1,5 +1,8 @@
 / HomeR GET
 
+
+/report/next ReportNextR GET
+
 -- Subsites
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
