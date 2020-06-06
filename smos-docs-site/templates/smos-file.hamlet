@@ -158,7 +158,7 @@
     States are arbitrary pieces of text without whitespace.
 
   <p>
-    Tags can be used to filter entries by.
+    The state history must appear in reverse chronological order.
 
   <p>
     Standard states are, for example:
