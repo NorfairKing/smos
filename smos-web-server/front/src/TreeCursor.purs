@@ -3,10 +3,10 @@ module TreeCursor where
 import Prelude
 import CSS (marginLeft, minHeight, px) as CSS
 import Control.Monad.State (modify_)
-import Cursor.Tree.Base (foldTreeCursor)
+import Cursor.Tree.Base (foldTreeCursor, makeTreeCursor)
 import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertAndSelect)
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
-import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
+import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL, cTree)
 import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
 import Cursor.Tree.Swap (dullSwapResult, treeCursorSwapNext, treeCursorSwapPrev)
 import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
@@ -63,34 +63,12 @@ data Action
   | EntryClicked PathToClickedEntry WUEM.MouseEvent
   | HandleHeader String
 
-component :: forall q i o. H.Component HH.HTML q i o Aff
-component =
+component :: forall q i o. Tree String -> H.Component HH.HTML q i o Aff
+component t =
   H.mkComponent
     { initialState:
       \_ ->
-        { cursor:
-          -- hello
-          -- |- left
-          -- |- world  <- 
-          -- | |- below
-          -- |- right
-          { treeAbove:
-            Just
-              ( TreeAbove
-                  { treeAboveLefts: CTree { rootLabel: "left", subForest: EmptyCForest } : Nil
-                  , treeAboveAbove: Nothing
-                  , treeAboveNode: "hello"
-                  , treeAboveRights: CTree { rootLabel: "right", subForest: EmptyCForest } : Nil
-                  }
-              )
-          , treeBelow:
-            OpenForest
-              ( NonEmptyList
-                  ( CTree { rootLabel: "below", subForest: EmptyCForest } :| Nil
-                  )
-              )
-          , treeCurrent: "world"
-          }
+        { cursor: makeTreeCursor identity $ cTree true t
         , headerSelected: Nothing
         }
     , render: render

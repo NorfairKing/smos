@@ -20,6 +20,7 @@ library:
   - base16-bytestring
   - bytestring
   - containers
+  - cursor
   - data-default
   - envparse
   - filepath
