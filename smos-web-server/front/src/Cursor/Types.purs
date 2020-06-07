@@ -3,7 +3,7 @@ module Cursor.Types where
 import Prelude
 import Data.Functor.Compose (Compose(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
+import Data.Newtype (un)
 import Control.Plus (class Alt, (<|>))
 import Data.Lens (Lens', traverseOf)
 
@@ -51,12 +51,12 @@ joinDeletes3 m1 m2 m3 = case m1 of
 joinPossibleDeletes ::
   forall a.
   Maybe (DeleteOrUpdate a) -> Maybe (DeleteOrUpdate a) -> Maybe (DeleteOrUpdate a)
-joinPossibleDeletes d1 d2 = unwrap $ Compose d1 <|> Compose d2
+joinPossibleDeletes d1 d2 = un Compose $ Compose d1 <|> Compose d2
 
 focusPossibleDeleteOrUpdate ::
   forall a b.
   Lens' a b -> (b -> Maybe (DeleteOrUpdate b)) -> a -> Maybe (DeleteOrUpdate a)
-focusPossibleDeleteOrUpdate l func = unwrap <<< (traverseOf l) (Compose <<< func)
+focusPossibleDeleteOrUpdate l func = un Compose <<< (traverseOf l) (Compose <<< func)
 
 dullMDelete :: forall a. Maybe (DeleteOrUpdate a) -> Maybe a
 dullMDelete = case _ of
