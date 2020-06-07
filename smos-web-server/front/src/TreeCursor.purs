@@ -6,7 +6,7 @@ import Cursor.Tree.Base (foldTreeCursor)
 import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertAndSelect)
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
 import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
-import Cursor.Tree.Delete
+import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
 import Cursor.Types
 import Data.Array as Array
 import Data.Const (Const)
@@ -226,6 +226,12 @@ handle =
 
     treeModM :: (TreeCursor String String -> Maybe (TreeCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
     treeModM func = treeMod (\tc -> fromMaybe tc (func tc))
+
+    treeModDOU :: (TreeCursor String String -> DeleteOrUpdate (TreeCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
+    treeModDOU func = treeModM (\tc -> dullDelete (func tc))
+
+    treeModDOUM :: (TreeCursor String String -> Maybe (DeleteOrUpdate (TreeCursor String String))) -> H.HalogenM State Action ChildSlots o Aff Unit
+    treeModDOUM func = treeModM (\tc -> dullMDelete (func tc))
   in
     case _ of
       Init -> do
@@ -267,5 +273,7 @@ handle =
               | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "a" || k == "A" -> modify_ (_ { headerSelected = Just Header.End })
               | k == "i" || k == "I" -> modify_ (_ { headerSelected = Just Header.Beginning })
+              | k == "d" -> treeModDOU (treeCursorDeleteElem identity)
+              | k == "D" -> treeModDOU (treeCursorDeleteSubTree identity)
             _ -> pure unit
       HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # treeCursorCurrentL .~ str })
