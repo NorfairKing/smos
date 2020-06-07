@@ -7,6 +7,7 @@ import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertA
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
 import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
 import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
+import Cursor.Tree.Swap
 import Cursor.Types
 import Data.Array as Array
 import Data.Const (Const)
