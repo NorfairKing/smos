@@ -77,3 +77,9 @@ data SwapResult a
   = SwapperIsTopNode
   | NoSiblingsToSwapWith
   | Swapped a
+
+dullSwapResult :: forall a. SwapResult a -> Maybe a
+dullSwapResult = case _ of
+  SwapperIsTopNode -> Nothing
+  NoSiblingsToSwapWith -> Nothing
+  Swapped a -> Just a

@@ -1,5 +1,6 @@
 module TreeCursor where
 
+import Prelude
 import CSS (marginLeft, minHeight, px) as CSS
 import Control.Monad.State (modify_)
 import Cursor.Tree.Base (foldTreeCursor)
@@ -7,8 +8,8 @@ import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertA
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
 import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
 import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
-import Cursor.Tree.Swap
-import Cursor.Types
+import Cursor.Tree.Swap (dullSwapResult, treeCursorSwapNext, treeCursorSwapPrev)
+import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
 import Data.Array as Array
 import Data.Const (Const)
 import Data.List (List(..), (:))
@@ -27,7 +28,6 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Query.EventSource as ES
 import Data.Lens ((.~))
-import Prelude (Unit, Void, bind, discard, identity, map, pure, unit, (#), ($), (+), (<<<), (=<<), (==), (||))
 import Web.Event.Event as WEE
 import Web.HTML (window) as Web
 import Web.HTML.HTMLDocument as HTMLDocument
@@ -260,21 +260,26 @@ handle =
         s <- H.get
         let
           k = WUEK.key ke
+
+          ak = WUEK.altKey ke
         H.liftEffect (Console.log k)
         if isJust s.headerSelected then
           pure unit
         else do
           case unit of
             _
-              | k == "ArrowDown" || k == "j" -> treeModM (treeCursorSelectNext identity identity)
-              | k == "ArrowUp" || k == "k" -> treeModM (treeCursorSelectPrev identity identity)
-              | k == "ArrowLeft" || k == "h" -> treeModM (treeCursorSelectAbove identity identity)
-              | k == "ArrowRight" || k == "l" -> treeModM (treeCursorSelectBelowAtEnd identity identity)
+              | k == "ArrowDown" || (not ak && k == "j") -> treeModM (treeCursorSelectNext identity identity)
+              | k == "ArrowUp" || (not ak && k == "k") -> treeModM (treeCursorSelectPrev identity identity)
+              | k == "ArrowLeft" || (not ak && k == "h") -> treeModM (treeCursorSelectAbove identity identity)
+              | k == "ArrowRight" || (not ak && k == "l") -> treeModM (treeCursorSelectBelowAtEnd identity identity)
               | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "a" || k == "A" -> modify_ (_ { headerSelected = Just Header.End })
               | k == "i" || k == "I" -> modify_ (_ { headerSelected = Just Header.Beginning })
               | k == "d" -> treeModDOU (treeCursorDeleteElem identity)
               | k == "D" -> treeModDOU (treeCursorDeleteSubTree identity)
+              | k == "D" -> treeModDOU (treeCursorDeleteSubTree identity)
+              | ak && k == "j" -> treeModM (dullSwapResult <<< treeCursorSwapNext)
+              | ak && k == "k" -> treeModM (dullSwapResult <<< treeCursorSwapPrev)
             _ -> pure unit
       HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # treeCursorCurrentL .~ str })
