@@ -84,6 +84,13 @@ instance bindPromoteElemResult :: Bind PromoteElemResult where
 
 instance monadPromoteElemResult :: Monad PromoteElemResult
 
+dullPromoteElemResult :: forall a. PromoteElemResult a -> Maybe a
+dullPromoteElemResult = case _ of
+  CannotPromoteTopElem -> Nothing
+  NoGrandparentToPromoteElemUnder -> Nothing
+  NoSiblingsToAdoptChildren -> Nothing
+  PromotedElem a -> Just a
+
 -- | Promotes the current node to the level of its parent.
 --
 -- Example:
@@ -149,3 +156,9 @@ instance bindPromoteResult :: Bind PromoteResult where
   bind (Promoted a) f = f a
 
 instance monadPromoteResult :: Monad PromoteResult
+
+dullPromoteResult :: forall a. PromoteResult a -> Maybe a
+dullPromoteResult = case _ of
+  CannotPromoteTopNode -> Nothing
+  NoGrandparentToPromoteUnder -> Nothing
+  Promoted a -> Just a
