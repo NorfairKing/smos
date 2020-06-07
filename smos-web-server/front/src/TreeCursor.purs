@@ -10,8 +10,8 @@ import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeC
 import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
 import Cursor.Tree.Swap (dullSwapResult, treeCursorSwapNext, treeCursorSwapPrev)
 import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
-import Cursor.Tree.Promote
-import Cursor.Tree.Demote
+import Cursor.Tree.Promote (dullPromoteElemResult, dullPromoteResult, treeCursorPromoteElem, treeCursorPromoteSubTree)
+import Cursor.Tree.Demote (dullDemoteResult, treeCursorDemoteElem, treeCursorDemoteSubTree)
 import Data.Array as Array
 import Data.Const (Const)
 import Data.List (List(..), (:))
@@ -274,10 +274,10 @@ handle =
         else do
           case unit of
             _
-              | not ak && (k == "ArrowDown" && k == "j") -> treeModM (treeCursorSelectNext identity identity)
-              | not ak && (k == "ArrowUp" && k == "k") -> treeModM (treeCursorSelectPrev identity identity)
-              | not ak && (k == "ArrowLeft" && k == "h") -> treeModM (treeCursorSelectAbove identity identity)
-              | not ak && (k == "ArrowRight" && k == "l") -> treeModM (treeCursorSelectBelowAtEnd identity identity)
+              | not ak && (k == "ArrowDown" || k == "j") -> treeModM (treeCursorSelectNext identity identity)
+              | not ak && (k == "ArrowUp" || k == "k") -> treeModM (treeCursorSelectPrev identity identity)
+              | not ak && (k == "ArrowLeft" || k == "h") -> treeModM (treeCursorSelectAbove identity identity)
+              | not ak && (k == "ArrowRight" || k == "l") -> treeModM (treeCursorSelectBelowAtEnd identity identity)
               | k == "e" -> treeModM (treeCursorInsertAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "E" -> treeMod (treeCursorAddChildAtStartAndSelect identity identity (Tree { rootLabel: "new", subForest: Nil }))
               | k == "a" || k == "A" -> modify_ (_ { headerSelected = Just Header.End })
@@ -285,9 +285,11 @@ handle =
               | k == "d" -> treeModDOU (treeCursorDeleteElem identity)
               | k == "D" -> treeModDOU (treeCursorDeleteSubTree identity)
               | k == "D" -> treeModDOU (treeCursorDeleteSubTree identity)
-              | ak && k == "j" -> treeModM (dullSwapResult <<< treeCursorSwapNext)
-              | ak && k == "k" -> treeModM (dullSwapResult <<< treeCursorSwapPrev)
+              | ak && (k == "ArrowDown" || k == "j") -> treeModM (dullSwapResult <<< treeCursorSwapNext)
+              | ak && (k == "ArrowUp" || k == "k") -> treeModM (dullSwapResult <<< treeCursorSwapPrev)
               | ak && k == "ArrowLeft" -> treeModM (dullPromoteElemResult <<< treeCursorPromoteElem identity identity)
-              | ak && sk && k == "H" -> treeModM (dullPromoteResult <<< treeCursorPromoteSubTree identity identity)
+              | ak && sk && (k == "ArrowLeft" || k == "H") -> treeModM (dullPromoteResult <<< treeCursorPromoteSubTree identity identity)
+              | ak && k == "ArrowRight" -> treeModM (dullDemoteResult <<< treeCursorDemoteElem identity identity)
+              | ak && sk && (k == "ArrowRight" || k == "L") -> treeModM (dullDemoteResult <<< treeCursorDemoteSubTree identity identity)
             _ -> pure unit
       HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # treeCursorCurrentL .~ str })
