@@ -12,6 +12,7 @@ import Cursor.Tree.Swap (dullSwapResult, treeCursorSwapNext, treeCursorSwapPrev)
 import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
 import Cursor.Tree.Promote (dullPromoteElemResult, dullPromoteResult, treeCursorPromoteElem, treeCursorPromoteSubTree)
 import Cursor.Tree.Demote (dullDemoteResult, treeCursorDemoteElem, treeCursorDemoteSubTree)
+import Cursor.Tree.Collapse (treeCursorToggleCurrentForest, treeCursorToggleCurrentForestRecursively)
 import Data.Array as Array
 import Data.Const (Const)
 import Data.List (List(..))
@@ -101,7 +102,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
   wrap lefts above rights (Tuple p current) =
     Tuple (GoToParent p)
       ( HH.div_
-          [ goUnseletected (GoToParent p) above
+          [ goUnseletected (GoToParent p) above emptyCForestIndication
           , HH.div
               [ CSS.style do
                   CSS.marginLeft (CSS.px 30.0)
@@ -143,7 +144,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
   cur current subForest =
     Tuple ClickedEqualsSelected
       ( HH.div_
-          $ [ goSelected current
+          $ [ goSelected current (cForestIndication subForest)
             , HH.div
                 [ CSS.style do
                     CSS.marginLeft (CSS.px 30.0)
@@ -166,7 +167,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
   goCTree :: PathToClickedEntry -> CTree String -> H.ComponentHTML Action ChildSlots Aff
   goCTree p (CTree cn) =
     HH.div_
-      [ goUnseletected p cn.rootLabel
+      [ goUnseletected p cn.rootLabel (cForestIndication cn.subForest)
       , HH.div
           [ CSS.style do
               CSS.marginLeft (CSS.px 30.0)
@@ -174,19 +175,25 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
           [ goCForest p cn.subForest ]
       ]
 
-  goUnseletected :: PathToClickedEntry -> String -> H.ComponentHTML Action ChildSlots Aff
-  goUnseletected p s =
+  goUnseletected :: PathToClickedEntry -> String -> CForestIndication -> H.ComponentHTML Action ChildSlots Aff
+  goUnseletected p s cfi =
     HH.p
       [ CSS.style do
           CSS.minHeight (CSS.px 30.0)
       , HE.onClick (\me -> Just (EntryClicked p me))
       ]
       [ HH.text s
+      , goCForestIndication cfi
       ]
 
-  goSelected :: String -> H.ComponentHTML Action ChildSlots Aff
-  goSelected s = case selected of
-    Just sp -> HH.slot _header unit Header.component { contents: s, startingPosition: sp } (Just <<< HandleHeader)
+  goSelected :: String -> CForestIndication -> H.ComponentHTML Action ChildSlots Aff
+  goSelected s cfi = case selected of
+    Just sp ->
+      HH.p
+        []
+        [ HH.slot _header unit Header.component { contents: s, startingPosition: sp } (Just <<< HandleHeader)
+        , goCForestIndication cfi
+        ]
     Nothing ->
       HH.p
         [ CSS.style do
@@ -194,8 +201,27 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
         , HE.onClick (\me -> Just (EntryClicked ClickedEqualsSelected me))
         ]
         [ HH.text s
+        , goCForestIndication cfi
         , HH.text " <--"
         ]
+
+  goCForestIndication :: CForestIndication -> H.ComponentHTML Action ChildSlots Aff
+  goCForestIndication { hiddenNodesBelow } = if hiddenNodesBelow then HH.text " +++" else HH.text ""
+
+type CForestIndication
+  = { hiddenNodesBelow :: Boolean }
+
+emptyCForestIndication :: CForestIndication
+emptyCForestIndication = { hiddenNodesBelow: false }
+
+cForestIndication :: CForest String -> CForestIndication
+cForestIndication cf =
+  { hiddenNodesBelow:
+    case cf of
+      EmptyCForest -> false
+      OpenForest _ -> false
+      ClosedForest _ -> true
+  }
 
 handle :: forall o. Action -> H.HalogenM State Action ChildSlots o Aff Unit
 handle =
@@ -267,5 +293,7 @@ handle =
               | ak && sk && (k == "ArrowLeft" || k == "H") -> treeModM (dullPromoteResult <<< treeCursorPromoteSubTree identity identity)
               | ak && k == "ArrowRight" -> treeModM (dullDemoteResult <<< treeCursorDemoteElem identity identity)
               | ak && sk && (k == "ArrowRight" || k == "L") -> treeModM (dullDemoteResult <<< treeCursorDemoteSubTree identity identity)
+              | k == "c" -> treeModM treeCursorToggleCurrentForest
+              | k == "C" -> treeModM treeCursorToggleCurrentForestRecursively
             _ -> pure unit
       HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # treeCursorCurrentL .~ str })
