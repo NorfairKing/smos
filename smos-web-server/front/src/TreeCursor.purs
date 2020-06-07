@@ -6,6 +6,7 @@ import Cursor.Tree.Base (foldTreeCursor)
 import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertAndSelect)
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
 import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL)
+import Cursor.Types
 import Data.Array as Array
 import Data.Const (Const)
 import Data.List (List(..), (:))
