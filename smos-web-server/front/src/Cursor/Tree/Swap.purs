@@ -1,8 +1,8 @@
 module Cursor.Tree.Swap where
 
+import Prelude
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
-import Prelude
 import Cursor.Tree.Types (TreeAbove(..), TreeCursor)
 
 -- | Swaps the current node with the previous node on the same level

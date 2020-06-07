@@ -1,8 +1,8 @@
 module Cursor.Tree.Delete where
 
 import Prelude
-import Data.List
-import Data.Maybe
+import Data.List (List(..), reverse, (:))
+import Data.Maybe (Maybe(..))
 import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NE
 import Data.NonEmpty ((:|))

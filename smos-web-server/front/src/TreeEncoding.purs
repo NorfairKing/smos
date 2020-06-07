@@ -1,18 +1,17 @@
 module TreeEncoding where
 
 import Prelude
-import Data.Maybe
-import Data.Tuple
+import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Foreign.Object as FO
-import Cursor.Tree.Types
+import Cursor.Tree.Types (Forest, Tree(..))
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as J
-import Data.List
 import Data.Codec as C
 import Data.Codec.Argonaut.Common (JsonCodec)
 import Data.Codec.Argonaut.Common as CA
 import Data.Codec.Argonaut.Record as CAR
-import Data.Either
+import Data.Either (Either(..))
 import Data.Profunctor (dimap)
 
 forestCodec :: forall a. JsonCodec a -> JsonCodec (Forest a)

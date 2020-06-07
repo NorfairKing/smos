@@ -6,7 +6,7 @@ import Control.Monad.State (modify_)
 import Cursor.Tree.Base (foldTreeCursor, makeTreeCursor)
 import Cursor.Tree.Insert (treeCursorAddChildAtStartAndSelect, treeCursorInsertAndSelect)
 import Cursor.Tree.Movement (PathToClickedEntry(..), moveUsingPath, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectNext, treeCursorSelectPrev)
-import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, treeCursorCurrentL, cTree)
+import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeCursor, cTree, treeCursorCurrentL)
 import Cursor.Tree.Delete (treeCursorDeleteElem, treeCursorDeleteSubTree)
 import Cursor.Tree.Swap (dullSwapResult, treeCursorSwapNext, treeCursorSwapPrev)
 import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
@@ -14,12 +14,10 @@ import Cursor.Tree.Promote (dullPromoteElemResult, dullPromoteResult, treeCursor
 import Cursor.Tree.Demote (dullDemoteResult, treeCursorDemoteElem, treeCursorDemoteSubTree)
 import Data.Array as Array
 import Data.Const (Const)
-import Data.List (List(..), (:))
+import Data.List (List(..))
 import Data.List as List
-import Data.List.NonEmpty (NonEmptyList(..))
 import Data.List.NonEmpty as NE
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.NonEmpty ((:|))
 import Data.Tuple (Tuple(..), snd)
 import Effect.Aff (Aff)
 import Effect.Console as Console
