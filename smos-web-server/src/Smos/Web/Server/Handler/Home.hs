@@ -5,7 +5,6 @@ module Smos.Web.Server.Handler.Home where
 
 import Cursor.Tree
 import Data.Aeson.Text as JSON
-import qualified Data.ByteString.Lazy as LB
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
 import Data.Tree
