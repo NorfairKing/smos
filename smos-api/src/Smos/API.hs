@@ -24,7 +24,7 @@ import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Mergeful as Mergeful
-import Data.Mergeful.Timed
+import Data.Mergeful.Persistent ()
 import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -161,10 +161,6 @@ deriving instance PersistFieldSql (Path Rel File) -- TODO Not entirely safe
 
 deriving instance PersistField (Path Rel File) -- TODO Not entirely safe
 
-deriving instance PersistFieldSql ServerTime
-
-deriving instance PersistField ServerTime
-
 instance PersistField (UUID a) where
   toPersistValue (UUID uuid) = PersistByteString $ LB.toStrict $ UUID.toByteString uuid
   fromPersistValue (PersistByteString bs) =
@@ -202,7 +198,22 @@ instance ToJSON SyncFile where
   toJSON SyncFile {..} =
     object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-type SyncRequest = Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+data SyncRequest
+  = SyncRequest
+      { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity SyncRequest
+
+instance NFData SyncRequest
+
+instance FromJSON SyncRequest where
+  parseJSON = withObject "SyncRequest" $ \o -> SyncRequest <$> o .: "items"
+
+instance ToJSON SyncRequest where
+  toJSON SyncRequest {..} =
+    object ["items" .= syncRequestItems]
 
 data SyncResponse
   = SyncResponse

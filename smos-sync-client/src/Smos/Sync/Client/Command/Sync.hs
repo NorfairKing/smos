@@ -73,7 +73,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
 runInitialSync :: Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
 runInitialSync contentsDir ignoreFiles token = do
   logDebugN "INITIAL SYNC START"
-  let req = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+  let req = SyncRequest {syncRequestItems = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile}
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
@@ -103,13 +103,14 @@ runSync contentsDir ignoreFiles serverUUID token = do
   clientMergeSyncResponse contentsDir ignoreFiles syncResponseItems
   logDebugN "SYNC END"
 
-clientMakeSyncRequest :: Path Abs Dir -> IgnoreFiles -> C (Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile)
+clientMakeSyncRequest :: Path Abs Dir -> IgnoreFiles -> C SyncRequest
 clientMakeSyncRequest contentsDir ignoreFiles = do
   files <- liftIO $ readFilteredSyncFiles ignoreFiles contentsDir
   logDebugData "CLIENT CONTENTS MAP BEFORE SYNC" files
   meta <- runDB readClientMetadata
   logDebugData "CLIENT META MAP BEFORE SYNC" meta
-  pure $ consolidateToSyncRequest meta files
+  let syncRequestItems = consolidateToSyncRequest meta files
+  pure SyncRequest {..}
 
 consolidateToSyncRequest :: MetaMap -> ContentsMap -> Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
 consolidateToSyncRequest clientMetaDataMap contentsMap =

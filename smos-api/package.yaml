@@ -22,6 +22,7 @@ library:
   - deepseq
   - hashable
   - mergeful
+  - mergeful-persistent
   - mtl
   - password
   - password-instances

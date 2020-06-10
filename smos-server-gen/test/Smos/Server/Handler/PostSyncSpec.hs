@@ -5,11 +5,12 @@ module Smos.Server.Handler.PostSyncSpec
   )
 where
 
-import Data.Mergeful
 import Smos.Client
+import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
 import Test.Hspec
 import Test.Validity
+import Text.Show.Pretty
 
 spec :: Spec
 spec =
@@ -19,12 +20,17 @@ spec =
         withNewUser cenv $ \t -> do
           response <- testClientOrErr cenv (clientPostSync t request)
           shouldBeValid response
-    it "is idempotent after an arbitrary setup request" $ \cenv ->
-      forAllValid $ \initial ->
+    xit "is idempotent after an arbitrary setup request" $ \cenv ->
+      forAllValid $ \interestingStore ->
         forAllValid $ \request ->
           withNewUser cenv $ \t -> do
-            let initialRequest = initialSyncRequest {syncRequestNewItems = initial}
-            _ <- testClientOrErr cenv (clientPostSync t initialRequest)
+            pPrint interestingStore
+            print ("Setup" :: String)
+            testClientOrErr cenv $ setupInterestingStore t interestingStore
+            pPrint request
+            print ("request1" :: String)
             response1 <- testClientOrErr cenv (clientPostSync t request)
+            pPrint request
+            print ("request2" :: String)
             response2 <- testClientOrErr cenv (clientPostSync t request)
             response2 `shouldBe` response1
