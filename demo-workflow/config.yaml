@@ -1,0 +1,22 @@
+work:
+  contexts:
+    home: 'ancestor:(tag:home or (tag:online or (tag:offline or tag:power)))'
+    plug: '(not:ancestor:tag:home and ancestor:(tag:transport or (tag:power or (tag:offline or tag:online))))'
+    transport: '(not:ancestor:(tag:home or tag:power) and ancestor:(tag:transport or (tag:offline or tag:online)))'
+    airplane: '(not:ancestor:(tag:online or (tag:home or tag:power)) and ancestor:tag:offline)'
+    toast: 'ancestor:tag:toast'
+  time-filter: timewindow
+  checks:
+    - property:timewindow
+  columns:
+    - file
+    - state
+    - header
+    - property:timewindow
+  sorter: '(reverse:property-as-time:timewindow then file)'
+
+report:
+  reports:
+    accounting:
+      description: 'Anything I need to see during my accounting'
+      filter: tag:accounting

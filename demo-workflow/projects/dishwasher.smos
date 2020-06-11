@@ -1,0 +1,23 @@
+- entry:
+    header: Dishwasher
+    contents: |-
+      The dishwasher has broken and is now leaking water.
+
+      Goal: Have a working dishwasher
+    state-history:
+    - state: TODO
+      time: 2020-06-11 19:25:14.192327902000
+  forest:
+  - header: Call the landlord
+    contents: +41 0123 4567
+    state-history:
+    - state: DONE
+      time: 2020-06-11 19:25:44.014974418000
+    - state: NEXT
+      time: 2020-06-11 19:25:43.110961399000
+    - state: TODO
+      time: 2020-06-11 19:25:42.567057065000
+  - header: for an email from the landlord
+    state-history:
+    - state: WAITING
+      time: 2020-06-11 19:25:51.526570704000

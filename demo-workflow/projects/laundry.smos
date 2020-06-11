@@ -1,0 +1,15 @@
+- entry:
+    header: Laundry
+    state-history:
+    - state: TODO
+      time: 2020-06-11 19:21:38.067158526000
+  forest:
+  - header: Collect the dirty clothes from my room
+    properties:
+      timewindow: 5m
+    state-history:
+    - state: NEXT
+      time: 2020-06-11 19:21:32.163609141000
+    tags:
+    - home
+    - offline
