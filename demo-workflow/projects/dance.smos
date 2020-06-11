@@ -1,0 +1,27 @@
+- entry:
+    header: Dance
+    contents: 'Goal: Pick up dance as a hobby'
+    state-history:
+    - state: TODO
+      time: 2020-06-11 19:31:52.972379719000
+  forest:
+  - header: Google 'dance classes near me'
+    state-history:
+    - state: DONE
+      time: 2020-06-11 19:32:17.451171366000
+    - state: NEXT
+      time: 2020-06-11 19:32:01.124162538000
+  - header: contact the teachers at the class I found near me
+    state-history:
+    - state: DONE
+      time: 2020-06-11 19:32:29.490510960000
+    - state: NEXT
+      time: 2020-06-11 19:32:17.827240546000
+    - state: TODO
+      time: 2020-06-11 19:32:17.211258953000
+  - header: go to my first class
+    timestamps:
+      SCHEDULED: 2020-06-12 11:00:00
+    state-history:
+    - state: READY
+      time: 2020-06-11 19:32:29.778660950000
