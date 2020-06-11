@@ -77,28 +77,36 @@ in
                   }
                 );
             };
+          calendar =
+            mkOption {
+              default = null;
+              type =
+                types.nullOr (
+                  types.submodule {
+                    options =
+                      {
+                        enable = mkEnableOption "Smos calendar importing";
+                        destination =
+                          mkOption {
+                            type = types.nullOr types.str;
+                            default = null;
+                            example = "calendar.smos";
+                            description = "The destination file within the workflow directory";
+                          };
+                        sources =
+                          mkOption {
+                            type = types.listOf types.str;
+                            description = "The list of sources to import from";
+                          };
+                      };
+                  }
+                );
+            };
         };
     };
   config =
     let
       smosPkgs = (import ./pkgs.nix).smosPackages;
-
-      syncConfigContents =
-        syncCfg:
-          optionalString (syncCfg.enable or false) ''
-
-sync:
-  server-url: "${cfg.sync.server-url}"
-  username: "${cfg.sync.username}"
-  password: "${cfg.sync.password}"
-
-    '';
-
-      smosConfigContents =
-        concatStringsSep "\n" [
-          (syncConfigContents cfg.sync)
-          cfg.extraConfig
-        ];
 
       backupSmosName = "backup-smos";
       backupSmosService =
@@ -140,6 +148,17 @@ sync:
             };
         };
 
+      syncConfigContents =
+        syncCfg:
+          optionalString (syncCfg.enable or false) ''
+
+sync:
+  server-url: "${cfg.sync.server-url}"
+  username: "${cfg.sync.username}"
+  password: "${cfg.sync.password}"
+
+    '';
+
       syncSmosName = "sync-smos";
       syncSmosService =
         {
@@ -176,6 +195,60 @@ sync:
             };
         };
 
+      calendarConfigContents =
+        calendarCfg:
+          optionalString (calendarCfg.enable or false) ''
+
+calendar:
+  ${optionalString (! (isNull calendarCfg.destination)) "destination: ${calendarCfg.destination}"}
+  sources: ${builtins.toJSON cfg.calendar.sources}
+
+    '';
+
+
+      calendarSmosName = "calendar-smos";
+      calendarSmosService =
+        {
+          Unit =
+            {
+              Description = "Calendar import smos";
+              Wants = [ "network-online.target" ];
+            };
+          Service =
+            {
+              ExecStart =
+                "${pkgs.writeShellScript "calendar-smos-service-ExecStart"
+                  ''
+                    exec ${smosPkgs.smos-calendar-import}/bin/smos-calendar-import
+                  ''}";
+              Type = "oneshot";
+            };
+        };
+      calendarSmosTimer =
+        {
+          Unit =
+            {
+              Description = "Import calendar into smos every day";
+            };
+          Install =
+            {
+              WantedBy = [ "timers.target" ];
+            };
+          Timer =
+            {
+              OnCalendar = "daily";
+              Persistent = true;
+              Unit = "${calendarSmosName}.service";
+            };
+        };
+
+      smosConfigContents =
+        concatStringsSep "\n" [
+          (syncConfigContents cfg.sync)
+          (calendarConfigContents cfg.calendar)
+          cfg.extraConfig
+        ];
+
       services =
         (
           optionalAttrs (cfg.sync.enable or false) {
@@ -183,6 +256,9 @@ sync:
           }
           // optionalAttrs (cfg.backup.enable or false) {
             "${backupSmosName}" = backupSmosService;
+          }
+          // optionalAttrs (cfg.calendar.enable or false) {
+            "${calendarSmosName}" = calendarSmosService;
           }
         );
       timers =
@@ -192,6 +268,9 @@ sync:
           }
           // optionalAttrs (cfg.backup.enable or false) {
             "${backupSmosName}" = backupSmosTimer;
+          }
+          // optionalAttrs (cfg.calendar.enable or false) {
+            "${calendarSmosName}" = calendarSmosTimer;
           }
         );
       packages =

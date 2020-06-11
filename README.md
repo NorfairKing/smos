@@ -21,10 +21,11 @@ smos-report-gen          : Generators for Smos reports
 smos-report-cursor       : Cursors for Smos reports
 smos-report-cursor-gen   : Generators for cursors for smos reports
 smos                     : The smos TUI
-smos-convert-org         : The smos-convert-org tool: to convert org-mode files to smos files
 smos-single              ; The smos-single tool; to make a single-task project
 smos-query               : The smos-query tool; to query your workflow
 smos-archive             : The smos-archive tool: to archive smos files
+smos-convert-org         : The smos-convert-org tool: to convert org-mode files to smos files
+smos-calendar-import     : The calendar import tool: to import calendars in an onging manner
 smos-docs-site           : The generator for the documentation website.
 smos-api                 : The API for the smos server
 smos-api-gen             : Generators for the API for the smos server
