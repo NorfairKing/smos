@@ -281,6 +281,7 @@ calendar:
           smosPkgs.smos-single
           smosPkgs.smos-query
           smosPkgs.smos-sync-client
+          smosPkgs.smos-calendar-import
         ];
 
 
