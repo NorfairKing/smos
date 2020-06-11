@@ -17,6 +17,9 @@
       time: 2020-06-11 19:25:43.110961399000
     - state: TODO
       time: 2020-06-11 19:25:42.567057065000
+    logbook:
+    - start: 2020-06-11 19:14:54.330337293000
+      end: 2020-06-11 19:19:54.642466812000
   - header: for an email from the landlord
     state-history:
     - state: WAITING
