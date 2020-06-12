@@ -18,6 +18,7 @@ library:
   - bytestring
   - containers
   - genvalidity
+  - genvalidity-containers
   - genvalidity-bytestring
   - genvalidity-path
   - hspec
