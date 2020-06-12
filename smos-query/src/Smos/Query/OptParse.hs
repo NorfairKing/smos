@@ -110,7 +110,8 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                 { agendaSetFilter = agendaFlagFilter,
                   agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
                   agendaSetBlock = fromMaybe OneBlock agendaFlagBlock,
-                  agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive
+                  agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
+                  agendaSetPeriod = fromMaybe AllTime agendaFlagPeriod
                 }
         CommandWork WorkFlags {..} -> do
           let wc func = func <$> (mc >>= confWorkConfiguration)
@@ -344,7 +345,7 @@ parseCommandAgenda = info parser modifier
     parser =
       CommandAgenda
         <$> ( AgendaFlags <$> parseFilterArgs <*> parseHistoricityFlag <*> parseTimeBlock
-                <*> parseHideArchiveFlag
+                <*> parseHideArchiveFlag <*> parsePeriod
             )
 
 parseCommandProjects :: ParserInfo Command

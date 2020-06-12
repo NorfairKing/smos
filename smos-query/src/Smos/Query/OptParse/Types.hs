@@ -116,7 +116,8 @@ data AgendaFlags
       { agendaFlagFilter :: Maybe EntryFilter,
         agendaFlagHistoricity :: Maybe AgendaHistoricity,
         agendaFlagBlock :: Maybe TimeBlock,
-        agendaFlagHideArchive :: Maybe HideArchive
+        agendaFlagHideArchive :: Maybe HideArchive,
+        agendaFlagPeriod :: Maybe Period
       }
   deriving (Show, Eq)
 
@@ -319,7 +320,8 @@ data AgendaSettings
       { agendaSetFilter :: Maybe EntryFilter,
         agendaSetHistoricity :: AgendaHistoricity,
         agendaSetBlock :: TimeBlock,
-        agendaSetHideArchive :: HideArchive
+        agendaSetHideArchive :: HideArchive,
+        agendaSetPeriod :: Period
       }
   deriving (Show, Eq, Generic)
 

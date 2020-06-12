@@ -40,7 +40,7 @@ smosQueryAgenda AgendaSettings {..} = do
         .| smosCursorCurrents
         .| C.concatMap (uncurry makeAgendaEntry)
         .| C.filter (fitsHistoricity now agendaSetHistoricity)
-  liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetBlock tups
+  liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetPeriod agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
 renderAgendaReport now = formatAsTable . renderAgendaReportLines now . addNowLine now . makeAgendaReportLines

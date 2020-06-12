@@ -59,8 +59,8 @@ dayPeriod d = BeginEnd dayStart dayEnd
     dayStart = LocalTime {localDay = d, localTimeOfDay = midnight}
     dayEnd = LocalTime {localDay = addDays 1 d, localTimeOfDay = midnight}
 
-filterPeriod :: ZonedTime -> Period -> UTCTime -> Bool
-filterPeriod now p u =
+filterPeriodLocal :: ZonedTime -> Period -> LocalTime -> Bool
+filterPeriodLocal now p l =
   ( case p of
       AllTime -> const True
       Today -> filterBetween todayStart todayEnd
@@ -74,11 +74,8 @@ filterPeriod now p u =
       BeginOnly begin -> (begin <=)
       EndOnly end -> (< end)
       BeginEnd begin end -> filterBetween begin end
-  )
-    $ utcToLocalTime tz u
+  ) l
   where
-    tz :: TimeZone
-    tz = zonedTimeZone now
     nowLocal :: LocalTime
     nowLocal = zonedTimeToLocalTime now
     today :: Day
@@ -131,3 +128,9 @@ filterPeriod now p u =
     thisYearEnd =
       let (y, _, _) = toGregorian today
        in LocalTime (fromGregorian y 12 31) midnight
+
+filterPeriod :: ZonedTime -> Period -> UTCTime -> Bool
+filterPeriod now p u = let
+  tz :: TimeZone
+  tz = zonedTimeZone now
+  in filterPeriodLocal now p $ utcToLocalTime tz u
