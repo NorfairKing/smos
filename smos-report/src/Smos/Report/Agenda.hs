@@ -14,6 +14,7 @@ import GHC.Generics (Generic)
 import Smos.Data
 import Smos.Report.Agenda.Types
 import Smos.Report.Path
+import Smos.Report.Period
 import Smos.Report.TimeBlock
 
 data AgendaReport
@@ -26,9 +27,10 @@ data AgendaReport
 
 instance Validity AgendaReport
 
-makeAgendaReport :: ZonedTime -> TimeBlock -> [AgendaEntry] -> AgendaReport
-makeAgendaReport now tb as =
-  let (past, present, future) = divideIntoPastPresentFuture now $ sortAgendaEntries as
+makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
+makeAgendaReport now period tb as =
+  let filteredAgenda = filter (filterPeriodLocal now period . timestampLocalTime . agendaEntryTimestamp) as
+      (past, present, future) = divideIntoPastPresentFuture now $ sortAgendaEntries filteredAgenda
       pastBlocks = divideIntoAgendaTableBlocks tb past
       presentBlocks = divideIntoAgendaTableBlocks tb present
       futureBlocks = divideIntoAgendaTableBlocks tb future
