@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Smos.Actions.Forest
   ( allForestPlainActions,
@@ -26,6 +27,9 @@ module Smos.Actions.Forest
     forestDemoteEntry,
     forestDemoteSubTree,
     forestToggleHideEntireEntry,
+    forestToggleHideEntryContents,
+    forestToggleHideEntryHistory,
+    forestToggleHideEntryLogbook,
     forestClockOutEverywhereInThisFile,
     forestClockOutEverywhereInAllFiles,
     forestClockOutEverywhereInThisFileAndClockInHere,
@@ -34,8 +38,11 @@ module Smos.Actions.Forest
 where
 
 import Conduit
+import Data.Text (Text, toLower, toTitle)
 import Data.Time
+import Lens.Micro
 import Smos.Actions.Utils
+import Smos.Cursor.Collapse
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -263,6 +270,23 @@ forestToggleHideEntireEntry =
       actionFunc = modifyFileCursor smosFileCursorToggleHideEntireEntry,
       actionDescription = "Toggle the hiding of the current entire entry"
     }
+
+mkForestToggleHideEntryPart :: Text -> Lens' (CollapseEntry EntryCursor) Bool -> Action
+mkForestToggleHideEntryPart name field =
+  Action
+    { actionName = "forestToggleHideEntry" <> ActionName (toTitle name),
+      actionFunc = modifyFileCursor $ smosFileCursorToggleHideEntryLens field,
+      actionDescription = "Toggle the hiding of the " <> toLower name <> " of the current entry"
+    }
+
+forestToggleHideEntryContents :: Action
+forestToggleHideEntryContents = mkForestToggleHideEntryPart "contents" collapseEntryShowContentsL
+
+forestToggleHideEntryHistory :: Action
+forestToggleHideEntryHistory = mkForestToggleHideEntryPart "history" collapseEntryShowHistoryL
+
+forestToggleHideEntryLogbook :: Action
+forestToggleHideEntryLogbook = mkForestToggleHideEntryPart "logbook" collapseEntryShowLogbookL
 
 forestClockOutEverywhereInThisFile :: Action
 forestClockOutEverywhereInThisFile =

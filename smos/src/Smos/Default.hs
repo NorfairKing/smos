@@ -119,6 +119,9 @@ defaultFileKeyMap =
             exactChar '\t' forestToggleCollapse,
             exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively,
             exactKey KBackTab forestToggleHideEntireEntry,
+            exactString "zc" forestToggleHideEntryContents,
+            exactString "zh" forestToggleHideEntryHistory,
+            exactString "zl" forestToggleHideEntryLogbook,
             -- Entering contents
             combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents,
             -- Entering tags
