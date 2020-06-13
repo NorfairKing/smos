@@ -53,6 +53,7 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     pageContent <- widgetToPageContent $ do
+      addStylesheetRemote "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"
       $(widgetFile "default-body")
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
