@@ -72,8 +72,10 @@ makeAgendaReportLines AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
-      [goBlocks agendaReportPast, goBlocks agendaReportPresent, goBlocks agendaReportFuture]
+      [goBlocks agendaReportPast, goToday agendaReportPresent, goBlocks agendaReportFuture]
   where
+    goToday :: AgendaTodayReport -> [AgendaReportLine]
+    goToday AgendaTodayReport {..} = goBlocks agendaTodayReportBlocks
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
       case bs of

@@ -20,12 +20,20 @@ import Smos.Report.TimeBlock
 data AgendaReport
   = AgendaReport
       { agendaReportPast :: [AgendaTableBlock Text],
-        agendaReportPresent :: [AgendaTableBlock Text],
+        agendaReportPresent :: AgendaTodayReport,
         agendaReportFuture :: [AgendaTableBlock Text]
       }
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaReport
+
+data AgendaTodayReport
+  = AgendaTodayReport
+      { agendaTodayReportBlocks :: [AgendaTableBlock Text]
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity AgendaTodayReport
 
 makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
 makeAgendaReport now period tb as =
@@ -36,7 +44,10 @@ makeAgendaReport now period tb as =
       futureBlocks = divideIntoAgendaTableBlocks tb future
    in AgendaReport
         { agendaReportPast = pastBlocks,
-          agendaReportPresent = presentBlocks,
+          agendaReportPresent =
+            AgendaTodayReport
+              { agendaTodayReportBlocks = presentBlocks
+              },
           agendaReportFuture = futureBlocks
         }
 
