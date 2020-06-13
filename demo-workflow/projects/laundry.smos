@@ -26,8 +26,6 @@
     - state: TODO
       time: 2020-06-13 12:12:07.094730659000
   - header: example3
-    timestamps:
-      SCHEDULED: 2020-06-13
     state-history:
     - state: TODO
       time: 2020-06-13 12:12:06.582745397000

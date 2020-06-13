@@ -7,8 +7,8 @@
 module Smos.Query.Commands.Agenda
   ( smosQueryAgenda,
     renderAgendaReportLines,
-    addNowLine,
     AgendaReportLine (..),
+    insertNowLine,
   )
 where
 
@@ -43,12 +43,13 @@ smosQueryAgenda AgendaSettings {..} = do
   liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetPeriod agendaSetBlock tups
 
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
-renderAgendaReport now = formatAsTable . renderAgendaReportLines now . addNowLine now . makeAgendaReportLines
+renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now
 
 renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
+  HourLine i -> [chunk $ T.pack (show i) <> ":00 ..."] -- TODO use printf
   NowLine ->
     [ fore yellow $ chunk $ T.pack $
         unwords
@@ -63,19 +64,18 @@ renderAgendaReportLines now = map $ \case
 data AgendaReportLine
   = TitleLine Text
   | NowLine
+  | HourLine Int
   | SpaceLine
   | EntryLine AgendaEntry
   deriving (Show, Eq, Generic)
 
-makeAgendaReportLines :: AgendaReport -> [AgendaReportLine]
-makeAgendaReportLines AgendaReport {..} =
+makeAgendaReportLines :: ZonedTime -> AgendaReport -> [AgendaReportLine]
+makeAgendaReportLines now AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
-      [goBlocks agendaReportPast, goToday agendaReportPresent, goBlocks agendaReportFuture]
+      [goBlocks agendaReportPast, makeAgendaTodayReportLines now agendaReportPresent, goBlocks agendaReportFuture]
   where
-    goToday :: AgendaTodayReport -> [AgendaReportLine]
-    goToday AgendaTodayReport {..} = goEntries agendaTodayReportBlocks
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
       case bs of
@@ -87,27 +87,61 @@ makeAgendaReportLines AgendaReport {..} =
     goEntries :: [AgendaEntry] -> [AgendaReportLine]
     goEntries = map EntryLine
 
--- TODO: this won't work at the start or the end.
--- we will want to do some lookahead.
-addNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
-addNowLine now = go
+makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> [AgendaReportLine]
+makeAgendaTodayReportLines now AgendaTodayReport {..} =
+  insertNowLine now $ insertHourLines $ map EntryLine agendaTodayReportEntries
+  where
+    insertHourLines :: [AgendaReportLine] -> [AgendaReportLine]
+    insertHourLines = id -- OTOD
+
+insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
+insertNowLine now = go
   where
     go = \case
-      [] -> []
-      [x] -> [x]
+      [] -> [NowLine]
+      [x] ->
+        if isBefore now x
+          then [NowLine, x]
+          else [x, NowLine]
       (x : y : zs) ->
-        case (x, y) of
-          (EntryLine xe, EntryLine ye) ->
-            let beforeT = agendaEntryTimestamp xe
-                afterT = agendaEntryTimestamp ye
-             in if isBetween beforeT now afterT then x : NowLine : y : zs else x : go (y : zs)
-          _ -> x : go (y : zs)
+        if isBetween x now y
+          then x : NowLine : y : zs
+          else x : go (y : zs)
 
-isBetween :: Timestamp -> ZonedTime -> Timestamp -> Bool
+isBefore :: ZonedTime -> AgendaReportLine -> Bool
+isBefore now after =
+  let ZonedTime lt tz = now
+      today = localDay lt
+      mAfterLT = agendaReportLineLocalTime today after
+      nowUTC = zonedTimeToUTC now
+   in case mAfterLT of
+        Just afterLT ->
+          nowUTC <= localTimeToUTC tz afterLT
+        _ -> False
+
+isBetween :: AgendaReportLine -> ZonedTime -> AgendaReportLine -> Bool
 isBetween before now after =
-  beforeUTC <= nowUTC && nowUTC <= afterUTC
-  where
-    tz = zonedTimeZone now
-    beforeUTC = localTimeToUTC tz $ timestampLocalTime before
-    afterUTC = localTimeToUTC tz $ timestampLocalTime after
-    nowUTC = zonedTimeToUTC now
+  let ZonedTime lt tz = now
+      today = localDay lt
+      mBeforeLT = agendaReportLineLocalTime today before
+      mAfterLT = agendaReportLineLocalTime today after
+      nowUTC = zonedTimeToUTC now
+   in case (mBeforeLT, mAfterLT) of
+        (Just beforeLT, Just afterLT) ->
+          localTimeToUTC tz beforeLT <= nowUTC
+            && nowUTC <= localTimeToUTC tz afterLT
+        (_, _) -> False
+
+agendaReportLineLocalTime :: Day -> AgendaReportLine -> Maybe LocalTime
+agendaReportLineLocalTime d = \case
+  TitleLine _ -> Nothing
+  NowLine -> Nothing
+  SpaceLine -> Nothing
+  HourLine i -> Just $ hourLineLocalTime d i
+  EntryLine ae -> Just $ agendaEntryLocalTime ae
+
+agendaEntryLocalTime :: AgendaEntry -> LocalTime
+agendaEntryLocalTime = timestampLocalTime . agendaEntryTimestamp
+
+hourLineLocalTime :: Day -> Int -> LocalTime
+hourLineLocalTime d h = LocalTime d (TimeOfDay h 0 0)
