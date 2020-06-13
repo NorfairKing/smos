@@ -28,6 +28,7 @@ import Smos.Query.Streaming
 import Smos.Report.Agenda
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
+import Text.Printf
 
 smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
@@ -49,7 +50,7 @@ renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
-  HourLine i -> [chunk $ "... " <> T.pack (show i) <> ":00 ..."] -- TODO use printf
+  HourLine i -> [chunk $ "... " <> T.pack (printf "%02d" i) <> ":00 ..."] -- TODO use printf
   NowLine ->
     [ fore yellow $ chunk $ T.pack $
         unwords
