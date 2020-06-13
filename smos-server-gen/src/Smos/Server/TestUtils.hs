@@ -28,7 +28,7 @@ data ServerTestEnv
       }
 
 serverEnvSpec :: SpecWith ServerTestEnv -> Spec
-serverEnvSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerTestEnv
+serverEnvSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withServerTestEnv
 
 withServerTestEnv :: (ServerTestEnv -> IO a) -> IO a
 withServerTestEnv func = do
