@@ -37,12 +37,12 @@ clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 
-clientGetNextActionReport :: Token -> ClientM NextActionReport
-
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
 
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
-clientPostSync :<|> clientGetNextActionReport :<|> clientGetSmosFile :<|> clientPutSmosFile = client (flatten syncProtectedAPI)
+
+clientGetNextActionReport :: Token -> ClientM NextActionReport
+clientPostSync :<|> clientGetSmosFile :<|> clientPutSmosFile :<|> clientGetNextActionReport = client (flatten syncProtectedAPI)
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession
