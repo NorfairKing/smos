@@ -33,7 +33,7 @@ A sorter is something of the following form:
 ``` plain
 file
 property:<property-name>          -- property:effort
-property-time:<property-name>     -- property:timewindow
+property-as-time:<property-name>     -- property:timewindow
 reverse:<sorter>                  -- reverse:file
 (<sorter> then <sorter>)          -- file then property:effort
 ```
