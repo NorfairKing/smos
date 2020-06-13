@@ -210,6 +210,7 @@ with final.haskell.lib;
                     # Calendar
                     iCalendar = iCalendarPkg;
                     mime = self.callHackage "mime" "0.4.0.2" {};
+                    genvalidity-dirforest = dontCheck super.genvalidity-dirforest;
 
                   } // persistentPackages // passwordPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
             );
