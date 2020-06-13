@@ -75,7 +75,7 @@ makeAgendaReportLines AgendaReport {..} =
       [goBlocks agendaReportPast, goToday agendaReportPresent, goBlocks agendaReportFuture]
   where
     goToday :: AgendaTodayReport -> [AgendaReportLine]
-    goToday AgendaTodayReport {..} = goBlocks agendaTodayReportBlocks
+    goToday AgendaTodayReport {..} = goEntries agendaTodayReportBlocks
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
       case bs of

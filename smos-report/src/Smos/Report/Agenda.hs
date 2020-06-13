@@ -29,7 +29,7 @@ instance Validity AgendaReport
 
 data AgendaTodayReport
   = AgendaTodayReport
-      { agendaTodayReportBlocks :: [AgendaTableBlock Text]
+      { agendaTodayReportBlocks :: [AgendaEntry]
       }
   deriving (Show, Eq, Generic)
 
@@ -40,13 +40,12 @@ makeAgendaReport now period tb as =
   let filteredAgenda = filter (filterPeriodLocal now period . timestampLocalTime . agendaEntryTimestamp) as
       (past, present, future) = divideIntoPastPresentFuture now $ sortAgendaEntries filteredAgenda
       pastBlocks = divideIntoAgendaTableBlocks tb past
-      presentBlocks = divideIntoAgendaTableBlocks tb present
       futureBlocks = divideIntoAgendaTableBlocks tb future
    in AgendaReport
         { agendaReportPast = pastBlocks,
           agendaReportPresent =
             AgendaTodayReport
-              { agendaTodayReportBlocks = presentBlocks
+              { agendaTodayReportBlocks = present
               },
           agendaReportFuture = futureBlocks
         }
