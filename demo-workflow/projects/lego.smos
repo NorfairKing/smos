@@ -1,0 +1,26 @@
+- entry:
+    header: Lego
+    contents: 'Goal: break apart and store the lego airplane'
+    state-history:
+    - state: TODO
+      time: 2020-06-13 13:39:06.567264965000
+  forest:
+  - header: research boxes online
+    contents: lmgtfy.com/?q=lego+storage+botxes
+    properties:
+      timewindow: 15m
+    state-history:
+    - state: NEXT
+      time: 2020-06-13 13:39:06.191178208000
+    tags:
+    - online
+  - header: buy the boxes
+    state-history:
+    - state: TODO
+      time: 2020-06-13 13:39:13.358879000000
+  - header: break apart the airplane
+    state-history:
+    - state: TODO
+      time: 2020-06-13 13:39:28.215834265000
+    - state: NEXT
+      time: 2020-06-13 13:39:24.382438405000
