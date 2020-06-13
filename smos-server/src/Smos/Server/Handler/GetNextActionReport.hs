@@ -14,14 +14,10 @@ import Smos.Report.Next
 import Smos.Server.Handler.Import
 
 serveGetNextActionReport :: AuthCookie -> SyncHandler NextActionReport
-serveGetNextActionReport (AuthCookie un) = do
-  mu <- runDB $ getBy $ UniqueUsername un
-  case mu of
-    Nothing -> throwError err404
-    Just (Entity uid _) -> do
-      acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
-      liftIO $ withAcquire acqSource $ \source ->
-        runConduit $ source .| parseServerFileC .| nextActionReportConduit Nothing
+serveGetNextActionReport (AuthCookie un) = withUserId un $ \uid -> do
+  acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
+  liftIO $ withAcquire acqSource $ \source ->
+    runConduit $ source .| parseServerFileC .| nextActionReportConduit Nothing
 
 -- TODO deal with the archive using 'hideArchive'.
 parseServerFileC :: Monad m => ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
