@@ -97,9 +97,9 @@ type SyncProtectedAPI = ToServantApi ProtectedRoutes
 data ProtectedRoutes route
   = ProtectedRoutes
       { postSync :: !(route :- ProtectAPI :> PostSync),
-        getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
         getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
-        putSmosFile :: !(route :- ProtectAPI :> PutSmosFile)
+        putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
+        reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
       }
   deriving (Generic)
 
@@ -221,8 +221,6 @@ instance ToJSON SyncResponse where
   toJSON SyncResponse {..} =
     object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
 
-type GetNextActionReport = "report" :> "next" :> Get '[JSON] NextActionReport
-
 instance FromHttpApiData (Path Rel File) where
   parseQueryParam t = left (T.pack . displayException :: SomeException -> Text) $ parseRelFile (T.unpack t)
 
@@ -232,3 +230,16 @@ instance ToHttpApiData (Path Rel File) where
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> PutNoContent '[JSON] NoContent
+
+type ReportsAPI = ToServantApi ReportRoutes
+
+data ReportRoutes route
+  = ReportRoutes
+      { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport)
+      }
+  deriving (Generic)
+
+type GetNextActionReport = "next" :> Get '[JSON] NextActionReport
+
+reportsAPI :: Proxy ReportsAPI
+reportsAPI = Proxy
