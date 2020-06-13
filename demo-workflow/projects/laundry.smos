@@ -13,3 +13,15 @@
     tags:
     - home
     - offline
+  - header: example1
+    timestamps:
+      SCHEDULED: 2020-06-12
+  - header: example2
+    timestamps:
+      SCHEDULED: 2020-06-14
+  - header: example3
+    timestamps:
+      SCHEDULED: 2020-06-13
+  - header: example4
+    timestamps:
+      SCHEDULED: 2020-06-13 17:58:58.258255839
