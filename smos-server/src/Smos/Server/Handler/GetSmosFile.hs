@@ -13,7 +13,7 @@ import Path
 import Smos.Data
 import Smos.Server.Handler.Import
 
-serveGetSmosFile :: AuthCookie -> Path Rel File -> SyncHandler SmosFile
+serveGetSmosFile :: AuthCookie -> Path Rel File -> ServerHandler SmosFile
 serveGetSmosFile (AuthCookie un) p = withUserId un $ \uid -> do
   msf <- runDB $ getBy (UniqueServerFilePath uid p)
   case msf of

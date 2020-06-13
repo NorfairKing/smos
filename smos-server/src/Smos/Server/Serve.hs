@@ -87,24 +87,24 @@ makeSyncApp env =
         hoistServerWithContext
           syncAPI
           (Proxy :: Proxy '[CookieSettings, JWTSettings])
-          ((`runReaderT` env) :: SyncHandler a -> Handler a)
+          ((`runReaderT` env) :: ServerHandler a -> Handler a)
           syncServantServer
 
-syncServantServer :: ServerT SyncAPI SyncHandler
+syncServantServer :: ServerT SyncAPI ServerHandler
 syncServantServer = toServant syncServerRecord
 
-syncServerRecord :: APIRoutes (AsServerT SyncHandler)
+syncServerRecord :: APIRoutes (AsServerT ServerHandler)
 syncServerRecord =
   APIRoutes
     { unprotectedRoutes = toServant syncServerUnprotectedRoutes,
       protectedRoutes = toServant syncServerProtectedRoutes
     }
 
-syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT SyncHandler)
+syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT ServerHandler)
 syncServerUnprotectedRoutes =
   UnprotectedRoutes {postRegister = servePostRegister, postLogin = servePostLogin}
 
-syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
+syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { postSync = withAuthResult servePostSync,
