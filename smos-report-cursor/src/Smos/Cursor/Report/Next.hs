@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Smos.Cursor.Report.Next where
 
@@ -36,34 +37,40 @@ produceNextActionReportCursor dc = do
       .| C.map (uncurry makeNextActionEntryCursor)
       .| sinkList
 
-type NextActionReportCursor = NonEmptyCursor NextActionEntryCursor
+newtype NextActionReportCursor = NextActionReportCursor {getter :: NonEmptyCursor NextActionEntryCursor}
+  deriving (Show, Eq, Generic)
+
+instance Validity NextActionReportCursor
+
+nextActionReportCursorNonEmptyCursorL :: Lens' NextActionReportCursor (NonEmptyCursor NextActionEntryCursor)
+nextActionReportCursorNonEmptyCursorL = lens getter (\narc nec -> narc {getter = nec})
 
 makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
-makeNextActionReportCursor = fmap makeNonEmptyCursor . NE.nonEmpty
+makeNextActionReportCursor = fmap (\nec -> NextActionReportCursor {getter = nec}) . fmap makeNonEmptyCursor . NE.nonEmpty
 
 nextActionReportCursorBuildSmosFileCursor :: NextActionReportCursor -> SmosFileCursor
 nextActionReportCursorBuildSmosFileCursor =
-  go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent
+  go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent . (^. nextActionReportCursorNonEmptyCursorL)
   where
     go :: ForestCursor Entry Entry -> SmosFileCursor
     go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 nextActionReportCursorBuildFilePath :: Path Abs Dir -> NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath pad narc =
-  let NextActionEntryCursor {..} = nonEmptyCursorCurrent narc
+  let NextActionEntryCursor {..} = nonEmptyCursorCurrent (narc ^. nextActionReportCursorNonEmptyCursorL)
    in pad </> nextActionEntryCursorFilePath
 
 nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorNext = nonEmptyCursorSelectNext
+nextActionReportCursorNext = nextActionReportCursorNonEmptyCursorL nonEmptyCursorSelectNext
 
 nextActionReportCursorPrev :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorPrev = nonEmptyCursorSelectPrev
+nextActionReportCursorPrev = nextActionReportCursorNonEmptyCursorL nonEmptyCursorSelectPrev
 
 nextActionReportCursorFirst :: NextActionReportCursor -> NextActionReportCursor
-nextActionReportCursorFirst = nonEmptyCursorSelectFirst
+nextActionReportCursorFirst = nextActionReportCursorNonEmptyCursorL %~ nonEmptyCursorSelectFirst
 
 nextActionReportCursorLast :: NextActionReportCursor -> NextActionReportCursor
-nextActionReportCursorLast = nonEmptyCursorSelectLast
+nextActionReportCursorLast = nextActionReportCursorNonEmptyCursorL %~ nonEmptyCursorSelectLast
 
 data NextActionEntryCursor
   = NextActionEntryCursor

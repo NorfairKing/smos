@@ -297,6 +297,7 @@ drawNextActionReportCursor s =
     (drawNextActionEntryCursor NotSelected)
     (drawNextActionEntryCursor s)
     (drawNextActionEntryCursor NotSelected)
+  . (^. nextActionReportCursorNonEmptyCursorL)
 
 drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> [Widget ResourceName]
 drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
