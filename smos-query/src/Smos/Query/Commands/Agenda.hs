@@ -50,7 +50,7 @@ renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
-  HourLine i -> [chunk $ "... " <> T.pack (printf "%02d" i) <> ":00 ..."] -- TODO use printf
+  HourLine i -> [chunk $ "... " <> T.pack (printf "%02d" i) <> ":00 ..."]
   NowLine ->
     [ fore yellow $ chunk $ T.pack $
         unwords
