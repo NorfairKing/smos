@@ -6,3 +6,6 @@ result-*
 .pre-commit-hooks
 *.cabal
 stack.yaml.lock
+server.uuid
+session.json
+*.sqlite3
