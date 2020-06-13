@@ -49,7 +49,7 @@ renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
-  HourLine i -> [chunk $ T.pack (show i) <> ":00 ..."] -- TODO use printf
+  HourLine i -> [chunk $ "... " <> T.pack (show i) <> ":00 ..."] -- TODO use printf
   NowLine ->
     [ fore yellow $ chunk $ T.pack $
         unwords
@@ -89,10 +89,21 @@ makeAgendaReportLines now AgendaReport {..} =
 
 makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> [AgendaReportLine]
 makeAgendaTodayReportLines now AgendaTodayReport {..} =
-  insertNowLine now $ insertHourLines $ map EntryLine agendaTodayReportEntries
+  insertNowLine now $ insertHourLines now agendaTodayReportEntries
+
+insertHourLines :: ZonedTime -> [AgendaEntry] -> [AgendaReportLine]
+insertHourLines now = go [0 .. 24]
   where
-    insertHourLines :: [AgendaReportLine] -> [AgendaReportLine]
-    insertHourLines = id -- OTOD
+    ZonedTime lt _ = now
+    today = localDay lt
+    go hs [] = map HourLine hs
+    go [] es = map EntryLine es
+    go (h : hs) (e : es) =
+      let alt = agendaEntryLocalTime e
+          hlt = hourLineLocalTime today h
+       in if alt <= hlt
+            then EntryLine e : go (h : hs) es
+            else HourLine h : go hs (e : es)
 
 insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
 insertNowLine now = go

@@ -22,8 +22,18 @@
       end: 2020-06-11 19:19:54.642466812000
   - header: for an email from the landlord
     state-history:
+    - state: DONE
+      time: 2020-06-13 13:41:56.686803684000
     - state: WAITING
       time: 2020-06-11 19:25:51.526570704000
+  - header: Ping again
+    state-history:
+    - state: DONE
+      time: 2020-06-13 13:41:56.686803684000
+  - header: for an email from the landlord
+    state-history:
+    - state: WAITING
+      time: 2020-06-13 13:41:56.686803684000
   - header: example4
     timestamps:
       SCHEDULED: 2020-06-20
