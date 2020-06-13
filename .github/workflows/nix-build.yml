@@ -2,6 +2,10 @@ name: "Nix Build"
 on:
   pull_request:
   push:
+    branches:
+      - development
+      - master
+
 jobs:
   nix-build:
     name: ${{ matrix.os }} / Nix
