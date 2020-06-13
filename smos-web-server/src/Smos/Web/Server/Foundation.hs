@@ -5,6 +5,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Web.Server.Foundation where
@@ -32,6 +33,7 @@ import Servant.Client
 import Smos.Client
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Widget
+import qualified System.FilePath as FP
 import Text.Hamlet
 import Yesod
 import Yesod.Auth
@@ -318,3 +320,6 @@ runClientOrDisallow func = do
           then pure Nothing
           else error $ show resp -- TODO deal with error
     Right r -> pure $ Just r
+
+fileR :: Path Rel File -> Route App
+fileR = FileR . map T.pack . FP.splitDirectories . fromRelFile

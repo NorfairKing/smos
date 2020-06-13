@@ -79,7 +79,8 @@ agendaEntryWidget AgendaEntry {..} =
   [whamlet|
      <tr>
       <td>
-        #{fromRelFile agendaEntryFilePath}
+        <a href=@{fileR agendaEntryFilePath}>
+          #{fromRelFile agendaEntryFilePath}
       <td>
         #{headerText agendaEntryHeader}
       <td>

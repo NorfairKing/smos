@@ -11,7 +11,8 @@
     $forall e <- nextActionReportEntries report
       <tr>
         <td class="pv3 pr3 bb b--black-20">
-          #{fromRelFile $ nextActionEntryFilePath e}
+          <a href=@{fileR $ nextActionEntryFilePath e}>
+            #{fromRelFile $ nextActionEntryFilePath e}
         <td class="pv3 pr3 bb b--black-20">
           #{maybe "" todoStateText $ nextActionEntryTodoState e}
         <td class="pv3 pr3 bb b--black-20">
