@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Smos.Cursor.SmosFile
   ( SmosFileCursor (..),
@@ -11,7 +12,6 @@ module Smos.Cursor.SmosFile
     smosFileCursorSelectedEntryL,
     smosFileCursorEntrySelectionL,
     smosFileCursorReadyForStartup,
-    smosFileCursorToggleHideEntireEntry,
     smosFileCursorSelectPrev,
     smosFileCursorSelectNext,
     smosFileCursorSelectPrevOnSameLevel,
@@ -23,6 +23,8 @@ module Smos.Cursor.SmosFile
     smosFileCursorSelectBelowAtEnd,
     smosFileCursorToggleCollapse,
     smosFileCursorToggleCollapseRecursively,
+    smosFileCursorToggleCollapseEntireEntry,
+    smosFileCursorToggleCollapseEntryLens,
     smosFileCursorInsertEntryBefore,
     smosFileCursorInsertEntryBeforeAndSelect,
     smosFileCursorInsertEntryBeforeAndSelectHeader,
@@ -138,14 +140,18 @@ smosFileCursorReadyForStartup = unclockStarted . goToEnd
             then ce {collapseEntryShowLogbook = True}
             else ce
 
-smosFileCursorToggleHideEntireEntry :: SmosFileCursor -> SmosFileCursor
-smosFileCursorToggleHideEntireEntry =
+smosFileCursorToggleCollapseEntireEntry :: SmosFileCursor -> SmosFileCursor
+smosFileCursorToggleCollapseEntireEntry =
   smosFileCursorSelectedEntireL
     %~ ( \c ->
            collapseEntrySetShowAll
              (not $ c ^. collapseEntryShowContentsL && c ^. collapseEntryShowHistoryL)
              c
        )
+
+smosFileCursorToggleCollapseEntryLens :: Lens' (CollapseEntry EntryCursor) Bool -> SmosFileCursor -> SmosFileCursor
+smosFileCursorToggleCollapseEntryLens field =
+  smosFileCursorSelectedEntireL %~ over field not
 
 smosFileCursorSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectPrev = smosFileCursorForestCursorL $ forestCursorSelectPrev rebuild make
