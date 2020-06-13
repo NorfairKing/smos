@@ -40,6 +40,7 @@ library:
   - servant-auth-client
   - servant-client
   - servant-flatten
+  - smos-data
   - smos-report
   - smos-api
   - stm

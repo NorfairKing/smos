@@ -71,6 +71,7 @@ tests:
     - persistent-sqlite
     - resource-pool
     - servant-client
+    - smos-data-gen
     - smos-client
     - smos-client-gen
     - smos-report

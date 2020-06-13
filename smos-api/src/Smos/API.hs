@@ -14,7 +14,9 @@ module Smos.API
   )
 where
 
+import Control.Arrow
 import Control.DeepSeq
+import Control.Exception
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
@@ -44,6 +46,7 @@ import Servant.Auth
 import Servant.Auth.Server
 import Smos.API.Password as X
 import Smos.API.Username as X
+import Smos.Data hiding (Header)
 import Smos.Report.Next
 
 syncAPI :: Proxy SyncAPI
@@ -94,7 +97,9 @@ type SyncProtectedAPI = ToServantApi ProtectedRoutes
 data ProtectedRoutes route
   = ProtectedRoutes
       { postSync :: !(route :- ProtectAPI :> PostSync),
-        getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport)
+        getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
+        getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
+        putSmosFile :: !(route :- ProtectAPI :> PutSmosFile)
       }
   deriving (Generic)
 
@@ -217,3 +222,13 @@ instance ToJSON SyncResponse where
     object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
 
 type GetNextActionReport = "report" :> "next" :> Get '[JSON] NextActionReport
+
+instance FromHttpApiData (Path Rel File) where
+  parseQueryParam t = left (T.pack . displayException :: SomeException -> Text) $ parseRelFile (T.unpack t)
+
+instance ToHttpApiData (Path Rel File) where
+  toQueryParam = T.pack . fromRelFile
+
+type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
+
+type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> PutNoContent '[JSON] NoContent
