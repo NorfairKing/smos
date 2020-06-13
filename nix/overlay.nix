@@ -45,7 +45,14 @@ with final.haskell.lib;
         "smos-client" = smosPkg "smos-client";
         "smos-client-gen" = smosPkg "smos-client-gen";
         "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-        "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+        "smos-sync-client-gen" =
+          let
+            default = smosPkg "smos-sync-client-gen";
+            set = {
+              "x86_64-darwin" = dontCheck (smosPkg "smos-sync-client-gen");
+            };
+          in
+            set."${builtins.currentSystem}" or default;
         "smos-web-server" = overrideCabal (smosPkgWithOwnComp "smos-web-server") (
           old:
             {
