@@ -20,7 +20,6 @@ import Smos.Query.Commands.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
 import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Filter
@@ -50,9 +49,9 @@ produceWorkReport ::
   HideArchive ->
   ContextName ->
   Maybe (Filter Entry) ->
-  Maybe EntryFilter ->
+  Maybe EntryFilterRel ->
   Maybe Sorter ->
-  Set EntryFilter ->
+  Set EntryFilterRel ->
   Q WorkReport
 produceWorkReport src ha cn mtf mf ms checks = do
   let wc = smosReportConfigWorkConfig src
@@ -72,9 +71,13 @@ produceWorkReport src ha cn mtf mf ms checks = do
                 workReportContextContexts = contexts,
                 workReportContextChecks = checks
               }
+      let dc = smosReportConfigDirectoryConfig src
+      wd <- liftIO $ resolveDirWorkflowDir dc
       fmap (finishWorkReport ms)
         $ runConduit
-        $ streamSmosFiles ha .| parseSmosFiles .| printShouldPrint PrintWarning .| smosFileCursors
+        $ streamSmosFilesFromWorkflowRel ha dc .| parseSmosFilesRel wd
+          .| printShouldPrint PrintWarning
+          .| smosFileCursors
           .| C.map (uncurry $ makeWorkReport wrc)
           .| accumulateMonoid
 
@@ -88,7 +91,7 @@ renderWorkReport now ne WorkReport {..} =
       [ unlessNull
           workReportAgendaEntries
           [ sectionHeading "Today's agenda:",
-            [formatAsTable $ renderAgendaReportLines now $ addNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
+            [formatAsTable $ renderAgendaReportLines now $ insertNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
           ],
         unlessNull
           workReportResultEntries

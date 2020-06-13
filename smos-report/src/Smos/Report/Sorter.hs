@@ -18,7 +18,6 @@ import Data.Void
 import GHC.Generics (Generic)
 import Lens.Micro
 import Smos.Data
-import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -45,21 +44,24 @@ instance ToJSON Sorter where
   toJSON = toJSON . renderSorter
 
 sorterSortCursorList ::
-  Sorter -> [(RootedPath, ForestCursor Entry)] -> [(RootedPath, ForestCursor Entry)]
+  Ord a =>
+  Sorter ->
+  [(a, ForestCursor Entry)] ->
+  [(a, ForestCursor Entry)]
 sorterSortCursorList s =
   sortBy $ \(rpa, fca) (rpb, fcb) -> sorterOrdering s rpa (cur fca) rpb (cur fcb)
   where
     cur fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
-sorterSortList :: Sorter -> [(RootedPath, Entry)] -> [(RootedPath, Entry)]
+sorterSortList :: Ord a => Sorter -> [(a, Entry)] -> [(a, Entry)]
 sorterSortList s = sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb
 
-sorterOrdering :: Sorter -> RootedPath -> Entry -> RootedPath -> Entry -> Ordering
+sorterOrdering :: Ord a => Sorter -> a -> Entry -> a -> Entry -> Ordering
 sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
   where
     go s ea eb =
       case s of
-        ByFile -> comparing resolveRootedPath rpa rpb
+        ByFile -> compare rpa rpb
         ByTag t -> comparing ((t `elem`) . entryTags) ea eb
         ByPropertyTime pn ->
           comparing (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText)) ea eb

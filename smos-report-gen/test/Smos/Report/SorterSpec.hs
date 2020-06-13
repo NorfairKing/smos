@@ -8,6 +8,7 @@ where
 
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
+import Path
 import Smos.Report.Path.Gen ()
 import Smos.Report.Sorter
 import Smos.Report.Sorter.Gen ()
@@ -25,7 +26,7 @@ spec = do
     $ forAllValid
     $ \s ->
       forAllValid $ \(rp1, fc1) ->
-        forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s rp1 fc1 rp2 fc2
+        forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s (rp1 :: Path Rel File) fc1 (rp2 :: Path Rel File) fc2
   describe "byFileP" $ parsesValidSpec byFileP
   describe "byPropertyP" $ parsesValidSpec byPropertyP
   describe "reverseP" $ parsesValidSpec reverseP

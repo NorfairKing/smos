@@ -8,6 +8,8 @@
 Reports:
 <a href=@{ReportNextR}>
   Next
+<a href=@{ReportAgendaR}>
+  Agenda
 
 <h1>
   Smos Web Server

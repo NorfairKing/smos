@@ -172,8 +172,8 @@ backToDirectoryConfiguration DirectoryConfig {..} =
 
 data WorkReportConfiguration
   = WorkReportConfiguration
-      { workReportConfBaseFilter :: !(Maybe EntryFilter),
-        workReportConfContexts :: !(Maybe (Map ContextName EntryFilter))
+      { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
+        workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel))
       }
   deriving (Show, Eq, Generic)
 

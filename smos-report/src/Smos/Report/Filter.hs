@@ -667,6 +667,12 @@ instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
 instance YamlSchema (Filter (RootedPath, ForestCursor Entry)) where
   yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilter) yamlSchema
 
+instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema (Filter (Path Rel File, ForestCursor Entry)) where
+  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel) yamlSchema
+
 instance ToJSON (Filter a) where
   toJSON = toJSON . renderFilter
 

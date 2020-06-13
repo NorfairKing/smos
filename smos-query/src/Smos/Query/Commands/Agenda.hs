@@ -7,13 +7,12 @@
 module Smos.Query.Commands.Agenda
   ( smosQueryAgenda,
     renderAgendaReportLines,
-    addNowLine,
     AgendaReportLine (..),
+    insertNowLine,
   )
 where
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,31 +23,25 @@ import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
 import Smos.Report.Agenda
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
+import Text.Printf
 
 smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
-  tups <-
-    sourceToList $
-      streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
-        .| smosFileCursors
-        .| smosMFilter agendaSetFilter
-        .| smosCursorCurrents
-        .| C.concatMap (uncurry makeAgendaEntry)
-        .| C.filter (fitsHistoricity now agendaSetHistoricity)
-  liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetPeriod agendaSetBlock tups
+  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive agendaSetHistoricity agendaSetFilter dc
+  liftIO $ putTableLn $ renderAgendaReport now report
 
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
-renderAgendaReport now = formatAsTable . renderAgendaReportLines now . addNowLine now . makeAgendaReportLines
+renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now
 
 renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
+  HourLine i -> [chunk $ "... " <> T.pack (printf "%02d" i) <> ":00 ..."]
   NowLine ->
     [ fore yellow $ chunk $ T.pack $
         unwords
@@ -63,16 +56,17 @@ renderAgendaReportLines now = map $ \case
 data AgendaReportLine
   = TitleLine Text
   | NowLine
+  | HourLine Int
   | SpaceLine
   | EntryLine AgendaEntry
   deriving (Show, Eq, Generic)
 
-makeAgendaReportLines :: AgendaReport -> [AgendaReportLine]
-makeAgendaReportLines AgendaReport {..} =
+makeAgendaReportLines :: ZonedTime -> AgendaReport -> [AgendaReportLine]
+makeAgendaReportLines now AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
-      [goBlocks agendaReportPast, goBlocks agendaReportPresent, goBlocks agendaReportFuture]
+      [goBlocks agendaReportPast, makeAgendaTodayReportLines now agendaReportPresent, goBlocks agendaReportFuture]
   where
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
@@ -85,27 +79,72 @@ makeAgendaReportLines AgendaReport {..} =
     goEntries :: [AgendaEntry] -> [AgendaReportLine]
     goEntries = map EntryLine
 
--- TODO: this won't work at the start or the end.
--- we will want to do some lookahead.
-addNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
-addNowLine now = go
+makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> [AgendaReportLine]
+makeAgendaTodayReportLines now AgendaTodayReport {..} =
+  insertNowLine now $ insertHourLines now agendaTodayReportEntries
+
+insertHourLines :: ZonedTime -> [AgendaEntry] -> [AgendaReportLine]
+insertHourLines now = go [0 .. 24]
+  where
+    ZonedTime lt _ = now
+    today = localDay lt
+    go hs [] = map HourLine hs
+    go [] es = map EntryLine es
+    go (h : hs) (e : es) =
+      let alt = agendaEntryLocalTime e
+          hlt = hourLineLocalTime today h
+       in if alt <= hlt
+            then EntryLine e : go (h : hs) es
+            else HourLine h : go hs (e : es)
+
+insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
+insertNowLine now = go
   where
     go = \case
-      [] -> []
-      [x] -> [x]
+      [] -> [NowLine]
+      [x] ->
+        if isBefore now x
+          then [NowLine, x]
+          else [x, NowLine]
       (x : y : zs) ->
-        case (x, y) of
-          (EntryLine xe, EntryLine ye) ->
-            let beforeT = agendaEntryTimestamp xe
-                afterT = agendaEntryTimestamp ye
-             in if isBetween beforeT now afterT then x : NowLine : y : zs else x : go (y : zs)
-          _ -> x : go (y : zs)
+        if isBetween x now y
+          then x : NowLine : y : zs
+          else x : go (y : zs)
 
-isBetween :: Timestamp -> ZonedTime -> Timestamp -> Bool
+isBefore :: ZonedTime -> AgendaReportLine -> Bool
+isBefore now after =
+  let ZonedTime lt tz = now
+      today = localDay lt
+      mAfterLT = agendaReportLineLocalTime today after
+      nowUTC = zonedTimeToUTC now
+   in case mAfterLT of
+        Just afterLT ->
+          nowUTC <= localTimeToUTC tz afterLT
+        _ -> False
+
+isBetween :: AgendaReportLine -> ZonedTime -> AgendaReportLine -> Bool
 isBetween before now after =
-  beforeUTC <= nowUTC && nowUTC <= afterUTC
-  where
-    tz = zonedTimeZone now
-    beforeUTC = localTimeToUTC tz $ timestampLocalTime before
-    afterUTC = localTimeToUTC tz $ timestampLocalTime after
-    nowUTC = zonedTimeToUTC now
+  let ZonedTime lt tz = now
+      today = localDay lt
+      mBeforeLT = agendaReportLineLocalTime today before
+      mAfterLT = agendaReportLineLocalTime today after
+      nowUTC = zonedTimeToUTC now
+   in case (mBeforeLT, mAfterLT) of
+        (Just beforeLT, Just afterLT) ->
+          localTimeToUTC tz beforeLT <= nowUTC
+            && nowUTC <= localTimeToUTC tz afterLT
+        (_, _) -> False
+
+agendaReportLineLocalTime :: Day -> AgendaReportLine -> Maybe LocalTime
+agendaReportLineLocalTime d = \case
+  TitleLine _ -> Nothing
+  NowLine -> Nothing
+  SpaceLine -> Nothing
+  HourLine i -> Just $ hourLineLocalTime d i
+  EntryLine ae -> Just $ agendaEntryLocalTime ae
+
+agendaEntryLocalTime :: AgendaEntry -> LocalTime
+agendaEntryLocalTime = timestampLocalTime . agendaEntryTimestamp
+
+hourLineLocalTime :: Day -> Int -> LocalTime
+hourLineLocalTime d h = LocalTime d (TimeOfDay h 0 0)

@@ -2,6 +2,7 @@
 
 
 /report/next ReportNextR GET
+/report/agenda ReportAgendaR GET
 
 -- Subsites
 /auth AuthR Auth getAuth
