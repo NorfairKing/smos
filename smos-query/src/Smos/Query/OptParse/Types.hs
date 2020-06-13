@@ -55,7 +55,7 @@ data Command
 
 data EntryFlags
   = EntryFlags
-      { entryFlagFilter :: Maybe EntryFilter,
+      { entryFlagFilter :: Maybe EntryFilterRel,
         entryFlagProjection :: Maybe (NonEmpty Projection),
         entryFlagSorter :: Maybe Sorter,
         entryFlagHideArchive :: Maybe HideArchive
@@ -72,7 +72,7 @@ data WorkFlags
   = WorkFlags
       { workFlagContext :: ContextName,
         workFlagTimeFilter :: Filter Time,
-        workFlagFilter :: Maybe EntryFilter,
+        workFlagFilter :: Maybe EntryFilterRel,
         workFlagProjection :: Maybe (NonEmpty Projection),
         workFlagSorter :: Maybe Sorter,
         workFlagHideArchive :: Maybe HideArchive
@@ -113,7 +113,7 @@ data ClockFormatFlags
 
 data AgendaFlags
   = AgendaFlags
-      { agendaFlagFilter :: Maybe EntryFilter,
+      { agendaFlagFilter :: Maybe EntryFilterRel,
         agendaFlagHistoricity :: Maybe AgendaHistoricity,
         agendaFlagBlock :: Maybe TimeBlock,
         agendaFlagHideArchive :: Maybe HideArchive,
@@ -227,7 +227,7 @@ instance YamlSchema WaitingConfiguration where
 
 data WorkConfiguration
   = WorkConfiguration
-      { workConfChecks :: Set EntryFilter,
+      { workConfChecks :: Set EntryFilterRel,
         workConfTimeFilterProperty :: Maybe PropertyName,
         workConfProjection :: Maybe (NonEmpty Projection),
         workConfSorter :: Maybe Sorter
@@ -262,7 +262,7 @@ data Dispatch
 
 data EntrySettings
   = EntrySettings
-      { entrySetFilter :: Maybe EntryFilter,
+      { entrySetFilter :: Maybe EntryFilterRel,
         entrySetProjection :: NonEmpty Projection,
         entrySetSorter :: Maybe Sorter,
         entrySetHideArchive :: HideArchive
@@ -280,8 +280,8 @@ data WorkSettings
   = WorkSettings
       { workSetContext :: ContextName,
         workSetTimeFilter :: Maybe (Filter Entry),
-        workSetFilter :: Maybe EntryFilter,
-        workSetChecks :: Set EntryFilter,
+        workSetFilter :: Maybe EntryFilterRel,
+        workSetChecks :: Set EntryFilterRel,
         workSetProjection :: NonEmpty Projection,
         workSetSorter :: Maybe Sorter,
         workSetHideArchive :: HideArchive
@@ -317,7 +317,7 @@ data ClockSettings
 
 data AgendaSettings
   = AgendaSettings
-      { agendaSetFilter :: Maybe EntryFilter,
+      { agendaSetFilter :: Maybe EntryFilterRel,
         agendaSetHistoricity :: AgendaHistoricity,
         agendaSetBlock :: TimeBlock,
         agendaSetHideArchive :: HideArchive,

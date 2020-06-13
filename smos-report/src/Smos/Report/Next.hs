@@ -22,9 +22,9 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
-produceNextActionReport :: Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> IO NextActionReport
+produceNextActionReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> m NextActionReport
 produceNextActionReport ef ha dc = do
-  wd <- resolveDirWorkflowDir dc
+  wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceNextActionReportFromFiles ef wd
 
 produceNextActionReportFromFiles :: MonadIO m => Maybe EntryFilterRel -> Path Abs Dir -> ConduitT (Path Rel File) void m NextActionReport
