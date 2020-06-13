@@ -13,7 +13,7 @@ import Smos.Data
 import Smos.Report.Next
 import Smos.Server.Handler.Import
 
-serveGetNextActionReport :: AuthCookie -> SyncHandler NextActionReport
+serveGetNextActionReport :: AuthCookie -> ServerHandler NextActionReport
 serveGetNextActionReport (AuthCookie un) = withUserId un $ \uid -> do
   acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
   liftIO $ withAcquire acqSource $ \source ->

@@ -12,7 +12,7 @@ import Smos.Server.Handler.Import
 
 servePostLogin ::
   Login ->
-  SyncHandler (Headers '[Header "Set-Cookie" T.Text] NoContent)
+  ServerHandler (Headers '[Header "Set-Cookie" T.Text] NoContent)
 servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of

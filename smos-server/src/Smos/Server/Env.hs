@@ -17,7 +17,7 @@ import Servant.Auth.Server
 import Smos.API
 import Smos.Server.DB
 
-type SyncHandler = ReaderT ServerEnv Handler
+type ServerHandler = ReaderT ServerEnv Handler
 
 data ServerEnv
   = ServerEnv
@@ -29,7 +29,7 @@ data ServerEnv
       }
   deriving (Generic)
 
-runDB :: DB.SqlPersistT IO a -> SyncHandler a
+runDB :: DB.SqlPersistT IO a -> ServerHandler a
 runDB func = do
   pool <- asks serverEnvConnection
   liftIO $ DB.runSqlPool func pool

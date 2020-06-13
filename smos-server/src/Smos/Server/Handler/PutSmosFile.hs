@@ -10,7 +10,7 @@ import Path
 import Smos.Data
 import Smos.Server.Handler.Import
 
-servePutSmosFile :: AuthCookie -> Path Rel File -> SmosFile -> SyncHandler NoContent
+servePutSmosFile :: AuthCookie -> Path Rel File -> SmosFile -> ServerHandler NoContent
 servePutSmosFile (AuthCookie un) p sf = withUserId un $ \uid -> do
   uuid <- nextRandomUUID
   let contentsBS = smosFileYamlBS sf

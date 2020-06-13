@@ -12,7 +12,7 @@ import qualified Data.Text.Encoding as TE
 import Data.Time
 import Smos.Server.Handler.Import
 
-servePostRegister :: Register -> SyncHandler NoContent
+servePostRegister :: Register -> ServerHandler NoContent
 servePostRegister Register {..} = do
   difficulty <- asks serverEnvPasswordDifficulty
   hashedPassword <- liftIO $ hashPasswordWithParams difficulty $ mkPassword registerPassword
