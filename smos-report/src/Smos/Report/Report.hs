@@ -18,7 +18,7 @@ import YamlParse.Applicative
 data PreparedReport
   = PreparedReport
       { preparedReportDescription :: Maybe Text,
-        perparedReportFilter :: Maybe EntryFilter,
+        perparedReportFilter :: Maybe EntryFilterRel,
         perparedReportProjection :: Maybe (NonEmpty Projection),
         preparedReportSorter :: Maybe Sorter,
         preparedReportHideArchive :: Maybe HideArchive

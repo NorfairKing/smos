@@ -13,7 +13,6 @@ module Smos.Query.Commands.Agenda
 where
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,24 +23,16 @@ import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
 import Smos.Report.Agenda
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 import Text.Printf
 
 smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
-  tups <-
-    sourceToList $
-      streamSmosFiles agendaSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
-        .| smosFileCursors
-        .| smosMFilter agendaSetFilter
-        .| smosCursorCurrents
-        .| C.concatMap (uncurry makeAgendaEntry)
-        .| C.filter (fitsHistoricity now agendaSetHistoricity)
-  liftIO $ putTableLn $ renderAgendaReport now $ makeAgendaReport now agendaSetPeriod agendaSetBlock tups
+  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive agendaSetHistoricity agendaSetFilter dc
+  liftIO $ putTableLn $ renderAgendaReport now report
 
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
 renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now

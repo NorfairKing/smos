@@ -248,7 +248,7 @@ parseCommandEntry = info parser modifier
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
       CommandEntry
-        <$> ( EntryFlags <$> parseFilterArgs <*> parseProjectionArgs <*> parseSorterArgs
+        <$> ( EntryFlags <$> parseFilterArgsRel <*> parseProjectionArgs <*> parseSorterArgs
                 <*> parseHideArchiveFlag
             )
 
@@ -270,7 +270,7 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork
-        <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgs
+        <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgsRel
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
                 <*> parseHideArchiveFlag
@@ -344,7 +344,7 @@ parseCommandAgenda = info parser modifier
     modifier = fullDesc <> progDesc "Print the agenda"
     parser =
       CommandAgenda
-        <$> ( AgendaFlags <$> parseFilterArgs <*> parseHistoricityFlag <*> parseTimeBlock
+        <$> ( AgendaFlags <$> parseFilterArgsRel <*> parseHistoricityFlag <*> parseTimeBlock
                 <*> parseHideArchiveFlag
                 <*> parsePeriod
             )

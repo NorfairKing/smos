@@ -68,7 +68,7 @@ formatAgendaEntry now AgendaEntry {..} =
             | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
-   in [ func $ rootedPathChunk agendaEntryFilePath,
+   in [ func $ pathChunk agendaEntryFilePath,
         func $ chunk $ timestampPrettyText agendaEntryTimestamp,
         func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d,
         timestampNameChunk agendaEntryTimestampName,
@@ -110,7 +110,7 @@ renderProjectees = map projecteeChunk
 projecteeChunk :: Projectee -> Chunk Text
 projecteeChunk p =
   case p of
-    FileProjection rp -> rootedPathChunk rp
+    FileProjection rp -> pathChunk rp
     HeaderProjection h -> headerChunk h
     StateProjection s -> maybe (chunk "") todoStateChunk s
     TagProjection mt -> maybe (chunk "") tagChunk mt

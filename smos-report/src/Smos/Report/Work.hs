@@ -12,19 +12,19 @@ import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import Path
 import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Config
 import Smos.Report.Filter
-import Smos.Report.Path
 import Smos.Report.Sorter
 
 data WorkReport
   = WorkReport
-      { workReportResultEntries :: [(RootedPath, ForestCursor Entry)],
-        workReportEntriesWithoutContext :: [(RootedPath, ForestCursor Entry)],
+      { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
+        workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         workReportAgendaEntries :: [AgendaEntry],
-        workReportCheckViolations :: Map EntryFilter [(RootedPath, ForestCursor Entry)]
+        workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
 
@@ -53,16 +53,16 @@ instance Monoid WorkReport where
 data WorkReportContext
   = WorkReportContext
       { workReportContextNow :: ZonedTime,
-        workReportContextBaseFilter :: Maybe EntryFilter,
-        workReportContextCurrentContext :: EntryFilter,
+        workReportContextBaseFilter :: Maybe EntryFilterRel,
+        workReportContextCurrentContext :: EntryFilterRel,
         workReportContextTimeFilter :: Maybe (Filter Entry),
-        workReportContextAdditionalFilter :: Maybe EntryFilter,
-        workReportContextContexts :: Map ContextName EntryFilter,
-        workReportContextChecks :: Set EntryFilter
+        workReportContextAdditionalFilter :: Maybe EntryFilterRel,
+        workReportContextContexts :: Map ContextName EntryFilterRel,
+        workReportContextChecks :: Set EntryFilterRel
       }
   deriving (Show, Generic)
 
-makeWorkReport :: WorkReportContext -> RootedPath -> ForestCursor Entry -> WorkReport
+makeWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> WorkReport
 makeWorkReport WorkReportContext {..} rp fc =
   let match b = [(rp, fc) | b]
       combineFilter f = maybe f (FilterAnd f)
@@ -93,7 +93,7 @@ makeWorkReport WorkReportContext {..} rp fc =
           workReportCheckViolations =
             if matchesAnyContext
               then
-                let go :: EntryFilter -> Maybe (RootedPath, ForestCursor Entry)
+                let go :: EntryFilterRel -> Maybe (Path Rel File, ForestCursor Entry)
                     go f =
                       if filterPredicate (filterWithBase f) (rp, fc)
                         then Nothing

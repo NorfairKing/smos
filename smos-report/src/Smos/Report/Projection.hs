@@ -12,11 +12,12 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
+import Data.Validity.Path ()
 import Data.Void
 import GHC.Generics (Generic)
 import Lens.Micro
+import Path
 import Smos.Data
-import Smos.Report.Path
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import YamlParse.Applicative
@@ -45,7 +46,7 @@ instance ToJSON Projection where
   toJSON = toJSON . renderProjection
 
 data Projectee
-  = FileProjection RootedPath
+  = FileProjection (Path Rel File)
   | HeaderProjection Header
   | StateProjection (Maybe TodoState)
   | TagProjection (Maybe Tag)
@@ -64,7 +65,7 @@ instance Semigroup Projectee where
           else p1
       (_, _) -> p1
 
-performProjection :: Projection -> RootedPath -> ForestCursor Entry -> Projectee
+performProjection :: Projection -> Path Rel File -> ForestCursor Entry -> Projectee
 performProjection p rp fc =
   let cur = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
    in case p of
