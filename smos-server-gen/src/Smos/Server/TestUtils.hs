@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.TestUtils where
 
@@ -20,6 +21,34 @@ import Smos.Server.Serve as Server
 import Test.Hspec
 import Test.Hspec.Core.QuickCheck
 
+data ServerTestEnv
+  = ServerTestEnv
+      { serverTestEnvPool :: Pool SqlBackend,
+        serverTestEnvClient :: ClientEnv
+      }
+
+serverEnvSpec :: SpecWith ServerTestEnv -> Spec
+serverEnvSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerTestEnv
+
+withServerTestEnv :: (ServerTestEnv -> IO a) -> IO a
+withServerTestEnv func = do
+  withServerDB $ \pool ->
+    withTestServer' pool $ \cenv ->
+      let ste = ServerTestEnv {serverTestEnvPool = pool, serverTestEnvClient = cenv}
+       in func ste
+
+serverEnvDB :: ServerTestEnv -> SqlPersistT IO a -> IO a
+serverEnvDB ServerTestEnv {..} func = DB.runSqlPool func serverTestEnvPool
+
+serverEnvClient :: ServerTestEnv -> ClientM a -> IO (Either ClientError a)
+serverEnvClient senv = testClient (serverTestEnvClient senv)
+
+serverEnvClientOrErr :: ServerTestEnv -> ClientM a -> IO a
+serverEnvClientOrErr senv = testClientOrErr (serverTestEnvClient senv)
+
+withServerEnvNewUser :: ServerTestEnv -> (Token -> IO ()) -> Expectation
+withServerEnvNewUser senv = withNewUser (serverTestEnvClient senv)
+
 serverDBSpec :: SpecWith (Pool SqlBackend) -> Spec
 serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerDB
 
@@ -35,28 +64,28 @@ serverSpec :: SpecWith ClientEnv -> Spec
 serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer
 
 withTestServer :: (ClientEnv -> IO a) -> IO a
-withTestServer func = do
+withTestServer func = withServerDB $ \pool -> withTestServer' pool func
+
+withTestServer' :: Pool SqlBackend -> (ClientEnv -> IO a) -> IO a
+withTestServer' pool func = do
   man <- Http.newManager Http.defaultManagerSettings
-  runNoLoggingT
-    $ DB.withSqlitePool ":memory:" 1
-    $ \pool ->
-      liftIO $ do
-        let mkApp = do
-              uuid <- nextRandomUUID
-              flip DB.runSqlPool pool $ void $ DB.runMigrationSilent migrateAll
-              jwtKey <- Auth.generateKey
-              let env =
-                    ServerEnv
-                      { serverEnvServerUUID = uuid,
-                        serverEnvConnection = pool,
-                        serverEnvCookieSettings = defaultCookieSettings,
-                        serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                        serverEnvPasswordDifficulty = 4 -- The lowest
-                      }
-              pure $ Server.makeSyncApp env
-        Warp.testWithApplication mkApp $ \p ->
-          let cenv = mkClientEnv man (BaseUrl Http "127.0.0.1" p "")
-           in func cenv
+  liftIO $ do
+    let mkApp = do
+          uuid <- nextRandomUUID
+          flip DB.runSqlPool pool $ void $ DB.runMigrationSilent migrateAll
+          jwtKey <- Auth.generateKey
+          let env =
+                ServerEnv
+                  { serverEnvServerUUID = uuid,
+                    serverEnvConnection = pool,
+                    serverEnvCookieSettings = defaultCookieSettings,
+                    serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                    serverEnvPasswordDifficulty = 4 -- The lowest
+                  }
+          pure $ Server.makeSyncApp env
+    Warp.testWithApplication mkApp $ \p ->
+      let cenv = mkClientEnv man (BaseUrl Http "127.0.0.1" p "")
+       in func cenv
 
 testClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 testClient = flip runClientM

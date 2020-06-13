@@ -108,7 +108,9 @@ syncServerProtectedRoutes :: ProtectedRoutes (AsServerT SyncHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { postSync = withAuthResult servePostSync,
-      getNextActionReport = withAuthResult serveGetNextActionReport
+      getNextActionReport = withAuthResult serveGetNextActionReport,
+      getSmosFile = withAuthResult serveGetSmosFile,
+      putSmosFile = withAuthResult servePutSmosFile
     }
 
 readServerUUID :: Path Abs File -> IO ServerUUID
