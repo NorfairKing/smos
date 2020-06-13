@@ -1,6 +1,8 @@
 / HomeR GET
 
 
+/file/*Texts FileR GET
+
 /report/next ReportNextR GET
 /report/agenda ReportAgendaR GET
 
