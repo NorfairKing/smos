@@ -24,6 +24,7 @@ import Servant.Auth.Server
 import Servant.Client
 import Smos.API as X
 import Smos.Data hiding (Header)
+import Smos.Report.Agenda
 import Smos.Report.Next
 import System.Exit
 import Web.Cookie
@@ -42,7 +43,9 @@ clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 
 clientGetNextActionReport :: Token -> ClientM NextActionReport
-clientPostSync :<|> clientGetSmosFile :<|> clientPutSmosFile :<|> clientGetNextActionReport = client (flatten syncProtectedAPI)
+
+clientGetAgendaReport :: Token -> ClientM AgendaReport
+clientPostSync :<|> clientGetSmosFile :<|> clientPutSmosFile :<|> clientGetNextActionReport :<|> clientGetAgendaReport = client (flatten syncProtectedAPI)
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession

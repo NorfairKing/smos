@@ -28,6 +28,10 @@ data TimeBlock
 
 instance Validity TimeBlock
 
+instance FromJSON TimeBlock
+
+instance ToJSON TimeBlock
+
 data Block a b
   = Block
       { blockTitle :: a,
@@ -36,6 +40,9 @@ data Block a b
   deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Block a b)
+
+instance (FromJSON a, FromJSON b) => FromJSON (Block a b) where
+  parseJSON = withObject "Block" $ \o -> Block <$> o .: "title" <*> o .: "entries"
 
 instance (ToJSON a, ToJSON b) => ToJSON (Block a b) where
   toJSON Block {..} = object ["title" .= blockTitle, "entries" .= blockEntries]
