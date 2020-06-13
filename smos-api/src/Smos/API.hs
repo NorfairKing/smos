@@ -47,6 +47,7 @@ import Servant.Auth.Server
 import Smos.API.Password as X
 import Smos.API.Username as X
 import Smos.Data hiding (Header)
+import Smos.Report.Agenda
 import Smos.Report.Next
 
 syncAPI :: Proxy SyncAPI
@@ -235,11 +236,14 @@ type ReportsAPI = ToServantApi ReportRoutes
 
 data ReportRoutes route
   = ReportRoutes
-      { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport)
+      { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
+        getAgendaReport :: !(route :- ProtectAPI :> GetAgendaReport)
       }
   deriving (Generic)
 
 type GetNextActionReport = "next" :> Get '[JSON] NextActionReport
+
+type GetAgendaReport = "agenda" :> Get '[JSON] AgendaReport
 
 reportsAPI :: Proxy ReportsAPI
 reportsAPI = Proxy

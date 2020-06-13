@@ -116,7 +116,8 @@ syncServerProtectedRoutes =
 serverReportRoutes :: ReportRoutes (AsServerT ServerHandler)
 serverReportRoutes =
   ReportRoutes
-    { getNextActionReport = withAuthResult serveGetNextActionReport
+    { getNextActionReport = withAuthResult serveGetNextActionReport,
+      getAgendaReport = withAuthResult serveGetAgendaReport
     }
 
 readServerUUID :: Path Abs File -> IO ServerUUID

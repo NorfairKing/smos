@@ -1,9 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Agenda where
 
 import Conduit
+import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import Data.List
 import qualified Data.Map as M
@@ -56,11 +59,17 @@ data AgendaReport
 
 instance Validity AgendaReport
 
-data AgendaTodayReport
+instance FromJSON AgendaReport where
+  parseJSON = withObject "AgendaReport" $ \o -> AgendaReport <$> o .: "past" <*> o .: "present" <*> o .: "future"
+
+instance ToJSON AgendaReport where
+  toJSON AgendaReport {..} = object ["past" .= agendaReportPast, "present" .= agendaReportPresent, "future" .= agendaReportFuture]
+
+newtype AgendaTodayReport
   = AgendaTodayReport
       { agendaTodayReportEntries :: [AgendaEntry]
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 instance Validity AgendaTodayReport
 
@@ -133,6 +142,10 @@ data AgendaEntry
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaEntry
+
+instance FromJSON AgendaEntry
+
+instance ToJSON AgendaEntry
 
 isDone :: Maybe TodoState -> Bool
 isDone (Just "CANCELLED") = True
