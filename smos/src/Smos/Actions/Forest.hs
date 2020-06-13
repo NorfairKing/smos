@@ -6,6 +6,10 @@ module Smos.Actions.Forest
     allForestUsingCharActions,
     forestToggleCollapse,
     forestToggleCollapseRecursively,
+    forestToggleCollapseEntireEntry,
+    forestToggleCollapseEntryContents,
+    forestToggleCollapseEntryHistory,
+    forestToggleCollapseEntryLogbook,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
     forestInsertEntryBelow,
@@ -26,10 +30,6 @@ module Smos.Actions.Forest
     forestPromoteSubTree,
     forestDemoteEntry,
     forestDemoteSubTree,
-    forestToggleHideEntireEntry,
-    forestToggleHideEntryContents,
-    forestToggleHideEntryHistory,
-    forestToggleHideEntryLogbook,
     forestClockOutEverywhereInThisFile,
     forestClockOutEverywhereInAllFiles,
     forestClockOutEverywhereInThisFileAndClockInHere,
@@ -54,6 +54,10 @@ allForestPlainActions :: [Action]
 allForestPlainActions =
   [ forestToggleCollapse,
     forestToggleCollapseRecursively,
+    forestToggleCollapseEntireEntry,
+    forestToggleCollapseEntryContents,
+    forestToggleCollapseEntryHistory,
+    forestToggleCollapseEntryLogbook,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
     forestInsertEntryBelow,
@@ -74,10 +78,6 @@ allForestPlainActions =
     forestPromoteSubTree,
     forestDemoteEntry,
     forestDemoteSubTree,
-    forestToggleHideEntireEntry,
-    forestToggleHideEntryContents,
-    forestToggleHideEntryHistory,
-    forestToggleHideEntryLogbook,
     forestClockOutEverywhereInThisFile,
     forestClockOutEverywhereInAllFiles,
     forestClockOutEverywhereInThisFileAndClockInHere,
@@ -266,30 +266,30 @@ forestDemoteSubTree =
       actionDescription = "Demotes the current sub tree"
     }
 
-forestToggleHideEntireEntry :: Action
-forestToggleHideEntireEntry =
+forestToggleCollapseEntireEntry :: Action
+forestToggleCollapseEntireEntry =
   Action
-    { actionName = "forestToggleHideEntireEntry",
-      actionFunc = modifyFileCursor smosFileCursorToggleHideEntireEntry,
+    { actionName = "forestToggleCollapseEntireEntry",
+      actionFunc = modifyFileCursor smosFileCursorToggleCollapseEntireEntry,
       actionDescription = "Toggle the hiding of the current entire entry"
     }
 
-mkForestToggleHideEntryPart :: Text -> Lens' (CollapseEntry EntryCursor) Bool -> Action
-mkForestToggleHideEntryPart name field =
+mkForestToggleCollapseEntryPart :: Text -> Lens' (CollapseEntry EntryCursor) Bool -> Action
+mkForestToggleCollapseEntryPart name field =
   Action
-    { actionName = "forestToggleHideEntry" <> ActionName (toTitle name),
-      actionFunc = modifyFileCursor $ smosFileCursorToggleHideEntryLens field,
+    { actionName = "forestToggleCollapseEntry" <> ActionName (toTitle name),
+      actionFunc = modifyFileCursor $ smosFileCursorToggleCollapseEntryLens field,
       actionDescription = "Toggle the hiding of the " <> toLower name <> " of the current entry"
     }
 
-forestToggleHideEntryContents :: Action
-forestToggleHideEntryContents = mkForestToggleHideEntryPart "contents" collapseEntryShowContentsL
+forestToggleCollapseEntryContents :: Action
+forestToggleCollapseEntryContents = mkForestToggleCollapseEntryPart "contents" collapseEntryShowContentsL
 
-forestToggleHideEntryHistory :: Action
-forestToggleHideEntryHistory = mkForestToggleHideEntryPart "history" collapseEntryShowHistoryL
+forestToggleCollapseEntryHistory :: Action
+forestToggleCollapseEntryHistory = mkForestToggleCollapseEntryPart "history" collapseEntryShowHistoryL
 
-forestToggleHideEntryLogbook :: Action
-forestToggleHideEntryLogbook = mkForestToggleHideEntryPart "logbook" collapseEntryShowLogbookL
+forestToggleCollapseEntryLogbook :: Action
+forestToggleCollapseEntryLogbook = mkForestToggleCollapseEntryPart "logbook" collapseEntryShowLogbookL
 
 forestClockOutEverywhereInThisFile :: Action
 forestClockOutEverywhereInThisFile =
