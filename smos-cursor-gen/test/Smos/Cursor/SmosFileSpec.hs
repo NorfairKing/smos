@@ -26,7 +26,7 @@ spec = modifyMaxShrinks (const 1) $ do
   describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
   describe "smosFileCursorToggleHideEntireEntry"
     $ it "produces valid cursors"
-    $ producesValidsOnValids smosFileCursorToggleHideEntireEntry
+    $ producesValidsOnValids smosFileCursorToggleCollapseEntireEntry
   describe "smosFileCursorSelectPrev"
     $ it "produces valid cursors"
     $ producesValidsOnValids smosFileCursorSelectPrev
