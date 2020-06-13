@@ -16,12 +16,30 @@
   - header: example1
     timestamps:
       SCHEDULED: 2020-06-12
+    state-history:
+    - state: TODO
+      time: 2020-06-13 12:12:07.454676077000
   - header: example2
     timestamps:
       SCHEDULED: 2020-06-14
+    state-history:
+    - state: TODO
+      time: 2020-06-13 12:12:07.094730659000
   - header: example3
     timestamps:
       SCHEDULED: 2020-06-13
+    state-history:
+    - state: TODO
+      time: 2020-06-13 12:12:06.582745397000
   - header: example4
     timestamps:
       SCHEDULED: 2020-06-13 17:58:58.258255839
+    state-history:
+    - state: TODO
+      time: 2020-06-13 12:12:06.254924918000
+  - header: deadline
+    timestamps:
+      DEADLINE: 2020-06-19
+    state-history:
+    - state: TODO
+      time: 2020-06-13 12:12:05.466075929000
