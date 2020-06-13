@@ -93,7 +93,7 @@ insertHourLines now = go [0 .. 24]
     go (h : hs) (e : es) =
       let alt = agendaEntryLocalTime e
           hlt = hourLineLocalTime today h
-       in if alt <= hlt
+       in if alt < hlt
             then EntryLine e : go (h : hs) es
             else HourLine h : go hs (e : es)
 
