@@ -88,7 +88,7 @@ renderWorkReport now ne WorkReport {..} =
       [ unlessNull
           workReportAgendaEntries
           [ sectionHeading "Today's agenda:",
-            [formatAsTable $ renderAgendaReportLines now $ addNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
+            [formatAsTable $ renderAgendaReportLines now $ insertNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
           ],
         unlessNull
           workReportResultEntries

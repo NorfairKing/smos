@@ -29,7 +29,7 @@ instance Validity AgendaReport
 
 data AgendaTodayReport
   = AgendaTodayReport
-      { agendaTodayReportBlocks :: [AgendaEntry]
+      { agendaTodayReportEntries :: [AgendaEntry]
       }
   deriving (Show, Eq, Generic)
 
@@ -45,7 +45,7 @@ makeAgendaReport now period tb as =
         { agendaReportPast = pastBlocks,
           agendaReportPresent =
             AgendaTodayReport
-              { agendaTodayReportBlocks = present
+              { agendaTodayReportEntries = present
               },
           agendaReportFuture = futureBlocks
         }
