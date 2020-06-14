@@ -10,8 +10,11 @@ import Data.GenValidity.Containers ()
 import Data.GenValidity.Criterion
 import Data.Map (Map)
 import Data.Set (Set)
+import Data.Text (Text)
 import Smos.Data
 import Smos.Data.Gen ()
+import Smos.Report.Agenda
+import Smos.Report.Agenda.Gen ()
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Path
@@ -39,5 +42,12 @@ main =
           genValidBench @(Filter (ForestCursor Header)),
           genValidBench @(Filter (ForestCursor Entry)),
           genValidBench @(Filter (RootedPath, ForestCursor Entry))
+        ],
+      bgroup
+        "Agenda"
+        [ genValidBench @AgendaEntry,
+          genValidBench @(AgendaTableBlock Text),
+          genValidBench @AgendaTodayReport,
+          genValidBench @AgendaReport
         ]
     ]

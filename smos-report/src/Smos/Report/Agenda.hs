@@ -6,6 +6,7 @@
 module Smos.Report.Agenda where
 
 import Conduit
+import Control.DeepSeq
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import Data.List
@@ -59,6 +60,8 @@ data AgendaReport
 
 instance Validity AgendaReport
 
+instance NFData AgendaReport
+
 instance FromJSON AgendaReport where
   parseJSON = withObject "AgendaReport" $ \o -> AgendaReport <$> o .: "past" <*> o .: "present" <*> o .: "future"
 
@@ -72,6 +75,8 @@ newtype AgendaTodayReport
   deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 instance Validity AgendaTodayReport
+
+instance NFData AgendaTodayReport
 
 makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
 makeAgendaReport now period tb as =
@@ -142,6 +147,8 @@ data AgendaEntry
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaEntry
+
+instance NFData AgendaEntry
 
 instance FromJSON AgendaEntry
 

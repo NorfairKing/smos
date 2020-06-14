@@ -5,6 +5,7 @@
 
 module Smos.Report.TimeBlock where
 
+import Control.DeepSeq
 import Data.Aeson
 import Data.Function
 import Data.List
@@ -28,6 +29,8 @@ data TimeBlock
 
 instance Validity TimeBlock
 
+instance NFData TimeBlock
+
 instance FromJSON TimeBlock
 
 instance ToJSON TimeBlock
@@ -40,6 +43,8 @@ data Block a b
   deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Block a b)
+
+instance (NFData a, NFData b) => NFData (Block a b)
 
 instance (FromJSON a, FromJSON b) => FromJSON (Block a b) where
   parseJSON = withObject "Block" $ \o -> Block <$> o .: "title" <*> o .: "entries"
