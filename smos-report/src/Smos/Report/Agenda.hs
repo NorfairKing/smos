@@ -74,7 +74,18 @@ newtype AgendaTodayReport
       }
   deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
-instance Validity AgendaTodayReport
+instance Validity AgendaTodayReport where
+  validate atr@AgendaTodayReport {..} =
+    mconcat
+      [ genericValidate atr,
+        declare "The entries are in chronological order" $
+          agendaEntriesAreSorted agendaTodayReportEntries,
+        declare "All the entries are in the same day"
+          $ (<= 1)
+          $ length
+          $ group
+          $ map (timestampDay . agendaEntryTimestamp) agendaTodayReportEntries
+      ]
 
 instance NFData AgendaTodayReport
 
@@ -126,15 +137,24 @@ type AgendaTableBlock a = Block a AgendaEntry
 divideIntoAgendaTableBlocks :: TimeBlock -> [AgendaEntry] -> [AgendaTableBlock Text]
 divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimestamp)
 
+agendaEntriesAreSorted :: [AgendaEntry] -> Bool
+agendaEntriesAreSorted = areOrderedBy agendaEntrySortingProjection
+
+areOrderedBy :: Eq a => (a -> a -> Ordering) -> [a] -> Bool
+areOrderedBy func ls =
+  sortBy func ls == ls
+
 sortAgendaEntries :: [AgendaEntry] -> [AgendaEntry]
 sortAgendaEntries =
-  sortBy
-    ( mconcat
-        [ comparing (timestampLocalTime . agendaEntryTimestamp),
-          comparing agendaEntryTimestampName,
-          comparing agendaEntryTodoState
-        ]
-    )
+  sortBy agendaEntrySortingProjection
+
+agendaEntrySortingProjection :: AgendaEntry -> AgendaEntry -> Ordering
+agendaEntrySortingProjection =
+  mconcat
+    [ comparing (timestampLocalTime . agendaEntryTimestamp),
+      comparing agendaEntryTimestampName,
+      comparing agendaEntryTodoState
+    ]
 
 data AgendaEntry
   = AgendaEntry

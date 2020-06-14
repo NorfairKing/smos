@@ -6,11 +6,11 @@ import Data.GenValidity
 import Smos.Report.TimeBlock
 
 instance GenValid TimeBlock where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance (GenUnchecked a, GenUnchecked b) => GenUnchecked (Block a b)
 
 instance (GenValid a, GenValid b) => GenValid (Block a b) where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
