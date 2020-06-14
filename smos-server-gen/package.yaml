@@ -17,9 +17,10 @@ library:
   - QuickCheck
   - bytestring
   - containers
+  - dirforest
   - genvalidity
-  - genvalidity-containers
   - genvalidity-bytestring
+  - genvalidity-containers
   - genvalidity-path
   - hspec
   - hspec-core
@@ -40,6 +41,7 @@ library:
   - smos-client-gen
   - smos-data
   - smos-data-gen
+  - smos-report-gen
   - smos-server
   - smos-sync-client
   - stm

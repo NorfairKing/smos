@@ -1,6 +1,6 @@
 {
   owner = "NorfairKing";
   repo = "dirforest";
-  rev = "c0657315e01683558a8f20b991bc47d4733ed40e";
-  sha256 = "sha256:1r3q0wqrd6rb721kylpivdimqapx6ahi041p8wc71gpz23gxvbxz";
+  rev = "e8c63dae86099c3c50e7908f84487126048cd93b";
+  sha256 = "sha256:05zx6b3vjralkjydgq6lgx84lyd0d5s3xifc4whf7jvc60ibrg8k";
 }

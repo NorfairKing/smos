@@ -89,6 +89,8 @@ import Control.Arrow
 import Control.DeepSeq
 import Data.Aeson as JSON hiding ((<?>))
 import Data.Char as Char
+import Data.Function
+import Data.Functor.Classes (Ord1 (..))
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -117,6 +119,9 @@ newtype SmosFile
       { smosFileForest :: Forest Entry
       }
   deriving (Show, Eq, Generic)
+
+instance Ord SmosFile where
+  compare = liftCompare (liftCompare compare) `on` smosFileForest
 
 instance Validity SmosFile
 

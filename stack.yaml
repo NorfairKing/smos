@@ -106,7 +106,7 @@ extra-deps:
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: c0657315e01683558a8f20b991bc47d4733ed40e
+  commit: e8c63dae86099c3c50e7908f84487126048cd93b
   subdirs:
     - dirforest
     - genvalidity-dirforest
@@ -130,7 +130,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/validity
-  commit: b8c4cb4cafef7eb2feabaf767eb0d96c5fb5b573
+  commit: 8b938a46ca36d95f718f8071317395b07107000c
   subdirs:
   - genvalidity
   - genvalidity-aeson

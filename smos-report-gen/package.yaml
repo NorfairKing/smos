@@ -15,15 +15,20 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
+  - bytestring
   - containers
   - cursor
   - deepseq
+  - dirforest
   - genvalidity
+  - genvalidity-bytestring
   - genvalidity-containers
+  - genvalidity-dirforest
   - genvalidity-path
   - genvalidity-text
   - genvalidity-time
   - path
+  - pretty-show
   - smos-data
   - smos-data-gen
   - smos-report
@@ -53,11 +58,11 @@ tests:
     - parsec
     - path
     - pretty-show
-    - smos-report
     - smos-cursor
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - smos-report
     - smos-report
     - smos-report-gen
     - text

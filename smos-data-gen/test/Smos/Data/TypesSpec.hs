@@ -112,6 +112,7 @@ spec = do
   genValidSpec @(ForYaml (Forest Entry))
   jsonSpecOnValid @(ForYaml (Forest Entry))
   genValidSpec @SmosFile
+  ordSpecOnValid @SmosFile
   jsonSpecOnValid @SmosFile
 
 textLikeJSONValid ::

@@ -7,13 +7,15 @@ copyright: ! 'Copyright: (c) 2018-2019 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+dependencies:
+  base
+
 library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
   - aeson
   - aeson-pretty
-  - base
   - bytestring
   - conduit
   - configurator
@@ -43,5 +45,31 @@ executables:
     main: Main.hs
     source-dirs: app
     dependencies:
-    - base
     - smos-query
+
+tests:
+  smos-query-test:
+    main: Spec.hs
+    source-dirs: test/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - bytestring
+    - dirforest
+    - genvalidity-bytestring
+    - genvalidity-dirforest
+    - genvalidity-hspec
+    - hspec
+    - path
+    - path-io
+    - smos-data
+    - smos-data-gen
+    - smos-report
+    - smos-report-gen
+    - smos-query
+    - text
+    - time

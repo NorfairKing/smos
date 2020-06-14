@@ -2,6 +2,33 @@ final: previous:
 with final.haskell.lib;
 
 {
+  smosRelease =
+    final.stdenv.mkDerivation {
+      name = "smos-release";
+      buildInputs = final.lib.attrsets.attrValues final.smosPackages;
+      # Just to make sure that the test suites in these pass:
+      nativeBuildInputs =
+        final.lib.attrsets.attrValues final.validityPackages
+        ++ final.lib.attrsets.attrValues final.cursorPackages
+        ++ final.lib.attrsets.attrValues final.cursorBrickPackages
+        ++ final.lib.attrsets.attrValues final.fuzzyTimePackages
+        ++ final.lib.attrsets.attrValues final.cursorFuzzyTimePackages
+        ++ final.lib.attrsets.attrValues final.prettyRelativeTimePackages
+        ++ final.lib.attrsets.attrValues final.mergefulPackages
+        ++ final.lib.attrsets.attrValues final.dirforestPackages;
+      buildCommand =
+        ''
+          mkdir -p $out/bin
+          for i in $buildInputs
+          do
+            if [ -d "$i/bin" ]
+            then
+              cp $i/bin/* $out/bin/
+            fi
+          done
+        '';
+    };
+
   smosPackages =
     let
       smosPkg =
