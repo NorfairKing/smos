@@ -47,7 +47,6 @@ data NextActionReportCursor
     { nextActionReportCursorNextActionEntryCursors :: NonEmptyCursor NextActionEntryCursor
     , nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor)
     , nextActionReportCursorFilterBar :: TextCursor
-    , nextActionReportCursorFilterValid :: Bool
     , nextActionReportCursorSelection :: NextActionReportCursorSelection
     }
   deriving (Show, Eq, Generic)
@@ -82,7 +81,6 @@ nextActionReportCursorFilterBarL =
         case query of
           Left _ -> narc { nextActionReportCursorFilterBar = tc
                          , nextActionReportCursorSelectedNextActionEntryCursors = Just nextActionReportCursorNextActionEntryCursors
-                         , nextActionReportCursorFilterValid = False
                          }
           Right ef ->
             let filteredIn =
@@ -92,7 +90,6 @@ nextActionReportCursorFilterBarL =
             narc { nextActionReportCursorFilterBar = tc
                  , nextActionReportCursorSelectedNextActionEntryCursors =
                      makeNENextActionEntryCursor filteredIn
-                 , nextActionReportCursorFilterValid = True
                  }
 
 filterNextActionEntryCursors :: EntryFilterRel -> [NextActionEntryCursor] -> [NextActionEntryCursor]
@@ -106,7 +103,6 @@ makeNextActionReportCursor naecs
     , nextActionReportCursorSelectedNextActionEntryCursors = Just nenec
     , nextActionReportCursorFilterBar = emptyTextCursor
     , nextActionReportCursorSelection = NextActionReportSelected
-    , nextActionReportCursorFilterValid = False
     })
     <$> makeNENextActionEntryCursor naecs
 

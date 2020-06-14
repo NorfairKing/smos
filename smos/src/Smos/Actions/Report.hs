@@ -16,12 +16,15 @@ allPlainReportNextActions =
     lastNextAction,
     enterNextActionFile,
     selectNextActionReport,
-    selectNextActionFilter
+    selectNextActionFilter,
+    removeNextActionFilter,
+    deleteNextActionFilter
   ]
 
 allReportNextActionsUsingActions :: [ActionUsing Char]
 allReportNextActionsUsingActions =
-  [insertNextActionFilter]
+  [ insertNextActionFilter
+  , appendNextActionFilter]
 
 reportNextActions :: Action
 reportNextActions =
