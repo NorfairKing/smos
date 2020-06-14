@@ -42,4 +42,3 @@ jobs:
         name: smos
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build default.nix
-    - run: nix-build nix/release.nix
