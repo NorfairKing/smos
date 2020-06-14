@@ -14,8 +14,7 @@ with final.haskell.lib;
         ++ final.lib.attrsets.attrValues final.fuzzyTimePackages
         ++ final.lib.attrsets.attrValues final.cursorFuzzyTimePackages
         ++ final.lib.attrsets.attrValues final.prettyRelativeTimePackages
-        ++ final.lib.attrsets.attrValues final.mergefulPackages
-        ++ final.lib.attrsets.attrValues final.dirforestPackages;
+        ++ final.lib.attrsets.attrValues final.mergefulPackages;
       buildCommand =
         ''
           mkdir -p $out/bin
