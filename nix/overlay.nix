@@ -20,6 +20,23 @@ with final.haskell.lib;
           generateOptparseApplicativeCompletion exeName (smosPkg name);
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
 
+      docsSite =
+        let
+          rawDocsSite = smosPkg "smos-docs-site";
+        in
+          final.stdenv.mkDerivation {
+            name = "smos-docs-site";
+            buildInputs = [ rawDocsSite final.linkchecker final.killall ];
+            buildCommand = ''
+              smos-docs-site &
+              linkchecker http://localhost:8000
+              killall smos-docs-site
+
+              mkdir -p $out
+              cp -r ${rawDocsSite} $out
+            '';
+          };
+
     in
       {
         "smos" = smosPkgWithOwnComp "smos";
@@ -37,7 +54,7 @@ with final.haskell.lib;
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
         "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-        "smos-docs-site" = smosPkg "smos-docs-site";
+        "smos-docs-site" = docsSite;
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";
         "smos-server" = smosPkgWithOwnComp "smos-server";
