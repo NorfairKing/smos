@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.Cursor.Report.Next where
 
@@ -8,8 +8,11 @@ import Conduit
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Tree
+import Cursor.Text
+import Cursor.Types
 import qualified Data.Conduit.Combinators as C
 import qualified Data.List.NonEmpty as NE
+import Data.Foldable (toList)
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -20,6 +23,7 @@ import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.Filter
 import Smos.Report.Next
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
@@ -37,40 +41,159 @@ produceNextActionReportCursor dc = do
       .| C.map (uncurry makeNextActionEntryCursor)
       .| sinkList
 
-newtype NextActionReportCursor = NextActionReportCursor {getter :: NonEmptyCursor NextActionEntryCursor}
+
+produceNextActionEntryCursorsFiltered :: Maybe EntryFilterRel -> DirectoryConfig -> IO (Maybe (NonEmptyCursor NextActionEntryCursor))
+produceNextActionEntryCursorsFiltered ef dc = do
+  wd <- resolveDirWorkflowDir dc
+  runConduit
+    $ fmap makeNextActionEntryCursors
+    $ streamSmosFilesFromWorkflowRel HideArchive dc
+      .| filterSmosFilesRel
+      .| parseSmosFilesRel wd
+      .| printShouldPrint DontPrint
+      .| nextActionConduitHelper ef
+      .| C.map (uncurry makeNextActionEntryCursor)
+      .| sinkList
+
+
+data NextActionReportCursor
+  = NextActionReportCursor
+    { nextActionReportCursorNextActionEntryCursors :: NonEmptyCursor NextActionEntryCursor
+    , nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor)
+    , nextActionReportCursorFilterBar :: TextCursor
+    , nextActionReportCursorFilterValid :: Bool
+    , nextActionReportCursorSelection :: NextActionReportCursorSelection
+    }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionReportCursor
 
-nextActionReportCursorNonEmptyCursorL :: Lens' NextActionReportCursor (NonEmptyCursor NextActionEntryCursor)
-nextActionReportCursorNonEmptyCursorL = lens getter (\narc nec -> narc {getter = nec})
+data NextActionReportCursorSelection
+  = NextActionReportSelected
+  | NextActionReportFilterSelected
+  deriving (Show, Eq, Generic)
+
+instance Validity NextActionReportCursorSelection
+
+nextActionReportCursorNextActionEntryCursorsL :: Lens' NextActionReportCursor (NonEmptyCursor NextActionEntryCursor)
+nextActionReportCursorNextActionEntryCursorsL =
+  lens nextActionReportCursorNextActionEntryCursors (\narc naecs -> narc {nextActionReportCursorNextActionEntryCursors = naecs})
+
+nextActionReportCursorSelectedNextActionEntryCursorsL :: Lens' NextActionReportCursor (Maybe (NonEmptyCursor NextActionEntryCursor))
+nextActionReportCursorSelectedNextActionEntryCursorsL = lens nextActionReportCursorSelectedNextActionEntryCursors
+  (\narc necM -> narc {nextActionReportCursorSelectedNextActionEntryCursors = necM})
+
+nextActionReportCursorSelectionL :: Lens' NextActionReportCursor NextActionReportCursorSelection
+nextActionReportCursorSelectionL = lens nextActionReportCursorSelection (\narc cs -> narc {nextActionReportCursorSelection = cs})
+
+
+nextActionReportCursorFilterBarL :: Lens' NextActionReportCursor TextCursor
+nextActionReportCursorFilterBarL =
+  lens nextActionReportCursorFilterBar
+  $ \narc@(NextActionReportCursor {..}) tc ->
+      let query = parseEntryFilterRel $ rebuildTextCursor tc
+      in
+        case query of
+          Left _ -> narc { nextActionReportCursorFilterBar = tc
+                         , nextActionReportCursorSelectedNextActionEntryCursors = Just nextActionReportCursorNextActionEntryCursors
+                         , nextActionReportCursorFilterValid = False
+                         }
+          Right ef ->
+            let filteredIn =
+                  filterNextActionReportCursor ef
+                  . toList . rebuildNonEmptyCursor $ nextActionReportCursorNextActionEntryCursors
+            in
+            narc { nextActionReportCursorFilterBar = tc
+                 , nextActionReportCursorSelectedNextActionEntryCursors =
+                     makeNonEmptyCursor <$> NE.nonEmpty filteredIn
+                 , nextActionReportCursorFilterValid = True
+                 }
+
+filterNextActionReportCursor :: EntryFilterRel -> [NextActionEntryCursor] -> [NextActionEntryCursor]
+filterNextActionReportCursor ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
 
 makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
-makeNextActionReportCursor = fmap (\nec -> NextActionReportCursor {getter = nec}) . fmap makeNonEmptyCursor . NE.nonEmpty
+makeNextActionReportCursor
+  = fmap ((\nec -> NextActionReportCursor
+           { nextActionReportCursorNextActionEntryCursors = nec
+           , nextActionReportCursorSelectedNextActionEntryCursors = Just nec
+           , nextActionReportCursorFilterBar = emptyTextCursor
+           , nextActionReportCursorSelection = NextActionReportSelected
+           , nextActionReportCursorFilterValid = False
+           })
+    . makeNonEmptyCursor) . NE.nonEmpty
+
+makeNextActionEntryCursors :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
+makeNextActionEntryCursors = fmap makeNonEmptyCursor . NE.nonEmpty
 
 nextActionReportCursorBuildSmosFileCursor :: NextActionReportCursor -> SmosFileCursor
 nextActionReportCursorBuildSmosFileCursor =
-  go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent . (^. nextActionReportCursorNonEmptyCursorL)
+  go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent . (^. nextActionReportCursorNextActionEntryCursorsL)
   where
     go :: ForestCursor Entry Entry -> SmosFileCursor
     go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 nextActionReportCursorBuildFilePath :: Path Abs Dir -> NextActionReportCursor -> Path Abs File
 nextActionReportCursorBuildFilePath pad narc =
-  let NextActionEntryCursor {..} = nonEmptyCursorCurrent (narc ^. nextActionReportCursorNonEmptyCursorL)
+  let NextActionEntryCursor {..} = nonEmptyCursorCurrent (narc ^. nextActionReportCursorNextActionEntryCursorsL)
    in pad </> nextActionEntryCursorFilePath
 
 nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorNext = nextActionReportCursorNonEmptyCursorL nonEmptyCursorSelectNext
+nextActionReportCursorNext = nextActionReportCursorSelectedNextActionEntryCursorsL $
+  \msc ->
+    Just
+    <$> case msc of
+          Nothing -> Nothing
+          Just sc -> nonEmptyCursorSelectNext sc
 
 nextActionReportCursorPrev :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorPrev = nextActionReportCursorNonEmptyCursorL nonEmptyCursorSelectPrev
+nextActionReportCursorPrev = nextActionReportCursorSelectedNextActionEntryCursorsL $ \msc ->
+  Just
+  <$> case msc of
+        Nothing -> Nothing
+        Just sc -> nonEmptyCursorSelectPrev sc
 
 nextActionReportCursorFirst :: NextActionReportCursor -> NextActionReportCursor
-nextActionReportCursorFirst = nextActionReportCursorNonEmptyCursorL %~ nonEmptyCursorSelectFirst
+nextActionReportCursorFirst = nextActionReportCursorSelectedNextActionEntryCursorsL %~ fmap nonEmptyCursorSelectFirst
 
 nextActionReportCursorLast :: NextActionReportCursor -> NextActionReportCursor
-nextActionReportCursorLast = nextActionReportCursorNonEmptyCursorL %~ nonEmptyCursorSelectLast
+nextActionReportCursorLast = nextActionReportCursorSelectedNextActionEntryCursorsL %~ fmap nonEmptyCursorSelectLast
+
+nextActionReportCursorSelectReport :: NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorSelectReport = nextActionReportCursorSelectionL $
+  \case
+    NextActionReportSelected -> Nothing
+    NextActionReportFilterSelected -> Just NextActionReportSelected
+
+nextActionReportCursorSelectFilter :: NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorSelectFilter = nextActionReportCursorSelectionL $
+  \case
+    NextActionReportFilterSelected -> Nothing
+    NextActionReportSelected -> Just NextActionReportFilterSelected
+
+nextActionReportCursorInsert :: Char -> NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorInsert c = nextActionReportCursorFilterBarL $ textCursorInsert c
+
+nextActionReportCursorAppend :: Char -> NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorAppend c = nextActionReportCursorFilterBarL $ textCursorAppend c
+
+nextActionReportCursorRemove :: NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorRemove =
+  nextActionReportCursorFilterBarL
+  $ \tc ->
+      case textCursorRemove tc of
+        Nothing -> Nothing
+        Just Deleted -> Nothing
+        Just (Updated narc) -> Just narc
+
+nextActionReportCursorDelete :: NextActionReportCursor -> Maybe NextActionReportCursor
+nextActionReportCursorDelete =
+  nextActionReportCursorFilterBarL
+  $ \tc ->
+      case textCursorDelete tc of
+        Nothing -> Nothing
+        Just Deleted -> Nothing
+        Just (Updated narc) -> Just narc
 
 data NextActionEntryCursor
   = NextActionEntryCursor
@@ -80,6 +203,9 @@ data NextActionEntryCursor
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor
+
+unwrapNextActionEntryCursor :: NextActionEntryCursor -> (Path Rel File, ForestCursor Entry Entry)
+unwrapNextActionEntryCursor NextActionEntryCursor {..} = (nextActionEntryCursorFilePath, nextActionEntryCursorForestCursor)
 
 makeNextActionEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> NextActionEntryCursor
 makeNextActionEntryCursor rp fc =

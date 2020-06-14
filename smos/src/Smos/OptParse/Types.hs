@@ -177,9 +177,10 @@ backToFileKeyConfigs FileKeyMap {..} =
           anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
         }
 
-newtype ReportsKeyConfigs
+data ReportsKeyConfigs
   = ReportsKeyConfigs
       { nextActionReportKeyConfigs :: Maybe KeyConfigs
+      , nextActionReportFilterKeyConfigs :: Maybe KeyConfigs
       }
   deriving (Show, Eq, Generic)
 
@@ -192,13 +193,16 @@ instance FromJSON ReportsKeyConfigs where
   parseJSON = viaYamlSchema
 
 instance YamlSchema ReportsKeyConfigs where
-  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs <$> optionalField "next-action" "Keybindings for the interactive next action report"
+  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs 
+    <$> optionalField "next-action" "Keybindings for the interactive next action report"
+    <*> optionalField "next-action-filter" "Keybindings for when the filter bar is selected in the interactive next action report"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
-  let ReportsKeyMap _ = undefined
+  let ReportsKeyMap _ _ = undefined
    in ReportsKeyConfigs
         { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
+        , nextActionReportFilterKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportFilterMatchers
         }
 
 data HelpKeyConfigs
