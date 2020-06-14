@@ -26,14 +26,14 @@ with final.haskell.lib;
         in
           final.stdenv.mkDerivation {
             name = "smos-docs-site";
-            buildInputs = [ rawDocsSite final.linkchecker final.killall ];
+            buildInputs = [ final.linkchecker final.killall ];
             buildCommand = ''
-              smos-docs-site &
+              mkdir -p $out
+              cp -r ${rawDocsSite}/. $out
+
+              $out/bin/smos-docs-site &
               linkchecker http://localhost:8000
               killall smos-docs-site
-
-              mkdir -p $out
-              cp -r ${rawDocsSite} $out
             '';
           };
 
