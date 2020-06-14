@@ -74,7 +74,14 @@ with final.haskell.lib;
         "smos-report-gen" = smosPkg "smos-report-gen";
         "smos-report-cursor" = smosPkg "smos-report-cursor";
         "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-        "smos-query" = smosPkgWithOwnComp "smos-query";
+        "smos-query" =
+          let
+            default = smosPkgWithOwnComp "smos-query";
+            set = {
+              "x86_64-darwin" = dontCheck default;
+            };
+          in
+            set."${builtins.currentSystem}" or default;
         "smos-single" = smosPkgWithOwnComp "smos-single";
         "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
@@ -92,7 +99,7 @@ with final.haskell.lib;
           let
             default = smosPkg "smos-sync-client-gen";
             set = {
-              "x86_64-darwin" = dontCheck (smosPkg "smos-sync-client-gen");
+              "x86_64-darwin" = dontCheck default;
             };
           in
             set."${builtins.currentSystem}" or default;
