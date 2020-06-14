@@ -10,4 +10,5 @@ import Test.Validity
 spec :: Spec
 spec = do
   genValidSpec @NextActionReportCursor
+  genValidSpec @NextActionReportCursorSelection
   genValidSpec @NextActionEntryCursor
