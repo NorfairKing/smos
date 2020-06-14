@@ -6,7 +6,7 @@ title: Customisation in Haskell
 ### Disclaimer
 
 Smos is available via a default build without any programming involved.
-If you are looking to customise smos without writing any code, please see [the respective guide](/customisation-default.html)
+If you are looking to customise smos without writing any code, please see [the respective guide](/customisation-default)
 
 ## Your own smos
 

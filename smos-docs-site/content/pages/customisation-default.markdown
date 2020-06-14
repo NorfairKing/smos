@@ -45,4 +45,4 @@ keys:
 
 
 Smos can also be configured directly in Haskell.
-If you are looking to do that, please see [the respective guide](/customisation-haskell.html)
+If you are looking to do that, please see [the respective guide](/customisation-haskell)

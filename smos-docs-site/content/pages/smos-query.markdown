@@ -8,5 +8,5 @@ The `smos` editor comes with some handy companion tools.
 # File structure
 
 The `smos-query` tool operates in the workflow directory.
-See [the directories documentation](/page/directories) for more information.
+See [the directories documentation](/directories) for more information.
 The `smos-query` tool will only consider the contents of the workflow directory for its functionality.
