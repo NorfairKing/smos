@@ -42,20 +42,6 @@ produceNextActionReportCursor dc = do
       .| sinkList
 
 
-produceNextActionEntryCursorsFiltered :: Maybe EntryFilterRel -> DirectoryConfig -> IO (Maybe (NonEmptyCursor NextActionEntryCursor))
-produceNextActionEntryCursorsFiltered ef dc = do
-  wd <- resolveDirWorkflowDir dc
-  runConduit
-    $ fmap makeNextActionEntryCursors
-    $ streamSmosFilesFromWorkflowRel HideArchive dc
-      .| filterSmosFilesRel
-      .| parseSmosFilesRel wd
-      .| printShouldPrint DontPrint
-      .| nextActionConduitHelper ef
-      .| C.map (uncurry makeNextActionEntryCursor)
-      .| sinkList
-
-
 data NextActionReportCursor
   = NextActionReportCursor
     { nextActionReportCursorNextActionEntryCursors :: NonEmptyCursor NextActionEntryCursor
