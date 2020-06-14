@@ -6,6 +6,7 @@
 
 module Smos.Query.Commands.Agenda
   ( smosQueryAgenda,
+    renderAgendaReport,
     renderAgendaReportLines,
     AgendaReportLine (..),
     insertNowLine,

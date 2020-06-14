@@ -23,7 +23,9 @@ data WorkReport
   = WorkReport
       { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
         workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
-        workReportAgendaEntries :: [AgendaEntry],
+        workReportAgendaPastEntries :: [AgendaEntry],
+        workReportAgendaTodayReport :: AgendaTodayReport,
+        workReportAgendaFutureEntries :: [AgendaEntry],
         workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
@@ -36,7 +38,9 @@ instance Semigroup WorkReport where
       { workReportResultEntries = workReportResultEntries wr1 <> workReportResultEntries wr2,
         workReportEntriesWithoutContext =
           workReportEntriesWithoutContext wr1 <> workReportEntriesWithoutContext wr2,
-        workReportAgendaEntries = workReportAgendaEntries wr1 <> workReportAgendaEntries wr2,
+        workReportAgendaPastEntries = workReportAgendaPastEntries wr1 <> workReportAgendaPastEntries wr2,
+        workReportAgendaTodayReport = workReportAgendaTodayReport wr1 <> workReportAgendaTodayReport wr2,
+        workReportAgendaFutureEntries = workReportAgendaFutureEntries wr1 <> workReportAgendaFutureEntries wr2,
         workReportCheckViolations =
           M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2)
       }
@@ -46,7 +50,9 @@ instance Monoid WorkReport where
     WorkReport
       { workReportResultEntries = mempty,
         workReportEntriesWithoutContext = mempty,
-        workReportAgendaEntries = [],
+        workReportAgendaPastEntries = [],
+        workReportAgendaTodayReport = mempty,
+        workReportAgendaFutureEntries = [],
         workReportCheckViolations = M.empty
       }
 
@@ -75,21 +81,25 @@ makeWorkReport WorkReportContext {..} rp fc =
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
+      agendaEntries =
+        let go ae =
+              let day = timestampDay (agendaEntryTimestamp ae)
+                  today = localDay (zonedTimeToLocalTime workReportContextNow)
+               in case agendaEntryTimestampName ae of
+                    "SCHEDULED" -> day <= today
+                    "DEADLINE" -> day <= addDays 7 today
+                    _ -> day == today
+         in filter go $ makeAgendaEntry rp $ forestCursorCurrent fc
+      (past, present, future) = divideIntoPastPresentFuture workReportContextNow agendaEntries
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext,
           workReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
                 && matchesNoContext,
-          workReportAgendaEntries =
-            let go ae =
-                  let day = timestampDay (agendaEntryTimestamp ae)
-                      today = localDay (zonedTimeToLocalTime workReportContextNow)
-                   in case agendaEntryTimestampName ae of
-                        "SCHEDULED" -> day <= today
-                        "DEADLINE" -> day <= addDays 7 today
-                        _ -> day == today
-             in filter go $ makeAgendaEntry rp $ forestCursorCurrent fc,
+          workReportAgendaPastEntries = past,
+          workReportAgendaTodayReport = AgendaTodayReport present,
+          workReportAgendaFutureEntries = future,
           workReportCheckViolations =
             if matchesAnyContext
               then
@@ -108,7 +118,9 @@ finishWorkReport ms wr =
     Nothing -> wr
     Just s ->
       WorkReport
-        { workReportAgendaEntries = workReportAgendaEntries wr,
+        { workReportAgendaPastEntries = workReportAgendaPastEntries wr,
+          workReportAgendaTodayReport = workReportAgendaTodayReport wr,
+          workReportAgendaFutureEntries = workReportAgendaFutureEntries wr,
           workReportResultEntries = sorterSortCursorList s $ workReportResultEntries wr,
           workReportEntriesWithoutContext =
             sorterSortCursorList s $ workReportEntriesWithoutContext wr,

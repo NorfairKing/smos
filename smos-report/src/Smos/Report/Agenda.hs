@@ -68,27 +68,6 @@ instance FromJSON AgendaReport where
 instance ToJSON AgendaReport where
   toJSON AgendaReport {..} = object ["past" .= agendaReportPast, "present" .= agendaReportPresent, "future" .= agendaReportFuture]
 
-newtype AgendaTodayReport
-  = AgendaTodayReport
-      { agendaTodayReportEntries :: [AgendaEntry]
-      }
-  deriving (Show, Eq, Generic, FromJSON, ToJSON)
-
-instance Validity AgendaTodayReport where
-  validate atr@AgendaTodayReport {..} =
-    mconcat
-      [ genericValidate atr,
-        declare "The entries are in chronological order" $
-          agendaEntriesAreSorted agendaTodayReportEntries,
-        declare "All the entries are in the same day"
-          $ (<= 1)
-          $ length
-          $ group
-          $ map (timestampDay . agendaEntryTimestamp) agendaTodayReportEntries
-      ]
-
-instance NFData AgendaTodayReport
-
 makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
 makeAgendaReport now period tb as =
   let filteredAgenda = filter (filterPeriodLocal now period . timestampLocalTime . agendaEntryTimestamp) as
@@ -131,6 +110,27 @@ splitList func = go
           case go2 as of
             (ys, zs) -> (a : ys, zs)
         GT -> ([], a : as)
+
+newtype AgendaTodayReport
+  = AgendaTodayReport
+      { agendaTodayReportEntries :: [AgendaEntry]
+      }
+  deriving (Show, Eq, Generic, FromJSON, ToJSON, Semigroup, Monoid)
+
+instance Validity AgendaTodayReport where
+  validate atr@AgendaTodayReport {..} =
+    mconcat
+      [ genericValidate atr,
+        declare "The entries are in chronological order" $
+          agendaEntriesAreSorted agendaTodayReportEntries,
+        declare "All the entries are in the same day"
+          $ (<= 1)
+          $ length
+          $ group
+          $ map (timestampDay . agendaEntryTimestamp) agendaTodayReportEntries
+      ]
+
+instance NFData AgendaTodayReport
 
 type AgendaTableBlock a = Block a AgendaEntry
 

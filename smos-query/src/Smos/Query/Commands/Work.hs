@@ -26,6 +26,7 @@ import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Streaming
+import Smos.Report.TimeBlock
 import Smos.Report.Work
 import System.Exit
 
@@ -89,9 +90,9 @@ renderWorkReport now ne WorkReport {..} =
     $ filter
       (not . null)
       [ unlessNull
-          workReportAgendaEntries
+          (workReportAgendaPastEntries <> agendaTodayReportEntries workReportAgendaTodayReport <> workReportAgendaFutureEntries)
           [ sectionHeading "Today's agenda:",
-            [formatAsTable $ renderAgendaReportLines now $ insertNowLine now $ map EntryLine $ sortAgendaEntries workReportAgendaEntries]
+            [agendaTable]
           ],
         unlessNull
           workReportResultEntries
@@ -120,3 +121,11 @@ renderWorkReport now ne WorkReport {..} =
     heading c = [formatAsTable [[c]]]
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne
+    agendaTable =
+      renderAgendaReport
+        now
+        AgendaReport
+          { agendaReportPast = [Block "" workReportAgendaPastEntries],
+            agendaReportPresent = workReportAgendaTodayReport,
+            agendaReportFuture = [Block "" workReportAgendaFutureEntries]
+          }
