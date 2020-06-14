@@ -85,7 +85,7 @@ makeAgendaTodayReportLines now AgendaTodayReport {..} =
   insertNowLine now $ insertHourLines now agendaTodayReportEntries
 
 insertHourLines :: ZonedTime -> [AgendaEntry] -> [AgendaReportLine]
-insertHourLines now = go [0 .. 24]
+insertHourLines now = go [8 .. 18]
   where
     ZonedTime lt _ = now
     today = localDay lt
