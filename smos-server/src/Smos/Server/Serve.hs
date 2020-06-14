@@ -83,18 +83,18 @@ loadSigningKey = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
-   in Servant.serveWithContext syncAPI cfg $
+   in Servant.serveWithContext smosAPI cfg $
         hoistServerWithContext
-          syncAPI
+          smosAPI
           (Proxy :: Proxy '[CookieSettings, JWTSettings])
           ((`runReaderT` env) :: ServerHandler a -> Handler a)
-          syncServantServer
+          smosServantServer
 
-syncServantServer :: ServerT SyncAPI ServerHandler
-syncServantServer = toServant syncServerRecord
+smosServantServer :: ServerT SmosAPI ServerHandler
+smosServantServer = toServant smosServerRecord
 
-syncServerRecord :: APIRoutes (AsServerT ServerHandler)
-syncServerRecord =
+smosServerRecord :: APIRoutes (AsServerT ServerHandler)
+smosServerRecord =
   APIRoutes
     { unprotectedRoutes = toServant syncServerUnprotectedRoutes,
       protectedRoutes = toServant syncServerProtectedRoutes

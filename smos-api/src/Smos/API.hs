@@ -50,10 +50,10 @@ import Smos.Data hiding (Header)
 import Smos.Report.Agenda
 import Smos.Report.Next
 
-syncAPI :: Proxy SyncAPI
-syncAPI = Proxy
+smosAPI :: Proxy SmosAPI
+smosAPI = Proxy
 
-type SyncAPI = ToServantApi APIRoutes
+type SmosAPI = ToServantApi APIRoutes
 
 data APIRoutes route
   = APIRoutes
@@ -62,10 +62,10 @@ data APIRoutes route
       }
   deriving (Generic)
 
-syncUnprotectedAPI :: Proxy SyncUnprotectedAPI
-syncUnprotectedAPI = Proxy
+smosUnprotectedAPI :: Proxy SmosUnprotectedAPI
+smosUnprotectedAPI = Proxy
 
-type SyncUnprotectedAPI = ToServantApi UnprotectedRoutes
+type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
 data UnprotectedRoutes route
   = UnprotectedRoutes
@@ -74,8 +74,8 @@ data UnprotectedRoutes route
       }
   deriving (Generic)
 
-syncProtectedAPI :: Proxy SyncProtectedAPI
-syncProtectedAPI = Proxy
+smosProtectedAPI :: Proxy SmosProtectedAPI
+smosProtectedAPI = Proxy
 
 type ProtectAPI = Auth '[JWT] AuthCookie
 
@@ -93,7 +93,7 @@ instance FromJWT AuthCookie
 
 instance ToJWT AuthCookie
 
-type SyncProtectedAPI = ToServantApi ProtectedRoutes
+type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route
   = ProtectedRoutes

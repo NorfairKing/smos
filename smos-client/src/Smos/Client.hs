@@ -34,7 +34,8 @@ clientPostRegister :: Register -> ClientM NoContent
 clientPostLogin ::
   Login ->
   ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
-clientPostRegister :<|> clientPostLogin = client (flatten syncUnprotectedAPI)
+clientPostRegister :<|>
+  clientPostLogin = client (flatten smosUnprotectedAPI)
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 
@@ -45,7 +46,11 @@ clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 clientGetNextActionReport :: Token -> ClientM NextActionReport
 
 clientGetAgendaReport :: Token -> ClientM AgendaReport
-clientPostSync :<|> clientGetSmosFile :<|> clientPutSmosFile :<|> clientGetNextActionReport :<|> clientGetAgendaReport = client (flatten syncProtectedAPI)
+clientPostSync :<|>
+  clientGetSmosFile :<|>
+  clientPutSmosFile :<|>
+  clientGetNextActionReport :<|>
+  clientGetAgendaReport = client (flatten smosProtectedAPI)
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession
