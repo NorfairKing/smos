@@ -99,15 +99,16 @@ filterNextActionEntryCursors :: EntryFilterRel -> [NextActionEntryCursor] -> [Ne
 filterNextActionEntryCursors ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
 
 makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
-makeNextActionReportCursor
-  = fmap ((\nec -> NextActionReportCursor
-           { nextActionReportCursorNextActionEntryCursors = nec
-           , nextActionReportCursorSelectedNextActionEntryCursors = Just nec
-           , nextActionReportCursorFilterBar = emptyTextCursor
-           , nextActionReportCursorSelection = NextActionReportSelected
-           , nextActionReportCursorFilterValid = False
-           })
-    . makeNonEmptyCursor) . NE.nonEmpty
+makeNextActionReportCursor naecs
+  = (\nenec ->
+    NextActionReportCursor
+    { nextActionReportCursorNextActionEntryCursors = nenec
+    , nextActionReportCursorSelectedNextActionEntryCursors = Just nenec
+    , nextActionReportCursorFilterBar = emptyTextCursor
+    , nextActionReportCursorSelection = NextActionReportSelected
+    , nextActionReportCursorFilterValid = False
+    })
+    <$> makeNENextActionEntryCursor naecs
 
 makeNENextActionEntryCursor :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
 makeNENextActionEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty
