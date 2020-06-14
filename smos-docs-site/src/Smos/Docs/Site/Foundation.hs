@@ -65,7 +65,7 @@ instance Read DocPage where
       Nothing -> fail "No such page"
       Just dp -> pure dp
 
-instance PathPiece DocPage where
-  fromPathPiece url =
-    find ((== url) . docPageUrl) docPages
-  toPathPiece = docPageUrl
+instance PathMultiPiece DocPage where
+  fromPathMultiPiece url =
+    find ((== T.intercalate "/" url) . docPageUrl) docPages
+  toPathMultiPiece = T.splitOn "/" . docPageUrl

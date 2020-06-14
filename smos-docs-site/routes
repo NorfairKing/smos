@@ -1,7 +1,5 @@
 / HomeR GET
 
-/page/#DocPage PageR GET
-
 /smos SmosR GET
 /smos/file SmosFileR GET
 /smos/keybindings SmosKeybindingsR GET
@@ -26,3 +24,5 @@
 
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets
+
+!/*DocPage PageR GET
