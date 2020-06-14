@@ -86,17 +86,17 @@ nextActionReportCursorFilterBarL =
                          }
           Right ef ->
             let filteredIn =
-                  filterNextActionReportCursor ef
+                  filterNextActionEntryCursors ef
                   . toList . rebuildNonEmptyCursor $ nextActionReportCursorNextActionEntryCursors
             in
             narc { nextActionReportCursorFilterBar = tc
                  , nextActionReportCursorSelectedNextActionEntryCursors =
-                     makeNonEmptyCursor <$> NE.nonEmpty filteredIn
+                     makeNENextActionEntryCursor filteredIn
                  , nextActionReportCursorFilterValid = True
                  }
 
-filterNextActionReportCursor :: EntryFilterRel -> [NextActionEntryCursor] -> [NextActionEntryCursor]
-filterNextActionReportCursor ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
+filterNextActionEntryCursors :: EntryFilterRel -> [NextActionEntryCursor] -> [NextActionEntryCursor]
+filterNextActionEntryCursors ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
 
 makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
 makeNextActionReportCursor
@@ -109,8 +109,8 @@ makeNextActionReportCursor
            })
     . makeNonEmptyCursor) . NE.nonEmpty
 
-makeNextActionEntryCursors :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
-makeNextActionEntryCursors = fmap makeNonEmptyCursor . NE.nonEmpty
+makeNENextActionEntryCursor :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
+makeNENextActionEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty
 
 nextActionReportCursorBuildSmosFileCursor :: NextActionReportCursor -> SmosFileCursor
 nextActionReportCursorBuildSmosFileCursor =
