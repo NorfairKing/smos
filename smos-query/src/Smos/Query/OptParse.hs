@@ -255,7 +255,7 @@ parseCommandEntry = info parser modifier
 parseCommandReport :: ParserInfo Command
 parseCommandReport = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Run preconfigure reports"
+    modifier = fullDesc <> progDesc "Run preconfigured reports"
     parser =
       CommandReport
         <$> ( ReportFlags
