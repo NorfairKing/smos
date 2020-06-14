@@ -246,8 +246,16 @@ defaultReportsKeyMap =
             exactChar 'G' lastNextAction,
             exactChar 'q' selectEditor,
             exactKey KEnter enterNextActionFile,
-            exactChar '?' selectHelp
-          ]
+            exactChar '?' selectHelp,
+            exactChar '/' selectNextActionFilter
+          ],
+      reportsKeymapNextActionReportFilterMatchers =
+        listMatchers
+        [ anyChar insertNextActionFilter,
+          exactKey KEnter selectNextActionReport,
+          exactKey KBS removeNextActionFilter,
+          exactKey KDel deleteNextActionFilter,
+          exactKey KEsc selectEditor]
     }
 
 defaultHelpKeyMap :: HelpKeyMap
