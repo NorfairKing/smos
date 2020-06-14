@@ -126,7 +126,8 @@ defaultFileKeyMap =
             -- Entering contents
             combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents,
             -- Entering tags
-            exactString "gi" entrySelectTags
+            exactString "gi" entrySelectTags,
+            exactString "ga" entrySelectTagsFromBack
           ],
       fileKeyMapHeaderMatchers =
         listMatchers

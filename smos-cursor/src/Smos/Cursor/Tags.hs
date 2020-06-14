@@ -26,6 +26,10 @@ module Smos.Cursor.Tags
     tagsCursorSelectNextTag,
     tagsCursorSelectOrCreatePrevTag,
     tagsCursorSelectOrCreateNextTag,
+    tagsCursorSelectFirstTag,
+    tagsCursorSelectLastTag,
+    tagsCursorSelectStartInSelectedTag,
+    tagsCursorSelectEndInSelectedTag,
   )
 where
 
@@ -186,3 +190,15 @@ tagsCursorSelectOrCreatePrevTag tc =
 tagsCursorSelectOrCreateNextTag :: TagsCursor -> TagsCursor
 tagsCursorSelectOrCreateNextTag tc =
   fromMaybe (tagsCursorAppendAndSelectTag emptyTagCursor tc) (tagsCursorSelectNextTag tc)
+
+tagsCursorSelectFirstTag :: TagsCursor -> TagsCursor
+tagsCursorSelectFirstTag = tagsCursorNonEmptyCursorL %~ nonEmptyCursorSelectFirst rebuildTagCursor makeTagCursor
+
+tagsCursorSelectLastTag :: TagsCursor -> TagsCursor
+tagsCursorSelectLastTag = tagsCursorNonEmptyCursorL %~ nonEmptyCursorSelectLast rebuildTagCursor makeTagCursor
+
+tagsCursorSelectStartInSelectedTag :: TagsCursor -> TagsCursor
+tagsCursorSelectStartInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectStart
+
+tagsCursorSelectEndInSelectedTag :: TagsCursor -> TagsCursor
+tagsCursorSelectEndInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectEnd
