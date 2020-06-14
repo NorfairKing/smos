@@ -73,7 +73,7 @@ instance ToJSON AgendaReport where
 makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
 makeAgendaReport now period tb as =
   let filteredAgenda = filter (filterPeriodLocal now period . timestampLocalTime . agendaEntryTimestamp) as
-      (past, present, future) = divideIntoPastPresentFuture now $ sortAgendaEntries filteredAgenda
+      (past, present, future) = divideIntoPastPresentFuture now filteredAgenda
       pastBlocks = divideIntoAgendaTableBlocks tb past
       futureBlocks = divideIntoAgendaTableBlocks tb future
    in AgendaReport
@@ -88,30 +88,33 @@ makeAgendaReport now period tb as =
 divideIntoPastPresentFuture ::
   ZonedTime -> [AgendaEntry] -> ([AgendaEntry], [AgendaEntry], [AgendaEntry])
 divideIntoPastPresentFuture now =
-  splitList $ \ae ->
-    compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
-
-splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
-splitList func = go
+  splitList
+    ( \ae ->
+        compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
+    )
+    . sortAgendaEntries
   where
-    go [] = ([], [], [])
-    go (a : as) =
-      case func a of
-        LT ->
-          case go as of
-            (xs, ys, zs) -> (a : xs, ys, zs)
-        EQ ->
-          case go2 as of
-            (ys, zs) -> ([], a : ys, zs)
-        GT -> ([], [], a : as)
-    go2 [] = ([], [])
-    go2 (a : as) =
-      case func a of
-        LT -> error "should not happen"
-        EQ ->
-          case go2 as of
-            (ys, zs) -> (a : ys, zs)
-        GT -> ([], a : as)
+    splitList :: (a -> Ordering) -> [a] -> ([a], [a], [a])
+    splitList func = go
+      where
+        go [] = ([], [], [])
+        go (a : as) =
+          case func a of
+            LT ->
+              case go as of
+                (xs, ys, zs) -> (a : xs, ys, zs)
+            EQ ->
+              case go2 as of
+                (ys, zs) -> ([], a : ys, zs)
+            GT -> ([], [], a : as)
+        go2 [] = ([], [])
+        go2 (a : as) =
+          case func a of
+            LT -> error "should not happen"
+            EQ ->
+              case go2 as of
+                (ys, zs) -> (a : ys, zs)
+            GT -> ([], a : as)
 
 newtype AgendaTodayReport
   = AgendaTodayReport
