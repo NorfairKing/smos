@@ -102,7 +102,9 @@ combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
   nams <-
     combineKeyMappings (reportsKeymapNextActionReportMatchers rkm) (nextActionReportKeyConfigs rkc)
-  return $ rkm {reportsKeymapNextActionReportMatchers = nams}
+  nafms <-
+    combineKeyMappings (reportsKeymapNextActionReportFilterMatchers rkm) (nextActionReportKeyConfigs rkc)
+  return $ rkm {reportsKeymapNextActionReportMatchers = nams, reportsKeymapNextActionReportFilterMatchers = nafms}
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
 combineHelpKeymap hkm Nothing = pure hkm
