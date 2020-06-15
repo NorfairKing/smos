@@ -157,7 +157,7 @@ agendaEntrySortingProjection :: AgendaEntry -> AgendaEntry -> Ordering
 agendaEntrySortingProjection =
   mconcat
     [ comparing (timestampLocalTime . agendaEntryTimestamp),
-      comparing agendaEntryTimestampName,
+      comparing (Down . agendaEntryTimestampName),
       comparing agendaEntryTodoState
     ]
 

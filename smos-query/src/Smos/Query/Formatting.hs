@@ -60,7 +60,8 @@ showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
 formatAgendaEntry now AgendaEntry {..} =
-  let d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
+  let tz = zonedTimeZone now
+      d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
       func =
         if  | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
             | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
@@ -68,12 +69,15 @@ formatAgendaEntry now AgendaEntry {..} =
             | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
-   in [ func $ pathChunk agendaEntryFilePath,
-        func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func $ chunk $ T.pack $ renderDaysAgoAuto $ daysAgo $ negate d,
+   in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
+        func $ chunk $ T.pack $ renderTimeAgoAuto $ timeAgo $
+          diffUTCTime
+            (zonedTimeToUTC now)
+            (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
         timestampNameChunk agendaEntryTimestampName,
         maybe (chunk "") todoStateChunk agendaEntryTodoState,
-        headerChunk agendaEntryHeader
+        headerChunk agendaEntryHeader,
+        func $ pathChunk agendaEntryFilePath
       ]
 
 rootedPathChunk :: RootedPath -> Chunk Text

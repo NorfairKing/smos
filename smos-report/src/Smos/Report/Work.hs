@@ -119,7 +119,7 @@ finishWorkReport ms wr =
     Just s ->
       WorkReport
         { workReportAgendaPastEntries = workReportAgendaPastEntries wr,
-          workReportAgendaTodayReport = workReportAgendaTodayReport wr,
+          workReportAgendaTodayReport = AgendaTodayReport $ sortAgendaEntries $ agendaTodayReportEntries $ workReportAgendaTodayReport wr,
           workReportAgendaFutureEntries = workReportAgendaFutureEntries wr,
           workReportResultEntries = sorterSortCursorList s $ workReportResultEntries wr,
           workReportEntriesWithoutContext =

@@ -42,22 +42,29 @@ renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
-  HourLine i -> [chunk $ "... " <> T.pack (printf "%02d" i) <> ":00 ..."]
+  TodayLine -> [fore white $ chunk $ T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %A" now]
+  HourLine i -> [chunk $ ".......... " <> T.pack (printf "%02d" i) <> ":00 ..."]
   NowLine ->
-    [ fore yellow $ chunk $ T.pack $
+    map
+      (fore magenta . chunk . T.pack)
+      [ "--------------------",
+        "--------",
+        "---",
+        "---",
         unwords
-          [ "---",
-            "Now:",
-            formatTime defaultTimeLocale "%A %Y-%m-%d %H:%M:%S" now,
-            "---"
-          ]
-    ]
+          [ "[",
+            formatTime defaultTimeLocale "%H:%M:%S" now,
+            "]"
+          ],
+        "---"
+      ]
   EntryLine ae -> formatAgendaEntry now ae
 
 data AgendaReportLine
   = TitleLine Text
   | NowLine
   | HourLine Int
+  | TodayLine
   | SpaceLine
   | EntryLine AgendaEntry
   deriving (Show, Eq, Generic)
@@ -67,7 +74,7 @@ makeAgendaReportLines now AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
-      [goBlocks agendaReportPast, makeAgendaTodayReportLines now agendaReportPresent, goBlocks agendaReportFuture]
+      [goBlocks agendaReportPast, TodayLine : makeAgendaTodayReportLines now agendaReportPresent, goBlocks agendaReportFuture]
   where
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
@@ -141,6 +148,7 @@ agendaReportLineLocalTime d = \case
   TitleLine _ -> Nothing
   NowLine -> Nothing
   SpaceLine -> Nothing
+  TodayLine -> Just $ LocalTime d midnight
   HourLine i -> Just $ hourLineLocalTime d i
   EntryLine ae -> Just $ agendaEntryLocalTime ae
 
