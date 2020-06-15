@@ -74,16 +74,23 @@ smosCalendarImport = do
       Left err -> die err
       Right (cals, warnings) -> do
         forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> warning
-        pure $ processCalendars setDebug start recurrenceLimit hereTZ cals
+        pure $ processCalendars setDebug start recurrenceLimit hereTZ source cals
   wd <- resolveDirWorkflowDir setDirectorySettings
   let fp = wd </> setDestinationFile
-  writeSmosFile fp $ SmosFile $ sorter $ concat fs
+  writeSmosFile fp $ SmosFile $ sorter fs
   where
     sorter = sortOn (entryTimestamps . rootLabel)
 
-processCalendars :: Bool -> Day -> Day -> TimeZone -> [VCalendar] -> Forest Entry
-processCalendars debug start recurrenceLimit hereTZ = concatMap goCal
+processCalendars :: Bool -> Day -> Day -> TimeZone -> String -> [VCalendar] -> Tree Entry
+processCalendars debug start recurrenceLimit hereTZ name vcals = titleNode $ concatMap goCal vcals
   where
+    titleNode :: Forest Entry -> Tree Entry
+    titleNode = Node ((newEntry titleHeader) {entryContents = titleContents})
+    titleHeader = fromMaybe "Invalid title name" $ header (T.pack name)
+    titleContents =
+      if debug
+        then contents $ T.pack $ ppShow vcals
+        else Nothing
     goCal :: VCalendar -> Forest Entry
     goCal cal =
       let env =
@@ -130,7 +137,7 @@ eventContents ve = do
   pure $
     if debug
       then contents $ T.pack $ ppShow ve
-      else Nothing
+      else (descriptionValue <$> veDescription ve) >>= (contents . Lazy.toStrict)
 
 data EventTimestamps
   = EventTimestamps
