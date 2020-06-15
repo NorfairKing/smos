@@ -187,13 +187,15 @@ data ReportsKeyConfigs
 instance Validity ReportsKeyConfigs
 
 instance ToJSON ReportsKeyConfigs where
-  toJSON ReportsKeyConfigs {..} = object ["next-action" .= nextActionReportKeyConfigs]
+  toJSON ReportsKeyConfigs {..} = object
+    [ "next-action" .= nextActionReportKeyConfigs
+    , "next-action-filter" .= nextActionReportFilterKeyConfigs]
 
 instance FromJSON ReportsKeyConfigs where
   parseJSON = viaYamlSchema
 
 instance YamlSchema ReportsKeyConfigs where
-  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs 
+  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs
     <$> optionalField "next-action" "Keybindings for the interactive next action report"
     <*> optionalField "next-action-filter" "Keybindings for when the filter bar is selected in the interactive next action report"
 
