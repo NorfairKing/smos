@@ -41,10 +41,7 @@ instance Validity MetaMap where
         decorate "The map can be translated to a valid DirForest" $
           case makeDirForest $ metaMapFiles mm of
             Left fp -> invalid $ "Duplicate path: " <> fp
-            Right df -> validate df,
-        declare "The uuids are distinct" $
-          let distinct ls = nub ls == ls
-           in distinct $ map syncFileMetaUUID $ M.elems $ metaMapFiles mm
+            Right df -> validate df
       ]
 
 instance NFData MetaMap

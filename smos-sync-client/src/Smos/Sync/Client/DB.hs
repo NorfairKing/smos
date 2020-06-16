@@ -31,13 +31,11 @@ share
   [persistLowerCase|
 
 ClientFile
-    uuid FileUUID sqltype=uuid
     path (Path Rel File)
     sha256 SHA256
     time ServerTime
 
     UniquePath path
-    UniqueUUID uuid
 
     deriving Show
     deriving Eq

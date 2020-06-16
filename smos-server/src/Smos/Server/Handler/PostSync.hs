@@ -8,6 +8,7 @@ where
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Mergeful.Persistent as Mergeful
+import Path
 import Smos.Server.Handler.Import
 
 servePostSync :: AuthCookie -> SyncRequest -> ServerHandler SyncResponse
@@ -25,24 +26,30 @@ servePostSync (AuthCookie un) SyncRequest {..} = withUserId un $ \uid -> do
         liftIO $ putStrLn $ "Removing " <> show p
         pure Nothing
   let modifiedSyncRequest = syncRequestItems {Mergeful.syncRequestNewItems = modifiedAddedItems}
-  syncResponseItems <-
-    runDB $
-      Mergeful.serverProcessSyncWithCustomIdQuery
-        ServerFileUuid
-        nextRandomUUID
-        ServerFileTime
-        [ServerFileUser ==. uid]
-        readSyncFile
-        (writeSyncFile uid)
-        syncFileUpdates
-        modifiedSyncRequest
+  syncResponseItems <- undefined
+  -- runDB $
+  --   Mergeful.serverProcessSyncWithCustomIdQuery
+  --     ServerFileUuid
+  --     nextRandomUUID
+  --     ServerFileTime
+  --     [ServerFileUser ==. uid]
+  --     readSyncFile
+  --     (writeSyncFile uid)
+  --     syncFileUpdates
+  --     modifiedSyncRequest
   pure SyncResponse {..}
   where
-    readSyncFile :: ServerFile -> (FileUUID, Mergeful.Timed SyncFile)
+    readSyncFile :: ServerFile -> (Path Rel File, Mergeful.Timed SyncFile)
     readSyncFile ServerFile {..} =
-      let sf = SyncFile {syncFilePath = serverFilePath, syncFileContents = serverFileContents}
-       in (serverFileUuid, Mergeful.Timed sf serverFileTime)
-    writeSyncFile :: UserId -> FileUUID -> SyncFile -> ServerFile
-    writeSyncFile uid uuid SyncFile {..} = ServerFile {serverFileUser = uid, serverFileUuid = uuid, serverFilePath = syncFilePath, serverFileContents = syncFileContents, serverFileTime = Mergeful.initialServerTime}
+      let sf = SyncFile {syncFileContents = serverFileContents}
+       in (serverFilePath, Mergeful.Timed sf serverFileTime)
+    writeSyncFile :: UserId -> Path Rel File -> SyncFile -> ServerFile
+    writeSyncFile uid path SyncFile {..} =
+      ServerFile
+        { serverFileUser = uid,
+          serverFilePath = path,
+          serverFileContents = syncFileContents,
+          serverFileTime = Mergeful.initialServerTime
+        }
     syncFileUpdates :: SyncFile -> [Update ServerFile]
-    syncFileUpdates SyncFile {..} = [ServerFilePath =. syncFilePath, ServerFileContents =. syncFileContents]
+    syncFileUpdates SyncFile {..} = [ServerFileContents =. syncFileContents]

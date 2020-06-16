@@ -28,8 +28,7 @@ readClientMetadata = do
       ( \(Entity _ ClientFile {..}) ->
           ( clientFilePath,
             SyncFileMeta
-              { syncFileMetaUUID = clientFileUuid,
-                syncFileMetaHash = clientFileSha256,
+              { syncFileMetaHash = clientFileSha256,
                 syncFileMetaTime = clientFileTime
               }
           )
@@ -52,8 +51,7 @@ writeClientMetadata mm = do
         upsertBy
           (UniquePath path)
           ( ClientFile
-              { clientFileUuid = syncFileMetaUUID,
-                clientFilePath = path,
+              { clientFilePath = path,
                 clientFileSha256 = syncFileMetaHash,
                 clientFileTime = syncFileMetaTime
               }
@@ -74,22 +72,21 @@ makeClientMetaData igf ClientStore {..} =
         )
         then Nothing
         else
-          let go :: MetaMap -> FileUUID -> Mergeful.Timed SyncFile -> Maybe MetaMap
-              go m u Mergeful.Timed {..} =
+          let go :: MetaMap -> Path Rel File -> Mergeful.Timed SyncFile -> Maybe MetaMap
+              go m path Mergeful.Timed {..} =
                 let SyncFile {..} = timedValue
                     goOn =
                       MM.insert
-                        syncFilePath
+                        path
                         SyncFileMeta
-                          { syncFileMetaUUID = u,
-                            syncFileMetaTime = timedTime,
+                          { syncFileMetaTime = timedTime,
                             syncFileMetaHash = SHA256.hashBytes syncFileContents
                           }
                         m
                  in case igf of
                       IgnoreNothing -> goOn
                       IgnoreHiddenFiles ->
-                        if isHidden syncFilePath
+                        if isHidden path
                           then Just m
                           else goOn
            in foldM (\m (f, t) -> go m f t) MM.empty $ M.toList clientStoreSyncedItems

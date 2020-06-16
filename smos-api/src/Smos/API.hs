@@ -141,8 +141,6 @@ instance FromJSON Login
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
-type FileUUID = UUID SyncFile
-
 data SyncServer
 
 type ServerUUID = UUID SyncServer
@@ -172,10 +170,9 @@ instance PersistField (UUID a) where
 instance PersistFieldSql (UUID a) where
   sqlType Proxy = SqlBlob
 
-data SyncFile
+newtype SyncFile
   = SyncFile
-      { syncFilePath :: Path Rel File,
-        syncFileContents :: ByteString
+      { syncFileContents :: ByteString
       }
   deriving (Show, Eq, Generic)
 
@@ -186,8 +183,8 @@ instance NFData SyncFile
 instance FromJSON SyncFile where
   parseJSON =
     withObject "SyncFile" $ \o ->
-      SyncFile <$> o .: "path"
-        <*> ( do
+      SyncFile
+        <$> ( do
                 base64Contents <- SB8.pack <$> o .: "contents"
                 case Base64.decode base64Contents of
                   Left err -> fail err
@@ -196,11 +193,11 @@ instance FromJSON SyncFile where
 
 instance ToJSON SyncFile where
   toJSON SyncFile {..} =
-    object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
+    object ["contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
 data SyncRequest
   = SyncRequest
-      { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+      { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
       }
   deriving (Show, Eq, Generic)
 
@@ -218,7 +215,7 @@ instance ToJSON SyncRequest where
 data SyncResponse
   = SyncResponse
       { syncResponseServerId :: ServerUUID,
-        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile
+        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
       }
   deriving (Show, Eq, Generic)
 

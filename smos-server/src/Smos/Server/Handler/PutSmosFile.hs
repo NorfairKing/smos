@@ -12,12 +12,10 @@ import Smos.Server.Handler.Import
 
 servePutSmosFile :: AuthCookie -> Path Rel File -> SmosFile -> ServerHandler NoContent
 servePutSmosFile (AuthCookie un) p sf = withUserId un $ \uid -> do
-  uuid <- nextRandomUUID
   let contentsBS = smosFileYamlBS sf
       record =
         ServerFile
           { serverFileUser = uid,
-            serverFileUuid = uuid,
             serverFilePath = p,
             serverFileContents = contentsBS,
             serverFileTime = Mergeful.initialServerTime

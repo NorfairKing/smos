@@ -12,6 +12,7 @@ import Data.Mergeful.Timed (Timed (..))
 import Database.Persist as DB
 import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
+import Path
 import Servant
 import Servant.Auth.Server
 import Smos.API
@@ -34,7 +35,7 @@ runDB func = do
   pool <- asks serverEnvConnection
   liftIO $ DB.runSqlPool func pool
 
-readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore FileUUID SyncFile)
+readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do
   sfs <- selectList [ServerFileUser ==. uid] []
   pure
@@ -42,38 +43,12 @@ readServerStore uid = do
     $ M.fromList
     $ map
       ( \(Entity _ ServerFile {..}) ->
-          ( serverFileUuid,
+          ( serverFilePath,
             Timed
               { timedValue =
-                  SyncFile {syncFilePath = serverFilePath, syncFileContents = serverFileContents},
+                  SyncFile {syncFileContents = serverFileContents},
                 timedTime = serverFileTime
               }
           )
       )
       sfs
-
-writeServerStore ::
-  forall m.
-  MonadIO m =>
-  UserId ->
-  Mergeful.ServerStore FileUUID SyncFile ->
-  SqlPersistT m ()
-writeServerStore uid ss = do
-  deleteWhere [ServerFileUser ==. uid] -- Clean slate
-  void $ M.traverseWithKey go $ serverStoreItems ss
-  where
-    go :: FileUUID -> Timed SyncFile -> SqlPersistT m ()
-    go u Timed {..} =
-      let SyncFile {..} = timedValue
-       in void $
-            upsertBy
-              (UniqueServerFilePath uid syncFilePath)
-              ( ServerFile
-                  { serverFileUser = uid,
-                    serverFileUuid = u,
-                    serverFilePath = syncFilePath,
-                    serverFileContents = syncFileContents,
-                    serverFileTime = timedTime
-                  }
-              )
-              [ServerFileContents =. syncFileContents, ServerFileTime =. timedTime]
