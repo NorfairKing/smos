@@ -5,6 +5,7 @@ module Smos.Server.Handler.PostSyncSpec
   )
 where
 
+import Control.Monad
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Smos.Client
@@ -27,7 +28,7 @@ spec =
         forAllValid $ \request2 ->
           withNewUser cenv $ \t -> do
             response <- testClientOrErr cenv $ do
-              clientPostSync t request1
+              void $ clientPostSync t request1
               clientPostSync t request2
             shouldBeValid response
     it "produces a valid result after two of the same additions" $ \cenv ->
@@ -64,12 +65,11 @@ spec =
                             }
                       }
               response <- testClientOrErr cenv $ do
-                clientPostSync t request1
+                void $ clientPostSync t request1
                 clientPostSync t request2
               shouldBeValid response
-    xdescribe "Doesn't hold yet."
-      $ it "is idempotent after an arbitrary setup request"
-      $ \cenv ->
+    it "is idempotent after an arbitrary setup request" $
+      \cenv ->
         forAllValid $ \interestingStore ->
           forAllValid $ \request ->
             withNewUser cenv $ \t -> do
