@@ -54,7 +54,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
        in
         case editorCursorReportCursor of
           Nothing -> anys
-          Just (ReportNextActions (NextActionReportCursor {..})) ->
+          Just (ReportNextActions NextActionReportCursor {..}) ->
             (++) anys
             $ map ((,) SpecificMatcher)
               $ case nextActionReportCursorSelection of

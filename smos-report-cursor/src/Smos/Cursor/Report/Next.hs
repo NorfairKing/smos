@@ -75,7 +75,7 @@ nextActionReportCursorSelectionL = lens nextActionReportCursorSelection (\narc c
 nextActionReportCursorFilterBarL :: Lens' NextActionReportCursor TextCursor
 nextActionReportCursorFilterBarL =
   lens nextActionReportCursorFilterBar
-  $ \narc@(NextActionReportCursor {..}) tc ->
+  $ \narc@NextActionReportCursor {..} tc ->
       let query = parseEntryFilterRel $ rebuildTextCursor tc
       in
         case query of
