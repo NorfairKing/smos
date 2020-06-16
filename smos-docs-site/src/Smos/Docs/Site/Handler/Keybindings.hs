@@ -18,7 +18,7 @@ getSmosKeybindingsR = do
   -- Just to force a compilation error if we forget to add new bindings here.
   let KeyMap _ _ _ _ _ = undefined
       FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
-      ReportsKeyMap _ = undefined
+      ReportsKeyMap _ _ = undefined
       HelpKeyMap _ _ = undefined
   defaultLayout
     $(widgetFile "smos-keybindings")
