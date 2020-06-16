@@ -290,7 +290,7 @@ drawReportCursor s = \case
       ReportNextActions narc -> drawNextActionReportCursor s narc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
-drawNextActionReportCursor s (NextActionReportCursor {..}) =
+drawNextActionReportCursor s NextActionReportCursor {..} =
   vBox [ padAll 1
            $ viewport ResourceViewport Vertical
            $ case nextActionReportCursorSelectedNextActionEntryCursors of
