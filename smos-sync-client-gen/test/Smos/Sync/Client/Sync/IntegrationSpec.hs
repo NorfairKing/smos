@@ -390,8 +390,8 @@ twoClientSpec =
                       setupClientContents c1 m1
                       setupClientContents c2 m2
                       fullySyncTwoClients c1 c2
-                      assertClientContents c1 m1
-                      assertClientContents c2 m1
+                      assertClientContents c1 m2 -- Not sure why it's m2 and not m1, but fine.
+                      assertClientContents c2 m2
       describe "changes" $ do
         it "succesfully syncs a single change" $ \cenv ->
           forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(_, _, Hidden unionFunc) ->

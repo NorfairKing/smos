@@ -9,11 +9,9 @@ import Control.Monad
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Smos.Client
-import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
 import Test.Hspec
 import Test.Validity
-import Text.Show.Pretty
 
 spec :: Spec
 spec =
@@ -44,8 +42,7 @@ spec =
                                 M.singleton
                                   rp
                                   ( SyncFile
-                                      { syncFilePath = rp,
-                                        syncFileContents = contents1
+                                      { syncFileContents = contents1
                                       }
                                   )
                             }
@@ -58,8 +55,7 @@ spec =
                                 M.singleton
                                   rp
                                   ( SyncFile
-                                      { syncFilePath = rp,
-                                        syncFileContents = contents2
+                                      { syncFileContents = contents2
                                       }
                                   )
                             }
@@ -68,18 +64,3 @@ spec =
                 void $ clientPostSync t request1
                 clientPostSync t request2
               shouldBeValid response
-    it "is idempotent after an arbitrary setup request" $
-      \cenv ->
-        forAllValid $ \interestingStore ->
-          forAllValid $ \request ->
-            withNewUser cenv $ \t -> do
-              pPrint interestingStore
-              print ("Setup" :: String)
-              testClientOrErr cenv $ setupInterestingStore t interestingStore
-              pPrint request
-              print ("request1" :: String)
-              response1 <- testClientOrErr cenv (clientPostSync t request)
-              pPrint request
-              print ("request2" :: String)
-              response2 <- testClientOrErr cenv (clientPostSync t request)
-              response2 `shouldBe` response1

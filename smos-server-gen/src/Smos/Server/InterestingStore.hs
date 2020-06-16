@@ -43,6 +43,6 @@ setupInterestingStore t is = void $ clientPostSync t sreq
       SyncRequest
         { syncRequestItems =
             Mergeful.initialSyncRequest
-              { Mergeful.syncRequestNewItems = M.mapWithKey SyncFile $ CM.contentsMapFiles $ interestingStoreToContentsMap is
+              { Mergeful.syncRequestNewItems = M.map SyncFile $ CM.contentsMapFiles $ interestingStoreToContentsMap is
               }
         }

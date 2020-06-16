@@ -24,7 +24,7 @@ import Database.Persist.TH
 import GHC.Generics (Generic)
 import Pantry.SHA256
 import Path
-import Smos.API
+import Smos.API ()
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]

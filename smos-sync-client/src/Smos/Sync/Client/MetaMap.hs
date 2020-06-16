@@ -16,7 +16,6 @@ where
 
 import Control.DeepSeq
 import Control.Monad
-import Data.List (nub)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Validity

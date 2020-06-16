@@ -1,4 +1,6 @@
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Server.Handler.PostSync
   ( servePostSync,
@@ -6,50 +8,52 @@ module Smos.Server.Handler.PostSync
 where
 
 import qualified Data.Map as M
+import Data.Map (Map)
 import qualified Data.Mergeful as Mergeful
-import qualified Data.Mergeful.Persistent as Mergeful
 import Path
 import Smos.Server.Handler.Import
 
 servePostSync :: AuthCookie -> SyncRequest -> ServerHandler SyncResponse
 servePostSync (AuthCookie un) SyncRequest {..} = withUserId un $ \uid -> do
   syncResponseServerId <- asks serverEnvServerUUID
-  modifiedAddedItems <- runDB $ fmap (M.mapMaybe id) $ flip M.traverseWithKey (Mergeful.syncRequestNewItems syncRequestItems) $ \p sf -> do
-    mp <- getBy (UniqueServerFilePath uid p)
-    case mp of
-      -- Doesn't exist yet, just leave it.
-      Nothing -> do
-        liftIO $ putStrLn $ "Leaving " <> show p
-        pure $ Just sf
-      -- Exists already, remove it from the request.
-      Just _ -> do
-        liftIO $ putStrLn $ "Removing " <> show p
-        pure Nothing
-  let modifiedSyncRequest = syncRequestItems {Mergeful.syncRequestNewItems = modifiedAddedItems}
-  syncResponseItems <- undefined
-  -- runDB $
-  --   Mergeful.serverProcessSyncWithCustomIdQuery
-  --     ServerFileUuid
-  --     nextRandomUUID
-  --     ServerFileTime
-  --     [ServerFileUser ==. uid]
-  --     readSyncFile
-  --     (writeSyncFile uid)
-  --     syncFileUpdates
-  --     modifiedSyncRequest
+  syncResponseItems <- runDB $ Mergeful.processServerSyncCustom (syncProcessor uid) syncRequestItems
   pure SyncResponse {..}
+
+syncProcessor :: forall m m'. (MonadIO m, m' ~ SqlPersistT m) => UserId -> Mergeful.ServerSyncProcessor (Path Rel File) (Path Rel File) SyncFile m'
+syncProcessor uid = Mergeful.ServerSyncProcessor {..}
   where
-    readSyncFile :: ServerFile -> (Path Rel File, Mergeful.Timed SyncFile)
-    readSyncFile ServerFile {..} =
-      let sf = SyncFile {syncFileContents = serverFileContents}
-       in (serverFilePath, Mergeful.Timed sf serverFileTime)
-    writeSyncFile :: UserId -> Path Rel File -> SyncFile -> ServerFile
-    writeSyncFile uid path SyncFile {..} =
-      ServerFile
-        { serverFileUser = uid,
-          serverFilePath = path,
-          serverFileContents = syncFileContents,
-          serverFileTime = Mergeful.initialServerTime
-        }
-    syncFileUpdates :: SyncFile -> [Update ServerFile]
-    syncFileUpdates SyncFile {..} = [ServerFileContents =. syncFileContents]
+    serverSyncProcessorRead :: m' (Map (Path Rel File) (Mergeful.Timed SyncFile))
+    serverSyncProcessorRead = do
+      sfs <- selectList [ServerFileUser ==. uid] []
+      pure $ M.fromList $ flip map sfs $ \(Entity _ ServerFile {..}) ->
+        ( serverFilePath,
+          Mergeful.Timed
+            { Mergeful.timedValue = SyncFile {syncFileContents = serverFileContents},
+              Mergeful.timedTime = serverFileTime
+            }
+        )
+    serverSyncProcessorAddItem :: Path Rel File -> SyncFile -> m' (Maybe (Path Rel File))
+    serverSyncProcessorAddItem path SyncFile {..} = do
+      mk <-
+        insertUnique
+          ServerFile
+            { serverFileUser = uid,
+              serverFilePath = path,
+              serverFileContents = syncFileContents,
+              serverFileTime = Mergeful.initialServerTime
+            }
+      pure (path <$ mk)
+    serverSyncProcessorChangeItem :: Path Rel File -> Mergeful.ServerTime -> SyncFile -> m' ()
+    serverSyncProcessorChangeItem path st SyncFile {..} =
+      void $
+        upsertBy
+          (UniqueServerFilePath uid path)
+          ServerFile
+            { serverFileUser = uid,
+              serverFilePath = path,
+              serverFileContents = syncFileContents,
+              serverFileTime = st
+            }
+          [ServerFileContents =. syncFileContents, ServerFileTime =. st]
+    serverSyncProcessorDeleteItem :: Path Rel File -> m' ()
+    serverSyncProcessorDeleteItem path = deleteBy (UniqueServerFilePath uid path)
