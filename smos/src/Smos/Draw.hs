@@ -287,25 +287,26 @@ drawFileBrowserCursor s =
 
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
 drawReportCursor s = \case
-      ReportNextActions narc -> drawNextActionReportCursor s narc
+  ReportNextActions narc -> drawNextActionReportCursor s narc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s NextActionReportCursor {..} =
-  vBox [ padAll 1
-           $ viewport ResourceViewport Vertical
-           $ case nextActionReportCursorSelectedNextActionEntryCursors of
-               Nothing -> txtWrap "All actions have been filtered out."
-               Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs
-       , (case nextActionReportCursorSelection of
-            NextActionReportFilterSelected -> withAttr selectedAttr
-            NextActionReportSelected -> id
-         )
-         $ let ms =
-                 case nextActionReportCursorSelection of
-                   NextActionReportFilterSelected -> MaybeSelected
-                   NextActionReportSelected -> NotSelected
+  vBox
+    [ padAll 1
+        $ viewport ResourceViewport Vertical
+        $ case nextActionReportCursorSelectedNextActionEntryCursors of
+          Nothing -> txtWrap "All actions have been filtered out."
+          Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
+      ( case nextActionReportCursorSelection of
+          NextActionReportFilterSelected -> withAttr selectedAttr
+          NextActionReportSelected -> id
+      )
+        $ let ms =
+                case nextActionReportCursorSelection of
+                  NextActionReportFilterSelected -> MaybeSelected
+                  NextActionReportSelected -> NotSelected
            in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms nextActionReportCursorFilterBar]
-       ]
+    ]
   where
     go = drawNextActionEntryCursor
 

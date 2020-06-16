@@ -255,11 +255,12 @@ defaultReportsKeyMap =
           ],
       reportsKeymapNextActionReportFilterMatchers =
         listMatchers
-        [ anyChar insertNextActionFilter,
-          exactKey KEnter selectNextActionReport,
-          exactKey KBS removeNextActionFilter,
-          exactKey KDel deleteNextActionFilter,
-          exactKey KEsc selectEditor]
+          [ anyChar insertNextActionFilter,
+            exactKey KEnter selectNextActionReport,
+            exactKey KBS removeNextActionFilter,
+            exactKey KDel deleteNextActionFilter,
+            exactKey KEsc selectEditor
+          ]
     }
 
 defaultHelpKeyMap :: HelpKeyMap

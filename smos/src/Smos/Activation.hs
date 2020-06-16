@@ -51,13 +51,12 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
     ReportSelected ->
       let ReportsKeyMap {..} = keyMapReportsKeyMap
           anys = map ((,) AnyMatcher) keyMapAnyKeyMap
-       in
-        case editorCursorReportCursor of
-          Nothing -> anys
-          Just (ReportNextActions NextActionReportCursor {..}) ->
-            (++) anys
-            $ map ((,) SpecificMatcher)
-              $ case nextActionReportCursorSelection of
+       in case editorCursorReportCursor of
+            Nothing -> anys
+            Just (ReportNextActions NextActionReportCursor {..}) ->
+              (++) anys
+                $ map ((,) SpecificMatcher)
+                $ case nextActionReportCursorSelection of
                   NextActionReportSelected -> reportsKeymapNextActionReportMatchers
                   NextActionReportFilterSelected -> reportsKeymapNextActionReportFilterMatchers
 

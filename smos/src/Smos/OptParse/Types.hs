@@ -179,32 +179,36 @@ backToFileKeyConfigs FileKeyMap {..} =
 
 data ReportsKeyConfigs
   = ReportsKeyConfigs
-      { nextActionReportKeyConfigs :: Maybe KeyConfigs
-      , nextActionReportFilterKeyConfigs :: Maybe KeyConfigs
+      { nextActionReportKeyConfigs :: Maybe KeyConfigs,
+        nextActionReportFilterKeyConfigs :: Maybe KeyConfigs
       }
   deriving (Show, Eq, Generic)
 
 instance Validity ReportsKeyConfigs
 
 instance ToJSON ReportsKeyConfigs where
-  toJSON ReportsKeyConfigs {..} = object
-    [ "next-action" .= nextActionReportKeyConfigs
-    , "next-action-filter" .= nextActionReportFilterKeyConfigs]
+  toJSON ReportsKeyConfigs {..} =
+    object
+      [ "next-action" .= nextActionReportKeyConfigs,
+        "next-action-filter" .= nextActionReportFilterKeyConfigs
+      ]
 
 instance FromJSON ReportsKeyConfigs where
   parseJSON = viaYamlSchema
 
 instance YamlSchema ReportsKeyConfigs where
-  yamlSchema = objectParser "ReportsKeyConfigs" $ ReportsKeyConfigs
-    <$> optionalField "next-action" "Keybindings for the interactive next action report"
-    <*> optionalField "next-action-filter" "Keybindings for when the filter bar is selected in the interactive next action report"
+  yamlSchema =
+    objectParser "ReportsKeyConfigs" $
+      ReportsKeyConfigs
+        <$> optionalField "next-action" "Keybindings for the interactive next action report"
+        <*> optionalField "next-action-filter" "Keybindings for when the filter bar is selected in the interactive next action report"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
   let ReportsKeyMap _ _ = undefined
    in ReportsKeyConfigs
-        { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers
-        , nextActionReportFilterKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportFilterMatchers
+        { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers,
+          nextActionReportFilterKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportFilterMatchers
         }
 
 data HelpKeyConfigs

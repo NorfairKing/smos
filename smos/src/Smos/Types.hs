@@ -159,8 +159,8 @@ fileKeyMapActions
 
 data ReportsKeyMap
   = ReportsKeyMap
-      { reportsKeymapNextActionReportMatchers :: KeyMappings
-      , reportsKeymapNextActionReportFilterMatchers :: KeyMappings
+      { reportsKeymapNextActionReportMatchers :: KeyMappings,
+        reportsKeymapNextActionReportFilterMatchers :: KeyMappings
       }
   deriving (Generic)
 
@@ -168,8 +168,8 @@ instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
     ReportsKeyMap
       { reportsKeymapNextActionReportMatchers =
-          reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2
-      , reportsKeymapNextActionReportFilterMatchers =
+          reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2,
+        reportsKeymapNextActionReportFilterMatchers =
           reportsKeymapNextActionReportFilterMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2
       }
 
@@ -178,9 +178,11 @@ instance Monoid ReportsKeyMap where
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
 reportsKeyMapActions (ReportsKeyMap reportsKeymapNextActionReportMatchers reportsKeymapNextActionReportFilterMatchers) =
-  concatMap keyMappingsActions
-  [ reportsKeymapNextActionReportMatchers
-  , reportsKeymapNextActionReportFilterMatchers]
+  concatMap
+    keyMappingsActions
+    [ reportsKeymapNextActionReportMatchers,
+      reportsKeymapNextActionReportFilterMatchers
+    ]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings
 keyMapHelpMatchers km =
