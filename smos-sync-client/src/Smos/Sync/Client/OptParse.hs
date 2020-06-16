@@ -60,6 +60,9 @@ combineToInstructions c Flags {..} Environment {..} mc = do
             case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
               Nothing -> defaultMetadataDB
               Just d -> resolveFile' d
+          syncSetBackupDir <- case syncFlagBackupDir <|> envBackupDir <|> cM syncConfBackupDir of
+            Nothing -> defaultBackupDir
+            Just d -> resolveDir' d
           let syncSetIgnoreFiles =
                 fromMaybe IgnoreHiddenFiles $
                   syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
@@ -108,6 +111,11 @@ defaultSessionPath = do
   home <- getHomeDir
   resolveFile home ".smos/sync-session.dat"
 
+defaultBackupDir :: IO (Path Abs Dir)
+defaultBackupDir = do
+  home <- getHomeDir
+  resolveDir home ".smos/conflict-backups"
+
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
@@ -128,6 +136,7 @@ environmentParser =
       <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
       <*> Env.var (fmap (Just . mkPassword) . Env.str) "PASSWORD" (mE <> Env.help "The password to sync with")
       <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
+      <*> Env.var (fmap Just . Env.str) "BACKUP_DIR" (mE <> Env.help "The directory to store backups in when a sync conflict happens")
   where
     logLevelReader s = case parseLogLevel s of
       Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
@@ -218,6 +227,9 @@ parseCommandSync = info parser modifier
                       ]
                   )
                 <*> parseIgnoreFilesFlag
+                <*> option
+                  (Just <$> str)
+                  (mconcat [long "backup-dir", help "The directory to store backups in when a sync conflict happens", value Nothing])
             )
 
 parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)

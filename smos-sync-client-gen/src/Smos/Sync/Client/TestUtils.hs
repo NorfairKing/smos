@@ -107,12 +107,14 @@ withSyncClient cenv reg func =
       mp <- resolveFile tmpDir2 "metadata.sqlite3"
       up <- resolveFile tmpDir2 "uuid.json"
       sp <- resolveFile tmpDir2 "session.dat"
+      bd <- resolveDir tmpDir2 "backup"
       let ss =
             SyncSettings
               { syncSetContentsDir = tmpDir1,
                 syncSetMetadataDB = mp,
                 syncSetUUIDFile = up,
-                syncSetIgnoreFiles = IgnoreNothing
+                syncSetIgnoreFiles = IgnoreNothing,
+                syncSetBackupDir = bd
               }
       let s =
             Settings

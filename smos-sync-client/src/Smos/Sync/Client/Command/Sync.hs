@@ -26,6 +26,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
+import Data.Time
 import Data.Validity.UUID ()
 import Database.Persist.Sqlite as DB
 import Pantry.SHA256 as SHA256
@@ -67,7 +68,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
                   pure serverUUID
                 -- Already synced before
                 Just serverUUID -> pure serverUUID
-              runSync syncSetContentsDir syncSetIgnoreFiles serverUUID token
+              runSync syncSetContentsDir syncSetBackupDir syncSetIgnoreFiles serverUUID token
             logDebugN "CLIENT END"
 
 runInitialSync :: Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
@@ -83,8 +84,8 @@ runInitialSync contentsDir ignoreFiles token = do
   logDebugN "INITIAL SYNC END"
   pure syncResponseServerId
 
-runSync :: Path Abs Dir -> IgnoreFiles -> ServerUUID -> Token -> C ()
-runSync contentsDir ignoreFiles serverUUID token = do
+runSync :: Path Abs Dir -> Path Abs Dir -> IgnoreFiles -> ServerUUID -> Token -> C ()
+runSync contentsDir backupDir ignoreFiles serverUUID token = do
   logDebugN "SYNC START"
   req <- clientMakeSyncRequest contentsDir ignoreFiles
   logDebugData "SYNC REQUEST" req
@@ -100,7 +101,7 @@ runSync contentsDir ignoreFiles serverUUID token = do
         "If you want to sync anyway, remove the client metadata file and sync again.",
         "Note that you can lose data by doing this, so make a backup first."
       ]
-  clientMergeSyncResponse contentsDir ignoreFiles syncResponseItems
+  clientMergeSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
   logDebugN "SYNC END"
 
 clientMakeSyncRequest :: Path Abs Dir -> IgnoreFiles -> C SyncRequest
@@ -221,8 +222,8 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
       IgnoreNothing -> const True
       IgnoreHiddenFiles -> not . isHidden
 
-clientMergeSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
-clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResponseCustom Mergeful.mergeFromServerStrategy proc
+clientMergeSyncResponse :: Path Abs Dir -> Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
+clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mergeSyncResponseCustom Mergeful.mergeFromServerStrategy proc
   where
     proc :: Mergeful.ClientSyncProcessor (Path Rel File) (Path Rel File) SyncFile (SqlPersistT C)
     proc = Mergeful.ClientSyncProcessor {..}
@@ -278,6 +279,8 @@ clientMergeSyncResponse contentsDir ignoreFiles = runDB . Mergeful.mergeSyncResp
         clientSyncProcessorSyncMergedConflict :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncMergedConflict m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           let p = contentsDir </> rf
+          logInfoN $ "Backing up a change-conflict item locally: " <> T.pack (fromAbsFile p)
+          lift $ backupFile contentsDir backupDir rf
           logInfoN $ "Updating a merged change-conflict item locally on disk but not its metadata: " <> T.pack (fromAbsFile p)
           liftIO $ do
             ensureDir $ parent p
@@ -338,3 +341,20 @@ writeServerUUID p u = do
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents =
   SHA256.hashBytes contents == syncFileMetaHash
+
+backupFile :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> C ()
+backupFile contentsDir backupDir sourceFile = do
+  now <- liftIO getCurrentTime
+  let today = utctDay now
+  let timeStr = formatTime defaultTimeLocale ".%F" today
+  destinationFile <- addFileExtension timeStr sourceFile
+  let source = contentsDir </> sourceFile
+  let destination = backupDir </> destinationFile
+  me <- forgivingAbsence $ doesFileExist destination
+  case me of
+    Just True ->
+      logErrorN $ "Failed to back up " <> T.pack (fromAbsFile source) <> " because the destination was already taken: " <> T.pack (fromAbsFile destination)
+    _ -> do
+      logInfoN $ "Backing up " <> T.pack (fromAbsFile source) <> " to " <> T.pack (fromAbsFile destination)
+      ensureDir $ parent destination
+      copyFile source destination
