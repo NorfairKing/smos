@@ -17,22 +17,13 @@ import Path
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.Entry (produceReport)
 import Smos.Report.Filter
-import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
 produceNextActionReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> m NextActionReport
-produceNextActionReport ef ha dc = do
-  wd <- liftIO $ resolveDirWorkflowDir dc
-  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceNextActionReportFromFiles ef wd
-
-produceNextActionReportFromFiles :: MonadIO m => Maybe EntryFilterRel -> Path Abs Dir -> ConduitT (Path Rel File) void m NextActionReport
-produceNextActionReportFromFiles ef wd =
-  filterSmosFilesRel
-    .| parseSmosFilesRel wd
-    .| printShouldPrint PrintWarning
-    .| nextActionReportConduit ef
+produceNextActionReport ef ha dc = produceReport ha dc (nextActionReportConduit ef)
 
 nextActionReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
 nextActionReportConduit ef =

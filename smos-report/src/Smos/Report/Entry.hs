@@ -19,17 +19,19 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 
-produceEntryReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> NonEmpty Projection -> Maybe Sorter -> DirectoryConfig -> m EntryReport
-produceEntryReport ef ha p s dc = do
+produceReport :: MonadIO m => HideArchive -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
+produceReport ha dc rc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
-  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceEntryReportFromFiles ef p s wd
+  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles wd .| rc
 
-produceEntryReportFromFiles :: MonadIO m => Maybe EntryFilterRel -> NonEmpty Projection -> Maybe Sorter -> Path Abs Dir -> ConduitT (Path Rel File) void m EntryReport
-produceEntryReportFromFiles ef p s wd =
+produceReportFromFiles :: MonadIO m => Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
+produceReportFromFiles wd =
   filterSmosFilesRel
     .| parseSmosFilesRel wd
     .| printShouldPrint PrintWarning
-    .| entryReportConduit ef p s
+
+produceEntryReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> NonEmpty Projection -> Maybe Sorter -> DirectoryConfig -> m EntryReport
+produceEntryReport ef ha p s dc = produceReport ha dc (entryReportConduit ef p s)
 
 entryReportConduit :: Monad m => Maybe EntryFilterRel -> NonEmpty Projection -> Maybe Sorter -> ConduitT (Path Rel File, SmosFile) void m EntryReport
 entryReportConduit ef p s =
