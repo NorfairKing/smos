@@ -262,7 +262,6 @@ with final.haskell.lib;
                     orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
                     cron = dontCheck (self.callHackage "cron" "0.6.1" {});
                     # Passwords
-                    base-64 = self.callHackage "base-64" "0.4.2" {};
                     ghc-byteorder = self.callHackage "ghc-byteorder" "4.11.0.0" {};
                     # Calendar
                     iCalendar = iCalendarPkg;
