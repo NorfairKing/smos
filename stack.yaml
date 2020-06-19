@@ -85,7 +85,7 @@ extra-deps:
     - persistent-sqlite
 
 - github: NorfairKing/mergeful
-  commit: 1e22efe9c6063d3111b16a5f7c48de9e998c02ac
+  commit: 15af41c244ce733f5e514d04a770479baa409370
   subdirs:
     - mergeful
     - mergeful-persistent
