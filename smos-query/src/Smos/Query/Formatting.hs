@@ -70,7 +70,7 @@ formatAgendaEntry now AgendaEntry {..} =
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func $ chunk $ T.pack $ renderTimeAgoAuto $ timeAgo $
+        func $ bold $ chunk $ T.pack $ renderTimeAgoAuto $ timeAgo $
           diffUTCTime
             (zonedTimeToUTC now)
             (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),

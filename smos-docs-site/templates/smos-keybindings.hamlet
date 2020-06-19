@@ -68,6 +68,9 @@
   <h3>
     Next Action Report
   ^{keyMapTable $ reportsKeymapNextActionReportMatchers $ keyMapReportsKeyMap defaultKeyMap }
+  <h3>
+    Filter
+  ^{keyMapTable $ reportsKeymapNextActionReportFilterMatchers $ keyMapReportsKeyMap defaultKeyMap }
 
   <h2>
     Help

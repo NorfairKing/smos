@@ -286,17 +286,29 @@ drawFileBrowserCursor s =
       FodDir rd -> drawDirPath rd
 
 drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
-drawReportCursor s rc =
-  viewport ResourceViewport Vertical $
-    case rc of
-      ReportNextActions narc -> drawNextActionReportCursor s narc
+drawReportCursor s = \case
+  ReportNextActions narc -> drawNextActionReportCursor s narc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
-drawNextActionReportCursor s =
-  verticalNonEmptyCursorTable
-    (drawNextActionEntryCursor NotSelected)
-    (drawNextActionEntryCursor s)
-    (drawNextActionEntryCursor NotSelected)
+drawNextActionReportCursor s NextActionReportCursor {..} =
+  vBox
+    [ padAll 1
+        $ viewport ResourceViewport Vertical
+        $ case nextActionReportCursorSelectedNextActionEntryCursors of
+          Nothing -> txtWrap "All actions have been filtered out."
+          Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
+      ( case nextActionReportCursorSelection of
+          NextActionReportFilterSelected -> withAttr selectedAttr
+          NextActionReportSelected -> id
+      )
+        $ let ms =
+                case nextActionReportCursorSelection of
+                  NextActionReportFilterSelected -> MaybeSelected
+                  NextActionReportSelected -> NotSelected
+           in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms nextActionReportCursorFilterBar]
+    ]
+  where
+    go = drawNextActionEntryCursor
 
 drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> [Widget ResourceName]
 drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =

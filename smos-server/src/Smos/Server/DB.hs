@@ -45,13 +45,11 @@ User
 
 ServerFile
     user UserId
-    uuid FileUUID sqltype=uuid
     path (Path Rel File)
     contents ByteString
     time ServerTime
 
     UniqueServerFilePath user path
-    UniqueServerFileUUID user uuid
 
     deriving Show
     deriving Eq

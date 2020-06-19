@@ -40,7 +40,8 @@ data SyncFlags
       { syncFlagContentsDir :: Maybe FilePath,
         syncFlagUUIDFile :: Maybe FilePath,
         syncFlagMetadataDB :: Maybe FilePath,
-        syncFlagIgnoreFiles :: Maybe IgnoreFiles
+        syncFlagIgnoreFiles :: Maybe IgnoreFiles,
+        syncFlagBackupDir :: Maybe FilePath
       }
   deriving (Show)
 
@@ -66,7 +67,8 @@ data Environment
         envIgnoreFiles :: Maybe IgnoreFiles,
         envUsername :: Maybe Username,
         envPassword :: Maybe Password,
-        envSessionPath :: Maybe FilePath
+        envSessionPath :: Maybe FilePath,
+        envBackupDir :: Maybe FilePath
       }
   deriving (Show, Generic)
 
@@ -94,7 +96,8 @@ data SyncConfiguration
         syncConfIgnoreFiles :: Maybe IgnoreFiles,
         syncConfUsername :: Maybe Username,
         syncConfPassword :: Maybe Password,
-        syncConfSessionPath :: Maybe FilePath
+        syncConfSessionPath :: Maybe FilePath,
+        syncConfBackupDir :: Maybe FilePath
       }
   deriving (Show, Generic)
 
@@ -114,6 +117,7 @@ instance YamlSchema SyncConfiguration where
         <*> optionalField "username" "The username to log into the sync server"
         <*> optionalField "password" "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
         <*> optionalField "session-path" "The file in which to store the login session cookie"
+        <*> optionalField "backup-dir" "The directory to store backups in when a sync conflict happens"
 
 data Dispatch
   = DispatchRegister RegisterSettings
@@ -126,6 +130,7 @@ data SyncSettings
       { syncSetContentsDir :: Path Abs Dir,
         syncSetUUIDFile :: Path Abs File,
         syncSetMetadataDB :: Path Abs File,
+        syncSetBackupDir :: Path Abs Dir,
         syncSetIgnoreFiles :: IgnoreFiles
       }
   deriving (Show, Eq, Generic)

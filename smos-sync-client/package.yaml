@@ -48,6 +48,7 @@ library:
   - smos-client
   - smos-report
   - stm
+  - time
   - text
   - typed-uuid
   - unliftio

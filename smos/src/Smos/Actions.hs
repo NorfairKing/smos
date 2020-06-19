@@ -82,7 +82,8 @@ allUsingCharActions =
       allPropertiesUsingCharActions,
       allUndoUsingCharActions,
       allBrowserUsingCharActions,
-      allHelpUsingCharActions
+      allHelpUsingCharActions,
+      allReportNextActionsUsingActions
     ]
 
 startHeaderFromEmptyAndSelectHeader :: Action

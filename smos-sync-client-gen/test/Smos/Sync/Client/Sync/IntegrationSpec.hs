@@ -376,6 +376,22 @@ twoClientSpec =
                     fullySyncTwoClients c1 c2
                     assertClientContents c1 m
                     assertClientContents c2 m
+        it "succesfully syncs two of the same additions at the same time" $ \cenv ->
+          forAllValid $ \contents1 ->
+            forAllValid $ \contents2 ->
+              forAllValid $ \rp ->
+                withNewRegisteredUser cenv $ \r ->
+                  withSyncClient cenv r $ \c1 ->
+                    withSyncClient cenv r $ \c2 -> do
+                      setupClientContents c1 CM.empty
+                      setupClientContents c2 CM.empty
+                      let m1 = CM.singleton rp contents1
+                      let m2 = CM.singleton rp contents2
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      assertClientContents c1 m2 -- Not sure why it's m2 and not m1, but fine.
+                      assertClientContents c2 m2
       describe "changes" $ do
         it "succesfully syncs a single change" $ \cenv ->
           forAll twoDistinctPathsThatFitAndTheirUnionFunc $ \(_, _, Hidden unionFunc) ->

@@ -24,7 +24,7 @@ import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Mergeful as Mergeful
-import Data.Mergeful.Timed
+import Data.Mergeful.Persistent ()
 import Data.Proxy
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -141,8 +141,6 @@ instance FromJSON Login
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
-type FileUUID = UUID SyncFile
-
 data SyncServer
 
 type ServerUUID = UUID SyncServer
@@ -161,10 +159,6 @@ deriving instance PersistFieldSql (Path Rel File) -- TODO Not entirely safe
 
 deriving instance PersistField (Path Rel File) -- TODO Not entirely safe
 
-deriving instance PersistFieldSql ServerTime
-
-deriving instance PersistField ServerTime
-
 instance PersistField (UUID a) where
   toPersistValue (UUID uuid) = PersistByteString $ LB.toStrict $ UUID.toByteString uuid
   fromPersistValue (PersistByteString bs) =
@@ -176,10 +170,9 @@ instance PersistField (UUID a) where
 instance PersistFieldSql (UUID a) where
   sqlType Proxy = SqlBlob
 
-data SyncFile
+newtype SyncFile
   = SyncFile
-      { syncFilePath :: Path Rel File,
-        syncFileContents :: ByteString
+      { syncFileContents :: ByteString
       }
   deriving (Show, Eq, Generic)
 
@@ -190,8 +183,8 @@ instance NFData SyncFile
 instance FromJSON SyncFile where
   parseJSON =
     withObject "SyncFile" $ \o ->
-      SyncFile <$> o .: "path"
-        <*> ( do
+      SyncFile
+        <$> ( do
                 base64Contents <- SB8.pack <$> o .: "contents"
                 case Base64.decode base64Contents of
                   Left err -> fail err
@@ -200,14 +193,29 @@ instance FromJSON SyncFile where
 
 instance ToJSON SyncFile where
   toJSON SyncFile {..} =
-    object ["path" .= syncFilePath, "contents" .= SB8.unpack (Base64.encode syncFileContents)]
+    object ["contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-type SyncRequest = Mergeful.SyncRequest (Path Rel File) FileUUID SyncFile
+data SyncRequest
+  = SyncRequest
+      { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity SyncRequest
+
+instance NFData SyncRequest
+
+instance FromJSON SyncRequest where
+  parseJSON = withObject "SyncRequest" $ \o -> SyncRequest <$> o .: "items"
+
+instance ToJSON SyncRequest where
+  toJSON SyncRequest {..} =
+    object ["items" .= syncRequestItems]
 
 data SyncResponse
   = SyncResponse
       { syncResponseServerId :: ServerUUID,
-        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) FileUUID SyncFile
+        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
       }
   deriving (Show, Eq, Generic)
 

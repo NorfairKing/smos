@@ -40,6 +40,9 @@ setupInterestingStore :: Token -> InterestingStore -> ClientM ()
 setupInterestingStore t is = void $ clientPostSync t sreq
   where
     sreq =
-      Mergeful.initialSyncRequest
-        { Mergeful.syncRequestNewItems = M.mapWithKey SyncFile $ CM.contentsMapFiles $ interestingStoreToContentsMap is
+      SyncRequest
+        { syncRequestItems =
+            Mergeful.initialSyncRequest
+              { Mergeful.syncRequestNewItems = M.map SyncFile $ CM.contentsMapFiles $ interestingStoreToContentsMap is
+              }
         }
