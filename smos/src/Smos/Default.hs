@@ -206,7 +206,8 @@ defaultFileKeyMap =
             exactKey KBS tagsRemove,
             exactKey KDel tagsDelete,
             exactKey KEnter entrySelectWhole,
-            exactKey KEsc entrySelectWhole
+            exactKey KEsc entrySelectWhole,
+            exactChar ':' tagsSplit
           ],
       fileKeyMapLogbookMatchers = listMatchers [],
       fileKeyMapAnyMatchers =

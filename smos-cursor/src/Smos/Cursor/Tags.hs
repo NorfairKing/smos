@@ -30,6 +30,7 @@ module Smos.Cursor.Tags
     tagsCursorSelectLastTag,
     tagsCursorSelectStartInSelectedTag,
     tagsCursorSelectEndInSelectedTag,
+    tagsCursorSplit,
   )
 where
 
@@ -202,3 +203,12 @@ tagsCursorSelectStartInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectSt
 
 tagsCursorSelectEndInSelectedTag :: TagsCursor -> TagsCursor
 tagsCursorSelectEndInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectEnd
+
+tagsCursorSplit :: TagsCursor -> TagsCursor
+tagsCursorSplit tc =
+  let
+    tagc = tc ^. tagsCursorSelectedTagL
+    (first, second) = tagCursorSplit tagc
+  in tc 
+      & tagsCursorSelectedTagL %~ (const first)
+      & tagsCursorAppendAndSelectTag second

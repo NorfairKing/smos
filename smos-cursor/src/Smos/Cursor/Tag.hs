@@ -14,6 +14,7 @@ module Smos.Cursor.Tag
     tagCursorSelectEnd,
     tagCursorSelectPrevChar,
     tagCursorSelectNextChar,
+    tagCursorSplit,
   )
 where
 
@@ -80,3 +81,8 @@ tagCursorSelectPrevChar = tagCursorTextCursorL textCursorSelectPrev
 
 tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
 tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectNext
+
+tagCursorSplit :: TagCursor -> (TagCursor, TagCursor)
+tagCursorSplit = tagCursorTextCursorL $ \tc ->
+  let (a, b) = textCursorSplit tc
+  in (TagCursor a, b)
