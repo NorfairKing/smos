@@ -44,6 +44,7 @@ data App
   = App
       { appLogLevel :: !LogLevel,
         appAPIBaseUrl :: !BaseUrl,
+        appDocsBaseUrl :: !(Maybe BaseUrl),
         appStatic :: !EmbeddedStatic,
         appLoginTokens :: !(TVar (Map Username Token)),
         appHttpManager :: !Http.Manager

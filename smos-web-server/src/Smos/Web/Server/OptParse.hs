@@ -13,6 +13,7 @@ import Data.Maybe
 import qualified Env
 import Options.Applicative
 import Path.IO
+import Servant.Client
 import qualified Smos.Server.OptParse as API
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
@@ -33,10 +34,12 @@ combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Envi
       (API.Arguments (API.CommandServe serveFlagAPIFlags) flagAPIFlags)
       envAPIEnv
       (confAPIConfiguration <$> mConf)
+  let WebServerEnvironment {..} = envWebServerEnv
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
   let serveSetLogLevel = fromMaybe LevelInfo $ serveFlagLogLevel <|> envLogLevel <|> mc confLogLevel
   let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
+  serveSetDocsUrl <- mapM parseBaseUrl $ serveFlagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
   when (serveSetPort == API.serveSetPort serveSetAPISettings) $ die $ "The port for the api server and the web server are the same: " <> show serveSetPort
   pure (Instructions (DispatchServe ServeSettings {..}) Settings)
 
@@ -45,13 +48,16 @@ getEnvironment = Env.parse (Env.header "Environment") environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
-  (\apiEnv (a, b) -> Environment apiEnv a b) <$> API.environmentParser
-    <*> Env.prefixed
-      "SMOS_WEB_SERVER_"
-      ( (,)
-          <$> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . API.parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
-          <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
-      )
+  Environment
+    <$> API.environmentParser
+    <*> Env.prefixed "SMOS_WEB_SERVER_" webServerEnvironmentParser
+
+webServerEnvironmentParser :: Env.Parser Env.Error WebServerEnvironment
+webServerEnvironmentParser =
+  WebServerEnvironment
+    <$> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . API.parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+    <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
+    <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -118,6 +124,15 @@ parseCommandServe = info parser modifier
                       [ long "web-port",
                         metavar "PORT",
                         help "The port to serve web requests on",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "docs-url",
+                        metavar "URL",
+                        help "The url to the docs site to refer to",
                         value Nothing
                       ]
                   )

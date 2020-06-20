@@ -2,14 +2,26 @@
 <h1>
   Smos Web Server
 
+$maybe docsUrl <- mDocsUrl
+  <h2>
+    Docs
+
+  <p>
+    <a href="#{showBaseUrl docsUrl}">
+      Docs Site
+
 <h2>
   Auth
 
 <p>
-  <a href=@{AuthR LoginR}>
-    Login
-  <a href=@{AuthR registerR}>
-    Register
+  $maybe _ <- maid
+    <a href=@{AuthR LogoutR}>
+      Logout
+  $nothing
+    <a href=@{AuthR LoginR}>
+      Login
+    <a href=@{AuthR registerR}>
+      Register
 
 <h2>
   Reports

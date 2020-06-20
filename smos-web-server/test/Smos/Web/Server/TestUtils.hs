@@ -36,6 +36,7 @@ webServerSpec = yesodSpecWithSiteGeneratorAndArgument $ \(ClientEnv _ burl _) ->
           { appLogLevel = LevelDebug,
             appStatic = smosWebServerStatic,
             appAPIBaseUrl = burl,
+            appDocsBaseUrl = Nothing,
             appLoginTokens = loginVar,
             appHttpManager = man
           }
