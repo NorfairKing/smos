@@ -1,15 +1,21 @@
-<a href=@{AuthR LoginR}>
-  Login
-<a href=@{AuthR registerR}>
-  Register
-
-<br>
-
-Reports:
-<a href=@{ReportNextR}>
-  Next
-<a href=@{ReportAgendaR}>
-  Agenda
 
 <h1>
   Smos Web Server
+
+<h2>
+  Auth
+
+<p>
+  <a href=@{AuthR LoginR}>
+    Login
+  <a href=@{AuthR registerR}>
+    Register
+
+<h2>
+  Reports
+
+<p>
+  <a href=@{ReportNextR}>
+    Next
+  <a href=@{ReportAgendaR}>
+    Agenda

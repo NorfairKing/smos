@@ -6,19 +6,36 @@
 
 module Smos.Web.Server.Handler.File where
 
+import Data.Aeson.Text as JSON
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Tree
 import Path
-import Smos.Client
+import Smos.Client hiding (Header)
+import Smos.Data
 import Smos.Web.Server.Foundation
+import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
+import Text.Julius
 import Text.Show.Pretty (ppShow)
-import Yesod
+import Yesod hiding (Header)
 
 getFileR :: [Text] -> Handler Html
 getFileR ts = withLogin $ \t -> do
   case parseRelFile $ T.unpack $ T.intercalate "/" ts of
     Nothing -> notFound
-    Just p -> do
-      sf <- runClientOrErr $ clientGetSmosFile t p
+    Just rf -> do
+      sf <- runClientOrErr $ clientGetSmosFile t rf
+      editorWidget <- getEditorWidget rf sf
       defaultLayout $(widgetFile "file")
+
+getEditorWidget :: Path Rel File -> SmosFile -> Handler Widget
+getEditorWidget _ sf = do
+  -- TODO use the relative file to contact the api from purescript
+  let startingTree = case smosFileForest sf of
+        [] -> Node "Empty" []
+        (t : _) -> headerText . entryHeader <$> t
+      encodedTree = JSON.encodeToLazyText (ForYaml (fmap (newEntry . Header) startingTree))
+  pure $ do
+    addScript $ StaticR smos_web_server_front_js
+    $(widgetFile "editor")
