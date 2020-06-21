@@ -11,14 +11,18 @@ import GHC.Generics (Generic)
 import Smos.Report.TimeBlock
 
 data Period
-  = Today
-  | Yesterday
-  | ThisWeek
+  = Yesterday
+  | Today
+  | Tomorrow
   | LastWeek
-  | ThisMonth
+  | ThisWeek
+  | NextWeek
   | LastMonth -- TODO add year
-  | ThisYear
+  | ThisMonth
+  | NextMonth
   | LastYear
+  | ThisYear
+  | NextYear
   | AllTime
   | BeginOnly LocalTime
   | EndOnly LocalTime
@@ -63,14 +67,18 @@ filterPeriodLocal :: ZonedTime -> Period -> LocalTime -> Bool
 filterPeriodLocal now p l =
   ( case p of
       AllTime -> const True
-      Today -> filterBetween todayStart todayEnd
       Yesterday -> filterBetween yesterdayStart yesterdayEnd
-      LastWeek -> filterBetween lastWeekStart thisWeekStart
+      Today -> filterBetween todayStart todayEnd
+      Tomorrow -> filterBetween tomorrowStart tomorrowEnd
+      LastWeek -> filterBetween lastWeekStart lastWeekEnd
       ThisWeek -> filterBetween thisWeekStart thisWeekEnd
-      LastMonth -> filterBetween lastMonthStart thisMonthStart
+      NextWeek -> filterBetween nextWeekStart nextWeekEnd
+      LastMonth -> filterBetween lastMonthStart lastMonthEnd
       ThisMonth -> filterBetween thisMonthStart thisMonthEnd
-      LastYear -> filterBetween lastYearStart thisYearStart
+      NextMonth -> filterBetween nextMonthStart nextMonthEnd
+      LastYear -> filterBetween lastYearStart lastYearEnd
       ThisYear -> filterBetween thisYearStart thisYearEnd
+      NextYear -> filterBetween nextYearStart nextYearEnd
       BeginOnly begin -> (begin <=)
       EndOnly end -> (< end)
       BeginEnd begin end -> filterBetween begin end
@@ -81,22 +89,26 @@ filterPeriodLocal now p l =
     nowLocal = zonedTimeToLocalTime now
     today :: Day
     today = localDay nowLocal
-    yesterday :: Day
-    yesterday = pred today
     filterBetween :: LocalTime -> LocalTime -> LocalTime -> Bool
     filterBetween start end lt = start <= lt && lt < end
+    yesterdayStart :: LocalTime
+    yesterdayStart = LocalTime {localDay = addDays (-1) today, localTimeOfDay = midnight}
+    yesterdayEnd :: LocalTime
+    yesterdayEnd = todayStart
     todayStart :: LocalTime
-    todayStart = nowLocal {localTimeOfDay = midnight}
+    todayStart = LocalTime {localDay = today, localTimeOfDay = midnight}
     todayEnd :: LocalTime
     todayEnd = nowLocal {localDay = addDays 1 today, localTimeOfDay = midnight}
-    yesterdayStart :: LocalTime
-    yesterdayStart = LocalTime {localDay = yesterday, localTimeOfDay = midnight}
-    yesterdayEnd :: LocalTime
-    yesterdayEnd = LocalTime {localDay = today, localTimeOfDay = midnight}
+    tomorrowStart :: LocalTime
+    tomorrowStart = todayEnd
+    tomorrowEnd :: LocalTime
+    tomorrowEnd = LocalTime {localDay = addDays 2 today, localTimeOfDay = midnight}
     lastWeekStart :: LocalTime
     lastWeekStart =
       let (y, wn, _) = toWeekDate today
        in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
+    lastWeekEnd :: LocalTime
+    lastWeekEnd = thisWeekStart
     thisWeekStart :: LocalTime
     thisWeekStart =
       let (y, wn, _) = toWeekDate today
@@ -105,10 +117,18 @@ filterPeriodLocal now p l =
     thisWeekEnd =
       let (y, wn, _) = toWeekDate today
        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+    nextWeekStart :: LocalTime
+    nextWeekStart = thisWeekEnd
+    nextWeekEnd :: LocalTime
+    nextWeekEnd =
+      let (y, wn, _) = toWeekDate today
+       in LocalTime (fromWeekDate y (wn + 2) 1) midnight -- FIXME this can wrong at the end of the year
     lastMonthStart :: LocalTime
     lastMonthStart =
       let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y (m - 1) 1) midnight -- This will fail around newyear
+       in LocalTime (fromGregorian y (m - 1) 1) midnight -- FIXME This will fail around newyear
+    lastMonthEnd :: LocalTime
+    lastMonthEnd = thisMonthStart
     thisMonthStart :: LocalTime
     thisMonthStart =
       let (y, m, _) = toGregorian today
@@ -117,10 +137,18 @@ filterPeriodLocal now p l =
     thisMonthEnd =
       let (y, m, _) = toGregorian today
        in LocalTime (fromGregorian y m 31) midnight
+    nextMonthStart :: LocalTime
+    nextMonthStart = thisMonthEnd
+    nextMonthEnd :: LocalTime
+    nextMonthEnd =
+      let (y, m, _) = toGregorian today
+       in LocalTime (fromGregorian y (m + 1) 31) midnight -- FIXME This will fail around newyear
     lastYearStart :: LocalTime
     lastYearStart =
       let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- This will fail around newyear
+       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- FIXME This will fail around newyear
+    lastYearEnd :: LocalTime
+    lastYearEnd = thisYearEnd
     thisYearStart :: LocalTime
     thisYearStart =
       let (y, _, _) = toGregorian today
@@ -129,6 +157,12 @@ filterPeriodLocal now p l =
     thisYearEnd =
       let (y, _, _) = toGregorian today
        in LocalTime (fromGregorian y 12 31) midnight
+    nextYearStart :: LocalTime
+    nextYearStart = thisYearEnd
+    nextYearEnd :: LocalTime
+    nextYearEnd =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian (y + 1) 12 31) midnight -- FIXME this will fail around newyear
 
 filterPeriod :: ZonedTime -> Period -> UTCTime -> Bool
 filterPeriod now p u =

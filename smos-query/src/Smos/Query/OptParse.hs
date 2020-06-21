@@ -485,14 +485,18 @@ parsePeriod =
   Just
     <$> ( parseBeginEnd
             <|> choices
-              [ flag' Today (mconcat [long "today", help "today"]),
-                flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
-                flag' ThisWeek (mconcat [long "this-week", help "this week"]),
+              [ flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
+                flag' Today (mconcat [long "today", help "today"]),
+                flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
                 flag' LastWeek (mconcat [long "last-week", help "last week"]),
-                flag' ThisMonth (mconcat [long "this-month", help "this month"]),
+                flag' ThisWeek (mconcat [long "this-week", help "this week"]),
+                flag' NextWeek (mconcat [long "next-week", help "next week"]),
                 flag' LastMonth (mconcat [long "last-month", help "last month"]),
-                flag' ThisYear (mconcat [long "this-year", help "this year"]),
+                flag' ThisMonth (mconcat [long "this-month", help "this month"]),
+                flag' NextMonth (mconcat [long "next-month", help "next month"]),
                 flag' LastYear (mconcat [long "last-year", help "last year"]),
+                flag' ThisYear (mconcat [long "this-year", help "this year"]),
+                flag' NextYear (mconcat [long "next-year", help "next year"]),
                 flag' AllTime (mconcat [long "all-time", help "all time"])
               ]
         )

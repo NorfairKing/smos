@@ -92,14 +92,18 @@ trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntry now cp =
   case cp of
     AllTime -> pure
-    Today -> trimToToday
-    Yesterday -> trimToYesterday
-    LastWeek -> trimToLastWeek
-    ThisWeek -> trimToThisWeek
-    LastMonth -> trimToLastMonth
-    ThisMonth -> trimToThisMonth
-    LastYear -> trimToLastYear
-    ThisYear -> trimToThisYear
+    Yesterday -> trimLogbookEntryToDay tz (pred today)
+    Today -> trimLogbookEntryToDay tz today
+    Tomorrow -> trimLogbookEntryToDay tz (succ today)
+    LastWeek -> trimLogbookEntryTo tz lastWeekStart lastWeekEnd
+    ThisWeek -> trimLogbookEntryTo tz thisWeekStart thisWeekEnd
+    NextWeek -> trimLogbookEntryTo tz nextWeekStart nextWeekEnd
+    LastMonth -> trimLogbookEntryTo tz lastMonthStart lastMonthEnd
+    ThisMonth -> trimLogbookEntryTo tz thisMonthStart thisMonthEnd
+    NextMonth -> trimLogbookEntryTo tz nextMonthStart nextMonthEnd
+    LastYear -> trimLogbookEntryTo tz lastYearStart lastYearEnd
+    ThisYear -> trimLogbookEntryTo tz thisYearStart thisYearEnd
+    NextYear -> trimLogbookEntryTo tz nextYearStart nextYearEnd
     BeginOnly begin -> trimLogbookEntryToM tz (Just begin) Nothing
     EndOnly end -> trimLogbookEntryToM tz Nothing (Just end)
     BeginEnd begin end -> trimLogbookEntryTo tz begin end
@@ -110,14 +114,12 @@ trimLogbookEntry now cp =
     nowLocal = zonedTimeToLocalTime now
     today :: Day
     today = localDay nowLocal
-    trimToToday :: LogbookEntry -> Maybe LogbookEntry
-    trimToToday = trimLogbookEntryToDay tz today
-    trimToYesterday :: LogbookEntry -> Maybe LogbookEntry
-    trimToYesterday = trimLogbookEntryToDay tz (pred today)
     lastWeekStart :: LocalTime
     lastWeekStart =
       let (y, wn, _) = toWeekDate today
-       in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- FIXME this will go wrong at the start of the year
+       in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
+    lastWeekEnd :: LocalTime
+    lastWeekEnd = thisWeekStart
     thisWeekStart :: LocalTime
     thisWeekStart =
       let (y, wn, _) = toWeekDate today
@@ -126,10 +128,18 @@ trimLogbookEntry now cp =
     thisWeekEnd =
       let (y, wn, _) = toWeekDate today
        in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
+    nextWeekStart :: LocalTime
+    nextWeekStart = thisWeekEnd
+    nextWeekEnd :: LocalTime
+    nextWeekEnd =
+      let (y, wn, _) = toWeekDate today
+       in LocalTime (fromWeekDate y (wn + 2) 1) midnight -- FIXME this can wrong at the end of the year
     lastMonthStart :: LocalTime
     lastMonthStart =
       let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y (m - 1) 1) midnight -- This will fail around newyear
+       in LocalTime (fromGregorian y (m - 1) 1) midnight -- FIXME This will fail around newyear
+    lastMonthEnd :: LocalTime
+    lastMonthEnd = thisMonthStart
     thisMonthStart :: LocalTime
     thisMonthStart =
       let (y, m, _) = toGregorian today
@@ -138,10 +148,18 @@ trimLogbookEntry now cp =
     thisMonthEnd =
       let (y, m, _) = toGregorian today
        in LocalTime (fromGregorian y m 31) midnight
+    nextMonthStart :: LocalTime
+    nextMonthStart = thisMonthEnd
+    nextMonthEnd :: LocalTime
+    nextMonthEnd =
+      let (y, m, _) = toGregorian today
+       in LocalTime (fromGregorian y (m + 1) 31) midnight -- FIXME This will fail around newyear
     lastYearStart :: LocalTime
     lastYearStart =
       let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- This will fail around newyear
+       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- FIXME This will fail around newyear
+    lastYearEnd :: LocalTime
+    lastYearEnd = thisYearEnd
     thisYearStart :: LocalTime
     thisYearStart =
       let (y, _, _) = toGregorian today
@@ -150,18 +168,12 @@ trimLogbookEntry now cp =
     thisYearEnd =
       let (y, _, _) = toGregorian today
        in LocalTime (fromGregorian y 12 31) midnight
-    trimToThisWeek :: LogbookEntry -> Maybe LogbookEntry
-    trimToThisWeek = trimLogbookEntryTo tz thisWeekStart thisWeekEnd
-    trimToLastWeek :: LogbookEntry -> Maybe LogbookEntry
-    trimToLastWeek = trimLogbookEntryTo tz lastWeekStart thisWeekStart
-    trimToThisMonth :: LogbookEntry -> Maybe LogbookEntry
-    trimToThisMonth = trimLogbookEntryTo tz thisMonthStart thisMonthEnd
-    trimToLastMonth :: LogbookEntry -> Maybe LogbookEntry
-    trimToLastMonth = trimLogbookEntryTo tz lastMonthStart thisMonthStart
-    trimToThisYear :: LogbookEntry -> Maybe LogbookEntry
-    trimToThisYear = trimLogbookEntryTo tz thisYearStart thisYearEnd
-    trimToLastYear :: LogbookEntry -> Maybe LogbookEntry
-    trimToLastYear = trimLogbookEntryTo tz lastYearStart thisYearStart
+    nextYearStart :: LocalTime
+    nextYearStart = thisYearEnd
+    nextYearEnd :: LocalTime
+    nextYearEnd =
+      let (y, _, _) = toGregorian today
+       in LocalTime (fromGregorian (y + 1) 12 31) midnight -- FIXME this will fail around newyear
 
 trimLogbookEntryToDay :: TimeZone -> Day -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
