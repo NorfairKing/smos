@@ -67,9 +67,9 @@ spec = do
           historyModM
             ( \j -> case (j :: Int) of
                 0 -> Nothing
-                _ -> Just $ i `div` j
+                _ -> Just $ i - j
             )
-    it "produces valid results for division with Maybe" $ forAllValid $ \i ->
+    it "produces valid results for subtraction with Maybe" $ forAllValid $ \i ->
       producesValidsOnValids (f i)
     it "produces a history with one longer undo stack" $ forAllValid $ \i -> forAllValid $ \h ->
       case f i h of
