@@ -45,7 +45,7 @@ allTagsPlainActions =
               tag "code"
             ]
         pure $ act arg,
-      [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag]
+      [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag, tagsSplit]
     ]
 
 allTagsUsingCharActions :: [ActionUsing Char]

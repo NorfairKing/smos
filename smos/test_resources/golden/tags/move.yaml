@@ -6,6 +6,7 @@ before:
 commands:
 - entrySelectTags
 - tagsNext
+- tagsNext
 - tagsInsert x
 - tagsPrev
 - tagsPrev

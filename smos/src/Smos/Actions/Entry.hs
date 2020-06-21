@@ -17,7 +17,6 @@ module Smos.Actions.Entry
   )
 where
 
-import Data.Maybe
 import Smos.Actions.Entry.TodoState
 import Smos.Actions.Utils
 import Smos.Types
@@ -32,6 +31,7 @@ allEntryPlainActions =
     entrySelectTimestamps,
     entrySelectStateHistory,
     entrySelectTags,
+    entrySelectTagsFromBack,
     entrySelectLogbook
   ]
     ++ allTodoStatePlainActions

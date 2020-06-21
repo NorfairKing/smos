@@ -6,6 +6,7 @@ before:
   - c
 commands:
 - entrySelectTags
+- tagsNext
 - tagsDelete
 - tagsNext
 - tagsRemove
