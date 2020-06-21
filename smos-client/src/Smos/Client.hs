@@ -13,6 +13,7 @@ where
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
+import Data.DirForest (DirForest)
 import Data.List (find)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
@@ -39,6 +40,8 @@ clientPostRegister :<|>
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 
+clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
+
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
 
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
@@ -47,6 +50,7 @@ clientGetNextActionReport :: Token -> ClientM NextActionReport
 
 clientGetAgendaReport :: Token -> ClientM AgendaReport
 clientPostSync :<|>
+  clientGetListSmosFiles :<|>
   clientGetSmosFile :<|>
   clientPutSmosFile :<|>
   clientGetNextActionReport :<|>

@@ -8,4 +8,4 @@ import Smos.Server.Handler.Import
 
 serveGetNextActionReport :: AuthCookie -> ServerHandler NextActionReport
 serveGetNextActionReport (AuthCookie un) = withUserId un $ \uid ->
-  streamSmosFiles uid (nextActionReportConduit Nothing)
+  streamSmosFiles uid HideArchive (nextActionReportConduit Nothing)

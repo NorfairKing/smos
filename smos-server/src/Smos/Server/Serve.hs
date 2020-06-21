@@ -108,6 +108,7 @@ syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { postSync = withAuthResult servePostSync,
+      getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
       reportRoutes = toServant serverReportRoutes

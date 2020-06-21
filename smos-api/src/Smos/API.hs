@@ -23,6 +23,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
+import Data.DirForest (DirForest (..))
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Persistent ()
 import Data.Proxy
@@ -98,6 +99,7 @@ type SmosProtectedAPI = ToServantApi ProtectedRoutes
 data ProtectedRoutes route
   = ProtectedRoutes
       { postSync :: !(route :- ProtectAPI :> PostSync),
+        getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
         getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
         putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
         reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
@@ -235,6 +237,8 @@ instance FromHttpApiData (Path Rel File) where
 
 instance ToHttpApiData (Path Rel File) where
   toQueryParam = T.pack . fromRelFile
+
+type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 

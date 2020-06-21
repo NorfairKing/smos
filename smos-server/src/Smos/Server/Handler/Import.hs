@@ -20,6 +20,7 @@ import Servant.API as X
 import Servant.Server as X
 import Smos.API as X
 import Smos.Data hiding (parseHeader)
+import Smos.Report.Archive as X
 import Smos.Server.DB as X
 import Smos.Server.Env as X
 import Text.Show.Pretty as X
@@ -37,19 +38,18 @@ withUser un func = withUserEntity un $ func . entityVal
 withUserId :: Username -> (UserId -> ServerHandler a) -> ServerHandler a
 withUserId un func = withUserEntity un $ func . entityKey
 
-streamSmosFiles :: UserId -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
-streamSmosFiles uid conduit = do
+streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
+streamSmosFiles uid ha conduit = do
   acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
   liftIO $ withAcquire acqSource $ \source ->
-    runConduit $ source .| parseServerFileC .| conduit
+    runConduit $ source .| parseServerFileC ha .| conduit
 
--- TODO deal with the archive using 'hideArchive'.
-parseServerFileC :: Monad m => ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
-parseServerFileC = C.concatMap $ \(Entity _ ServerFile {..}) ->
-  if isProperPrefixOf [reldir|archive|] serverFilePath
-    then Nothing
-    else
-      if fileExtension serverFilePath == ".smos"
+parseServerFileC :: Monad m => HideArchive -> ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
+parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->
+  let filePred = case ha of
+        HideArchive -> not . isProperPrefixOf [reldir|archive|]
+        Don'tHideArchive -> const True
+   in if filePred serverFilePath && fileExtension serverFilePath == ".smos"
         then case parseSmosFile serverFileContents of
           Left _ -> Nothing
           Right sf -> Just (serverFilePath, sf)
