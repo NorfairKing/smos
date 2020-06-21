@@ -74,7 +74,10 @@ makeAgendaReportLines now AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
-      [goBlocks agendaReportPast, TodayLine : makeAgendaTodayReportLines now agendaReportPresent, goBlocks agendaReportFuture]
+      [ goBlocks agendaReportPast,
+        maybe [] (TodayLine :) (makeAgendaTodayReportLines now agendaReportPresent),
+        goBlocks agendaReportFuture
+      ]
   where
     goBlocks :: [AgendaTableBlock Text] -> [AgendaReportLine]
     goBlocks bs =
@@ -87,9 +90,11 @@ makeAgendaReportLines now AgendaReport {..} =
     goEntries :: [AgendaEntry] -> [AgendaReportLine]
     goEntries = map EntryLine
 
-makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> [AgendaReportLine]
+makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> Maybe [AgendaReportLine]
 makeAgendaTodayReportLines now AgendaTodayReport {..} =
-  insertNowLine now $ insertHourLines now agendaTodayReportEntries
+  if null agendaTodayReportEntries
+    then Nothing
+    else Just $ insertNowLine now $ insertHourLines now agendaTodayReportEntries
 
 insertHourLines :: ZonedTime -> [AgendaEntry] -> [AgendaReportLine]
 insertHourLines now = go [8 .. 18]
