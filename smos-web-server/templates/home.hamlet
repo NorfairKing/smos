@@ -31,3 +31,10 @@ $maybe docsUrl <- mDocsUrl
     Next
   <a href=@{ReportAgendaR}>
     Agenda
+
+<h2>
+  Files
+
+<p>
+  <a href=@{FilesR}>
+    Files

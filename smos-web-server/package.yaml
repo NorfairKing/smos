@@ -22,6 +22,7 @@ library:
   - containers
   - cursor
   - data-default
+  - dirforest
   - envparse
   - filepath
   - http-client

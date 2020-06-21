@@ -1,5 +1,6 @@
 / HomeR GET
 
+/files FilesR GET
 
 /file/*Texts FileR GET
 
