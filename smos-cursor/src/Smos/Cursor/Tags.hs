@@ -206,9 +206,8 @@ tagsCursorSelectEndInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectEnd
 
 tagsCursorSplit :: TagsCursor -> TagsCursor
 tagsCursorSplit tc =
-  let
-    tagc = tc ^. tagsCursorSelectedTagL
-    (first, second) = tagCursorSplit tagc
-  in tc 
-      & tagsCursorSelectedTagL %~ (const first)
-      & tagsCursorAppendAndSelectTag second
+  let tagc = tc ^. tagsCursorSelectedTagL
+      (first, second) = tagCursorSplit tagc
+   in tc
+        & tagsCursorSelectedTagL %~ const first
+        & tagsCursorAppendAndSelectTag second
