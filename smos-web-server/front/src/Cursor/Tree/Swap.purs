@@ -78,6 +78,8 @@ data SwapResult a
   | NoSiblingsToSwapWith
   | Swapped a
 
+derive instance functorSwapResult :: Functor SwapResult
+
 dullSwapResult :: forall a. SwapResult a -> Maybe a
 dullSwapResult = case _ of
   SwapperIsTopNode -> Nothing
