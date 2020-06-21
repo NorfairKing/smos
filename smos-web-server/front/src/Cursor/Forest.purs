@@ -3,9 +3,10 @@ module Cursor.Forest where
 import Cursor.List.NonEmpty (NonEmptyCursor, foldNonEmptyCursor, makeNonEmptyCursor, mapNonEmptyCursor, nonEmptyCursorAppend, nonEmptyCursorAppendAndSelect, nonEmptyCursorDeleteElem, nonEmptyCursorDeleteElemAndSelectNext, nonEmptyCursorElemL, nonEmptyCursorInsert, nonEmptyCursorInsertAndSelect, nonEmptyCursorRemoveElem, nonEmptyCursorRemoveElemAndSelectPrev, nonEmptyCursorSelectFirst, nonEmptyCursorSelectIndex, nonEmptyCursorSelectLast, nonEmptyCursorSelectNext, nonEmptyCursorSelectPrev, nonEmptyCursorSelection, rebuildNonEmptyCursor)
 import Control.Alternative ((<|>))
 import Prelude
-import Cursor.Tree (PromoteElemResult(..), PromoteResult(..), SwapResult(..), makeTreeCursor, makeTreeCursorWithSelection, mapTreeCursor, rebuildTreeCursor, singletonTreeCursor, treeCursorAddChildAtEnd, treeCursorAddChildAtEndAndSelect, treeCursorAddChildAtPos, treeCursorAddChildAtPosAndSelect, treeCursorAddChildAtStart, treeCursorAddChildAtStartAndSelect, treeCursorAppend, treeCursorAppendAndSelect, treeCursorCloseCurrentForest, treeCursorDeleteElem, treeCursorDeleteElemAndSelectNext, treeCursorDeleteElemAndSelectPrevious, treeCursorDeleteSubTree, treeCursorDeleteSubTreeAndSelectNext, treeCursorDeleteSubTreeAndSelectPrevious, treeCursorInsert, treeCursorInsertAndSelect, treeCursorOpenCurrentForest, treeCursorOpenCurrentForestRecursively, treeCursorPromoteElem, treeCursorPromoteSubTree, treeCursorRemoveElem, treeCursorRemoveSubTree, treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectBelowAtEndRecursively, treeCursorSelectBelowAtPos, treeCursorSelectBelowAtStart, treeCursorSelectNext, treeCursorSelectNextOnSameLevel, treeCursorSelectPrev, treeCursorSelectPrevOnSameLevel, treeCursorSwapNext, treeCursorSwapPrev, treeCursorToggleCurrentForest, treeCursorToggleCurrentForestRecursively)
+import Cursor.Tree (PromoteElemResult(..), PromoteResult(..), SwapResult(..), makeTreeCursor, makeTreeCursorWithSelection, mapTreeCursor, rebuildTreeCursor, singletonTreeCursor, treeCursorAddChildAtEnd, treeCursorAddChildAtEndAndSelect, treeCursorAddChildAtPos, treeCursorAddChildAtPosAndSelect, treeCursorAddChildAtStart, treeCursorAddChildAtStartAndSelect, treeCursorAppend, treeCursorAppendAndSelect, treeCursorCloseCurrentForest, treeCursorDeleteElem, treeCursorDeleteElemAndSelectNext, treeCursorDeleteElemAndSelectPrevious, treeCursorDeleteSubTree, treeCursorDeleteSubTreeAndSelectNext, treeCursorDeleteSubTreeAndSelectPrevious, treeCursorInsert, treeCursorInsertAndSelect, treeCursorOpenCurrentForest, treeCursorOpenCurrentForestRecursively, treeCursorPromoteElem, treeCursorPromoteSubTree, treeCursorRemoveElem, treeCursorRemoveSubTree, treeCursorSwapNext, treeCursorSwapPrev, treeCursorToggleCurrentForest, treeCursorToggleCurrentForestRecursively)
 import Cursor.Tree.Types (CForest(..), CTree(..), Tree(..), TreeAbove(..), TreeCursor, TreeCursorSelection(..), emptyCForest, lengthCForest, makeCTree, openForest, unpackCForest)
 import Cursor.Tree.Demote (DemoteResult(..), treeCursorDemoteElem, treeCursorDemoteElemUnder, treeCursorDemoteSubTree, treeCursorDemoteSubTreeUnder)
+import Cursor.Tree.Movement (PathToClickedEntry(..), treeCursorSelectAbove, treeCursorSelectBelowAtEnd, treeCursorSelectBelowAtEndRecursively, treeCursorSelectBelowAtPos, treeCursorSelectBelowAtStart, treeCursorSelectNext, treeCursorSelectNextOnSameLevel, treeCursorSelectPrev, treeCursorSelectPrevOnSameLevel)
 import Cursor.Types (DeleteOrUpdate(..), focusPossibleDeleteOrUpdate, joinPossibleDeletes)
 import Data.List.NonEmpty (NonEmptyList)
 import Data.List (List(..), (:))
@@ -34,15 +35,11 @@ forestCursorListCursorL = lens (\(ForestCursor fc) -> fc.forestCursorListCursor)
 forestCursorSelectedTreeL :: forall a b. Lens' (ForestCursor a b) (TreeCursor a b)
 forestCursorSelectedTreeL = forestCursorListCursorL <<< nonEmptyCursorElemL
 
-forestCursorSelectPrev ::
-  forall a b.
-  (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
-forestCursorSelectPrev f g = (traverseOf forestCursorListCursorL) $ nonEmptyCursorSelectPrev (rebuildTreeCursor f) (makeTreeCursor g)
+forestCursorSelectPrevTreeCursor :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
+forestCursorSelectPrevTreeCursor f g = (traverseOf forestCursorListCursorL) $ nonEmptyCursorSelectPrev (rebuildTreeCursor f) (makeTreeCursor g)
 
-forestCursorSelectNext ::
-  forall a b.
-  (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
-forestCursorSelectNext f g = (traverseOf forestCursorListCursorL) $ nonEmptyCursorSelectNext (rebuildTreeCursor f) (makeTreeCursor g)
+forestCursorSelectNextTreeCursor :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
+forestCursorSelectNextTreeCursor f g = (traverseOf forestCursorListCursorL) $ nonEmptyCursorSelectNext (rebuildTreeCursor f) (makeTreeCursor g)
 
 forestCursorSelectFirst :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> ForestCursor a b
 forestCursorSelectFirst f g = forestCursorListCursorL %~ nonEmptyCursorSelectFirst (rebuildTreeCursor f) (makeTreeCursor g)
@@ -50,15 +47,15 @@ forestCursorSelectFirst f g = forestCursorListCursorL %~ nonEmptyCursorSelectFir
 forestCursorSelectLast :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> ForestCursor a b
 forestCursorSelectLast f g = forestCursorListCursorL %~ nonEmptyCursorSelectLast (rebuildTreeCursor f) (makeTreeCursor g)
 
-forestCursorSelectNextTreeCursor :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
-forestCursorSelectNextTreeCursor f g fc =
+forestCursorSelectNext :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
+forestCursorSelectNext f g fc =
   (fc # (traverseOf forestCursorSelectedTreeL) (treeCursorSelectNext f g))
     <|> forestCursorSelectNextTreeCursor f g fc
 
-forestCursorSelectPrevTreeCursor :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
-forestCursorSelectPrevTreeCursor f g fc =
+forestCursorSelectPrev :: forall a b. (a -> b) -> (b -> a) -> ForestCursor a b -> Maybe (ForestCursor a b)
+forestCursorSelectPrev f g fc =
   (fc # (traverseOf forestCursorSelectedTreeL) (treeCursorSelectPrev f g))
-    <|> ( forestCursorSelectPrev f g fc
+    <|> ( forestCursorSelectPrevTreeCursor f g fc
           >>= (traverseOf forestCursorSelectedTreeL) (treeCursorSelectBelowAtEndRecursively f g)
       )
     <|> forestCursorSelectPrevTreeCursor f g fc
@@ -630,3 +627,9 @@ traverseForestCursor = foldForestCursor
 
 foldForestCursor :: forall a b c. (List (CTree b) -> TreeCursor a b -> List (CTree b) -> c) -> ForestCursor a b -> c
 foldForestCursor func (ForestCursor ne) = foldNonEmptyCursor func ne.forestCursorListCursor
+
+forestCursorMoveUsingPath :: forall a b. (a -> b) -> (b -> a) -> PathToClickedEntry -> ForestCursor a b -> Maybe (ForestCursor a b)
+forestCursorMoveUsingPath f g p fc = case p of
+  ClickedEqualsSelected -> Just fc
+  GoToParent p' -> forestCursorSelectAbove f g =<< forestCursorMoveUsingPath f g p' fc
+  GoToChild index p' -> forestCursorSelectBelowAtPos f g index =<< forestCursorMoveUsingPath f g p' fc

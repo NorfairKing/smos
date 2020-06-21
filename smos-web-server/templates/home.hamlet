@@ -10,31 +10,36 @@ $maybe docsUrl <- mDocsUrl
     <a href="#{showBaseUrl docsUrl}">
       Docs Site
 
-<h2>
-  Auth
 
-<p>
-  $maybe _ <- maid
+$maybe _ <- maid
+  <h2>
+    Auth
+  <p>
     <a href=@{AuthR LogoutR}>
       Logout
-  $nothing
+
+
+  <h2>
+    Reports
+
+  <p>
+    <a href=@{ReportNextR}>
+      Next
+    <a href=@{ReportAgendaR}>
+      Agenda
+
+  <h2>
+    Files
+
+  <p>
+    <a href=@{FilesR}>
+      Files
+
+$nothing
+  <h2>
+    Auth
+  <p>
     <a href=@{AuthR LoginR}>
       Login
     <a href=@{AuthR registerR}>
       Register
-
-<h2>
-  Reports
-
-<p>
-  <a href=@{ReportNextR}>
-    Next
-  <a href=@{ReportAgendaR}>
-    Agenda
-
-<h2>
-  Files
-
-<p>
-  <a href=@{FilesR}>
-    Files

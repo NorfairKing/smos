@@ -12,7 +12,7 @@ import Halogen.Aff (awaitBody, runHalogenAff, selectElement)
 import Halogen.VDom.Driver (runUI)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Editor as Editor
-import TreeEncoding (smosFileCodec)
+import Encoding (smosFileCodec)
 
 foreign import getStartingJson :: Effect Json
 

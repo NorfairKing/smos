@@ -1,4 +1,4 @@
-module TreeEncoding where
+module Encoding where
 
 import Prelude
 import Data.Maybe (Maybe(..))
@@ -50,5 +50,5 @@ treeCodec ac =
 
   fromTree (Tree { rootLabel, subForest }) = { entry: rootLabel, forest: subForest }
 
-smosFileCodec :: JsonCodec (Tree String)
-smosFileCodec = treeCodec CA.string --  forestCodec CA.string
+smosFileCodec :: JsonCodec (Forest String)
+smosFileCodec = forestCodec CA.string

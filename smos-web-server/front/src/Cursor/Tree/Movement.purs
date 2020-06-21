@@ -152,8 +152,8 @@ derive instance genericPathToClickedEntry :: Generic PathToClickedEntry _
 instance showPathToClickedEntry :: Show PathToClickedEntry where
   show x = genericShow x
 
-moveUsingPath :: forall a b. (a -> b) -> (b -> a) -> PathToClickedEntry -> TreeCursor a b -> Maybe (TreeCursor a b)
-moveUsingPath f g p tc = case p of
+treeCursorMoveUsingPath :: forall a b. (a -> b) -> (b -> a) -> PathToClickedEntry -> TreeCursor a b -> Maybe (TreeCursor a b)
+treeCursorMoveUsingPath f g p tc = case p of
   ClickedEqualsSelected -> Just tc
-  GoToParent p' -> treeCursorSelectAbove f g =<< moveUsingPath f g p' tc
-  GoToChild index p' -> treeCursorSelectBelowAtPos f g index =<< moveUsingPath f g p' tc
+  GoToParent p' -> treeCursorSelectAbove f g =<< treeCursorMoveUsingPath f g p' tc
+  GoToChild index p' -> treeCursorSelectBelowAtPos f g index =<< treeCursorMoveUsingPath f g p' tc
