@@ -11,7 +11,7 @@ import Halogen (liftEffect)
 import Halogen.Aff (awaitBody, runHalogenAff, selectElement)
 import Halogen.VDom.Driver (runUI)
 import Web.DOM.ParentNode (QuerySelector(..))
-import TreeCursor as TreeCursor
+import Editor as Editor
 import TreeEncoding (smosFileCodec)
 
 foreign import getStartingJson :: Effect Json
@@ -29,4 +29,4 @@ main = do
     startingJson <- liftEffect getStartingJson
     case CA.decode smosFileCodec startingJson of
       Left err -> liftEffect (Console.log (CA.printJsonDecodeError err))
-      Right startingFile -> void $ runUI (TreeCursor.component startingFile) unit editorElement
+      Right startingFile -> void $ runUI (Editor.component startingFile) unit editorElement

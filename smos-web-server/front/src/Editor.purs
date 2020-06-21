@@ -1,4 +1,4 @@
-module TreeCursor where
+module Editor where
 
 import Prelude
 import CSS (marginLeft, minHeight, px) as CSS
@@ -13,7 +13,6 @@ import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
 import Cursor.Tree.Promote (dullPromoteElemResult, dullPromoteResult, treeCursorPromoteElem, treeCursorPromoteSubTree)
 import Cursor.Tree.Demote (dullDemoteResult, treeCursorDemoteElem, treeCursorDemoteSubTree)
 import Cursor.Tree.Collapse (treeCursorToggleCurrentForest, treeCursorToggleCurrentForestRecursively)
-import Cursor.Forest
 import Data.Array as Array
 import Data.Const (Const)
 import Data.List (List(..))
