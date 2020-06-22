@@ -26,6 +26,11 @@ module Smos.Cursor.Tags
     tagsCursorSelectNextTag,
     tagsCursorSelectOrCreatePrevTag,
     tagsCursorSelectOrCreateNextTag,
+    tagsCursorSelectFirstTag,
+    tagsCursorSelectLastTag,
+    tagsCursorSelectStartInSelectedTag,
+    tagsCursorSelectEndInSelectedTag,
+    tagsCursorSplit,
   )
 where
 
@@ -186,3 +191,23 @@ tagsCursorSelectOrCreatePrevTag tc =
 tagsCursorSelectOrCreateNextTag :: TagsCursor -> TagsCursor
 tagsCursorSelectOrCreateNextTag tc =
   fromMaybe (tagsCursorAppendAndSelectTag emptyTagCursor tc) (tagsCursorSelectNextTag tc)
+
+tagsCursorSelectFirstTag :: TagsCursor -> TagsCursor
+tagsCursorSelectFirstTag = tagsCursorNonEmptyCursorL %~ nonEmptyCursorSelectFirst rebuildTagCursor makeTagCursor
+
+tagsCursorSelectLastTag :: TagsCursor -> TagsCursor
+tagsCursorSelectLastTag = tagsCursorNonEmptyCursorL %~ nonEmptyCursorSelectLast rebuildTagCursor makeTagCursor
+
+tagsCursorSelectStartInSelectedTag :: TagsCursor -> TagsCursor
+tagsCursorSelectStartInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectStart
+
+tagsCursorSelectEndInSelectedTag :: TagsCursor -> TagsCursor
+tagsCursorSelectEndInSelectedTag = tagsCursorSelectedTagL %~ tagCursorSelectEnd
+
+tagsCursorSplit :: TagsCursor -> TagsCursor
+tagsCursorSplit tc =
+  let tagc = tc ^. tagsCursorSelectedTagL
+      (first, second) = tagCursorSplit tagc
+   in tc
+        & tagsCursorSelectedTagL .~ first
+        & tagsCursorAppendAndSelectTag second

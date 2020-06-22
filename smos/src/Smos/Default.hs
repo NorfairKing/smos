@@ -126,7 +126,8 @@ defaultFileKeyMap =
             -- Entering contents
             combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents,
             -- Entering tags
-            exactString "gi" entrySelectTags
+            exactString "gi" entrySelectTagsFromStart,
+            exactString "ga" entrySelectTagsFromBack
           ],
       fileKeyMapHeaderMatchers =
         listMatchers
@@ -205,7 +206,8 @@ defaultFileKeyMap =
             exactKey KBS tagsRemove,
             exactKey KDel tagsDelete,
             exactKey KEnter entrySelectWhole,
-            exactKey KEsc entrySelectWhole
+            exactKey KEsc entrySelectWhole,
+            exactChar ':' tagsSplit
           ],
       fileKeyMapLogbookMatchers = listMatchers [],
       fileKeyMapAnyMatchers =

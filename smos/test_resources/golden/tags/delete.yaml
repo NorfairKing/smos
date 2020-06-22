@@ -5,7 +5,8 @@ before:
   - b
   - c
 commands:
-- entrySelectTags
+- entrySelectTagsFromStart
+- tagsNext
 - tagsDelete
 - tagsNext
 - tagsRemove

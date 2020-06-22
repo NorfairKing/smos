@@ -4,7 +4,8 @@ before:
   - a
   - b
 commands:
-- entrySelectTags
+- entrySelectTagsFromStart
+- tagsNext
 - tagsNext
 - tagsInsert x
 - tagsPrev

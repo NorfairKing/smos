@@ -14,6 +14,7 @@ module Smos.Actions.Entry.Tags
     tagsNext,
     tagsPrevTag,
     tagsNextTag,
+    tagsSplit,
   )
 where
 
@@ -44,7 +45,7 @@ allTagsPlainActions =
               tag "code"
             ]
         pure $ act arg,
-      [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag]
+      [tagsRemove, tagsDelete, tagsPrev, tagsNext, tagsPrevTag, tagsNextTag, tagsSplit]
     ]
 
 allTagsUsingCharActions :: [ActionUsing Char]
@@ -136,4 +137,12 @@ tagsNextTag =
     { actionName = "tagsNextTag",
       actionFunc = modifyTagsCursor tagsCursorSelectOrCreateNextTag,
       actionDescription = "Move to the previous tag in the tags cursor"
+    }
+
+tagsSplit :: Action
+tagsSplit =
+  Action
+    { actionName = "tagsSplit",
+      actionFunc = modifyTagsCursor tagsCursorSplit,
+      actionDescription = "Separate current tab into two after typing `:`"
     }

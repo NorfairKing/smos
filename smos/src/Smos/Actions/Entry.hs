@@ -10,13 +10,13 @@ module Smos.Actions.Entry
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
-    entrySelectTags,
+    entrySelectTagsFromStart,
+    entrySelectTagsFromBack,
     entrySelectLogbook,
     module Smos.Actions.Entry.TodoState,
   )
 where
 
-import Data.Maybe
 import Smos.Actions.Entry.TodoState
 import Smos.Actions.Utils
 import Smos.Types
@@ -30,7 +30,8 @@ allEntryPlainActions =
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
-    entrySelectTags,
+    entrySelectTagsFromStart,
+    entrySelectTagsFromBack,
     entrySelectLogbook
   ]
     ++ allTodoStatePlainActions
@@ -94,14 +95,24 @@ entrySelectStateHistory =
       actionDescription = "Select the current Entry's state history"
     }
 
-entrySelectTags :: Action
-entrySelectTags =
+entrySelectTagsFromStart :: Action
+entrySelectTagsFromStart =
   Action
-    { actionName = "entrySelectTags",
+    { actionName = "entrySelectTagsFromStart",
       actionFunc = do
         modifyEntryCursor entryCursorSelectTags
-        modifyMTagsCursor $ fromMaybe (singletonTagsCursor ""),
+        modifyMTagsCursor $ maybe (singletonTagsCursor "") $ tagsCursorSelectStartInSelectedTag . tagsCursorSelectFirstTag,
       actionDescription = "Select the current Entry's tags"
+    }
+
+entrySelectTagsFromBack :: Action
+entrySelectTagsFromBack =
+  Action
+    { actionName = "entrySelectTagsFromBack",
+      actionFunc = do
+        modifyEntryCursor entryCursorSelectTags
+        modifyMTagsCursor $ maybe (singletonTagsCursor "") $ tagsCursorSelectEndInSelectedTag . tagsCursorSelectLastTag,
+      actionDescription = "Select the current Entry's tags from back"
     }
 
 entrySelectLogbook :: Action
