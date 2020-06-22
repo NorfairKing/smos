@@ -86,10 +86,12 @@ enterNextActionFile =
             case editorCursorReportCursor ec of
               Nothing -> pure ()
               Just (ReportNextActions narc) -> do
-                let sfc = nextActionReportCursorBuildSmosFileCursor narc
                 dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
                 wd <- liftIO $ resolveDirWorkflowDir dc
-                void $ switchToCursor (nextActionReportCursorBuildFilePath wd narc) (Just sfc)
+                case nextActionReportCursorBuildSmosFileCursor wd narc of
+                  Nothing -> pure ()
+                  Just (fp, sfc) ->
+                    void $ switchToCursor fp (Just sfc)
           _ -> pure (),
       actionDescription = "Enter the currently selected next action"
     }

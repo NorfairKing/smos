@@ -37,6 +37,7 @@ tests:
     - QuickCheck
     - base
     - genvalidity-hspec
+    - genvalidity-hspec-optics
     - genvalidity-path
     - hspec
     - smos-data-gen

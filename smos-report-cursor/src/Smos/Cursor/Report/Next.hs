@@ -12,6 +12,7 @@ import Cursor.Text
 import Cursor.Types
 import qualified Data.Conduit.Combinators as C
 import Data.Foldable (toList)
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
 import GHC.Generics (Generic)
@@ -43,7 +44,7 @@ produceNextActionReportCursor dc = do
 
 data NextActionReportCursor
   = NextActionReportCursor
-      { nextActionReportCursorNextActionEntryCursors :: NonEmptyCursor NextActionEntryCursor,
+      { nextActionReportCursorNextActionEntryCursors :: NonEmpty NextActionEntryCursor,
         nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor),
         nextActionReportCursorFilterBar :: TextCursor,
         nextActionReportCursorSelection :: NextActionReportCursorSelection
@@ -59,7 +60,7 @@ data NextActionReportCursorSelection
 
 instance Validity NextActionReportCursorSelection
 
-nextActionReportCursorNextActionEntryCursorsL :: Lens' NextActionReportCursor (NonEmptyCursor NextActionEntryCursor)
+nextActionReportCursorNextActionEntryCursorsL :: Lens' NextActionReportCursor (NonEmpty NextActionEntryCursor)
 nextActionReportCursorNextActionEntryCursorsL =
   lens nextActionReportCursorNextActionEntryCursors (\narc naecs -> narc {nextActionReportCursorNextActionEntryCursors = naecs})
 
@@ -80,14 +81,12 @@ nextActionReportCursorFilterBarL =
        in case query of
             Left _ ->
               narc
-                { nextActionReportCursorFilterBar = tc,
-                  nextActionReportCursorSelectedNextActionEntryCursors = Just nextActionReportCursorNextActionEntryCursors
+                { nextActionReportCursorFilterBar = tc
                 }
             Right ef ->
               let filteredIn =
                     filterNextActionEntryCursors ef
                       . toList
-                      . rebuildNonEmptyCursor
                       $ nextActionReportCursorNextActionEntryCursors
                in narc
                     { nextActionReportCursorFilterBar = tc,
@@ -99,31 +98,26 @@ filterNextActionEntryCursors :: EntryFilterRel -> [NextActionEntryCursor] -> [Ne
 filterNextActionEntryCursors ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
 
 makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
-makeNextActionReportCursor naecs =
-  ( \nenec ->
-      NextActionReportCursor
-        { nextActionReportCursorNextActionEntryCursors = nenec,
-          nextActionReportCursorSelectedNextActionEntryCursors = Just nenec,
-          nextActionReportCursorFilterBar = emptyTextCursor,
-          nextActionReportCursorSelection = NextActionReportSelected
-        }
-  )
-    <$> makeNENextActionEntryCursor naecs
+makeNextActionReportCursor naecs = do
+  nenec <- makeNENextActionEntryCursor naecs
+  nenaecs <- NE.nonEmpty naecs
+  pure
+    NextActionReportCursor
+      { nextActionReportCursorNextActionEntryCursors = nenaecs,
+        nextActionReportCursorSelectedNextActionEntryCursors = Just nenec,
+        nextActionReportCursorFilterBar = emptyTextCursor,
+        nextActionReportCursorSelection = NextActionReportSelected
+      }
 
 makeNENextActionEntryCursor :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
 makeNENextActionEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty
 
-nextActionReportCursorBuildSmosFileCursor :: NextActionReportCursor -> SmosFileCursor
-nextActionReportCursorBuildSmosFileCursor =
-  go . nextActionEntryCursorForestCursor . nonEmptyCursorCurrent . (^. nextActionReportCursorNextActionEntryCursorsL)
-  where
-    go :: ForestCursor Entry Entry -> SmosFileCursor
-    go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
-
-nextActionReportCursorBuildFilePath :: Path Abs Dir -> NextActionReportCursor -> Path Abs File
-nextActionReportCursorBuildFilePath pad narc =
-  let NextActionEntryCursor {..} = nonEmptyCursorCurrent (narc ^. nextActionReportCursorNextActionEntryCursorsL)
-   in pad </> nextActionEntryCursorFilePath
+nextActionReportCursorBuildSmosFileCursor :: Path Abs Dir -> NextActionReportCursor -> Maybe (Path Abs File, SmosFileCursor)
+nextActionReportCursorBuildSmosFileCursor pad narc = do
+  selected <- nonEmptyCursorCurrent <$> nextActionReportCursorSelectedNextActionEntryCursors narc
+  let go :: ForestCursor Entry Entry -> SmosFileCursor
+      go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+  pure (pad </> nextActionEntryCursorFilePath selected, go $ nextActionEntryCursorForestCursor selected)
 
 nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
 nextActionReportCursorNext = nextActionReportCursorSelectedNextActionEntryCursorsL $
