@@ -353,7 +353,7 @@ data HelpCursor
       { helpCursorTitle :: Text,
         helpCursorSearchBar :: TextCursor,
         helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
-        helpCursorKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
+        helpCursorKeyHelpCursors :: [KeyHelpCursor],
         helpCursorSelection :: HelpCursorSelection
       }
   deriving (Show, Eq, Generic)
@@ -373,11 +373,12 @@ makeHelpCursor title kms =
     { helpCursorTitle = title,
       helpCursorSearchBar = emptyTextCursor,
       helpCursorSelectedKeyHelpCursors = hcs,
-      helpCursorKeyHelpCursors = hcs,
+      helpCursorKeyHelpCursors = khcs,
       helpCursorSelection = HelpCursorHelpSelected
     }
   where
-    hcs = makeNonEmptyCursor <$> NE.nonEmpty (makeKeyHelpCursors kms)
+    hcs = makeNonEmptyCursor <$> NE.nonEmpty khcs
+    khcs = makeKeyHelpCursors kms
 
 makeKeyHelpCursors :: KeyMappings -> [KeyHelpCursor]
 makeKeyHelpCursors = combine . map makeKeyHelpCursor
@@ -418,9 +419,7 @@ helpCursorKeySearchBarL :: Lens' HelpCursor TextCursor
 helpCursorKeySearchBarL =
   lens helpCursorSearchBar $ \hc tc ->
     let query = rebuildTextCursor tc
-        selected =
-          searchHelpCursor query $
-            maybe [] (NE.toList . rebuildNonEmptyCursor) (helpCursorKeyHelpCursors hc)
+        selected = searchHelpCursor query $ helpCursorKeyHelpCursors hc
      in hc
           { helpCursorSearchBar = tc,
             helpCursorSelectedKeyHelpCursors = makeNonEmptyCursor <$> NE.nonEmpty selected
