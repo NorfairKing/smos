@@ -83,6 +83,6 @@ tagCursorSelectNextChar :: TagCursor -> Maybe TagCursor
 tagCursorSelectNextChar = tagCursorTextCursorL textCursorSelectNext
 
 tagCursorSplit :: TagCursor -> (TagCursor, TagCursor)
-tagCursorSplit = tagCursorTextCursorL $ \tc ->
+tagCursorSplit (TagCursor tc) =
   let (a, b) = textCursorSplit tc
-   in (TagCursor a, b)
+   in (TagCursor a, TagCursor b)
