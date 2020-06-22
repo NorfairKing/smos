@@ -32,7 +32,6 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
-import System.Exit
 
 getInstructions :: SmosQueryConfig -> IO Instructions
 getInstructions sqc = do
