@@ -123,17 +123,14 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                   (Just a, Nothing) -> Just a
                   (Nothing, Just a) -> Just a
                   (Just a1, Just a2) -> Just $ f a1 a2
-          mtf <-
-            case (workFlagTimeFilter, mwc workConfTimeFilterProperty) of
-              (_, Nothing) -> die "No time filter property configured."
-              (tf, Just pn) ->
-                pure
-                  $ Just
+          let pn = fromMaybe "timewindow" $ mwc workConfTimeFilterProperty
+          let mtf =
+                Just
                   $ FilterEntryProperties
                   $ FilterMapVal pn
                   $ FilterMaybe False
                   $ FilterPropertyTime
-                  $ FilterMaybe False tf
+                  $ FilterMaybe False workFlagTimeFilter
           pure $
             DispatchWork
               WorkSettings
