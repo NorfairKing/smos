@@ -18,15 +18,12 @@ import Cursor.Brick.List.NonEmpty
 import Cursor.Brick.Map
 import Cursor.Brick.Map.KeyValue
 import Cursor.Brick.Text
-import Cursor.Brick.TextField
 import Cursor.DirForest
 import Cursor.DirForest.Brick
 import Cursor.FuzzyLocalTime
-import Cursor.List.NonEmpty (NonEmptyCursor)
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
 import Cursor.Text
-import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
 import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
@@ -43,6 +40,7 @@ import Smos.Cursor.FileBrowser
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
+import Smos.Draw.Report
 import Smos.History
 import Smos.Keys
 import Smos.Style
@@ -204,14 +202,6 @@ drawHelpCursor _ s (Just HelpCursor {..}) =
             msel $ withAttr helpNameAttr $ textWidget $ actionNameText keyHelpCursorName
           ]
 
-verticalNonEmptyCursorTable ::
-  (b -> [Widget n]) -> (a -> [Widget n]) -> (b -> [Widget n]) -> NonEmptyCursor a b -> Widget n
-verticalNonEmptyCursorTable prevFunc curFunc nextFunc =
-  nonEmptyCursorWidget (\ps c ns -> drawTable $ map prevFunc ps ++ [curFunc c] ++ map nextFunc ns)
-
-drawTable :: [[Widget n]] -> Widget n
-drawTable = hBox . intersperse (str " ") . map vBox . transpose
-
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . renderKeyCombination
 
@@ -284,44 +274,6 @@ drawFileBrowserCursor s =
               _ -> forceAttr nonSmosFileAttr
          in extraStyle $ drawFilePath rf
       FodDir rd -> drawDirPath rd
-
-drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
-drawReportCursor s = \case
-  ReportNextActions narc -> drawNextActionReportCursor s narc
-
-drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
-drawNextActionReportCursor s NextActionReportCursor {..} =
-  vBox
-    [ padAll 1
-        $ viewport ResourceViewport Vertical
-        $ case nextActionReportCursorSelectedNextActionEntryCursors of
-          Nothing -> txtWrap "Empty next action report."
-          Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
-      ( case nextActionReportCursorSelection of
-          NextActionReportFilterSelected -> withAttr selectedAttr
-          NextActionReportSelected -> id
-      )
-        $ let ms =
-                case nextActionReportCursorSelection of
-                  NextActionReportFilterSelected -> MaybeSelected
-                  NextActionReportSelected -> NotSelected
-           in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms nextActionReportCursorFilterBar]
-    ]
-  where
-    go = drawNextActionEntryCursor
-
-drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> [Widget ResourceName]
-drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
-  let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
-      sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
-   in [ drawFilePath nextActionEntryCursorFilePath,
-        maybe emptyWidget drawTodoState $ entryState e,
-        sel $ drawHeader entryHeader
-      ]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
@@ -609,9 +561,6 @@ drawEntry tc edc e = do
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor s = withAttr headerAttr . drawTextCursor s . headerCursorTextCursor
 
-drawHeader :: Header -> Widget ResourceName
-drawHeader = withAttr headerAttr . textLineWidget . headerText
-
 drawCurrentStateFromCursor :: StateHistoryCursor -> Maybe (Widget ResourceName)
 drawCurrentStateFromCursor = drawCurrentState . rebuildStateHistoryCursor . Just
 
@@ -884,33 +833,11 @@ drawLogbookTimestamp utct = do
   tw <- drawUTCLocal utct
   pure $ str "[" <+> tw <+> str "]"
 
-drawTodoState :: TodoState -> Widget ResourceName
-drawTodoState ts =
-  withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textLineWidget $ todoStateText ts
-
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
   tz <- asks zonedTimeZone
   let localTime = utcToLocalTime tz utct
   pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
-
-drawTextFieldCursor :: Select -> TextFieldCursor -> Widget ResourceName
-drawTextFieldCursor s =
-  case s of
-    MaybeSelected -> selectedTextFieldCursorWidget ResourceTextCursor
-    _ -> textFieldCursorWidget
-
-drawTextCursor :: Select -> TextCursor -> Widget ResourceName
-drawTextCursor s =
-  case s of
-    MaybeSelected -> selectedTextCursorWidget ResourceTextCursor
-    _ -> textCursorWidget
-
-drawFilePath :: Path b File -> Widget n
-drawFilePath = withAttr fileAttr . str . toFilePath
-
-drawDirPath :: Path b Dir -> Widget n
-drawDirPath = withAttr dirAttr . str . toFilePath
 
 type DrawEnv = ZonedTime
 
