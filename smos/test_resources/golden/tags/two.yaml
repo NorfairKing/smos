@@ -1,7 +1,7 @@
 before:
 - ''
 commands:
-- entrySelectTags
+- entrySelectTagsFromStart
 - tagsInsert b
 - tagsNextTag
 - tagsAppend d

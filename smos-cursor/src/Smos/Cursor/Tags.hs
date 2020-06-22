@@ -209,5 +209,5 @@ tagsCursorSplit tc =
   let tagc = tc ^. tagsCursorSelectedTagL
       (first, second) = tagCursorSplit tagc
    in tc
-        & tagsCursorSelectedTagL %~ const first
+        & tagsCursorSelectedTagL .~ first
         & tagsCursorAppendAndSelectTag second

@@ -10,7 +10,7 @@ module Smos.Actions.Entry
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
-    entrySelectTags,
+    entrySelectTagsFromStart,
     entrySelectTagsFromBack,
     entrySelectLogbook,
     module Smos.Actions.Entry.TodoState,
@@ -30,7 +30,7 @@ allEntryPlainActions =
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
-    entrySelectTags,
+    entrySelectTagsFromStart,
     entrySelectTagsFromBack,
     entrySelectLogbook
   ]
@@ -95,10 +95,10 @@ entrySelectStateHistory =
       actionDescription = "Select the current Entry's state history"
     }
 
-entrySelectTags :: Action
-entrySelectTags =
+entrySelectTagsFromStart :: Action
+entrySelectTagsFromStart =
   Action
-    { actionName = "entrySelectTags",
+    { actionName = "entrySelectTagsFromStart",
       actionFunc = do
         modifyEntryCursor entryCursorSelectTags
         modifyMTagsCursor $ maybe (singletonTagsCursor "") $ tagsCursorSelectStartInSelectedTag . tagsCursorSelectFirstTag,
