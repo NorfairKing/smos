@@ -295,7 +295,7 @@ drawNextActionReportCursor s NextActionReportCursor {..} =
     [ padAll 1
         $ viewport ResourceViewport Vertical
         $ case nextActionReportCursorSelectedNextActionEntryCursors of
-          Nothing -> txtWrap "All actions have been filtered out."
+          Nothing -> txtWrap "Empty next action report."
           Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
       ( case nextActionReportCursorSelection of
           NextActionReportFilterSelected -> withAttr selectedAttr

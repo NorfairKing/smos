@@ -12,7 +12,6 @@ import Cursor.Text
 import Cursor.Types
 import qualified Data.Conduit.Combinators as C
 import Data.Foldable (toList)
-import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
 import GHC.Generics (Generic)
@@ -29,7 +28,7 @@ import Smos.Report.Next
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceNextActionReportCursor :: DirectoryConfig -> IO (Maybe NextActionReportCursor)
+produceNextActionReportCursor :: DirectoryConfig -> IO NextActionReportCursor
 produceNextActionReportCursor dc = do
   wd <- resolveDirWorkflowDir dc
   runConduit
@@ -44,7 +43,7 @@ produceNextActionReportCursor dc = do
 
 data NextActionReportCursor
   = NextActionReportCursor
-      { nextActionReportCursorNextActionEntryCursors :: NonEmpty NextActionEntryCursor,
+      { nextActionReportCursorNextActionEntryCursors :: [NextActionEntryCursor],
         nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor),
         nextActionReportCursorFilterBar :: TextCursor,
         nextActionReportCursorSelection :: NextActionReportCursorSelection
@@ -60,7 +59,7 @@ data NextActionReportCursorSelection
 
 instance Validity NextActionReportCursorSelection
 
-nextActionReportCursorNextActionEntryCursorsL :: Lens' NextActionReportCursor (NonEmpty NextActionEntryCursor)
+nextActionReportCursorNextActionEntryCursorsL :: Lens' NextActionReportCursor [NextActionEntryCursor]
 nextActionReportCursorNextActionEntryCursorsL =
   lens nextActionReportCursorNextActionEntryCursors (\narc naecs -> narc {nextActionReportCursorNextActionEntryCursors = naecs})
 
@@ -97,17 +96,14 @@ nextActionReportCursorFilterBarL =
 filterNextActionEntryCursors :: EntryFilterRel -> [NextActionEntryCursor] -> [NextActionEntryCursor]
 filterNextActionEntryCursors ef = filter (filterPredicate ef . unwrapNextActionEntryCursor)
 
-makeNextActionReportCursor :: [NextActionEntryCursor] -> Maybe NextActionReportCursor
-makeNextActionReportCursor naecs = do
-  nenec <- makeNENextActionEntryCursor naecs
-  nenaecs <- NE.nonEmpty naecs
-  pure
-    NextActionReportCursor
-      { nextActionReportCursorNextActionEntryCursors = nenaecs,
-        nextActionReportCursorSelectedNextActionEntryCursors = Just nenec,
-        nextActionReportCursorFilterBar = emptyTextCursor,
-        nextActionReportCursorSelection = NextActionReportSelected
-      }
+makeNextActionReportCursor :: [NextActionEntryCursor] -> NextActionReportCursor
+makeNextActionReportCursor naecs =
+  NextActionReportCursor
+    { nextActionReportCursorNextActionEntryCursors = naecs,
+      nextActionReportCursorSelectedNextActionEntryCursors = makeNENextActionEntryCursor naecs,
+      nextActionReportCursorFilterBar = emptyTextCursor,
+      nextActionReportCursorSelection = NextActionReportSelected
+    }
 
 makeNENextActionEntryCursor :: [NextActionEntryCursor] -> Maybe (NonEmptyCursor NextActionEntryCursor)
 makeNENextActionEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty

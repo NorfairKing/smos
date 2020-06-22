@@ -34,11 +34,8 @@ reportNextActions =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        mnarc <- liftIO $ produceNextActionReportCursor dc
-        pure $
-          case mnarc of
-            Nothing -> ec
-            Just narc -> editorCursorSwitchToNextActionReport narc ec,
+        narc <- liftIO $ produceNextActionReportCursor dc
+        pure $ editorCursorSwitchToNextActionReport narc ec,
       actionDescription = "Next action report"
     }
 
