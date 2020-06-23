@@ -6,8 +6,8 @@ let
     final.fetchFromGitHub {
       owner = "justinwoo";
       repo = "easy-purescript-nix";
-      rev = "0ba91d9aa9f7421f6bfe4895677159a8a999bf20";
-      sha256 = "1baq7mmd3vjas87f0gzlq83n2l1h3dlqajjqr7fgaazpa9xgzs7q";
+      rev = "2432d492b1f0cc3aa7bf8b4bdb2c7ee0219e1f4e";
+      sha256 = "sha256:0gdg7b4yvs9rg2z6xv705miq5c9vbhimq21nfmhk9j48b3m3xkhf";
     }
   ) { pkgs = final; };
 in
