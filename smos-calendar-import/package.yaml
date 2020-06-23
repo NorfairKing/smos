@@ -33,6 +33,7 @@ library:
     - smos-report
     - text
     - time
+    - yaml
     - yamlparse-applicative
 
 executables:
@@ -48,9 +49,15 @@ tests:
     source-dirs: test
     dependencies:
     - containers
+    - data-default
     - hspec
     - iCalendar
+    - iCalendar
     - mtl
+    - path
+    - path-io
     - smos-calendar-import
     - smos-data
+    - text
     - time
+    - yamlparse-applicative

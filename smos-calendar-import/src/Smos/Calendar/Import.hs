@@ -17,10 +17,12 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as Lazy
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Time.Calendar.WeekDate
+import Data.Yaml as Yaml
 import Lens.Micro
 import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
@@ -32,6 +34,7 @@ import System.Exit
 import Text.ICalendar.Parser
 import Text.ICalendar.Types as ICal
 import Text.Show.Pretty
+import YamlParse.Applicative
 
 -- Given a list of sources (basically ics files) we want to produce a single smos file (like calendar.smos) that contains all the events.
 -- For each event we want an entry with the description in the header.
@@ -81,33 +84,79 @@ smosCalendarImport = do
       Left err -> die err
       Right (cals, warnings) -> do
         forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> warning
-        let ts = processCalendars setDebug start recurrenceLimit hereTZ originName cals
+        let conf =
+              ProcessConf
+                { processConfDebug = setDebug,
+                  processConfStart = start,
+                  processConfLimit = recurrenceLimit,
+                  processConfTimeZone = hereTZ,
+                  processConfName = originName
+                }
+        when setDebug $ putStrLn $ unlines ["Using process conf: ", T.unpack (TE.decodeUtf8 (Yaml.encode conf))]
+        let sf = processCalendars conf cals
         wd <- resolveDirWorkflowDir setDirectorySettings
         putStrLn $ "Saving to " <> fromRelFile sourceDestinationFile
         let fp = wd </> sourceDestinationFile
-        writeSmosFile fp $ SmosFile $ sorter [ts]
-        where
-          sorter = sortOn (entryTimestamps . rootLabel)
+        writeSmosFile fp sf
 
-processCalendars :: Bool -> Day -> Day -> TimeZone -> String -> [VCalendar] -> Tree Entry
-processCalendars debug start recurrenceLimit hereTZ name vcals = titleNode $ concatMap goCal vcals
+data ProcessConf
+  = ProcessConf
+      { processConfDebug :: Bool,
+        processConfStart :: Day,
+        processConfLimit :: Day,
+        processConfTimeZone :: TimeZone,
+        processConfName :: String
+      }
+  deriving (Show, Eq)
+
+instance ToJSON ProcessConf where
+  toJSON ProcessConf {..} =
+    object $
+      (if processConfDebug then (("debug" .= processConfDebug) :) else id)
+        [ "start" .= formatTime defaultTimeLocale timestampDayFormat processConfStart,
+          "limit" .= formatTime defaultTimeLocale timestampDayFormat processConfLimit,
+          "timezone" .= formatTime defaultTimeLocale timeZoneFormat processConfTimeZone,
+          "name" .= processConfName
+        ]
+
+instance FromJSON ProcessConf where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema ProcessConf where
+  yamlSchema =
+    let dayField = maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat
+        timeZoneField = maybeParser (parseTimeM True defaultTimeLocale timeZoneFormat) yamlSchema <?> T.pack timeZoneFormat
+     in objectParser "ProcessConf" $
+          ProcessConf
+            <$> optionalFieldWithDefault "debug" False "debug mode"
+            <*> requiredFieldWith "start" "start day" dayField
+            <*> requiredFieldWith "limit" "recurrence limit" dayField
+            <*> requiredFieldWith "timezone" "time zone" timeZoneField
+            <*> requiredField "name" "calendar name"
+
+timeZoneFormat :: String
+timeZoneFormat = "%z"
+
+processCalendars :: ProcessConf -> [VCalendar] -> SmosFile
+processCalendars ProcessConf {..} vcals = SmosFile [titleNode $ sorter $ concatMap goCal vcals]
   where
+    sorter = sortOn (entryTimestamps . rootLabel)
     titleNode :: Forest Entry -> Tree Entry
     titleNode = Node ((newEntry titleHeader) {entryContents = titleContents})
-    titleHeader = fromMaybe "Invalid title name" $ header (T.pack name)
+    titleHeader = fromMaybe "Invalid title name" $ header (T.pack processConfName)
     titleContents =
-      if debug
+      if processConfDebug
         then contents $ T.pack $ ppShow vcals
         else Nothing
     goCal :: VCalendar -> Forest Entry
     goCal cal =
       let env =
             ImportEnv
-              { importEnvTimeZone = hereTZ,
-                importEnvStartDay = start,
-                importEnvRecurrentLimit = recurrenceLimit,
+              { importEnvTimeZone = processConfTimeZone,
+                importEnvStartDay = processConfStart,
+                importEnvRecurrentLimit = processConfLimit,
                 importEnvNamedTimeZones = vcTimeZones cal,
-                importEnvDebug = debug
+                importEnvDebug = processConfDebug
               }
        in runReader (processEvents (vcEvents cal)) env
 

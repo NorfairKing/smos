@@ -1,0 +1,4 @@
+name: Example
+start: 2020-06-16
+limit: 2020-07-23
+timezone: '+0200'
