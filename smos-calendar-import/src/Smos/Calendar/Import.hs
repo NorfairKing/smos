@@ -177,7 +177,7 @@ processEvents m = fmap catMaybes $ mapM (\(_, v) -> processEvent v) $ M.toList m
 
 processEvent :: VEvent -> I (Maybe (Tree Entry))
 processEvent ve = do
-  let mDesc = eventDescription ve -- We must not miss any time
+  let mDesc = eventDescription ve
   mContents <- eventContents ve
   let firstTimestamps = eventFirstTimestamps ve
   recurrenceTimestamps <- processRecurrences (S.map rRuleValue $ veRRule ve) firstTimestamps
@@ -250,7 +250,7 @@ eventTimestampsBefore st ets = case eventTimestampsStart ets of
   Just st' -> go st'
   where
     go :: StartTime -> Bool
-    go st' = ((<=) `on` (\t -> t ^. startTimeDayL)) st st' -- TODO This might make an event too much?
+    go st' = ((<=) `on` (\t -> t ^. startTimeDayL)) st' st -- TODO This might make an event too much?
 
 data EndTime
   = EndTimeStart StartTime -- It's not a start time but it has the same idea

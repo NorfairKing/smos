@@ -3,6 +3,7 @@ module Smos.Calendar.Import.GoldenSpec
   )
 where
 
+import Control.Monad
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -12,6 +13,7 @@ import Smos.Calendar.Import
 import Smos.Data
 import Test.Hspec
 import Text.ICalendar.Parser
+import Text.Show.Pretty
 import YamlParse.Applicative
 
 spec :: Spec
@@ -39,10 +41,23 @@ mkGoldenTest cp = it (fromAbsFile cp) $ do
             Nothing ->
               expectationFailure $
                 unlines
-                  [ "Golden result not found: " <> fromAbsFile sfp,
-                    T.unpack (TE.decodeUtf8 (smosFileYamlBS actual))
-                  ]
+                  ["Golden result not found: ", saveSuggestion sfp actual]
             Just errOrSmosFile -> case errOrSmosFile of
               Left err -> expectationFailure $ "Failed to parse smos file: " <> err
-              Right expected -> do
-                expected `shouldBe` actual
+              Right expected ->
+                unless (expected == actual)
+                  $ expectationFailure
+                  $ unlines
+                    [ "expected: ",
+                      ppShow expected,
+                      "actual:",
+                      ppShow actual,
+                      saveSuggestion sfp actual
+                    ]
+
+saveSuggestion :: Path Abs File -> SmosFile -> String
+saveSuggestion sfp sf =
+  unlines
+    [ fromAbsFile sfp,
+      T.unpack (TE.decodeUtf8 (smosFileYamlBS sf))
+    ]

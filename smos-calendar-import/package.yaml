@@ -61,3 +61,4 @@ tests:
     - text
     - time
     - yamlparse-applicative
+    - pretty-show
