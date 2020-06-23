@@ -3,11 +3,10 @@ module Editor where
 import Prelude
 import Control.Monad.State (modify_)
 import Cursor.Tree.Movement (PathToClickedEntry(..))
-import Cursor.Tree.Types (Forest, Tree(..), cTree, treeCursorCurrentL)
-import Cursor.Types (DeleteOrUpdate, dullDelete, dullMDelete)
+import Cursor.Tree.Types (Forest, cTree, treeCursorCurrentL)
+import Cursor.Types (DeleteOrUpdate(..), dullDelete)
 import Cursor.Forest (ForestCursor, forestCursorAddChildToTreeAtStartAndSelect, forestCursorAppendAndSelect, forestCursorDeleteElem, forestCursorDeleteSubTree, forestCursorDemoteElem, forestCursorDemoteSubTree, forestCursorMoveUsingPath, forestCursorPromoteElem, forestCursorPromoteSubTree, forestCursorSelectAbove, forestCursorSelectBelowAtEnd, forestCursorSelectNext, forestCursorSelectPrev, forestCursorSelectedTreeL, forestCursorSwapNext, forestCursorSwapPrev, forestCursorToggleCurrentForest, forestCursorToggleCurrentForestRecursively, makeForestCursor)
 import Data.Const (Const)
-import Data.List (List(..))
 import Data.List.NonEmpty as NE
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Effect.Aff (Aff)
@@ -25,13 +24,8 @@ import Web.UIEvent.KeyboardEvent.EventTypes as KET
 import Web.UIEvent.MouseEvent as WUEM
 import Web.UIEvent.MouseEvent.EventTypes as MET
 import Header as Header
-import Render (render, Action(..))
+import Render (Action(..), State, render)
 import Data.Symbol (SProxy(..))
-
-type State
-  = { cursor :: ForestCursor String String
-    , headerSelected :: Maybe Header.StartingPosition
-    }
 
 type ChildSlots
   = ( header ::
@@ -49,10 +43,7 @@ component t =
     { initialState:
       \_ ->
         { cursor:
-          makeForestCursor identity $ map (cTree true)
-            $ case NE.fromList t of
-                Nothing -> NE.singleton (Tree { rootLabel: "empty", subForest: Nil })
-                Just ne -> ne
+          makeForestCursor identity <<< map (cTree true) <$> NE.fromList t
         , headerSelected: Nothing
         }
     , render: render
@@ -67,17 +58,24 @@ component t =
 handle :: forall o. Action -> H.HalogenM State Action ChildSlots o Aff Unit
 handle =
   let
+    forestMModM :: (Maybe (ForestCursor String String) -> Maybe (ForestCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
+    forestMModM func = modify_ (\s -> s { cursor = func s.cursor })
+
     forestMod :: (ForestCursor String String -> ForestCursor String String) -> H.HalogenM State Action ChildSlots o Aff Unit
-    forestMod func = modify_ (\s -> s { cursor = func s.cursor })
+    forestMod func = forestMModM $ map func
 
     forestModM :: (ForestCursor String String -> Maybe (ForestCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
     forestModM func = forestMod (\tc -> fromMaybe tc (func tc))
 
     forestModDOU :: (ForestCursor String String -> DeleteOrUpdate (ForestCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
-    forestModDOU func = forestModM (\tc -> dullDelete (func tc))
+    forestModDOU func =
+      forestMModM
+        $ \mfc -> case mfc of
+            Nothing -> Nothing
+            Just fc -> dullDelete (func fc)
 
     forestModDOUM :: (ForestCursor String String -> Maybe (DeleteOrUpdate (ForestCursor String String))) -> H.HalogenM State Action ChildSlots o Aff Unit
-    forestModDOUM func = forestModM (\tc -> dullMDelete (func tc))
+    forestModDOUM func = forestModDOU (\fc -> fromMaybe (Updated fc) (func fc))
   in
     case _ of
       Init -> do
@@ -137,4 +135,6 @@ handle =
               | k == "c" -> forestModM forestCursorToggleCurrentForest
               | k == "C" -> forestModM forestCursorToggleCurrentForestRecursively
             _ -> pure unit
-      HandleHeader str -> modify_ (\s -> s { headerSelected = Nothing, cursor = s.cursor # (forestCursorSelectedTreeL <<< treeCursorCurrentL) .~ str })
+      HandleHeader str -> do
+        modify_ (\s -> s { headerSelected = Nothing })
+        forestMod ((forestCursorSelectedTreeL <<< treeCursorCurrentL) .~ str)

@@ -25,7 +25,7 @@ import Header as Header
 import Data.Symbol (SProxy(..))
 
 type State
-  = { cursor :: ForestCursor String String
+  = { cursor :: Maybe (ForestCursor String String)
     , headerSelected :: Maybe Header.StartingPosition
     }
 
@@ -44,7 +44,9 @@ render state =
   HH.div
     [ HP.ref (H.RefLabel "cursor")
     ]
-    [ renderForestCursor state.headerSelected state.cursor
+    [ case state.cursor of
+        Nothing -> HH.text "Empty file"
+        Just sfc -> renderForestCursor state.headerSelected sfc
     ]
 
 data Action
