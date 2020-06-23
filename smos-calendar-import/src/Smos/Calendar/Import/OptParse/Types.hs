@@ -2,8 +2,9 @@
 
 module Smos.Calendar.Import.OptParse.Types where
 
-import Data.Aeson
+import Data.Aeson hiding ((<?>))
 import Data.List.NonEmpty (NonEmpty (..))
+import Network.URI (URI)
 import Path
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
@@ -12,8 +13,6 @@ import YamlParse.Applicative
 data Flags
   = Flags
       { flagDirectoryFlags :: !Report.DirectoryFlags,
-        flagDestinationFile :: !(Maybe FilePath),
-        flagSources :: !(Maybe (NonEmpty String)),
         flagDebug :: Maybe Bool
       }
   deriving (Show, Eq)
@@ -28,8 +27,6 @@ data Configuration
 data Environment
   = Environment
       { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-        envDestinationFile :: !(Maybe FilePath),
-        envSource :: !(Maybe String),
         envDebug :: !(Maybe Bool)
       }
   deriving (Show, Eq)
@@ -46,8 +43,7 @@ instance YamlSchema Configuration where
 
 data CalendarImportConfiguration
   = CalendarImportConfiguration
-      { calendarImportConfDestinationFile :: !(Maybe FilePath),
-        calendarImportConfSources :: !(Maybe (NonEmpty String)),
+      { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
         calendarImportConfDebug :: !(Maybe Bool)
       }
   deriving (Show, Eq)
@@ -59,20 +55,45 @@ instance YamlSchema CalendarImportConfiguration where
   yamlSchema =
     objectParser "CalendarImportConfiguration" $
       CalendarImportConfiguration
-        <$> optionalField "destination" "The destination path within the workflow directory"
-        <*> ( optionalField "sources" "The list of urls to fetch and import"
+        <$> optionalField "sources" "The sources to import from"
+        <*> optionalField "debug" "Show the internal structure of every event in its entry's contents."
+
+data SourceConfiguration
+  = SourceConfiguration
+      { sourceConfName :: !(Maybe String),
+        sourceConfOrigin :: !String,
+        sourceConfDestinationFile :: !FilePath
+      }
+  deriving (Show, Eq)
+
+instance YamlSchema SourceConfiguration where
+  yamlSchema =
+    objectParser "SourceConfiguration" $
+      SourceConfiguration
+        <$> optionalField "name" "The name of the source"
+        <*> ( requiredField "source" "the url to fetch or file to import"
                 <??> [ "If you are using Google, you want to get the URL that has these labels:",
                        "\"Use this address to access this calendar from other applications without making it public.\"",
                        "\"Warning: Only share this address with those you trust to see all event details for this calendar.\""
                      ]
             )
-        <*> optionalField "debug" "Show the internal structure of every event in its entry's contents."
+        <*> requiredField "destination" "The destination path within the workflow directory"
 
 data Settings
   = Settings
       { setDirectorySettings :: !Report.DirectoryConfig,
-        setDestinationFile :: !(Path Rel File),
-        setSources :: !(NonEmpty String),
+        setSources :: !(NonEmpty Source),
         setDebug :: Bool
       }
+  deriving (Show, Eq)
+
+data Source
+  = Source
+      { sourceName :: Maybe String,
+        sourceDestinationFile :: !(Path Rel File),
+        sourceOrigin :: !Origin
+      }
+  deriving (Show, Eq)
+
+data Origin = WebOrigin URI | FileOrigin (Path Abs File)
   deriving (Show, Eq)

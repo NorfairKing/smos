@@ -22,7 +22,8 @@ import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Time.Calendar.WeekDate
 import Lens.Micro
-import Network.HTTP.Simple (getResponseBody, httpLBS, parseRequest)
+import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
+import Network.HTTP.Client.TLS as HTTP
 import Path
 import Smos.Calendar.Import.OptParse
 import Smos.Data
@@ -61,25 +62,32 @@ smosCalendarImport = do
   let start = addDays (-7) today
   let recurrenceLimit = addDays 30 today
   hereTZ <- getCurrentTimeZone
-  fs <- forM (NE.toList setSources) $ \source -> do
-    errOrCal <- case parseAbsFile source of
-      Nothing -> do
-        req <- parseRequest source
-        putStrLn $ "Fetching: " <> source
-        resp <- httpLBS req
-        let errOrCal = parseICalendar def source $ getResponseBody resp
+  man <- HTTP.newTlsManager
+  forM_ (NE.toList setSources) $ \Source {..} -> do
+    let originName = case sourceName of
+          Just n -> n
+          Nothing -> case sourceOrigin of
+            WebOrigin uri -> show uri
+            FileOrigin fp -> fromAbsFile fp
+    errOrCal <- case sourceOrigin of
+      WebOrigin uri -> do
+        req <- requestFromURI uri
+        putStrLn $ "Fetching: " <> show uri
+        resp <- httpLbs req man
+        let errOrCal = parseICalendar def (show uri) $ responseBody resp
         pure errOrCal
-      Just af -> parseICalendarFile def $ fromAbsFile af
+      FileOrigin af -> parseICalendarFile def $ fromAbsFile af
     case errOrCal of
       Left err -> die err
       Right (cals, warnings) -> do
         forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> warning
-        pure $ processCalendars setDebug start recurrenceLimit hereTZ source cals
-  wd <- resolveDirWorkflowDir setDirectorySettings
-  let fp = wd </> setDestinationFile
-  writeSmosFile fp $ SmosFile $ sorter fs
-  where
-    sorter = sortOn (entryTimestamps . rootLabel)
+        let ts = processCalendars setDebug start recurrenceLimit hereTZ originName cals
+        wd <- resolveDirWorkflowDir setDirectorySettings
+        putStrLn $ "Saving to " <> fromRelFile sourceDestinationFile
+        let fp = wd </> sourceDestinationFile
+        writeSmosFile fp $ SmosFile $ sorter [ts]
+        where
+          sorter = sortOn (entryTimestamps . rootLabel)
 
 processCalendars :: Bool -> Day -> Day -> TimeZone -> String -> [VCalendar] -> Tree Entry
 processCalendars debug start recurrenceLimit hereTZ name vcals = titleNode $ concatMap goCal vcals
@@ -137,7 +145,10 @@ eventContents ve = do
   pure $
     if debug
       then contents $ T.pack $ ppShow ve
-      else (descriptionValue <$> veDescription ve) >>= (contents . Lazy.toStrict)
+      else do
+        t <- Lazy.toStrict . descriptionValue <$> veDescription ve
+        guard $ not $ T.null t
+        contents t
 
 data EventTimestamps
   = EventTimestamps

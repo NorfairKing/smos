@@ -86,17 +86,36 @@ in
                     options =
                       {
                         enable = mkEnableOption "Smos calendar importing";
-                        destination =
-                          mkOption {
-                            type = types.nullOr types.str;
-                            default = null;
-                            example = "calendar.smos";
-                            description = "The destination file within the workflow directory";
-                          };
                         sources =
                           mkOption {
-                            type = types.listOf types.str;
                             description = "The list of sources to import from";
+                            type = types.listOf (
+                              types.submodule {
+                                options = {
+                                  name =
+                                    mkOption {
+                                      type = types.nullOr types.str;
+                                      default = null;
+                                      example = "Personal";
+                                      description = "The name of the source";
+                                    };
+                                  destination =
+                                    mkOption {
+                                      type = types.str;
+                                      default = null;
+                                      example = "calendar/name.smos";
+                                      description = "The destination file within the workflow directory";
+                                    };
+                                  source =
+                                    mkOption {
+                                      type = types.str;
+                                      default = null;
+                                      example = "https://calendar.google.com/calendar/ical/xxx.xxxxxxxxx%40gmail.com/private-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/basic.ics";
+                                      description = "The url to download the calendar from";
+                                    };
+                                };
+                              }
+                            );
                           };
                       };
                   }
@@ -200,7 +219,6 @@ sync:
           optionalString (calendarCfg.enable or false) ''
 
 calendar:
-  ${optionalString (! (isNull calendarCfg.destination)) "destination: ${calendarCfg.destination}"}
   sources: ${builtins.toJSON cfg.calendar.sources}
 
     '';

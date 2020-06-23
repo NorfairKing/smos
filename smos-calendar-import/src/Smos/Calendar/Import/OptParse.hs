@@ -7,11 +7,13 @@ module Smos.Calendar.Import.OptParse
   )
 where
 
-import Data.List.NonEmpty as NE
+import Control.Monad
 import Data.Maybe
 import qualified Env
+import Network.URI
 import Options.Applicative
 import Path
+import Path.IO
 import Smos.Calendar.Import.OptParse.Types
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -38,10 +40,17 @@ deriveSettings Flags {..} Environment {..} mConf = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mConf)
-  setDestinationFile <- parseRelFile $ fromMaybe "calendar.smos" $ flagDestinationFile <|> envDestinationFile <|> mc calendarImportConfDestinationFile
-  setSources <- case flagSources <|> ((:| []) <$> envSource) <|> mc calendarImportConfSources of
+  setSources <- case mc calendarImportConfSources of
     Nothing -> die "No sources configured."
-    Just ss -> pure ss
+    Just ss -> forM ss $ \SourceConfiguration {..} -> do
+      let sourceName = sourceConfName
+      sourceDestinationFile <- parseRelFile sourceConfDestinationFile
+      sourceOrigin <- case parseURI sourceConfOrigin of
+        Just uri -> pure $ WebOrigin uri
+        Nothing -> do
+          putStrLn $ "Couldn't parse into an URI, assuming it's a file: " <> sourceConfOrigin
+          FileOrigin <$> resolveFile' sourceConfOrigin
+      pure Source {..}
   let setDebug = fromMaybe False $ flagDebug <|> envDebug <|> mc calendarImportConfDebug
   pure Settings {..}
 
@@ -73,35 +82,7 @@ flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> Report.parseDirectoryFlags
-    <*> destinationOption
-    <*> sourcesOptions
     <*> (Just <$> switch (mconcat [long "debug", help "Turn on debug output"]))
-
-destinationOption :: Parser (Maybe FilePath)
-destinationOption =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The destination path within the workflow directory",
-          long "destination",
-          value Nothing
-        ]
-    )
-
-sourcesOptions :: Parser (Maybe (NonEmpty String))
-sourcesOptions =
-  NE.nonEmpty
-    <$> many
-      ( option
-          str
-          ( mconcat
-              [ metavar "URL",
-                help "A source url to import from",
-                long "source"
-              ]
-          )
-      )
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -113,8 +94,6 @@ environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser =
   Report.envWithConfigFileParser $
     Environment <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . Env.str) "DESTINATION" (mE <> Env.help "The destination path within the workflow directory")
-      <*> Env.var (fmap Just . Env.str) "SOURCE" (mE <> Env.help "A source url to import the calendar from. Use flags or a config file to import from multiple sources.")
       <*> Env.var (fmap Just . Env.auto) "DEBUG" (mE <> Env.help "Whether to output debug info")
   where
     mE = Env.def Nothing <> Env.keep
