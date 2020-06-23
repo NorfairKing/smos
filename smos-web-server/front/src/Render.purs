@@ -8,11 +8,11 @@ import Cursor.Tree.Types (CForest(..), CTree(..), TreeCursor)
 import Cursor.Forest (ForestCursor, foldForestCursor)
 import Data.Array as Array
 import Data.Const (Const)
-import Data.List (List)
+import Data.List (List, mapWithIndex)
 import Data.List as List
 import Data.List.NonEmpty as NE
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..), snd)
+import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
@@ -68,18 +68,21 @@ renderForestCursor selected = foldForestCursor go
     List (CTree String) ->
     H.ComponentHTML Action ChildSlots Aff
   go befores current afters =
-    HH.div_
-      $ Array.concat
-          [ Array.fromFoldable (map (renderCTree selected ClickedEqualsSelected) befores)
-          , [ renderTreeCursor selected current ]
-          , Array.fromFoldable (map (renderCTree selected ClickedEqualsSelected) afters)
-          ]
+    let
+      Tuple treePath treeHtml = renderTreeCursor selected current
+    in
+      HH.div_
+        $ Array.concat
+            [ Array.fromFoldable (mapWithIndex (\index -> renderCTree selected (GoToSibling index treePath)) befores)
+            , [ treeHtml ]
+            , Array.fromFoldable (mapWithIndex (\index -> renderCTree selected (GoToSibling (index + 1 + List.length befores) treePath)) afters)
+            ]
 
 renderTreeCursor ::
   Maybe Header.StartingPosition ->
   TreeCursor String String ->
-  H.ComponentHTML Action ChildSlots Aff
-renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
+  Tuple PathToClickedEntry (H.ComponentHTML Action ChildSlots Aff)
+renderTreeCursor selected = foldTreeCursor wrap cur
   where
   wrap ::
     List (CTree String) ->
@@ -99,12 +102,7 @@ renderTreeCursor selected = snd <<< foldTreeCursor wrap cur
                   ( Array.fromFoldable
                       ( List.mapWithIndex
                           ( \i ct ->
-                              renderCTree selected
-                                ( GoToChild i
-                                    ( GoToParent p
-                                    )
-                                )
-                                ct
+                              renderCTree selected (GoToSibling i p) ct
                           )
                           lefts
                       )

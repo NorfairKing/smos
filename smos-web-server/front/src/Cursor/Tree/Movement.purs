@@ -144,6 +144,7 @@ treeCursorSelectAboveNext f g tc = case treeCursorSelectNextOnSameLevel f g tc o
 -- | Note that the recursive 'PathToClickedEntry' should be followed first.
 data PathToClickedEntry
   = ClickedEqualsSelected
+  | GoToSibling Int PathToClickedEntry
   | GoToParent PathToClickedEntry
   | GoToChild Int PathToClickedEntry
 
@@ -155,5 +156,6 @@ instance showPathToClickedEntry :: Show PathToClickedEntry where
 treeCursorMoveUsingPath :: forall a b. (a -> b) -> (b -> a) -> PathToClickedEntry -> TreeCursor a b -> Maybe (TreeCursor a b)
 treeCursorMoveUsingPath f g p tc = case p of
   ClickedEqualsSelected -> Just tc
+  GoToSibling index p' -> treeCursorMoveUsingPath f g (GoToChild index (GoToParent p')) tc
   GoToParent p' -> treeCursorSelectAbove f g =<< treeCursorMoveUsingPath f g p' tc
   GoToChild index p' -> treeCursorSelectBelowAtPos f g index =<< treeCursorMoveUsingPath f g p' tc

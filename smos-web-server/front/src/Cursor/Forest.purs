@@ -631,5 +631,11 @@ foldForestCursor func (ForestCursor ne) = foldNonEmptyCursor func ne.forestCurso
 forestCursorMoveUsingPath :: forall a b. (a -> b) -> (b -> a) -> PathToClickedEntry -> ForestCursor a b -> Maybe (ForestCursor a b)
 forestCursorMoveUsingPath f g p fc = case p of
   ClickedEqualsSelected -> Just fc
+  GoToSibling index p' ->
+    forestCursorMoveUsingPath f g p' fc
+      >>= ( \fc' -> case forestCursorSelectAbove f g fc' of
+            Nothing -> forestCursorSelectIndex f g index fc -- Already on the top level
+            Just fc'' -> forestCursorSelectBelowAtPos f g index fc''
+        )
   GoToParent p' -> forestCursorSelectAbove f g =<< forestCursorMoveUsingPath f g p' fc
   GoToChild index p' -> forestCursorSelectBelowAtPos f g index =<< forestCursorMoveUsingPath f g p' fc
