@@ -185,7 +185,11 @@ drawHelpCursor _ s (Just HelpCursor {..}) =
                     [ txt "Name: "
                         <+> withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName),
                       txt "Description: ",
-                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
+                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription,
+                      txt "Key Binding: ",
+                      hBox
+                        $ intersperse (str ", ")
+                        $ map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding
                     ]
       ]
   where
