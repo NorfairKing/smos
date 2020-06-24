@@ -184,12 +184,9 @@ drawHelpCursor _ s (Just HelpCursor {..}) =
                in vBox
                     [ txt "Name: "
                         <+> withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName),
+                      hBox [txt "Key Bindings: ", drawKeyCombinations keyHelpCursorKeyBinding],
                       txt "Description: ",
-                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription,
-                      txt "Key Binding: ",
-                      hBox
-                        $ intersperse (str ", ")
-                        $ map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding
+                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
                     ]
       ]
   where
@@ -200,11 +197,15 @@ drawHelpCursor _ s (Just HelpCursor {..}) =
                 MaybeSelected -> forceAttr selectedAttr . visible
                 NotSelected -> id
             )
-       in [ hBox
-              $ intersperse (str ", ")
-              $ map (withAttr helpKeyCombinationAttr . drawKeyCombination) keyHelpCursorKeyBinding,
+       in [ drawKeyCombinations keyHelpCursorKeyBinding,
             msel $ withAttr helpNameAttr $ textWidget $ actionNameText keyHelpCursorName
           ]
+
+drawKeyCombinations :: [KeyCombination] -> Widget n
+drawKeyCombinations kbs =
+  hBox
+    $ intersperse (str ", ")
+    $ map (withAttr helpKeyCombinationAttr . drawKeyCombination) kbs
 
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . renderKeyCombination
