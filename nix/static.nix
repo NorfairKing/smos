@@ -1,6 +1,6 @@
 # Run using:
 #
-#     $(nix-build nix/static.nix --no-link -A fullBuildScript)
+#     $(nix-build nix/static.nix --no-link -A releaseZipScript)
 { stack2nix-output-path ? "custom-stack2nix-output.nix"
 ,
 }:
@@ -55,13 +55,25 @@ let
 
       ${pkgs.nix}/bin/nix-build nix/static.nix ${staticPackageFlags} --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" "$@"
     '';
-in
-{
   static_package = pkgs.lib.genAttrs cabalPackageNames (
     name:
       pkgs.haskell.lib.addBuildDepend ((static-stack2nix-builder name).static_package) (pkgs.haskellPackages.autoexporter)
   );
+  releaseZipScript =
+    pkgs.writeShellScript "smos-release-zip.sh" ''
+      for i in *result
+      do
+        unlink $i
+      done
+      ${fullBuildScript}
+
+      find result*/bin -type f | xargs ${pkgs.gnutar}/bin/tar -cf smos.tar.gz
+    '';
+in
+{
+  inherit static_package;
   inherit fullBuildScript;
+  inherit releaseZipScript;
   # For debugging:
   inherit stack2nix-script;
   inherit static-stack2nix-builder;
