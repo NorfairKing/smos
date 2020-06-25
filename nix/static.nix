@@ -1,6 +1,6 @@
 # Run using:
 #
-#     $(nix-build static.nix --no-link -A fullBuildScript)
+#     $(nix-build nix/static.nix --no-link -A fullBuildScript)
 { stack2nix-output-path ? "custom-stack2nix-output.nix"
 ,
 }:
@@ -31,7 +31,7 @@ let
 
   stack2nix-script = import "${static-haskell-nix}/static-stack2nix-builder/stack2nix-script.nix" {
     inherit pkgs;
-    stack-project-dir = toString ./.; # where stack.yaml is
+    stack-project-dir = toString ../.; # where stack.yaml is
     hackageSnapshot = "2020-06-25T00:00:00Z"; # pins e.g. extra-deps without hashes or revisions
   };
 
@@ -53,7 +53,7 @@ let
       STACK2NIX_OUTPUT_PATH=$(${stack2nix-script})
       export NIX_PATH=nixpkgs=${pkgs.path}
 
-      ${pkgs.nix}/bin/nix-build static.nix --no-link ${staticPackageFlags} --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" "$@"
+      ${pkgs.nix}/bin/nix-build nix/static.nix ${staticPackageFlags} --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" "$@"
     '';
 in
 {
