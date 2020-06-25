@@ -35,7 +35,7 @@ extra-deps:
 # Password
 - base64-0.4.2@sha256:e9523e18bdadc3cab9dc32dfe3ac09c718fe792076326d6d353437b8b255cb5b,2888
 - ghc-byteorder-4.11.0.0.10@sha256:5ee4a907279bfec27b0f9de7b8fba4cecfd34395a0235a7784494de70ad4e98f,1535
-- github: cdepillabout/password 
+- git: https://github.com/cdepillabout/password 
   commit: 26434d4f6888faf8dc36425b20b59f0b5056d7f5
   subdirs:
     - password
@@ -43,14 +43,14 @@ extra-deps:
 
 
 # Calendar
-- github: chrra/iCalendar
+- git: https://github.com/chrra/iCalendar
   commit: 66b408f10b2d87929ecda715109b26093c711823
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 
 
 
-- github: haskell-servant/servant-auth
+- git: https://github.com/haskell-servant/servant-auth
   commit: 62d3f4b6a7fd7dc38510d4c60982239f94fc1b58
   subdirs:
     - servant-auth-client
@@ -59,7 +59,7 @@ extra-deps:
     - servant-auth-server
 
 
-- github: NorfairKing/typed-uuid
+- git: https://github.com/NorfairKing/typed-uuid
   commit: 5415eaeee9817dfc4846fe4d73efce9312281b27
   subdirs:
   - typed-uuid
@@ -67,69 +67,69 @@ extra-deps:
 
 # https://github.com/vincenthz/hs-tls/issues/421
 # see also nix/overlay.nix.
-- github: ocheron/hs-tls
+- git: https://github.com/ocheron/hs-tls
   commit: f785ce66559a09d998bcb5d459cc5ec9d53d54f0
   subdirs:
     - core
     - debug
     - session
 
-- github: GaloisInc/sqlite
+- git: https://github.com/GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
 
-- github: NorfairKing/persistent
+- git: https://github.com/NorfairKing/persistent
   commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
   subdirs:
     - persistent
     - persistent-template
     - persistent-sqlite
 
-- github: NorfairKing/mergeful
+- git: https://github.com/NorfairKing/mergeful
   commit: 15af41c244ce733f5e514d04a770479baa409370
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
-- github: ixmatus/orgmode-parse
+- git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
-- github: NorfairKing/pretty-relative-time
+- git: https://github.com/NorfairKing/pretty-relative-time
   commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
-- github: NorfairKing/cursor-fuzzy-time
+- git: https://github.com/NorfairKing/cursor-fuzzy-time
   commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
-- github: NorfairKing/fuzzy-time
+- git: https://github.com/NorfairKing/fuzzy-time
   commit: c296b1de29a7795895bb1c68311021ce149406e2
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 
-- github: NorfairKing/dirforest
+- git: https://github.com/NorfairKing/dirforest
   commit: e8c63dae86099c3c50e7908f84487126048cd93b
   subdirs:
     - dirforest
     - genvalidity-dirforest
 
-- github: NorfairKing/cursor-dirforest
+- git: https://github.com/NorfairKing/cursor-dirforest
   commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
 
-- github: NorfairKing/cursor-brick
+- git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
   subdirs:
     - cursor-brick
 
-- github: NorfairKing/cursor
+- git: https://github.com/NorfairKing/cursor
   commit: ea6724d2a0127614e9062a5ea53de8f042506dd0
   subdirs:
     - cursor
     - cursor-gen
 
-- github: NorfairKing/validity
+- git: https://github.com/NorfairKing/validity
   commit: 8b938a46ca36d95f718f8071317395b07107000c
   subdirs:
   - genvalidity
@@ -167,7 +167,7 @@ extra-deps:
   - validity-uuid
   - validity-vector
 
-- github: NorfairKing/yamlparse-applicative
+- git: https://github.com/NorfairKing/yamlparse-applicative
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
   subdirs:
   - yamlparse-applicative
