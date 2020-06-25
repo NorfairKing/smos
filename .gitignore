@@ -9,3 +9,4 @@ stack.yaml.lock
 server.uuid
 session.json
 *.sqlite3
+*.tar.gz
