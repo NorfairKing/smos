@@ -307,8 +307,8 @@ parseCommandClock = info parser modifier
 parseClockFormatFlags :: Parser (Maybe ClockFormatFlags)
 parseClockFormatFlags =
   Just
-    <$> ( (flag' ClockFormatTemporalFlag (long "temporal") <*> parseTemporalClockResolution)
-            <|> flag' ClockFormatDecimalFlag (long "decimal") <*> parseDecimalClockResolution
+    <$> ( flag' ClockFormatTemporalFlag (long "temporal-resolution") <*> parseTemporalClockResolution
+            <|> flag' ClockFormatDecimalFlag (long "decimal-resolution") <*> parseDecimalClockResolution
         )
     <|> pure Nothing
 
