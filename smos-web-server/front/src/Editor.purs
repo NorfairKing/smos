@@ -5,7 +5,7 @@ import Control.Monad.State (modify_)
 import Cursor.Tree.Movement (PathToClickedEntry(..))
 import Cursor.Tree.Types (Forest, cTree, treeCursorCurrentL)
 import Cursor.Types (DeleteOrUpdate(..), dullDelete)
-import Cursor.Forest (ForestCursor, forestCursorAddChildToTreeAtStartAndSelect, forestCursorAppendAndSelect, forestCursorDeleteElem, forestCursorDeleteSubTree, forestCursorDemoteElem, forestCursorDemoteSubTree, forestCursorMoveUsingPath, forestCursorPromoteElem, forestCursorPromoteSubTree, forestCursorSelectAbove, forestCursorSelectBelowAtEnd, forestCursorSelectNext, forestCursorSelectPrev, forestCursorSelectedTreeL, forestCursorSwapNext, forestCursorSwapPrev, forestCursorToggleCurrentForest, forestCursorToggleCurrentForestRecursively, makeForestCursor)
+import Cursor.Forest (ForestCursor, forestCursorAddChildToTreeAtStartAndSelect, forestCursorAppendAndSelect, forestCursorDeleteElem, forestCursorDeleteSubTree, forestCursorDemoteElem, forestCursorDemoteSubTree, forestCursorMoveUsingPath, forestCursorPromoteElem, forestCursorPromoteSubTree, forestCursorSelectAbove, forestCursorSelectBelowAtEnd, forestCursorSelectNext, forestCursorSelectPrev, forestCursorSelectedTreeL, forestCursorSwapNext, forestCursorSwapPrev, forestCursorToggleCurrentForest, forestCursorToggleCurrentForestRecursively, makeForestCursor, singletonForestCursor)
 import Data.Const (Const)
 import Data.List.NonEmpty as NE
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
@@ -60,6 +60,9 @@ handle =
   let
     forestMModM :: (Maybe (ForestCursor String String) -> Maybe (ForestCursor String String)) -> H.HalogenM State Action ChildSlots o Aff Unit
     forestMModM func = modify_ (\s -> s { cursor = func s.cursor })
+
+    forestMMod :: (Maybe (ForestCursor String String) -> ForestCursor String String) -> H.HalogenM State Action ChildSlots o Aff Unit
+    forestMMod func = forestMModM $ Just <<< func
 
     forestMod :: (ForestCursor String String -> ForestCursor String String) -> H.HalogenM State Action ChildSlots o Aff Unit
     forestMod func = forestMModM $ map func
@@ -119,8 +122,18 @@ handle =
               | not ak && (k == "ArrowUp" || k == "k") -> forestModM (forestCursorSelectPrev identity identity)
               | not ak && (k == "ArrowLeft" || k == "h") -> forestModM (forestCursorSelectAbove identity identity)
               | not ak && (k == "ArrowRight" || k == "l") -> forestModM (forestCursorSelectBelowAtEnd identity identity)
-              | k == "e" -> forestMod (forestCursorAppendAndSelect identity identity "")
-              | k == "E" -> forestMod (forestCursorAddChildToTreeAtStartAndSelect identity identity "")
+              | k == "e" -> do
+                forestMMod
+                  $ \mfc -> case mfc of
+                      Nothing -> singletonForestCursor ""
+                      Just fc -> forestCursorAppendAndSelect identity identity "" fc
+                modify_ (_ { headerSelected = Just Header.Beginning })
+              | k == "E" -> do
+                forestMMod
+                  $ \mfc -> case mfc of
+                      Nothing -> singletonForestCursor ""
+                      Just fc -> forestCursorAddChildToTreeAtStartAndSelect identity identity "" fc
+                modify_ (_ { headerSelected = Just Header.Beginning })
               | k == "a" || k == "A" -> modify_ (_ { headerSelected = Just Header.End })
               | k == "i" || k == "I" -> modify_ (_ { headerSelected = Just Header.Beginning })
               | k == "d" -> forestModDOU (forestCursorDeleteElem identity)

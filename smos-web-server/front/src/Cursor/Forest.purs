@@ -1,6 +1,6 @@
 module Cursor.Forest where
 
-import Cursor.List.NonEmpty (NonEmptyCursor, foldNonEmptyCursor, makeNonEmptyCursor, mapNonEmptyCursor, nonEmptyCursorAppend, nonEmptyCursorAppendAndSelect, nonEmptyCursorDeleteElem, nonEmptyCursorDeleteElemAndSelectNext, nonEmptyCursorElemL, nonEmptyCursorInsert, nonEmptyCursorInsertAndSelect, nonEmptyCursorRemoveElem, nonEmptyCursorRemoveElemAndSelectPrev, nonEmptyCursorSelectFirst, nonEmptyCursorSelectIndex, nonEmptyCursorSelectLast, nonEmptyCursorSelectNext, nonEmptyCursorSelectPrev, nonEmptyCursorSelection, rebuildNonEmptyCursor)
+import Cursor.List.NonEmpty (NonEmptyCursor, foldNonEmptyCursor, makeNonEmptyCursor, mapNonEmptyCursor, nonEmptyCursorAppend, nonEmptyCursorAppendAndSelect, nonEmptyCursorDeleteElem, nonEmptyCursorDeleteElemAndSelectNext, nonEmptyCursorElemL, nonEmptyCursorInsert, nonEmptyCursorInsertAndSelect, nonEmptyCursorRemoveElem, nonEmptyCursorRemoveElemAndSelectPrev, nonEmptyCursorSelectFirst, nonEmptyCursorSelectIndex, nonEmptyCursorSelectLast, nonEmptyCursorSelectNext, nonEmptyCursorSelectPrev, nonEmptyCursorSelection, rebuildNonEmptyCursor, singletonNonEmptyCursor)
 import Control.Alternative ((<|>))
 import Prelude
 import Cursor.Tree (PromoteElemResult(..), PromoteResult(..), SwapResult(..), makeTreeCursor, makeTreeCursorWithSelection, mapTreeCursor, rebuildTreeCursor, singletonTreeCursor, treeCursorAddChildAtEnd, treeCursorAddChildAtEndAndSelect, treeCursorAddChildAtPos, treeCursorAddChildAtPosAndSelect, treeCursorAddChildAtStart, treeCursorAddChildAtStartAndSelect, treeCursorAppend, treeCursorAppendAndSelect, treeCursorCloseCurrentForest, treeCursorDeleteElem, treeCursorDeleteElemAndSelectNext, treeCursorDeleteElemAndSelectPrevious, treeCursorDeleteSubTree, treeCursorDeleteSubTreeAndSelectNext, treeCursorDeleteSubTreeAndSelectPrevious, treeCursorInsert, treeCursorInsertAndSelect, treeCursorOpenCurrentForest, treeCursorOpenCurrentForestRecursively, treeCursorPromoteElem, treeCursorPromoteSubTree, treeCursorRemoveElem, treeCursorRemoveSubTree, treeCursorSwapNext, treeCursorSwapPrev, treeCursorToggleCurrentForest, treeCursorToggleCurrentForestRecursively)
@@ -17,6 +17,12 @@ newtype ForestCursor a b
   = ForestCursor
   { forestCursorListCursor :: NonEmptyCursor (TreeCursor a b) (CTree b)
   }
+
+singletonForestCursor :: forall a b. a -> ForestCursor a b
+singletonForestCursor a =
+  ForestCursor
+    { forestCursorListCursor: singletonNonEmptyCursor (singletonTreeCursor a)
+    }
 
 makeForestCursor :: forall a b. (b -> a) -> NonEmptyList (CTree b) -> ForestCursor a b
 makeForestCursor g nec = ForestCursor { forestCursorListCursor: makeNonEmptyCursor (makeTreeCursor g) nec }
