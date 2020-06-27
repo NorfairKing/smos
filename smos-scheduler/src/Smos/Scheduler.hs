@@ -130,8 +130,8 @@ performScheduleItem wdir now tz ScheduleItem {..} = do
                 Success rendered -> do
                   destinationExists <- doesFileExist to
                   when destinationExists
-                    $ putStrLn
-                    $ unwords ["WARNING: destination already exists:", fromAbsFile to, "overwriting."]
+                    $ die
+                    $ unwords ["ERROR: destination already exists:", fromAbsFile to, " not overwriting."]
                   ensureDir $ parent to
                   writeSmosFile to rendered
                   cs <- SB.readFile $ fromAbsFile to

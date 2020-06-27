@@ -121,6 +121,50 @@ in
                   }
                 );
             };
+          scheduler =
+            mkOption {
+              default = null;
+              type =
+                types.nullOr (
+                  types.submodule {
+                    options =
+                      {
+                        enable = mkEnableOption "Smos scheduler activation";
+                        schedule =
+                          mkOption {
+                            description = "The schedule to activate";
+                            type = types.listOf (
+                              types.submodule {
+                                options = {
+                                  template =
+                                    mkOption {
+                                      type = types.nullOr types.str;
+                                      default = null;
+                                      example = "templates/weekly.smos";
+                                      description = "The relative path to the template in the workflow dir";
+                                    };
+                                  destination =
+                                    mkOption {
+                                      type = types.str;
+                                      default = null;
+                                      example = "workflow/work-[ %Y-%V | monday ].smos";
+                                      description = "The template relative path to the destination in the workflow dir";
+                                    };
+                                  schedule =
+                                    mkOption {
+                                      type = types.str;
+                                      default = null;
+                                      example = "0 12 * * 6"; # At 12:00 on saturday
+                                      description = "The cron schedule for when to activate this item";
+                                    };
+                                };
+                              }
+                            );
+                          };
+                      };
+                  }
+                );
+            };
         };
     };
   config =
@@ -218,8 +262,7 @@ sync:
         calendarCfg:
           optionalString (calendarCfg.enable or false) ''
 
-calendar:
-  sources: ${builtins.toJSON cfg.calendar.sources}
+calendar: ${builtins.toJSON calendarCfg}
 
     '';
 
@@ -260,10 +303,55 @@ calendar:
             };
         };
 
+      schedulerConfigContents =
+        schedulerCfg:
+          optionalString (schedulerCfg.enable or false) ''
+
+scheduler: ${builtins.toJSON schedulerCfg}
+
+    '';
+
+
+      schedulerSmosName = "scheduler-activate-smos";
+      schedulerSmosService =
+        {
+          Unit =
+            {
+              Description = "smos-scheduler activation";
+            };
+          Service =
+            {
+              ExecStart =
+                "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
+                  ''
+                    exec ${smosPkgs.smos-scheduler}/bin/smos-scheduler
+                  ''}";
+              Type = "oneshot";
+            };
+        };
+      schedulerSmosTimer =
+        {
+          Unit =
+            {
+              Description = "Activate smos scheduler every day";
+            };
+          Install =
+            {
+              WantedBy = [ "timers.target" ];
+            };
+          Timer =
+            {
+              OnCalendar = "daily";
+              Persistent = true;
+              Unit = "${schedulerSmosName}.service";
+            };
+        };
+
       smosConfigContents =
         concatStringsSep "\n" [
           (syncConfigContents cfg.sync)
           (calendarConfigContents cfg.calendar)
+          (schedulerConfigContents cfg.scheduler)
           cfg.extraConfig
         ];
 
@@ -278,6 +366,9 @@ calendar:
           // optionalAttrs (cfg.calendar.enable or false) {
             "${calendarSmosName}" = calendarSmosService;
           }
+          // optionalAttrs (cfg.scheduler.enable or false) {
+            "${schedulerSmosName}" = schedulerSmosService;
+          }
         );
       timers =
         (
@@ -290,6 +381,9 @@ calendar:
           // optionalAttrs (cfg.calendar.enable or false) {
             "${calendarSmosName}" = calendarSmosTimer;
           }
+          // optionalAttrs (cfg.scheduler.enable or false) {
+            "${schedulerSmosName}" = schedulerSmosTimer;
+          }
         );
       packages =
         [
@@ -299,6 +393,7 @@ calendar:
           smosPkgs.smos-single
           smosPkgs.smos-query
           smosPkgs.smos-sync-client
+          smosPkgs.smos-scheduler
           smosPkgs.smos-calendar-import
         ];
 
