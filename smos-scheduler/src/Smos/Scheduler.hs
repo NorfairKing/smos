@@ -71,7 +71,7 @@ scheduler Settings {..} = do
     else putStrLn "Not running because it's been run too recently already."
 
 minimumScheduleInterval :: NominalDiffTime
-minimumScheduleInterval = 1 -- 60 -- Only run once per minute.
+minimumScheduleInterval = 60 -- Only run once per minute.
 
 handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
 handleScheduleItem mState wdir now tz se = do
@@ -201,7 +201,20 @@ renderStateHistoryTemplate =
   fmap StateHistory . mapM renderStateHistoryEntryTemplate . stateHistoryEntryTemplates
 
 renderStateHistoryEntryTemplate :: StateHistoryEntryTemplate -> Render StateHistoryEntry
-renderStateHistoryEntryTemplate = undefined
+renderStateHistoryEntryTemplate StateHistoryEntryTemplate {..} = do
+  stateHistoryEntryNewState <- mapM renderTodoStateTemplate stateHistoryEntryTemplateNewState
+  stateHistoryEntryTimestamp <- renderUTCTimeTemplate stateHistoryEntryTemplateTimestamp
+  pure StateHistoryEntry {..}
+
+renderTodoStateTemplate :: TodoState -> Render TodoState
+renderTodoStateTemplate = fmap TodoState . renderTextTemplate . todoStateText
+
+renderUTCTimeTemplate :: UTCTimeTemplate -> Render UTCTime
+renderUTCTimeTemplate (UTCTimeTemplate t) = do
+  rt <- renderTextTemplate t
+  case JSON.eitherDecode (JSON.encode rt) of
+    Left err -> lift $ Failure [RenderErrorUTCTimeParseError t rt err]
+    Right ts -> pure ts
 
 renderTagsTemplate :: Set Tag -> Render (Set Tag)
 renderTagsTemplate = fmap S.fromList . mapM renderTagTemplate . S.toList
@@ -268,6 +281,7 @@ data RenderError
   | RenderErrorContentsValidity Contents Text
   | RenderErrorTagValidity Tag Text
   | RenderErrorPropertyValueValidity PropertyValue Text
+  | RenderErrorUTCTimeParseError Text Text String
   | RenderErrorTimestampParseError Text Text String
   | RenderErrorEntrySetState Entry UTCTime
   | RenderErrorTemplateParseError Text String
