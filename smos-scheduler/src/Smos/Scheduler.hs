@@ -41,49 +41,48 @@ scheduler Settings {..} = do
                   prettyPrintParseException err
                 ]
           Right state -> pure $ Just state
-  now <- getCurrentTime
-  tz <- getCurrentTimeZone
+  now <- getZonedTime
   let goAhead =
         case mState of
           Nothing -> True
-          Just ScheduleState {..} -> diffUTCTime now scheduleStateLastRun >= minimumScheduleInterval
+          Just ScheduleState {..} -> diffUTCTime (zonedTimeToUTC now) scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
-      mapM_ (handleScheduleItem mState wd now tz) $ scheduleItems setSchedule
+      mapM_ (handleScheduleItem mState wd now) $ scheduleItems setSchedule
       let state' =
             case mState of
-              Nothing -> ScheduleState {scheduleStateLastRun = now}
-              Just state -> state {scheduleStateLastRun = now}
+              Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now}
+              Just state -> state {scheduleStateLastRun = zonedTimeToUTC now}
       SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
     else putStrLn "Not running because it's been run too recently already."
 
 minimumScheduleInterval :: NominalDiffTime
 minimumScheduleInterval = 60 -- Only run once per minute.
 
-handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
-handleScheduleItem mState wdir now tz se = do
+handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
+handleScheduleItem mState wdir now se = do
   let s = scheduleItemCronSchedule se
   let mScheduledTime =
         case mState of
           Nothing ->
-            if scheduleMatches s now
-              then Just now
+            if scheduleMatches s (zonedTimeToUTC now)
+              then Just (zonedTimeToUTC now)
               else Nothing
           Just ScheduleState {..} ->
             case nextMatch s scheduleStateLastRun of
               Nothing -> Nothing
               Just scheduled ->
-                if scheduleStateLastRun <= scheduled && scheduled <= now
+                if scheduleStateLastRun <= scheduled && scheduled <= zonedTimeToUTC now
                   then Just scheduled
                   else Nothing
   case mScheduledTime of
     Nothing -> putStrLn $ unwords ["Not activating", show s, "at current time", show now]
-    Just scheduledTime -> performScheduleItem wdir scheduledTime tz se
+    Just scheduledTime -> performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
 
-performScheduleItem :: Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
-performScheduleItem wdir now tz ScheduleItem {..} = do
+performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
+performScheduleItem wdir now ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
-  let ctx = RenderContext {renderContextTime = now, renderContextTimeZone = tz}
+  let ctx = RenderContext {renderContextTime = now}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
     Failure errs ->
       putStrLn

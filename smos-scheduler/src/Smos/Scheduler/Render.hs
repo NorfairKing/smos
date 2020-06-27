@@ -33,9 +33,10 @@ renderTemplate (ScheduleTemplate f) = do
     $ for renderedForest
     $ \tree ->
       for tree $ \entry ->
-        case entrySetState now (Just "TODO") entry of
-          Nothing -> lift $ Failure [RenderErrorEntrySetState entry now]
-          Just r -> pure r
+        let utct = zonedTimeToUTC now
+         in case entrySetState utct (Just "TODO") entry of
+              Nothing -> lift $ Failure [RenderErrorEntrySetState entry utct]
+              Just r -> pure r
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
@@ -134,14 +135,13 @@ renderPathTemplate rf = do
 renderTimeTemplateNow :: Template -> Render Text
 renderTimeTemplateNow (Template tps) = do
   now <- asks renderContextTime
-  tz <- asks renderContextTimeZone
   fmap T.concat $ forM tps $ \case
     TLit t -> pure t
     TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
     TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
       Left err -> lift $ Failure [RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)]
       Right flt ->
-        pure $ T.pack $ case resolveLocalTime (utcToLocalTime tz now) flt of
+        pure $ T.pack $ case resolveLocalTime (zonedTimeToLocalTime now) flt of
           OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
           BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
@@ -185,8 +185,7 @@ prettyRenderError = show
 
 data RenderContext
   = RenderContext
-      { renderContextTime :: UTCTime,
-        renderContextTimeZone :: TimeZone
+      { renderContextTime :: ZonedTime
       }
   deriving (Show, Generic)
 
