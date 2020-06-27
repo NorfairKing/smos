@@ -51,17 +51,17 @@ instance Validity TemplatePiece where
           _ -> valid
       ]
 
-renderTemplate :: Template -> Text
-renderTemplate = T.concat . map renderTemplatePiece . templatePieces
+renderTimeTemplate :: Template -> Text
+renderTimeTemplate = T.concat . map renderTimeTemplatePiece . templatePieces
 
-renderTemplatePiece :: TemplatePiece -> Text
-renderTemplatePiece = \case
+renderTimeTemplatePiece :: TemplatePiece -> Text
+renderTimeTemplatePiece = \case
   TLit t -> t
   TTime t -> "[ " <> t <> " ]"
   TRelTime t1 t2 -> "[ " <> t1 <> " | " <> t2 <> " ]"
 
-parseTemplate :: Text -> Either String Template
-parseTemplate = fmap Template . go . T.unpack
+parseTimeTemplate :: Text -> Either String Template
+parseTimeTemplate = fmap Template . go . T.unpack
   where
     go :: String -> Either String [TemplatePiece]
     go cs = case break (== '[') cs of

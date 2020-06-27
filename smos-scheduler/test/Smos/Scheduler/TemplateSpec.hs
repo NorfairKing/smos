@@ -26,15 +26,15 @@ spec = do
   genValidSpec @TemplatePiece
   genValidSpec @Template
   describe "normaliseTemplate" $ it "produces valid templates" $ producesValidsOnValids normaliseTemplate
-  describe "renderTemplatePiece" $ it "produces valids values" $ producesValidsOnValids renderTemplatePiece
-  describe "renderTemplate" $ it "produces valids values" $ producesValidsOnValids renderTemplate
-  describe "renderTemplate and parseTemplate" $ it "are inverses" $ forAllValid $ \t -> parseTemplate (renderTemplate t) `shouldBe` Right t
+  describe "renderTimeTemplatePiece" $ it "produces valids values" $ producesValidsOnValids renderTimeTemplatePiece
+  describe "renderTimeTemplate" $ it "produces valids values" $ producesValidsOnValids renderTimeTemplate
+  describe "renderTimeTemplate and parseTimeTemplate" $ it "are inverses" $ forAllValid $ \t -> parseTimeTemplate (renderTimeTemplate t) `shouldBe` Right t
   describe "parseTemplate" $ do
-    it "parses into valid values" $ producesValidsOnValids parseTemplate
+    it "parses into valid values" $ producesValidsOnValids parseTimeTemplate
     let s t ps =
           let r = Template ps
-           in it ("succesfully parses " <> show t <> " into " <> show r) $ parseTemplate t `shouldBe` Right r
-    let f t = it ("correctly fails to parse " <> show t) $ case parseTemplate t of
+           in it ("succesfully parses " <> show t <> " into " <> show r) $ parseTimeTemplate t `shouldBe` Right r
+    let f t = it ("correctly fails to parse " <> show t) $ case parseTimeTemplate t of
           Left _ -> pure ()
           Right r -> expectationFailure $ "Should have failed to parse, but succeeded and parsed " <> show r
     -- Literal

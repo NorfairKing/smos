@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -26,6 +27,7 @@ import Path.IO
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
+import Smos.Scheduler.Template
 import System.Cron (nextMatch, scheduleMatches)
 import System.Exit
 import Text.Show.Pretty
@@ -204,18 +206,28 @@ renderTagTemplate tg = do
     Just tg' -> pure tg'
 
 renderTextTemplate :: Text -> Render Text
-renderTextTemplate t = do
-  now <- asks renderContextTime
-  pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
+renderTextTemplate t =
+  case parseTimeTemplate t of
+    Left err -> lift $ Failure [RenderErrorTemplateParseError t err]
+    Right templ -> renderTimeTemplateNow templ
 
 renderPathTemplate :: Path Rel File -> Render (Path Rel File)
 renderPathTemplate rf = do
-  now <- asks renderContextTime
   let s = fromRelFile rf
-  let s' = formatTime defaultTimeLocale s now
-  case parseRelFile s' of
-    Nothing -> lift $ Failure [RenderErrorPathValidity rf s]
-    Just rf' -> pure rf'
+  case parseTimeTemplate (T.pack s) of
+    Left err -> lift $ Failure [RenderErrorTemplateParseError (T.pack s) err]
+    Right templ -> do
+      t' <- renderTimeTemplateNow templ
+      case parseRelFile (T.unpack t') of
+        Nothing -> lift $ Failure [RenderErrorPathValidity rf s]
+        Just rf' -> pure rf'
+
+renderTimeTemplateNow :: Template -> Render Text
+renderTimeTemplateNow (Template tps) = do
+  now <- asks renderContextTime
+  fmap T.concat $ forM tps $ \case
+    TLit t -> pure t
+    TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
 
 type Render a = ReaderT RenderContext RenderValidation a
 
@@ -242,6 +254,7 @@ data RenderError
   | RenderErrorTagValidity Tag Text
   | RenderErrorPropertyValueValidity PropertyValue Text
   | RenderErrorEntrySetState Entry UTCTime
+  | RenderErrorTemplateParseError Text String
   deriving (Show, Eq, Generic)
 
 prettyRenderError :: RenderError -> String
