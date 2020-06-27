@@ -10,6 +10,8 @@ where
 import Control.Monad
 import Control.Monad.Reader
 import qualified Data.ByteString as SB
+import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
 import Data.Time
 import Data.Yaml as Yaml
@@ -128,10 +130,10 @@ performScheduleItem wdir now ScheduleItem {..} = do
                       pure ScheduleItemResultSuccess
 
 data ScheduleItemResult
-  = ScheduleItemResultPathRenderError [RenderError]
+  = ScheduleItemResultPathRenderError (NonEmpty RenderError)
   | ScheduleItemResultTemplateDoesNotExist (Path Abs File)
   | ScheduleItemResultYamlParseError (Path Abs File) String
-  | ScheduleItemResultFileRenderError [RenderError]
+  | ScheduleItemResultFileRenderError (NonEmpty RenderError)
   | ScheduleItemResultDestinationAlreadyExists (Path Abs File)
   | ScheduleItemResultSuccess
 
@@ -141,7 +143,7 @@ scheduleItemResultMessage = \case
   ScheduleItemResultPathRenderError errs ->
     Just $ unlines $
       "ERROR: Validation errors while rendering template destination file name:"
-        : map prettyRenderError errs
+        : map prettyRenderError (NE.toList errs)
   ScheduleItemResultTemplateDoesNotExist from ->
     Just $ unwords ["ERROR: template does not exist:", fromAbsFile from]
   ScheduleItemResultYamlParseError from err ->
@@ -154,6 +156,6 @@ scheduleItemResultMessage = \case
     Just
       $ unlines
       $ "ERROR: Validation errors while rendering template:"
-        : map prettyRenderError errs
+        : map prettyRenderError (NE.toList errs)
   ScheduleItemResultDestinationAlreadyExists to ->
     Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]

@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Monad.Reader
 import qualified Data.Aeson as JSON
 import Data.FuzzyTime
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import qualified Data.Set as S
 import Data.Set (Set)
@@ -35,7 +36,7 @@ renderTemplate (ScheduleTemplate f) = do
       for tree $ \entry ->
         let utct = zonedTimeToUTC now
          in case entrySetState utct (Just "TODO") entry of
-              Nothing -> lift $ Failure [RenderErrorEntrySetState entry utct]
+              Nothing -> renderFail $ RenderErrorEntrySetState entry utct
               Just r -> pure r
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
@@ -52,7 +53,7 @@ renderHeaderTemplate :: Header -> Render Header
 renderHeaderTemplate h = do
   t <- renderTextTemplate (headerText h)
   case header t of
-    Nothing -> lift $ Failure [RenderErrorHeaderValidity h t]
+    Nothing -> renderFail $ RenderErrorHeaderValidity h t
     Just h' -> pure h'
 
 renderContentsTemplate :: Maybe Contents -> Render (Maybe Contents)
@@ -60,7 +61,7 @@ renderContentsTemplate =
   mapM $ \cs -> do
     t <- renderTextTemplate (contentsText cs)
     case contents t of
-      Nothing -> lift $ Failure [RenderErrorContentsValidity cs t]
+      Nothing -> renderFail $ RenderErrorContentsValidity cs t
       Just cs' -> pure cs'
 
 renderTimestampsTemplate ::
@@ -71,7 +72,7 @@ renderTimestampTemplate :: TimestampTemplate -> Render Timestamp
 renderTimestampTemplate (TimestampTemplate t) = do
   rt <- renderTextTemplate t
   case JSON.eitherDecode (JSON.encode rt) of
-    Left err -> lift $ Failure [RenderErrorTimestampParseError t rt err]
+    Left err -> renderFail $ RenderErrorTimestampParseError t rt err
     Right ts -> pure ts
 
 renderPropertiesTemplate ::
@@ -82,7 +83,7 @@ renderPropertyValueTemplate :: PropertyValue -> Render PropertyValue
 renderPropertyValueTemplate pv = do
   t <- renderTextTemplate (propertyValueText pv)
   case propertyValue t of
-    Nothing -> lift $ Failure [RenderErrorPropertyValueValidity pv t]
+    Nothing -> renderFail $ RenderErrorPropertyValueValidity pv t
     Just pv' -> pure pv'
 
 renderStateHistoryTemplate :: StateHistoryTemplate -> Render StateHistory
@@ -102,7 +103,7 @@ renderUTCTimeTemplate :: UTCTimeTemplate -> Render UTCTime
 renderUTCTimeTemplate (UTCTimeTemplate t) = do
   rt <- renderTextTemplate t
   case JSON.eitherDecode (JSON.encode rt) of
-    Left err -> lift $ Failure [RenderErrorUTCTimeParseError t rt err]
+    Left err -> renderFail $ RenderErrorUTCTimeParseError t rt err
     Right ts -> pure ts
 
 renderTagsTemplate :: Set Tag -> Render (Set Tag)
@@ -112,24 +113,24 @@ renderTagTemplate :: Tag -> Render Tag
 renderTagTemplate tg = do
   t <- renderTextTemplate (tagText tg)
   case tag t of
-    Nothing -> lift $ Failure [RenderErrorTagValidity tg t]
+    Nothing -> renderFail $ RenderErrorTagValidity tg t
     Just tg' -> pure tg'
 
 renderTextTemplate :: Text -> Render Text
 renderTextTemplate t =
   case parseTimeTemplate t of
-    Left err -> lift $ Failure [RenderErrorTemplateParseError t err]
+    Left err -> renderFail $ RenderErrorTemplateParseError t err
     Right templ -> renderTimeTemplateNow templ
 
 renderPathTemplate :: Path Rel File -> Render (Path Rel File)
 renderPathTemplate rf = do
   let s = fromRelFile rf
   case parseTimeTemplate (T.pack s) of
-    Left err -> lift $ Failure [RenderErrorTemplateParseError (T.pack s) err]
+    Left err -> renderFail $ RenderErrorTemplateParseError (T.pack s) err
     Right templ -> do
       t' <- renderTimeTemplateNow templ
       case parseRelFile (T.unpack t') of
-        Nothing -> lift $ Failure [RenderErrorPathValidity rf s]
+        Nothing -> renderFail $ RenderErrorPathValidity rf s
         Just rf' -> pure rf'
 
 renderTimeTemplateNow :: Template -> Render Text
@@ -139,7 +140,7 @@ renderTimeTemplateNow (Template tps) = do
     TLit t -> pure t
     TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
     TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
-      Left err -> lift $ Failure [RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)]
+      Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
       Right flt ->
         pure $ T.pack $ case resolveLocalTime (zonedTimeToLocalTime now) flt of
           OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
@@ -149,7 +150,7 @@ type Render a = ReaderT RenderContext RenderValidation a
 
 data RenderValidation a
   = Success a
-  | Failure [RenderError]
+  | Failure (NonEmpty RenderError)
   deriving (Show, Eq, Generic, Functor)
 
 instance Validity a => Validity (RenderValidation a)
@@ -179,6 +180,9 @@ data RenderError
   deriving (Show, Eq, Generic)
 
 instance Validity RenderError
+
+renderFail :: RenderError -> Render a
+renderFail e = lift $ Failure (e :| [])
 
 prettyRenderError :: RenderError -> String
 prettyRenderError = show
