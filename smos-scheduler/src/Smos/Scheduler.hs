@@ -11,6 +11,7 @@ where
 
 import Control.Monad
 import Control.Monad.Reader
+import qualified Data.Aeson as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Char8 as SB8
 import Data.FuzzyTime
@@ -70,7 +71,7 @@ scheduler Settings {..} = do
     else putStrLn "Not running because it's been run too recently already."
 
 minimumScheduleInterval :: NominalDiffTime
-minimumScheduleInterval = 60 -- Only run once per minute.
+minimumScheduleInterval = 1 -- 60 -- Only run once per minute.
 
 handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
 handleScheduleItem mState wdir now tz se = do
@@ -175,14 +176,18 @@ renderContentsTemplate =
 
 renderTimestampsTemplate ::
   Map TimestampName TimestampTemplate -> Render (Map TimestampName Timestamp)
-renderTimestampsTemplate = traverse renderTimestampTemplate -- TODO
+renderTimestampsTemplate = traverse renderTimestampTemplate
 
 renderTimestampTemplate :: TimestampTemplate -> Render Timestamp
-renderTimestampTemplate = undefined -- TODO
+renderTimestampTemplate (TimestampTemplate t) = do
+  rt <- renderTextTemplate t
+  case JSON.eitherDecode (JSON.encode rt) of
+    Left err -> lift $ Failure [RenderErrorTimestampParseError t rt err]
+    Right ts -> pure ts
 
 renderPropertiesTemplate ::
   Map PropertyName PropertyValue -> Render (Map PropertyName PropertyValue)
-renderPropertiesTemplate = traverse renderPropertyValueTemplate -- TODO
+renderPropertiesTemplate = traverse renderPropertyValueTemplate
 
 renderPropertyValueTemplate :: PropertyValue -> Render PropertyValue
 renderPropertyValueTemplate pv = do
@@ -263,6 +268,7 @@ data RenderError
   | RenderErrorContentsValidity Contents Text
   | RenderErrorTagValidity Tag Text
   | RenderErrorPropertyValueValidity PropertyValue Text
+  | RenderErrorTimestampParseError Text Text String
   | RenderErrorEntrySetState Entry UTCTime
   | RenderErrorTemplateParseError Text String
   | RenderErrorRelativeTimeParserError Text String
