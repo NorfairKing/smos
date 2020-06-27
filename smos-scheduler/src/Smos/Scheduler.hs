@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -77,8 +78,12 @@ handleScheduleItem mLastRun wdir now se = do
       putStrLn $ unwords ["Not activating", show s, "at current time", show now]
       pure Nothing
     Just scheduledTime -> do
-      performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
-      pure $ Just scheduledTime
+      r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
+      case scheduleItemResultMessage r of
+        Nothing -> pure $ Just scheduledTime
+        Just msg -> do
+          putStrLn msg
+          pure Nothing
 
 calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> Maybe UTCTime
 calculateScheduledTime now mState s =
@@ -95,41 +100,60 @@ calculateScheduledTime now mState s =
             then Just scheduled
             else Nothing
 
-performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
+performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem wdir now ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
-    Failure errs ->
-      putStrLn
-        $ unlines
-        $ "ERROR: Validation errors while rendering template destination file name:"
-          : map prettyRenderError errs
+    Failure errs -> pure $ ScheduleItemResultPathRenderError errs
     Success destination -> do
       let to = wdir </> destination
       mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
       case mContents of
-        Nothing -> putStrLn $ unwords ["ERROR: template does not exist:", fromAbsFile from]
+        Nothing -> pure $ ScheduleItemResultTemplateDoesNotExist from
         Just cts ->
           case Yaml.decodeEither' cts of
-            Left err ->
-              putStrLn $
-                unlines
-                  [ unwords ["ERROR: Does not look like a smos template file:", fromAbsFile from],
-                    prettyPrintParseException err
-                  ]
+            Left err -> pure $ ScheduleItemResultYamlParseError from (prettyPrintParseException err)
             Right template -> do
               let vRendered = runReaderT (renderTemplate template) ctx
               case vRendered of
-                Failure errs ->
-                  putStrLn
-                    $ unlines
-                    $ "ERROR: Validation errors while rendering template:"
-                      : map prettyRenderError errs
+                Failure errs -> pure $ ScheduleItemResultFileRenderError errs
                 Success rendered -> do
                   destinationExists <- doesFileExist to
-                  when destinationExists
-                    $ putStrLn
-                    $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
-                  ensureDir $ parent to
-                  writeSmosFile to rendered
+                  if destinationExists
+                    then pure $ ScheduleItemResultDestinationAlreadyExists to
+                    else do
+                      ensureDir $ parent to
+                      writeSmosFile to rendered
+                      pure ScheduleItemResultSuccess
+
+data ScheduleItemResult
+  = ScheduleItemResultPathRenderError [RenderError]
+  | ScheduleItemResultTemplateDoesNotExist (Path Abs File)
+  | ScheduleItemResultYamlParseError (Path Abs File) String
+  | ScheduleItemResultFileRenderError [RenderError]
+  | ScheduleItemResultDestinationAlreadyExists (Path Abs File)
+  | ScheduleItemResultSuccess
+
+scheduleItemResultMessage :: ScheduleItemResult -> Maybe String
+scheduleItemResultMessage = \case
+  ScheduleItemResultSuccess -> Nothing
+  ScheduleItemResultPathRenderError errs ->
+    Just $ unlines $
+      "ERROR: Validation errors while rendering template destination file name:"
+        : map prettyRenderError errs
+  ScheduleItemResultTemplateDoesNotExist from ->
+    Just $ unwords ["ERROR: template does not exist:", fromAbsFile from]
+  ScheduleItemResultYamlParseError from err ->
+    Just $
+      unlines
+        [ unwords ["ERROR: Does not look like a smos template file:", fromAbsFile from],
+          err
+        ]
+  ScheduleItemResultFileRenderError errs ->
+    Just
+      $ unlines
+      $ "ERROR: Validation errors while rendering template:"
+        : map prettyRenderError errs
+  ScheduleItemResultDestinationAlreadyExists to ->
+    Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
