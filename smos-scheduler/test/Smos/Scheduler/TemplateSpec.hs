@@ -7,19 +7,11 @@ module Smos.Scheduler.TemplateSpec
   )
 where
 
-import Data.GenValidity
 import Data.GenValidity.Text ()
 import Smos.Scheduler.Template
+import Smos.Scheduler.Template.Gen ()
 import Test.Hspec
 import Test.Validity
-
-instance GenValid Template where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid TemplatePiece where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
 
 spec :: Spec
 spec = do

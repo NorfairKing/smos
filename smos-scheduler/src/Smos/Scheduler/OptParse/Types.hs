@@ -3,6 +3,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Scheduler.OptParse.Types where
 
@@ -15,6 +16,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
 import Data.Tree
+import Data.Validity
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
@@ -77,6 +79,8 @@ data ScheduleItem
       }
   deriving (Show, Eq, Generic)
 
+instance Validity ScheduleItem
+
 instance FromJSON ScheduleItem where
   parseJSON = viaYamlSchema
 
@@ -87,6 +91,9 @@ instance YamlSchema ScheduleItem where
         <$> requiredField "template" "The file to copy from (relative, inside the workflow directory)"
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)"
         <*> requiredFieldWith "schedule" "The schedule on which to do the copying" (eitherParser parseCronSchedule yamlSchema)
+
+instance Validity CronSchedule where
+  validate = trivialValidation
 
 data Environment
   = Environment
@@ -119,7 +126,9 @@ newtype ScheduleTemplate
   = ScheduleTemplate
       { scheduleTemplateForest :: Forest EntryTemplate
       }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+
+instance Validity ScheduleTemplate
 
 instance FromJSON ScheduleTemplate where
   parseJSON v = ScheduleTemplate . unForYaml <$> parseJSON v
@@ -151,6 +160,8 @@ data EntryTemplate
         entryTemplateTags :: Set Tag
       }
   deriving (Show, Eq, Generic)
+
+instance Validity EntryTemplate
 
 newEntryTemplate :: Header -> EntryTemplate
 newEntryTemplate h =
@@ -184,11 +195,15 @@ newtype TimestampTemplate
       }
   deriving (Show, Eq, Ord, Generic, FromJSON)
 
+instance Validity TimestampTemplate
+
 newtype StateHistoryTemplate
   = StateHistoryTemplate
       { stateHistoryEntryTemplates :: [StateHistoryEntryTemplate]
       }
   deriving (Show, Eq, Generic, FromJSON)
+
+instance Validity StateHistoryTemplate
 
 emptyStateHistoryTemplate :: StateHistoryTemplate
 emptyStateHistoryTemplate = StateHistoryTemplate {stateHistoryEntryTemplates = []}
@@ -200,6 +215,8 @@ data StateHistoryEntryTemplate
       }
   deriving (Show, Eq, Generic)
 
+instance Validity StateHistoryEntryTemplate
+
 instance FromJSON StateHistoryEntryTemplate where
   parseJSON =
     withObject "StateHistoryEntryTemplate" $ \o ->
@@ -210,3 +227,5 @@ newtype UTCTimeTemplate
       { utcTimeTemplateText :: Text
       }
   deriving (Show, Eq, Ord, Generic, FromJSON)
+
+instance Validity UTCTimeTemplate
