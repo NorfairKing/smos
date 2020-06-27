@@ -20,7 +20,6 @@ import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import System.Cron (CronSchedule, nextMatch, scheduleMatches)
 import System.Exit
-import Text.Show.Pretty
 
 smosScheduler :: IO ()
 smosScheduler = getSettings >>= scheduler
@@ -48,22 +47,26 @@ scheduler Settings {..} = do
           Just ScheduleState {..} -> diffUTCTime (zonedTimeToUTC now) scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
-      let startingState = case mState of
-            Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
-            Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
-      let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
-          go s si = do
-            let ms = M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
-            mu <- handleScheduleItem ms wd now si
-            case mu of
-              Nothing -> pure s
-              Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
-      state' <- foldM go startingState (scheduleItems setSchedule)
+      state' <- handleSchedule mState wd now setSchedule
       SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
     else putStrLn "Not running because it's been run too recently already."
 
 minimumScheduleInterval :: NominalDiffTime
 minimumScheduleInterval = 60 -- Only run once per minute.
+
+handleSchedule :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> Schedule -> IO ScheduleState
+handleSchedule mState wd now schedule = do
+  let startingState = case mState of
+        Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
+        Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
+  let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
+      go s si = do
+        let ms = M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
+        mu <- handleScheduleItem ms wd now si
+        case mu of
+          Nothing -> pure s
+          Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
+  foldM go startingState (scheduleItems schedule)
 
 handleScheduleItem :: Maybe UTCTime -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
 handleScheduleItem mLastRun wdir now se = do
