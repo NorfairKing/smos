@@ -9,6 +9,7 @@ module Smos.Scheduler.OptParse.Types where
 
 import Control.Applicative
 import Data.Aeson
+import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
@@ -22,7 +23,7 @@ import Path
 import Smos.Data
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
-import System.Cron (CronSchedule, parseCronSchedule)
+import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import YamlParse.Applicative
 
 data Flags
@@ -81,6 +82,13 @@ data ScheduleItem
 
 instance Validity ScheduleItem
 
+instance Hashable ScheduleItem where
+  hashWithSalt s (ScheduleItem t d cs) =
+    s
+      `hashWithSalt` t
+      `hashWithSalt` d
+      `hashWithSalt` serializeCronSchedule cs
+
 instance FromJSON ScheduleItem where
   parseJSON = viaYamlSchema
 
@@ -112,15 +120,22 @@ data Settings
 
 data ScheduleState
   = ScheduleState
-      { scheduleStateLastRun :: UTCTime
+      { scheduleStateLastRun :: UTCTime,
+        scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
       }
   deriving (Show, Eq, Generic)
 
 instance ToJSON ScheduleState where
-  toJSON ScheduleState {..} = object ["last-run" .= scheduleStateLastRun]
+  toJSON ScheduleState {..} = object ["last-run" .= scheduleStateLastRun, "item-last-runs" .= scheduleStateLastRuns]
 
 instance FromJSON ScheduleState where
-  parseJSON = withObject "ScheduleState" $ \o -> ScheduleState <$> o .: "last-run"
+  parseJSON = withObject "ScheduleState" $ \o -> ScheduleState <$> o .: "last-run" <*> o .: "item-last-runs"
+
+newtype ScheduleItemHash = ScheduleItemHash Int
+  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey)
+
+hashScheduleItem :: ScheduleItem -> ScheduleItemHash
+hashScheduleItem = ScheduleItemHash . hash
 
 newtype ScheduleTemplate
   = ScheduleTemplate

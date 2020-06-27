@@ -9,7 +9,7 @@ where
 import Control.Monad
 import Control.Monad.Reader
 import qualified Data.ByteString as SB
-import qualified Data.ByteString.Char8 as SB8
+import qualified Data.Map as M
 import Data.Time
 import Data.Yaml as Yaml
 import Path
@@ -48,24 +48,34 @@ scheduler Settings {..} = do
           Just ScheduleState {..} -> diffUTCTime (zonedTimeToUTC now) scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
-      mapM_ (handleScheduleItem mState wd now) $ scheduleItems setSchedule
-      let state' =
-            case mState of
-              Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now}
-              Just state -> state {scheduleStateLastRun = zonedTimeToUTC now}
+      let startingState = case mState of
+            Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
+            Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
+      let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
+          go s si = do
+            let ms = M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
+            mu <- handleScheduleItem ms wd now si
+            case mu of
+              Nothing -> pure s
+              Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
+      state' <- foldM go startingState (scheduleItems setSchedule)
       SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
     else putStrLn "Not running because it's been run too recently already."
 
 minimumScheduleInterval :: NominalDiffTime
 minimumScheduleInterval = 60 -- Only run once per minute.
 
-handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
-handleScheduleItem mState wdir now se = do
+handleScheduleItem :: Maybe UTCTime -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
+handleScheduleItem mLastRun wdir now se = do
   let s = scheduleItemCronSchedule se
-  let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) (scheduleStateLastRun <$> mState) s
+  let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
   case mScheduledTime of
-    Nothing -> putStrLn $ unwords ["Not activating", show s, "at current time", show now]
-    Just scheduledTime -> performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
+    Nothing -> do
+      putStrLn $ unwords ["Not activating", show s, "at current time", show now]
+      pure Nothing
+    Just scheduledTime -> do
+      performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
+      pure $ Just scheduledTime
 
 calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> Maybe UTCTime
 calculateScheduledTime now mState s =
@@ -94,8 +104,6 @@ performScheduleItem wdir now ScheduleItem {..} = do
           : map prettyRenderError errs
     Success destination -> do
       let to = wdir </> destination
-      pPrint from
-      pPrint to
       mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
       case mContents of
         Nothing -> putStrLn $ unwords ["ERROR: template does not exist:", fromAbsFile from]
@@ -108,7 +116,6 @@ performScheduleItem wdir now ScheduleItem {..} = do
                     prettyPrintParseException err
                   ]
             Right template -> do
-              SB8.putStrLn cts
               let vRendered = runReaderT (renderTemplate template) ctx
               case vRendered of
                 Failure errs ->
@@ -119,9 +126,7 @@ performScheduleItem wdir now ScheduleItem {..} = do
                 Success rendered -> do
                   destinationExists <- doesFileExist to
                   when destinationExists
-                    $ die
-                    $ unwords ["ERROR: destination already exists:", fromAbsFile to, " not overwriting."]
+                    $ putStrLn
+                    $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
                   ensureDir $ parent to
                   writeSmosFile to rendered
-                  cs <- SB.readFile $ fromAbsFile to
-                  SB8.putStrLn cs
