@@ -18,7 +18,7 @@ import Smos.Data
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
-import System.Cron (nextMatch, scheduleMatches)
+import System.Cron (CronSchedule, nextMatch, scheduleMatches)
 import System.Exit
 import Text.Show.Pretty
 
@@ -62,22 +62,25 @@ minimumScheduleInterval = 60 -- Only run once per minute.
 handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
 handleScheduleItem mState wdir now se = do
   let s = scheduleItemCronSchedule se
-  let mScheduledTime =
-        case mState of
-          Nothing ->
-            if scheduleMatches s (zonedTimeToUTC now)
-              then Just (zonedTimeToUTC now)
-              else Nothing
-          Just ScheduleState {..} ->
-            case nextMatch s scheduleStateLastRun of
-              Nothing -> Nothing
-              Just scheduled ->
-                if scheduleStateLastRun <= scheduled && scheduled <= zonedTimeToUTC now
-                  then Just scheduled
-                  else Nothing
+  let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) (scheduleStateLastRun <$> mState) s
   case mScheduledTime of
     Nothing -> putStrLn $ unwords ["Not activating", show s, "at current time", show now]
     Just scheduledTime -> performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
+
+calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> Maybe UTCTime
+calculateScheduledTime now mState s =
+  case mState of
+    Nothing ->
+      if scheduleMatches s now
+        then Just now
+        else Nothing
+    Just lastRun ->
+      case nextMatch s lastRun of
+        Nothing -> Nothing
+        Just scheduled ->
+          if lastRun <= scheduled && scheduled <= now
+            then Just scheduled
+            else Nothing
 
 performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ()
 performScheduleItem wdir now ScheduleItem {..} = do
