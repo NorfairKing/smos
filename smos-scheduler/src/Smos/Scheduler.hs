@@ -13,6 +13,7 @@ import Control.Monad
 import Control.Monad.Reader
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Char8 as SB8
+import Data.FuzzyTime
 import Data.Map (Map)
 import qualified Data.Set as S
 import Data.Set (Set)
@@ -30,6 +31,7 @@ import Smos.Scheduler.OptParse
 import Smos.Scheduler.Template
 import System.Cron (nextMatch, scheduleMatches)
 import System.Exit
+import Text.Megaparsec
 import Text.Show.Pretty
 
 smosScheduler :: IO ()
@@ -52,13 +54,14 @@ scheduler Settings {..} = do
                 ]
           Right state -> pure $ Just state
   now <- getCurrentTime
+  tz <- getCurrentTimeZone
   let goAhead =
         case mState of
           Nothing -> True
           Just ScheduleState {..} -> diffUTCTime now scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
-      mapM_ (handleScheduleItem mState wd now) $ scheduleItems setSchedule
+      mapM_ (handleScheduleItem mState wd now tz) $ scheduleItems setSchedule
       let state' =
             case mState of
               Nothing -> ScheduleState {scheduleStateLastRun = now}
@@ -69,8 +72,8 @@ scheduler Settings {..} = do
 minimumScheduleInterval :: NominalDiffTime
 minimumScheduleInterval = 60 -- Only run once per minute.
 
-handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
-handleScheduleItem mState wdir now se = do
+handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
+handleScheduleItem mState wdir now tz se = do
   let s = scheduleItemCronSchedule se
   let mScheduledTime =
         case mState of
@@ -87,12 +90,12 @@ handleScheduleItem mState wdir now se = do
                   else Nothing
   case mScheduledTime of
     Nothing -> putStrLn $ unwords ["Not activating", show s, "at current time", show now]
-    Just scheduledTime -> performScheduleItem wdir scheduledTime se
+    Just scheduledTime -> performScheduleItem wdir scheduledTime tz se
 
-performScheduleItem :: Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
-performScheduleItem wdir now ScheduleItem {..} = do
+performScheduleItem :: Path Abs Dir -> UTCTime -> TimeZone -> ScheduleItem -> IO ()
+performScheduleItem wdir now tz ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
-  let ctx = RenderContext {renderContextTime = now}
+  let ctx = RenderContext {renderContextTime = now, renderContextTimeZone = tz}
   case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
     Failure errs ->
       putStrLn
@@ -225,9 +228,16 @@ renderPathTemplate rf = do
 renderTimeTemplateNow :: Template -> Render Text
 renderTimeTemplateNow (Template tps) = do
   now <- asks renderContextTime
+  tz <- asks renderContextTimeZone
   fmap T.concat $ forM tps $ \case
     TLit t -> pure t
     TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
+    TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
+      Left err -> lift $ Failure [RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)]
+      Right flt ->
+        pure $ T.pack $ case resolveLocalTime (utcToLocalTime tz now) flt of
+          OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
+          BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
 type Render a = ReaderT RenderContext RenderValidation a
 
@@ -255,6 +265,7 @@ data RenderError
   | RenderErrorPropertyValueValidity PropertyValue Text
   | RenderErrorEntrySetState Entry UTCTime
   | RenderErrorTemplateParseError Text String
+  | RenderErrorRelativeTimeParserError Text String
   deriving (Show, Eq, Generic)
 
 prettyRenderError :: RenderError -> String
@@ -262,6 +273,7 @@ prettyRenderError = show
 
 data RenderContext
   = RenderContext
-      { renderContextTime :: UTCTime
+      { renderContextTime :: UTCTime,
+        renderContextTimeZone :: TimeZone
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)

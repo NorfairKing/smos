@@ -19,6 +19,8 @@ library:
     - containers
     - cron
     - envparse
+    - fuzzy-time
+    - megaparsec
     - mtl
     - optparse-applicative
     - path
