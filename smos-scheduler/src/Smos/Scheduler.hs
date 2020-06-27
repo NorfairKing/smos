@@ -72,17 +72,19 @@ handleSchedule mState wd now schedule = do
   foldM go startingState (scheduleItems schedule)
 
 handleScheduleItem :: Maybe UTCTime -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
-handleScheduleItem mLastRun wdir now se = do
-  let s = scheduleItemCronSchedule se
+handleScheduleItem mLastRun wdir now si = do
+  let s = scheduleItemCronSchedule si
   let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
   case mScheduledTime of
     Nothing -> do
-      putStrLn $ unwords ["Not activating", show s, "at current time", show now]
+      putStrLn $ unwords ["Not activating", show s, "with hash", show (hashScheduleItem si), "at current time", show now]
       pure Nothing
     Just scheduledTime -> do
-      r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) se
+      r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) si
       case scheduleItemResultMessage r of
-        Nothing -> pure $ Just scheduledTime
+        Nothing -> do
+          putStrLn $ "Succesfully activated " <> show s
+          pure $ Just scheduledTime
         Just msg -> do
           putStrLn msg
           pure Nothing
