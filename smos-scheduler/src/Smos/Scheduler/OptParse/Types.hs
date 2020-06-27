@@ -78,22 +78,14 @@ data ScheduleItem
   deriving (Show, Eq, Generic)
 
 instance FromJSON ScheduleItem where
-  parseJSON =
-    withObject "ScheduleItem" $ \o ->
-      ScheduleItem <$> o .: "template" <*> o .: "destination"
-        <*> ( do
-                t <- o .: "schedule"
-                case parseCronSchedule t of
-                  Left err -> fail err
-                  Right cs -> pure cs
-            )
+  parseJSON = viaYamlSchema
 
 instance YamlSchema ScheduleItem where
   yamlSchema =
     objectParser "ScheduleItem" $
       ScheduleItem
-        <$> requiredField "template" "The file to copy from"
-        <*> requiredField "destination" "The file to copy to"
+        <$> requiredField "template" "The file to copy from (relative, inside the workflow directory)"
+        <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)"
         <*> requiredFieldWith "schedule" "The schedule on which to do the copying" (eitherParser parseCronSchedule yamlSchema)
 
 data Environment

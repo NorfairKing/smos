@@ -45,7 +45,7 @@ scheduler Settings {..} = do
           Left err ->
             die $
               unlines
-                [ unwords ["WARNING: unable to decode state file:", fromAbsFile setStateFile],
+                [ unwords ["ERROR: unable to decode state file:", fromAbsFile setStateFile],
                   prettyPrintParseException err
                 ]
           Right state -> pure $ Just state
@@ -53,7 +53,7 @@ scheduler Settings {..} = do
   let goAhead =
         case mState of
           Nothing -> True
-          Just ScheduleState {..} -> diffUTCTime now scheduleStateLastRun >= 60
+          Just ScheduleState {..} -> diffUTCTime now scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
       mapM_ (handleScheduleItem mState wd now) $ scheduleItems setSchedule
@@ -63,6 +63,9 @@ scheduler Settings {..} = do
               Just state -> state {scheduleStateLastRun = now}
       SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
     else putStrLn "Not running because it's been run too recently already."
+
+minimumScheduleInterval :: NominalDiffTime
+minimumScheduleInterval = 60 -- Only run once per minute.
 
 handleScheduleItem :: Maybe ScheduleState -> Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
 handleScheduleItem mState wdir now se = do
@@ -81,7 +84,7 @@ handleScheduleItem mState wdir now se = do
                   then Just scheduled
                   else Nothing
   case mScheduledTime of
-    Nothing -> putStrLn $ unwords ["Not activating ", show s, "at current time", show now]
+    Nothing -> putStrLn $ unwords ["Not activating", show s, "at current time", show now]
     Just scheduledTime -> performScheduleItem wdir scheduledTime se
 
 performScheduleItem :: Path Abs Dir -> UTCTime -> ScheduleItem -> IO ()
@@ -92,7 +95,7 @@ performScheduleItem wdir now ScheduleItem {..} = do
     Failure errs ->
       putStrLn
         $ unlines
-        $ "WARNING: Validation errors while rendering template destination file name:"
+        $ "ERROR: Validation errors while rendering template destination file name:"
           : map prettyRenderError errs
     Success destination -> do
       let to = wdir </> destination
@@ -100,13 +103,13 @@ performScheduleItem wdir now ScheduleItem {..} = do
       pPrint to
       mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
       case mContents of
-        Nothing -> putStrLn $ unwords ["WARNING: template does not exist:", fromAbsFile from]
+        Nothing -> putStrLn $ unwords ["ERROR: template does not exist:", fromAbsFile from]
         Just cts ->
           case Yaml.decodeEither' cts of
             Left err ->
               putStrLn $
                 unlines
-                  [ unwords ["WARNING: Does not look like a smos template file:", fromAbsFile from],
+                  [ unwords ["ERROR: Does not look like a smos template file:", fromAbsFile from],
                     prettyPrintParseException err
                   ]
             Right template -> do
@@ -116,7 +119,7 @@ performScheduleItem wdir now ScheduleItem {..} = do
                 Failure errs ->
                   putStrLn
                     $ unlines
-                    $ "WARNING: Validation errors while rendering template:"
+                    $ "ERROR: Validation errors while rendering template:"
                       : map prettyRenderError errs
                 Success rendered -> do
                   destinationExists <- doesFileExist to
