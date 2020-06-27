@@ -13,7 +13,17 @@ import GHC.Generics (Generic)
 newtype Template = Template {templatePieces :: [TemplatePiece]}
   deriving (Show, Eq, Generic)
 
-instance Validity Template
+instance Validity Template where
+  validate t = mconcat [genericValidate t, declare "The pieces are normalised" $ normaliseTemplate t == t]
+
+normaliseTemplate :: Template -> Template
+normaliseTemplate = Template . go . templatePieces
+  where
+    go = \case
+      [] -> []
+      [x] -> [x]
+      (TLit t1 : TLit t2 : rest) -> TLit (t1 <> t2) : go (TLit t2 : rest)
+      (p : rest) -> p : go rest
 
 data TemplatePiece
   = -- | "Literal text", translates to "Literal text"
@@ -32,7 +42,14 @@ data TemplatePiece
     TRelTime Text Text
   deriving (Show, Eq, Generic)
 
-instance Validity TemplatePiece
+instance Validity TemplatePiece where
+  validate tp =
+    mconcat
+      [ genericValidate tp,
+        case tp of
+          TLit t -> declare "The piece is nonempty" $ not $ T.null t
+          _ -> valid
+      ]
 
 renderTemplate :: Template -> Text
 renderTemplate = T.concat . map renderTemplatePiece . templatePieces
@@ -58,9 +75,16 @@ parseTemplate = fmap Template . go . T.unpack
     goVar :: String -> Either String [TemplatePiece]
     goVar cs = case break (== ']') cs of
       (l, cs') -> do
-        let h = [TTime (T.strip (T.pack l))]
+        let h = goRelVar l
         t <-
           if null cs'
             then Left "Unmatched [" -- the string does not contain ']'
             else go (drop 1 cs') -- The first character is ']'
-        pure $ h ++ t
+        pure $ h : t
+    goRelVar :: String -> TemplatePiece
+    goRelVar s =
+      let tt = T.strip . T.pack
+       in case break (== '|') s of
+            ([], []) -> TTime ""
+            (_, []) -> TTime (tt s)
+            (b, e) -> TRelTime (tt b) (tt (drop 1 e))
