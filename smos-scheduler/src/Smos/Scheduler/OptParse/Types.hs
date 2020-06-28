@@ -18,6 +18,7 @@ import Data.Text (Text)
 import Data.Time
 import Data.Tree
 import Data.Validity
+import Data.Word
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
@@ -131,11 +132,11 @@ instance ToJSON ScheduleState where
 instance FromJSON ScheduleState where
   parseJSON = withObject "ScheduleState" $ \o -> ScheduleState <$> o .: "last-run" <*> o .: "item-last-runs"
 
-newtype ScheduleItemHash = ScheduleItemHash Int
+newtype ScheduleItemHash = ScheduleItemHash Word64
   deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey)
 
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
-hashScheduleItem = ScheduleItemHash . hash
+hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
 
 newtype ScheduleTemplate
   = ScheduleTemplate
