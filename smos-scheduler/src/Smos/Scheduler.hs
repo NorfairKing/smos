@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -15,6 +16,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
 import Data.Time
 import Data.Yaml as Yaml
+import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Smos.Data
@@ -76,10 +78,13 @@ handleScheduleItem mLastRun wdir now si = do
   let s = scheduleItemCronSchedule si
   let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
   case mScheduledTime of
-    Nothing -> do
+    Don'tActivateButUpdate newLastRun -> do
+      putStrLn $ unwords ["Not activating", show s, "with hash", show (hashScheduleItem si), "at current time", show now, "but still setting it last run because it's the first time"]
+      pure (Just newLastRun)
+    Don'tActivate -> do
       putStrLn $ unwords ["Not activating", show s, "with hash", show (hashScheduleItem si), "at current time", show now]
       pure Nothing
-    Just scheduledTime -> do
+    ActivateAt scheduledTime -> do
       r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) si
       case scheduleItemResultMessage r of
         Nothing -> do
@@ -89,20 +94,26 @@ handleScheduleItem mLastRun wdir now si = do
           putStrLn msg
           pure Nothing
 
-calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> Maybe UTCTime
+calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> ScheduledTime
 calculateScheduledTime now mState s =
   case mState of
     Nothing ->
       if scheduleMatches s now
-        then Just now
-        else Nothing
+        then ActivateAt now
+        else Don'tActivateButUpdate now
     Just lastRun ->
       case nextMatch s lastRun of
-        Nothing -> Nothing
+        Nothing -> Don'tActivate
         Just scheduled ->
           if lastRun <= scheduled && scheduled <= now
-            then Just scheduled
-            else Nothing
+            then ActivateAt scheduled
+            else Don'tActivate
+
+data ScheduledTime
+  = ActivateAt UTCTime
+  | Don'tActivate
+  | Don'tActivateButUpdate UTCTime
+  deriving (Show, Eq, Generic)
 
 performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem wdir now ScheduleItem {..} = do

@@ -341,7 +341,7 @@ scheduler: ${builtins.toJSON schedulerCfg}
             };
           Timer =
             {
-              OnCalendar = "daily";
+              OnCalendar = "hourly";
               Persistent = true;
               Unit = "${schedulerSmosName}.service";
             };

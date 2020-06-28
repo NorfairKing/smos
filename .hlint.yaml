@@ -17,7 +17,9 @@
       - "Smos.Draw.drawEntryCursor"
 - ignore:
     name: "Use camelCase"
-    within: "Smos.Report.Archive.HideArchive"
+    within: 
+      - "Smos.Report.Archive.HideArchive"
+      - "Smos.Scheduler"
 - ignore: 
     name: "Use <$>"
     within: 
