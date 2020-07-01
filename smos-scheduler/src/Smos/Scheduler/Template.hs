@@ -48,7 +48,12 @@ instance Validity TemplatePiece where
       [ genericValidate tp,
         case tp of
           TLit t -> declare "The piece is nonempty" $ not $ T.null t
-          _ -> valid
+          TTime t -> declare "The piece is stripped" $ T.strip t == t
+          TRelTime t1 t2 ->
+            mconcat
+              [ declare "The first piece is stripped" $ T.strip t1 == t1,
+                declare "The second piece is stripped" $ T.strip t2 == t2
+              ]
       ]
 
 renderTimeTemplate :: Template -> Text

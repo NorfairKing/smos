@@ -19,7 +19,7 @@
     name: "Use camelCase"
     within: 
       - "Smos.Report.Archive.HideArchive"
-      - "Smos.Scheduler"
+      - "Smos.Scheduler.Commands.Schedule"
 - ignore: 
     name: "Use <$>"
     within: 
