@@ -1,6 +1,8 @@
 # Run using:
 #
-#     $(nix-build nix/static.nix --no-link -A releaseTarScript)
+#     $(nix-build nix/static.nix --no-link -A releaseTarScript --option extra-substituters https://static-haskell-nix.cachix.org)
+#
+# Make sure to put the right cache in your trusted caches config
 { stack2nix-output-path ? "custom-stack2nix-output.nix"
 ,
 }:
@@ -12,7 +14,7 @@ let
     "smos-single"
     "smos-convert-org"
     "smos-sync-client"
-    # # "smos-scheduler" # Not production ready
+    "smos-scheduler"
     # # "smos-calendar-import" # Not production ready
     # # "smos-server" # Not for the casual user
     # # "smos-web-server" # Not for the casual user
@@ -53,7 +55,7 @@ let
       STACK2NIX_OUTPUT_PATH=$(${stack2nix-script})
       export NIX_PATH=nixpkgs=${pkgs.path}
 
-      ${pkgs.nix}/bin/nix-build nix/static.nix ${staticPackageFlags} --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" "$@"
+      ${pkgs.nix}/bin/nix-build nix/static.nix ${staticPackageFlags} --argstr stack2nix-output-path "$STACK2NIX_OUTPUT_PATH" --option extra-substituters https://static-haskell-nix.cachix.org "$@"
     '';
   static_package = pkgs.lib.genAttrs cabalPackageNames (
     name:
@@ -61,13 +63,13 @@ let
   );
   releaseTarScript =
     pkgs.writeShellScript "smos-release-zip.sh" ''
-      for i in *result
+      for i in result*
       do
         unlink $i
       done
       ${fullBuildScript}
 
-      find result*/bin -type f | xargs ${pkgs.gnutar}/bin/tar -cf smos.tar.gz
+      find result*/bin -type f | xargs ${pkgs.gnutar}/bin/tar -czf smos.tar.gz
     '';
 in
 {
