@@ -63,13 +63,13 @@ scheduleItemTemplateCheck wd tf = do
     Just (Left err) -> die $ unlines [unwords ["Error reading template file:", fromAbsFile f], err]
     Just (Right _) -> pure ()
 
-scheduleItemDestinationCheck :: Path Abs Dir -> Path Rel File -> IO ()
+scheduleItemDestinationCheck :: Path Abs Dir -> DestinationPathTemplate -> IO ()
 scheduleItemDestinationCheck _ tf = do
   now <- getZonedTime
   let ctx = RenderContext {renderContextTime = now}
-  case runReaderT (renderPathTemplate tf) ctx of
-    Failure errs -> die $ unlines $ unwords ["Failed to render a destination file template: ", fromRelFile tf] : map prettyRenderError (NE.toList errs)
-    Success _ -> pure ()
+  case renderDestinationPathTemplate ctx tf of
+    Left errs -> die $ unlines $ unwords ["Failed to render a destination file template: ", fromRelFile (destinationPathTemplatePath tf)] : map prettyRenderError (NE.toList errs)
+    Right _ -> pure ()
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do
@@ -161,9 +161,9 @@ performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleI
 performScheduleItem wdir now ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
-  case runReaderT (renderPathTemplate scheduleItemDestination) ctx of
-    Failure errs -> pure $ ScheduleItemResultPathRenderError errs
-    Success destination -> do
+  case renderDestinationPathTemplate ctx scheduleItemDestination of
+    Left errs -> pure $ ScheduleItemResultPathRenderError errs
+    Right destination -> do
       let to = wdir </> destination
       mErrOrTemplate <- readScheduleTemplate from
       case mErrOrTemplate of
@@ -181,6 +181,11 @@ performScheduleItem wdir now ScheduleItem {..} = do
                   ensureDir $ parent to
                   writeSmosFile to rendered
                   pure ScheduleItemResultSuccess
+
+renderDestinationPathTemplate :: RenderContext -> DestinationPathTemplate -> Either (NonEmpty RenderError) (Path Rel File)
+renderDestinationPathTemplate ctx (DestinationPathTemplate rf) = case runReaderT (renderPathTemplate rf) ctx of
+  Failure errs -> Left errs
+  Success r -> Right r
 
 readScheduleTemplate :: Path Abs File -> IO (Maybe (Either String ScheduleTemplate))
 readScheduleTemplate from = readYamlFile from

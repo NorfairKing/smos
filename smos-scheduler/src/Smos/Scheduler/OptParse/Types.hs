@@ -82,7 +82,7 @@ instance YamlSchema Schedule where
 data ScheduleItem
   = ScheduleItem
       { scheduleItemTemplate :: !(Path Rel File),
-        scheduleItemDestination :: !(Path Rel File), -- Turn this into a newline
+        scheduleItemDestination :: !DestinationPathTemplate,
         scheduleItemCronSchedule :: !CronSchedule
       }
   deriving (Show, Eq, Generic)
@@ -109,6 +109,16 @@ instance YamlSchema ScheduleItem where
 
 instance Validity CronSchedule where
   validate = trivialValidation
+
+newtype DestinationPathTemplate = DestinationPathTemplate {destinationPathTemplatePath :: Path Rel File}
+  deriving (Show, Eq, Generic)
+
+instance Validity DestinationPathTemplate
+
+instance Hashable DestinationPathTemplate
+
+instance YamlSchema DestinationPathTemplate where
+  yamlSchema = DestinationPathTemplate <$> yamlSchema
 
 data Environment
   = Environment
