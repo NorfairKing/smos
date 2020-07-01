@@ -27,6 +27,12 @@ import qualified Smos.Report.OptParse.Types as Report
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import YamlParse.Applicative
 
+data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
+  deriving (Show, Eq)
+
+data Command = CommandCheck | CommandSchedule
+  deriving (Show, Eq)
+
 data Flags
   = Flags
       { flagDirectoryFlags :: !Report.DirectoryFlags,
@@ -76,7 +82,7 @@ instance YamlSchema Schedule where
 data ScheduleItem
   = ScheduleItem
       { scheduleItemTemplate :: !(Path Rel File),
-        scheduleItemDestination :: !(Path Rel File),
+        scheduleItemDestination :: !(Path Rel File), -- Turn this into a newline
         scheduleItemCronSchedule :: !CronSchedule
       }
   deriving (Show, Eq, Generic)
@@ -109,6 +115,12 @@ data Environment
       { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
         envStateFile :: !(Maybe FilePath)
       }
+  deriving (Show, Eq)
+
+data Instructions = Instructions Dispatch Settings
+  deriving (Show, Eq)
+
+data Dispatch = DispatchCheck | DispatchSchedule
   deriving (Show, Eq)
 
 data Settings

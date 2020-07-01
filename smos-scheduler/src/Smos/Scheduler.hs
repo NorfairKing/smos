@@ -8,6 +8,7 @@ module Smos.Scheduler
   )
 where
 
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Reader
 import qualified Data.ByteString as SB
@@ -27,24 +28,53 @@ import System.Cron (CronSchedule, nextMatch, scheduleMatches)
 import System.Exit
 
 smosScheduler :: IO ()
-smosScheduler = getSettings >>= scheduler
+smosScheduler = getInstructions >>= scheduler
 
-scheduler :: Settings -> IO ()
-scheduler Settings {..} = do
+scheduler :: Instructions -> IO ()
+scheduler (Instructions d s) = case d of
+  DispatchCheck -> check s
+  DispatchSchedule -> schedule s
+
+check :: Settings -> IO ()
+check Settings {..} = do
   wd <- Report.resolveDirWorkflowDir setDirectorySettings
-  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile setStateFile
-  mState <-
-    case mContents of
-      Nothing -> pure Nothing
-      Just cts ->
-        case Yaml.decodeEither' cts of
-          Left err ->
-            die $
-              unlines
-                [ unwords ["ERROR: unable to decode state file:", fromAbsFile setStateFile],
-                  prettyPrintParseException err
-                ]
-          Right state -> pure $ Just state
+  stateFileCheck setStateFile
+  scheduleCheck wd setSchedule
+
+stateFileCheck :: Path Abs File -> IO ()
+stateFileCheck sf = do
+  _ <- readStateFile sf
+  pure ()
+
+scheduleCheck :: Path Abs Dir -> Schedule -> IO ()
+scheduleCheck wd (Schedule sis) = mapM_ (scheduleItemCheck wd) sis
+
+scheduleItemCheck :: Path Abs Dir -> ScheduleItem -> IO ()
+scheduleItemCheck wd ScheduleItem {..} = do
+  scheduleItemTemplateCheck wd scheduleItemTemplate
+  scheduleItemDestinationCheck wd scheduleItemDestination
+
+scheduleItemTemplateCheck :: Path Abs Dir -> Path Rel File -> IO ()
+scheduleItemTemplateCheck wd tf = do
+  let f = wd </> tf
+  mErrOrTemplate <- readScheduleTemplate f
+  case mErrOrTemplate of
+    Nothing -> die $ "Template file does not exist: " <> fromAbsFile f
+    Just (Left err) -> die $ unlines [unwords ["Error reading template file:", fromAbsFile f], err]
+    Just (Right _) -> pure ()
+
+scheduleItemDestinationCheck :: Path Abs Dir -> Path Rel File -> IO ()
+scheduleItemDestinationCheck _ tf = do
+  now <- getZonedTime
+  let ctx = RenderContext {renderContextTime = now}
+  case runReaderT (renderPathTemplate tf) ctx of
+    Failure errs -> die $ unlines $ unwords ["Failed to render a destination file template: ", fromRelFile tf] : map prettyRenderError (NE.toList errs)
+    Success _ -> pure ()
+
+schedule :: Settings -> IO ()
+schedule Settings {..} = do
+  wd <- Report.resolveDirWorkflowDir setDirectorySettings
+  mState <- readStateFile setStateFile
   now <- getZonedTime
   let goAhead =
         case mState of
@@ -56,11 +86,23 @@ scheduler Settings {..} = do
       SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
     else putStrLn "Not running because it's been run too recently already."
 
-minimumScheduleInterval :: NominalDiffTime
-minimumScheduleInterval = 60 -- Only run once per minute.
+readStateFile :: Path Abs File -> IO (Maybe ScheduleState)
+readStateFile sf = do
+  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile sf
+  case mContents of
+    Nothing -> pure Nothing
+    Just cts ->
+      case Yaml.decodeEither' cts of
+        Left err ->
+          die $
+            unlines
+              [ unwords ["ERROR: unable to decode state file:", fromAbsFile sf],
+                prettyPrintParseException err
+              ]
+        Right state -> pure $ Just state
 
 handleSchedule :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> Schedule -> IO ScheduleState
-handleSchedule mState wd now schedule = do
+handleSchedule mState wd now sched = do
   let startingState = case mState of
         Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
         Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
@@ -71,7 +113,7 @@ handleSchedule mState wd now schedule = do
         case mu of
           Nothing -> pure s
           Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
-  foldM go startingState (scheduleItems schedule)
+  foldM go startingState (scheduleItems sched)
 
 handleScheduleItem :: Maybe UTCTime -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
 handleScheduleItem mLastRun wdir now si = do
@@ -123,24 +165,30 @@ performScheduleItem wdir now ScheduleItem {..} = do
     Failure errs -> pure $ ScheduleItemResultPathRenderError errs
     Success destination -> do
       let to = wdir </> destination
-      mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile from
-      case mContents of
+      mErrOrTemplate <- readScheduleTemplate from
+      case mErrOrTemplate of
         Nothing -> pure $ ScheduleItemResultTemplateDoesNotExist from
-        Just cts ->
-          case Yaml.decodeEither' cts of
-            Left err -> pure $ ScheduleItemResultYamlParseError from (prettyPrintParseException err)
-            Right template -> do
-              let vRendered = runReaderT (renderTemplate template) ctx
-              case vRendered of
-                Failure errs -> pure $ ScheduleItemResultFileRenderError errs
-                Success rendered -> do
-                  destinationExists <- doesFileExist to
-                  if destinationExists
-                    then pure $ ScheduleItemResultDestinationAlreadyExists to
-                    else do
-                      ensureDir $ parent to
-                      writeSmosFile to rendered
-                      pure ScheduleItemResultSuccess
+        Just (Left err) -> pure $ ScheduleItemResultYamlParseError from err
+        Just (Right template) -> do
+          let vRendered = runReaderT (renderTemplate template) ctx
+          case vRendered of
+            Failure errs -> pure $ ScheduleItemResultFileRenderError errs
+            Success rendered -> do
+              destinationExists <- doesFileExist to
+              if destinationExists
+                then pure $ ScheduleItemResultDestinationAlreadyExists to
+                else do
+                  ensureDir $ parent to
+                  writeSmosFile to rendered
+                  pure ScheduleItemResultSuccess
+
+readScheduleTemplate :: Path Abs File -> IO (Maybe (Either String ScheduleTemplate))
+readScheduleTemplate from = readYamlFile from
+
+readYamlFile :: FromJSON a => Path Abs File -> IO (Maybe (Either String a))
+readYamlFile f = do
+  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile f
+  forM mContents $ \cts -> pure $ left prettyPrintParseException $ Yaml.decodeEither' cts
 
 data ScheduleItemResult
   = ScheduleItemResultPathRenderError (NonEmpty RenderError)
@@ -172,3 +220,6 @@ scheduleItemResultMessage = \case
         : map prettyRenderError (NE.toList errs)
   ScheduleItemResultDestinationAlreadyExists to ->
     Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
+
+minimumScheduleInterval :: NominalDiffTime
+minimumScheduleInterval = 60 -- Only run once per minute.

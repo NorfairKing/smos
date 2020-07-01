@@ -17,15 +17,18 @@ import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
 import qualified System.Environment as System
 
-getSettings :: IO Settings
-getSettings = do
-  flags <- getFlags
+getInstructions :: IO Instructions
+getInstructions = do
+  (Arguments cmd flags) <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions cmd (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
-deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
-deriveSettings Flags {..} Environment {..} mc = do
+combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions cmd Flags {..} Environment {..} mc = do
+  let d = case cmd of
+        CommandCheck -> DispatchCheck
+        CommandSchedule -> DispatchSchedule
   setDirectorySettings <-
     Report.combineToDirectoryConfig
       Report.defaultDirectoryConfig
@@ -37,7 +40,7 @@ deriveSettings Flags {..} Environment {..} mc = do
       Nothing -> defaultStateFile
       Just fp -> resolveFile' fp
   let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
-  pure Settings {..}
+  pure (Instructions d Settings {..})
   where
     cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSchedulerConfiguration >>= func
@@ -66,14 +69,14 @@ environmentParser =
   where
     mE = Env.def Nothing <> Env.keep
 
-getFlags :: IO (Report.FlagsWithConfigFile Flags)
-getFlags = do
+getArguments :: IO Arguments
+getArguments = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
-runArgumentsParser = execParserPure prefs_ flagsParser
+runArgumentsParser :: [String] -> ParserResult Arguments
+runArgumentsParser = execParserPure prefs_ argumentsParser
   where
     prefs_ =
       ParserPrefs
@@ -85,11 +88,34 @@ runArgumentsParser = execParserPure prefs_ flagsParser
           prefColumns = 80
         }
 
-flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
-flagsParser = info (helper <*> parseFlags) help_
+argumentsParser :: ParserInfo Arguments
+argumentsParser = info (helper <*> parseArguments) help_
   where
     help_ = fullDesc <> progDesc description
     description = "smos-scheduler"
+
+parseArguments :: Parser Arguments
+parseArguments = Arguments <$> parseCommand <*> parseFlags
+
+parseCommand :: Parser Command
+parseCommand =
+  hsubparser $
+    mconcat
+      [ command "check" parseCommandCheck,
+        command "schedule" parseCommandSchedule
+      ]
+
+parseCommandCheck :: ParserInfo Command
+parseCommandCheck = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Check that all schedules are sensible"
+    parser = pure CommandCheck
+
+parseCommandSchedule :: ParserInfo Command
+parseCommandSchedule = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Run the schedules"
+    parser = pure CommandSchedule
 
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =

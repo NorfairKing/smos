@@ -324,7 +324,7 @@ scheduler: ${builtins.toJSON schedulerCfg}
               ExecStart =
                 "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
                   ''
-                    exec ${smosPkgs.smos-scheduler}/bin/smos-scheduler
+                    exec ${smosPkgs.smos-scheduler}/bin/smos-scheduler schedule
                   ''}";
               Type = "oneshot";
             };
