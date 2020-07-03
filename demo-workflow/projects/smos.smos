@@ -1,0 +1,14 @@
+- entry:
+    header: Learn to use smos
+    state-history:
+    - state: TODO
+      time: 2020-07-02 17:27:12.486238102000
+  forest:
+  - header: Learn the basic editing
+    state-history:
+    - state: DONE
+      time: 2020-07-02 17:27:13.470951763000
+  - header: Learn about todo states
+    state-history:
+    - state: NEXT
+      time: 2020-07-02 17:27:13.790176785000
