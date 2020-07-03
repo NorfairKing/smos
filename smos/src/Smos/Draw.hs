@@ -110,7 +110,7 @@ drawInfo km =
         str " ",
         str "Building smos takes time, energy and money.",
         str "Please consider supporting the project.",
-        str "https://smos.cs-syd.eu/support.html"
+        str "https://smos.cs-syd.eu/support"
       ]
       ++ case lookupStartingActionInKeymap of
         Nothing -> []
