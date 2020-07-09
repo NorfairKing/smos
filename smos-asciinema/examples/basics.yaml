@@ -1,0 +1,60 @@
+output: ../casts/basics.cast
+file: foo.smos
+input:
+- send: "smos foo.smos\n"
+- wait: 1000
+# Look around in the help page
+- send: '?'
+- wait: 1000
+- send: j
+- wait: 100
+- send: j
+- wait: 100
+- send: j
+- wait: 100
+- send: j
+- wait: 100
+- send: j
+- wait: 1000
+- send: "\e"
+# Make three entries
+- wait: 1000
+- send: "e"
+- wait: 1000
+- send: Learn to use smos
+- wait: 1000
+- send: "\e"
+- wait: 1000
+- send: "E"
+- wait: 1000
+- send: Learn the basic editing
+- wait: 1000
+- send: "\e"
+- wait: 1000
+- send: "e"
+- wait: 1000
+- send: Learn about todo states
+- wait: 1000
+- send: "\e"
+- wait: 1000
+# Mark them all as TODO
+- send: k
+- wait: 1000
+- send: k
+- wait: 1000
+- send: Tt
+- wait: 1000
+# Mark the second as DONE
+- send: j
+- wait: 1000
+- send: td
+- wait: 1000
+# Mark the third as NEXT
+- send: j
+- wait: 1000
+- send: tn
+- wait: 1000
+# Exit
+- wait: 1000
+- send: 'q'
+- wait: 1000

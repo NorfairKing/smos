@@ -87,7 +87,11 @@ with final.haskell.lib;
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
         "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-        "smos-asciinema" = addBuildDepend (smosPkgWithOwnComp "smos-asciinema") final.asciinema;
+        "smos-asciinema" = addBuildDepends (smosPkgWithOwnComp "smos-asciinema") [
+          final.asciinema
+          final.haskellPackages.smos
+          final.haskellPackages.smos-query
+        ];
         "smos-docs-site" = docsSite;
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";

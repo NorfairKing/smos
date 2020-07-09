@@ -11,4 +11,4 @@ smosASCIInema = getInstructions >>= asciinema
 
 asciinema :: Instructions -> IO ()
 asciinema (Instructions d _) = case d of
-  DispatchRecord f -> record f
+  DispatchRecord rs -> record rs

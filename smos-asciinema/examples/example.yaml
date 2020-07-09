@@ -1,5 +1,6 @@
-command: smos ~/example.smos
-output: casts/example.cast
+command: smos example.smos
+output: ../casts/example.cast
+file: example.smos
 input:
 - send: e
 - wait: 1000

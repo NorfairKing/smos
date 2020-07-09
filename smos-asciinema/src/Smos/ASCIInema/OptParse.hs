@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.ASCIInema.OptParse
   ( module Smos.ASCIInema.OptParse,
@@ -6,6 +7,7 @@ module Smos.ASCIInema.OptParse
   )
 where
 
+import Data.Maybe
 import qualified Env
 import Options.Applicative
 import Path.IO
@@ -20,8 +22,10 @@ getInstructions = do
   combineToInstructions cmd flags env config
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (CommandRecord fp) Flags Environment _ = do
-  d <- DispatchRecord <$> resolveFile' fp
+combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment _ = do
+  let recordSetWait = fromMaybe 1 recordFlagWait
+  recordSetSpecFile <- resolveFile' recordFlagSpecFile
+  let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
@@ -77,12 +81,18 @@ parseCommandRecord = info parser modifier
     modifier = fullDesc <> progDesc "Record an asciinema"
     parser =
       CommandRecord
-        <$> strArgument
-          ( mconcat
-              [ help "The instructions file",
-                metavar "FILEPATH"
-              ]
-          )
+        <$> ( RecordFlags
+                <$> strArgument
+                  ( mconcat
+                      [ help "The instructions file",
+                        metavar "FILEPATH"
+                      ]
+                  )
+                <*> parseWaitFlag
+            )
+
+parseWaitFlag :: Parser (Maybe Double)
+parseWaitFlag = optional $ option auto $ mconcat [long "wait", help "The wait-time multiplier", metavar "DOUBLE"]
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags
