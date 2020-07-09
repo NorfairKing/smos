@@ -1,0 +1,34 @@
+name: smos-asciinema
+version: '0.0.0.0'
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2020 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+    - envparse
+    - optparse-applicative
+    - yamlparse-applicative
+    - yaml
+    - path
+    - path-io
+    - containers
+    - text
+    - time
+    - smos-report
+    - validity
+
+executables:
+  smos-asciinema:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - smos-asciinema

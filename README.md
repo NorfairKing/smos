@@ -28,6 +28,7 @@ smos-query               : The smos-query tool; to query your workflow
 smos-archive             : The smos-archive tool: to archive smos files
 smos-convert-org         : The smos-convert-org tool: to convert org-mode files to smos files
 smos-calendar-import     : The calendar import tool: to import calendars in an onging manner
+smos-asciinema           : Automated recorder of usage gifs
 smos-docs-site           : The generator for the documentation website.
 smos-api                 : The API for the smos server
 smos-api-gen             : Generators for the API for the smos server
