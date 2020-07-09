@@ -20,7 +20,7 @@ spec = do
       pure (inFile, outFile)
   forM_ fs $ \(fi, fo) ->
     it ("'Just works' for this example: " <> fromAbsFile fi) $ do
-      let args = ["record", fromAbsFile fi, fromAbsFile fo, "--wait", "0.5"]
+      let args = ["record", fromAbsFile fi, fromAbsFile fo, "--wait", "0.2"]
       putStrLn $ "Running: asciinema " <> unwords (map show args)
       withArgs args smosASCIInema
 
