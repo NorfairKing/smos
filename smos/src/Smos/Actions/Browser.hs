@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Smos.Actions.Browser
   ( allPlainBrowserActions,
@@ -6,6 +7,7 @@ module Smos.Actions.Browser
     selectBrowserProjects,
     selectBrowserWorkflow,
     selectBrowserArchive,
+    selectBrowserReview,
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
@@ -34,6 +36,7 @@ allPlainBrowserActions =
   [ selectBrowserProjects,
     selectBrowserWorkflow,
     selectBrowserArchive,
+    selectBrowserReview,
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
@@ -112,6 +115,9 @@ selectBrowserProjects = selectBrowserHelper "Projects" resolveReportProjectsDir
 
 selectBrowserArchive :: Action
 selectBrowserArchive = selectBrowserHelper "Archive" resolveReportArchiveDir
+
+selectBrowserReview :: Action
+selectBrowserReview = selectBrowserHelper "Review" (fmap (</> [reldir|review|]) . resolveReportWorkflowDir)
 
 selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =

@@ -301,6 +301,7 @@ defaultAnyKeyMap =
       exactString "bp" selectBrowserProjects,
       exactString "bw" selectBrowserWorkflow,
       exactString "ba" selectBrowserArchive,
+      exactString "br" selectBrowserReview,
       -- Reports
       exactString "rn" reportNextActions
     ]
