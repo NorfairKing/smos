@@ -1,5 +1,5 @@
 .stack-work/
-casts/
+*.cast
 .config/
 *.cabal
 *.css

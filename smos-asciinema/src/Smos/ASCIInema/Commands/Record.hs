@@ -63,7 +63,6 @@ restoreFile p = \case
 data ASCIInemaSpec
   = ASCIInemaSpec
       { asciinemaCommand :: Maybe String,
-        asciinemaOutput :: FilePath,
         asciinemaFiles :: [FilePath],
         asciinemaInput :: [ASCIInemaCommand]
       }
@@ -77,7 +76,6 @@ instance YamlSchema ASCIInemaSpec where
     objectParser "ASCIInemaSpec" $
       ASCIInemaSpec
         <$> optionalField "command" "The command to show off. Leave this to just run a shell"
-        <*> requiredField "output" "The path to the cast file"
         <*> alternatives
           [ (: []) <$> requiredField "file" "The file that is being touched. It will be brought back in order afterwards.",
             optionalFieldWithDefault "files" [] "The files that are being touched. These will be brought back in order afterwards."
@@ -87,8 +85,7 @@ instance YamlSchema ASCIInemaSpec where
 runASCIInema :: RecordSettings -> ASCIInemaSpec -> IO ()
 runASCIInema RecordSettings {..} ASCIInemaSpec {..} = do
   -- Get the output file's parent directory ready
-  outFile <- resolveFile (parent recordSetSpecFile) asciinemaOutput
-  ensureDir $ parent outFile
+  ensureDir $ parent recordSetOutputFile
   env <- getEnvironment
   let env' =
         env
@@ -99,10 +96,9 @@ runASCIInema RecordSettings {..} ASCIInemaSpec {..} = do
           $ setStdin createPipe
           $ proc "asciinema"
           $ concat
-            [ ["rec", "--stdin", "--yes", "--quiet", "--overwrite", fromAbsFile outFile],
+            [ ["rec", "--stdin", "--yes", "--quiet", "--overwrite", fromAbsFile recordSetOutputFile],
               maybe [] (\c -> ["--command", c]) asciinemaCommand
             ]
-  -- Remove the files that will be touched during
   withProcessWait apc $ \p -> do
     mExitedNormally <- timeout (60 * 1000 * 1000) $ do
       let h = getStdin p

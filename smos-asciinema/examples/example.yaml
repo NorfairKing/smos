@@ -1,5 +1,4 @@
 command: smos example.smos
-output: ../casts/example.cast
 file: example.smos
 input:
 - send: e

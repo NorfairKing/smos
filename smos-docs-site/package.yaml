@@ -23,12 +23,13 @@ library:
   - shakespeare
   - smos
   - smos-archive
+  - smos-asciinema
   - smos-calendar-import
   - smos-data
   - smos-query
   - smos-report
-  - smos-server
   - smos-scheduler
+  - smos-server
   - smos-single
   - smos-sync-client
   - smos-web-server
@@ -36,6 +37,7 @@ library:
   - text
   - th-lift-instances
   - time
+  - typed-process
   - yaml
   - yamlparse-applicative
   - yesod

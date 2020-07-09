@@ -12,6 +12,8 @@
 
 /smos-archive SmosArchiveR GET
 
+/smos-asciinema SmosASCIInemaR GET
+
 /smos-calendar-import SmosCalendarImportR GET
 
 /smos-scheduler SmosSchedulerR GET
@@ -22,7 +24,8 @@
 
 /smos-web-server SmosWebServerR GET
 
-/assets/*Texts AssetsR GET
-/assets-static AssetsStaticR EmbeddedStatic appAssets
-
 !/*DocPage PageR GET
+
+/assets/*Texts AssetsR GET
+
+/assets-static AssetsStaticR EmbeddedStatic appAssets

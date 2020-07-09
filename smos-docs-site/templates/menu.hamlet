@@ -110,6 +110,10 @@
             Running on NixOs
 
     <li>
+      <a href=@{SmosASCIInemaR}>
+        The Smos ASCIInema Automation Tool
+
+    <li>
       <a href=@{SmosSyncClientR}>
         The Smos Sync Client
       <ul>

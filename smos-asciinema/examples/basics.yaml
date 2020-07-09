@@ -1,4 +1,3 @@
-output: ../casts/basics.cast
 file: foo.smos
 input:
 - send: "smos foo.smos\n"
@@ -39,9 +38,9 @@ input:
 - wait: 1000
 # Mark them all as TODO
 - send: k
-- wait: 1000
+- wait: 500
 - send: k
-- wait: 1000
+- wait: 500
 - send: Tt
 - wait: 1000
 # Mark the second as DONE

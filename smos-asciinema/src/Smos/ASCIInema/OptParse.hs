@@ -25,6 +25,7 @@ combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration 
 combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment _ = do
   let recordSetWait = fromMaybe 1 recordFlagWait
   recordSetSpecFile <- resolveFile' recordFlagSpecFile
+  recordSetOutputFile <- resolveFile' recordFlagOutputFile
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -85,7 +86,13 @@ parseCommandRecord = info parser modifier
                 <$> strArgument
                   ( mconcat
                       [ help "The instructions file",
-                        metavar "FILEPATH"
+                        metavar "SPEC_FILE"
+                      ]
+                  )
+                <*> strArgument
+                  ( mconcat
+                      [ help "The output file",
+                        metavar "OUTPUT_FILE"
                       ]
                   )
                 <*> parseWaitFlag

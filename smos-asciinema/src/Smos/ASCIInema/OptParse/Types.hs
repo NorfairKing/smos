@@ -14,6 +14,7 @@ data Command = CommandRecord RecordFlags
 data RecordFlags
   = RecordFlags
       { recordFlagSpecFile :: FilePath,
+        recordFlagOutputFile :: FilePath,
         recordFlagWait :: Maybe Double
       }
   deriving (Show, Eq)
@@ -37,6 +38,7 @@ data Dispatch = DispatchRecord RecordSettings
 data RecordSettings
   = RecordSettings
       { recordSetSpecFile :: Path Abs File,
+        recordSetOutputFile :: Path Abs File,
         recordSetWait :: Double
       }
   deriving (Show, Eq)
