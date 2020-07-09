@@ -7,8 +7,8 @@ import Smos.ASCIInema.Commands
 import Smos.ASCIInema.OptParse
 
 smosASCIInema :: IO ()
-smosASCIInema = getInstructions >>= scheduler
+smosASCIInema = getInstructions >>= asciinema
 
-scheduler :: Instructions -> IO ()
-scheduler (Instructions d _) = case d of
+asciinema :: Instructions -> IO ()
+asciinema (Instructions d _) = case d of
   DispatchRecord f -> record f

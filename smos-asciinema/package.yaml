@@ -14,21 +14,37 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+    - containers
     - envparse
     - optparse-applicative
-    - yamlparse-applicative
-    - yaml
     - path
     - path-io
-    - containers
+    - smos-report
     - text
     - time
-    - smos-report
+    - typed-process
     - validity
+    - yaml
+    - yamlparse-applicative
 
 executables:
   smos-asciinema:
     main: Main.hs
     source-dirs: app
     dependencies:
+    - smos-asciinema
+
+tests:
+  smos-asciinema-test:
+    main: Spec.hs
+    source-dirs: test/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - hspec
+    - path
+    - path-io
     - smos-asciinema
