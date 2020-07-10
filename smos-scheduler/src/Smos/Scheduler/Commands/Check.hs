@@ -6,6 +6,7 @@ module Smos.Scheduler.Commands.Check
   )
 where
 
+import Control.Monad.Reader
 import qualified Data.List.NonEmpty as NE
 import Data.Time
 import Path
@@ -41,7 +42,13 @@ scheduleItemTemplateCheck wd tf = do
   case mErrOrTemplate of
     Nothing -> die $ "Template file does not exist: " <> fromAbsFile f
     Just (Left err) -> die $ unlines [unwords ["Error reading template file:", fromAbsFile f], err]
-    Just (Right _) -> pure ()
+    Just (Right template) -> do
+      now <- getZonedTime
+      let ctx = RenderContext {renderContextTime = now}
+      let vRendered = runReaderT (renderTemplate template) ctx
+      case vRendered of
+        Failure errs -> die $ unlines $ "Error while rendering template: " : map show (NE.toList errs)
+        Success _ -> pure ()
 
 scheduleItemDestinationCheck :: Path Abs Dir -> DestinationPathTemplate -> IO ()
 scheduleItemDestinationCheck _ tf = do
