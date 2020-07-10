@@ -49,6 +49,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
+    - -optP-Wno-nonportable-include-path # For macos
     dependencies:
     - hspec
     - path
