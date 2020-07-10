@@ -9,12 +9,10 @@ module Smos.Docs.Site.Handler.SmosASCIInema
 where
 
 import Data.Text (Text)
-import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.ASCIInema.OptParse as ASCIInema
 import Smos.Docs.Site.Handler.Import
-import YamlParse.Applicative
 
 getSmosASCIInemaR :: Handler Html
 getSmosASCIInemaR = do
