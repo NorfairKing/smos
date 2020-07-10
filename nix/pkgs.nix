@@ -41,6 +41,10 @@ let
     import (
       pkgs.fetchFromGitHub (import ./yamlparse-applicative-version.nix) + "/nix/overlay.nix"
     );
+  linkcheck-overlay =
+    import (
+      pkgs.fetchFromGitHub (import ./linkcheck-version.nix) + "/nix/overlay.nix"
+    );
   smosPkgs =
     pkgsv {
       overlays =
@@ -55,6 +59,7 @@ let
           cursor-dirforest-overlay
           mergeful-overlay
           yamlparse-applicative-overlay
+          linkcheck-overlay
           (import ./gitignore-src.nix)
           (import ../smos-web-server/front/nix/overlay.nix)
           (import ./overlay.nix)

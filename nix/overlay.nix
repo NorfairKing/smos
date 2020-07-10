@@ -52,13 +52,13 @@ with final.haskell.lib;
         in
           final.stdenv.mkDerivation {
             name = "smos-docs-site";
-            buildInputs = [ final.linkchecker final.killall ];
+            buildInputs = [ final.haskellPackages.linkcheck final.killall ];
             buildCommand = ''
               mkdir -p $out
               cp -r ${rawDocsSite}/. $out
 
               $out/bin/smos-docs-site &
-              linkchecker http://localhost:8000
+              linkcheck http://localhost:8000
               killall smos-docs-site
             '';
           };
