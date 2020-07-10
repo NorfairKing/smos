@@ -34,8 +34,13 @@ executables:
     source-dirs: app
     dependencies:
     - smos-asciinema
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -optP-Wno-nonportable-include-path # For macos
 
-tests:
+
   smos-asciinema-test:
     main: Spec.hs
     source-dirs: test/

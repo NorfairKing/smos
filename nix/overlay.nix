@@ -87,7 +87,7 @@ with final.haskell.lib;
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
         "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-        "smos-asciinema" = dontCheck (smosPkgWithOwnComp "smos-asciinema"); # There are all sorts of issues with running asciinema with nix
+        "smos-asciinema" = smosPkgWithOwnComp "smos-asciinema";
         "smos-docs-site" = docsSite;
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";
