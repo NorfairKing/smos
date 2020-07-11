@@ -63,6 +63,7 @@ restoreFile p = \case
 data ASCIInemaSpec
   = ASCIInemaSpec
       { asciinemaCommand :: Maybe String,
+        asciinemaTimeout :: Int, -- Seconds
         asciinemaFiles :: [FilePath],
         asciinemaInput :: [ASCIInemaCommand]
       }
@@ -76,6 +77,7 @@ instance YamlSchema ASCIInemaSpec where
     objectParser "ASCIInemaSpec" $
       ASCIInemaSpec
         <$> optionalField "command" "The command to show off. Leave this to just run a shell"
+        <*> optionalFieldWithDefault "timeout" 60 "How long to allow the recording to run before timing out, in seconds"
         <*> alternatives
           [ (: []) <$> requiredField "file" "The file that is being touched. It will be brought back in order afterwards.",
             optionalFieldWithDefault "files" [] "The files that are being touched. These will be brought back in order afterwards."
@@ -100,14 +102,16 @@ runASCIInema RecordSettings {..} ASCIInemaSpec {..} = do
               maybe [] (\c -> ["--command", c]) asciinemaCommand
             ]
   withProcessWait apc $ \p -> do
-    mExitedNormally <- timeout (60 * 1000 * 1000) $ do
+    mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
       let h = getStdin p
       hSetBuffering h NoBuffering
       sendAsciinemaCommand recordSetWait h $ Wait 1
       mapM_ (sendAsciinemaCommand recordSetWait h) asciinemaInput
       when (isNothing asciinemaCommand) $ hPutStr h "exit\n"
     case mExitedNormally of
-      Nothing -> stopProcess p
+      Nothing -> do
+        stopProcess p
+        die "Asciinema got stuck for 60 seconds"
       Just () -> pure ()
 
 data ASCIInemaCommand
