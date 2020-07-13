@@ -8,6 +8,7 @@ module Smos.Actions.Browser
     selectBrowserWorkflow,
     selectBrowserArchive,
     selectBrowserReview,
+    selectBrowserClient,
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
@@ -37,6 +38,7 @@ allPlainBrowserActions =
     selectBrowserWorkflow,
     selectBrowserArchive,
     selectBrowserReview,
+    selectBrowserClient,
     browserSelectPrev,
     browserSelectNext,
     browserToggleCollapse,
@@ -118,6 +120,9 @@ selectBrowserArchive = selectBrowserHelper "Archive" resolveReportArchiveDir
 
 selectBrowserReview :: Action
 selectBrowserReview = selectBrowserHelper "Review" (fmap (</> [reldir|review|]) . resolveReportWorkflowDir)
+
+selectBrowserClient :: Action
+selectBrowserClient = selectBrowserHelper "Client" (fmap (</> [reldir|client|]) . resolveReportProjectsDir)
 
 selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =

@@ -302,6 +302,7 @@ defaultAnyKeyMap =
       exactString "bw" selectBrowserWorkflow,
       exactString "ba" selectBrowserArchive,
       exactString "br" selectBrowserReview,
+      exactString "bc" selectBrowserClient,
       -- Reports
       exactString "rn" reportNextActions
     ]
