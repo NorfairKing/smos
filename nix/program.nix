@@ -136,6 +136,13 @@ in
                             type = types.listOf (
                               types.submodule {
                                 options = {
+                                  description =
+                                    mkOption {
+                                      type = types.nullOr types.str;
+                                      default = null;
+                                      example = "Weekly tasks for work";
+                                      description = "A description of the schedule item. This is only used for logging and error messages.";
+                                    };
                                   template =
                                     mkOption {
                                       type = types.nullOr types.str;

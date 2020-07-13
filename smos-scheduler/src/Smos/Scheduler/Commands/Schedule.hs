@@ -14,6 +14,9 @@ import qualified Data.ByteString as SB
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
+import Data.Maybe
+import qualified Data.Text as T
+import Data.Text (Text)
 import Data.Time
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -61,10 +64,10 @@ handleScheduleItem mLastRun wdir now si = do
   let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
   case mScheduledTime of
     Don'tActivateButUpdate newLastRun -> do
-      putStrLn $ unwords ["Not activating", show s, "with hash", show (hashScheduleItem si), "at current time", show now, "but still setting it last run because it's the first time"]
+      putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting it last run because it's the first time"]
       pure (Just newLastRun)
     Don'tActivate -> do
-      putStrLn $ unwords ["Not activating", show s, "with hash", show (hashScheduleItem si), "at current time", show now]
+      putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si)]
       pure Nothing
     ActivateAt scheduledTime -> do
       r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) si
@@ -75,6 +78,12 @@ handleScheduleItem mLastRun wdir now si = do
         Just msg -> do
           putStrLn msg
           pure Nothing
+
+scheduleItemDisplayName :: ScheduleItem -> Text
+scheduleItemDisplayName si@ScheduleItem {..} =
+  fromMaybe
+    (T.unwords ["the item with schedule", T.pack (show scheduleItemCronSchedule), "and hash", T.pack (show (hashScheduleItem si))])
+    scheduleItemDescription
 
 calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> ScheduledTime
 calculateScheduledTime now mState s =

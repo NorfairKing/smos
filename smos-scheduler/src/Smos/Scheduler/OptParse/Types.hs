@@ -81,7 +81,8 @@ instance YamlSchema Schedule where
 
 data ScheduleItem
   = ScheduleItem
-      { scheduleItemTemplate :: !(Path Rel File),
+      { scheduleItemDescription :: !(Maybe Text),
+        scheduleItemTemplate :: !(Path Rel File),
         scheduleItemDestination :: !DestinationPathTemplate,
         scheduleItemCronSchedule :: !CronSchedule
       }
@@ -90,7 +91,8 @@ data ScheduleItem
 instance Validity ScheduleItem
 
 instance Hashable ScheduleItem where
-  hashWithSalt s (ScheduleItem t d cs) =
+  hashWithSalt s (ScheduleItem _ t d cs) =
+    -- Don't hash the description, on purpose
     s
       `hashWithSalt` t
       `hashWithSalt` d
@@ -103,7 +105,8 @@ instance YamlSchema ScheduleItem where
   yamlSchema =
     objectParser "ScheduleItem" $
       ScheduleItem
-        <$> requiredField "template" "The file to copy from (relative, inside the workflow directory)"
+        <$> optionalField "description" "A description of this item"
+        <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)"
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)"
         <*> requiredFieldWith "schedule" "The schedule on which to do the copying" (eitherParser parseCronSchedule yamlSchema)
 
