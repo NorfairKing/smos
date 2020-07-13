@@ -58,6 +58,7 @@ with final.haskell.lib;
               cp -r ${rawDocsSite}/. $out
 
               $out/bin/smos-docs-site &
+              sleep 1
               linkcheck http://localhost:8000
               killall smos-docs-site
             '';
