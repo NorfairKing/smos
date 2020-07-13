@@ -16,17 +16,14 @@ import qualified Data.Text as T
 import Data.Time
 import Rainbow
 import Smos.Data
-import Smos.Query.Commands.Agenda
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Streaming
-import Smos.Report.TimeBlock
 import Smos.Report.Work
 import System.Exit
 
@@ -90,7 +87,7 @@ renderWorkReport now ne WorkReport {..} =
     $ filter
       (not . null)
       [ unlessNull
-          (workReportAgendaPastEntries <> agendaTodayReportEntries workReportAgendaTodayReport <> workReportAgendaFutureEntries)
+          workReportAgendaEntries
           [ sectionHeading "Today's agenda:",
             [agendaTable]
           ],
@@ -121,11 +118,4 @@ renderWorkReport now ne WorkReport {..} =
     heading c = [formatAsTable [[c]]]
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne
-    agendaTable =
-      renderAgendaReport
-        now
-        AgendaReport
-          { agendaReportPast = [Block "" workReportAgendaPastEntries],
-            agendaReportPresent = workReportAgendaTodayReport,
-            agendaReportFuture = [Block "" workReportAgendaFutureEntries]
-          }
+    agendaTable = formatAsTable $ map (formatAgendaEntry now) workReportAgendaEntries

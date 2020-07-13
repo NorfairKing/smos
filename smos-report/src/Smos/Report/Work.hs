@@ -23,9 +23,7 @@ data WorkReport
   = WorkReport
       { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
         workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
-        workReportAgendaPastEntries :: [AgendaEntry],
-        workReportAgendaTodayReport :: AgendaTodayReport,
-        workReportAgendaFutureEntries :: [AgendaEntry],
+        workReportAgendaEntries :: [AgendaEntry],
         workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
@@ -38,9 +36,7 @@ instance Semigroup WorkReport where
       { workReportResultEntries = workReportResultEntries wr1 <> workReportResultEntries wr2,
         workReportEntriesWithoutContext =
           workReportEntriesWithoutContext wr1 <> workReportEntriesWithoutContext wr2,
-        workReportAgendaPastEntries = workReportAgendaPastEntries wr1 <> workReportAgendaPastEntries wr2,
-        workReportAgendaTodayReport = workReportAgendaTodayReport wr1 <> workReportAgendaTodayReport wr2,
-        workReportAgendaFutureEntries = workReportAgendaFutureEntries wr1 <> workReportAgendaFutureEntries wr2,
+        workReportAgendaEntries = workReportAgendaEntries wr1 <> workReportAgendaEntries wr2,
         workReportCheckViolations =
           M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2)
       }
@@ -50,9 +46,7 @@ instance Monoid WorkReport where
     WorkReport
       { workReportResultEntries = mempty,
         workReportEntriesWithoutContext = mempty,
-        workReportAgendaPastEntries = [],
-        workReportAgendaTodayReport = mempty,
-        workReportAgendaFutureEntries = [],
+        workReportAgendaEntries = [],
         workReportCheckViolations = M.empty
       }
 
@@ -88,18 +82,17 @@ makeWorkReport WorkReportContext {..} rp fc =
                in case agendaEntryTimestampName ae of
                     "SCHEDULED" -> day <= today
                     "DEADLINE" -> day <= addDays 7 today
+                    "BEGIN" -> False
+                    "END" -> False
                     _ -> day == today
          in filter go $ makeAgendaEntry rp $ forestCursorCurrent fc
-      (past, present, future) = divideIntoPastPresentFuture workReportContextNow agendaEntries
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext,
           workReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
                 && matchesNoContext,
-          workReportAgendaPastEntries = past,
-          workReportAgendaTodayReport = AgendaTodayReport present,
-          workReportAgendaFutureEntries = future,
+          workReportAgendaEntries = agendaEntries,
           workReportCheckViolations =
             if matchesAnyContext
               then
@@ -118,9 +111,7 @@ finishWorkReport ms wr =
     Nothing -> wr
     Just s ->
       WorkReport
-        { workReportAgendaPastEntries = workReportAgendaPastEntries wr,
-          workReportAgendaTodayReport = AgendaTodayReport $ sortAgendaEntries $ agendaTodayReportEntries $ workReportAgendaTodayReport wr,
-          workReportAgendaFutureEntries = workReportAgendaFutureEntries wr,
+        { workReportAgendaEntries = sortAgendaEntries $ workReportAgendaEntries wr,
           workReportResultEntries = sorterSortCursorList s $ workReportResultEntries wr,
           workReportEntriesWithoutContext =
             sorterSortCursorList s $ workReportEntriesWithoutContext wr,
