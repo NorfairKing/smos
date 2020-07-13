@@ -25,7 +25,7 @@ You probably want to also install related tools:
 ```
 stack install smos-query
 stack install smos-archive
-stack install smos-install
+stack install smos-single
 stack install smos-sync-client
 ```
 
