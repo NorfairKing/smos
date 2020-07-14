@@ -82,8 +82,7 @@ defaultDirectoryConfig =
 data WorkReportConfig
   = WorkReportConfig
       { workReportConfigBaseFilter :: Maybe EntryFilterRel,
-        workReportConfigContexts :: Map ContextName EntryFilterRel,
-        workReportConfigSmart :: Bool
+        workReportConfigContexts :: Map ContextName EntryFilterRel
       }
   deriving (Show, Eq, Generic)
 
@@ -91,8 +90,7 @@ defaultWorkReportConfig :: WorkReportConfig
 defaultWorkReportConfig =
   WorkReportConfig
     { workReportConfigBaseFilter = Just defaultWorkBaseFilter,
-      workReportConfigContexts = M.fromList [],
-      workReportConfigSmart = False
+      workReportConfigContexts = M.fromList []
     }
 
 defaultWorkBaseFilter :: EntryFilterRel

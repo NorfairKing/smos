@@ -268,7 +268,7 @@ parseCommandWork = info parser modifier
             )
 
 parseSmartModeFlag :: Parser (Maybe Bool)
-parseSmartModeFlag = optional $ switch (mconcat [long "smart", help "Smart mode"])
+parseSmartModeFlag = flag Nothing (Just True) (mconcat [long "smart", help "Smart mode"])
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
