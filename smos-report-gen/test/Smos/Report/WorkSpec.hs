@@ -12,6 +12,7 @@ import Test.Validity
 
 spec :: Spec
 spec = do
+  genValidSpec @WorkReportContext
   genValidSpec @IntermediateWorkReport
   genValidSpec @WorkReport
   describe "makeIntermediateWorkReport"

@@ -147,25 +147,28 @@ data WorkReport
       }
   deriving (Show, Eq, Generic)
 
-instance Validity WorkReport
+instance Validity WorkReport where
+  validate wr@WorkReport {..} =
+    mconcat
+      [ genericValidate wr,
+        declare "The agenda entries are sorted" $ sortAgendaEntries workReportAgendaEntries == workReportAgendaEntries
+      ]
 
 finishWorkReport :: ZonedTime -> PropertyName -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
 finishWorkReport now pn ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
-      mTimeFilter = do
+      mAutoFilter :: Maybe EntryFilterRel
+      mAutoFilter = do
         ae <- intermediateWorkReportNextBegin wr
-        pure $ Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
-      mAutoFilter =
-        FilterSnd
-          . FilterWithinCursor
-          . FilterEntryProperties
-          . FilterMapVal pn
-          . FilterMaybe False
-          . FilterPropertyTime
-          . FilterMaybe False
-          . FilterOrd LEC
-          <$> mTimeFilter ::
-          Maybe EntryFilterRel
+        let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
+        pure $ FilterSnd
+          $ FilterWithinCursor
+          $ FilterEntryProperties
+          $ FilterMapVal pn
+          $ FilterMaybe False
+          $ FilterPropertyTime
+          $ FilterMaybe False
+          $ FilterOrd LEC t
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True
         Just autoFilter -> filterPredicate autoFilter tup

@@ -6,6 +6,7 @@ import Cursor.Forest.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
+import Smos.Report.Agenda
 import Smos.Report.Agenda.Gen ()
 import Smos.Report.Config.Gen ()
 import Smos.Report.Filter.Gen ()
@@ -24,5 +25,11 @@ instance GenValid IntermediateWorkReport where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid WorkReport where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid =
+    WorkReport
+      <$> genValid
+      <*> genValid
+      <*> (sortAgendaEntries <$> genValid)
+      <*> genValid
+      <*> genValid
+  shrinkValid = shrinkValidStructurally
