@@ -1,0 +1,34 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+file: projects/interviews/cs-syd.smos
+input:
+- send: "smos-query waiting\n"
+- wait: 2000
+- send: "smos projects/interviews/cs-syd.smos\n"
+- wait: 250
+- send: e
+- wait: 500
+- send: "Apply at CS Syd"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: tt
+- wait: 500
+- send: E
+- wait: 500
+- send: "Send an application email to jobs@cs-syd.eu"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: tn
+- wait: 1500
+- send: " nw"
+- wait: 500
+- send: "jobs@cs-syd.eu"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: "q"
+- wait: 250
+- send: "smos-query waiting\n"
+- wait: 2000
