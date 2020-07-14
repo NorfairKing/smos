@@ -57,8 +57,13 @@ renderWorkReport now ne WorkReport {..} =
     $ filter
       (not . null)
       [ unlessNull
+          workReportNextBegin
+          [ sectionHeading "Next meeting:",
+            [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
+          ],
+        unlessNull
           workReportAgendaEntries
-          [ sectionHeading "Today's agenda:",
+          [ sectionHeading "Deadlines:",
             [agendaTable]
           ],
         unlessNull
