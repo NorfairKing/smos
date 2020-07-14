@@ -11,6 +11,7 @@ import qualified Data.Conduit.Combinators as C
 import Data.List (intersperse)
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Time
@@ -32,6 +33,7 @@ smosQueryWork :: WorkSettings -> Q ()
 smosQueryWork WorkSettings {..} = do
   now <- liftIO getZonedTime
   src <- asks smosQueryConfigReportConfig
+  liftIO $ when (not workSetSmartMode && isNothing workSetTime) $ die "No time filter provided."
   wr <-
     produceWorkReport
       src

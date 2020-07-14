@@ -134,6 +134,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                     fromMaybe defaultProjection $
                       combineMaybe (<>) (mwc workConfProjection) workFlagProjection,
                   workSetSorter = mwc workConfSorter <|> workFlagSorter,
+                  workSetSmartMode = fromMaybe False $ workFlagSmartMode <|> mwc workConfSmartMode,
                   workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
                 }
         CommandProjects ProjectsFlags {..} ->
@@ -262,8 +263,12 @@ parseCommandWork = info parser modifier
         <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgsRel
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
+                <*> parseSmartModeFlag
                 <*> parseHideArchiveFlag
             )
+
+parseSmartModeFlag :: Parser (Maybe Bool)
+parseSmartModeFlag = optional $ switch (mconcat [long "smart", help "Smart mode"])
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
