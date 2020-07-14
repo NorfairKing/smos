@@ -17,7 +17,6 @@ import Path
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Entry (produceReport)
 import Smos.Report.Filter
 import Smos.Report.Streaming
 import YamlParse.Applicative

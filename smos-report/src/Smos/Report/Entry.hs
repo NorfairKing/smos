@@ -15,20 +15,8 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
-import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Streaming
-
-produceReport :: MonadIO m => HideArchive -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
-produceReport ha dc rc = do
-  wd <- liftIO $ resolveDirWorkflowDir dc
-  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles wd .| rc
-
-produceReportFromFiles :: MonadIO m => Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
-produceReportFromFiles wd =
-  filterSmosFilesRel
-    .| parseSmosFilesRel wd
-    .| printShouldPrint PrintWarning
 
 produceEntryReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> NonEmpty Projection -> Maybe Sorter -> DirectoryConfig -> m EntryReport
 produceEntryReport ef ha p s dc = produceReport ha dc (entryReportConduit ef p s)
