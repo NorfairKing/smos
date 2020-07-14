@@ -5,6 +5,7 @@
 module Smos.Report.Work where
 
 import Cursor.Simple.Forest
+import Data.Function
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Set (Set)
@@ -13,17 +14,21 @@ import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
 import Path
+import Safe
 import Smos.Data
 import Smos.Report.Agenda
+import Smos.Report.Comparison
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Sorter
+import Smos.Report.Time
 
 data WorkReport
   = WorkReport
       { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
         workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         workReportAgendaEntries :: [AgendaEntry],
+        workReportNextBegin :: Maybe AgendaEntry,
         workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
@@ -38,8 +43,16 @@ instance Semigroup WorkReport where
           workReportEntriesWithoutContext wr1 <> workReportEntriesWithoutContext wr2,
         workReportAgendaEntries = workReportAgendaEntries wr1 <> workReportAgendaEntries wr2,
         workReportCheckViolations =
-          M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2)
+          M.unionWith (++) (workReportCheckViolations wr1) (workReportCheckViolations wr2),
+        workReportNextBegin = case (workReportNextBegin wr1, workReportNextBegin wr2) of
+          (Nothing, Nothing) -> Nothing
+          (Just ae, Nothing) -> Just ae
+          (Nothing, Just ae) -> Just ae
+          (Just ae1, Just ae2) -> Just $ if earlier ae1 ae2 then ae1 else ae2
       }
+
+earlier :: AgendaEntry -> AgendaEntry -> Bool
+earlier = (<=) `on` (timestampLocalTime . agendaEntryTimestamp)
 
 instance Monoid WorkReport where
   mempty =
@@ -47,6 +60,7 @@ instance Monoid WorkReport where
       { workReportResultEntries = mempty,
         workReportEntriesWithoutContext = mempty,
         workReportAgendaEntries = [],
+        workReportNextBegin = Nothing,
         workReportCheckViolations = M.empty
       }
 
@@ -55,7 +69,8 @@ data WorkReportContext
       { workReportContextNow :: ZonedTime,
         workReportContextBaseFilter :: Maybe EntryFilterRel,
         workReportContextCurrentContext :: EntryFilterRel,
-        workReportContextTimeFilter :: Maybe (Filter Entry),
+        workReportContextTimeProperty :: PropertyName,
+        workReportContextTime :: Maybe Time,
         workReportContextAdditionalFilter :: Maybe EntryFilterRel,
         workReportContextContexts :: Map ContextName EntryFilterRel,
         workReportContextChecks :: Set EntryFilterRel
@@ -69,12 +84,20 @@ makeWorkReport WorkReportContext {..} rp fc =
       filterWithBase f = combineFilter f workReportContextBaseFilter
       totalCurrent =
         combineFilter workReportContextCurrentContext $
-          FilterSnd . FilterWithinCursor <$> workReportContextTimeFilter
+          FilterSnd
+            . FilterWithinCursor
+            . FilterEntryProperties
+            . FilterMapVal workReportContextTimeProperty
+            . FilterMaybe False
+            . FilterPropertyTime
+            . FilterMaybe False
+            . FilterOrd LEC <$> workReportContextTime
       currentFilter = filterWithBase $ combineFilter totalCurrent workReportContextAdditionalFilter
       matchesSelectedContext = filterPredicate currentFilter (rp, fc)
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
+      allAgendaEntries = makeAgendaEntry rp $ forestCursorCurrent fc
       agendaEntries =
         let go ae =
               let day = timestampDay (agendaEntryTimestamp ae)
@@ -85,7 +108,12 @@ makeWorkReport WorkReportContext {..} rp fc =
                     "BEGIN" -> False
                     "END" -> False
                     _ -> day == today
-         in filter go $ makeAgendaEntry rp $ forestCursorCurrent fc
+         in filter go allAgendaEntries
+      beginEntries =
+        let go ae = case agendaEntryTimestampName ae of
+              "BEGIN" -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime workReportContextNow
+              _ -> False
+         in sortAgendaEntries $ filter go allAgendaEntries
    in WorkReport
         { workReportResultEntries = match matchesSelectedContext,
           workReportEntriesWithoutContext =
@@ -93,6 +121,7 @@ makeWorkReport WorkReportContext {..} rp fc =
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
                 && matchesNoContext,
           workReportAgendaEntries = agendaEntries,
+          workReportNextBegin = headMay beginEntries,
           workReportCheckViolations =
             if matchesAnyContext
               then
@@ -105,15 +134,32 @@ makeWorkReport WorkReportContext {..} rp fc =
               else M.empty
         }
 
-finishWorkReport :: Maybe Sorter -> WorkReport -> WorkReport
-finishWorkReport ms wr =
+finishWorkReport :: ZonedTime -> PropertyName -> Maybe Sorter -> WorkReport -> WorkReport
+finishWorkReport now pn ms wr =
   case ms of
     Nothing -> wr
     Just s ->
-      WorkReport
-        { workReportAgendaEntries = sortAgendaEntries $ workReportAgendaEntries wr,
-          workReportResultEntries = sorterSortCursorList s $ workReportResultEntries wr,
-          workReportEntriesWithoutContext =
-            sorterSortCursorList s $ workReportEntriesWithoutContext wr,
-          workReportCheckViolations = workReportCheckViolations wr
-        }
+      let mTimeFilter = do
+            ae <- workReportNextBegin wr
+            pure $ Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
+          mAutoFilter =
+            FilterSnd
+              . FilterWithinCursor
+              . FilterEntryProperties
+              . FilterMapVal pn
+              . FilterMaybe False
+              . FilterPropertyTime
+              . FilterMaybe False
+              . FilterOrd LEC
+              <$> mTimeFilter ::
+              Maybe EntryFilterRel
+          applyAutoFilter = filter $ \tup -> case mAutoFilter of
+            Nothing -> True
+            Just autoFilter -> filterPredicate autoFilter tup
+       in WorkReport
+            { workReportAgendaEntries = sortAgendaEntries $ workReportAgendaEntries wr,
+              workReportResultEntries = sorterSortCursorList s $ applyAutoFilter $ workReportResultEntries wr,
+              workReportNextBegin = workReportNextBegin wr,
+              workReportEntriesWithoutContext = sorterSortCursorList s $ workReportEntriesWithoutContext wr,
+              workReportCheckViolations = workReportCheckViolations wr
+            }

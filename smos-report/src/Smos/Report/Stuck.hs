@@ -12,6 +12,7 @@ import Data.Time
 import Data.Tree
 import Data.Validity
 import GHC.Generics (Generic)
+import Safe
 import Smos.Data
 import Smos.Report.Path
 
@@ -53,10 +54,6 @@ latestEntryInSmosFile =
     . sortOn (Down . latestTimestampInEntry)
     . concatMap flatten
     . smosFileForest
-  where
-    headMay :: [a] -> Maybe a
-    headMay [] = Nothing
-    headMay (h : _) = Just h
 
 latestTimestampInEntry :: Entry -> Maybe UTCTime
 latestTimestampInEntry Entry {..} =
@@ -65,11 +62,6 @@ latestTimestampInEntry Entry {..} =
       [ latestStateChange entryStateHistory,
         latestClockChange entryLogbook
       ]
-  where
-    maximumMay :: Ord a => [a] -> Maybe a
-    maximumMay = \case
-      [] -> Nothing
-      l -> Just $ maximum l
 
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =

@@ -24,6 +24,7 @@ import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Streaming
+import Smos.Report.Time
 import Smos.Report.Work
 import System.Exit
 
@@ -36,7 +37,8 @@ smosQueryWork WorkSettings {..} = do
       src
       workSetHideArchive
       workSetContext
-      workSetTimeFilter
+      workSetTimeProperty
+      workSetTime
       workSetFilter
       workSetSorter
       workSetChecks
@@ -46,12 +48,13 @@ produceWorkReport ::
   SmosReportConfig ->
   HideArchive ->
   ContextName ->
-  Maybe (Filter Entry) ->
+  PropertyName ->
+  Maybe Time ->
   Maybe EntryFilterRel ->
   Maybe Sorter ->
   Set EntryFilterRel ->
   Q WorkReport
-produceWorkReport src ha cn mtf mf ms checks = do
+produceWorkReport src ha cn pn mtf mf ms checks = do
   let wc = smosReportConfigWorkConfig src
   let contexts = workReportConfigContexts wc
   let baseFilter = workReportConfigBaseFilter wc
@@ -64,14 +67,15 @@ produceWorkReport src ha cn mtf mf ms checks = do
               { workReportContextNow = now,
                 workReportContextBaseFilter = baseFilter,
                 workReportContextCurrentContext = cf,
-                workReportContextTimeFilter = mtf,
+                workReportContextTimeProperty = pn,
+                workReportContextTime = mtf,
                 workReportContextAdditionalFilter = mf,
                 workReportContextContexts = contexts,
                 workReportContextChecks = checks
               }
       let dc = smosReportConfigDirectoryConfig src
       wd <- liftIO $ resolveDirWorkflowDir dc
-      fmap (finishWorkReport ms)
+      fmap (finishWorkReport now pn ms)
         $ runConduit
         $ streamSmosFilesFromWorkflowRel ha dc .| parseSmosFilesRel wd
           .| printShouldPrint PrintWarning

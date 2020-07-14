@@ -23,7 +23,6 @@ import qualified Env
 import Options.Applicative as OptParse
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
-import Smos.Report.Comparison
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
@@ -123,18 +122,12 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                   (Nothing, Just a) -> Just a
                   (Just a1, Just a2) -> Just $ f a1 a2
           let pn = fromMaybe "timewindow" $ mwc workConfTimeFilterProperty
-          let mtf =
-                Just
-                  $ FilterEntryProperties
-                  $ FilterMapVal pn
-                  $ FilterMaybe False
-                  $ FilterPropertyTime
-                  $ FilterMaybe False workFlagTimeFilter
           pure $
             DispatchWork
               WorkSettings
                 { workSetContext = workFlagContext,
-                  workSetTimeFilter = mtf,
+                  workSetTimeProperty = pn,
+                  workSetTime = workFlagTime,
                   workSetFilter = workFlagFilter,
                   workSetChecks = fromMaybe S.empty $ wc workConfChecks,
                   workSetProjection =
@@ -400,11 +393,12 @@ parseContextNameArg :: Parser ContextName
 parseContextNameArg =
   argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
-parseTimeFilterArg :: Parser (Filter Time)
+parseTimeFilterArg :: Parser (Maybe Time)
 parseTimeFilterArg =
-  argument
-    (eitherReader (fmap (FilterOrd LEC) . parseTime . T.pack))
-    (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
+  optional $
+    argument
+      (eitherReader (parseTime . T.pack))
+      (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
 
 -- TODO: eventually get rid of this
 parseFilterArgs :: Parser (Maybe EntryFilter)

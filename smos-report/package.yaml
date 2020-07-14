@@ -29,6 +29,7 @@ library:
   - path
   - path-io
   - pretty-show
+  - safe
   - smos-data
   - text
   - time
