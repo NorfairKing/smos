@@ -82,7 +82,7 @@ produceWorkReport src ha cn pn mtf mf ms checks = do
         $ streamSmosFilesFromWorkflowRel ha dc .| parseSmosFilesRel wd
           .| printShouldPrint PrintWarning
           .| smosFileCursors
-          .| C.map (uncurry $ makeWorkReport wrc)
+          .| C.map (uncurry $ makeIntermediateWorkReport wrc)
           .| accumulateMonoid
 
 renderWorkReport :: ZonedTime -> NonEmpty Projection -> WorkReport -> Table
