@@ -27,6 +27,14 @@ import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Time
 
+produceWorkReport :: MonadIO m => HideArchive -> DirectoryConfig -> WorkReportContext -> m WorkReport
+produceWorkReport ha dc wrc = produceReport ha dc $ workReportConduit (workReportContextNow wrc) wrc
+
+workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
+workReportConduit now wrc@WorkReportContext {..} =
+  fmap (finishWorkReport now workReportContextTimeProperty workReportContextSorter) $
+    smosFileCursors .| C.map (uncurry $ makeIntermediateWorkReport wrc) .| accumulateMonoid
+
 data IntermediateWorkReport
   = IntermediateWorkReport
       { intermediateWorkReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
@@ -84,14 +92,6 @@ data WorkReportContext
   deriving (Show, Generic)
 
 instance Validity WorkReportContext
-
-produceWorkReport :: MonadIO m => HideArchive -> DirectoryConfig -> WorkReportContext -> m WorkReport
-produceWorkReport ha dc wrc = produceReport ha dc $ workReportConduit (workReportContextNow wrc) wrc
-
-workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
-workReportConduit now wrc@WorkReportContext {..} =
-  fmap (finishWorkReport now workReportContextTimeProperty workReportContextSorter) $
-    smosFileCursors .| C.map (uncurry $ makeIntermediateWorkReport wrc) .| accumulateMonoid
 
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =

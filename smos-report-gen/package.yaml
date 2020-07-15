@@ -25,10 +25,12 @@ library:
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-dirforest
+  - genvalidity-hspec
   - genvalidity-path
   - genvalidity-text
   - genvalidity-time
   - path
+  - path-io
   - pretty-show
   - smos-data
   - smos-data-gen
@@ -58,6 +60,7 @@ tests:
     - megaparsec
     - parsec
     - path
+    - path-io
     - pretty-show
     - smos-cursor
     - smos-cursor-gen

@@ -4,10 +4,13 @@ module Smos.Report.WorkSpec where
 
 import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
+import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.TestUtils
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()
 import Test.Hspec
+import Test.Hspec.QuickCheck
 import Test.Validity
 
 spec :: Spec
@@ -23,3 +26,10 @@ spec = do
       forAllValid $ \ms ->
         forAllValid $ \workReport ->
           shouldBeValid $ finishWorkReport zt pn ms workReport
+  modifyMaxSuccess (`div` 10) $ describe "produceWorkReport" $ it "produces valid reports for interesting stores"
+    $ forAllValid
+    $ \wrc ->
+      forAllValid $ \ha ->
+        withInterestingStore $ \dc -> do
+          nar <- produceWorkReport ha dc wrc
+          shouldBeValid nar
