@@ -260,7 +260,10 @@ parseCommandWork = info parser modifier
     modifier = fullDesc <> progDesc "Show the work overview"
     parser =
       CommandWork
-        <$> ( WorkFlags <$> parseContextNameArg <*> parseTimeFilterArg <*> parseFilterArgsRel
+        <$> ( WorkFlags
+                <$> parseContextNameArg
+                <*> parseTimeFilterArg
+                <*> parseFilterOptionsRel
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
                 <*> parseSmartModeFlag
@@ -413,6 +416,15 @@ parseFilterArgs =
       ( argument
           (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
+      )
+
+parseFilterOptionsRel :: Parser (Maybe EntryFilterRel)
+parseFilterOptionsRel =
+  fmap foldFilterAnd . NE.nonEmpty
+    <$> many
+      ( option
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
+          (mconcat [short 'f', long "filter", metavar "FILTER", help "A filter to filter entries by"])
       )
 
 parseFilterArgsRel :: Parser (Maybe EntryFilterRel)
