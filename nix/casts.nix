@@ -1,27 +1,41 @@
-{ lib, stdenv, smosPackages, asciinema, gitignoreSource, ncurses }:
+{ lib
+, stdenv
+, smosPackages
+, asciinema
+, gitignoreSource
+, ncurses
+, rxvt_unicode
+, python
+}:
 stdenv.mkDerivation {
   name = "smos-asciinema-casts";
-  buildInputs = [ asciinema ncurses ] ++ lib.attrValues smosPackages;
+  buildInputs = [ asciinema ncurses python ] ++ lib.attrValues smosPackages;
   src = gitignoreSource ../.;
+  ASCIINEMA_CONFIG_HOME = "./config";
   buildCommand = ''
+    # Set terminal size
+    python ${../smos-asciinema/set_window_size.py} 80 25
 
-    mkdir -p $out
-    mkdir -p $out/config
+    # Make sure the spec files and the demo-workflow are available
+    cp -r $src/demo-workflow ./demo-workflow
+    mkdir -p ./smos-asciinema
+    cp -r $src/smos-asciinema/examples ./smos-asciinema/examples
 
-    cp -r $src/demo-workflow $out/demo-workflow
-    mkdir -p $out/smos-asciinema
-    cp -r $src/smos-asciinema/examples $out/smos-asciinema/examples
+    # Make sure they are writeable too
+    chmod -R +w .
 
-    chmod -R +w $out
+    # Make sure asciinema has place to write its config to
+    mkdir -p $ASCIINEMA_CONFIG_HOME
 
-    shopt -u checkwinsize
-    export LINES=80
-    export COLUMNS=80
-    export TERM=xterm
-    tput lines
-    tput cols
+    mkdir -p $out/casts
+    for i in ./smos-asciinema/examples/*
+    do
+      local base="$(basename $i .yaml)"
+      # Record the cast
+      smos-asciinema record "./smos-asciinema/examples/$base.yaml" "./$base.cast"
 
-    export ASCIINEMA_CONFIG_HOME=$out/config
-    smos-asciinema record $out/smos-asciinema/examples/waiting.yaml $out/waiting.cast
+      # Output the casts
+      cp "$base.cast" $out/casts
+    done
   '';
 }
