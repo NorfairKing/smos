@@ -120,7 +120,8 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
                     "--quiet",
                     "--overwrite",
                     fromAbsFile recordSetOutputFile,
-                    "--env=SMOS_WORKFLOW_DIR"
+                    "--env=SMOS_WORKFLOW_DIR",
+                    "--env=TERM"
                   ],
                   maybe [] (\c -> ["--command", c]) asciinemaCommand
                 ]

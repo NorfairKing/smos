@@ -27,7 +27,7 @@ with final.haskell.lib;
           done
         '';
     };
-  smosCasts = final.callPackage ./casts.nix { smosPackages = final.smosPackages; };
+  smosCasts = import ./casts.nix final;
 
   smosPackages =
     let
