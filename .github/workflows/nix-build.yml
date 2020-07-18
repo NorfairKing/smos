@@ -27,10 +27,19 @@ jobs:
         fi
     - uses: cachix/cachix-action@v6
       with:
+        name: iohk
+    - uses: cachix/cachix-action@v6
+      with:
         name: validity
     - uses: cachix/cachix-action@v6
       with:
+        name: dirforest
+    - uses: cachix/cachix-action@v6
+      with:
         name: cursor
+    - uses: cachix/cachix-action@v6
+      with:
+        name: cursor-dirforest
     - uses: cachix/cachix-action@v6
       with:
         name: mergeful

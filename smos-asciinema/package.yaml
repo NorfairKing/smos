@@ -13,6 +13,7 @@ dependencies:
 library:
   source-dirs: src/
   ghc-options: -Wall
+  build-tools: autoexporter
   dependencies:
     - bytestring
     - containers

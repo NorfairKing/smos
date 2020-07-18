@@ -36,19 +36,21 @@ extra-deps:
 
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 
-  # - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
-
 - git: https://github.com/haskell/time
   commit: 8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211
+  # nix-sha256: sha256:0b8d0k5igc2s1mhlzb7bnjxknq6bj1qvqs2az3s9nlwkcifcb2rf
 
 - git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
+  # nix-sha256: sha256:0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv
 
 - Cabal-3.2.0.0@sha256:d0d7a1f405f25d0000f5ddef684838bc264842304fd4e7f80ca92b997b710874,27320
 
 # Calendar
 - git: https://github.com/chrra/iCalendar
   commit: 66b408f10b2d87929ecda715109b26093c711823
+  # nix-sha256: sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452l37
+
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 - git: https://github.com/haskell-servant/servant-auth
@@ -58,17 +60,17 @@ extra-deps:
     - servant-auth-docs
     - servant-auth-swagger
     - servant-auth-server
+  # nix-sha256: sha256:0q1n0s126ywqw3g9xiiaw59s9jn2543v7p4zgxw99p68pihdlysv
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
 
 # Password
-# - base64-0.4.2@sha256:e9523e18bdadc3cab9dc32dfe3ac09c718fe792076326d6d353437b8b255cb5b,2888
-# - ghc-byteorder-4.11.0.0.10@sha256:5ee4a907279bfec27b0f9de7b8fba4cecfd34395a0235a7784494de70ad4e98f,1535
 - git: https://github.com/cdepillabout/password 
   commit: 26434d4f6888faf8dc36425b20b59f0b5056d7f5
   subdirs:
     - password
     - password-instances
+  # nix-sha256: sha256:0kbrw7zcn687h61h574z5k8p7z671whblcrmd6q21gsa2pyrk4ll
 
 
 
@@ -80,18 +82,11 @@ extra-deps:
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
-
-# https://github.com/vincenthz/hs-tls/issues/421
-# see also nix/overlay.nix.
-- git: https://github.com/ocheron/hs-tls
-  commit: f785ce66559a09d998bcb5d459cc5ec9d53d54f0
-  subdirs:
-    - core
-    - debug
-    - session
+  # nix-sha256: sha256:1illk01gyhhrjmz19n5wc07n61d0s2d2m348n7ibwf2795pjkrwj
 
 - git: https://github.com/GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
+  # nix-sha256: sha256:1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk
 
 - git: https://github.com/NorfairKing/mergeful
   commit: 15af41c244ce733f5e514d04a770479baa409370
@@ -99,24 +94,32 @@ extra-deps:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
+  # nix-sha256: sha256:15485mb6dp4p8zwr9ka5aib7rz2v64jhdmh36wypvrakn77fjyq2
+  
 - git: https://github.com/NorfairKing/pretty-relative-time
   commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
+  # nix-sha256: sha256:0dalpi3kwlr7m14sjjf2jvxfq8ydskarra2gc5j4w134m4r1m2ca
+
 - git: https://github.com/NorfairKing/cursor-fuzzy-time
   commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
+  # nix-sha256: sha256:0kxz4iw7qmgc0c8rrwfy6d0pwlcbsi7igsgfrmcgwszcymq2w8ki
+  
 - git: https://github.com/NorfairKing/fuzzy-time
   commit: c296b1de29a7795895bb1c68311021ce149406e2
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
+  # nix-sha256: sha256:1zk92kfk6vm86hm9n6q3b81fihkqxy8h1nwzfla42pj46bnkszky
 
 - git: https://github.com/NorfairKing/dirforest
   commit: e8c63dae86099c3c50e7908f84487126048cd93b
   subdirs:
     - dirforest
     - genvalidity-dirforest
+  # nix-sha256: sha256:05zx6b3vjralkjydgq6lgx84lyd0d5s3xifc4whf7jvc60ibrg8k
 
 - git: https://github.com/NorfairKing/cursor-dirforest
   commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
@@ -124,17 +127,20 @@ extra-deps:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
+  # nix-sha256: sha256:0msxk90acin5kickfs9x5hmmj1bi2yfpkp7lk3dg3fn2rf9kkbvv
 
 - git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
   subdirs:
     - cursor-brick
+  # nix-sha256: sha256:1mdi8bpd9i2l4rcmcr19c5wyghasiwkzymskidn7fan57wmj921v
 
 - git: https://github.com/NorfairKing/cursor
   commit: ea6724d2a0127614e9062a5ea53de8f042506dd0
   subdirs:
     - cursor
     - cursor-gen
+  # nix-sha256: sha256:0d3aky2hr3xz7mr3vcvvsgiv4ahw8xm2k7v8aaj6lkfpzrvrbvgk
 
 - git: https://github.com/NorfairKing/validity
   commit: 10c3b06dc45ce5edfc565abfba564140512efe92
@@ -173,12 +179,15 @@ extra-deps:
   - validity-unordered-containers
   - validity-uuid
   - validity-vector
+  # nix-sha256: sha256:1hfj4sznm4qzr746pcbgmm2sx0xnzj4hxr65q2nkrcjh161pqlwp
 
 - git: https://github.com/NorfairKing/yamlparse-applicative
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
   subdirs:
   - yamlparse-applicative
-allow-newer: true # Because splitmix has a really annoying upper-bound
+  # nix-sha256: sha256:1ap6xpckj756ap9rgvl6vb3if986zp3f3lgxir7lbq35k9qqib1y
+ 
+allow-newer: true # Because splitmix has a really annoying upper-bound on time<=1.9
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]
   add-gc-roots: true

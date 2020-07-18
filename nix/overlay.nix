@@ -30,17 +30,9 @@ with final.haskell.lib;
 
   smosPackages =
     let
+      sPkgs = import ../stack-to-nix/default.nix {};
       smosPkg =
-        name:
-          doBenchmark (
-            addBuildDepend (
-              failOnAllWarnings (
-                disableLibraryProfiling (
-                  final.haskellPackages.callCabal2nix name (final.gitignoreSource (../. + "/${name}")) {}
-                )
-              )
-            ) (final.haskellPackages.autoexporter)
-          );
+        name: sPkgs."${name}";
       smosPkgWithComp =
         exeName: name:
           generateOptparseApplicativeCompletion exeName (smosPkg name);
@@ -128,156 +120,9 @@ with final.haskell.lib;
         {
           overrides =
             final.lib.composeExtensions (
-              old.overrides or (
-                _:
-                _:
-                  {}
-              )
+              old.overrides or (_: _: {})
             ) (
-              self: super:
-                let
-                  orgmodeParseRepo =
-                    final.fetchFromGitHub {
-                      owner = "ixmatus";
-                      repo = "orgmode-parse";
-                      rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
-                      sha256 =
-                        "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
-                    };
-
-                  sqliteRepo =
-                    final.fetchFromGitHub {
-                      owner = "GaloisInc";
-                      repo = "sqlite";
-                      rev = "e93ee84000c1d1eedbc23036c4a20ffd07e3145f";
-                      sha256 =
-                        "1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk";
-                    };
-
-                  typedUUIDRepo =
-                    final.fetchFromGitHub {
-                      owner = "NorfairKing";
-                      repo = "typed-uuid";
-                      rev = "5415eaeee9817dfc4846fe4d73efce9312281b27";
-                      sha256 =
-                        "sha256:1illk01gyhhrjmz19n5wc07n61d0s2d2m348n7ibwf2795pjkrwj";
-                    };
-
-                  typedUUIDPkg =
-                    name:
-                      disableLibraryProfiling (
-                        self.callCabal2nix name (typedUUIDRepo + "/${name}") {}
-                      );
-
-                  typedUUIDPackages =
-                    final.lib.genAttrs [
-                      "typed-uuid"
-                      "genvalidity-typed-uuid"
-                    ] typedUUIDPkg;
-
-                  servantAuthRepo =
-                    final.fetchFromGitHub {
-                      owner = "haskell-servant";
-                      repo = "servant-auth";
-                      rev = "62d3f4b6a7fd7dc38510d4c60982239f94fc1b58";
-                      sha256 =
-                        "sha256:0syp5k2nm1jb1lh3z1ajzpgq35jhbm8qx3xr22s5qv27f6y7f99v";
-                    };
-
-                  servantAuthPkg =
-                    name:
-                      disableLibraryProfiling (
-                        dontCheck (
-                          self.callCabal2nix name (servantAuthRepo + "/${name}") {}
-                        )
-                      );
-
-                  servantAuthPackages =
-                    final.lib.genAttrs [
-                      "servant-auth-client"
-                      "servant-auth-docs"
-                      "servant-auth-server"
-                      "servant-auth-swagger"
-                    ] servantAuthPkg;
-
-                  # Passwords
-                  passwordRepo =
-                    final.fetchFromGitHub {
-                      owner = "cdepillabout";
-                      repo = "password";
-                      rev = "26434d4f6888faf8dc36425b20b59f0b5056d7f5";
-                      sha256 = "sha256:0kbrw7zcn687h61h574z5k8p7z671whblcrmd6q21gsa2pyrk4ll";
-                    };
-                  passwordPkg = name: dontCheck (self.callCabal2nix name (passwordRepo + "/${name}") {});
-                  passwordPackages =
-                    final.lib.genAttrs [
-                      "password"
-                      "password-instances"
-                    ] passwordPkg;
-                  iCalendarRepo =
-                    final.fetchFromGitHub {
-                      owner = "chrra";
-                      repo = "iCalendar";
-                      rev = "66b408f10b2d87929ecda715109b26093c711823";
-                      sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452l37";
-                    };
-                  iCalendarPkg = dontCheck (self.callCabal2nix "iCalendar" iCalendarRepo {});
-                  timeRepo =
-                    final.fetchFromGitHub {
-                      owner = "haskell";
-                      repo = "time";
-                      rev = "8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211";
-                      sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452aaa";
-                    };
-                  timePkg = overrideCabal (
-                    final.callPackage ./time.nix (
-                      {
-                        base = final.haskellPackages.base;
-                        inherit (final) fetchFromGitHub;
-                        inherit (previous.haskellPackages)
-                          mkDerivation
-                          deepseq
-                          QuickCheck
-                          random
-                          tasty
-                          tasty-hunit
-                          tasty-quickcheck
-                          unix
-                          ;
-                      }
-                    )
-                  ) (
-                    old: {}
-                    # { preConfigure = 
-                    # ''
-                    #   cabal configure
-                    #   ${old.preConfigure or ""}
-                    # '';
-                    # }
-                  ); # dontCheck (self.callCabal2nix "time" timeRepo {});
-                in
-                  final.smosPackages // {
-                    # directory = self.callHackage "directory" "1.3.6" {};
-                    # process = self.callHackage "process" "1.6.10" {};
-                    # unix = self.callHackage "unix" "2.7.2.2" {};
-
-                    envparse = self.callHackage "envparse" "0.4.1" {};
-                    time = timePkg;
-                    # time = self.callHackage "time" "1.10.0" {};
-                    # Cabal = self.callHackage "Cabal" "3.2.0" {};
-
-                    servant-flatten = self.callHackage "servant-flatten" "0.2" {};
-
-                    sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite);
-                    orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
-                    cron = dontCheck (self.callHackage "cron" "0.6.1" {});
-                    # Passwords
-                    ghc-byteorder = self.callHackage "ghc-byteorder" "4.11.0.0" {};
-                    # Calendar
-                    iCalendar = iCalendarPkg;
-                    mime = self.callHackage "mime" "0.4.0.2" {};
-                    genvalidity-dirforest = dontCheck super.genvalidity-dirforest;
-                  } // passwordPackages // typedUUIDPackages // servantAuthPackages
+              self: super: final.smosPackages
             );
         }
     );
