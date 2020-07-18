@@ -1,44 +1,108 @@
 final: previous:
 with final.haskell.lib;
 
-{
-  smosRelease =
+let
+  haskellNix = import (
+    final.fetchFromGitHub {
+      owner = "input-output-hk";
+      repo = "haskell.nix";
+      rev = "91b0a95e4071e7998778e1fe997f8ddcf759d48b";
+      sha256 = "sha256:13jx33vj8ixr3m88181wybzb8qlx0rl249bpphgz944anxp8z521";
+    }
+  ) {};
+  nixpkgsSrc = haskellNix.sources.nixpkgs-2003;
+  nixpkgsArgs = haskellNix.nixpkgsArgs;
+  haskellNixPkgs = import nixpkgsSrc nixpkgsArgs;
+  sPkgs = haskellNixPkgs.haskell-nix.stackProject {
+    # 'cleanGit' cleans a source directory based on the files known by git
+    src = haskellNixPkgs.haskell-nix.haskellLib.cleanGit {
+      name = "smos";
+      src = ../.;
+    };
+    modules = [
+      {
+        reinstallableLibGhc = true; # Because we override the 'time' version
+        packages.time.components.library.preConfigure = ''
+          ${final.autoconf}/bin/autoreconf -i
+        '';
+
+        # Workaround to make the following work
+        # https://github.com/input-output-hk/haskell.nix/issues/769
+        # packages.smos-web-server.components.library.preBuild
+        packages.smos-web-server.preBuild = final.lib.mkForce ''
+          export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
+        '';
+      }
+    ];
+  };
+
+  # Until this is built-in to the haskell.nix workings.
+  # https://github.com/input-output-hk/haskell.nix/issues/624
+  completionsFor = exeName: exe:
     final.stdenv.mkDerivation {
-      name = "smos-release";
-      buildInputs = final.lib.attrsets.attrValues final.smosPackages;
-      # Just to make sure that the test suites in these pass:
-      nativeBuildInputs =
-        final.lib.attrsets.attrValues final.validityPackages
-        ++ final.lib.attrsets.attrValues final.cursorPackages
-        ++ final.lib.attrsets.attrValues final.cursorBrickPackages
-        ++ final.lib.attrsets.attrValues final.fuzzyTimePackages
-        ++ final.lib.attrsets.attrValues final.cursorFuzzyTimePackages
-        ++ final.lib.attrsets.attrValues final.prettyRelativeTimePackages
-        ++ final.lib.attrsets.attrValues final.mergefulPackages;
+      name = "${exeName}-completion";
       buildCommand =
         ''
-          mkdir -p $out/bin
-          for i in $buildInputs
-          do
-            if [ -d "$i/bin" ]
-            then
-              cp $i/bin/* $out/bin/
-            fi
-          done
+          bashCompDir="$out/share/bash-completion/completions"
+          zshCompDir="$out/share/zsh/vendor-completions"
+          fishCompDir="$out/share/fish/vendor_completions.d"
+          mkdir -p "$bashCompDir" "$zshCompDir" "$fishCompDir"
+          "${exe}/bin/${exeName}" --bash-completion-script "${exe}/bin/${exeName}" >"$bashCompDir/${exeName}"
+          "${exe}/bin/${exeName}" --zsh-completion-script  "${exe}/bin/${exeName}" >"$zshCompDir/_${exeName}"
+          "${exe}/bin/${exeName}" --fish-completion-script "${exe}/bin/${exeName}" >"$fishCompDir/${exeName}.fish"
+          # Sanity check
+          grep -F ${exeName} <$bashCompDir/${exeName} >/dev/null || {
+            echo 'Could not find ${exeName} in completion script.'
+            exit 1
+          }
         '';
+    };
+  smosPkg = name: sPkgs."${name}".components.all;
+  smosPkgWithComp = exeName: name:
+    final.symlinkJoin {
+      name = "${exeName}-with-completion";
+      paths = [
+        (smosPkg name)
+        (completionsFor exeName (smosPkg name))
+      ];
+    };
+  smosPkgWithOwnComp = name: smosPkgWithComp name name;
+in
+{
+  smosRelease =
+    final.symlinkJoin {
+      name = "smos-release";
+      paths = final.lib.attrsets.attrValues final.smosPackages;
     };
 
   smosPackages =
-    let
-      sPkgs = import ../stack-to-nix/default.nix {};
-      smosPkg =
-        name: sPkgs."${name}";
-      smosPkgWithComp =
-        exeName: name:
-          generateOptparseApplicativeCompletion exeName (smosPkg name);
-      smosPkgWithOwnComp = name: smosPkgWithComp name name;
-
-      docsSite =
+    {
+      "smos" = smosPkgWithOwnComp "smos";
+      "smos-data" = smosPkg "smos-data";
+      "smos-data-gen" = smosPkg "smos-data-gen";
+      "smos-cursor" = smosPkg "smos-cursor";
+      "smos-cursor-gen" = smosPkg "smos-cursor-gen";
+      "smos-report" = smosPkg "smos-report";
+      "smos-report-gen" = smosPkg "smos-report-gen";
+      "smos-report-cursor" = smosPkg "smos-report-cursor";
+      "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
+      "smos-query" = smosPkgWithOwnComp "smos-query";
+      "smos-single" = smosPkgWithOwnComp "smos-single";
+      "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
+      "smos-archive" = smosPkgWithOwnComp "smos-archive";
+      "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+      "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
+      "smos-asciinema" = smosPkgWithOwnComp "smos-asciinema";
+      "smos-api" = smosPkg "smos-api";
+      "smos-api-gen" = smosPkg "smos-api-gen";
+      "smos-server" = smosPkgWithOwnComp "smos-server";
+      "smos-server-gen" = smosPkg "smos-server-gen";
+      "smos-client" = smosPkg "smos-client";
+      "smos-client-gen" = smosPkg "smos-client-gen";
+      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
+      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+      "smos-web-server" = smosPkgWithOwnComp "smos-web-server";
+      "smos-docs-site" =
         let
           rawDocsSite = smosPkg "smos-docs-site";
         in
@@ -55,65 +119,7 @@ with final.haskell.lib;
               killall smos-docs-site
             '';
           };
-
-    in
-      {
-        "smos" = smosPkgWithOwnComp "smos";
-        "smos-data" = smosPkg "smos-data";
-        "smos-data-gen" = smosPkg "smos-data-gen";
-        "smos-cursor" = smosPkg "smos-cursor";
-        "smos-cursor-gen" = smosPkg "smos-cursor-gen";
-        "smos-report" = smosPkg "smos-report";
-        "smos-report-gen" =
-          let
-            default = smosPkg "smos-report-gen";
-            set = {
-              "x86_64-darwin" = dontCheck default; # Because it hangs
-            };
-          in
-            set."${builtins.currentSystem}" or default;
-        "smos-report-cursor" = smosPkg "smos-report-cursor";
-        "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-        "smos-query" =
-          let
-            default = smosPkgWithOwnComp "smos-query";
-            set = {
-              "x86_64-darwin" = dontCheck default;
-            };
-          in
-            set."${builtins.currentSystem}" or default;
-        "smos-single" = smosPkgWithOwnComp "smos-single";
-        "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
-        "smos-archive" = smosPkgWithOwnComp "smos-archive";
-        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
-        "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-        "smos-asciinema" = smosPkgWithOwnComp "smos-asciinema";
-        "smos-docs-site" = docsSite;
-        "smos-api" = smosPkg "smos-api";
-        "smos-api-gen" = smosPkg "smos-api-gen";
-        "smos-server" = smosPkgWithOwnComp "smos-server";
-        "smos-server-gen" = smosPkg "smos-server-gen";
-        "smos-client" = smosPkg "smos-client";
-        "smos-client-gen" = smosPkg "smos-client-gen";
-        "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-        "smos-sync-client-gen" =
-          let
-            default = smosPkg "smos-sync-client-gen";
-            set = {
-              "x86_64-darwin" = dontCheck default;
-            };
-          in
-            set."${builtins.currentSystem}" or default;
-        "smos-web-server" = overrideCabal (smosPkgWithOwnComp "smos-web-server") (
-          old:
-            {
-              preBuild = ''
-                ${old.preBuild or ""}
-                export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
-              '';
-            }
-        );
-      };
+    };
   haskellPackages =
     previous.haskellPackages.override (
       old:

@@ -9,6 +9,7 @@ copyright: "2018-2019 Tom Sydney Kerckhove"
 
 library:
   source-dirs: src
+  build-tools: autoexporter
   dependencies:
   - base >= 4.7
   - bytestring

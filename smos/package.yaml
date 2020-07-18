@@ -71,6 +71,7 @@ tests:
   smos-test:
     main: Main.hs
     source-dirs: test/
+    build-tools: hspec-discover
     ghc-options:
     - -threaded
     - -rtsopts
