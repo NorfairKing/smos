@@ -43,10 +43,13 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - bytestring
     - cursor
+    - cursor-dirforest
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
     - cursor-gen
+    - dirforest
     - genvalidity-hspec
     - genvalidity-hspec-optics
     - hspec
