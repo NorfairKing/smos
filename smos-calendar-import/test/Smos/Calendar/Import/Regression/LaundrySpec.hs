@@ -8,7 +8,7 @@ where
 import Control.Monad.Reader
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Time
+import Data.Time hiding (DayOfWeek (Monday, Sunday))
 import Smos.Calendar.Import
 import Smos.Data
 import Test.Hspec

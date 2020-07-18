@@ -42,7 +42,7 @@ successAndFailureTests ::
 successAndFailureTests name =
   describe name $ do
     forMatchingFilesIn ("test_resources/" ++ name ++ "/success") $ \tf -> do
-      let ext = fileExtension tf
+      ext <- runIO $ fileExtension tf
       it (fromAbsFile tf ++ " succesfully parses as " ++ ext) $
         shouldSucceedInParsingByExtension @a tf
     forMatchingFilesIn ("test_resources/" ++ name ++ "/failure") $ \tf ->
@@ -80,7 +80,7 @@ shouldFailToParse tf = do
   errOrSmosFile <- readFileByExtension @a tf
   case errOrSmosFile of
     Left actualErr -> do
-      errFile <- addFileExtension "error" tf
+      errFile <- addExtension ".error" tf
       expectedErr <- readFile $ fromAbsFile errFile
       unless (actualErr == expectedErr)
         $ expectationFailure
@@ -104,12 +104,11 @@ readFileByExtension ::
   Path Abs File ->
   IO (Either String a)
 readFileByExtension tf = do
-  let ext = fileExtension tf
   let p =
-        case ext of
-          ".yaml" -> parseSmosDataYaml @a
-          ".json" -> parseSmosDataJSON @a
-          ".smos" -> parseSmosData @a
+        case fileExtension tf of
+          Just ".yaml" -> parseSmosDataYaml @a
+          Just ".json" -> parseSmosDataJSON @a
+          Just ".smos" -> parseSmosData @a
           _ -> parseSmosData @a
   bs <- SB.readFile (fromAbsFile tf)
   pure $ p bs
@@ -120,7 +119,8 @@ forMatchingFilesIn d specFunc = do
     runIO $ do
       trd <- resolveDir' d
       mtfs <- forgivingAbsence (snd <$> listDirRecur trd)
-      pure $ filter ((`elem` matchingExtensions) . fileExtension) $ fromMaybe [] mtfs
+      let tfs = fromMaybe [] mtfs
+      pure $ filter ((`elem` map Just matchingExtensions) . fileExtension) tfs
   forM_ tfs specFunc
 
 matchingExtensions :: [String]

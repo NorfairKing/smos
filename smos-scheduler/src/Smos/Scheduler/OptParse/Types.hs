@@ -197,7 +197,7 @@ data EntryTemplate
         entryTemplateContents :: Maybe Contents,
         entryTemplateTimestamps :: Map TimestampName TimestampTemplate,
         entryTemplateProperties :: Map PropertyName PropertyValue,
-        entryTemplateStateHistory :: StateHistoryTemplate,
+        entryTemplateState :: Maybe TodoState,
         entryTemplateTags :: Set Tag
       }
   deriving (Show, Eq, Generic)
@@ -211,7 +211,7 @@ newEntryTemplate h =
       entryTemplateContents = Nothing,
       entryTemplateTimestamps = M.empty,
       entryTemplateProperties = M.empty,
-      entryTemplateStateHistory = emptyStateHistoryTemplate,
+      entryTemplateState = Nothing,
       entryTemplateTags = S.empty
     }
 
@@ -225,7 +225,7 @@ instance FromJSON EntryTemplate where
               EntryTemplate <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
                 <*> o .:? "timestamps" .!= M.empty
                 <*> o .:? "properties" .!= M.empty
-                <*> o .:? "state-history" .!= emptyStateHistoryTemplate
+                <*> o .:? "state" .!= Nothing
                 <*> o .:? "tags" .!= S.empty
           )
         v

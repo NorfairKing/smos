@@ -38,7 +38,7 @@ smosQueryAgenda AgendaSettings {..} = do
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
 renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now
 
-renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk Text]]
+renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk]]
 renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]

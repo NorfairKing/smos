@@ -18,7 +18,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Data.Time hiding (parseTime)
+import Data.Time
 import qualified Env
 import Options.Applicative as OptParse
 import Smos.Query.Config
@@ -196,13 +196,9 @@ runArgumentsParser :: [String] -> ParserResult Arguments
 runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
-      ParserPrefs
-        { prefMultiSuffix = "",
-          prefDisambiguate = True,
-          prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True,
-          prefBacktrack = True,
-          prefColumns = 80
+      defaultPrefs
+        { prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True
         }
 
 argParser :: ParserInfo Arguments

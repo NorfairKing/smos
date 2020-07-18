@@ -9,7 +9,6 @@ import Data.Foldable
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
 import qualified Data.Text as T
-import Data.Text (Text)
 import Data.Time
 import Path
 import Rainbow
@@ -21,19 +20,19 @@ import Smos.Report.Path
 import Smos.Report.Projection
 import Text.Time.Pretty
 
-type Table = Seq (Chunk Text)
+type Table = Seq Chunk
 
-formatAsTable :: [[Chunk Text]] -> Seq (Chunk Text)
+formatAsTable :: [[Chunk]] -> Seq Chunk
 formatAsTable =
   Box.render
     . tableByRows
     . S.fromList
-    . map (Box.intersperse (separator mempty 1) . S.fromList . map mkCell)
+    . map (S.intersperse (separator mempty 1) . S.fromList . map mkCell)
 
-mkCell :: Chunk Text -> Cell
+mkCell :: Chunk -> Cell
 mkCell c = Cell (S.singleton (S.singleton c)) center left mempty
 
-putTableLn :: Seq (Chunk Text) -> IO ()
+putTableLn :: Seq Chunk -> IO ()
 putTableLn myChunks = do
   printer <- byteStringMakerFromEnvironment
   mapM_ SB.putStr $ chunksToByteStrings printer $ toList myChunks
@@ -43,7 +42,7 @@ putBoxLn box = do
   printer <- byteStringMakerFromEnvironment
   mapM_ SB.putStr $ chunksToByteStrings printer $ toList $ Box.render box
 
-showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk Text
+showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
   where
     th1 = fromIntegral threshold :: Int
@@ -58,7 +57,7 @@ showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
     diffInDays :: UTCTime -> UTCTime -> Int
     diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay
 
-formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk Text]
+formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk]
 formatAgendaEntry now AgendaEntry {..} =
   let tz = zonedTimeZone now
       d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
@@ -80,7 +79,7 @@ formatAgendaEntry now AgendaEntry {..} =
         func $ pathChunk agendaEntryFilePath
       ]
 
-rootedPathChunk :: RootedPath -> Chunk Text
+rootedPathChunk :: RootedPath -> Chunk
 rootedPathChunk rp =
   chunk
     $ T.pack
@@ -88,7 +87,7 @@ rootedPathChunk rp =
       Relative _ rf -> fromRelFile rf
       Absolute af -> fromAbsFile af
 
-pathChunk :: Path b t -> Chunk Text
+pathChunk :: Path b t -> Chunk
 pathChunk = chunk . T.pack . toFilePath
 
 renderEntryReport :: EntryReport -> Table
@@ -97,7 +96,7 @@ renderEntryReport EntryReport {..} =
     map renderProjectionHeader (toList entryReportHeaders)
       : map (renderProjectees . toList) entryReportCells
 
-renderProjectionHeader :: Projection -> Chunk Text
+renderProjectionHeader :: Projection -> Chunk
 renderProjectionHeader p =
   underline $
     case p of
@@ -108,10 +107,10 @@ renderProjectionHeader p =
       OntoState -> chunk "state"
       OntoAncestor p' -> renderProjectionHeader p'
 
-renderProjectees :: [Projectee] -> [Chunk Text]
+renderProjectees :: [Projectee] -> [Chunk]
 renderProjectees = map projecteeChunk
 
-projecteeChunk :: Projectee -> Chunk Text
+projecteeChunk :: Projectee -> Chunk
 projecteeChunk p =
   case p of
     FileProjection rp -> pathChunk rp
@@ -120,10 +119,10 @@ projecteeChunk p =
     TagProjection mt -> maybe (chunk "") tagChunk mt
     PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
 
-mTodoStateChunk :: Maybe TodoState -> Chunk Text
+mTodoStateChunk :: Maybe TodoState -> Chunk
 mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
 
-todoStateChunk :: TodoState -> Chunk Text
+todoStateChunk :: TodoState -> Chunk
 todoStateChunk ts = fore color . chunk . todoStateText $ ts
   where
     color =
@@ -138,7 +137,7 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
         "FAILED" -> brightRed
         _ -> mempty
 
-timestampNameChunk :: TimestampName -> Chunk Text
+timestampNameChunk :: TimestampName -> Chunk
 timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
   where
     color =
@@ -149,13 +148,13 @@ timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
         "DEADLINE" -> red
         _ -> mempty
 
-headerChunk :: Header -> Chunk Text
+headerChunk :: Header -> Chunk
 headerChunk = fore yellow . chunk . headerText
 
-propertyValueChunk :: PropertyName -> PropertyValue -> Chunk Text
+propertyValueChunk :: PropertyName -> PropertyValue -> Chunk
 propertyValueChunk pn = fore (propertyNameColor pn) . chunk . propertyValueText
 
-propertyNameChunk :: PropertyName -> Chunk Text
+propertyNameChunk :: PropertyName -> Chunk
 propertyNameChunk pn = fore (propertyNameColor pn) $ chunk $ propertyNameText pn
 
 propertyNameColor :: PropertyName -> Radiant
@@ -166,10 +165,10 @@ propertyNameColor pn =
     "brainpower" -> brown
     _ -> mempty
 
-tagChunk :: Tag -> Chunk Text
+tagChunk :: Tag -> Chunk
 tagChunk = fore cyan . chunk . tagText
 
-intChunk :: Int -> Chunk Text
+intChunk :: Int -> Chunk
 intChunk = chunk . T.pack . show
 
 orange :: Radiant

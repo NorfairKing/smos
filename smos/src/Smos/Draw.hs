@@ -12,7 +12,6 @@ import Brick.Types as B
 import Brick.Widgets.Border as B
 import Brick.Widgets.Center as B
 import Brick.Widgets.Core as B
-import Brick.Widgets.Core ((<+>))
 import Cursor.Brick.Forest
 import Cursor.Brick.List.NonEmpty
 import Cursor.Brick.Map
@@ -275,7 +274,7 @@ drawFileBrowserCursor s =
     goFod fod = case fod of
       FodFile rf () ->
         let extraStyle = case fileExtension rf of
-              ".smos" -> id -- TODO maybe also something fancy?
+              Just ".smos" -> id -- TODO maybe also something fancy?
               _ -> forceAttr nonSmosFileAttr
          in extraStyle $ drawFilePath rf
       FodDir rd -> drawDirPath rd

@@ -23,7 +23,7 @@ import Smos.Sync.Client.ContentsMap (ContentsMap)
 interestingStoreToContentsMap :: InterestingStore -> ContentsMap
 interestingStoreToContentsMap is@InterestingStore {..} =
   let smosDF = interestingStoreSmosFileDF is
-      addSmosExt p = fromMaybe p $ addFileExtension ".smos" p
+      addSmosExt p = fromMaybe p $ addExtension ".smos" p
    in foldl'
         goM
         CM.empty

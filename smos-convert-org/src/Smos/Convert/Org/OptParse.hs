@@ -36,13 +36,9 @@ runArgumentsParser :: [String] -> ParserResult Flags
 runArgumentsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
-      ParserPrefs
-        { prefMultiSuffix = "",
-          prefDisambiguate = True,
-          prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True,
-          prefBacktrack = True,
-          prefColumns = 80
+      defaultPrefs
+        { prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True
         }
 
 flagsParser :: ParserInfo Flags

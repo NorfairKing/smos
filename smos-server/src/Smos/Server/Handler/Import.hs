@@ -49,7 +49,7 @@ parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->
   let filePred = case ha of
         HideArchive -> not . isProperPrefixOf [reldir|archive|]
         Don'tHideArchive -> const True
-   in if filePred serverFilePath && fileExtension serverFilePath == ".smos"
+   in if filePred serverFilePath && fileExtension serverFilePath == Just ".smos"
         then case parseSmosFile serverFileContents of
           Left _ -> Nothing
           Right sf -> Just (serverFilePath, sf)

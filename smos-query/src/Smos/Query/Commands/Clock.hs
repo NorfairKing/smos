@@ -151,11 +151,11 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
               (cell . fore blue)
               [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t]
           ]
-    blockTitleChunk :: Text -> Chunk Text
+    blockTitleChunk :: Text -> Chunk
     blockTitleChunk = fore blue . chunk
     emptyCell :: Cell
     emptyCell = cell $ chunk ""
-    cell :: Chunk Text -> Cell
+    cell :: Chunk -> Cell
     cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
 
 renderNominalDiffTime :: ClockFormat -> NominalDiffTime -> Text

@@ -73,5 +73,5 @@ spec = do
             afs <- snd <$> listDirRecur ad
             case afs of
               [_] -> pure ()
-              _ -> expectationFailure $ unlines $ "The file was archived incorrectly, we didn't find exactly one file: " : map fromAbsFile afs
+              _ -> expectationFailure $ unlines $ ("The file was archived incorrectly, we didn't find exactly one file but " <> show (length afs) <> " instead:") : map fromAbsFile afs
             fileBrowserCursorDirForestCursor fbc' `shouldBe` Nothing

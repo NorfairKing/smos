@@ -45,7 +45,7 @@ renderEntryTemplate EntryTemplate {..} =
     <*> renderContentsTemplate entryTemplateContents
     <*> renderTimestampsTemplate entryTemplateTimestamps
     <*> renderPropertiesTemplate entryTemplateProperties
-    <*> renderStateHistoryTemplate entryTemplateStateHistory
+    <*> renderStateHistoryTemplate entryTemplateState
     <*> renderTagsTemplate entryTemplateTags
     <*> pure emptyLogbook
 
@@ -86,15 +86,12 @@ renderPropertyValueTemplate pv = do
     Nothing -> renderFail $ RenderErrorPropertyValueValidity pv t
     Just pv' -> pure pv'
 
-renderStateHistoryTemplate :: StateHistoryTemplate -> Render StateHistory
-renderStateHistoryTemplate =
-  fmap StateHistory . mapM renderStateHistoryEntryTemplate . stateHistoryEntryTemplates
-
-renderStateHistoryEntryTemplate :: StateHistoryEntryTemplate -> Render StateHistoryEntry
-renderStateHistoryEntryTemplate StateHistoryEntryTemplate {..} = do
-  stateHistoryEntryNewState <- mapM renderTodoStateTemplate stateHistoryEntryTemplateNewState
-  stateHistoryEntryTimestamp <- renderUTCTimeTemplate stateHistoryEntryTemplateTimestamp
-  pure StateHistoryEntry {..}
+renderStateHistoryTemplate :: Maybe TodoState -> Render StateHistory
+renderStateHistoryTemplate = \case
+  Nothing -> pure emptyStateHistory
+  Just ts -> do
+    now <- asks renderContextTime
+    pure $ StateHistory [StateHistoryEntry {stateHistoryEntryNewState = Just ts, stateHistoryEntryTimestamp = zonedTimeToUTC now}]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState
 renderTodoStateTemplate = fmap TodoState . renderTextTemplate . todoStateText

@@ -21,7 +21,6 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Lazy as Lazy
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
-import Data.Time.Calendar.WeekDate
 import Data.Yaml as Yaml
 import Lens.Micro
 import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
@@ -33,7 +32,7 @@ import Smos.Report.Config
 import System.Exit
 import Text.ICalendar.Parser
 import Text.ICalendar.Types as ICal
-import Text.Show.Pretty
+import Text.Show.Pretty (ppShow)
 import YamlParse.Applicative
 
 -- Given a list of sources (basically ics files) we want to produce a single smos file (like calendar.smos) that contains all the events.
@@ -385,8 +384,6 @@ nextWeeklyByDayOfWeek interval _ day =
       let baseDay = addDays (fromIntegral $ (interval - 1) * 7) day
        in go baseDay
   where
-    -- Until we get time 1.9
-    dayOfWeek d = let (_, _, dow) = toWeekDate d in dow
     go d =
       let d' = addDays 1 d
        in if dayOfWeek d' == dayOfWeek day

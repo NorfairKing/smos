@@ -10,7 +10,6 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
 import Data.Map (Map)
-import Data.Text (Text)
 import Data.Time
 import Rainbow
 import Smos.Data
@@ -73,19 +72,19 @@ renderStateStatsReport StateStatsReport {..} =
         [[chunk ""]]
       ]
 
-formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk Text]]
+formatReportStates :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportStates m = flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, intChunk i]
 
-formatReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk Text]]
+formatReportStateTransitions :: Map (Maybe TodoState, Maybe TodoState) Int -> [[Chunk]]
 formatReportStateTransitions m =
   flip map (M.toList m) $ \((mts1, mts2), i) ->
     [mTodoStateChunk mts1, mTodoStateChunk mts2, intChunk i]
 
-formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
+formatReportFromStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportFromStateTransitions m =
   flip map (M.toList m) $ \(mts, i) -> [mTodoStateChunk mts, chunk "(any)", intChunk i]
 
-formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk Text]]
+formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportToStateTransitions m =
   flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
 

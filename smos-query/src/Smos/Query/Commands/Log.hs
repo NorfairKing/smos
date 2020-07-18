@@ -8,7 +8,6 @@ where
 
 import Conduit
 import Data.List
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Rainbow
@@ -42,7 +41,7 @@ renderLogReport zt lrbs =
     goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
     goEntries es = map (renderLogEntry zt) (sortOn logEntryEvent es)
 
-renderLogEntry :: ZonedTime -> LogEntry -> [Chunk Text]
+renderLogEntry :: ZonedTime -> LogEntry -> [Chunk]
 renderLogEntry zt LogEntry {..} =
   let LogEvent {..} = logEntryEvent
    in [ rootedPathChunk logEntryFilePath,
@@ -54,7 +53,7 @@ renderLogEntry zt LogEntry {..} =
       ]
         <> logEventTypeChunk logEventType
 
-logEventTypeChunk :: LogEventType -> [Chunk Text]
+logEventTypeChunk :: LogEventType -> [Chunk]
 logEventTypeChunk typ =
   case typ of
     StateChange from to -> [mTodoStateChunk from, chunk " -> ", mTodoStateChunk to]

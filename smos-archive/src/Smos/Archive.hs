@@ -30,6 +30,7 @@ import Smos.Archive.Prompt
 import Smos.Data
 import Smos.Report.Config
 import System.Exit
+import qualified System.FilePath as FP
 
 smosArchive :: IO ()
 smosArchive = do
@@ -67,11 +68,11 @@ destinationFile today workflowDir archiveDir file = do
   case stripProperPrefix workflowDir file of
     Nothing -> throwM (NotInWorkflowDir workflowDir file)
     Just rf -> do
-      let ext = fileExtension rf
-      withoutExt <- setFileExtension "" rf
-      let newRelFile = fromRelFile withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F" today
+      let mext = fileExtension rf :: Maybe String
+      let withoutExt = FP.dropExtensions (fromRelFile rf)
+      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F" today
       arf' <- parseRelFile newRelFile
-      arf'' <- setFileExtension ext arf'
+      arf'' <- maybe (pure arf') (`replaceExtension` arf') mext
       pure $ archiveDir </> arf''
 
 data NotInWorkflowDir = NotInWorkflowDir (Path Abs Dir) (Path Abs File)

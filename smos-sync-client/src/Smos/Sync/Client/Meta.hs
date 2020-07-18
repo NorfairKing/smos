@@ -8,8 +8,8 @@ import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import qualified Data.Mergeful as Mergeful
 import Database.Persist.Sql as DB
-import Pantry.SHA256 as SHA256
 import Path
+import Smos.API.SHA256 as SHA256
 import Smos.Client
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.DB

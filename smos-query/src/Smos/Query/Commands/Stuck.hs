@@ -9,7 +9,6 @@ where
 
 import Conduit
 import qualified Data.Conduit.List as C
-import Data.Text (Text)
 import Data.Time
 import Rainbow
 import Smos.Query.Config
@@ -36,7 +35,7 @@ smosQueryStuck StuckSettings {..} = do
 renderStuckReport :: UTCTime -> StuckReport -> Table
 renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuckReportEntries
 
-renderStuckReportEntry :: UTCTime -> StuckReportEntry -> [Chunk Text]
+renderStuckReportEntry :: UTCTime -> StuckReportEntry -> [Chunk]
 renderStuckReportEntry now StuckReportEntry {..} =
   [ rootedPathChunk stuckReportEntryFilePath,
     mTodoStateChunk stuckReportEntryState,

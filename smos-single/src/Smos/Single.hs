@@ -36,9 +36,8 @@ single Settings {..} = do
       writeSmosFile path smosFile
 
 deriveFileName :: Header -> IO (Path Rel File)
-deriveFileName h = parseRelFile $ addExtension $ map go $ T.unpack $ headerText h
+deriveFileName h = parseRelFile $ (++ ".smos") $ map go $ T.unpack $ headerText h
   where
-    addExtension = (++ ".smos")
     go :: Char -> Char
     go ' ' = '-'
     go c = Char.toLower c

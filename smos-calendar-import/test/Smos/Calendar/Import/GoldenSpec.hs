@@ -20,7 +20,7 @@ spec :: Spec
 spec = do
   fs <- runIO $ do
     testResourcesDir <- resolveDir' "test_resources"
-    filter ((== ".ics") . fileExtension) . snd <$> listDirRecur testResourcesDir
+    filter ((== Just ".ics") . fileExtension) . snd <$> listDirRecur testResourcesDir
   mapM_ mkGoldenTest fs
 
 mkGoldenTest :: Path Abs File -> Spec
@@ -29,13 +29,13 @@ mkGoldenTest cp = it (fromAbsFile cp) $ do
   case errOrCal of
     Left err -> expectationFailure $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, err]
     Right (cals, _) -> do
-      tcp <- setFileExtension ".yaml" cp
+      tcp <- replaceExtension ".yaml" cp
       mTestConf <- readConfigFile tcp
       case mTestConf of
         Nothing -> expectationFailure $ "Test conf not found: " <> fromAbsFile tcp
         Just pc -> do
           let actual = processCalendars pc cals
-          sfp <- setFileExtension ".smos" cp
+          sfp <- replaceExtension ".smos" cp
           mErrOrSmosFile <- readSmosFile sfp
           case mErrOrSmosFile of
             Nothing ->

@@ -8,7 +8,6 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Data.Text (Text)
 import Data.Time
 import Rainbow
 import Smos.Query.Config
@@ -34,7 +33,7 @@ renderWaitingActionReport :: Word -> UTCTime -> WaitingReport -> Table
 renderWaitingActionReport threshold now =
   formatAsTable . map (formatWaitingActionEntry threshold now) . waitingReportEntries
 
-formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk Text]
+formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk]
 formatWaitingActionEntry threshold now WaitingActionEntry {..} =
   [ rootedPathChunk waitingActionEntryFilePath,
     headerChunk waitingActionEntryHeader,

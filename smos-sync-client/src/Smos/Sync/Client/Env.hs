@@ -16,7 +16,6 @@ import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
-import Pantry.SHA256
 import Path
 import Servant.Auth.Client as Auth
 import Servant.Client as Servant
@@ -128,6 +127,3 @@ instance ToJSON SyncFileMeta where
       [ "sha256" .= syncFileMetaHash,
         "time" .= syncFileMetaTime
       ]
-
-instance Validity SHA256 where
-  validate = trivialValidation

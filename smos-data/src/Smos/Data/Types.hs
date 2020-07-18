@@ -398,7 +398,7 @@ instance YamlSchema PropertyName where
 instance YamlKeySchema PropertyName where
   yamlKeySchema = extraParser parseJSONPropertyName yamlKeySchema
 
-parseJSONPropertyName :: Monad m => Text -> m PropertyName
+parseJSONPropertyName :: MonadFail m => Text -> m PropertyName
 parseJSONPropertyName t =
   case propertyName t of
     Nothing -> fail $ "Invalid property name: " <> T.unpack t
@@ -447,7 +447,7 @@ instance YamlSchema PropertyValue where
 instance YamlKeySchema PropertyValue where
   yamlKeySchema = extraParser parseJSONPropertyValue yamlKeySchema
 
-parseJSONPropertyValue :: Monad m => Text -> m PropertyValue
+parseJSONPropertyValue :: MonadFail m => Text -> m PropertyValue
 parseJSONPropertyValue t =
   case propertyValue t of
     Nothing -> fail $ "Invalid property value: " <> T.unpack t
@@ -489,7 +489,7 @@ instance YamlSchema TimestampName where
 instance YamlKeySchema TimestampName where
   yamlKeySchema = extraParser parseJSONTimestampName yamlKeySchema
 
-parseJSONTimestampName :: Monad m => Text -> m TimestampName
+parseJSONTimestampName :: MonadFail m => Text -> m TimestampName
 parseJSONTimestampName t =
   case timestampName t of
     Nothing -> fail $ "Invalid timestamp name: " <> T.unpack t

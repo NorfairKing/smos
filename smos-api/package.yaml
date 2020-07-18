@@ -19,9 +19,12 @@ library:
   - base64-bytestring
   - bcrypt
   - bytestring
+  - cryptonite
+  - cryptonite-conduit
   - deepseq
   - dirforest
   - hashable
+  - memory
   - mergeful
   - mergeful-persistent
   - mtl

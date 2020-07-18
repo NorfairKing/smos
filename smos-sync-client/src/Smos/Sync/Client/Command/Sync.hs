@@ -29,9 +29,9 @@ import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Validity.UUID ()
 import Database.Persist.Sqlite as DB
-import Pantry.SHA256 as SHA256
 import Path
 import Path.IO
+import Smos.API.SHA256 as SHA256
 import Smos.Client
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
@@ -382,7 +382,7 @@ backupFile :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> C ()
 backupFile contentsDir backupDir sourceFile = do
   now <- liftIO getCurrentTime
   let timeStr = formatTime defaultTimeLocale ".%F_%T" now
-  destinationFile <- addFileExtension timeStr sourceFile
+  destinationFile <- addExtension timeStr sourceFile
   let source = contentsDir </> sourceFile
   let destination = backupDir </> destinationFile
   me <- forgivingAbsence $ doesFileExist destination

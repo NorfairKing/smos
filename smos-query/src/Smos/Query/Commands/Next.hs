@@ -7,7 +7,6 @@ module Smos.Query.Commands.Next
 where
 
 import Conduit
-import Data.Text (Text)
 import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -24,7 +23,7 @@ smosQueryNext NextSettings {..} = do
 renderNextActionReport :: NextActionReport -> Table
 renderNextActionReport = formatAsTable . map formatNextActionEntry . nextActionReportEntries
 
-formatNextActionEntry :: NextActionEntry -> [Chunk Text]
+formatNextActionEntry :: NextActionEntry -> [Chunk]
 formatNextActionEntry NextActionEntry {..} =
   [ pathChunk nextActionEntryFilePath,
     maybe (chunk "") todoStateChunk nextActionEntryTodoState,

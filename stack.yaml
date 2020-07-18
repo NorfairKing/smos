@@ -1,4 +1,4 @@
-resolver: lts-14.23
+resolver: lts-15.15
 packages:
 
 - smos
@@ -29,13 +29,41 @@ packages:
 - smos-web-server
 
 extra-deps:
+# No idea why these have to be here ... ? 
+- directory-1.3.6.1@sha256:3dc9c69c8e09ec95a7a45c6d06abe0f0d2f604439c37e5f88e5a6c335b088d71,2810
+- process-1.6.10.0@sha256:c0d2d8adaca7cea7ceaa60e67b61c775dc03727b83bdb1c97aa8cbeac9f5dd84,2469
+- unix-2.7.2.2@sha256:9e93f93cc5a065248120136e83a0a6d1ce93d6eb5ef2a2543f9593e93e164d24,3496
+
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
+
+  # - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+
+- git: https://github.com/haskell/time
+  commit: 8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211
+
+- git: https://github.com/ixmatus/orgmode-parse
+  commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
+
+- Cabal-3.2.0.0@sha256:d0d7a1f405f25d0000f5ddef684838bc264842304fd4e7f80ca92b997b710874,27320
+
+# Calendar
+- git: https://github.com/chrra/iCalendar
+  commit: 66b408f10b2d87929ecda715109b26093c711823
+- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
+
+- git: https://github.com/haskell-servant/servant-auth
+  commit: 23971e889f8cbe8790305bda8915f00aa8be5ad9
+  subdirs:
+    - servant-auth-client
+    - servant-auth-docs
+    - servant-auth-swagger
+    - servant-auth-server
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
 
 # Password
-- base64-0.4.2@sha256:e9523e18bdadc3cab9dc32dfe3ac09c718fe792076326d6d353437b8b255cb5b,2888
-- ghc-byteorder-4.11.0.0.10@sha256:5ee4a907279bfec27b0f9de7b8fba4cecfd34395a0235a7784494de70ad4e98f,1535
+# - base64-0.4.2@sha256:e9523e18bdadc3cab9dc32dfe3ac09c718fe792076326d6d353437b8b255cb5b,2888
+# - ghc-byteorder-4.11.0.0.10@sha256:5ee4a907279bfec27b0f9de7b8fba4cecfd34395a0235a7784494de70ad4e98f,1535
 - git: https://github.com/cdepillabout/password 
   commit: 26434d4f6888faf8dc36425b20b59f0b5056d7f5
   subdirs:
@@ -43,21 +71,8 @@ extra-deps:
     - password-instances
 
 
-# Calendar
-- git: https://github.com/chrra/iCalendar
-  commit: 66b408f10b2d87929ecda715109b26093c711823
-- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 
-
-
-- git: https://github.com/haskell-servant/servant-auth
-  commit: 62d3f4b6a7fd7dc38510d4c60982239f94fc1b58
-  subdirs:
-    - servant-auth-client
-    - servant-auth-docs
-    - servant-auth-swagger
-    - servant-auth-server
 
 
 - git: https://github.com/NorfairKing/typed-uuid
@@ -78,21 +93,12 @@ extra-deps:
 - git: https://github.com/GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
 
-- git: https://github.com/NorfairKing/persistent
-  commit: 0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee
-  subdirs:
-    - persistent
-    - persistent-template
-    - persistent-sqlite
-
 - git: https://github.com/NorfairKing/mergeful
   commit: 15af41c244ce733f5e514d04a770479baa409370
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
-- git: https://github.com/ixmatus/orgmode-parse
-  commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 - git: https://github.com/NorfairKing/pretty-relative-time
   commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
 - git: https://github.com/NorfairKing/cursor-fuzzy-time
@@ -131,7 +137,7 @@ extra-deps:
     - cursor-gen
 
 - git: https://github.com/NorfairKing/validity
-  commit: 8b938a46ca36d95f718f8071317395b07107000c
+  commit: 10c3b06dc45ce5edfc565abfba564140512efe92
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -172,10 +178,12 @@ extra-deps:
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
   subdirs:
   - yamlparse-applicative
+allow-newer: true # Because splitmix has a really annoying upper-bound
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/323fe92057bb38475a446ff5e18d3b388c2e4403.tar.gz" ]
+  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]
   add-gc-roots: true
   packages:
   - zlib
   - haskellPackages.autoexporter
   - killall
+  - autoconf

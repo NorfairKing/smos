@@ -144,6 +144,7 @@ with final.haskell.lib;
                       sha256 =
                         "0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv";
                     };
+
                   sqliteRepo =
                     final.fetchFromGitHub {
                       owner = "GaloisInc";
@@ -199,49 +200,6 @@ with final.haskell.lib;
                       "servant-auth-swagger"
                     ] servantAuthPkg;
 
-                  hsTlsRepo =
-                    final.fetchFromGitHub {
-                      owner = "ocheron";
-                      repo = "hs-tls";
-                      rev = "f785ce66559a09d998bcb5d459cc5ec9d53d54f0";
-                      sha256 =
-                        "13vq1xzwsagxdrbyl6h3fslii4jrvx7fi20h87hdqlzj3y91n1dk";
-                    };
-                  hsTlsPkg =
-                    name: subdir:
-                      dontCheck (
-                        self.callCabal2nix name (hsTlsRepo + "/${subdir}") {}
-                      );
-
-                  hsTlsPackages =
-                    {
-                      "tls" = hsTlsPkg "tls" "core";
-                      "tls-session-manager" =
-                        hsTlsPkg "tls-session-manager" "session";
-                      "tls-debug" = hsTlsPkg "tls-debug" "debug";
-                    };
-
-                  persistentRepo =
-                    final.fetchFromGitHub {
-                      owner = "NorfairKing";
-                      repo = "persistent";
-                      rev = "0e3bbb1bd2f5f6383f9eb0407a2416e8b12255ee";
-                      sha256 =
-                        "1nzl7kckbvarffj96695xh4wg3d387fyhzxp3sbsv0jzh2iv1kj7";
-                    };
-
-                  persistentPkg =
-                    name:
-                      dontCheck (
-                        self.callCabal2nix name (persistentRepo + "/${name}") {}
-                      );
-                  persistentPackages =
-                    final.lib.genAttrs [
-                      "persistent"
-                      "persistent-template"
-                      "persistent-sqlite"
-                    ] persistentPkg;
-
                   # Passwords
                   passwordRepo =
                     final.fetchFromGitHub {
@@ -264,9 +222,27 @@ with final.haskell.lib;
                       sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452l37";
                     };
                   iCalendarPkg = dontCheck (self.callCabal2nix "iCalendar" iCalendarRepo {});
+                  timeRepo =
+                    final.fetchFromGitHub {
+                      owner = "haskell";
+                      repo = "time";
+                      rev = "8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211";
+                      sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452aaa";
+                    };
+                  timePkg = dontCheck (self.callCabal2nix "time" timeRepo {});
                 in
                   final.smosPackages // {
-                    pantry = disableLibraryProfiling (dontCheck (self.callHackage "pantry" "0.1.1.2" {}));
+                    # directory = self.callHackage "directory" "1.3.6" {};
+                    # process = self.callHackage "process" "1.6.10" {};
+                    # unix = self.callHackage "unix" "2.7.2.2" {};
+
+                    envparse = self.callHackage "envparse" "0.4.1" {};
+                    time = timePkg;
+                    # time = self.callHackage "time" "1.10.0" {};
+                    # Cabal = self.callHackage "Cabal" "3.2.0" {};
+
+                    servant-flatten = self.callHackage "servant-flatten" "0.2" {};
+
                     sqlite = addBuildDepend (dontCheck (self.callCabal2nix "sqlite" sqliteRepo { sqlite = final.sqlite; })) (final.sqlite);
                     orgmode-parse = self.callCabal2nix "orgmode-parse" orgmodeParseRepo {};
                     cron = dontCheck (self.callHackage "cron" "0.6.1" {});
@@ -276,8 +252,7 @@ with final.haskell.lib;
                     iCalendar = iCalendarPkg;
                     mime = self.callHackage "mime" "0.4.0.2" {};
                     genvalidity-dirforest = dontCheck super.genvalidity-dirforest;
-
-                  } // persistentPackages // passwordPackages // typedUUIDPackages // servantAuthPackages // hsTlsPackages
+                  } // passwordPackages // typedUUIDPackages // servantAuthPackages
             );
         }
     );

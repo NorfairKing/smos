@@ -79,13 +79,9 @@ runArgumentsParser :: [String] -> ParserResult Arguments
 runArgumentsParser = execParserPure prefs_ argumentsParser
   where
     prefs_ =
-      ParserPrefs
-        { prefMultiSuffix = "",
-          prefDisambiguate = True,
-          prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True,
-          prefBacktrack = True,
-          prefColumns = 80
+      defaultPrefs
+        { prefShowHelpOnError = True,
+          prefShowHelpOnEmpty = True
         }
 
 argumentsParser :: ParserInfo Arguments

@@ -54,7 +54,7 @@ writeInterestingStore dir is@InterestingStore {..} = do
   let writeSBF :: Path Abs File -> ByteString -> IO ()
       writeSBF p c = SB.writeFile (fromAbsFile p) c
       writeSF :: Path Abs File -> SmosFile -> IO ()
-      writeSF p c = writeSBF (fromMaybe p $ addFileExtension ".smos" p) (smosFileYamlBS c)
+      writeSF p c = writeSBF (fromMaybe p $ replaceExtension ".smos" p) (smosFileYamlBS c)
       smosFileDf = interestingStoreSmosFileDF is
   liftIO $ DF.write dir smosFileDf writeSF
   liftIO $ DF.write dir otherFiles writeSBF

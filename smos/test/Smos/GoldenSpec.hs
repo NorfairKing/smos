@@ -13,7 +13,6 @@ import Brick hiding (on)
 import qualified Data.ByteString.Char8 as SB8
 import Data.Function
 import Data.List
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Yaml
@@ -30,7 +29,7 @@ spec = do
     runIO $ do
       resourcesDir <- resolveDir' "test_resources/golden"
       fs <- snd <$> listDirRecur resourcesDir
-      pure $ filter ((== ".yaml") . fileExtension) fs
+      pure $ filter ((== Just ".yaml") . fileExtension) fs
   describe "Preconditions"
     $ specify "all actions have unique names"
     $ let allActionNames = map anyActionName allActions

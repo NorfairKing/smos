@@ -32,7 +32,6 @@ library:
   - monad-logger
   - mtl
   - optparse-applicative
-  - pantry
   - path
   - path-io
   - persistent

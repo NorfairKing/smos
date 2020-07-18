@@ -1,5 +1,6 @@
 - entry: Weekly actions
   forest:
   - header: Weekly review
+    state: READY
     timestamps:
       SCHEDULED: "[ %F | saturday ]"

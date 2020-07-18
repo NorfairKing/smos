@@ -177,7 +177,7 @@ defaultConfigFiles = do
         pure $ d </> [relfile|config|]
   plainFile <- resolveFile home ".smos"
   let files = inDirs ++ [plainFile]
-  pure $ mapMaybe (setFileExtension ".yaml") files
+  pure $ mapMaybe (replaceExtension ".yaml") files
 
 parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseYamlConfig configFile =

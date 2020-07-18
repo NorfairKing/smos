@@ -17,6 +17,7 @@ library:
     - containers
     - envparse
     - exceptions
+    - filepath
     - mtl
     - optparse-applicative
     - path

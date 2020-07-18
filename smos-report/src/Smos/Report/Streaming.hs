@@ -151,12 +151,12 @@ isHiddenIn curdir ad =
 filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
 filterSmosFiles =
   Conduit.filter $ \case
-    Relative _ prf -> fileExtension prf == ".smos"
-    Absolute paf -> fileExtension paf == ".smos"
+    Relative _ prf -> fileExtension prf == Just ".smos"
+    Absolute paf -> fileExtension paf == Just ".smos"
 
 filterSmosFilesRel :: Monad m => ConduitT (Path b File) (Path b File) m ()
 filterSmosFilesRel =
-  Conduit.filter $ (== ".smos") . fileExtension
+  Conduit.filter $ (== Just ".smos") . fileExtension
 
 -- TODO eventually get rid of this
 parseSmosFiles ::

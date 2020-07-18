@@ -22,7 +22,6 @@ spec = do
   describe "renderPropertiesTemplate" $ it "produces valid results" $ rendersValid renderPropertiesTemplate
   describe "renderPropertyValueTemplate" $ it "produces valid results" $ rendersValid renderPropertyValueTemplate
   describe "renderStateHistoryTemplate" $ it "produces valid results" $ rendersValid renderStateHistoryTemplate
-  describe "renderStateHistoryEntryTemplate" $ it "produces valid results" $ rendersValid renderStateHistoryEntryTemplate
   describe "renderTodoStateTemplate" $ it "produces valid results" $ rendersValid renderTodoStateTemplate
   describe "renderUTCTimeTemplate" $ it "produces valid results" $ rendersValid renderUTCTimeTemplate
   describe "renderTagsTemplate" $ it "produces valid results" $ rendersValid renderTagsTemplate

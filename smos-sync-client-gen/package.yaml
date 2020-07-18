@@ -27,7 +27,6 @@ library:
   - mergeful
   - microlens
   - monad-logger
-  - pantry
   - path
   - path-io
   - persistent

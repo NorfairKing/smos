@@ -10,7 +10,6 @@ import qualified Data.Conduit.Combinators as C
 import Data.List
 import qualified Data.Map as M
 import Data.Ord
-import Data.Text (Text)
 import Rainbow
 import Smos.Data
 import Smos.Query.Config
@@ -36,5 +35,5 @@ renderTagsReport :: TagsReport -> Table
 renderTagsReport TagsReport {..} =
   formatAsTable $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
   where
-    go :: Tag -> Int -> [Chunk Text]
+    go :: Tag -> Int -> [Chunk]
     go t n = [tagChunk t, intChunk n]

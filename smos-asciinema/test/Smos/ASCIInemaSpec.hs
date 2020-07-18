@@ -13,10 +13,10 @@ spec = do
   fs <- runIO $ do
     examplesDir <- resolveDir' "examples"
     castsDir <- resolveDir' "casts"
-    relFiles <- filter ((== ".yaml") . fileExtension) . filter (not . hidden) . snd <$> listDirRecurRel examplesDir
+    relFiles <- filter ((== Just ".yaml") . fileExtension) . filter (not . hidden) . snd <$> listDirRecurRel examplesDir
     forM relFiles $ \relFile -> do
       let inFile = examplesDir </> relFile
-      outFile <- setFileExtension ".cast" $ castsDir </> relFile
+      outFile <- replaceExtension ".cast" $ castsDir </> relFile
       pure (inFile, outFile)
   forM_ fs $ \(fi, fo) ->
     it ("'Just works' for this example: " <> fromAbsFile fi) $ do

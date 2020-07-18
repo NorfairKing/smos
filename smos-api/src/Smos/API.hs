@@ -18,7 +18,6 @@ import Control.Arrow
 import Control.DeepSeq
 import Control.Exception
 import Data.Aeson as JSON
-import Data.Aeson.Types as JSON
 import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
@@ -38,7 +37,6 @@ import Data.Validity.Text ()
 import Data.Validity.UUID ()
 import Database.Persist
 import Database.Persist.Sql
-import GHC.Generics (Generic)
 import Path
 import Path.Internal
 import Servant.API as X
@@ -46,6 +44,7 @@ import Servant.API.Generic
 import Servant.Auth
 import Servant.Auth.Server
 import Smos.API.Password as X
+import Smos.API.SHA256 as X
 import Smos.API.Username as X
 import Smos.Data hiding (Header)
 import Smos.Report.Agenda
@@ -146,16 +145,6 @@ type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncRespon
 data SyncServer
 
 type ServerUUID = UUID SyncServer
-
-instance FromJSONKey (Path Rel File) where
-  fromJSONKey =
-    FromJSONKeyTextParser $ \t ->
-      case parseRelFile (T.unpack t) of
-        Nothing -> fail "failed to parse relative file"
-        Just rf -> pure rf
-
-instance ToJSONKey (Path Rel File) where
-  toJSONKey = toJSONKeyText $ T.pack . fromRelFile
 
 deriving instance PersistFieldSql (Path Rel File) -- TODO Not entirely safe
 

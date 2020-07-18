@@ -8,7 +8,6 @@ module Smos.Query.Commands.Projects
 where
 
 import Conduit
-import Data.Text (Text)
 import Rainbow
 import Smos.Data
 import Smos.Query.Config
@@ -30,7 +29,7 @@ smosQueryProjects ProjectsSettings {..} = do
 renderProjectsReport :: ProjectsReport -> Table
 renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEntries
 
-renderProjectEntry :: ProjectEntry -> [Chunk Text]
+renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =
   rootedPathChunk projectEntryFilePath
     : case projectEntryCurrentEntry of

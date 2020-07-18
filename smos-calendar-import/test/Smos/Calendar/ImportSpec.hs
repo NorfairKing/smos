@@ -6,7 +6,7 @@ module Smos.Calendar.ImportSpec
 where
 
 import qualified Data.Set as S
-import Data.Time
+import Data.Time hiding (DayOfWeek (Monday, Sunday))
 import Smos.Calendar.Import
 import Test.Hspec
 import Text.ICalendar.Types as ICal
