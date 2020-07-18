@@ -19,10 +19,17 @@
 
   # import nixpkgs with overlays
 , pkgs ? import nixpkgsSrc nixpkgsArgs
-}: pkgs.haskell-nix.project {
+}: pkgs.haskell-nix.stackProject {
   # 'cleanGit' cleans a source directory based on the files known by git
   src = pkgs.haskell-nix.haskellLib.cleanGit {
     name = "smos";
     src = ../.;
   };
+  pkg-def-extras = [
+    (
+      hackage: {
+        time = hackage.time."1.10".revisions.default;
+      }
+    )
+  ];
 }
