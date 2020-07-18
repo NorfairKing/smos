@@ -12,12 +12,12 @@ import qualified Data.Aeson as JSON
 import Data.FuzzyTime
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
+import Data.Maybe
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Data.Traversable
 import Data.Validity
 import GHC.Generics (Generic)
 import Path
@@ -27,17 +27,8 @@ import Smos.Scheduler.Template
 import Text.Megaparsec
 
 renderTemplate :: ScheduleTemplate -> Render SmosFile
-renderTemplate (ScheduleTemplate f) = do
-  now <- asks renderContextTime
-  renderedForest <- traverse (traverse renderEntryTemplate) f
-  fmap SmosFile
-    $ for renderedForest
-    $ \tree ->
-      for tree $ \entry ->
-        let utct = zonedTimeToUTC now
-         in case entrySetState utct (Just "TODO") entry of
-              Nothing -> renderFail $ RenderErrorEntrySetState entry utct
-              Just r -> pure r
+renderTemplate (ScheduleTemplate f) =
+  SmosFile <$> traverse (traverse renderEntryTemplate) f
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
@@ -87,11 +78,9 @@ renderPropertyValueTemplate pv = do
     Just pv' -> pure pv'
 
 renderStateHistoryTemplate :: Maybe TodoState -> Render StateHistory
-renderStateHistoryTemplate = \case
-  Nothing -> pure emptyStateHistory
-  Just ts -> do
-    now <- asks renderContextTime
-    pure $ StateHistory [StateHistoryEntry {stateHistoryEntryNewState = Just ts, stateHistoryEntryTimestamp = zonedTimeToUTC now}]
+renderStateHistoryTemplate mts = do
+  now <- asks renderContextTime
+  pure $ StateHistory [StateHistoryEntry {stateHistoryEntryNewState = Just $ fromMaybe "TODO" mts, stateHistoryEntryTimestamp = zonedTimeToUTC now}]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState
 renderTodoStateTemplate = fmap TodoState . renderTextTemplate . todoStateText
