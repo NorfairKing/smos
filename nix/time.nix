@@ -8,10 +8,17 @@
 , tasty-hunit
 , tasty-quickcheck
 , unix
+, fetchFromGitHub
 }:
 mkDerivation {
   pname = "time";
   version = "1.10";
+  src = fetchFromGitHub {
+    owner = "haskell";
+    repo = "time";
+    rev = "8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211";
+    sha256 = "sha256:0b8d0k5igc2s1mhlzb7bnjxknq6bj1qvqs2az3s9nlwkcifcb2rf";
+  };
   sha256 = "1000fhgcvqagvyhm587zf6y9g2ffj517w0hsvvpbzj1sggyjc93s";
   libraryHaskellDepends = [ base deepseq ];
   testHaskellDepends = [

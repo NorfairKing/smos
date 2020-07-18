@@ -229,20 +229,31 @@ with final.haskell.lib;
                       rev = "8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211";
                       sha256 = "sha256:1qipvvcan5ahx3a16davji7b21m09s2jdxm78q75hxk6bk452aaa";
                     };
-                  timePkg = final.callPackage ./time.nix (
-                    {
-                      mkDerivation = final.stdenv.mkDerivation;
-                      base = final.haskellPackages.base;
-                      inherit (final.haskellPackages)
-                        deepseq
-                        QuickCheck
-                        random
-                        tasty
-                        tasty-hunit
-                        tasty-quickcheck
-                        unix
-                        ;
-                    }
+                  timePkg = overrideCabal (
+                    final.callPackage ./time.nix (
+                      {
+                        base = final.haskellPackages.base;
+                        inherit (final) fetchFromGitHub;
+                        inherit (previous.haskellPackages)
+                          mkDerivation
+                          deepseq
+                          QuickCheck
+                          random
+                          tasty
+                          tasty-hunit
+                          tasty-quickcheck
+                          unix
+                          ;
+                      }
+                    )
+                  ) (
+                    old: {}
+                    # { preConfigure = 
+                    # ''
+                    #   cabal configure
+                    #   ${old.preConfigure or ""}
+                    # '';
+                    # }
                   ); # dontCheck (self.callCabal2nix "time" timeRepo {});
                 in
                   final.smosPackages // {
