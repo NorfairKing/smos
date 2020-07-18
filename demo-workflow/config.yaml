@@ -20,3 +20,12 @@ report:
     accounting:
       description: 'Anything I need to see during my accounting'
       filter: tag:accounting
+
+scheduler:
+  state-file: scheduler-state.yaml
+  schedule:
+    - description: "Weekly tasks"
+      template: templates/weekly.smos.template
+      destination: projects/weekly-[ %V | monday ].smos
+      schedule: "0 12 * * 7" # Cron schedule: "At 12:00 on Sunday."
+

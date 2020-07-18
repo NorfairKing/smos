@@ -64,7 +64,7 @@ handleScheduleItem mLastRun wdir now si = do
   let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
   case mScheduledTime of
     Don'tActivateButUpdate newLastRun -> do
-      putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting it last run because it's the first time"]
+      putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting its last run because it's the first time"]
       pure (Just newLastRun)
     Don'tActivate -> do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si)]
@@ -73,7 +73,7 @@ handleScheduleItem mLastRun wdir now si = do
       r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) si
       case scheduleItemResultMessage r of
         Nothing -> do
-          putStrLn $ "Succesfully activated " <> show s
+          putStrLn $ "Succesfully activated " <> T.unpack (scheduleItemDisplayName si)
           pure $ Just scheduledTime
         Just msg -> do
           putStrLn msg

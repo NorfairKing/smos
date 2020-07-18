@@ -7,6 +7,7 @@ pkgs.stdenv.mkDerivation rec {
   buildInputs = with pkgs.smosPackages; [
     smos
     smos-single
+    smos-scheduler
     smos-query
     smos-archive
     smos-sync-client

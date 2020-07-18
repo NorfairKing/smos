@@ -1,0 +1,5 @@
+- entry: Weekly actions
+  forest:
+  - header: Weekly review
+    timestamps:
+      SCHEDULED: "[ %F | saturday ]"
