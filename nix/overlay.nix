@@ -235,7 +235,12 @@ with final.haskell.lib;
                       base = final.haskellPackages.base;
                       inherit (final.haskellPackages)
                         deepseq
-                        QuickCheck random tasty tasty-hunit tasty-quickcheck unix
+                        QuickCheck
+                        random
+                        tasty
+                        tasty-hunit
+                        tasty-quickcheck
+                        unix
                         ;
                     }
                   ); # dontCheck (self.callCabal2nix "time" timeRepo {});
