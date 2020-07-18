@@ -17,6 +17,7 @@ library:
   - containers
   - data-default
   - envparse
+  - filepath
   - optparse-applicative
   - path
   - path-io

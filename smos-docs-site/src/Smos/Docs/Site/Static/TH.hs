@@ -30,18 +30,13 @@ import Language.Haskell.TH.Syntax
 import Path
 import Path.IO
 import Path.Internal
+import qualified System.FilePath as FP
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
-
-deriving instance Typeable (Path Rel File)
 
 deriving instance Data Rel
 
 deriving instance Data File
-
-deriving instance Data (Path Rel File)
-
-deriving instance Lift (Path Rel File)
 
 deriving instance Lift Day
 
@@ -87,8 +82,8 @@ sourceFilesInNonHiddenDirsRecursively = walkSafe go
 
 isMarkdown :: Path b File -> Bool
 isMarkdown f = case fileExtension f of
-  ".md" -> True
-  ".markdown" -> True
+  Just ".md" -> True
+  Just ".markdown" -> True
   _ -> False
 
 isHiddenIn :: Path b Dir -> Path b t -> Bool
@@ -115,7 +110,7 @@ mkDocPages' fp = do
         Just rp ->
           Just <$> do
             rawContents <- T.readFile $ toFilePath pf
-            urlString <- toFilePath <$> setFileExtension "" rp
+            let urlString = FP.dropExtension $ toFilePath rp
             let url = T.pack urlString
             let (attributes, contents) = splitContents rawContents
             let maybeAtt k =
