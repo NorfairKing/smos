@@ -72,7 +72,14 @@ with final.haskell.lib;
         "smos-cursor" = smosPkg "smos-cursor";
         "smos-cursor-gen" = smosPkg "smos-cursor-gen";
         "smos-report" = smosPkg "smos-report";
-        "smos-report-gen" = smosPkg "smos-report-gen";
+        "smos-report-gen" =
+          let
+            default = smosPkg "smos-report-gen";
+            set = {
+              "x86_64-darwin" = dontCheck default; # Because it hangs
+            };
+          in
+            set."${builtins.currentSystem}" or default;
         "smos-report-cursor" = smosPkg "smos-report-cursor";
         "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
         "smos-query" =
