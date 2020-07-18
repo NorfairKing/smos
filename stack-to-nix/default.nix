@@ -25,11 +25,12 @@
     name = "smos";
     src = ../.;
   };
-  pkg-def-extras = [
-    (
-      hackage: {
-        time = hackage.time."1.10".revisions.default;
-      }
-    )
+  modules = [
+    {
+      reinstallableLibGhc = true; # Because we override the 'time' version
+      packages.time.components.library.preConfigure = ''
+        ${pkgs.autoconf}/bin/autoreconf -i
+      '';
+    }
   ];
 }

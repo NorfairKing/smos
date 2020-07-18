@@ -36,10 +36,10 @@ extra-deps:
 
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 
-- time-1.10
-  # - git: https://github.com/haskell/time
-  #   commit: 8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211
-  #   # nix-sha256: sha256:0b8d0k5igc2s1mhlzb7bnjxknq6bj1qvqs2az3s9nlwkcifcb2rf
+# Be sure to change `reinstallableLibGhc` back to false if you change the `time` version to be the same as the one included in the GHC that you use.
+- git: https://github.com/haskell/time
+  commit: 8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211
+  # nix-sha256: sha256:0b8d0k5igc2s1mhlzb7bnjxknq6bj1qvqs2az3s9nlwkcifcb2rf
 
 - git: https://github.com/ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
