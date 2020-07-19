@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler.OptParse
@@ -45,11 +46,10 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
     cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSchedulerConfiguration >>= func
 
--- TODO make sure this is in the workflow dir, so that it gets synced.
 defaultStateFile :: IO (Path Abs File)
 defaultStateFile = do
-  home <- getHomeDir
-  resolveFile home ".smos/scheduler-state.yaml"
+  xdg <- getXdgDir XdgData (Just [reldir|smos|])
+  resolveFile xdg "scheduler-state.yaml"
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration
@@ -123,6 +123,7 @@ parseFlags =
             [ long "state-file",
               help "The state file to use",
               value Nothing,
-              metavar "FILEPATH"
+              metavar "FILEPATH",
+              completer $ bashCompleter "file"
             ]
         )
