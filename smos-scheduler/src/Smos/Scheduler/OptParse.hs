@@ -117,4 +117,12 @@ parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
   Report.parseFlagsWithConfigFile $
     Flags <$> Report.parseDirectoryFlags
-      <*> option (Just <$> str) (mconcat [long "state-file", help "The state file to use", value Nothing])
+      <*> option
+        (Just <$> str)
+        ( mconcat
+            [ long "state-file",
+              help "The state file to use",
+              value Nothing,
+              metavar "FILEPATH"
+            ]
+        )
