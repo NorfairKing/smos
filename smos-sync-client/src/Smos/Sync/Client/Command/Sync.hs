@@ -58,7 +58,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
             let env =
                   SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
             flip runReaderT env $ do
-              void $ runDB $ runMigrationSilent migrateAll
+              void $ runDB $ runMigrationQuiet migrateAll
               mUUID <- liftIO $ readServerUUID syncSetUUIDFile
               serverUUID <- case mUUID of
                 -- Never synced before
