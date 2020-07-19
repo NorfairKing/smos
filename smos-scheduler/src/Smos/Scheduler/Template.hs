@@ -32,13 +32,13 @@ data TemplatePiece
     --
     -- All leading and trailing whitespace is skipped
     --
-    -- Example: "[ %F ]", translates to "2020-06-27"
+    -- Example: "[ %F ]", translates to "2020-06-27" on "2020-06-27"
     TTime Text
   | -- |  A relative time formatting string
     --
     -- All leading and trailing whitespace is skipped
     --
-    -- "[ %F | tomorrow ]", translates to "2020-06-28"
+    -- "[ %F | tomorrow ]", translates to "2020-06-28" on "2020-06-27"
     TRelTime Text Text
   deriving (Show, Eq, Generic)
 

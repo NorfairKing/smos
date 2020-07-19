@@ -64,3 +64,5 @@ tests:
     - mtl
     - smos-data-gen
     - smos-scheduler
+    - text
+    - time
