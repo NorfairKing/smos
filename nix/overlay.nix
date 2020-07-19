@@ -13,15 +13,15 @@ let
   nixpkgsSrc = haskellNix.sources.nixpkgs-2003;
   nixpkgsArgs = haskellNix.nixpkgsArgs;
   haskellNixPkgs = import nixpkgsSrc nixpkgsArgs;
-  isMacos = builtins.currentSystem == "x86_64-darwan";
+  isMacos = builtins.currentSystem == "x86_64-darwin";
   sPkgs = haskellNixPkgs.haskell-nix.stackProject {
-    # 'cleanGit' cleans a source directory based on the files known by git
-    src = haskellNixPkgs.haskell-nix.haskellLib.cleanGit {
-      name = "smos";
-      src = ../.;
-    };
+    src = final.gitignoreSource ../.;
     modules = [
       {
+        testFlags = [
+          "--seed 42"
+        ];
+
         reinstallableLibGhc = true; # Because we override the 'time' version
         packages.time.components.library.preConfigure = ''
           ${final.autoconf}/bin/autoreconf -i
@@ -37,9 +37,9 @@ let
         # Turn off certain test suites on macos because they generate random
         # filepaths and that fails for some reason that I cannot investigate
         # because I don't own any apple products.
-        packages.smos-report-gen.doCheck = isMacos;
-        packages.smos-query.doCheck = isMacos;
-        packages.smos-sync-client.doCheck = isMacos;
+        packages.smos-report-gen.doCheck = !isMacos;
+        packages.smos-query.doCheck = !isMacos;
+        packages.smos-sync-client.doCheck = !isMacos;
       }
     ];
   };
