@@ -37,6 +37,7 @@ let
         # Turn off certain test suites on macos because they generate random
         # filepaths and that fails for some reason that I cannot investigate
         # because I don't own any apple products.
+        doCheck = true;
         packages.smos-report-gen.doCheck = !isMacos;
         packages.smos-query.doCheck = !isMacos;
         packages.smos-sync-client.doCheck = !isMacos;
