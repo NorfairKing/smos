@@ -21,6 +21,7 @@ Example template at `templates/weekly.smos.template`:
 - entry: Weekly actions
   forest:
   - header: Weekly review
+    state: READY
     timestamps:
       SCHEDULED: "[ %F | saturday ]"
 ```

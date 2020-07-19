@@ -100,6 +100,10 @@
     <li>
       <a href=@{SmosSchedulerR}>
         The Smos Scheduler Tool
+      <ul>
+        <li>
+          <a href=@{PageR smos_scheduler_nixos}>
+            Running on NixOs
 
     <li>
       <a href=@{SmosCalendarImportR}>
