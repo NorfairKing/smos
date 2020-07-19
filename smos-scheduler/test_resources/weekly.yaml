@@ -1,0 +1,24 @@
+template:
+  - entry: Weekly actions
+    forest:
+    - header: Weekly review
+      state: READY
+      timestamps:
+        SCHEDULED: "[ %F | saturday ]"
+
+time: "2020-07-19 12:00:00"
+
+result:
+  - entry:
+      header: Weekly actions
+      state-history:
+      - state: TODO
+        time: 2020-07-19 12:00:00.000000000000
+    forest:
+    - header: Weekly review
+      timestamps:
+        SCHEDULED: 2020-07-25
+      state-history:
+      - state: READY
+        time: 2020-07-19 12:00:00.000000000000
+

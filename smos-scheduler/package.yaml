@@ -62,7 +62,12 @@ tests:
     - genvalidity-time
     - hspec
     - mtl
+    - path
+    - path-io
+    - smos-data
     - smos-data-gen
     - smos-scheduler
     - text
     - time
+    - yaml
+    - yamlparse-applicative
