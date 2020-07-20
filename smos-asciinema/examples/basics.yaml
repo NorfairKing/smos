@@ -1,6 +1,6 @@
 file: foo.smos
 input:
-- send: "smos foo.smos\n"
+- type: "smos foo.smos\n"
 - wait: 1000
 # Look around in the help page
 - send: '?'
@@ -20,19 +20,19 @@ input:
 - wait: 1000
 - send: "e"
 - wait: 1000
-- send: Learn to use smos
+- type: Learn to use smos
 - wait: 1000
 - send: "\e"
 - wait: 1000
 - send: "E"
 - wait: 1000
-- send: Learn the basic editing
+- type: Learn the basic editing
 - wait: 1000
 - send: "\e"
 - wait: 1000
 - send: "e"
 - wait: 1000
-- send: Learn about todo states
+- type: Learn about todo states
 - wait: 1000
 - send: "\e"
 - wait: 1000

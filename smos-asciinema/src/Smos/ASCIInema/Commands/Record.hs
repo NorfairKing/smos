@@ -143,6 +143,7 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
 data ASCIInemaCommand
   = Wait Int -- Milliseconds
   | SendInput String
+  | Type String Int -- Milliseconds
   deriving (Show, Eq)
 
 instance FromJSON ASCIInemaCommand where
@@ -152,12 +153,33 @@ instance YamlSchema ASCIInemaCommand where
   yamlSchema =
     alternatives
       [ objectParser "Wait" $ Wait <$> requiredField "wait" "How long to wait (in milliseconds)",
-        objectParser "SendInput" $ SendInput <$> requiredField "send" "The input to send"
+        objectParser "SendInput" $ SendInput <$> requiredField "send" "The input to send",
+        objectParser "Type" $
+          Type
+            <$> requiredField "type" "The input to send"
+            <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
       ]
 
 sendAsciinemaCommand :: Double -> Handle -> ASCIInemaCommand -> IO ()
-sendAsciinemaCommand d h = \case
-  Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * d
-  SendInput s -> do
-    hPutStr h s
-    hFlush h
+sendAsciinemaCommand d h = go
+  where
+    go = \case
+      Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * d
+      SendInput s -> do
+        hPutStr h s
+        hFlush h
+      Type s i ->
+        mapM_ go $
+          concatMap
+            ( \c ->
+                [ Wait (round (fromIntegral i * charSpeed c :: Double)),
+                  SendInput [c]
+                ]
+            )
+            s
+    -- To make the typing feel more natural.
+    charSpeed ' ' = 1.25
+    charSpeed c
+      | c `elem` ['a' .. 'z'] = 0.75
+      | c `elem` ['A' .. 'Z'] = 1.5
+      | otherwise = 2

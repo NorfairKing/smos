@@ -43,4 +43,4 @@ let
       '';
     };
 in
-builtins.trace (builtins.toString specFiles) (builtins.map derivationFor specFiles)
+builtins.map derivationFor specFiles
