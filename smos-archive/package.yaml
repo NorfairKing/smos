@@ -40,6 +40,7 @@ tests:
   smos-archive-test:
     main: Spec.hs
     source-dirs: test
+    build-tools: hspec-discover
     dependencies:
     - QuickCheck
     - containers

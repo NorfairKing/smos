@@ -47,6 +47,7 @@ tests:
   smos-calendar-import-test:
     main: Spec.hs
     source-dirs: test
+    build-tools: hspec-discover
     dependencies:
     - containers
     - data-default

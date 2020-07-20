@@ -35,8 +35,9 @@ library:
 
 tests:
   smos-cursor-test:
-    main:                Main.hs
-    source-dirs:         test
+    main: Main.hs
+    source-dirs: test
+    build-tools: hspec-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -64,8 +65,8 @@ tests:
 
 benchmarks:
   smos-cursor-bench:
-    main:                Bench.hs
-    source-dirs:         bench
+    main: Bench.hs
+    source-dirs: bench
     ghc-options:
     - -threaded
     - -rtsopts

@@ -1,4 +1,5 @@
 final: previous:
+with final.lib;
 with final.haskell.lib;
 
 let
@@ -30,7 +31,7 @@ let
         # Workaround to make the following work
         # https://github.com/input-output-hk/haskell.nix/issues/769
         # packages.smos-web-server.components.library.preBuild
-        packages.smos-web-server.preBuild = final.lib.mkForce ''
+        packages.smos-web-server.preBuild = mkForce ''
           export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
         '';
 
@@ -66,7 +67,38 @@ let
           }
         '';
     };
-  smosPkg = name: sPkgs."${name}".components.all;
+  smosPkg = name:
+    with sPkgs."${name}".components;
+    final.stdenv.mkDerivation {
+      name = "${name}";
+      buildInputs = [ library ];
+      buildCommand =
+        let
+          testCommand = testname: test:
+            let
+              testOutput = haskellNixPkgs.haskell-nix.haskellLib.check test;
+            in
+              ''
+                mkdir -p $out/test-output
+                ln -s ${testOutput} $out/test-output/${testname}
+                ${lndir "${test}"}
+              '';
+          benchCommand = benchname: bench: lndir "${bench}";
+          exeCommand = exename: exe: lndir "${exe}";
+          lndir = dir: "${final.xorg.lndir}/bin/lndir -silent ${dir} $out";
+        in
+          ''
+            mkdir -p $out
+            for i in $buildInputs
+            do
+              ${lndir "$i"}
+            done
+            ${concatStringsSep "\n" (mapAttrsToList testCommand tests)}
+            ${concatStringsSep "\n" (mapAttrsToList benchCommand benchmarks)}
+            rm -rf $out/bin # Don't keep any bins from the tests or benchmarks
+            ${concatStringsSep "\n" (mapAttrsToList exeCommand exes)}
+          '';
+    };
   smosPkgWithComp = exeName: name:
     final.symlinkJoin {
       name = "${exeName}-with-completion";
@@ -81,7 +113,7 @@ in
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";
-      paths = final.lib.attrsets.attrValues final.smosPackages;
+      paths = attrValues final.smosPackages;
     };
 
   smosPackages =
@@ -134,7 +166,7 @@ in
       old:
         {
           overrides =
-            final.lib.composeExtensions (
+            composeExtensions (
               old.overrides or (_: _: {})
             ) (
               self: super: final.smosPackages
