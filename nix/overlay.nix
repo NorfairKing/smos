@@ -42,6 +42,38 @@ let
         packages.smos-report-gen.doCheck = !isMacos;
         packages.smos-query.doCheck = !isMacos;
         packages.smos-sync-client.doCheck = !isMacos;
+
+      }
+      # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.
+      {
+        packages = {
+          smos.package.ghcOptions = "-Werror";
+          smos-data.package.ghcOptions = "-Werror";
+          smos-data-gen.package.ghcOptions = "-Werror";
+          smos-cursor.package.ghcOptions = "-Werror";
+          smos-cursor-gen.package.ghcOptions = "-Werror";
+          smos-report.package.ghcOptions = "-Werror";
+          smos-report-gen.package.ghcOptions = "-Werror";
+          smos-report-cursor.package.ghcOptions = "-Werror";
+          smos-report-cursor-gen.package.ghcOptions = "-Werror";
+          smos-query.package.ghcOptions = "-Werror";
+          smos-single.package.ghcOptions = "-Werror";
+          smos-scheduler.package.ghcOptions = "-Werror";
+          smos-archive.package.ghcOptions = "-Werror";
+          smos-convert-org.package.ghcOptions = "-Werror";
+          smos-calendar-import.package.ghcOptions = "-Werror";
+          smos-asciinema.package.ghcOptions = "-Werror";
+          smos-api.package.ghcOptions = "-Werror";
+          smos-api-gen.package.ghcOptions = "-Werror";
+          smos-server.package.ghcOptions = "-Werror";
+          smos-server-gen.package.ghcOptions = "-Werror";
+          smos-client.package.ghcOptions = "-Werror";
+          smos-client-gen.package.ghcOptions = "-Werror";
+          smos-sync-client.package.ghcOptions = "-Werror";
+          smos-sync-client-gen.package.ghcOptions = "-Werror";
+          smos-web-server.package.ghcOptions = "-Werror";
+          smos-docs-site.package.ghcOptions = "-Werror";
+        };
       }
     ];
   };
