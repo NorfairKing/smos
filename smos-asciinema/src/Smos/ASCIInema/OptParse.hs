@@ -22,10 +22,11 @@ getInstructions = do
   combineToInstructions cmd flags env config
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment _ = do
+combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ = do
   let recordSetWait = fromMaybe 1 recordFlagWait
   recordSetSpecFile <- resolveFile' recordFlagSpecFile
   recordSetOutputFile <- resolveFile' recordFlagOutputFile
+  recordSetAsciinemaConfigDir <- mapM resolveDir' envAsciinemaConfigDir
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -33,13 +34,10 @@ getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration _ _ = pure Nothing
 
 getEnvironment :: IO Environment
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error Environment
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+getEnvironment = Env.parse (Env.header "Environment") environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
-environmentParser = pure Environment
+environmentParser = Environment <$> optional (Env.var Env.str "ASCIINEMA_CONFIG_HOME" (Env.help "The directory for asciinema config files"))
 
 getArguments :: IO Arguments
 getArguments = do

@@ -27,6 +27,8 @@ data Configuration
 
 data Environment
   = Environment
+      { envAsciinemaConfigDir :: Maybe FilePath
+      }
   deriving (Show, Eq)
 
 data Instructions = Instructions Dispatch Settings
@@ -39,7 +41,8 @@ data RecordSettings
   = RecordSettings
       { recordSetSpecFile :: Path Abs File,
         recordSetOutputFile :: Path Abs File,
-        recordSetWait :: Double
+        recordSetWait :: Double,
+        recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir)
       }
   deriving (Show, Eq)
 

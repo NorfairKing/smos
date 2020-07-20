@@ -104,7 +104,7 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
       let env' =
             concat
               [ env,
-                [ ("ASCIINEMA_CONFIG_HOME", ".config")
+                [ ("ASCIINEMA_CONFIG_HOME", maybe ".config" fromAbsDir recordSetAsciinemaConfigDir)
                 ],
                 [("SMOS_WORKFLOW_DIR", fromAbsDir p) | p <- maybeToList mWorkflowDir]
               ]
@@ -120,7 +120,8 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
                     "--quiet",
                     "--overwrite",
                     fromAbsFile recordSetOutputFile,
-                    "--env=SMOS_WORKFLOW_DIR"
+                    "--env=SMOS_WORKFLOW_DIR",
+                    "--env=TERM"
                   ],
                   maybe [] (\c -> ["--command", c]) asciinemaCommand
                 ]

@@ -197,6 +197,9 @@ in
             '';
           };
     };
+
+  smosCasts = import ./casts.nix final;
+
   haskellPackages =
     previous.haskellPackages.override (
       old:
