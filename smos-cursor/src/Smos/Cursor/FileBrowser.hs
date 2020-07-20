@@ -105,32 +105,32 @@ fileBrowserArchiveFile :: MonadIO m => Path Abs Dir -> Path Abs Dir -> FileBrows
 fileBrowserArchiveFile workflowDir archiveDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
-    Just dfc ->
+    Just dfc -> do
       let (rd, fod) = dirForestCursorSelected dfc
-       in case fod of
-            FodDir _ -> pure fbc
-            FodFile rp _ -> do
-              let src = fileBrowserCursorBase fbc </> rd </> rp
-              today <- liftIO $ utctDay <$> getCurrentTime
-              case destinationFile today workflowDir archiveDir src of
-                Nothing -> pure fbc
-                Just dest -> do
-                  acr <- liftIO $ checkFromFile src
-                  let goOn sf = do
-                        let a = ArchiveSmosFile src dest sf dfc
-                        let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
-                        r <- redoArchiveFile src dest sf
-                        pure $ case r of
-                          MoveDestinationAlreadyExists _ -> fbc
-                          ArchivedSuccesfully ->
-                            fbc
-                              { fileBrowserCursorDirForestCursor = dullDelete $ dirForestCursorDeleteCurrent dfc,
-                                fileBrowserCursorUndoStack = us'
-                              }
-                  case acr of
-                    ReadyToArchive sf -> goOn sf
-                    NotAllDone sf -> goOn sf
-                    _ -> pure fbc
+      case fod of
+        FodDir _ -> pure fbc
+        FodFile rp _ -> do
+          let src = fileBrowserCursorBase fbc </> rd </> rp
+          today <- liftIO $ utctDay <$> getCurrentTime
+          case destinationFile today workflowDir archiveDir src of
+            Nothing -> pure fbc
+            Just dest -> do
+              acr <- liftIO $ checkFromFile src
+              let goOn sf = do
+                    let a = ArchiveSmosFile src dest sf dfc
+                    let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+                    r <- redoArchiveFile src dest sf
+                    pure $ case r of
+                      MoveDestinationAlreadyExists _ -> fbc
+                      ArchivedSuccesfully ->
+                        fbc
+                          { fileBrowserCursorDirForestCursor = dullDelete $ dirForestCursorDeleteCurrent dfc,
+                            fileBrowserCursorUndoStack = us'
+                          }
+              case acr of
+                ReadyToArchive sf -> goOn sf
+                NotAllDone sf -> goOn sf
+                _ -> pure fbc
 
 -- Fails if there is nothing to undo
 fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)

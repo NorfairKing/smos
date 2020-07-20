@@ -5,6 +5,7 @@ module Smos.Cursor.FileBrowserSpec where
 import Cursor.Simple.DirForest
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
+import Data.Maybe
 import Path
 import Path.IO
 import Smos.Cursor.FileBrowser
@@ -15,6 +16,7 @@ import Smos.Undo
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
+import Text.Show.Pretty
 
 spec :: Spec
 spec = do
@@ -49,29 +51,41 @@ spec = do
       fbc' <- fileBrowserRmEmptyDir fbc
       fbc'' <- startFileBrowserCursor tdir
       rebuildFileBrowserCursor fbc' `shouldBe` rebuildFileBrowserCursor fbc''
-  modifyMaxSuccess (`div` 10) $ describe "fileBrowserArchiveFile" $ it "correctly archives a file" $ forAllValid $ \rd ->
-    forAllValid $ \rf ->
-      forAllValid $ \sf ->
-        withSystemTempDir "smos-cursor-test" $ \wd ->
-          withSystemTempDir "smos-cursor-test" $ \ad -> do
-            let base = wd </> rd
-            let cts = smosFileYamlBS sf
-            let af = base </> rf
-            let fbc =
-                  FileBrowserCursor
-                    { fileBrowserCursorBase = base,
-                      fileBrowserCursorDirForestCursor = makeDirForestCursor $ DF.singletonFile rf (),
-                      fileBrowserCursorUndoStack = emptyUndoStack
-                    }
-            -- Put the file to archive in place
-            ensureDir (parent af)
-            SB.writeFile (fromAbsFile af) cts
-            -- Do the archiving
-            fbc' <- fileBrowserArchiveFile wd ad fbc
-            shouldBeValid fbc'
-            -- Check that the file was archived
-            afs <- snd <$> listDirRecur ad
-            case afs of
-              [_] -> pure ()
-              _ -> expectationFailure $ unlines $ ("The file was archived incorrectly, we didn't find exactly one file but " <> show (length afs) <> " instead:") : map fromAbsFile afs
-            fileBrowserCursorDirForestCursor fbc' `shouldBe` Nothing
+  modifyMaxSuccess (`div` 10) $ describe "fileBrowserArchiveFile" $ do
+    let archiveTest rf =
+          forAllValid $ \relativeDirInBase ->
+            forAllValid $ \sf ->
+              withSystemTempDir "smos-cursor-test" $ \wd ->
+                withSystemTempDir "smos-cursor-test" $ \ad -> do
+                  let base = wd </> relativeDirInBase
+                  let cts = smosFileYamlBS sf
+                  let af = base </> rf
+                  let goDown c = case dirForestCursorSelectFirstChild c of
+                        Nothing -> c
+                        Just c' -> goDown c'
+                  let dfc = goDown . (\c -> fromMaybe c (dirForestCursorOpenRecursively c)) <$> makeDirForestCursor (DF.singletonFile rf ())
+                  dfc `shouldSatisfy` isJust -- Sanity test
+                  let fbc =
+                        FileBrowserCursor
+                          { fileBrowserCursorBase = base,
+                            fileBrowserCursorDirForestCursor = dfc,
+                            fileBrowserCursorUndoStack = emptyUndoStack
+                          }
+                  -- Put the file to archive in place
+                  ensureDir (parent af)
+                  SB.writeFile (fromAbsFile af) cts
+                  -- Do the archiving
+                  fbc' <- fileBrowserArchiveFile wd ad fbc
+                  shouldBeValid fbc'
+                  -- Check that the file was archived
+                  afs <- snd <$> listDirRecur ad
+                  case afs of
+                    [] -> expectationFailure "The file was archived incorrectly, we didn't find any files in the archive."
+                    [_] -> pure ()
+                    _ -> expectationFailure $ unlines $ ("The file was archived incorrectly, we didn't find exactly one file but " <> show (length afs) <> " instead:") : map fromAbsFile afs
+                  DF.toFileList (rebuildFileBrowserCursor fbc') `shouldBe` []
+    it "correctly archives a file" $ forAllValid $ \rf -> archiveTest rf
+    it "correctly archives a file in a subdir" $ forAllValid $ \rd -> forAllValid $ \rf -> archiveTest (rd </> rf)
+    it "correctly archives a file in a nested subdir" $ forAllValid $ \rd1 ->
+      forAllValid $ \rd2 ->
+        forAllValid $ \rf -> archiveTest (rd1 </> rd2 </> rf)
