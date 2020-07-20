@@ -20,7 +20,7 @@ let
     modules = [
       {
         testFlags = [
-          "--seed 42"
+          "--seed 42" # To make sure the tests are reproducable
         ];
 
         reinstallableLibGhc = true; # Because we override the 'time' version
@@ -77,12 +77,14 @@ let
           testCommand = testname: test:
             let
               testOutput = haskellNixPkgs.haskell-nix.haskellLib.check test;
+              testOutputCommand = optionalString test.config.doCheck
+                ''
+                  mkdir -p $out/test-output
+                  ln -s ${testOutput} $out/test-output/${testname}
+                '';
+              testLinkCommand = lndir "${test}";
             in
-              ''
-                mkdir -p $out/test-output
-                ln -s ${testOutput} $out/test-output/${testname}
-                ${lndir "${test}"}
-              '';
+              concatStringsSep "\n" [ testOutputCommand testLinkCommand ];
           benchCommand = benchname: bench: lndir "${bench}";
           exeCommand = exename: exe: lndir "${exe}";
           lndir = dir: "${final.xorg.lndir}/bin/lndir -silent ${dir} $out";
