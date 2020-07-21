@@ -6,8 +6,8 @@ This tool exists to automate smos casts for documentation purposes.
 You can use it to produce a cast this:
 
 <script
-  id="asciicast-zvrLOxJOOSvTdQp0UAG5kGdQk"
-  src="https://asciinema.org/a/zvrLOxJOOSvTdQp0UAG5kGdQk.js"
+  id="asciicast-348778"
+  src="https://asciinema.org/a/348778.js"
   async
   data-autoplay="true"
   data-loop="1"
