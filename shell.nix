@@ -4,9 +4,7 @@ let
 in
 pkgs.mkShell {
   name = "smos-nix-shell";
-  buildInputs = [
-    nix-tools
-  ];
+  buildInputs = [];
   shellHook = ''
     ${shellHook}
   '';

@@ -133,6 +133,7 @@ let
             ${concatStringsSep "\n" (mapAttrsToList benchCommand benchmarks)}
             rm -rf $out/bin # Don't keep any bins from the tests or benchmarks
             ${concatStringsSep "\n" (mapAttrsToList exeCommand exes)}
+            rm -rf $out/{exactDep,envDep,lib,package.conf.d} # Don't keep files we don't need.
           '';
     };
   smosPkgWithComp = exeName: name:
@@ -199,17 +200,4 @@ in
     };
 
   smosCasts = import ./casts.nix final;
-
-  haskellPackages =
-    previous.haskellPackages.override (
-      old:
-        {
-          overrides =
-            composeExtensions (
-              old.overrides or (_: _: {})
-            ) (
-              self: super: final.smosPackages
-            );
-        }
-    );
 }

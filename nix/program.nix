@@ -398,12 +398,12 @@ scheduler: ${builtins.toJSON schedulerCfg}
         [
           smosPkgs.smos
           smosPkgs.smos-archive
-          smosPkgs.smos-convert-org
-          smosPkgs.smos-single
-          smosPkgs.smos-query
-          smosPkgs.smos-sync-client
-          smosPkgs.smos-scheduler
           smosPkgs.smos-calendar-import
+          smosPkgs.smos-convert-org
+          smosPkgs.smos-query
+          smosPkgs.smos-scheduler
+          smosPkgs.smos-single
+          smosPkgs.smos-sync-client
         ];
 
 
