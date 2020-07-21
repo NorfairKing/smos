@@ -4,7 +4,13 @@ title: Featured blogposts
 
 #### CS Syd:
 
-Building smos:
+
+##### Using smos:
+
+* [Introduction](https://cs-syd.eu/posts/2020-07-07-intro-to-gtd-with-smos)
+* [Waiting](https://cs-syd.eu/posts/2020-07-21-waiting)
+
+##### Building smos:
 
 * [List Cursor](https://cs-syd.eu/posts/2018-10-28-cursor-list)
 * [Text Cursor](https://cs-syd.eu/posts/2018-11-28-cursors-text)
