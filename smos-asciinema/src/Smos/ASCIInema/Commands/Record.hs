@@ -13,6 +13,7 @@ import Control.Monad
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import Data.Maybe
+import Data.Random.Normal
 import Data.Yaml
 import GHC.IO.Handle
 import Path
@@ -169,17 +170,14 @@ sendAsciinemaCommand d h = go
         hPutStr h s
         hFlush h
       Type s i ->
-        mapM_ go $
-          concatMap
-            ( \c ->
-                [ Wait (round (fromIntegral i * charSpeed c :: Double)),
-                  SendInput [c]
-                ]
-            )
-            s
-    -- To make the typing feel more natural.
+        forM_ s $ \c -> do
+          randomDelay <- normalIO' (0, 15) -- Add some random delay to make the typing feel more natural
+          let delay = round (fromIntegral i * charSpeed c + randomDelay :: Double)
+          go $ Wait delay
+          go $ SendInput [c]
+    -- Add a delay multiplier based on what kind of character it is to make the typing feel more natural.
     charSpeed ' ' = 1.25
     charSpeed c
       | c `elem` ['a' .. 'z'] = 0.75
-      | c `elem` ['A' .. 'Z'] = 1.5
-      | otherwise = 2
+      | c `elem` ['A' .. 'Z'] = 1.5 -- Because you have to press 'shift'
+      | otherwise = 2 -- Special characters take even longer

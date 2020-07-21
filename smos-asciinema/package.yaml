@@ -18,6 +18,7 @@ library:
     - bytestring
     - containers
     - envparse
+    - normaldistribution
     - optparse-applicative
     - path
     - path-io

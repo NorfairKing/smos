@@ -188,6 +188,8 @@ extra-deps:
   - yamlparse-applicative
   # nix-sha256: sha256:1ap6xpckj756ap9rgvl6vb3if986zp3f3lgxir7lbq35k9qqib1y
  
+- normaldistribution-1.1.0.3@sha256:2615b784c4112cbf6ffa0e2b55b76790290a9b9dff18a05d8c89aa374b213477,2160
+
 allow-newer: true # Because splitmix has a really annoying upper-bound on time<=1.9
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]
