@@ -44,6 +44,7 @@ let
         packages.smos-query.doCheck = !isMacos;
         packages.smos-report-gen.doCheck = !isMacos;
         packages.smos-sync-client-gen.doCheck = !isMacos;
+        packages.smos-scheduler.doCheck = !isMacos;
 
       }
       # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.
