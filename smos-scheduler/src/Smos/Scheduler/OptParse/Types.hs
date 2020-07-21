@@ -171,8 +171,17 @@ newtype ScheduleTemplate
 
 instance Validity ScheduleTemplate
 
+instance ToJSON ScheduleTemplate where
+  toJSON = toJSON . ForYaml . scheduleTemplateForest
+
 instance FromJSON ScheduleTemplate where
   parseJSON v = ScheduleTemplate . unForYaml <$> parseJSON v
+
+instance ToJSON (ForYaml (Tree EntryTemplate)) where
+  toJSON (ForYaml Node {..}) =
+    if null subForest
+      then toJSON rootLabel
+      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
 
 instance FromJSON (ForYaml (Tree EntryTemplate)) where
   parseJSON v =
@@ -215,6 +224,17 @@ newEntryTemplate h =
       entryTemplateTags = S.empty
     }
 
+instance ToJSON EntryTemplate where
+  toJSON EntryTemplate {..} =
+    object
+      [ "header" .= entryTemplateHeader,
+        "contents" .= entryTemplateContents,
+        "timestamps" .= entryTemplateTimestamps,
+        "properties" .= entryTemplateProperties,
+        "state" .= entryTemplateState,
+        "tags" .= entryTemplateTags
+      ]
+
 instance FromJSON EntryTemplate where
   parseJSON v =
     ( do
@@ -234,39 +254,14 @@ newtype TimestampTemplate
   = TimestampTemplate
       { timestampTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 instance Validity TimestampTemplate
-
-newtype StateHistoryTemplate
-  = StateHistoryTemplate
-      { stateHistoryEntryTemplates :: [StateHistoryEntryTemplate]
-      }
-  deriving (Show, Eq, Generic, FromJSON)
-
-instance Validity StateHistoryTemplate
-
-emptyStateHistoryTemplate :: StateHistoryTemplate
-emptyStateHistoryTemplate = StateHistoryTemplate {stateHistoryEntryTemplates = []}
-
-data StateHistoryEntryTemplate
-  = StateHistoryEntryTemplate
-      { stateHistoryEntryTemplateNewState :: Maybe TodoState,
-        stateHistoryEntryTemplateTimestamp :: UTCTimeTemplate
-      }
-  deriving (Show, Eq, Generic)
-
-instance Validity StateHistoryEntryTemplate
-
-instance FromJSON StateHistoryEntryTemplate where
-  parseJSON =
-    withObject "StateHistoryEntryTemplate" $ \o ->
-      StateHistoryEntryTemplate <$> o .: "new-state" <*> o .: "timestamp"
 
 newtype UTCTimeTemplate
   = UTCTimeTemplate
       { utcTimeTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 instance Validity UTCTimeTemplate
