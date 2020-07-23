@@ -102,6 +102,9 @@
         The Smos Scheduler Tool
       <ul>
         <li>
+          <a href=@{SmosSchedulerTemplateR}>
+            Template format
+        <li>
           <a href=@{PageR smos_scheduler_nixos}>
             Running on NixOs
 

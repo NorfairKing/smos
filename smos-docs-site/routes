@@ -17,6 +17,7 @@
 /smos-calendar-import SmosCalendarImportR GET
 
 /smos-scheduler SmosSchedulerR GET
+/smos-scheduler/template SmosSchedulerTemplateR GET
 
 /smos-sync-client SmosSyncClientR GET
 

@@ -8,12 +8,13 @@
 module Smos.Scheduler.OptParse.Types where
 
 import Control.Applicative
-import Data.Aeson
+import Data.Aeson hiding ((<?>))
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Tree
@@ -242,7 +243,9 @@ instance FromJSON EntryTemplate where
         pure $ newEntryTemplate h
     )
       <|> ( withObject "EntryTemplate" $ \o ->
-              EntryTemplate <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
+              EntryTemplate
+                <$> o .:? "header" .!= emptyHeader
+                <*> o .:? "contents"
                 <*> o .:? "timestamps" .!= M.empty
                 <*> o .:? "properties" .!= M.empty
                 <*> o .:? "state" .!= Nothing
@@ -250,18 +253,38 @@ instance FromJSON EntryTemplate where
           )
         v
 
+instance YamlSchema EntryTemplate where
+  yamlSchema =
+    alternatives
+      [ newEntryTemplate <$> (yamlSchema <?> "A header-only entry template"),
+        objectParser "EntryTemplate" $
+          EntryTemplate
+            <$> optionalFieldWithDefault' "header" emptyHeader
+            <*> optionalField' "contents"
+            <*> optionalFieldWithDefault' "timestamps" M.empty
+            <*> optionalFieldWithDefault' "properties" M.empty
+            <*> optionalFieldWithDefault' "state" Nothing
+            <*> optionalFieldWithDefault' "tags" S.empty
+      ]
+
 newtype TimestampTemplate
   = TimestampTemplate
       { timestampTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity TimestampTemplate
+
+instance YamlSchema TimestampTemplate where
+  yamlSchema = TimestampTemplate <$> yamlSchema
 
 newtype UTCTimeTemplate
   = UTCTimeTemplate
       { utcTimeTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity UTCTimeTemplate
+
+instance YamlSchema UTCTimeTemplate where
+  yamlSchema = UTCTimeTemplate <$> yamlSchema
