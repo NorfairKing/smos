@@ -13,7 +13,6 @@ import Control.Monad.Reader
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
@@ -79,8 +78,9 @@ handleScheduleItem mLastRun wdir now si = do
 
 scheduleItemDisplayName :: ScheduleItem -> Text
 scheduleItemDisplayName si@ScheduleItem {..} =
-  fromMaybe
+  maybe
     (T.unwords ["the item with schedule", T.pack (show scheduleItemCronSchedule), "and hash", T.pack (show (hashScheduleItem si))])
+    (T.pack . show)
     scheduleItemDescription
 
 calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> ScheduledTime
