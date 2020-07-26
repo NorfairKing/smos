@@ -120,6 +120,10 @@
       <a href=@{SmosASCIInemaR}>
         The Smos ASCIInema Automation Tool
 
+      <ul>
+        <li>
+          <a href=@{SmosASCIInemaSpecR}>
+            Spec format
     <li>
       <a href=@{SmosSyncClientR}>
         The Smos Sync Client

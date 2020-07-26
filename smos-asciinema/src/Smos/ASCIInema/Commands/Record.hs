@@ -2,10 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.ASCIInema.Commands.Record
-  ( record,
-  )
-where
+module Smos.ASCIInema.Commands.Record where
 
 import Control.Concurrent
 import Control.Exception

@@ -23,7 +23,7 @@ file: example.smos
 input:
 - send: e
 - wait: 1000
-- send: Hello world!
+- type: Hello world!
 - wait: 1000
 - send: "\e"
 - wait: 1000
