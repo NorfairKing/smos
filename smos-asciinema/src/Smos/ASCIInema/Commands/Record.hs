@@ -9,13 +9,18 @@ import Control.Exception
 import Control.Monad
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import Data.DirForest (DirForest)
+import qualified Data.DirForest as DF
 import Data.Maybe
 import Data.Random.Normal
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Yaml
 import GHC.IO.Handle
 import Path
 import Path.IO
 import Smos.ASCIInema.OptParse.Types
+import qualified System.Directory as FP
 import System.Environment (getEnvironment)
 import System.Exit
 import System.Process.Typed
@@ -57,7 +62,7 @@ instance YamlSchema ASCIInemaSpec where
         <*> optionalField "workflow-dir" "The workflow directory to set via an environment variable"
         <*> optionalFieldWithDefault "input" [] "The inputs to send to the command"
 
-withRestoredFiles :: [Path Abs File] -> IO a -> IO a
+withRestoredFiles :: [FilePath] -> IO a -> IO a
 withRestoredFiles fs func =
   bracket
     (getFileStati fs)
@@ -65,36 +70,52 @@ withRestoredFiles fs func =
     $ const func
 
 data FileStatus
-  = FileDoesNotExist
-  | FileWithContents ByteString
-  deriving (Show, Eq)
+  = DoesNotExist FilePath
+  | FileWithContents (Path Abs File) ByteString
+  | DirWithContents (Path Abs Dir) (DirForest ByteString)
+  deriving (Show, Eq, Ord)
 
-getFileStati :: [Path Abs File] -> IO [(Path Abs File, FileStatus)]
-getFileStati = mapM $ \p -> do
-  s <- getFileStatus p
-  pure (p, s)
+getFileStati :: [FilePath] -> IO (Set FileStatus)
+getFileStati fs = S.fromList <$> mapM getFileStatus fs
 
-getFileStatus :: Path Abs File -> IO FileStatus
-getFileStatus p = maybe FileDoesNotExist FileWithContents <$> forgivingAbsence (SB.readFile (fromAbsFile p))
+getFileStatus :: FilePath -> IO FileStatus
+getFileStatus p = do
+  fileExists <- FP.doesFileExist p
+  if fileExists
+    then do
+      fp <- resolveFile' p
+      FileWithContents fp <$> SB.readFile (fromAbsFile fp)
+    else do
+      dirExists <- FP.doesDirectoryExist p
+      if dirExists
+        then do
+          dp <- resolveDir' p
+          DirWithContents dp <$> DF.read dp (SB.readFile . fromAbsFile)
+        else pure (DoesNotExist p)
 
-restoreFiles :: [(Path Abs File, FileStatus)] -> IO ()
-restoreFiles = mapM_ (uncurry restoreFile)
+-- maybe FileDoesNotExist FileWithContents <$> forgivingAbsence (SB.readFile (fromAbsFile p))
 
-restoreFile :: Path Abs File -> FileStatus -> IO ()
-restoreFile p = \case
-  FileDoesNotExist -> ignoringAbsence $ removeFile p
-  FileWithContents bs -> do
+restoreFiles :: Set FileStatus -> IO ()
+restoreFiles = mapM_ restoreFile . S.toList
+
+restoreFile :: FileStatus -> IO ()
+restoreFile = \case
+  DoesNotExist p -> do
+    ignoringAbsence $ FP.removePathForcibly p
+  FileWithContents p bs -> do
     ensureDir $ parent p
     SB.writeFile (fromAbsFile p) bs
+  DirWithContents p df -> do
+    ensureDir p
+    DF.write p df (\p_ bs -> SB.writeFile (fromAbsFile p_) bs)
 
 runASCIInema :: RecordSettings -> Path Abs File -> ASCIInemaSpec -> IO ()
 runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
   let parentDir = parent specFilePath
   mWorkingDir <- mapM (resolveDir parentDir) asciinemaWorkingDir
   let dirToResolveFiles = fromMaybe parentDir mWorkingDir
-  fs <- mapM (resolveFile dirToResolveFiles) asciinemaFiles
-  withRestoredFiles fs
-    $ withCurrentDir parentDir
+  withCurrentDir dirToResolveFiles
+    $ withRestoredFiles asciinemaFiles
     $ do
       -- Get the output file's parent directory ready
       env <- getEnvironment

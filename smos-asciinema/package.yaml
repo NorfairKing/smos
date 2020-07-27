@@ -17,7 +17,10 @@ library:
   dependencies:
     - bytestring
     - containers
+    - directory
+    - dirforest
     - envparse
+    - filepath
     - normaldistribution
     - optparse-applicative
     - path

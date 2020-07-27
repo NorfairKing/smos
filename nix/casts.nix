@@ -14,7 +14,12 @@ let
   derivationFor = path:
     stdenv.mkDerivation {
       name = "smos-asciinema-casts-${path}";
-      buildInputs = [ asciinema ncurses python ] ++ lib.attrValues smosPackages;
+      buildInputs = [
+        asciinema
+        ncurses
+        python
+        tree
+      ] ++ lib.attrValues smosPackages;
       src = gitignoreSource ../.;
       ASCIINEMA_CONFIG_HOME = "./config";
       buildCommand = ''

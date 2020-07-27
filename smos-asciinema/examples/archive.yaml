@@ -1,0 +1,22 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+files:
+  - projects/dishwasher.smos
+  - archive
+input:
+- type: "tree\n"
+- wait: 2000
+- type: "smos projects/dishwasher.smos\n"
+- wait: 2000
+- send: "tc"
+- wait: 1000
+- send: "h"
+- wait: 1000
+- send: "tc"
+- wait: 1000
+- send: "q"
+- wait: 2000
+- type: "smos-archive projects/dishwasher.smos\n"
+- wait: 2000
+- type: "tree\n"
+- wait: 2000
