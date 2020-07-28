@@ -9,6 +9,7 @@ import Control.Exception
 import Control.Monad
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import Data.Char as Char
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
 import Data.Maybe
@@ -26,6 +27,7 @@ import System.Environment (getEnvironment)
 import System.Exit
 import System.Posix.IO (stdOutput)
 import System.Process.Typed
+import System.Random
 import System.Timeout
 import YamlParse.Applicative
 
@@ -192,13 +194,27 @@ sendAsciinemaCommand d h = go
         hPutStr h s
         hFlush h
       Type s i ->
-        forM_ s $ \c -> do
-          randomDelay <- normalIO' (0, 15) -- Add some random delay to make the typing feel more natural
-          let delay = round (fromIntegral i * charSpeed c + randomDelay :: Double)
-          go $ Wait delay
-          go $ SendInput [c]
+        let waitForChar c = do
+              randomDelay <- normalIO' (0, 25) -- Add some random delay to make the typing feel more natural
+              go $ Wait $ round (fromIntegral i * charSpeed c + randomDelay :: Double)
+         in forM_ s $ \c -> do
+              randomMistake <- (>= (97 :: Int)) <$> randomRIO (0, 100) :: IO Bool
+              when randomMistake $ do
+                let validMistakes =
+                      if Char.isUpper c -- You won't accidentally type an upper-case character if the character you intended was lower-case
+                        then concat [['A' .. 'Z'], "[{+(=*)!}]"]
+                        else concat [['a' .. 'z'], ['0' .. '9']]
+                randomIndex <- randomRIO (0, length validMistakes - 1) :: IO Int
+                let c' = validMistakes !! randomIndex
+                waitForChar c'
+                go $ SendInput [c']
+                waitForChar '\b'
+                go $ SendInput ['\b'] -- Backspace
+              waitForChar c
+              go $ SendInput [c]
     -- Add a delay multiplier based on what kind of character it is to make the typing feel more natural.
     charSpeed ' ' = 1.25
+    charSpeed '\b' = 3 -- It takes a while to notice a mistake
     charSpeed c
       | c `elem` ['a' .. 'z'] = 0.75
       | c `elem` ['A' .. 'Z'] = 1.5 -- Because you have to press 'shift'

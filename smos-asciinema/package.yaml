@@ -27,6 +27,7 @@ library:
     - optparse-applicative
     - path
     - path-io
+    - random
     - smos-report
     - text
     - time
