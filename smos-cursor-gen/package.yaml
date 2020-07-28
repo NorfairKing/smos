@@ -27,6 +27,7 @@ library:
   - fuzzy-time
   - fuzzy-time-gen
   - genvalidity
+  - genvalidity-path
   - genvalidity-text
   - genvalidity-time
   - smos-cursor
