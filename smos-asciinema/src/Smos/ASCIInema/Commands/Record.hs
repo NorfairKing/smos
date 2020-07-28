@@ -20,9 +20,11 @@ import GHC.IO.Handle
 import Path
 import Path.IO
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.WindowSize
 import qualified System.Directory as FP
 import System.Environment (getEnvironment)
 import System.Exit
+import System.Posix.IO (stdOutput)
 import System.Process.Typed
 import System.Timeout
 import YamlParse.Applicative
@@ -131,6 +133,7 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
             maybe id (setWorkingDir . fromAbsDir) mWorkingDir
               $ setEnv env'
               $ setStdin createPipe
+              $ setStdout inherit
               $ proc "asciinema"
               $ concat
                 [ [ "rec",
@@ -147,6 +150,7 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
       -- Make sure the output file can be created nicely
       ensureDir $ parent recordSetOutputFile
       withProcessWait apc $ \p -> do
+        setWindowSize stdOutput (recordSetColumns, recordSetRows)
         mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
           let h = getStdin p
           hSetBuffering h NoBuffering

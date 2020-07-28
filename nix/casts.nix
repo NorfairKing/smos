@@ -17,15 +17,11 @@ let
       buildInputs = [
         asciinema
         ncurses
-        python
         tree
       ] ++ lib.attrValues smosPackages;
       src = gitignoreSource ../.;
       ASCIINEMA_CONFIG_HOME = "./config";
       buildCommand = ''
-        # Set terminal size
-        python ${../smos-asciinema/set_window_size.py} 80 25
-
         # Make sure the spec files and the demo-workflow are available
         cp -r $src/demo-workflow ./demo-workflow
         mkdir -p ./smos-asciinema
@@ -41,7 +37,7 @@ let
         mkdir -p $ASCIINEMA_CONFIG_HOME
 
         # Record the cast
-        smos-asciinema record "./smos-asciinema/examples/${path}.yaml" "./${path}.cast"
+        smos-asciinema record "./smos-asciinema/examples/${path}.yaml" "./${path}.cast" --columns 80 --rows 25
 
         # Output the casts
         cp "${path}.cast" $out
