@@ -14,12 +14,14 @@ spec = do
   genValidSpec @EditorCursor
   describe "makeEditorCursor"
     $ it "produces valid cursors"
-    $ producesValidsOnValids makeEditorCursor
+    $ producesValidsOnValids2 makeEditorCursor
   describe "rebuildEditorCursor" $ do
     it "produces valid cursors" $ producesValidsOnValids rebuildEditorCursor
-    it "is the inverse of makeFileCursor" $
-      inverseFunctionsOnValid makeEditorCursor rebuildEditorCursor
-  describe "editorCursorSmosFileCursorL" $ lensSpecOnValid editorCursorSmosFileCursorHistoryL
+    it "roundtrips after makeEditorCursor" $ forAllValid $ \p -> forAllValid $ \msf ->
+      let sfec = makeEditorCursor p msf
+          (p', msf') = rebuildEditorCursor sfec
+       in (p, msf) `shouldBe` (p', msf')
+  describe "editorCursorSmosFileEditorCursorL" $ lensSpecOnValid editorCursorSmosFileEditorCursorL
   describe "editorCursorSelectionL" $ lensSpecOnValid editorCursorSelectionL
   describe "editorCursorDebugL" $ lensSpecOnValid editorCursorDebugL
   describe "editorCursorShowDebug"

@@ -51,19 +51,7 @@ smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} ss@SmosState {..} =
   let helpCursorWidget =
         drawHelpCursor configKeyMap (selectWhen HelpSelected) editorCursorHelpCursor
-      withHeading hw w =
-        let ts =
-              if smosStateUnsavedChanges
-                then str " | " <+> withAttr unsavedAttr (str "[+]")
-                else emptyWidget
-         in vBox
-              [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
-      fileCursorWidget =
-        withHeading (forceAttr selectedAttr $ drawFilePath smosStateFilePath) $
-          maybe
-            (drawInfo configKeyMap)
-            (drawFileCursor $ selectWhen FileSelected)
-            (historyPresent editorCursorFileCursor)
+      fileCursorWidget = drawFileEditorCursor (selectWhen FileSelected) editorCursorFileEditorCursor
       browserCursorWidget =
         withHeading (str "File Browser") $
           maybe
@@ -92,6 +80,21 @@ smosDraw SmosConfig {..} ss@SmosState {..} =
       if ecs == editorCursorSelection
         then MaybeSelected
         else NotSelected
+    withHeading :: Widget n -> Widget n -> Widget n
+    withHeading hw w =
+      let ts =
+            if smosStateUnsavedChanges
+              then str " | " <+> withAttr unsavedAttr (str "[+]")
+              else emptyWidget
+       in vBox
+            [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
+    drawFileEditorCursor :: Select -> SmosFileEditorCursor -> Widget ResourceName
+    drawFileEditorCursor s SmosFileEditorCursor {..} =
+      withHeading (forceAttr selectedAttr $ drawFilePath smosFileEditorCursorPath) $
+        maybe
+          (drawInfo configKeyMap)
+          (drawFileCursor s)
+          (historyPresent smosFileEditorCursorHistory)
     drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
     drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
 
@@ -221,7 +224,7 @@ drawDebug SmosState {..} =
           str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
           case editorCursorSelection smosStateCursor of
             FileSelected ->
-              let h = editorCursorFileCursor smosStateCursor
+              let h = smosFileEditorCursorHistory $ editorCursorFileEditorCursor smosStateCursor
                in vBox
                     [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
                       str "Redo stack length: " <+> str (show (historyRedoLength h))

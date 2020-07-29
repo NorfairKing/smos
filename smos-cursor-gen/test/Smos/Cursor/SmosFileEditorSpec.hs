@@ -15,9 +15,14 @@ spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
   genValidSpec @SmosFileEditorCursor
   describe "makeSmosFileCursor" $ it "produces valid results" $ producesValidsOnValids2 makeSmosFileEditorCursor
+  describe "makeSmosFileCursorFromCursor" $ it "produces valid results" $ producesValidsOnValids2 makeSmosFileEditorCursorFromCursor
   describe "rebuildSmosFileCursor" $ do
     it "produces valid results" $ producesValidsOnValids rebuildSmosFileEditorCursor
     it "roundtrips after makeSmosFileCursor" $ forAllValid $ \p -> forAllValid $ \msf ->
       let sfec = makeSmosFileEditorCursor p msf
           (p', msf') = rebuildSmosFileEditorCursor sfec
        in (p, msf) `shouldBe` (p', msf')
+  describe "smosFileEditorCursorPathL" $ lensSpecOnValid smosFileEditorCursorPathL
+  describe "smosFileEditorCursorHistoryL" $ lensSpecOnValid smosFileEditorCursorHistoryL
+  describe "smosFileEditorCursorPresent" $ it "produces valid results" $ producesValidsOnValids smosFileEditorCursorPresent
+  describe "smosFileEditorCursorUpdateTime" $ it "produces valid results" $ producesValidsOnValids2 smosFileEditorCursorUpdateTime

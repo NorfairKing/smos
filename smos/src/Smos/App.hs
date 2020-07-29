@@ -117,9 +117,8 @@ initState zt p fl msf =
   SmosState
     { smosStateTime = zt,
       smosStateStartSmosFile = msf,
-      smosStateFilePath = p,
       smosStateFileLock = fl,
-      smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf,
+      smosStateCursor = makeEditorCursor p $ fromMaybe emptySmosFile msf,
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],
       smosStateUnsavedChanges = False,
@@ -127,12 +126,11 @@ initState zt p fl msf =
       smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }
 
-initStateWithCursor :: ZonedTime -> Path Abs File -> FileLock -> EditorCursor -> SmosState
-initStateWithCursor zt p fl ec =
+initStateWithCursor :: ZonedTime -> FileLock -> EditorCursor -> SmosState
+initStateWithCursor zt fl ec =
   SmosState
     { smosStateTime = zt,
-      smosStateStartSmosFile = Just $ rebuildEditorCursor ec,
-      smosStateFilePath = p,
+      smosStateStartSmosFile = Just $ snd $ rebuildEditorCursor ec,
       smosStateFileLock = fl,
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,

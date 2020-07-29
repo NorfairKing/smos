@@ -7,7 +7,7 @@ import Data.GenValidity
 import Smos.Cursor.FileBrowser.Gen ()
 import Smos.Cursor.Help.Gen ()
 import Smos.Cursor.Report.Next.Gen ()
-import Smos.Cursor.SmosFile.Gen ()
+import Smos.Cursor.SmosFileEditor.Gen ()
 import Smos.Types
 
 instance GenValid EditorCursor where

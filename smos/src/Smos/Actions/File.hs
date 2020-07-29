@@ -18,8 +18,8 @@ import Data.Time
 import Path
 import Path.IO
 import Smos.Cursor.SmosFile
+import Smos.Cursor.SmosFileEditor
 import Smos.Data
-import Smos.History
 import Smos.Types
 import qualified System.FileLock as FL
 
@@ -34,8 +34,8 @@ saveFile =
 saveCurrentSmosFile :: SmosM ()
 saveCurrentSmosFile = do
   SmosState {..} <- get
-  let sf' = rebuildEditorCursor smosStateCursor
-  liftIO $ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath
+  let (path, sf') = rebuildEditorCursor smosStateCursor
+  liftIO $ saveSmosFile sf' smosStateStartSmosFile path
   now <- liftIO getCurrentTime
   modify
     ( \ss ->
@@ -81,10 +81,12 @@ switchToCursor path msfc = do
     put $
       ss
         { smosStateStartSmosFile = rebuildSmosFileCursorEntirely <$> msfc,
-          smosStateFilePath = path,
           smosStateFileLock = fl,
           smosStateCursor =
-            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = startingHistory msfc},
+            editorCursorSwitchToFile
+              (smosStateCursor ss)
+                { editorCursorFileEditorCursor = makeSmosFileEditorCursorFromCursor path msfc
+                },
           smosStateUnsavedChanges = False,
           smosStateLastSaved = now
         }

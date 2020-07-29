@@ -24,6 +24,7 @@ module Smos.Actions.Utils
     module Smos.Cursor.Properties,
     module Smos.Cursor.Report.Next,
     module Smos.Cursor.SmosFile,
+    module Smos.Cursor.SmosFileEditor,
     module Smos.Cursor.StateHistory,
     module Smos.Cursor.Tags,
     module Smos.Cursor.Timestamps,
@@ -42,6 +43,7 @@ import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
+import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
@@ -263,7 +265,7 @@ modifyMFileCursorMHistory :: (History (Maybe SmosFileCursor) -> History (Maybe S
 modifyMFileCursorMHistory func = modifyMFileCursorMHistoryS $ pure . func
 
 modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History (Maybe SmosFileCursor))) -> SmosM ()
-modifyMFileCursorMHistoryS func = modifyEditorCursorS $ editorCursorSmosFileCursorHistoryL func
+modifyMFileCursorMHistoryS func = modifyEditorCursorS $ editorCursorSmosFileEditorCursorL . smosFileEditorCursorHistoryL $ func
 
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc

@@ -5,9 +5,11 @@ module Smos.Cursor.SmosFileEditor where
 
 import Control.DeepSeq
 import qualified Data.List.NonEmpty as NE
+import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import Lens.Micro
 import Path
 import Smos.Cursor.SmosFile
 import Smos.Data
@@ -25,9 +27,12 @@ instance Validity SmosFileEditorCursor
 instance NFData SmosFileEditorCursor
 
 makeSmosFileEditorCursor :: Path Abs File -> SmosFile -> SmosFileEditorCursor
-makeSmosFileEditorCursor p sf =
+makeSmosFileEditorCursor p sf = makeSmosFileEditorCursorFromCursor p $ makeSmosFileCursor <$> NE.nonEmpty (smosFileForest sf)
+
+makeSmosFileEditorCursorFromCursor :: Path Abs File -> Maybe SmosFileCursor -> SmosFileEditorCursor
+makeSmosFileEditorCursorFromCursor p msfc =
   SmosFileEditorCursor
-    { smosFileEditorCursorHistory = startingHistory $ makeSmosFileCursor <$> NE.nonEmpty (smosFileForest sf),
+    { smosFileEditorCursorHistory = startingHistory msfc,
       smosFileEditorCursorPath = p
     }
 
@@ -36,3 +41,15 @@ rebuildSmosFileEditorCursor SmosFileEditorCursor {..} =
   ( smosFileEditorCursorPath,
     maybe emptySmosFile rebuildSmosFileCursorEntirely $ historyPresent smosFileEditorCursorHistory
   )
+
+smosFileEditorCursorPathL :: Lens' SmosFileEditorCursor (Path Abs File)
+smosFileEditorCursorPathL = lens smosFileEditorCursorPath $ \sfec p -> sfec {smosFileEditorCursorPath = p}
+
+smosFileEditorCursorHistoryL :: Lens' SmosFileEditorCursor (History (Maybe SmosFileCursor))
+smosFileEditorCursorHistoryL = lens smosFileEditorCursorHistory $ \sfec h -> sfec {smosFileEditorCursorHistory = h}
+
+smosFileEditorCursorPresent :: SmosFileEditorCursor -> Maybe SmosFileCursor
+smosFileEditorCursorPresent = historyPresent . smosFileEditorCursorHistory
+
+smosFileEditorCursorUpdateTime :: ZonedTime -> SmosFileEditorCursor -> SmosFileEditorCursor
+smosFileEditorCursorUpdateTime zt = smosFileEditorCursorHistoryL . historyPresentL %~ fmap (smosFileCursorUpdateTime zt)

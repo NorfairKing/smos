@@ -57,10 +57,11 @@ startSmosOn p sc@SmosConfig {..} = do
           (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
           (eventPusher chan)
       finalWait $ smosStateAsyncs s'
+      let (path, endFile) = rebuildEditorCursor $ smosStateCursor s'
       saveSmosFile
-        (rebuildEditorCursor $ smosStateCursor s')
+        endFile
         (smosStateStartSmosFile s')
-        (smosStateFilePath s')
+        path
       unlockFile $ smosStateFileLock s'
 
 finalWait :: [Async ()] -> IO ()

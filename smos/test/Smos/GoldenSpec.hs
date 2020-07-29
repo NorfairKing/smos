@@ -122,12 +122,12 @@ runCommandsOn mstart commands =
       Nothing -> die "Could not lock pretend file."
       Just fl -> do
         let startState =
-              initStateWithCursor zt af fl $ makeEditorCursorClosed $ fromMaybe emptySmosFile mstart
+              initStateWithCursor zt fl $ makeEditorCursorClosed af $ fromMaybe emptySmosFile mstart
         (fs, rs) <- foldM go (startState, []) commands
         let cr =
               CommandsRun
                 { intermidiaryResults = reverse rs,
-                  finalResult = rebuildEditorCursor $ smosStateCursor fs
+                  finalResult = snd $ rebuildEditorCursor $ smosStateCursor fs
                 }
         unlockFile fl
         pure cr
@@ -146,7 +146,7 @@ runCommandsOn mstart commands =
           (error "Tried to access the brick state")
       case s of
         Stop -> failure "Premature stop"
-        Continue () -> pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
+        Continue () -> pure (ss', (c, snd $ rebuildEditorCursor $ smosStateCursor ss') : rs)
 
 expectResults :: Path Abs File -> SmosFile -> SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =

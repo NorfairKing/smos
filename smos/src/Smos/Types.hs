@@ -30,6 +30,7 @@ import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
+import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.History
 import Smos.Keys
@@ -283,7 +284,6 @@ data SmosState
   = SmosState
       { smosStateTime :: !ZonedTime,
         smosStateStartSmosFile :: !(Maybe SmosFile),
-        smosStateFilePath :: !(Path Abs File),
         smosStateFileLock :: !FileLock,
         smosStateCursor :: !EditorCursor,
         smosStateKeyHistory :: !(Seq KeyPress),
@@ -536,7 +536,7 @@ renderKeyCombination = go
 
 data EditorCursor
   = EditorCursor
-      { editorCursorFileCursor :: History (Maybe SmosFileCursor), -- Nothing means an empty smos file, so it needs to be in the history
+      { editorCursorFileEditorCursor :: SmosFileEditorCursor,
         editorCursorBrowserCursor :: Maybe FileBrowserCursor,
         editorCursorReportCursor :: Maybe ReportCursor,
         editorCursorHelpCursor :: Maybe HelpCursor,
@@ -559,15 +559,15 @@ data EditorSelection
 
 instance Validity EditorSelection
 
-makeEditorCursor :: SmosFile -> EditorCursor
-makeEditorCursor =
-  (editorCursorSmosFileCursorHistoryL . historyPresentL %~ fmap smosFileCursorReadyForStartup)
-    . makeEditorCursorClosed
+makeEditorCursor :: Path Abs File -> SmosFile -> EditorCursor
+makeEditorCursor p =
+  (editorCursorSmosFileEditorCursorL . smosFileEditorCursorHistoryL . historyPresentL %~ fmap smosFileCursorReadyForStartup)
+    . makeEditorCursorClosed p
 
-makeEditorCursorClosed :: SmosFile -> EditorCursor
-makeEditorCursorClosed sf =
+makeEditorCursorClosed :: Path Abs File -> SmosFile -> EditorCursor
+makeEditorCursorClosed p sf =
   EditorCursor
-    { editorCursorFileCursor = startingHistory $ fmap makeSmosFileCursor $ NE.nonEmpty $ smosFileForest sf,
+    { editorCursorFileEditorCursor = makeSmosFileEditorCursor p sf,
       editorCursorBrowserCursor = Nothing,
       editorCursorReportCursor = Nothing,
       editorCursorHelpCursor = Nothing,
@@ -575,12 +575,12 @@ makeEditorCursorClosed sf =
       editorCursorDebug = False
     }
 
-rebuildEditorCursor :: EditorCursor -> SmosFile
-rebuildEditorCursor = maybe emptySmosFile rebuildSmosFileCursorEntirely . historyPresent . editorCursorFileCursor
+rebuildEditorCursor :: EditorCursor -> (Path Abs File, SmosFile)
+rebuildEditorCursor = rebuildSmosFileEditorCursor . editorCursorFileEditorCursor
 
-editorCursorSmosFileCursorHistoryL :: Lens' EditorCursor (History (Maybe SmosFileCursor))
-editorCursorSmosFileCursorHistoryL =
-  lens editorCursorFileCursor $ \ec msfc -> ec {editorCursorFileCursor = msfc}
+editorCursorSmosFileEditorCursorL :: Lens' EditorCursor SmosFileEditorCursor
+editorCursorSmosFileEditorCursorL =
+  lens editorCursorFileEditorCursor $ \ec sfec -> ec {editorCursorFileEditorCursor = sfec}
 
 editorCursorBrowserCursorL :: Lens' EditorCursor (Maybe FileBrowserCursor)
 editorCursorBrowserCursorL =
@@ -627,7 +627,7 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                in ( \(t, ms) ->
                       withHelpBindings t $ ms ++ fileKeyMapAnyMatchers
                   )
-                    $ case historyPresent $ editorCursorFileCursor ec of
+                    $ case smosFileEditorCursorPresent $ editorCursorFileEditorCursor ec of
                       Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
                       Just sfc ->
                         case sfc ^. smosFileCursorEntrySelectionL of
@@ -655,7 +655,7 @@ editorCursorSwitchToNextActionReport narc ec =
     }
 
 editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
-editorCursorUpdateTime zt = editorCursorSmosFileCursorHistoryL . historyPresentL %~ fmap (smosFileCursorUpdateTime zt)
+editorCursorUpdateTime zt = editorCursorSmosFileEditorCursorL %~ smosFileEditorCursorUpdateTime zt
 
 newtype ReportCursor
   = ReportNextActions NextActionReportCursor
