@@ -31,7 +31,7 @@ reportNextActions :: Action
 reportNextActions =
   Action
     { actionName = "reportNextActions",
-      actionFunc = modifyEditorCursorSumS $ \ecs -> do
+      actionFunc = modifyEditorCursorSumS $ \_ -> do
         saveCurrentSmosFile
         closeCurrentFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig

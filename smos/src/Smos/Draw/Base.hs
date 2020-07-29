@@ -25,6 +25,13 @@ instance Semigroup Select where
   MaybeSelected <> MaybeSelected = MaybeSelected
   _ <> _ = NotSelected
 
+withHeading :: Widget n -> Widget n -> Widget n
+withHeading hw w =
+  vBox
+    [ hBox [str "──[ ", withAttr selectedAttr hw, str " ]──", vLimit 1 $ fill '─'],
+      w
+    ]
+
 drawNominalDiffTime :: NominalDiffTime -> Widget n
 drawNominalDiffTime ndt =
   hBox

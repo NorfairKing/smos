@@ -3,14 +3,11 @@
 
 module Smos.Cursor.SmosFileEditor where
 
-import Control.DeepSeq
 import Control.Monad
 import Control.Monad.IO.Class
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
-import Data.Validity
-import Data.Validity.Path ()
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path

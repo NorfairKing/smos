@@ -11,14 +11,8 @@ module Smos.Actions.File
   )
 where
 
-import Data.Maybe
-import Data.Time
 import Path
-import Path.IO
 import Smos.Actions.Utils
-import Smos.Cursor.SmosFile
-import Smos.Cursor.SmosFileEditor
-import Smos.Data
 import Smos.Types
 
 saveFile :: Action

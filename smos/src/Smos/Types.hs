@@ -31,7 +31,6 @@ import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
-import Smos.Data
 import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
@@ -628,13 +627,6 @@ data EditorSelection
   deriving (Show, Eq, Generic)
 
 instance Validity EditorSelection
-
--- editorCursorSwitchToNextActionReport :: NextActionReportCursor -> EditorCursor -> EditorCursor
--- editorCursorSwitchToNextActionReport narc ec =
---   ec
---     { editorCursorReportCursor = Just $ ReportNextActions narc,
---       editorCursorSelection = ReportSelected
---     }
 
 newtype ReportCursor
   = ReportNextActions NextActionReportCursor
