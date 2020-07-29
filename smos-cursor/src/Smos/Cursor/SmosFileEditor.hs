@@ -45,7 +45,7 @@ startSmosFileEditorCursor p = do
         SmosFileEditorCursor
           { smosFileEditorPath = p,
             smosFileEditorStartingPoint = startingPoint,
-            smosFileEditorCursorHistory = startingHistory $ makeSmosFileCursor <$> (smosFileForest <$> startingPoint >>= NE.nonEmpty),
+            smosFileEditorCursorHistory = startingHistory $ smosFileCursorReadyForStartup . makeSmosFileCursor <$> (smosFileForest <$> startingPoint >>= NE.nonEmpty),
             smosFileEditorUnsavedChanges = isNothing startingPoint, -- Because we'll be editing an empty file, not a nonexistent file
             smosFileEditorLastSaved = now,
             smosFileEditorLock = fl
