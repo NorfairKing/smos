@@ -48,7 +48,10 @@ import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} SmosState {..} =
-  [ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime
+  [ vBox
+      [ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime,
+        drawErrorMessages smosStateErrorMessages
+      ]
   ]
 
 drawEditorCursor :: KeyMap -> EditorCursor -> Drawer
@@ -64,6 +67,9 @@ drawEditorCursor configKeyMap EditorCursor {..} =
     ReportSelected -> case editorCursorReportCursor of
       Nothing -> pure $ str "No report selected" -- TODO make this a nice view
       Just rc -> pure $ drawReportCursor MaybeSelected rc
+
+drawErrorMessages :: [Text] -> Widget n
+drawErrorMessages = vBox . map (withAttr errorAttr . txtWrap)
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =

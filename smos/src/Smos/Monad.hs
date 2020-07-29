@@ -15,19 +15,20 @@ where
 import Brick.Types as B hiding (Next)
 import Control.Monad.Reader
 import Control.Monad.State
+import Control.Monad.Writer
 import Import
 
 newtype MkSmosM c n s a
   = MkSmosM
-      { unMkSmosM :: NextT (StateT s (ReaderT c (EventM n))) a
+      { unMkSmosM :: NextT (StateT s (WriterT [Text] (ReaderT c (EventM n)))) a
       }
-  deriving (Generic, Functor, Applicative, Monad, MonadState s, MonadReader c)
+  deriving (Generic, Functor, Applicative, Monad, MonadState s, MonadReader c, MonadWriter [Text])
 
 instance MonadIO (MkSmosM c n s) where
   liftIO = MkSmosM . liftIO
 
-runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n (MStop a, s)
-runMkSmosM conf initState act = runReaderT (runStateT (runNextT (unMkSmosM act)) initState) conf
+runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n ((MStop a, s), [Text])
+runMkSmosM conf initState act = runReaderT (runWriterT (runStateT (runNextT (unMkSmosM act)) initState)) conf
 
 data MStop a
   = Stop
@@ -44,6 +45,9 @@ newtype NextT m a
   = NextT
       { runNextT :: m (MStop a)
       }
+
+mapNextT :: (m (MStop a) -> n (MStop b)) -> NextT m a -> NextT n b
+mapNextT f = NextT . f . runNextT
 
 instance Functor m => Functor (NextT m) where
   fmap f (NextT func) = NextT $ fmap (f <$>) func
@@ -80,3 +84,15 @@ instance MonadState s m => MonadState s (NextT m) where
 instance MonadReader s m => MonadReader s (NextT m) where
   ask = NextT $ asks Continue
   local func (NextT m) = NextT $ local func m
+
+instance MonadWriter w m => MonadWriter w (NextT m) where
+  writer = lift . writer
+  tell = lift . tell
+  listen = mapNextT $ \m -> do
+    (a, w) <- listen m
+    return $ fmap (\r -> (r, w)) a
+  pass = mapNextT $ \m -> pass $ do
+    a <- m
+    return $ case a of
+      Stop -> (Stop, id)
+      Continue (v, f) -> (Continue v, f)

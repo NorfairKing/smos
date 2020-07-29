@@ -32,10 +32,14 @@ switchToFile path = modifyEditorCursorS $ \ec -> do
     else do
       mErrOrSmec <- startSmosFileEditorCursor path
       case mErrOrSmec of
-        Nothing -> pure ec -- Couldn't get a lock, do nothing
+        Nothing -> do
+          addErrorMessage "Unable to get a lock on the file to switch to"
+          pure ec -- Couldn't get a lock, do nothing
         Just errOrSmec ->
           case errOrSmec of
-            Left _ -> pure ec -- Do nothing if the file is not a smos file
+            Left _ -> do
+              addErrorMessage "The file to switch to is not a valid smos file"
+              pure ec -- Do nothing if the file is not a smos file
             Right smec -> do
               saveCurrentSmosFile
               closeCurrentFile
@@ -47,7 +51,9 @@ switchToCursor path msfc = modifyEditorCursorS $ \ec -> do
   closeCurrentFile
   mSmec <- startSmosFileEditorCursorWithCursor path msfc
   case mSmec of
-    Nothing -> pure ec -- Couldn't get a lock, do nothing
+    Nothing -> do
+      addErrorMessage "Unable to get a lock on the file to switch to"
+      pure ec -- Couldn't get a lock, do nothing
     Just smec -> do
       pure $ ec {editorCursorSelection = FileSelected, editorCursorFileCursor = Just smec}
 

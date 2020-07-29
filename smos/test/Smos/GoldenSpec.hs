@@ -143,7 +143,7 @@ runCommandsOn mstart commands =
               CommandPlain a -> actionFunc a
               CommandUsing a arg -> actionUsingFunc a arg
       let eventFunc = runSmosM testConf ss func
-      ((s, ss'), _) <-
+      (((s, ss'), _), _) <-
         runStateT
           (runReaderT (runEventM eventFunc) (error "Tried to access the brick env"))
           (error "Tried to access the brick state")

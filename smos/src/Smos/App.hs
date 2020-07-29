@@ -46,13 +46,14 @@ smosHandleEvent cf s e = do
                  in recordKeyPress kp
               _ -> pure ()
           KeyActivated func_ -> do
+            modify (\s_ -> s_ {smosStateErrorMessages = []}) -- Clear error messages only on an activated keypress
             func_
             clearKeyHistory
           EventActivated func_ -> func_
-  (mkHalt, s') <- runSmosM cf s func
+  ((mkHalt, s'), errs) <- runSmosM cf s func
   case mkHalt of
     Stop -> B.halt s'
-    Continue () -> B.continue s'
+    Continue () -> B.continue (s' {smosStateErrorMessages = smosStateErrorMessages s' ++ errs})
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
@@ -130,5 +131,6 @@ initStateWithCursor zt ec =
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],
+      smosStateErrorMessages = [],
       smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }

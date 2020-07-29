@@ -23,6 +23,7 @@ module Smos.Style
     helpNameAttr,
     helpKeyCombinationAttr,
     helpDescriptionAttr,
+    errorAttr,
 
     -- * Re-exports
     applyAttrMappings,
@@ -76,7 +77,8 @@ defaultAttrMap _ =
             (headerAttr, fg V.yellow),
             (helpNameAttr, fg V.yellow),
             (helpKeyCombinationAttr, fg V.blue),
-            (helpDescriptionAttr, fg V.yellow)
+            (helpDescriptionAttr, fg V.yellow),
+            (errorAttr, fg V.red)
           ]
 
 fileAttr :: AttrName
@@ -141,3 +143,6 @@ helpKeyCombinationAttr = "helpkeycombination"
 
 helpDescriptionAttr :: AttrName
 helpDescriptionAttr = "helpdescription"
+
+errorAttr :: AttrName
+errorAttr = "error"

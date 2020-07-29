@@ -17,6 +17,7 @@ import Brick.Types as B hiding (Next)
 import Control.Concurrent.Async
 import Control.Monad.Reader
 import Control.Monad.State
+import Control.Monad.Writer
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
@@ -274,7 +275,7 @@ data SmosEvent
 
 type SmosM = MkSmosM SmosConfig ResourceName SmosState
 
-runSmosM :: SmosConfig -> SmosState -> SmosM a -> EventM ResourceName (MStop a, SmosState)
+runSmosM :: SmosConfig -> SmosState -> SmosM a -> EventM ResourceName ((MStop a, SmosState), [Text])
 runSmosM = runMkSmosM
 
 data SmosState
@@ -283,9 +284,13 @@ data SmosState
         smosStateCursor :: !EditorCursor,
         smosStateKeyHistory :: !(Seq KeyPress),
         smosStateAsyncs :: ![Async ()],
-        smosStateDebugInfo :: !DebugInfo
+        smosStateDebugInfo :: !DebugInfo,
+        smosStateErrorMessages :: [Text] -- In reverse order
       }
   deriving (Generic)
+
+addErrorMessage :: Text -> SmosM ()
+addErrorMessage t = tell [t]
 
 runSmosAsync :: IO () -> SmosM ()
 runSmosAsync func = do
