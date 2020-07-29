@@ -32,11 +32,9 @@ import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
-import Smos.History
 import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
-import System.FileLock
 import YamlParse.Applicative
 
 data SmosConfig
@@ -284,12 +282,9 @@ data SmosState
   = SmosState
       { smosStateTime :: !ZonedTime,
         smosStateStartSmosFile :: !(Maybe SmosFile),
-        smosStateFileLock :: !FileLock,
         smosStateCursor :: !EditorCursor,
         smosStateKeyHistory :: !(Seq KeyPress),
         smosStateAsyncs :: ![Async ()],
-        smosStateLastSaved :: !UTCTime,
-        smosStateUnsavedChanges :: !Bool,
         smosStateDebugInfo :: !DebugInfo
       }
   deriving (Generic)
@@ -534,65 +529,36 @@ renderKeyCombination = go
     go PressAny = "<any key>"
     go (PressCombination kp km) = renderKeyPress kp <> go km
 
+-- [ Editor Cursor ] --
+--
+-- Cannot factor this out because of the problem with help cursor.
 data EditorCursor
   = EditorCursor
-      { editorCursorFileEditorCursor :: SmosFileEditorCursor,
-        editorCursorBrowserCursor :: Maybe FileBrowserCursor,
-        editorCursorReportCursor :: Maybe ReportCursor,
+      { editorCursorSum :: EditorCursorSum,
         editorCursorHelpCursor :: Maybe HelpCursor,
         editorCursorSelection :: EditorSelection,
         editorCursorDebug :: Bool
       }
-  deriving (Show, Eq, Generic)
 
-instance Validity EditorCursor
+startEditorCursor :: MonadIO m => Path Abs File -> m (Maybe (Either String EditorCursor))
+startEditorCursor p = do
+  mErrOrCursor <- startSmosFileEditorCursor p
+  let go sfec =
+        EditorCursor
+          { editorCursorSum = EditorCursorFileSelected sfec,
+            editorCursorHelpCursor = Nothing,
+            editorCursorSelection = NormalSelected,
+            editorCursorDebug = False
+          }
+  pure $ fmap (fmap go) mErrOrCursor
 
--- [ Editor Cursor ] --
---
--- Cannot factor this out because of the problem with help cursor.
-data EditorSelection
-  = FileSelected
-  | BrowserSelected
-  | ReportSelected
-  | HelpSelected
-  deriving (Show, Eq, Generic)
-
-instance Validity EditorSelection
-
-makeEditorCursor :: Path Abs File -> SmosFile -> EditorCursor
-makeEditorCursor p =
-  (editorCursorSmosFileEditorCursorL . smosFileEditorCursorHistoryL . historyPresentL %~ fmap smosFileCursorReadyForStartup)
-    . makeEditorCursorClosed p
-
-makeEditorCursorClosed :: Path Abs File -> SmosFile -> EditorCursor
-makeEditorCursorClosed p sf =
-  EditorCursor
-    { editorCursorFileEditorCursor = makeSmosFileEditorCursor p sf,
-      editorCursorBrowserCursor = Nothing,
-      editorCursorReportCursor = Nothing,
-      editorCursorHelpCursor = Nothing,
-      editorCursorSelection = FileSelected,
-      editorCursorDebug = False
-    }
-
-rebuildEditorCursor :: EditorCursor -> (Path Abs File, SmosFile)
-rebuildEditorCursor = rebuildSmosFileEditorCursor . editorCursorFileEditorCursor
-
-editorCursorSmosFileEditorCursorL :: Lens' EditorCursor SmosFileEditorCursor
-editorCursorSmosFileEditorCursorL =
-  lens editorCursorFileEditorCursor $ \ec sfec -> ec {editorCursorFileEditorCursor = sfec}
-
-editorCursorBrowserCursorL :: Lens' EditorCursor (Maybe FileBrowserCursor)
-editorCursorBrowserCursorL =
-  lens editorCursorBrowserCursor $ \ec msfc -> ec {editorCursorBrowserCursor = msfc}
+editorCursorSumL :: Lens' EditorCursor EditorCursorSum
+editorCursorSumL =
+  lens editorCursorSum $ \ec esc -> ec {editorCursorSum = esc}
 
 editorCursorHelpCursorL :: Lens' EditorCursor (Maybe HelpCursor)
 editorCursorHelpCursorL =
   lens editorCursorHelpCursor $ \ec msfc -> ec {editorCursorHelpCursor = msfc}
-
-editorCursorReportCursorL :: Lens' EditorCursor (Maybe ReportCursor)
-editorCursorReportCursorL =
-  lens editorCursorReportCursor $ \ec msfc -> ec {editorCursorReportCursor = msfc}
 
 editorCursorSelectionL :: Lens' EditorCursor EditorSelection
 editorCursorSelectionL = lens editorCursorSelection $ \ec es -> ec {editorCursorSelection = es}
@@ -609,53 +575,67 @@ editorCursorHideDebug = editorCursorDebugL .~ False
 editorCursorToggleDebug :: EditorCursor -> EditorCursor
 editorCursorToggleDebug = editorCursorDebugL %~ not
 
-editorCursorSwitchToFile :: EditorCursor -> EditorCursor
-editorCursorSwitchToFile ec =
-  ec
-    { editorCursorHelpCursor = Nothing,
-      editorCursorReportCursor = Nothing,
-      editorCursorSelection = FileSelected
-    }
+editorCursorUnselectHelp :: EditorCursor -> EditorCursor
+editorCursorUnselectHelp = editorCursorSelectionL .~ NormalSelected
 
 editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
 editorCursorSwitchToHelp km@KeyMap {..} ec =
   let withHelpBindings n ms = Just $ makeHelpCursor n $ ms ++ keyMapHelpMatchers km ++ keyMapAnyKeyMap
    in ec
         { editorCursorHelpCursor = case editorCursorSelection ec of
-            FileSelected ->
-              let FileKeyMap {..} = keyMapFileKeyMap
-               in ( \(t, ms) ->
-                      withHelpBindings t $ ms ++ fileKeyMapAnyMatchers
-                  )
-                    $ case smosFileEditorCursorPresent $ editorCursorFileEditorCursor ec of
-                      Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
-                      Just sfc ->
-                        case sfc ^. smosFileCursorEntrySelectionL of
-                          WholeEntrySelected -> ("Entry", fileKeyMapEntryMatchers)
-                          HeaderSelected -> ("Header", fileKeyMapHeaderMatchers)
-                          ContentsSelected -> ("Contents", fileKeyMapContentsMatchers)
-                          TimestampsSelected -> ("Timestamps", fileKeyMapTimestampsMatchers)
-                          PropertiesSelected -> ("Properties", fileKeyMapPropertiesMatchers)
-                          StateHistorySelected -> ("State History", fileKeyMapStateHistoryMatchers)
-                          TagsSelected -> ("Tags", fileKeyMapTagsMatchers)
-                          LogbookSelected -> ("Logbook", fileKeyMapLogbookMatchers)
-            BrowserSelected -> withHelpBindings "keyMapBrowserKeyMap" keyMapBrowserKeyMap
-            ReportSelected ->
-              let ReportsKeyMap {..} = keyMapReportsKeyMap
-               in withHelpBindings "Next Action Report" reportsKeymapNextActionReportMatchers
+            NormalSelected -> case editorCursorSum ec of
+              EditorCursorFileSelected sfec ->
+                let FileKeyMap {..} = keyMapFileKeyMap
+                 in ( \(t, ms) ->
+                        withHelpBindings t $ ms ++ fileKeyMapAnyMatchers
+                    )
+                      $ case smosFileEditorCursorPresent sfec of
+                        Nothing -> ("Empty file", fileKeyMapEmptyMatchers)
+                        Just sfc ->
+                          case sfc ^. smosFileCursorEntrySelectionL of
+                            WholeEntrySelected -> ("Entry", fileKeyMapEntryMatchers)
+                            HeaderSelected -> ("Header", fileKeyMapHeaderMatchers)
+                            ContentsSelected -> ("Contents", fileKeyMapContentsMatchers)
+                            TimestampsSelected -> ("Timestamps", fileKeyMapTimestampsMatchers)
+                            PropertiesSelected -> ("Properties", fileKeyMapPropertiesMatchers)
+                            StateHistorySelected -> ("State History", fileKeyMapStateHistoryMatchers)
+                            TagsSelected -> ("Tags", fileKeyMapTagsMatchers)
+                            LogbookSelected -> ("Logbook", fileKeyMapLogbookMatchers)
+              EditorCursorBrowserSelected _ -> withHelpBindings "keyMapBrowserKeyMap" keyMapBrowserKeyMap
+              EditorCursorReportSelected rc -> case rc of
+                ReportNextActions _ ->
+                  let ReportsKeyMap {..} = keyMapReportsKeyMap
+                   in withHelpBindings "Next Action Report" reportsKeymapNextActionReportMatchers
             HelpSelected -> Nothing, -- Should not happen
           editorCursorSelection = HelpSelected
         }
 
-editorCursorSwitchToNextActionReport :: NextActionReportCursor -> EditorCursor -> EditorCursor
-editorCursorSwitchToNextActionReport narc ec =
+editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
+editorCursorUpdateTime zt ec =
   ec
-    { editorCursorReportCursor = Just $ ReportNextActions narc,
-      editorCursorSelection = ReportSelected
+    { editorCursorSum = case editorCursorSum ec of
+        EditorCursorFileSelected ecf -> EditorCursorFileSelected $ smosFileEditorCursorUpdateTime zt ecf
+        s -> s
     }
 
-editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
-editorCursorUpdateTime zt = editorCursorSmosFileEditorCursorL %~ smosFileEditorCursorUpdateTime zt
+data EditorCursorSum
+  = EditorCursorFileSelected SmosFileEditorCursor
+  | EditorCursorBrowserSelected FileBrowserCursor
+  | EditorCursorReportSelected ReportCursor
+
+data EditorSelection
+  = NormalSelected
+  | HelpSelected
+  deriving (Show, Eq, Generic)
+
+instance Validity EditorSelection
+
+-- editorCursorSwitchToNextActionReport :: NextActionReportCursor -> EditorCursor -> EditorCursor
+-- editorCursorSwitchToNextActionReport narc ec =
+--   ec
+--     { editorCursorReportCursor = Just $ ReportNextActions narc,
+--       editorCursorSelection = ReportSelected
+--     }
 
 newtype ReportCursor
   = ReportNextActions NextActionReportCursor
