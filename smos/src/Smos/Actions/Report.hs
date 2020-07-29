@@ -31,12 +31,17 @@ reportNextActions :: Action
 reportNextActions =
   Action
     { actionName = "reportNextActions",
-      actionFunc = modifyEditorCursorSumS $ \_ -> do
+      actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         closeCurrentFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
         narc <- liftIO $ produceNextActionReportCursor dc
-        pure $ EditorCursorReportSelected $ ReportNextActions narc,
+        pure $
+          ec
+            { editorCursorSelection = ReportSelected,
+              editorCursorReportCursor = Just $ ReportNextActions narc,
+              editorCursorFileCursor = Nothing
+            },
       actionDescription = "Next action report"
     }
 
@@ -78,16 +83,15 @@ enterNextActionFile =
     { actionName = "enterNextActionFile",
       actionFunc = do
         ss <- get
-        let ecs = editorCursorSum $ smosStateCursor ss
-        case ecs of
-          EditorCursorReportSelected rc -> case rc of
+        case editorCursorReportCursor $ smosStateCursor ss of
+          Just rc -> case rc of
             ReportNextActions narc -> do
               dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
               case nextActionReportCursorBuildSmosFileCursor wd narc of
                 Nothing -> pure ()
                 Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
-          _ -> pure (),
+          Nothing -> pure (),
       actionDescription = "Enter the currently selected next action"
     }
 

@@ -22,8 +22,6 @@ import Smos.Cursor.Properties
 import Smos.Cursor.Properties.Gen ()
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFile.Gen ()
-import Smos.Cursor.SmosFileEditor
-import Smos.Cursor.SmosFileEditor.Gen ()
 import Smos.Cursor.StateHistory
 import Smos.Cursor.StateHistory.Gen ()
 import Smos.Cursor.Tag
@@ -56,6 +54,5 @@ main =
       genValidBench @SmosFileCursor,
       genValidBench @(UndoStack Int),
       genValidBench @FileBrowserCursor,
-      genValidBench @(History Int),
-      genValidBench @SmosFileEditorCursor
+      genValidBench @(History Int)
     ]

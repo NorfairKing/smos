@@ -3,6 +3,7 @@
 module Smos.Style
   ( defaultAttrMap,
     selectedAttr,
+    savedAttr,
     unsavedAttr,
     keyAttr,
     fileAttr,
@@ -69,6 +70,7 @@ defaultAttrMap _ =
         $ attrMap
           defAttr
           [ (selectedAttr, fg V.white),
+            (savedAttr, fg green),
             (unsavedAttr, fg orange),
             (keyAttr, fg orange),
             (headerAttr, fg V.yellow),
@@ -88,6 +90,9 @@ dirAttr = "dir"
 
 selectedAttr :: AttrName
 selectedAttr = "selected"
+
+savedAttr :: AttrName
+savedAttr = "saved"
 
 unsavedAttr :: AttrName
 unsavedAttr = "unsaved"

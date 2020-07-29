@@ -12,17 +12,15 @@ import Brick.BChan as Brick
 import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
-import Data.Time
 import Graphics.Vty as Vty (defaultConfig, mkVty)
 import Import
 import Smos.Actions.File
 import Smos.App
 import Smos.Config
-import Smos.Data
+import Smos.Cursor.SmosFileEditor
 import Smos.OptParse
 import Smos.OptParse.Bare
 import Smos.Types
-import System.Exit
 
 smos :: SmosConfig -> IO ()
 smos sc = do
@@ -45,8 +43,9 @@ startSmosOn p sc@SmosConfig {..} = do
       (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
       (eventPusher chan)
   finalWait $ smosStateAsyncs s'
-  case editorCursorSum $ smosStateCursor s' of
-    EditorCursorFileSelected sfec -> do
+  case editorCursorFileCursor $ smosStateCursor s' of
+    Nothing -> pure ()
+    Just sfec -> do
       sfec' <- smosFileEditorCursorSave sfec
       smosFileEditorCursorClose sfec'
 

@@ -16,7 +16,6 @@ import qualified Graphics.Vty as Vty
 import Import
 import Smos.Actions.File
 import Smos.Activation
-import Smos.Data
 import Smos.Draw
 import Smos.Keys
 import Smos.Style

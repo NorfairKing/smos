@@ -29,13 +29,13 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
-import qualified Data.Text as T
 import Data.Time
 import Import hiding ((<+>))
 import Lens.Micro
 import Smos.Actions
 import Smos.Cursor.Collapse
 import Smos.Cursor.FileBrowser
+import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
@@ -44,11 +44,10 @@ import Smos.History
 import Smos.Keys
 import Smos.Style
 import Smos.Types
-import Smos.Undo
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw SmosConfig {..} ss@SmosState {..} =
+smosDraw SmosConfig {..} SmosState {..} =
   [ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime
   ]
 
@@ -56,10 +55,15 @@ drawEditorCursor :: KeyMap -> EditorCursor -> Drawer
 drawEditorCursor configKeyMap EditorCursor {..} =
   case editorCursorSelection of
     HelpSelected -> pure $ drawHelpCursor configKeyMap MaybeSelected editorCursorHelpCursor
-    NormalSelected -> case editorCursorSum of
-      EditorCursorFileSelected sfec -> drawFileEditorCursor configKeyMap MaybeSelected sfec
-      EditorCursorBrowserSelected fbc -> pure $ drawFileBrowserCursor MaybeSelected fbc
-      EditorCursorReportSelected rc -> pure $ drawReportCursor MaybeSelected rc
+    FileSelected -> case editorCursorFileCursor of
+      Nothing -> pure $ str "No file selected" -- TODO make this a nice view
+      Just sfec -> drawFileEditorCursor configKeyMap MaybeSelected sfec
+    BrowserSelected -> case editorCursorBrowserCursor of
+      Nothing -> pure $ str "No directory selected" -- TODO make this a nice view
+      Just fbc -> pure $ drawFileBrowserCursor MaybeSelected fbc
+    ReportSelected -> case editorCursorReportCursor of
+      Nothing -> pure $ str "No report selected" -- TODO make this a nice view
+      Just rc -> pure $ drawReportCursor MaybeSelected rc
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =
@@ -175,22 +179,6 @@ drawKeyCombinations kbs =
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . renderKeyCombination
 
-drawHistory :: Seq KeyPress -> Widget n
-drawHistory = txtWrap . T.unwords . map renderKeyPress . toList
-
-drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
-drawLastMatches Nothing = Nothing
-drawLastMatches (Just ts) = Just $ hBox $ intersperse (str " ") $ map go $ NE.toList ts
-  where
-    go :: ActivationDebug -> Widget n
-    go ActivationDebug {..} =
-      vBox
-        [ str (show activationDebugPrecedence),
-          str (show activationDebugPriority),
-          drawHistory activationDebugMatch,
-          txt $ actionNameText activationDebugName
-        ]
-
 defaultPadding :: Padding
 defaultPadding = Pad defaultPaddingAmount
 
@@ -198,11 +186,13 @@ defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
 drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor s =
-  withHeading (str "File Browser")
-    . viewport ResourceViewport Vertical
-    . maybe emptyScreen (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
-    . fileBrowserCursorDirForestCursor
+drawFileBrowserCursor s FileBrowserCursor {..} =
+  withHeading (str "File Browser: " <+> drawDirPath fileBrowserCursorBase)
+    $ viewport ResourceViewport Vertical
+    $ maybe
+      emptyScreen
+      (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
+      fileBrowserCursorDirForestCursor
   where
     emptyScreen = str "No files to show."
     sel = case s of
@@ -226,7 +216,16 @@ drawFileEditorCursor keyMap s SmosFileEditorCursor {..} = do
   w <- case historyPresent smosFileEditorCursorHistory of
     Nothing -> pure $ drawInfo keyMap
     Just sfc -> drawSmosFileCursor s sfc
-  pure $ withHeading (forceAttr selectedAttr $ drawFilePath smosFileEditorPath) w
+  let heading =
+        hBox
+          [ drawFilePath smosFileEditorPath,
+            str
+              " | ",
+            if smosFileEditorUnsavedChanges
+              then withAttr unsavedAttr (str "[+]")
+              else withAttr savedAttr (str "[-]")
+          ]
+  pure $ withHeading heading w
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =

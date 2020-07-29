@@ -48,7 +48,7 @@ allPlainActions =
   concat
     [ [ startHeaderFromEmptyAndSelectHeader,
         selectHelp,
-        unselectHelp,
+        selectEditor,
         showDebug,
         hideDebug,
         toggleDebug,
@@ -104,11 +104,11 @@ selectHelp =
       actionDescription = "Show the (contextual) help screen"
     }
 
-unselectHelp :: Action
-unselectHelp =
+selectEditor :: Action
+selectEditor =
   Action
-    { actionName = "unselectHelp",
-      actionFunc = modifyEditorCursor editorCursorUnselectHelp,
+    { actionName = "selectEditor",
+      actionFunc = modifyEditorCursor $ editorCursorSelect FileSelected,
       actionDescription = "Hide the help screen"
     }
 

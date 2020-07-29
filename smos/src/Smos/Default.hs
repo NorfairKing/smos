@@ -231,7 +231,9 @@ defaultBrowserKeyMap =
       exactString "ded" browserRemoveEmptyDir,
       exactChar 'a' browserArchive,
       exactChar 'u' browserUndo,
-      exactChar 'r' browserRedo
+      exactChar 'r' browserRedo,
+      exactKey KEsc selectEditor,
+      exactChar 'q' stop
     ]
 
 defaultReportsKeyMap :: ReportsKeyMap
@@ -249,14 +251,17 @@ defaultReportsKeyMap =
             exactChar 'G' lastNextAction,
             exactKey KEnter enterNextActionFile,
             exactChar '?' selectHelp,
-            exactChar '/' selectNextActionFilter
+            exactChar '/' selectNextActionFilter,
+            exactKey KEsc selectEditor,
+            exactChar 'q' selectEditor
           ],
       reportsKeymapNextActionReportFilterMatchers =
         listMatchers
           [ anyChar insertNextActionFilter,
             exactKey KEnter selectNextActionReport,
             exactKey KBS removeNextActionFilter,
-            exactKey KDel deleteNextActionFilter
+            exactKey KDel deleteNextActionFilter,
+            exactKey KEsc selectEditor
           ]
     }
 
@@ -274,15 +279,15 @@ defaultHelpKeyMap =
             exactKey KEnd helpEnd,
             exactChar 'G' helpEnd,
             exactChar '/' helpSelectSearch,
-            exactKey KEsc unselectHelp,
-            exactChar 'q' unselectHelp
+            exactKey KEsc selectEditor,
+            exactChar 'q' selectEditor
           ],
       helpKeyMapSearchMatchers =
         listMatchers
           [ anyChar helpInsert,
             exactKey KBS helpRemove,
             exactKey KDel helpDelete,
-            exactKey KEsc unselectHelp,
+            exactKey KEsc selectEditor,
             exactKey KEnter helpSelectHelp
           ]
     }

@@ -24,7 +24,6 @@ module Smos.Actions.Utils
     module Smos.Cursor.Properties,
     module Smos.Cursor.Report.Next,
     module Smos.Cursor.SmosFile,
-    module Smos.Cursor.SmosFileEditor,
     module Smos.Cursor.StateHistory,
     module Smos.Cursor.Tags,
     module Smos.Cursor.Timestamps,
@@ -267,19 +266,34 @@ modifyMFileCursorMHistory func = modifyMFileCursorMHistoryS $ pure . func
 modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History (Maybe SmosFileCursor))) -> SmosM ()
 modifyMFileCursorMHistoryS func = modifySmosFileEditorCursorS $ smosFileEditorCursorHistoryL func
 
+modifySmosFileEditorCursorS :: (SmosFileEditorCursor -> SmosM SmosFileEditorCursor) -> SmosM ()
+modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS $ mapM $ \sfec -> do
+  sfec' <- func sfec
+  pure $
+    sfec'
+      { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
+      }
+
+modifyMSmosFileEditorCursorMS :: (Maybe SmosFileEditorCursor -> SmosM (Maybe SmosFileEditorCursor)) -> SmosM ()
+modifyMSmosFileEditorCursorMS func = modifyEditorCursorS $ editorCursorFileCursorL func
+
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc
 
 modifyFileBrowserCursor :: (FileBrowserCursor -> FileBrowserCursor) -> SmosM ()
-modifyFileBrowserCursor func = modifyFileBrowserCursorS $ pure . func
+modifyFileBrowserCursor func = modifyMFileBrowserCursorM $ fmap func
 
 modifyFileBrowserCursorSM :: (FileBrowserCursor -> Maybe (SmosM FileBrowserCursor)) -> SmosM ()
 modifyFileBrowserCursorSM func = modifyFileBrowserCursorS $ \fbc -> fromMaybe (pure fbc) (func fbc)
 
 modifyFileBrowserCursorS :: (FileBrowserCursor -> SmosM FileBrowserCursor) -> SmosM ()
-modifyFileBrowserCursorS func = modifyEditorCursorSumS $ \ecs -> case ecs of
-  EditorCursorBrowserSelected sfec -> EditorCursorBrowserSelected <$> func sfec
-  _ -> pure ecs
+modifyFileBrowserCursorS func = modifyMFileBrowserCursorMS $ mapM func
+
+modifyMFileBrowserCursorM :: (Maybe FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
+modifyMFileBrowserCursorM func = modifyMFileBrowserCursorMS $ pure . func
+
+modifyMFileBrowserCursorMS :: (Maybe FileBrowserCursor -> SmosM (Maybe FileBrowserCursor)) -> SmosM ()
+modifyMFileBrowserCursorMS func = modifyEditorCursorS $ editorCursorBrowserCursorL func
 
 modifyHelpCursorM :: (HelpCursor -> Maybe HelpCursor) -> SmosM ()
 modifyHelpCursorM func = modifyHelpCursor $ \hc -> fromMaybe hc $ func hc
@@ -310,22 +324,19 @@ modifyReportCursorM :: (ReportCursor -> Maybe ReportCursor) -> SmosM ()
 modifyReportCursorM func = modifyReportCursor $ \hc -> fromMaybe hc $ func hc
 
 modifyReportCursor :: (ReportCursor -> ReportCursor) -> SmosM ()
-modifyReportCursor func = modifyReportCursorS $ pure . func
+modifyReportCursor func = modifyMReportCursorM $ fmap func
+
+modifyMReportCursorM :: (Maybe ReportCursor -> Maybe ReportCursor) -> SmosM ()
+modifyMReportCursorM func = modifyMReportCursorMS $ pure . func
 
 modifyReportCursorS :: (ReportCursor -> SmosM ReportCursor) -> SmosM ()
-modifyReportCursorS func = modifyEditorCursorSumS $ \ecs -> case ecs of
-  EditorCursorReportSelected sfec -> EditorCursorReportSelected <$> func sfec
-  _ -> pure ecs
+modifyReportCursorS func =
+  modifyMReportCursorMS $ \case
+    Nothing -> pure Nothing
+    Just rc -> Just <$> func rc
 
-modifySmosFileEditorCursorS :: (SmosFileEditorCursor -> SmosM SmosFileEditorCursor) -> SmosM ()
-modifySmosFileEditorCursorS func = modifyEditorCursorSumS $ \ecs -> case ecs of
-  EditorCursorFileSelected sfec -> EditorCursorFileSelected <$> func sfec
-  _ -> pure ecs
-
-modifyEditorCursorSumS :: (EditorCursorSum -> SmosM EditorCursorSum) -> SmosM ()
-modifyEditorCursorSumS func = modifyEditorCursorS $ \ec -> do
-  ecs' <- func $ editorCursorSum ec
-  pure $ ec {editorCursorSum = ecs'}
+modifyMReportCursorMS :: (Maybe ReportCursor -> SmosM (Maybe ReportCursor)) -> SmosM ()
+modifyMReportCursorMS func = modifyEditorCursorS $ editorCursorReportCursorL func
 
 modifyEditorCursorM :: (EditorCursor -> Maybe EditorCursor) -> SmosM ()
 modifyEditorCursorM func = modifyEditorCursor $ \ec -> fromMaybe ec $ func ec

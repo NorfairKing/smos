@@ -93,16 +93,15 @@ browserEnter =
     { actionName = "browserEnter",
       actionFunc = do
         ss <- get
-        let ecs = editorCursorSum $ smosStateCursor ss
-        case ecs of
-          EditorCursorBrowserSelected dfc ->
+        case editorCursorBrowserCursor $ smosStateCursor ss of
+          Just dfc ->
             case fileBrowserSelected dfc of
               Nothing -> pure ()
               Just (_, _, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
               Just (base, rd, FodFile rf ()) -> do
                 let path = base </> rd </> rf
                 switchToFile path
-          _ -> pure (),
+          Nothing -> pure (),
       actionDescription = "Enter the file if a file is selected, toggle collapsing the directory if a directory is selected"
     }
 
@@ -125,7 +124,7 @@ selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =
   Action
     { actionName = ActionName $ "selectBrowser" <> dirName,
-      actionFunc = modifyEditorCursorSumS $ \ecs -> do
+      actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         closeCurrentFile
         src <- asks configReportConfig
@@ -134,13 +133,18 @@ selectBrowserHelper dirName dirFunc =
         -- We don't want to move the cursor if the directory hasn't changed.
         -- We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
         -- but even then we shouldn't because the syncing might not have happned soon enough.
-        let dfc = case ecs of
-              EditorCursorBrowserSelected dfc'' ->
+        let dfc = case editorCursorBrowserCursor ec of
+              Just dfc'' ->
                 if rebuildFileBrowserCursor dfc'' == rebuildFileBrowserCursor dfc'
                   then dfc''
                   else dfc'
-              _ -> dfc'
-        pure $ EditorCursorBrowserSelected dfc,
+              Nothing -> dfc'
+        pure $
+          ec
+            { editorCursorSelection = BrowserSelected,
+              editorCursorBrowserCursor = Just dfc,
+              editorCursorFileCursor = Nothing
+            },
       actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
     }
 
