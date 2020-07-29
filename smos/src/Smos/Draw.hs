@@ -218,12 +218,11 @@ drawFileEditorCursor keyMap s SmosFileEditorCursor {..} = do
     Just sfc -> drawSmosFileCursor s sfc
   let heading =
         hBox
-          [ drawFilePath smosFileEditorPath,
-            str
-              " | ",
+          [ str "Editor: ",
+            drawFilePath smosFileEditorPath,
             if smosFileEditorUnsavedChanges
-              then withAttr unsavedAttr (str "[+]")
-              else withAttr savedAttr (str "[-]")
+              then withAttr unsavedAttr (str " [+]")
+              else emptyWidget
           ]
   pure $ withHeading heading w
 
