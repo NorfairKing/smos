@@ -225,15 +225,13 @@ defaultBrowserKeyMap =
       exactChar 'j' browserSelectNext,
       exactKey KUp browserSelectPrev,
       exactChar 'k' browserSelectPrev,
-      exactChar 'q' selectEditor,
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
       exactKey KBackTab browserToggleCollapseRecursively,
       exactString "ded" browserRemoveEmptyDir,
       exactChar 'a' browserArchive,
       exactChar 'u' browserUndo,
-      exactChar 'r' browserRedo,
-      exactKey KEsc selectEditor
+      exactChar 'r' browserRedo
     ]
 
 defaultReportsKeyMap :: ReportsKeyMap
@@ -245,12 +243,10 @@ defaultReportsKeyMap =
             exactChar 'k' prevNextAction,
             exactKey KDown nextNextAction,
             exactChar 'j' nextNextAction,
-            exactKey KEsc selectEditor,
             exactKey KHome firstNextAction,
             exactString "gg" firstNextAction,
             exactKey KEnd lastNextAction,
             exactChar 'G' lastNextAction,
-            exactChar 'q' selectEditor,
             exactKey KEnter enterNextActionFile,
             exactChar '?' selectHelp,
             exactChar '/' selectNextActionFilter
@@ -260,8 +256,7 @@ defaultReportsKeyMap =
           [ anyChar insertNextActionFilter,
             exactKey KEnter selectNextActionReport,
             exactKey KBS removeNextActionFilter,
-            exactKey KDel deleteNextActionFilter,
-            exactKey KEsc selectEditor
+            exactKey KDel deleteNextActionFilter
           ]
     }
 
@@ -279,15 +274,15 @@ defaultHelpKeyMap =
             exactKey KEnd helpEnd,
             exactChar 'G' helpEnd,
             exactChar '/' helpSelectSearch,
-            exactKey KEsc selectEditor,
-            exactChar 'q' selectEditor
+            exactKey KEsc unselectHelp,
+            exactChar 'q' unselectHelp
           ],
       helpKeyMapSearchMatchers =
         listMatchers
           [ anyChar helpInsert,
             exactKey KBS helpRemove,
             exactKey KDel helpDelete,
-            exactKey KEsc selectEditor,
+            exactKey KEsc unselectHelp,
             exactKey KEnter helpSelectHelp
           ]
     }

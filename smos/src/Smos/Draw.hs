@@ -48,55 +48,62 @@ import Smos.Undo
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw SmosConfig {..} ss@SmosState {..} =
-  let helpCursorWidget =
-        drawHelpCursor configKeyMap (selectWhen HelpSelected) editorCursorHelpCursor
-      fileCursorWidget = drawFileEditorCursor (selectWhen FileSelected) editorCursorFileEditorCursor
-      browserCursorWidget =
-        withHeading (str "File Browser") $
-          maybe
-            (drawInfo configKeyMap)
-            (drawFileBrowserCursor (selectWhen BrowserSelected))
-            editorCursorBrowserCursor
-      reportCursorWidget =
-        withHeading (str "Next Action Report") $
-          maybe
-            (str "empty report")
-            (drawReportCursor (selectWhen ReportSelected))
-            editorCursorReportCursor
-      mainCursorWidget =
-        case editorCursorSelection of
-          FileSelected -> fileCursorWidget
-          BrowserSelected -> browserCursorWidget
-          ReportSelected -> reportCursorWidget
-          HelpSelected -> helpCursorWidget
-      debugWidget = [drawDebug ss | editorCursorDebug]
-      baseWidget = [vBox $ mainCursorWidget : debugWidget]
-   in baseWidget
-  where
-    EditorCursor {..} = smosStateCursor
-    selectWhen :: EditorSelection -> Select
-    selectWhen ecs =
-      if ecs == editorCursorSelection
-        then MaybeSelected
-        else NotSelected
-    withHeading :: Widget n -> Widget n -> Widget n
-    withHeading hw w =
-      let ts =
-            if smosStateUnsavedChanges
-              then str " | " <+> withAttr unsavedAttr (str "[+]")
-              else emptyWidget
-       in vBox
-            [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
-    drawFileEditorCursor :: Select -> SmosFileEditorCursor -> Widget ResourceName
-    drawFileEditorCursor s SmosFileEditorCursor {..} =
-      withHeading (forceAttr selectedAttr $ drawFilePath smosFileEditorCursorPath) $
-        maybe
-          (drawInfo configKeyMap)
-          (drawFileCursor s)
-          (historyPresent smosFileEditorCursorHistory)
-    drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
-    drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
+smosDraw SmosConfig {..} ss@SmosState {..} = undefined
+
+--  let helpCursorWidget =
+--        drawHelpCursor configKeyMap (selectWhen HelpSelected) editorCursorHelpCursor
+--      fileCursorWidget = drawFileEditorCursor (selectWhen FileSelected) editorCursorFileEditorCursor
+--      browserCursorWidget =
+--        withHeading (str "File Browser") $
+--          maybe
+--            (drawInfo configKeyMap)
+--            (drawFileBrowserCursor (selectWhen BrowserSelected))
+--            editorCursorBrowserCursor
+--      reportCursorWidget =
+--        withHeading (str "Next Action Report") $
+--          maybe
+--            (str "empty report")
+--            (drawReportCursor (selectWhen ReportSelected))
+--            editorCursorReportCursor
+--      mainCursorWidget =
+--        case editorCursorSelection of
+--          FileSelected -> fileCursorWidget
+--          BrowserSelected -> browserCursorWidget
+--          ReportSelected -> reportCursorWidget
+--          HelpSelected -> helpCursorWidget
+--      debugWidget = [drawDebug ss | editorCursorDebug]
+--      baseWidget = [vBox $ mainCursorWidget : debugWidget]
+--   in baseWidget
+--  where
+--    EditorCursor {..} = smosStateCursor
+--    selectWhen :: EditorSelection -> Select
+--    selectWhen ecs =
+--      if ecs == editorCursorSelection
+--        then MaybeSelected
+--        else NotSelected
+--    withHeading :: Widget n -> Widget n -> Widget n
+--    withHeading hw w =
+--      let ts =
+--            if smosStateUnsavedChanges
+--              then str " | " <+> withAttr unsavedAttr (str "[+]")
+--              else emptyWidget
+--       in vBox
+--            [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
+--    drawFileEditorCursor :: Select -> SmosFileEditorCursor -> Widget ResourceName
+--    drawFileEditorCursor s SmosFileEditorCursor {..} =
+--      withHeading (forceAttr selectedAttr $ drawFilePath smosFileEditorCursorPath) $
+--        maybe
+--          (drawInfo configKeyMap)
+--          (drawFileCursor s)
+--          (historyPresent smosFileEditorCursorHistory)
+--    drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
+--    drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
+
+drawEditorCursor :: KeyMap -> EditorCursor -> Widget ResourceName
+drawEditorCursor configKeyMap EditorCursor {..} =
+  case editorCursorSelection of
+    HelpSelected -> drawHelpCursor configKeyMap MaybeSelected editorCursorHelpCursor
+    NormalSelected -> undefined
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =
@@ -215,30 +222,30 @@ drawKeyCombination = txt . renderKeyCombination
 drawHistory :: Seq KeyPress -> Widget n
 drawHistory = txtWrap . T.unwords . map renderKeyPress . toList
 
-drawDebug :: SmosState -> Widget n
-drawDebug SmosState {..} =
-  let DebugInfo {..} = smosStateDebugInfo
-   in vBox
-        [ hBorderWithLabel (str "[ Debug ]"),
-          str "Key history: " <+> drawHistory smosStateKeyHistory,
-          str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
-          case editorCursorSelection smosStateCursor of
-            FileSelected ->
-              let h = smosFileEditorCursorHistory $ editorCursorFileEditorCursor smosStateCursor
-               in vBox
-                    [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
-                      str "Redo stack length: " <+> str (show (historyRedoLength h))
-                    ]
-            BrowserSelected -> case editorCursorBrowserCursor smosStateCursor of
-              Nothing -> emptyWidget
-              Just fbc ->
-                let us = fileBrowserCursorUndoStack fbc
-                 in vBox
-                      [ str "Undo stack length: " <+> str (show (undoStackUndoLength us)),
-                        str "Redo stack length: " <+> str (show (undoStackRedoLength us))
-                      ]
-            _ -> emptyWidget
-        ]
+-- drawDebug :: SmosState -> Widget n
+-- drawDebug SmosState {..} =
+--   let DebugInfo {..} = smosStateDebugInfo
+--    in vBox
+--         [ hBorderWithLabel (str "[ Debug ]"),
+--           str "Key history: " <+> drawHistory smosStateKeyHistory,
+--           str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
+--           case editorCursorSelection smosStateCursor of
+--             FileSelected ->
+--               let h = smosFileEditorCursorHistory $ editorCursorFileEditorCursor smosStateCursor
+--                in vBox
+--                     [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
+--                       str "Redo stack length: " <+> str (show (historyRedoLength h))
+--                     ]
+--             BrowserSelected -> case editorCursorBrowserCursor smosStateCursor of
+--               Nothing -> emptyWidget
+--               Just fbc ->
+--                 let us = fileBrowserCursorUndoStack fbc
+--                  in vBox
+--                       [ str "Undo stack length: " <+> str (show (undoStackUndoLength us)),
+--                         str "Redo stack length: " <+> str (show (undoStackRedoLength us))
+--                       ]
+--             _ -> emptyWidget
+--         ]
 
 drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
 drawLastMatches Nothing = Nothing

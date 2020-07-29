@@ -281,7 +281,6 @@ runSmosM = runMkSmosM
 data SmosState
   = SmosState
       { smosStateTime :: !ZonedTime,
-        smosStateStartSmosFile :: !(Maybe SmosFile),
         smosStateCursor :: !EditorCursor,
         smosStateKeyHistory :: !(Seq KeyPress),
         smosStateAsyncs :: ![Async ()],

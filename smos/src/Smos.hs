@@ -36,33 +36,19 @@ smosWithoutRuntimeConfig sc = do
 
 startSmosOn :: Path Abs File -> SmosConfig -> IO ()
 startSmosOn p sc@SmosConfig {..} = do
-  errOrSF <- readSmosFile p
-  startF <-
-    case errOrSF of
-      Nothing -> pure Nothing
-      Just (Left err) ->
-        die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
-      Just (Right sf) -> pure $ Just sf
-  lock <- lockFile p
-  case lock of
-    Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
-    Just fl -> do
-      zt <- getZonedTime
-      let s = initState zt p fl startF
-      chan <- Brick.newBChan maxBound
-      let vtyBuilder = mkVty defaultConfig
-      initialVty <- vtyBuilder
-      Left s' <-
-        race
-          (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
-          (eventPusher chan)
-      finalWait $ smosStateAsyncs s'
-      let (path, endFile) = rebuildEditorCursor $ smosStateCursor s'
-      saveSmosFile
-        endFile
-        (smosStateStartSmosFile s')
-        path
-      unlockFile $ smosStateFileLock s'
+  s <- buildInitState p
+  chan <- Brick.newBChan maxBound
+  let vtyBuilder = mkVty defaultConfig
+  initialVty <- vtyBuilder
+  Left s' <-
+    race
+      (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
+      (eventPusher chan)
+  finalWait $ smosStateAsyncs s'
+  case editorCursorSum $ smosStateCursor s' of
+    EditorCursorFileSelected sfec -> do
+      sfec' <- smosFileEditorCursorSave sfec
+      smosFileEditorCursorClose sfec'
 
 finalWait :: [Async ()] -> IO ()
 finalWait as = do
