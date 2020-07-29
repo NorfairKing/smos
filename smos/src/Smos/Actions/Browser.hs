@@ -142,8 +142,8 @@ selectBrowserHelper dirName dirFunc =
         pure $
           ec
             { editorCursorSelection = BrowserSelected,
-              editorCursorBrowserCursor = Just dfc,
-              editorCursorFileCursor = Nothing
+              editorCursorFileCursor = Nothing,
+              editorCursorBrowserCursor = Just dfc
             },
       actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
     }
