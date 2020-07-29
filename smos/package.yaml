@@ -93,6 +93,7 @@ tests:
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - genvalidity-hspec-optics
+    - genvalidity-path
     - genvalidity-text
     - genvalidity-time
     - genvalidity-unordered-containers
