@@ -669,19 +669,16 @@ drawStateHistory (StateHistory ls)
     pure
       $ Just
       $ withAttr todoStateHistoryAttr
-      $ vBox
+      $ drawTable
       $ flip map ls
       $ \StateHistoryEntry {..} ->
-        hBox $
-          catMaybes
-            [ Just
-                $ strWrap
-                $ unwords
-                  [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
-                    "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
-                  ],
-              (str " " <+>) . drawTodoState <$> stateHistoryEntryNewState
-            ]
+        [ maybe (str " ") drawTodoState stateHistoryEntryNewState,
+          strWrap $
+            unwords
+              [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
+                "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
+              ]
+        ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
