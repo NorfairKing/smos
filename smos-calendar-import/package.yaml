@@ -33,6 +33,8 @@ library:
     - smos-report
     - text
     - time
+    - validity
+    - validity-text
     - yaml
     - yamlparse-applicative
 
@@ -51,15 +53,17 @@ tests:
     dependencies:
     - containers
     - data-default
+    - genvalidity
+    - genvalidity-hspec
+    - genvalidity-text
     - hspec
-    - iCalendar
     - iCalendar
     - mtl
     - path
     - path-io
+    - pretty-show
     - smos-calendar-import
     - smos-data
     - text
     - time
     - yamlparse-applicative
-    - pretty-show
