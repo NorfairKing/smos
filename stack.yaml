@@ -144,7 +144,7 @@ extra-deps:
   # nix-sha256: sha256:0d3aky2hr3xz7mr3vcvvsgiv4ahw8xm2k7v8aaj6lkfpzrvrbvgk
 
 - git: https://github.com/NorfairKing/validity
-  commit: 10c3b06dc45ce5edfc565abfba564140512efe92
+  commit: df818378705f681b58f0375a74d7606c865c70bb
   subdirs:
   - genvalidity
   - genvalidity-aeson

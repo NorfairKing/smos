@@ -51,6 +51,7 @@ tests:
     source-dirs: test
     build-tools: hspec-discover
     dependencies:
+    - QuickCheck
     - containers
     - data-default
     - genvalidity
