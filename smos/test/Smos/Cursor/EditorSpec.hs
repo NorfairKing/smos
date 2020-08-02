@@ -1,33 +1,25 @@
-{-# LANGUAGE TypeApplications #-}
-
 module Smos.Cursor.EditorSpec where
 
-import Smos.Cursor.Editor.Gen ()
+import Data.GenValidity.Path ()
+import Path
+import Path.IO
+import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Types
 import Test.Hspec
+import Test.Hspec.QuickCheck
 import Test.Validity
-import Test.Validity.Optics
 
 spec :: Spec
-spec = do
-  genValidSpec @EditorCursor
-  describe "makeEditorCursor"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids makeEditorCursor
-  describe "rebuildEditorCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildEditorCursor
-    it "is the inverse of makeFileCursor" $
-      inverseFunctionsOnValid makeEditorCursor rebuildEditorCursor
-  describe "editorCursorSmosFileCursorL" $ lensSpecOnValid editorCursorSmosFileCursorHistoryL
-  describe "editorCursorSelectionL" $ lensSpecOnValid editorCursorSelectionL
-  describe "editorCursorDebugL" $ lensSpecOnValid editorCursorDebugL
-  describe "editorCursorShowDebug"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids editorCursorShowDebug
-  describe "editorCursorHideDebug"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids editorCursorHideDebug
-  describe "editorCursorToggleDebug"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids editorCursorToggleDebug
+spec =
+  modifyMaxShrinks (const 1) $ do
+    describe "startEditorCursor" $ it "works on any valid smos file" $ forAllValid $ \sf ->
+      forAllValid $ \rp ->
+        withSystemTempDir "smos-test" $ \tdir -> do
+          let p = tdir </> rp
+          writeSmosFile p sf
+          errOrCursor <- startEditorCursor p
+          case errOrCursor of
+            Nothing -> expectationFailure "Locking should have been possible"
+            Just (Left err) -> expectationFailure err
+            Just (Right _) -> pure ()

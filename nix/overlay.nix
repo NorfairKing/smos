@@ -39,11 +39,13 @@ let
         # filepaths and that fails for some reason that I cannot investigate
         # because I don't own any apple products.
         doCheck = true;
-        packages.smos-cursor-gen.doCheck = !isMacos;
         packages.smos-archive.doCheck = !isMacos;
+        packages.smos-cursor-gen.doCheck = !isMacos;
         packages.smos-query.doCheck = !isMacos;
         packages.smos-report-gen.doCheck = !isMacos;
+        packages.smos-scheduler.doCheck = !isMacos;
         packages.smos-sync-client-gen.doCheck = !isMacos;
+        packages.smos.doCheck = !isMacos;
 
       }
       # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.

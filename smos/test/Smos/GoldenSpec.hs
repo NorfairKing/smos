@@ -19,6 +19,7 @@ import Data.Yaml
 import Data.Yaml.Builder as Yaml
 import Smos
 import Smos.App
+import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Types
 import TestImport
@@ -42,9 +43,9 @@ spec = do
 
 data GoldenTestCase
   = GoldenTestCase
-      { goldenTestCaseBefore :: SmosFile,
+      { goldenTestCaseBefore :: Maybe SmosFile,
         goldenTestCaseCommands :: [Command],
-        goldenTestCaseAfter :: SmosFile
+        goldenTestCaseAfter :: Maybe SmosFile
       }
   deriving (Show, Generic)
 
@@ -53,7 +54,7 @@ instance Validity GoldenTestCase
 instance FromJSON GoldenTestCase where
   parseJSON =
     withObject "GoldenTestCase" $ \o ->
-      GoldenTestCase <$> o .: "before" <*> o .: "commands" <*> o .: "after"
+      GoldenTestCase <$> o .:? "before" <*> o .: "commands" <*> o .:? "after"
 
 makeTestcases :: [Path Abs File] -> Spec
 makeTestcases = mapM_ makeTestcase
@@ -62,7 +63,7 @@ makeTestcase :: Path Abs File -> Spec
 makeTestcase p =
   it (fromAbsFile p) $ do
     gtc@GoldenTestCase {..} <- decodeFileThrow (fromAbsFile p)
-    run <- runCommandsOn (Just goldenTestCaseBefore) goldenTestCaseCommands
+    run <- runCommandsOn goldenTestCaseBefore goldenTestCaseCommands
     shouldBeValid gtc
     expectResults p goldenTestCaseBefore goldenTestCaseAfter run
 
@@ -109,48 +110,60 @@ parseCommand t =
 
 data CommandsRun
   = CommandsRun
-      { intermidiaryResults :: [(Command, SmosFile)],
-        finalResult :: SmosFile
+      { intermidiaryResults :: [(Command, Maybe SmosFile)],
+        finalResult :: Maybe SmosFile
       }
 
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
-  withSystemTempFile "smos-golden" $ \af _ -> do
-    zt <- getZonedTime
-    mfl <- lockFile af
-    case mfl of
+  withSystemTempDir "smos-golden" $ \tdir -> do
+    af <- resolveFile tdir "example.smos"
+    mapM_ (writeSmosFile af) mstart
+    mErrOrEC <- startEditorCursor af
+    case mErrOrEC of
       Nothing -> die "Could not lock pretend file."
-      Just fl -> do
-        let startState =
-              initStateWithCursor zt af fl $ makeEditorCursorClosed $ fromMaybe emptySmosFile mstart
-        (fs, rs) <- foldM go (startState, []) commands
-        let cr =
-              CommandsRun
-                { intermidiaryResults = reverse rs,
-                  finalResult = rebuildEditorCursor $ smosStateCursor fs
-                }
-        unlockFile fl
-        pure cr
+      Just errOrEC -> case errOrEC of
+        Left err -> die $ "Not a smos file: " <> err
+        Right ec -> do
+          zt <- getZonedTime
+          let startState =
+                initStateWithCursor zt ec
+          (fs, rs) <- foldM go (startState, []) commands
+          pure $
+            CommandsRun
+              { intermidiaryResults = reverse rs,
+                finalResult = rebuildSmosFileEditorCursor <$> editorCursorFileCursor (smosStateCursor fs)
+              }
   where
     testConf = error "tried to access the config"
-    go :: (SmosState, [(Command, SmosFile)]) -> Command -> IO (SmosState, [(Command, SmosFile)])
+    go :: (SmosState, [(Command, Maybe SmosFile)]) -> Command -> IO (SmosState, [(Command, Maybe SmosFile)])
     go (ss, rs) c = do
       let func =
             case c of
               CommandPlain a -> actionFunc a
               CommandUsing a arg -> actionUsingFunc a arg
       let eventFunc = runSmosM testConf ss func
-      ((s, ss'), _) <-
+      (((s, ss'), _), _) <-
         runStateT
           (runReaderT (runEventM eventFunc) (error "Tried to access the brick env"))
           (error "Tried to access the brick state")
       case s of
         Stop -> failure "Premature stop"
-        Continue () -> pure (ss', (c, rebuildEditorCursor $ smosStateCursor ss') : rs)
+        Continue () ->
+          pure
+            ( ss',
+              ( c,
+                rebuildSmosFileEditorCursor
+                  <$> editorCursorFileCursor
+                    ( smosStateCursor ss'
+                    )
+              )
+                : rs
+            )
 
-expectResults :: Path Abs File -> SmosFile -> SmosFile -> CommandsRun -> IO ()
+expectResults :: Path Abs File -> Maybe SmosFile -> Maybe SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =
-  unless (finalResult `eqForTest` af)
+  unless (finalResult `mEqForTest` af)
     $ failure
     $ unlines
     $ concat
@@ -181,9 +194,15 @@ expectResults p bf af CommandsRun {..} =
         ]
       ]
   where
-    go :: Command -> SmosFile -> [String]
+    go :: Command -> Maybe SmosFile -> [String]
     go c isf =
       ["After running the following command:", show c, "The file looked as follows:", ppShow isf]
+
+mEqForTest :: Maybe SmosFile -> Maybe SmosFile -> Bool
+mEqForTest m1 m2 = case (m1, m2) of
+  (Nothing, Nothing) -> True
+  (Just f1, Just f2) -> eqForTest f1 f2
+  _ -> False
 
 eqForTest :: SmosFile -> SmosFile -> Bool
 eqForTest = forestEqForTest `on` smosFileForest

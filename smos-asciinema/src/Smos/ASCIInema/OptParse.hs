@@ -12,7 +12,9 @@ import qualified Env
 import Options.Applicative
 import Path.IO
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.WindowSize
 import qualified System.Environment as System
+import System.Posix.IO (stdOutput)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -27,6 +29,9 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   recordSetSpecFile <- resolveFile' recordFlagSpecFile
   recordSetOutputFile <- resolveFile' recordFlagOutputFile
   recordSetAsciinemaConfigDir <- mapM resolveDir' envAsciinemaConfigDir
+  (cols, rows) <- getWindowSize stdOutput
+  let recordSetRows = fromMaybe rows recordFlagRows
+  let recordSetColumns = fromMaybe cols recordFlagColumns
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -90,6 +95,8 @@ parseCommandRecord = info parser modifier
                       ]
                   )
                 <*> parseWaitFlag
+                <*> optional (option auto (mconcat [help "The number of columns", metavar "COLUMNS", long "columns"]))
+                <*> optional (option auto (mconcat [help "The number of rows", metavar "ROWS", long "rows"]))
             )
 
 parseWaitFlag :: Parser (Maybe Double)

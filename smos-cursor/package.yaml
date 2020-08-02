@@ -20,6 +20,7 @@ library:
   - cursor-fuzzy-time
   - deepseq
   - dirforest
+  - filelock
   - fuzzy-time
   - microlens
   - path
@@ -29,5 +30,6 @@ library:
   - text
   - time
   - validity
+  - validity-path
   - validity-text
   - validity-time

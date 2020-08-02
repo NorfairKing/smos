@@ -14,18 +14,25 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   build-tools: autoexporter
+  c-sources:
+    - cbits/window_size.c
   dependencies:
     - bytestring
     - containers
+    - directory
+    - dirforest
     - envparse
+    - filepath
     - normaldistribution
     - optparse-applicative
     - path
     - path-io
+    - random
     - smos-report
     - text
     - time
     - typed-process
+    - unix
     - validity
     - yaml
     - yamlparse-applicative

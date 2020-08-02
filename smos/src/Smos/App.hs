@@ -2,7 +2,7 @@
 
 module Smos.App
   ( mkSmosApp,
-    initState,
+    buildInitState,
     initStateWithCursor,
   )
 where
@@ -16,11 +16,11 @@ import qualified Graphics.Vty as Vty
 import Import
 import Smos.Actions.File
 import Smos.Activation
-import Smos.Data
 import Smos.Draw
 import Smos.Keys
 import Smos.Style
 import Smos.Types
+import System.Exit
 
 mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
 mkSmosApp sc@SmosConfig {..} =
@@ -46,13 +46,14 @@ smosHandleEvent cf s e = do
                  in recordKeyPress kp
               _ -> pure ()
           KeyActivated func_ -> do
+            modify (\s_ -> s_ {smosStateErrorMessages = []}) -- Clear error messages only on an activated keypress
             func_
             clearKeyHistory
           EventActivated func_ -> func_
-  (mkHalt, s') <- runSmosM cf s func
+  ((mkHalt, s'), errs) <- runSmosM cf s func
   case mkHalt of
     Stop -> B.halt s'
-    Continue () -> B.continue s'
+    Continue () -> B.continue (s' {smosStateErrorMessages = smosStateErrorMessages s' ++ errs})
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
@@ -112,32 +113,24 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-initState :: ZonedTime -> Path Abs File -> FileLock -> Maybe SmosFile -> SmosState
-initState zt p fl msf =
-  SmosState
-    { smosStateTime = zt,
-      smosStateStartSmosFile = msf,
-      smosStateFilePath = p,
-      smosStateFileLock = fl,
-      smosStateCursor = makeEditorCursor $ fromMaybe emptySmosFile msf,
-      smosStateKeyHistory = Empty,
-      smosStateAsyncs = [],
-      smosStateUnsavedChanges = False,
-      smosStateLastSaved = zonedTimeToUTC zt,
-      smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
-    }
+buildInitState :: Path Abs File -> IO SmosState
+buildInitState p = do
+  mErrOrEC <- startEditorCursor p
+  case mErrOrEC of
+    Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
+    Just errOrEC -> case errOrEC of
+      Left err -> die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
+      Right ec -> do
+        zt <- getZonedTime
+        pure $ initStateWithCursor zt ec
 
-initStateWithCursor :: ZonedTime -> Path Abs File -> FileLock -> EditorCursor -> SmosState
-initStateWithCursor zt p fl ec =
+initStateWithCursor :: ZonedTime -> EditorCursor -> SmosState
+initStateWithCursor zt ec =
   SmosState
     { smosStateTime = zt,
-      smosStateStartSmosFile = Just $ rebuildEditorCursor ec,
-      smosStateFilePath = p,
-      smosStateFileLock = fl,
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],
-      smosStateUnsavedChanges = False,
-      smosStateLastSaved = zonedTimeToUTC zt,
+      smosStateErrorMessages = [],
       smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
     }

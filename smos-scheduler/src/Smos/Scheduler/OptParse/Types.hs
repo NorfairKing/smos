@@ -8,12 +8,13 @@
 module Smos.Scheduler.OptParse.Types where
 
 import Control.Applicative
-import Data.Aeson
+import Data.Aeson hiding ((<?>))
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Tree
@@ -171,8 +172,17 @@ newtype ScheduleTemplate
 
 instance Validity ScheduleTemplate
 
+instance ToJSON ScheduleTemplate where
+  toJSON = toJSON . ForYaml . scheduleTemplateForest
+
 instance FromJSON ScheduleTemplate where
   parseJSON v = ScheduleTemplate . unForYaml <$> parseJSON v
+
+instance ToJSON (ForYaml (Tree EntryTemplate)) where
+  toJSON (ForYaml Node {..}) =
+    if null subForest
+      then toJSON rootLabel
+      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
 
 instance FromJSON (ForYaml (Tree EntryTemplate)) where
   parseJSON v =
@@ -215,6 +225,17 @@ newEntryTemplate h =
       entryTemplateTags = S.empty
     }
 
+instance ToJSON EntryTemplate where
+  toJSON EntryTemplate {..} =
+    object
+      [ "header" .= entryTemplateHeader,
+        "contents" .= entryTemplateContents,
+        "timestamps" .= entryTemplateTimestamps,
+        "properties" .= entryTemplateProperties,
+        "state" .= entryTemplateState,
+        "tags" .= entryTemplateTags
+      ]
+
 instance FromJSON EntryTemplate where
   parseJSON v =
     ( do
@@ -222,7 +243,9 @@ instance FromJSON EntryTemplate where
         pure $ newEntryTemplate h
     )
       <|> ( withObject "EntryTemplate" $ \o ->
-              EntryTemplate <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
+              EntryTemplate
+                <$> o .:? "header" .!= emptyHeader
+                <*> o .:? "contents"
                 <*> o .:? "timestamps" .!= M.empty
                 <*> o .:? "properties" .!= M.empty
                 <*> o .:? "state" .!= Nothing
@@ -230,43 +253,38 @@ instance FromJSON EntryTemplate where
           )
         v
 
+instance YamlSchema EntryTemplate where
+  yamlSchema =
+    alternatives
+      [ newEntryTemplate <$> (yamlSchema <?> "A header-only entry template"),
+        objectParser "EntryTemplate" $
+          EntryTemplate
+            <$> optionalFieldWithDefault' "header" emptyHeader
+            <*> optionalField' "contents"
+            <*> optionalFieldWithDefault' "timestamps" M.empty
+            <*> optionalFieldWithDefault' "properties" M.empty
+            <*> optionalFieldWithDefault' "state" Nothing
+            <*> optionalFieldWithDefault' "tags" S.empty
+      ]
+
 newtype TimestampTemplate
   = TimestampTemplate
       { timestampTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity TimestampTemplate
 
-newtype StateHistoryTemplate
-  = StateHistoryTemplate
-      { stateHistoryEntryTemplates :: [StateHistoryEntryTemplate]
-      }
-  deriving (Show, Eq, Generic, FromJSON)
-
-instance Validity StateHistoryTemplate
-
-emptyStateHistoryTemplate :: StateHistoryTemplate
-emptyStateHistoryTemplate = StateHistoryTemplate {stateHistoryEntryTemplates = []}
-
-data StateHistoryEntryTemplate
-  = StateHistoryEntryTemplate
-      { stateHistoryEntryTemplateNewState :: Maybe TodoState,
-        stateHistoryEntryTemplateTimestamp :: UTCTimeTemplate
-      }
-  deriving (Show, Eq, Generic)
-
-instance Validity StateHistoryEntryTemplate
-
-instance FromJSON StateHistoryEntryTemplate where
-  parseJSON =
-    withObject "StateHistoryEntryTemplate" $ \o ->
-      StateHistoryEntryTemplate <$> o .: "new-state" <*> o .: "timestamp"
+instance YamlSchema TimestampTemplate where
+  yamlSchema = TimestampTemplate <$> yamlSchema
 
 newtype UTCTimeTemplate
   = UTCTimeTemplate
       { utcTimeTemplateText :: Text
       }
-  deriving (Show, Eq, Ord, Generic, FromJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity UTCTimeTemplate
+
+instance YamlSchema UTCTimeTemplate where
+  yamlSchema = UTCTimeTemplate <$> yamlSchema

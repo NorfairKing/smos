@@ -93,19 +93,15 @@ browserEnter =
     { actionName = "browserEnter",
       actionFunc = do
         ss <- get
-        let ec = smosStateCursor ss
-        case editorCursorSelection ec of
-          BrowserSelected ->
-            case editorCursorBrowserCursor ec of
+        case editorCursorBrowserCursor $ smosStateCursor ss of
+          Just dfc ->
+            case fileBrowserSelected dfc of
               Nothing -> pure ()
-              Just dfc -> case fileBrowserSelected dfc of
-                Nothing -> pure ()
-                Just (_, _, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
-                Just (base, rd, FodFile rf ()) -> do
-                  saveCurrentSmosFile
-                  let path = base </> rd </> rf
-                  switchToFile path
-          _ -> pure (),
+              Just (_, _, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
+              Just (base, rd, FodFile rf ()) -> do
+                let path = base </> rd </> rf
+                switchToFile path
+          Nothing -> pure (),
       actionDescription = "Enter the file if a file is selected, toggle collapsing the directory if a directory is selected"
     }
 
@@ -129,21 +125,25 @@ selectBrowserHelper dirName dirFunc =
   Action
     { actionName = ActionName $ "selectBrowser" <> dirName,
       actionFunc = modifyEditorCursorS $ \ec -> do
+        saveCurrentSmosFile
+        closeCurrentFile
         src <- asks configReportConfig
         wd <- liftIO $ dirFunc src
         dfc' <- startFileBrowserCursor wd
         -- We don't want to move the cursor if the directory hasn't changed.
-        -- TODO: We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
+        -- We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
+        -- but even then we shouldn't because the syncing might not have happned soon enough.
         let dfc = case editorCursorBrowserCursor ec of
-              Nothing -> dfc'
               Just dfc'' ->
                 if rebuildFileBrowserCursor dfc'' == rebuildFileBrowserCursor dfc'
                   then dfc''
                   else dfc'
-        pure
+              Nothing -> dfc'
+        pure $
           ec
-            { editorCursorBrowserCursor = Just dfc,
-              editorCursorSelection = BrowserSelected
+            { editorCursorSelection = BrowserSelected,
+              editorCursorFileCursor = Nothing,
+              editorCursorBrowserCursor = Just dfc
             },
       actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
     }

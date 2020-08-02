@@ -29,6 +29,11 @@ stack install smos-single
 stack install smos-sync-client
 ```
 
+#### Troubleshooting Autoconf
+
+You may get an error about `autoreconf` not being available if `autoconf` is not installed.
+Make sure that you have `autoreconf` on your path.
+
 #### Troubleshooting on Arch linux
 
 *Do not install `stack` or any other haskell packages using pacman.*

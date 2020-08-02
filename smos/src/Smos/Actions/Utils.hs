@@ -42,6 +42,7 @@ import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
+import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.StateHistory
 import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
@@ -263,7 +264,18 @@ modifyMFileCursorMHistory :: (History (Maybe SmosFileCursor) -> History (Maybe S
 modifyMFileCursorMHistory func = modifyMFileCursorMHistoryS $ pure . func
 
 modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History (Maybe SmosFileCursor))) -> SmosM ()
-modifyMFileCursorMHistoryS func = modifyEditorCursorS $ editorCursorSmosFileCursorHistoryL func
+modifyMFileCursorMHistoryS func = modifySmosFileEditorCursorS $ smosFileEditorCursorHistoryL func
+
+modifySmosFileEditorCursorS :: (SmosFileEditorCursor -> SmosM SmosFileEditorCursor) -> SmosM ()
+modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS $ mapM $ \sfec -> do
+  sfec' <- func sfec
+  pure $
+    sfec'
+      { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
+      }
+
+modifyMSmosFileEditorCursorMS :: (Maybe SmosFileEditorCursor -> SmosM (Maybe SmosFileEditorCursor)) -> SmosM ()
+modifyMSmosFileEditorCursorMS func = modifyEditorCursorS $ editorCursorFileCursorL func
 
 modifyFileBrowserCursorM :: (FileBrowserCursor -> Maybe FileBrowserCursor) -> SmosM ()
 modifyFileBrowserCursorM func = modifyFileBrowserCursor $ \hc -> fromMaybe hc $ func hc
@@ -337,10 +349,5 @@ modifyEditorCursorS func = do
   ss <- get
   let msc = smosStateCursor ss
   msc' <- func msc
-  let ss' =
-        ss
-          { smosStateCursor = msc',
-            smosStateUnsavedChanges =
-              smosStateUnsavedChanges ss || rebuildEditorCursor msc /= rebuildEditorCursor msc'
-          }
+  let ss' = ss {smosStateCursor = msc'}
   put ss'

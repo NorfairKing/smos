@@ -225,7 +225,6 @@ defaultBrowserKeyMap =
       exactChar 'j' browserSelectNext,
       exactKey KUp browserSelectPrev,
       exactChar 'k' browserSelectPrev,
-      exactChar 'q' selectEditor,
       exactChar '\t' browserToggleCollapse,
       exactKey KEnter browserEnter,
       exactKey KBackTab browserToggleCollapseRecursively,
@@ -233,7 +232,8 @@ defaultBrowserKeyMap =
       exactChar 'a' browserArchive,
       exactChar 'u' browserUndo,
       exactChar 'r' browserRedo,
-      exactKey KEsc selectEditor
+      exactKey KEsc selectEditor,
+      exactChar 'q' stop
     ]
 
 defaultReportsKeyMap :: ReportsKeyMap
@@ -245,15 +245,15 @@ defaultReportsKeyMap =
             exactChar 'k' prevNextAction,
             exactKey KDown nextNextAction,
             exactChar 'j' nextNextAction,
-            exactKey KEsc selectEditor,
             exactKey KHome firstNextAction,
             exactString "gg" firstNextAction,
             exactKey KEnd lastNextAction,
             exactChar 'G' lastNextAction,
-            exactChar 'q' selectEditor,
             exactKey KEnter enterNextActionFile,
             exactChar '?' selectHelp,
-            exactChar '/' selectNextActionFilter
+            exactChar '/' selectNextActionFilter,
+            exactKey KEsc selectEditor,
+            exactChar 'q' selectEditor
           ],
       reportsKeymapNextActionReportFilterMatchers =
         listMatchers

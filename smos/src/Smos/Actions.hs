@@ -108,7 +108,7 @@ selectEditor :: Action
 selectEditor =
   Action
     { actionName = "selectEditor",
-      actionFunc = modifyEditorCursor editorCursorSwitchToFile,
+      actionFunc = modifyEditorCursor $ editorCursorSelect FileSelected,
       actionDescription = "Hide the help screen"
     }
 

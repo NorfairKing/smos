@@ -9,7 +9,7 @@ before:
   - e
   - f
 commands:
-- forestToggleCollapse
+- forestMoveToFirst
 - forestMoveDown
 - forestToggleCollapse
 - forestMoveDown

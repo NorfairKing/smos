@@ -1,27 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Actions.File
   ( saveFile,
     saveCurrentSmosFile,
-    saveSmosFile,
+    closeCurrentFile,
     switchToFile,
     switchToCursor,
-    lockFile,
-    unlockFile,
-    FL.FileLock,
   )
 where
 
-import Data.Maybe
-import Data.Time
 import Path
-import Path.IO
-import Smos.Cursor.SmosFile
-import Smos.Data
-import Smos.History
+import Smos.Actions.Utils
+import Smos.Cursor.SmosFileEditor
 import Smos.Types
-import qualified System.FileLock as FL
 
 saveFile :: Action
 saveFile =
@@ -32,68 +23,42 @@ saveFile =
     }
 
 saveCurrentSmosFile :: SmosM ()
-saveCurrentSmosFile = do
-  SmosState {..} <- get
-  let sf' = rebuildEditorCursor smosStateCursor
-  liftIO $ saveSmosFile sf' smosStateStartSmosFile smosStateFilePath
-  now <- liftIO getCurrentTime
-  modify
-    ( \ss ->
-        ss
-          { smosStateStartSmosFile = Just sf',
-            smosStateUnsavedChanges = False,
-            smosStateLastSaved = now
-          }
-    )
-
-saveSmosFile :: SmosFile -> Maybe SmosFile -> Path Abs File -> IO ()
-saveSmosFile sf' smosStateStartSmosFile smosStateFilePath = do
-  e <- doesFileExist smosStateFilePath
-  when (e && isNothing smosStateStartSmosFile) $ removeFile smosStateFilePath
-  ( case smosStateStartSmosFile of
-      Nothing -> unless (sf' == emptySmosFile)
-      Just sf'' -> unless (sf'' == sf')
-    )
-    $ do
-      ensureDir $ parent smosStateFilePath
-      writeSmosFile smosStateFilePath sf'
+saveCurrentSmosFile = modifyMSmosFileEditorCursorMS $ mapM $ liftIO . smosFileEditorCursorSave
 
 switchToFile :: Path Abs File -> SmosM ()
-switchToFile path = do
-  maybeErrOrSmosFile <- liftIO $ readSmosFile path
-  case maybeErrOrSmosFile of
-    Nothing -> pure () -- Do nothing if the file doesn't exist
-    Just errOrSmosFile -> case errOrSmosFile of
-      Left _ -> pure () -- Do nothing if the file is not a smos file
-      Right sf -> do
-        let msfc = smosFileCursorReadyForStartup <$> makeSmosFileCursorEntirely sf
-        void $ switchToCursor path msfc
+switchToFile path = modifyEditorCursorS $ \ec -> do
+  if (smosFileEditorPath <$> editorCursorFileCursor ec) == Just path
+    then pure ec {editorCursorSelection = FileSelected} -- Just don't change anything
+    else do
+      mErrOrSmec <- startSmosFileEditorCursor path
+      case mErrOrSmec of
+        Nothing -> do
+          addErrorMessage "Unable to get a lock on the file to switch to"
+          pure ec -- Couldn't get a lock, do nothing
+        Just errOrSmec ->
+          case errOrSmec of
+            Left _ -> do
+              addErrorMessage "The file to switch to is not a valid smos file"
+              pure ec -- Do nothing if the file is not a smos file
+            Right smec -> do
+              saveCurrentSmosFile
+              closeCurrentFile
+              pure $ ec {editorCursorSelection = FileSelected, editorCursorFileCursor = Just smec}
 
-switchToCursor :: Path Abs File -> Maybe SmosFileCursor -> SmosM (Maybe FL.FileLock)
-switchToCursor path msfc = do
-  ss <- get
-  mfl <-
-    liftIO $ do
-      unlockFile $ smosStateFileLock ss
-      lockFile path
-  forM_ mfl $ \fl -> do
-    now <- liftIO getCurrentTime
-    put $
-      ss
-        { smosStateStartSmosFile = rebuildSmosFileCursorEntirely <$> msfc,
-          smosStateFilePath = path,
-          smosStateFileLock = fl,
-          smosStateCursor =
-            editorCursorSwitchToFile (smosStateCursor ss) {editorCursorFileCursor = startingHistory msfc},
-          smosStateUnsavedChanges = False,
-          smosStateLastSaved = now
-        }
-  pure mfl
+switchToCursor :: Path Abs File -> Maybe SmosFileCursor -> SmosM ()
+switchToCursor path msfc = modifyEditorCursorS $ \ec -> do
+  saveCurrentSmosFile
+  closeCurrentFile
+  mSmec <- startSmosFileEditorCursorWithCursor path msfc
+  case mSmec of
+    Nothing -> do
+      addErrorMessage "Unable to get a lock on the file to switch to"
+      pure ec -- Couldn't get a lock, do nothing
+    Just smec -> do
+      pure $ ec {editorCursorSelection = FileSelected, editorCursorFileCursor = Just smec}
 
-lockFile :: Path Abs File -> IO (Maybe FL.FileLock)
-lockFile p = do
-  ensureDir $ parent p
-  FL.tryLockFile (fromAbsFile p) FL.Exclusive
-
-unlockFile :: FL.FileLock -> IO ()
-unlockFile = FL.unlockFile
+-- Note that this leaves the file cursor invalidated, so it must not end up in the editor cursor sum after this.
+closeCurrentFile :: SmosM ()
+closeCurrentFile = modifySmosFileEditorCursorS $ \sfec -> do
+  liftIO $ smosFileEditorCursorClose sfec
+  pure sfec

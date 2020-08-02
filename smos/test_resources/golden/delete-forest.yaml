@@ -3,6 +3,7 @@ before:
   - world
   entry: hello
 commands:
+- forestMoveToFirst
 - forestDeleteCurrentEntry
 after:
 - world

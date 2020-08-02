@@ -29,13 +29,13 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
-import qualified Data.Text as T
 import Data.Time
 import Import hiding ((<+>))
 import Lens.Micro
 import Smos.Actions
 import Smos.Cursor.Collapse
 import Smos.Cursor.FileBrowser
+import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.Tag
 import Smos.Data
 import Smos.Draw.Base
@@ -44,56 +44,32 @@ import Smos.History
 import Smos.Keys
 import Smos.Style
 import Smos.Types
-import Smos.Undo
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw SmosConfig {..} ss@SmosState {..} =
-  let helpCursorWidget =
-        drawHelpCursor configKeyMap (selectWhen HelpSelected) editorCursorHelpCursor
-      withHeading hw w =
-        let ts =
-              if smosStateUnsavedChanges
-                then str " | " <+> withAttr unsavedAttr (str "[+]")
-                else emptyWidget
-         in vBox
-              [hBox [str "──[ ", withAttr selectedAttr hw, ts, str " ]──", vLimit 1 $ fill '─'], w]
-      fileCursorWidget =
-        withHeading (forceAttr selectedAttr $ drawFilePath smosStateFilePath) $
-          maybe
-            (drawInfo configKeyMap)
-            (drawFileCursor $ selectWhen FileSelected)
-            (historyPresent editorCursorFileCursor)
-      browserCursorWidget =
-        withHeading (str "File Browser") $
-          maybe
-            (drawInfo configKeyMap)
-            (drawFileBrowserCursor (selectWhen BrowserSelected))
-            editorCursorBrowserCursor
-      reportCursorWidget =
-        withHeading (str "Next Action Report") $
-          maybe
-            (str "empty report")
-            (drawReportCursor (selectWhen ReportSelected))
-            editorCursorReportCursor
-      mainCursorWidget =
-        case editorCursorSelection of
-          FileSelected -> fileCursorWidget
-          BrowserSelected -> browserCursorWidget
-          ReportSelected -> reportCursorWidget
-          HelpSelected -> helpCursorWidget
-      debugWidget = [drawDebug ss | editorCursorDebug]
-      baseWidget = [vBox $ mainCursorWidget : debugWidget]
-   in baseWidget
-  where
-    EditorCursor {..} = smosStateCursor
-    selectWhen :: EditorSelection -> Select
-    selectWhen ecs =
-      if ecs == editorCursorSelection
-        then MaybeSelected
-        else NotSelected
-    drawFileCursor :: Select -> SmosFileCursor -> Widget ResourceName
-    drawFileCursor s = flip runReader smosStateTime . drawSmosFileCursor s
+smosDraw SmosConfig {..} SmosState {..} =
+  [ vBox
+      [ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime,
+        drawErrorMessages smosStateErrorMessages
+      ]
+  ]
+
+drawEditorCursor :: KeyMap -> EditorCursor -> Drawer
+drawEditorCursor configKeyMap EditorCursor {..} =
+  case editorCursorSelection of
+    HelpSelected -> pure $ drawHelpCursor configKeyMap MaybeSelected editorCursorHelpCursor
+    FileSelected -> case editorCursorFileCursor of
+      Nothing -> pure $ str "No file selected" -- TODO make this a nice view
+      Just sfec -> drawFileEditorCursor configKeyMap MaybeSelected sfec
+    BrowserSelected -> case editorCursorBrowserCursor of
+      Nothing -> pure $ str "No directory selected" -- TODO make this a nice view
+      Just fbc -> pure $ drawFileBrowserCursor MaybeSelected fbc
+    ReportSelected -> case editorCursorReportCursor of
+      Nothing -> pure $ str "No report selected" -- TODO make this a nice view
+      Just rc -> pure $ drawReportCursor MaybeSelected rc
+
+drawErrorMessages :: [Text] -> Widget n
+drawErrorMessages = vBox . map (withAttr errorAttr . txtWrap)
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =
@@ -209,47 +185,6 @@ drawKeyCombinations kbs =
 drawKeyCombination :: KeyCombination -> Widget n
 drawKeyCombination = txt . renderKeyCombination
 
-drawHistory :: Seq KeyPress -> Widget n
-drawHistory = txtWrap . T.unwords . map renderKeyPress . toList
-
-drawDebug :: SmosState -> Widget n
-drawDebug SmosState {..} =
-  let DebugInfo {..} = smosStateDebugInfo
-   in vBox
-        [ hBorderWithLabel (str "[ Debug ]"),
-          str "Key history: " <+> drawHistory smosStateKeyHistory,
-          str "Last match: " <+> fromMaybe emptyWidget (drawLastMatches debugInfoLastMatches),
-          case editorCursorSelection smosStateCursor of
-            FileSelected ->
-              let h = editorCursorFileCursor smosStateCursor
-               in vBox
-                    [ str "Undo stack length: " <+> str (show (historyUndoLength h)),
-                      str "Redo stack length: " <+> str (show (historyRedoLength h))
-                    ]
-            BrowserSelected -> case editorCursorBrowserCursor smosStateCursor of
-              Nothing -> emptyWidget
-              Just fbc ->
-                let us = fileBrowserCursorUndoStack fbc
-                 in vBox
-                      [ str "Undo stack length: " <+> str (show (undoStackUndoLength us)),
-                        str "Redo stack length: " <+> str (show (undoStackRedoLength us))
-                      ]
-            _ -> emptyWidget
-        ]
-
-drawLastMatches :: Maybe (NonEmpty ActivationDebug) -> Maybe (Widget n)
-drawLastMatches Nothing = Nothing
-drawLastMatches (Just ts) = Just $ hBox $ intersperse (str " ") $ map go $ NE.toList ts
-  where
-    go :: ActivationDebug -> Widget n
-    go ActivationDebug {..} =
-      vBox
-        [ str (show activationDebugPrecedence),
-          str (show activationDebugPriority),
-          drawHistory activationDebugMatch,
-          txt $ actionNameText activationDebugName
-        ]
-
 defaultPadding :: Padding
 defaultPadding = Pad defaultPaddingAmount
 
@@ -257,10 +192,13 @@ defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
 drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor s =
-  viewport ResourceViewport Vertical
-    . maybe emptyScreen (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
-    . fileBrowserCursorDirForestCursor
+drawFileBrowserCursor s FileBrowserCursor {..} =
+  withHeading (str "File Browser: " <+> drawDirPath fileBrowserCursorBase)
+    $ viewport ResourceViewport Vertical
+    $ maybe
+      emptyScreen
+      (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
+      fileBrowserCursorDirForestCursor
   where
     emptyScreen = str "No files to show."
     sel = case s of
@@ -278,6 +216,21 @@ drawFileBrowserCursor s =
               _ -> forceAttr nonSmosFileAttr
          in extraStyle $ drawFilePath rf
       FodDir rd -> drawDirPath rd
+
+drawFileEditorCursor :: KeyMap -> Select -> SmosFileEditorCursor -> Drawer
+drawFileEditorCursor keyMap s SmosFileEditorCursor {..} = do
+  w <- case historyPresent smosFileEditorCursorHistory of
+    Nothing -> pure $ drawInfo keyMap
+    Just sfc -> drawSmosFileCursor s sfc
+  let heading =
+        hBox
+          [ str "Editor: ",
+            drawFilePath smosFileEditorPath,
+            if smosFileEditorUnsavedChanges
+              then withAttr unsavedAttr (str " [+]")
+              else emptyWidget
+          ]
+  pure $ withHeading heading w
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
@@ -716,19 +669,16 @@ drawStateHistory (StateHistory ls)
     pure
       $ Just
       $ withAttr todoStateHistoryAttr
-      $ vBox
+      $ drawTable
       $ flip map ls
       $ \StateHistoryEntry {..} ->
-        hBox $
-          catMaybes
-            [ Just
-                $ strWrap
-                $ unwords
-                  [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
-                    "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
-                  ],
-              (str " " <+>) . drawTodoState <$> stateHistoryEntryNewState
-            ]
+        [ maybe (str " ") drawTodoState stateHistoryEntryNewState,
+          strWrap $
+            unwords
+              [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
+                "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
+              ]
+        ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =

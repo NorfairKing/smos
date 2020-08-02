@@ -29,6 +29,9 @@ readStateFile sf = do
               ]
         Right state -> pure $ Just state
 
+writeStateFile :: Path Abs File -> ScheduleState -> IO ()
+writeStateFile = writeYamlFile
+
 renderDestinationPathTemplate :: RenderContext -> DestinationPathTemplate -> Either (NonEmpty RenderError) (Path Rel File)
 renderDestinationPathTemplate ctx (DestinationPathTemplate rf) = case runReaderT (renderPathTemplate rf) ctx of
   Failure errs -> Left errs
@@ -41,3 +44,8 @@ readYamlFile :: FromJSON a => Path Abs File -> IO (Maybe (Either String a))
 readYamlFile f = do
   mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile f
   forM mContents $ \cts -> pure $ left prettyPrintParseException $ Yaml.decodeEither' cts
+
+writeYamlFile :: ToJSON a => Path Abs File -> a -> IO ()
+writeYamlFile p a = do
+  ensureDir $ parent p
+  SB.writeFile (fromAbsFile p) (Yaml.encode a)

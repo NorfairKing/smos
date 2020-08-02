@@ -3,6 +3,7 @@
 
 module Smos.Cursor.FileBrowser where
 
+import Control.DeepSeq
 import Control.Monad.IO.Class
 import Cursor.Simple.DirForest
 import Cursor.Types
@@ -27,6 +28,8 @@ data FileBrowserCursor
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursor
+
+instance NFData FileBrowserCursor
 
 makeFileBrowserCursor :: Path Abs Dir -> DirForest () -> FileBrowserCursor
 makeFileBrowserCursor base df =
@@ -239,3 +242,5 @@ data FileBrowserCursorAction
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursorAction
+
+instance NFData FileBrowserCursorAction

@@ -9,30 +9,22 @@ import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render
 import Test.Validity
 
-instance GenValid ScheduleTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
 instance GenValid RenderContext where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid ScheduleTemplate where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid EntryTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TimestampTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid StateHistoryTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid StateHistoryEntryTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid UTCTimeTemplate where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

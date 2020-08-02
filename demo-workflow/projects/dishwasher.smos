@@ -34,9 +34,3 @@
     state-history:
     - state: WAITING
       time: 2020-06-13 13:41:56.686803684000
-  - header: example4
-    timestamps:
-      SCHEDULED: 2020-06-20
-  - header: example5
-    timestamps:
-      SCHEDULED: 2020-06-06

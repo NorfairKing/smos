@@ -55,9 +55,12 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - QuickCheck
+    - cron
     - genvalidity
     - genvalidity-containers
     - genvalidity-hspec
+    - genvalidity-hspec-aeson
     - genvalidity-path
     - genvalidity-text
     - genvalidity-time
@@ -67,6 +70,8 @@ tests:
     - path-io
     - smos-data
     - smos-data-gen
+    - smos-report
+    - smos-report-gen
     - smos-scheduler
     - text
     - time

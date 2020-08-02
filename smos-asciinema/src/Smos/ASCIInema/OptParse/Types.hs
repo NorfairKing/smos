@@ -15,7 +15,9 @@ data RecordFlags
   = RecordFlags
       { recordFlagSpecFile :: FilePath,
         recordFlagOutputFile :: FilePath,
-        recordFlagWait :: Maybe Double
+        recordFlagWait :: Maybe Double,
+        recordFlagColumns :: Maybe Int,
+        recordFlagRows :: Maybe Int
       }
   deriving (Show, Eq)
 
@@ -42,7 +44,9 @@ data RecordSettings
       { recordSetSpecFile :: Path Abs File,
         recordSetOutputFile :: Path Abs File,
         recordSetWait :: Double,
-        recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir)
+        recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir),
+        recordSetColumns :: Int,
+        recordSetRows :: Int
       }
   deriving (Show, Eq)
 

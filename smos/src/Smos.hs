@@ -12,17 +12,15 @@ import Brick.BChan as Brick
 import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
-import Data.Time
 import Graphics.Vty as Vty (defaultConfig, mkVty)
 import Import
 import Smos.Actions.File
 import Smos.App
 import Smos.Config
-import Smos.Data
+import Smos.Cursor.SmosFileEditor
 import Smos.OptParse
 import Smos.OptParse.Bare
 import Smos.Types
-import System.Exit
 
 smos :: SmosConfig -> IO ()
 smos sc = do
@@ -36,32 +34,20 @@ smosWithoutRuntimeConfig sc = do
 
 startSmosOn :: Path Abs File -> SmosConfig -> IO ()
 startSmosOn p sc@SmosConfig {..} = do
-  errOrSF <- readSmosFile p
-  startF <-
-    case errOrSF of
-      Nothing -> pure Nothing
-      Just (Left err) ->
-        die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
-      Just (Right sf) -> pure $ Just sf
-  lock <- lockFile p
-  case lock of
-    Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
-    Just fl -> do
-      zt <- getZonedTime
-      let s = initState zt p fl startF
-      chan <- Brick.newBChan maxBound
-      let vtyBuilder = mkVty defaultConfig
-      initialVty <- vtyBuilder
-      Left s' <-
-        race
-          (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
-          (eventPusher chan)
-      finalWait $ smosStateAsyncs s'
-      saveSmosFile
-        (rebuildEditorCursor $ smosStateCursor s')
-        (smosStateStartSmosFile s')
-        (smosStateFilePath s')
-      unlockFile $ smosStateFileLock s'
+  s <- buildInitState p
+  chan <- Brick.newBChan maxBound
+  let vtyBuilder = mkVty defaultConfig
+  initialVty <- vtyBuilder
+  Left s' <-
+    race
+      (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
+      (eventPusher chan)
+  finalWait $ smosStateAsyncs s'
+  case editorCursorFileCursor $ smosStateCursor s' of
+    Nothing -> pure ()
+    Just sfec -> do
+      sfec' <- smosFileEditorCursorSave sfec
+      smosFileEditorCursorClose sfec'
 
 finalWait :: [Async ()] -> IO ()
 finalWait as = do

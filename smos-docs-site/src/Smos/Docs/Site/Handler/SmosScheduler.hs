@@ -1,18 +1,26 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Docs.Site.Handler.SmosScheduler
   ( getSmosSchedulerR,
+    getSmosSchedulerTemplateR,
   )
 where
 
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text.Encoding as TE
+import Data.Tree
+import Data.Yaml as Yaml
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Scheduler.OptParse as Scheduler
+import Text.RawString.QQ
 import YamlParse.Applicative
 
 getSmosSchedulerR :: Handler Html
@@ -24,6 +32,28 @@ getSmosSchedulerR = do
   defaultLayout $ do
     setTitle "Smos Documentation - smos-scheduler"
     $(widgetFile "args")
+
+getSmosSchedulerTemplateR :: Handler Html
+getSmosSchedulerTemplateR = do
+  let confHelpText = prettySchemaDoc @Scheduler.EntryTemplate
+  defaultLayout $ do
+    setTitle "Smos Documentation - smos-scheduler templates"
+    $(widgetFile "smos-scheduler/template")
+
+templateExample :: String
+templateExample =
+  [r|
+- entry: Weekly actions
+  forest:
+  - Clean room
+  - header: Weekly review
+    state: READY
+    properties:
+      timewindow: 1h
+    tags:
+    - review
+    timestamps:
+      SCHEDULED: "[ %F | saturday ]"|]
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =

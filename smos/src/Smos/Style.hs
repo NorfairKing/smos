@@ -3,6 +3,7 @@
 module Smos.Style
   ( defaultAttrMap,
     selectedAttr,
+    savedAttr,
     unsavedAttr,
     keyAttr,
     fileAttr,
@@ -22,6 +23,7 @@ module Smos.Style
     helpNameAttr,
     helpKeyCombinationAttr,
     helpDescriptionAttr,
+    errorAttr,
 
     -- * Re-exports
     applyAttrMappings,
@@ -69,12 +71,14 @@ defaultAttrMap _ =
         $ attrMap
           defAttr
           [ (selectedAttr, fg V.white),
+            (savedAttr, fg green),
             (unsavedAttr, fg orange),
             (keyAttr, fg orange),
             (headerAttr, fg V.yellow),
             (helpNameAttr, fg V.yellow),
             (helpKeyCombinationAttr, fg V.blue),
-            (helpDescriptionAttr, fg V.yellow)
+            (helpDescriptionAttr, fg V.yellow),
+            (errorAttr, fg V.red)
           ]
 
 fileAttr :: AttrName
@@ -88,6 +92,9 @@ dirAttr = "dir"
 
 selectedAttr :: AttrName
 selectedAttr = "selected"
+
+savedAttr :: AttrName
+savedAttr = "saved"
 
 unsavedAttr :: AttrName
 unsavedAttr = "unsaved"
@@ -136,3 +143,6 @@ helpKeyCombinationAttr = "helpkeycombination"
 
 helpDescriptionAttr :: AttrName
 helpDescriptionAttr = "helpdescription"
+
+errorAttr :: AttrName
+errorAttr = "error"

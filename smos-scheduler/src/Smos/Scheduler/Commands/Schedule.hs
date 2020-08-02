@@ -10,15 +10,12 @@ where
 
 import Control.Monad
 import Control.Monad.Reader
-import qualified Data.ByteString as SB
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Path.IO
@@ -41,7 +38,7 @@ schedule Settings {..} = do
   if goAhead
     then do
       state' <- handleSchedule mState wd now setSchedule
-      SB.writeFile (fromAbsFile setStateFile) (Yaml.encode state')
+      writeStateFile setStateFile state'
     else putStrLn "Not running because it's been run too recently already."
 
 handleSchedule :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> Schedule -> IO ScheduleState
@@ -81,8 +78,9 @@ handleScheduleItem mLastRun wdir now si = do
 
 scheduleItemDisplayName :: ScheduleItem -> Text
 scheduleItemDisplayName si@ScheduleItem {..} =
-  fromMaybe
+  maybe
     (T.unwords ["the item with schedule", T.pack (show scheduleItemCronSchedule), "and hash", T.pack (show (hashScheduleItem si))])
+    (T.pack . show)
     scheduleItemDescription
 
 calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> ScheduledTime

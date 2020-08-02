@@ -1,0 +1,19 @@
+<div .content>
+  <h2>
+    Smos scheduler: template format
+
+  <p>
+    A scheduler template is like a smos file.
+    It uses the same forest format of template entries.
+
+  <h3>
+    Example template:
+
+  <pre>
+    #{templateExample}
+
+  <h3>
+    Reference: Template entry format
+
+  <pre>
+    #{confHelpText}

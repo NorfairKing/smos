@@ -5,14 +5,17 @@
 
 module Smos.Docs.Site.Handler.SmosASCIInema
   ( getSmosASCIInemaR,
+    getSmosASCIInemaSpecR,
   )
 where
 
 import Data.Text (Text)
 import Options.Applicative
 import Options.Applicative.Help
+import Smos.ASCIInema.Commands.Record as ASCIInema
 import Smos.ASCIInema.OptParse as ASCIInema
 import Smos.Docs.Site.Handler.Import
+import YamlParse.Applicative
 
 getSmosASCIInemaR :: Handler Html
 getSmosASCIInemaR = do
@@ -23,6 +26,13 @@ getSmosASCIInemaR = do
   defaultLayout $ do
     setTitle "Smos Documentation - smos-asciinema"
     $(widgetFile "args")
+
+getSmosASCIInemaSpecR :: Handler Html
+getSmosASCIInemaSpecR = do
+  let confHelpText = prettySchemaDoc @ASCIInemaSpec
+  defaultLayout $ do
+    setTitle "Smos Documentation - smos-asciinema spec"
+    $(widgetFile "smos-asciinema/spec")
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =

@@ -35,7 +35,12 @@ reportNextActions =
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
         narc <- liftIO $ produceNextActionReportCursor dc
-        pure $ editorCursorSwitchToNextActionReport narc ec,
+        pure $
+          ec
+            { editorCursorSelection = ReportSelected,
+              editorCursorReportCursor = Just $ ReportNextActions narc,
+              editorCursorFileCursor = Nothing
+            },
       actionDescription = "Next action report"
     }
 
@@ -77,19 +82,15 @@ enterNextActionFile =
     { actionName = "enterNextActionFile",
       actionFunc = do
         ss <- get
-        let ec = smosStateCursor ss
-        case editorCursorSelection ec of
-          ReportSelected ->
-            case editorCursorReportCursor ec of
-              Nothing -> pure ()
-              Just (ReportNextActions narc) -> do
-                dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-                wd <- liftIO $ resolveDirWorkflowDir dc
-                case nextActionReportCursorBuildSmosFileCursor wd narc of
-                  Nothing -> pure ()
-                  Just (fp, sfc) ->
-                    void $ switchToCursor fp (Just sfc)
-          _ -> pure (),
+        case editorCursorReportCursor $ smosStateCursor ss of
+          Just rc -> case rc of
+            ReportNextActions narc -> do
+              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              wd <- liftIO $ resolveDirWorkflowDir dc
+              case nextActionReportCursorBuildSmosFileCursor wd narc of
+                Nothing -> pure ()
+                Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
+          Nothing -> pure (),
       actionDescription = "Enter the currently selected next action"
     }
 

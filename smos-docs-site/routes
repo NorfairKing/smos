@@ -13,10 +13,12 @@
 /smos-archive SmosArchiveR GET
 
 /smos-asciinema SmosASCIInemaR GET
+/smos-asciinema/spec SmosASCIInemaSpecR GET
 
 /smos-calendar-import SmosCalendarImportR GET
 
 /smos-scheduler SmosSchedulerR GET
+/smos-scheduler/template SmosSchedulerTemplateR GET
 
 /smos-sync-client SmosSyncClientR GET
 

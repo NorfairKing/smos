@@ -102,6 +102,9 @@
         The Smos Scheduler Tool
       <ul>
         <li>
+          <a href=@{SmosSchedulerTemplateR}>
+            Template format
+        <li>
           <a href=@{PageR smos_scheduler_nixos}>
             Running on NixOs
 
@@ -117,6 +120,10 @@
       <a href=@{SmosASCIInemaR}>
         The Smos ASCIInema Automation Tool
 
+      <ul>
+        <li>
+          <a href=@{SmosASCIInemaSpecR}>
+            Spec format
     <li>
       <a href=@{SmosSyncClientR}>
         The Smos Sync Client
