@@ -67,4 +67,5 @@ tests:
     - smos-data
     - text
     - time
+    - yaml
     - yamlparse-applicative

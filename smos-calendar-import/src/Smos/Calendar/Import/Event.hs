@@ -3,11 +3,13 @@
 
 module Smos.Calendar.Import.Event where
 
+import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Text
 import GHC.Generics (Generic)
+import YamlParse.Applicative
 
 data Event
   = Event
@@ -23,3 +25,9 @@ instance Validity Event where
         declare "The title is nonempty" $ not $ T.null eventTitle,
         decorate "The title is a single line" $ validateTextSingleLine eventTitle
       ]
+
+instance YamlSchema Event
+
+instance FromJSON Event
+
+instance ToJSON Event
