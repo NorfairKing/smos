@@ -13,9 +13,7 @@ instance GenValid Event where
   shrinkValid = shrinkValidStructurally
   genValid =
     ( do
-        c <- genNonLineSeparator
-        t <- genSingleLineText
-        let eventTitle = T.cons c t
+        eventSummary <- oneof [Just <$> genSingleLineText, pure Nothing]
         eventDescription <- genValid
         pure Event {..}
     )

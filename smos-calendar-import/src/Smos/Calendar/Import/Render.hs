@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Render where
@@ -13,7 +14,7 @@ renderEvents es = SmosFile $ map (\e -> Node e []) $ mapMaybe renderEvent es
 
 renderEvent :: Event -> Maybe Entry
 renderEvent Event {..} = do
-  h <- header eventTitle
-  let mc = if T.null eventDescription then Nothing else contents eventDescription
+  let h = fromMaybe "Event without Summary" $ eventSummary >>= header
+  mc <- mapM contents eventDescription
   let e = (newEntry h) {entryContents = mc}
   pure e
