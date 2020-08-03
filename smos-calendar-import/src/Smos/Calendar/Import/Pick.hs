@@ -52,8 +52,8 @@ pickDurationProp (DurationProp d _) = pickDuration d
 
 pickDuration :: ICal.Duration -> Int
 pickDuration = \case
-  DurationDate sign d h m s -> signNum sign * (d * 24 + (h * 60 + (m * 60 + s)))
-  DurationTime sign h m s -> signNum sign * (h * 60 + (m * 60 + s))
+  DurationDate sign d h m s -> signNum sign * (((d * 24 + h) * 60 + m) * 60 + s)
+  DurationTime sign h m s -> signNum sign * ((h * 60 + m) * 60 + s)
   DurationWeek sign w -> signNum sign * w * 7 * 24 * 60 * 60
 
 signNum :: Num a => ICal.Sign -> a
