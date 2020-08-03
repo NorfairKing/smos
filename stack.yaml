@@ -180,7 +180,7 @@ extra-deps:
   - validity-unordered-containers
   - validity-uuid
   - validity-vector
-  # nix-sha256: sha256:1hfj4sznm4qzr746pcbgmm2sx0xnzj4hxr65q2nkrcjh161pqlwp
+  # nix-sha256: sha256:0maj2vjx8kpq6mzgh0vnnzf0a6l5jbmk1bpsz3qa9xbqlpdcm5xm
 
 - git: https://github.com/NorfairKing/yamlparse-applicative
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640

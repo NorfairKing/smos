@@ -7,20 +7,18 @@ import Control.Monad
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Data.Time
 import Data.Yaml as Yaml
 import Path
 import Path.IO
-import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
-import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Render
 import Smos.Data
 import System.Exit
 import Test.Hspec
 import Text.ICalendar.Parser
 import Text.ICalendar.Types
-import Text.Show.Pretty
 import YamlParse.Applicative
 
 spec :: Spec
@@ -47,7 +45,7 @@ mkGoldenTest cp cals = do
   recurringEvents <- runIO $ readGoldenYaml cp ".recurring" actualRecurringEvents
   it "picks the correct recurring events" $
     actualRecurringEvents `shouldBe` recurringEvents
-  let actualEvents = recurEvents actualRecurringEvents
+  let actualEvents = recurEvents utc actualRecurringEvents -- TODO use a config file
   events <- runIO $ readGoldenYaml cp ".events" actualEvents
   it "recurs the correct events" $
     actualEvents `shouldBe` events

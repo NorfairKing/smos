@@ -3,7 +3,6 @@ module Smos.Calendar.Import.RenderSpec
   )
 where
 
-import Data.Maybe
 import Smos.Calendar.Import.Event.Gen ()
 import Smos.Calendar.Import.Render
 import Test.Hspec

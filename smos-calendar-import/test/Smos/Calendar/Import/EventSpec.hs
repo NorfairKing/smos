@@ -6,7 +6,7 @@ module Smos.Calendar.Import.EventSpec
 where
 
 import Smos.Calendar.Import.Event
-import Smos.Calendar.Import.Event.Gen
+import Smos.Calendar.Import.Event.Gen ()
 import Test.Hspec
 import Test.Validity
 import Test.Validity.Aeson

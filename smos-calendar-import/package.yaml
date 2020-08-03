@@ -66,6 +66,7 @@ tests:
     - pretty-show
     - smos-calendar-import
     - smos-data
+    - smos-data-gen
     - text
     - time
     - yaml

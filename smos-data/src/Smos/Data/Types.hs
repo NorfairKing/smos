@@ -70,7 +70,9 @@ module Smos.Data.Types
     timestampText,
     timestampPrettyString,
     timestampPrettyText,
+    daySchema,
     timestampDayFormat,
+    localTimeSchema,
     timestampLocalTimeFormat,
     timestampLocalTimePrettyFormat,
     parseTimestampString,
@@ -531,12 +533,18 @@ instance FromJSON Timestamp where
 instance YamlSchema Timestamp where
   yamlSchema =
     alternatives
-      [ TimestampDay <$> maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat,
-        TimestampLocalTime <$> maybeParser (parseTimeM True defaultTimeLocale timestampLocalTimeFormat) yamlSchema <?> T.pack timestampLocalTimeFormat
+      [ TimestampDay <$> daySchema,
+        TimestampLocalTime <$> localTimeSchema
       ]
+
+daySchema :: YamlParser Day
+daySchema = maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
+
+localTimeSchema :: YamlParser LocalTime
+localTimeSchema = maybeParser (parseTimeM True defaultTimeLocale timestampLocalTimeFormat) yamlSchema <?> T.pack timestampLocalTimeFormat
 
 timestampLocalTimeFormat :: String
 timestampLocalTimeFormat = "%F %T%Q"

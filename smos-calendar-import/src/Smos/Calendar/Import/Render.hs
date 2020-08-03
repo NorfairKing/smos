@@ -4,7 +4,6 @@
 module Smos.Calendar.Import.Render where
 
 import Data.Maybe
-import qualified Data.Text as T
 import Data.Tree
 import Smos.Calendar.Import.Event
 import Smos.Data
