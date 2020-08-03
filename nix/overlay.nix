@@ -7,8 +7,8 @@ let
     final.fetchFromGitHub {
       owner = "input-output-hk";
       repo = "haskell.nix";
-      rev = "91b0a95e4071e7998778e1fe997f8ddcf759d48b";
-      sha256 = "sha256:13jx33vj8ixr3m88181wybzb8qlx0rl249bpphgz944anxp8z521";
+      rev = "f4136211c933b444ab2e0f358abd223929970220";
+      sha256 = "sha256:1b9nxzkg29hwczr6pb6a7arxka8z0swzq7b2bqyxqzr4qvpcjlc1";
     }
   ) {};
   nixpkgsSrc = haskellNix.sources.nixpkgs-2003;
@@ -28,10 +28,8 @@ let
           ${final.autoconf}/bin/autoreconf -i
         '';
 
-        # Workaround to make the following work
-        # https://github.com/input-output-hk/haskell.nix/issues/769
-        # packages.smos-web-server.components.library.preBuild
-        packages.smos-web-server.preBuild = mkForce ''
+        # The smos web server front-end.
+        packages.smos-web-server.components.library.preBuild = ''
           export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
         '';
 
