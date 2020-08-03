@@ -1,1 +1,4 @@
-- Event without Summary
+- header: Event without Summary
+  timestamps:
+    BEGIN: 1996-09-18 14:30:00
+

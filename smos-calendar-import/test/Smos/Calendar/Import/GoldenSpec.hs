@@ -19,6 +19,7 @@ import System.Exit
 import Test.Hspec
 import Text.ICalendar.Parser
 import Text.ICalendar.Types
+import Text.Show.Pretty
 import YamlParse.Applicative
 
 spec :: Spec
@@ -50,13 +51,23 @@ mkGoldenTest cp cals = do
   it "recurs the correct events" $
     actualEvents `shouldBe` events
   let actualSmosFile = renderEvents actualEvents
-  smosFile <- runIO $ readGoldenSmosFile cp actualSmosFile
-  it "renders the correct smosFile" $
-    actualSmosFile `shouldBe` smosFile
+  sfp <- runIO $ replaceExtension ".smos" cp
+  smosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile
+  it "renders the correct smosFile" $ do
+    unless (actualSmosFile == smosFile)
+      $ expectationFailure
+      $ unlines
+        [ fromAbsFile sfp,
+          "actual:",
+          ppShow actualSmosFile,
+          T.unpack (TE.decodeUtf8 (smosFileYamlBS actualSmosFile)),
+          "expected:",
+          ppShow smosFile,
+          T.unpack (TE.decodeUtf8 (smosFileYamlBS smosFile))
+        ]
 
 readGoldenSmosFile :: Path Abs File -> SmosFile -> IO SmosFile
-readGoldenSmosFile cp actual = do
-  sfp <- replaceExtension ".smos" cp
+readGoldenSmosFile sfp actual = do
   mErrOrSmosFile <- readSmosFile sfp
   case mErrOrSmosFile of
     Nothing ->
