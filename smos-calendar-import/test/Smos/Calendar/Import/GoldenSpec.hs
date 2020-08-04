@@ -15,6 +15,7 @@ import Path.IO
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.Render
+import Smos.Calendar.Import.Resolve
 import Smos.Data
 import System.Exit
 import Test.Hspec
@@ -50,7 +51,11 @@ mkGoldenTest cp cals = do
   rp <- runIO $ replaceExtension ".recurring" cp
   expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
   it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let actualEvents = recurRecurringEvents utc actualRecurringEvents -- TODO use a config file
+  let actualUnresolvedEvents = recurRecurringEvents actualRecurringEvents -- TODO use a config file
+  up <- runIO $ replaceExtension ".unresolved" cp
+  expectedUnresolvedEvents <- runIO $ readGoldenYaml up actualUnresolvedEvents
+  it "recurs the correct unresolved events" $ compareAndSuggest Yaml.encode up actualUnresolvedEvents expectedUnresolvedEvents
+  let actualEvents = resolveUnresolvedEvents utc actualUnresolvedEvents -- TODO use a config file
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
   it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
