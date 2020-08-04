@@ -15,6 +15,10 @@ instance GenValid TimeZoneHistory where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
 
+instance GenValid TimeZoneHistoryRule where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
 instance GenValid UTCOffset where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally

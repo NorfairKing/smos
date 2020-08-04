@@ -23,21 +23,19 @@ pickEventsFromCalendar ICal.VCalendar {..} =
    in RecurringEvents {..}
 
 pickTimeZoneHistory :: ICal.VTimeZone -> TimeZoneHistory
-pickTimeZoneHistory ICal.VTimeZone {..} = case S.toList (S.union vtzStandardC vtzDaylightC) of
-  [tzprop] -> pickTimeZoneProp tzprop
-  _ -> error "only timezones with one rule supported right now"
+pickTimeZoneHistory ICal.VTimeZone {..} = TimeZoneHistory $ map pickTimeZoneProp $ S.toList (S.union vtzStandardC vtzDaylightC)
 
-pickTimeZoneProp :: ICal.TZProp -> TimeZoneHistory
+pickTimeZoneProp :: ICal.TZProp -> TimeZoneHistoryRule
 pickTimeZoneProp ICal.TZProp {..} =
-  let timeZoneHistoryStart = case tzpDTStart of
+  let timeZoneHistoryRuleStart = case tzpDTStart of
         ICal.DTStartDateTime dt _ -> case dt of
           ICal.FloatingDateTime lt -> lt
           ICal.UTCDateTime utct -> utcToLocalTime utc utct
           ICal.ZonedDateTime lt _ -> lt -- Techincally not supported, but it'll have to be this way so we don't crash.
         ICal.DTStartDate (ICal.Date d) _ -> LocalTime d midnight -- Not allowed by the spec but it's fine.
-      timeZoneHistoryOffsetFrom = pickUTCOffset tzpTZOffsetFrom
-      timeZoneHistoryOffsetTo = pickUTCOffset tzpTZOffsetTo
-   in TimeZoneHistory {..}
+      timeZoneHistoryRuleOffsetFrom = pickUTCOffset tzpTZOffsetFrom
+      timeZoneHistoryRuleOffsetTo = pickUTCOffset tzpTZOffsetTo
+   in TimeZoneHistoryRule {..}
 
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset
 pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)

@@ -75,13 +75,19 @@ resolveZonedTime lt tzid = do
     Just tzh -> resolveZonedTimeWithHistory resolveCtxTimeZone lt tzh
 
 resolveZonedTimeWithHistory :: TimeZone -> LocalTime -> TimeZoneHistory -> LocalTime
-resolveZonedTimeWithHistory tz lt TimeZoneHistory {..} =
+resolveZonedTimeWithHistory tz lt (TimeZoneHistory rules) = case rules of
+  [] -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
+  [rule] -> resolveZonedTimeWithRule tz lt rule
+  _ -> error "timezones with more than one rule not supported"
+
+resolveZonedTimeWithRule :: TimeZone -> LocalTime -> TimeZoneHistoryRule -> LocalTime
+resolveZonedTimeWithRule tz lt TimeZoneHistoryRule {..} =
   let utct = localTimeToUTC tz lt
       tz' =
         utcOffsetTimeZone $
-          if lt < timeZoneHistoryStart
-            then timeZoneHistoryOffsetFrom
-            else timeZoneHistoryOffsetTo
+          if lt < timeZoneHistoryRuleStart
+            then timeZoneHistoryRuleOffsetFrom
+            else timeZoneHistoryRuleOffsetTo
    in utcToLocalTime tz' utct
 
 utcOffsetTimeZone :: UTCOffset -> TimeZone

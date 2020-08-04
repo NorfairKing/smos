@@ -17,5 +17,7 @@ spec = do
   jsonSpecOnValid @TimeZoneId
   genValidSpec @TimeZoneHistory
   jsonSpecOnValid @TimeZoneHistory
+  genValidSpec @TimeZoneHistoryRule
+  jsonSpecOnValid @TimeZoneHistoryRule
   genValidSpec @UTCOffset
   jsonSpecOnValid @UTCOffset

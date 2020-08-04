@@ -24,33 +24,46 @@ instance YamlKeySchema TimeZoneId where
 instance YamlSchema TimeZoneId where
   yamlSchema = TimeZoneId <$> yamlSchema
 
-data TimeZoneHistory
-  = TimeZoneHistory
-      { timeZoneHistoryStart :: LocalTime, -- In the timezone at the time
-        timeZoneHistoryOffsetFrom :: UTCOffset,
-        timeZoneHistoryOffsetTo :: UTCOffset
-      }
-  deriving (Show, Eq, Generic)
+newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
+  deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 instance Validity TimeZoneHistory
 
 instance YamlSchema TimeZoneHistory where
   yamlSchema =
-    objectParser "TimeZoneHistory" $
-      TimeZoneHistory
+    TimeZoneHistory
+      <$> alternatives
+        [ yamlSchema,
+          (: []) <$> yamlSchema
+        ]
+
+data TimeZoneHistoryRule
+  = TimeZoneHistoryRule
+      { timeZoneHistoryRuleStart :: LocalTime, -- In the timezone at the time
+        timeZoneHistoryRuleOffsetFrom :: UTCOffset,
+        timeZoneHistoryRuleOffsetTo :: UTCOffset
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity TimeZoneHistoryRule
+
+instance YamlSchema TimeZoneHistoryRule where
+  yamlSchema =
+    objectParser "TimeZoneHistoryRule" $
+      TimeZoneHistoryRule
         <$> requiredFieldWith' "start" localTimeSchema
         <*> requiredField' "from"
         <*> requiredField' "to"
 
-instance FromJSON TimeZoneHistory where
+instance FromJSON TimeZoneHistoryRule where
   parseJSON = viaYamlSchema
 
-instance ToJSON TimeZoneHistory where
-  toJSON TimeZoneHistory {..} =
+instance ToJSON TimeZoneHistoryRule where
+  toJSON TimeZoneHistoryRule {..} =
     object
-      [ "start" .= formatTime defaultTimeLocale timestampLocalTimeFormat timeZoneHistoryStart,
-        "from" .= timeZoneHistoryOffsetFrom,
-        "to" .= timeZoneHistoryOffsetTo
+      [ "start" .= formatTime defaultTimeLocale timestampLocalTimeFormat timeZoneHistoryRuleStart,
+        "from" .= timeZoneHistoryRuleOffsetFrom,
+        "to" .= timeZoneHistoryRuleOffsetTo
       ]
 
 newtype UTCOffset = UTCOffset Int -- Minutes from UTCTime
