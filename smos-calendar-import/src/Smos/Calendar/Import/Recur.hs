@@ -11,6 +11,7 @@ import Data.Time
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.RecurringEvent
+import Smos.Calendar.Import.TimeZone
 import Smos.Data
 
 recurEvents :: TimeZone -> [RecurringEvents] -> [Event]

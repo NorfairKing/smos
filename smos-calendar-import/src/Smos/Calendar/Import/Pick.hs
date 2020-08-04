@@ -9,6 +9,7 @@ import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
+import Smos.Calendar.Import.TimeZone
 import qualified Text.ICalendar.Types as ICal
 
 pickEvents :: [ICal.VCalendar] -> [RecurringEvents]
