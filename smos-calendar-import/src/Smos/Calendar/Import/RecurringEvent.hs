@@ -196,7 +196,7 @@ instance ToJSON TimeZoneHistory where
         "to" .= timeZoneHistoryOffsetTo
       ]
 
-newtype UTCOffset = UTCOffset Int -- Seconds from UTCTime
+newtype UTCOffset = UTCOffset Int -- Minutes from UTCTime
   deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 instance Validity UTCOffset

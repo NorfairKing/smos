@@ -1,7 +1,18 @@
+zones:
+  Foo:
+    start: 1970-10-26 02:00:00
+    to: -360
+    from: -240
+  Bar:
+    start: 1970-10-26 02:00:00
+    to: 360
+    from: 240
+events:
 - summary: Summary
   start:
-    floating: 1996-09-18 08:30:00
+    local: 1996-09-18 14:30:00
+    zone: Foo
   end:
-    floating: 1996-09-18 20:30:00
+    local: 1996-09-18 14:30:00
+    zone: Bar
   description: null
-
