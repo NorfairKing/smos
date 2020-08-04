@@ -1,8 +1,8 @@
 zones:
   Foo:
-    start: 1970-10-26 02:00:00
-    to: -360
-    from: -240
+    start: 1998-10-26 02:00:00
+    to: -240
+    from: -360
   Bar:
     start: 1970-10-26 02:00:00
     to: 360
@@ -15,4 +15,3 @@ events:
   end:
     local: 1996-09-18 14:30:00
     zone: Bar
-  description: null
