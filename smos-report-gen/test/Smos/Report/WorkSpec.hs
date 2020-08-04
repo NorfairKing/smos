@@ -23,9 +23,10 @@ spec = do
     $ producesValidsOnValids3 makeIntermediateWorkReport
   describe "finishWorkReport" $ it "produces valid work reports" $ forAllValid $ \zt ->
     forAllValid $ \pn ->
-      forAllValid $ \ms ->
-        forAllValid $ \workReport ->
-          shouldBeValid $ finishWorkReport zt pn ms workReport
+      forAllValid $ \mt ->
+        forAllValid $ \ms ->
+          forAllValid $ \workReport ->
+            shouldBeValid $ finishWorkReport zt pn mt ms workReport
   modifyMaxSuccess (`div` 10) $ describe "produceWorkReport" $ it "produces valid reports for interesting stores"
     $ forAllValid
     $ \wrc ->
