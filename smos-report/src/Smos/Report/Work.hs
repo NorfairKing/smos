@@ -32,7 +32,7 @@ produceWorkReport ha dc wrc = produceReport ha dc $ workReportConduit (workRepor
 
 workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
 workReportConduit now wrc@WorkReportContext {..} =
-  fmap (finishWorkReport now workReportContextTimeProperty workReportContextSorter) $
+  fmap (finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter) $
     smosFileCursors .| C.map (uncurry $ makeIntermediateWorkReport wrc) .| accumulateMonoid
 
 data IntermediateWorkReport
@@ -167,8 +167,8 @@ instance Validity WorkReport where
         declare "The agenda entries are sorted" $ sortAgendaEntries workReportAgendaEntries == workReportAgendaEntries
       ]
 
-finishWorkReport :: ZonedTime -> PropertyName -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
-finishWorkReport now pn ms wr =
+finishWorkReport :: ZonedTime -> PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
+finishWorkReport now pn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
       mAutoFilter :: Maybe EntryFilterRel
       mAutoFilter = do
@@ -184,7 +184,9 @@ finishWorkReport now pn ms wr =
           $ FilterOrd LEC t
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True
-        Just autoFilter -> filterPredicate autoFilter tup
+        Just autoFilter -> case mt of
+          Nothing -> filterPredicate autoFilter tup
+          Just _ -> True
    in WorkReport
         { workReportAgendaEntries = sortAgendaEntries $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
