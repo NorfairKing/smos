@@ -17,9 +17,3 @@ spec = do
   jsonSpecOnValid @RecurringEvents
   genValidSpec @RecurringEvent
   jsonSpecOnValid @RecurringEvent
-  genValidSpec @CalEndDuration
-  jsonSpecOnValid @CalEndDuration
-  genValidSpec @CalTimestamp
-  jsonSpecOnValid @CalTimestamp
-  genValidSpec @CalDateTime
-  jsonSpecOnValid @CalDateTime

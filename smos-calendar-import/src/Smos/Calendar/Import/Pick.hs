@@ -10,6 +10,7 @@ import Data.Time
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
+import Smos.Calendar.Import.UnresolvedTimestamp
 import qualified Text.ICalendar.Types as ICal
 
 pickEvents :: [ICal.VCalendar] -> [RecurringEvents]
