@@ -8,6 +8,7 @@ import qualified Data.Set as S
 import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurringEvent
+import Smos.Calendar.Import.Static
 import qualified Text.ICalendar.Types as ICal
 
 pickEvents :: [ICal.VCalendar] -> [RecurringEvents]
@@ -41,8 +42,9 @@ pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)
 
 pickEventFromVEvent :: ICal.VEvent -> RecurringEvent
 pickEventFromVEvent ICal.VEvent {..} =
-  let recurringEventSummary = LT.toStrict . ICal.summaryValue <$> veSummary
-      recurringEventDescription = LT.toStrict . ICal.descriptionValue <$> veDescription
+  let staticSummary = LT.toStrict . ICal.summaryValue <$> veSummary
+      staticDescription = LT.toStrict . ICal.descriptionValue <$> veDescription
+      recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
    in RecurringEvent {..}

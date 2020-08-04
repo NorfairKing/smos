@@ -36,8 +36,7 @@ type R = Reader RecurCtx
 
 recurEvent :: RecurringEvent -> R [Event]
 recurEvent RecurringEvent {..} = do
-  let eventSummary = recurringEventSummary
-      eventDescription = recurringEventDescription
+  let eventStatic = recurringEventStatic
   eventStart <- mapM recurStart recurringEventStart
   eventEnd <- case recurringEventEnd of
     Nothing -> pure Nothing

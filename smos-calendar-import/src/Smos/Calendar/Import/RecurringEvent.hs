@@ -13,6 +13,7 @@ import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import GHC.Generics
+import Smos.Calendar.Import.Static
 import Smos.Data
 import YamlParse.Applicative
 
@@ -48,8 +49,7 @@ instance ToJSON RecurringEvents where
 
 data RecurringEvent
   = RecurringEvent
-      { recurringEventSummary :: !(Maybe Text),
-        recurringEventDescription :: !(Maybe Text),
+      { recurringEventStatic :: !Static,
         recurringEventStart :: !(Maybe CalTimestamp),
         recurringEventEnd :: !(Maybe CalEndDuration)
       }
@@ -61,8 +61,7 @@ instance YamlSchema RecurringEvent where
   yamlSchema =
     objectParser "RecurringEvent" $
       RecurringEvent
-        <$> optionalField' "summary"
-        <*> optionalField' "description"
+        <$> staticObjectParser
         <*> optionalField' "start"
         <*> optionalField' "end"
 
@@ -71,12 +70,11 @@ instance FromJSON RecurringEvent where
 
 instance ToJSON RecurringEvent where
   toJSON RecurringEvent {..} =
-    object
-      [ "summary" .= recurringEventSummary,
-        "description" .= recurringEventDescription,
-        "start" .= recurringEventStart,
-        "end" .= recurringEventEnd
-      ]
+    object $
+      staticToObject recurringEventStatic
+        ++ [ "start" .= recurringEventStart,
+             "end" .= recurringEventEnd
+           ]
 
 data CalEndDuration
   = CalTimestamp CalTimestamp
