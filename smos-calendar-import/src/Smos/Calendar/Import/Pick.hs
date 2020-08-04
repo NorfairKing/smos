@@ -3,7 +3,10 @@
 
 module Smos.Calendar.Import.Pick where
 
+import Control.Monad.Reader
 import qualified Data.Map as M
+import Data.Map (Map)
+import Data.Text (Text)
 import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurringEvent
@@ -13,36 +16,56 @@ pickEvents :: [ICal.VCalendar] -> [RecurringEvent]
 pickEvents = concatMap pickEventsFromCalendar
 
 pickEventsFromCalendar :: ICal.VCalendar -> [RecurringEvent]
-pickEventsFromCalendar ICal.VCalendar {..} = map pickEventFromVEvent $ M.elems vcEvents
+pickEventsFromCalendar ICal.VCalendar {..} =
+  let ctx =
+        PickCtx
+          { pickCtxTimeZones = M.mapKeys LT.toStrict vcTimeZones
+          }
+   in flip runReader ctx $ mapM pickEventFromVEvent $ M.elems vcEvents
 
-pickEventFromVEvent :: ICal.VEvent -> RecurringEvent
-pickEventFromVEvent ICal.VEvent {..} =
+type P = Reader PickCtx
+
+data PickCtx
+  = PickCtx
+      { pickCtxTimeZones :: Map Text VTimeZone
+      }
+  deriving (Show, Eq)
+
+pickEventFromVEvent :: ICal.VEvent -> P RecurringEvent
+pickEventFromVEvent ICal.VEvent {..} = do
   let recurringEventSummary = LT.toStrict . ICal.summaryValue <$> veSummary
       recurringEventDescription = LT.toStrict . ICal.descriptionValue <$> veDescription
-      recurringEventStart = pickStart <$> veDTStart
-      recurringEventEnd = pickEndDuration <$> veDTEndDuration
-   in RecurringEvent {..}
+  recurringEventStart <- mapM pickStart veDTStart
+  recurringEventEnd <- mapM pickEndDuration veDTEndDuration
+  pure $ RecurringEvent {..}
 
-pickStart :: ICal.DTStart -> CalTimestamp
+pickStart :: ICal.DTStart -> P CalTimestamp
 pickStart = \case
-  DTStartDateTime dt _ -> CalDateTime $ pickDateTime dt
-  DTStartDate d _ -> CalDate $ pickDate d
+  DTStartDateTime dt _ -> CalDateTime <$> pickDateTime dt
+  DTStartDate d _ -> pure $ CalDate $ pickDate d
 
-pickEndDuration :: Either ICal.DTEnd ICal.DurationProp -> CalEndDuration
+pickEndDuration :: Either ICal.DTEnd ICal.DurationProp -> P CalEndDuration
 pickEndDuration = \case
-  Left e -> CalTimestamp $ pickEnd e
-  Right d -> CalDuration $ pickDurationProp d
+  Left e -> CalTimestamp <$> pickEnd e
+  Right d -> pure $ CalDuration $ pickDurationProp d
 
-pickEnd :: ICal.DTEnd -> CalTimestamp
+pickEnd :: ICal.DTEnd -> P CalTimestamp
 pickEnd = \case
-  DTEndDateTime dt _ -> CalDateTime $ pickDateTime dt
-  DTEndDate d _ -> CalDate $ pickDate d
+  DTEndDateTime dt _ -> CalDateTime <$> pickDateTime dt
+  DTEndDate d _ -> pure $ CalDate $ pickDate d
 
-pickDateTime :: ICal.DateTime -> CalDateTime
+pickDateTime :: ICal.DateTime -> P CalDateTime
 pickDateTime = \case
-  FloatingDateTime lt -> Floating lt
-  UTCDateTime utct -> UTC utct
-  ZonedDateTime _ _ -> undefined -- We have to deal with timezones somehow
+  FloatingDateTime lt -> pure $ Floating lt
+  UTCDateTime utct -> pure $ UTC utct
+  ZonedDateTime lt tzid -> do
+    mtz <- asks (M.lookup (LT.toStrict tzid) . pickCtxTimeZones)
+    pure $ case mtz of
+      Nothing -> Floating lt
+      Just vtz -> Floating $ pickZonedTime vtz lt -- FIXME
+
+pickZonedTime :: VTimeZone -> LocalTime -> LocalTime
+pickZonedTime VTimeZone {..} lt = lt
 
 pickDate :: ICal.Date -> Day
 pickDate (Date d) = d

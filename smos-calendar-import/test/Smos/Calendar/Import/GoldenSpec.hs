@@ -4,6 +4,7 @@ module Smos.Calendar.Import.GoldenSpec
 where
 
 import Control.Monad
+import Data.ByteString (ByteString)
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -43,28 +44,33 @@ mkGoldenTestFor cp = do
 mkGoldenTest :: Path Abs File -> [VCalendar] -> Spec
 mkGoldenTest cp cals = do
   let actualRecurringEvents = pickEvents cals
-  recurringEvents <- runIO $ readGoldenYaml cp ".recurring" actualRecurringEvents
-  it "picks the correct recurring events" $
-    actualRecurringEvents `shouldBe` recurringEvents
+  rp <- runIO $ replaceExtension ".recurring" cp
+  expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
+  it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
   let actualEvents = recurEvents utc actualRecurringEvents -- TODO use a config file
-  events <- runIO $ readGoldenYaml cp ".events" actualEvents
-  it "recurs the correct events" $
-    actualEvents `shouldBe` events
+  ep <- runIO $ replaceExtension ".events" cp
+  expectedEvents <- runIO $ readGoldenYaml ep actualEvents
+  it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
   let actualSmosFile = renderEvents actualEvents
   sfp <- runIO $ replaceExtension ".smos" cp
-  smosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile
-  it "renders the correct smosFile" $ do
-    unless (actualSmosFile == smosFile)
-      $ expectationFailure
-      $ unlines
-        [ fromAbsFile sfp,
-          "actual:",
-          ppShow actualSmosFile,
-          T.unpack (TE.decodeUtf8 (smosFileYamlBS actualSmosFile)),
-          "expected:",
-          ppShow smosFile,
-          T.unpack (TE.decodeUtf8 (smosFileYamlBS smosFile))
-        ]
+  expectedSmosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile
+  it "renders the correct smosFile" $ compareAndSuggest smosFileYamlBS sfp actualSmosFile expectedSmosFile
+
+compareAndSuggest :: (Show a, Eq a) => (a -> ByteString) -> Path Abs File -> a -> a -> IO ()
+compareAndSuggest func p actual expected =
+  unless (actual == expected)
+    $ expectationFailure
+    $ unlines
+      [ fromAbsFile p,
+        "actual structure:",
+        ppShow actual,
+        "actual serialised:",
+        T.unpack (TE.decodeUtf8 (func actual)),
+        "expected structure:",
+        ppShow expected,
+        "expected serialised:",
+        T.unpack (TE.decodeUtf8 (func expected))
+      ]
 
 readGoldenSmosFile :: Path Abs File -> SmosFile -> IO SmosFile
 readGoldenSmosFile sfp actual = do
@@ -84,15 +90,14 @@ readGoldenSmosFile sfp actual = do
       Left err -> die $ "Failed to parse smos file: " <> err
       Right smosFile -> pure smosFile
 
-readGoldenYaml :: (FromJSON a, ToJSON a, YamlSchema a) => Path Abs File -> String -> a -> IO a
-readGoldenYaml cp ext actual = do
-  p <- replaceExtension ext cp
+readGoldenYaml :: (FromJSON a, ToJSON a, YamlSchema a) => Path Abs File -> a -> IO a
+readGoldenYaml p actual = do
   mF <- readConfigFile p
   case mF of
     Nothing ->
       die $
         unlines
-          [ unwords [ext, "not found:"],
+          [ unwords ["not found:"],
             fromAbsFile p,
             "suggested:",
             T.unpack (TE.decodeUtf8 (Yaml.encode actual))
