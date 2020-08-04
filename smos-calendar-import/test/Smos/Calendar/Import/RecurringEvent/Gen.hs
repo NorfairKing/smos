@@ -7,11 +7,15 @@ import Data.GenValidity.Text ()
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Data.Gen ()
 
-instance GenValid CalEndDuration where
+instance GenValid RecurringEvents where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
 
 instance GenValid RecurringEvent where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
+instance GenValid CalEndDuration where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
 
@@ -20,6 +24,14 @@ instance GenValid CalTimestamp where
   genValid = genValidStructurally
 
 instance GenValid CalDateTime where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
+instance GenValid TimeZoneId where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
+instance GenValid TimeZoneHistory where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
 

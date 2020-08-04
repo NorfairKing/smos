@@ -13,6 +13,8 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
+  genValidSpec @RecurringEvents
+  jsonSpecOnValid @RecurringEvents
   genValidSpec @RecurringEvent
   jsonSpecOnValid @RecurringEvent
   genValidSpec @CalEndDuration
@@ -21,3 +23,9 @@ spec = do
   jsonSpecOnValid @CalTimestamp
   genValidSpec @CalDateTime
   jsonSpecOnValid @CalDateTime
+  genValidSpec @TimeZoneId
+  jsonSpecOnValid @TimeZoneId
+  genValidSpec @TimeZoneHistory
+  jsonSpecOnValid @TimeZoneHistory
+  genValidSpec @UTCOffset
+  jsonSpecOnValid @UTCOffset

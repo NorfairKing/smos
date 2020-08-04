@@ -8,8 +8,11 @@ import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Data
 
-recurEvents :: TimeZone -> [RecurringEvent] -> [Event]
-recurEvents tz = concatMap (recurEvent tz)
+recurEvents :: TimeZone -> [RecurringEvents] -> [Event]
+recurEvents tz = concatMap (recurRecurringEvents tz)
+
+recurRecurringEvents :: TimeZone -> RecurringEvents -> [Event]
+recurRecurringEvents tz RecurringEvents {..} = undefined
 
 recurEvent :: TimeZone -> RecurringEvent -> [Event]
 recurEvent tz RecurringEvent {..} =
@@ -27,9 +30,7 @@ recurDateTime :: TimeZone -> CalDateTime -> LocalTime
 recurDateTime tz = \case
   Floating lt -> lt
   UTC lt -> utcToLocalTime utc lt
-  Zoned lt (UTCOffset u) ->
-    let utct = localTimeToUTC (minutesToTimeZone (u * 60)) lt
-     in utcToLocalTime tz utct
+  Zoned lt tzid -> undefined tz lt tzid
 
 recurEndDuration :: TimeZone -> Maybe Timestamp -> CalEndDuration -> Maybe Timestamp
 recurEndDuration tz mstart = \case

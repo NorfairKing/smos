@@ -32,22 +32,25 @@ spec = do
 
 mkGoldenTestFor :: Path Abs File -> Spec
 mkGoldenTestFor cp = do
-  cals <- runIO $ do
+  cal <- runIO $ do
     errOrCal <- parseICalendarFile def $ fromAbsFile cp
     case errOrCal of
       Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, err]
       Right (cals, warns) -> do
         unless (null warns) $ mapM_ print warns
-        pure cals
-  describe (fromAbsFile cp) $ mkGoldenTest cp cals
+        case cals of
+          [] -> die "Expected at least one calendar, got 0"
+          [cal] -> pure cal
+          _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+  describe (fromAbsFile cp) $ mkGoldenTest cp cal
 
-mkGoldenTest :: Path Abs File -> [VCalendar] -> Spec
+mkGoldenTest :: Path Abs File -> VCalendar -> Spec
 mkGoldenTest cp cals = do
-  let actualRecurringEvents = pickEvents cals
+  let actualRecurringEvents = pickEventsFromCalendar cals
   rp <- runIO $ replaceExtension ".recurring" cp
   expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
   it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let actualEvents = recurEvents utc actualRecurringEvents -- TODO use a config file
+  let actualEvents = recurRecurringEvents utc actualRecurringEvents -- TODO use a config file
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
   it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
