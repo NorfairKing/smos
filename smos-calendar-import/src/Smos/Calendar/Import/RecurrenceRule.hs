@@ -439,6 +439,8 @@ isIndefinite = (== Indefinitely) . rRuleUntilCount
 -- DATE-TIME value type used with a recurrence rule, should be specified as a
 -- date with local time and time zone reference to make sure all the recurrence
 -- instances start at the same local time regardless of time zone changes.
+--
+-- This function takes care of the 'rRuleUntilCount' part.
 rruleOccurrencesUntil ::
   -- | DTStart
   LocalTime ->
@@ -490,15 +492,12 @@ rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
                 then S.insert next $ go next
                 else S.empty
 
+-- This function takes care of the 'rRuleFrequency' part.
 rruleNextOccurrence :: LocalTime -> RRule -> Maybe LocalTime
 rruleNextOccurrence lt RRule {..} = case rRuleFrequency of
-  Daily -> dailyNextRecurrence lt rRuleUntilCount
+  Daily -> dailyNextRecurrence lt rRuleInterval
   _ -> Nothing
 
-dailyNextRecurrence :: LocalTime -> UntilCount -> Maybe LocalTime
-dailyNextRecurrence (LocalTime d tod) uc =
-  let next = LocalTime (succ d) tod
-   in case uc of
-        Indefinitely -> Just next
-        Count i -> if i > 0 then Just next else Nothing
-        Until lt -> if next <= lt then Just next else Nothing
+dailyNextRecurrence :: LocalTime -> Word -> Maybe LocalTime
+dailyNextRecurrence (LocalTime d tod) interval =
+  Just $ LocalTime (addDays (fromIntegral interval) d) tod

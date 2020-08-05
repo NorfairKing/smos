@@ -20,6 +20,10 @@ import Test.Validity
 spec :: Spec
 spec = do
   genValidSpec @RRule
+  describe "rruleNextOccurrence" $ do
+    it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
+  describe "dailyNextRecurrence" $ do
+    it "produces valid results" $ producesValidsOnValids2 dailyNextRecurrence
   describe "rruleOccurrencesUntil" $ do
     xit "produces valid results" $ producesValidsOnValids3 rruleOccurrencesUntil
     xit "produces results within the 'Count' range for 'Count' rules" $ forAllValid $ \start ->
@@ -41,7 +45,7 @@ spec = do
             limit = LocalTime (fromGregorian 1998 01 01) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList (map (\d -> LocalTime (fromGregorian 1997 09 d) (TimeOfDay 09 00 00)) [2 .. 11])
-      xspecify "Daily until December 24, 1997" $ do
+      specify "Daily until December 24, 1997" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
         --  RRULE:FREQ=DAILY;UNTIL=19971224T000000Z
@@ -57,7 +61,7 @@ spec = do
             to = fromGregorian 1997 12 23
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList (map (\d -> LocalTime d (TimeOfDay 09 00 00)) [from .. to])
-      xspecify "Every other day - forever" $ do
+      specify "Every other day - forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
         --  RRULE:FREQ=DAILY;INTERVAL=2
@@ -80,7 +84,7 @@ spec = do
                   (x : y : zs) -> x : go zs
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList (map (\d -> LocalTime d (TimeOfDay 09 00 00)) (everySecond [from .. to]))
-      xspecify "Every 10 days, 5 occurrences" $ do
+      specify "Every 10 days, 5 occurrences" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
         --  RRULE:FREQ=DAILY;INTERVAL=10;COUNT=5
