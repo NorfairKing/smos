@@ -63,11 +63,6 @@ data CalDateTime
   | Zoned LocalTime TimeZoneId
   deriving (Show, Eq, Generic)
 
-compareCalDateTime :: CalDateTime -> CalDateTime -> Maybe Orderring
-compareCalDateTime cdt1 cdt2 = case (cdt1, cdt2) of
-  (Floating lt1, Floating lt2) -> Just $ compare lt1 lt2
-  (UTC utct1, UTC utct2) -> Just $ compare utct1 utct2
-
 instance Validity CalDateTime
 
 instance YamlSchema CalDateTime where
