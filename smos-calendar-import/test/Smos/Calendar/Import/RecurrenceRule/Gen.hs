@@ -38,60 +38,44 @@ instance GenValid RRule where
     rRuleFrequency <- genValid
     rRuleInterval <- sized $ \s -> max 1 <$> choose (1, fromIntegral s) -- no point in generating huge words
     rRuleUntilCount <- genValid
-    rRuleBySecond <- oneof [pure Nothing, Just <$> genNonEmptyOf (choose (0, 60))]
-    rRuleByMinute <- oneof [pure Nothing, Just <$> genNonEmptyOf (choose (0, 59))]
-    rRuleByHour <- oneof [pure Nothing, Just <$> genNonEmptyOf (choose (0, 23))]
+    rRuleBySecond <- genListOf (choose (0, 60))
+    rRuleByMinute <- genListOf (choose (0, 59))
+    rRuleByHour <- genListOf (choose (0, 23))
     rRuleByDay <-
-      oneof
-        [ pure Nothing,
-          Just
-            <$> genNonEmptyOf
-              ( case rRuleFrequency of
-                  Monthly -> Every <$> genValid
-                  Yearly -> Every <$> genValid
-                  _ -> genValid
-              )
-        ]
+      genListOf
+        ( case rRuleFrequency of
+            Monthly -> Every <$> genValid
+            Yearly -> Every <$> genValid
+            _ -> genValid
+        )
     rRuleByMonthDay <- case rRuleFrequency of
-      Weekly -> pure Nothing
+      Weekly -> pure []
       _ ->
-        oneof
-          [ pure Nothing,
-            Just
-              <$> genNonEmptyOf
-                ( oneof
-                    [ choose (1, 31),
-                      choose (-31, - 1)
-                    ]
-                )
-          ]
+        genListOf
+          ( oneof
+              [ choose (1, 31),
+                choose (-31, - 1)
+              ]
+          )
     rRuleByYearDay <- case rRuleFrequency of
-      Daily -> pure Nothing
-      Weekly -> pure Nothing
-      Monthly -> pure Nothing
+      Daily -> pure []
+      Weekly -> pure []
+      Monthly -> pure []
       _ ->
-        oneof
-          [ pure Nothing,
-            Just
-              <$> genNonEmptyOf
-                ( oneof
-                    [ choose (1, 366),
-                      choose (-366, - 1)
-                    ]
-                )
-          ]
+        genListOf
+          ( oneof
+              [ choose (1, 366),
+                choose (-366, - 1)
+              ]
+          )
     rRuleByWeekNo <-
-      oneof
-        [ pure Nothing,
-          Just
-            <$> genNonEmptyOf
-              ( oneof
-                  [ choose (1, 53),
-                    choose (-53, - 1)
-                  ]
-              )
-        ]
-    rRuleByMonth <- oneof [pure Nothing, Just <$> genNonEmptyOf (choose (1, 12))]
+      genListOf
+        ( oneof
+            [ choose (1, 53),
+              choose (-53, - 1)
+            ]
+        )
+    rRuleByMonth <- genListOf (choose (1, 12))
     rRuleWeekStart <- genValid
-    rRuleBySetPos <- oneof [pure Nothing, Just <$> genNonEmptyOf (sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]))]
+    rRuleBySetPos <- genListOf (sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]))
     pure RRule {..}
