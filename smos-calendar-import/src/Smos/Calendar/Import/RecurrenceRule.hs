@@ -6,11 +6,11 @@
 module Smos.Calendar.Import.RecurrenceRule where
 
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time
 import Data.Validity
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
-import Smos.Calendar.Import.UnresolvedTimestamp
 
 -- | A recurrence rule
 --
@@ -449,7 +449,56 @@ rruleOccurrencesUntil ::
   -- | The recurrence set.
   -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
   Set LocalTime
-rruleOccurrencesUntil = undefined
+rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
+  Indefinitely -> goIndefinitely
+  Count i -> goCount i
+  Until lt -> goUntil lt
+  where
+    goIndefinitely = S.insert start $ go start
+      where
+        go cur =
+          case rruleNextOccurrence cur rrule of
+            Nothing -> S.empty
+            Just next ->
+              if next <= limit
+                then S.insert next $ go next
+                else S.empty
+    goCount count =
+      if count >= 1
+        then S.insert start $ go (pred count) start
+        else S.empty
+      where
+        go c cur =
+          if c <= 0
+            then S.empty
+            else case rruleNextOccurrence cur rrule of
+              Nothing -> S.empty
+              Just next ->
+                if next <= limit
+                  then S.insert next $ go (pred c) next
+                  else S.empty
+    goUntil untilLimit =
+      if start <= untilLimit
+        then S.insert start $ go start
+        else S.empty
+      where
+        go cur =
+          case rruleNextOccurrence cur rrule of
+            Nothing -> S.empty
+            Just next ->
+              if next <= limit && next <= untilLimit
+                then S.insert next $ go next
+                else S.empty
 
-rruleNextOccurrence :: CalDateTime -> RRule -> Maybe CalDateTime
-rruleNextOccurrence = undefined
+rruleNextOccurrence :: LocalTime -> RRule -> Maybe LocalTime
+rruleNextOccurrence lt RRule {..} = case rRuleFrequency of
+  Daily -> dailyNextRecurrence lt rRuleUntilCount
+  _ -> Nothing
+
+dailyNextRecurrence :: LocalTime -> UntilCount -> Maybe LocalTime
+dailyNextRecurrence (LocalTime d tod) uc =
+  let next = LocalTime (succ d) tod
+   in case uc of
+        Indefinitely -> Just next
+        Count i -> if i > 0 then Just next else Nothing
+        Until lt -> if next <= lt then Just next else Nothing

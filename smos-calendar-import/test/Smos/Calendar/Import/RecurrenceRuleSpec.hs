@@ -29,7 +29,7 @@ spec = do
             let s = rruleOccurrencesUntil start rule limit
              in fromIntegral (S.size s) `shouldSatisfy` (<= c)
     describe "Examples from the spec in section 3.8.5.3" $ do
-      xspecify "Daily for 10 occurrences" $ do
+      specify "Daily for 10 occurrences" $ do
         --
         -- DTSTART;TZID=America/New_York:19970902T090000
         -- RRULE:FREQ=DAILY;COUNT=10
@@ -38,7 +38,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule = (rRule Daily) {rRuleUntilCount = Count 10}
             -- Limit: the set is finite so the limit will just be some point beyond the end
-            limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
+            limit = LocalTime (fromGregorian 1998 01 01) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList (map (\d -> LocalTime (fromGregorian 1997 09 d) (TimeOfDay 09 00 00)) [2 .. 11])
       xspecify "Daily until December 24, 1997" $ do
