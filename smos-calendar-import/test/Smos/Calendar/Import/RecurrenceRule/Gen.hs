@@ -80,4 +80,18 @@ instance GenValid RRule where
                     ]
                 )
           ]
+    rRuleByWeekNo <-
+      oneof
+        [ pure Nothing,
+          Just
+            <$> genNonEmptyOf
+              ( oneof
+                  [ choose (1, 53),
+                    choose (-53, - 1)
+                  ]
+              )
+        ]
+    rRuleByMonth <- oneof [pure Nothing, Just <$> genNonEmptyOf (choose (1, 12))]
+    rRuleWeekStart <- genValid
+    rRuleBySetPos <- oneof [pure Nothing, Just <$> genNonEmptyOf (sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]))]
     pure RRule {..}
