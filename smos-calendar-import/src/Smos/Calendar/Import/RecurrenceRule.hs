@@ -376,7 +376,7 @@ data UntilCount
     -- sub-components the UNTIL rule part MUST always be specified as a date
     -- with UTC time.  If specified as a DATE-TIME value, then it MUST be
     -- specified in a UTC time format.
-    Until CalTimestamp
+    Until LocalTime
   | -- | The COUNT rule part defines the number of occurrences at which to range-bound the recurrence.
     --
     -- The "DTSTART" property value always counts as the first occurrence.
@@ -439,6 +439,9 @@ rRule freq =
       rRuleWeekStart = Monday,
       rRuleBySetPos = Nothing
     }
+
+isIndefinite :: RRule -> Bool
+isIndefinite = (== Indefinitely) . rRuleUntilCount
 
 rruleOccurrencesUntil ::
   -- | DTStart
