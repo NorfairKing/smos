@@ -8,7 +8,7 @@ import Data.Aeson
 import Data.Aeson.Types
 import Data.Text (Text)
 import Data.Validity
-import Data.Validity.Text
+import Data.Validity.Text (validateTextSingleLine)
 import GHC.Generics (Generic)
 import YamlParse.Applicative
 
