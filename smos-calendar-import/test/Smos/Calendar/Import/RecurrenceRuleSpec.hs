@@ -632,7 +632,7 @@ spec = do
               LocalTime (fromGregorian 2001 06 10) (TimeOfDay 09 00 00),
               LocalTime (fromGregorian 2001 07 10) (TimeOfDay 09 00 00)
             ]
-      specify "Every other year on January, February, and March for 1 occurrences" $ do
+      specify "Every other year on January, February, and March for 10 occurrences" $ do
         --
         --  DTSTART;TZID=America/New_York:19970310T090000
         --  RRULE:FREQ=YEARLY;INTERVAL=2;COUNT=10;BYMONTH=1,2,3
@@ -642,7 +642,28 @@ spec = do
         --      (2001 9:00 AM EST) January 10;February 10;March 10
         --      (2003 9:00 AM EST) January 10;February 10;March 10
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 03 10) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleInterval = 2,
+                  rRuleUntilCount = Count 10,
+                  rRuleByMonth = [1, 2, 3]
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 03 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 01 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 02 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 03 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2001 01 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2001 02 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2001 03 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 01 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 02 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 03 10) (TimeOfDay 09 00 00)
+            ]
       specify "Every third year on the 1st, 100th, and 200th day for 10 occurrences" $ do
         --
         --  DTSTART;TZID=America/New_York:19970101T090000
@@ -656,7 +677,28 @@ spec = do
         --      (2003 9:00 AM EDT) April 10;July 19
         --      (2006 9:00 AM EST) January 1
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 01 01) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleInterval = 3,
+                  rRuleUntilCount = Count 10,
+                  rRuleByYearDay = [1, 100, 200]
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 01 01) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 04 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2000 01 01) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2000 04 09) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2000 07 18) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 01 01) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 04 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2003 07 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2006 01 01) (TimeOfDay 09 00 00)
+            ]
       specify "Every 20th Monday of the year, forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970519T090000
@@ -668,7 +710,18 @@ spec = do
         --      ...
         --
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 05 19) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleByDay = [Specific 20 Monday]
+                }
+            limit = LocalTime (fromGregorian 1999 05 18) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 05 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 05 18) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 05 17) (TimeOfDay 09 00 00)
+            ]
       specify "Monday of week number 20 (where the default start of the week is Monday), forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970512T090000
@@ -679,7 +732,19 @@ spec = do
         --      (1999 9:00 AM EDT) May 17
         --      ...
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 05 12) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleByWeekNo = [20],
+                  rRuleByDay = [Every Monday]
+                }
+            limit = LocalTime (fromGregorian 1999 05 18) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 05 12) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 05 11) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 05 17) (TimeOfDay 09 00 00)
+            ]
       specify "Every Thursday in March, forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970313T090000
@@ -690,7 +755,27 @@ spec = do
         --      (1999 9:00 AM EST) March 4,11,18,25
         --      ...
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 03 13) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleByMonth = [3],
+                  rRuleByDay = [Every Thursday]
+                }
+            limit = LocalTime (fromGregorian 1999 03 26) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 03 12) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 03 20) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 03 27) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 03 05) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 03 12) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 03 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 03 26) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 03 04) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 03 11) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 03 18) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 03 25) (TimeOfDay 09 00 00)
+            ]
       specify "Every Thursday, but only during June, July, and August, forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970605T090000
@@ -704,7 +789,55 @@ spec = do
         --                         August 5,12,19,26
         --      ...
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 06 05) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Yearly)
+                { rRuleByDay = [Every Thursday],
+                  rRuleByMonth = [6, 7, 8]
+                }
+            limit = LocalTime (fromGregorian 1999 08 26) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 06 05) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 06 12) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 06 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 06 26) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 03) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 17) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 24) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 07 31) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 07) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 14) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 21) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 28) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 06 04) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 06 11) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 06 18) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 06 25) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 07 02) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 07 09) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 07 16) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 07 23) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 07 30) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 08 06) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 08 13) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 08 20) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1998 08 27) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 06 03) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 06 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 06 17) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 06 24) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 07 01) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 07 08) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 07 15) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 07 22) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 07 29) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 08 05) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 08 12) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 08 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1999 08 26) (TimeOfDay 09 00 00)
+            ]
       specify "Every Friday the 13th, forever" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
