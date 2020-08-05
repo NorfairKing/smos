@@ -48,6 +48,15 @@ instance GenValid ByDay where
         Specific <$> sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]) <*> genValid
       ]
 
+instance GenValid ByMonthDay where
+  shrinkValid = shrinkValidStructurally
+  genValid =
+    MonthDay
+      <$> oneof
+        [ choose (1, 31),
+          choose (-31, - 1)
+        ]
+
 instance GenValid RRule where
   shrinkValid = shrinkValidStructurally
   genValid = do
@@ -66,13 +75,7 @@ instance GenValid RRule where
         )
     rRuleByMonthDay <- case rRuleFrequency of
       Weekly -> pure []
-      _ ->
-        genListOf
-          ( oneof
-              [ choose (1, 31),
-                choose (-31, - 1)
-              ]
-          )
+      _ -> genValid
     rRuleByYearDay <- case rRuleFrequency of
       Daily -> pure []
       Weekly -> pure []

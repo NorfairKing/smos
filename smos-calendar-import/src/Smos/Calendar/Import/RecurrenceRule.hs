@@ -246,7 +246,7 @@ data RRule
         -- Valid values are 1 to 31 or -31 to -1.  For example, -10 represents
         -- the tenth to the last day of the month.  The BYMONTHDAY rule part
         -- MUST NOT be specified when the FREQ rule part is set to WEEKLY
-        rRuleByMonthDay :: ![Int],
+        rRuleByMonthDay :: ![ByMonthDay],
         -- | The BYYEARDAY rule part specifies a COMMA-separated list of days of the year.
         --
         -- Valid values are 1 to 366 or -366 to -1.  For example, -1 represents
@@ -319,7 +319,6 @@ instance Validity RRule where
                   Monthly -> care
                   Yearly -> care
                   _ -> True,
-        decorateList rRuleByMonthDay $ \bmd -> declare "Valid values are 1 to 31 or -31 to -1." $ bmd /= 0 && bmd >= -31 && bmd <= 31,
         declare "The BYMONTHDAY rule part MUST NOT be specified when the FREQ rule part is set to WEEKLY" $
           case rRuleFrequency of
             Weekly -> null rRuleByMonthDay
@@ -436,6 +435,16 @@ instance Validity ByDay where
         case bd of
           Every _ -> valid
           Specific i _ -> declare "The specific weekday number is not zero" $ i /= 0
+      ]
+
+newtype ByMonthDay = MonthDay Int
+  deriving (Show, Eq, Generic)
+
+instance Validity ByMonthDay where
+  validate md@(MonthDay i) =
+    mconcat
+      [ genericValidate md,
+        declare "Valid values are 1 to 31 or -31 to -1." $ i /= 0 && i >= -31 && i <= 31
       ]
 
 deriving instance Generic DayOfWeek

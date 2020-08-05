@@ -481,7 +481,7 @@ spec = do
         --      ...
         --
         let dtstart = LocalTime (fromGregorian 1997 09 28) (TimeOfDay 09 00 00)
-            rule = (rRule Monthly) {rRuleByMonthDay = [-3]}
+            rule = (rRule Monthly) {rRuleByMonthDay = [MonthDay (-3)]}
             limit = LocalTime (fromGregorian 1998 02 27) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList
@@ -502,7 +502,7 @@ spec = do
         --      (1998 9:00 AM EST) January 2,15
         --
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
-            rule = (rRule Monthly) {rRuleUntilCount = Count 10, rRuleByMonthDay = [2, 15]}
+            rule = (rRule Monthly) {rRuleUntilCount = Count 10, rRuleByMonthDay = [MonthDay 2, MonthDay 15]}
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -531,7 +531,7 @@ spec = do
             rule =
               (rRule Monthly)
                 { rRuleUntilCount = Count 10,
-                  rRuleByMonthDay = [1, -1]
+                  rRuleByMonthDay = [MonthDay 1, MonthDay (-1)]
                 }
             limit = LocalTime (fromGregorian 1998 02 02) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -561,7 +561,7 @@ spec = do
               (rRule Monthly)
                 { rRuleInterval = Interval 18,
                   rRuleUntilCount = Count 10,
-                  rRuleByMonthDay = [10, 11, 12, 13, 14, 15]
+                  rRuleByMonthDay = map MonthDay [10, 11, 12, 13, 14, 15]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
@@ -865,7 +865,7 @@ spec = do
             rule =
               (rRule Monthly)
                 { rRuleByDay = [Every Friday],
-                  rRuleByMonthDay = [13]
+                  rRuleByMonthDay = [MonthDay 13]
                 }
             limit = LocalTime (fromGregorian 2000 10 14) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -891,7 +891,7 @@ spec = do
             rule =
               (rRule Monthly)
                 { rRuleByDay = [Every Saturday],
-                  rRuleByMonthDay = [7, 8, 9, 9, 10, 11, 12, 13]
+                  rRuleByMonthDay = map MonthDay [7, 8, 9, 9, 10, 11, 12, 13]
                 }
             limit = LocalTime (fromGregorian 1998 06 14) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -924,7 +924,7 @@ spec = do
                 { rRuleInterval = Interval 4,
                   rRuleByMonth = [11],
                   rRuleByDay = [Every Tuesday],
-                  rRuleByMonthDay = [2, 3, 4, 5, 6, 7, 8]
+                  rRuleByMonthDay = map MonthDay [2, 3, 4, 5, 6, 7, 8]
                 }
             limit = LocalTime (fromGregorian 2004 11 03) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -1144,7 +1144,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 2007 01 15) (TimeOfDay 09 00 00)
             rule =
               (rRule Monthly)
-                { rRuleByMonthDay = [15, 30],
+                { rRuleByMonthDay = [MonthDay 15, MonthDay 30],
                   rRuleUntilCount = Count 5
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
