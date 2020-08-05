@@ -980,7 +980,20 @@ spec = do
         --
         --  ==> (September 2, 1997 EDT) 09:00,12:00,15:00
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Hourly)
+                { rRuleInterval = 3,
+                  rRuleUntilCount = Until (LocalTime (fromGregorian 1997 09 02) (TimeOfDay 00 00 00))
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 12 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 15 00 00)
+            ]
       specify "Every 15 minutes for 6 occurrences" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
@@ -988,7 +1001,23 @@ spec = do
         --
         --  ==> (September 2, 1997 EDT) 09:00,09:15,09:30,09:45,10:00,10:15
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Minutely)
+                { rRuleInterval = 15,
+                  rRuleUntilCount = Count 6
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 15 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 30 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 45 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 10 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 10 15 00)
+            ]
       specify "Every hour and a half for 4 occurrences" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
@@ -996,7 +1025,21 @@ spec = do
         --
         --  ==> (September 2, 1997 EDT) 09:00,10:30;12:00;13:30
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Minutely)
+                { rRuleInterval = 90,
+                  rRuleUntilCount = Count 4
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 10 30 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 12 00 00),
+              LocalTime (fromGregorian 1997 09 02) (TimeOfDay 13 30 00)
+            ]
       specify "Every 20 minutes from 9:00 AM to 4:40 PM every day" $ do
         --
         --  DTSTART;TZID=America/New_York:19970902T090000
@@ -1007,10 +1050,32 @@ spec = do
         --  ==> (September 2, 1997 EDT) 9:00,9:20,9:40,10:00,10:20,
         --                              ... 16:00,16:20,16:40
         --      (September 3, 1997 EDT) 9:00,9:20,9:40,10:00,10:20,
-        --                              ...16:00,16:20,16:40
+        --                              ... 16:00,16:20,16:40
         --      ...
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
+            rule1 =
+              (rRule Daily)
+                { rRuleByHour = [9, 10, 11, 12, 13, 14, 15, 16],
+                  rRuleByMinute = [0, 20, 40]
+                }
+            rule2 =
+              (rRule Minutely)
+                { rRuleInterval = 20,
+                  rRuleByHour = [9, 10, 11, 12, 13, 14, 15, 16]
+                }
+            limit = LocalTime (fromGregorian 1997 09 03) (TimeOfDay 17 00 00)
+        let res1 = rruleOccurrencesUntil dtstart rule1 limit
+        let res2 = rruleOccurrencesUntil dtstart rule2 limit
+        res1
+          `shouldBe` S.fromList
+            ( do
+                dn <- [2, 3]
+                h <- [9 .. 16]
+                m <- [00, 20, 40]
+                pure (LocalTime (fromGregorian 1997 09 dn) (TimeOfDay h m 00))
+            )
+        res2 `shouldBe` res1
       specify "An example where the days generated makes a difference because of WKST" $ do
         --
         --  DTSTART;TZID=America/New_York:19970805T090000
@@ -1018,7 +1083,23 @@ spec = do
         --
         --  ==> (1997 EDT) August 5,10,19,24
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Weekly)
+                { rRuleInterval = 2,
+                  rRuleUntilCount = Count 4,
+                  rRuleByDay = [Every Tuesday, Every Sunday],
+                  rRuleWeekStart = Monday
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 10) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 24) (TimeOfDay 09 00 00)
+            ]
       specify "changing only WKST from MO to SU, yields different results.." $ do
         --
         --  DTSTART;TZID=America/New_York:19970805T090000
@@ -1026,7 +1107,23 @@ spec = do
         --
         --  ==> (1997 EDT) August 5,17,19,31
         --
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Weekly)
+                { rRuleInterval = 2,
+                  rRuleUntilCount = Count 4,
+                  rRuleByDay = [Every Tuesday, Every Sunday],
+                  rRuleWeekStart = Sunday
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 17) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 19) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 1997 08 31) (TimeOfDay 09 00 00)
+            ]
       specify "An example where an invalid date (i.e., February 30) is ignored" $ do
         --  DTSTART;TZID=America/New_York:20070115T090000
         --  RRULE:FREQ=MONTHLY;BYMONTHDAY=15,30;COUNT=5
@@ -1034,4 +1131,19 @@ spec = do
         --  ==> (2007 EST) January 15,30
         --      (2007 EST) February 15
         --      (2007 EDT) March 15,30
-        expectationFailure "not implemented yet."
+        let dtstart = LocalTime (fromGregorian 2007 01 15) (TimeOfDay 09 00 00)
+            rule =
+              (rRule Monthly)
+                { rRuleByMonthDay = [15, 30],
+                  rRuleUntilCount = Count 5
+                }
+            -- Limit: the set is finite so the limit will just be some point beyond the end
+            limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
+        rruleOccurrencesUntil dtstart rule limit
+          `shouldBe` S.fromList
+            [ LocalTime (fromGregorian 2007 01 15) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2007 01 30) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2007 02 15) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2007 03 15) (TimeOfDay 09 00 00),
+              LocalTime (fromGregorian 2007 03 30) (TimeOfDay 09 00 00)
+            ]
