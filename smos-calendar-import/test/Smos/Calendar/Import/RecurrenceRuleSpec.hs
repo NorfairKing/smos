@@ -19,6 +19,12 @@ import Test.Validity
 
 spec :: Spec
 spec = do
+  genValidSpec @Frequency
+  genValidSpec @UntilCount
+  genValidSpec @Interval
+  genValidSpec @BySecond
+  genValidSpec @ByMinute
+  genValidSpec @ByHour
   genValidSpec @RRule
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
@@ -72,7 +78,7 @@ spec = do
         --                         November 1,3,5,7...25,27,29;
         --                         December 1,3,...
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
-            rule = (rRule Daily) {rRuleInterval = 2}
+            rule = (rRule Daily) {rRuleInterval = Interval 2}
             limit = LocalTime (fromGregorian 1997 12 03) (TimeOfDay 09 00 00)
             from = fromGregorian 1997 09 02
             to = fromGregorian 1997 12 03
@@ -93,7 +99,7 @@ spec = do
         --                         October 2,12
         --
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
-            rule = (rRule Daily) {rRuleInterval = 10, rRuleUntilCount = Count 5}
+            rule = (rRule Daily) {rRuleInterval = Interval 10, rRuleUntilCount = Count 5}
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
@@ -218,7 +224,7 @@ spec = do
         --                         February 3, 17
         --      ...
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
-            rule = (rRule Weekly) {rRuleInterval = 2, rRuleWeekStart = Sunday}
+            rule = (rRule Weekly) {rRuleInterval = Interval 2, rRuleWeekStart = Sunday}
             limit = LocalTime (fromGregorian 1998 02 17) (TimeOfDay 09 00 00)
         rruleOccurrencesUntil dtstart rule limit
           `shouldBe` S.fromList
@@ -295,7 +301,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 01) (TimeOfDay 09 00 00)
             rule =
               (rRule Weekly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Until (LocalTime (fromGregorian 1997 12 24) (TimeOfDay 00 00 00)),
                   rRuleWeekStart = Sunday,
                   rRuleByDay = map Every [Monday, Wednesday, Friday]
@@ -340,7 +346,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule =
               (rRule Weekly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 8,
                   rRuleWeekStart = Sunday,
                   rRuleByDay = map Every [Tuesday, Thursday]
@@ -425,7 +431,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 07) (TimeOfDay 09 00 00)
             rule =
               (rRule Monthly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 10,
                   rRuleByDay = [Specific 1 Sunday, Specific (-1) Sunday]
                 }
@@ -553,7 +559,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 03) (TimeOfDay 09 00 00)
             rule =
               (rRule Monthly)
-                { rRuleInterval = 18,
+                { rRuleInterval = Interval 18,
                   rRuleUntilCount = Count 10,
                   rRuleByMonthDay = [10, 11, 12, 13, 14, 15]
                 }
@@ -585,7 +591,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule =
               (rRule Monthly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleByDay = [Every Tuesday]
                 }
             limit = LocalTime (fromGregorian 1998 04 01) (TimeOfDay 00 00 00)
@@ -649,7 +655,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 03 10) (TimeOfDay 09 00 00)
             rule =
               (rRule Yearly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 10,
                   rRuleByMonth = [1, 2, 3]
                 }
@@ -684,7 +690,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 01 01) (TimeOfDay 09 00 00)
             rule =
               (rRule Yearly)
-                { rRuleInterval = 3,
+                { rRuleInterval = Interval 3,
                   rRuleUntilCount = Count 10,
                   rRuleByYearDay = [1, 100, 200]
                 }
@@ -915,7 +921,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1996 11 05) (TimeOfDay 09 00 00)
             rule =
               (rRule Yearly)
-                { rRuleInterval = 4,
+                { rRuleInterval = Interval 4,
                   rRuleByMonth = [11],
                   rRuleByDay = [Every Tuesday],
                   rRuleByMonthDay = [2, 3, 4, 5, 6, 7, 8]
@@ -987,7 +993,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule =
               (rRule Hourly)
-                { rRuleInterval = 3,
+                { rRuleInterval = Interval 3,
                   rRuleUntilCount = Until (LocalTime (fromGregorian 1997 09 02) (TimeOfDay 00 00 00))
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
@@ -1008,7 +1014,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule =
               (rRule Minutely)
-                { rRuleInterval = 15,
+                { rRuleInterval = Interval 15,
                   rRuleUntilCount = Count 6
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
@@ -1032,7 +1038,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule =
               (rRule Minutely)
-                { rRuleInterval = 90,
+                { rRuleInterval = Interval 90,
                   rRuleUntilCount = Count 4
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
@@ -1060,13 +1066,13 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
             rule1 =
               (rRule Daily)
-                { rRuleByHour = [9, 10, 11, 12, 13, 14, 15, 16],
-                  rRuleByMinute = [0, 20, 40]
+                { rRuleByHour = map Hour [9, 10, 11, 12, 13, 14, 15, 16],
+                  rRuleByMinute = map Minute [0, 20, 40]
                 }
             rule2 =
               (rRule Minutely)
-                { rRuleInterval = 20,
-                  rRuleByHour = [9, 10, 11, 12, 13, 14, 15, 16]
+                { rRuleInterval = Interval 20,
+                  rRuleByHour = map Hour [9, 10, 11, 12, 13, 14, 15, 16]
                 }
             limit = LocalTime (fromGregorian 1997 09 03) (TimeOfDay 17 00 00)
         let res1 = rruleOccurrencesUntil dtstart rule1 limit
@@ -1090,7 +1096,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00)
             rule =
               (rRule Weekly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 4,
                   rRuleByDay = [Every Tuesday, Every Sunday],
                   rRuleWeekStart = Monday
@@ -1114,7 +1120,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00)
             rule =
               (rRule Weekly)
-                { rRuleInterval = 2,
+                { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 4,
                   rRuleByDay = [Every Tuesday, Every Sunday],
                   rRuleWeekStart = Sunday

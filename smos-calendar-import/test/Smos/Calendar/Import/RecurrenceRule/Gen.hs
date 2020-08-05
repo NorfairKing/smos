@@ -24,6 +24,22 @@ instance GenValid UntilCount where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
 
+instance GenValid Interval where
+  shrinkValid = shrinkValidStructurally
+  genValid = Interval <$> sized (\s -> max 1 <$> choose (1, fromIntegral s)) -- no point in generating huge words
+
+instance GenValid BySecond where
+  shrinkValid = shrinkValidStructurally
+  genValid = Second <$> choose (0, 60)
+
+instance GenValid ByMinute where
+  shrinkValid = shrinkValidStructurally
+  genValid = Minute <$> choose (0, 59)
+
+instance GenValid ByHour where
+  shrinkValid = shrinkValidStructurally
+  genValid = Hour <$> choose (0, 23)
+
 instance GenValid ByDay where
   shrinkValid = shrinkValidStructurally
   genValid =
@@ -36,11 +52,11 @@ instance GenValid RRule where
   shrinkValid = shrinkValidStructurally
   genValid = do
     rRuleFrequency <- genValid
-    rRuleInterval <- sized $ \s -> max 1 <$> choose (1, fromIntegral s) -- no point in generating huge words
+    rRuleInterval <- genValid
     rRuleUntilCount <- genValid
-    rRuleBySecond <- genListOf (choose (0, 60))
-    rRuleByMinute <- genListOf (choose (0, 59))
-    rRuleByHour <- genListOf (choose (0, 23))
+    rRuleBySecond <- genValid
+    rRuleByMinute <- genValid
+    rRuleByHour <- genValid
     rRuleByDay <-
       genListOf
         ( case rRuleFrequency of
