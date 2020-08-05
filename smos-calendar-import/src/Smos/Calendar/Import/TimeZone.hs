@@ -6,6 +6,7 @@
 module Smos.Calendar.Import.TimeZone where
 
 import Data.Aeson
+import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
@@ -14,7 +15,7 @@ import Smos.Data
 import YamlParse.Applicative
 
 newtype TimeZoneId = TimeZoneId Text -- Unique id of the timezone
-  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
 
 instance Validity TimeZoneId
 
