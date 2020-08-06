@@ -4,9 +4,11 @@
 module Smos.Calendar.Import.RecurrenceRule.Gen where
 
 import Data.GenValidity
+import Data.GenValidity.Containers
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import Data.Maybe
+import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.UnresolvedTimestamp.Gen
@@ -28,7 +30,7 @@ instance GenValid Frequency where
 
 instance GenValid UntilCount where
   shrinkValid = shrinkValidStructurally
-  genValid = genValidStructurally
+  genValid = oneof [pure Indefinitely, Count <$> sized (\s -> max 1 <$> choose (1, fromIntegral s)), Until <$> genValid]
 
 instance GenValid Interval where
   shrinkValid = shrinkValidStructurally
@@ -95,41 +97,41 @@ instance GenValid RRule where
     rRuleByMinute <- genValid
     rRuleByHour <- genValid
     rRuleByDay <-
-      genListOf
+      genSetOf
         ( case rRuleFrequency of
             Monthly -> Every <$> genValid
             Yearly -> Every <$> genValid
             _ -> genValid
         )
     rRuleByMonthDay <- case rRuleFrequency of
-      Weekly -> pure []
+      Weekly -> pure S.empty
       _ -> genValid
     rRuleByYearDay <- case rRuleFrequency of
-      Daily -> pure []
-      Weekly -> pure []
-      Monthly -> pure []
+      Daily -> pure S.empty
+      Weekly -> pure S.empty
+      Monthly -> pure S.empty
       _ -> genValid
     rRuleByWeekNo <- case rRuleFrequency of
       Yearly -> genValid
-      _ -> pure []
+      _ -> pure S.empty
     rRuleByMonth <- genValid
     rRuleWeekStart <- genValid
     rRuleBySetPos <-
       let anyOtherBySpecified =
             any
-              (not . null)
-              [ () <$ rRuleBySecond,
-                () <$ rRuleByMinute,
-                () <$ rRuleByHour,
-                () <$ rRuleByDay,
-                () <$ rRuleByMonthDay,
-                () <$ rRuleByYearDay,
-                () <$ rRuleByWeekNo,
-                () <$ rRuleByMonth
+              not
+              [ S.null rRuleBySecond,
+                S.null rRuleByMinute,
+                S.null rRuleByHour,
+                S.null rRuleByDay,
+                S.null rRuleByMonthDay,
+                S.null rRuleByYearDay,
+                S.null rRuleByWeekNo,
+                S.null rRuleByMonth
               ]
        in if anyOtherBySpecified
             then genValid
-            else pure []
+            else pure S.empty
     pure RRule {..}
 
 genDailyRecurrence :: Gen RRule
@@ -141,33 +143,33 @@ genDailyRecurrence = do
   rRuleByMinute <- genValid
   rRuleByHour <- genValid
   rRuleByDay <-
-    genListOf
+    genSetOf
       ( case rRuleFrequency of
           Monthly -> Every <$> genValid
           Yearly -> Every <$> genValid
           _ -> genValid
       )
   rRuleByMonthDay <- case rRuleFrequency of
-    Weekly -> pure []
+    Weekly -> pure S.empty
     _ -> genValid
-  let rRuleByYearDay = []
-      rRuleByWeekNo = []
+  let rRuleByYearDay = S.empty
+      rRuleByWeekNo = S.empty
   rRuleByMonth <- genValid
   rRuleWeekStart <- genValid
   rRuleBySetPos <-
     let anyOtherBySpecified =
           any
-            (not . null)
-            [ () <$ rRuleBySecond,
-              () <$ rRuleByMinute,
-              () <$ rRuleByHour,
-              () <$ rRuleByDay,
-              () <$ rRuleByMonthDay,
-              () <$ rRuleByYearDay,
-              () <$ rRuleByWeekNo,
-              () <$ rRuleByMonth
+            not
+            [ S.null rRuleBySecond,
+              S.null rRuleByMinute,
+              S.null rRuleByHour,
+              S.null rRuleByDay,
+              S.null rRuleByMonthDay,
+              S.null rRuleByYearDay,
+              S.null rRuleByWeekNo,
+              S.null rRuleByMonth
             ]
      in if anyOtherBySpecified
           then genValid
-          else pure []
+          else pure S.empty
   pure RRule {..}

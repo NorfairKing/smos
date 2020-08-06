@@ -29,11 +29,13 @@ library:
     - path
     - path-io
     - pretty-show
+    - safe
     - smos-data
     - smos-report
     - text
     - time
     - validity
+    - validity-containers
     - validity-text
     - validity-time
     - yaml
@@ -57,6 +59,7 @@ tests:
     - containers
     - data-default
     - genvalidity
+    - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - genvalidity-text
