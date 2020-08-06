@@ -10,7 +10,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.RecurrenceRule.Gen ()
+import Smos.Calendar.Import.RecurrenceRule.Gen
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Test.Hspec
 import Test.QuickCheck
@@ -31,6 +31,7 @@ spec = do
   genValidSpec @Month
   genValidSpec @BySetPos
   genValidSpec @RRule
+  describe "genDailyRecurrence" $ it "generates valid rules" $ genGeneratesValid genDailyRecurrence
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
   describe "dailyNextRecurrence" $ do

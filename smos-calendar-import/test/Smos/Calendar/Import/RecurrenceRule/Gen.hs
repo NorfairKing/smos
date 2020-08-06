@@ -131,3 +131,43 @@ instance GenValid RRule where
             then genValid
             else pure []
     pure RRule {..}
+
+genDailyRecurrence :: Gen RRule
+genDailyRecurrence = do
+  let rRuleFrequency = Daily
+  rRuleInterval <- genValid
+  rRuleUntilCount <- genValid
+  rRuleBySecond <- genValid
+  rRuleByMinute <- genValid
+  rRuleByHour <- genValid
+  rRuleByDay <-
+    genListOf
+      ( case rRuleFrequency of
+          Monthly -> Every <$> genValid
+          Yearly -> Every <$> genValid
+          _ -> genValid
+      )
+  rRuleByMonthDay <- case rRuleFrequency of
+    Weekly -> pure []
+    _ -> genValid
+  let rRuleByYearDay = []
+      rRuleByWeekNo = []
+  rRuleByMonth <- genValid
+  rRuleWeekStart <- genValid
+  rRuleBySetPos <-
+    let anyOtherBySpecified =
+          any
+            (not . null)
+            [ () <$ rRuleBySecond,
+              () <$ rRuleByMinute,
+              () <$ rRuleByHour,
+              () <$ rRuleByDay,
+              () <$ rRuleByMonthDay,
+              () <$ rRuleByYearDay,
+              () <$ rRuleByWeekNo,
+              () <$ rRuleByMonth
+            ]
+     in if anyOtherBySpecified
+          then genValid
+          else pure []
+  pure RRule {..}
