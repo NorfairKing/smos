@@ -29,6 +29,8 @@ spec = do
   genValidSpec @ByMonthDay
   genValidSpec @ByYearDay
   genValidSpec @ByWeekNo
+  genValidSpec @ByMonth
+  genValidSpec @BySetPos
   genValidSpec @RRule
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence

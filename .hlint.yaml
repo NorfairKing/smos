@@ -35,6 +35,7 @@
       - "Smos.Draw.completedForestNumbersWidget"
       - "Smos.Sync.Client.Contents"
       - "Smos.Sync.Client.isHidden"
+      - "Smos.Calendar.Import.RecurrenceRule"
 - ignore:
     name: "Replace case with maybe"
 - ignore:
@@ -42,3 +43,8 @@
     within:
       - "Smos.Docs.Site.Handler.Keybindings"
       - "Smos.OptParse.Types"
+- ignore:
+    name: "Hoist not"
+    within:
+      - "Smos.Calendar.Import.RecurrenceRule"
+      - "Smos.Calendar.Import.RecurrenceRule.Gen"

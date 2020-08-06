@@ -252,7 +252,7 @@ data RRule
         --
         -- See 'ByMonth'
         rRuleByMonth :: ![ByMonth],
-        -- The WKST rule part specifies the day on which the workweek starts.
+        -- | The WKST rule part specifies the day on which the workweek starts.
         --
         -- Valid values are MO, TU, WE, TH, FR, SA, and SU.  This is
         -- significant when a WEEKLY "RRULE" has an interval greater than 1,
@@ -262,10 +262,11 @@ data RRule
         --
         -- Note: We did not chose 'Maybe DayOfWeek' because that would have two ways to represent the default value.
         rRuleWeekStart :: DayOfWeek,
-        -- | The BYSETPOS rule part specifies a COMMA-separated list of values that corresponds to the nth occurrence within the set of recurrence instances specified by the rule.
+        -- | The BYSETPOS rule part specifies a COMMA-separated list of values
+        -- that corresponds to the nth occurrence within the set of recurrence
+        -- instances specified by the rule.
         --
-        -- It MUST only be used in conjunction with another
-        -- BYxxx rule part.
+        -- It MUST only be used in conjunction with another BYxxx rule part.
         --
         -- See 'BySetPos'
         rRuleBySetPos :: ![BySetPos]
@@ -289,11 +290,31 @@ instance Validity RRule where
           case rRuleFrequency of
             Weekly -> null rRuleByMonthDay
             _ -> True,
-        declare "The BYYEARDAY rule part MUST NOT be specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY." $ case rRuleFrequency of
-          Daily -> null rRuleByYearDay
-          Weekly -> null rRuleByYearDay
-          Monthly -> null rRuleByYearDay
-          _ -> True
+        declare "The BYYEARDAY rule part MUST NOT be specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY." $
+          case rRuleFrequency of
+            Daily -> null rRuleByYearDay
+            Weekly -> null rRuleByYearDay
+            Monthly -> null rRuleByYearDay
+            _ -> True,
+        declare "The BYWEEKNO rule part MUST NOT be used when the FREQ rule part is set to anything other than YEARLY." $
+          case rRuleFrequency of
+            Yearly -> True
+            _ -> null rRuleByWeekNo,
+        declare "the BYSETPOST rule part MUST only be used in conjunction with another BYxxx rule part." $
+          if null rRuleBySetPos
+            then True
+            else
+              any
+                (not . null)
+                [ () <$ rRuleBySecond,
+                  () <$ rRuleByMinute,
+                  () <$ rRuleByHour,
+                  () <$ rRuleByDay,
+                  () <$ rRuleByMonthDay,
+                  () <$ rRuleByYearDay,
+                  () <$ rRuleByWeekNo,
+                  () <$ rRuleByMonth
+                ]
       ]
 
 -- | Frequency

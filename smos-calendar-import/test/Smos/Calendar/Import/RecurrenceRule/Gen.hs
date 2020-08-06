@@ -107,8 +107,25 @@ instance GenValid RRule where
       Weekly -> pure []
       Monthly -> pure []
       _ -> genValid
-    rRuleByWeekNo <- genValid
+    rRuleByWeekNo <- case rRuleFrequency of
+      Yearly -> genValid
+      _ -> pure []
     rRuleByMonth <- genValid
     rRuleWeekStart <- genValid
-    rRuleBySetPos <- genValid
+    rRuleBySetPos <-
+      let anyOtherBySpecified =
+            any
+              (not . null)
+              [ () <$ rRuleBySecond,
+                () <$ rRuleByMinute,
+                () <$ rRuleByHour,
+                () <$ rRuleByDay,
+                () <$ rRuleByMonthDay,
+                () <$ rRuleByYearDay,
+                () <$ rRuleByWeekNo,
+                () <$ rRuleByMonth
+              ]
+       in if anyOtherBySpecified
+            then genValid
+            else pure []
     pure RRule {..}
