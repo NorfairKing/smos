@@ -243,20 +243,11 @@ data RRule
         rRuleByYearDay :: ![ByYearDay],
         -- | The BYWEEKNO rule part specifies a COMMA-separated list of ordinals specifying weeks of the year.
         --
-        -- Valid values are 1 to 53 or -53 to -1.  This corresponds to weeks
-        -- according to week numbering as defined in
-        -- [ISO.8601.2004](https://tools.ietf.org/html/rfc5545#ref-ISO.8601.2004).
-        -- A week is defined as a seven day period, starting on the day of the
-        -- week defined to be the week start (see WKST).  Week number one of
-        -- the calendar year is the first week that contains at least four (4)
-        -- days in that calendar year.  This rule part MUST NOT be used when
-        -- the FREQ rule part is set to anything other than YEARLY.  For
-        -- example, 3 represents the third week of the year.
+        -- This rule part MUST NOT be used when
+        -- the FREQ rule part is set to anything other than YEARLY.
         --
-        --  Note: Assuming a Monday week start, week 53 can only occur when
-        --  Thursday is January 1 or if it is a leap year and Wednesday is
-        --  January 1.
-        rRuleByWeekNo :: ![Int],
+        -- See 'ByWeekNo'
+        rRuleByWeekNo :: ![ByWeekNo],
         -- | The BYMONTH rule part specifies a COMMA-separated list of months of the year.
         --
         -- Valid values are 1 to 12.
@@ -314,7 +305,6 @@ instance Validity RRule where
           Weekly -> null rRuleByYearDay
           Monthly -> null rRuleByYearDay
           _ -> True,
-        decorateList rRuleByWeekNo $ \bwn -> declare "Valid values are 1 to 53 or -53 to -1." $ bwn /= 0 && bwn >= -53 && bwn <= 53,
         decorateList rRuleByMonth $ \bm -> declare "Valid values are 1 to 12" $ bm >= 1 && bm <= 12
       ]
 
@@ -466,7 +456,7 @@ instance Validity ByMonthDay where
         declare "Valid values are 1 to 31 or -31 to -1." $ i /= 0 && i >= -31 && i <= 31
       ]
 
--- A day within a year
+-- | A day within a year
 --
 -- Valid values are 1 to 366 or -366 to -1.  For example, -1 represents the
 -- last day of the year (December 31st) and -306 represents the 306th to the
@@ -479,6 +469,30 @@ instance Validity ByYearDay where
     mconcat
       [ genericValidate md,
         declare "Valid values are 1 to 366 or -366 to -1." $ i /= 0 && i >= -366 && i <= 366
+      ]
+
+-- | A week within a year
+--
+-- Valid values are 1 to 53 or -53 to -1.  This corresponds to weeks according
+-- to week numbering as defined in
+-- [ISO.8601.2004](https://tools.ietf.org/html/rfc5545#ref-ISO.8601.2004).  A
+-- week is defined as a seven day period, starting on the day of the week
+-- defined to be the week start (see WKST).  Week number one of the calendar
+-- year is the first week that contains at least four (4) days in that calendar
+-- year.
+--
+-- For example, 3 represents the third week of the year.
+--
+-- Note: Assuming a Monday week start, week 53 can only occur when Thursday is
+-- January 1 or if it is a leap year and Wednesday is January 1.
+newtype ByWeekNo = WeekNo Int
+  deriving (Show, Eq, Generic)
+
+instance Validity ByWeekNo where
+  validate bwn@(WeekNo i) =
+    mconcat
+      [ genericValidate bwn,
+        declare "Valid values are 1 to 53 or -53 to -1." $ i /= 0 && i >= -53 && i <= 53
       ]
 
 deriving instance Generic DayOfWeek

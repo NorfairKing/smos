@@ -66,6 +66,15 @@ instance GenValid ByYearDay where
           choose (-366, - 1)
         ]
 
+instance GenValid ByWeekNo where
+  shrinkValid = shrinkValidStructurally
+  genValid =
+    WeekNo
+      <$> oneof
+        [ choose (1, 53),
+          choose (-53, - 1)
+        ]
+
 instance GenValid RRule where
   shrinkValid = shrinkValidStructurally
   genValid = do
@@ -90,13 +99,7 @@ instance GenValid RRule where
       Weekly -> pure []
       Monthly -> pure []
       _ -> genValid
-    rRuleByWeekNo <-
-      genListOf
-        ( oneof
-            [ choose (1, 53),
-              choose (-53, - 1)
-            ]
-        )
+    rRuleByWeekNo <- genValid
     rRuleByMonth <- genListOf (choose (1, 12))
     rRuleWeekStart <- genValid
     rRuleBySetPos <- genListOf (sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]))

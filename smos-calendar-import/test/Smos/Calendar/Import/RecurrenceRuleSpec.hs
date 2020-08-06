@@ -28,6 +28,7 @@ spec = do
   genValidSpec @ByDay
   genValidSpec @ByMonthDay
   genValidSpec @ByYearDay
+  genValidSpec @ByWeekNo
   genValidSpec @RRule
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
@@ -748,7 +749,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 05 12) (TimeOfDay 09 00 00)
             rule =
               (rRule Yearly)
-                { rRuleByWeekNo = [20],
+                { rRuleByWeekNo = [WeekNo 20],
                   rRuleByDay = [Every Monday]
                 }
             limit = LocalTime (fromGregorian 1999 05 18) (TimeOfDay 00 00 00)
