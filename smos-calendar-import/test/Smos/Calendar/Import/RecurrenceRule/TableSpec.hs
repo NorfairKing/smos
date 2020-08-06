@@ -17,6 +17,27 @@ spec :: Spec
 spec =
   -- TODO add 'cover' clauses to make sure these tests have value
   describe "dailyNextRecurrence" $ do
+    -- > +----------+-------+
+    -- > |          |DAILY  |
+    -- > +----------+-------+
+    -- > |BYMONTH   |Limit  |
+    -- > +----------+-------+
+    -- > |BYWEEKNO  |N/A    |
+    -- > +----------+-------+
+    -- > |BYYEARDAY |N/A    |
+    -- > +----------+-------+
+    -- > |BYMONTHDAY|Limit  |
+    -- > +----------+-------+
+    -- > |BYDAY     |Limit  |
+    -- > +----------+-------+
+    -- > |BYHOUR    |Expand |
+    -- > +----------+-------+
+    -- > |BYMINUTE  |Expand |
+    -- > +----------+-------+
+    -- > |BYSECOND  |Expand |
+    -- > +----------+-------+
+    -- > |BYSETPOS  |Limit  |
+    -- > +----------+-------+
     specify "ByMonth limits the recurrence set" $ forAllValid $ \cur ->
       forAll genDailyRecurrence $ \rrule -> do
         let limit = addLocalTime (30 * nominalDay) cur

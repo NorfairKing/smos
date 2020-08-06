@@ -653,28 +653,6 @@ rruleNextOccurrence lt RRule {..} = case rRuleFrequency of
   _ -> Nothing
 
 -- | Recur with a 'Daily' frequency
---
--- > +----------+-------+
--- > |          |DAILY  |
--- > +----------+-------+
--- > |BYMONTH   |Limit  |
--- > +----------+-------+
--- > |BYWEEKNO  |N/A    |
--- > +----------+-------+
--- > |BYYEARDAY |N/A    |
--- > +----------+-------+
--- > |BYMONTHDAY|Limit  |
--- > +----------+-------+
--- > |BYDAY     |Limit  |
--- > +----------+-------+
--- > |BYHOUR    |Expand |
--- > +----------+-------+
--- > |BYMINUTE  |Expand |
--- > +----------+-------+
--- > |BYSECOND  |Expand |
--- > +----------+-------+
--- > |BYSETPOS  |Limit  |
--- > +----------+-------+
 dailyNextRecurrence ::
   LocalTime ->
   Interval ->
