@@ -264,22 +264,11 @@ data RRule
         rRuleWeekStart :: DayOfWeek,
         -- | The BYSETPOS rule part specifies a COMMA-separated list of values that corresponds to the nth occurrence within the set of recurrence instances specified by the rule.
         --
-        -- BYSETPOS operates on
-        -- a set of recurrence instances in one interval of the recurrence
-        -- rule.  For example, in a WEEKLY rule, the interval would be one
-        -- week A set of recurrence instances starts at the beginning of the
-        -- interval defined by the FREQ rule part.  Valid values are 1 to 366
-        -- or -366 to -1.  It MUST only be used in conjunction with another
-        -- BYxxx rule part.  For example "the last work day of the month"
-        -- could be represented as:
+        -- It MUST only be used in conjunction with another
+        -- BYxxx rule part.
         --
-        --  FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
-        --
-        -- Each BYSETPOS value can include a positive (+n) or negative (-n)
-        -- integer.  If present, this indicates the nth occurrence of the
-        -- specific occurrence within the set of occurrences specified by the
-        -- rule.
-        rRuleBySetPos :: ![Int]
+        -- See 'BySetPos'
+        rRuleBySetPos :: ![BySetPos]
       }
   deriving (Show, Eq, Generic)
 
@@ -505,6 +494,34 @@ instance Validity ByMonth where
     mconcat
       [ genericValidate m,
         declare "Valid values are 1 to 12" $ w >= 1 && w <= 12
+      ]
+
+-- | A position within the recurrence set
+--
+-- BYSETPOS operates on
+-- a set of recurrence instances in one interval of the recurrence
+-- rule.  For example, in a WEEKLY rule, the interval would be one
+-- week A set of recurrence instances starts at the beginning of the
+-- interval defined by the FREQ rule part.  Valid values are 1 to 366
+-- or -366 to -1.
+--
+-- For example "the last work day of the month"
+-- could be represented as:
+--
+--  FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1
+--
+-- Each BYSETPOS value can include a positive (+n) or negative (-n)
+-- integer.  If present, this indicates the nth occurrence of the
+-- specific occurrence within the set of occurrences specified by the
+-- rule.
+newtype BySetPos = SetPos Int
+  deriving (Show, Eq, Generic)
+
+instance Validity BySetPos where
+  validate sp@(SetPos w) =
+    mconcat
+      [ genericValidate sp,
+        declare "The set position is not zero" $ w /= 0
       ]
 
 deriving instance Generic DayOfWeek

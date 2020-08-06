@@ -950,7 +950,7 @@ spec = do
               (rRule Monthly)
                 { rRuleUntilCount = Count 3,
                   rRuleByDay = map Every [Tuesday, Wednesday, Thursday],
-                  rRuleBySetPos = [3]
+                  rRuleBySetPos = [SetPos 3]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
@@ -974,7 +974,7 @@ spec = do
             rule =
               (rRule Monthly)
                 { rRuleByDay = map Every [Monday, Tuesday, Wednesday, Thursday, Friday],
-                  rRuleBySetPos = [-2]
+                  rRuleBySetPos = [SetPos (-2)]
                 }
             limit = LocalTime (fromGregorian 1998 04 01) (TimeOfDay 00 00 00)
         rruleOccurrencesUntil dtstart rule limit
