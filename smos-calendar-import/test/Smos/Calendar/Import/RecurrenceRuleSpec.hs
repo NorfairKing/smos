@@ -34,7 +34,26 @@ spec = do
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
   describe "dailyNextRecurrence" $ do
-    it "produces valid results" $ producesValidsOnValids2 dailyNextRecurrence
+    it "produces valid results" $ forAllValid $ \cur ->
+      forAllValid $ \int ->
+        forAllValid $ \byMonths ->
+          forAllValid $ \byMonthDays ->
+            forAllValid $ \byDays ->
+              forAllValid $ \byHours ->
+                forAllValid $ \byMinutes ->
+                  forAllValid $ \bySeconds ->
+                    forAllValid $ \bySetPoss ->
+                      shouldBeValid $
+                        dailyNextRecurrence
+                          cur
+                          int
+                          byMonths
+                          byMonthDays
+                          byDays
+                          byHours
+                          byMinutes
+                          bySeconds
+                          bySetPoss
   describe "rruleOccurrencesUntil" $ do
     xit "produces valid results" $ producesValidsOnValids3 rruleOccurrencesUntil
     xit "produces results within the 'Count' range for 'Count' rules" $ forAllValid $ \start ->

@@ -649,9 +649,51 @@ rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
 -- This function takes care of the 'rRuleFrequency' part.
 rruleNextOccurrence :: LocalTime -> RRule -> Maybe LocalTime
 rruleNextOccurrence lt RRule {..} = case rRuleFrequency of
-  Daily -> dailyNextRecurrence lt rRuleInterval
+  Daily -> dailyNextRecurrence lt rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   _ -> Nothing
 
-dailyNextRecurrence :: LocalTime -> Interval -> Maybe LocalTime
-dailyNextRecurrence (LocalTime d tod) (Interval interval) =
-  Just $ LocalTime (addDays (fromIntegral interval) d) tod
+-- | Recur with a 'Daily' frequency
+--
+-- > +----------+-------+
+-- > |          |DAILY  |
+-- > +----------+-------+
+-- > |BYMONTH   |Limit  |
+-- > +----------+-------+
+-- > |BYWEEKNO  |N/A    |
+-- > +----------+-------+
+-- > |BYYEARDAY |N/A    |
+-- > +----------+-------+
+-- > |BYMONTHDAY|Limit  |
+-- > +----------+-------+
+-- > |BYDAY     |Limit  |
+-- > +----------+-------+
+-- > |BYHOUR    |Expand |
+-- > +----------+-------+
+-- > |BYMINUTE  |Expand |
+-- > +----------+-------+
+-- > |BYSECOND  |Expand |
+-- > +----------+-------+
+-- > |BYSETPOS  |Limit  |
+-- > +----------+-------+
+dailyNextRecurrence ::
+  LocalTime ->
+  Interval ->
+  [ByMonth] ->
+  [ByMonthDay] ->
+  [ByDay] ->
+  [ByHour] ->
+  [ByMinute] ->
+  [BySecond] ->
+  [BySetPos] ->
+  Maybe LocalTime
+dailyNextRecurrence
+  (LocalTime d tod)
+  (Interval interval)
+  byMonths
+  byMonthDays
+  byDays
+  byHours
+  byMinutes
+  bySeconds
+  bySetPoss =
+    Just $ LocalTime (addDays (fromIntegral interval) d) tod
