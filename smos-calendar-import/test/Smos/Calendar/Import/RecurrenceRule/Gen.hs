@@ -75,6 +75,10 @@ instance GenValid ByWeekNo where
           choose (-53, - 1)
         ]
 
+instance GenValid ByMonth where
+  shrinkValid = shrinkValidStructurally
+  genValid = Month <$> choose (1, 12)
+
 instance GenValid RRule where
   shrinkValid = shrinkValidStructurally
   genValid = do
@@ -100,7 +104,7 @@ instance GenValid RRule where
       Monthly -> pure []
       _ -> genValid
     rRuleByWeekNo <- genValid
-    rRuleByMonth <- genListOf (choose (1, 12))
+    rRuleByMonth <- genValid
     rRuleWeekStart <- genValid
     rRuleBySetPos <- genListOf (sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, - 1)]))
     pure RRule {..}

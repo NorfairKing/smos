@@ -131,7 +131,7 @@ spec = do
             rule =
               (rRule Yearly)
                 { rRuleUntilCount = Until (LocalTime (fromGregorian 2000 01 31) (TimeOfDay 14 0 0)),
-                  rRuleByMonth = [1],
+                  rRuleByMonth = [Month 1],
                   rRuleByDay =
                     map
                       Every
@@ -629,7 +629,7 @@ spec = do
             rule =
               (rRule Yearly)
                 { rRuleUntilCount = Count 10,
-                  rRuleByMonth = [6, 7]
+                  rRuleByMonth = [Month 6, Month 7]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
@@ -661,7 +661,7 @@ spec = do
               (rRule Yearly)
                 { rRuleInterval = Interval 2,
                   rRuleUntilCount = Count 10,
-                  rRuleByMonth = [1, 2, 3]
+                  rRuleByMonth = map Month [1, 2, 3]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
@@ -772,7 +772,7 @@ spec = do
         let dtstart = LocalTime (fromGregorian 1997 03 13) (TimeOfDay 09 00 00)
             rule =
               (rRule Yearly)
-                { rRuleByMonth = [3],
+                { rRuleByMonth = [Month 3],
                   rRuleByDay = [Every Thursday]
                 }
             limit = LocalTime (fromGregorian 1999 03 26) (TimeOfDay 00 00 00)
@@ -807,7 +807,7 @@ spec = do
             rule =
               (rRule Yearly)
                 { rRuleByDay = [Every Thursday],
-                  rRuleByMonth = [6, 7, 8]
+                  rRuleByMonth = map Month [6, 7, 8]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
@@ -926,7 +926,7 @@ spec = do
             rule =
               (rRule Yearly)
                 { rRuleInterval = Interval 4,
-                  rRuleByMonth = [11],
+                  rRuleByMonth = [Month 11],
                   rRuleByDay = [Every Tuesday],
                   rRuleByMonthDay = map MonthDay [2, 3, 4, 5, 6, 7, 8]
                 }

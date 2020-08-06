@@ -250,8 +250,8 @@ data RRule
         rRuleByWeekNo :: ![ByWeekNo],
         -- | The BYMONTH rule part specifies a COMMA-separated list of months of the year.
         --
-        -- Valid values are 1 to 12.
-        rRuleByMonth :: ![Word],
+        -- See 'ByMonth'
+        rRuleByMonth :: ![ByMonth],
         -- The WKST rule part specifies the day on which the workweek starts.
         --
         -- Valid values are MO, TU, WE, TH, FR, SA, and SU.  This is
@@ -304,8 +304,7 @@ instance Validity RRule where
           Daily -> null rRuleByYearDay
           Weekly -> null rRuleByYearDay
           Monthly -> null rRuleByYearDay
-          _ -> True,
-        decorateList rRuleByMonth $ \bm -> declare "Valid values are 1 to 12" $ bm >= 1 && bm <= 12
+          _ -> True
       ]
 
 -- | Frequency
@@ -493,6 +492,19 @@ instance Validity ByWeekNo where
     mconcat
       [ genericValidate bwn,
         declare "Valid values are 1 to 53 or -53 to -1." $ i /= 0 && i >= -53 && i <= 53
+      ]
+
+-- | A month within a year
+--
+-- Valid values are 1 to 12.
+newtype ByMonth = Month Word
+  deriving (Show, Eq, Generic)
+
+instance Validity ByMonth where
+  validate m@(Month w) =
+    mconcat
+      [ genericValidate m,
+        declare "Valid values are 1 to 12" $ w >= 1 && w <= 12
       ]
 
 deriving instance Generic DayOfWeek
