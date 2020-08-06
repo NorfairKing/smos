@@ -507,15 +507,9 @@ instance Validity ByWeekNo where
 -- | A month within a year
 --
 -- Valid values are 1 to 12.
-newtype ByMonth = Month Word
-  deriving (Show, Eq, Generic)
-
-instance Validity ByMonth where
-  validate m@(Month w) =
-    mconcat
-      [ genericValidate m,
-        declare "Valid values are 1 to 12" $ w >= 1 && w <= 12
-      ]
+--
+-- In Haskell we represent these using a 'Month' value.
+type ByMonth = Month
 
 -- | A position within the recurrence set
 --
@@ -544,6 +538,27 @@ instance Validity BySetPos where
       [ genericValidate sp,
         declare "The set position is not zero" $ w /= 0
       ]
+
+-- A month within a year
+--
+-- Until 'time' has this too'
+data Month
+  = January
+  | February
+  | March
+  | April
+  | May
+  | June
+  | July
+  | August
+  | September
+  | October
+  | November
+  | December
+  deriving (Show, Eq, Ord, Enum, Bounded, Generic)
+
+instance Validity Month where
+  validate = trivialValidation
 
 deriving instance Generic DayOfWeek
 

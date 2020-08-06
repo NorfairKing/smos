@@ -12,7 +12,13 @@ import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.UnresolvedTimestamp.Gen
 import Test.QuickCheck
 
-instance GenValid DayOfWeek where -- Until we have it in genvalidity-time
+-- | Until we have it in genvalidity-time
+instance GenValid DayOfWeek where
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = genValidStructurallyWithoutExtraChecking
+
+-- | Until we have it in time and then in genvalidity-time
+instance GenValid Month where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
   genValid = genValidStructurallyWithoutExtraChecking
 
@@ -74,10 +80,6 @@ instance GenValid ByWeekNo where
         [ choose (1, 53),
           choose (-53, - 1)
         ]
-
-instance GenValid ByMonth where
-  shrinkValid = shrinkValidStructurally
-  genValid = Month <$> choose (1, 12)
 
 instance GenValid BySetPos where
   shrinkValid = shrinkValidStructurally
