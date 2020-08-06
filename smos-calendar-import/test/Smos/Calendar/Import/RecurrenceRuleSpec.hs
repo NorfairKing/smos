@@ -25,6 +25,9 @@ spec = do
   genValidSpec @BySecond
   genValidSpec @ByMinute
   genValidSpec @ByHour
+  genValidSpec @ByDay
+  genValidSpec @ByMonthDay
+  genValidSpec @ByYearDay
   genValidSpec @RRule
   describe "rruleNextOccurrence" $ do
     it "produces valid results" $ producesValidsOnValids2 rruleNextOccurrence
@@ -692,7 +695,7 @@ spec = do
               (rRule Yearly)
                 { rRuleInterval = Interval 3,
                   rRuleUntilCount = Count 10,
-                  rRuleByYearDay = [1, 100, 200]
+                  rRuleByYearDay = map YearDay [1, 100, 200]
                 }
             -- Limit: the set is finite so the limit will just be some point beyond the end
             limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)

@@ -254,7 +254,7 @@ data RRule
         -- 306th to the last day of the year (March 1st).  The BYYEARDAY rule
         -- part MUST NOT be specified when the FREQ rule part is set to DAILY,
         -- WEEKLY, or MONTHLY.
-        rRuleByYearDay :: ![Int],
+        rRuleByYearDay :: ![ByYearDay],
         -- | The BYWEEKNO rule part specifies a COMMA-separated list of ordinals specifying weeks of the year.
         --
         -- Valid values are 1 to 53 or -53 to -1.  This corresponds to weeks
@@ -323,7 +323,6 @@ instance Validity RRule where
           case rRuleFrequency of
             Weekly -> null rRuleByMonthDay
             _ -> True,
-        decorateList rRuleByYearDay $ \bmd -> declare "Valid values are 1 to 366 or -366 to -1." $ bmd /= 0 && bmd >= -366 && bmd <= 366,
         declare "The BYYEARDAY rule part MUST NOT be specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY." $ case rRuleFrequency of
           Daily -> null rRuleByYearDay
           Weekly -> null rRuleByYearDay
@@ -445,6 +444,16 @@ instance Validity ByMonthDay where
     mconcat
       [ genericValidate md,
         declare "Valid values are 1 to 31 or -31 to -1." $ i /= 0 && i >= -31 && i <= 31
+      ]
+
+newtype ByYearDay = YearDay Int
+  deriving (Show, Eq, Generic)
+
+instance Validity ByYearDay where
+  validate md@(YearDay i) =
+    mconcat
+      [ genericValidate md,
+        declare "Valid values are 1 to 366 or -366 to -1." $ i /= 0 && i >= -366 && i <= 366
       ]
 
 deriving instance Generic DayOfWeek
