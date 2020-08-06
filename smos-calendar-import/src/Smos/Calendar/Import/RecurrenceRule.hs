@@ -7,6 +7,8 @@
 module Smos.Calendar.Import.RecurrenceRule where
 
 import Control.Monad
+import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
@@ -719,9 +721,7 @@ dailyNextRecurrence
     d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
     let (y, month, day) = toGregorian d
     guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
-    let leap = isLeapYear y
-        monthLen = monthLength leap month
-        negativeMonthDayIndex = negate $ monthLen - day + 1
+    let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
     guard $
       if S.null byMonthDays
         then True
@@ -729,7 +729,17 @@ dailyNextRecurrence
           MonthDay day `S.member` byMonthDays -- Positive
             || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
     let dow = dayOfWeek d
-    guard $ if null byDays then True else Every dow `S.member` byDays
+    let (positiveSpecificWeekDayIndex, negativeSpecificWeekDayIndex) = specificWeekDayIndex d dow
+    -- From the spec:
+    --
+    -- > The BYDAY rule part MUST NOT be specified with a numeric value when
+    -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
+    --
+    -- So we don't need to check specific weekdays here
+    guard $
+      if null byDays
+        then True
+        else Every dow `S.member` byDays
     s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
     m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
     h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
@@ -737,3 +747,36 @@ dailyNextRecurrence
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
     pure next
+
+monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
+monthIndices d =
+  let (y, month, day) = toGregorian d
+      leap = isLeapYear y
+      monthLen = monthLength leap month
+      negativeMonthDayIndex = negate $ monthLen - day + 1
+   in (day, negativeMonthDayIndex)
+
+-- This can probably be sped up a lot
+specificWeekDayIndex :: Day -> DayOfWeek -> (Int, Int) -- (Positive index, Negative index)
+specificWeekDayIndex d wd =
+  let (y, month, day) = toGregorian d
+      firstDayOfTheMonth = fromGregorian y month 1
+      lastDayOfTheMonth = fromGregorian y month 31 -- Will be clipped
+      daysOfThisMonth = numberWeekdays [firstDayOfTheMonth .. lastDayOfTheMonth]
+      numberOfThisWeekDayInTheMonth = length $ filter ((== wd) . fst . snd) daysOfThisMonth
+      (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisMonth) -- Must be there
+   in (positiveSpecificWeekDayIndex, numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex)
+  where
+    numberWeekdays :: [Day] -> [(Day, (DayOfWeek, Int))]
+    numberWeekdays = go M.empty
+      where
+        go _ [] = []
+        go m (d : ds) =
+          let dow = dayOfWeek d
+              (mv, m') =
+                M.insertLookupWithKey
+                  (\_ _ old -> succ old) -- If found, just increment
+                  dow
+                  1 -- If not found, insert 1
+                  m
+           in (d, (dow, fromMaybe 1 mv)) : go m' ds

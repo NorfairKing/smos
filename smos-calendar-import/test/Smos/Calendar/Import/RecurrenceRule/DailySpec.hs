@@ -51,7 +51,6 @@ spec =
       specify "Every second-to-last day of September" $ forAllValid $ \tod ->
         dailyNextRecurrence (LocalTime (fromGregorian 2019 09 33) tod) limit (Interval 1) [September] [MonthDay (-1)] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 33) tod)
-    -- TODO tests for specific days
     describe "ByDay" $ do
       specify "Every tuesday" $ forAllValid $ \tod ->
         dailyNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [] [] [Every Tuesday] [] [] [] []
