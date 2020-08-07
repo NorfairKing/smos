@@ -6,6 +6,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule where
 
 import Control.Monad
@@ -475,7 +476,7 @@ instance ToJSON UntilCount where
 
 untilCountObject :: UntilCount -> [Pair]
 untilCountObject = \case
-  Until lt -> ["until" .= lt]
+  Until lt -> ["until" .= formatTime defaultTimeLocale timestampLocalTimeFormat lt]
   Count c -> ["count" .= c]
   Indefinitely -> []
 

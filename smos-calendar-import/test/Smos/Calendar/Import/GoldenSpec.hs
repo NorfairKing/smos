@@ -51,11 +51,13 @@ mkGoldenTest cp cals = do
   rp <- runIO $ replaceExtension ".recurring" cp
   expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
   it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let actualUnresolvedEvents = recurRecurringEvents actualRecurringEvents -- TODO use a config file
+  let limit = LocalTime (fromGregorian 2030 00 00) midnight -- TODO use a config file
+  let actualUnresolvedEvents = recurRecurringEvents limit actualRecurringEvents -- TODO use a config file
   up <- runIO $ replaceExtension ".unresolved" cp
   expectedUnresolvedEvents <- runIO $ readGoldenYaml up actualUnresolvedEvents
   it "recurs the correct unresolved events" $ compareAndSuggest Yaml.encode up actualUnresolvedEvents expectedUnresolvedEvents
-  let actualEvents = resolveUnresolvedEvents utc actualUnresolvedEvents -- TODO use a config file
+  let tz = utc -- TODO use a config file
+  let actualEvents = resolveUnresolvedEvents tz actualUnresolvedEvents
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
   it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
@@ -70,6 +72,7 @@ compareAndSuggest func p actual expected =
     $ expectationFailure
     $ unlines
       [ fromAbsFile p,
+        "input:",
         "actual structure:",
         ppShow actual,
         "actual serialised:",
