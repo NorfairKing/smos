@@ -6,6 +6,7 @@ module Smos.Calendar.Import.Static where
 
 import Data.Aeson
 import Data.Aeson.Types
+import Data.Maybe
 import Data.Text (Text)
 import Data.Validity
 import Data.Validity.Text (validateTextSingleLine)
@@ -43,6 +44,7 @@ instance ToJSON Static where
 
 staticToObject :: Static -> [Pair]
 staticToObject Static {..} =
-  [ "summary" .= staticSummary,
-    "description" .= staticDescription
-  ]
+  concat
+    [ ["summary" .= s | s <- maybeToList staticSummary],
+      ["description" .= d | d <- maybeToList staticDescription]
+    ]

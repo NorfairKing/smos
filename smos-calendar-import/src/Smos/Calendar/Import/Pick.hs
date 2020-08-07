@@ -4,9 +4,12 @@
 module Smos.Calendar.Import.Pick where
 
 import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.Set as S
+import Data.Set (Set)
 import qualified Data.Text.Lazy as LT
 import Data.Time
+import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
@@ -47,6 +50,7 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
+      recurringEventRRules = pickRRule veRRule
    in RecurringEvent {..}
 
 pickStart :: ICal.DTStart -> CalTimestamp
@@ -86,3 +90,54 @@ signNum :: Num a => ICal.Sign -> a
 signNum = \case
   ICal.Positive -> 1
   ICal.Negative -> -1
+
+-- FIXME: This can fail in many ways if the rule wasn't valid; should we watch out for that?
+pickRRule :: Set ICal.RRule -> Set RRule
+pickRRule = S.map $ \ICal.RRule {..} ->
+  let ICal.Recur {..} = rRuleValue
+      rRuleFrequency = case recurFreq of
+        ICal.Secondly -> Secondly
+        ICal.Minutely -> Minutely
+        ICal.Hourly -> Hourly
+        ICal.Daily -> Daily
+        ICal.Weekly -> Weekly
+        ICal.Monthly -> Monthly
+        ICal.Yearly -> Yearly
+      rRuleInterval = Interval $ fromIntegral recurInterval
+      rRuleUntilCount = case recurUntilCount of
+        Nothing -> Indefinitely
+        Just untilCount -> case untilCount of
+          Left (Left d) -> Until (LocalTime (ICal.dateValue d) midnight) -- This might run us into trouble, but I think it _shouldn't_ if the rule was valid.
+          Left (Right dt) -> case dt of -- This _should_ work. Let's see.
+            ICal.FloatingDateTime lt -> Until lt
+            ICal.UTCDateTime utct -> Until $ utcToLocalTime utc utct
+            ICal.ZonedDateTime lt _ -> Until lt
+          Right i -> Count $ fromIntegral i
+      rRuleBySecond = S.fromList $ map (Second . fromIntegral) recurBySecond
+      rRuleByMinute = S.fromList $ map (Minute . fromIntegral) recurByMinute
+      rRuleByHour = S.fromList $ map (Hour . fromIntegral) recurByHour
+      rRuleByDay =
+        S.fromList $
+          map
+            ( \case
+                Left (i, wd) -> Specific i $ pickWeekDay wd
+                Right wd -> Every $ pickWeekDay wd
+            )
+            recurByDay
+      rRuleByMonthDay = S.fromList $ map MonthDay recurByMonthDay
+      rRuleByYearDay = S.fromList $ map YearDay recurByYearDay
+      rRuleByWeekNo = S.fromList $ map WeekNo recurByWeekNo
+      rRuleByMonth = S.fromList $ mapMaybe monthNoToMonth recurByMonth -- Will ignore invalid values
+      rRuleBySetPos = S.fromList $ map SetPos recurBySetPos
+      rRuleWeekStart = pickWeekDay recurWkSt
+   in RRule {..}
+
+pickWeekDay :: ICal.Weekday -> DayOfWeek
+pickWeekDay = \case
+  ICal.Sunday -> Sunday
+  ICal.Monday -> Monday
+  ICal.Tuesday -> Tuesday
+  ICal.Wednesday -> Wednesday
+  ICal.Thursday -> Thursday
+  ICal.Friday -> Friday
+  ICal.Saturday -> Saturday

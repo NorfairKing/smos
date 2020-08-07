@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -7,6 +9,7 @@
 module Smos.Calendar.Import.RecurrenceRule where
 
 import Control.Monad
+import Data.Aeson.Types (Pair)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
@@ -17,9 +20,12 @@ import Data.Time.Calendar.OrdinalDate
 import Data.Validity
 import Data.Validity.Containers
 import Data.Validity.Time ()
+import Data.Yaml
 import Debug.Trace
 import GHC.Generics (Generic)
 import Safe
+import Smos.Data
+import YamlParse.Applicative
 
 -- | A recurrence rule
 --
@@ -270,7 +276,7 @@ data RRule
         -- default value is MO.
         --
         -- Note: We did not chose 'Maybe DayOfWeek' because that would have two ways to represent the default value.
-        rRuleWeekStart :: DayOfWeek,
+        rRuleWeekStart :: !DayOfWeek,
         -- | The BYSETPOS rule part specifies a COMMA-separated list of values
         -- that corresponds to the nth occurrence within the set of recurrence
         -- instances specified by the rule.
@@ -280,7 +286,7 @@ data RRule
         -- See 'BySetPos'
         rRuleBySetPos :: !(Set BySetPos)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity RRule where
   validate rule@RRule {..} =
@@ -326,6 +332,45 @@ instance Validity RRule where
                 ]
       ]
 
+instance YamlSchema RRule where
+  yamlSchema =
+    objectParser "RRule" $
+      RRule
+        <$> requiredField' "frequency"
+        <*> optionalFieldWithDefault' "interval" (Interval 1)
+        <*> untilCountObjectParser
+        <*> optionalFieldWithDefault' "second" S.empty
+        <*> optionalFieldWithDefault' "minute" S.empty
+        <*> optionalFieldWithDefault' "hour" S.empty
+        <*> optionalFieldWithDefault' "day" S.empty
+        <*> optionalFieldWithDefault' "monthday" S.empty
+        <*> optionalFieldWithDefault' "yearday" S.empty
+        <*> optionalFieldWithDefault' "weekno" S.empty
+        <*> optionalFieldWithDefault' "month" S.empty
+        <*> optionalFieldWithDefault' "week-start" Monday
+        <*> optionalFieldWithDefault' "setpos" S.empty
+
+instance FromJSON RRule where
+  parseJSON = viaYamlSchema
+
+instance ToJSON RRule where
+  toJSON RRule {..} =
+    object $
+      [ "frequency" .= rRuleFrequency,
+        "interval" .= rRuleInterval,
+        "second" .= rRuleBySecond,
+        "minute" .= rRuleByMinute,
+        "hour" .= rRuleByHour,
+        "day" .= rRuleByDay,
+        "monthday" .= rRuleByMonthDay,
+        "yearday" .= rRuleByYearDay,
+        "weekno" .= rRuleByWeekNo,
+        "month" .= rRuleByMonth,
+        "week-start" .= rRuleWeekStart,
+        "setpos" .= rRuleBySetPos
+      ]
+        ++ untilCountObject rRuleUntilCount
+
 -- | Frequency
 --
 -- This rule part MUST be specified in the recurrence rule.  Valid
@@ -346,9 +391,26 @@ data Frequency
   | Weekly
   | Monthly
   | Yearly
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic, Enum, Bounded)
 
 instance Validity Frequency
+
+instance YamlSchema Frequency where
+  yamlSchema =
+    alternatives
+      [ literalValue Secondly,
+        literalValue Minutely,
+        literalValue Hourly,
+        literalValue Daily,
+        literalValue Weekly,
+        literalValue Monthly,
+        literalValue Yearly
+      ]
+
+instance FromJSON Frequency where
+  parseJSON = viaYamlSchema
+
+instance ToJSON Frequency
 
 -- | Interval
 --
@@ -360,10 +422,13 @@ instance Validity Frequency
 --
 -- Note: We did not chose 'Maybe Word' because that would have two ways to represent the default value.
 newtype Interval = Interval {unInterval :: Word}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 instance Validity Interval where
   validate i@(Interval w) = mconcat [genericValidate i, declare "The interval is not zero" $ w /= 0]
+
+instance YamlSchema Interval where
+  yamlSchema = Interval <$> yamlSchema
 
 data UntilCount
   = -- | The UNTIL rule part defines a DATE or DATE-TIME value that bounds the recurrence rule in an inclusive manner.
@@ -391,11 +456,34 @@ data UntilCount
 
 instance Validity UntilCount
 
+instance YamlSchema UntilCount where
+  yamlSchema = objectParser "UntilCount" untilCountObjectParser
+
+untilCountObjectParser :: ObjectParser UntilCount
+untilCountObjectParser =
+  alternatives
+    [ Until <$> requiredFieldWith' "until" localTimeSchema,
+      Count <$> requiredField' "count",
+      pure Indefinitely
+    ]
+
+instance FromJSON UntilCount where
+  parseJSON = viaYamlSchema
+
+instance ToJSON UntilCount where
+  toJSON = object . untilCountObject
+
+untilCountObject :: UntilCount -> [Pair]
+untilCountObject = \case
+  Until lt -> ["until" .= lt]
+  Count c -> ["count" .= c]
+  Indefinitely -> []
+
 -- | A second within a minute
 --
 -- Valid values are 0 to 60.
 newtype BySecond = Second {unSecond :: Word}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity BySecond where
   validate s@(Second w) =
@@ -404,11 +492,17 @@ instance Validity BySecond where
         declare "Valid values are 0 to 60." $ w >= 0 && w <= 60
       ]
 
+instance YamlSchema BySecond where
+  yamlSchema = Second <$> yamlSchema
+
+instance FromJSON BySecond where
+  parseJSON = viaYamlSchema
+
 -- | A minute within an hour
 --
 -- Valid values are 0 to 59.
 newtype ByMinute = Minute {unMinute :: Word}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity ByMinute where
   validate s@(Minute w) =
@@ -417,11 +511,17 @@ instance Validity ByMinute where
         declare "Valid values are 0 to 59." $ w >= 0 && w <= 59
       ]
 
+instance YamlSchema ByMinute where
+  yamlSchema = Minute <$> yamlSchema
+
+instance FromJSON ByMinute where
+  parseJSON = viaYamlSchema
+
 -- | An hour within a day
 --
 -- Valid values are 0 to 23.
 newtype ByHour = Hour {unHour :: Word}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity ByHour where
   validate s@(Hour w) =
@@ -429,6 +529,12 @@ instance Validity ByHour where
       [ genericValidate s,
         declare "Valid values are 0 to 23." $ w >= 0 && w <= 23
       ]
+
+instance YamlSchema ByHour where
+  yamlSchema = Hour <$> yamlSchema
+
+instance FromJSON ByHour where
+  parseJSON = viaYamlSchema
 
 -- | The BYDAY rule part specifies a COMMA-separated list of days of the week;
 --
@@ -460,12 +566,28 @@ instance Validity ByDay where
           Specific i _ -> declare "The specific weekday number is not zero" $ i /= 0
       ]
 
+instance YamlSchema ByDay where
+  yamlSchema =
+    objectParser "ByDay" $
+      alternatives
+        [ Specific <$> requiredField' "pos" <*> requiredField' "day",
+          Every <$> requiredField' "day"
+        ]
+
+instance FromJSON ByDay where
+  parseJSON = viaYamlSchema
+
+instance ToJSON ByDay where
+  toJSON = \case
+    Every d -> object ["day" .= d]
+    Specific p d -> object ["pos" .= p, "day" .= d]
+
 -- | A day within a month
 --
 -- Valid values are 1 to 31 or -31 to -1.  For example, -10 represents the
 -- tenth to the last day of the month.
 newtype ByMonthDay = MonthDay {unMonthDay :: Int}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity ByMonthDay where
   validate md@(MonthDay i) =
@@ -474,13 +596,19 @@ instance Validity ByMonthDay where
         declare "Valid values are 1 to 31 or -31 to -1." $ i /= 0 && i >= -31 && i <= 31
       ]
 
+instance YamlSchema ByMonthDay where
+  yamlSchema = MonthDay <$> yamlSchema
+
+instance FromJSON ByMonthDay where
+  parseJSON = viaYamlSchema
+
 -- | A day within a year
 --
 -- Valid values are 1 to 366 or -366 to -1.  For example, -1 represents the
 -- last day of the year (December 31st) and -306 represents the 306th to the
 -- last day of the year (March 1st).
 newtype ByYearDay = YearDay {unYearDay :: Int}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity ByYearDay where
   validate md@(YearDay i) =
@@ -488,6 +616,12 @@ instance Validity ByYearDay where
       [ genericValidate md,
         declare "Valid values are 1 to 366 or -366 to -1." $ i /= 0 && i >= -366 && i <= 366
       ]
+
+instance YamlSchema ByYearDay where
+  yamlSchema = YearDay <$> yamlSchema
+
+instance FromJSON ByYearDay where
+  parseJSON = viaYamlSchema
 
 -- | A week within a year
 --
@@ -504,7 +638,7 @@ instance Validity ByYearDay where
 -- Note: Assuming a Monday week start, week 53 can only occur when Thursday is
 -- January 1 or if it is a leap year and Wednesday is January 1.
 newtype ByWeekNo = WeekNo {unWeekNo :: Int}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity ByWeekNo where
   validate bwn@(WeekNo i) =
@@ -512,6 +646,12 @@ instance Validity ByWeekNo where
       [ genericValidate bwn,
         declare "Valid values are 1 to 53 or -53 to -1." $ i /= 0 && i >= -53 && i <= 53
       ]
+
+instance YamlSchema ByWeekNo where
+  yamlSchema = WeekNo <$> yamlSchema
+
+instance FromJSON ByWeekNo where
+  parseJSON = viaYamlSchema
 
 -- | A month within a year
 --
@@ -539,7 +679,7 @@ type ByMonth = Month
 -- specific occurrence within the set of occurrences specified by the
 -- rule.
 newtype BySetPos = SetPos {unSetPos :: Int}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 instance Validity BySetPos where
   validate sp@(SetPos w) =
@@ -547,6 +687,12 @@ instance Validity BySetPos where
       [ genericValidate sp,
         declare "The set position is not zero" $ w /= 0
       ]
+
+instance YamlSchema BySetPos where
+  yamlSchema = SetPos <$> yamlSchema
+
+instance FromJSON BySetPos where
+  parseJSON = viaYamlSchema
 
 -- A month within a year
 --
@@ -569,12 +715,46 @@ data Month
 instance Validity Month where
   validate = trivialValidation
 
-deriving instance Ord DayOfWeek -- Silly that this doesn't exist
+instance YamlSchema Month where
+  yamlSchema =
+    alternatives
+      [ literalValue January,
+        literalValue February,
+        literalValue March,
+        literalValue April,
+        literalValue May,
+        literalValue June,
+        literalValue July,
+        literalValue August,
+        literalValue September,
+        literalValue October,
+        literalValue November,
+        literalValue December
+      ]
+
+instance FromJSON Month where
+  parseJSON = viaYamlSchema
+
+instance ToJSON Month
+
+deriving instance Ord DayOfWeek -- Silly that this doesn't exist. We need to be able to put days in a set
 
 deriving instance Generic DayOfWeek
 
 instance Validity DayOfWeek where -- Until we have it in validity-time
   validate = trivialValidation
+
+instance YamlSchema DayOfWeek where -- Until we have it in yamlparse-applicative
+  yamlSchema =
+    alternatives
+      [ literalValue Monday,
+        literalValue Tuesday,
+        literalValue Wednesday,
+        literalValue Thursday,
+        literalValue Friday,
+        literalValue Saturday,
+        literalValue Sunday
+      ]
 
 monthToMontNo :: Month -> Int
 monthToMontNo = \case

@@ -15,22 +15,36 @@ import Smos.Calendar.Import.UnresolvedTimestamp
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
+import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
   genValidSpec @Frequency
+  jsonSpecOnValid @Frequency
   genValidSpec @UntilCount
+  jsonSpecOnValid @UntilCount
   genValidSpec @Interval
+  jsonSpecOnValid @Interval
   genValidSpec @BySecond
+  jsonSpecOnValid @BySecond
   genValidSpec @ByMinute
+  jsonSpecOnValid @ByMinute
   genValidSpec @ByHour
+  jsonSpecOnValid @ByHour
   genValidSpec @ByDay
+  jsonSpecOnValid @ByDay
   genValidSpec @ByMonthDay
+  jsonSpecOnValid @ByMonthDay
   genValidSpec @ByYearDay
+  jsonSpecOnValid @ByYearDay
   genValidSpec @ByWeekNo
+  jsonSpecOnValid @ByWeekNo
   genValidSpec @Month
+  jsonSpecOnValid @Month
   genValidSpec @BySetPos
+  jsonSpecOnValid @BySetPos
   genValidSpec @RRule
+  jsonSpecOnValid @RRule
   describe "genDailyRecurrence" $ it "generates valid rules" $ genGeneratesValid genDailyRecurrence
   xdescribe "These produces sets that are too big to be useful tests" $ do
     describe "rruleNextOccurrence" $ do

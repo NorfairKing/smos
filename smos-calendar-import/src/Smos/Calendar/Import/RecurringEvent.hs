@@ -7,8 +7,11 @@ module Smos.Calendar.Import.RecurringEvent where
 import Data.Aeson
 import Data.Map (Map)
 import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.Set (Set)
 import Data.Validity
 import GHC.Generics
+import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
@@ -48,7 +51,8 @@ data RecurringEvent
   = RecurringEvent
       { recurringEventStatic :: !Static,
         recurringEventStart :: !(Maybe CalTimestamp),
-        recurringEventEnd :: !(Maybe CalEndDuration)
+        recurringEventEnd :: !(Maybe CalEndDuration),
+        recurringEventRRules :: !(Set RRule)
       }
   deriving (Show, Eq, Generic)
 
@@ -61,6 +65,7 @@ instance YamlSchema RecurringEvent where
         <$> staticObjectParser
         <*> optionalField' "start"
         <*> optionalField' "end"
+        <*> optionalFieldWithDefault' "rrule" S.empty
 
 instance FromJSON RecurringEvent where
   parseJSON = viaYamlSchema
@@ -70,5 +75,6 @@ instance ToJSON RecurringEvent where
     object $
       staticToObject recurringEventStatic
         ++ [ "start" .= recurringEventStart,
-             "end" .= recurringEventEnd
+             "end" .= recurringEventEnd,
+             "rrule" .= recurringEventRRules
            ]
