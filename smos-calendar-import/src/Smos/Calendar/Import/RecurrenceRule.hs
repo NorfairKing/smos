@@ -357,20 +357,24 @@ instance FromJSON RRule where
 instance ToJSON RRule where
   toJSON RRule {..} =
     object $
-      [ "frequency" .= rRuleFrequency,
-        "interval" .= rRuleInterval,
-        "second" .= rRuleBySecond,
-        "minute" .= rRuleByMinute,
-        "hour" .= rRuleByHour,
-        "day" .= rRuleByDay,
-        "monthday" .= rRuleByMonthDay,
-        "yearday" .= rRuleByYearDay,
-        "weekno" .= rRuleByWeekNo,
-        "month" .= rRuleByMonth,
-        "week-start" .= rRuleWeekStart,
-        "setpos" .= rRuleBySetPos
-      ]
+      concat
+        [ [ "frequency" .= rRuleFrequency,
+            "interval" .= rRuleInterval
+          ],
+          setPair "second" rRuleBySecond,
+          setPair "minute" rRuleByMinute,
+          setPair "hour" rRuleByHour,
+          setPair "day" rRuleByDay,
+          setPair "monthday" rRuleByMonthDay,
+          setPair "yearday" rRuleByYearDay,
+          setPair "weekno" rRuleByWeekNo,
+          setPair "month" rRuleByMonth,
+          ["week-start" .= rRuleWeekStart],
+          setPair "setpos" rRuleBySetPos
+        ]
         ++ untilCountObject rRuleUntilCount
+    where
+      setPair k s = [k .= s | not (S.null s)]
 
 -- | Frequency
 --

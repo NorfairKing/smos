@@ -1,0 +1,31 @@
+- summary: The second occurence of the event has an invalid start date
+  start:
+    utc: 2000-02-29 12:00:00
+  end:
+    utc: 2000-03-01 12:00:00
+- summary: The second occurence of the event has an invalid start date
+  start:
+    utc: 2004-02-29 12:00:00
+  end:
+    utc: 2004-03-01 12:00:00
+- summary: The second occurence of the event has an invalid start date
+  start:
+    utc: 2008-02-29 12:00:00
+  end:
+    utc: 2008-03-01 12:00:00
+- summary: The second occurence of the event has an invalid end date
+  start:
+    utc: 2000-02-28 12:00:00
+  end:
+    utc: 2000-02-29 12:00:00
+- summary: The second occurence of the event has an invalid end date
+  start:
+    utc: 2001-02-28 12:00:00
+  end:
+    utc: 2001-03-01 12:00:00
+- summary: The second occurence of the event has an invalid end date
+  start:
+    utc: 2002-02-28 12:00:00
+  end:
+    utc: 2002-03-01 12:00:00
+
