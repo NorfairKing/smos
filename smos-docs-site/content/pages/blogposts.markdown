@@ -9,6 +9,7 @@ title: Featured blogposts
 
 * [Introduction](https://cs-syd.eu/posts/2020-07-07-intro-to-gtd-with-smos)
 * [Waiting](https://cs-syd.eu/posts/2020-07-21-waiting)
+* [Archiving](https://cs-syd.eu/posts/2020-08-07-smos-archive)
 
 ##### Building smos:
 
