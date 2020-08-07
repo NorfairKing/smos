@@ -52,6 +52,17 @@ data RecurringEvent
       { recurringEventStatic :: !Static,
         recurringEventStart :: !(Maybe CalTimestamp),
         recurringEventEnd :: !(Maybe CalEndDuration),
+        -- | We use a set here instead of a Maybe because the spec says:
+        --
+        -- >  ; The following is OPTIONAL,
+        -- >  ; but SHOULD NOT occur more than once.
+        -- >  ;
+        -- >  rrule /
+        --
+        -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
+        --
+        -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
+        -- so we choose to define it as the union of the recurrence sets defined by the rules.
         recurringEventRRules :: !(Set RRule)
       }
   deriving (Show, Eq, Generic)
