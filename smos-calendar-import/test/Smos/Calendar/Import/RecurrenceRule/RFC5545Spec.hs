@@ -7,15 +7,11 @@ module Smos.Calendar.Import.RecurrenceRule.RFC5545Spec
   )
 where
 
-import qualified Data.List.NonEmpty as NE
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
-import Smos.Calendar.Import.UnresolvedTimestamp
 import Test.Hspec
-import Test.QuickCheck
-import Test.Validity
 
 spec :: Spec
 spec =
@@ -68,7 +64,7 @@ spec =
               go = \case
                 [] -> []
                 [x] -> [x]
-                (x : y : zs) -> x : go zs
+                (x : _ : zs) -> x : go zs
       rruleOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList (map (\d -> LocalTime d (TimeOfDay 09 00 00)) (everySecond [from .. to]))
     specify "Every 10 days, 5 occurrences" $ do

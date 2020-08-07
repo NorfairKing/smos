@@ -66,13 +66,13 @@ recurUnresolvedTimestamps rrule start end = do
   pure $ expandEnds starts end
   where
     expandEnds :: [CalTimestamp] -> CalEndDuration -> [(CalTimestamp, CalEndDuration)]
-    expandEnds starts end = case starts of
+    expandEnds starts end1 = case starts of
       [] -> []
-      [start] -> [(start, end)]
+      [start1] -> [(start1, end1)]
       (start1 : start2 : rest) ->
         let diff = diffCalTimestamp start2 start1
-            end2 = addEndDuration diff end -- This may be wrong when the end is in a different timezone than the start.
-         in (start1, end) : expandEnds (start2 : rest) end2
+            end2 = addEndDuration diff end1 -- This may be wrong when the end is in a different timezone than the start.
+         in (start1, end1) : expandEnds (start2 : rest) end2
       where
         -- This is not total, but it's an internal function and the function maintains the invariant that the timestamps are similar.
         diffCalTimestamp :: CalTimestamp -> CalTimestamp -> NominalDiffTime
@@ -113,7 +113,7 @@ recurCalEndDuration rrule = \case
 recurCalTimestamp :: RRule -> CalTimestamp -> R [CalTimestamp]
 recurCalTimestamp rrule = \case
   CalDateTime cdt -> fmap CalDateTime <$> recurCalDateTime rrule cdt
-  CalDate d -> undefined
+  CalDate _ -> undefined
 
 recurCalDateTime :: RRule -> CalDateTime -> R [CalDateTime]
 recurCalDateTime rrule = \case

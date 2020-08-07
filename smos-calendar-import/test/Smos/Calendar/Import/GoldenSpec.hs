@@ -73,8 +73,8 @@ compareAndSuggest func p actual expected = do
   unless (actual == expected) $ do
     if write
       then SB.writeFile (fromAbsFile p) (func actual)
-      else
-        expectationFailure $
+      else do
+        putStr $
           unlines
             [ fromAbsFile p,
               "input:",
@@ -87,6 +87,7 @@ compareAndSuggest func p actual expected = do
               "expected serialised:",
               T.unpack (TE.decodeUtf8 (func expected))
             ]
+        actual `shouldBe` expected
 
 readGoldenSmosFile :: Path Abs File -> SmosFile -> IO SmosFile
 readGoldenSmosFile sfp actual = do

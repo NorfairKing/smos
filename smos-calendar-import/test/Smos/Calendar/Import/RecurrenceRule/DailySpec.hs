@@ -5,22 +5,19 @@ module Smos.Calendar.Import.RecurrenceRule.DailySpec
   )
 where
 
-import qualified Data.List.NonEmpty as NE
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.RecurrenceRule.Gen
-import Smos.Calendar.Import.UnresolvedTimestamp
+import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Test.Hspec
-import Test.QuickCheck
 import Test.Validity
 
 spec :: Spec
 spec = do
   describe "rruleOccurrencesUntil" $ do
-    let limit = LocalTime (fromGregorian 2024 01 01) midnight
     specify "it works for this complex example" $
-      let rule =
+      let limit = LocalTime (fromGregorian 2024 01 01) midnight
+          rule =
             (rRule Daily)
               { rRuleInterval = Interval 3,
                 rRuleUntilCount = Count 10,

@@ -7,11 +7,10 @@ import Data.GenValidity
 import Data.GenValidity.Containers
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
-import Data.Maybe
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.UnresolvedTimestamp.Gen
+import Smos.Calendar.Import.UnresolvedTimestamp.Gen ()
 import Test.QuickCheck
 
 -- | Until we have it in genvalidity-time

@@ -17,12 +17,10 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
-import Data.Time.Calendar.OrdinalDate
 import Data.Validity
-import Data.Validity.Containers
+import Data.Validity.Containers ()
 import Data.Validity.Time ()
 import Data.Yaml
-import Debug.Trace
 import GHC.Generics (Generic)
 import Safe
 import Smos.Data
@@ -917,17 +915,16 @@ dailyNextRecurrence
         pure tod
       days = do
         d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
-        let (y, month, day) = toGregorian d
+        let (_, month, _) = toGregorian d
         guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
         let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
         guard $
           if S.null byMonthDays
             then True
             else
-              MonthDay day `S.member` byMonthDays -- Positive
+              MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
                 || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
         let dow = dayOfWeek d
-        let (positiveSpecificWeekDayIndex, negativeSpecificWeekDayIndex) = specificWeekDayIndex d dow
         -- From the spec:
         --
         -- > The BYDAY rule part MUST NOT be specified with a numeric value when
@@ -947,10 +944,10 @@ filterSetPos poss values =
     else
       let len = length values
           toNegative positive = negate $ len - positive + 1
-          go (positive, v) =
+          go positive =
             let negative = toNegative positive
              in S.member (SetPos positive) poss || S.member (SetPos negative) poss
-       in map snd $ filter go $ zip [1 ..] values
+       in map snd $ filter (go . fst) $ zip [1 ..] values
 
 monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
 monthIndices d =
@@ -963,7 +960,7 @@ monthIndices d =
 -- This can probably be sped up a lot
 specificWeekDayIndex :: Day -> DayOfWeek -> (Int, Int) -- (Positive index, Negative index)
 specificWeekDayIndex d wd =
-  let (y, month, day) = toGregorian d
+  let (y, month, _) = toGregorian d
       firstDayOfTheMonth = fromGregorian y month 1
       lastDayOfTheMonth = fromGregorian y month 31 -- Will be clipped
       daysOfThisMonth = numberWeekdays [firstDayOfTheMonth .. lastDayOfTheMonth]
@@ -975,12 +972,12 @@ specificWeekDayIndex d wd =
     numberWeekdays = go M.empty
       where
         go _ [] = []
-        go m (d : ds) =
-          let dow = dayOfWeek d
+        go m (d_ : ds) =
+          let dow = dayOfWeek d_
               (mv, m') =
                 M.insertLookupWithKey
                   (\_ _ old -> succ old) -- If found, just increment
                   dow
                   1 -- If not found, insert 1
                   m
-           in (d, (dow, fromMaybe 1 mv)) : go m' ds
+           in (d_, (dow, fromMaybe 1 mv)) : go m' ds

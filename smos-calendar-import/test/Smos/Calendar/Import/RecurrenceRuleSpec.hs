@@ -6,12 +6,9 @@ module Smos.Calendar.Import.RecurrenceRuleSpec
   )
 where
 
-import qualified Data.List.NonEmpty as NE
 import qualified Data.Set as S
-import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen
-import Smos.Calendar.Import.UnresolvedTimestamp
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
