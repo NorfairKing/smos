@@ -16,7 +16,31 @@ import Test.QuickCheck
 import Test.Validity
 
 spec :: Spec
-spec =
+spec = do
+  describe "rruleOccurrencesUntil" $ do
+    --  An limit in the future because we don't specify indefinite rules
+    let limit = LocalTime (fromGregorian 2024 01 01) midnight
+    specify "it works for this complex example" $
+      let rule =
+            (rRule Daily)
+              { rRuleInterval = Interval 3,
+                rRuleUntilCount = Count 10,
+                rRuleByMonthDay = [MonthDay 10, MonthDay 20, MonthDay 30],
+                rRuleByMonth = [September, October]
+              }
+          tod = TimeOfDay 04 30 00
+          start = LocalTime (fromGregorian 2020 09 10) tod
+       in rruleOccurrencesUntil start rule limit
+            `shouldBe` S.fromList
+              [ LocalTime (fromGregorian 2020 09 10) tod,
+                LocalTime (fromGregorian 2020 10 10) tod,
+                LocalTime (fromGregorian 2021 09 20) tod,
+                LocalTime (fromGregorian 2021 10 20) tod,
+                LocalTime (fromGregorian 2022 09 30) tod,
+                LocalTime (fromGregorian 2022 10 30) tod,
+                LocalTime (fromGregorian 2023 09 10) tod,
+                LocalTime (fromGregorian 2023 10 10) tod
+              ]
   describe "dailyNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = LocalTime (fromGregorian 2021 01 01) midnight
