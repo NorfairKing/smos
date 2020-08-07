@@ -48,3 +48,5 @@
     within:
       - "Smos.Calendar.Import.RecurrenceRule"
       - "Smos.Calendar.Import.RecurrenceRule.Gen"
+- ignore:
+    name: "Use bimap"
