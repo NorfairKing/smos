@@ -8,10 +8,12 @@ zones:
     to: 360
     from: 240
 events:
-- summary: Summary
-  start:
-    local: 1996-09-18 14:30:00
-    zone: Foo
-  end:
-    local: 1996-09-18 14:30:00
-    zone: Bar
+- events:
+  - summary: Summary
+    start:
+      local: 1996-09-18 14:30:00
+      zone: Foo
+    end:
+      local: 1996-09-18 14:30:00
+      zone: Bar
+  title: Summary

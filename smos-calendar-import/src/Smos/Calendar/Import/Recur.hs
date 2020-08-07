@@ -9,6 +9,7 @@ import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurringEvent
+import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 
@@ -19,7 +20,7 @@ recurRecurringEvents :: LocalTime -> RecurringEvents -> UnresolvedEvents
 recurRecurringEvents limit RecurringEvents {..} =
   let ctx = RecurCtx {recurCtxLimit = limit}
    in flip runReader ctx $ do
-        unresolvedEvents <- concat <$> mapM recurEvent recurringEvents
+        unresolvedEventGroups <- mapM recurEvent recurringEvents
         let unresolvedEventsTimeZones = recurringEventsTimeZones
         pure UnresolvedEvents {..}
 
@@ -28,19 +29,23 @@ data RecurCtx = RecurCtx {recurCtxLimit :: LocalTime}
 
 type R = Reader RecurCtx
 
-recurEvent :: RecurringEvent -> R [UnresolvedEvent]
+recurEvent :: RecurringEvent -> R UnresolvedEventGroup
 recurEvent RecurringEvent {..} = do
   let unresolvedEventStatic = recurringEventStatic
+      unresolvedEventGroupTitle = staticSummary recurringEventStatic
   if S.null recurringEventRRules
     then do
       let unresolvedEventStart = recurringEventStart
       let unresolvedEventEnd = recurringEventEnd
-      pure [UnresolvedEvent {..}]
-    else fmap concat $ forM (S.toList recurringEventRRules) $ \rrule -> do
-      tups <- recurMUnresolvedTimestamps rrule recurringEventStart recurringEventEnd
-      pure $ do
-        (unresolvedEventStart, unresolvedEventEnd) <- tups
-        pure UnresolvedEvent {..}
+      let unresolvedEvents = [UnresolvedEvent {..}]
+      pure UnresolvedEventGroup {..}
+    else do
+      unresolvedEvents <- fmap concat $ forM (S.toList recurringEventRRules) $ \rrule -> do
+        tups <- recurMUnresolvedTimestamps rrule recurringEventStart recurringEventEnd
+        pure $ do
+          (unresolvedEventStart, unresolvedEventEnd) <- tups
+          pure UnresolvedEvent {..}
+      pure UnresolvedEventGroup {..}
 
 recurMUnresolvedTimestamps :: RRule -> Maybe CalTimestamp -> Maybe CalEndDuration -> R [(Maybe CalTimestamp, Maybe CalEndDuration)]
 recurMUnresolvedTimestamps rrule mstart mend = case (mstart, mend) of

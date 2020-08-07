@@ -7,11 +7,44 @@ module Smos.Calendar.Import.Event where
 import Control.Applicative
 import Data.Aeson
 import Data.Maybe
+import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Static
 import Smos.Data
 import YamlParse.Applicative
+
+-- A collection of events from the same recurrence set
+data Events
+  = Events
+      { eventsTitle :: !(Maybe Text),
+        events :: ![Event]
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity Events
+
+instance YamlSchema Events where
+  yamlSchema =
+    alternatives
+      [ objectParser "Events" $
+          Events
+            <$> optionalField' "title"
+            <*> optionalFieldWithDefault' "events" [],
+        Events Nothing <$> yamlSchema
+      ]
+
+instance FromJSON Events where
+  parseJSON = viaYamlSchema
+
+instance ToJSON Events where
+  toJSON Events {..} = case eventsTitle of
+    Nothing -> toJSON events
+    Just title ->
+      object
+        [ "title" .= title,
+          "events" .= events
+        ]
 
 data Event
   = Event
@@ -45,6 +78,7 @@ instance ToJSON Event where
   toJSON Event {..} =
     object $
       staticToObject eventStatic
-        ++ [ "start" .= eventStart,
-             "end" .= eventEnd
-           ]
+        ++ concat
+          [ ["start" .= s | s <- maybeToList eventStart],
+            ["end" .= e | e <- maybeToList eventEnd]
+          ]

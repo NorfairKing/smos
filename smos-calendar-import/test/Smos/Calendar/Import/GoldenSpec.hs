@@ -5,6 +5,7 @@ where
 
 import Control.Monad
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -61,27 +62,31 @@ mkGoldenTest cp cals = do
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
   it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
-  let actualSmosFile = renderEvents actualEvents
+  let actualSmosFile = renderAllEvents actualEvents
   sfp <- runIO $ replaceExtension ".smos" cp
   expectedSmosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile
   it "renders the correct smosFile" $ compareAndSuggest smosFileYamlBS sfp actualSmosFile expectedSmosFile
 
 compareAndSuggest :: (Show a, Eq a) => (a -> ByteString) -> Path Abs File -> a -> a -> IO ()
-compareAndSuggest func p actual expected =
-  unless (actual == expected)
-    $ expectationFailure
-    $ unlines
-      [ fromAbsFile p,
-        "input:",
-        "actual structure:",
-        ppShow actual,
-        "actual serialised:",
-        T.unpack (TE.decodeUtf8 (func actual)),
-        "expected structure:",
-        ppShow expected,
-        "expected serialised:",
-        T.unpack (TE.decodeUtf8 (func expected))
-      ]
+compareAndSuggest func p actual expected = do
+  let write = False -- TODO expose this somehow?
+  unless (actual == expected) $ do
+    if write
+      then SB.writeFile (fromAbsFile p) (func actual)
+      else
+        expectationFailure $
+          unlines
+            [ fromAbsFile p,
+              "input:",
+              "actual structure:",
+              ppShow actual,
+              "actual serialised:",
+              T.unpack (TE.decodeUtf8 (func actual)),
+              "expected structure:",
+              ppShow expected,
+              "expected serialised:",
+              T.unpack (TE.decodeUtf8 (func expected))
+            ]
 
 readGoldenSmosFile :: Path Abs File -> SmosFile -> IO SmosFile
 readGoldenSmosFile sfp actual = do

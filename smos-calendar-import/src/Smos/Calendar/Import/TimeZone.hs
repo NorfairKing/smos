@@ -26,7 +26,7 @@ instance YamlSchema TimeZoneId where
   yamlSchema = TimeZoneId <$> yamlSchema
 
 newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
-  deriving (Show, Eq, Generic, FromJSON, ToJSON)
+  deriving (Show, Eq, Generic)
 
 instance Validity TimeZoneHistory
 
@@ -37,6 +37,13 @@ instance YamlSchema TimeZoneHistory where
         [ yamlSchema,
           (: []) <$> yamlSchema
         ]
+
+instance FromJSON TimeZoneHistory where
+  parseJSON = viaYamlSchema
+
+instance ToJSON TimeZoneHistory where
+  toJSON (TimeZoneHistory [x]) = toJSON x
+  toJSON (TimeZoneHistory l) = toJSON l
 
 data TimeZoneHistoryRule
   = TimeZoneHistoryRule

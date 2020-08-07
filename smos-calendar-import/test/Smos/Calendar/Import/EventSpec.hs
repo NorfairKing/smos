@@ -15,3 +15,5 @@ spec :: Spec
 spec = do
   genValidSpec @Event
   jsonSpecOnValid @Event
+  genValidSpec @Events
+  jsonSpecOnValid @Events

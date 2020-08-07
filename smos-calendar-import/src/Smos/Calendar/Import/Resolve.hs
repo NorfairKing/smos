@@ -9,23 +9,25 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Time
 import GHC.Generics (Generic)
+import Safe
 import Smos.Calendar.Import.Event
+import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
-resolveEvents :: TimeZone -> [UnresolvedEvents] -> [Event]
+resolveEvents :: TimeZone -> [UnresolvedEvents] -> [Events]
 resolveEvents tz = concatMap (resolveUnresolvedEvents tz)
 
-resolveUnresolvedEvents :: TimeZone -> UnresolvedEvents -> [Event]
+resolveUnresolvedEvents :: TimeZone -> UnresolvedEvents -> [Events]
 resolveUnresolvedEvents tz UnresolvedEvents {..} =
   let ctx =
         RecurCtx
           { resolveCtxTimeZone = tz,
             resolveCtxTimeZones = unresolvedEventsTimeZones
           }
-   in runReader (concat <$> mapM resolveEvent unresolvedEvents) ctx
+   in runReader (mapM resolveEventGroup unresolvedEventGroups) ctx
 
 data RecurCtx
   = RecurCtx
@@ -36,14 +38,20 @@ data RecurCtx
 
 type R = Reader RecurCtx
 
-resolveEvent :: UnresolvedEvent -> R [Event]
+resolveEventGroup :: UnresolvedEventGroup -> R Events
+resolveEventGroup UnresolvedEventGroup {..} = do
+  let eventsTitle = unresolvedEventGroupTitle
+  events <- mapM resolveEvent unresolvedEvents
+  pure Events {..}
+
+resolveEvent :: UnresolvedEvent -> R Event
 resolveEvent UnresolvedEvent {..} = do
   let eventStatic = unresolvedEventStatic
   eventStart <- mapM resolveStart unresolvedEventStart
   eventEnd <- case unresolvedEventEnd of
     Nothing -> pure Nothing
     Just ced -> resolveEndDuration eventStart ced
-  pure [Event {..}]
+  pure Event {..}
 
 resolveStart :: CalTimestamp -> R Timestamp
 resolveStart = resolveTimestamp
