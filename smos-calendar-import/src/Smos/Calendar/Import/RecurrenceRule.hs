@@ -718,35 +718,54 @@ dailyNextRecurrence
   byMinutes
   bySeconds
   bySetPoss = headMay $ filter (> lt) $ takeWhile (<= limit) $ do
-    d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
-    let (y, month, day) = toGregorian d
-    guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
-    let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
-    guard $
-      if S.null byMonthDays
-        then True
-        else
-          MonthDay day `S.member` byMonthDays -- Positive
-            || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
-    let dow = dayOfWeek d
-    let (positiveSpecificWeekDayIndex, negativeSpecificWeekDayIndex) = specificWeekDayIndex d dow
-    -- From the spec:
-    --
-    -- > The BYDAY rule part MUST NOT be specified with a numeric value when
-    -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
-    --
-    -- So we don't need to check specific weekdays here
-    guard $
-      if null byDays
-        then True
-        else Every dow `S.member` byDays
-    s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
-    m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
-    h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
-    let tod = TimeOfDay h m s
+    d <- days
+    tod <- filterSetPos bySetPoss tods
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
     pure next
+    where
+      tods = do
+        s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
+        m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
+        h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
+        let tod = TimeOfDay h m s
+        pure tod
+      days = do
+        d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
+        let (y, month, day) = toGregorian d
+        guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
+        let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
+        guard $
+          if S.null byMonthDays
+            then True
+            else
+              MonthDay day `S.member` byMonthDays -- Positive
+                || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
+        let dow = dayOfWeek d
+        let (positiveSpecificWeekDayIndex, negativeSpecificWeekDayIndex) = specificWeekDayIndex d dow
+        -- From the spec:
+        --
+        -- > The BYDAY rule part MUST NOT be specified with a numeric value when
+        -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
+        --
+        -- So we don't need to check specific weekdays here
+        guard $
+          if null byDays
+            then True
+            else Every dow `S.member` byDays
+        pure d
+
+filterSetPos :: Set BySetPos -> [a] -> [a]
+filterSetPos poss values =
+  if S.null poss
+    then values
+    else
+      let len = length values
+          toNegative positive = negate $ len - positive + 1
+          go (positive, v) =
+            let negative = toNegative positive
+             in S.member (SetPos positive) poss || S.member (SetPos negative) poss
+       in map snd $ filter go $ zip [1 ..] values
 
 monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
 monthIndices d =

@@ -18,7 +18,6 @@ import Test.Validity
 spec :: Spec
 spec = do
   describe "rruleOccurrencesUntil" $ do
-    --  An limit in the future because we don't specify indefinite rules
     let limit = LocalTime (fromGregorian 2024 01 01) midnight
     specify "it works for this complex example" $
       let rule =
@@ -30,7 +29,8 @@ spec = do
               }
           tod = TimeOfDay 04 30 00
           start = LocalTime (fromGregorian 2020 09 10) tod
-       in rruleOccurrencesUntil start rule limit
+       in --  This limit will be reached and cut of 2 recurrences
+          rruleOccurrencesUntil start rule limit
             `shouldBe` S.fromList
               [ LocalTime (fromGregorian 2020 09 10) tod,
                 LocalTime (fromGregorian 2020 10 10) tod,
@@ -40,6 +40,30 @@ spec = do
                 LocalTime (fromGregorian 2022 10 30) tod,
                 LocalTime (fromGregorian 2023 09 10) tod,
                 LocalTime (fromGregorian 2023 10 10) tod
+              ]
+    specify "It works for this BYSETPOS example: The last hour of every day" $
+      --  An limit in the future because it won't be reached anyway
+      let limit = LocalTime (fromGregorian 2024 01 01) midnight
+          rule =
+            (rRule Daily)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 3,
+                rRuleBySetPos = [SetPos (-1)],
+                rRuleByHour =
+                  [ Hour 20,
+                    Hour 21,
+                    Hour 22,
+                    Hour 23
+                  ],
+                rRuleByMinute = [Minute 0],
+                rRuleBySecond = [Second 0]
+              }
+          start = LocalTime (fromGregorian 2020 08 07) (TimeOfDay 23 00 00)
+       in rruleOccurrencesUntil start rule limit
+            `shouldBe` S.fromList
+              [ LocalTime (fromGregorian 2020 08 07) (TimeOfDay 23 00 00),
+                LocalTime (fromGregorian 2020 08 08) (TimeOfDay 23 00 00),
+                LocalTime (fromGregorian 2020 08 09) (TimeOfDay 23 00 00)
               ]
   describe "dailyNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
