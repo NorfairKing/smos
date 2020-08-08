@@ -908,7 +908,7 @@ dailyDateTimeNextRecurrence ::
 dailyDateTimeNextRecurrence
   lt@(LocalTime d_ (TimeOfDay h_ m_ s_))
   limit@(LocalTime limitDay _)
-  (Interval interval)
+  interval
   byMonths
   byMonthDays
   byDays
@@ -929,29 +929,7 @@ dailyDateTimeNextRecurrence
         s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
         let tod = TimeOfDay h m s
         pure tod
-      days = do
-        d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
-        let (_, month, _) = toGregorian d
-        guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
-        let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
-        guard $
-          if S.null byMonthDays
-            then True
-            else
-              MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
-                || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
-        let dow = dayOfWeek d
-        -- From the spec:
-        --
-        -- > The BYDAY rule part MUST NOT be specified with a numeric value when
-        -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
-        --
-        -- So we don't need to check specific weekdays here
-        guard $
-          if null byDays
-            then True
-            else Every dow `S.member` byDays
-        pure d
+      days = dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
 
 -- | Recur with a 'Daily' frequency
 dailyDateNextRecurrence ::
@@ -966,39 +944,54 @@ dailyDateNextRecurrence ::
 dailyDateNextRecurrence
   d_
   limitDay
-  (Interval interval)
+  interval
   byMonths
   byMonthDays
   byDays
   bySetPoss = headMay $ do
-    d <- filterSetPos bySetPoss days
+    d <- filterSetPos bySetPoss $ dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
     guard (d > d_) -- Don't take the current one again
     guard (d <= limitDay) -- Don't go beyond the limit
     pure d
-    where
-      days = do
-        d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
-        let (_, month, _) = toGregorian d
-        guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
-        let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
-        guard $
-          if S.null byMonthDays
-            then True
-            else
-              MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
-                || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
-        let dow = dayOfWeek d
-        -- From the spec:
-        --
-        -- > The BYDAY rule part MUST NOT be specified with a numeric value when
-        -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
-        --
-        -- So we don't need to check specific weekdays here
-        guard $
-          if null byDays
-            then True
-            else Every dow `S.member` byDays
-        pure d
+
+-- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
+dayRecurrence ::
+  Day ->
+  Day ->
+  Interval ->
+  Set Month ->
+  Set ByMonthDay ->
+  Set ByDay ->
+  [Day]
+dayRecurrence
+  d_
+  limitDay
+  (Interval interval)
+  byMonths
+  byMonthDays
+  byDays = do
+    d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
+    let (_, month, _) = toGregorian d
+    guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
+    let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
+    guard $
+      if S.null byMonthDays
+        then True
+        else
+          MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
+            || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
+    let dow = dayOfWeek d
+    -- From the spec:
+    --
+    -- > The BYDAY rule part MUST NOT be specified with a numeric value when
+    -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
+    --
+    -- So we don't need to check specific weekdays here
+    guard $
+      if null byDays
+        then True
+        else Every dow `S.member` byDays
+    pure d
 
 filterSetPos :: Set BySetPos -> [a] -> [a]
 filterSetPos poss values =
