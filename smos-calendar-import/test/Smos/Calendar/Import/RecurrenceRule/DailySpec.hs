@@ -118,3 +118,43 @@ spec = do
       specify "every 15th and 20th second" $
         dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 15)) limit (Interval 1) [] [] [] [] [] [Second 15, Second 20] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 20))
+  describe "dailyDateNextRecurrence" $ do
+    --  An unimportant limit because we don't specify any rules that have no occurrances
+    let limit = fromGregorian 2021 01 01
+    describe "No ByX's" $ do
+      specify "Every day" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 06) limit (Interval 1) [] [] [] []
+          `shouldBe` Just (fromGregorian 2020 08 07)
+      specify "Every other day" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 06) limit (Interval 2) [] [] [] []
+          `shouldBe` Just (fromGregorian 2020 08 08)
+    describe "ByMonth" $ do
+      specify "Every three days in September" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 06) limit (Interval 3) [September] [] [] []
+          `shouldBe` Just (fromGregorian 2020 09 02)
+      specify "Every four days in August" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 06) limit (Interval 4) [August] [] [] []
+          `shouldBe` Just (fromGregorian 2020 08 10)
+    describe "ByMonthDay" $ do
+      specify "Every tenth day of the month" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 10) limit (Interval 1) [] [MonthDay 10] [] []
+          `shouldBe` Just (fromGregorian 2020 09 10)
+      specify "Every tenth of September" $
+        dailyDateNextRecurrence (fromGregorian 2019 09 10) limit (Interval 1) [September] [MonthDay 10] [] []
+          `shouldBe` Just (fromGregorian 2020 09 10)
+      specify "Every last day of February in a non-leap year" $
+        dailyDateNextRecurrence (fromGregorian 2018 02 28) limit (Interval 1) [February] [MonthDay (-1)] [] []
+          `shouldBe` Just (fromGregorian 2019 02 28)
+      specify "Every last day of February in a leap year" $
+        dailyDateNextRecurrence (fromGregorian 2019 02 28) limit (Interval 1) [February] [MonthDay (-1)] [] []
+          `shouldBe` Just (fromGregorian 2020 02 29)
+      specify "Every second-to-last day of September" $
+        dailyDateNextRecurrence (fromGregorian 2019 09 33) limit (Interval 1) [September] [MonthDay (-1)] [] []
+          `shouldBe` Just (fromGregorian 2020 09 33)
+    describe "ByDay" $ do
+      specify "Every tuesday" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [] [] [Every Tuesday] []
+          `shouldBe` Just (fromGregorian 2020 08 11)
+      specify "Every tuesday in September" $
+        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [September] [] [Every Tuesday] []
+          `shouldBe` Just (fromGregorian 2020 09 01)
