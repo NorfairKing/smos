@@ -820,7 +820,7 @@ isIndefinite = (== Indefinitely) . rRuleUntilCount
 -- instances start at the same local time regardless of time zone changes.
 --
 -- This function takes care of the 'rRuleUntilCount' part.
-rruleOccurrencesUntil ::
+rruleDateTimeOccurrencesUntil ::
   -- | DTStart
   LocalTime ->
   -- | recurrence rule
@@ -830,7 +830,7 @@ rruleOccurrencesUntil ::
   -- | The recurrence set.
   -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
   Set LocalTime
-rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
+rruleDateTimeOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
   Indefinitely -> goIndefinitely
   Count i -> goCount i
   Until lt -> goUntil lt
@@ -838,7 +838,7 @@ rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
     goIndefinitely = S.insert start $ go start
       where
         go cur =
-          case rruleNextOccurrence cur limit rrule of
+          case rruleDateTimeNextOccurrence cur limit rrule of
             Nothing -> S.empty
             Just next ->
               if next <= limit
@@ -852,7 +852,7 @@ rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
         go c cur
           | c <= 0 = S.empty
           | otherwise =
-            case rruleNextOccurrence cur limit rrule of
+            case rruleDateTimeNextOccurrence cur limit rrule of
               Nothing -> S.empty
               Just next ->
                 if next <= limit
@@ -864,21 +864,36 @@ rruleOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
         else S.empty
       where
         go cur =
-          case rruleNextOccurrence cur limit rrule of
+          case rruleDateTimeNextOccurrence cur limit rrule of
             Nothing -> S.empty
             Just next ->
               if next <= limit && next <= untilLimit
                 then S.insert next $ go next
                 else S.empty
 
+rruleDateOccurrencesUntil ::
+  -- | DTStart
+  Day ->
+  -- | recurrence rule
+  RRule ->
+  -- | Limit
+  Day ->
+  -- | The recurrence set.
+  -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
+  Set Day
+rruleDateOccurrencesUntil start rrule limit = undefined start rrule limit
+
 -- This function takes care of the 'rRuleFrequency' part.
-rruleNextOccurrence :: LocalTime -> LocalTime -> RRule -> Maybe LocalTime
-rruleNextOccurrence lt limit RRule {..} = case rRuleFrequency of
-  Daily -> dailyNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
+rruleDateTimeNextOccurrence :: LocalTime -> LocalTime -> RRule -> Maybe LocalTime
+rruleDateTimeNextOccurrence lt limit RRule {..} = case rRuleFrequency of
+  Daily -> dailyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   _ -> Nothing
 
+rruleDateNextOccurrence :: Day -> Day -> RRule -> Maybe Day
+rruleDateNextOccurrence d limit rrule = undefined d limit rrule
+
 -- | Recur with a 'Daily' frequency
-dailyNextRecurrence ::
+dailyDateTimeNextRecurrence ::
   LocalTime ->
   LocalTime ->
   Interval ->
@@ -890,7 +905,7 @@ dailyNextRecurrence ::
   Set BySecond ->
   Set BySetPos ->
   Maybe LocalTime
-dailyNextRecurrence
+dailyDateTimeNextRecurrence
   lt@(LocalTime d_ (TimeOfDay h_ m_ s_))
   limit@(LocalTime limitDay _)
   (Interval interval)

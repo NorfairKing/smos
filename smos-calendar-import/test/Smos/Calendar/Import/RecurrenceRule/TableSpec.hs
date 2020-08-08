@@ -45,29 +45,29 @@ spec =
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleByMonth = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (<= S.size without)
       specify "ByMonthDay limits the recurrence set" $ forAllValid $ \cur ->
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleByMonthDay = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (<= S.size without)
       specify "ByDay limits the recurrence set" $ forAllValid $ \cur ->
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleByDay = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (<= S.size without)
       specify "ByHour expands the recurrence set" $ forAllValid $ \cur ->
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleByHour = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           pPrint ("cur", cur)
           pPrint ("limit", limit)
           pPrint rrule
@@ -80,20 +80,20 @@ spec =
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleByMinute = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (>= S.size without)
       specify "BySecond expands the recurrence set" $ forAllValid $ \cur ->
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleBySecond = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (>= S.size without)
       specify "BySetPos limits the recurrence set" $ forAllValid $ \cur ->
         forAll genDailyRecurrence $ \rrule -> do
           let limit = addLocalTime nominalDay cur
           let withoutRule = rrule {rRuleBySetPos = S.empty}
-          let with = rruleOccurrencesUntil cur rrule limit
-          let without = rruleOccurrencesUntil cur withoutRule limit
+          let with = rruleDateTimeOccurrencesUntil cur rrule limit
+          let without = rruleDateTimeOccurrencesUntil cur withoutRule limit
           S.size with `shouldSatisfy` (<= S.size without)

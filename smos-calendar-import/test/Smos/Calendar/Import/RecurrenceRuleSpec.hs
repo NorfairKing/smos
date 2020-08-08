@@ -44,9 +44,9 @@ spec = do
   jsonSpecOnValid @RRule
   describe "genDailyRecurrence" $ it "generates valid rules" $ genGeneratesValid genDailyRecurrence
   xdescribe "These produces sets that are too big to be useful tests" $ do
-    describe "rruleNextOccurrence" $ do
-      it "produces valid results" $ producesValidsOnValids3 rruleNextOccurrence
-    describe "dailyNextRecurrence" $ do
+    describe "rruleDateTimeNextOccurrence" $ do
+      it "produces valid results" $ producesValidsOnValids3 rruleDateTimeNextOccurrence
+    describe "dailyDateTimeNextRecurrence" $ do
       it "produces valid results" $ forAllValid $ \cur ->
         forAllValid $ \limit ->
           forAllValid $ \int ->
@@ -58,7 +58,7 @@ spec = do
                       forAllValid $ \bySeconds ->
                         forAllValid $ \bySetPoss ->
                           shouldBeValid $
-                            dailyNextRecurrence
+                            dailyDateTimeNextRecurrence
                               cur
                               limit
                               int
@@ -69,11 +69,11 @@ spec = do
                               byMinutes
                               bySeconds
                               bySetPoss
-  describe "rruleOccurrencesUntil" $ do
-    xit "produces valid results" $ producesValidsOnValids3 rruleOccurrencesUntil
+  describe "rruleDateTimeOccurrencesUntil" $ do
+    xit "produces valid results" $ producesValidsOnValids3 rruleDateTimeOccurrencesUntil
     xit "produces results within the 'Count' range for 'Count' rules" $ forAllValid $ \start ->
       forAllValid $ \limit ->
         forAllValid $ \c ->
           forAll (((\r -> r {rRuleUntilCount = Count c}) <$> genValid) `suchThat` isValid) $ \rule ->
-            let s = rruleOccurrencesUntil start rule limit
+            let s = rruleDateTimeOccurrencesUntil start rule limit
              in fromIntegral (S.size s) `shouldSatisfy` (<= c)

@@ -14,7 +14,7 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  describe "rruleOccurrencesUntil" $ do
+  describe "rruleDateTimeOccurrencesUntil" $ do
     specify "it works for this complex example" $
       let limit = LocalTime (fromGregorian 2024 01 01) midnight
           rule =
@@ -27,7 +27,7 @@ spec = do
           tod = TimeOfDay 04 30 00
           start = LocalTime (fromGregorian 2020 09 10) tod
        in --  This limit will be reached and cut of 2 recurrences
-          rruleOccurrencesUntil start rule limit
+          rruleDateTimeOccurrencesUntil start rule limit
             `shouldBe` S.fromList
               [ LocalTime (fromGregorian 2020 09 10) tod,
                 LocalTime (fromGregorian 2020 10 10) tod,
@@ -56,65 +56,65 @@ spec = do
                 rRuleBySecond = [Second 0]
               }
           start = LocalTime (fromGregorian 2020 08 07) (TimeOfDay 23 00 00)
-       in rruleOccurrencesUntil start rule limit
+       in rruleDateTimeOccurrencesUntil start rule limit
             `shouldBe` S.fromList
               [ LocalTime (fromGregorian 2020 08 07) (TimeOfDay 23 00 00),
                 LocalTime (fromGregorian 2020 08 08) (TimeOfDay 23 00 00),
                 LocalTime (fromGregorian 2020 08 09) (TimeOfDay 23 00 00)
               ]
-  describe "dailyNextRecurrence" $ do
+  describe "dailyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = LocalTime (fromGregorian 2021 01 01) midnight
     describe "No ByX's" $ do
       specify "Every day" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 1) [] [] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 1) [] [] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 07) tod)
       specify "Every other day" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 2) [] [] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 2) [] [] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 08) tod)
     describe "ByMonth" $ do
       specify "Every three days in September" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 3) [September] [] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 3) [September] [] [] [] [] [] []
           `shouldBe` Just
             (LocalTime (fromGregorian 2020 09 02) tod)
       specify "Every four days in August" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 4) [August] [] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) tod) limit (Interval 4) [August] [] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 10) tod)
     describe "ByMonthDay" $ do
       specify "Every tenth day of the month" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 10) tod) limit (Interval 1) [] [MonthDay 10] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 10) tod) limit (Interval 1) [] [MonthDay 10] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 10) tod)
       specify "Every tenth of September" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2019 09 10) tod) limit (Interval 1) [September] [MonthDay 10] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2019 09 10) tod) limit (Interval 1) [September] [MonthDay 10] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 10) tod)
       specify "Every last day of February in a non-leap year" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2018 02 28) tod) limit (Interval 1) [February] [MonthDay (-1)] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2018 02 28) tod) limit (Interval 1) [February] [MonthDay (-1)] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2019 02 28) tod)
       specify "Every last day of February in a leap year" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2019 02 28) tod) limit (Interval 1) [February] [MonthDay (-1)] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2019 02 28) tod) limit (Interval 1) [February] [MonthDay (-1)] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 02 29) tod)
       specify "Every second-to-last day of September" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2019 09 33) tod) limit (Interval 1) [September] [MonthDay (-1)] [] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2019 09 33) tod) limit (Interval 1) [September] [MonthDay (-1)] [] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 33) tod)
     describe "ByDay" $ do
       specify "Every tuesday" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [] [] [Every Tuesday] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [] [] [Every Tuesday] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 11) tod)
       specify "Every tuesday in September" $ forAllValid $ \tod ->
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [September] [] [Every Tuesday] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [September] [] [Every Tuesday] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 01) tod)
     describe "ByHour" $ do
       specify "16h every other day" $
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 16 00 00)) limit (Interval 2) [] [] [] [Hour 16] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 16 00 00)) limit (Interval 2) [] [] [] [Hour 16] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 08) (TimeOfDay 16 00 00))
     describe "ByMinute" $ do
       specify "16h20 every third day" $
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 16 20 00)) limit (Interval 3) [] [] [] [Hour 16] [Minute 20] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 16 20 00)) limit (Interval 3) [] [] [] [Hour 16] [Minute 20] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 09) (TimeOfDay 16 20 00))
     describe "ByMinute" $ do
       specify "16h20m30s every fourth day" $
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 00)) limit (Interval 4) [] [] [] [Hour 16] [Minute 20] [Second 30] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 00)) limit (Interval 4) [] [] [] [Hour 16] [Minute 20] [Second 30] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 16 20 30))
       specify "every 15th and 20th second" $
-        dailyNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 15)) limit (Interval 1) [] [] [] [] [] [Second 15, Second 20] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 15)) limit (Interval 1) [] [] [] [] [] [Second 15, Second 20] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 06) (TimeOfDay 15 00 20))

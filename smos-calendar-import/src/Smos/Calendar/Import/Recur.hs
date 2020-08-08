@@ -113,7 +113,7 @@ recurCalEndDuration rrule = \case
 recurCalTimestamp :: RRule -> CalTimestamp -> R [CalTimestamp]
 recurCalTimestamp rrule = \case
   CalDateTime cdt -> fmap CalDateTime <$> recurCalDateTime rrule cdt
-  CalDate _ -> undefined
+  CalDate dt -> fmap CalDate <$> recurDate rrule dt
 
 recurCalDateTime :: RRule -> CalDateTime -> R [CalDateTime]
 recurCalDateTime rrule = \case
@@ -132,4 +132,9 @@ recurUTCTime rrule utct = do
 recurLocalTime :: RRule -> LocalTime -> R [LocalTime]
 recurLocalTime rrule lt = do
   limit <- asks recurCtxLimit
-  pure $ S.toList $ rruleOccurrencesUntil lt rrule limit
+  pure $ S.toAscList $ rruleDateTimeOccurrencesUntil lt rrule limit
+
+recurDate :: RRule -> Day -> R [Day]
+recurDate rrule d = do
+  limit <- asks recurCtxLimit
+  pure $ S.toAscList $ rruleDateOccurrencesUntil d rrule $ localDay limit

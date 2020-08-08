@@ -26,7 +26,7 @@ spec =
           rule = (rRule Daily) {rRuleUntilCount = Count 10}
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 1998 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.map (\d -> LocalTime (fromGregorian 1997 09 d) (TimeOfDay 09 00 00)) [2 .. 11]
     specify "Daily until December 24, 1997" $ do
       --
@@ -42,7 +42,7 @@ spec =
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
           from = fromGregorian 1997 09 02
           to = fromGregorian 1997 12 23
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList (map (\d -> LocalTime d (TimeOfDay 09 00 00)) [from .. to])
     specify "Every other day - forever" $ do
       --
@@ -65,7 +65,7 @@ spec =
                 [] -> []
                 [x] -> [x]
                 (x : _ : zs) -> x : go zs
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList (map (\d -> LocalTime d (TimeOfDay 09 00 00)) (everySecond [from .. to]))
     specify "Every 10 days, 5 occurrences" $ do
       --
@@ -79,7 +79,7 @@ spec =
           rule = (rRule Daily) {rRuleInterval = Interval 10, rRuleUntilCount = Count 5}
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 12) (TimeOfDay 09 00 00),
@@ -117,7 +117,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 12) (TimeOfDay 09 00 00),
@@ -137,7 +137,7 @@ spec =
           rule = (rRule Weekly) {rRuleUntilCount = Count 10}
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 09) (TimeOfDay 09 00 00),
@@ -165,7 +165,7 @@ spec =
           rule = (rRule Weekly) {rRuleUntilCount = Until (LocalTime (fromGregorian 1997 12 24) (TimeOfDay 00 00 00))}
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 09) (TimeOfDay 09 00 00),
@@ -201,7 +201,7 @@ spec =
       let dtstart = LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00)
           rule = (rRule Weekly) {rRuleInterval = Interval 2, rRuleWeekStart = Sunday}
           limit = LocalTime (fromGregorian 1998 02 17) (TimeOfDay 09 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 16) (TimeOfDay 09 00 00),
@@ -244,8 +244,8 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      let res1 = rruleOccurrencesUntil dtstart rule1 limit
-      let res2 = rruleOccurrencesUntil dtstart rule2 limit
+      let res1 = rruleDateTimeOccurrencesUntil dtstart rule1 limit
+      let res2 = rruleDateTimeOccurrencesUntil dtstart rule2 limit
       res1
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
@@ -287,7 +287,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 01) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 03) (TimeOfDay 09 00 00),
@@ -332,7 +332,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 04) (TimeOfDay 09 00 00),
@@ -361,7 +361,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 03) (TimeOfDay 09 00 00),
@@ -390,7 +390,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 03) (TimeOfDay 09 00 00),
@@ -416,7 +416,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 07) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 11 02) (TimeOfDay 09 00 00),
@@ -440,7 +440,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 22) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 20) (TimeOfDay 09 00 00),
@@ -462,7 +462,7 @@ spec =
       let dtstart = LocalTime (fromGregorian 1997 09 28) (TimeOfDay 09 00 00)
           rule = (rRule Monthly) {rRuleByMonthDay = [MonthDay (-3)]}
           limit = LocalTime (fromGregorian 1998 02 27) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 28) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 29) (TimeOfDay 09 00 00),
@@ -484,7 +484,7 @@ spec =
           rule = (rRule Monthly) {rRuleUntilCount = Count 10, rRuleByMonthDay = [MonthDay 2, MonthDay 15]}
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 15) (TimeOfDay 09 00 00),
@@ -513,7 +513,7 @@ spec =
                 rRuleByMonthDay = [MonthDay 1, MonthDay (-1)]
               }
           limit = LocalTime (fromGregorian 1998 02 02) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 30) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 01) (TimeOfDay 09 00 00),
@@ -551,7 +551,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 10) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 11) (TimeOfDay 09 00 00),
@@ -581,7 +581,7 @@ spec =
                 rRuleByDay = [Every Tuesday]
               }
           limit = LocalTime (fromGregorian 1998 04 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 09) (TimeOfDay 09 00 00),
@@ -615,7 +615,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 06 10) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 07 10) (TimeOfDay 09 00 00),
@@ -647,7 +647,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 03 10) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1999 01 10) (TimeOfDay 09 00 00),
@@ -686,7 +686,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 01 01) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 04 10) (TimeOfDay 09 00 00),
@@ -716,7 +716,7 @@ spec =
               { rRuleByDay = [Specific 20 Monday]
               }
           limit = LocalTime (fromGregorian 1999 05 18) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 05 19) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 05 18) (TimeOfDay 09 00 00),
@@ -739,7 +739,7 @@ spec =
                 rRuleByDay = [Every Monday]
               }
           limit = LocalTime (fromGregorian 1999 05 18) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 05 12) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 05 11) (TimeOfDay 09 00 00),
@@ -762,7 +762,7 @@ spec =
                 rRuleByDay = [Every Thursday]
               }
           limit = LocalTime (fromGregorian 1999 03 26) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 03 12) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 03 20) (TimeOfDay 09 00 00),
@@ -797,7 +797,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 06 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 06 12) (TimeOfDay 09 00 00),
@@ -858,7 +858,7 @@ spec =
                 rRuleByMonthDay = [MonthDay 13]
               }
           limit = LocalTime (fromGregorian 2000 10 14) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1998 02 13) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 03 13) (TimeOfDay 09 00 00),
@@ -893,7 +893,7 @@ spec =
                   ]
               }
           limit = LocalTime (fromGregorian 1998 06 14) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 13) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 11) (TimeOfDay 09 00 00),
@@ -934,7 +934,7 @@ spec =
                   ]
               }
           limit = LocalTime (fromGregorian 2004 11 03) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1996 11 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 2000 11 07) (TimeOfDay 09 00 00),
@@ -961,7 +961,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 04) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 07) (TimeOfDay 09 00 00),
@@ -990,7 +990,7 @@ spec =
                 rRuleBySetPos = [SetPos (-2)]
               }
           limit = LocalTime (fromGregorian 1998 04 01) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 29) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 30) (TimeOfDay 09 00 00),
@@ -1015,7 +1015,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 02) (TimeOfDay 12 00 00),
@@ -1036,7 +1036,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 15 00),
@@ -1060,7 +1060,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 02) (TimeOfDay 10 30 00),
@@ -1114,8 +1114,8 @@ spec =
                   ]
               }
           limit = LocalTime (fromGregorian 1997 09 03) (TimeOfDay 17 00 00)
-      let res1 = rruleOccurrencesUntil dtstart rule1 limit
-      let res2 = rruleOccurrencesUntil dtstart rule2 limit
+      let res1 = rruleDateTimeOccurrencesUntil dtstart rule1 limit
+      let res2 = rruleDateTimeOccurrencesUntil dtstart rule2 limit
       res1
         `shouldBe` S.fromList
           ( do
@@ -1142,7 +1142,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 08 10) (TimeOfDay 09 00 00),
@@ -1166,7 +1166,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2000 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 1997 08 05) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 08 17) (TimeOfDay 09 00 00),
@@ -1188,7 +1188,7 @@ spec =
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
           limit = LocalTime (fromGregorian 2020 00 00) (TimeOfDay 00 00 00)
-      rruleOccurrencesUntil dtstart rule limit
+      rruleDateTimeOccurrencesUntil dtstart rule limit
         `shouldBe` S.fromList
           [ LocalTime (fromGregorian 2007 01 15) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 2007 01 30) (TimeOfDay 09 00 00),
