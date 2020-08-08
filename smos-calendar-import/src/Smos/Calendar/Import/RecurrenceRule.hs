@@ -830,46 +830,7 @@ rruleDateTimeOccurrencesUntil ::
   -- | The recurrence set.
   -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
   Set LocalTime
-rruleDateTimeOccurrencesUntil start rrule limit = case rRuleUntilCount rrule of
-  Indefinitely -> goIndefinitely
-  Count i -> goCount i
-  Until lt -> goUntil lt
-  where
-    goIndefinitely = S.insert start $ go start
-      where
-        go cur =
-          case rruleDateTimeNextOccurrence cur limit rrule of
-            Nothing -> S.empty
-            Just next ->
-              if next <= limit
-                then S.insert next $ go next
-                else S.empty
-    goCount count =
-      if count >= 1
-        then S.insert start $ go (pred count) start
-        else S.empty
-      where
-        go c cur
-          | c <= 0 = S.empty
-          | otherwise =
-            case rruleDateTimeNextOccurrence cur limit rrule of
-              Nothing -> S.empty
-              Just next ->
-                if next <= limit
-                  then S.insert next $ go (pred c) next
-                  else S.empty
-    goUntil untilLimit =
-      if start <= untilLimit
-        then S.insert start $ go start
-        else S.empty
-      where
-        go cur =
-          case rruleDateTimeNextOccurrence cur limit rrule of
-            Nothing -> S.empty
-            Just next ->
-              if next <= limit && next <= untilLimit
-                then S.insert next $ go next
-                else S.empty
+rruleDateTimeOccurrencesUntil = occurrencesUntil rruleDateTimeNextOccurrence (<=)
 
 rruleDateOccurrencesUntil ::
   -- | DTStart
@@ -881,7 +842,24 @@ rruleDateOccurrencesUntil ::
   -- | The recurrence set.
   -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
   Set Day
-rruleDateOccurrencesUntil start rrule limit = undefined start rrule limit
+rruleDateOccurrencesUntil = occurrencesUntil rruleDateNextOccurrence (\d lt -> d <= localDay lt)
+
+occurrencesUntil :: Ord a => (a -> a -> RRule -> Maybe a) -> (a -> LocalTime -> Bool) -> a -> RRule -> a -> Set a
+occurrencesUntil func leFunc start rrule limit = case rRuleUntilCount rrule of
+  Indefinitely -> goIndefinitely
+  Count i -> goCount i
+  Until lt -> goUntil lt
+  where
+    goUntil untilLimit = S.filter (`leFunc` untilLimit) goIndefinitely
+    goCount count = S.take (fromIntegral count) goIndefinitely
+    goIndefinitely = iterateMaybeSet (\cur -> func cur limit rrule) start
+
+iterateMaybeSet :: Ord a => (a -> Maybe a) -> a -> Set a
+iterateMaybeSet func start = go start
+  where
+    go cur = case func cur of
+      Nothing -> S.singleton start
+      Just next -> S.insert next $ go next
 
 -- This function takes care of the 'rRuleFrequency' part.
 rruleDateTimeNextOccurrence :: LocalTime -> LocalTime -> RRule -> Maybe LocalTime
@@ -890,7 +868,10 @@ rruleDateTimeNextOccurrence lt limit RRule {..} = case rRuleFrequency of
   _ -> Nothing
 
 rruleDateNextOccurrence :: Day -> Day -> RRule -> Maybe Day
-rruleDateNextOccurrence d limit rrule = undefined d limit rrule
+rruleDateNextOccurrence d limit RRule {..} =
+  case rRuleFrequency of
+    Daily -> dailyDateNextRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay -- By set pos is ignored because every day is the only day in a daily interval
+    _ -> Nothing
 
 -- | Recur with a 'Daily' frequency
 dailyDateTimeNextRecurrence ::
@@ -939,7 +920,6 @@ dailyDateNextRecurrence ::
   Set ByMonth ->
   Set ByMonthDay ->
   Set ByDay ->
-  Set BySetPos ->
   Maybe Day
 dailyDateNextRecurrence
   d_
@@ -947,12 +927,12 @@ dailyDateNextRecurrence
   interval
   byMonths
   byMonthDays
-  byDays
-  bySetPoss = headMay $ do
-    d <- filterSetPos bySetPoss $ dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
-    guard (d > d_) -- Don't take the current one again
-    guard (d <= limitDay) -- Don't go beyond the limit
-    pure d
+  byDays =
+    headMay $ do
+      d <- dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+      guard (d > d_) -- Don't take the current one again
+      guard (d <= limitDay) -- Don't go beyond the limit
+      pure d
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
 dayRecurrence ::
