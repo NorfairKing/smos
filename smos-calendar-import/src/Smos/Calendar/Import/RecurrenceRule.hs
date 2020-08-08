@@ -808,9 +808,6 @@ rRule freq =
       rRuleBySetPos = S.empty
     }
 
-isIndefinite :: RRule -> Bool
-isIndefinite = (== Indefinitely) . rRuleUntilCount
-
 -- Recurrence rules operate on LocalTime instead of CalDateTime because of this line in the spec:
 --
 -- The "DTSTART" property specified within the iCalendar object defines the
