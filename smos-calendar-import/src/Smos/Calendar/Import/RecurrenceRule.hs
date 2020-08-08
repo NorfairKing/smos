@@ -17,6 +17,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
+import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Containers ()
 import Data.Validity.Time ()
@@ -861,14 +862,40 @@ iterateMaybeSet func start = go start
 -- This function takes care of the 'rRuleFrequency' part.
 rruleDateTimeNextOccurrence :: LocalTime -> LocalTime -> RRule -> Maybe LocalTime
 rruleDateTimeNextOccurrence lt limit RRule {..} = case rRuleFrequency of
-  Daily -> dailyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
+  -- 1. From the spec:
+  --
+  --    > The BYDAY rule part MUST NOT be specified with a numeric value when
+  --    > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
+  --
+  --    So we 'filterEvery' on the 'byDay's for every frequency except 'MONTHLY' and 'YEARLY'.
+  Daily -> dailyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
+  Weekly -> weeklyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   _ -> Nothing
 
 rruleDateNextOccurrence :: Day -> Day -> RRule -> Maybe Day
 rruleDateNextOccurrence d limit RRule {..} =
   case rRuleFrequency of
-    Daily -> dailyDateNextRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay -- By set pos is ignored because every day is the only day in a daily interval
+    -- 1. From the spec:
+    --
+    --    > The BYDAY rule part MUST NOT be specified with a numeric value when
+    --    > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
+    --
+    --    So we 'filterEvery' on the 'byDay's for every frequency except 'MONTHLY' and 'YEARLY'.
+    --
+    -- 2. By set pos is ignored because every day is the only day in a daily interval
+    Daily -> dailyDateNextRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay)
+    Weekly -> weeklyDateNextRecurrence d limit rRuleInterval rRuleByMonth (filterEvery rRuleByDay) rRuleBySetPos -- By set pos is ignored because every day is the only day in a daily interval
     _ -> Nothing
+
+filterEvery :: Set ByDay -> Set DayOfWeek
+filterEvery =
+  S.fromList
+    . mapMaybe
+      ( \case
+          Every d -> Just d
+          _ -> Nothing
+      )
+    . S.toList
 
 -- | Recur with a 'Daily' frequency
 dailyDateTimeNextRecurrence ::
@@ -877,7 +904,7 @@ dailyDateTimeNextRecurrence ::
   Interval ->
   Set ByMonth ->
   Set ByMonthDay ->
-  Set ByDay ->
+  Set DayOfWeek ->
   Set ByHour ->
   Set ByMinute ->
   Set BySecond ->
@@ -907,7 +934,7 @@ dailyDateTimeNextRecurrence
         s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
         let tod = TimeOfDay h m s
         pure tod
-      days = dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+      days = dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
 
 -- | Recur with a 'Daily' frequency
 dailyDateNextRecurrence ::
@@ -916,7 +943,7 @@ dailyDateNextRecurrence ::
   Interval ->
   Set ByMonth ->
   Set ByMonthDay ->
-  Set ByDay ->
+  Set DayOfWeek ->
   Maybe Day
 dailyDateNextRecurrence
   d_
@@ -926,21 +953,21 @@ dailyDateNextRecurrence
   byMonthDays
   byDays =
     headMay $ do
-      d <- dayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+      d <- dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
       guard (d > d_) -- Don't take the current one again
       guard (d <= limitDay) -- Don't go beyond the limit
       pure d
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
-dayRecurrence ::
+dailyDayRecurrence ::
   Day ->
   Day ->
   Interval ->
   Set Month ->
   Set ByMonthDay ->
-  Set ByDay ->
+  Set DayOfWeek ->
   [Day]
-dayRecurrence
+dailyDayRecurrence
   d_
   limitDay
   (Interval interval)
@@ -948,27 +975,86 @@ dayRecurrence
   byMonthDays
   byDays = do
     d <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * i) d_) [0 ..]
-    let (_, month, _) = toGregorian d
-    guard $ if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
-    let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
-    guard $
-      if S.null byMonthDays
+    guard $ byMonthLimit byMonths d
+    guard $ byMonthDayLimit byMonthDays d
+    guard $ byEveryWeekDayLimit byDays d
+    pure d
+
+-- | Recur with a 'Weekly' frequency
+weeklyDateTimeNextRecurrence ::
+  LocalTime ->
+  LocalTime ->
+  Interval ->
+  Set ByMonth ->
+  Set DayOfWeek ->
+  Set ByHour ->
+  Set ByMinute ->
+  Set BySecond ->
+  Set BySetPos ->
+  Maybe LocalTime
+weeklyDateTimeNextRecurrence = undefined
+
+-- | Recur with a 'Weekly' frequency
+weeklyDateNextRecurrence ::
+  Day ->
+  Day ->
+  Interval ->
+  Set ByMonth ->
+  Set DayOfWeek ->
+  Set BySetPos ->
+  Maybe Day
+weeklyDateNextRecurrence
+  d_
+  limitDay
+  (Interval interval)
+  byMonths
+  byDays
+  bySetPoss =
+    headMay $ do
+      d' <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * 7 * i) d_) [0 ..]
+      d <- byEveryWeekDayExpand byDays d'
+      guard $ byMonthLimit byMonths d
+      guard (d > d_) -- Don't take the current one again
+      guard (d <= limitDay) -- Don't go beyond the limit
+      pure d
+
+byMonthLimit :: Set ByMonth -> Day -> Bool
+byMonthLimit byMonths d =
+  let (_, month, _) = toGregorian d
+   in if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
+
+byMonthDayLimit :: Set ByMonthDay -> Day -> Bool
+byMonthDayLimit byMonthDays d =
+  let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
+   in if S.null byMonthDays
         then True
         else
           MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
             || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
-    let dow = dayOfWeek d
-    -- From the spec:
-    --
-    -- > The BYDAY rule part MUST NOT be specified with a numeric value when
-    -- > the FREQ rule part is not set to MONTHLY or YEARLY.  Furthermore,
-    --
-    -- So we don't need to check specific weekdays here
-    guard $
-      if null byDays
+
+byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
+byEveryWeekDayLimit byDays d =
+  let dow = dayOfWeek d
+   in if null byDays
         then True
-        else Every dow `S.member` byDays
-    pure d
+        else dow `S.member` byDays
+
+byEveryWeekDayExpand :: Set DayOfWeek -> Day -> [Day]
+byEveryWeekDayExpand byDays d =
+  let (y, w, _) = toWeekDate d
+   in if S.null byDays
+        then [d]
+        else do
+          dow <- S.toList byDays
+          maybeToList $ fromWeekDateValid y w (fromEnum dow)
+
+monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
+monthIndices d =
+  let (y, month, day) = toGregorian d
+      leap = isLeapYear y
+      monthLen = monthLength leap month
+      negativeMonthDayIndex = negate $ monthLen - day + 1
+   in (day, negativeMonthDayIndex)
 
 filterSetPos :: Set BySetPos -> [a] -> [a]
 filterSetPos poss values =
@@ -981,14 +1067,6 @@ filterSetPos poss values =
             let negative = toNegative positive
              in S.member (SetPos positive) poss || S.member (SetPos negative) poss
        in map snd $ filter (go . fst) $ zip [1 ..] values
-
-monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
-monthIndices d =
-  let (y, month, day) = toGregorian d
-      leap = isLeapYear y
-      monthLen = monthLength leap month
-      negativeMonthDayIndex = negate $ monthLen - day + 1
-   in (day, negativeMonthDayIndex)
 
 -- This can probably be sped up a lot
 specificWeekDayIndex :: Day -> DayOfWeek -> (Int, Int) -- (Positive index, Negative index)

@@ -98,10 +98,10 @@ spec = do
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 33) tod)
     describe "ByDay" $ do
       specify "Every tuesday" $ forAllValid $ \tod ->
-        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [] [] [Every Tuesday] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [] [] [Tuesday] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 08 11) tod)
       specify "Every tuesday in September" $ forAllValid $ \tod ->
-        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [September] [] [Every Tuesday] [] [] [] []
+        dailyDateTimeNextRecurrence (LocalTime (fromGregorian 2020 08 04) tod) limit (Interval 1) [September] [] [Tuesday] [] [] [] []
           `shouldBe` Just (LocalTime (fromGregorian 2020 09 01) tod)
     describe "ByHour" $ do
       specify "16h every other day" $
@@ -192,8 +192,8 @@ spec = do
           `shouldBe` Just (fromGregorian 2020 09 33)
     describe "ByDay" $ do
       specify "Every tuesday" $
-        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [] [] [Every Tuesday]
+        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [] [] [Tuesday]
           `shouldBe` Just (fromGregorian 2020 08 11)
       specify "Every tuesday in September" $
-        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [September] [] [Every Tuesday]
+        dailyDateNextRecurrence (fromGregorian 2020 08 04) limit (Interval 1) [September] [] [Tuesday]
           `shouldBe` Just (fromGregorian 2020 09 01)
