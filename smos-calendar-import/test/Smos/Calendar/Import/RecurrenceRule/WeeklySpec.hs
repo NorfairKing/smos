@@ -16,28 +16,29 @@ spec :: Spec
 spec = do
   describe "weeklyyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
-    let limit = fromGregorian 2021 01 01
+    let d = fromGregorian
+    let limit = d 2021 01 01
     describe "No ByX's" $ do
       specify "Every week" $
-        weeklyDateNextRecurrence (fromGregorian 2020 08 08) limit (Interval 1) [] [] []
-          `shouldBe` Just (fromGregorian 2020 08 15)
+        weeklyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] [] []
+          `shouldBe` Just (d 2020 08 15)
       specify "Every other week" $
-        weeklyDateNextRecurrence (fromGregorian 2020 08 08) limit (Interval 2) [] [] []
-          `shouldBe` Just (fromGregorian 2020 08 22)
+        weeklyDateNextRecurrence (d 2020 08 08) limit (Interval 2) [] [] []
+          `shouldBe` Just (d 2020 08 22)
     describe "ByMonth" $ do
       specify "Every week in Sept" $
-        weeklyDateNextRecurrence (fromGregorian 2019 09 30) limit (Interval 1) [September] [] []
-          `shouldBe` Just (fromGregorian 2020 09 07)
+        weeklyDateNextRecurrence (d 2019 09 30) limit (Interval 1) [September] [] []
+          `shouldBe` Just (d 2020 09 07)
       specify "Every other week in Sept" $
-        weeklyDateNextRecurrence (fromGregorian 2019 09 30) limit (Interval 2) [September] [] []
-          `shouldBe` Just (fromGregorian 2020 09 14)
+        weeklyDateNextRecurrence (d 2019 09 30) limit (Interval 2) [September] [] []
+          `shouldBe` Just (d 2020 09 14)
     -- No 'ByWeekNo' because it's excluded by the table
     -- No 'ByYearDay' because it's excluded by the table
     -- No 'ByMonthDay' because it's excluded by the table
     describe "ByDay" $ do
       specify "Every wednesday and thursday" $
-        weeklyDateNextRecurrence (fromGregorian 2020 08 05) limit (Interval 1) [] [Wednesday, Thursday] []
-          `shouldBe` Just (fromGregorian 2020 08 06)
+        weeklyDateNextRecurrence (d 2020 08 05) limit (Interval 1) [] [Wednesday, Thursday] []
+          `shouldBe` Just (d 2020 08 06)
       specify "Every other thursday and friday" $
-        weeklyDateNextRecurrence (fromGregorian 2020 08 07) limit (Interval 2) [] [Thursday, Friday] []
-          `shouldBe` Just (fromGregorian 2020 08 20)
+        weeklyDateNextRecurrence (d 2020 08 07) limit (Interval 2) [] [Thursday, Friday] []
+          `shouldBe` Just (d 2020 08 20)
