@@ -900,17 +900,18 @@ dailyNextRecurrence
   byHours
   byMinutes
   bySeconds
-  bySetPoss = headMay $ filter (> lt) $ takeWhile (<= limit) $ do
+  bySetPoss = headMay $ do
     d <- days
     tod <- filterSetPos bySetPoss tods
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
+    guard (next <= limit) -- Don't go beyond the limit
     pure next
     where
       tods = do
-        s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
-        m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
         h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
+        m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
+        s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
         let tod = TimeOfDay h m s
         pure tod
       days = do
