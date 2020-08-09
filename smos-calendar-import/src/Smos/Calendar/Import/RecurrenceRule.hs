@@ -19,13 +19,10 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
-import Data.Time.Calendar.OrdinalDate
-import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Containers ()
 import Data.Validity.Time ()
 import Data.Yaml
-import Debug.Trace
 import GHC.Generics (Generic)
 import Safe
 import Smos.Data
@@ -931,7 +928,6 @@ dailyDateTimeNextRecurrence
     guard (next > lt) -- Don't take the current one again
     guard (next <= limit) -- Don't go beyond the limit
     pure next
-    where
 
 -- | Recur with a 'Weekly' frequency
 weeklyDateTimeNextRecurrence ::
@@ -956,13 +952,15 @@ weeklyDateTimeNextRecurrence
   byHours
   byMinutes
   bySeconds
-  bySetPoss = headMay $ do
-    d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
-    tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
-    let next = LocalTime d tod
-    guard (next > lt) -- Don't take the current one again
-    guard (next <= limit) -- Don't go beyond the limit
-    pure next
+  _ =
+    -- FIXME implement the BySetPos
+    headMay $ do
+      d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
+      tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
+      let next = LocalTime d tod
+      guard (next > lt) -- Don't take the current one again
+      guard (next <= limit) -- Don't go beyond the limit
+      pure next
 
 -- | Recur with a 'Daily' frequency
 dailyDateNextRecurrence ::
@@ -1025,7 +1023,8 @@ weeklyDateNextRecurrence
   byMonths
   weekStart
   byDays
-  bySetPoss =
+  _ =
+    -- FIXME implement the BySetPos
     headMay $ weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
@@ -1054,8 +1053,8 @@ weeklyDayRecurrence
           then [d']
           else do
             let (y', wn', _) = toWeekDateWithStart weekStart d'
-            dow <- S.toList byDays
-            maybeToList $ fromWeekDateWithStart weekStart y' wn' dow
+            dow' <- S.toList byDays
+            maybeToList $ fromWeekDateWithStart weekStart y' wn' dow'
     guard $ byMonthLimit byMonths d
     guard (d > d_) -- Don't take the current one again
     guard (d <= limitDay) -- Don't go beyond the limit
@@ -1112,19 +1111,13 @@ byEveryWeekDayExpand weekStart byDays d =
 toWeekDateWithStart :: DayOfWeek -> Day -> (Integer, ByWeekNo, DayOfWeek)
 toWeekDateWithStart ws d =
   let dow = dayOfWeek d
-      (year, _, monthDay) = toGregorian d
-      firstDayOfTheYear = fromGregorian year 1 1
-      dowFirstDayOfTheYear = dayOfWeek firstDayOfTheYear
+      (year, _, _) = toGregorian d
       firstDayOfTheFirstWsWeekThisYear = firstDayOfTheFirstWsWeekOf ws year
       firstDayOfTheFirstWsWeekNextYear = firstDayOfTheFirstWsWeekOf ws (year + 1)
-      lastLeap = isLeapYear (year - 1)
-      (wsWeekYear, wsWeekNo) =
-        if d < firstDayOfTheFirstWsWeekThisYear
-          then (year - 1, WeekNo 53) -- TODO leap year to see if it's 53 or 52
-          else
-            if d >= firstDayOfTheFirstWsWeekNextYear
-              then (year + 1, WeekNo 1)
-              else (year, WeekNo $ fromInteger $ (diffDays d firstDayOfTheFirstWsWeekThisYear `quot` 7) + 1)
+      (wsWeekYear, wsWeekNo)
+        | d < firstDayOfTheFirstWsWeekThisYear = (year - 1, WeekNo 53) -- TODO leap year to see if it's 53 or 52
+        | d >= firstDayOfTheFirstWsWeekNextYear = (year + 1, WeekNo 1)
+        | otherwise = (year, WeekNo $ fromInteger $ (diffDays d firstDayOfTheFirstWsWeekThisYear `quot` 7) + 1)
    in (wsWeekYear, wsWeekNo, dow)
 
 daysInYear :: Integer -> Int
@@ -1134,7 +1127,6 @@ fromWeekDateWithStart :: DayOfWeek -> Integer -> ByWeekNo -> DayOfWeek -> Maybe 
 fromWeekDateWithStart ws year (WeekNo w) dow =
   Just $
     let firstD = firstDayOfTheFirstWsWeekOf ws year
-        firstDN = firstDayOfTheFirstWsWeekOf ws (year + 1)
         weekOffset = positiveMod 7 $ fromEnum dow - fromEnum ws
      in addDays (fromIntegral $ 7 * (w -1) + weekOffset) firstD
 
@@ -1181,6 +1173,7 @@ firstDayOfTheWSWeekThatContainsJan1st ws year =
       dowFirstDayOfTheYear = dayOfWeek firstDayOfTheYear
    in addDays (negate $ positiveMod 7 $ fromIntegral $ fromEnum dowFirstDayOfTheYear - fromEnum ws) firstDayOfTheYear
 
+positiveMod :: Integral i => i -> i -> i
 positiveMod r n =
   let m = n `mod` r
    in if m < 0 then m + r else m

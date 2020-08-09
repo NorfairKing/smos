@@ -5,7 +5,6 @@ module Smos.Calendar.Import.RecurrenceRule.WeeklySpec
   )
 where
 
-import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
@@ -68,9 +67,9 @@ spec = do
         toWeekDateWithStart Monday (d 1997 08 17) `shouldBe` (1997, WeekNo 33, Sunday)
     it "produces tuples of which the last value is independent of the week start" $ forAllValid $ \ws1 ->
       forAllValid $ \ws2 ->
-        forAllValid $ \d ->
-          let (_, _, dow1) = toWeekDateWithStart ws1 d
-              (_, _, dow2) = toWeekDateWithStart ws2 d
+        forAllValid $ \day ->
+          let (_, _, dow1) = toWeekDateWithStart ws1 day
+              (_, _, dow2) = toWeekDateWithStart ws2 day
            in dow1 `shouldBe` dow2
     it "produces valid results" $ producesValidsOnValids2 toWeekDateWithStart
   describe "fromWeekDateWithStart" $ do
@@ -104,10 +103,9 @@ spec = do
       $ it "roundtrips toWeekDateWithStart for a given week start"
       $ forAllValid
       $ \ws ->
-        forAllValid $ \d ->
-          let (y, wn, dow) = toWeekDateWithStart ws d
-           in fromWeekDateWithStart ws y wn dow `shouldBe` Just d
-  let t = TimeOfDay
+        forAllValid $ \day ->
+          let (y, wn, dow) = toWeekDateWithStart ws day
+           in fromWeekDateWithStart ws y wn dow `shouldBe` Just day
   let l = LocalTime
   describe "weeklyyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
