@@ -5,6 +5,29 @@ import Data.Time
 import Data.Validity.Containers ()
 import Data.Validity.Time ()
 
+nextWeek :: DayOfWeek -> Integer -> Word -> (Integer, Word)
+nextWeek ws y wn
+  | wn < 52 = (y, wn + 1)
+  | wn == 52 =
+    -- From https://en.wikipedia.org/wiki/ISO_week_date#Last_week
+    -- [The last week] has 28 December in it.
+
+    let dayInLastWeek = fromGregorian y 12 28
+        (_, wnOfLastWeek, _) = toWeekDateWithStart ws dayInLastWeek
+     in if wnOfLastWeek <= 52
+          then-- There are 52 weeks this year, so we go to the next year
+            (y + 1, 1)
+          else-- There are 53 weeks in this year, so we go to to that week
+            (y, 53)
+  | otherwise = (y + 1, 1)
+
+weeksIntoTheFutureStartingFrom :: DayOfWeek -> Integer -> Word -> [(Integer, Word)]
+weeksIntoTheFutureStartingFrom ws = go
+  where
+    go y wn =
+      let (y', wn') = nextWeek ws y wn
+       in (y, wn) : go y' wn'
+
 -- | Calculate the year, week number and weekday of a day, given a day on which the week starts
 --
 -- The BYWEEKNO rule part specifies a COMMA-separated list of

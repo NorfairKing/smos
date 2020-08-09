@@ -46,8 +46,8 @@ spec = do
         weeklyDateTimeNextRecurrence (l (d 2019 12 29) tod) limit (Interval 1) [] Monday [Sunday] [] [] [] []
           `shouldBe` Just (l (d 2020 01 05) tod)
     describe "BySetPos" $ do
-      specify "The last day of every week" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 09) tod) limit (Interval 1) [] Friday [] [] [] [] [SetPos (-1)]
+      specify "The first day of every week" $ forAllValid $ \tod ->
+        weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 1) [] Friday [Friday, Saturday] [] [] [] [SetPos 1]
           `shouldBe` Just (l (d 2020 08 14) tod)
   describe "weeklyyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
@@ -95,5 +95,8 @@ spec = do
           `shouldBe` Just (d 1997 08 31)
     describe "BySetPos" $ do
       specify "The last day of every week" $
-        weeklyDateNextRecurrence (d 2020 08 09) limit (Interval 1) [] Friday [] [SetPos (-1)]
+        weeklyDateNextRecurrence (d 2020 08 07) limit (Interval 1) [] Friday [Friday, Saturday] [SetPos 1]
           `shouldBe` Just (d 2020 08 14)
+      specify "The last day of every week in september" $
+        weeklyDateNextRecurrence (d 2020 09 05) limit (Interval 1) [] Sunday [Friday, Saturday] [SetPos (- 1)]
+          `shouldBe` Just (d 2020 09 12)

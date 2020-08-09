@@ -23,6 +23,7 @@ import Data.Validity
 import Data.Validity.Containers ()
 import Data.Validity.Time ()
 import Data.Yaml
+import Debug.Trace
 import GHC.Generics (Generic)
 import Safe
 import Smos.Calendar.Import.WeekDate
@@ -953,10 +954,9 @@ weeklyDateTimeNextRecurrence
   byHours
   byMinutes
   bySeconds
-  _ =
-    -- FIXME implement the BySetPos
+  bySetPoss =
     headMay $ do
-      d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
+      d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays bySetPoss
       tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
       let next = LocalTime d tod
       guard (next > lt) -- Don't take the current one again
@@ -1024,9 +1024,8 @@ weeklyDateNextRecurrence
   byMonths
   weekStart
   byDays
-  _ =
-    -- FIXME implement the BySetPos
-    headMay $ weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
+  bySetPoss =
+    headMay $ weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays bySetPoss
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
 weeklyDayRecurrence ::
@@ -1036,6 +1035,7 @@ weeklyDayRecurrence ::
   Set Month ->
   DayOfWeek ->
   Set DayOfWeek ->
+  Set BySetPos ->
   [Day]
 weeklyDayRecurrence
   d_
@@ -1043,23 +1043,33 @@ weeklyDayRecurrence
   (Interval interval)
   byMonths
   weekStart
-  byDays = do
+  byDays
+  bySetPoss = do
     let (y, w, dow) = toWeekDateWithStart weekStart d_
-    d' <- takeWhile (<= limitDay) $ do
-      i <- [0 ..]
-      maybeToList $ fromWeekDateWithStart weekStart y (w + i * fromIntegral interval) dow
+    let (limitY, limitWN, _) = toWeekDateWithStart weekStart limitDay
+    (y', w') <-
+      takeEvery interval
+        $ takeWhile (<= (limitY, limitWN))
+        $ weeksIntoTheFutureStartingFrom weekStart y w
     d <-
-      sort $ -- Need to sort because the week days may not be in order.
-        if S.null byDays
-          then [d']
+      filterSetPos bySetPoss
+        $ sort -- Need to sort because the week days may not be in order.
+        $ if S.null byDays
+          then maybeToList $ fromWeekDateWithStart weekStart y' w' dow
           else do
-            let (y', wn', _) = toWeekDateWithStart weekStart d'
             dow' <- S.toList byDays
-            maybeToList $ fromWeekDateWithStart weekStart y' wn' dow'
+            maybeToList $ fromWeekDateWithStart weekStart y' w' dow'
     guard $ byMonthLimit byMonths d
     guard (d > d_) -- Don't take the current one again
     guard (d <= limitDay) -- Don't go beyond the limit
     pure d
+
+takeEvery :: Word -> [a] -> [a]
+takeEvery i = go 0
+  where
+    go _ [] = []
+    go 0 (l : ls) = l : go (i -1) ls
+    go j (_ : ls) = go (pred j) ls
 
 byMonthLimit :: Set ByMonth -> Day -> Bool
 byMonthLimit = limitBy $ \d m ->
@@ -1082,13 +1092,6 @@ monthIndices d =
 
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
-
-byEveryWeekDayExpand :: DayOfWeek -> Day -> Set DayOfWeek -> [Day]
-byEveryWeekDayExpand weekStart d =
-  let func dow =
-        let (y, wn, _) = toWeekDateWithStart weekStart d
-         in fromWeekDateWithStart weekStart y wn dow
-   in expandM func d
 
 timeOfDayExpand :: TimeOfDay -> Set ByHour -> Set ByMinute -> Set BySecond -> [TimeOfDay]
 timeOfDayExpand (TimeOfDay h_ m_ s_) byHours byMinutes bySeconds = do
