@@ -11,6 +11,7 @@ module Smos.Calendar.Import.RecurrenceRule where
 
 import Control.Monad
 import Data.Aeson.Types (Pair)
+import Data.Fixed
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
@@ -1081,14 +1082,12 @@ byEveryWeekDayLimit byDays d =
         then True
         else dow `S.member` byDays
 
-byEveryWeekDayExpand :: DayOfWeek -> Set DayOfWeek -> Day -> [Day]
-byEveryWeekDayExpand weekStart byDays d =
-  if S.null byDays
-    then [d]
-    else do
-      let (y, wn, _) = toWeekDateWithStart weekStart d
-      dow <- S.toList byDays
-      maybeToList $ fromWeekDateWithStart weekStart y wn dow
+byEveryWeekDayExpand :: DayOfWeek -> Day -> Set DayOfWeek -> [Day]
+byEveryWeekDayExpand weekStart d =
+  let func dow =
+        let (y, wn, _) = toWeekDateWithStart weekStart d
+         in fromWeekDateWithStart weekStart y wn dow
+   in expandM func d
 
 monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
 monthIndices d =
@@ -1100,11 +1099,26 @@ monthIndices d =
 
 timeOfDayExpand :: TimeOfDay -> Set ByHour -> Set ByMinute -> Set BySecond -> [TimeOfDay]
 timeOfDayExpand (TimeOfDay h_ m_ s_) byHours byMinutes bySeconds = do
-  h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
-  m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
-  s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
+  h <- byHourExpand h_ byHours
+  m <- byMinuteExpand m_ byMinutes
+  s <- bySecondExpand s_ bySeconds
   let tod = TimeOfDay h m s
   pure tod
+
+byHourExpand :: Int -> Set ByHour -> [Int]
+byHourExpand = expand (fromIntegral . unHour)
+
+byMinuteExpand :: Int -> Set ByMinute -> [Int]
+byMinuteExpand = expand (fromIntegral . unMinute)
+
+bySecondExpand :: Pico -> Set BySecond -> [Pico]
+bySecondExpand = expand (fromIntegral . unSecond)
+
+expand :: (b -> a) -> a -> Set b -> [a]
+expand func def bys = if S.null bys then pure def else map func (S.toList bys)
+
+expandM :: (b -> Maybe a) -> a -> Set b -> [a]
+expandM func def bys = if S.null bys then pure def else mapMaybe func (S.toList bys)
 
 filterSetPos :: Set BySetPos -> [a] -> [a]
 filterSetPos poss values =
