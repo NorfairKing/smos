@@ -1062,32 +1062,15 @@ weeklyDayRecurrence
     pure d
 
 byMonthLimit :: Set ByMonth -> Day -> Bool
-byMonthLimit byMonths d =
+byMonthLimit = limitBy $ \d m ->
   let (_, month, _) = toGregorian d
-   in if S.null byMonths then True else monthNoToMonth month `S.member` S.map Just byMonths
+   in month == monthToMontNo m
 
 byMonthDayLimit :: Set ByMonthDay -> Day -> Bool
-byMonthDayLimit byMonthDays d =
+byMonthDayLimit = limitBy $ \d (MonthDay md) ->
   let (positiveMonthDayIndex, negativeMonthDayIndex) = monthIndices d
-   in if S.null byMonthDays
-        then True
-        else
-          MonthDay positiveMonthDayIndex `S.member` byMonthDays -- Positive
-            || MonthDay negativeMonthDayIndex `S.member` byMonthDays -- Negative
-
-byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
-byEveryWeekDayLimit byDays d =
-  let dow = dayOfWeek d
-   in if null byDays
-        then True
-        else dow `S.member` byDays
-
-byEveryWeekDayExpand :: DayOfWeek -> Day -> Set DayOfWeek -> [Day]
-byEveryWeekDayExpand weekStart d =
-  let func dow =
-        let (y, wn, _) = toWeekDateWithStart weekStart d
-         in fromWeekDateWithStart weekStart y wn dow
-   in expandM func d
+   in positiveMonthDayIndex == md
+        || negativeMonthDayIndex == md
 
 monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
 monthIndices d =
@@ -1096,6 +1079,16 @@ monthIndices d =
       monthLen = monthLength leap month
       negativeMonthDayIndex = negate $ monthLen - day + 1
    in (day, negativeMonthDayIndex)
+
+byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
+byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
+
+byEveryWeekDayExpand :: DayOfWeek -> Day -> Set DayOfWeek -> [Day]
+byEveryWeekDayExpand weekStart d =
+  let func dow =
+        let (y, wn, _) = toWeekDateWithStart weekStart d
+         in fromWeekDateWithStart weekStart y wn dow
+   in expandM func d
 
 timeOfDayExpand :: TimeOfDay -> Set ByHour -> Set ByMinute -> Set BySecond -> [TimeOfDay]
 timeOfDayExpand (TimeOfDay h_ m_ s_) byHours byMinutes bySeconds = do
@@ -1122,15 +1115,18 @@ expandM func def bys = if S.null bys then pure def else mapMaybe func (S.toList 
 
 filterSetPos :: Set BySetPos -> [a] -> [a]
 filterSetPos poss values =
-  if S.null poss
-    then values
-    else
-      let len = length values
-          toNegative positive = negate $ len - positive + 1
-          go positive =
-            let negative = toNegative positive
-             in S.member (SetPos positive) poss || S.member (SetPos negative) poss
-       in map snd $ filter (go . fst) $ zip [1 ..] values
+  map snd (filter (limitBy func poss) (zip [1 ..] values))
+  where
+    len = length values
+    func (i, _) (SetPos pos) =
+      let toNegative positive = negate $ len - positive + 1
+       in i == pos || toNegative i == pos
+
+limitBy :: (b -> a -> Bool) -> Set a -> b -> Bool
+limitBy func bys b =
+  if S.null bys
+    then True
+    else any (func b) bys
 
 -- This can probably be sped up a lot
 specificWeekDayIndex :: Day -> DayOfWeek -> (Int, Int) -- (Positive index, Negative index)
