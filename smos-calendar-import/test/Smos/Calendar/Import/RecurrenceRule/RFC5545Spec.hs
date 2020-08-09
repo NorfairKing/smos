@@ -125,7 +125,7 @@ spec =
             LocalTime (fromGregorian 1997 10 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 12) (TimeOfDay 09 00 00)
           ]
-    xspecify "Weekly for 10 occurrences" $ do
+    specify "Weekly for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=WEEKLY;COUNT=10
@@ -150,7 +150,7 @@ spec =
             LocalTime (fromGregorian 1997 10 28) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 11 04) (TimeOfDay 09 00 00)
           ]
-    xspecify "Weekly until December 24, 1997" $ do
+    specify "Weekly until December 24, 1997" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=WEEKLY;UNTIL=19971224T000000Z
@@ -185,7 +185,7 @@ spec =
             LocalTime (fromGregorian 1997 12 16) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 12 23) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every other week - forever" $ do
+    specify "Every other week - forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=WEEKLY;INTERVAL=2;WKST=SU
@@ -217,7 +217,7 @@ spec =
             LocalTime (fromGregorian 1998 02 03) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 02 17) (TimeOfDay 09 00 00)
           ]
-    xspecify "Weekly on Tuesday and Thursday for five weeks" $ do
+    specify "Weekly on Tuesday and Thursday for five weeks" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=WEEKLY;UNTIL=19971007T000000Z;WKST=SU;BYDAY=TU,TH
@@ -260,7 +260,7 @@ spec =
             LocalTime (fromGregorian 1997 10 02) (TimeOfDay 09 00 00)
           ]
       res2 `shouldBe` res1
-    xspecify "Every other week on Monday, Wednesday, and Friday until December 24, 1997, starting on Monday, September 1, 1997" $ do
+    specify "Every other week on Monday, Wednesday, and Friday until December 24, 1997, starting on Monday, September 1, 1997" $ do
       --
       --  DTSTART;TZID=America/New_York:19970901T090000
       --  RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=19971224T000000Z;WKST=SU;
@@ -295,6 +295,7 @@ spec =
             LocalTime (fromGregorian 1997 09 15) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 17) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 09 19) (TimeOfDay 09 00 00),
+            LocalTime (fromGregorian 1997 09 29) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 01) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 03) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 13) (TimeOfDay 09 00 00),
@@ -314,7 +315,7 @@ spec =
             LocalTime (fromGregorian 1997 12 12) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 12 22) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every other week on Tuesday and Thursday, for 8 occurrences" $ do
+    specify "Every other week on Tuesday and Thursday, for 8 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=8;WKST=SU;BYDAY=TU,TH
@@ -1125,7 +1126,7 @@ spec =
               pure (LocalTime (fromGregorian 1997 09 dn) (TimeOfDay h m 00))
           )
       res2 `shouldBe` res1
-    xspecify "An example where the days generated makes a difference because of WKST" $ do
+    specify "An example where the days generated makes a difference because of WKST" $ do
       --
       --  DTSTART;TZID=America/New_York:19970805T090000
       --  RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO
@@ -1149,7 +1150,7 @@ spec =
             LocalTime (fromGregorian 1997 08 19) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 08 24) (TimeOfDay 09 00 00)
           ]
-    xspecify "changing only WKST from MO to SU, yields different results.." $ do
+    specify "changing only WKST from MO to SU, yields different results.." $ do
       --
       --  DTSTART;TZID=America/New_York:19970805T090000
       --  RRULE:FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU

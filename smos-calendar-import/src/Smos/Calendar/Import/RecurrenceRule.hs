@@ -9,19 +9,23 @@
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule where
 
+import Control.Exception
 import Control.Monad
 import Data.Aeson.Types (Pair)
+import Data.List
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
+import Data.Time.Calendar.OrdinalDate
 import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Containers ()
 import Data.Validity.Time ()
 import Data.Yaml
+import Debug.Trace
 import GHC.Generics (Generic)
 import Safe
 import Smos.Data
@@ -869,7 +873,7 @@ rruleDateTimeNextOccurrence lt limit RRule {..} = case rRuleFrequency of
   --
   --    So we 'filterEvery' on the 'byDay's for every frequency except 'MONTHLY' and 'YEARLY'.
   Daily -> dailyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
-  Weekly -> weeklyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
+  Weekly -> weeklyDateTimeNextRecurrence lt limit rRuleInterval rRuleByMonth rRuleWeekStart (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   _ -> Nothing
 
 rruleDateNextOccurrence :: Day -> Day -> RRule -> Maybe Day
@@ -884,7 +888,7 @@ rruleDateNextOccurrence d limit RRule {..} =
     --
     -- 2. By set pos is ignored because every day is the only day in a daily interval
     Daily -> dailyDateNextRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay)
-    Weekly -> weeklyDateNextRecurrence d limit rRuleInterval rRuleByMonth (filterEvery rRuleByDay) rRuleBySetPos -- By set pos is ignored because every day is the only day in a daily interval
+    Weekly -> weeklyDateNextRecurrence d limit rRuleInterval rRuleByMonth rRuleWeekStart (filterEvery rRuleByDay) rRuleBySetPos -- By set pos is ignored because every day is the only day in a daily interval
     _ -> Nothing
 
 filterEvery :: Set ByDay -> Set DayOfWeek
@@ -911,7 +915,7 @@ dailyDateTimeNextRecurrence ::
   Set BySetPos ->
   Maybe LocalTime
 dailyDateTimeNextRecurrence
-  lt@(LocalTime d_ (TimeOfDay h_ m_ s_))
+  lt@(LocalTime d_ tod_)
   limit@(LocalTime limitDay _)
   interval
   byMonths
@@ -921,20 +925,44 @@ dailyDateTimeNextRecurrence
   byMinutes
   bySeconds
   bySetPoss = headMay $ do
-    d <- days
-    tod <- filterSetPos bySetPoss tods
+    d <- dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+    tod <- filterSetPos bySetPoss $ timeOfDayExpand tod_ byHours byMinutes bySeconds
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
     guard (next <= limit) -- Don't go beyond the limit
     pure next
     where
-      tods = do
-        h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
-        m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
-        s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
-        let tod = TimeOfDay h m s
-        pure tod
-      days = dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+
+-- | Recur with a 'Weekly' frequency
+weeklyDateTimeNextRecurrence ::
+  LocalTime ->
+  LocalTime ->
+  Interval ->
+  Set ByMonth ->
+  DayOfWeek ->
+  Set DayOfWeek ->
+  Set ByHour ->
+  Set ByMinute ->
+  Set BySecond ->
+  Set BySetPos ->
+  Maybe LocalTime
+weeklyDateTimeNextRecurrence
+  lt@(LocalTime d_ tod_)
+  limit@(LocalTime limitDay _)
+  interval
+  byMonths
+  weekStart
+  byDays
+  byHours
+  byMinutes
+  bySeconds
+  bySetPoss = headMay $ do
+    d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
+    tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
+    let next = LocalTime d tod
+    guard (next > lt) -- Don't take the current one again
+    guard (next <= limit) -- Don't go beyond the limit
+    pure next
 
 -- | Recur with a 'Daily' frequency
 dailyDateNextRecurrence ::
@@ -981,42 +1009,57 @@ dailyDayRecurrence
     pure d
 
 -- | Recur with a 'Weekly' frequency
-weeklyDateTimeNextRecurrence ::
-  LocalTime ->
-  LocalTime ->
-  Interval ->
-  Set ByMonth ->
-  Set DayOfWeek ->
-  Set ByHour ->
-  Set ByMinute ->
-  Set BySecond ->
-  Set BySetPos ->
-  Maybe LocalTime
-weeklyDateTimeNextRecurrence = undefined
-
--- | Recur with a 'Weekly' frequency
 weeklyDateNextRecurrence ::
   Day ->
   Day ->
   Interval ->
   Set ByMonth ->
+  DayOfWeek ->
   Set DayOfWeek ->
   Set BySetPos ->
   Maybe Day
 weeklyDateNextRecurrence
   d_
   limitDay
-  (Interval interval)
+  interval
   byMonths
+  weekStart
   byDays
   bySetPoss =
-    headMay $ do
-      d' <- takeWhile (<= limitDay) $ map (\i -> addDays (fromIntegral interval * 7 * i) d_) [0 ..]
-      d <- byEveryWeekDayExpand byDays d'
-      guard $ byMonthLimit byMonths d
-      guard (d > d_) -- Don't take the current one again
-      guard (d <= limitDay) -- Don't go beyond the limit
-      pure d
+    headMay $ weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays
+
+-- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
+weeklyDayRecurrence ::
+  Day ->
+  Day ->
+  Interval ->
+  Set Month ->
+  DayOfWeek ->
+  Set DayOfWeek ->
+  [Day]
+weeklyDayRecurrence
+  d_
+  limitDay
+  (Interval interval)
+  byMonths
+  weekStart
+  byDays = do
+    let (y, WeekNo w, dow) = toWeekDateWithStart weekStart d_
+    d' <- takeWhile (<= limitDay) $ do
+      i <- [0 ..]
+      maybeToList $ fromWeekDateWithStart weekStart y (WeekNo $ w + i * fromIntegral interval) dow
+    d <-
+      sort $ -- Need to sort because the week days may not be in order.
+        if S.null byDays
+          then [d']
+          else do
+            let (y', wn', _) = toWeekDateWithStart weekStart d'
+            dow <- S.toList byDays
+            maybeToList $ fromWeekDateWithStart weekStart y' wn' dow
+    guard $ byMonthLimit byMonths d
+    guard (d > d_) -- Don't take the current one again
+    guard (d <= limitDay) -- Don't go beyond the limit
+    pure d
 
 byMonthLimit :: Set ByMonth -> Day -> Bool
 byMonthLimit byMonths d =
@@ -1039,14 +1082,108 @@ byEveryWeekDayLimit byDays d =
         then True
         else dow `S.member` byDays
 
-byEveryWeekDayExpand :: Set DayOfWeek -> Day -> [Day]
-byEveryWeekDayExpand byDays d =
-  let (y, w, _) = toWeekDate d
-   in if S.null byDays
-        then [d]
-        else do
-          dow <- S.toList byDays
-          maybeToList $ fromWeekDateValid y w (fromEnum dow)
+byEveryWeekDayExpand :: DayOfWeek -> Set DayOfWeek -> Day -> [Day]
+byEveryWeekDayExpand weekStart byDays d =
+  if S.null byDays
+    then [d]
+    else do
+      let (y, wn, _) = toWeekDateWithStart weekStart d
+      dow <- S.toList byDays
+      maybeToList $ fromWeekDateWithStart weekStart y wn dow
+
+-- | Calculate the year, week number and weekday of a day, given a day on which the week starts
+--
+-- The BYWEEKNO rule part specifies a COMMA-separated list of
+-- ordinals specifying weeks of the year.  Valid values are 1 to 53
+-- or -53 to -1.  This corresponds to weeks according to week
+-- numbering as defined in [ISO.8601.2004].  A week is defined as a
+-- seven day period, starting on the day of the week defined to be
+-- the week start (see WKST).  Week number one of the calendar year
+-- is the first week that contains at least four (4) days in that
+-- calendar year.
+--
+--    Note: Assuming a Monday week start, week 53 can only occur when
+--    Thursday is January 1 or if it is a leap year and Wednesday is
+--    January 1.
+--
+-- This means that in 2015, when Jan 1st was a thursday:
+-- - with a week start of Monday, the first week started on 29 dec 2014
+-- - with a week start of Sunday, the first week started on 4 jan 2015
+toWeekDateWithStart :: DayOfWeek -> Day -> (Integer, ByWeekNo, DayOfWeek)
+toWeekDateWithStart ws d =
+  let dow = dayOfWeek d
+      (year, _, monthDay) = toGregorian d
+      firstDayOfTheYear = fromGregorian year 1 1
+      dowFirstDayOfTheYear = dayOfWeek firstDayOfTheYear
+      firstDayOfTheFirstWsWeekThisYear = firstDayOfTheFirstWsWeekOf ws year
+      firstDayOfTheFirstWsWeekNextYear = firstDayOfTheFirstWsWeekOf ws (year + 1)
+      lastLeap = isLeapYear (year - 1)
+      (wsWeekYear, wsWeekNo) =
+        if d < firstDayOfTheFirstWsWeekThisYear
+          then (year - 1, WeekNo 53) -- TODO leap year to see if it's 53 or 52
+          else
+            if d >= firstDayOfTheFirstWsWeekNextYear
+              then (year + 1, WeekNo 1)
+              else (year, WeekNo $ fromInteger $ (diffDays d firstDayOfTheFirstWsWeekThisYear `quot` 7) + 1)
+   in (wsWeekYear, wsWeekNo, dow)
+
+daysInYear :: Integer -> Int
+daysInYear y = if isLeapYear y then 366 else 365
+
+fromWeekDateWithStart :: DayOfWeek -> Integer -> ByWeekNo -> DayOfWeek -> Maybe Day
+fromWeekDateWithStart ws year (WeekNo w) dow =
+  Just $
+    let firstD = firstDayOfTheFirstWsWeekOf ws year
+        firstDN = firstDayOfTheFirstWsWeekOf ws (year + 1)
+        weekOffset = positiveMod 7 $ fromEnum dow - fromEnum ws
+     in addDays (fromIntegral $ 7 * (w -1) + weekOffset) firstD
+
+-- We want to know whethere the first 'ws' occurs in the first week of
+-- this year or in the last week of last year
+-- Example: If the first 'ws' occurs on jan 1st then it's easy because
+-- then it's definitely the first week of this year beacuse then all 7
+-- days of that week are in this year.
+-- To make sure that four of the days in the week that started on the
+-- 'ws' week that contains jan 1, the 'ws' of that week must have
+-- occurred on or after the third-to-last day of the previous year.
+-- In that case the first week started in the previous year.
+-- If that 'ws' occurred before the third-to-last day of the previous year,
+-- then the first week started in the current year.
+-- The third-to-last day of the previous year is always 29 dec, even in
+-- leap years
+--
+-- For example, if Jan 1st is a thursday then the first monday-week of the year started this year
+-- but if Jan 1st is a Wednesday then the first monday-week of the year started last year
+--
+-- If the 'firstDayOfTheWSWeekThatContainsJan1st' is on or after dec 29
+-- then it is the first day of the first ws week otherwise, the first
+-- week starts a week later.
+firstDayOfTheFirstWsWeekOf :: DayOfWeek -> Integer -> Day
+firstDayOfTheFirstWsWeekOf ws year =
+  let firstDayOfTheWSWeekThatContainsJan1stForD = firstDayOfTheWSWeekThatContainsJan1st ws year
+   in assert (dayOfWeek firstDayOfTheWSWeekThatContainsJan1stForD == ws) $
+        if firstDayOfTheWSWeekThatContainsJan1stForD >= fromGregorian (year - 1) 12 29
+          then firstDayOfTheWSWeekThatContainsJan1stForD
+          else addDays 7 firstDayOfTheWSWeekThatContainsJan1stForD
+
+-- | The first 'ws' day of the week that contains jan 1st
+--
+-- Example 1: If Jan 1st is a thursday and the week starts on monday
+-- then dec 29 is the first day of the 'monday'-week that contains jan 1st
+-- so we have to subtract 3, which is positiveMod 7 (Thursday (4) - Monday (1))
+--
+-- Example 2: If Jan 1st is a thursday and the week starts on saturday
+-- then then dec 27 is the firstay day of the 'monday'-week start contains jan 1st
+-- so we have to subtract 5, which is positiveMod 7 (Thursday (4) - Saturday (6))
+firstDayOfTheWSWeekThatContainsJan1st :: DayOfWeek -> Integer -> Day
+firstDayOfTheWSWeekThatContainsJan1st ws year =
+  let firstDayOfTheYear = fromGregorian year 1 1
+      dowFirstDayOfTheYear = dayOfWeek firstDayOfTheYear
+   in addDays (negate $ positiveMod 7 $ fromIntegral $ fromEnum dowFirstDayOfTheYear - fromEnum ws) firstDayOfTheYear
+
+positiveMod r n =
+  let m = n `mod` r
+   in if m < 0 then m + r else m
 
 monthIndices :: Day -> (Int, Int) -- (Positive index, Negative index)
 monthIndices d =
@@ -1055,6 +1192,14 @@ monthIndices d =
       monthLen = monthLength leap month
       negativeMonthDayIndex = negate $ monthLen - day + 1
    in (day, negativeMonthDayIndex)
+
+timeOfDayExpand :: TimeOfDay -> Set ByHour -> Set ByMinute -> Set BySecond -> [TimeOfDay]
+timeOfDayExpand (TimeOfDay h_ m_ s_) byHours byMinutes bySeconds = do
+  h <- if S.null byHours then pure h_ else map (fromIntegral . unHour) $ S.toList byHours
+  m <- if S.null byMinutes then pure m_ else map (fromIntegral . unMinute) $ S.toList byMinutes
+  s <- if S.null bySeconds then pure s_ else map (realToFrac . unSecond) $ S.toList bySeconds
+  let tod = TimeOfDay h m s
+  pure tod
 
 filterSetPos :: Set BySetPos -> [a] -> [a]
 filterSetPos poss values =
