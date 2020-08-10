@@ -1025,7 +1025,10 @@ weeklyDateNextRecurrence
   weekStart
   byDays
   bySetPoss =
-    headMay $ weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays bySetPoss
+    headMay $ do
+      d <- weeklyDayRecurrence d_ limitDay interval byMonths weekStart byDays bySetPoss
+      guard (d > d_) -- Don't take the current one again
+      pure d
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
 weeklyDayRecurrence ::
@@ -1060,7 +1063,6 @@ weeklyDayRecurrence
             dow' <- S.toList byDays
             maybeToList $ fromWeekDateWithStart weekStart y' w' dow'
     guard $ byMonthLimit byMonths d
-    guard (d > d_) -- Don't take the current one again
     guard (d <= limitDay) -- Don't go beyond the limit
     pure d
 

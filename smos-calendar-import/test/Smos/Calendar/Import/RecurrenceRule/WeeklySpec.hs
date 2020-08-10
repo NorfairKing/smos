@@ -15,6 +15,7 @@ spec :: Spec
 spec = do
   let d = fromGregorian
   let l = LocalTime
+  let t = TimeOfDay
   describe "weeklyyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2021 01 01) midnight
@@ -49,6 +50,21 @@ spec = do
       specify "The first day of every week" $ forAllValid $ \tod ->
         weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 1) [] Friday [Friday, Saturday] [] [] [] [SetPos 1]
           `shouldBe` Just (l (d 2020 08 14) tod)
+    describe "ByHour" $ do
+      specify "16h every other week" $
+        weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 00 00)) limit (Interval 2) [] Monday [] [Hour 16] [] [] []
+          `shouldBe` Just (LocalTime (d 2020 08 20) (t 16 00 00))
+    describe "ByMinute" $ do
+      specify "16h20 every third week" $
+        weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 20 00)) limit (Interval 3) [] Monday [] [Hour 16] [Minute 20] [] []
+          `shouldBe` Just (LocalTime (d 2020 08 27) (t 16 20 00))
+    describe "BySecond" $ do
+      specify "16h20m30s every fourth week" $
+        weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 15 00 00)) limit (Interval 4) [] Monday [] [Hour 16] [Minute 20] [Second 30] []
+          `shouldBe` Just (LocalTime (d 2020 08 06) (t 16 20 30))
+      specify "every 15th and 20th second" $
+        weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 15 00 15)) limit (Interval 1) [] Monday [] [] [] [Second 15, Second 20] []
+          `shouldBe` Just (LocalTime (d 2020 08 06) (t 15 00 20))
   describe "weeklyyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = d 2021 01 01

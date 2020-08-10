@@ -113,7 +113,7 @@ spec = do
       specify "16h20 every third day" $
         dailyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 20 00)) limit (Interval 3) [] [] [] [Hour 16] [Minute 20] [] []
           `shouldBe` Just (LocalTime (d 2020 08 09) (t 16 20 00))
-    describe "ByMinute" $ do
+    describe "BySecond" $ do
       specify "16h20m30s every fourth day" $
         dailyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 15 00 00)) limit (Interval 4) [] [] [] [Hour 16] [Minute 20] [Second 30] []
           `shouldBe` Just (LocalTime (d 2020 08 06) (t 16 20 30))
