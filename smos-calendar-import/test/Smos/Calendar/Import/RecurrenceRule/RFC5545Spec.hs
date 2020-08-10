@@ -344,7 +344,7 @@ spec =
             LocalTime (fromGregorian 1997 10 14) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 10 16) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the first Friday for 10 occurrences" $ do
+    specify "Monthly on the first Friday for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970905T090000
       --  RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=1FR
@@ -375,7 +375,7 @@ spec =
             LocalTime (fromGregorian 1998 05 01) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 06 05) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the first Friday until December 24, 1997" $ do
+    specify "Monthly on the first Friday until December 24, 1997" $ do
       --
       --  DTSTART;TZID=America/New_York:19970905T090000
       --  RRULE:FREQ=MONTHLY;UNTIL=19971224T000000Z;BYDAY=1FR
@@ -398,7 +398,7 @@ spec =
             LocalTime (fromGregorian 1997 11 07) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 12 05) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every other month on the first and last Sunday of the month for 10 occurrences" $ do
+    specify "Every other month on the first and last Sunday of the month for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970907T090000
       --  RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=1SU,-1SU
@@ -424,7 +424,7 @@ spec =
             LocalTime (fromGregorian 1998 01 04) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 05 03) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the second-to-last Monday of the month for 6 months" $ do
+    specify "Monthly on the second-to-last Monday of the month for 6 months" $ do
       --
       --  DTSTART;TZID=America/New_York:19970922T090000
       --  RRULE:FREQ=MONTHLY;COUNT=6;BYDAY=-2MO
@@ -450,7 +450,7 @@ spec =
             LocalTime (fromGregorian 1998 01 19) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 02 16) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the third-to-the-last day of the month, forever" $ do
+    specify "Monthly on the third-to-the-last day of the month, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970928T090000
       --  RRULE:FREQ=MONTHLY;BYMONTHDAY=-3
@@ -472,7 +472,7 @@ spec =
             LocalTime (fromGregorian 1998 01 29) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 02 26) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the 2nd and 15th of the month for 10 occurrences" $ do
+    specify "Monthly on the 2nd and 15th of the month for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=2,15
@@ -498,7 +498,7 @@ spec =
             LocalTime (fromGregorian 1998 01 02) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 01 15) (TimeOfDay 09 00 00)
           ]
-    xspecify "Monthly on the first and last day of the month for 10 occurrences" $ do
+    specify "Monthly on the first and last day of the month for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970930T090000
       --  RRULE:FREQ=MONTHLY;COUNT=10;BYMONTHDAY=1,-1
@@ -527,7 +527,7 @@ spec =
             LocalTime (fromGregorian 1998 01 31) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 02 01) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every 18 months on the 10th thru 15th of the month for 10 occurrences" $ do
+    specify "Every 18 months on the 10th thru 15th of the month for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970910T090000
       --  RRULE:FREQ=MONTHLY;INTERVAL=18;COUNT=10;BYMONTHDAY=10,11,12,
@@ -565,7 +565,7 @@ spec =
             LocalTime (fromGregorian 1998 03 12) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1998 03 13) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every Tuesday, every other month" $ do
+    specify "Every Tuesday, every other month" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  RRULE:FREQ=MONTHLY;INTERVAL=2;BYDAY=TU
@@ -840,7 +840,7 @@ spec =
             LocalTime (fromGregorian 1999 08 19) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1999 08 26) (TimeOfDay 09 00 00)
           ]
-    xspecify "Every Friday the 13th, forever" $ do
+    specify "Every Friday the 13th, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
       --  EXDATE;TZID=America/New_York:19970902T090000
@@ -867,7 +867,7 @@ spec =
             LocalTime (fromGregorian 1999 08 13) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 2000 10 13) (TimeOfDay 09 00 00)
           ]
-    xspecify "The first Saturday that follows the first Sunday of the month, forever" $ do
+    specify "The first Saturday that follows the first Sunday of the month, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970913T090000
       --  RRULE:FREQ=MONTHLY;BYDAY=SA;BYMONTHDAY=7,8,9,10,11,12,13
@@ -941,7 +941,7 @@ spec =
             LocalTime (fromGregorian 2000 11 07) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 2004 11 02) (TimeOfDay 09 00 00)
           ]
-    xspecify "The third instance into the month of one of Tuesday, Wednesday, or Thursday, for the next 3 months" $ do
+    specify "The third instance into the month of one of Tuesday, Wednesday, or Thursday, for the next 3 months" $ do
       --
       --  DTSTART;TZID=America/New_York:19970904T090000
       --  RRULE:FREQ=MONTHLY;COUNT=3;BYDAY=TU,WE,TH;BYSETPOS=3
@@ -968,7 +968,7 @@ spec =
             LocalTime (fromGregorian 1997 10 07) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 11 06) (TimeOfDay 09 00 00)
           ]
-    xspecify "The second-to-last weekday of the month" $ do
+    specify "The second-to-last weekday of the month" $ do
       --
       --  DTSTART;TZID=America/New_York:19970929T090000
       --  RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-2
@@ -1174,7 +1174,7 @@ spec =
             LocalTime (fromGregorian 1997 08 19) (TimeOfDay 09 00 00),
             LocalTime (fromGregorian 1997 08 31) (TimeOfDay 09 00 00)
           ]
-    xspecify "An example where an invalid date (i.e., February 30) is ignored" $ do
+    specify "An example where an invalid date (i.e., February 30) is ignored" $ do
       --  DTSTART;TZID=America/New_York:20070115T090000
       --  RRULE:FREQ=MONTHLY;BYMONTHDAY=15,30;COUNT=5
       --
