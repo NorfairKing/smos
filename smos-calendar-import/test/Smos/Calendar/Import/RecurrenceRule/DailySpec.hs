@@ -5,7 +5,6 @@ module Smos.Calendar.Import.RecurrenceRule.DailySpec
   )
 where
 
-import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
@@ -31,16 +30,15 @@ spec = do
           start = LocalTime (d 2020 09 10) tod
        in --  This limit will be reached and cut of 2 recurrences
           rruleDateTimeOccurrencesUntil start rule limit
-            `shouldBe` S.fromList
-              [ LocalTime (d 2020 09 10) tod,
-                LocalTime (d 2020 10 10) tod,
-                LocalTime (d 2021 09 20) tod,
-                LocalTime (d 2021 10 20) tod,
-                LocalTime (d 2022 09 30) tod,
-                LocalTime (d 2022 10 30) tod,
-                LocalTime (d 2023 09 10) tod,
-                LocalTime (d 2023 10 10) tod
-              ]
+            `shouldBe` [ LocalTime (d 2020 09 10) tod,
+                         LocalTime (d 2020 10 10) tod,
+                         LocalTime (d 2021 09 20) tod,
+                         LocalTime (d 2021 10 20) tod,
+                         LocalTime (d 2022 09 30) tod,
+                         LocalTime (d 2022 10 30) tod,
+                         LocalTime (d 2023 09 10) tod,
+                         LocalTime (d 2023 10 10) tod
+                       ]
     specify "It works for this BYSETPOS example: The last hour of every day" $
       --  An limit in the future because it won't be reached anyway
       let limit = LocalTime (d 2024 01 01) midnight
@@ -60,11 +58,32 @@ spec = do
               }
           start = LocalTime (d 2020 08 07) (t 23 00 00)
        in rruleDateTimeOccurrencesUntil start rule limit
-            `shouldBe` S.fromList
-              [ LocalTime (d 2020 08 07) (t 23 00 00),
-                LocalTime (d 2020 08 08) (t 23 00 00),
-                LocalTime (d 2020 08 09) (t 23 00 00)
-              ]
+            `shouldBe` [ LocalTime (d 2020 08 07) (t 23 00 00),
+                         LocalTime (d 2020 08 08) (t 23 00 00),
+                         LocalTime (d 2020 08 09) (t 23 00 00)
+                       ]
+    specify "It works for this BYSETPOS example: The last two hours of every day" $
+      --  An limit in the future because it won't be reached anyway
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Daily)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 4,
+                rRuleBySetPos = [SetPos (-1), SetPos (-2)],
+                rRuleByHour =
+                  [ Hour 22,
+                    Hour 23
+                  ],
+                rRuleByMinute = [Minute 0],
+                rRuleBySecond = [Second 0]
+              }
+          start = LocalTime (d 2020 08 07) (t 23 00 00)
+       in rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2020 08 07) (t 22 00 00),
+                         LocalTime (d 2020 08 07) (t 23 00 00),
+                         LocalTime (d 2020 08 08) (t 22 00 00),
+                         LocalTime (d 2020 08 08) (t 23 00 00)
+                       ]
   describe "dailyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = LocalTime (d 2021 01 01) midnight
@@ -134,16 +153,15 @@ spec = do
           start = d 2020 09 10
        in --  This limit will be reached and cut of 2 recurrences
           rruleDateOccurrencesUntil start rule limit
-            `shouldBe` S.fromList
-              [ d 2020 09 10,
-                d 2020 10 10,
-                d 2021 09 20,
-                d 2021 10 20,
-                d 2022 09 30,
-                d 2022 10 30,
-                d 2023 09 10,
-                d 2023 10 10
-              ]
+            `shouldBe` [ d 2020 09 10,
+                         d 2020 10 10,
+                         d 2021 09 20,
+                         d 2021 10 20,
+                         d 2022 09 30,
+                         d 2022 10 30,
+                         d 2023 09 10,
+                         d 2023 10 10
+                       ]
     specify "It works for this BYSETPOS example: The last hour of every day (this is the same as just 'every day'.)" $
       --  An limit in the future because it won't be reached anyway
       let limit = d 2024 01 01
@@ -155,11 +173,10 @@ spec = do
               }
           start = d 2020 08 07
        in rruleDateOccurrencesUntil start rule limit
-            `shouldBe` S.fromList
-              [ d 2020 08 07,
-                d 2020 08 08,
-                d 2020 08 09
-              ]
+            `shouldBe` [ d 2020 08 07,
+                         d 2020 08 08,
+                         d 2020 08 09
+                       ]
   describe "dailyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = d 2021 01 01

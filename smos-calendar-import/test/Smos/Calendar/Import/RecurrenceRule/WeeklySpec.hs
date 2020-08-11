@@ -17,6 +17,73 @@ spec = do
   let d = fromGregorian
   let l = LocalTime
   let t = TimeOfDay
+  describe "rruleDateTimeOccurrencesUntil" $ do
+    specify "it works for this complex example" $
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Weekly)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 10,
+                rRuleByMonthDay = [MonthDay 10, MonthDay 20],
+                rRuleByDay = [Every Wednesday, Every Thursday],
+                rRuleByMonth = [September, October],
+                rRuleWeekStart = Wednesday
+              }
+          tod = t 04 30 00
+          start = LocalTime (d 2020 08 20) tod
+       in --  This limit will be reached and cut of 2 recurrences
+          rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2020 08 20) tod,
+                         LocalTime (d 2020 09 10) tod,
+                         LocalTime (d 2021 10 20) tod,
+                         LocalTime (d 2022 10 20) tod,
+                         LocalTime (d 2023 09 20) tod
+                       ]
+    specify "It works for this BYSETPOS example: The last hour of every week" $
+      --  An limit in the future because it won't be reached anyway
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Weekly)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 3,
+                rRuleBySetPos = [SetPos (-1)],
+                rRuleByHour =
+                  [ Hour 22,
+                    Hour 23
+                  ],
+                rRuleByMinute = [Minute 0],
+                rRuleBySecond = [Second 0],
+                rRuleWeekStart = Monday
+              }
+          start = LocalTime (d 2020 08 09) (t 23 00 00)
+       in rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2020 08 09) (t 23 00 00),
+                         LocalTime (d 2020 08 16) (t 23 00 00),
+                         LocalTime (d 2020 08 23) (t 23 00 00)
+                       ]
+    specify "It works for this BYSETPOS example: The last two hours of every week" $
+      --  An limit in the future because it won't be reached anyway
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Weekly)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 4,
+                rRuleBySetPos = [SetPos (-1), SetPos (-2)],
+                rRuleByHour =
+                  [ Hour 22,
+                    Hour 23
+                  ],
+                rRuleByMinute = [Minute 0],
+                rRuleBySecond = [Second 0],
+                rRuleWeekStart = Monday
+              }
+          start = LocalTime (d 2020 08 09) (t 22 00 00)
+       in rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2020 08 09) (t 22 00 00),
+                         LocalTime (d 2020 08 09) (t 23 00 00),
+                         LocalTime (d 2020 08 16) (t 22 00 00),
+                         LocalTime (d 2020 08 16) (t 23 00 00)
+                       ]
   describe "weeklyyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2021 01 01) midnight
