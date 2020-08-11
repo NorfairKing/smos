@@ -79,10 +79,10 @@ spec = do
               }
           start = LocalTime (d 2020 08 07) (t 23 00 00)
        in rruleDateTimeOccurrencesUntil start rule limit
-            `shouldBe` [ LocalTime (d 2020 08 07) (t 22 00 00),
-                         LocalTime (d 2020 08 07) (t 23 00 00),
+            `shouldBe` [ LocalTime (d 2020 08 07) (t 23 00 00),
                          LocalTime (d 2020 08 08) (t 22 00 00),
-                         LocalTime (d 2020 08 08) (t 23 00 00)
+                         LocalTime (d 2020 08 08) (t 23 00 00),
+                         LocalTime (d 2020 08 09) (t 22 00 00)
                        ]
   describe "dailyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
