@@ -36,7 +36,7 @@
       - "Smos.Sync.Client.Contents"
       - "Smos.Sync.Client.isHidden"
       - "Smos.Calendar.Import.RecurrenceRule.Type"
-      - "Smos.Calendar.Import.RecurrenceRule.Recurrence"
+      - "Smos.Calendar.Import.RecurrenceRule.Recurrence.Util"
 - ignore:
     name: "Replace case with maybe"
 - ignore:
