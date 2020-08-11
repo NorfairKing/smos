@@ -11,6 +11,7 @@ import Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Monthly
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
+import Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly
 import Smos.Calendar.Import.RecurrenceRule.Type
 
 -- Recurrence rules operate on LocalTime instead of CalDateTime because of this line in the spec:
@@ -76,6 +77,7 @@ rruleDateTimeOccurrence lt limit RRule {..} = case rRuleFrequency of
   Daily -> dailyDateTimeRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   Weekly -> weeklyDateTimeRecurrence lt limit rRuleInterval rRuleByMonth rRuleWeekStart (filterEvery rRuleByDay) rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   Monthly -> monthlyDateTimeRecurrence lt limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
+  Yearly -> yearlyDateTimeRecurrence lt limit rRuleInterval rRuleByMonth rRuleWeekStart rRuleByWeekNo rRuleByYearDay rRuleByMonthDay rRuleByDay rRuleByHour rRuleByMinute rRuleBySecond rRuleBySetPos
   _ -> error $ "not implemented yet: " <> show rRuleFrequency
 
 rruleDateOccurrence :: Day -> Day -> RRule -> [Day]
@@ -92,4 +94,5 @@ rruleDateOccurrence d limit RRule {..} =
     Daily -> dailyDateRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay (filterEvery rRuleByDay) -- By set pos is ignored because every day is the only day in a daily interval
     Weekly -> weeklyDateRecurrence d limit rRuleInterval rRuleByMonth rRuleWeekStart (filterEvery rRuleByDay) rRuleBySetPos
     Monthly -> monthlyDateRecurrence d limit rRuleInterval rRuleByMonth rRuleByMonthDay rRuleByDay rRuleBySetPos
+    Yearly -> yearlyDateRecurrence d limit rRuleInterval rRuleByMonth rRuleWeekStart rRuleByWeekNo rRuleByYearDay rRuleByMonthDay rRuleByDay rRuleBySetPos
     _ -> error $ "not implemented yet: " <> show rRuleFrequency

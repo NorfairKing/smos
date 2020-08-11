@@ -70,6 +70,12 @@ byDayLimit = limitBy $ \d bd -> case bd of
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
+byYearDayExpand :: Integer -> Word -> Set ByYearDay -> [Word]
+byYearDayExpand = undefined
+
+byWeekNoExpand :: DayOfWeek -> Integer -> Word -> Set ByWeekNo -> [Word]
+byWeekNoExpand = undefined
+
 byDayExpand :: Integer -> Int -> Int -> Set ByDay -> [Day]
 byDayExpand y m md s =
   concat $
