@@ -8,7 +8,7 @@ where
 
 import qualified Data.Set as S
 import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.RecurrenceRule.Gen
+import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Test.Hspec
 import Test.QuickCheck
 import Test.Validity
@@ -42,33 +42,6 @@ spec = do
   jsonSpecOnValid @BySetPos
   genValidSpec @RRule
   jsonSpecOnValid @RRule
-  describe "genDailyRecurrence" $ it "generates valid rules" $ genGeneratesValid genDailyRecurrence
-  xdescribe "These produces sets that are too big to be useful tests" $ do
-    describe "rruleDateTimeNextOccurrence" $ do
-      it "produces valid results" $ producesValidsOnValids3 rruleDateTimeNextOccurrence
-    describe "dailyDateTimeNextRecurrence" $ do
-      it "produces valid results" $ forAllValid $ \cur ->
-        forAllValid $ \limit ->
-          forAllValid $ \int ->
-            forAllValid $ \byMonths ->
-              forAllValid $ \byMonthDays ->
-                forAllValid $ \byDays ->
-                  forAllValid $ \byHours ->
-                    forAllValid $ \byMinutes ->
-                      forAllValid $ \bySeconds ->
-                        forAllValid $ \bySetPoss ->
-                          shouldBeValid $
-                            dailyDateTimeNextRecurrence
-                              cur
-                              limit
-                              int
-                              byMonths
-                              byMonthDays
-                              byDays
-                              byHours
-                              byMinutes
-                              bySeconds
-                              bySetPoss
   describe "rruleDateTimeOccurrencesUntil" $ do
     xit "produces valid results" $ producesValidsOnValids3 rruleDateTimeOccurrencesUntil
     xit "produces results within the 'Count' range for 'Count' rules" $ forAllValid $ \start ->

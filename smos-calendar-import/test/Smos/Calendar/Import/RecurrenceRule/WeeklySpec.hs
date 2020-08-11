@@ -8,6 +8,7 @@ where
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
+import Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
 import Test.Hspec
 import Test.Validity
 

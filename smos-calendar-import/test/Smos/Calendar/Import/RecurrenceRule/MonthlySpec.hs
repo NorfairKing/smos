@@ -8,6 +8,7 @@ where
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
+import Smos.Calendar.Import.RecurrenceRule.Recurrence.Monthly
 import Test.Hspec
 import Test.Validity
 
@@ -15,7 +16,6 @@ spec :: Spec
 spec = do
   let d = fromGregorian
   let l = LocalTime
-  let t = TimeOfDay
   describe "monthlyyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2021 01 01) midnight

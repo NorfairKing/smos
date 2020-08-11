@@ -9,6 +9,7 @@ import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
+import Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily
 import Test.Hspec
 import Test.Validity
 

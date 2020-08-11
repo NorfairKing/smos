@@ -2,16 +2,11 @@
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly where
 
 import Control.Monad
-import Data.Fixed
 import Data.List
-import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
-import Data.Time.Calendar.MonthDay
-import Data.Validity.Containers ()
-import Data.Validity.Time ()
 import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type

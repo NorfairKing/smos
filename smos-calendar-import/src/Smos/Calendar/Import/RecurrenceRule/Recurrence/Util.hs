@@ -3,20 +3,14 @@
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
-import Control.Monad
 import Data.Fixed
-import Data.List
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
-import Data.Validity.Containers ()
-import Data.Validity.Time ()
-import Safe
 import Smos.Calendar.Import.RecurrenceRule.Type
-import Smos.Calendar.Import.WeekDate
 
 iterateMaybeSet :: Ord a => (a -> Maybe a) -> a -> Set a
 iterateMaybeSet func start = go start
