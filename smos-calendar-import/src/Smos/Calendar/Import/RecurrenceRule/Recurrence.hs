@@ -347,22 +347,22 @@ monthlyDayRecurrence
   bySetPoss = do
     let (year_, month_, md_) = toGregorian d_
     let (limitYear, limitMonth, _) = toGregorian limitDay
-    (year, month) <- filterSetPos bySetPoss $ takeEvery interval $ takeWhile (<= (limitYear, limitMonth)) $ dropWhile (< (year_, month_)) $ do
+    (year, month) <- takeEvery interval $ takeWhile (<= (limitYear, limitMonth)) $ dropWhile (< (year_, month_)) $ do
       y <- [year_ .. limitYear]
       m <- [1 .. 12]
       pure (y, m)
-    m <- maybeToList $ monthNoToMonth month
-    guard $ byMonthLimitMonth byMonths m
-    md <- byMonthDayExpand year m md_ byMonthDays
-    d <- maybeToList $ fromGregorianValid year month md
-    d' <-
+    d <- filterSetPos bySetPoss $ do
+      m <- maybeToList $ monthNoToMonth month
+      guard $ byMonthLimitMonth byMonths m
+      md <- byMonthDayExpand year m md_ byMonthDays
+      d <- maybeToList $ fromGregorianValid year month md
       if S.null byMonthDays
         then do
           guard $ byDayLimit byDays d
           pure d
         else byDayExand d byDays
-    guard (d' <= limitDay) -- Don't go beyond the limit
-    pure d'
+    guard (d <= limitDay) -- Don't go beyond the limit
+    pure d
 
 takeEvery :: Word -> [a] -> [a]
 takeEvery i = go 0
