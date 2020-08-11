@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
