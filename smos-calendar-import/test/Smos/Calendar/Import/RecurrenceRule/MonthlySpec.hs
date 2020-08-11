@@ -16,7 +16,7 @@ spec :: Spec
 spec = do
   let d = fromGregorian
   let l = LocalTime
-  describe "monthlyyDateTimeNextRecurrence" $ do
+  describe "monthlyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2021 01 01) midnight
     describe "No ByX's" $ do
@@ -38,7 +38,6 @@ spec = do
           `shouldBe` Just (l (d 2020 09 30) tod)
     -- No 'ByWeekNo' because it's excluded by the table
     -- No 'ByYearDay' because it's excluded by the table
-    -- No 'ByMonthDay' because it's excluded by the table
     describe "ByDay" $ do
       specify "Every wednesday and thursday" $ forAllValid $ \tod ->
         monthlyDateTimeNextRecurrence (l (d 2020 08 12) tod) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] [] [] [] []
@@ -48,7 +47,42 @@ spec = do
           `shouldBe` Just (l (d 2020 10 01) tod)
       specify "Every sunday, at the end of the year" $ forAllValid $ \tod ->
         monthlyDateTimeNextRecurrence (l (d 2019 12 29) tod) limit (Interval 2) [] [] [Every Sunday] [] [] [] []
-          `shouldBe` Just (l (d 2020 01 05) tod)
+          `shouldBe` Just (l (d 2020 02 02) tod)
       specify "Every other sunday, at the end of the year" $ forAllValid $ \tod ->
         monthlyDateTimeNextRecurrence (l (d 2019 12 29) tod) limit (Interval 2) [] [] [Every Sunday] [] [] [] []
           `shouldBe` Just (l (d 2020 02 02) tod)
+  describe "monthlyDateNextRecurrence" $ do
+    --  An unimportant limit because we don't specify any rules that have no occurrances
+    let limit = d 2021 01 01
+    describe "No ByX's" $ do
+      specify "Every month" $
+        monthlyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] [] [] []
+          `shouldBe` Just (d 2020 09 08)
+      specify "Every other month" $
+        monthlyDateNextRecurrence (d 2020 08 08) limit (Interval 2) [] [] [] []
+          `shouldBe` Just (d 2020 10 08)
+    describe "ByMonth" $ do
+      specify "Every month in Sept" $
+        monthlyDateNextRecurrence (d 2019 09 30) limit (Interval 1) [September] [] [] []
+          `shouldBe` Just (d 2020 09 30)
+      specify "Every other month in Sept" $
+        monthlyDateNextRecurrence (d 2019 09 30) limit (Interval 2) [September] [] [] []
+          `shouldBe` Just (d 2020 09 30)
+      specify "Every five months in Sept" $
+        monthlyDateNextRecurrence (d 2015 09 30) limit (Interval 5) [September] [] [] []
+          `shouldBe` Just (d 2020 09 30)
+    -- No 'ByWeekNo' because it's excluded by the table
+    -- No 'ByYearDay' because it's excluded by the table
+    describe "ByDay" $ do
+      specify "Every wednesday and thursday" $
+        monthlyDateNextRecurrence (d 2020 08 12) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] []
+          `shouldBe` Just (d 2020 08 13)
+      specify "Every other thursday and friday" $
+        monthlyDateNextRecurrence (d 2020 08 28) limit (Interval 2) [] [] [Every Thursday, Every Friday] []
+          `shouldBe` Just (d 2020 10 01)
+      specify "Every sunday, at the end of the year" $
+        monthlyDateNextRecurrence (d 2019 12 29) limit (Interval 2) [] [] [Every Sunday] []
+          `shouldBe` Just (d 2020 02 02)
+      specify "Every other month, ever sunday, at the end of the year" $
+        monthlyDateNextRecurrence (d 2019 12 29) limit (Interval 2) [] [] [Every Sunday] []
+          `shouldBe` Just (d 2020 02 02)

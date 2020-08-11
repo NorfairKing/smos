@@ -1,10 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
 import Data.Fixed
 import qualified Data.Map as M
+import Data.Map (Map)
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -68,8 +70,13 @@ byDayLimit = limitBy $ \d bd -> case bd of
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
-byDayExand :: Day -> Set ByDay -> [Day]
-byDayExand = expandM $ const undefined
+byDayExpand :: Day -> Set ByDay -> [Day]
+byDayExpand d_ = flip expandL d_ $ \bd ->
+  let (y, m, _) = toGregorian d_
+      qdrups = daysOfMonth y m
+   in case bd of
+        Every dow -> mapMaybe (\(d, _, _, dow') -> if dow == dow' then Just d else Nothing) qdrups
+        Specific i dow -> mapMaybe (\(d, p, n, dow') -> if dow == dow' && (i == p || i == n) then Just d else Nothing) qdrups
 
 byMonthDayExpand :: Integer -> Month -> Int -> Set ByMonthDay -> [Int]
 byMonthDayExpand y m = expandM $ \(MonthDay md) ->
@@ -135,17 +142,40 @@ specificWeekDayIndex d wd =
       numberOfThisWeekDayInTheMonth = length $ filter ((== wd) . fst . snd) daysOfThisMonth
       (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisMonth) -- Must be there
    in (positiveSpecificWeekDayIndex, numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex)
+
+-- Quadruples: Day, Positive index, negative index, day of week
+daysOfMonth :: Integer -> Int -> [(Day, Int, Int, DayOfWeek)]
+daysOfMonth year month = map go daysOfThisMonth
   where
-    numberWeekdays :: [Day] -> [(Day, (DayOfWeek, Int))]
-    numberWeekdays = go M.empty
-      where
-        go _ [] = []
-        go m (d_ : ds) =
-          let dow = dayOfWeek d_
-              (mv, m') =
-                M.insertLookupWithKey
-                  (\_ _ old -> succ old) -- If found, just increment
-                  dow
-                  1 -- If not found, insert 1
-                  m
-           in (d_, (dow, fromMaybe 1 mv)) : go m' ds
+    firstDayOfTheMonth = fromGregorian year month 1
+    lastDayOfTheMonth = fromGregorian year month 31 -- Will be clipped
+    days = [firstDayOfTheMonth .. lastDayOfTheMonth]
+    daysOfThisMonth = numberWeekdays days
+    numberOfThisWeekDayInTheMonth wd = fromMaybe 0 $ M.lookup wd $ count $ map dayOfWeek days
+    go :: (Day, (DayOfWeek, Int)) -> (Day, Int, Int, DayOfWeek)
+    go (d, (dow, p)) =
+      let n = fromIntegral (numberOfThisWeekDayInTheMonth dow) - p
+       in (d, p, n, dow)
+
+numberWeekdays :: [Day] -> [(Day, (DayOfWeek, Int))]
+numberWeekdays = go M.empty
+  where
+    go _ [] = []
+    go m (d_ : ds) =
+      let dow = dayOfWeek d_
+          (mv, m') =
+            M.insertLookupWithKey
+              (\_ _ old -> succ old) -- If found, just increment
+              dow
+              1 -- If not found, insert 1
+              m
+       in (d_, (dow, fromMaybe 1 mv)) : go m' ds
+
+count :: forall a. Ord a => [a] -> Map a Word
+count = foldl go M.empty
+  where
+    go :: Map a Word -> a -> Map a Word
+    go m a = M.alter go2 a m
+    go2 :: Maybe Word -> Maybe Word
+    go2 Nothing = Just 1
+    go2 (Just i) = Just $ i + 1
