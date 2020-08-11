@@ -35,7 +35,8 @@
       - "Smos.Draw.completedForestNumbersWidget"
       - "Smos.Sync.Client.Contents"
       - "Smos.Sync.Client.isHidden"
-      - "Smos.Calendar.Import.RecurrenceRule"
+      - "Smos.Calendar.Import.RecurrenceRule.Type"
+      - "Smos.Calendar.Import.RecurrenceRule.Recurrence"
 - ignore:
     name: "Replace case with maybe"
 - ignore:
