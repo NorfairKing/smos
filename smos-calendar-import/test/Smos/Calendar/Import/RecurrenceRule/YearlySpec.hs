@@ -43,24 +43,24 @@ spec = do
     let yearlyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg bh bi bj =
           headMay $ yearlyDateTimeRecurrence start lim i ba bb bc bd be bf bg bh bi bj
     --  An unimportant limit because we don't specify any rules that have no occurrences
-    let limit = l (d 2022 01 01) midnight
+    let limit = l (d 2025 01 01) midnight
     describe "No ByX's" $ do
       specify "Every year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2021 08 08) tod)
-  --     specify "Every other year" $ forAllValid $ \tod ->
-  --       yearlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 2) [] [] [] [] [] [] [] [] [] []
-  --         `shouldBe` Just (l (d 2020 10 08) tod)
-  --   describe "ByYear" $ do
-  --     specify "Every year in Sept" $ forAllValid $ \tod ->
-  --       yearlyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 1) [September] [] [] [] [] [] [] [] [] []
-  --         `shouldBe` Just (l (d 2020 09 30) tod)
-  --     specify "Every other year in Sept" $ forAllValid $ \tod ->
-  --       yearlyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 2) [September] [] [] [] [] [] [] [] [] []
-  --         `shouldBe` Just (l (d 2020 09 30) tod)
-  --     specify "Every five years in Sept" $ forAllValid $ \tod ->
-  --       yearlyDateTimeNextRecurrence (l (d 2015 09 30) tod) limit (Interval 5) [September] [] [] [] [] [] [] [] [] []
-  --         `shouldBe` Just (l (d 2020 09 30) tod)
+      specify "Every other year" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 2) [] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2022 08 08) tod)
+    describe "ByMonth" $ do
+      specify "Every year in Sept" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 1) [September] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2020 09 30) tod)
+      specify "Every other year in Sept" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 10 30) tod) limit (Interval 2) [October] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2021 10 30) tod)
+      specify "Every five years in Sept" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2015 11 30) tod) limit (Interval 5) [November] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2020 11 30) tod)
   --   -- No 'ByWeekNo' because it's excluded by the table
   --   -- No 'ByYearDay' because it's excluded by the table
   --   describe "ByDay" $ do
@@ -122,19 +122,19 @@ spec = do
       specify "Every year" $
         yearlyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] Monday [] [] [] [] []
           `shouldBe` Just (d 2021 08 08)
---     specify "Every other year" $
---       yearlyDateNextRecurrence (d 2020 08 08) limit (Interval 2) [] [] [] [] [] [] []
---         `shouldBe` Just (d 2020 10 08)
---   describe "ByYear" $ do
---     specify "Every year in Sept" $
---       yearlyDateNextRecurrence (d 2019 09 30) limit (Interval 1) [September] [] [] [] [] [] []
---         `shouldBe` Just (d 2020 09 30)
---     specify "Every other year in Sept" $
---       yearlyDateNextRecurrence (d 2019 09 30) limit (Interval 2) [September] [] [] [] [] [] []
---         `shouldBe` Just (d 2020 09 30)
---     specify "Every five years in Sept" $
---       yearlyDateNextRecurrence (d 2015 09 30) limit (Interval 5) [September] [] [] [] [] [] []
---         `shouldBe` Just (d 2020 09 30)
+      specify "Every other year" $
+        yearlyDateNextRecurrence (d 2020 08 08) limit (Interval 2) [] Monday [] [] [] [] []
+          `shouldBe` Just (d 2022 08 08)
+    describe "ByMonth" $ do
+      specify "Every year in Sept" $
+        yearlyDateNextRecurrence (d 2019 09 30) limit (Interval 1) [September] Monday [] [] [] [] []
+          `shouldBe` Just (d 2020 09 30)
+      specify "Every other year in Sept" $
+        yearlyDateNextRecurrence (d 2019 09 30) limit (Interval 2) [September] Monday [] [] [] [] []
+          `shouldBe` Just (d 2021 09 30)
+      specify "Every five years in Sept" $
+        yearlyDateNextRecurrence (d 2015 09 30) limit (Interval 5) [September] Monday [] [] [] [] []
+          `shouldBe` Just (d 2020 09 30)
 --   -- No 'ByWeekNo' because it's excluded by the table
 --   -- No 'ByYearDay' because it's excluded by the table
 --   describe "ByDay" $ do
