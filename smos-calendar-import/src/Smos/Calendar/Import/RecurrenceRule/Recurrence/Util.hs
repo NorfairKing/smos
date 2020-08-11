@@ -81,6 +81,9 @@ byMonthDayExpand y m = expandM $ \(MonthDay md) ->
           Just $ len - md
         GT -> Just md
 
+byEveryWeekDayExpand :: DayOfWeek -> Set DayOfWeek -> [DayOfWeek]
+byEveryWeekDayExpand = expand id
+
 timeOfDayExpand :: TimeOfDay -> Set ByHour -> Set ByMinute -> Set BySecond -> [TimeOfDay]
 timeOfDayExpand (TimeOfDay h_ m_ s_) byHours byMinutes bySeconds = do
   h <- byHourExpand h_ byHours

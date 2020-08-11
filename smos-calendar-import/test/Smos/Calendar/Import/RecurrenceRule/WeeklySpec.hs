@@ -18,26 +18,30 @@ spec = do
   let l = LocalTime
   let t = TimeOfDay
   describe "rruleDateTimeOccurrencesUntil" $ do
-    specify "it works for this complex example" $
+    specify "it works for this complex example" $ forAllValid $ \tod ->
       let limit = LocalTime (d 2024 01 01) midnight
           rule =
             (rRule Weekly)
-              { rRuleInterval = Interval 1,
-                rRuleUntilCount = Count 10,
-                rRuleByMonthDay = [MonthDay 10, MonthDay 20],
+              { rRuleInterval = Interval 2,
+                rRuleUntilCount = Count 11,
                 rRuleByDay = [Every Wednesday, Every Thursday],
-                rRuleByMonth = [September, October],
+                rRuleByMonth = [September, November],
                 rRuleWeekStart = Wednesday
               }
-          tod = t 04 30 00
           start = LocalTime (d 2020 08 20) tod
        in --  This limit will be reached and cut of 2 recurrences
           rruleDateTimeOccurrencesUntil start rule limit
             `shouldBe` [ LocalTime (d 2020 08 20) tod,
-                         LocalTime (d 2020 09 10) tod,
-                         LocalTime (d 2021 10 20) tod,
-                         LocalTime (d 2022 10 20) tod,
-                         LocalTime (d 2023 09 20) tod
+                         LocalTime (d 2020 09 02) tod,
+                         LocalTime (d 2020 09 03) tod,
+                         LocalTime (d 2020 09 16) tod,
+                         LocalTime (d 2020 09 17) tod,
+                         LocalTime (d 2020 09 30) tod,
+                         LocalTime (d 2020 11 11) tod,
+                         LocalTime (d 2020 11 12) tod,
+                         LocalTime (d 2020 11 25) tod,
+                         LocalTime (d 2020 11 26) tod,
+                         LocalTime (d 2021 09 01) tod
                        ]
     specify "It works for this BYSETPOS example: The last hour of every week" $
       --  An limit in the future because it won't be reached anyway
