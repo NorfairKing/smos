@@ -7,7 +7,6 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
-import Debug.Trace
 import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
@@ -41,12 +40,12 @@ monthlyDateTimeNextRecurrence
       guard $ byMonthLimitMonth byMonths m
       let (_, _, md_) = toGregorian d_
       next <- filterSetPos bySetPoss $ sort $ do
-        md <- byMonthDayExpand year m md_ byMonthDays
-        d' <- maybeToList $ fromGregorianValid year month md
         d <-
           if S.null byMonthDays
-            then byDayExpand d' byDays
+            then byDayExpand year month md_ byDays
             else do
+              md <- byMonthDayExpand year m md_ byMonthDays
+              d' <- maybeToList $ fromGregorianValid year month md
               guard $ byDayLimit byDays d'
               pure d'
         tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
@@ -79,11 +78,11 @@ monthlyDateNextRecurrence
       guard $ byMonthLimitMonth byMonths m
       let (_, _, md_) = toGregorian d_
       d <- filterSetPos bySetPoss $ sort $ do
-        md <- byMonthDayExpand year m md_ byMonthDays
-        d <- maybeToList $ fromGregorianValid year month md
         if S.null byMonthDays
-          then byDayExpand d byDays
+          then byDayExpand year month md_ byDays
           else do
+            md <- byMonthDayExpand year m md_ byMonthDays
+            d <- maybeToList $ fromGregorianValid year month md
             guard $ byDayLimit byDays d
             pure d
       guard (d <= limitDay)

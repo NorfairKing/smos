@@ -71,23 +71,28 @@ byDayLimit = limitBy $ \d bd -> case bd of
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
-byDayExpand :: Day -> Set ByDay -> [Day]
-byDayExpand d_ = flip expandL d_ $ \bd ->
-  let (y, m, _) = toGregorian d_
-      qdrups = daysOfMonth y m
-   in case bd of
-        Every dow ->
-          mapMaybe
-            ( \(d, _, _, dow') ->
-                if dow == dow' then Just d else Nothing
-            )
-            qdrups
-        Specific i dow ->
-          mapMaybe
-            ( \(d, p, n, dow') ->
-                if dow == dow' && (i == p || i == n) then Just d else Nothing
-            )
-            qdrups
+byDayExpand :: Integer -> Int -> Int -> Set ByDay -> [Day]
+byDayExpand y m md s =
+  concat $
+    expand
+      ( \bd ->
+          let qdrups = daysOfMonth y m
+           in case bd of
+                Every dow ->
+                  mapMaybe
+                    ( \(d, _, _, dow') ->
+                        if dow == dow' then Just d else Nothing
+                    )
+                    qdrups
+                Specific i dow ->
+                  mapMaybe
+                    ( \(d, p, n, dow') ->
+                        if dow == dow' && (i == p || i == n) then Just d else Nothing
+                    )
+                    qdrups
+      )
+      (maybeToList $ fromGregorianValid y m md)
+      s
 
 byMonthDayExpand :: Integer -> Month -> Int -> Set ByMonthDay -> [Int]
 byMonthDayExpand y m = expandM $ \(MonthDay md) ->

@@ -16,9 +16,31 @@ spec :: Spec
 spec = do
   let d = fromGregorian
   let l = LocalTime
+  let t = TimeOfDay
+  describe "rruleDateTimeOccurrencesUntil" $ do
+    specify "it works for this complex example" $ forAllValid $ \tod ->
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Monthly)
+              { rRuleInterval = Interval 2,
+                rRuleUntilCount = Count 5,
+                rRuleByDay = [Every Tuesday, Every Sunday],
+                rRuleByMonth = [March, April, August],
+                rRuleWeekStart = Wednesday,
+                rRuleBySetPos = [SetPos (-1)]
+              }
+          start = LocalTime (d 2020 08 30) tod
+       in --  This limit will be reached and cut of 2 recurrences
+          rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2020 08 30) tod,
+                         LocalTime (d 2021 04 27) tod,
+                         LocalTime (d 2021 08 31) tod,
+                         LocalTime (d 2022 04 26) tod,
+                         LocalTime (d 2022 08 30) tod
+                       ]
   describe "monthlyDateTimeNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
-    let limit = l (d 2021 01 01) midnight
+    let limit = l (d 2022 01 01) midnight
     describe "No ByX's" $ do
       specify "Every month" $ forAllValid $ \tod ->
         monthlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] [] [] [] [] [] []
@@ -60,9 +82,37 @@ spec = do
       specify "Every last wednesday of the month" $ forAllValid $ \tod ->
         monthlyDateTimeNextRecurrence (l (d 2020 08 26) tod) limit (Interval 1) [] [] [Specific (-1) Wednesday] [] [] [] []
           `shouldBe` Just (l (d 2020 09 30) tod)
+      specify "Every wednesday that falls on the 10th of the month" $ forAllValid $ \tod ->
+        monthlyDateTimeNextRecurrence (l (d 2019 07 10) tod) limit (Interval 1) [] [MonthDay 10] [Every Wednesday] [] [] [] []
+          `shouldBe` Just (l (d 2020 06 10) tod)
+      specify "Every second wednesday that falls on the 10th of the month" $ forAllValid $ \tod ->
+        monthlyDateTimeNextRecurrence (l (d 2019 07 10) tod) limit (Interval 1) [] [MonthDay 10] [Specific 2 Wednesday] [] [] [] []
+          `shouldBe` Just (l (d 2020 06 10) tod)
+      specify "Every last wednesday that falls on the 27th of the month" $ forAllValid $ \tod ->
+        monthlyDateTimeNextRecurrence (l (d 2019 03 27) tod) limit (Interval 1) [] [MonthDay 27] [Specific (-1) Wednesday] [] [] [] []
+          `shouldBe` Just (l (d 2019 11 27) tod)
+    describe "ByHour" $ do
+      specify "16h every other month" $
+        monthlyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 00 00)) limit (Interval 2) [] [] [] [Hour 16] [] [] []
+          `shouldBe` Just (LocalTime (d 2020 10 06) (t 16 00 00))
+    describe "ByMinute" $ do
+      specify "16h20 every third month" $
+        monthlyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 20 00)) limit (Interval 3) [] [] [] [Hour 16] [Minute 20] [] []
+          `shouldBe` Just (LocalTime (d 2020 11 06) (t 16 20 00))
+    describe "BySecond" $ do
+      specify "16h20m30s every fourth month" $
+        monthlyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 20 30)) limit (Interval 4) [] [] [] [Hour 16] [Minute 20] [Second 30] []
+          `shouldBe` Just (LocalTime (d 2020 12 06) (t 16 20 30))
+      specify "every 15th and 20th second" $
+        monthlyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 15 00 15)) limit (Interval 1) [] [] [] [] [] [Second 15, Second 20] []
+          `shouldBe` Just (LocalTime (d 2020 08 06) (t 15 00 20))
+    describe "BySetPos" $ do
+      specify "The last weekday of the month" $ forAllValid $ \tod ->
+        monthlyDateTimeNextRecurrence (LocalTime (d 2020 04 30) tod) limit (Interval 1) [] [] [Every Monday, Every Tuesday, Every Wednesday, Every Thursday, Every Friday] [] [] [] [SetPos (-1)]
+          `shouldBe` Just (LocalTime (d 2020 05 29) tod)
   describe "monthlyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
-    let limit = d 2021 01 01
+    let limit = d 2023 01 01
     describe "No ByX's" $ do
       specify "Every month" $
         monthlyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] [] [] []
@@ -113,3 +163,7 @@ spec = do
       specify "Every last wednesday that falls on the 27th of the month" $
         monthlyDateNextRecurrence (d 2019 03 27) limit (Interval 1) [] [MonthDay 27] [Specific (-1) Wednesday] []
           `shouldBe` Just (d 2019 11 27)
+    describe "BySetPos" $ do
+      specify "This special case" $
+        monthlyDateNextRecurrence (d 2021 08 31) limit (Interval 2) [March, April, August] [] [Every Tuesday, Every Sunday] [SetPos (-1)]
+          `shouldBe` Just (d 2022 04 26)
