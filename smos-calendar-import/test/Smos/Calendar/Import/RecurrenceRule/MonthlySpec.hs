@@ -6,6 +6,7 @@ module Smos.Calendar.Import.RecurrenceRule.MonthlySpec
 where
 
 import Data.Time
+import Safe
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Monthly
@@ -38,7 +39,9 @@ spec = do
                          LocalTime (d 2022 04 26) tod,
                          LocalTime (d 2022 08 30) tod
                        ]
-  describe "monthlyDateTimeNextRecurrence" $ do
+  describe "monthlyDateTimeRecurrence" $ do
+    let monthlyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg =
+          headMay $ monthlyDateTimeRecurrence start lim i ba bb bc bd be bf bg
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2022 01 01) midnight
     describe "No ByX's" $ do
@@ -111,6 +114,8 @@ spec = do
         monthlyDateTimeNextRecurrence (LocalTime (d 2020 04 30) tod) limit (Interval 1) [] [] [Every Monday, Every Tuesday, Every Wednesday, Every Thursday, Every Friday] [] [] [] [SetPos (-1)]
           `shouldBe` Just (LocalTime (d 2020 05 29) tod)
   describe "monthlyDateNextRecurrence" $ do
+    let monthlyDateNextRecurrence start lim i ba bb bc bd =
+          headMay $ monthlyDateRecurrence start lim i ba bb bc bd
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = d 2023 01 01
     describe "No ByX's" $ do

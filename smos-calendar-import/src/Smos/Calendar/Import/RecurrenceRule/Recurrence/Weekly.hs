@@ -6,13 +6,12 @@ import Data.List
 import Data.Maybe
 import Data.Set (Set)
 import Data.Time
-import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
 import Smos.Calendar.Import.WeekDate
 
 -- | Recur with a 'Weekly' frequency
-weeklyDateTimeNextRecurrence ::
+weeklyDateTimeRecurrence ::
   LocalTime ->
   LocalTime ->
   Interval ->
@@ -23,8 +22,8 @@ weeklyDateTimeNextRecurrence ::
   Set ByMinute ->
   Set BySecond ->
   Set BySetPos ->
-  Maybe LocalTime
-weeklyDateTimeNextRecurrence
+  [LocalTime]
+weeklyDateTimeRecurrence
   lt@(LocalTime d_ tod_)
   limit@(LocalTime limitDay _)
   interval
@@ -34,28 +33,27 @@ weeklyDateTimeNextRecurrence
   byHours
   byMinutes
   bySeconds
-  bySetPoss =
-    headMay $ do
-      (y, w) <-
-        weeklyWeekRecurrence
-          d_
-          limitDay
-          interval
-          weekStart
-      next <- filterSetPos bySetPoss $ sort $ do
-        -- Need to sort because week days may not be in order.
-        dow <- byEveryWeekDayExpand (dayOfWeek d_) byDays
-        d <- maybeToList $ fromWeekDateWithStart weekStart y w dow
-        guard $ byMonthLimit byMonths d
-        tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
-        let next = LocalTime d tod
-        pure next
-      guard (next <= limit) -- Don't go beyond the limit
-      guard (next > lt) -- Don't take the current one again
+  bySetPoss = do
+    (y, w) <-
+      weeklyWeekRecurrence
+        d_
+        limitDay
+        interval
+        weekStart
+    next <- filterSetPos bySetPoss $ sort $ do
+      -- Need to sort because week days may not be in order.
+      dow <- byEveryWeekDayExpand (dayOfWeek d_) byDays
+      d <- maybeToList $ fromWeekDateWithStart weekStart y w dow
+      guard $ byMonthLimit byMonths d
+      tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
+      let next = LocalTime d tod
       pure next
+    guard (next <= limit) -- Don't go beyond the limit
+    guard (next > lt) -- Don't take the current one again
+    pure next
 
 -- | Recur with a 'Weekly' frequency
-weeklyDateNextRecurrence ::
+weeklyDateRecurrence ::
   Day ->
   Day ->
   Interval ->
@@ -63,31 +61,30 @@ weeklyDateNextRecurrence ::
   DayOfWeek ->
   Set DayOfWeek ->
   Set BySetPos ->
-  Maybe Day
-weeklyDateNextRecurrence
+  [Day]
+weeklyDateRecurrence
   d_
   limitDay
   interval
   byMonths
   weekStart
   byDays
-  bySetPoss =
-    headMay $ do
-      (y, w) <-
-        weeklyWeekRecurrence
-          d_
-          limitDay
-          interval
-          weekStart
-      d <- filterSetPos bySetPoss $ sort $ do
-        -- Need to sort because week days may not be in order.
-        dow <- byEveryWeekDayExpand (dayOfWeek d_) byDays
-        d <- maybeToList $ fromWeekDateWithStart weekStart y w dow
-        guard $ byMonthLimit byMonths d
-        pure d
-      guard (d <= limitDay)
-      guard (d > d_) -- Don't take the current one again
+  bySetPoss = do
+    (y, w) <-
+      weeklyWeekRecurrence
+        d_
+        limitDay
+        interval
+        weekStart
+    d <- filterSetPos bySetPoss $ sort $ do
+      -- Need to sort because week days may not be in order.
+      dow <- byEveryWeekDayExpand (dayOfWeek d_) byDays
+      d <- maybeToList $ fromWeekDateWithStart weekStart y w dow
+      guard $ byMonthLimit byMonths d
       pure d
+    guard (d <= limitDay)
+    guard (d > d_) -- Don't take the current one again
+    pure d
 
 weeklyWeekRecurrence ::
   Day ->

@@ -6,6 +6,7 @@ module Smos.Calendar.Import.RecurrenceRule.WeeklySpec
 where
 
 import Data.Time
+import Safe
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
@@ -88,9 +89,11 @@ spec = do
                          LocalTime (d 2020 08 16) (t 22 00 00),
                          LocalTime (d 2020 08 16) (t 23 00 00)
                        ]
-  describe "weeklyyDateTimeNextRecurrence" $ do
+  describe "weeklyDateTimeRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = l (d 2021 01 01) midnight
+    let weeklyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg =
+          headMay $ weeklyDateTimeRecurrence start lim i ba bb bc bd be bf bg
     describe "No ByX's" $ do
       specify "Every week" $ forAllValid $ \tod ->
         weeklyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] []
@@ -137,9 +140,11 @@ spec = do
       specify "every 15th and 20th second" $
         weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 15 00 15)) limit (Interval 1) [] Monday [] [] [] [Second 15, Second 20] []
           `shouldBe` Just (LocalTime (d 2020 08 06) (t 15 00 20))
-  describe "weeklyyDateNextRecurrence" $ do
+  describe "weeklyDateRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = d 2021 01 01
+    let weeklyDateNextRecurrence start lim i ba bb bc bd =
+          headMay $ weeklyDateRecurrence start lim i ba bb bc bd
     describe "No ByX's" $ do
       specify "Every week" $
         weeklyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] Monday [] []

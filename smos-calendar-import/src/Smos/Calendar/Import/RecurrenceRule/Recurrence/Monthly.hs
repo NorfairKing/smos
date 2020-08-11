@@ -7,11 +7,10 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
-import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
 
-monthlyDateTimeNextRecurrence ::
+monthlyDateTimeRecurrence ::
   LocalTime ->
   LocalTime ->
   Interval ->
@@ -22,8 +21,8 @@ monthlyDateTimeNextRecurrence ::
   Set ByMinute ->
   Set BySecond ->
   Set BySetPos ->
-  Maybe LocalTime
-monthlyDateTimeNextRecurrence
+  [LocalTime]
+monthlyDateTimeRecurrence
   lt@(LocalTime d_ tod_)
   limit@(LocalTime limitDay _)
   interval
@@ -33,29 +32,28 @@ monthlyDateTimeNextRecurrence
   byHours
   byMinutes
   bySeconds
-  bySetPoss =
-    headMay $ do
-      (year, month) <- monthlyMonthRecurrence d_ limitDay interval
-      m <- maybeToList $ monthNoToMonth month
-      guard $ byMonthLimitMonth byMonths m
-      let (_, _, md_) = toGregorian d_
-      next <- filterSetPos bySetPoss $ sort $ do
-        d <-
-          if S.null byMonthDays
-            then byDayExpand year month md_ byDays
-            else do
-              md <- byMonthDayExpand year m md_ byMonthDays
-              d' <- maybeToList $ fromGregorianValid year month md
-              guard $ byDayLimit byDays d'
-              pure d'
-        tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
-        let next = LocalTime d tod
-        pure next
-      guard (next > lt) -- Don't take the current one again
-      guard (next <= limit) -- Don't go beyond the limit
+  bySetPoss = do
+    (year, month) <- monthlyMonthRecurrence d_ limitDay interval
+    m <- maybeToList $ monthNoToMonth month
+    guard $ byMonthLimitMonth byMonths m
+    let (_, _, md_) = toGregorian d_
+    next <- filterSetPos bySetPoss $ sort $ do
+      d <-
+        if S.null byMonthDays
+          then byDayExpand year month md_ byDays
+          else do
+            md <- byMonthDayExpand year m md_ byMonthDays
+            d' <- maybeToList $ fromGregorianValid year month md
+            guard $ byDayLimit byDays d'
+            pure d'
+      tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
+      let next = LocalTime d tod
       pure next
+    guard (next > lt) -- Don't take the current one again
+    guard (next <= limit) -- Don't go beyond the limit
+    pure next
 
-monthlyDateNextRecurrence ::
+monthlyDateRecurrence ::
   Day ->
   Day ->
   Interval ->
@@ -63,31 +61,30 @@ monthlyDateNextRecurrence ::
   Set ByMonthDay ->
   Set ByDay ->
   Set BySetPos ->
-  Maybe Day
-monthlyDateNextRecurrence
+  [Day]
+monthlyDateRecurrence
   d_
   limitDay
   interval
   byMonths
   byMonthDays
   byDays
-  bySetPoss =
-    headMay $ do
-      (year, month) <- monthlyMonthRecurrence d_ limitDay interval
-      m <- maybeToList $ monthNoToMonth month
-      guard $ byMonthLimitMonth byMonths m
-      let (_, _, md_) = toGregorian d_
-      d <- filterSetPos bySetPoss $ sort $ do
-        if S.null byMonthDays
-          then byDayExpand year month md_ byDays
-          else do
-            md <- byMonthDayExpand year m md_ byMonthDays
-            d <- maybeToList $ fromGregorianValid year month md
-            guard $ byDayLimit byDays d
-            pure d
-      guard (d <= limitDay)
-      guard (d > d_) -- Don't take the current one again
-      pure d
+  bySetPoss = do
+    (year, month) <- monthlyMonthRecurrence d_ limitDay interval
+    m <- maybeToList $ monthNoToMonth month
+    guard $ byMonthLimitMonth byMonths m
+    let (_, _, md_) = toGregorian d_
+    d <- filterSetPos bySetPoss $ sort $ do
+      if S.null byMonthDays
+        then byDayExpand year month md_ byDays
+        else do
+          md <- byMonthDayExpand year m md_ byMonthDays
+          d <- maybeToList $ fromGregorianValid year month md
+          guard $ byDayLimit byDays d
+          pure d
+    guard (d <= limitDay)
+    guard (d > d_) -- Don't take the current one again
+    pure d
 
 monthlyMonthRecurrence ::
   Day ->

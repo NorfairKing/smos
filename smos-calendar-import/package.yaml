@@ -70,6 +70,7 @@ tests:
     - path
     - path-io
     - pretty-show
+    - safe
     - smos-calendar-import
     - smos-data
     - smos-data-gen

@@ -6,6 +6,7 @@ module Smos.Calendar.Import.RecurrenceRule.DailySpec
 where
 
 import Data.Time
+import Safe
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily
@@ -84,7 +85,9 @@ spec = do
                          LocalTime (d 2020 08 08) (t 23 00 00),
                          LocalTime (d 2020 08 09) (t 22 00 00)
                        ]
-  describe "dailyDateTimeNextRecurrence" $ do
+  describe "dailyDateTimeRecurrence" $ do
+    let dailyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg =
+          headMay $ dailyDateTimeRecurrence start lim i ba bb bc bd be bf bg
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = LocalTime (d 2021 01 01) midnight
     describe "No ByX's" $ do
@@ -178,6 +181,8 @@ spec = do
                          d 2020 08 09
                        ]
   describe "dailyDateNextRecurrence" $ do
+    let dailyDateNextRecurrence start lim i ba bb bc =
+          headMay $ dailyDateRecurrence start lim i ba bb bc
     --  An unimportant limit because we don't specify any rules that have no occurrances
     let limit = d 2021 01 01
     describe "No ByX's" $ do

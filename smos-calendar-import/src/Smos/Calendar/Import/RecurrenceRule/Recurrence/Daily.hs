@@ -4,12 +4,11 @@ module Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily where
 import Control.Monad
 import Data.Set (Set)
 import Data.Time
-import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
 
 -- | Recur with a 'Daily' frequency
-dailyDateTimeNextRecurrence ::
+dailyDateTimeRecurrence ::
   LocalTime ->
   LocalTime ->
   Interval ->
@@ -20,8 +19,8 @@ dailyDateTimeNextRecurrence ::
   Set ByMinute ->
   Set BySecond ->
   Set BySetPos ->
-  Maybe LocalTime
-dailyDateTimeNextRecurrence
+  [LocalTime]
+dailyDateTimeRecurrence
   lt@(LocalTime d_ tod_)
   limit@(LocalTime limitDay _)
   interval
@@ -31,7 +30,7 @@ dailyDateTimeNextRecurrence
   byHours
   byMinutes
   bySeconds
-  bySetPoss = headMay $ do
+  bySetPoss = do
     d <- dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
     tod <- filterSetPos bySetPoss $ timeOfDayExpand tod_ byHours byMinutes bySeconds
     let next = LocalTime d tod
@@ -40,26 +39,25 @@ dailyDateTimeNextRecurrence
     pure next
 
 -- | Recur with a 'Daily' frequency
-dailyDateNextRecurrence ::
+dailyDateRecurrence ::
   Day ->
   Day ->
   Interval ->
   Set ByMonth ->
   Set ByMonthDay ->
   Set DayOfWeek ->
-  Maybe Day
-dailyDateNextRecurrence
+  [Day]
+dailyDateRecurrence
   d_
   limitDay
   interval
   byMonths
   byMonthDays
-  byDays =
-    headMay $ do
-      d <- dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
-      guard (d > d_) -- Don't take the current one again
-      guard (d <= limitDay) -- Don't go beyond the limit
-      pure d
+  byDays = do
+    d <- dailyDayRecurrence d_ limitDay interval byMonths byMonthDays byDays
+    guard (d > d_) -- Don't take the current one again
+    guard (d <= limitDay) -- Don't go beyond the limit
+    pure d
 
 -- | Internal: Get all the relevant days until the limit, not considering any 'Set BySetPos'
 dailyDayRecurrence ::
