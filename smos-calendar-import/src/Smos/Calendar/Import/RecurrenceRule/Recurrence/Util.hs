@@ -101,7 +101,7 @@ byMonthDayExpand y m = expandM $ \(MonthDay md) ->
         EQ -> Nothing -- Should not happen
         LT ->
           -- Negative
-          Just $ len - md
+          Just $ len + md + 1
         GT -> Just md
 
 byEveryWeekDayExpand :: DayOfWeek -> Set DayOfWeek -> [DayOfWeek]
