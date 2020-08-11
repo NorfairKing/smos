@@ -52,7 +52,7 @@ occurrencesUntil func leFunc start rrule limit = case rRuleUntilCount rrule of
   Until lt -> goUntil lt
   where
     goUntil untilLimit = S.filter (`leFunc` untilLimit) goIndefinitely
-    goCount count = S.take (fromIntegral count) goIndefinitely
+    goCount c = S.take (fromIntegral c) goIndefinitely
     goIndefinitely = iterateMaybeSet (\cur -> func cur limit rrule) start
 
 -- This function takes care of the 'rRuleFrequency' part.

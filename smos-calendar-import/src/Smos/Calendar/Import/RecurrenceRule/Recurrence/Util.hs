@@ -12,6 +12,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
+import Debug.Trace
 import Smos.Calendar.Import.RecurrenceRule.Type
 
 iterateMaybeSet :: Ord a => (a -> Maybe a) -> a -> Set a
@@ -65,7 +66,7 @@ byDayLimit = limitBy $ \d bd -> case bd of
   Every dow -> dayOfWeek d == dow
   Specific i dow ->
     let (pos, neg) = specificWeekDayIndex d dow
-     in i == pos || i == neg
+     in dayOfWeek d == dow && (i == pos || i == neg)
 
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
@@ -75,8 +76,18 @@ byDayExpand d_ = flip expandL d_ $ \bd ->
   let (y, m, _) = toGregorian d_
       qdrups = daysOfMonth y m
    in case bd of
-        Every dow -> mapMaybe (\(d, _, _, dow') -> if dow == dow' then Just d else Nothing) qdrups
-        Specific i dow -> mapMaybe (\(d, p, n, dow') -> if dow == dow' && (i == p || i == n) then Just d else Nothing) qdrups
+        Every dow ->
+          mapMaybe
+            ( \(d, _, _, dow') ->
+                if dow == dow' then Just d else Nothing
+            )
+            qdrups
+        Specific i dow ->
+          mapMaybe
+            ( \(d, p, n, dow') ->
+                if dow == dow' && (i == p || i == n) then Just d else Nothing
+            )
+            qdrups
 
 byMonthDayExpand :: Integer -> Month -> Int -> Set ByMonthDay -> [Int]
 byMonthDayExpand y m = expandM $ \(MonthDay md) ->
@@ -141,7 +152,7 @@ specificWeekDayIndex d wd =
       daysOfThisMonth = numberWeekdays [firstDayOfTheMonth .. lastDayOfTheMonth]
       numberOfThisWeekDayInTheMonth = length $ filter ((== wd) . fst . snd) daysOfThisMonth
       (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisMonth) -- Must be there
-   in (positiveSpecificWeekDayIndex, numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex)
+   in (positiveSpecificWeekDayIndex, negate $ numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex + 1)
 
 -- Quadruples: Day, Positive index, negative index, day of week
 daysOfMonth :: Integer -> Int -> [(Day, Int, Int, DayOfWeek)]
@@ -151,10 +162,10 @@ daysOfMonth year month = map go daysOfThisMonth
     lastDayOfTheMonth = fromGregorian year month 31 -- Will be clipped
     days = [firstDayOfTheMonth .. lastDayOfTheMonth]
     daysOfThisMonth = numberWeekdays days
-    numberOfThisWeekDayInTheMonth wd = fromMaybe 0 $ M.lookup wd $ count $ map dayOfWeek days
+    numberOfThisWeekDayInTheMonth wd = fromMaybe 1 $ M.lookup wd $ count $ map dayOfWeek days
     go :: (Day, (DayOfWeek, Int)) -> (Day, Int, Int, DayOfWeek)
     go (d, (dow, p)) =
-      let n = fromIntegral (numberOfThisWeekDayInTheMonth dow) - p
+      let n = negate $ fromIntegral (numberOfThisWeekDayInTheMonth dow) - p + 1
        in (d, p, n, dow)
 
 numberWeekdays :: [Day] -> [(Day, (DayOfWeek, Int))]
@@ -165,11 +176,11 @@ numberWeekdays = go M.empty
       let dow = dayOfWeek d_
           (mv, m') =
             M.insertLookupWithKey
-              (\_ _ old -> succ old) -- If found, just increment
+              (\_ new old -> new + old) -- If found, just increment
               dow
               1 -- If not found, insert 1
               m
-       in (d_, (dow, fromMaybe 1 mv)) : go m' ds
+       in (d_, (dow, maybe 1 succ mv)) : go m' ds
 
 count :: forall a. Ord a => [a] -> Map a Word
 count = foldl go M.empty

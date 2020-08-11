@@ -7,6 +7,7 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
+import Debug.Trace
 import Safe
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
@@ -88,38 +89,6 @@ monthlyDateNextRecurrence
       guard (d <= limitDay)
       guard (d > d_) -- Don't take the current one again
       pure d
-
-monthlyDayRecurrence ::
-  Day ->
-  Day ->
-  Interval ->
-  Set ByMonth ->
-  Set ByMonthDay ->
-  Set ByDay ->
-  Set BySetPos ->
-  [Day]
-monthlyDayRecurrence
-  d_
-  limitDay
-  interval
-  byMonths
-  byMonthDays
-  byDays
-  bySetPoss = do
-    let (_, _, md_) = toGregorian d_
-    (year, month) <- monthlyMonthRecurrence d_ limitDay interval
-    m <- maybeToList $ monthNoToMonth month
-    guard $ byMonthLimitMonth byMonths m
-    d <- filterSetPos bySetPoss $ do
-      md <- byMonthDayExpand year m md_ byMonthDays
-      d <- maybeToList $ fromGregorianValid year month md
-      if S.null byMonthDays
-        then do
-          guard $ byDayLimit byDays d
-          pure d
-        else byDayExpand d byDays
-    guard (d <= limitDay) -- Don't go beyond the limit
-    pure d
 
 monthlyMonthRecurrence ::
   Day ->
