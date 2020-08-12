@@ -204,6 +204,10 @@ spec = do
       specify "Every 1st of march, except on leap years" $
         yearlyDateNextRecurrence (d 2019 03 01) limit (Interval 1) [March] Monday [] [YearDay 60] [] [] []
           `shouldBe` Just (d 2021 03 01)
+    describe "ByMonthDay" $ do
+      specify "Every 29th day of the month" $
+        yearlyDateNextRecurrence (d 2020 01 29) limit (Interval 1) [] Monday [] [] [MonthDay 29] [] []
+          `shouldBe` Just (d 2020 03 29)
 --   describe "ByDay" $ do
 --     specify "Every wednesday and thursday" $
 --       yearlyDateNextRecurrence (d 2020 08 12) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] [] [] [] []

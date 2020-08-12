@@ -82,6 +82,14 @@ byYearDayExpand year s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(Yea
         GT -> Just $ fromIntegral yd
         LT -> Just $ fromIntegral $ fromIntegral days + yd + 1 -- Must be positive
 
+byMonthDayExpandOptions :: Integer -> Month -> Set ByMonthDay -> Maybe (NonEmpty Word)
+byMonthDayExpandOptions year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(MonthDay md) ->
+  let days = monthLength (isLeapYear year) (monthToMonthNo month)
+   in case compare md 0 of
+        EQ -> Nothing -- Wouldn't be valid, but that's fine
+        GT -> Just $ fromIntegral md
+        LT -> Just $ fromIntegral $ fromIntegral days + md + 1 -- Must be positive
+
 byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
 byWeekNoExpand weekStart year s =
   NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->

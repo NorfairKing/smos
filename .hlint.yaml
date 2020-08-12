@@ -51,3 +51,13 @@
       - "Smos.Calendar.Import.RecurrenceRule.Gen"
 - ignore:
     name: "Use bimap"
+
+- functions:
+  # Disallowed functions
+  - {name: unsafeDupablePerformIO, within: []}
+  - {name: unsafeInterleaveIO, within: []}
+  - {name: unsafeFixIO, within: []}
+
+  # Still to add:
+  # - {name: nub, within: []}
+  # - {name: unsafePerformIO, within: []}
