@@ -44,10 +44,7 @@ yearlyDateTimeRecurrence
     let (y_, m_, md_) = toGregorian d_
     year <- yearlyYearRecurrence d_ limitDay interval
     month_ <- maybeToList $ monthNoToMonth m_
-    --  month <- byMonthExpand month_ byMonths
-    -- let (_, weekNo, _) = toWeekDateWithStart weekStart d_
-    -- weekNo <- byWeekNoExpand weekStart year weekNo byWeekNos
-    d <- maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
+    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos
     tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
@@ -82,28 +79,35 @@ yearlyDateRecurrence
     month_ <- maybeToList $ monthNoToMonth m_
     let mMonth = byMonthExpand byMonths
     let mWeekNos = byWeekNoExpand weekStart year byWeekNos
-    d <- case mWeekNos of
-      Nothing -> case mMonth of
-        Nothing -> maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
-        Just months -> do
-          month <- NE.toList months
-          maybeToList $ fromGregorianValid year (monthToMonthNo month) md_
-      Just wnos -> do
-        wno <- NE.toList wnos
-        dow <- [Monday .. Sunday]
-        d' <- maybeToList $ fromWeekDateWithStart weekStart year wno dow
-        let (y', m', md') = toGregorian d'
-        condition <- case mMonth of
-          Nothing -> pure $ y' == year
-          Just months -> do
-            month <- NE.toList months
-            pure $ y' == year && m' == monthToMonthNo month
-        if condition
-          then pure d'
-          else []
+    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos
     guard (d <= limitDay)
     guard (d > d_) -- Don't take the current one again
     pure d
+
+yearlyDayCandidate d_ weekStart year byMonths byWeekNos = do
+  let (y_, m_, md_) = toGregorian d_
+  month_ <- maybeToList $ monthNoToMonth m_
+  let mMonth = byMonthExpand byMonths
+  let mWeekNos = byWeekNoExpand weekStart year byWeekNos
+  case mWeekNos of
+    Nothing -> case mMonth of
+      Nothing -> maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
+      Just months -> do
+        month <- NE.toList months
+        maybeToList $ fromGregorianValid year (monthToMonthNo month) md_
+    Just wnos -> do
+      wno <- NE.toList wnos
+      dow <- [Monday .. Sunday]
+      d' <- maybeToList $ fromWeekDateWithStart weekStart year wno dow
+      let (y', m', md') = toGregorian d'
+      condition <- case mMonth of
+        Nothing -> pure $ y' == year
+        Just months -> do
+          month <- NE.toList months
+          pure $ y' == year && m' == monthToMonthNo month
+      if condition
+        then pure d'
+        else []
 
 yearlyYearRecurrence ::
   Day ->

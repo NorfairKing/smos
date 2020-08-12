@@ -18,6 +18,10 @@ spec = do
   let d = fromGregorian
   let l = LocalTime
   let t = TimeOfDay
+  let yearlyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg bh bi bj =
+        headMay $ yearlyDateTimeRecurrence start lim i ba bb bc bd be bf bg bh bi bj
+  let yearlyDateNextRecurrence start lim i ba bb bc bd be bf bg =
+        headMay $ yearlyDateRecurrence start lim i ba bb bc bd be bf bg
   describe "rruleDateTimeOccurrencesUntil" $ do
     specify "it works for this example weekno example" $ forAllValid $ \tod ->
       let limit = LocalTime (d 2024 01 01) midnight
@@ -59,10 +63,8 @@ spec = do
   --                        LocalTime (d 2022 08 30) tod
   --                      ]
   describe "yearlyDateTimeRecurrence" $ do
-    let yearlyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg bh bi bj =
-          headMay $ yearlyDateTimeRecurrence start lim i ba bb bc bd be bf bg bh bi bj
     --  An unimportant limit because we don't specify any rules that have no occurrences
-    let limit = l (d 2025 01 01) midnight
+    let limit = l (d 2028 01 01) midnight
     describe "No ByX's" $ do
       specify "Every year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] [] [] [] []
@@ -86,7 +88,7 @@ spec = do
     describe "ByWeekNo" $ do
       specify "Every last week of the year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2019 12 31) tod) limit (Interval 1) [] Monday [WeekNo (-1)] [] [] [] [] [] [] []
-          `shouldBe` Just (l (d 2020 12 27) tod)
+          `shouldBe` Just (l (d 2020 12 28) tod)
       specify "Every sixth week in february" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2025 02 09) tod) limit (Interval 1) [February] Monday [WeekNo 6] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2026 02 02) tod)
@@ -143,8 +145,6 @@ spec = do
   --       yearlyDateTimeNextRecurrence (LocalTime (d 2020 04 30) tod) limit (Interval 1) [] [] [Every Monday, Every Tuesday, Every Wednesday, Every Thursday, Every Friday] [] [] [] [SetPos (-1)] [] [] []
   --         `shouldBe` Just (LocalTime (d 2020 05 29) tod)
   describe "yearlyDateNextRecurrence" $ do
-    let yearlyDateNextRecurrence start lim i ba bb bc bd be bf bg =
-          headMay $ yearlyDateRecurrence start lim i ba bb bc bd be bf bg
     --  An unimportant limit because we don't specify any rules that have no occurrences
     let limit = d 2028 01 01
     describe "No ByX's" $ do
