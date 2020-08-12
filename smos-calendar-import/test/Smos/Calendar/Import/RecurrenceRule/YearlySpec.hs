@@ -64,7 +64,7 @@ spec = do
   --                      ]
   describe "yearlyDateTimeRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrences
-    let limit = l (d 2028 01 01) midnight
+    let limit = l (d 2030 01 01) midnight
     describe "No ByX's" $ do
       specify "Every year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] [] [] [] []
@@ -92,8 +92,22 @@ spec = do
       specify "Every sixth week in february" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2025 02 09) tod) limit (Interval 1) [February] Monday [WeekNo 6] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2026 02 02) tod)
-  --   -- No 'ByWeekNo' because it's excluded by the table
-  --   -- No 'ByYearDay' because it's excluded by the table
+    describe "ByYearDay" $ do
+      specify "Every first and last day of the year, at the end" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 12 31) tod) limit (Interval 1) [] Monday [] [YearDay 1, YearDay (-1)] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2020 01 01) tod)
+      specify "Every first and last day of the year, at the start" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 01 01) tod) limit (Interval 1) [] Monday [] [YearDay 1, YearDay (-1)] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2019 12 31) tod)
+      specify "Every February" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 02 05) tod) limit (Interval 1) [February] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2020 02 05) tod)
+      specify "Every first day of the year, as long as it's also in the first week of the year" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2026 01 01) tod) limit (Interval 1) [] Monday [WeekNo 1] [YearDay 1] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2029 01 01) tod)
+      specify "Every 1st of march, except on leap years" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 03 01) tod) limit (Interval 1) [March] Monday [] [YearDay 60] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2021 03 01) tod)
   --   describe "ByDay" $ do
   --     specify "Every wednesday and thursday" $ forAllValid $ \tod ->
   --       yearlyDateTimeNextRecurrence (l (d 2020 08 12) tod) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] [] [] [] [] [] [] []
@@ -146,7 +160,7 @@ spec = do
   --         `shouldBe` Just (LocalTime (d 2020 05 29) tod)
   describe "yearlyDateNextRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrences
-    let limit = d 2028 01 01
+    let limit = d 2030 01 01
     describe "No ByX's" $ do
       specify "Every year" $
         yearlyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] Monday [] [] [] [] []
@@ -174,8 +188,22 @@ spec = do
       specify "Every sixth week, in february" $
         yearlyDateNextRecurrence (d 2025 02 09) limit (Interval 1) [February] Monday [WeekNo 6] [] [] [] []
           `shouldBe` Just (d 2026 02 02)
---   -- No 'ByWeekNo' because it's excluded by the table
---   -- No 'ByYearDay' because it's excluded by the table
+    describe "ByYearDay" $ do
+      specify "Every first and last day of the year, at the end" $
+        yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [] [YearDay 1, YearDay (-1)] [] [] []
+          `shouldBe` Just (d 2020 01 01)
+      specify "Every first and last day of the year, at the start" $
+        yearlyDateNextRecurrence (d 2019 01 01) limit (Interval 1) [] Monday [] [YearDay 1, YearDay (-1)] [] [] []
+          `shouldBe` Just (d 2019 12 31)
+      specify "Every February" $
+        yearlyDateNextRecurrence (d 2019 02 05) limit (Interval 1) [February] Monday [] [] [] [] []
+          `shouldBe` Just (d 2020 02 05)
+      specify "Every first day of the year, as long as it's also in the first week of the year" $
+        yearlyDateNextRecurrence (d 2026 01 01) limit (Interval 1) [] Monday [WeekNo 1] [YearDay 1] [] [] []
+          `shouldBe` Just (d 2029 01 01)
+      specify "Every 1st of march, except on leap years" $
+        yearlyDateNextRecurrence (d 2019 03 01) limit (Interval 1) [March] Monday [] [YearDay 60] [] [] []
+          `shouldBe` Just (d 2021 03 01)
 --   describe "ByDay" $ do
 --     specify "Every wednesday and thursday" $
 --       yearlyDateNextRecurrence (d 2020 08 12) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] [] [] [] []

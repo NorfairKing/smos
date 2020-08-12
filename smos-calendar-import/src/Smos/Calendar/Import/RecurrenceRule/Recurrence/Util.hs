@@ -5,6 +5,7 @@
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
 import Data.Fixed
+import Data.List
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -73,15 +74,20 @@ byDayLimit = limitBy $ \d bd -> case bd of
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
-byYearDayExpand :: Integer -> Word -> Set ByYearDay -> [Word]
-byYearDayExpand = undefined
+byYearDayExpand :: Integer -> Set ByYearDay -> Maybe (NonEmpty Word)
+byYearDayExpand year s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(YearDay yd) ->
+  let days = daysInYear year
+   in case compare yd 0 of
+        EQ -> Nothing -- Wouldn't be valid, but that's fine
+        GT -> Just $ fromIntegral yd
+        LT -> Just $ fromIntegral $ fromIntegral days + yd + 1 -- Must be positive
 
 byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
 byWeekNoExpand weekStart year s =
-  NE.nonEmpty $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
+  NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
     let weeks = weeksInYear weekStart year
      in case compare wn 0 of
-          EQ -> Nothing -- Wouldn't be valid
+          EQ -> Nothing -- Wouldn't be valid, but that's fine
           GT -> Just $ fromIntegral wn
           LT -> Just $ fromIntegral $ fromIntegral weeks + wn + 1 -- Must be positive
 
