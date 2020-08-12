@@ -3,7 +3,7 @@
 
 module Smos.KeysSpec where
 
-import Data.List (nub)
+import Data.Containers.ListUtils
 import qualified Data.Text as T
 import Smos.Keys
 import Smos.Keys.Gen ()
@@ -187,7 +187,7 @@ matcherConfigText = genValid
 
 keyPressText :: Gen Text
 keyPressText = do
-  mods <- nub <$> genListOf modText
+  mods <- nubOrd <$> genListOf modText
   key <- keyText
   pure $ T.intercalate "-" $ mods ++ [key]
 

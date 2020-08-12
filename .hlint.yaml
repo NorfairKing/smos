@@ -57,7 +57,7 @@
   - {name: unsafeDupablePerformIO, within: []}
   - {name: unsafeInterleaveIO, within: []}
   - {name: unsafeFixIO, within: []}
+  - {name: nub, within: []}
 
   # Still to add:
-  # - {name: nub, within: []}
   # - {name: unsafePerformIO, within: []}
