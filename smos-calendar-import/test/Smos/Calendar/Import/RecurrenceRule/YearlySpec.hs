@@ -18,8 +18,27 @@ spec = do
   let d = fromGregorian
   let l = LocalTime
   let t = TimeOfDay
-  -- describe "rruleDateTimeOccurrencesUntil" $ do
-  --   specify "it works for this complex example" $ forAllValid $ \tod ->
+  describe "rruleDateTimeOccurrencesUntil" $ do
+    specify "it works for this example weekno example" $ forAllValid $ \tod ->
+      let limit = LocalTime (d 2024 01 01) midnight
+          rule =
+            (rRule Yearly)
+              { rRuleInterval = Interval 1,
+                rRuleUntilCount = Count 6,
+                rRuleByWeekNo = [WeekNo 1],
+                rRuleWeekStart = Wednesday,
+                rRuleBySetPos = [SetPos (-1)]
+              }
+          start = LocalTime (d 2021 01 08) tod
+       in --  This limit will be reached and cut of 2 recurrences
+          rruleDateTimeOccurrencesUntil start rule limit
+            `shouldBe` [ LocalTime (d 2021 01 08) tod,
+                         LocalTime (d 2021 01 09) tod,
+                         LocalTime (d 2021 01 10) tod,
+                         LocalTime (d 2022 01 03) tod,
+                         LocalTime (d 2022 01 04) tod,
+                         LocalTime (d 2022 01 05) tod
+                       ]
   --     let limit = LocalTime (d 2024 01 01) midnight
   --         rule =
   --           (rRule Yearly)
@@ -61,6 +80,10 @@ spec = do
       specify "Every five years in Sept" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2015 11 30) tod) limit (Interval 5) [November] Monday [] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2020 11 30) tod)
+    describe "ByWeekNo" $ do
+      specify "Every last week of the year" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 12 31) tod) limit (Interval 1) [] Monday [WeekNo (-1)] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2020 12 27) tod)
   --   -- No 'ByWeekNo' because it's excluded by the table
   --   -- No 'ByYearDay' because it's excluded by the table
   --   describe "ByDay" $ do
@@ -135,6 +158,10 @@ spec = do
       specify "Every five years in Sept" $
         yearlyDateNextRecurrence (d 2015 09 30) limit (Interval 5) [September] Monday [] [] [] [] []
           `shouldBe` Just (d 2020 09 30)
+    describe "ByWeekNo" $ do
+      specify "Every last week of the year" $
+        yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [WeekNo (-1)] [] [] [] []
+          `shouldBe` Just (d 2020 12 27)
 --   -- No 'ByWeekNo' because it's excluded by the table
 --   -- No 'ByYearDay' because it's excluded by the table
 --   describe "ByDay" $ do

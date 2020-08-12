@@ -86,7 +86,7 @@ spec =
                      LocalTime (fromGregorian 1997 10 02) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1997 10 12) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every day in January, for 3 years" $ do
+    specify "Every day in January, for 3 years" $ do
       --
       --  DTSTART;TZID=America/New_York:19980101T090000
       --
@@ -592,7 +592,7 @@ spec =
                      LocalTime (fromGregorian 1998 03 24) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1998 03 31) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Yearly in June and July for 10 occurrences" $ do
+    specify "Yearly in June and July for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970610T090000
       --  RRULE:FREQ=YEARLY;COUNT=10;BYMONTH=6,7
@@ -626,7 +626,7 @@ spec =
                      LocalTime (fromGregorian 2001 06 10) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 2001 07 10) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every other year on January, February, and March for 10 occurrences" $ do
+    specify "Every other year on January, February, and March for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970310T090000
       --  RRULE:FREQ=YEARLY;INTERVAL=2;COUNT=10;BYMONTH=1,2,3
@@ -657,7 +657,7 @@ spec =
                      LocalTime (fromGregorian 2003 02 10) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 2003 03 10) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every third year on the 1st, 100th, and 200th day for 10 occurrences" $ do
+    specify "Every third year on the 1st, 100th, and 200th day for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970101T090000
       --  RRULE:FREQ=YEARLY;INTERVAL=3;COUNT=10;BYYEARDAY=1,100,200
@@ -695,7 +695,7 @@ spec =
                      LocalTime (fromGregorian 2003 07 19) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 2006 01 01) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every 20th Monday of the year, forever" $ do
+    specify "Every 20th Monday of the year, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970519T090000
       --  RRULE:FREQ=YEARLY;BYDAY=20MO
@@ -717,7 +717,7 @@ spec =
                      LocalTime (fromGregorian 1998 05 18) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1999 05 17) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Monday of week number 20 (where the default start of the week is Monday), forever" $ do
+    specify "Monday of week number 20 (where the default start of the week is Monday), forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970512T090000
       --  RRULE:FREQ=YEARLY;BYWEEKNO=20;BYDAY=MO
@@ -739,7 +739,7 @@ spec =
                      LocalTime (fromGregorian 1998 05 11) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1999 05 17) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every Thursday in March, forever" $ do
+    specify "Every Thursday in March, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970313T090000
       --  RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=TH
@@ -769,7 +769,7 @@ spec =
                      LocalTime (fromGregorian 1999 03 18) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1999 03 25) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every Thursday, but only during June, July, and August, forever" $ do
+    specify "Every Thursday, but only during June, July, and August, forever" $ do
       --
       --  DTSTART;TZID=America/New_York:19970605T090000
       --  RRULE:FREQ=YEARLY;BYDAY=TH;BYMONTH=6,7,8
@@ -897,7 +897,7 @@ spec =
                      LocalTime (fromGregorian 1998 05 09) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1998 06 13) (TimeOfDay 09 00 00)
                    ]
-    xspecify "Every 4 years, the first Tuesday after a Monday in November, forever (U.S. Presidential Election day)" $ do
+    specify "Every 4 years, the first Tuesday after a Monday in November, forever (U.S. Presidential Election day)" $ do
       --
       --  DTSTART;TZID=America/New_York:19961105T090000
       --  RRULE:FREQ=YEARLY;INTERVAL=4;BYMONTH=11;BYDAY=TU;
