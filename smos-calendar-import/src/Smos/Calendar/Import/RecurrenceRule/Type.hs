@@ -753,8 +753,8 @@ instance YamlSchema DayOfWeek where -- Until we have it in yamlparse-applicative
         literalValue Sunday
       ]
 
-monthToMontNo :: Month -> Int
-monthToMontNo = \case
+monthToMonthNo :: Month -> Int
+monthToMonthNo = \case
   January -> 1
   February -> 2
   March -> 3

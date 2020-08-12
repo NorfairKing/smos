@@ -80,10 +80,16 @@ spec = do
       specify "Every five years in Sept" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2015 11 30) tod) limit (Interval 5) [November] Monday [] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2020 11 30) tod)
+      specify "Every year in Sept and Nov" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 1) [September, November] Monday [] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2019 11 30) tod)
     describe "ByWeekNo" $ do
       specify "Every last week of the year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2019 12 31) tod) limit (Interval 1) [] Monday [WeekNo (-1)] [] [] [] [] [] [] []
           `shouldBe` Just (l (d 2020 12 27) tod)
+      specify "Every sixth week in february" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2025 02 09) tod) limit (Interval 1) [February] Monday [WeekNo 6] [] [] [] [] [] [] []
+          `shouldBe` Just (l (d 2026 02 02) tod)
   --   -- No 'ByWeekNo' because it's excluded by the table
   --   -- No 'ByYearDay' because it's excluded by the table
   --   describe "ByDay" $ do
@@ -140,7 +146,7 @@ spec = do
     let yearlyDateNextRecurrence start lim i ba bb bc bd be bf bg =
           headMay $ yearlyDateRecurrence start lim i ba bb bc bd be bf bg
     --  An unimportant limit because we don't specify any rules that have no occurrences
-    let limit = d 2023 01 01
+    let limit = d 2028 01 01
     describe "No ByX's" $ do
       specify "Every year" $
         yearlyDateNextRecurrence (d 2020 08 08) limit (Interval 1) [] Monday [] [] [] [] []
@@ -158,10 +164,16 @@ spec = do
       specify "Every five years in Sept" $
         yearlyDateNextRecurrence (d 2015 09 30) limit (Interval 5) [September] Monday [] [] [] [] []
           `shouldBe` Just (d 2020 09 30)
+      specify "Every year in Sept and Nov" $
+        yearlyDateNextRecurrence (d 2019 09 30) limit (Interval 1) [September, November] Monday [] [] [] [] []
+          `shouldBe` Just (d 2019 11 30)
     describe "ByWeekNo" $ do
       specify "Every last week of the year" $
         yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [WeekNo (-1)] [] [] [] []
-          `shouldBe` Just (d 2020 12 27)
+          `shouldBe` Just (d 2020 12 28)
+      specify "Every sixth week, in february" $
+        yearlyDateNextRecurrence (d 2025 02 09) limit (Interval 1) [February] Monday [WeekNo 6] [] [] [] []
+          `shouldBe` Just (d 2026 02 02)
 --   -- No 'ByWeekNo' because it's excluded by the table
 --   -- No 'ByYearDay' because it's excluded by the table
 --   describe "ByDay" $ do

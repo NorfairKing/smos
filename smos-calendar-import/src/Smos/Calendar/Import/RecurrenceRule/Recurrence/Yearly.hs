@@ -3,6 +3,7 @@ module Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly where
 
 import Control.Monad
 import Data.List
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -42,9 +43,11 @@ yearlyDateTimeRecurrence
   bySetPoss = do
     let (y_, m_, md_) = toGregorian d_
     year <- yearlyYearRecurrence d_ limitDay interval
+    month_ <- maybeToList $ monthNoToMonth m_
+    --  month <- byMonthExpand month_ byMonths
     -- let (_, weekNo, _) = toWeekDateWithStart weekStart d_
     -- weekNo <- byWeekNoExpand weekStart year weekNo byWeekNos
-    d <- maybeToList $ fromGregorianValid year m_ md_
+    d <- maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
     tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
@@ -76,9 +79,28 @@ yearlyDateRecurrence
   bySetPoss = do
     let (y_, m_, md_) = toGregorian d_
     year <- yearlyYearRecurrence d_ limitDay interval
-    -- let (_, weekNo, _) = toWeekDateWithStart weekStart d_
-    -- weekNo <- byWeekNoExpand weekStart year weekNo byWeekNos
-    d <- maybeToList $ fromGregorianValid year m_ md_
+    month_ <- maybeToList $ monthNoToMonth m_
+    let mMonth = byMonthExpand byMonths
+    let mWeekNos = byWeekNoExpand weekStart year byWeekNos
+    d <- case mWeekNos of
+      Nothing -> case mMonth of
+        Nothing -> maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
+        Just months -> do
+          month <- NE.toList months
+          maybeToList $ fromGregorianValid year (monthToMonthNo month) md_
+      Just wnos -> do
+        wno <- NE.toList wnos
+        dow <- [Monday .. Sunday]
+        d' <- maybeToList $ fromWeekDateWithStart weekStart year wno dow
+        let (y', m', md') = toGregorian d'
+        condition <- case mMonth of
+          Nothing -> pure $ y' == year
+          Just months -> do
+            month <- NE.toList months
+            pure $ y' == year && m' == monthToMonthNo month
+        if condition
+          then pure d'
+          else []
     guard (d <= limitDay)
     guard (d > d_) -- Don't take the current one again
     pure d

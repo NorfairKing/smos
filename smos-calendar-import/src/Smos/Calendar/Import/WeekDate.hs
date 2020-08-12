@@ -7,18 +7,7 @@ import Data.Validity.Time ()
 
 nextWeek :: DayOfWeek -> Integer -> Word -> (Integer, Word)
 nextWeek ws y wn
-  | wn < 52 = (y, wn + 1)
-  | wn == 52 =
-    -- From https://en.wikipedia.org/wiki/ISO_week_date#Last_week
-    -- [The last week] has 28 December in it.
-
-    let dayInLastWeek = fromGregorian y 12 28
-        (_, wnOfLastWeek, _) = toWeekDateWithStart ws dayInLastWeek
-     in if wnOfLastWeek <= 52
-          then-- There are 52 weeks this year, so we go to the next year
-            (y + 1, 1)
-          else-- There are 53 weeks in this year, so we go to to that week
-            (y, 53)
+  | wn < weeksInYear ws y = (y, wn + 1)
   | otherwise = (y + 1, 1)
 
 weeksIntoTheFutureStartingFrom :: DayOfWeek -> Integer -> Word -> [(Integer, Word)]
@@ -53,10 +42,20 @@ toWeekDateWithStart ws d =
       firstDayOfTheFirstWsWeekThisYear = firstDayOfTheFirstWsWeekOf ws year
       firstDayOfTheFirstWsWeekNextYear = firstDayOfTheFirstWsWeekOf ws (year + 1)
       (wsWeekYear, wsWeekNo)
-        | d < firstDayOfTheFirstWsWeekThisYear = (year - 1, 53) -- TODO leap year to see if it's 53 or 52
+        | d < firstDayOfTheFirstWsWeekThisYear = (year - 1, weeksInYear ws (year - 1))
         | d >= firstDayOfTheFirstWsWeekNextYear = (year + 1, 1)
         | otherwise = (year, fromInteger $ (diffDays d firstDayOfTheFirstWsWeekThisYear `quot` 7) + 1)
    in (wsWeekYear, wsWeekNo, dow)
+
+weeksInYear :: DayOfWeek -> Integer -> Word
+weeksInYear ws y =
+  -- From https://en.wikipedia.org/wiki/ISO_week_date#Last_week
+  -- [The last week] has 28 December in it.
+  let dayInLastWeek = fromGregorian y 12 28
+      (_, wnOfLastWeek, _) = toWeekDateWithStart ws dayInLastWeek
+   in if wnOfLastWeek <= 52
+        then 52
+        else 53
 
 daysInYear :: Integer -> Int
 daysInYear y = if isLeapYear y then 366 else 365

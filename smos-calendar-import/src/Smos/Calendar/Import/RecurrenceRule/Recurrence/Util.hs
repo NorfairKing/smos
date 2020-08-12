@@ -5,6 +5,8 @@
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
 import Data.Fixed
+import Data.List.NonEmpty (NonEmpty)
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Maybe
@@ -13,6 +15,7 @@ import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
 import Smos.Calendar.Import.RecurrenceRule.Type
+import Smos.Calendar.Import.WeekDate
 
 iterateMaybeSet :: Ord a => (a -> Maybe a) -> a -> Set a
 iterateMaybeSet func start = go start
@@ -44,7 +47,7 @@ byMonthLimitMonth = limitBy $ \m1 m2 -> m1 == m2
 byMonthLimit :: Set ByMonth -> Day -> Bool
 byMonthLimit = limitBy $ \d m ->
   let (_, month, _) = toGregorian d
-   in month == monthToMontNo m
+   in month == monthToMonthNo m
 
 byMonthDayLimit :: Set ByMonthDay -> Day -> Bool
 byMonthDayLimit = limitBy $ \d (MonthDay md) ->
@@ -73,8 +76,14 @@ byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 byYearDayExpand :: Integer -> Word -> Set ByYearDay -> [Word]
 byYearDayExpand = undefined
 
-byWeekNoExpand :: DayOfWeek -> Integer -> Word -> Set ByWeekNo -> [Word]
-byWeekNoExpand = undefined
+byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
+byWeekNoExpand weekStart year s =
+  NE.nonEmpty $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
+    let weeks = weeksInYear weekStart year
+     in case compare wn 0 of
+          EQ -> Nothing -- Wouldn't be valid
+          GT -> Just $ fromIntegral wn
+          LT -> Just $ fromIntegral $ fromIntegral weeks + wn + 1 -- Must be positive
 
 byDayExpand :: Integer -> Int -> Int -> Set ByDay -> [Day]
 byDayExpand y m md s =
@@ -99,9 +108,12 @@ byDayExpand y m md s =
       (maybeToList $ fromGregorianValid y m md)
       s
 
+byMonthExpand :: Set Month -> Maybe (NonEmpty Month)
+byMonthExpand = NE.nonEmpty . S.toList
+
 byMonthDayExpand :: Integer -> Month -> Int -> Set ByMonthDay -> [Int]
 byMonthDayExpand y m = expandM $ \(MonthDay md) ->
-  let len = monthLength (isLeapYear y) (monthToMontNo m)
+  let len = monthLength (isLeapYear y) (monthToMonthNo m)
    in case compare md 0 of
         EQ -> Nothing -- Should not happen
         LT ->
