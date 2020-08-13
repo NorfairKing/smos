@@ -4,6 +4,7 @@
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Util where
 
+import Control.Monad
 import Data.Fixed
 import Data.List
 import Data.List.NonEmpty (NonEmpty)
@@ -15,6 +16,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
+import Debug.Trace
 import Smos.Calendar.Import.RecurrenceRule.Type
 import Smos.Calendar.Import.WeekDate
 
@@ -68,8 +70,10 @@ byDayLimit :: Set ByDay -> Day -> Bool
 byDayLimit = limitBy $ \d bd -> case bd of
   Every dow -> dayOfWeek d == dow
   Specific i dow ->
-    let (pos, neg) = specificWeekDayIndex d dow
-     in dayOfWeek d == dow && (i == pos || i == neg)
+    dayOfWeek d == dow
+      && ( let (pos, neg) = specificWeekDayIndex d
+            in i == pos || i == neg
+         )
 
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
@@ -99,12 +103,22 @@ byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toLis
         GT -> Just $ fromIntegral md
         LT -> Just $ fromIntegral $ fromIntegral days + md + 1 -- Must be positive
 
+byEveryWeekDayWeek :: Set DayOfWeek -> Maybe (NonEmpty DayOfWeek)
+byEveryWeekDayWeek = NE.nonEmpty . S.toList
+
 byEveryWeekDayExpandYear :: DayOfWeek -> Integer -> Set ByDay -> Maybe (NonEmpty Day)
 byEveryWeekDayExpandYear weekStart year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $
   \case
     Every dow -> do
       wn <- [1 .. weeksInYear weekStart year]
       maybeToList $ fromWeekDateWithStart weekStart year wn dow
+    Specific i dow -> do
+      wn <- [1 .. weeksInYear weekStart year]
+      d <- maybeToList $ fromWeekDateWithStart weekStart year wn dow
+      guard $ dayOfWeek d == dow
+      let (pn, nn) = specificWeekDayIndex d
+      guard $ i == pn || i == nn
+      pure d
 
 byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
 byWeekNoExpand weekStart year s =
@@ -196,13 +210,13 @@ limitBy func bys b =
     else any (func b) bys
 
 -- This can probably be sped up a lot using the weekdate module
-specificWeekDayIndex :: Day -> DayOfWeek -> (Int, Int) -- (Positive index, Negative index)
-specificWeekDayIndex d wd =
+specificWeekDayIndex :: Day -> (Int, Int) -- (Positive index, Negative index)
+specificWeekDayIndex d =
   let (y, month, _) = toGregorian d
       firstDayOfTheMonth = fromGregorian y month 1
       lastDayOfTheMonth = fromGregorian y month 31 -- Will be clipped
       daysOfThisMonth = numberWeekdays [firstDayOfTheMonth .. lastDayOfTheMonth]
-      numberOfThisWeekDayInTheMonth = length $ filter ((== wd) . fst . snd) daysOfThisMonth
+      numberOfThisWeekDayInTheMonth = length $ filter ((== dayOfWeek d) . fst . snd) daysOfThisMonth
       (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisMonth) -- Must be there
    in (positiveSpecificWeekDayIndex, negate $ numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex + 1)
 

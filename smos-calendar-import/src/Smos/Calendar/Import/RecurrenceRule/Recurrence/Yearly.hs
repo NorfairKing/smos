@@ -5,6 +5,7 @@ import Control.Monad
 import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
+import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
@@ -125,8 +126,14 @@ yearlyDayCandidate
             pure d'
         Just ms -> do
           month <- NE.toList ms
-          md <- byMonthDayExpand year month md_ byMonthDays
+          md <-
+            if S.null byDays
+              then byMonthDayExpand year month md_ byMonthDays
+              else case byMonthDayExpandMonth year month byMonthDays of
+                Nothing -> [1 .. 31]
+                Just mds -> map fromIntegral $ NE.toList mds
           d' <- maybeToList $ fromGregorianValid year (monthToMonthNo month) md
+          guard $ byDayLimit byDays d'
           condition <- case mYearDays of
             Nothing -> pure True
             Just yds -> do
@@ -137,7 +144,9 @@ yearlyDayCandidate
           pure d'
       Just wnos -> do
         wno <- NE.toList wnos
-        dow <- [Monday .. Sunday]
+        dow <- case byEveryWeekDayWeek (filterEvery byDays) of
+          Nothing -> [Monday .. Sunday]
+          Just dows -> NE.toList dows
         d' <- maybeToList $ fromWeekDateWithStart weekStart year wno dow
         let (y', m', _) = toGregorian d'
         monthCondition <- case mMonth of

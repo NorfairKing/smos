@@ -216,28 +216,28 @@ spec = do
         yearlyDateNextRecurrence (d 2020 08 03) limit (Interval 1) [] Monday [] [] [] [Specific 1 Monday] []
           `shouldBe` Just (d 2020 09 07)
       specify "Every monday in the first and second weeks of the year" $
-        yearlyDateNextRecurrence (d 2020 01 06) limit (Interval 2) [] Monday [WeekNo 1, WeekNo 2] [] [] [Every Monday] []
+        yearlyDateNextRecurrence (d 2020 01 06) limit (Interval 1) [] Monday [WeekNo 1, WeekNo 2] [] [] [Every Monday] []
           `shouldBe` Just (d 2021 01 04)
       specify "Every saturday in june" $
-        yearlyDateNextRecurrence (d 2020 06 13) limit (Interval 2) [June] Monday [] [] [] [Every Saturday] []
+        yearlyDateNextRecurrence (d 2020 06 13) limit (Interval 1) [June] Monday [] [] [] [Every Saturday] []
           `shouldBe` Just (d 2020 06 20)
       specify "Every fourth saturday in june" $
-        yearlyDateNextRecurrence (d 2020 06 13) limit (Interval 2) [June] Monday [] [] [] [Specific 3 Saturday] []
+        yearlyDateNextRecurrence (d 2019 06 22) limit (Interval 1) [June] Monday [] [] [] [Specific 4 Saturday] []
           `shouldBe` Just (d 2020 06 27)
       specify "Every last saturday in june" $
-        yearlyDateNextRecurrence (d 2020 06 13) limit (Interval 2) [June] Monday [] [] [] [Specific (-1) Saturday] []
+        yearlyDateNextRecurrence (d 2020 06 13) limit (Interval 1) [June] Monday [] [] [] [Specific (-1) Saturday] []
           `shouldBe` Just (d 2020 06 27)
       specify "Every monday, the first of the month" $
-        yearlyDateNextRecurrence (d 2021 03 01) limit (Interval 2) [] Monday [] [] [MonthDay 1] [Every Monday] []
+        yearlyDateNextRecurrence (d 2021 03 01) limit (Interval 1) [] Monday [] [] [MonthDay 1] [Every Monday] []
           `shouldBe` Just (d 2021 11 01)
       specify "Every last monday, the 30th day of the month" $
-        yearlyDateNextRecurrence (d 2020 03 30) limit (Interval 2) [] Monday [] [] [MonthDay 30] [Specific (-1) Monday] []
+        yearlyDateNextRecurrence (d 2020 03 30) limit (Interval 1) [] Monday [] [] [MonthDay 30] [Specific (-1) Monday] []
           `shouldBe` Just (d 2020 11 30)
       specify "Every last monday, the last of the month" $
-        yearlyDateNextRecurrence (d 2020 08 31) limit (Interval 2) [] Monday [] [] [MonthDay (-1)] [Specific (-1) Monday] []
+        yearlyDateNextRecurrence (d 2020 08 31) limit (Interval 1) [] Monday [] [] [MonthDay (-1)] [Specific (-1) Monday] []
           `shouldBe` Just (d 2020 11 30)
       specify "Every tuesday, on a year day divisible by 100" $
-        yearlyDateNextRecurrence (d 2020 10 26) limit (Interval 2) [] Monday [] [YearDay 100, YearDay 200, YearDay 300] [] [Every Tuesday] []
+        yearlyDateNextRecurrence (d 2020 10 26) limit (Interval 1) [] Monday [] [YearDay 100, YearDay 200, YearDay 300] [] [Every Tuesday] []
           `shouldBe` Just (d 2021 07 19)
 -- specify "Every Monday and Tuesday in the first week of every year" $
 --   yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [WeekNo 1] [] [] [Every Monday, Every Tuesday] []
