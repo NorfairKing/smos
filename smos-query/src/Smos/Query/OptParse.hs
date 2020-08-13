@@ -88,7 +88,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
               ClockSettings
                 { clockSetFilter = clockFlagFilter,
                   clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
-                  clockSetBlock = fromMaybe OneBlock clockFlagBlockFlags,
+                  clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
                   clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
                   clockSetClockFormat = case clockFlagClockFormat of
                     Nothing -> ClockFormatTemporal TemporalMinutesResolution
@@ -107,7 +107,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
               AgendaSettings
                 { agendaSetFilter = agendaFlagFilter,
                   agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
-                  agendaSetBlock = fromMaybe OneBlock agendaFlagBlock,
+                  agendaSetBlock = fromMaybe DayBlock agendaFlagBlock,
                   agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
                   agendaSetPeriod = fromMaybe AllTime agendaFlagPeriod
                 }
@@ -147,7 +147,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
               LogSettings
                 { logSetFilter = logFlagFilter,
                   logSetPeriod = fromMaybe AllTime logFlagPeriodFlags,
-                  logSetBlock = fromMaybe OneBlock logFlagBlockFlags,
+                  logSetBlock = fromMaybe DayBlock logFlagBlockFlags,
                   logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
                 }
         CommandTags TagsFlags {..} ->
