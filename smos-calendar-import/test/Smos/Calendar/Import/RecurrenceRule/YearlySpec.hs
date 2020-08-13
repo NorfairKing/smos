@@ -43,25 +43,6 @@ spec = do
                          LocalTime (d 2022 01 04) tod,
                          LocalTime (d 2022 01 05) tod
                        ]
-  --     let limit = LocalTime (d 2024 01 01) midnight
-  --         rule =
-  --           (rRule Yearly)
-  --             { rRuleInterval = Interval 2,
-  --               rRuleUntilCount = Count 5,
-  --               rRuleByDay = [Every Tuesday, Every Sunday],
-  --               rRuleByMonth = [March, April, August],
-  --               rRuleWeekStart = Wednesday,
-  --               rRuleBySetPos = [SetPos (-1)]
-  --             }
-  --         start = LocalTime (d 2020 08 30) tod
-  --      in --  This limit will be reached and cut of 2 recurrences
-  --         rruleDateTimeOccurrencesUntil start rule limit
-  --           `shouldBe` [ LocalTime (d 2020 08 30) tod,
-  --                        LocalTime (d 2021 04 27) tod,
-  --                        LocalTime (d 2021 08 31) tod,
-  --                        LocalTime (d 2022 04 26) tod,
-  --                        LocalTime (d 2022 08 30) tod
-  --                      ]
   describe "yearlyDateTimeRecurrence" $ do
     --  An unimportant limit because we don't specify any rules that have no occurrences
     let limit = l (d 2030 01 01) midnight
@@ -124,6 +105,40 @@ spec = do
       specify "Every 30th or 31st day of the month that is also the first week of the year" $ forAllValid $ \tod ->
         yearlyDateTimeNextRecurrence (l (d 2018 12 31) tod) limit (Interval 1) [] Monday [WeekNo 1] [] [MonthDay 30, MonthDay 31] [] [] [] [] []
           `shouldBe` Just (l (d 2019 12 30) tod)
+    describe "ByDay" $ do
+      specify "Every monday and wednesday" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 08 12) tod) limit (Interval 1) [] Monday [] [] [] [Every Monday, Every Wednesday] [] [] [] []
+          `shouldBe` Just (l (d 2020 08 17) tod)
+      specify "Every first monday" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 08 03) tod) limit (Interval 1) [] Monday [] [] [] [Specific 1 Monday] [] [] [] []
+          `shouldBe` Just (l (d 2020 09 07) tod)
+      specify "Every monday in the first and second weeks of the year" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 01 06) tod) limit (Interval 1) [] Monday [WeekNo 1, WeekNo 2] [] [] [Every Monday] [] [] [] []
+          `shouldBe` Just (l (d 2021 01 04) tod)
+      specify "Every saturday in june" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 06 13) tod) limit (Interval 1) [June] Monday [] [] [] [Every Saturday] [] [] [] []
+          `shouldBe` Just (l (d 2020 06 20) tod)
+      specify "Every fourth saturday in june" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 06 22) tod) limit (Interval 1) [June] Monday [] [] [] [Specific 4 Saturday] [] [] [] []
+          `shouldBe` Just (l (d 2020 06 27) tod)
+      specify "Every last saturday in june" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 06 13) tod) limit (Interval 1) [June] Monday [] [] [] [Specific (-1) Saturday] [] [] [] []
+          `shouldBe` Just (l (d 2020 06 27) tod)
+      specify "Every monday, the first of the month" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2021 03 01) tod) limit (Interval 1) [] Monday [] [] [MonthDay 1] [Every Monday] [] [] [] []
+          `shouldBe` Just (l (d 2021 11 01) tod)
+      specify "Every last monday, the 30th day of the month" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 03 30) tod) limit (Interval 1) [] Monday [] [] [MonthDay 30] [Specific (-1) Monday] [] [] [] []
+          `shouldBe` Just (l (d 2020 11 30) tod)
+      specify "Every last monday, the last of the month" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 08 31) tod) limit (Interval 1) [] Monday [] [] [MonthDay (-1)] [Specific (-1) Monday] [] [] [] []
+          `shouldBe` Just (l (d 2020 11 30) tod)
+      specify "Every tuesday, on a year day divisible by 100" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2020 10 26) tod) limit (Interval 1) [] Monday [] [YearDay 100, YearDay 200, YearDay 300] [] [Every Tuesday] [] [] [] []
+          `shouldBe` Just (l (d 2022 07 19) tod)
+      specify "Every Monday and Tuesday in the first week of every year" $ forAllValid $ \tod ->
+        yearlyDateTimeNextRecurrence (l (d 2019 12 31) tod) limit (Interval 1) [] Monday [WeekNo 1] [] [] [Every Monday, Every Tuesday] [] [] [] []
+          `shouldBe` Just (l (d 2021 01 04) tod)
   --   describe "ByHour" $ do
   --     specify "16h every other year" $
   --       yearlyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 00 00)) limit (Interval 2) [] [] [] [Hour 16] [] [] [] [] [] []
@@ -238,10 +253,10 @@ spec = do
           `shouldBe` Just (d 2020 11 30)
       specify "Every tuesday, on a year day divisible by 100" $
         yearlyDateNextRecurrence (d 2020 10 26) limit (Interval 1) [] Monday [] [YearDay 100, YearDay 200, YearDay 300] [] [Every Tuesday] []
-          `shouldBe` Just (d 2021 07 19)
--- specify "Every Monday and Tuesday in the first week of every year" $
---   yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [WeekNo 1] [] [] [Every Monday, Every Tuesday] []
---     `shouldBe` Just (d 2022 01 04)
+          `shouldBe` Just (d 2022 07 19)
+      specify "Every Monday and Tuesday in the first week of every year" $
+        yearlyDateNextRecurrence (d 2019 12 31) limit (Interval 1) [] Monday [WeekNo 1] [] [] [Every Monday, Every Tuesday] []
+          `shouldBe` Just (d 2021 01 04)
 --
 --   describe "BySetPos" $ do
 --     specify "This special case" $
