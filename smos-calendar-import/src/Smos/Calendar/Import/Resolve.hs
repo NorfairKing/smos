@@ -8,10 +8,9 @@ import Control.Applicative
 import Control.Monad.Reader
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.Set as S
-import Data.Set (Set)
 import Data.Time
-import Debug.Trace
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.RecurrenceRule
@@ -20,8 +19,22 @@ import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
-resolveEvents :: TimeZone -> [UnresolvedEvents] -> [Events]
-resolveEvents tz = concatMap (resolveUnresolvedEvents tz)
+resolveEvents :: LocalTime -> LocalTime -> TimeZone -> [UnresolvedEvents] -> [Events]
+resolveEvents start end tz = mapMaybe (filterEvents start end) . concatMap (resolveUnresolvedEvents tz)
+
+filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
+filterEvents start end e@Events {..} = case filter (filterEvent start end) events of
+  [] -> Nothing
+  es -> Just $ e {events = es}
+
+filterEvent :: LocalTime -> LocalTime -> Event -> Bool
+filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
+  (Nothing, Nothing) -> True
+  (Just start, Nothing) -> timestampLocalTime start <= hi
+  (Nothing, Just end) -> lo <= timestampLocalTime end
+  (Just start, Just end) ->
+    timestampLocalTime start <= hi
+      && lo <= timestampLocalTime end
 
 resolveUnresolvedEvents :: TimeZone -> UnresolvedEvents -> [Events]
 resolveUnresolvedEvents tz UnresolvedEvents {..} =

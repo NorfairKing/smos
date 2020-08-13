@@ -16,7 +16,6 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.MonthDay
-import Debug.Trace
 import Smos.Calendar.Import.RecurrenceRule.Type
 import Smos.Calendar.Import.WeekDate
 

@@ -2,14 +2,12 @@
 module Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly where
 
 import Control.Monad
-import Data.List
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
-import Debug.Trace
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
 import Smos.Calendar.Import.RecurrenceRule.Type
 import Smos.Calendar.Import.WeekDate
@@ -153,7 +151,7 @@ yearlyDayCandidate
           Nothing -> [Monday .. Sunday]
           Just dows -> NE.toList dows
         d' <- maybeToList $ fromWeekDateWithStart weekStart year wno dow
-        let (y', m', _) = toGregorian d'
+        let (_, m', _) = toGregorian d'
         monthCondition <- case mMonth of
           Nothing -> pure True
           Just ms -> do
