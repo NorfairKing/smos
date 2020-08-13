@@ -38,6 +38,7 @@ pickTimeZoneProp ICal.TZProp {..} =
         ICal.DTStartDate (ICal.Date d) _ -> LocalTime d midnight -- Not allowed by the spec but it's fine.
       timeZoneHistoryRuleOffsetFrom = pickUTCOffset tzpTZOffsetFrom
       timeZoneHistoryRuleOffsetTo = pickUTCOffset tzpTZOffsetTo
+      timeZoneHistoryRuleRRules = pickRRule tzpRRule
    in TimeZoneHistoryRule {..}
 
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset

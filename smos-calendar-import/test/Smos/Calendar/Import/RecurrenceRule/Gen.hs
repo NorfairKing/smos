@@ -10,7 +10,6 @@ import Data.GenValidity.Time ()
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.UnresolvedTimestamp.Gen ()
 import Test.QuickCheck
 
 -- | Until we have it in genvalidity-time

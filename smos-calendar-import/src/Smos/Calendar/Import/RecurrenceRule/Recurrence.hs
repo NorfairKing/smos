@@ -14,6 +14,19 @@ import Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly
 import Smos.Calendar.Import.RecurrenceRule.Type
 
+rruleSetDateTimeOccurrencesUntil ::
+  -- | DTStart
+  LocalTime ->
+  -- | recurrence rule
+  Set RRule ->
+  -- | Limit
+  LocalTime ->
+  -- | The recurrence set.
+  -- For infinte recurrence sets, these are only the occurrences before (inclusive) the limit.
+  Set LocalTime
+rruleSetDateTimeOccurrencesUntil lt rules limit =
+  S.unions $ map (\rule -> rruleDateTimeOccurrencesUntil lt rule limit) $ S.toList rules
+
 -- Recurrence rules operate on LocalTime instead of CalDateTime because of this line in the spec:
 --
 -- The "DTSTART" property specified within the iCalendar object defines the

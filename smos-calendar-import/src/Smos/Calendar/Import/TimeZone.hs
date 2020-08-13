@@ -6,11 +6,14 @@
 module Smos.Calendar.Import.TimeZone where
 
 import Data.Aeson
+import qualified Data.Set as S
+import Data.Set (Set)
 import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import GHC.Generics
+import Smos.Calendar.Import.RecurrenceRule
 import Smos.Data
 import YamlParse.Applicative
 
@@ -47,11 +50,12 @@ instance ToJSON TimeZoneHistory where
 
 data TimeZoneHistoryRule
   = TimeZoneHistoryRule
-      { timeZoneHistoryRuleStart :: LocalTime, -- In the timezone at the time
-        timeZoneHistoryRuleOffsetFrom :: UTCOffset,
-        timeZoneHistoryRuleOffsetTo :: UTCOffset
+      { timeZoneHistoryRuleStart :: !LocalTime, -- In the timezone at the time
+        timeZoneHistoryRuleOffsetFrom :: !UTCOffset,
+        timeZoneHistoryRuleOffsetTo :: !UTCOffset,
+        timeZoneHistoryRuleRRules :: !(Set RRule)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity TimeZoneHistoryRule
 
@@ -62,20 +66,25 @@ instance YamlSchema TimeZoneHistoryRule where
         <$> requiredFieldWith' "start" localTimeSchema
         <*> requiredField' "from"
         <*> requiredField' "to"
+        <*> optionalFieldWithDefault' "rules" S.empty
 
 instance FromJSON TimeZoneHistoryRule where
   parseJSON = viaYamlSchema
 
 instance ToJSON TimeZoneHistoryRule where
   toJSON TimeZoneHistoryRule {..} =
-    object
-      [ "start" .= formatTime defaultTimeLocale timestampLocalTimeFormat timeZoneHistoryRuleStart,
-        "from" .= timeZoneHistoryRuleOffsetFrom,
-        "to" .= timeZoneHistoryRuleOffsetTo
-      ]
+    object $
+      concat
+        [ [ "start" .= formatTime defaultTimeLocale timestampLocalTimeFormat timeZoneHistoryRuleStart,
+            "from" .= timeZoneHistoryRuleOffsetFrom,
+            "to" .= timeZoneHistoryRuleOffsetTo
+          ],
+          [ "rules" .= timeZoneHistoryRuleRRules | not (S.null timeZoneHistoryRuleRRules)
+          ]
+        ]
 
 newtype UTCOffset = UTCOffset Int -- Minutes from UTCTime
-  deriving (Show, Eq, Generic, FromJSON, ToJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 instance Validity UTCOffset
 

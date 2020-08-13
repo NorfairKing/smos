@@ -4,12 +4,17 @@
 
 module Smos.Calendar.Import.Resolve where
 
+import Control.Applicative
 import Control.Monad.Reader
 import Data.Map (Map)
 import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.Set (Set)
 import Data.Time
+import Debug.Trace
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Event
+import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
@@ -81,20 +86,33 @@ resolveZonedTime lt tzid = do
     Just tzh -> resolveZonedTimeWithHistory resolveCtxTimeZone lt tzh
 
 resolveZonedTimeWithHistory :: TimeZone -> LocalTime -> TimeZoneHistory -> LocalTime
-resolveZonedTimeWithHistory tz lt (TimeZoneHistory rules) = case rules of
-  [] -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
-  [rule] -> resolveZonedTimeWithRule tz lt rule
-  _ -> error "timezones with more than one rule not supported"
+resolveZonedTimeWithHistory tz lt tzh =
+  case chooseRuleToApply lt tzh of
+    Nothing -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
+    Just rule -> resolveZonedTimeWithRule tz lt rule
+
+chooseRuleToApply :: LocalTime -> TimeZoneHistory -> Maybe TimeZoneHistoryRule
+chooseRuleToApply lt (TimeZoneHistory rules) =
+  let m = M.unions $ map (ruleRecurrences lt) rules
+   in snd <$> (M.lookupLE lt m <|> M.lookupGE lt m)
+
+-- TODO: have an intermediate type for a TimeZoneHistoryRule without recurrence
+
+ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime TimeZoneHistoryRule
+ruleRecurrences limit tzh@TimeZoneHistoryRule {..} =
+  let s = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
+      s' = if S.null s then S.singleton timeZoneHistoryRuleStart else s -- If there is no recurrence, just use the rule by itself
+   in M.fromList $ map (\lt -> (lt, tzh {timeZoneHistoryRuleStart = lt})) $ S.toList s'
 
 resolveZonedTimeWithRule :: TimeZone -> LocalTime -> TimeZoneHistoryRule -> LocalTime
 resolveZonedTimeWithRule tz lt TimeZoneHistoryRule {..} =
-  let utct = localTimeToUTC tz lt
-      tz' =
+  let tz' =
         utcOffsetTimeZone $
           if lt < timeZoneHistoryRuleStart
             then timeZoneHistoryRuleOffsetFrom
             else timeZoneHistoryRuleOffsetTo
-   in utcToLocalTime tz' utct
+      utct = localTimeToUTC tz' lt -- From the local time according to the TimeZoneHistoryRule to UTC
+   in utcToLocalTime tz utct -- From UTC to the local time that we want
 
 utcOffsetTimeZone :: UTCOffset -> TimeZone
 utcOffsetTimeZone (UTCOffset m) = minutesToTimeZone m

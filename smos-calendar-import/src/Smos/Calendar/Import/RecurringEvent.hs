@@ -85,7 +85,9 @@ instance ToJSON RecurringEvent where
   toJSON RecurringEvent {..} =
     object $
       staticToObject recurringEventStatic
-        ++ [ "start" .= recurringEventStart,
-             "end" .= recurringEventEnd,
-             "rrule" .= recurringEventRRules
-           ]
+        ++ concat
+          [ [ "start" .= recurringEventStart,
+              "end" .= recurringEventEnd
+            ],
+            ["rrule" .= recurringEventRRules | not (S.null recurringEventRRules)]
+          ]

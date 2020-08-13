@@ -44,12 +44,13 @@ yearlyDateTimeRecurrence
   bySeconds
   bySetPoss = do
     year <- yearlyYearRecurrence d_ limitDay interval
-    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays byDays
-    tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
-    let next = LocalTime d tod
-    guard (next > lt) -- Don't take the current one again
-    guard (next <= limit) -- Don't go beyond the limit
-    pure next
+    filterSetPos bySetPoss $ do
+      d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays byDays
+      tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
+      let next = LocalTime d tod
+      guard (next > lt) -- Don't take the current one again
+      guard (next <= limit) -- Don't go beyond the limit
+      pure next
 
 yearlyDateRecurrence ::
   Day ->
@@ -75,10 +76,11 @@ yearlyDateRecurrence
   byDays
   bySetPoss = do
     year <- yearlyYearRecurrence d_ limitDay interval
-    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays byDays
-    guard (d <= limitDay)
-    guard (d > d_) -- Don't take the current one again
-    pure d
+    filterSetPos bySetPoss $ do
+      d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays byDays
+      guard (d <= limitDay)
+      guard (d > d_) -- Don't take the current one again
+      pure d
 
 yearlyYearRecurrence ::
   Day ->

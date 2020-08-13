@@ -11,7 +11,7 @@ events:
 - summary: Summary
   start:
     local: 1996-09-18 14:30:00
-    zone: Foo
+    zone: Bar
   end:
     local: 1996-09-18 14:30:00
-    zone: Bar
+    zone: Foo
