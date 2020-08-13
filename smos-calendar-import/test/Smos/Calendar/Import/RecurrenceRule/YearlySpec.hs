@@ -211,7 +211,7 @@ spec = do
     describe "ByDay" $ do
       specify "Every monday and wednesday" $
         yearlyDateNextRecurrence (d 2020 08 12) limit (Interval 1) [] Monday [] [] [] [Every Monday, Every Wednesday] []
-          `shouldBe` Just (d 2020 08 14)
+          `shouldBe` Just (d 2020 08 17)
       specify "Every first monday" $
         yearlyDateNextRecurrence (d 2020 08 03) limit (Interval 1) [] Monday [] [] [] [Specific 1 Monday] []
           `shouldBe` Just (d 2020 09 07)

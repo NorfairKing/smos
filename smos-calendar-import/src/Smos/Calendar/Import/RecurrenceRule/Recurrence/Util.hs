@@ -99,6 +99,13 @@ byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toLis
         GT -> Just $ fromIntegral md
         LT -> Just $ fromIntegral $ fromIntegral days + md + 1 -- Must be positive
 
+byEveryWeekDayExpandYear :: DayOfWeek -> Integer -> Set ByDay -> Maybe (NonEmpty Day)
+byEveryWeekDayExpandYear weekStart year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $
+  \case
+    Every dow -> do
+      wn <- [1 .. weeksInYear weekStart year]
+      maybeToList $ fromWeekDateWithStart weekStart year wn dow
+
 byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
 byWeekNoExpand weekStart year s =
   NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
