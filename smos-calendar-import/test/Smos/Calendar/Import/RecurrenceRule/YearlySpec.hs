@@ -205,9 +205,15 @@ spec = do
         yearlyDateNextRecurrence (d 2019 03 01) limit (Interval 1) [March] Monday [] [YearDay 60] [] [] []
           `shouldBe` Just (d 2021 03 01)
     describe "ByMonthDay" $ do
-      specify "Every 29th day of the month" $
+      specify "Every 29th day of every month" $
         yearlyDateNextRecurrence (d 2020 01 29) limit (Interval 1) [] Monday [] [] [MonthDay 29] [] []
           `shouldBe` Just (d 2020 03 29)
+      specify "Every 15th and 20th day of every month" $
+        yearlyDateNextRecurrence (d 2020 01 20) limit (Interval 1) [] Monday [] [] [MonthDay 15, MonthDay 20] [] []
+          `shouldBe` Just (d 2020 02 15)
+      specify "Every 15th and 20th day of every February and March" $
+        yearlyDateNextRecurrence (d 2020 03 20) limit (Interval 1) [February, March] Monday [] [] [MonthDay 15, MonthDay 20] [] []
+          `shouldBe` Just (d 2021 02 15)
 --   describe "ByDay" $ do
 --     specify "Every wednesday and thursday" $
 --       yearlyDateNextRecurrence (d 2020 08 12) limit (Interval 1) [] [] [Every Wednesday, Every Thursday] [] [] [] []

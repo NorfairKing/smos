@@ -43,7 +43,7 @@ yearlyDateTimeRecurrence
   bySeconds
   bySetPoss = do
     year <- yearlyYearRecurrence d_ limitDay interval
-    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays
+    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays
     tod <- timeOfDayExpand tod_ byHours byMinutes bySeconds
     let next = LocalTime d tod
     guard (next > lt) -- Don't take the current one again
@@ -74,7 +74,7 @@ yearlyDateRecurrence
   byDays
   bySetPoss = do
     year <- yearlyYearRecurrence d_ limitDay interval
-    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays
+    d <- yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays
     guard (d <= limitDay)
     guard (d > d_) -- Don't take the current one again
     pure d
@@ -93,8 +93,8 @@ yearlyYearRecurrence d_ limitDay (Interval interval) = do
       (< year_)
       [year_ ..]
 
-yearlyDayCandidate :: Day -> DayOfWeek -> Integer -> Set ByMonth -> Set ByWeekNo -> Set ByYearDay -> [Day]
-yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays = do
+yearlyDayCandidate :: Day -> DayOfWeek -> Integer -> Set ByMonth -> Set ByWeekNo -> Set ByYearDay -> Set ByMonthDay -> [Day]
+yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays = do
   let (_, m_, md_) = toGregorian d_
   month_ <- maybeToList $ monthNoToMonth m_
   let mMonth = byMonthExpand byMonths
@@ -103,13 +103,16 @@ yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays = do
   cand <- case mWeekNos of
     Nothing -> case mMonth of
       Nothing -> case mYearDays of
-        Nothing -> maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
+        Nothing -> do
+          md <- byMonthDayExpand year month_ md_ byMonthDays
+          maybeToList $ fromGregorianValid year (monthToMonthNo month_) md
         Just yds -> do
           yd <- NE.toList yds
           maybeToList $ fromOrdinalDateValid year $ fromIntegral yd
       Just ms -> do
         month <- NE.toList ms
-        d' <- maybeToList $ fromGregorianValid year (monthToMonthNo month) md_
+        md <- byMonthDayExpand year month md_ byMonthDays
+        d' <- maybeToList $ fromGregorianValid year (monthToMonthNo month) md
         condition <- case mYearDays of
           Nothing -> pure True
           Just yds -> do
