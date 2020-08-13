@@ -119,13 +119,13 @@ yearlyDayCandidate
             Just mds -> do
               (month, md) <- NE.toList mds
               d' <- maybeToList $ fromGregorianValid year (monthToMonthNo month) (fromIntegral md)
-              guard $ byDayLimit byDays d'
+              guard $ byDayLimitInYear byDays d'
               pure d'
           Just yds -> do
             yd <- NE.toList yds
             d' <- maybeToList $ fromOrdinalDateValid year $ fromIntegral yd
             guard $ byMonthDayLimit byMonthDays d'
-            guard $ byDayLimit byDays d'
+            guard $ byDayLimitInYear byDays d'
             pure d'
         Just ms -> do
           month <- NE.toList ms

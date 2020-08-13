@@ -75,6 +75,15 @@ byDayLimit = limitBy $ \d bd -> case bd of
             in i == pos || i == neg
          )
 
+byDayLimitInYear :: Set ByDay -> Day -> Bool
+byDayLimitInYear = limitBy $ \d bd -> case bd of
+  Every dow -> dayOfWeek d == dow
+  Specific i dow ->
+    dayOfWeek d == dow
+      && ( let (pos, neg) = specificYearWeekDayIndex d
+            in i == pos || i == neg
+         )
+
 byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
@@ -116,7 +125,7 @@ byEveryWeekDayExpandYear weekStart year s = NE.nonEmpty $ sort $ flip concatMap 
       wn <- [1 .. weeksInYear weekStart year]
       d <- maybeToList $ fromWeekDateWithStart weekStart year wn dow
       guard $ dayOfWeek d == dow
-      let (pn, nn) = specificWeekDayIndex d
+      let (pn, nn) = specificYearWeekDayIndex d
       guard $ i == pn || i == nn
       pure d
 
@@ -219,6 +228,17 @@ specificWeekDayIndex d =
       numberOfThisWeekDayInTheMonth = length $ filter ((== dayOfWeek d) . fst . snd) daysOfThisMonth
       (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisMonth) -- Must be there
    in (positiveSpecificWeekDayIndex, negate $ numberOfThisWeekDayInTheMonth - positiveSpecificWeekDayIndex + 1)
+
+-- This can probably be sped up a lot using the weekdate module
+specificYearWeekDayIndex :: Day -> (Int, Int) -- (Positive index, Negative index)
+specificYearWeekDayIndex d =
+  let (y, _, _) = toGregorian d
+      firstDayOfTheYear = fromGregorian y 01 01
+      lastDayOfTheYear = fromGregorian y 12 31
+      daysOfThisYear = numberWeekdays [firstDayOfTheYear .. lastDayOfTheYear]
+      numberOfThisWeekDayInTheYear = length $ filter ((== dayOfWeek d) . fst . snd) daysOfThisYear
+      (_, positiveSpecificWeekDayIndex) = fromJust (lookup d daysOfThisYear) -- Must be there
+   in (positiveSpecificWeekDayIndex, negate $ numberOfThisWeekDayInTheYear - positiveSpecificWeekDayIndex + 1)
 
 -- Quadruples: Day, Positive index, negative index, day of week
 daysOfMonth :: Integer -> Int -> [(Day, Int, Int, DayOfWeek)]

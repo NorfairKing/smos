@@ -99,10 +99,10 @@ spec =
       --      (1999 9:00 AM EST)January 1-31
       --      (2000 9:00 AM EST)January 1-31
       --
-      let dtstart = LocalTime (fromGregorian 1998 10 01) (TimeOfDay 09 00 00)
+      let dtstart = LocalTime (fromGregorian 1998 01 01) (TimeOfDay 09 00 00)
           rule =
             (rRule Yearly)
-              { rRuleUntilCount = Until (LocalTime (fromGregorian 2000 01 31) (TimeOfDay 14 0 0)),
+              { rRuleUntilCount = Until (LocalTime (fromGregorian 2000 01 31) (TimeOfDay 14 00 00)),
                 rRuleByMonth = [January],
                 rRuleByDay =
                   [ Every Sunday,
@@ -115,14 +115,14 @@ spec =
                   ]
               }
           -- Limit: the set is finite so the limit will just be some point beyond the end
-          limit = LocalTime (fromGregorian 2000 01 01) (TimeOfDay 00 00 00)
+          limit = LocalTime (fromGregorian 2000 02 01) (TimeOfDay 00 00 00)
       rruleDateTimeOccurrencesUntil dtstart rule limit
-        `shouldBe` [ LocalTime (fromGregorian 1997 09 02) (TimeOfDay 09 00 00),
-                     LocalTime (fromGregorian 1997 09 12) (TimeOfDay 09 00 00),
-                     LocalTime (fromGregorian 1997 09 22) (TimeOfDay 09 00 00),
-                     LocalTime (fromGregorian 1997 10 02) (TimeOfDay 09 00 00),
-                     LocalTime (fromGregorian 1997 10 12) (TimeOfDay 09 00 00)
-                   ]
+        `shouldBe` S.fromList
+          ( do
+              y <- [1998 .. 2000]
+              md <- [1 .. 31]
+              pure $ LocalTime (fromGregorian y 01 md) (TimeOfDay 09 00 00)
+          )
     specify "Weekly for 10 occurrences" $ do
       --
       --  DTSTART;TZID=America/New_York:19970902T090000
@@ -757,7 +757,7 @@ spec =
               }
           limit = LocalTime (fromGregorian 1999 03 26) (TimeOfDay 00 00 00)
       rruleDateTimeOccurrencesUntil dtstart rule limit
-        `shouldBe` [ LocalTime (fromGregorian 1997 03 12) (TimeOfDay 09 00 00),
+        `shouldBe` [ LocalTime (fromGregorian 1997 03 13) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1997 03 20) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1997 03 27) (TimeOfDay 09 00 00),
                      LocalTime (fromGregorian 1998 03 05) (TimeOfDay 09 00 00),
