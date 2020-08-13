@@ -61,3 +61,4 @@
 
   # Still to add:
   # - {name: unsafePerformIO, within: []}
+  # - {name: fromIntegral, within: []}

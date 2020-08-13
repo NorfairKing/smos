@@ -82,8 +82,17 @@ byYearDayExpand year s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(Yea
         GT -> Just $ fromIntegral yd
         LT -> Just $ fromIntegral $ fromIntegral days + yd + 1 -- Must be positive
 
-byMonthDayExpandOptions :: Integer -> Month -> Set ByMonthDay -> Maybe (NonEmpty Word)
-byMonthDayExpandOptions year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(MonthDay md) ->
+byMonthDayExpandEveryMonth :: Integer -> Set ByMonthDay -> Maybe (NonEmpty (Month, Word))
+byMonthDayExpandEveryMonth year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $ \(MonthDay md) -> do
+  month <- [January .. December]
+  let days = monthLength (isLeapYear year) (monthToMonthNo month)
+  case compare md 0 of
+    EQ -> [] -- Wouldn't be valid, but that's fine
+    GT -> pure (month, fromIntegral md)
+    LT -> pure (month, fromIntegral $ fromIntegral days + md + 1) -- Must be positive
+
+byMonthDayExpandMonth :: Integer -> Month -> Set ByMonthDay -> Maybe (NonEmpty Word)
+byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(MonthDay md) ->
   let days = monthLength (isLeapYear year) (monthToMonthNo month)
    in case compare md 0 of
         EQ -> Nothing -- Wouldn't be valid, but that's fine

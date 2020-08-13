@@ -100,15 +100,19 @@ yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays =
   let mMonth = byMonthExpand byMonths
   let mWeekNos = byWeekNoExpand weekStart year byWeekNos
   let mYearDays = byYearDayExpand year byYearDays
-  cand <- case mWeekNos of
+  case mWeekNos of
     Nothing -> case mMonth of
       Nothing -> case mYearDays of
-        Nothing -> do
-          md <- byMonthDayExpand year month_ md_ byMonthDays
-          maybeToList $ fromGregorianValid year (monthToMonthNo month_) md
+        Nothing -> case byMonthDayExpandEveryMonth year byMonthDays of
+          Nothing -> maybeToList $ fromGregorianValid year (monthToMonthNo month_) md_
+          Just mds -> do
+            (month, md) <- NE.toList mds
+            maybeToList $ fromGregorianValid year (monthToMonthNo month) (fromIntegral md)
         Just yds -> do
           yd <- NE.toList yds
-          maybeToList $ fromOrdinalDateValid year $ fromIntegral yd
+          d' <- maybeToList $ fromOrdinalDateValid year $ fromIntegral yd
+          guard $ byMonthDayLimit byMonthDays d'
+          pure d'
       Just ms -> do
         month <- NE.toList ms
         md <- byMonthDayExpand year month md_ byMonthDays
@@ -139,7 +143,5 @@ yearlyDayCandidate d_ weekStart year byMonths byWeekNos byYearDays byMonthDays =
           let (_, yd') = toOrdinalDate d'
           pure $ fromIntegral yd == yd'
       guard yearDayCondition
+      guard $ byMonthDayLimit byMonthDays d'
       pure d'
-  let (candY, _, _) = toGregorian cand
-  guard $ year == candY
-  pure cand
