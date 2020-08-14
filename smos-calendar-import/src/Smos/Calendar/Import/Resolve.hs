@@ -65,8 +65,10 @@ resolveEvent UnresolvedEvent {..} = do
   let eventStatic = unresolvedEventStatic
   eventStart <- mapM resolveStart unresolvedEventStart
   eventEnd <- case unresolvedEventEnd of
-    Nothing -> pure Nothing
     Just ced -> resolveEndDuration eventStart ced
+    -- Use the event start so we definitely have an endpoint. This is the way google calendar does it.
+    -- This is important because otherwise very old events without an end time are always imported.
+    Nothing -> pure eventStart
   pure Event {..}
 
 resolveStart :: CalTimestamp -> R Timestamp

@@ -3,3 +3,4 @@
   - header: Event without Summary
     timestamps:
       BEGIN: 1996-09-18 14:30:00
+      END: 1996-09-18 14:30:00

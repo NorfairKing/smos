@@ -26,6 +26,7 @@ renderEvent ev@Event {..} =
       h = fromMaybe "Event without Summary" $ staticSummary >>= header
       mc = case staticDescription of
         Nothing -> Nothing
+        Just "" -> Nothing
         Just desc -> Just $ fromMaybe "invalid description" $ contents desc
       ts = renderTimestamps ev
    in (newEntry h) {entryContents = mc, entryTimestamps = ts}
