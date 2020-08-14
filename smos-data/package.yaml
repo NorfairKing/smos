@@ -25,6 +25,7 @@ library:
   - path-io
   - text
   - time
+  - unliftio
   - validity
   - validity-aeson
   - validity-containers

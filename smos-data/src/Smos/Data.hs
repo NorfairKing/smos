@@ -43,6 +43,7 @@ import Data.Yaml.Builder as Yaml
 import Path
 import Path.IO
 import Smos.Data.Types
+import UnliftIO.IO.File
 
 readSmosFile :: Path Abs File -> IO (Maybe (Either String SmosFile))
 readSmosFile fp = do
@@ -55,7 +56,7 @@ readSmosFile fp = do
 writeSmosFile :: Path Abs File -> SmosFile -> IO ()
 writeSmosFile fp sf = do
   ensureDir $ parent fp
-  SB.writeFile (toFilePath fp) (smosFileYamlBS sf)
+  writeBinaryFileDurableAtomic (toFilePath fp) (smosFileYamlBS sf)
 
 parseSmosFile :: ByteString -> Either String SmosFile
 parseSmosFile = parseSmosData
