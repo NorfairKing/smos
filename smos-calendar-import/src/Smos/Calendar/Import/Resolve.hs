@@ -20,7 +20,16 @@ import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
 resolveEvents :: LocalTime -> LocalTime -> TimeZone -> [UnresolvedEvents] -> [Events]
-resolveEvents start end tz = mapMaybe (filterEvents start end) . concatMap (resolveUnresolvedEvents tz)
+resolveEvents start end tz = concatMap (resolveUnresolvedEvents start end tz)
+
+resolveUnresolvedEvents :: LocalTime -> LocalTime -> TimeZone -> UnresolvedEvents -> [Events]
+resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
+  let ctx =
+        RecurCtx
+          { resolveCtxTimeZone = tz,
+            resolveCtxTimeZones = unresolvedEventsTimeZones
+          }
+   in mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup unresolvedEventGroups) ctx
 
 filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
 filterEvents start end e@Events {..} = case filter (filterEvent start end) events of
@@ -35,15 +44,6 @@ filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
   (Just start, Just end) ->
     timestampLocalTime start <= hi
       && lo <= timestampLocalTime end
-
-resolveUnresolvedEvents :: TimeZone -> UnresolvedEvents -> [Events]
-resolveUnresolvedEvents tz UnresolvedEvents {..} =
-  let ctx =
-        RecurCtx
-          { resolveCtxTimeZone = tz,
-            resolveCtxTimeZones = unresolvedEventsTimeZones
-          }
-   in runReader (mapM resolveEventGroup unresolvedEventGroups) ctx
 
 data RecurCtx
   = RecurCtx
@@ -89,7 +89,9 @@ resolveTimestamp = \case
 resolveDateTime :: CalDateTime -> R LocalTime
 resolveDateTime = \case
   Floating lt -> pure lt
-  UTC lt -> pure $ utcToLocalTime utc lt
+  UTC lt -> do
+    tz <- asks resolveCtxTimeZone
+    pure $ utcToLocalTime tz lt
   Zoned lt tzid -> resolveZonedTime lt tzid
 
 resolveZonedTime :: LocalTime -> TimeZoneId -> R LocalTime

@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Pick where
@@ -47,7 +48,10 @@ pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)
 pickEventFromVEvent :: ICal.VEvent -> Maybe RecurringEvent
 pickEventFromVEvent ICal.VEvent {..} =
   let staticSummary = LT.toStrict . ICal.summaryValue <$> veSummary
-      staticDescription = LT.toStrict . ICal.descriptionValue <$> veDescription
+      staticDescription = case LT.toStrict . ICal.descriptionValue <$> veDescription of
+        Nothing -> Nothing
+        Just "" -> Nothing -- Don't pick the empty string, it's pointless.
+        Just d -> Just d
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration

@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Smos.Calendar.Import.GoldenSpec
   ( spec,
   )
@@ -13,6 +15,7 @@ import Data.Time
 import Data.Yaml as Yaml
 import Path
 import Path.IO
+import Smos.Calendar.Import
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.Render
@@ -48,17 +51,21 @@ mkGoldenTestFor cp = do
 
 mkGoldenTest :: Path Abs File -> VCalendar -> Spec
 mkGoldenTest cp cals = do
+  ProcessConf {..} <- runIO $ do
+    cp <- replaceExtension ".config" cp
+    mpc <- readConfigFile cp
+    case mpc of
+      Nothing -> die $ "No process conf for golden test: " <> fromAbsFile cp
+      Just pc -> pure pc
   let actualRecurringEvents = pickEventsFromCalendar cals
   rp <- runIO $ replaceExtension ".recurring" cp
   expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
   it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let limit = LocalTime (fromGregorian 2030 00 00) midnight -- TODO use a config file
-  let actualUnresolvedEvents = recurRecurringEvents limit actualRecurringEvents -- TODO use a config file
+  let actualUnresolvedEvents = recurRecurringEvents (LocalTime processConfLimit midnight) actualRecurringEvents -- TODO use a config file
   up <- runIO $ replaceExtension ".unresolved" cp
   expectedUnresolvedEvents <- runIO $ readGoldenYaml up actualUnresolvedEvents
   it "recurs the correct unresolved events" $ compareAndSuggest Yaml.encode up actualUnresolvedEvents expectedUnresolvedEvents
-  let tz = utc -- TODO use a config file
-  let actualEvents = resolveUnresolvedEvents tz actualUnresolvedEvents
+  let actualEvents = resolveUnresolvedEvents (LocalTime processConfStart midnight) (LocalTime processConfLimit midnight) processConfTimeZone actualUnresolvedEvents
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
   it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents

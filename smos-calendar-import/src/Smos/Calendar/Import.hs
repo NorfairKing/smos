@@ -6,6 +6,7 @@ module Smos.Calendar.Import where
 import Control.Monad
 import Data.Default
 import qualified Data.List.NonEmpty as NE
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -80,7 +81,7 @@ smosCalendarImport = do
                   processConfStart = start,
                   processConfLimit = recurrenceLimit,
                   processConfTimeZone = hereTZ,
-                  processConfName = originName
+                  processConfName = Just originName
                 }
         when setDebug $ putStrLn $ unlines ["Using process conf: ", T.unpack (TE.decodeUtf8 (Yaml.encode conf))]
         let sf = processCalendars conf cals
@@ -95,18 +96,20 @@ data ProcessConf
         processConfStart :: Day,
         processConfLimit :: Day,
         processConfTimeZone :: TimeZone,
-        processConfName :: String
+        processConfName :: Maybe String
       }
   deriving (Show, Eq)
 
 instance ToJSON ProcessConf where
   toJSON ProcessConf {..} =
     object $
-      (if processConfDebug then (("debug" .= processConfDebug) :) else id)
-        [ "start" .= formatTime defaultTimeLocale timestampDayFormat processConfStart,
-          "limit" .= formatTime defaultTimeLocale timestampDayFormat processConfLimit,
-          "timezone" .= formatTime defaultTimeLocale timeZoneFormat processConfTimeZone,
-          "name" .= processConfName
+      concat
+        [ ["debug" .= processConfDebug | not processConfDebug],
+          ["timezone" .= formatTime defaultTimeLocale timeZoneFormat processConfTimeZone | processConfTimeZone /= utc],
+          ["name" .= processConfName | isJust processConfName],
+          [ "start" .= formatTime defaultTimeLocale timestampDayFormat processConfStart,
+            "limit" .= formatTime defaultTimeLocale timestampDayFormat processConfLimit
+          ]
         ]
 
 instance FromJSON ProcessConf where
@@ -121,8 +124,8 @@ instance YamlSchema ProcessConf where
             <$> optionalFieldWithDefault "debug" False "debug mode"
             <*> requiredFieldWith "start" "start day" dayField
             <*> requiredFieldWith "limit" "recurrence limit" dayField
-            <*> requiredFieldWith "timezone" "time zone" timeZoneField
-            <*> requiredField "name" "calendar name"
+            <*> optionalFieldWithDefaultWith "timezone" utc "time zone" timeZoneField
+            <*> optionalField "name" "calendar name"
 
 timeZoneFormat :: String
 timeZoneFormat = "%z"
