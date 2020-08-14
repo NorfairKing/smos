@@ -105,28 +105,27 @@ resolveZonedTimeWithHistory :: TimeZone -> LocalTime -> TimeZoneHistory -> Local
 resolveZonedTimeWithHistory tz lt tzh =
   case chooseRuleToApply lt tzh of
     Nothing -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
-    Just rule -> resolveZonedTimeWithRule tz lt rule
+    Just (ruleStart, (from, to)) -> resolveZonedTimeWithRule tz lt ruleStart from to
 
-chooseRuleToApply :: LocalTime -> TimeZoneHistory -> Maybe TimeZoneHistoryRule
+chooseRuleToApply :: LocalTime -> TimeZoneHistory -> Maybe (LocalTime, (UTCOffset, UTCOffset))
 chooseRuleToApply lt (TimeZoneHistory rules) =
   let m = M.unions $ map (ruleRecurrences lt) rules
-   in snd <$> (M.lookupLE lt m <|> M.lookupGE lt m)
+   in M.lookupLE lt m <|> M.lookupGE lt m
 
--- TODO: have an intermediate type for a TimeZoneHistoryRule without recurrence
-
-ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime TimeZoneHistoryRule
-ruleRecurrences limit tzh@TimeZoneHistoryRule {..} =
+ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime (UTCOffset, UTCOffset)
+ruleRecurrences limit TimeZoneHistoryRule {..} =
   let s = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
-      s' = if S.null s then S.singleton timeZoneHistoryRuleStart else s -- If there is no recurrence, just use the rule by itself
-   in M.fromList $ map (\lt -> (lt, tzh {timeZoneHistoryRuleStart = lt})) $ S.toList s'
+   in if S.null s -- If there is no recurrence, just use the rule by itself
+        then M.singleton timeZoneHistoryRuleStart (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)
+        else M.fromSet (const (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)) s
 
-resolveZonedTimeWithRule :: TimeZone -> LocalTime -> TimeZoneHistoryRule -> LocalTime
-resolveZonedTimeWithRule tz lt TimeZoneHistoryRule {..} =
+resolveZonedTimeWithRule :: TimeZone -> LocalTime -> LocalTime -> UTCOffset -> UTCOffset -> LocalTime
+resolveZonedTimeWithRule tz lt start from to =
   let tz' =
         utcOffsetTimeZone $
-          if lt < timeZoneHistoryRuleStart
-            then timeZoneHistoryRuleOffsetFrom
-            else timeZoneHistoryRuleOffsetTo
+          if lt < start
+            then from
+            else to
       utct = localTimeToUTC tz' lt -- From the local time according to the TimeZoneHistoryRule to UTC
    in utcToLocalTime tz utct -- From UTC to the local time that we want
 
