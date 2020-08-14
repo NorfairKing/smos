@@ -8,7 +8,6 @@ import Data.Aeson
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import Data.Text (Text)
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.Static

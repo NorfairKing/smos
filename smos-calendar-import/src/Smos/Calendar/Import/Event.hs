@@ -7,7 +7,6 @@ module Smos.Calendar.Import.Event where
 import Control.Applicative
 import Data.Aeson
 import Data.Maybe
-import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Static

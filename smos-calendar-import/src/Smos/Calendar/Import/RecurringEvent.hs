@@ -95,7 +95,8 @@ data Recurrence
         --
         -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
         -- so we choose to define it as the union of the recurrence sets defined by the rules.
-        recurrenceRules :: !(Set RRule)
+        recurrenceRules :: !(Set RRule),
+        recurrenceExceptions :: !(Set CalTimestamp)
       }
   deriving (Show, Eq, Generic)
 
@@ -105,7 +106,11 @@ instance YamlSchema Recurrence where
   yamlSchema = objectParser "Recurrence" recurrenceObjectParser
 
 emptyRecurrence :: Recurrence
-emptyRecurrence = Recurrence {recurrenceRules = S.empty}
+emptyRecurrence =
+  Recurrence
+    { recurrenceRules = S.empty,
+      recurrenceExceptions = S.empty
+    }
 
 instance FromJSON Recurrence where
   parseJSON = viaYamlSchema
@@ -114,7 +119,14 @@ instance ToJSON Recurrence where
   toJSON = object . recurrenceToObject
 
 recurrenceObjectParser :: ObjectParser Recurrence
-recurrenceObjectParser = Recurrence <$> optionalFieldWithDefault' "rrule" S.empty
+recurrenceObjectParser =
+  Recurrence
+    <$> optionalFieldWithDefault' "rrule" S.empty
+    <*> optionalFieldWithDefault' "exceptions" S.empty
 
 recurrenceToObject :: Recurrence -> [Pair]
-recurrenceToObject Recurrence {..} = ["rrule" .= recurrenceRules | not (S.null recurrenceRules)]
+recurrenceToObject Recurrence {..} =
+  concat
+    [ ["rrule" .= recurrenceRules | not (S.null recurrenceRules)],
+      ["exceptions" .= recurrenceExceptions | not (S.null recurrenceExceptions)]
+    ]

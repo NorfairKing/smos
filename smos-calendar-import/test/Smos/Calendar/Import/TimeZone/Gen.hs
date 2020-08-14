@@ -4,7 +4,7 @@ module Smos.Calendar.Import.TimeZone.Gen where
 
 import Data.GenValidity
 import Data.GenValidity.Text ()
-import Smos.Calendar.Import.RecurrenceRule.Gen
+import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.TimeZone
 import Smos.Data.Gen ()
 

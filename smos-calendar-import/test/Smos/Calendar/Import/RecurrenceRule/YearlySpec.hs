@@ -17,7 +17,6 @@ spec :: Spec
 spec = do
   let d = fromGregorian
   let l = LocalTime
-  let t = TimeOfDay
   let yearlyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg bh bi bj =
         headMay $ yearlyDateTimeRecurrence start lim i ba bb bc bd be bf bg bh bi bj
   let yearlyDateNextRecurrence start lim i ba bb bc bd be bf bg =

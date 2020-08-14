@@ -55,13 +55,25 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
-      recurringEventRecurrence = pickRecurrence veRRule
+      recurringEventRecurrence = pickRecurrence veRRule veExDate
    in case veStatus of
         Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
         _ -> Just RecurringEvent {..}
 
-pickRecurrence :: Set ICal.RRule -> Recurrence
-pickRecurrence veRRule = Recurrence {recurrenceRules = pickRRule veRRule}
+pickRecurrence :: Set ICal.RRule -> Set ICal.ExDate -> Recurrence
+pickRecurrence veRRule veExDate =
+  Recurrence
+    { recurrenceRules = pickRRule veRRule,
+      recurrenceExceptions = pickExDate veExDate
+    }
+
+pickExDate :: Set ICal.ExDate -> Set CalTimestamp
+pickExDate = S.unions . map go . S.toList
+  where
+    go :: ICal.ExDate -> Set CalTimestamp
+    go = \case
+      ICal.ExDates sd _ -> S.map (CalDate . pickDate) sd
+      ICal.ExDateTimes sdt _ -> S.map (CalDateTime . pickDateTime) sdt
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case

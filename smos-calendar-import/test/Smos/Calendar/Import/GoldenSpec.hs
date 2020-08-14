@@ -52,8 +52,8 @@ mkGoldenTestFor cp = do
 mkGoldenTest :: Path Abs File -> VCalendar -> Spec
 mkGoldenTest cp cals = do
   ProcessConf {..} <- runIO $ do
-    cp <- replaceExtension ".config" cp
-    mpc <- readConfigFile cp
+    confP <- replaceExtension ".config" cp
+    mpc <- readConfigFile confP
     case mpc of
       Nothing -> die $ "No process conf for golden test: " <> fromAbsFile cp
       Just pc -> pure pc

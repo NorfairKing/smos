@@ -1,0 +1,53 @@
+zones:
+  Europe/Zurich:
+  - rules:
+    - frequency: Yearly
+      day:
+      - day: sunday
+        pos: -1
+      interval: 1
+      month:
+      - March
+      week-start: monday
+    start: 1970-03-29 02:00:00
+    to: 120
+    from: 60
+  - rules:
+    - frequency: Yearly
+      day:
+      - day: sunday
+        pos: -1
+      interval: 1
+      month:
+      - October
+      week-start: monday
+    start: 1970-10-25 03:00:00
+    to: 60
+    from: 120
+events:
+- summary: Training
+  events:
+  - start:
+      local: 2020-02-25 18:00:00
+      zone: Europe/Zurich
+    end:
+      local: 2020-02-25 20:00:00
+      zone: Europe/Zurich
+  - start:
+      local: 2020-03-03 18:00:00
+      zone: Europe/Zurich
+    end:
+      local: 2020-03-03 20:00:00
+      zone: Europe/Zurich
+  - start:
+      local: 2020-03-10 18:00:00
+      zone: Europe/Zurich
+    end:
+      local: 2020-03-10 20:00:00
+      zone: Europe/Zurich
+  - start:
+      local: 2020-03-17 18:00:00
+      zone: Europe/Zurich
+    end:
+      local: 2020-03-17 20:00:00
+      zone: Europe/Zurich

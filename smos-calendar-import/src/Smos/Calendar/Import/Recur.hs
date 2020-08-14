@@ -5,11 +5,11 @@
 module Smos.Calendar.Import.Recur where
 
 import Control.Monad.Reader
+import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurringEvent
-import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 
@@ -50,10 +50,10 @@ recurMUnresolvedTimestamps :: Recurrence -> Maybe CalTimestamp -> Maybe CalEndDu
 recurMUnresolvedTimestamps recurrence mstart mend = case (mstart, mend) of
   (Nothing, Nothing) -> pure [(Nothing, Nothing)] -- One occurrence, just to make sure we don't miss any events even if they're weird...
   (Just start, Nothing) -> do
-    starts <- recurCalTimestamp recurrence start
+    starts <- S.toAscList <$> recurCalTimestamp recurrence start
     pure $ (,) <$> (Just <$> starts) <*> pure Nothing
   (Nothing, Just end) -> do
-    ends <- recurCalEndDuration recurrence end
+    ends <- S.toAscList <$> recurCalEndDuration recurrence end
     pure $ (,) Nothing <$> (Just <$> ends)
   (Just start, Just end) -> do
     tups <- recurUnresolvedTimestamps recurrence start end
@@ -61,7 +61,7 @@ recurMUnresolvedTimestamps recurrence mstart mend = case (mstart, mend) of
 
 recurUnresolvedTimestamps :: Recurrence -> CalTimestamp -> CalEndDuration -> R [(CalTimestamp, CalEndDuration)]
 recurUnresolvedTimestamps recurrence start end = do
-  starts <- recurCalTimestamp recurrence start
+  starts <- S.toAscList <$> recurCalTimestamp recurrence start
   pure $ expandEnds starts end
   where
     expandEnds :: [CalTimestamp] -> CalEndDuration -> [(CalTimestamp, CalEndDuration)]
@@ -104,40 +104,42 @@ recurUnresolvedTimestamps recurrence start end = do
           UTC utct -> UTC $ addUTCTime ndt utct
           Zoned lt tzid -> Zoned (addLocalTime ndt lt) tzid
 
-recurCalEndDuration :: Recurrence -> CalEndDuration -> R [CalEndDuration]
+recurCalEndDuration :: Recurrence -> CalEndDuration -> R (Set CalEndDuration)
 recurCalEndDuration recurrence = \case
-  CalTimestamp cts -> fmap CalTimestamp <$> recurCalTimestamp recurrence cts
-  CalDuration i -> pure [CalDuration i]
+  CalTimestamp cts -> S.map CalTimestamp <$> recurCalTimestamp recurrence cts
+  CalDuration i -> pure $ S.singleton $ CalDuration i
 
-recurCalTimestamp :: Recurrence -> CalTimestamp -> R [CalTimestamp]
-recurCalTimestamp recurrence = \case
-  CalDateTime cdt -> fmap CalDateTime <$> recurCalDateTime recurrence cdt
-  CalDate dt -> fmap CalDate <$> recurDate recurrence dt
+recurCalTimestamp :: Recurrence -> CalTimestamp -> R (Set CalTimestamp)
+recurCalTimestamp Recurrence {..} cts = do
+  posSet <- case cts of
+    CalDateTime cdt -> S.map CalDateTime <$> recurCalDateTime recurrenceRules cdt
+    CalDate dt -> S.map CalDate <$> recurDate recurrenceRules dt
+  pure $ posSet `S.difference` recurrenceExceptions
 
-recurCalDateTime :: Recurrence -> CalDateTime -> R [CalDateTime]
-recurCalDateTime recurrence = \case
-  Floating lt -> fmap Floating <$> recurLocalTime recurrence lt
-  UTC utct -> fmap UTC <$> recurUTCTime recurrence utct
+recurCalDateTime :: Set RRule -> CalDateTime -> R (Set CalDateTime)
+recurCalDateTime rules = \case
+  Floating lt -> S.map Floating <$> recurLocalTime rules lt
+  UTC utct -> S.map UTC <$> recurUTCTime rules utct
   Zoned lt tzid -> do
-    lts <- recurLocalTime recurrence lt
-    pure $ Zoned <$> lts <*> pure tzid
+    lts <- recurLocalTime rules lt
+    pure $ S.map (`Zoned` tzid) lts
 
-recurUTCTime :: Recurrence -> UTCTime -> R [UTCTime]
-recurUTCTime recurrence utct = do
+recurUTCTime :: Set RRule -> UTCTime -> R (Set UTCTime)
+recurUTCTime rules utct = do
   let lt = utcToLocalTime utc utct
-  lts <- recurLocalTime recurrence lt
-  pure $ localTimeToUTC utc <$> lts
+  lts <- recurLocalTime rules lt
+  pure $ S.map (localTimeToUTC utc) lts
 
-recurLocalTime :: Recurrence -> LocalTime -> R [LocalTime]
-recurLocalTime Recurrence {..} lt = do
+recurLocalTime :: Set RRule -> LocalTime -> R (Set LocalTime)
+recurLocalTime rules lt = do
   limit <- asks recurCtxLimit
-  pure $ S.toAscList $ S.unions
-    $ flip map (S.toList recurrenceRules)
+  pure $ S.unions
+    $ flip map (S.toList rules)
     $ \rrule -> rruleDateTimeOccurrencesUntil lt rrule limit
 
-recurDate :: Recurrence -> Day -> R [Day]
-recurDate Recurrence {..} d = do
+recurDate :: Set RRule -> Day -> R (Set Day)
+recurDate rules d = do
   limit <- asks recurCtxLimit
-  pure $ S.toAscList $ S.unions
-    $ flip map (S.toList recurrenceRules)
+  pure $ S.unions
+    $ flip map (S.toList rules)
     $ \rrule -> rruleDateOccurrencesUntil d rrule $ localDay limit

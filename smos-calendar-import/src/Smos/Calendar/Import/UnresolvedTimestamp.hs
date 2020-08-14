@@ -15,7 +15,7 @@ import YamlParse.Applicative
 data CalEndDuration
   = CalTimestamp CalTimestamp
   | CalDuration Int -- Seconds
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity CalEndDuration
 
@@ -37,7 +37,7 @@ instance ToJSON CalEndDuration where
 data CalTimestamp
   = CalDate Day
   | CalDateTime CalDateTime
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity CalTimestamp
 
@@ -61,7 +61,7 @@ data CalDateTime
   = Floating LocalTime
   | UTC UTCTime
   | Zoned LocalTime TimeZoneId
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity CalDateTime
 
