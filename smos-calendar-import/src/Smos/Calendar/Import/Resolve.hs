@@ -56,13 +56,12 @@ type R = Reader RecurCtx
 
 resolveEventGroup :: UnresolvedEventGroup -> R Events
 resolveEventGroup UnresolvedEventGroup {..} = do
-  let eventsTitle = unresolvedEventGroupTitle
+  let eventsStatic = unresolvedEventGroupStatic
   events <- mapM resolveEvent unresolvedEvents
   pure Events {..}
 
 resolveEvent :: UnresolvedEvent -> R Event
 resolveEvent UnresolvedEvent {..} = do
-  let eventStatic = unresolvedEventStatic
   eventStart <- mapM resolveStart unresolvedEventStart
   eventEnd <- case unresolvedEventEnd of
     Just ced -> resolveEndDuration eventStart ced

@@ -80,13 +80,11 @@ zones:
     to: -300
     from: -240
 events:
-- events:
-  - summary: Summary
-    start:
+- summary: Summary
+  events:
+  - start:
       local: 1996-09-18 14:30:00
       zone: America/New_York
     end:
       local: 1996-09-18 14:30:00
       zone: America/New_York
-  title: Summary
-

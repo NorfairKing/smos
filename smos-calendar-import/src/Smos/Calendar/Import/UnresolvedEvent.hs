@@ -52,8 +52,8 @@ instance ToJSON UnresolvedEvents where
 
 data UnresolvedEventGroup
   = UnresolvedEventGroup
-      { unresolvedEventGroupTitle :: Maybe Text,
-        unresolvedEvents :: [UnresolvedEvent]
+      { unresolvedEventGroupStatic :: !Static,
+        unresolvedEvents :: ![UnresolvedEvent]
       }
   deriving (Show, Eq, Generic)
 
@@ -64,27 +64,26 @@ instance YamlSchema UnresolvedEventGroup where
     alternatives
       [ objectParser "UnresolvedEventGroup" $
           UnresolvedEventGroup
-            <$> optionalField' "title"
+            <$> staticObjectParser
             <*> optionalFieldWithDefault' "events" [],
-        UnresolvedEventGroup Nothing <$> yamlSchema
+        UnresolvedEventGroup emptyStatic <$> yamlSchema
       ]
 
 instance FromJSON UnresolvedEventGroup where
   parseJSON = viaYamlSchema
 
 instance ToJSON UnresolvedEventGroup where
-  toJSON UnresolvedEventGroup {..} = case unresolvedEventGroupTitle of
-    Nothing -> toJSON unresolvedEvents
-    Just title ->
-      object
-        [ "title" .= title,
-          "events" .= unresolvedEvents
-        ]
+  toJSON UnresolvedEventGroup {..} = case staticToObject unresolvedEventGroupStatic of
+    [] -> toJSON unresolvedEvents
+    ps ->
+      object $
+        ps
+          ++ [ "events" .= unresolvedEvents
+             ]
 
 data UnresolvedEvent
   = UnresolvedEvent
-      { unresolvedEventStatic :: !Static,
-        unresolvedEventStart :: !(Maybe CalTimestamp),
+      { unresolvedEventStart :: !(Maybe CalTimestamp),
         unresolvedEventEnd :: !(Maybe CalEndDuration)
       }
   deriving (Show, Eq, Generic)
@@ -95,8 +94,7 @@ instance YamlSchema UnresolvedEvent where
   yamlSchema =
     objectParser "UnresolvedEvent" $
       UnresolvedEvent
-        <$> staticObjectParser
-        <*> optionalField' "start"
+        <$> optionalField' "start"
         <*> optionalField' "end"
 
 instance FromJSON UnresolvedEvent where
@@ -105,8 +103,7 @@ instance FromJSON UnresolvedEvent where
 instance ToJSON UnresolvedEvent where
   toJSON UnresolvedEvent {..} =
     object $
-      staticToObject unresolvedEventStatic
-        ++ concat
-          [ ["start" .= s | s <- maybeToList unresolvedEventStart],
-            ["end" .= e | e <- maybeToList unresolvedEventEnd]
-          ]
+      concat
+        [ ["start" .= s | s <- maybeToList unresolvedEventStart],
+          ["end" .= e | e <- maybeToList unresolvedEventEnd]
+        ]

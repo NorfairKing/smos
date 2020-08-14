@@ -31,8 +31,7 @@ type R = Reader RecurCtx
 
 recurEvent :: RecurringEvent -> R UnresolvedEventGroup
 recurEvent RecurringEvent {..} = do
-  let unresolvedEventStatic = recurringEventStatic
-      unresolvedEventGroupTitle = staticSummary recurringEventStatic
+  let unresolvedEventGroupStatic = recurringEventStatic
   if S.null recurringEventRRules
     then do
       let unresolvedEventStart = recurringEventStart

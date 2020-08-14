@@ -15,21 +15,23 @@ renderAllEvents :: [Events] -> SmosFile
 renderAllEvents = SmosFile . map renderEvents
 
 renderEvents :: Events -> Tree Entry
-renderEvents Events {..} = Node (newEntry $ fromMaybe "Invalid title" $ eventsTitle >>= header) $ map (toNode . renderEvent) events
+renderEvents Events {..} =
+  Node ((newEntry h) {entryContents = mc}) $
+    map (toNode . renderEvent h) events
   where
+    Static {..} = eventsStatic
+    h = fromMaybe "Event without Summary" $ staticSummary >>= header
+    mc = case staticDescription of
+      Nothing -> Nothing
+      Just "" -> Nothing
+      Just desc -> Just $ fromMaybe "invalid description" $ contents desc
     toNode :: a -> Tree a
     toNode a = Node a []
 
-renderEvent :: Event -> Entry
-renderEvent ev@Event {..} =
-  let Static {..} = eventStatic
-      h = fromMaybe "Event without Summary" $ staticSummary >>= header
-      mc = case staticDescription of
-        Nothing -> Nothing
-        Just "" -> Nothing
-        Just desc -> Just $ fromMaybe "invalid description" $ contents desc
-      ts = renderTimestamps ev
-   in (newEntry h) {entryContents = mc, entryTimestamps = ts}
+renderEvent :: Header -> Event -> Entry
+renderEvent h ev@Event {..} =
+  let ts = renderTimestamps ev
+   in (newEntry h) {entryTimestamps = ts}
 
 renderTimestamps :: Event -> Map TimestampName Timestamp
 renderTimestamps Event {..} =

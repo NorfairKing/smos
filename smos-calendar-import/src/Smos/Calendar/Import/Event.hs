@@ -17,7 +17,7 @@ import YamlParse.Applicative
 -- A collection of events from the same recurrence set
 data Events
   = Events
-      { eventsTitle :: !(Maybe Text),
+      { eventsStatic :: !Static,
         events :: ![Event]
       }
   deriving (Show, Eq, Generic)
@@ -29,27 +29,26 @@ instance YamlSchema Events where
     alternatives
       [ objectParser "Events" $
           Events
-            <$> optionalField' "title"
+            <$> staticObjectParser
             <*> optionalFieldWithDefault' "events" [],
-        Events Nothing <$> yamlSchema
+        Events emptyStatic <$> yamlSchema
       ]
 
 instance FromJSON Events where
   parseJSON = viaYamlSchema
 
 instance ToJSON Events where
-  toJSON Events {..} = case eventsTitle of
-    Nothing -> toJSON events
-    Just title ->
-      object
-        [ "title" .= title,
-          "events" .= events
-        ]
+  toJSON Events {..} = case staticToObject eventsStatic of
+    [] -> toJSON events
+    sps ->
+      object $
+        sps
+          ++ [ "events" .= events
+             ]
 
 data Event
   = Event
-      { eventStatic :: !Static,
-        eventStart :: !(Maybe Timestamp),
+      { eventStart :: !(Maybe Timestamp),
         eventEnd :: !(Maybe Timestamp)
       }
   deriving (Show, Eq, Generic)
@@ -67,8 +66,7 @@ instance YamlSchema Event where
   yamlSchema =
     objectParser "Event" $
       Event
-        <$> staticObjectParser
-        <*> optionalField' "start"
+        <$> optionalField' "start"
         <*> optionalField' "end"
 
 instance FromJSON Event where
@@ -77,8 +75,7 @@ instance FromJSON Event where
 instance ToJSON Event where
   toJSON Event {..} =
     object $
-      staticToObject eventStatic
-        ++ concat
-          [ ["start" .= s | s <- maybeToList eventStart],
-            ["end" .= e | e <- maybeToList eventEnd]
-          ]
+      concat
+        [ ["start" .= s | s <- maybeToList eventStart],
+          ["end" .= e | e <- maybeToList eventEnd]
+        ]

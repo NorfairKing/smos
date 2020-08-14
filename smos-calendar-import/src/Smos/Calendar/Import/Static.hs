@@ -48,3 +48,6 @@ staticToObject Static {..} =
     [ ["summary" .= s | s <- maybeToList staticSummary],
       ["description" .= d | d <- maybeToList staticDescription]
     ]
+
+emptyStatic :: Static
+emptyStatic = Static {staticSummary = Nothing, staticDescription = Nothing}

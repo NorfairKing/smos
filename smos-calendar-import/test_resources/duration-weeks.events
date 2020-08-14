@@ -1,5 +1,4 @@
-- events:
-  - summary: Summary
-    start: 1996-09-18 14:30:00
+- summary: Summary
+  events:
+  - start: 1996-09-18 14:30:00
     end: 1996-11-06 14:30:00
-  title: Summary

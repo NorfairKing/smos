@@ -1,6 +1,5 @@
-- events:
-  - summary: Summary
-    start:
+- summary: Summary
+  events:
+  - start:
       floating: 1996-09-18 14:30:00
     end: 1314020
-  title: Summary

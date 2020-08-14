@@ -1,4 +1,4 @@
-- entry: Invalid title
+- entry: Event without Summary
   forest:
   - header: Event without Summary
     timestamps:
