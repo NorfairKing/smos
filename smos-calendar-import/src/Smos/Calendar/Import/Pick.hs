@@ -21,7 +21,7 @@ pickEvents = map pickEventsFromCalendar
 
 pickEventsFromCalendar :: ICal.VCalendar -> RecurringEvents
 pickEventsFromCalendar ICal.VCalendar {..} =
-  let recurringEvents = map pickEventFromVEvent $ M.elems vcEvents
+  let recurringEvents = mapMaybe pickEventFromVEvent $ M.elems vcEvents
       recurringEventsTimeZones = M.map pickTimeZoneHistory $ M.mapKeys (TimeZoneId . LT.toStrict) vcTimeZones
    in RecurringEvents {..}
 
@@ -44,7 +44,7 @@ pickTimeZoneProp ICal.TZProp {..} =
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset
 pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)
 
-pickEventFromVEvent :: ICal.VEvent -> RecurringEvent
+pickEventFromVEvent :: ICal.VEvent -> Maybe RecurringEvent
 pickEventFromVEvent ICal.VEvent {..} =
   let staticSummary = LT.toStrict . ICal.summaryValue <$> veSummary
       staticDescription = LT.toStrict . ICal.descriptionValue <$> veDescription
@@ -52,7 +52,9 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
       recurringEventRRules = pickRRule veRRule
-   in RecurringEvent {..}
+   in case veStatus of
+        Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
+        _ -> Just RecurringEvent {..}
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case
