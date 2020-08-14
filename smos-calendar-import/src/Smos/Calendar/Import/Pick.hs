@@ -55,10 +55,13 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
-      recurringEventRRules = pickRRule veRRule
+      recurringEventRecurrence = pickRecurrence veRRule
    in case veStatus of
         Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
         _ -> Just RecurringEvent {..}
+
+pickRecurrence :: Set ICal.RRule -> Recurrence
+pickRecurrence veRRule = Recurrence {recurrenceRules = pickRRule veRRule}
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case

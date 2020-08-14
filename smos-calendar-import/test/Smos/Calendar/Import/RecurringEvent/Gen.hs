@@ -18,3 +18,7 @@ instance GenValid RecurringEvents where
 instance GenValid RecurringEvent where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally
+
+instance GenValid Recurrence where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally

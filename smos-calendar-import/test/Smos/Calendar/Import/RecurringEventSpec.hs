@@ -17,3 +17,5 @@ spec = do
   jsonSpecOnValid @RecurringEvents
   genValidSpec @RecurringEvent
   jsonSpecOnValid @RecurringEvent
+  genValidSpec @Recurrence
+  jsonSpecOnValid @Recurrence

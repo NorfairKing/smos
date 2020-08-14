@@ -32,36 +32,36 @@ type R = Reader RecurCtx
 recurEvent :: RecurringEvent -> R UnresolvedEventGroup
 recurEvent RecurringEvent {..} = do
   let unresolvedEventGroupStatic = recurringEventStatic
-  if S.null recurringEventRRules
+  if recurringEventRecurrence == emptyRecurrence
     then do
       let unresolvedEventStart = recurringEventStart
       let unresolvedEventEnd = recurringEventEnd
       let unresolvedEvents = [UnresolvedEvent {..}]
       pure UnresolvedEventGroup {..}
     else do
-      unresolvedEvents <- fmap concat $ forM (S.toList recurringEventRRules) $ \rrule -> do
-        tups <- recurMUnresolvedTimestamps rrule recurringEventStart recurringEventEnd
+      unresolvedEvents <- do
+        tups <- recurMUnresolvedTimestamps recurringEventRecurrence recurringEventStart recurringEventEnd
         pure $ do
           (unresolvedEventStart, unresolvedEventEnd) <- tups
           pure UnresolvedEvent {..}
       pure UnresolvedEventGroup {..}
 
-recurMUnresolvedTimestamps :: RRule -> Maybe CalTimestamp -> Maybe CalEndDuration -> R [(Maybe CalTimestamp, Maybe CalEndDuration)]
-recurMUnresolvedTimestamps rrule mstart mend = case (mstart, mend) of
+recurMUnresolvedTimestamps :: Recurrence -> Maybe CalTimestamp -> Maybe CalEndDuration -> R [(Maybe CalTimestamp, Maybe CalEndDuration)]
+recurMUnresolvedTimestamps recurrence mstart mend = case (mstart, mend) of
   (Nothing, Nothing) -> pure [(Nothing, Nothing)] -- One occurrence, just to make sure we don't miss any events even if they're weird...
   (Just start, Nothing) -> do
-    starts <- recurCalTimestamp rrule start
+    starts <- recurCalTimestamp recurrence start
     pure $ (,) <$> (Just <$> starts) <*> pure Nothing
   (Nothing, Just end) -> do
-    ends <- recurCalEndDuration rrule end
+    ends <- recurCalEndDuration recurrence end
     pure $ (,) Nothing <$> (Just <$> ends)
   (Just start, Just end) -> do
-    tups <- recurUnresolvedTimestamps rrule start end
+    tups <- recurUnresolvedTimestamps recurrence start end
     pure $ map (\(a, b) -> (Just a, Just b)) tups
 
-recurUnresolvedTimestamps :: RRule -> CalTimestamp -> CalEndDuration -> R [(CalTimestamp, CalEndDuration)]
-recurUnresolvedTimestamps rrule start end = do
-  starts <- recurCalTimestamp rrule start
+recurUnresolvedTimestamps :: Recurrence -> CalTimestamp -> CalEndDuration -> R [(CalTimestamp, CalEndDuration)]
+recurUnresolvedTimestamps recurrence start end = do
+  starts <- recurCalTimestamp recurrence start
   pure $ expandEnds starts end
   where
     expandEnds :: [CalTimestamp] -> CalEndDuration -> [(CalTimestamp, CalEndDuration)]
@@ -104,36 +104,40 @@ recurUnresolvedTimestamps rrule start end = do
           UTC utct -> UTC $ addUTCTime ndt utct
           Zoned lt tzid -> Zoned (addLocalTime ndt lt) tzid
 
-recurCalEndDuration :: RRule -> CalEndDuration -> R [CalEndDuration]
-recurCalEndDuration rrule = \case
-  CalTimestamp cts -> fmap CalTimestamp <$> recurCalTimestamp rrule cts
+recurCalEndDuration :: Recurrence -> CalEndDuration -> R [CalEndDuration]
+recurCalEndDuration recurrence = \case
+  CalTimestamp cts -> fmap CalTimestamp <$> recurCalTimestamp recurrence cts
   CalDuration i -> pure [CalDuration i]
 
-recurCalTimestamp :: RRule -> CalTimestamp -> R [CalTimestamp]
-recurCalTimestamp rrule = \case
-  CalDateTime cdt -> fmap CalDateTime <$> recurCalDateTime rrule cdt
-  CalDate dt -> fmap CalDate <$> recurDate rrule dt
+recurCalTimestamp :: Recurrence -> CalTimestamp -> R [CalTimestamp]
+recurCalTimestamp recurrence = \case
+  CalDateTime cdt -> fmap CalDateTime <$> recurCalDateTime recurrence cdt
+  CalDate dt -> fmap CalDate <$> recurDate recurrence dt
 
-recurCalDateTime :: RRule -> CalDateTime -> R [CalDateTime]
-recurCalDateTime rrule = \case
-  Floating lt -> fmap Floating <$> recurLocalTime rrule lt
-  UTC utct -> fmap UTC <$> recurUTCTime rrule utct
+recurCalDateTime :: Recurrence -> CalDateTime -> R [CalDateTime]
+recurCalDateTime recurrence = \case
+  Floating lt -> fmap Floating <$> recurLocalTime recurrence lt
+  UTC utct -> fmap UTC <$> recurUTCTime recurrence utct
   Zoned lt tzid -> do
-    lts <- recurLocalTime rrule lt
+    lts <- recurLocalTime recurrence lt
     pure $ Zoned <$> lts <*> pure tzid
 
-recurUTCTime :: RRule -> UTCTime -> R [UTCTime]
-recurUTCTime rrule utct = do
+recurUTCTime :: Recurrence -> UTCTime -> R [UTCTime]
+recurUTCTime recurrence utct = do
   let lt = utcToLocalTime utc utct
-  lts <- recurLocalTime rrule lt
+  lts <- recurLocalTime recurrence lt
   pure $ localTimeToUTC utc <$> lts
 
-recurLocalTime :: RRule -> LocalTime -> R [LocalTime]
-recurLocalTime rrule lt = do
+recurLocalTime :: Recurrence -> LocalTime -> R [LocalTime]
+recurLocalTime Recurrence {..} lt = do
   limit <- asks recurCtxLimit
-  pure $ S.toAscList $ rruleDateTimeOccurrencesUntil lt rrule limit
+  pure $ S.toAscList $ S.unions
+    $ flip map (S.toList recurrenceRules)
+    $ \rrule -> rruleDateTimeOccurrencesUntil lt rrule limit
 
-recurDate :: RRule -> Day -> R [Day]
-recurDate rrule d = do
+recurDate :: Recurrence -> Day -> R [Day]
+recurDate Recurrence {..} d = do
   limit <- asks recurCtxLimit
-  pure $ S.toAscList $ rruleDateOccurrencesUntil d rrule $ localDay limit
+  pure $ S.toAscList $ S.unions
+    $ flip map (S.toList recurrenceRules)
+    $ \rrule -> rruleDateOccurrencesUntil d rrule $ localDay limit

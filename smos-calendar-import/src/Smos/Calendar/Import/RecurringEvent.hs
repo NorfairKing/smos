@@ -5,6 +5,7 @@
 module Smos.Calendar.Import.RecurringEvent where
 
 import Data.Aeson
+import Data.Aeson.Types
 import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -52,18 +53,7 @@ data RecurringEvent
       { recurringEventStatic :: !Static,
         recurringEventStart :: !(Maybe CalTimestamp),
         recurringEventEnd :: !(Maybe CalEndDuration),
-        -- | We use a set here instead of a Maybe because the spec says:
-        --
-        -- >  ; The following is OPTIONAL,
-        -- >  ; but SHOULD NOT occur more than once.
-        -- >  ;
-        -- >  rrule /
-        --
-        -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
-        --
-        -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
-        -- so we choose to define it as the union of the recurrence sets defined by the rules.
-        recurringEventRRules :: !(Set RRule)
+        recurringEventRecurrence :: !Recurrence
       }
   deriving (Show, Eq, Generic)
 
@@ -76,7 +66,7 @@ instance YamlSchema RecurringEvent where
         <$> staticObjectParser
         <*> optionalField' "start"
         <*> optionalField' "end"
-        <*> optionalFieldWithDefault' "rrule" S.empty
+        <*> recurrenceObjectParser
 
 instance FromJSON RecurringEvent where
   parseJSON = viaYamlSchema
@@ -89,5 +79,42 @@ instance ToJSON RecurringEvent where
           [ [ "start" .= recurringEventStart,
               "end" .= recurringEventEnd
             ],
-            ["rrule" .= recurringEventRRules | not (S.null recurringEventRRules)]
+            recurrenceToObject recurringEventRecurrence
           ]
+
+data Recurrence
+  = Recurrence
+      { -- | We use a set here instead of a Maybe because the spec says:
+        --
+        -- >  ; The following is OPTIONAL,
+        -- >  ; but SHOULD NOT occur more than once.
+        -- >  ;
+        -- >  rrule /
+        --
+        -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
+        --
+        -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
+        -- so we choose to define it as the union of the recurrence sets defined by the rules.
+        recurrenceRules :: !(Set RRule)
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity Recurrence
+
+instance YamlSchema Recurrence where
+  yamlSchema = objectParser "Recurrence" recurrenceObjectParser
+
+emptyRecurrence :: Recurrence
+emptyRecurrence = Recurrence {recurrenceRules = S.empty}
+
+instance FromJSON Recurrence where
+  parseJSON = viaYamlSchema
+
+instance ToJSON Recurrence where
+  toJSON = object . recurrenceToObject
+
+recurrenceObjectParser :: ObjectParser Recurrence
+recurrenceObjectParser = Recurrence <$> optionalFieldWithDefault' "rrule" S.empty
+
+recurrenceToObject :: Recurrence -> [Pair]
+recurrenceToObject Recurrence {..} = ["rrule" .= recurrenceRules | not (S.null recurrenceRules)]
