@@ -14,19 +14,9 @@ import Data.Time
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.RecurrenceRule
+import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 import YamlParse.Applicative
-
-newtype TimeZoneId = TimeZoneId Text -- Unique id of the timezone
-  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
-
-instance Validity TimeZoneId
-
-instance YamlKeySchema TimeZoneId where
-  yamlKeySchema = TimeZoneId <$> yamlKeySchema
-
-instance YamlSchema TimeZoneId where
-  yamlSchema = TimeZoneId <$> yamlSchema
 
 newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
   deriving (Show, Eq, Generic)
@@ -53,7 +43,8 @@ data TimeZoneHistoryRule
       { timeZoneHistoryRuleStart :: !LocalTime, -- In the timezone at the time
         timeZoneHistoryRuleOffsetFrom :: !UTCOffset,
         timeZoneHistoryRuleOffsetTo :: !UTCOffset,
-        timeZoneHistoryRuleRRules :: !(Set RRule)
+        timeZoneHistoryRuleRRules :: !(Set RRule),
+        timeZoneHistoryRuleRDates :: !(Set CalRDate)
       }
   deriving (Show, Eq, Ord, Generic)
 
@@ -67,6 +58,7 @@ instance YamlSchema TimeZoneHistoryRule where
         <*> requiredField' "from"
         <*> requiredField' "to"
         <*> optionalFieldWithDefault' "rules" S.empty
+        <*> optionalFieldWithDefault' "rdates" S.empty
 
 instance FromJSON TimeZoneHistoryRule where
   parseJSON = viaYamlSchema
@@ -80,6 +72,8 @@ instance ToJSON TimeZoneHistoryRule where
             "to" .= timeZoneHistoryRuleOffsetTo
           ],
           [ "rules" .= timeZoneHistoryRuleRRules | not (S.null timeZoneHistoryRuleRRules)
+          ],
+          [ "rdates" .= timeZoneHistoryRuleRDates | not (S.null timeZoneHistoryRuleRDates)
           ]
         ]
 

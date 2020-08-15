@@ -29,6 +29,8 @@ zones:
   - start: 1974-01-06 02:00:00
     to: -240
     from: -300
+    rdates:
+    - floating: 1975-02-23 02:00:00
   - rules:
     - frequency: Yearly
       day:

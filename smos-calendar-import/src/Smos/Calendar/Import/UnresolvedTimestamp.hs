@@ -1,14 +1,16 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Calendar.Import.UnresolvedTimestamp where
 
 import Data.Aeson
+import Data.String
+import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import GHC.Generics
-import Smos.Calendar.Import.TimeZone
 import Smos.Data
 import YamlParse.Applicative
 
@@ -126,10 +128,21 @@ instance FromJSON CalDateTime where
 
 instance ToJSON CalDateTime where
   toJSON = \case
-    Floating lt -> object ["floating" .= formatTime defaultTimeLocale timestampLocalTimeFormat lt]
+    Floating lt -> toJSON $ formatTime defaultTimeLocale timestampLocalTimeFormat lt
     UTC utct -> object ["utc" .= formatTime defaultTimeLocale timestampLocalTimeFormat utct]
     Zoned lt tzid ->
       object
         [ "local" .= formatTime defaultTimeLocale timestampLocalTimeFormat lt,
           "zone" .= tzid
         ]
+
+newtype TimeZoneId = TimeZoneId Text -- Unique id of the timezone
+  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
+
+instance Validity TimeZoneId
+
+instance YamlKeySchema TimeZoneId where
+  yamlKeySchema = TimeZoneId <$> yamlKeySchema
+
+instance YamlSchema TimeZoneId where
+  yamlSchema = TimeZoneId <$> yamlSchema

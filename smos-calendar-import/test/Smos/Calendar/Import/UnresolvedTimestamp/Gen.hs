@@ -5,7 +5,6 @@ module Smos.Calendar.Import.UnresolvedTimestamp.Gen where
 import Data.GenValidity
 import Data.GenValidity.Text ()
 import Smos.Calendar.Import.Static.Gen ()
-import Smos.Calendar.Import.TimeZone.Gen ()
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data.Gen ()
 
@@ -26,5 +25,9 @@ instance GenValid CalTimestamp where
   genValid = genValidStructurally
 
 instance GenValid CalDateTime where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
+instance GenValid TimeZoneId where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally

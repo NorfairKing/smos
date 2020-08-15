@@ -23,3 +23,5 @@ spec = do
   jsonSpecOnValid @CalTimestamp
   genValidSpec @CalDateTime
   jsonSpecOnValid @CalDateTime
+  genValidSpec @TimeZoneId
+  jsonSpecOnValid @TimeZoneId

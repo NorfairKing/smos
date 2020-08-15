@@ -115,10 +115,15 @@ chooseRuleToApply lt (TimeZoneHistory rules) =
 
 ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime (UTCOffset, UTCOffset)
 ruleRecurrences limit TimeZoneHistoryRule {..} =
-  let s = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
-   in if S.null s -- If there is no recurrence, just use the rule by itself
-        then M.singleton timeZoneHistoryRuleStart (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)
-        else M.fromSet (const (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)) s
+  -- Always have the start
+  let start = M.singleton timeZoneHistoryRuleStart (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)
+      rRuleSet = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
+      toUTCMap = M.fromSet (const (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo))
+      onlyLocalTime = \case
+        CalRTimestamp (CalDateTime (Floating lt)) -> Just lt
+        _ -> Nothing
+      rDateSet = S.fromList $ mapMaybe onlyLocalTime $ S.toList timeZoneHistoryRuleRDates
+   in M.union start $ toUTCMap $ S.union rRuleSet rDateSet
 
 resolveZonedTimeWithRule :: TimeZone -> LocalTime -> LocalTime -> UTCOffset -> UTCOffset -> LocalTime
 resolveZonedTimeWithRule tz lt start from to =

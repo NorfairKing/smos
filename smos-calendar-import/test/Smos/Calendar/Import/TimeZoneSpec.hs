@@ -13,8 +13,6 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
-  genValidSpec @TimeZoneId
-  jsonSpecOnValid @TimeZoneId
   genValidSpec @TimeZoneHistory
   jsonSpecOnValid @TimeZoneHistory
   genValidSpec @TimeZoneHistoryRule

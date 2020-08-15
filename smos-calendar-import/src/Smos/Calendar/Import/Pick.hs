@@ -40,6 +40,7 @@ pickTimeZoneProp ICal.TZProp {..} =
       timeZoneHistoryRuleOffsetFrom = pickUTCOffset tzpTZOffsetFrom
       timeZoneHistoryRuleOffsetTo = pickUTCOffset tzpTZOffsetTo
       timeZoneHistoryRuleRRules = pickRRule tzpRRule
+      timeZoneHistoryRuleRDates = pickRDates tzpRDate
    in TimeZoneHistoryRule {..}
 
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset

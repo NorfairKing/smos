@@ -1,0 +1,20 @@
+zones:
+  Foo:
+  - start: 2000-01-01 05:00:00
+    to: -60
+    from: 60
+    rdates:
+    - 2000-03-01 05:00:00
+  - start: 2000-02-01 05:00:00
+    to: 60
+    from: -60
+    rdates:
+    - 2000-02-01 05:00:00
+events:
+- summary: Summary
+  start:
+    local: 2000-03-01 02:00:00
+    zone: Foo
+  end:
+    local: 2000-03-01 08:00:00
+    zone: Foo
