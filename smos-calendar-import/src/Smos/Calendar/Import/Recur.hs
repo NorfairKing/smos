@@ -6,6 +6,7 @@ module Smos.Calendar.Import.Recur where
 
 import Control.Monad.Reader
 import Data.Either
+import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
@@ -21,7 +22,8 @@ recurRecurringEvents :: LocalTime -> RecurringEvents -> UnresolvedEvents
 recurRecurringEvents limit RecurringEvents {..} =
   let ctx = RecurCtx {recurCtxLimit = limit}
    in flip runReader ctx $ do
-        unresolvedEventGroups <- mapM recurEvent recurringEvents
+        unresolvedEventGroups <- fmap (S.fromList . concat) $ forM (M.toList recurringEvents) $ \(_, res) -> do
+          mapM recurEvent $ S.toList res
         let unresolvedEventsTimeZones = recurringEventsTimeZones
         pure UnresolvedEvents {..}
 

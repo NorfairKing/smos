@@ -118,7 +118,7 @@ readGoldenSmosFile sfp actual = do
             T.unpack (TE.decodeUtf8 (smosFileYamlBS actual))
           ]
     Just errOrSmosFile -> case errOrSmosFile of
-      Left err -> die $ "Failed to parse smos file: " <> err
+      Left err -> die $ unlines ["Failed to parse smos file: ", fromAbsFile sfp, err]
       Right smosFile -> pure smosFile
 
 readGoldenYaml :: (FromJSON a, ToJSON a, YamlSchema a) => Path Abs File -> a -> IO a

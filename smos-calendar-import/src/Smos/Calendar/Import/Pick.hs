@@ -8,6 +8,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Set (Set)
+import Data.Text (Text)
 import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
@@ -22,7 +23,7 @@ pickEvents = map pickEventsFromCalendar
 
 pickEventsFromCalendar :: ICal.VCalendar -> RecurringEvents
 pickEventsFromCalendar ICal.VCalendar {..} =
-  let recurringEvents = mapMaybe pickEventFromVEvent $ M.elems vcEvents
+  let recurringEvents = M.fromListWith S.union $ map (\(k, v) -> (k, S.singleton v)) $ mapMaybe pickEventFromVEvent $ M.elems vcEvents
       recurringEventsTimeZones = M.map pickTimeZoneHistory $ M.mapKeys (TimeZoneId . LT.toStrict) vcTimeZones
    in RecurringEvents {..}
 
@@ -46,7 +47,7 @@ pickTimeZoneProp ICal.TZProp {..} =
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset
 pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)
 
-pickEventFromVEvent :: ICal.VEvent -> Maybe RecurringEvent
+pickEventFromVEvent :: ICal.VEvent -> Maybe (Text, RecurringEvent)
 pickEventFromVEvent ICal.VEvent {..} =
   let staticSummary = LT.toStrict . ICal.summaryValue <$> veSummary
       staticDescription = case LT.toStrict . ICal.descriptionValue <$> veDescription of
@@ -59,7 +60,7 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventRecurrence = pickRecurrence veRRule veExDate veRDate
    in case veStatus of
         Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
-        _ -> Just RecurringEvent {..}
+        _ -> Just (LT.toStrict $ ICal.uidValue veUID, RecurringEvent {..})
 
 pickRecurrence :: Set ICal.RRule -> Set ICal.ExDate -> Set ICal.RDate -> Recurrence
 pickRecurrence veRRule veExDate veRDate =

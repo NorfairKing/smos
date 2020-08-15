@@ -10,6 +10,8 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Text as T
+import Data.Text (Text)
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.RecurrenceRule
@@ -20,7 +22,7 @@ import YamlParse.Applicative
 
 data RecurringEvents
   = RecurringEvents
-      { recurringEvents :: [RecurringEvent],
+      { recurringEvents :: Map Text (Set RecurringEvent),
         recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
       }
   deriving (Show, Eq, Generic)
@@ -31,13 +33,19 @@ instance Validity RecurringEvents
 
 instance YamlSchema RecurringEvents where
   yamlSchema =
-    alternatives
-      [ objectParser "RecurringEvents" $
-          RecurringEvents
-            <$> requiredField' "events"
-            <*> optionalFieldWithDefault' "zones" M.empty,
-        RecurringEvents <$> yamlSchema <*> pure M.empty
-      ]
+    let eventsSchema :: YamlParser (Map Text (Set RecurringEvent))
+        eventsSchema =
+          alternatives
+            [ yamlSchema,
+              M.fromList . zipWith (\i e -> (T.pack (show (i :: Word)), S.singleton e)) [0 ..] <$> yamlSchema
+            ]
+     in alternatives
+          [ objectParser "RecurringEvents" $
+              RecurringEvents
+                <$> requiredFieldWith' "events" eventsSchema
+                <*> optionalFieldWithDefault' "zones" M.empty,
+            RecurringEvents <$> eventsSchema <*> pure M.empty
+          ]
 
 instance FromJSON RecurringEvents where
   parseJSON = viaYamlSchema
@@ -55,7 +63,7 @@ data RecurringEvent
         recurringEventEnd :: !(Maybe CalEndDuration),
         recurringEventRecurrence :: !Recurrence
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity RecurringEvent
 
@@ -99,7 +107,7 @@ data Recurrence
         recurrenceExceptions :: !(Set CalTimestamp),
         recurrenceRDates :: !(Set CalRDate)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Recurrence
 

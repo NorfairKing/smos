@@ -19,8 +19,8 @@ import YamlParse.Applicative
 
 data UnresolvedEvents
   = UnresolvedEvents
-      { unresolvedEventGroups :: [UnresolvedEventGroup],
-        unresolvedEventsTimeZones :: Map TimeZoneId TimeZoneHistory
+      { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
+        unresolvedEventsTimeZones :: !(Map TimeZoneId TimeZoneHistory)
       }
   deriving (Show, Eq, Generic)
 

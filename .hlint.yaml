@@ -5,6 +5,8 @@
 - ignore:
     name: "Use uncurry"
 - ignore:
+    name: "Use second"
+- ignore:
     name: "Reduce duplication"
 - ignore:
     name: "Redundant do"

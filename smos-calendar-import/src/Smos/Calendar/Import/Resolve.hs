@@ -30,7 +30,7 @@ resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
           { resolveCtxTimeZone = tz,
             resolveCtxTimeZones = unresolvedEventsTimeZones
           }
-   in mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup unresolvedEventGroups) ctx
+   in mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
 
 filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
 filterEvents start end e@Events {..} = case S.filter (filterEvent start end) events of
