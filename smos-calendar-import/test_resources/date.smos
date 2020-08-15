@@ -1,0 +1,6 @@
+- entry: Summary
+  forest:
+  - header: Summary
+    timestamps:
+      BEGIN: 1996-09-18
+      END: 1996-09-20

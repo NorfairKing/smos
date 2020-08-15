@@ -29,10 +29,15 @@ library:
     - path
     - path-io
     - pretty-show
+    - safe
     - smos-data
     - smos-report
     - text
     - time
+    - validity
+    - validity-containers
+    - validity-text
+    - validity-time
     - yaml
     - yamlparse-applicative
 
@@ -49,17 +54,27 @@ tests:
     source-dirs: test
     build-tools: hspec-discover
     dependencies:
+    - QuickCheck
+    - bytestring
     - containers
     - data-default
+    - genvalidity
+    - genvalidity-containers
+    - genvalidity-hspec
+    - genvalidity-hspec-aeson
+    - genvalidity-text
+    - genvalidity-time
     - hspec
-    - iCalendar
     - iCalendar
     - mtl
     - path
     - path-io
+    - pretty-show
+    - safe
     - smos-calendar-import
     - smos-data
+    - smos-data-gen
     - text
     - time
+    - yaml
     - yamlparse-applicative
-    - pretty-show

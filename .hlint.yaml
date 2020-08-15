@@ -5,6 +5,8 @@
 - ignore:
     name: "Use uncurry"
 - ignore:
+    name: "Use second"
+- ignore:
     name: "Reduce duplication"
 - ignore:
     name: "Redundant do"
@@ -35,6 +37,8 @@
       - "Smos.Draw.completedForestNumbersWidget"
       - "Smos.Sync.Client.Contents"
       - "Smos.Sync.Client.isHidden"
+      - "Smos.Calendar.Import.RecurrenceRule.Type"
+      - "Smos.Calendar.Import.RecurrenceRule.Recurrence.Util"
 - ignore:
     name: "Replace case with maybe"
 - ignore:
@@ -42,3 +46,21 @@
     within:
       - "Smos.Docs.Site.Handler.Keybindings"
       - "Smos.OptParse.Types"
+- ignore:
+    name: "Hoist not"
+    within:
+      - "Smos.Calendar.Import.RecurrenceRule"
+      - "Smos.Calendar.Import.RecurrenceRule.Gen"
+- ignore:
+    name: "Use bimap"
+
+- functions:
+  # Disallowed functions
+  - {name: unsafeDupablePerformIO, within: []}
+  - {name: unsafeInterleaveIO, within: []}
+  - {name: unsafeFixIO, within: []}
+  - {name: nub, within: []}
+
+  # Still to add:
+  # - {name: unsafePerformIO, within: []}
+  # - {name: fromIntegral, within: []}

@@ -20,6 +20,7 @@ module Smos.Keys
 where
 
 import Data.Aeson as JSON
+import Data.Containers.ListUtils
 import Data.Either
 import Data.Functor
 import qualified Data.Text as T
@@ -71,7 +72,7 @@ data KeyPress
 
 instance Validity KeyPress where
   validate kp@(KeyPress _ mods) =
-    mconcat [genericValidate kp, declare "Each of the mods appears at most once" $ nub mods == mods]
+    mconcat [genericValidate kp, declare "Each of the mods appears at most once" $ nubOrd mods == mods]
 
 instance ToJSON KeyPress where
   toJSON kp = toJSON $ renderKeyPress kp

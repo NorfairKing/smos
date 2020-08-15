@@ -1,11 +1,11 @@
 let
   pkgs = import ./nix/pkgs.nix;
-  shellHook = (import ./.).pre-commit-check.shellHook;
+  pre-commit-hooks = import ./nix/pre-commit.nix;
 in
 pkgs.mkShell {
   name = "smos-nix-shell";
-  buildInputs = [];
+  buildInputs = pre-commit-hooks.tools;
   shellHook = ''
-    ${shellHook}
+    ${pre-commit-hooks.run.shellHook}
   '';
 }

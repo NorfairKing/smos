@@ -84,10 +84,11 @@ tests:
     - base
     - brick
     - bytestring
+    - containers
     - cursor
-    - cursor-gen
     - cursor-dirforest
     - cursor-dirforest-gen
+    - cursor-gen
     - genvalidity
     - genvalidity-containers
     - genvalidity-hspec
