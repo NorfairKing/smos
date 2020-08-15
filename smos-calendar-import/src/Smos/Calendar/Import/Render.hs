@@ -6,14 +6,15 @@ module Smos.Calendar.Import.Render where
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Tree
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Static
 import Smos.Data
 
-renderAllEvents :: [Events] -> SmosFile
-renderAllEvents = SmosFile . map renderEvents
+renderAllEvents :: Set Events -> SmosFile
+renderAllEvents = SmosFile . map renderEvents . S.toAscList
 
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =

@@ -17,7 +17,6 @@ import Path
 import Smos.Calendar.Import.OptParse
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
-import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.Resolve
 import Smos.Data
@@ -132,7 +131,7 @@ timeZoneFormat = "%z"
 
 processCalendars :: ProcessConf -> [VCalendar] -> SmosFile
 processCalendars ProcessConf {..} cals =
-  let recurringEvents = map pickEventsFromCalendar cals :: [RecurringEvents]
+  let recurringEvents = pickEvents cals
       -- TODO just make the limit a local time.
       start = LocalTime processConfStart midnight
       limit = LocalTime processConfLimit midnight

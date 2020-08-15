@@ -75,7 +75,7 @@ mkGoldenTest cp cals = do
   let actualEvents = resolveUnresolvedEvents (LocalTime processConfStart midnight) (LocalTime processConfLimit midnight) processConfTimeZone actualUnresolvedEvents
   ep <- runIO $ replaceExtension ".events" cp
   expectedEvents <- runIO $ readGoldenYaml ep actualEvents
-  it "recurs the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
+  it "resolves the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
   let actualSmosFile = renderAllEvents actualEvents
   sfp <- runIO $ replaceExtension ".smos" cp
   expectedSmosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile

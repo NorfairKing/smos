@@ -8,8 +8,6 @@ module Smos.Calendar.Import.TimeZone where
 import Data.Aeson
 import qualified Data.Set as S
 import Data.Set (Set)
-import Data.String
-import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import GHC.Generics
@@ -19,7 +17,7 @@ import Smos.Data
 import YamlParse.Applicative
 
 newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity TimeZoneHistory
 

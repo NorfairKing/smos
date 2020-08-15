@@ -6,6 +6,7 @@ module Smos.Calendar.Import.Recur where
 
 import Control.Monad.Reader
 import Data.Either
+import Data.List
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -15,15 +16,15 @@ import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 
-recurEvents :: LocalTime -> [RecurringEvents] -> [UnresolvedEvents]
-recurEvents limit res = map (recurRecurringEvents limit) res
+recurEvents :: LocalTime -> Set RecurringEvents -> Set UnresolvedEvents
+recurEvents limit res = S.map (recurRecurringEvents limit) res
 
 recurRecurringEvents :: LocalTime -> RecurringEvents -> UnresolvedEvents
 recurRecurringEvents limit RecurringEvents {..} =
   let ctx = RecurCtx {recurCtxLimit = limit}
    in flip runReader ctx $ do
-        unresolvedEventGroups <- fmap (S.fromList . concat) $ forM (M.toList recurringEvents) $ \(_, res) -> do
-          mapM recurEvent $ S.toList res
+        unresolvedEventGroups <- fmap (deduplicateBasedOnId . S.unions) $ forM (M.toList recurringEvents) $ \(_, res) ->
+          S.fromList <$> mapM recurEvent (S.toList res)
         let unresolvedEventsTimeZones = recurringEventsTimeZones
         pure UnresolvedEvents {..}
 
@@ -31,6 +32,26 @@ data RecurCtx = RecurCtx {recurCtxLimit :: LocalTime}
   deriving (Show, Eq)
 
 type R = Reader RecurCtx
+
+deduplicateBasedOnId :: Set UnresolvedEventGroup -> Set UnresolvedEventGroup
+deduplicateBasedOnId = snd . foldl' goGroup (S.empty, S.empty) . toSortedList
+  where
+    -- Sort groups by their descending order of their first occurrence.
+    -- The reasoning is that this marks the original version of the event.
+    -- Any changed occurrences that may produce duplicates will have been introduced later.
+    toSortedList :: Set UnresolvedEventGroup -> [UnresolvedEventGroup]
+    toSortedList = sortOn (S.toDescList . unresolvedEvents) . S.toList
+    -- Go through all groups.
+    -- For each group we only keep the events that are not in any other group.
+    -- We will keep the results in the second element of the tuple, and the total collection of the events in the first element
+    goGroup :: (Set UnresolvedEvent, Set UnresolvedEventGroup) -> UnresolvedEventGroup -> (Set UnresolvedEvent, Set UnresolvedEventGroup)
+    goGroup (allEvents, result) ueg =
+      let (allEvents', groupEvents) = foldl' goEvent (allEvents, S.empty) $ S.toAscList $ unresolvedEvents ueg
+          ueg' = UnresolvedEventGroup {unresolvedEventGroupStatic = unresolvedEventGroupStatic ueg, unresolvedEvents = groupEvents}
+          result' = S.insert ueg' result
+       in (allEvents', result')
+    goEvent :: (Set UnresolvedEvent, Set UnresolvedEvent) -> UnresolvedEvent -> (Set UnresolvedEvent, Set UnresolvedEvent)
+    goEvent (allEvents, groupEvents) e = if S.member e allEvents then (allEvents, groupEvents) else (S.insert e allEvents, S.insert e groupEvents)
 
 recurEvent :: RecurringEvent -> R UnresolvedEventGroup
 recurEvent RecurringEvent {..} = do

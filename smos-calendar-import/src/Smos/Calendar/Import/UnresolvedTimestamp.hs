@@ -10,7 +10,7 @@ import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
-import GHC.Generics
+import GHC.Generics (Generic)
 import Smos.Data
 import YamlParse.Applicative
 

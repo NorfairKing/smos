@@ -10,6 +10,7 @@ import Control.Monad.Reader
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import GHC.Generics (Generic)
@@ -20,17 +21,17 @@ import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
-resolveEvents :: LocalTime -> LocalTime -> TimeZone -> [UnresolvedEvents] -> [Events]
-resolveEvents start end tz = concatMap (resolveUnresolvedEvents start end tz)
+resolveEvents :: LocalTime -> LocalTime -> TimeZone -> Set UnresolvedEvents -> Set Events
+resolveEvents start end tz = S.unions . map (resolveUnresolvedEvents start end tz) . S.toList
 
-resolveUnresolvedEvents :: LocalTime -> LocalTime -> TimeZone -> UnresolvedEvents -> [Events]
+resolveUnresolvedEvents :: LocalTime -> LocalTime -> TimeZone -> UnresolvedEvents -> Set Events
 resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
   let ctx =
         RecurCtx
           { resolveCtxTimeZone = tz,
             resolveCtxTimeZones = unresolvedEventsTimeZones
           }
-   in mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
+   in S.fromList $ mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
 
 filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
 filterEvents start end e@Events {..} = case S.filter (filterEvent start end) events of

@@ -21,7 +21,7 @@ data Events
       { eventsStatic :: !Static,
         events :: !(Set Event)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Events
 

@@ -18,8 +18,8 @@ import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
 import qualified Text.ICalendar.Types as ICal
 
-pickEvents :: [ICal.VCalendar] -> [RecurringEvents]
-pickEvents = map pickEventsFromCalendar
+pickEvents :: [ICal.VCalendar] -> Set RecurringEvents
+pickEvents = S.fromList . map pickEventsFromCalendar
 
 pickEventsFromCalendar :: ICal.VCalendar -> RecurringEvents
 pickEventsFromCalendar ICal.VCalendar {..} =

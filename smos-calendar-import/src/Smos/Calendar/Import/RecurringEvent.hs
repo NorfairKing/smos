@@ -25,7 +25,7 @@ data RecurringEvents
       { recurringEvents :: Map Text (Set RecurringEvent),
         recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity RecurringEvents
 

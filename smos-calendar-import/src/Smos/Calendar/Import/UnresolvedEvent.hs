@@ -22,7 +22,7 @@ data UnresolvedEvents
       { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
         unresolvedEventsTimeZones :: !(Map TimeZoneId TimeZoneHistory)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEvents
 
