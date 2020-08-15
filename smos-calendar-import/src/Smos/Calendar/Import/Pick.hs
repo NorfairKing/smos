@@ -83,7 +83,7 @@ pickRDate :: ICal.RDate -> Set CalTimestamp
 pickRDate = \case
   ICal.RDateDates sd _ -> S.map (CalDate . pickDate) sd
   ICal.RDateDateTimes sd _ -> S.map (CalDateTime . pickDateTime) sd
-  rd -> error (show "Periods in RDates are not supported yet.")
+  rd -> error (show ("Periods in RDates are not supported yet.", rd))
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case

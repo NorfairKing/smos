@@ -114,7 +114,7 @@ recurCalTimestamp Recurrence {..} cts = do
   rRuleSet <- case cts of
     CalDateTime cdt -> S.map CalDateTime <$> recurCalDateTime recurrenceRules cdt
     CalDate dt -> S.map CalDate <$> recurDate recurrenceRules dt
-  let posSet = rRuleSet `S.union` recurrenceRDates
+  let posSet = S.singleton cts `S.union` rRuleSet `S.union` recurrenceRDates
   pure $ posSet `S.difference` recurrenceExceptions
 
 recurCalDateTime :: Set RRule -> CalDateTime -> R (Set CalDateTime)
