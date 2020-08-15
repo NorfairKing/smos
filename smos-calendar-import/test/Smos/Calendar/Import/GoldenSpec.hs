@@ -55,7 +55,14 @@ mkGoldenTest cp cals = do
     confP <- replaceExtension ".config" cp
     mpc <- readConfigFile confP
     case mpc of
-      Nothing -> die $ "No process conf for golden test: " <> fromAbsFile cp
+      Nothing ->
+        die $
+          unlines
+            [ "No process conf for golden test:",
+              fromAbsFile cp,
+              "Expected one at:",
+              fromAbsFile confP
+            ]
       Just pc -> pure pc
   let actualRecurringEvents = pickEventsFromCalendar cals
   rp <- runIO $ replaceExtension ".recurring" cp

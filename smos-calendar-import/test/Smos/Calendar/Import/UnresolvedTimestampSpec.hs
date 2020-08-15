@@ -13,6 +13,10 @@ import Test.Validity.Aeson
 
 spec :: Spec
 spec = do
+  genValidSpec @CalRDate
+  jsonSpecOnValid @CalRDate
+  genValidSpec @CalPeriod
+  jsonSpecOnValid @CalPeriod
   genValidSpec @CalEndDuration
   jsonSpecOnValid @CalEndDuration
   genValidSpec @CalTimestamp

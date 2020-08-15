@@ -8,6 +8,8 @@ import Data.Aeson
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.Set as S
+import Data.Set (Set)
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.Static
@@ -52,9 +54,9 @@ instance ToJSON UnresolvedEvents where
 data UnresolvedEventGroup
   = UnresolvedEventGroup
       { unresolvedEventGroupStatic :: !Static,
-        unresolvedEvents :: ![UnresolvedEvent]
+        unresolvedEvents :: !(Set UnresolvedEvent)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEventGroup
 
@@ -64,7 +66,7 @@ instance YamlSchema UnresolvedEventGroup where
       [ objectParser "UnresolvedEventGroup" $
           UnresolvedEventGroup
             <$> staticObjectParser
-            <*> optionalFieldWithDefault' "events" [],
+            <*> optionalFieldWithDefault' "events" S.empty,
         UnresolvedEventGroup emptyStatic <$> yamlSchema
       ]
 
@@ -85,7 +87,7 @@ data UnresolvedEvent
       { unresolvedEventStart :: !(Maybe CalTimestamp),
         unresolvedEventEnd :: !(Maybe CalEndDuration)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEvent
 

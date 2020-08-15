@@ -9,6 +9,14 @@ import Smos.Calendar.Import.TimeZone.Gen ()
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data.Gen ()
 
+instance GenValid CalRDate where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
+instance GenValid CalPeriod where
+  shrinkValid = shrinkValidStructurally
+  genValid = genValidStructurally
+
 instance GenValid CalEndDuration where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally

@@ -6,6 +6,7 @@ module Smos.Calendar.Import.Render where
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.Set as S
 import Data.Tree
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Static
@@ -17,7 +18,7 @@ renderAllEvents = SmosFile . map renderEvents
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
   Node ((newEntry h) {entryContents = mc}) $
-    map (toNode . renderEvent h) events
+    map (toNode . renderEvent h) (S.toAscList events)
   where
     Static {..} = eventsStatic
     h = fromMaybe "Event without Summary" $ staticSummary >>= header

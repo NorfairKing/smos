@@ -76,14 +76,19 @@ pickExDate = S.unions . map go . S.toList
       ICal.ExDates sd _ -> S.map (CalDate . pickDate) sd
       ICal.ExDateTimes sdt _ -> S.map (CalDateTime . pickDateTime) sdt
 
-pickRDates :: Set ICal.RDate -> Set CalTimestamp
+pickRDates :: Set ICal.RDate -> Set CalRDate
 pickRDates = S.unions . map pickRDate . S.toList
 
-pickRDate :: ICal.RDate -> Set CalTimestamp
+pickRDate :: ICal.RDate -> Set CalRDate
 pickRDate = \case
-  ICal.RDateDates sd _ -> S.map (CalDate . pickDate) sd
-  ICal.RDateDateTimes sd _ -> S.map (CalDateTime . pickDateTime) sd
-  rd -> error (show ("Periods in RDates are not supported yet.", rd))
+  ICal.RDateDates sd _ -> S.map (CalRTimestamp . CalDate . pickDate) sd
+  ICal.RDateDateTimes sd _ -> S.map (CalRTimestamp . CalDateTime . pickDateTime) sd
+  ICal.RDatePeriods ps _ -> S.map (CalRPeriod . pickPeriod) ps
+
+pickPeriod :: ICal.Period -> CalPeriod
+pickPeriod = \case
+  ICal.PeriodDates from to -> CalPeriodFromTo (pickDateTime from) (pickDateTime to)
+  ICal.PeriodDuration from dur -> CalPeriodDuration (pickDateTime from) (pickDuration dur)
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case

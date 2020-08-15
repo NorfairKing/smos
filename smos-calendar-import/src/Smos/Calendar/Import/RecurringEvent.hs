@@ -97,7 +97,7 @@ data Recurrence
         -- so we choose to define it as the union of the recurrence sets defined by the rules.
         recurrenceRules :: !(Set RRule),
         recurrenceExceptions :: !(Set CalTimestamp),
-        recurrenceRDates :: !(Set CalTimestamp)
+        recurrenceRDates :: !(Set CalRDate)
       }
   deriving (Show, Eq, Generic)
 

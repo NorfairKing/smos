@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Resolve where
@@ -32,7 +33,7 @@ resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
    in mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup unresolvedEventGroups) ctx
 
 filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
-filterEvents start end e@Events {..} = case filter (filterEvent start end) events of
+filterEvents start end e@Events {..} = case S.filter (filterEvent start end) events of
   [] -> Nothing
   es -> Just $ e {events = es}
 
@@ -57,7 +58,7 @@ type R = Reader RecurCtx
 resolveEventGroup :: UnresolvedEventGroup -> R Events
 resolveEventGroup UnresolvedEventGroup {..} = do
   let eventsStatic = unresolvedEventGroupStatic
-  events <- mapM resolveEvent unresolvedEvents
+  events <- S.fromList <$> mapM resolveEvent (S.toList unresolvedEvents)
   pure Events {..}
 
 resolveEvent :: UnresolvedEvent -> R Event

@@ -12,6 +12,50 @@ import Smos.Calendar.Import.TimeZone
 import Smos.Data
 import YamlParse.Applicative
 
+data CalRDate
+  = CalRTimestamp CalTimestamp
+  | CalRPeriod CalPeriod
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity CalRDate
+
+instance YamlSchema CalRDate where
+  yamlSchema =
+    alternatives
+      [ CalRTimestamp <$> yamlSchema,
+        CalRPeriod <$> yamlSchema
+      ]
+
+instance ToJSON CalRDate where
+  toJSON = \case
+    CalRTimestamp cts -> toJSON cts
+    CalRPeriod cp -> toJSON cp
+
+instance FromJSON CalRDate where
+  parseJSON = viaYamlSchema
+
+data CalPeriod
+  = CalPeriodFromTo CalDateTime CalDateTime
+  | CalPeriodDuration CalDateTime Int -- Seconds
+  deriving (Show, Eq, Ord, Generic)
+
+instance Validity CalPeriod
+
+instance YamlSchema CalPeriod where
+  yamlSchema =
+    alternatives
+      [ objectParser "period" $ CalPeriodFromTo <$> requiredField' "from" <*> requiredField' "to",
+        objectParser "duration" $ CalPeriodDuration <$> requiredField' "from" <*> requiredField' "duration"
+      ]
+
+instance ToJSON CalPeriod where
+  toJSON = \case
+    CalPeriodFromTo from to -> object ["from" .= from, "to" .= to]
+    CalPeriodDuration from dur -> object ["from" .= from, "duration" .= dur]
+
+instance FromJSON CalPeriod where
+  parseJSON = viaYamlSchema
+
 data CalEndDuration
   = CalTimestamp CalTimestamp
   | CalDuration Int -- Seconds

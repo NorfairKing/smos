@@ -7,6 +7,8 @@ module Smos.Calendar.Import.Event where
 import Control.Applicative
 import Data.Aeson
 import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Static
@@ -17,7 +19,7 @@ import YamlParse.Applicative
 data Events
   = Events
       { eventsStatic :: !Static,
-        events :: ![Event]
+        events :: !(Set Event)
       }
   deriving (Show, Eq, Generic)
 
@@ -29,7 +31,7 @@ instance YamlSchema Events where
       [ objectParser "Events" $
           Events
             <$> staticObjectParser
-            <*> optionalFieldWithDefault' "events" [],
+            <*> optionalFieldWithDefault' "events" S.empty,
         Events emptyStatic <$> yamlSchema
       ]
 
@@ -50,7 +52,7 @@ data Event
       { eventStart :: !(Maybe Timestamp),
         eventEnd :: !(Maybe Timestamp)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Event where
   validate e@Event {..} =

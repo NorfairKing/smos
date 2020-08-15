@@ -18,7 +18,7 @@ data Static
       { staticSummary :: !(Maybe Text),
         staticDescription :: !(Maybe Text)
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity Static where
   validate e@Static {..} =
