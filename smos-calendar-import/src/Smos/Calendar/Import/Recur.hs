@@ -111,9 +111,10 @@ recurCalEndDuration recurrence = \case
 
 recurCalTimestamp :: Recurrence -> CalTimestamp -> R (Set CalTimestamp)
 recurCalTimestamp Recurrence {..} cts = do
-  posSet <- case cts of
+  rRuleSet <- case cts of
     CalDateTime cdt -> S.map CalDateTime <$> recurCalDateTime recurrenceRules cdt
     CalDate dt -> S.map CalDate <$> recurDate recurrenceRules dt
+  let posSet = rRuleSet `S.union` recurrenceRDates
   pure $ posSet `S.difference` recurrenceExceptions
 
 recurCalDateTime :: Set RRule -> CalDateTime -> R (Set CalDateTime)

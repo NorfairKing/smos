@@ -96,7 +96,8 @@ data Recurrence
         -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
         -- so we choose to define it as the union of the recurrence sets defined by the rules.
         recurrenceRules :: !(Set RRule),
-        recurrenceExceptions :: !(Set CalTimestamp)
+        recurrenceExceptions :: !(Set CalTimestamp),
+        recurrenceRDates :: !(Set CalTimestamp)
       }
   deriving (Show, Eq, Generic)
 
@@ -109,7 +110,8 @@ emptyRecurrence :: Recurrence
 emptyRecurrence =
   Recurrence
     { recurrenceRules = S.empty,
-      recurrenceExceptions = S.empty
+      recurrenceExceptions = S.empty,
+      recurrenceRDates = S.empty
     }
 
 instance FromJSON Recurrence where
@@ -123,10 +125,12 @@ recurrenceObjectParser =
   Recurrence
     <$> optionalFieldWithDefault' "rrule" S.empty
     <*> optionalFieldWithDefault' "exceptions" S.empty
+    <*> optionalFieldWithDefault' "rdates" S.empty
 
 recurrenceToObject :: Recurrence -> [Pair]
 recurrenceToObject Recurrence {..} =
   concat
     [ ["rrule" .= recurrenceRules | not (S.null recurrenceRules)],
-      ["exceptions" .= recurrenceExceptions | not (S.null recurrenceExceptions)]
+      ["exceptions" .= recurrenceExceptions | not (S.null recurrenceExceptions)],
+      ["rdates" .= recurrenceRDates | not (S.null recurrenceRDates)]
     ]

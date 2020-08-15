@@ -55,16 +55,17 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration
-      recurringEventRecurrence = pickRecurrence veRRule veExDate
+      recurringEventRecurrence = pickRecurrence veRRule veExDate veRDate
    in case veStatus of
         Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
         _ -> Just RecurringEvent {..}
 
-pickRecurrence :: Set ICal.RRule -> Set ICal.ExDate -> Recurrence
-pickRecurrence veRRule veExDate =
+pickRecurrence :: Set ICal.RRule -> Set ICal.ExDate -> Set ICal.RDate -> Recurrence
+pickRecurrence veRRule veExDate veRDate =
   Recurrence
     { recurrenceRules = pickRRule veRRule,
-      recurrenceExceptions = pickExDate veExDate
+      recurrenceExceptions = pickExDate veExDate,
+      recurrenceRDates = pickRDates veRDate
     }
 
 pickExDate :: Set ICal.ExDate -> Set CalTimestamp
@@ -74,6 +75,15 @@ pickExDate = S.unions . map go . S.toList
     go = \case
       ICal.ExDates sd _ -> S.map (CalDate . pickDate) sd
       ICal.ExDateTimes sdt _ -> S.map (CalDateTime . pickDateTime) sdt
+
+pickRDates :: Set ICal.RDate -> Set CalTimestamp
+pickRDates = S.unions . map pickRDate . S.toList
+
+pickRDate :: ICal.RDate -> Set CalTimestamp
+pickRDate = \case
+  ICal.RDateDates sd _ -> S.map (CalDate . pickDate) sd
+  ICal.RDateDateTimes sd _ -> S.map (CalDateTime . pickDateTime) sd
+  rd -> error (show "Periods in RDates are not supported yet.")
 
 pickStart :: ICal.DTStart -> CalTimestamp
 pickStart = \case
