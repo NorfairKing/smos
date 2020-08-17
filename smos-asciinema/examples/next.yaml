@@ -1,0 +1,54 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+file: projects/blog.smos
+input:
+- type: "smos-query next\n"
+- wait: 2000
+- type: "smos projects/blog.smos\n"
+- wait: 2000
+- send: 'e'
+- wait: 500
+- type: "Next-action blogpost\nGoal: Write a blogpost about how to use smos' next-action report"
+- wait: 250
+- send: "\e"
+- wait: 250
+- send: 'tt'
+- wait: 250
+- send: 'E'
+- wait: 250
+- type: "Write an ascii cast for the next-action report"
+- wait: 250
+- send: "\e"
+- wait: 250
+- send: 'tn'
+- wait: 1000
+- send: "q"
+- wait: 250
+- type: "smos-query next\n"
+- wait: 2000
+- type: "smos\n"
+- wait: 500
+- send: "rn"
+- wait: 500
+- send: "j"
+- wait: 250
+- send: "j"
+- wait: 250
+- send: "k"
+- wait: 250
+- send: "k"
+- wait: 250
+- send: "j"
+- wait: 250
+- send: "j"
+- wait: 500
+- send: "\n"
+- wait: 500
+- send: 'td'
+- wait: 1000
+- send: "q"
+- wait: 250
+- type: "smos-query next\n"
+- wait: 2000
+
+
