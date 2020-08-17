@@ -304,7 +304,7 @@ calendar: ${builtins.toJSON calendarCfg}
             };
           Timer =
             {
-              OnCalendar = "daily";
+              OnCalendar = "hourly";
               Persistent = true;
               Unit = "${calendarSmosName}.service";
             };
