@@ -39,7 +39,13 @@ startSmosFileEditorCursor p = do
     let errOrStartingPoint = case mErrOrSF of
           Nothing -> Right Nothing
           Just errOrSF -> Just <$> errOrSF
-    forM errOrStartingPoint $ \startingPoint -> do
+    forM errOrStartingPoint $ \msf -> do
+      -- This is necessary because 'tryLockFile' creates an empty file
+      -- so there is no way to differentiate between an empty file and a
+      -- nonexistent file.
+      -- So we'll just always consider an empty smos file a nonexistent file.
+      -- The assumption is that empty smos files aren't useful anyway.
+      let startingPoint = if msf == Just emptySmosFile then Nothing else msf
       now <- liftIO getCurrentTime
       pure
         SmosFileEditorCursor
