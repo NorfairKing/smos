@@ -9,6 +9,7 @@ import Control.Exception
 import Control.Monad
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as LB
 import Data.Char as Char
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
@@ -20,6 +21,7 @@ import Data.Yaml
 import GHC.IO.Handle
 import Path
 import Path.IO
+import Smos.ASCIInema.Cast
 import Smos.ASCIInema.OptParse.Types
 import Smos.ASCIInema.WindowSize
 import qualified System.Directory as FP
@@ -29,10 +31,24 @@ import System.Posix.IO (stdOutput)
 import System.Process.Typed
 import System.Random
 import System.Timeout
+import Text.Show.Pretty
 import YamlParse.Applicative
 
 record :: RecordSettings -> IO ()
 record rs@RecordSettings {..} = do
+  castBS <- LB.readFile "/home/syd/test.cast"
+  case parseCast castBS of
+    Left err -> die err
+    Right cast -> do
+      pPrint cast
+      let castBS' = renderCast cast
+      if castBS == castBS'
+        then putStrLn "Were the same"
+        else putStrLn "Were different"
+      LB.writeFile "/home/syd/test2.cast" castBS'
+
+record' :: RecordSettings -> IO ()
+record' rs@RecordSettings {..} = do
   mSpec <- readConfigFile recordSetSpecFile
   case mSpec of
     Nothing -> die $ "File does not exist: " <> fromAbsFile recordSetSpecFile
