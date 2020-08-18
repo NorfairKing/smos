@@ -20,6 +20,7 @@ library:
     - aeson
     - async
     - bytestring
+    - conduit
     - containers
     - directory
     - dirforest

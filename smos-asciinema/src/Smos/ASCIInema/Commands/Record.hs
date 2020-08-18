@@ -4,6 +4,7 @@
 
 module Smos.ASCIInema.Commands.Record where
 
+import Conduit
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
@@ -13,8 +14,10 @@ import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import Data.Char as Char
+import qualified Data.Conduit.Combinators as C
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
+import Data.List
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Maybe
@@ -172,8 +175,7 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
           setWindowSize stdOutput (recordSetColumns, recordSetRows)
           start <- getCurrentTime
           putStrLn "Sending commands"
-          doneVar <- newTVarIO False
-          withAsync (outputReader doneVar tMasterHandle) $ \outputReader -> do
+          withAsync (outputReader tMasterHandle) $ \outputReaderAsync -> do
             mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
               sendCommands recordSetWait recordSetMistakes inh $
                 concat
@@ -189,15 +191,14 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                 die "Asciinema got stuck for 60 seconds"
               Just inputEvents -> do
                 putStrLn "Waiting for outputs"
-                atomically $ writeTVar doneVar True
-                outputEvents <- wait outputReader
+                outputEvents <- wait outputReaderAsync
                 putStrLn "got outputs:"
                 pPrint outputEvents
                 pPrint recordSetOutputFile
                 stopProcess p
                 pure $ completeCast rs spec start inputEvents outputEvents
 
-completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> Map UTCTime Text -> Map UTCTime ByteString -> Cast
+completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
 completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
   let dur = undefined
       castHeader =
@@ -214,8 +215,8 @@ completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
       castEvents = interleaveEvents start inputs outputs
    in Cast {..}
 
-interleaveEvents :: UTCTime -> Map UTCTime Text -> Map UTCTime ByteString -> [Event]
-interleaveEvents start inputs outputs = go (M.toAscList inputs) (M.toAscList outputs)
+interleaveEvents :: UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> [Event]
+interleaveEvents start inputs outputs = go (sortOn fst inputs) (sortOn fst outputs)
   where
     go [] [] = []
     go is [] = map (uncurry makeInput) is
@@ -233,25 +234,19 @@ interleaveEvents start inputs outputs = go (M.toAscList inputs) (M.toAscList out
     makeOutput :: UTCTime -> ByteString -> Event
     makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}
 
-sendCommands :: Double -> Bool -> Handle -> [ASCIInemaCommand] -> IO (Map UTCTime Text)
+sendCommands :: Double -> Bool -> Handle -> [ASCIInemaCommand] -> IO [(UTCTime, Text)]
 sendCommands speed mistakes h cs = do
-  var <- newTVarIO M.empty
+  var <- newTVarIO []
   mapM_ (sendAsciinemaCommand speed mistakes h var) cs
   readTVarIO var
 
-outputReader :: TVar Bool -> Handle -> IO (Map UTCTime ByteString)
-outputReader doneVar h = fmap (M.fromList . catMaybes) $ loopUntilFalse doneVar $ do
-  closed <- hIsClosed h
-  if closed
-    then pure Nothing
-    else do
-      now <- getCurrentTime
-      bs <- SB.hGetSome h 1024
-      -- SB.hPutStr stdout bs
-      pure $
-        if SB.null bs
-          then Nothing
-          else Just (now, bs)
+outputReader :: Handle -> IO [(UTCTime, ByteString)]
+outputReader h =
+  runConduit $
+    sourceHandle h .| timerConduit .| sinkList
+  where
+    timerConduit :: MonadIO m => ConduitT i (UTCTime, i) m ()
+    timerConduit = C.mapM $ \i -> (,) <$> liftIO getCurrentTime <*> pure i
 
 loopUntilFalse :: TVar Bool -> IO a -> IO [a]
 loopUntilFalse var func = reverse <$> go []
@@ -284,7 +279,7 @@ instance YamlSchema ASCIInemaCommand where
             <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
       ]
 
-sendAsciinemaCommand :: Double -> Bool -> Handle -> TVar (Map UTCTime Text) -> ASCIInemaCommand -> IO ()
+sendAsciinemaCommand :: Double -> Bool -> Handle -> TVar [(UTCTime, Text)] -> ASCIInemaCommand -> IO ()
 sendAsciinemaCommand speed mistakes h var = go
   where
     go = \case
@@ -292,7 +287,7 @@ sendAsciinemaCommand speed mistakes h var = go
       SendInput s -> do
         now <- getCurrentTime
         hPutStr h s
-        atomically $ modifyTVar' var (M.insert now $ T.pack s)
+        atomically $ modifyTVar' var ((now, T.pack s) :)
         hFlush h
       Type s i ->
         let waitForChar c = do
