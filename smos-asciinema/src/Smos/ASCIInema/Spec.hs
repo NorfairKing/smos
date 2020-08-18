@@ -51,7 +51,9 @@ data Mistakes
 
 inputWriter :: MonadIO m => Speed -> Mistakes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
 inputWriter speed mistakes handle commands =
-  inputConduit speed mistakes commands .| inputDebugConduit .| inputRecorder `fuseUpstream` C.map TE.encodeUtf8 `fuseUpstream` sinkHandle handle
+  inputConduit speed mistakes commands
+    -- .| inputDebugConduit
+    .| inputRecorder `fuseUpstream` C.map TE.encodeUtf8 `fuseUpstream` sinkHandle handle
 
 inputRecorder :: MonadIO m => ConduitT i i m [(UTCTime, i)]
 inputRecorder = go []
@@ -67,7 +69,7 @@ inputRecorder = go []
 
 inputDebugConduit :: MonadIO m => ConduitT Text Text m ()
 inputDebugConduit = C.mapM $ \t -> do
-  -- liftIO $ T.putStrLn $ "Sending input: " <> T.pack (show t)
+  liftIO $ T.putStrLn $ "Sending input: " <> T.pack (show t)
   pure t
 
 inputConduit :: MonadIO m => Speed -> Mistakes -> [ASCIInemaCommand] -> ConduitT () Text m ()

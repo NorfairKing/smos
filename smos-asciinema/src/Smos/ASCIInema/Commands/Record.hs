@@ -157,7 +157,6 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
         Just c -> pure $ shell c
       -- Make sure the output file can be created nicely
       ensureDir $ parent recordSetOutputFile
-      putStrLn "Starting terminal"
       withPseudoTerminal $ \Terminal {..} -> do
         let apc =
               maybe id (setWorkingDir . fromAbsDir) mWorkingDir
@@ -168,10 +167,9 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
         hSetBuffering tMasterHandle NoBuffering
         hSetBuffering tSlaveHandle NoBuffering
         setWindowSize tFd (recordSetColumns, recordSetRows)
-        putStrLn "Starting process"
         withProcessWait apc $ \p -> do
           start <- getCurrentTime
-          putStrLn "Sending commands"
+          outVar <- newTVarIO []
           mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
             let commands =
                   concat
@@ -180,28 +178,15 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                       [SendInput "exit\n" | isNothing asciinemaCommand],
                       [Wait 500]
                     ]
-            concurrently
-              ( runConduit $ do
-                  inputs <- inputWriter recordSetWait recordSetMistakes tMasterHandle commands
-                  liftIO $ putStrLn "Done with input"
-                  pure inputs
-              )
-              ( runConduit $ do
-                  outputs <- outputConduit tMasterHandle
-                  liftIO $ print "Done with output"
-                  pure outputs
-              )
-          putStrLn "Process done."
+            race -- For some reason the output conduit never finishes, so this works.
+              (runConduit $ inputWriter recordSetWait recordSetMistakes tMasterHandle commands)
+              (runConduit $ outputConduit outVar tMasterHandle)
           case mExitedNormally of
             Nothing -> do
               stopProcess p
               die $ unwords ["the recording got stuck for", show asciinemaTimeout, "seconds."]
-            Just (inputEvents, outputEvents) -> do
-              putStrLn "Waiting for outputs"
-              putStrLn "got inputs:"
-              pPrint inputEvents
-              putStrLn "got outputs:"
-              pPrint outputEvents
+            Just (Left inputEvents) -> do
+              outputEvents <- readTVarIO outVar
               pure $ completeCast rs spec start inputEvents outputEvents
 
 completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
@@ -240,49 +225,26 @@ interleaveEvents start inputs outputs = go (sortOn fst inputs) (sortOn fst outpu
     makeOutput :: UTCTime -> ByteString -> Event
     makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}
 
-sendCommands :: Double -> Bool -> Handle -> [ASCIInemaCommand] -> IO [(UTCTime, Text)]
-sendCommands speed mistakes h cs = do
-  var <- newTVarIO []
-  mapM_ (sendAsciinemaCommand speed mistakes h var) cs
-  readTVarIO var
+outputConduit :: MonadIO m => TVar [(UTCTime, ByteString)] -> Handle -> ConduitT () void m ()
+outputConduit outVar h =
+  sourceHandle h
+    --  .| outputDebugConduit
+    .| outputTimerConduit
+    .| outputSink outVar
 
-outputConduit :: MonadIO m => Handle -> ConduitT () void m [(UTCTime, ByteString)]
-outputConduit h = sourceHandle h .| outputDebugConduit .| timerConduit .| sinkList
-  where
-    timerConduit :: MonadIO m => ConduitT i (UTCTime, i) m ()
-    timerConduit = C.mapM $ \i -> (,) <$> liftIO getCurrentTime <*> pure i
+outputSink :: MonadIO m => TVar [(UTCTime, ByteString)] -> ConduitT (UTCTime, ByteString) void m ()
+outputSink outVar = awaitForever $ \t -> do
+  liftIO $ atomically $ modifyTVar' outVar (t :)
+
+outputTimerConduit :: MonadIO m => ConduitT i (UTCTime, i) m ()
+outputTimerConduit = C.mapM $ \i -> (,) <$> liftIO getCurrentTime <*> pure i
 
 outputDebugConduit :: MonadIO m => ConduitT ByteString ByteString m ()
 outputDebugConduit = C.mapM $ \bs -> do
-  liftIO $ SB.putStr bs
-  -- liftIO $ putStrLn $ "Got output: " <> show bs
+  liftIO $ putStrLn $ "Got output: " <> show bs
   pure bs
 
-sendAsciinemaCommand :: Double -> Bool -> Handle -> TVar [(UTCTime, Text)] -> ASCIInemaCommand -> IO ()
-sendAsciinemaCommand speed mistakes h var = go
-  where
-    go = \case
-      Wait i -> waitMilliSeconds speed i
-      SendInput s -> do
-        now <- getCurrentTime
-        hPutStr h s
-        atomically $ modifyTVar' var ((now, T.pack s) :)
-        hFlush h
-      Type s i ->
-        let waitForChar c = do
-              randomDelay <- normalIO' (0, 25) -- Add some random delay to make the typing feel more natural
-              go $ Wait $ round (fromIntegral i * charSpeed c + randomDelay :: Double)
-         in forM_ s $ \c -> do
-              when mistakes $ do
-                -- Make a mistake with a 3% likelihood
-                randomMistake <- (> (97 :: Int)) <$> randomRIO (0, 100) :: IO Bool
-                when randomMistake $ do
-                  let possibleMistakes = validMistakes c
-                  randomIndex <- randomRIO (0, length possibleMistakes - 1) :: IO Int
-                  let c' = possibleMistakes !! randomIndex
-                  waitForChar c'
-                  go $ SendInput [c']
-                  waitForChar '\b'
-                  go $ SendInput ['\b'] -- Backspace
-              waitForChar c
-              go $ SendInput [c]
+outputDisplayConduit :: MonadIO m => ConduitT ByteString ByteString m ()
+outputDisplayConduit = C.mapM $ \bs -> do
+  liftIO $ SB.putStr bs
+  pure bs
