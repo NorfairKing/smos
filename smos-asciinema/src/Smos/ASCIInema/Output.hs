@@ -10,6 +10,11 @@ import qualified Data.Conduit.Combinators as C
 import Data.Time
 import GHC.IO.Handle
 
+data OutputView
+  = NoOutputView
+  | ProgressOutputView
+  | DisplayOutputView
+
 outputConduit :: MonadIO m => TVar [(UTCTime, ByteString)] -> Handle -> ConduitT () void m ()
 outputConduit outVar h =
   sourceHandle h
