@@ -4,11 +4,15 @@
 module Smos.ASCIInema.Cast where
 
 import Data.Aeson as JSON
+import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Lazy.Char8 as LB8
+import Data.List
 import Data.Map (Map)
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import Data.Time
 
 data Cast = Cast {castHeader :: Header, castEvents :: [Event]}
@@ -120,3 +124,22 @@ instance FromJSON Event where
           _ -> fail $ "Unknown event type: " <> typeStr
         pure Event {..}
       _ -> fail $ "Expected a list with three elements, but got: " <> show l
+
+interleaveEvents :: UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> [Event]
+interleaveEvents start inputs outputs = go (sortOn fst inputs) (sortOn fst outputs)
+  where
+    go [] [] = []
+    go is [] = map (uncurry makeInput) is
+    go [] os = map (uncurry makeOutput) os
+    go iss@((it, i) : is) oss@((ot, o) : os) =
+      if it <= ot
+        then makeInput it i : go is oss
+        else makeOutput ot o : go iss os
+    makeTime :: UTCTime -> Double
+    makeTime t =
+      let d = diffUTCTime t start
+       in realToFrac d
+    makeInput :: UTCTime -> Text -> Event
+    makeInput t d = Event {eventTime = makeTime t, eventData = EventInput d}
+    makeOutput :: UTCTime -> ByteString -> Event
+    makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}

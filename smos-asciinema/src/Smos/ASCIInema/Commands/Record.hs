@@ -11,23 +11,21 @@ import Control.Exception
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.Conduit.Combinators as C
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
-import Data.List
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
 import Data.Time
 import Data.Yaml
 import GHC.IO.Handle
 import Path
 import Path.IO
 import Smos.ASCIInema.Cast
+import Smos.ASCIInema.Input
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.Output
 import Smos.ASCIInema.Spec
 import Smos.ASCIInema.Terminal
 import Smos.ASCIInema.WindowSize
@@ -196,46 +194,3 @@ completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
           }
       castEvents = interleaveEvents start inputs outputs
    in Cast {..}
-
-interleaveEvents :: UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> [Event]
-interleaveEvents start inputs outputs = go (sortOn fst inputs) (sortOn fst outputs)
-  where
-    go [] [] = []
-    go is [] = map (uncurry makeInput) is
-    go [] os = map (uncurry makeOutput) os
-    go iss@((it, i) : is) oss@((ot, o) : os) =
-      if it <= ot
-        then makeInput it i : go is oss
-        else makeOutput ot o : go iss os
-    makeTime :: UTCTime -> Double
-    makeTime t =
-      let d = diffUTCTime t start
-       in realToFrac d
-    makeInput :: UTCTime -> Text -> Event
-    makeInput t d = Event {eventTime = makeTime t, eventData = EventInput d}
-    makeOutput :: UTCTime -> ByteString -> Event
-    makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}
-
-outputConduit :: MonadIO m => TVar [(UTCTime, ByteString)] -> Handle -> ConduitT () void m ()
-outputConduit outVar h =
-  sourceHandle h
-    --  .| outputDebugConduit
-    .| outputTimerConduit
-    .| outputSink outVar
-
-outputSink :: MonadIO m => TVar [(UTCTime, ByteString)] -> ConduitT (UTCTime, ByteString) void m ()
-outputSink outVar = awaitForever $ \t -> do
-  liftIO $ atomically $ modifyTVar' outVar (t :)
-
-outputTimerConduit :: MonadIO m => ConduitT i (UTCTime, i) m ()
-outputTimerConduit = C.mapM $ \i -> (,) <$> liftIO getCurrentTime <*> pure i
-
-outputDebugConduit :: MonadIO m => ConduitT ByteString ByteString m ()
-outputDebugConduit = C.mapM $ \bs -> do
-  liftIO $ putStrLn $ "Got output: " <> show bs
-  pure bs
-
-outputDisplayConduit :: MonadIO m => ConduitT ByteString ByteString m ()
-outputDisplayConduit = C.mapM $ \bs -> do
-  liftIO $ SB.putStr bs
-  pure bs

@@ -4,7 +4,7 @@
 module Smos.ASCIInema.OptParse.Types where
 
 import Path
-import Smos.ASCIInema.Spec
+import Smos.ASCIInema.Input
 
 data Arguments = Arguments Command Flags
   deriving (Show, Eq)

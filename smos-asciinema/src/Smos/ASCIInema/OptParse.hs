@@ -11,8 +11,8 @@ import Data.Maybe
 import qualified Env
 import Options.Applicative
 import Path.IO
+import Smos.ASCIInema.Input
 import Smos.ASCIInema.OptParse.Types
-import Smos.ASCIInema.Spec
 import Smos.ASCIInema.WindowSize
 import qualified System.Environment as System
 import System.Posix.IO (stdOutput)
