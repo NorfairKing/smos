@@ -1,14 +1,16 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.ASCIInema.Spec where
 
+import Data.List
 import Data.Yaml
 import YamlParse.Applicative
 
 data ASCIInemaCommand
   = Wait Word -- Milliseconds
   | SendInput String
-  | Type String Int -- Milliseconds
+  | Type String Word -- Milliseconds
   deriving (Show, Eq)
 
 instance FromJSON ASCIInemaCommand where
@@ -24,3 +26,9 @@ instance YamlSchema ASCIInemaCommand where
             <$> requiredField "type" "The input to send"
             <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
       ]
+
+commandDelay :: ASCIInemaCommand -> Word
+commandDelay = \case
+  Wait w -> w
+  SendInput _ -> 0
+  Type s i -> genericLength s * i

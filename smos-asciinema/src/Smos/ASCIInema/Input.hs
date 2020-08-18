@@ -57,16 +57,21 @@ inputDebugConduit = C.mapM $ \t -> do
   liftIO $ T.putStrLn $ "Sending input: " <> T.pack (show t)
   pure t
 
-inputListProgressConduit :: MonadIO m => [a] -> ConduitT i a m ()
-inputListProgressConduit as = do
-  let len = length as
-      lenStrLen = length (show len)
-      showIntWithLen :: Int -> String
-      showIntWithLen = printf ("%" <> show lenStrLen <> "d")
-      progressStr i = concat ["Progress: [", showIntWithLen i, "/", showIntWithLen len, "]"]
-  forM_ (zip as [1 ..]) $ \(a, i) -> do
-    liftIO $ putStrLn $ progressStr i
-    yield a
+inputListProgressConduit :: MonadIO m => [ASCIInemaCommand] -> ConduitT i ASCIInemaCommand m ()
+inputListProgressConduit as = foldM_ go 0 as
+  where
+    totalDelay = sum $ map commandDelay as
+    adjust = (`div` 100)
+    lenStrLen = length (show (adjust totalDelay))
+    showIntWithLen :: Word -> String
+    showIntWithLen w = printf ("%" <> show lenStrLen <> "d") (adjust w)
+    progressStr i = concat ["Progress: [", showIntWithLen i, "/", showIntWithLen totalDelay, "]"]
+    go :: MonadIO m => Word -> ASCIInemaCommand -> ConduitT i ASCIInemaCommand m Word
+    go currentTiming c = do
+      yield c
+      let newTiming = currentTiming + commandDelay c
+      unless (currentTiming == newTiming) $ liftIO $ putStrLn $ progressStr newTiming
+      pure newTiming
 
 inputConduit :: MonadIO m => Speed -> Mistakes -> TerminalAttributes -> ConduitT ASCIInemaCommand Text m ()
 inputConduit speed mistakes attrs = awaitForever go
