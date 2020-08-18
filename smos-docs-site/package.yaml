@@ -45,6 +45,7 @@ library:
   - yamlparse-applicative
   - yesod
   - yesod-static
+  - yesod-static-remote
 
 executables:
   smos-docs-site:

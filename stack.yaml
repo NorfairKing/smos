@@ -189,6 +189,7 @@ extra-deps:
   # nix-sha256: sha256:1ap6xpckj756ap9rgvl6vb3if986zp3f3lgxir7lbq35k9qqib1y
  
 - normaldistribution-1.1.0.3@sha256:2615b784c4112cbf6ffa0e2b55b76790290a9b9dff18a05d8c89aa374b213477,2160
+- yesod-static-remote-0.0.0.0@sha256:075df36680d31ffef635120b198aaf91dc9bd5d69f244a55cea3fc9f2a9dfbc1,1515
 
 allow-newer: true # Because splitmix has a really annoying upper-bound on time<=1.9
 nix:

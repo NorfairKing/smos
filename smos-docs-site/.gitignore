@@ -1,7 +1,5 @@
 .stack-work/
-_cache/
-_site/
+asciinema-player.*
 smos-docs-site.cabal
 *~
 *.aes
-_generated/

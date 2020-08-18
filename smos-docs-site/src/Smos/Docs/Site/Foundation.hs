@@ -9,6 +9,7 @@
 module Smos.Docs.Site.Foundation
   ( module Smos.Docs.Site.Foundation,
     module Smos.Docs.Site.Static,
+    module Smos.Docs.Site.Assets,
     module Smos.Docs.Site.Widget,
     module Yesod,
   )
@@ -17,6 +18,7 @@ where
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
+import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
@@ -37,6 +39,8 @@ instance Yesod App where
           "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
         toWidgetHead
           [hamlet|<link rel="icon" href="https://cs-syd.eu/logo/res/favicon.ico" sizes="32x32" type="image/x-icon">|]
+        addScript $ AssetsStaticR asciinema_player_js
+        addStylesheet $ AssetsStaticR asciinema_player_css
         let menu = $(widgetFile "menu")
         $(widgetFile "default-body")
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
