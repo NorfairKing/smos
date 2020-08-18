@@ -9,6 +9,11 @@ See [the documentation site](https://smos.cs-syd.eu) for more information.
 
 <img src="logo.png" width="200" alt="logo"/>
 
+## Try it out!
+
+There is a demo playground at `smos-docs-site/demo-workflow`.
+You can run `nix-shell` there and try out different things.
+
 ## Hacking on Smos
 
 ### Package overview
