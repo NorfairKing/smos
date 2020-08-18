@@ -30,7 +30,6 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   let recordSetWait = fromMaybe 1 recordFlagWait
   recordSetSpecFile <- resolveFile' recordFlagSpecFile
   recordSetOutputFile <- resolveFile' recordFlagOutputFile
-  recordSetAsciinemaConfigDir <- mapM resolveDir' envAsciinemaConfigDir
   (cols, rows) <- getWindowSize stdOutput
   let recordSetRows = fromMaybe rows recordFlagRows
   let recordSetColumns = fromMaybe cols recordFlagColumns

@@ -48,7 +48,6 @@ data RecordSettings
       { recordSetSpecFile :: Path Abs File,
         recordSetOutputFile :: Path Abs File,
         recordSetWait :: Double,
-        recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir),
         recordSetColumns :: Word,
         recordSetRows :: Word,
         recordSetMistakes :: Mistakes,

@@ -1,6 +1,6 @@
 file: foo.smos
 input:
-- type: "smos foo.smos\n"
+- type: "smos foo.smos\r"
 - wait: 1000
 # Look around in the help page
 - send: '?'

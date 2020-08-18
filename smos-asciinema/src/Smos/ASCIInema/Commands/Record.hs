@@ -164,11 +164,11 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                   concat
                     [ [Wait 500],
                       asciinemaInput,
-                      [SendInput "exit\n" | isNothing asciinemaCommand],
+                      [SendInput "exit\r" | isNothing asciinemaCommand],
                       [Wait 500]
                     ]
             race -- For some reason the output conduit never finishes, so this works.
-              (runConduit $ inputWriter recordSetOutputView recordSetWait recordSetMistakes tMasterHandle commands)
+              (runConduit $ inputWriter recordSetOutputView recordSetWait recordSetMistakes tAttributes tMasterHandle commands)
               (runConduit $ outputConduit recordSetOutputView outVar tMasterHandle)
           case mExitedNormally of
             Nothing -> do

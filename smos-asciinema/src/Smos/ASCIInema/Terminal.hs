@@ -1,4 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.ASCIInema.Terminal where
 
@@ -11,7 +13,8 @@ data Terminal
   = Terminal
       { tMasterHandle :: !Handle,
         tSlaveHandle :: !Handle,
-        tFd :: !Fd
+        tFd :: !Fd,
+        tAttributes :: !TerminalAttributes
       }
 
 withPseudoTerminal ::
@@ -24,14 +27,13 @@ withPseudoTerminal onPseudoTerminal =
         liftIO $ hClose tMasterHandle >> hClose tSlaveHandle
    in bracket openPseudoTerminalHandles closeHandles onPseudoTerminal
 
+deriving instance Show TerminalMode
+
 makePseudoTerminal :: IO Terminal
 makePseudoTerminal = do
   (masterFd, slaveFd) <- openPseudoTerminal
   masterHdl <- fdToHandle masterFd
   slaveHdl <- fdToHandle slaveFd
-  do
-    attrs <- getTerminalAttributes slaveFd
-    let attrs' = withMode attrs EchoErase -- To make sure that backspaces are interpreted correctly
-    setTerminalAttributes slaveFd attrs' Immediately
+  attrs <- getTerminalAttributes slaveFd
   pure $
-    Terminal {tMasterHandle = masterHdl, tSlaveHandle = slaveHdl, tFd = slaveFd}
+    Terminal {tMasterHandle = masterHdl, tSlaveHandle = slaveHdl, tFd = slaveFd, tAttributes = attrs}

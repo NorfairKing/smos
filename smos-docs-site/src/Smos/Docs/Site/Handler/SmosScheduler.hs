@@ -10,11 +10,6 @@ module Smos.Docs.Site.Handler.SmosScheduler
   )
 where
 
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified Data.Text.Encoding as TE
-import Data.Tree
-import Data.Yaml as Yaml
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help

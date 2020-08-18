@@ -6,7 +6,6 @@ module Smos.Docs.Site
 where
 
 import Smos.Docs.Site.Application ()
-import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Foundation
 import System.Environment
 import System.Exit
@@ -21,4 +20,4 @@ smosDocsSite = do
     Just s -> case readMaybe s of
       Nothing -> die "Unable to read port environment variable."
       Just p -> pure p
-  Yesod.warp port App {appAssets = assets}
+  Yesod.warp port App {appAssets = assets, appCasts = casts}

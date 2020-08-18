@@ -6,15 +6,14 @@ title: Features
 
 Smos is a comprehensive system for implementing self-management as a power-user.
 
-<script
-  id="asciicast-348778"
-  src="https://asciinema.org/a/348778.js"
-  async
-  data-autoplay="true"
-  data-loop="1"
-  data-cols="80"
-  data-rows="25">
-  </script>
+<asciinema-player
+  src="/casts/basics.cast"
+  rows="25"
+  cols="80"
+  autoplay="true"
+  preloop="true"
+  loop="true">
+  </asciinema-player>
 
 ## Completely customisable
 

@@ -9,6 +9,7 @@ import Control.Monad
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
 import Data.Conduit.List (sourceList)
+import Data.Maybe
 import Data.Random.Normal
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -18,6 +19,7 @@ import Data.Time
 import Smos.ASCIInema.Output
 import Smos.ASCIInema.Spec
 import System.IO
+import System.Posix.Terminal
 import System.Random
 import Text.Printf
 
@@ -28,14 +30,14 @@ data Mistakes
   | MistakesWithProbability Double
   deriving (Show, Eq)
 
-inputWriter :: MonadIO m => OutputView -> Speed -> Mistakes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
-inputWriter ov speed mistakes handle commands =
+inputWriter :: MonadIO m => OutputView -> Speed -> Mistakes -> TerminalAttributes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
+inputWriter ov speed mistakes attrs handle commands =
   ( \ic -> case ov of
       DebugOutputView -> sourceList commands .| ic .| inputDebugConduit
       ProgressOutputView -> inputListProgressConduit commands .| ic
       _ -> sourceList commands .| ic
   )
-    (inputConduit speed mistakes)
+    (inputConduit speed mistakes attrs)
     .| inputRecorder `fuseUpstream` C.map TE.encodeUtf8 `fuseUpstream` sinkHandle handle
 
 inputRecorder :: MonadIO m => ConduitT i i m [(UTCTime, i)]
@@ -66,14 +68,19 @@ inputListProgressConduit as = do
     liftIO $ putStrLn $ progressStr i
     yield a
 
-inputConduit :: MonadIO m => Speed -> Mistakes -> ConduitT ASCIInemaCommand Text m ()
-inputConduit speed mistakes = awaitForever go
+inputConduit :: MonadIO m => Speed -> Mistakes -> TerminalAttributes -> ConduitT ASCIInemaCommand Text m ()
+inputConduit speed mistakes attrs = awaitForever go
   where
     go :: MonadIO m => ASCIInemaCommand -> ConduitT ASCIInemaCommand Text m ()
     go = \case
       Wait i -> liftIO $ waitMilliSeconds speed i
-      SendInput s -> yield $ T.pack s
+      SendInput s -> yield $ T.pack $ map mapChar s
       Type s i -> typeString s i
+    mapChar :: Char -> Char
+    mapChar c = case c of
+      '\n' -> fromMaybe c $ controlChar attrs EndOfLine
+      '\b' -> fromMaybe c $ controlChar attrs Erase
+      _ -> c
     typeString s i =
       forM_ s $ \c -> do
         randomMistake <- liftIO decideToMakeAMistake

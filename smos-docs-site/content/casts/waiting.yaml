@@ -2,9 +2,9 @@ working-dir: ../../demo-workflow
 workflow-dir: ../../demo-workflow
 file: projects/interviews/cs-syd.smos
 input:
-- type: "smos-query waiting\n"
+- type: "smos-query waiting\r"
 - wait: 2000
-- type: "smos projects/interviews/cs-syd.smos\n"
+- type: "smos projects/interviews/cs-syd.smos\r"
 - wait: 250
 - send: e
 - wait: 500
@@ -30,5 +30,5 @@ input:
 - wait: 500
 - send: "q"
 - wait: 250
-- type: "smos-query waiting\n"
+- type: "smos-query waiting\r"
 - wait: 2000

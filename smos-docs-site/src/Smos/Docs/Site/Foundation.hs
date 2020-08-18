@@ -8,8 +8,9 @@
 
 module Smos.Docs.Site.Foundation
   ( module Smos.Docs.Site.Foundation,
-    module Smos.Docs.Site.Static,
     module Smos.Docs.Site.Assets,
+    module Smos.Docs.Site.Casts,
+    module Smos.Docs.Site.Static,
     module Smos.Docs.Site.Widget,
     module Yesod,
   )
@@ -19,6 +20,7 @@ import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import Smos.Docs.Site.Assets
+import Smos.Docs.Site.Casts
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
@@ -26,7 +28,7 @@ import Text.Read
 import Yesod
 import Yesod.EmbeddedStatic
 
-data App = App {appAssets :: EmbeddedStatic}
+data App = App {appAssets :: EmbeddedStatic, appCasts :: EmbeddedStatic}
 
 mkYesodData "App" $(parseRoutesFile "routes")
 
@@ -49,6 +51,11 @@ getHomeR :: Handler Html
 getHomeR = defaultLayout $ do
   setTitle "Smos Documentation"
   $(widgetFile "home")
+
+getCastsR :: [Text] -> Handler Html
+getCastsR t = do
+  neverExpires
+  redirect $ T.intercalate "/" $ "/casts-static/res" : t
 
 getAssetsR :: [Text] -> Handler Html
 getAssetsR t = do

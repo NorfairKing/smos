@@ -6,7 +6,7 @@ This report shows you all your next actions.
 
 
 <asciinema-player
-  src="/assets/casts/next.cast"
+  src="/casts/next.cast"
   rows="25"
   cols="80"
   autoplay="true"

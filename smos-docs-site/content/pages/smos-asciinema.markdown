@@ -5,15 +5,14 @@ title: The Smos ASCIInema Automation Tool
 This tool exists to automate smos casts for documentation purposes.
 You can use it to produce a cast this:
 
-<script
-  id="asciicast-348778"
-  src="https://asciinema.org/a/348778.js"
-  async
-  data-autoplay="true"
-  data-loop="1"
-  data-cols="80"
-  data-rows="25">
-  </script>
+<asciinema-player
+  src="/casts/example.cast"
+  rows="25"
+  cols="80"
+  autoplay="true"
+  preloop="true"
+  loop="true">
+  </asciinema-player>
 
 from a spec like this:
 
@@ -31,4 +30,5 @@ input:
 - wait: 1000
 ```
 
-See [the examples](https://github.com/NorfairKing/smos/tree/master/smos-asciinema/examples) in the source code.
+See [the examples](https://github.com/NorfairKing/smos/tree/master/smos-asciinema/examples) in the source code,
+as well as [the source code for the casts on this site](https://github.com/NorfairKing/smos/tree/master/smos-docs-site/content/casts).

@@ -46,10 +46,17 @@ let
               url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
               sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
             };
+            # Copy the casts into the right place already so they don't have
+            # to be cast during build.
+            copyCastScript = name: cast: ''
+              cp ${cast} content/casts/${name}.cast
+            '';
+            copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
           in
             ''
               cp ${asciinemaJS} asciinema-player.js
               cp ${asciinemaCSS} asciinema-player.css
+              ${copyCasts}
             '';
 
         # Turn off certain test suites on macos because they generate random
