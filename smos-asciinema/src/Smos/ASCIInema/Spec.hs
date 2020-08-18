@@ -6,12 +6,8 @@ module Smos.ASCIInema.Spec where
 import Conduit
 import Control.Concurrent (threadDelay)
 import Control.Monad
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
-import Data.Conduit.List (sourceList)
-import Data.List
 import Data.Random.Normal
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -122,7 +118,7 @@ inputConduit speed mistakes = awaitForever go
         waitForChar :: MonadIO m => Char -> ConduitT ASCIInemaCommand Text m ()
         waitForChar c = do
           randomDelay <- liftIO $ normalIO' (0, 25) -- Add some random delay to make the typing feel more natural
-          go $ Wait $ round (fromIntegral i + randomDelay :: Double)
+          go $ Wait $ round ((fromIntegral i * charSpeed c) + randomDelay :: Double)
 
 -- | Add a delay multiplier based on what kind of character it is to make the typing feel more natural.
 charSpeed :: Char -> Double

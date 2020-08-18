@@ -19,7 +19,7 @@ data RecordFlags
         recordFlagWait :: Maybe Double,
         recordFlagColumns :: Maybe Word,
         recordFlagRows :: Maybe Word,
-        recordFlagMistakes :: Maybe Bool
+        recordFlagMistakeProbability :: Maybe Mistakes
       }
   deriving (Show, Eq)
 

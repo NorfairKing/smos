@@ -3,7 +3,7 @@
 module Smos.ASCIInema.Terminal where
 
 import System.Posix.IO
-import System.Posix.Terminal (openPseudoTerminal)
+import System.Posix.Terminal
 import System.Posix.Types (Fd)
 import UnliftIO
 
@@ -29,5 +29,9 @@ makePseudoTerminal = do
   (masterFd, slaveFd) <- openPseudoTerminal
   masterHdl <- fdToHandle masterFd
   slaveHdl <- fdToHandle slaveFd
+  do
+    attrs <- getTerminalAttributes slaveFd
+    let attrs' = withMode attrs EchoErase -- To make sure that backspaces are interpreted correctly
+    setTerminalAttributes slaveFd attrs' Immediately
   pure $
     Terminal {tMasterHandle = masterHdl, tSlaveHandle = slaveHdl, tFd = slaveFd}

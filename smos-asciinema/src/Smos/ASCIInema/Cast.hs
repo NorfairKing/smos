@@ -4,16 +4,12 @@
 module Smos.ASCIInema.Cast where
 
 import Data.Aeson as JSON
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Lazy.Char8 as LB8
 import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import Data.Time
-import Text.Printf
 
 data Cast = Cast {castHeader :: Header, castEvents :: [Event]}
   deriving (Show, Eq)

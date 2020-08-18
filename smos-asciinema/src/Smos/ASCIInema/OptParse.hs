@@ -33,9 +33,7 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   (cols, rows) <- getWindowSize stdOutput
   let recordSetRows = fromMaybe rows recordFlagRows
   let recordSetColumns = fromMaybe cols recordFlagColumns
-  let recordSetMistakes = case recordFlagMistakes of
-        Just False -> NoMistakes
-        _ -> MistakesWithProbability 0.03
+  let recordSetMistakes = fromMaybe (MistakesWithProbability 0.03) recordFlagMistakeProbability
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -107,9 +105,11 @@ parseCommandRecord = info parser modifier
 parseWaitFlag :: Parser (Maybe Double)
 parseWaitFlag = optional $ option auto $ mconcat [long "wait", help "The wait-time multiplier", metavar "DOUBLE"]
 
-parseMistakesFlag :: Parser (Maybe Bool)
+parseMistakesFlag :: Parser (Maybe Mistakes)
 parseMistakesFlag =
-  optional $ flag' True (mconcat [long "mistakes", help "Enable mistakes"]) <|> flag' False (mconcat [long "no-mistakes", help "Disable mistakes"])
+  optional $
+    (MistakesWithProbability <$> option auto (mconcat [long "mistakes", help "Enable mistakes"]))
+      <|> flag' NoMistakes (mconcat [long "no-mistakes", help "Disable mistakes"])
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags

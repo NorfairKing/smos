@@ -5,26 +5,19 @@
 module Smos.ASCIInema.Commands.Record where
 
 import Conduit
-import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Exception
-import Control.Monad
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
-import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
 import Data.List
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
 import Data.Maybe
-import Data.Random.Normal
 import Data.Set (Set)
 import qualified Data.Set as S
-import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
@@ -41,12 +34,8 @@ import Smos.ASCIInema.WindowSize
 import qualified System.Directory as FP
 import System.Environment (getEnvironment)
 import System.Exit
-import System.IO
-import System.Posix.IO (handleToFd, stdOutput)
 import System.Process.Typed
-import System.Random
 import System.Timeout
-import Text.Show.Pretty
 import YamlParse.Applicative
 
 record :: RecordSettings -> IO ()
@@ -161,6 +150,8 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
         let apc =
               maybe id (setWorkingDir . fromAbsDir) mWorkingDir
                 $ setEnv env'
+                $ setCreateGroup True
+                $ setNewSession True
                 $ setStdin (useHandleClose tSlaveHandle)
                 $ setStdout (useHandleClose tSlaveHandle)
                 $ setStderr (useHandleClose tSlaveHandle) pc
@@ -185,14 +176,14 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
             Nothing -> do
               stopProcess p
               die $ unwords ["the recording got stuck for", show asciinemaTimeout, "seconds."]
+            Just (Right _) -> die "Should not happen: The outputter finished before the inputter"
             Just (Left inputEvents) -> do
               outputEvents <- readTVarIO outVar
               pure $ completeCast rs spec start inputEvents outputEvents
 
 completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
 completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
-  let dur = undefined
-      castHeader =
+  let castHeader =
         Header
           { headerWidth = recordSetColumns,
             headerHeight = recordSetRows,
