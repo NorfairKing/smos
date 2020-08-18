@@ -10,6 +10,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
+import Data.Conduit.List (sourceList)
 import Data.List
 import Data.Random.Normal
 import qualified Data.Text as T
@@ -20,6 +21,7 @@ import Data.Time
 import Data.Yaml
 import System.IO
 import System.Random
+import Text.Printf
 import YamlParse.Applicative
 
 data ASCIInemaCommand
@@ -51,7 +53,8 @@ data Mistakes
 
 inputWriter :: MonadIO m => Speed -> Mistakes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
 inputWriter speed mistakes handle commands =
-  inputConduit speed mistakes commands
+  inputListProgressConduit commands
+    .| inputConduit speed mistakes
     -- .| inputDebugConduit
     .| inputRecorder `fuseUpstream` C.map TE.encodeUtf8 `fuseUpstream` sinkHandle handle
 
@@ -72,13 +75,21 @@ inputDebugConduit = C.mapM $ \t -> do
   liftIO $ T.putStrLn $ "Sending input: " <> T.pack (show t)
   pure t
 
-inputConduit :: MonadIO m => Speed -> Mistakes -> [ASCIInemaCommand] -> ConduitT () Text m ()
-inputConduit speed mistakes = mapM_ (inputConduitCommand speed mistakes)
+inputListProgressConduit :: MonadIO m => [a] -> ConduitT i a m ()
+inputListProgressConduit as = do
+  let len = length as
+      lenStrLen = length (show len)
+      showIntWithLen :: Int -> String
+      showIntWithLen = printf ("%" <> show lenStrLen <> "d")
+      progressStr i = concat ["Progress: [", showIntWithLen i, "/", showIntWithLen len, "]"]
+  forM_ (zip as [1 ..]) $ \(a, i) -> do
+    liftIO $ putStrLn $ progressStr i
+    yield a
 
-inputConduitCommand :: MonadIO m => Speed -> Mistakes -> ASCIInemaCommand -> ConduitT () Text m ()
-inputConduitCommand speed mistakes = go
+inputConduit :: MonadIO m => Speed -> Mistakes -> ConduitT ASCIInemaCommand Text m ()
+inputConduit speed mistakes = awaitForever go
   where
-    go :: MonadIO m => ASCIInemaCommand -> ConduitT () Text m ()
+    go :: MonadIO m => ASCIInemaCommand -> ConduitT ASCIInemaCommand Text m ()
     go = \case
       Wait i -> liftIO $ waitMilliSeconds speed i
       SendInput s -> yield $ T.pack s
@@ -99,7 +110,7 @@ inputConduitCommand speed mistakes = go
               let accuracy = 1000 :: Int
               randomNum <- randomRIO (0, accuracy)
               pure $ randomNum < round (p * fromIntegral accuracy)
-        makeAMistake :: MonadIO m => Char -> ConduitT () Text m ()
+        makeAMistake :: MonadIO m => Char -> ConduitT ASCIInemaCommand Text m ()
         makeAMistake c = do
           let possibleMistakes = validMistakes c
           randomIndex <- liftIO $ randomRIO (0, length possibleMistakes - 1)
@@ -108,7 +119,7 @@ inputConduitCommand speed mistakes = go
           go $ SendInput [c']
           waitForChar '\b'
           go $ SendInput ['\b'] -- Backspace
-        waitForChar :: MonadIO m => Char -> ConduitT () Text m ()
+        waitForChar :: MonadIO m => Char -> ConduitT ASCIInemaCommand Text m ()
         waitForChar c = do
           randomDelay <- liftIO $ normalIO' (0, 25) -- Add some random delay to make the typing feel more natural
           go $ Wait $ round (fromIntegral i + randomDelay :: Double)
