@@ -39,7 +39,7 @@ data Header
         headerStartTimestamp :: Maybe UTCTime,
         headerDuration :: Maybe Double,
         headerIdleTimeLimit :: Maybe Double,
-        headerCommand :: Maybe Text,
+        headerCommand :: Maybe String,
         headerTitle :: Maybe Text,
         headerEnv :: Maybe (Map String String)
         -- castTheme :: Maybe ColourTheme

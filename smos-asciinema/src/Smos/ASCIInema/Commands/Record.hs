@@ -5,6 +5,8 @@
 module Smos.ASCIInema.Commands.Record where
 
 import Control.Concurrent
+import Control.Concurrent.Async
+import Control.Concurrent.STM
 import Control.Exception
 import Control.Monad
 import qualified Data.ByteString as SB
@@ -13,21 +15,30 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Char as Char
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as M
 import Data.Maybe
 import Data.Random.Normal
 import Data.Set (Set)
 import qualified Data.Set as S
+import qualified Data.Text as T
+import Data.Text (Text)
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
+import Data.Time
 import Data.Yaml
 import GHC.IO.Handle
 import Path
 import Path.IO
 import Smos.ASCIInema.Cast
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.Terminal
 import Smos.ASCIInema.WindowSize
 import qualified System.Directory as FP
 import System.Environment (getEnvironment)
 import System.Exit
-import System.Posix.IO (stdOutput)
+import System.IO
+import System.Posix.IO (handleToFd, stdOutput)
 import System.Process.Typed
 import System.Random
 import System.Timeout
@@ -36,23 +47,12 @@ import YamlParse.Applicative
 
 record :: RecordSettings -> IO ()
 record rs@RecordSettings {..} = do
-  castBS <- LB.readFile "/home/syd/test.cast"
-  case parseCast castBS of
-    Left err -> die err
-    Right cast -> do
-      pPrint cast
-      let castBS' = renderCast cast
-      if castBS == castBS'
-        then putStrLn "Were the same"
-        else putStrLn "Were different"
-      LB.writeFile "/home/syd/test2.cast" castBS'
-
-record' :: RecordSettings -> IO ()
-record' rs@RecordSettings {..} = do
   mSpec <- readConfigFile recordSetSpecFile
   case mSpec of
     Nothing -> die $ "File does not exist: " <> fromAbsFile recordSetSpecFile
-    Just s -> runASCIInema rs recordSetSpecFile s
+    Just s -> do
+      cast <- runASCIInema rs recordSetSpecFile s
+      LB.writeFile (fromAbsFile recordSetOutputFile) (renderCast cast)
 
 data ASCIInemaSpec
   = ASCIInemaSpec
@@ -129,8 +129,8 @@ restoreFile = \case
     ensureDir p
     DF.write p df (\p_ bs -> SB.writeFile (fromAbsFile p_) bs)
 
-runASCIInema :: RecordSettings -> Path Abs File -> ASCIInemaSpec -> IO ()
-runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
+runASCIInema :: RecordSettings -> Path Abs File -> ASCIInemaSpec -> IO Cast
+runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
   let parentDir = parent specFilePath
   mWorkingDir <- mapM (resolveDir parentDir) asciinemaWorkingDir
   let dirToResolveFiles = fromMaybe parentDir mWorkingDir
@@ -143,43 +143,126 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
       let env' =
             concat
               [ env,
-                [ ("ASCIINEMA_CONFIG_HOME", maybe ".config" fromAbsDir recordSetAsciinemaConfigDir)
-                ],
                 [("SMOS_WORKFLOW_DIR", fromAbsDir p) | p <- maybeToList mWorkflowDir]
               ]
-      let apc =
-            maybe id (setWorkingDir . fromAbsDir) mWorkingDir
-              $ setEnv env'
-              $ setStdin createPipe
-              $ setStdout inherit
-              $ proc "asciinema"
-              $ concat
-                [ [ "rec",
-                    "--stdin",
-                    "--yes",
-                    "--quiet",
-                    "--overwrite",
-                    fromAbsFile recordSetOutputFile,
-                    "--env=SMOS_WORKFLOW_DIR",
-                    "--env=TERM"
-                  ],
-                  maybe [] (\c -> ["--command", c]) asciinemaCommand
-                ]
+      pc <- case asciinemaCommand of
+        Nothing ->
+          case lookup "SHELL" env of
+            Nothing -> die "No shell configured"
+            Just s -> pure $ proc s []
+        Just c -> pure $ shell c
       -- Make sure the output file can be created nicely
       ensureDir $ parent recordSetOutputFile
-      withProcessWait apc $ \p -> do
-        setWindowSize stdOutput (recordSetColumns, recordSetRows)
-        mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
-          let h = getStdin p
-          hSetBuffering h NoBuffering
-          sendAsciinemaCommand recordSetWait recordSetMistakes h $ Wait 1
-          mapM_ (sendAsciinemaCommand recordSetWait recordSetMistakes h) asciinemaInput
-          when (isNothing asciinemaCommand) $ hPutStr h "exit\n"
-        case mExitedNormally of
-          Nothing -> do
-            stopProcess p
-            die "Asciinema got stuck for 60 seconds"
-          Just () -> pure ()
+      putStrLn "Starting terminal"
+      withPseudoTerminal $ \Terminal {..} -> do
+        let apc =
+              maybe id (setWorkingDir . fromAbsDir) mWorkingDir
+                $ setEnv env'
+                $ setStdin (useHandleClose tSlaveHandle)
+                $ setStdout (useHandleClose tSlaveHandle)
+                $ setStderr
+                  (useHandleClose tSlaveHandle)
+                  pc
+        putStrLn "Starting process"
+        withProcessWait apc $ \p -> do
+          let inh = tSlaveHandle
+          let outh = tSlaveHandle
+          hSetBuffering outh NoBuffering
+          hSetBuffering inh NoBuffering
+          setWindowSize stdOutput (recordSetColumns, recordSetRows)
+          start <- getCurrentTime
+          putStrLn "Sending commands"
+          doneVar <- newTVarIO False
+          withAsync (outputReader doneVar tMasterHandle) $ \outputReader -> do
+            mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
+              sendCommands recordSetWait recordSetMistakes inh $
+                concat
+                  [ [Wait 1],
+                    asciinemaInput,
+                    [SendInput "exit\n"],
+                    [Wait 1]
+                  ]
+            putStrLn "Process done."
+            case mExitedNormally of
+              Nothing -> do
+                stopProcess p
+                die "Asciinema got stuck for 60 seconds"
+              Just inputEvents -> do
+                putStrLn "Waiting for outputs"
+                atomically $ writeTVar doneVar True
+                outputEvents <- wait outputReader
+                putStrLn "got outputs:"
+                pPrint outputEvents
+                pPrint recordSetOutputFile
+                stopProcess p
+                pure $ completeCast rs spec start inputEvents outputEvents
+
+completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> Map UTCTime Text -> Map UTCTime ByteString -> Cast
+completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
+  let dur = undefined
+      castHeader =
+        Header
+          { headerWidth = recordSetColumns,
+            headerHeight = recordSetRows,
+            headerStartTimestamp = Just start,
+            headerDuration = Nothing,
+            headerIdleTimeLimit = Nothing,
+            headerCommand = asciinemaCommand,
+            headerTitle = Nothing,
+            headerEnv = Nothing
+          }
+      castEvents = interleaveEvents start inputs outputs
+   in Cast {..}
+
+interleaveEvents :: UTCTime -> Map UTCTime Text -> Map UTCTime ByteString -> [Event]
+interleaveEvents start inputs outputs = go (M.toAscList inputs) (M.toAscList outputs)
+  where
+    go [] [] = []
+    go is [] = map (uncurry makeInput) is
+    go [] os = map (uncurry makeOutput) os
+    go iss@((it, i) : is) oss@((ot, o) : os) =
+      if it <= ot
+        then makeInput it i : go is oss
+        else makeOutput ot o : go iss os
+    makeTime :: UTCTime -> Double
+    makeTime t =
+      let d = diffUTCTime t start
+       in realToFrac d
+    makeInput :: UTCTime -> Text -> Event
+    makeInput t d = Event {eventTime = makeTime t, eventData = EventInput d}
+    makeOutput :: UTCTime -> ByteString -> Event
+    makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}
+
+sendCommands :: Double -> Bool -> Handle -> [ASCIInemaCommand] -> IO (Map UTCTime Text)
+sendCommands speed mistakes h cs = do
+  var <- newTVarIO M.empty
+  mapM_ (sendAsciinemaCommand speed mistakes h var) cs
+  readTVarIO var
+
+outputReader :: TVar Bool -> Handle -> IO (Map UTCTime ByteString)
+outputReader doneVar h = fmap (M.fromList . catMaybes) $ loopUntilFalse doneVar $ do
+  closed <- hIsClosed h
+  if closed
+    then pure Nothing
+    else do
+      now <- getCurrentTime
+      bs <- SB.hGetSome h 1024
+      -- SB.hPutStr stdout bs
+      pure $
+        if SB.null bs
+          then Nothing
+          else Just (now, bs)
+
+loopUntilFalse :: TVar Bool -> IO a -> IO [a]
+loopUntilFalse var func = reverse <$> go []
+  where
+    go acc = do
+      done <- readTVarIO var
+      if done
+        then pure acc
+        else do
+          a <- func
+          go $ a : acc
 
 data ASCIInemaCommand
   = Wait Int -- Milliseconds
@@ -201,13 +284,15 @@ instance YamlSchema ASCIInemaCommand where
             <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
       ]
 
-sendAsciinemaCommand :: Double -> Bool -> Handle -> ASCIInemaCommand -> IO ()
-sendAsciinemaCommand speed mistakes h = go
+sendAsciinemaCommand :: Double -> Bool -> Handle -> TVar (Map UTCTime Text) -> ASCIInemaCommand -> IO ()
+sendAsciinemaCommand speed mistakes h var = go
   where
     go = \case
       Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * speed
       SendInput s -> do
+        now <- getCurrentTime
         hPutStr h s
+        atomically $ modifyTVar' var (M.insert now $ T.pack s)
         hFlush h
       Type s i ->
         let waitForChar c = do

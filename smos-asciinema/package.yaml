@@ -18,6 +18,7 @@ library:
     - cbits/window_size.c
   dependencies:
     - aeson
+    - async
     - bytestring
     - containers
     - directory
@@ -31,10 +32,12 @@ library:
     - pretty-show
     - random
     - smos-report
+    - stm
     - text
     - time
     - typed-process
     - unix
+    - unliftio
     - validity
     - yaml
     - yamlparse-applicative
