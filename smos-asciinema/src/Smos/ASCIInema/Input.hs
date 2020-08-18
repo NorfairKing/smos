@@ -8,12 +8,14 @@ import Control.Concurrent (threadDelay)
 import Control.Monad
 import Data.Char as Char
 import qualified Data.Conduit.Combinators as C
+import Data.Conduit.List (sourceList)
 import Data.Random.Normal
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.IO as T
 import Data.Time
+import Smos.ASCIInema.Output
 import Smos.ASCIInema.Spec
 import System.IO
 import System.Random
@@ -26,11 +28,14 @@ data Mistakes
   | MistakesWithProbability Double
   deriving (Show, Eq)
 
-inputWriter :: MonadIO m => Speed -> Mistakes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
-inputWriter speed mistakes handle commands =
-  inputListProgressConduit commands
-    .| inputConduit speed mistakes
-    -- .| inputDebugConduit
+inputWriter :: MonadIO m => OutputView -> Speed -> Mistakes -> Handle -> [ASCIInemaCommand] -> ConduitT () void m [(UTCTime, Text)]
+inputWriter ov speed mistakes handle commands =
+  ( \ic -> case ov of
+      DebugOutputView -> sourceList commands .| ic .| inputDebugConduit
+      ProgressOutputView -> inputListProgressConduit commands .| ic
+      _ -> sourceList commands .| ic
+  )
+    (inputConduit speed mistakes)
     .| inputRecorder `fuseUpstream` C.map TE.encodeUtf8 `fuseUpstream` sinkHandle handle
 
 inputRecorder :: MonadIO m => ConduitT i i m [(UTCTime, i)]

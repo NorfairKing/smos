@@ -168,8 +168,8 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                       [Wait 500]
                     ]
             race -- For some reason the output conduit never finishes, so this works.
-              (runConduit $ inputWriter recordSetWait recordSetMistakes tMasterHandle commands)
-              (runConduit $ outputConduit outVar tMasterHandle)
+              (runConduit $ inputWriter recordSetOutputView recordSetWait recordSetMistakes tMasterHandle commands)
+              (runConduit $ outputConduit recordSetOutputView outVar tMasterHandle)
           case mExitedNormally of
             Nothing -> do
               stopProcess p

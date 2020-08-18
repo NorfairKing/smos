@@ -5,6 +5,7 @@ module Smos.ASCIInema.OptParse.Types where
 
 import Path
 import Smos.ASCIInema.Input
+import Smos.ASCIInema.Output
 
 data Arguments = Arguments Command Flags
   deriving (Show, Eq)
@@ -19,7 +20,8 @@ data RecordFlags
         recordFlagWait :: Maybe Double,
         recordFlagColumns :: Maybe Word,
         recordFlagRows :: Maybe Word,
-        recordFlagMistakeProbability :: Maybe Mistakes
+        recordFlagMistakeProbability :: Maybe Mistakes,
+        recordFlagOutputView :: Maybe OutputView
       }
   deriving (Show, Eq)
 
@@ -49,7 +51,8 @@ data RecordSettings
         recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir),
         recordSetColumns :: Word,
         recordSetRows :: Word,
-        recordSetMistakes :: Mistakes
+        recordSetMistakes :: Mistakes,
+        recordSetOutputView :: OutputView
       }
   deriving (Show, Eq)
 

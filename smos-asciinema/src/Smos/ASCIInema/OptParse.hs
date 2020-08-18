@@ -13,6 +13,7 @@ import Options.Applicative
 import Path.IO
 import Smos.ASCIInema.Input
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.Output
 import Smos.ASCIInema.WindowSize
 import qualified System.Environment as System
 import System.Posix.IO (stdOutput)
@@ -34,6 +35,7 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   let recordSetRows = fromMaybe rows recordFlagRows
   let recordSetColumns = fromMaybe cols recordFlagColumns
   let recordSetMistakes = fromMaybe (MistakesWithProbability 0.03) recordFlagMistakeProbability
+  let recordSetOutputView = fromMaybe DisplayOutputView recordFlagOutputView
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -100,6 +102,7 @@ parseCommandRecord = info parser modifier
                 <*> optional (option auto (mconcat [help "The number of columns", metavar "COLUMNS", long "columns"]))
                 <*> optional (option auto (mconcat [help "The number of rows", metavar "ROWS", long "rows"]))
                 <*> parseMistakesFlag
+                <*> parseOutputViewFlag
             )
 
 parseWaitFlag :: Parser (Maybe Double)
@@ -110,6 +113,14 @@ parseMistakesFlag =
   optional $
     (MistakesWithProbability <$> option auto (mconcat [long "mistakes", help "Enable mistakes"]))
       <|> flag' NoMistakes (mconcat [long "no-mistakes", help "Disable mistakes"])
+
+parseOutputViewFlag :: Parser (Maybe OutputView)
+parseOutputViewFlag =
+  optional $
+    flag' DisplayOutputView (mconcat [long "display", help "Display what is happening"])
+      <|> flag' DebugOutputView (mconcat [long "debug", help "Debug the input and output messages"])
+      <|> flag' NoOutputView (mconcat [long "no-output", help "Do not show what is happening"])
+      <|> flag' ProgressOutputView (mconcat [long "progress", help "Only show the progress of what is happening"])
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags

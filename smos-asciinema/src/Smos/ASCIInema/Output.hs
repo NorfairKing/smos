@@ -12,14 +12,20 @@ import GHC.IO.Handle
 
 data OutputView
   = NoOutputView
+  | DebugOutputView
   | ProgressOutputView
   | DisplayOutputView
+  deriving (Show, Eq)
 
-outputConduit :: MonadIO m => TVar [(UTCTime, ByteString)] -> Handle -> ConduitT () void m ()
-outputConduit outVar h =
+outputConduit :: MonadIO m => OutputView -> TVar [(UTCTime, ByteString)] -> Handle -> ConduitT () void m ()
+outputConduit ov outVar h =
   sourceHandle h
-    --  .| outputDebugConduit
-    .| outputTimerConduit
+    .| ( case ov of
+           DisplayOutputView -> (outputDisplayConduit .|)
+           DebugOutputView -> (outputDebugConduit .|)
+           _ -> id
+       )
+      outputTimerConduit
     .| outputSink outVar
 
 outputSink :: MonadIO m => TVar [(UTCTime, ByteString)] -> ConduitT (UTCTime, ByteString) void m ()
