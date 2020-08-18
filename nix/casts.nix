@@ -37,7 +37,10 @@ let
         mkdir -p $ASCIINEMA_CONFIG_HOME
 
         # Record the cast
-        smos-asciinema record "./smos-asciinema/examples/${path}.yaml" "./${path}.cast" --columns 80 --rows 25
+        smos-asciinema record "./smos-asciinema/examples/${path}.yaml" "./${path}.cast" \
+          --columns 80 \
+          --rows 25 \
+          --no-mistakes
 
         # Output the casts
         cp "${path}.cast" $out

@@ -32,6 +32,7 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   (cols, rows) <- getWindowSize stdOutput
   let recordSetRows = fromMaybe rows recordFlagRows
   let recordSetColumns = fromMaybe cols recordFlagColumns
+  let recordSetMistakes = fromMaybe True recordFlagMistakes
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 
@@ -97,10 +98,15 @@ parseCommandRecord = info parser modifier
                 <*> parseWaitFlag
                 <*> optional (option auto (mconcat [help "The number of columns", metavar "COLUMNS", long "columns"]))
                 <*> optional (option auto (mconcat [help "The number of rows", metavar "ROWS", long "rows"]))
+                <*> parseMistakesFlag
             )
 
 parseWaitFlag :: Parser (Maybe Double)
 parseWaitFlag = optional $ option auto $ mconcat [long "wait", help "The wait-time multiplier", metavar "DOUBLE"]
+
+parseMistakesFlag :: Parser (Maybe Bool)
+parseMistakesFlag =
+  optional $ flag' True (mconcat [long "mistakes", help "Enable mistakes"]) <|> flag' False (mconcat [long "no-mistakes", help "Disable mistakes"])
 
 parseFlags :: Parser Flags
 parseFlags = pure Flags

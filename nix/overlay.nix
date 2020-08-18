@@ -33,6 +33,25 @@ let
           export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
         '';
 
+        # The smos docs site
+        #
+        # We put these remote assets in place before the build so that they do not get fetched during the build
+        packages.smos-docs-site.components.library.preConfigure =
+          let
+            asciinemaJS = builtins.fetchurl {
+              url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.js";
+              sha256 = "sha256:092y2zl51z23jrl6mcqfxb64xaf9f2dx0j8kp69hp07m0935cz2p";
+            };
+            asciinemaCSS = builtins.fetchurl {
+              url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
+              sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
+            };
+          in
+            ''
+              cp ${asciinemaJS} asciinema-player.js
+              cp ${asciinemaCSS} asciinema-player.css
+            '';
+
         # Turn off certain test suites on macos because they generate random
         # filepaths and that fails for some reason that I cannot investigate
         # because I don't own any apple products.

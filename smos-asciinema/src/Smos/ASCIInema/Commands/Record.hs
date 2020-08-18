@@ -156,8 +156,8 @@ runASCIInema RecordSettings {..} specFilePath ASCIInemaSpec {..} = do
         mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
           let h = getStdin p
           hSetBuffering h NoBuffering
-          sendAsciinemaCommand recordSetWait h $ Wait 1
-          mapM_ (sendAsciinemaCommand recordSetWait h) asciinemaInput
+          sendAsciinemaCommand recordSetWait recordSetMistakes h $ Wait 1
+          mapM_ (sendAsciinemaCommand recordSetWait recordSetMistakes h) asciinemaInput
           when (isNothing asciinemaCommand) $ hPutStr h "exit\n"
         case mExitedNormally of
           Nothing -> do
@@ -185,11 +185,11 @@ instance YamlSchema ASCIInemaCommand where
             <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
       ]
 
-sendAsciinemaCommand :: Double -> Handle -> ASCIInemaCommand -> IO ()
-sendAsciinemaCommand d h = go
+sendAsciinemaCommand :: Double -> Bool -> Handle -> ASCIInemaCommand -> IO ()
+sendAsciinemaCommand speed mistakes h = go
   where
     go = \case
-      Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * d
+      Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * speed
       SendInput s -> do
         hPutStr h s
         hFlush h
@@ -198,18 +198,20 @@ sendAsciinemaCommand d h = go
               randomDelay <- normalIO' (0, 25) -- Add some random delay to make the typing feel more natural
               go $ Wait $ round (fromIntegral i * charSpeed c + randomDelay :: Double)
          in forM_ s $ \c -> do
-              randomMistake <- (>= (97 :: Int)) <$> randomRIO (0, 100) :: IO Bool
-              when randomMistake $ do
-                let validMistakes =
-                      if Char.isUpper c -- You won't accidentally type an upper-case character if the character you intended was lower-case
-                        then concat [['A' .. 'Z'], "[{+(=*)!}]"]
-                        else concat [['a' .. 'z'], ['0' .. '9']]
-                randomIndex <- randomRIO (0, length validMistakes - 1) :: IO Int
-                let c' = validMistakes !! randomIndex
-                waitForChar c'
-                go $ SendInput [c']
-                waitForChar '\b'
-                go $ SendInput ['\b'] -- Backspace
+              when mistakes $ do
+                -- Make a mistake with a 3% likelihood
+                randomMistake <- (> (97 :: Int)) <$> randomRIO (0, 100) :: IO Bool
+                when randomMistake $ do
+                  let validMistakes =
+                        if Char.isUpper c -- You won't accidentally type an upper-case character if the character you intended was lower-case
+                          then concat [['A' .. 'Z'], "[{+(=*)!}]"]
+                          else concat [['a' .. 'z'], ['0' .. '9']]
+                  randomIndex <- randomRIO (0, length validMistakes - 1) :: IO Int
+                  let c' = validMistakes !! randomIndex
+                  waitForChar c'
+                  go $ SendInput [c']
+                  waitForChar '\b'
+                  go $ SendInput ['\b'] -- Backspace
               waitForChar c
               go $ SendInput [c]
     -- Add a delay multiplier based on what kind of character it is to make the typing feel more natural.
