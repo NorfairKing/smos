@@ -36,11 +36,10 @@ instance Yesod App where
   defaultLayout widget = do
     pageContent <-
       widgetToPageContent $ do
-        addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css"
-        addStylesheetRemote
-          "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+        addStylesheet $ AssetsStaticR bulma_css
+        addStylesheet $ AssetsStaticR font_awesome_css
         toWidgetHead
-          [hamlet|<link rel="icon" href="https://cs-syd.eu/logo/res/favicon.ico" sizes="32x32" type="image/x-icon">|]
+          [hamlet|<link rel="icon" href=@{AssetsStaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
         addScript $ AssetsStaticR asciinema_player_js
         addStylesheet $ AssetsStaticR asciinema_player_css
         let menu = $(widgetFile "menu")

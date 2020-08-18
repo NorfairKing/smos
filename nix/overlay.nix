@@ -38,6 +38,18 @@ let
         # We put these remote assets in place before the build so that they do not get fetched during the build
         packages.smos-docs-site.components.library.preConfigure =
           let
+            bulmaCSS = builtins.fetchurl {
+              url = "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css";
+              sha256 = "sha256:0lhpzahlszi5nr82n3sny5fjk4k1vaq11rdrddjmka23np53klqg";
+            };
+            fontawesomeCSS = builtins.fetchurl {
+              url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
+              sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
+            };
+            faviconICO = builtins.fetchurl {
+              url = "https://cs-syd.eu/logo/res/favicon.ico";
+              sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
+            };
             asciinemaJS = builtins.fetchurl {
               url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.js";
               sha256 = "sha256:092y2zl51z23jrl6mcqfxb64xaf9f2dx0j8kp69hp07m0935cz2p";
@@ -54,6 +66,9 @@ let
             copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
           in
             ''
+              cp ${bulmaCSS} bulma.css
+              cp ${fontawesomeCSS} font-awesome.css
+              cp ${faviconICO} favicon.ico
               cp ${asciinemaJS} asciinema-player.js
               cp ${asciinemaCSS} asciinema-player.css
               ${copyCasts}
