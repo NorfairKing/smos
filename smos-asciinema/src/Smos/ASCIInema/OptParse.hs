@@ -12,6 +12,7 @@ import qualified Env
 import Options.Applicative
 import Path.IO
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.Spec
 import Smos.ASCIInema.WindowSize
 import qualified System.Environment as System
 import System.Posix.IO (stdOutput)
@@ -32,7 +33,9 @@ combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ 
   (cols, rows) <- getWindowSize stdOutput
   let recordSetRows = fromMaybe rows recordFlagRows
   let recordSetColumns = fromMaybe cols recordFlagColumns
-  let recordSetMistakes = fromMaybe True recordFlagMistakes
+  let recordSetMistakes = case recordFlagMistakes of
+        Just False -> NoMistakes
+        _ -> MistakesWithProbability 0.03
   let d = DispatchRecord RecordSettings {..}
   pure (Instructions d Settings)
 

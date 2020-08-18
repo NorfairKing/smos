@@ -4,6 +4,7 @@
 module Smos.ASCIInema.OptParse.Types where
 
 import Path
+import Smos.ASCIInema.Spec
 
 data Arguments = Arguments Command Flags
   deriving (Show, Eq)
@@ -48,7 +49,7 @@ data RecordSettings
         recordSetAsciinemaConfigDir :: Maybe (Path Abs Dir),
         recordSetColumns :: Word,
         recordSetRows :: Word,
-        recordSetMistakes :: Bool
+        recordSetMistakes :: Mistakes
       }
   deriving (Show, Eq)
 

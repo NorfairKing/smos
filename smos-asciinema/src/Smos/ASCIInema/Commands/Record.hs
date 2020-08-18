@@ -35,6 +35,7 @@ import Path
 import Path.IO
 import Smos.ASCIInema.Cast
 import Smos.ASCIInema.OptParse.Types
+import Smos.ASCIInema.Spec
 import Smos.ASCIInema.Terminal
 import Smos.ASCIInema.WindowSize
 import qualified System.Directory as FP
@@ -163,40 +164,45 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                 $ setEnv env'
                 $ setStdin (useHandleClose tSlaveHandle)
                 $ setStdout (useHandleClose tSlaveHandle)
-                $ setStderr
-                  (useHandleClose tSlaveHandle)
-                  pc
+                $ setStderr (useHandleClose tSlaveHandle) pc
+        hSetBuffering tMasterHandle NoBuffering
+        hSetBuffering tSlaveHandle NoBuffering
+        setWindowSize tFd (recordSetColumns, recordSetRows)
         putStrLn "Starting process"
         withProcessWait apc $ \p -> do
-          let inh = tSlaveHandle
-          let outh = tSlaveHandle
-          hSetBuffering outh NoBuffering
-          hSetBuffering inh NoBuffering
-          setWindowSize stdOutput (recordSetColumns, recordSetRows)
           start <- getCurrentTime
           putStrLn "Sending commands"
-          withAsync (outputReader tMasterHandle) $ \outputReaderAsync -> do
-            mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
-              sendCommands recordSetWait recordSetMistakes inh $
-                concat
-                  [ [Wait 1],
-                    asciinemaInput,
-                    [SendInput "exit\n"],
-                    [Wait 1]
-                  ]
-            putStrLn "Process done."
-            case mExitedNormally of
-              Nothing -> do
-                stopProcess p
-                die "Asciinema got stuck for 60 seconds"
-              Just inputEvents -> do
-                putStrLn "Waiting for outputs"
-                outputEvents <- wait outputReaderAsync
-                putStrLn "got outputs:"
-                pPrint outputEvents
-                pPrint recordSetOutputFile
-                stopProcess p
-                pure $ completeCast rs spec start inputEvents outputEvents
+          mExitedNormally <- timeout (asciinemaTimeout * 1000 * 1000) $ do
+            let commands =
+                  concat
+                    [ [Wait 500],
+                      asciinemaInput,
+                      [SendInput "exit\n" | isNothing asciinemaCommand],
+                      [Wait 500]
+                    ]
+            concurrently
+              ( runConduit $ do
+                  inputs <- inputWriter recordSetWait recordSetMistakes tMasterHandle commands
+                  liftIO $ putStrLn "Done with input"
+                  pure inputs
+              )
+              ( runConduit $ do
+                  outputs <- outputConduit tMasterHandle
+                  liftIO $ print "Done with output"
+                  pure outputs
+              )
+          putStrLn "Process done."
+          case mExitedNormally of
+            Nothing -> do
+              stopProcess p
+              die $ unwords ["the recording got stuck for", show asciinemaTimeout, "seconds."]
+            Just (inputEvents, outputEvents) -> do
+              putStrLn "Waiting for outputs"
+              putStrLn "got inputs:"
+              pPrint inputEvents
+              putStrLn "got outputs:"
+              pPrint outputEvents
+              pure $ completeCast rs spec start inputEvents outputEvents
 
 completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
 completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
@@ -240,50 +246,23 @@ sendCommands speed mistakes h cs = do
   mapM_ (sendAsciinemaCommand speed mistakes h var) cs
   readTVarIO var
 
-outputReader :: Handle -> IO [(UTCTime, ByteString)]
-outputReader h =
-  runConduit $
-    sourceHandle h .| timerConduit .| sinkList
+outputConduit :: MonadIO m => Handle -> ConduitT () void m [(UTCTime, ByteString)]
+outputConduit h = sourceHandle h .| outputDebugConduit .| timerConduit .| sinkList
   where
     timerConduit :: MonadIO m => ConduitT i (UTCTime, i) m ()
     timerConduit = C.mapM $ \i -> (,) <$> liftIO getCurrentTime <*> pure i
 
-loopUntilFalse :: TVar Bool -> IO a -> IO [a]
-loopUntilFalse var func = reverse <$> go []
-  where
-    go acc = do
-      done <- readTVarIO var
-      if done
-        then pure acc
-        else do
-          a <- func
-          go $ a : acc
-
-data ASCIInemaCommand
-  = Wait Int -- Milliseconds
-  | SendInput String
-  | Type String Int -- Milliseconds
-  deriving (Show, Eq)
-
-instance FromJSON ASCIInemaCommand where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema ASCIInemaCommand where
-  yamlSchema =
-    alternatives
-      [ objectParser "Wait" $ Wait <$> requiredField "wait" "How long to wait (in milliseconds)",
-        objectParser "SendInput" $ SendInput <$> requiredField "send" "The input to send",
-        objectParser "Type" $
-          Type
-            <$> requiredField "type" "The input to send"
-            <*> optionalFieldWithDefault "delay" 100 "How long to wait between keystrokes (in milliseconds)"
-      ]
+outputDebugConduit :: MonadIO m => ConduitT ByteString ByteString m ()
+outputDebugConduit = C.mapM $ \bs -> do
+  liftIO $ SB.putStr bs
+  -- liftIO $ putStrLn $ "Got output: " <> show bs
+  pure bs
 
 sendAsciinemaCommand :: Double -> Bool -> Handle -> TVar [(UTCTime, Text)] -> ASCIInemaCommand -> IO ()
 sendAsciinemaCommand speed mistakes h var = go
   where
     go = \case
-      Wait i -> threadDelay $ round $ fromIntegral (i * 1000) * speed
+      Wait i -> waitMilliSeconds speed i
       SendInput s -> do
         now <- getCurrentTime
         hPutStr h s
@@ -298,22 +277,12 @@ sendAsciinemaCommand speed mistakes h var = go
                 -- Make a mistake with a 3% likelihood
                 randomMistake <- (> (97 :: Int)) <$> randomRIO (0, 100) :: IO Bool
                 when randomMistake $ do
-                  let validMistakes =
-                        if Char.isUpper c -- You won't accidentally type an upper-case character if the character you intended was lower-case
-                          then concat [['A' .. 'Z'], "[{+(=*)!}]"]
-                          else concat [['a' .. 'z'], ['0' .. '9']]
-                  randomIndex <- randomRIO (0, length validMistakes - 1) :: IO Int
-                  let c' = validMistakes !! randomIndex
+                  let possibleMistakes = validMistakes c
+                  randomIndex <- randomRIO (0, length possibleMistakes - 1) :: IO Int
+                  let c' = possibleMistakes !! randomIndex
                   waitForChar c'
                   go $ SendInput [c']
                   waitForChar '\b'
                   go $ SendInput ['\b'] -- Backspace
               waitForChar c
               go $ SendInput [c]
-    -- Add a delay multiplier based on what kind of character it is to make the typing feel more natural.
-    charSpeed ' ' = 1.25
-    charSpeed '\b' = 3 -- It takes a while to notice a mistake
-    charSpeed c
-      | c `elem` ['a' .. 'z'] = 0.75
-      | c `elem` ['A' .. 'Z'] = 1.5 -- Because you have to press 'shift'
-      | otherwise = 2 -- Special characters take even longer
