@@ -54,6 +54,9 @@ let
             export LANG=C.utf8
             export LC_ALL=C.utf8
 
+            # To show what's happening
+            export SMOS_EXPLAINER_MODE=True
+
             # Record the cast
             smos-asciinema record "./smos-docs-site/content/casts/${path}.yaml" "./${path}.cast" \
               --columns 80 \

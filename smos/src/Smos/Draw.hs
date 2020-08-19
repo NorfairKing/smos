@@ -48,10 +48,14 @@ import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw SmosConfig {..} SmosState {..} =
-  [ vBox
-      [ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime,
-        drawErrorMessages smosStateErrorMessages
-      ]
+  [ vBox $
+      concat
+        [ [ padBottom Max $ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime,
+            drawErrorMessages smosStateErrorMessages
+          ],
+          [ drawExplainerMode smosStateDebugInfo | configExplainerMode
+          ]
+        ]
   ]
 
 drawEditorCursor :: KeyMap -> EditorCursor -> Drawer
@@ -70,6 +74,28 @@ drawEditorCursor configKeyMap EditorCursor {..} =
 
 drawErrorMessages :: [Text] -> Widget n
 drawErrorMessages = vBox . map (withAttr errorAttr . txtWrap)
+
+drawExplainerMode :: DebugInfo -> Widget n
+drawExplainerMode DebugInfo {..} =
+  vBox
+    [ hBorderWithLabel (str "[ Explainer mode ]"),
+      vLimit 2 $
+        case NE.head <$> debugInfoLastMatches of
+          Nothing -> str "Nothing happened yet."
+          Just ActivationDebug {..} ->
+            vBox
+              [ hBox
+                  [ str "Last action activated: ",
+                    drawActionName activationDebugName,
+                    str " (",
+                    drawKeyPresses activationDebugMatch,
+                    str ")"
+                  ]
+              ]
+    ]
+
+drawKeyPresses :: Seq KeyPress -> Widget n
+drawKeyPresses = withAttr keyAttr . hBox . intersperse (str " ") . map (txt . renderKeyPress) . toList
 
 drawInfo :: KeyMap -> Widget n
 drawInfo km =
@@ -95,7 +121,7 @@ drawInfo km =
             str "If you don't know what to do,",
             hBox
               [ str "activate the ",
-                withAttr keyAttr $ txt $ actionNameText $ actionName selectHelp,
+                drawActionName $ actionName selectHelp,
                 str " command using the ",
                 withAttr keyAttr $ txt kpt,
                 str " key"
@@ -800,3 +826,6 @@ type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
 type Drawer = Drawer' (Widget ResourceName)
 
 type Drawer' = Reader DrawEnv
+
+drawActionName :: ActionName -> Widget n
+drawActionName = withAttr keyAttr . txt . actionNameText

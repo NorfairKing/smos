@@ -19,22 +19,25 @@ import YamlParse.Applicative
 data Arguments
   = Arguments FilePath (Report.FlagsWithConfigFile Flags)
 
-newtype Flags
+data Flags
   = Flags
-      { flagReportFlags :: Report.Flags
+      { flagReportFlags :: Report.Flags,
+        flagExplainerMode :: Maybe Bool
       }
   deriving (Show, Eq)
 
-newtype Environment
+data Environment
   = Environment
-      { envReportEnvironment :: Report.Environment
+      { envReportEnvironment :: Report.Environment,
+        envExplainerMode :: Maybe Bool
       }
   deriving (Show, Eq)
 
 data Configuration
   = Configuration
       { confReportConf :: !Report.Configuration,
-        confKeybindingsConf :: !(Maybe KeybindingsConfiguration)
+        confKeybindingsConf :: !(Maybe KeybindingsConfiguration),
+        confExplainerMode :: !(Maybe Bool)
       }
   deriving (Show, Eq, Generic)
 
@@ -42,7 +45,11 @@ instance Validity Configuration
 
 instance ToJSON Configuration where
   toJSON Configuration {..} =
-    toJSON confReportConf `mergeObjects` object ["keys" .= confKeybindingsConf]
+    toJSON confReportConf
+      `mergeObjects` object
+        [ "keys" .= confKeybindingsConf,
+          "explainer-mode" .= confExplainerMode
+        ]
 
 instance FromJSON Configuration where
   parseJSON = viaYamlSchema
@@ -52,13 +59,15 @@ instance YamlSchema Configuration where
     Configuration
       <$> yamlSchema
       <*> objectParser "Configuration" (optionalField "keys" "Keybindings")
+      <*> objectParser "Configuration" (optionalField "explainer-mode" "Turn on explainer mode where the user can see what is happening")
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
-  let SmosConfig _ _ = undefined
+  let SmosConfig _ _ _ = undefined
    in Configuration
         { confReportConf = Report.backToConfiguration configReportConfig,
-          confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap
+          confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap,
+          confExplainerMode = if configExplainerMode then Just True else Nothing
         }
 
 data KeybindingsConfiguration

@@ -49,9 +49,6 @@ allPlainActions =
     [ [ startHeaderFromEmptyAndSelectHeader,
         selectHelp,
         selectEditor,
-        showDebug,
-        hideDebug,
-        toggleDebug,
         saveFile,
         stop
       ],
@@ -110,28 +107,4 @@ selectEditor =
     { actionName = "selectEditor",
       actionFunc = modifyEditorCursor $ editorCursorSelect FileSelected,
       actionDescription = "Hide the help screen"
-    }
-
-showDebug :: Action
-showDebug =
-  Action
-    { actionName = "showDebug",
-      actionFunc = modifyEditorCursor editorCursorShowDebug,
-      actionDescription = "Show the debug screen"
-    }
-
-hideDebug :: Action
-hideDebug =
-  Action
-    { actionName = "hideDebug",
-      actionFunc = modifyEditorCursor editorCursorHideDebug,
-      actionDescription = "Hide the debug screen"
-    }
-
-toggleDebug :: Action
-toggleDebug =
-  Action
-    { actionName = "toggleDebug",
-      actionFunc = modifyEditorCursor editorCursorToggleDebug,
-      actionDescription = "Toggle the debug page to be shown"
     }

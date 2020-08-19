@@ -8,7 +8,12 @@ defaultSmos :: IO ()
 defaultSmos = smos defaultConfig
 
 defaultConfig :: SmosConfig
-defaultConfig = SmosConfig {configKeyMap = defaultKeyMap, configReportConfig = defaultReportConfig}
+defaultConfig =
+  SmosConfig
+    { configKeyMap = defaultKeyMap,
+      configReportConfig = defaultReportConfig,
+      configExplainerMode = False
+    }
 
 defaultKeyMap :: KeyMap
 defaultKeyMap =
@@ -296,7 +301,6 @@ defaultAnyKeyMap :: KeyMappings
 defaultAnyKeyMap =
   listMatchers
     [ exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
-      exactKeyPress (KeyPress KEnter [MMeta]) toggleDebug,
       -- Browser
       exactString "bp" selectBrowserProjects,
       exactString "bw" selectBrowserWorkflow,

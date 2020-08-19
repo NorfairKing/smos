@@ -40,7 +40,8 @@ import YamlParse.Applicative
 data SmosConfig
   = SmosConfig
       { configKeyMap :: !KeyMap,
-        configReportConfig :: !SmosReportConfig
+        configReportConfig :: !SmosReportConfig,
+        configExplainerMode :: !Bool
       }
   deriving (Generic)
 
@@ -541,8 +542,7 @@ data EditorCursor
         editorCursorBrowserCursor :: Maybe FileBrowserCursor,
         editorCursorReportCursor :: Maybe ReportCursor,
         editorCursorHelpCursor :: Maybe HelpCursor,
-        editorCursorSelection :: EditorSelection,
-        editorCursorDebug :: Bool
+        editorCursorSelection :: EditorSelection
       }
 
 startEditorCursor :: MonadIO m => Path Abs File -> m (Maybe (Either String EditorCursor))
@@ -554,8 +554,7 @@ startEditorCursor p = do
             editorCursorBrowserCursor = Nothing,
             editorCursorReportCursor = Nothing,
             editorCursorHelpCursor = Nothing,
-            editorCursorSelection = FileSelected,
-            editorCursorDebug = False
+            editorCursorSelection = FileSelected
           }
   pure $ fmap (fmap go) mErrOrCursor
 
@@ -580,18 +579,6 @@ editorCursorSelectionL = lens editorCursorSelection $ \ec es -> ec {editorCursor
 
 editorCursorSelect :: EditorSelection -> EditorCursor -> EditorCursor
 editorCursorSelect s = editorCursorSelectionL .~ s
-
-editorCursorDebugL :: Lens' EditorCursor Bool
-editorCursorDebugL = lens editorCursorDebug $ \ec sh -> ec {editorCursorDebug = sh}
-
-editorCursorShowDebug :: EditorCursor -> EditorCursor
-editorCursorShowDebug = editorCursorDebugL .~ True
-
-editorCursorHideDebug :: EditorCursor -> EditorCursor
-editorCursorHideDebug = editorCursorDebugL .~ False
-
-editorCursorToggleDebug :: EditorCursor -> EditorCursor
-editorCursorToggleDebug = editorCursorDebugL %~ not
 
 editorCursorSwitchToHelp :: KeyMap -> EditorCursor -> EditorCursor
 editorCursorSwitchToHelp km@KeyMap {..} ec =

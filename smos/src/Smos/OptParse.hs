@@ -42,7 +42,12 @@ combineToInstructions sc@SmosConfig {..} fp Flags {..} Environment {..} mc = do
     case combineKeymap configKeyMap $ mc >>= confKeybindingsConf of
       CombErr errs -> die $ unlines $ map prettyCombError errs
       Combined keyMap -> pure keyMap
-  let sc' = sc {configKeyMap = keyMap, configReportConfig = src}
+  let sc' =
+        sc
+          { configKeyMap = keyMap,
+            configReportConfig = src,
+            configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode)
+          }
   pure $ Instructions p sc'
 
 combineKeymap :: KeyMap -> Maybe KeybindingsConfiguration -> Comb KeyMap
@@ -180,7 +185,11 @@ prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Envi
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
 environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
-environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.environmentParser
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.environmentParser
+      <*> Env.var (fmap Just . Env.auto) "EXPLAINER_MODE" (Env.def Nothing <> Env.keep <> Env.help "Activate explainer mode to show what is happening")
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
@@ -201,7 +210,13 @@ argParser = info (helper <*> parseArgs) help_
     description = "Smos editor"
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> editParser <*> Report.parseFlagsWithConfigFile parseFlags
+parseArgs =
+  Arguments
+    <$> editParser
+    <*> Report.parseFlagsWithConfigFile parseFlags
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> Report.parseFlags
+parseFlags =
+  Flags
+    <$> Report.parseFlags
+    <*> optional (flag' True (mconcat [long "explainer-mode", help "Activate explainer mode to show what is happening."]))
