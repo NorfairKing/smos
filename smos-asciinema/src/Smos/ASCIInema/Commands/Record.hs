@@ -140,7 +140,7 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
         Nothing ->
           case lookup "SHELL" env of
             Nothing -> die "No shell configured"
-            Just s -> pure $ proc s []
+            Just s -> pure $ shell s
         Just c -> pure $ shell c
       -- Make sure the output file can be created nicely
       ensureDir $ parent recordSetOutputFile

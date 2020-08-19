@@ -4,21 +4,21 @@ files:
   - projects/smos.smos
   - archive
 input:
-- type: "tree\r"
+- type: "tree\n"
 - wait: 2000
-- type: "smos-query next\r"
+- type: "smos-query next\n"
 - wait: 2000
-- type: "smos projects/smos.smos\r"
+- type: "smos projects/smos.smos\n"
 - wait: 2000
 - send: "td"
 - wait: 1000
 - send: "q"
 - wait: 1000
-- type: "smos-archive projects/smos.smos\r"
+- type: "smos-archive projects/smos.smos\n"
 - wait: 2000
-- send: "y\r"
+- send: "y\n"
 - wait: 2000
-- type: "tree\r"
+- type: "tree\n"
 - wait: 2000
-- type: "smos-query next\r"
+- type: "smos-query next\n"
 - wait: 2000

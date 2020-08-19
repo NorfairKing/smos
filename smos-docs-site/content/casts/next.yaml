@@ -2,13 +2,13 @@ working-dir: ../../demo-workflow
 workflow-dir: ../../demo-workflow
 file: projects/blog.smos
 input:
-- type: "smos-query next\r"
+- type: "smos-query next\n"
 - wait: 2000
-- type: "smos projects/blog.smos\r"
+- type: "smos projects/blog.smos\n"
 - wait: 2000
 - send: 'e'
 - wait: 500
-- type: "Next-action blogpost\rGoal: Write a blogpost about how to use smos' next-action report"
+- type: "Next-action blogpost\nGoal: Write a blogpost about how to use smos' next-action report"
 - wait: 250
 - send: "\e"
 - wait: 250
@@ -24,9 +24,9 @@ input:
 - wait: 1000
 - send: "q"
 - wait: 250
-- type: "smos-query next\r"
+- type: "smos-query next\n"
 - wait: 2000
-- type: "smos\r"
+- type: "smos\n"
 - wait: 500
 - send: "rn"
 - wait: 500
@@ -42,13 +42,13 @@ input:
 - wait: 250
 - send: "j"
 - wait: 500
-- send: "\r"
+- send: "\n"
 - wait: 500
 - send: 'td'
 - wait: 1000
 - send: "q"
 - wait: 250
-- type: "smos-query next\r"
+- type: "smos-query next\n"
 - wait: 2000
 
 
