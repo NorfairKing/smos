@@ -37,7 +37,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             let FileKeyMap {..} = keyMapFileKeyMap
                 with :: KeyMappings -> [(Precedence, KeyMapping)]
                 with specificMappings =
-                  map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers ++ map ((,) AnyMatcher) keyMapAnyKeyMap
+                  map ((,) SpecificMatcher) specificMappings ++ map ((,) AnyMatcher) fileKeyMapAnyMatchers ++ anys
              in case smosFileEditorCursorPresent sfec of
                   Nothing -> with fileKeyMapEmptyMatchers
                   Just sfc ->
