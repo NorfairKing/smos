@@ -87,7 +87,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
             DispatchClock
               ClockSettings
                 { clockSetFilter = clockFlagFilter,
-                  clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
+                  clockSetPeriod = fromMaybe Today clockFlagPeriodFlags,
                   clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
                   clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
                   clockSetClockFormat = case clockFlagClockFormat of
@@ -101,7 +101,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                   clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle,
                   clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
                 }
-        CommandAgenda AgendaFlags {..} ->
+        CommandAgenda AgendaFlags {..} -> do
           pure $
             DispatchAgenda
               AgendaSettings
@@ -109,7 +109,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                   agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
                   agendaSetBlock = fromMaybe DayBlock agendaFlagBlock,
                   agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
-                  agendaSetPeriod = fromMaybe AllTime agendaFlagPeriod
+                  agendaSetPeriod = fromMaybe Today agendaFlagPeriod
                 }
         CommandWork WorkFlags {..} -> do
           let wc func = func <$> (mc >>= confWorkConfiguration)
@@ -146,7 +146,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
             DispatchLog
               LogSettings
                 { logSetFilter = logFlagFilter,
-                  logSetPeriod = fromMaybe AllTime logFlagPeriodFlags,
+                  logSetPeriod = fromMaybe Today logFlagPeriodFlags,
                   logSetBlock = fromMaybe DayBlock logFlagBlockFlags,
                   logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
                 }
@@ -485,34 +485,33 @@ parseTimeBlock =
 
 parsePeriod :: Parser (Maybe Period)
 parsePeriod =
-  Just
-    <$> ( parseBeginEnd
-            <|> choices
-              [ flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
-                flag' Today (mconcat [long "today", help "today"]),
-                flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
-                flag' LastWeek (mconcat [long "last-week", help "last week"]),
-                flag' ThisWeek (mconcat [long "this-week", help "this week"]),
-                flag' NextWeek (mconcat [long "next-week", help "next week"]),
-                flag' LastMonth (mconcat [long "last-month", help "last month"]),
-                flag' ThisMonth (mconcat [long "this-month", help "this month"]),
-                flag' NextMonth (mconcat [long "next-month", help "next month"]),
-                flag' LastYear (mconcat [long "last-year", help "last year"]),
-                flag' ThisYear (mconcat [long "this-year", help "this year"]),
-                flag' NextYear (mconcat [long "next-year", help "next year"]),
-                flag' AllTime (mconcat [long "all-time", help "all time"])
-              ]
-        )
-    <|> pure Nothing
+  parseBeginEnd
+    <|> optional
+      ( choices
+          [ flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
+            flag' Today (mconcat [long "today", help "today"]),
+            flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
+            flag' LastWeek (mconcat [long "last-week", help "last week"]),
+            flag' ThisWeek (mconcat [long "this-week", help "this week"]),
+            flag' NextWeek (mconcat [long "next-week", help "next week"]),
+            flag' LastMonth (mconcat [long "last-month", help "last month"]),
+            flag' ThisMonth (mconcat [long "this-month", help "this month"]),
+            flag' NextMonth (mconcat [long "next-month", help "next month"]),
+            flag' LastYear (mconcat [long "last-year", help "last year"]),
+            flag' ThisYear (mconcat [long "this-year", help "this year"]),
+            flag' NextYear (mconcat [long "next-year", help "next year"]),
+            flag' AllTime (mconcat [long "all-time", help "all time"])
+          ]
+      )
   where
-    parseBeginEnd :: Parser Period
+    parseBeginEnd :: Parser (Maybe Period)
     parseBeginEnd =
       ( \mb me ->
           case (mb, me) of
-            (Nothing, Nothing) -> AllTime
-            (Just begin, Nothing) -> BeginOnly begin
-            (Nothing, Just end) -> EndOnly end
-            (Just begin, Just end) -> BeginEnd begin end
+            (Nothing, Nothing) -> Nothing
+            (Just begin, Nothing) -> Just (BeginOnly begin)
+            (Nothing, Just end) -> Just (EndOnly end)
+            (Just begin, Just end) -> Just (BeginEnd begin end)
       )
         <$> option
           (Just <$> maybeReader parseLocalBegin)

@@ -1,0 +1,50 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+files:
+  - calendar.smos
+  - projects/gym.smos
+input:
+- type: "smos-query agenda\n"
+- wait: 1000
+- type: "smos projects/gym.smos\n"
+- wait: 500
+- send: "e"
+- type: "Gym habit\nGoal: Set up a gym schedule"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: "tt"
+- wait: 500
+- send: "E"
+- wait: 500
+- type: "Call the gym I found online\n"
+- wait: 100
+- send: "https://example-gym.com"
+- wait: 100
+- send: "\e"
+- wait: 500
+- send: "tt"
+- wait: 1500
+- send: "td"
+- wait: 500
+- send: "e"
+- wait: 500
+- type: "Go to my first gym appointment"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: "tr"
+- wait: 500
+- send: "ss"
+- wait: 500
+- type: "wednesday"
+- wait: 2000
+- send: "\n"
+- wait: 2000
+- send: "q"
+- wait: 1000
+- type: "smos-query agenda\n"
+- wait: 2000
+- type: "smos-query agenda --this-month\n"
+- wait: 2000
+

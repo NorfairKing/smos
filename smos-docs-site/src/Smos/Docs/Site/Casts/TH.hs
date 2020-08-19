@@ -4,6 +4,7 @@ module Smos.Docs.Site.Casts.TH where
 
 import Instances.TH.Lift ()
 import Language.Haskell.TH
+import Language.Haskell.TH.Syntax
 import Path
 import Path.IO
 import Smos.ASCIInema.Commands.Record as ASCIInema
@@ -21,10 +22,12 @@ mkCasts = do
     cs <- resolveDir' "content/casts"
     fs <- snd <$> listDirRecur cs
     pure $ filter ((== Just ".yaml") . fileExtension) fs
+  mapM_ (qAddDependentFile . fromAbsFile) specs
   tups <- runIO $ mapM ensureCast specs
+  mapM_ (qAddDependentFile . snd) tups
   mkEmbeddedStatic development "casts" $ map (uncurry embedFileAt) tups
 
-ensureCast :: Path Abs File -> IO (FilePath, String)
+ensureCast :: Path Abs File -> IO (String, FilePath)
 ensureCast specFile = do
   outputFile <- replaceExtension ".cast" specFile
   alreadyExists <- doesFileExist outputFile

@@ -1,0 +1,14 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+config-file: ../../demo-workflow/config.yaml
+files:
+  - calendar.smos
+  - projects/gym.smos
+input:
+- type: "smos-calendar-import\n"
+- wait: 2000
+- type: "smos-query agenda\n"
+- wait: 2000
+- type: "smos-query agenda --this-week\n"
+- wait: 2000
+

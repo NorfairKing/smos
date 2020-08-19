@@ -52,6 +52,7 @@ data ASCIInemaSpec
         asciinemaFiles :: [FilePath],
         asciinemaWorkingDir :: Maybe FilePath,
         asciinemaWorkflowDir :: Maybe FilePath,
+        asciinemaConfigFile :: Maybe FilePath,
         asciinemaInput :: [ASCIInemaCommand]
       }
   deriving (Show, Eq)
@@ -71,6 +72,7 @@ instance YamlSchema ASCIInemaSpec where
           ]
         <*> optionalField "working-dir" "The working directory directory"
         <*> optionalField "workflow-dir" "The workflow directory to set via an environment variable"
+        <*> optionalField "config-file" "The config file to set via an environment variable"
         <*> optionalFieldWithDefault "input" [] "The inputs to send to the command"
 
 withRestoredFiles :: [FilePath] -> IO a -> IO a
@@ -131,10 +133,12 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
       -- Get the output file's parent directory ready
       env <- getEnvironment
       mWorkflowDir <- mapM (resolveDir parentDir) asciinemaWorkflowDir
+      mConfigFile <- mapM (resolveFile parentDir) asciinemaConfigFile
       let env' =
             concat
               [ env,
-                [("SMOS_WORKFLOW_DIR", fromAbsDir p) | p <- maybeToList mWorkflowDir]
+                [("SMOS_WORKFLOW_DIR", fromAbsDir p) | p <- maybeToList mWorkflowDir],
+                [("SMOS_CONFIG_FILE", fromAbsFile p) | p <- maybeToList mConfigFile]
               ]
       pc <- case asciinemaCommand of
         Nothing ->
