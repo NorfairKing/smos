@@ -1,0 +1,11 @@
+command: smos example.smos
+file: example.smos
+input:
+- send: e
+- wait: 1000
+- type: Hello world!
+- wait: 1000
+- send: "\e"
+- wait: 1000
+- send: 'q'
+- wait: 1000
