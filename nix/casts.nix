@@ -22,6 +22,7 @@ let
         smos-query
         smos-archive
         smos-asciinema
+        smos-calendar-import
       ]; # Add the smos packages here one by one because smos-docs-site shouldn't be in here.
       buildCommand =
         let
