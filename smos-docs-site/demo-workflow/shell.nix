@@ -1,5 +1,5 @@
 let
-  pkgs = import ../nix/pkgs.nix;
+  pkgs = import ../../nix/pkgs.nix;
 in
 pkgs.stdenv.mkDerivation rec {
   name = "smos-demo-workflow-shell";
@@ -11,6 +11,7 @@ pkgs.stdenv.mkDerivation rec {
     smos-query
     smos-archive
     smos-sync-client
+    smos-calendar-import
   ];
 
   shellHook = ''

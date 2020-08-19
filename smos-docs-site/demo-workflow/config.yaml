@@ -29,3 +29,8 @@ scheduler:
       destination: projects/weekly-[ %V | monday ].smos
       schedule: "0 12 * * 7" # Cron schedule: "At 12:00 on Sunday."
 
+calendar:
+  sources:
+    - name: "Example agenda"
+      source: agenda.ics
+      destination: calendar.smos
