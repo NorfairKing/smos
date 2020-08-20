@@ -125,10 +125,7 @@ instance GenValid (Filter Entry) where
         ]
   shrinkValid = shrinkValidFilter
 
-instance
-  (Show a, Ord a, GenValid a, FilterArgument a, GenValid (Filter a)) =>
-  GenValid (Filter (Set a))
-  where
+instance GenValid (Filter a) => GenValid (Filter (Set a)) where
   genValid = withTopLevelBranches $ oneof [FilterAny <$> genValid, FilterAll <$> genValid]
   shrinkValid = shrinkValidFilter
 

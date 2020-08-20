@@ -47,7 +47,7 @@ withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-
 disjunctMap :: (Show k, Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
 disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
 
-changedMap :: (Ord k, GenValid k, Eq v, GenValid v) => Map k v -> Gen (Map k v)
+changedMap :: (Eq v, GenValid v) => Map k v -> Gen (Map k v)
 changedMap = traverse (\v -> genValid `suchThat` (/= v))
 
 readClientContents :: SyncClientSettings -> IO ContentsMap

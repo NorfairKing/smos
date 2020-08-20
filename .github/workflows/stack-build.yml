@@ -40,11 +40,11 @@ jobs:
         run: |
           cd smos-web-server/front && nix-shell --run "yarn bundle"
 
-      - name: Build
+      - name: Build autoexporter
         run: |
           stack install --system-ghc autoexporter
 
-      - name: Build
+      - name: Build smos packages
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --jobs 1 --test-arguments='--seed=42' \
             smos \

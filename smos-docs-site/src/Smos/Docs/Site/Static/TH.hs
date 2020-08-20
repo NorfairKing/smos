@@ -29,7 +29,6 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Path
 import Path.IO
-import Path.Internal
 import qualified System.FilePath as FP
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}

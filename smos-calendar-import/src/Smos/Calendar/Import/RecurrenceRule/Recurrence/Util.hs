@@ -92,7 +92,7 @@ byYearDayExpand year s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(Yea
    in case compare yd 0 of
         EQ -> Nothing -- Wouldn't be valid, but that's fine
         GT -> Just $ fromIntegral yd
-        LT -> Just $ fromIntegral $ fromIntegral days + yd + 1 -- Must be positive
+        LT -> Just $ fromIntegral $ days + yd + 1 -- Must be positive
 
 byMonthDayExpandEveryMonth :: Integer -> Set ByMonthDay -> Maybe (NonEmpty (Month, Word))
 byMonthDayExpandEveryMonth year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $ \(MonthDay md) -> do
@@ -101,7 +101,7 @@ byMonthDayExpandEveryMonth year s = NE.nonEmpty $ sort $ flip concatMap (S.toLis
   case compare md 0 of
     EQ -> [] -- Wouldn't be valid, but that's fine
     GT -> pure (month, fromIntegral md)
-    LT -> pure (month, fromIntegral $ fromIntegral days + md + 1) -- Must be positive
+    LT -> pure (month, fromIntegral $ days + md + 1) -- Must be positive
 
 byMonthDayExpandMonth :: Integer -> Month -> Set ByMonthDay -> Maybe (NonEmpty Word)
 byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(MonthDay md) ->
@@ -109,7 +109,7 @@ byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toLis
    in case compare md 0 of
         EQ -> Nothing -- Wouldn't be valid, but that's fine
         GT -> Just $ fromIntegral md
-        LT -> Just $ fromIntegral $ fromIntegral days + md + 1 -- Must be positive
+        LT -> Just $ fromIntegral $ days + md + 1 -- Must be positive
 
 byEveryWeekDayWeek :: Set DayOfWeek -> Maybe (NonEmpty DayOfWeek)
 byEveryWeekDayWeek = NE.nonEmpty . S.toList

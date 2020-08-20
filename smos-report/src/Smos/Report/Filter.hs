@@ -953,7 +953,7 @@ tcMapFilter func =
 tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
 tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 
-tcSetFilter :: (Validity a, Show a, Ord a, FilterArgument a) => TC (Filter a) -> TC (Filter (Set a))
+tcSetFilter :: TC (Filter a) -> TC (Filter (Set a))
 tcSetFilter func =
   tcWithTopLevelBranches $ tcChoices $
     let anyTC = fmap FilterAny . func
