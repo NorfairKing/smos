@@ -87,7 +87,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
             DispatchClock
               ClockSettings
                 { clockSetFilter = clockFlagFilter,
-                  clockSetPeriod = fromMaybe Today clockFlagPeriodFlags,
+                  clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
                   clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
                   clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
                   clockSetClockFormat = case clockFlagClockFormat of

@@ -41,7 +41,11 @@ component =
   H.mkComponent
     { initialState: identity
     , render: render
-    , eval: H.mkEval $ H.defaultEval { handleAction = handle, initialize = Just Init }
+    , eval:
+      H.mkEval
+        $ H.defaultEval
+            { handleAction = handle, initialize = Just Init
+            }
     }
 
 render :: forall m. State -> H.ComponentHTML Action () m
