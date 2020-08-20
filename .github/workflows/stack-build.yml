@@ -42,6 +42,33 @@ jobs:
 
       - name: Build
         run: |
-          stack install --system-ghc autoexporter && stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --jobs 1 --test-arguments='--seed=42'
-        env:
-          SHELL: bash
+          stack install --system-ghc autoexporter
+
+      - name: Build
+        run: |
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --jobs 1 --test-arguments='--seed=42' \
+            smos \
+            smos-api \
+            smos-api-gen \
+            smos-archive \
+            smos-asciinema \
+            smos-calendar-import \
+            smos-client \
+            smos-client-gen \
+            smos-convert-org \
+            smos-cursor \
+            smos-cursor-gen \
+            smos-data \
+            smos-data-gen \
+            smos-query \
+            smos-report \
+            smos-report-cursor \
+            smos-report-cursor-gen \
+            smos-report-gen \
+            smos-scheduler \
+            smos-server \
+            smos-server-gen \
+            smos-single \
+            smos-sync-client \
+            smos-sync-client-gen \
+            smos-web-server
