@@ -40,13 +40,13 @@ jobs:
         run: |
           cd smos-web-server/front && nix-shell --run "yarn bundle"
 
-      - name: Build autoexporter
-        run: |
-          stack install --system-ghc autoexporter
-
       - name: Build dependencies
         run: |
           stack build --system-ghc --only-dependencies
+
+      - name: Build autoexporter
+        run: |
+          stack install --system-ghc autoexporter
 
       - name: Build smos-data
         run: |
