@@ -39,6 +39,9 @@
           <a href=@{PageR customisation_haskell}>
             Customisation in Haskell
         <li>
+          <a href=@{PageR file_browser}>
+            File Browser
+        <li>
           <a href=@{SmosKeybindingsR}>
             Default Keybindings
         <li>

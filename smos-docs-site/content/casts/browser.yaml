@@ -1,0 +1,30 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
+input:
+- type: "smos\n"
+- wait: 1000
+- send: "?"
+- wait: 1000
+- send: "/"
+- wait: 1000
+- type: "browser"
+- wait: 2000
+- type: "\e" 
+- wait: 1000
+- send: "bw"
+- wait: 3000
+- send: "bp"
+- wait: 2000
+- send: "j"
+- wait: 500
+- send: "\n"
+- wait: 1000
+- send: "bp"
+- wait: 1000
+- send: "j"
+- wait: 500
+- send: "\n"
+- wait: 1000
+- type: "q" 
+- wait: 1000
+

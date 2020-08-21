@@ -23,7 +23,7 @@
       M-?
     by default.
 
-  <h2>
+  <h2 id="File">
     File
   <h3>
     Empty
@@ -57,13 +57,13 @@
   ^{keyMapTable $ fileKeyMapAnyMatchers $ keyMapFileKeyMap defaultKeyMap }
 
 
-  <h2>
+  <h2 id="FileBrowser">
     File Browser
   <h3>
     Browser
   ^{keyMapTable $ keyMapBrowserKeyMap defaultKeyMap }
 
-  <h2>
+  <h2 id="Reports">
     Reports
   <h3>
     Next Action Report
@@ -72,7 +72,7 @@
     Filter
   ^{keyMapTable $ reportsKeymapNextActionReportFilterMatchers $ keyMapReportsKeyMap defaultKeyMap }
 
-  <h2>
+  <h2 id="Help">
     Help
   <h3>
     List of keybindings
@@ -81,6 +81,6 @@
     Search
   ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap defaultKeyMap }
 
-  <h2>
+  <h2 id="Any">
     Any
   ^{keyMapTable $ keyMapAnyKeyMap defaultKeyMap }
