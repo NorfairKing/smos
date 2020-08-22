@@ -236,10 +236,10 @@ modText = elements ["S", "C", "M", "A"]
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
-parseNothingSpec :: (Show a, Eq a) => P a -> Text -> Spec
+parseNothingSpec :: Show a => P a -> Text -> Spec
 parseNothingSpec p s = it (unwords ["fails to parse", show s]) $ parseNothing p s
 
-parsesValidSpec :: (Show a, Eq a, Validity a) => P a -> Gen Text -> Spec
+parsesValidSpec :: (Show a, Validity a) => P a -> Gen Text -> Spec
 parsesValidSpec p gen = it "only parses valid values" $ forAll gen $ parsesValid p
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
@@ -250,7 +250,7 @@ parseJust p s res =
         unlines ["P failed on input", show s, "with error", errorBundlePretty err]
     Right out -> out `shouldBe` res
 
-parseNothing :: (Show a, Eq a) => P a -> Text -> Expectation
+parseNothing :: Show a => P a -> Text -> Expectation
 parseNothing p s =
   case parse (p <* eof) "test input" s of
     Right v ->
@@ -258,7 +258,7 @@ parseNothing p s =
         unlines ["P succeeded on input", show s, "at parsing", show v, "but it should have failed."]
     Left _ -> pure ()
 
-parsesValid :: (Show a, Eq a, Validity a) => P a -> Text -> Property
+parsesValid :: (Show a, Validity a) => P a -> Text -> Property
 parsesValid p s =
   checkCoverage $
     let (useful, ass) =
