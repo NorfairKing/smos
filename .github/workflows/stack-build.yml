@@ -50,125 +50,125 @@ jobs:
 
       - name: Build smos-data
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-data
 
       - name: Build smos-data-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-data-gen
 
       - name: Build smos-report
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-report
 
       - name: Build smos-report-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-report-gen
 
       - name: Build smos-convert-org
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-convert-org
 
       - name: Build smos-calendar-import
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-calendar-import
 
       - name: Build smos-asciinema
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-asciinema
 
       - name: Build smos-single
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-single
 
       - name: Build smos-scheduler
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-scheduler
 
       - name: Build smos-query
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-query
 
       - name: Build smos-archive
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-archive
 
       - name: Build smos-api
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-api
 
       - name: Build smos-api-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-api-gen
 
       - name: Build smos-cursor
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-cursor
 
       - name: Build smos-cursor-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-cursor-gen
 
       - name: Build smos-report-cursor
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-report-cursor
 
       - name: Build smos-report-cursor-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-report-cursor-gen
 
       - name: Build smos-client
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-client
 
       - name: Build smos-client-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-client-gen
 
       - name: Build smos-server
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-server
 
       - name: Build smos-server-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-server-gen
 
       - name: Build smos-sync-client
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-sync-client
 
       - name: Build smos-sync-client-gen
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-sync-client-gen 
 
       - name: Build smos-web-server
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos-web-server
 
       - name: Build smos
         run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --test-arguments='--seed=42' \
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
             smos

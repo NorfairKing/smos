@@ -8,14 +8,8 @@ import Data.GenValidity.Containers
 import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import qualified Data.Set as S
-import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Test.QuickCheck
-
--- | Until we have it in genvalidity-time
-instance GenValid DayOfWeek where
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-  genValid = genValidStructurallyWithoutExtraChecking
 
 -- | Until we have it in time and then in genvalidity-time
 instance GenValid Month where

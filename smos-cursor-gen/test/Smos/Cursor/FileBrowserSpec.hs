@@ -16,7 +16,6 @@ import Smos.Undo
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
-import Text.Show.Pretty
 
 spec :: Spec
 spec = do

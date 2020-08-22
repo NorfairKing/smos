@@ -112,11 +112,11 @@ extra-deps:
   # nix-sha256: sha256:0kxz4iw7qmgc0c8rrwfy6d0pwlcbsi7igsgfrmcgwszcymq2w8ki
   
 - git: https://github.com/NorfairKing/fuzzy-time
-  commit: c296b1de29a7795895bb1c68311021ce149406e2
+  commit: 9f93ff36ccfd69b4b2958f5dc458b6f6400aa97e
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
-  # nix-sha256: sha256:1zk92kfk6vm86hm9n6q3b81fihkqxy8h1nwzfla42pj46bnkszky
+  # nix-sha256: sha256:056k8maj6bq6gfbgq8xjxphgn1x97n34gqwh2mx55srmmdjzdnic
 
 - git: https://github.com/NorfairKing/dirforest
   commit: e8c63dae86099c3c50e7908f84487126048cd93b
@@ -147,7 +147,7 @@ extra-deps:
   # nix-sha256: sha256:0d3aky2hr3xz7mr3vcvvsgiv4ahw8xm2k7v8aaj6lkfpzrvrbvgk
 
 - git: https://github.com/NorfairKing/validity
-  commit: df818378705f681b58f0375a74d7606c865c70bb
+  commit: 44c45bc2a858a2c4c0c1e75c5ae9a649456f0020
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -183,7 +183,7 @@ extra-deps:
   - validity-unordered-containers
   - validity-uuid
   - validity-vector
-  # nix-sha256: sha256:0maj2vjx8kpq6mzgh0vnnzf0a6l5jbmk1bpsz3qa9xbqlpdcm5xm
+  # nix-sha256: sha256:167dxsnmp617fzlcpvsi5nbjxc5sx41qzw074rrm8g27y98al5z6
 
 - git: https://github.com/NorfairKing/yamlparse-applicative
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
@@ -201,6 +201,7 @@ nix:
   packages:
   - asciinema
   - autoconf
+  - cacert
   - haskellPackages.autoexporter
   - killall
   - zlib

@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 
@@ -32,7 +33,7 @@ instance Validity a => Validity (CollapseEntry a)
 instance NFData a => NFData (CollapseEntry a)
 
 makeCollapseEntry :: a -> CollapseEntry a
-makeCollapseEntry a =
+makeCollapseEntry !a =
   CollapseEntry
     { collapseEntryValue = a,
       collapseEntryShowContents = True,

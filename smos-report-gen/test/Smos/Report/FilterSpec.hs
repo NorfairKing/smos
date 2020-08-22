@@ -508,7 +508,7 @@ tcSpec tc ast a =
       Right r -> r `shouldBe` a
 
 parsesValidSpec ::
-  (Show a, Eq a, Validity a, Show s, Stream s Identity m, GenValid s) => Parsec s () a -> Spec
+  (Show a, Validity a, Show s, Stream s Identity m, GenValid s) => Parsec s () a -> Spec
 parsesValidSpec parser =
   it "produces valid values whenever parsing succeeds"
     $ forAllValid

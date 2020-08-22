@@ -19,7 +19,7 @@ spec :: Spec
 spec = do
   forMatchingFilesIn "test_resources/success/file" $ \tf ->
     it (fromAbsFile tf ++ " succesfully parses as .smos") $
-      shouldSucceedInParsingAsSmosFile @SmosFile tf
+      shouldSucceedInParsingAsSmosFile tf
   successAndFailureTests @SmosFile "file"
   successAndFailureTests @Entry "entry"
   successAndFailureTests @Header "header"
@@ -49,8 +49,6 @@ successAndFailureTests name =
       it (fromAbsFile tf ++ " successfully fails to parse") $ shouldFailToParse @a tf
 
 shouldSucceedInParsingAsSmosFile ::
-  forall a.
-  (Validity a, Show a, FromJSON a) =>
   Path Abs File ->
   IO ()
 shouldSucceedInParsingAsSmosFile tf = do
@@ -100,7 +98,7 @@ shouldFailToParse tf = do
 
 readFileByExtension ::
   forall a.
-  (Show a, FromJSON a) =>
+  FromJSON a =>
   Path Abs File ->
   IO (Either String a)
 readFileByExtension tf = do

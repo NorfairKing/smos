@@ -738,9 +738,6 @@ deriving instance Ord DayOfWeek -- Silly that this doesn't exist. We need to be 
 
 deriving instance Generic DayOfWeek
 
-instance Validity DayOfWeek where -- Until we have it in validity-time
-  validate = trivialValidation
-
 instance YamlSchema DayOfWeek where -- Until we have it in yamlparse-applicative
   yamlSchema =
     alternatives
