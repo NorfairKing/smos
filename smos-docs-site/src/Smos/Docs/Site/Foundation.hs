@@ -23,6 +23,7 @@ import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Casts
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
+import Smos.Version (smosVersion)
 import Text.Hamlet
 import Text.Read
 import Yesod

@@ -6,6 +6,7 @@
       <h2 .subtitle>
         A comprehensive self-management system
 
+
 <section .section .container>
   <div .columns>
     <div .column .is-3>
@@ -13,3 +14,8 @@
 
     <div .column .is-9>
       ^{widget}
+
+<footer .footer>
+  <div .content .has-text-centered>
+    <pre>
+      Version #{smosVersion}

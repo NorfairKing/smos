@@ -39,7 +39,7 @@ ensureCast specFile = do
             RecordSettings
               { recordSetSpecFile = specFile,
                 recordSetOutputFile = outputFile,
-                recordSetWait = 1,
+                recordSetSpeed = 1,
                 recordSetColumns = 80,
                 recordSetRows = 25,
                 recordSetMistakes = NoMistakes, -- TODO make the mistakes work: MistakesWithProbability 0.03,
