@@ -13,6 +13,7 @@ import qualified Env
 import Options.Applicative
 import Path.IO
 import Smos.Server.OptParse.Types
+import Smos.Version
 import qualified System.Environment as System
 import YamlParse.Applicative (readConfigFile)
 
@@ -84,7 +85,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-server"
+    description = "Smos Server: " <> smosVersion
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags

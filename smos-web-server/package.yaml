@@ -43,6 +43,7 @@ library:
   - smos-client
   - smos-report
   - smos-server
+  - smos-version
   - stm
   - template-haskell
   - text

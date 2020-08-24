@@ -18,6 +18,7 @@ import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
 import Smos.Types
+import Smos.Version
 import qualified System.Environment as System
 import System.Exit (die)
 
@@ -207,7 +208,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos editor"
+    description = "Smos TUI Editor: " <> smosVersion
 
 parseArgs :: Parser Arguments
 parseArgs =
@@ -219,4 +220,4 @@ parseFlags :: Parser Flags
 parseFlags =
   Flags
     <$> Report.parseFlags
-    <*> optional (flag' True (mconcat [long "explainer-mode", help "Activate explainer mode to show what is happening."]))
+    <*> optional (flag' True (mconcat [long "explainer-mode", help "Activate explainer mode to show what is happening"]))

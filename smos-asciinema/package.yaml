@@ -33,6 +33,7 @@ library:
     - pretty-show
     - random
     - smos-report
+    - smos-version
     - stm
     - text
     - time

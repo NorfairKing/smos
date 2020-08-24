@@ -32,6 +32,7 @@ library:
     - safe
     - smos-data
     - smos-report
+    - smos-version
     - text
     - time
     - validity

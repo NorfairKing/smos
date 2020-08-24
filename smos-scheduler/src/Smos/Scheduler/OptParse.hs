@@ -16,6 +16,7 @@ import Path.IO
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
+import Smos.Version
 import qualified System.Environment as System
 
 getInstructions :: IO Instructions
@@ -88,7 +89,7 @@ argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-scheduler"
+    description = "Smos Scheduler Tool: " <> smosVersion
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

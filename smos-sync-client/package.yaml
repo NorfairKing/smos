@@ -47,6 +47,7 @@ library:
   - smos-api
   - smos-client
   - smos-report
+  - smos-version
   - stm
   - time
   - text

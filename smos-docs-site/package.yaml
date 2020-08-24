@@ -35,6 +35,7 @@ library:
   - smos-server
   - smos-single
   - smos-sync-client
+  - smos-version
   - smos-web-server
   - template-haskell
   - text

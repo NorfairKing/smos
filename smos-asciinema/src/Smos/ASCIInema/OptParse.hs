@@ -15,6 +15,7 @@ import Smos.ASCIInema.Input
 import Smos.ASCIInema.OptParse.Types
 import Smos.ASCIInema.Output
 import Smos.ASCIInema.WindowSize
+import Smos.Version
 import qualified System.Environment as System
 import System.Posix.IO (stdOutput)
 
@@ -66,7 +67,7 @@ argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-scheduler"
+    description = "Smos ASCII cast Recorder: " <> smosVersion
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

@@ -9,6 +9,7 @@ where
 import Options.Applicative
 import Path.IO
 import Smos.Convert.Org.OptParse.Types
+import Smos.Version
 import System.Environment
 
 getSettings :: IO Settings
@@ -45,7 +46,7 @@ flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-convert-org"
+    description = "Smos Org-mode Conversion Tool: " <> smosVersion
 
 parseFlags :: Parser Flags
 parseFlags =

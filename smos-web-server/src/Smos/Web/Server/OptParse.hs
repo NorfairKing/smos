@@ -15,6 +15,7 @@ import Options.Applicative
 import Path.IO
 import Servant.Client
 import qualified Smos.Server.OptParse as API
+import Smos.Version
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -86,7 +87,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-web-server"
+    description = "Smos Web Server: " <> smosVersion
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags

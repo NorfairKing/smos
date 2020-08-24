@@ -30,6 +30,7 @@ import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
+import Smos.Version
 import qualified System.Environment as System
 
 getInstructions :: SmosQueryConfig -> IO Instructions
@@ -205,7 +206,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-query"
+    description = "Smos Query Tool: " <> smosVersion
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags

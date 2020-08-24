@@ -17,6 +17,7 @@ import Path.IO
 import Smos.Calendar.Import.OptParse.Types
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+import Smos.Version
 import qualified System.Environment as System
 import System.Exit
 
@@ -73,7 +74,7 @@ flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-archive"
+    description = "Smos Calendar Import Tool: " <> smosVersion
 
 parseFlags :: Parser Flags
 parseFlags =

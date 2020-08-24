@@ -19,6 +19,7 @@ import Smos.API
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Sync.Client.OptParse.Types
+import Smos.Version
 import qualified System.Environment as System
 import System.Exit (die)
 
@@ -175,7 +176,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "smos-sync-client"
+    description = "Smos Sync Client: " <> smosVersion
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
