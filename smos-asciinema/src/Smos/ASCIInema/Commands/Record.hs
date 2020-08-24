@@ -172,7 +172,7 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
                       [Wait 500]
                     ]
             race -- For some reason the output conduit never finishes, so this works.
-              (runConduit $ inputWriter recordSetOutputView recordSetWait recordSetMistakes tAttributes tMasterHandle commands)
+              (runConduit $ inputWriter recordSetOutputView recordSetSpeed recordSetMistakes tAttributes tMasterHandle commands)
               (runConduit $ outputConduit recordSetOutputView outVar tMasterHandle)
           case mExitedNormally of
             Nothing -> do
@@ -181,10 +181,10 @@ runASCIInema rs@RecordSettings {..} specFilePath spec@ASCIInemaSpec {..} = do
             Just (Right _) -> die "Should not happen: The outputter finished before the inputter"
             Just (Left inputEvents) -> do
               outputEvents <- readTVarIO outVar
-              pure $ completeCast rs spec start inputEvents outputEvents
+              pure $ completeCast rs spec recordSetSpeed start inputEvents outputEvents
 
-completeCast :: RecordSettings -> ASCIInemaSpec -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
-completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
+completeCast :: RecordSettings -> ASCIInemaSpec -> Speed -> UTCTime -> [(UTCTime, Text)] -> [(UTCTime, ByteString)] -> Cast
+completeCast RecordSettings {..} ASCIInemaSpec {..} speed start inputs outputs =
   let castHeader =
         Header
           { headerWidth = recordSetColumns,
@@ -196,5 +196,5 @@ completeCast RecordSettings {..} ASCIInemaSpec {..} start inputs outputs =
             headerTitle = Nothing,
             headerEnv = Nothing
           }
-      castEvents = interleaveEvents start inputs outputs
+      castEvents = map (eventSpeedUp speed) $ interleaveEvents start inputs outputs
    in Cast {..}

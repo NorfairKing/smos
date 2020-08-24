@@ -143,3 +143,6 @@ interleaveEvents start inputs outputs = go (sortOn fst inputs) (sortOn fst outpu
     makeInput t d = Event {eventTime = makeTime t, eventData = EventInput d}
     makeOutput :: UTCTime -> ByteString -> Event
     makeOutput t d = Event {eventTime = makeTime t, eventData = EventOutput $ TE.decodeUtf8With TE.lenientDecode d}
+
+eventSpeedUp :: Double -> Event -> Event
+eventSpeedUp s e = e {eventTime = eventTime e * s}

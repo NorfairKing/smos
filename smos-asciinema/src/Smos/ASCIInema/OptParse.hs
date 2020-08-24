@@ -28,7 +28,7 @@ getInstructions = do
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (CommandRecord RecordFlags {..}) Flags Environment {..} _ = do
-  let recordSetWait = fromMaybe 1 recordFlagWait
+  let recordSetSpeed = fromMaybe 1 recordFlagSpeed
   recordSetSpecFile <- resolveFile' recordFlagSpecFile
   recordSetOutputFile <- resolveFile' recordFlagOutputFile
   (cols, rows) <- getWindowSize stdOutput
@@ -98,15 +98,15 @@ parseCommandRecord = info parser modifier
                         metavar "OUTPUT_FILE"
                       ]
                   )
-                <*> parseWaitFlag
+                <*> parseSpeedFlag
                 <*> optional (option auto (mconcat [help "The number of columns", metavar "COLUMNS", long "columns"]))
                 <*> optional (option auto (mconcat [help "The number of rows", metavar "ROWS", long "rows"]))
                 <*> parseMistakesFlag
                 <*> parseOutputViewFlag
             )
 
-parseWaitFlag :: Parser (Maybe Double)
-parseWaitFlag = optional $ option auto $ mconcat [long "wait", help "The wait-time multiplier", metavar "DOUBLE"]
+parseSpeedFlag :: Parser (Maybe Double)
+parseSpeedFlag = optional $ option auto $ mconcat [long "speed", help "The speed multiplier", metavar "DOUBLE"]
 
 parseMistakesFlag :: Parser (Maybe Mistakes)
 parseMistakesFlag =

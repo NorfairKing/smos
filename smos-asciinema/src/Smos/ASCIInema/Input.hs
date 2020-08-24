@@ -126,7 +126,7 @@ charSpeed c
   | otherwise = 2 -- Special characters take even longer
 
 waitMilliSeconds :: Double -> Word -> IO ()
-waitMilliSeconds speed delay = threadDelay $ round $ fromIntegral (delay * 1000) * speed
+waitMilliSeconds speed delay = threadDelay $ round $ fromIntegral (delay * 1000) / speed
 
 validMistakes :: Char -> [Char]
 validMistakes c =

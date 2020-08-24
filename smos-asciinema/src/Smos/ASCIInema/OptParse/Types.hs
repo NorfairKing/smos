@@ -17,7 +17,7 @@ data RecordFlags
   = RecordFlags
       { recordFlagSpecFile :: FilePath,
         recordFlagOutputFile :: FilePath,
-        recordFlagWait :: Maybe Double,
+        recordFlagSpeed :: Maybe Double,
         recordFlagColumns :: Maybe Word,
         recordFlagRows :: Maybe Word,
         recordFlagMistakeProbability :: Maybe Mistakes,
@@ -47,7 +47,7 @@ data RecordSettings
   = RecordSettings
       { recordSetSpecFile :: Path Abs File,
         recordSetOutputFile :: Path Abs File,
-        recordSetWait :: Double,
+        recordSetSpeed :: Double,
         recordSetColumns :: Word,
         recordSetRows :: Word,
         recordSetMistakes :: Mistakes,
