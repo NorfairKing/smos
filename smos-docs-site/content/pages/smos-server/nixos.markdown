@@ -9,10 +9,11 @@ A NixOs module has to run your own smos server on NixOs has been provided at `ni
 let
   smos-production = (
     import (
-      builtins.fetchGit {
-        url = "https://github.com/NorfairKing/smos.git";
+      (import <nixpkgs> {}).fetchgit {
+        url = "https://github.com/NorfairKing/smos";
         rev = "0000000000000000000000000000000000000000"; # Use a recent commit hash
-        ref = "master";
+        sha256 = "sha256:0000000000000000000000000000000000000000000000000000";
+        leaveDotGit = true;
       } + "/nix/module.nix"
     ) { envname = "production"; }
   );
