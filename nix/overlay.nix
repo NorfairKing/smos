@@ -3,6 +3,19 @@ with final.lib;
 with final.haskell.lib;
 
 let
+  versionInfo = final.stdenv.mkDerivation {
+    name = "smos-version-info";
+    src = builtins.path {
+      name = "smos-dot-git";
+      path = ../.git;
+    };
+    buildInputs = [ final.git ];
+    buildCommand = ''
+      export GIT_DIR="$src"
+      HASH=$(git rev-parse HEAD)
+      echo "$HASH" > $out
+    '';
+  };
   haskellNix = import (
     final.fetchFromGitHub {
       owner = "input-output-hk";
@@ -26,6 +39,11 @@ let
         reinstallableLibGhc = true; # Because we override the 'time' version
         packages.time.components.library.preConfigure = ''
           ${final.autoconf}/bin/autoreconf -i
+        '';
+
+        # The smos version library needs access to the git info
+        packages.smos-version.components.library.preBuild = ''
+          export SMOS_GIT_INFO=${final.smosVersionInfo}
         '';
 
         # The smos web server front-end.
@@ -90,6 +108,7 @@ let
       # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.
       {
         packages = {
+          smos-version.package.ghcOptions = "-Werror";
           smos.package.ghcOptions = "-Werror";
           smos-data.package.ghcOptions = "-Werror";
           smos-data-gen.package.ghcOptions = "-Werror";
@@ -193,9 +212,10 @@ in
       name = "smos-release";
       paths = attrValues final.smosPackages;
     };
-
+  smosVersionInfo = versionInfo;
   smosPackages =
     {
+      "smos-version" = smosPkg "smos-version";
       "smos" = smosPkgWithOwnComp "smos";
       "smos-data" = smosPkg "smos-data";
       "smos-data-gen" = smosPkg "smos-data-gen";

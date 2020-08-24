@@ -48,6 +48,11 @@ jobs:
         run: |
           stack install --system-ghc autoexporter
 
+      - name: Build smos-version
+        run: |
+          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \
+            smos-data
+
       - name: Build smos-data
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic --test-arguments='--seed=42' \

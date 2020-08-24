@@ -1,6 +1,7 @@
 resolver: lts-15.15
 packages:
 
+- smos-version
 - smos
 - smos-data
 - smos-data-gen

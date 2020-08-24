@@ -30,8 +30,10 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.Time
+import Data.Version (showVersion)
 import Import hiding ((<+>))
 import Lens.Micro
+import Paths_smos
 import Smos.Actions
 import Smos.Cursor.Collapse
 import Smos.Cursor.FileBrowser
@@ -44,6 +46,7 @@ import Smos.History
 import Smos.Keys
 import Smos.Style
 import Smos.Types
+import Smos.Version
 import Text.Time.Pretty
 
 smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
@@ -103,31 +106,36 @@ drawInfo km =
     $ B.vCenterLayer
     $ vBox
     $ map B.hCenterLayer
-    $ [ str "SMOS",
-        str " ",
-        str "version 0.0.0.0",
-        str "by Tom Sydney Kerckhove",
-        str "Smos is open source and freely distributable",
-        str " ",
-        str "Building smos takes time, energy and money.",
-        str "Please consider supporting the project.",
-        str "https://smos.cs-syd.eu/support"
+    $ concat
+      [ [ str "SMOS",
+          str " ",
+          str "by Tom Sydney Kerckhove",
+          str "Smos is open source and freely distributable.",
+          str " ",
+          str "Building smos takes time, energy and money.",
+          str "Please consider supporting the project.",
+          str "https://smos.cs-syd.eu/support"
+        ],
+        case lookupStartingActionInKeymap of
+          Nothing -> []
+          Just kpt ->
+            [ str " ",
+              str " ",
+              str "If you don't know what to do,",
+              hBox
+                [ str "activate the ",
+                  drawActionName $ actionName selectHelp,
+                  str " command using the ",
+                  withAttr keyAttr $ txt kpt,
+                  str " key"
+                ],
+              str "for an overview of the available commands."
+            ],
+        [ str " ",
+          str $ "Version " <> showVersion version,
+          str smosVersion
+        ]
       ]
-      ++ case lookupStartingActionInKeymap of
-        Nothing -> []
-        Just kpt ->
-          [ str " ",
-            str " ",
-            str "If you don't know what to do,",
-            hBox
-              [ str "activate the ",
-                drawActionName $ actionName selectHelp,
-                str " command using the ",
-                withAttr keyAttr $ txt kpt,
-                str " key"
-              ],
-            str "for an overview of the available commands"
-          ]
   where
     lookupStartingActionInKeymap :: Maybe Text
     lookupStartingActionInKeymap =

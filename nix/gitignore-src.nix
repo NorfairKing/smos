@@ -9,5 +9,5 @@ let
     };
 in
 {
-  inherit (import gitignoreSrc { inherit (final) lib; }) gitignoreSource;
+  inherit (import gitignoreSrc { inherit (final) lib; }) gitignoreSource gitignoreFilter;
 }

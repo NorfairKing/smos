@@ -42,6 +42,7 @@ library:
   - smos-data
   - smos-report
   - smos-report-cursor
+  - smos-version
   - text
   - time
   - unordered-containers
