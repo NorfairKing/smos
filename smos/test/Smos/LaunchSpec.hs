@@ -32,6 +32,22 @@ spec = modifyMaxSuccess (`div` 50) $ do
           let file = td </> rf
           writeSmosFile file sf
           startupSpec wd file
+  specify "Launching smos with an existent workflow dir on a nonexistent file works fine" $ forAllValid $ \rd ->
+    forAllValid $ \rf ->
+      withSystemTempDir "smos-test" $ \td -> do
+        let wd = td </> rd
+        ensureDir wd
+        let file = td </> rf
+        startupSpec wd file
+  specify "Launching smos with an existent workflow dir on an existent file works fine" $ forAllValid $ \rd ->
+    forAllValid $ \rf ->
+      forAllValid $ \sf ->
+        withSystemTempDir "smos-test" $ \td -> do
+          let wd = td </> rd
+          ensureDir wd
+          let file = td </> rf
+          writeSmosFile file sf
+          startupSpec wd file
 
 startupSpec :: Path Abs Dir -> Path Abs File -> IO ()
 startupSpec workflowDir startupFile = do
