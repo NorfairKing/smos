@@ -30,8 +30,7 @@ defaultFileKeyMap =
   FileKeyMap
     { fileKeyMapEmptyMatchers =
         listMatchers
-          [ exactChar 'q' stop,
-            exactKey KEsc stop,
+          [ exactKey KEsc stop,
             exactChar 'e' startHeaderFromEmptyAndSelectHeader,
             exactChar 'E' startHeaderFromEmptyAndSelectHeader,
             exactChar '?' selectHelp,
@@ -39,8 +38,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapEntryMatchers =
         listMatchers
-          [ exactChar 'q' stop,
-            exactChar 'w' saveFile,
+          [ exactChar 'w' saveFile,
             -- Selections
             exactChar 'a' entrySelectHeaderAtEnd,
             exactChar 'A' entrySelectHeaderAtEnd,
@@ -217,7 +215,8 @@ defaultFileKeyMap =
       fileKeyMapLogbookMatchers = listMatchers [],
       fileKeyMapAnyMatchers =
         listMatchers
-          [ exactChar 'u' undo,
+          [ exactChar 'q' stop,
+            exactChar 'u' undo,
             modifiedChar 'u' [MMeta] redo,
             exactKey KEsc entrySelectWhole
           ]
