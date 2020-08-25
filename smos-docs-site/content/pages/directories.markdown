@@ -18,13 +18,12 @@ workflow
 
 ## The Workflow directory
 
-SMOS files can be everywhere on your disk, however the `smos-query` executable which used to generate reports and gather information will
-consult only the *workflow* directory.
-The default value is `~/workflow`.
+SMOS files can be anywhere on your disk. However the `smos-query` executable which is used to generate reports and gather 
+information will consult only the *workflow* directory. The default value is `~/workflow`.
 
 ## The projects directory
 
-Within the workflow directory, projects will be stored in seperate files within the projects directory.
+Within the workflow directory, projects will be stored in separate files within the projects directory.
 The default value is `~/workflow/projects`.
 If the workflow directory is reconfigured, the projects directory will still be within the workflow directory by default.
 
