@@ -4,6 +4,7 @@ module Smos
   ( smos,
     smosWithoutRuntimeConfig,
     startSmosOn,
+    startSmosWithVtyBuilderOn,
     module Smos.Config,
   )
 where
@@ -12,7 +13,7 @@ import Brick.BChan as Brick
 import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
-import Graphics.Vty as Vty (defaultConfig, mkVty)
+import Graphics.Vty as Vty (Vty, defaultConfig, mkVty)
 import Import
 import Smos.Actions.File
 import Smos.App
@@ -33,10 +34,12 @@ smosWithoutRuntimeConfig sc = do
   startSmosOn p sc
 
 startSmosOn :: Path Abs File -> SmosConfig -> IO ()
-startSmosOn p sc@SmosConfig {..} = do
+startSmosOn = startSmosWithVtyBuilderOn (mkVty defaultConfig)
+
+startSmosWithVtyBuilderOn :: IO Vty.Vty -> Path Abs File -> SmosConfig -> IO ()
+startSmosWithVtyBuilderOn vtyBuilder p sc@SmosConfig {..} = do
   s <- buildInitState p
   chan <- Brick.newBChan maxBound
-  let vtyBuilder = mkVty defaultConfig
   initialVty <- vtyBuilder
   Left s' <-
     race

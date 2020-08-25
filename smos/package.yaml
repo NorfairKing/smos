@@ -82,6 +82,7 @@ tests:
     - QuickCheck
     - aeson
     - aeson-pretty
+    - async
     - base
     - brick
     - bytestring
@@ -115,6 +116,7 @@ tests:
     - smos-report-gen
     - text
     - time
+    - unix
     - validity
     - vty
     - yaml
