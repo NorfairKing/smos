@@ -29,6 +29,20 @@ input:
 - wait: 500
 - send: "e"
 - wait: 500
+- type: "Go sign the contract and pick up my gym badge"
+- wait: 500
+- send: "\e"
+- wait: 500
+- send: "tt"
+- wait: 500
+- send: "ss"
+- wait: 500
+- type: "+2h"
+- wait: 2000
+- send: "\n"
+- wait: 2000
+- send: "e"
+- wait: 500
 - type: "Go to my first gym appointment"
 - wait: 500
 - send: "\e"
