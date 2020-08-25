@@ -3,8 +3,10 @@ module Smos.LaunchSpec where
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.Async
 import Control.Exception
+import qualified Data.ByteString as SB
 import Data.GenValidity.Path ()
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
+import Graphics.Vty.Output.TerminfoBased (setWindowSize)
 import Path
 import Path.IO
 import Smos
@@ -12,6 +14,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
 import System.Environment
+import System.Posix.IO
 import System.Posix.Terminal
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -107,8 +110,11 @@ startupSpec workflowDirSpec startupFile = do
                       }
                 }
           }
-  (_, slaveFd) <- openPseudoTerminal
-  let vtyBuilder = Vty.mkVty $ Vty.defaultConfig {Vty.inputFd = Just slaveFd, Vty.outputFd = Just slaveFd}
+  (masterFd, slaveFd) <- openPseudoTerminal
+  let vtyBuilder = do
+        vty <- Vty.mkVty $ Vty.defaultConfig {Vty.inputFd = Just slaveFd, Vty.outputFd = Just slaveFd}
+        setWindowSize slaveFd (80, 24)
+        pure vty
   let runSmos = startSmosWithVtyBuilderOn vtyBuilder startupFile config
   withAsync runSmos $ \smosAsync -> do
     threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos did the initialisation
@@ -117,3 +123,5 @@ startupSpec workflowDirSpec startupFile = do
       Just (Left err) -> expectationFailure $ displayException err
       Just (Right ()) -> expectationFailure "Smos exited."
       Nothing -> cancel smosAsync
+  masterHandle <- fdToHandle masterFd
+  SB.hGetNonBlocking masterHandle 4096 >>= SB.putStr

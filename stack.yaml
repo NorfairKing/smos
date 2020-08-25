@@ -40,6 +40,10 @@ extra-deps:
 
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 
+- git: https://github.com/jtdaugherty/vty.git
+  commit: 6a9c90da0e093cec1d4903924eb0f6a33be489cb
+  # nix-sha256: sha256:07mdgaqw3m5m8nxsi47grqkhvk6jvlqr7q7bj3jp9xc9gf08bqxh
+
 # Be sure to change `reinstallableLibGhc` back to false if you change the `time` version to be the same as the one included in the GHC that you use.
 - git: https://github.com/haskell/time
   commit: 8ffb3da1118ddd40cbb2bc3cd8cf4a9d94d15211
