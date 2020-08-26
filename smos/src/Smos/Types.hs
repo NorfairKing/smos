@@ -538,7 +538,8 @@ renderKeyCombination = go
 -- Cannot factor this out because of the problem with help cursor.
 data EditorCursor
   = EditorCursor
-      { editorCursorFileCursor :: Maybe SmosFileEditorCursor,
+      { editorCursorLastOpenedFile :: Path Abs File,
+        editorCursorFileCursor :: Maybe SmosFileEditorCursor,
         editorCursorBrowserCursor :: Maybe FileBrowserCursor,
         editorCursorReportCursor :: Maybe ReportCursor,
         editorCursorHelpCursor :: Maybe HelpCursor,
@@ -550,7 +551,8 @@ startEditorCursor p = do
   mErrOrCursor <- startSmosFileEditorCursor p
   let go sfec =
         EditorCursor
-          { editorCursorFileCursor = Just sfec,
+          { editorCursorLastOpenedFile = p,
+            editorCursorFileCursor = Just sfec,
             editorCursorBrowserCursor = Nothing,
             editorCursorReportCursor = Nothing,
             editorCursorHelpCursor = Nothing,
