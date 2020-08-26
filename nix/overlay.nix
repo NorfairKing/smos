@@ -241,6 +241,7 @@ in
       "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-web-server" = smosPkgWithOwnComp "smos-web-server";
+    } // optionalAttrs (!isMacos) {
       "smos-docs-site" =
         let
           rawDocsSite = smosPkg "smos-docs-site";
