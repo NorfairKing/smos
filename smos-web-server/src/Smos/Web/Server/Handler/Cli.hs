@@ -40,7 +40,10 @@ getCliR = withLogin' $ \un _ -> do
   M.keys <$> readTVarIO instancesVar >>= liftIO . print
   defaultLayout $ do
     setTitle "Smos Web TUI"
-    addScript $ StaticR hterm_js
+    addScript $ StaticR xterm_js
+    addScript $ StaticR xterm_attach_js
+    addScript $ StaticR xterm_fit_js
+    addStylesheet $ StaticR xterm_css
     addScript $ StaticR jquery_js
     $(widgetFile "cli")
 
@@ -142,5 +145,5 @@ communicate sih = do
 debugConduit :: MonadIO m => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC go
   where
-    go _ = pure ()
--- go bs = liftIO $ putStrLn $ name <> ": " <> show bs
+    -- go _ = pure ()
+    go bs = liftIO $ putStrLn $ name <> ": " <> show bs

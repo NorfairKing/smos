@@ -48,9 +48,6 @@ makeSmosInstance workflowDir startingFile = do
           }
   let runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
   smosInstanceHandleAsync <- async runSmos
-  -- Wait a bit to be sure that smos did the initialisation
-  -- TODO get rid of this. The websockets should take care of it
-  threadDelay $ 100 * 1000
   mErrOrDone <- poll smosInstanceHandleAsync
   case mErrOrDone of
     Just (Left err) -> throwIO err

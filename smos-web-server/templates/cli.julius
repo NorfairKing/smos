@@ -1,7 +1,7 @@
 
-function initCli() {
-  const terminal = document.querySelector('#terminal');
-  const encoder = new TextEncoder();
+
+function initWebsocket() {
+  // Build the websocket
   const loc = window.location;
   var new_uri;
   if (loc.protocol === "https:") {
@@ -10,67 +10,15 @@ function initCli() {
     new_uri = "ws:";
   }
   new_uri += "//" + loc.host + "/instance";
-  const ws = new WebSocket(new_uri);
-  const t = new hterm.Terminal("light");
-  t.prefs_.set('cursor-blink', true);
-  t.prefs_.set('cursor-blink-cycle', [500, 500]);
-  t.prefs_.set('enable-dec12', true);
-  t.prefs_.set('copy-on-select', false);
+  const socket = new WebSocket(new_uri);
 
-  var connected = false;
-
-  t.onTerminalReady = function() {
-    // Create a new terminal IO object and give it the foreground.
-    // (The default IO object just prints warning messages about unhandled
-    // things to the the JS console.)
-    const io = t.io.push();
-    function send(str) {
-      if (connected) {
-        ws.send(encoder.encode(str));
-      } else {
-        console.log(str);
-      }
-    }
-
-    io.onVTKeystroke = send;
-
-    io.sendString = send;
-
-    io.onTerminalResize = (columns, rows) => {
-      $.ajax({
-        type: "POST",
-        url: "/resize",
-        data: JSON.stringify({
-          "width": columns,
-          "height": rows
-        }),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function(data){
-          console.log("Succeeded in resizing the terminal.");
-          console.log(data);
-        },
-        failure: function(data){
-          console.log("Failed to resize the terminal.");
-          console.log(data);
-        }
-      });
-    };
-
-
-  // You can call io.push() to foreground a fresh io context, which can
-  // be uses to give control of the terminal to something else.  When that
-  // thing is complete, should call io.pop() to restore control to the
-  // previous io object.
-  };
-
-  ws.onopen = function(e) {
+  socket.onopen = function(e) {
     console.log("Connected: ");
     console.log(e);
     connected = true;
   }
   // Listen for the close connection event
-  ws.onclose = function(e) {
+  socket.onclose = function(e) {
     console.log("Disconnected: ");
     console.log(e);
     connected = false;
@@ -81,23 +29,224 @@ function initCli() {
   }
 
   // Listen for connection errors
-  ws.onerror = function(e) {
+  socket.onerror = function(e) {
     console.log("Error: ");
     console.log(e);
   }
 
   // Listen for new messages arriving at the client
-  ws.onmessage = function(e) {
-    t.io.print(e.data);
-  }
 
-  t.decorate(terminal);
-  t.installKeyboard();
+  // Do this to debug:
+  // socket.onmessage = function(e) {
+  //   console.log("Got a message:");
+  //   console.log(e.data);
+  // }
 
+  return socket;
 }
 
-hterm.defaultStorage = new lib.Storage.Memory();
+
 window.onload = async function() {
-  await lib.init();
-  initCli();
+  // Get the container element
+  terminalContainer = document.querySelector('#terminal')
+
+  // Create a terminal
+  const options = {
+    'cursorBlink': true,
+    'theme': {
+      'foreground': '#657b83',
+      'background': '#001b1a',
+      'cursor': '#93a1a1',
+      'cursorAccent': '#93a1a1',
+
+      'black': '#073642',
+      'brightBlack': '#001b1a',
+
+      'red': '#dc322f',
+      'brightRed': '#cb4b16',
+
+      'green': '#859900',
+      'brightGreen': '#586e75',
+
+      'yellow': '#b58900',
+      'brightYellow': '#657b83',
+
+      'blue': '#268bd2',
+      'brightBlue': '#839496',
+
+      'magenta': '#d33682',
+      'brightMagenta': '#6c71c4',
+
+      'cyan': '#2aa198',
+      'brightCyan': '#93a1a1',
+
+      'white': '#eee8d5',
+      'brightWhite': '#fdf6e3'
+    }
+  };
+  const term = new Terminal(options);
+  window.term = term;
+
+  // Load the attach addon to attach to the remote instance via websockets
+  socket = initWebsocket();
+  const attachAddon = new AttachAddon.AttachAddon(socket);
+  term.loadAddon(attachAddon);
+
+
+  // Load the fit addon
+  const fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+
+
+  // Open the terminal
+  term.open(terminalContainer);
+
+  // Fit the to the container
+  fitAddon.fit();
+  term.focus();
+
+
+  // A function to resize the terminal
+  const resize = () => {
+    console.log("trying to resize");
+
+    // Sending a request
+    const dimensions = fitAddon.proposeDimensions(); // We avoid using fitAddon.fit() as that would incur the expensive dimension calculations twice
+    // Do the resizing locally
+    term.resize(dimensions.cols, dimensions.rows);
+
+    // Do the resizing remotely
+    $.ajax({
+      type: "POST",
+      url: "/resize",
+      data: JSON.stringify({
+        "width": term.cols,
+        "height": term.rows
+      }),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data){
+        console.log("Succeeded in resizing the terminal.");
+        console.log(data);
+      },
+      failure: function(data){
+        console.log("Failed to resize the terminal.");
+        console.log(data);
+      }
+    });
+  };
+
+  
+
+  // Make sure to resize when the window changes in size
+  window.addEventListener('resize', resize);
+
+  // k
+  resize();
 };
+
+
+
+// 
+// function initCli() {
+//   const terminal = document.querySelector('#terminal');
+//   const encoder = new TextEncoder();
+//   const loc = window.location;
+//   var new_uri;
+//   if (loc.protocol === "https:") {
+//     new_uri = "wss:";
+//   } else {
+//     new_uri = "ws:";
+//   }
+//   new_uri += "//" + loc.host + "/instance";
+//   const ws = new WebSocket(new_uri);
+//   const t = new hterm.Terminal("light");
+//   t.prefs_.set('cursor-blink', true);
+//   t.prefs_.set('cursor-blink-cycle', [500, 500]);
+//   t.prefs_.set('enable-dec12', true);
+//   t.prefs_.set('copy-on-select', false);
+// 
+//   var connected = false;
+// 
+//   t.onTerminalReady = function() {
+//     // Create a new terminal IO object and give it the foreground.
+//     // (The default IO object just prints warning messages about unhandled
+//     // things to the the JS console.)
+//     const io = t.io.push();
+//     function send(str) {
+//       if (connected) {
+//         ws.send(encoder.encode(str));
+//       } else {
+//         console.log(str);
+//       }
+//     }
+// 
+//     io.onVTKeystroke = send;
+// 
+//     io.sendString = send;
+// 
+//     io.onTerminalResize = (columns, rows) => {
+//       $.ajax({
+//         type: "POST",
+//         url: "/resize",
+//         data: JSON.stringify({
+//           "width": columns,
+//           "height": rows
+//         }),
+//         contentType: "application/json; charset=utf-8",
+//         dataType: "json",
+//         success: function(data){
+//           console.log("Succeeded in resizing the terminal.");
+//           console.log(data);
+//         },
+//         failure: function(data){
+//           console.log("Failed to resize the terminal.");
+//           console.log(data);
+//         }
+//       });
+//     };
+// 
+// 
+//   // You can call io.push() to foreground a fresh io context, which can
+//   // be uses to give control of the terminal to something else.  When that
+//   // thing is complete, should call io.pop() to restore control to the
+//   // previous io object.
+//   };
+// 
+//   ws.onopen = function(e) {
+//     console.log("Connected: ");
+//     console.log(e);
+//     connected = true;
+//   }
+//   // Listen for the close connection event
+//   ws.onclose = function(e) {
+//     console.log("Disconnected: ");
+//     console.log(e);
+//     connected = false;
+// 
+//     // Remove the terminal and go back to the previous page.
+//     terminal.parentNode.removeChild(terminal);
+//     window.location.replace("@{HomeR}");
+//   }
+// 
+//   // Listen for connection errors
+//   ws.onerror = function(e) {
+//     console.log("Error: ");
+//     console.log(e);
+//   }
+// 
+//   // Listen for new messages arriving at the client
+//   ws.onmessage = function(e) {
+//     t.io.print(e.data);
+//   }
+// 
+//   t.decorate(terminal);
+//   t.installKeyboard();
+// 
+// }
+// 
+// hterm.defaultStorage = new lib.Storage.Memory();
+// window.onload = async function() {
+//   await lib.init();
+//   initCli();
+// };
