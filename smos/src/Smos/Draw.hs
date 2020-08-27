@@ -71,7 +71,7 @@ drawEditorCursor workflowDir configKeyMap EditorCursor {..} =
       Just sfec -> drawFileEditorCursor workflowDir configKeyMap MaybeSelected sfec
     BrowserSelected -> case editorCursorBrowserCursor of
       Nothing -> pure $ str "No directory selected" -- TODO make this a nice view
-      Just fbc -> pure $ drawFileBrowserCursor MaybeSelected fbc
+      Just fbc -> pure $ drawFileBrowserCursor workflowDir MaybeSelected fbc
     ReportSelected -> case editorCursorReportCursor of
       Nothing -> pure $ str "No report selected" -- TODO make this a nice view
       Just rc -> pure $ drawReportCursor MaybeSelected rc
@@ -226,9 +226,9 @@ defaultPadding = Pad defaultPaddingAmount
 defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
-drawFileBrowserCursor :: Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor s FileBrowserCursor {..} =
-  withHeading (str "File Browser: " <+> drawDirPath fileBrowserCursorBase)
+drawFileBrowserCursor :: Path Abs Dir -> Select -> FileBrowserCursor -> Widget ResourceName
+drawFileBrowserCursor workflowDir s FileBrowserCursor {..} =
+  withHeading (str "File Browser: " <+> drawOpenedDirPath workflowDir fileBrowserCursorBase)
     $ viewport ResourceViewport Vertical
     $ maybe
       emptyScreen
@@ -271,6 +271,11 @@ drawOpenedFilePath :: Path Abs Dir -> Path Abs File -> Widget n
 drawOpenedFilePath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
   Nothing -> drawFilePath currentFile
   Just rf -> drawFilePath $ [reldir|workflow|] </> rf
+
+drawOpenedDirPath :: Path Abs Dir -> Path Abs Dir -> Widget n
+drawOpenedDirPath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
+  Nothing -> drawDirPath currentFile
+  Just rf -> drawDirPath $ [reldir|workflow|] </> rf
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
