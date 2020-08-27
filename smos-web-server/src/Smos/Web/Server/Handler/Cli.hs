@@ -26,6 +26,7 @@ import Smos.Client hiding (Header)
 import Smos.Data
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosInstance
+import Smos.Web.Server.SmosSession
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import Text.Julius
@@ -52,41 +53,10 @@ getInstanceR = do
   withLogin' $ \un t -> do
     instancesVar <- getsYesod appSmosInstances
     webSockets
-      $ withSession un instancesVar
+      $ withSmosSession un instancesVar
       $ \instanceHandle -> do
         liftIO $ putStrLn "Starting to communicate"
         communicate instanceHandle
-
-withSession :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
-withSession un instancesVar func = do
-  mInstance <- M.lookup un <$> readTVarIO instancesVar
-  case mInstance of
-    Nothing -> bracket readyDir unreadyDir $ \workflowDir -> do
-      startingFile <- liftIO $ resolveFile workflowDir "example.smos"
-      withSmosInstance workflowDir startingFile $ \i ->
-        bracket_ (addInstance i) (removeInstance i) (func i)
-    Just i -> do
-      liftIO $ putStrLn "Should not happen."
-      -- Should not happen, but it's fine if it does, I guess...
-      -- We'll assume that whatever opened this instance will deal with cleanup as well.
-      func i
-  where
-    addInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
-    addInstance i = atomically $ modifyTVar' instancesVar $ M.insert un i
-    removeInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
-    removeInstance i = atomically $ modifyTVar' instancesVar $ M.delete un
-    readyDir :: MonadUnliftIO m => m (Path Abs Dir)
-    readyDir = do
-      liftIO $ putStrLn "Loading dir"
-      liftIO $ putStrLn "Creating a new instance"
-      workflowDir <- resolveDir' "/tmp/smos-web-server/example-workflow-dir"
-      -- TODO Load the dir
-      ensureDir workflowDir
-      pure workflowDir
-    unreadyDir :: MonadUnliftIO m => Path Abs Dir -> m ()
-    unreadyDir workflowDir = do
-      liftIO $ putStrLn "Unloading dir"
-      removeDirRecur workflowDir -- TODO save the dir
 
 postResizeR :: Handler Value
 postResizeR = do
@@ -129,21 +99,11 @@ communicate sih = do
   runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
   inputAsync <- async $ runConduit inputConduit
   outputAsync <- async $ runConduit outputConduit
-  ioAsync <- async $ waitEither inputAsync outputAsync
-  ress <- waitEither (smosInstanceHandleAsync sih) ioAsync
-  case ress of
-    Left () -> do
-      -- Smos exited
-      sendClose ("Close" :: Text)
-      liftIO $ destroySmosInstance sih
-    Right res ->
-      -- Something went wrong with the communications?
-      case res of
-        Left () -> cancel outputAsync
-        Right () -> cancel inputAsync
+  void $ waitAnyCancel [inputAsync, outputAsync, smosInstanceHandleAsync sih]
+  sendClose ("Close" :: Text)
 
 debugConduit :: MonadIO m => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC go
   where
-    -- go _ = pure ()
-    go bs = liftIO $ putStrLn $ name <> ": " <> show bs
+    go _ = pure ()
+-- go bs = liftIO $ putStrLn $ name <> ": " <> show bs
