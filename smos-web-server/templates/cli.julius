@@ -53,6 +53,9 @@ window.onload = async function() {
   // Create a terminal
   const options = {
     'cursorBlink': true,
+    'fontWeight': '500',
+    'fontWeightBold': '900',
+    'fontFamily': 'monospace',
     'theme': {
       'foreground': '#657b83',
       'background': '#001b1a',
