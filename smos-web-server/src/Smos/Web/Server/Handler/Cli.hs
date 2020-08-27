@@ -77,29 +77,14 @@ postResizeR = do
       Aeson.Error err ->
         sendStatusJSON badRequest400 $
           makeError ("JSON Parse Error: " <> T.pack err)
-      Aeson.Success TerminalSize {..} -> do
+      Aeson.Success terminalSize -> do
         instancesVar <- getsYesod appSmosInstances
         mInstanceHandle <- liftIO $ M.lookup un <$> readTVarIO instancesVar
         case mInstanceHandle of
           Nothing -> sendStatusJSON badRequest400 $ makeError "There is no smos instance yet."
           Just instanceHandle -> do
-            liftIO $ smosInstanceResize instanceHandle tsWidth tsHeight
-            -- TODO deal with failed resizing
+            liftIO $ smosInstanceResize instanceHandle terminalSize
             pure $ object ["success" .= True]
-
-data TerminalSize
-  = TerminalSize
-      { tsWidth :: !Word,
-        tsHeight :: !Word
-      }
-  deriving (Show)
-
-instance FromJSON TerminalSize where
-  parseJSON =
-    withObject "TerminalSize" $ \o -> do
-      tsWidth <- o .: "width"
-      tsHeight <- o .: "height"
-      pure TerminalSize {..}
 
 communicate :: SmosInstanceHandle -> WebSocketsT Handler ()
 communicate sih = do

@@ -1,8 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Web.Server.SmosInstance where
 
 import Conduit
+import Data.Aeson
 import Data.ByteString (ByteString)
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
@@ -73,6 +75,19 @@ smosInstanceInputSink = sinkHandle . smosInstanceHandleMasterHandle
 smosInstanceOutputSource :: MonadIO m => SmosInstanceHandle -> ConduitT i ByteString m ()
 smosInstanceOutputSource = sourceHandle . smosInstanceHandleMasterHandle
 
--- TODO use a struct to deal with the width and height so that we can never mix up width and height
-smosInstanceResize :: SmosInstanceHandle -> Word -> Word -> IO ()
-smosInstanceResize SmosInstanceHandle {..} width height = setWindowSize smosInstanceHandleResizeFd (fromIntegral width, fromIntegral height)
+data TerminalSize
+  = TerminalSize
+      { terminalWidth :: !Word,
+        terminalHeight :: !Word
+      }
+  deriving (Show)
+
+instance FromJSON TerminalSize where
+  parseJSON =
+    withObject "TerminalSize" $ \o -> do
+      terminalWidth <- o .: "width"
+      terminalHeight <- o .: "height"
+      pure TerminalSize {..}
+
+smosInstanceResize :: SmosInstanceHandle -> TerminalSize -> IO ()
+smosInstanceResize SmosInstanceHandle {..} TerminalSize {..} = setWindowSize smosInstanceHandleResizeFd (fromIntegral terminalWidth, fromIntegral terminalHeight)
