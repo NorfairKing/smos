@@ -10,6 +10,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types.Status (badRequest400)
 import Path
 import Path.IO
@@ -45,7 +46,8 @@ withReadiedDir un = bracket readyDir unreadyDir
     readyDir = do
       liftIO $ putStrLn "Loading dir"
       liftIO $ putStrLn "Creating a new instance"
-      workflowDir <- resolveDir' "/tmp/smos-web-server/example-workflow-dir"
+      dataDir <- resolveDir' "/tmp/smos-web-server/data"
+      workflowDir <- resolveDir dataDir $ usernameToPath un
       -- TODO Load the dir
       ensureDir workflowDir
       pure workflowDir
@@ -53,3 +55,6 @@ withReadiedDir un = bracket readyDir unreadyDir
     unreadyDir workflowDir = do
       liftIO $ putStrLn "Unloading dir"
       removeDirRecur workflowDir -- TODO save the dir
+
+usernameToPath :: Username -> FilePath
+usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
