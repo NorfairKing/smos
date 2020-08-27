@@ -32,7 +32,7 @@ in
                 };
             };
         };
-      sync-server =
+      server =
         mkOption {
           type =
             types.submodule {
@@ -68,7 +68,7 @@ in
       docs-site-service =
         with cfg.docs-site;
         optionalAttrs enable {
-          "smos-docs-${envname}" = {
+          "smos-docs-site-${envname}" = {
             description = "Smos docs site ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment =
@@ -106,14 +106,14 @@ in
               serverAliases = tail hosts;
             };
         };
-      sync-server-service =
-        with cfg.sync-server;
+      server-service =
+        with cfg.server;
 
         let
           workingDir = "/www/smos/${envname}/data/";
         in
           optionalAttrs enable {
-            "smos-sync-${envname}" = {
+            "smos-server-${envname}" = {
               description = "Smos sync server ${envname} Service";
               wantedBy = [ "multi-user.target" ];
               environment =
@@ -143,8 +143,8 @@ in
                 };
             };
           };
-      sync-server-host =
-        with cfg.sync-server;
+      server-host =
+        with cfg.server;
 
         optionalAttrs enable {
           "${head hosts}" =
@@ -166,16 +166,16 @@ in
         systemd.services =
           concatAttrs [
             docs-site-service
-            sync-server-service
+            server-service
           ];
         networking.firewall.allowedTCPPorts = builtins.concatLists [
           (optional cfg.docs-site.enable cfg.docs-site.port)
-          (optional cfg.sync-server.enable cfg.sync-server.port)
+          (optional cfg.server.enable cfg.server.port)
         ];
         services.nginx.virtualHosts =
           concatAttrs [
             docs-site-host
-            sync-server-host
+            server-host
           ];
       };
 }
