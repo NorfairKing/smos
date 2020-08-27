@@ -74,6 +74,10 @@ function initCli() {
     console.log("Disconnected: ");
     console.log(e);
     connected = false;
+
+    // Remove the terminal and go back to the previous page.
+    terminal.parentNode.removeChild(terminal);
+    window.location.replace("@{HomeR}");
   }
 
   // Listen for connection errors

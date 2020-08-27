@@ -10,7 +10,6 @@ module Smos.Web.Server.Handler.Cli
 where
 
 import Conduit
-import Control.Concurrent.STM
 import Control.Monad
 import Data.Aeson as Aeson
 import Data.Aeson.Text as JSON
@@ -31,11 +30,14 @@ import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import Text.Julius
 import Text.Show.Pretty (ppShow)
+import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
 getCliR :: Handler Html
-getCliR = withLogin' $ \un t -> do
+getCliR = withLogin' $ \un _ -> do
+  instancesVar <- getsYesod appSmosInstances
+  M.keys <$> readTVarIO instancesVar >>= liftIO . print
   defaultLayout $ do
     setTitle "Smos Web TUI"
     addScript $ StaticR hterm_js
@@ -43,12 +45,45 @@ getCliR = withLogin' $ \un t -> do
     $(widgetFile "cli")
 
 getInstanceR :: Handler ()
-getInstanceR =
+getInstanceR = do
   withLogin' $ \un t -> do
-    -- TODO figure out a way to deal with logins here.
     instancesVar <- getsYesod appSmosInstances
-    instanceHandle <- liftIO $ getOrCreateSmosInstance un instancesVar
-    webSockets $ communicate instanceHandle
+    webSockets
+      $ withSession un instancesVar
+      $ \instanceHandle -> do
+        liftIO $ putStrLn "Starting to communicate"
+        communicate instanceHandle
+
+withSession :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
+withSession un instancesVar func = do
+  mInstance <- M.lookup un <$> readTVarIO instancesVar
+  case mInstance of
+    Nothing -> bracket readyDir unreadyDir $ \workflowDir -> do
+      startingFile <- liftIO $ resolveFile workflowDir "example.smos"
+      withSmosInstance workflowDir startingFile $ \i ->
+        bracket_ (addInstance i) (removeInstance i) (func i)
+    Just i -> do
+      liftIO $ putStrLn "Should not happen."
+      -- Should not happen, but it's fine if it does, I guess...
+      -- We'll assume that whatever opened this instance will deal with cleanup as well.
+      func i
+  where
+    addInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
+    addInstance i = atomically $ modifyTVar' instancesVar $ M.insert un i
+    removeInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
+    removeInstance i = atomically $ modifyTVar' instancesVar $ M.delete un
+    readyDir :: MonadUnliftIO m => m (Path Abs Dir)
+    readyDir = do
+      liftIO $ putStrLn "Loading dir"
+      liftIO $ putStrLn "Creating a new instance"
+      workflowDir <- resolveDir' "/tmp/smos-web-server/example-workflow-dir"
+      -- TODO Load the dir
+      ensureDir workflowDir
+      pure workflowDir
+    unreadyDir :: MonadUnliftIO m => Path Abs Dir -> m ()
+    unreadyDir workflowDir = do
+      liftIO $ putStrLn "Unloading dir"
+      removeDirRecur workflowDir -- TODO save the dir
 
 postResizeR :: Handler Value
 postResizeR = do
@@ -62,10 +97,13 @@ postResizeR = do
           makeError ("JSON Parse Error: " <> T.pack err)
       Aeson.Success TerminalSize {..} -> do
         instancesVar <- getsYesod appSmosInstances
-        instanceHandle <- liftIO $ getOrCreateSmosInstance un instancesVar
-        liftIO $ smosInstanceResize instanceHandle tsWidth tsHeight
-        -- TODO deal with failed resizing
-        pure $ object ["success" .= True]
+        mInstanceHandle <- liftIO $ M.lookup un <$> readTVarIO instancesVar
+        case mInstanceHandle of
+          Nothing -> sendStatusJSON badRequest400 $ makeError "There is no smos instance yet."
+          Just instanceHandle -> do
+            liftIO $ smosInstanceResize instanceHandle tsWidth tsHeight
+            -- TODO deal with failed resizing
+            pure $ object ["success" .= True]
 
 data TerminalSize
   = TerminalSize
@@ -81,30 +119,28 @@ instance FromJSON TerminalSize where
       tsHeight <- o .: "height"
       pure TerminalSize {..}
 
-getOrCreateSmosInstance :: Username -> TVar (Map Username SmosInstanceHandle) -> IO SmosInstanceHandle
-getOrCreateSmosInstance un var = do
-  mInstance <- M.lookup un <$> readTVarIO var
-  size <- M.size <$> readTVarIO var
-  case mInstance of
-    Just i -> pure i
-    Nothing -> do
-      workflowDir <- resolveDir' "/tmp/smos-web-server/example-workflow-dir"
-      ensureDir workflowDir
-      startingFile <- resolveFile workflowDir "example.smos"
-      i <- makeSmosInstance workflowDir startingFile
-      atomically $ modifyTVar' var $ M.insert un i
-      pure i
-
 communicate :: SmosInstanceHandle -> WebSocketsT Handler ()
-communicate sih@SmosInstanceHandle {..} = do
+communicate sih = do
   let inputConduit = sourceWS .| debugConduit "Input" .| smosInstanceInputSink sih
       outputConduit = smosInstanceOutputSource sih .| debugConduit "Output" .| sinkWSText
-      runCommunication = do
-        runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
-        race_ (runConduit outputConduit) (runConduit inputConduit)
-  runCommunication
+  runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
+  inputAsync <- async $ runConduit inputConduit
+  outputAsync <- async $ runConduit outputConduit
+  ioAsync <- async $ waitEither inputAsync outputAsync
+  ress <- waitEither (smosInstanceHandleAsync sih) ioAsync
+  case ress of
+    Left () -> do
+      -- Smos exited
+      sendClose ("Close" :: Text)
+      liftIO $ destroySmosInstance sih
+    Right res ->
+      -- Something went wrong with the communications?
+      case res of
+        Left () -> cancel outputAsync
+        Right () -> cancel inputAsync
 
 debugConduit :: MonadIO m => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC go
   where
-    go bs = liftIO $ putStrLn $ name <> ": " <> show bs
+    go _ = pure ()
+-- go bs = liftIO $ putStrLn $ name <> ": " <> show bs

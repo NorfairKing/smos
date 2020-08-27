@@ -3,7 +3,6 @@
 module Smos.Web.Server.SmosInstance where
 
 import Conduit
-import Control.Concurrent
 import Data.ByteString (ByteString)
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
@@ -14,6 +13,7 @@ import System.Posix
 import System.Posix.IO
 import System.Posix.Terminal
 import UnliftIO
+import UnliftIO.Concurrent
 
 data SmosInstanceHandle
   = SmosInstanceHandle
@@ -23,12 +23,15 @@ data SmosInstanceHandle
         smosInstanceHandleAsync :: Async ()
       }
 
-makeSmosInstance :: Path Abs Dir -> Path Abs File -> IO SmosInstanceHandle
+withSmosInstance :: MonadUnliftIO m => Path Abs Dir -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
+withSmosInstance workflowDir startingFile = bracket (makeSmosInstance workflowDir startingFile) destroySmosInstance
+
+makeSmosInstance :: MonadUnliftIO m => Path Abs Dir -> Path Abs File -> m SmosInstanceHandle
 makeSmosInstance workflowDir startingFile = do
-  (masterFd, slaveFd) <- openPseudoTerminal
+  (masterFd, slaveFd) <- liftIO openPseudoTerminal
   let smosInstanceHandleResizeFd = slaveFd
-  smosInstanceHandleMasterHandle <- fdToHandle masterFd
-  smosInstanceHandleSlaveHandle <- fdToHandle slaveFd
+  smosInstanceHandleMasterHandle <- liftIO $ fdToHandle masterFd
+  smosInstanceHandleSlaveHandle <- liftIO $ fdToHandle slaveFd
   let vtyBuilder = do
         vty <- Vty.mkVty $ Vty.defaultConfig {Vty.inputFd = Just slaveFd, Vty.outputFd = Just slaveFd}
         setWindowSize smosInstanceHandleResizeFd (80, 24)
@@ -43,23 +46,29 @@ makeSmosInstance workflowDir startingFile = do
                       }
                 }
           }
-  let runSmos = startSmosWithVtyBuilderOn vtyBuilder startingFile config
+  let runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
   smosInstanceHandleAsync <- async runSmos
   -- Wait a bit to be sure that smos did the initialisation
   -- TODO get rid of this. The websockets should take care of it
   threadDelay $ 100 * 1000
   mErrOrDone <- poll smosInstanceHandleAsync
   case mErrOrDone of
-    Just (Left err) -> fail $ displayException err
-    Just (Right ()) -> fail "Smos exited."
+    Just (Left err) -> throwIO err
+    Just (Right ()) -> throwString "Smos exited."
     Nothing -> pure ()
   pure SmosInstanceHandle {..}
 
-destroySmosInstance :: SmosInstanceHandle -> IO ()
+destroySmosInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
 destroySmosInstance SmosInstanceHandle {..} = do
-  hClose smosInstanceHandleMasterHandle
-  hClose smosInstanceHandleSlaveHandle
+  liftIO $ putStrLn "Destroying smos instance"
   cancel smosInstanceHandleAsync
+  liftIO $ putStrLn "Cancelled the async"
+
+-- For some reason these won't close ...
+-- hClose smosInstanceHandleMasterHandle
+-- liftIO $ putStrLn "Closed the master"
+-- hClose smosInstanceHandleSlaveHandle
+-- liftIO $ putStrLn "Closed the slave"
 
 smosInstanceInputSink :: MonadIO m => SmosInstanceHandle -> ConduitT ByteString o m ()
 smosInstanceInputSink = sinkHandle . smosInstanceHandleMasterHandle
