@@ -22,10 +22,10 @@ import Smos.Style
 import Smos.Types
 import System.Exit
 
-mkSmosApp :: SmosConfig -> App SmosState SmosEvent ResourceName
-mkSmosApp sc@SmosConfig {..} =
+mkSmosApp :: Path Abs Dir -> SmosConfig -> App SmosState SmosEvent ResourceName
+mkSmosApp workflowDir sc@SmosConfig {..} =
   App
-    { appDraw = smosDraw sc,
+    { appDraw = smosDraw workflowDir sc,
       appChooseCursor = smosChooseCursor,
       appHandleEvent = smosHandleEvent sc,
       appStartEvent = smosStartEvent,

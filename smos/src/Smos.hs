@@ -41,9 +41,10 @@ startSmosWithVtyBuilderOn vtyBuilder p sc@SmosConfig {..} = do
   s <- buildInitState p
   chan <- Brick.newBChan maxBound
   initialVty <- vtyBuilder
+  workflowDir <- resolveReportWorkflowDir configReportConfig
   Left s' <-
     race
-      (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp sc) s)
+      (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp workflowDir sc) s)
       (eventPusher chan)
   finalWait $ smosStateAsyncs s'
   case editorCursorFileCursor $ smosStateCursor s' of

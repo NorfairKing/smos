@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -49,11 +50,11 @@ import Smos.Types
 import Smos.Version
 import Text.Time.Pretty
 
-smosDraw :: SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw SmosConfig {..} SmosState {..} =
+smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
+smosDraw workflowDir SmosConfig {..} SmosState {..} =
   [ vBox $
       concat
-        [ [ padBottom Max $ runReader (drawEditorCursor configKeyMap smosStateCursor) smosStateTime,
+        [ [ padBottom Max $ runReader (drawEditorCursor workflowDir configKeyMap smosStateCursor) smosStateTime,
             drawErrorMessages smosStateErrorMessages
           ],
           [ drawExplainerMode smosStateDebugInfo | configExplainerMode
@@ -61,13 +62,13 @@ smosDraw SmosConfig {..} SmosState {..} =
         ]
   ]
 
-drawEditorCursor :: KeyMap -> EditorCursor -> Drawer
-drawEditorCursor configKeyMap EditorCursor {..} =
+drawEditorCursor :: Path Abs Dir -> KeyMap -> EditorCursor -> Drawer
+drawEditorCursor workflowDir configKeyMap EditorCursor {..} =
   case editorCursorSelection of
     HelpSelected -> pure $ drawHelpCursor configKeyMap MaybeSelected editorCursorHelpCursor
     FileSelected -> case editorCursorFileCursor of
       Nothing -> pure $ str "No file selected" -- TODO make this a nice view
-      Just sfec -> drawFileEditorCursor configKeyMap MaybeSelected sfec
+      Just sfec -> drawFileEditorCursor workflowDir configKeyMap MaybeSelected sfec
     BrowserSelected -> case editorCursorBrowserCursor of
       Nothing -> pure $ str "No directory selected" -- TODO make this a nice view
       Just fbc -> pure $ drawFileBrowserCursor MaybeSelected fbc
@@ -251,20 +252,25 @@ drawFileBrowserCursor s FileBrowserCursor {..} =
          in extraStyle $ drawFilePath rf
       FodDir rd -> drawDirPath rd
 
-drawFileEditorCursor :: KeyMap -> Select -> SmosFileEditorCursor -> Drawer
-drawFileEditorCursor keyMap s SmosFileEditorCursor {..} = do
+drawFileEditorCursor :: Path Abs Dir -> KeyMap -> Select -> SmosFileEditorCursor -> Drawer
+drawFileEditorCursor workflowDir keyMap s SmosFileEditorCursor {..} = do
   w <- case historyPresent smosFileEditorCursorHistory of
     Nothing -> pure $ drawInfo keyMap
     Just sfc -> drawSmosFileCursor s sfc
   let heading =
         hBox
           [ str "Editor: ",
-            drawFilePath smosFileEditorPath,
+            drawOpenedFilePath workflowDir smosFileEditorPath,
             if smosFileEditorUnsavedChanges
               then withAttr unsavedAttr (str " [+]")
               else emptyWidget
           ]
   pure $ withHeading heading w
+
+drawOpenedFilePath :: Path Abs Dir -> Path Abs File -> Widget n
+drawOpenedFilePath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
+  Nothing -> drawFilePath currentFile
+  Just rf -> drawFilePath $ [reldir|workflow|] </> rf
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
