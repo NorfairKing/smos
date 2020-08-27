@@ -28,6 +28,7 @@ runSmosWebServer ServeSettings {..} = do
   burl <- parseBaseUrl $ "http://localhost:" <> show (API.serveSetPort serveSetAPISettings)
   man <- liftIO $ Http.newManager Http.tlsManagerSettings
   loginVar <- liftIO $ newTVarIO M.empty
+  instancesVar <- liftIO $ newTVarIO M.empty
   let app =
         App
           { appLogLevel = serveSetLogLevel,
@@ -35,7 +36,8 @@ runSmosWebServer ServeSettings {..} = do
             appAPIBaseUrl = burl,
             appDocsBaseUrl = serveSetDocsUrl,
             appLoginTokens = loginVar,
-            appHttpManager = man
+            appHttpManager = man,
+            appSmosInstances = instancesVar
           }
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =

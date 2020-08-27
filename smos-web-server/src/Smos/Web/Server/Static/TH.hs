@@ -8,6 +8,7 @@ import Smos.Web.Server.Constants
 import System.Environment
 import System.FilePath
 import Yesod.EmbeddedStatic
+import Yesod.EmbeddedStatic.Remote
 
 mkStatic :: Q [Dec]
 mkStatic = do
@@ -27,5 +28,7 @@ mkStatic = do
   mkEmbeddedStatic
     development
     "smosWebServerStatic"
-    [ embedFileAt "smos-web-server-front.js" $ mFrontF "smos-web-server-front"
+    [ embedFileAt "smos-web-server-front.js" $ mFrontF "smos-web-server-front",
+      embedRemoteFileAt "hterm.js" "https://raw.githubusercontent.com/lehins/haskell-webshell/master/files/static/hterm_all.js",
+      embedRemoteFileAt "jquery.js" "https://code.jquery.com/jquery-3.3.1.min.js"
     ]

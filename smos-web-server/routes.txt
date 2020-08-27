@@ -1,5 +1,9 @@
 / HomeR GET
 
+/cli CliR GET
+/instance InstanceR GET
+/resize ResizeR POST
+
 /files FilesR GET
 
 /file/*Texts FileR GET

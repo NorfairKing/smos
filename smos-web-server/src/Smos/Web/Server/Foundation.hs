@@ -32,6 +32,7 @@ import Servant.Auth.Client (Token (..))
 import Servant.Client
 import Smos.Client
 import Smos.Web.Server.Constants
+import Smos.Web.Server.SmosInstance
 import Smos.Web.Server.Widget
 import qualified System.FilePath as FP
 import Text.Hamlet
@@ -47,7 +48,8 @@ data App
         appDocsBaseUrl :: !(Maybe BaseUrl),
         appStatic :: !EmbeddedStatic,
         appLoginTokens :: !(TVar (Map Username Token)),
-        appHttpManager :: !Http.Manager
+        appHttpManager :: !Http.Manager,
+        appSmosInstances :: !(TVar (Map Username SmosInstanceHandle))
       }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
@@ -218,13 +220,16 @@ handleStandardServantErrs err func =
     ConnectionError e -> error $ unwords ["The api seems to be down:", show e]
     e -> error $ unwords ["Error while calling API:", show e]
 
-withLogin :: (Token -> Handler Html) -> Handler Html
-withLogin func = do
+withLogin :: (Token -> Handler a) -> Handler a
+withLogin func = withLogin' $ \_ t -> func t
+
+withLogin' :: (Username -> Token -> Handler a) -> Handler a
+withLogin' func = do
   un <- requireAuthId
   mLoginToken <- lookupToginToken un
   case mLoginToken of
     Nothing -> redirect $ AuthR LoginR
-    Just token -> func token
+    Just token -> func un token
 
 lookupToginToken :: Username -> Handler (Maybe Token)
 lookupToginToken un = do
