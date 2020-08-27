@@ -29,20 +29,18 @@ withSmosSession :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanc
 withSmosSession un instancesVar func = do
   mInstance <- M.lookup un <$> readTVarIO instancesVar
   case mInstance of
-    Nothing -> bracket readyDir unreadyDir $ \workflowDir -> do
+    Nothing -> withReadiedDir un $ \workflowDir -> do
       startingFile <- liftIO $ resolveFile workflowDir "example.smos"
-      withSmosInstance workflowDir startingFile $ \i ->
-        bracket_ (addInstance i) (removeInstance i) (func i)
+      withSmosInstance workflowDir startingFile func
     Just i -> do
       liftIO $ putStrLn "Should not happen."
       -- Should not happen, but it's fine if it does, I guess...
       -- We'll assume that whatever opened this instance will deal with cleanup as well.
       func i
+
+withReadiedDir :: MonadUnliftIO m => Username -> (Path Abs Dir -> m a) -> m a
+withReadiedDir un = bracket readyDir unreadyDir
   where
-    addInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
-    addInstance i = atomically $ modifyTVar' instancesVar $ M.insert un i
-    removeInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
-    removeInstance i = atomically $ modifyTVar' instancesVar $ M.delete un
     readyDir :: MonadUnliftIO m => m (Path Abs Dir)
     readyDir = do
       liftIO $ putStrLn "Loading dir"

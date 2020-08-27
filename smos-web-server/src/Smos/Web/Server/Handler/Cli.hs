@@ -54,9 +54,18 @@ getInstanceR = do
     instancesVar <- getsYesod appSmosInstances
     webSockets
       $ withSmosSession un instancesVar
-      $ \instanceHandle -> do
-        liftIO $ putStrLn "Starting to communicate"
-        communicate instanceHandle
+      $ \instanceHandle ->
+        withSavedInstance un instancesVar instanceHandle $ do
+          liftIO $ putStrLn "Starting to communicate"
+          communicate instanceHandle
+
+withSavedInstance :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> SmosInstanceHandle -> m a -> m a
+withSavedInstance un instancesVar i = bracket_ (addInstance i) (removeInstance i)
+  where
+    addInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
+    addInstance i = atomically $ modifyTVar' instancesVar $ M.insert un i
+    removeInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
+    removeInstance i = atomically $ modifyTVar' instancesVar $ M.delete un
 
 postResizeR :: Handler Value
 postResizeR = do
