@@ -5,34 +5,21 @@
 module Smos.Web.Server.SmosSession where
 
 import Conduit
-import Control.Monad
 import Control.Monad.Logger
-import Data.Aeson as Aeson
-import Data.Aeson.Text as JSON
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Database.Persist.Sqlite as DB
-import Network.HTTP.Types.Status (badRequest400)
 import Path
 import Path.IO
 import Smos.Client hiding (Header)
-import Smos.Data
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosInstance
-import Smos.Web.Server.Static
-import Smos.Web.Server.Widget
-import Text.Julius
-import Text.Show.Pretty (ppShow)
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
-import Yesod.WebSockets
 
 withSmosSession :: (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
 withSmosSession userName token instancesVar func = do

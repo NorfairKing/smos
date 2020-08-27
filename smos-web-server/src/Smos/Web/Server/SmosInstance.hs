@@ -12,10 +12,7 @@ import Path
 import Smos
 import Smos.Default
 import System.Posix
-import System.Posix.IO
-import System.Posix.Terminal
 import UnliftIO
-import UnliftIO.Concurrent
 
 data SmosInstanceHandle
   = SmosInstanceHandle
