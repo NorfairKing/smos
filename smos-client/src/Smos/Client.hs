@@ -8,6 +8,8 @@ module Smos.Client
     module X,
     Token,
     SetCookie,
+    ClientEnv,
+    mkClientEnv,
   )
 where
 

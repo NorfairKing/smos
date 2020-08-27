@@ -33,9 +33,8 @@ library:
   - monad-logger
   - optparse-applicative
   - path
-  - path
   - path-io
-  - path-io
+  - persistent-sqlite
   - pretty-show
   - servant-auth-client
   - servant-client
@@ -45,6 +44,7 @@ library:
   - smos-data
   - smos-report
   - smos-server
+  - smos-sync-client
   - smos-version
   - stm
   - template-haskell

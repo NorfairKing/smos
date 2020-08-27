@@ -6,6 +6,7 @@
 
 module Smos.Sync.Client.Command.Sync
   ( syncSmosSyncClient,
+    doActualSync,
   )
 where
 
@@ -31,6 +32,7 @@ import Data.Validity.UUID ()
 import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
+import Servant.Client
 import Smos.API.SHA256 as SHA256
 import Smos.Client
 import Smos.Sync.Client.Contents
@@ -53,23 +55,27 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
       $ DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1
       $ \pool ->
         withClientEnv setServerUrl $ \cenv ->
-          withLogin cenv setSessionPath setUsername setPassword $ \token -> do
-            logDebugN "CLIENT START"
-            let env =
-                  SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
-            flip runReaderT env $ do
-              void $ runDB $ runMigrationQuiet migrateAll
-              mUUID <- liftIO $ readServerUUID syncSetUUIDFile
-              serverUUID <- case mUUID of
-                -- Never synced before
-                Nothing -> do
-                  serverUUID <- runInitialSync syncSetContentsDir syncSetIgnoreFiles token
-                  liftIO $ writeServerUUID syncSetUUIDFile serverUUID
-                  pure serverUUID
-                -- Already synced before
-                Just serverUUID -> pure serverUUID
-              runSync syncSetContentsDir syncSetBackupDir syncSetIgnoreFiles serverUUID token
-            logDebugN "CLIENT END"
+          withLogin cenv setSessionPath setUsername setPassword $ \token ->
+            doActualSync syncSetUUIDFile pool syncSetContentsDir syncSetIgnoreFiles syncSetBackupDir cenv token
+
+doActualSync :: Path Abs File -> ConnectionPool -> Path Abs Dir -> IgnoreFiles -> Path Abs Dir -> ClientEnv -> Token -> LoggingT IO ()
+doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
+  logDebugN "CLIENT START"
+  let env =
+        SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
+  flip runReaderT env $ do
+    void $ runDB $ runMigrationQuiet migrateAll
+    mServerUUID <- liftIO $ readServerUUID uuidFile
+    serverUUID <- case mServerUUID of
+      -- Never synced before
+      Nothing -> do
+        serverUUID <- runInitialSync contentsDir ignoreFiles token
+        liftIO $ writeServerUUID uuidFile serverUUID
+        pure serverUUID
+      -- Already synced before
+      Just serverUUID -> pure serverUUID
+    runSync contentsDir backupDir ignoreFiles serverUUID token
+  logDebugN "CLIENT END"
 
 runInitialSync :: Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
 runInitialSync contentsDir ignoreFiles token = do

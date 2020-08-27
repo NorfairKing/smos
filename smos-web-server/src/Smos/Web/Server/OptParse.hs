@@ -41,6 +41,9 @@ combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Envi
   let serveSetLogLevel = fromMaybe LevelInfo $ serveFlagLogLevel <|> envLogLevel <|> mc confLogLevel
   let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
   serveSetDocsUrl <- mapM parseBaseUrl $ serveFlagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
+  serveSetDataDir <- case serveFlagDataDir <|> envDataDir <|> mc confDataDir of
+    Nothing -> getCurrentDir
+    Just dd -> resolveDir' dd
   when (serveSetPort == API.serveSetPort serveSetAPISettings) $ die $ "The port for the api server and the web server are the same: " <> show serveSetPort
   pure (Instructions (DispatchServe ServeSettings {..}) Settings)
 
@@ -59,6 +62,7 @@ webServerEnvironmentParser =
     <$> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . API.parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
     <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
     <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
+    <*> Env.var (fmap Just . Env.str) "DATA_DIR" (mE <> Env.help "The directory to store workflows during editing")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -130,6 +134,15 @@ parseCommandServe = info parser modifier
                       [ long "docs-url",
                         metavar "URL",
                         help "The url to the docs site to refer to",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "data-dir",
+                        metavar "FILEPATH",
+                        help "The directory to store workflows during editing",
                         value Nothing
                       ]
                   )

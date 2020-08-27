@@ -50,12 +50,12 @@ getCliR = withLogin' $ \un _ -> do
 
 getInstanceR :: Handler ()
 getInstanceR = do
-  withLogin' $ \un t -> do
+  withLogin' $ \userName token -> do
     instancesVar <- getsYesod appSmosInstances
     webSockets
-      $ withSmosSession un instancesVar
+      $ withSmosSession userName token instancesVar
       $ \instanceHandle ->
-        withSavedInstance un instancesVar instanceHandle $ do
+        withSavedInstance userName instancesVar instanceHandle $ do
           liftIO $ putStrLn "Starting to communicate"
           communicate instanceHandle
 

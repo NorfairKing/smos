@@ -1,7 +1,12 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Smos.Web.Server.SmosSession where
 
 import Conduit
 import Control.Monad
+import Control.Monad.Logger
 import Data.Aeson as Aeson
 import Data.Aeson.Text as JSON
 import Data.ByteString (ByteString)
@@ -11,11 +16,14 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Database.Persist.Sqlite as DB
 import Network.HTTP.Types.Status (badRequest400)
 import Path
 import Path.IO
 import Smos.Client hiding (Header)
 import Smos.Data
+import Smos.Sync.Client.Command.Sync
+import Smos.Sync.Client.OptParse.Types
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosInstance
 import Smos.Web.Server.Static
@@ -26,35 +34,48 @@ import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
-withSmosSession :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
-withSmosSession un instancesVar func = do
-  mInstance <- M.lookup un <$> readTVarIO instancesVar
+withSmosSession :: (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
+withSmosSession userName token instancesVar func = do
+  mInstance <- M.lookup userName <$> readTVarIO instancesVar
   case mInstance of
-    Nothing -> withReadiedDir un $ \workflowDir -> do
+    Nothing -> withReadiedDir userName token $ \workflowDir -> do
       startingFile <- liftIO $ resolveFile workflowDir "example.smos"
       withSmosInstance workflowDir startingFile func
     Just i -> do
-      liftIO $ putStrLn "Should not happen."
       -- Should not happen, but it's fine if it does, I guess...
       -- We'll assume that whatever opened this instance will deal with cleanup as well.
       func i
 
-withReadiedDir :: MonadUnliftIO m => Username -> (Path Abs Dir -> m a) -> m a
-withReadiedDir un = bracket readyDir unreadyDir
+withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a
+withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkflowDir)
   where
-    readyDir :: MonadUnliftIO m => m (Path Abs Dir)
+    toWorkflowDir :: Path Abs Dir -> Path Abs Dir
+    toWorkflowDir = (</> [reldir|workflow|])
+    readyDir :: m (Path Abs Dir)
     readyDir = do
-      liftIO $ putStrLn "Loading dir"
-      liftIO $ putStrLn "Creating a new instance"
-      dataDir <- resolveDir' "/tmp/smos-web-server/data"
-      workflowDir <- resolveDir dataDir $ usernameToPath un
-      -- TODO Load the dir
+      dataDir <- getsYesod appDataDir
+      userDir <- resolveDir dataDir $ usernameToPath userName
+      let workflowDir = toWorkflowDir userDir
       ensureDir workflowDir
-      pure workflowDir
-    unreadyDir :: MonadUnliftIO m => Path Abs Dir -> m ()
-    unreadyDir workflowDir = do
-      liftIO $ putStrLn "Unloading dir"
-      removeDirRecur workflowDir -- TODO save the dir
+      doSync userDir
+      pure userDir
+    unreadyDir :: Path Abs Dir -> m ()
+    unreadyDir userDir = do
+      doSync userDir
+    doSync :: Path Abs Dir -> m ()
+    doSync userDir = do
+      let workflowDir = toWorkflowDir userDir
+      backupDir <- resolveDir userDir "sync-conflict-backups"
+      dbFile <- resolveFile userDir "sync-metadata.sqlite3"
+      uuidFile <- resolveFile userDir "server-uuid.json"
+      man <- getsYesod appHttpManager
+      burl <- getsYesod appAPIBaseUrl
+      let cenv = mkClientEnv man burl
+      liftIO $ runStderrLoggingT
+        $ filterLogger (\_ ll -> ll >= LevelWarn)
+        $ DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1
+        $ \pool ->
+          doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
 
 usernameToPath :: Username -> FilePath
 usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText

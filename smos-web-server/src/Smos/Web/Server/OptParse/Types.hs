@@ -6,6 +6,7 @@ module Smos.Web.Server.OptParse.Types where
 import Control.Monad.Logger
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
+import Path
 import Servant.Client
 import qualified Smos.Server.OptParse.Types as API
 import YamlParse.Applicative
@@ -26,7 +27,8 @@ data ServeFlags
       { serveFlagAPIFlags :: !API.ServeFlags,
         serveFlagLogLevel :: !(Maybe LogLevel),
         serveFlagPort :: !(Maybe Int),
-        serveFlagDocsUrl :: !(Maybe String)
+        serveFlagDocsUrl :: !(Maybe String),
+        serveFlagDataDir :: !(Maybe FilePath)
       }
   deriving (Show, Eq)
 
@@ -47,7 +49,8 @@ data WebServerEnvironment
   = WebServerEnvironment
       { envLogLevel :: !(Maybe LogLevel),
         envPort :: !(Maybe Int),
-        envDocsUrl :: !(Maybe String)
+        envDocsUrl :: !(Maybe String),
+        envDataDir :: !(Maybe FilePath)
       }
   deriving (Show, Eq, Generic)
 
@@ -56,7 +59,8 @@ data Configuration
       { confAPIConfiguration :: !API.Configuration,
         confLogLevel :: !(Maybe LogLevel),
         confPort :: !(Maybe Int),
-        confDocsUrl :: !(Maybe String)
+        confDocsUrl :: !(Maybe String),
+        confDataDir :: !(Maybe FilePath)
       }
   deriving (Show, Eq, Generic)
 
@@ -71,6 +75,7 @@ instance YamlSchema Configuration where
         <*> optionalFieldWith "web-log-level" "The minimal severity for log messages" (maybeParser API.parseLogLevel yamlSchema)
         <*> optionalField "web-port" "The port on which to serve web requests"
         <*> optionalField "docs-url" "The url for the documentation site to refer to"
+        <*> optionalField "data-dir" "The directory to store workflows during editing"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -81,7 +86,8 @@ data ServeSettings
       { serveSetAPISettings :: !API.ServeSettings,
         serveSetLogLevel :: !LogLevel,
         serveSetPort :: !Int,
-        serveSetDocsUrl :: !(Maybe BaseUrl)
+        serveSetDocsUrl :: !(Maybe BaseUrl),
+        serveSetDataDir :: !(Path Abs Dir)
       }
   deriving (Show, Eq, Generic)
 

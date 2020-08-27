@@ -49,7 +49,8 @@ data App
         appStatic :: !EmbeddedStatic,
         appLoginTokens :: !(TVar (Map Username Token)),
         appHttpManager :: !Http.Manager,
-        appSmosInstances :: !(TVar (Map Username SmosInstanceHandle))
+        appSmosInstances :: !(TVar (Map Username SmosInstanceHandle)),
+        appDataDir :: !(Path Abs Dir)
       }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
