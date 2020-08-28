@@ -60,6 +60,7 @@ tests:
     - path
     - path-io
     - pretty-show
+    - resourcet
     - smos-cursor
     - smos-cursor-gen
     - smos-data

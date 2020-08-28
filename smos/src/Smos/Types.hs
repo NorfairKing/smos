@@ -17,6 +17,7 @@ import Brick.Types as B hiding (Next)
 import Control.Concurrent.Async
 import Control.Monad.Reader
 import Control.Monad.State
+import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Writer
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
@@ -35,6 +36,7 @@ import Smos.Cursor.SmosFileEditor
 import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
+import UnliftIO.Resource
 import YamlParse.Applicative
 
 data SmosConfig
@@ -274,10 +276,13 @@ data SmosEvent
   = SmosUpdateTime
   | SmosSaveFile
 
-type SmosM = MkSmosM SmosConfig ResourceName SmosState
+type SmosM = MkSmosM SmosConfig SmosState
 
-runSmosM :: SmosConfig -> SmosState -> SmosM a -> EventM ResourceName ((MStop a, SmosState), [Text])
+runSmosM :: Resource.InternalState -> SmosConfig -> SmosState -> SmosM a -> EventM ResourceName ((MStop a, SmosState), [Text])
 runSmosM = runMkSmosM
+
+runSmosM' :: SmosConfig -> SmosState -> SmosM a -> ResourceT IO ((MStop a, SmosState), [Text])
+runSmosM' = runMkSmosM'
 
 data SmosState
   = SmosState
@@ -546,7 +551,7 @@ data EditorCursor
         editorCursorSelection :: EditorSelection
       }
 
-startEditorCursor :: MonadIO m => Path Abs File -> m (Maybe (Either String EditorCursor))
+startEditorCursor :: (MonadIO m, MonadResource m) => Path Abs File -> m (Maybe (Either String EditorCursor))
 startEditorCursor p = do
   mErrOrCursor <- startSmosFileEditorCursor p
   let go sfec =

@@ -15,20 +15,29 @@ where
 import Brick.Types as B hiding (Next)
 import Control.Monad.Reader
 import Control.Monad.State
+import qualified Control.Monad.Trans.Resource as Resource (InternalState)
+import Control.Monad.Trans.Resource hiding (runResourceT)
+import Control.Monad.Trans.Resource.Internal (unResourceT)
 import Control.Monad.Writer
 import Import
 
-newtype MkSmosM c n s a
+newtype MkSmosM c s a
   = MkSmosM
-      { unMkSmosM :: NextT (StateT s (WriterT [Text] (ReaderT c (EventM n)))) a
+      { unMkSmosM :: NextT (StateT s (WriterT [Text] (ReaderT c (ResourceT IO)))) a
       }
   deriving (Generic, Functor, Applicative, Monad, MonadState s, MonadReader c, MonadWriter [Text])
 
-instance MonadIO (MkSmosM c n s) where
+instance MonadIO (MkSmosM c s) where
   liftIO = MkSmosM . liftIO
 
-runMkSmosM :: c -> s -> MkSmosM c n s a -> EventM n ((MStop a, s), [Text])
-runMkSmosM conf initState act = runReaderT (runWriterT (runStateT (runNextT (unMkSmosM act)) initState)) conf
+instance MonadResource (MkSmosM c s) where
+  liftResourceT func = MkSmosM $ NextT $ fmap Continue $ StateT $ \s -> (,) <$> WriterT ((,) <$> ReaderT (const func) <*> pure []) <*> pure s
+
+runMkSmosM :: Resource.InternalState -> c -> s -> MkSmosM c s a -> EventM n ((MStop a, s), [Text])
+runMkSmosM res conf initState act = liftIO $ unResourceT (runMkSmosM' conf initState act) res
+
+runMkSmosM' :: c -> s -> MkSmosM c s a -> ResourceT IO ((MStop a, s), [Text])
+runMkSmosM' conf initState act = runReaderT (runWriterT (runStateT (runNextT (unMkSmosM act)) initState)) conf
 
 data MStop a
   = Stop

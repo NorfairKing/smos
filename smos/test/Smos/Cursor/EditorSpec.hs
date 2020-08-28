@@ -9,6 +9,7 @@ import Smos.Types
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
+import UnliftIO.Resource
 
 spec :: Spec
 spec =
@@ -18,8 +19,9 @@ spec =
         withSystemTempDir "smos-test" $ \tdir -> do
           let p = tdir </> rp
           writeSmosFile p sf
-          errOrCursor <- startEditorCursor p
-          case errOrCursor of
-            Nothing -> expectationFailure "Locking should have been possible"
-            Just (Left err) -> expectationFailure err
-            Just (Right _) -> pure ()
+          runResourceT $ do
+            errOrCursor <- startEditorCursor p
+            case errOrCursor of
+              Nothing -> liftIO $ expectationFailure "Locking should have been possible"
+              Just (Left err) -> liftIO $ expectationFailure err
+              Just (Right _) -> pure ()

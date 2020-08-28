@@ -37,6 +37,7 @@ library:
   - pretty-relative-time
   - pretty-show
   - process
+  - resourcet
   - safe
   - smos-cursor
   - smos-data
@@ -106,6 +107,7 @@ tests:
     - path
     - path-io
     - pretty-show
+    - resourcet
     - smos
     - smos-cursor
     - smos-cursor-gen

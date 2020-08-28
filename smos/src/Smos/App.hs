@@ -9,6 +9,7 @@ where
 
 import Brick.Main as B
 import Brick.Types as B
+import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Sequence as Seq
 import Data.Time
@@ -21,13 +22,14 @@ import Smos.Keys
 import Smos.Style
 import Smos.Types
 import System.Exit
+import UnliftIO.Resource
 
-mkSmosApp :: Path Abs Dir -> SmosConfig -> App SmosState SmosEvent ResourceName
-mkSmosApp workflowDir sc@SmosConfig {..} =
+mkSmosApp :: Resource.InternalState -> Path Abs Dir -> SmosConfig -> App SmosState SmosEvent ResourceName
+mkSmosApp res workflowDir sc@SmosConfig {..} =
   App
     { appDraw = smosDraw workflowDir sc,
       appChooseCursor = smosChooseCursor,
-      appHandleEvent = smosHandleEvent sc,
+      appHandleEvent = smosHandleEvent res sc,
       appStartEvent = smosStartEvent,
       appAttrMap = defaultAttrMap
     }
@@ -35,8 +37,8 @@ mkSmosApp workflowDir sc@SmosConfig {..} =
 smosChooseCursor :: s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
 smosChooseCursor _ = showCursorNamed ResourceTextCursor
 
-smosHandleEvent :: SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
-smosHandleEvent cf s e = do
+smosHandleEvent :: Resource.InternalState -> SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
+smosHandleEvent res cf s e = do
   let func =
         case keyMapFunc s e (configKeyMap cf) of
           NothingActivated ->
@@ -50,7 +52,7 @@ smosHandleEvent cf s e = do
             func_
             clearKeyHistory
           EventActivated func_ -> func_
-  ((mkHalt, s'), errs) <- runSmosM cf s func
+  ((mkHalt, s'), errs) <- runSmosM res cf s func
   case mkHalt of
     Stop -> B.halt s'
     Continue () -> B.continue (s' {smosStateErrorMessages = smosStateErrorMessages s' ++ errs})
@@ -113,15 +115,15 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-buildInitState :: Path Abs File -> IO SmosState
+buildInitState :: Path Abs File -> ResourceT IO SmosState
 buildInitState p = do
   mErrOrEC <- startEditorCursor p
   case mErrOrEC of
-    Nothing -> die "Failed to lock. Has this file already been opened in another instance of smos?"
+    Nothing -> liftIO $ die "Failed to lock. Has this file already been opened in another instance of smos?"
     Just errOrEC -> case errOrEC of
-      Left err -> die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
+      Left err -> liftIO $ die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
       Right ec -> do
-        zt <- getZonedTime
+        zt <- liftIO getZonedTime
         pure $ initStateWithCursor zt ec
 
 initStateWithCursor :: ZonedTime -> EditorCursor -> SmosState

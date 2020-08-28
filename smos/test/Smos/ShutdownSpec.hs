@@ -3,9 +3,7 @@ module Smos.ShutdownSpec where
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.Async
 import Control.Exception
-import qualified Data.ByteString as SB
 import Data.GenValidity.Path ()
-import Data.Maybe
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
 import Path
@@ -14,10 +12,7 @@ import Smos
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
-import System.Environment
-import System.Exit
 import System.FileLock
-import System.Posix.IO
 import System.Posix.Terminal
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -56,7 +51,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                                       }
                                 }
                           }
-                  (masterFd, slaveFd) <- openPseudoTerminal
+                  (_, slaveFd) <- openPseudoTerminal
                   let vtyBuilder = do
                         vty <-
                           Vty.mkVty $
