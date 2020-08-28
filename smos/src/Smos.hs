@@ -13,6 +13,7 @@ import Brick.BChan as Brick
 import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Exception
 import Graphics.Vty as Vty (Vty, defaultConfig, mkVty)
 import Import
 import Smos.Actions.File
@@ -39,19 +40,21 @@ startSmosOn = startSmosWithVtyBuilderOn (mkVty defaultConfig)
 startSmosWithVtyBuilderOn :: IO Vty.Vty -> Path Abs File -> SmosConfig -> IO ()
 startSmosWithVtyBuilderOn vtyBuilder p sc@SmosConfig {..} = do
   s <- buildInitState p
-  chan <- Brick.newBChan maxBound
-  initialVty <- vtyBuilder
-  workflowDir <- resolveReportWorkflowDir configReportConfig
-  Left s' <-
-    race
-      (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp workflowDir sc) s)
-      (eventPusher chan)
-  finalWait $ smosStateAsyncs s'
-  case editorCursorFileCursor $ smosStateCursor s' of
-    Nothing -> pure ()
-    Just sfec -> do
-      sfec' <- smosFileEditorCursorSave sfec
-      smosFileEditorCursorClose sfec'
+  let unlockStartingFile = mapM_ smosFileEditorCursorClose $ editorCursorFileCursor $ smosStateCursor s
+  (`finally` unlockStartingFile) $ do
+    chan <- Brick.newBChan maxBound
+    initialVty <- vtyBuilder
+    workflowDir <- resolveReportWorkflowDir configReportConfig
+    Left s' <-
+      race
+        (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp workflowDir sc) s)
+        (eventPusher chan)
+    finalWait $ smosStateAsyncs s'
+    case editorCursorFileCursor $ smosStateCursor s' of
+      Nothing -> pure ()
+      Just sfec -> do
+        sfec' <- smosFileEditorCursorSave sfec
+        smosFileEditorCursorClose sfec'
 
 finalWait :: [Async ()] -> IO ()
 finalWait as = do
