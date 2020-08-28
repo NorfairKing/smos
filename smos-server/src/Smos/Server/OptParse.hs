@@ -106,7 +106,7 @@ parseServeFlags =
     <$> option
       (Just <$> maybeReader parseLogLevel)
       ( mconcat
-          [ long "api-log-level",
+          [ long "log-level",
             help $
               unwords
                 [ "The log level to use, options:",
@@ -135,7 +135,7 @@ parseServeFlags =
       )
     <*> option
       (Just <$> auto)
-      (mconcat [long "api-port", help "The port to serve on", metavar "PORT", value Nothing])
+      (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing])
 
 parseFlags :: Parser Flags
 parseFlags =

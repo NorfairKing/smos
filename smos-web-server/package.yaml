@@ -43,7 +43,6 @@ library:
   - smos-client
   - smos-data
   - smos-report
-  - smos-server
   - smos-sync-client
   - smos-version
   - stm

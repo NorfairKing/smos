@@ -273,8 +273,8 @@ drawOpenedFilePath workflowDir currentFile = case stripProperPrefix workflowDir 
   Just rf -> drawFilePath $ [reldir|workflow|] </> rf
 
 drawOpenedDirPath :: Path Abs Dir -> Path Abs Dir -> Widget n
-drawOpenedDirPath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
-  Nothing -> drawDirPath currentFile
+drawOpenedDirPath workflowDir currentDir = case stripProperPrefix workflowDir currentDir of
+  Nothing -> drawDirPath currentDir
   Just rf -> drawDirPath $ [reldir|workflow|] </> rf
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer

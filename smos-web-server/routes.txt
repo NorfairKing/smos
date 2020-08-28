@@ -1,8 +1,8 @@
 / HomeR GET
 
 /cli CliR GET
-/instance InstanceR GET
-/resize ResizeR POST
+/ws/instance InstanceR GET
+/ws/resize ResizeR POST
 
 /files FilesR GET
 

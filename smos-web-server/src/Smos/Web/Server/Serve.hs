@@ -8,8 +8,6 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
-import Servant.Client
-import qualified Smos.Server.OptParse.Types as API
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
@@ -25,7 +23,6 @@ serveSmosWebServer ss = do
 
 runSmosWebServer :: ServeSettings -> IO ()
 runSmosWebServer ServeSettings {..} = do
-  burl <- parseBaseUrl $ "http://localhost:" <> show (API.serveSetPort serveSetAPISettings)
   man <- liftIO $ Http.newManager Http.tlsManagerSettings
   loginVar <- liftIO $ newTVarIO M.empty
   instancesVar <- liftIO $ newTVarIO M.empty
@@ -33,7 +30,7 @@ runSmosWebServer ServeSettings {..} = do
         App
           { appLogLevel = serveSetLogLevel,
             appStatic = smosWebServerStatic,
-            appAPIBaseUrl = burl,
+            appAPIBaseUrl = serveSetAPIUrl,
             appDocsBaseUrl = serveSetDocsUrl,
             appLoginTokens = loginVar,
             appHttpManager = man,

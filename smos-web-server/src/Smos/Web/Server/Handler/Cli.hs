@@ -29,9 +29,7 @@ import Yesod hiding (Header)
 import Yesod.WebSockets
 
 getCliR :: Handler Html
-getCliR = withLogin $ \_ -> do
-  instancesVar <- getsYesod appSmosInstances
-  M.keys <$> readTVarIO instancesVar >>= liftIO . print
+getCliR = withLogin $ \_ ->
   defaultLayout $ do
     setTitle "Smos Web TUI"
     addScript $ StaticR xterm_js
@@ -48,8 +46,7 @@ getInstanceR = do
     webSockets
       $ withSmosSession userName token instancesVar
       $ \instanceHandle ->
-        withSavedInstance userName instancesVar instanceHandle $ do
-          liftIO $ putStrLn "Starting to communicate"
+        withSavedInstance userName instancesVar instanceHandle $
           communicate instanceHandle
 
 withSavedInstance :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> SmosInstanceHandle -> m a -> m a

@@ -32,7 +32,12 @@ makeSmosInstance workflowDir startingFile = do
   smosInstanceHandleMasterHandle <- liftIO $ fdToHandle masterFd
   smosInstanceHandleSlaveHandle <- liftIO $ fdToHandle slaveFd
   let vtyBuilder = do
-        vty <- Vty.mkVty $ Vty.defaultConfig {Vty.inputFd = Just slaveFd, Vty.outputFd = Just slaveFd}
+        vty <-
+          Vty.mkVty $
+            Vty.defaultConfig
+              { Vty.inputFd = Just slaveFd,
+                Vty.outputFd = Just slaveFd
+              }
         setWindowSize smosInstanceHandleResizeFd (80, 24)
         pure vty
   let config =

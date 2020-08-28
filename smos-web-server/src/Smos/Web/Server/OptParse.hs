@@ -7,14 +7,12 @@ module Smos.Web.Server.OptParse
   )
 where
 
-import Control.Monad
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Env
 import Options.Applicative
 import Path.IO
 import Servant.Client
-import qualified Smos.Server.OptParse as API
 import Smos.Version
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
@@ -30,45 +28,43 @@ getInstructions = do
 
 combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Environment {..} mConf = do
-  API.Instructions (API.DispatchServe serveSetAPISettings) API.Settings <-
-    API.combineToInstructions
-      (API.Arguments (API.CommandServe serveFlagAPIFlags) flagAPIFlags)
-      envAPIEnv
-      (confAPIConfiguration <$> mConf)
-  let WebServerEnvironment {..} = envWebServerEnv
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
   let serveSetLogLevel = fromMaybe LevelInfo $ serveFlagLogLevel <|> envLogLevel <|> mc confLogLevel
   let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
+  serveSetAPIUrl <- case serveFlagAPIUrl <|> envAPIUrl <|> mc confAPIUrl of
+    Nothing -> die "No API configured."
+    Just url -> parseBaseUrl url
   serveSetDocsUrl <- mapM parseBaseUrl $ serveFlagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
   serveSetDataDir <- case serveFlagDataDir <|> envDataDir <|> mc confDataDir of
     Nothing -> getCurrentDir
     Just dd -> resolveDir' dd
-  when (serveSetPort == API.serveSetPort serveSetAPISettings) $ die $ "The port for the api server and the web server are the same: " <> show serveSetPort
   pure (Instructions (DispatchServe ServeSettings {..}) Settings)
 
 getEnvironment :: IO Environment
-getEnvironment = Env.parse (Env.header "Environment") environmentParser
+getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+
+prefixedEnvironmentParser :: Env.Parser Env.Error Environment
+prefixedEnvironmentParser =
+  Env.prefixed
+    "SMOS_WEB_SERVER_"
+    environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
   Environment
-    <$> API.environmentParser
-    <*> Env.prefixed "SMOS_WEB_SERVER_" webServerEnvironmentParser
-
-webServerEnvironmentParser :: Env.Parser Env.Error WebServerEnvironment
-webServerEnvironmentParser =
-  WebServerEnvironment
-    <$> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . API.parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+    <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "The config file")
+    <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
     <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
     <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
+    <*> Env.var (fmap Just . Env.str) "API_URL" (mE <> Env.help "The url for the api to use")
     <*> Env.var (fmap Just . Env.str) "DATA_DIR" (mE <> Env.help "The directory to store workflows during editing")
   where
     mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
-  case API.flagConfigFile flagAPIFlags <|> API.envConfigFile envAPIEnv of
+  case flagConfigFile <|> envConfigFile of
     Nothing -> pure Nothing
     Just cf -> resolveFile' cf >>= readConfigFile
 
@@ -106,15 +102,14 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe
         <$> ( ServeFlags
-                <$> API.parseServeFlags
-                <*> option
-                  (Just <$> maybeReader API.parseLogLevel)
+                <$> option
+                  (Just <$> maybeReader parseLogLevel)
                   ( mconcat
                       [ long "web-log-level",
                         help $
                           unwords
                             [ "The log level to use, options:",
-                              show $ map API.renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                              show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
                             ],
                         value Nothing
                       ]
@@ -140,6 +135,15 @@ parseCommandServe = info parser modifier
                 <*> option
                   (Just <$> str)
                   ( mconcat
+                      [ long "api-url",
+                        metavar "URL",
+                        help "The url for the api to use",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
                       [ long "data-dir",
                         metavar "FILEPATH",
                         help "The directory to store workflows during editing",
@@ -150,4 +154,13 @@ parseCommandServe = info parser modifier
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> API.parseFlags
+  Flags
+    <$> option
+      (Just <$> str)
+      ( mconcat
+          [ long "config-file",
+            metavar "FILEPATH",
+            help "The config file",
+            value Nothing
+          ]
+      )

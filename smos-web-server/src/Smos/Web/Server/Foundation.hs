@@ -191,7 +191,7 @@ postNewAccountR = do
             FailureResponse _ resp ->
               case Http.statusCode $ responseStatusCode resp of
                 409 -> setMessage "An account with this username already exists"
-                _ -> setMessage "Failed to register for unknown reasons."
+                i -> setMessage $ "Failed to register for unknown reasons, got exit code: " <> toHtml (show i)
             _ -> setMessage "Failed to register for unknown reasons."
           liftHandler $ redirect $ AuthR registerR
         Right NoContent ->

@@ -9,7 +9,7 @@ function initWebsocket() {
   } else {
     new_uri = "ws:";
   }
-  new_uri += "//" + loc.host + "/instance";
+  new_uri += "//" + loc.host + "/ws/instance";
   const socket = new WebSocket(new_uri);
 
   socket.onopen = function(e) {
@@ -121,7 +121,7 @@ window.onload = async function() {
     // Do the resizing remotely
     $.ajax({
       type: "POST",
-      url: "/resize",
+      url: "/ws/resize",
       data: JSON.stringify({
         "width": term.cols,
         "height": term.rows
@@ -135,6 +135,7 @@ window.onload = async function() {
       failure: function(data){
         console.log("Failed to resize the terminal.");
         console.log(data);
+        resize(); // Try again
       }
     });
   };
