@@ -21,12 +21,19 @@ import Smos.Web.Server.SmosInstance
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 
-withSmosSession :: (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> TVar (Map Username SmosInstanceHandle) -> (SmosInstanceHandle -> m a) -> m a
-withSmosSession userName token instancesVar func = do
+withSmosSession ::
+  (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
+  Username ->
+  Token ->
+  TVar (Map Username SmosInstanceHandle) ->
+  Path Rel File ->
+  (SmosInstanceHandle -> m a) ->
+  m a
+withSmosSession userName token instancesVar relFile func = do
   mInstance <- M.lookup userName <$> readTVarIO instancesVar
   case mInstance of
     Nothing -> withReadiedDir userName token $ \workflowDir -> do
-      startingFile <- liftIO $ resolveFile workflowDir "example.smos"
+      let startingFile = workflowDir </> relFile
       withSmosInstance workflowDir startingFile func
     Just i -> do
       -- Should not happen, but it's fine if it does, I guess...

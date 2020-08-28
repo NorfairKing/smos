@@ -3,9 +3,9 @@ $doctype 5
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" sizes="32x32" href="https://cs-syd.eu/logo/res/favicon.ico">
 
     <title>#{pageTitle pageContent}
-
     ^{pageHead pageContent}
 
   <body>

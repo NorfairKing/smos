@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Web.Server.Handler.Cli
-  ( getCliR,
+  ( getFileR,
     getInstanceR,
     postResizeR,
   )
@@ -18,6 +18,7 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import Network.HTTP.Types.Status (badRequest400)
+import Path
 import Smos.Client hiding (Header)
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosInstance
@@ -28,8 +29,8 @@ import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
-getCliR :: Handler Html
-getCliR = withLogin $ \_ ->
+getFileR :: [Text] -> Handler Html
+getFileR ts = withLogin $ \_ ->
   defaultLayout $ do
     setTitle "Smos Web TUI"
     addScript $ StaticR xterm_js
@@ -37,17 +38,20 @@ getCliR = withLogin $ \_ ->
     addScript $ StaticR xterm_fit_js
     addStylesheet $ StaticR xterm_css
     addScript $ StaticR jquery_js
-    $(widgetFile "cli")
+    $(widgetFile "file")
 
-getInstanceR :: Handler ()
-getInstanceR = do
+getInstanceR :: [Text] -> Handler ()
+getInstanceR ts = do
   withLogin' $ \userName token -> do
-    instancesVar <- getsYesod appSmosInstances
-    webSockets
-      $ withSmosSession userName token instancesVar
-      $ \instanceHandle ->
-        withSavedInstance userName instancesVar instanceHandle $
-          communicate instanceHandle
+    case parseRelFile $ T.unpack $ T.intercalate "/" ts of
+      Nothing -> notFound
+      Just relFile -> do
+        instancesVar <- getsYesod appSmosInstances
+        webSockets
+          $ withSmosSession userName token instancesVar relFile
+          $ \instanceHandle ->
+            withSavedInstance userName instancesVar instanceHandle $
+              communicate instanceHandle
 
 withSavedInstance :: MonadUnliftIO m => Username -> TVar (Map Username SmosInstanceHandle) -> SmosInstanceHandle -> m a -> m a
 withSavedInstance un instancesVar i = bracket_ addInstance removeInstance

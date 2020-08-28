@@ -1,0 +1,7 @@
+^{editorWidget}
+
+<details>
+  <summary> Raw forest structure
+  <pre>
+    #{ppShow sf}
+

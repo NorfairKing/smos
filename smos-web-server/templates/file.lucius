@@ -7,16 +7,6 @@ body {
     overflow: hidden;
     // background-color: black;
 }
-#update-notification {
-    position: absolute;
-    top: 5px;
-    right: 20px;
-    font-size: 20px;
-    background-color: orange;
-    color: white;
-    opacity: 0.9;
-    cursor: pointer;
-}
 #terminal {
     display: block;
     position: relative;

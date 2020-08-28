@@ -38,7 +38,7 @@ $maybe _ <- maid
   <h2>
     Cli Tryout
   <p>
-    <a href=@{CliR}>
+    <a href=@{FileR ["example.smos"]}>
       Cli example
 
 $nothing

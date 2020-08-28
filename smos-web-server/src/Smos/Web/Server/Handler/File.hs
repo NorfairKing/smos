@@ -19,14 +19,14 @@ import Text.Julius
 import Text.Show.Pretty (ppShow)
 import Yesod hiding (Header)
 
-getFileR :: [Text] -> Handler Html
-getFileR ts = withLogin $ \t -> do
+getOldFileR :: [Text] -> Handler Html
+getOldFileR ts = withLogin $ \t -> do
   case parseRelFile $ T.unpack $ T.intercalate "/" ts of
     Nothing -> notFound
     Just rf -> do
       sf <- runClientOrErr $ clientGetSmosFile t rf
       editorWidget <- getEditorWidget rf sf
-      defaultLayout $(widgetFile "file")
+      defaultLayout $(widgetFile "old-file")
 
 getEditorWidget :: Path Rel File -> SmosFile -> Handler Widget
 getEditorWidget _ sf = do
