@@ -300,7 +300,7 @@ addErrorMessage t = tell [t]
 
 runSmosAsync :: IO () -> SmosM ()
 runSmosAsync func = do
-  a <- liftIO $ async func
+  (_, a) <- allocate (async func) wait
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
 
 data DebugInfo

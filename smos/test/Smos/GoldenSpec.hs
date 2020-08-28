@@ -20,6 +20,7 @@ import Smos
 import Smos.App
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
+import Smos.Default
 import Smos.Types
 import TestImport
 import UnliftIO.Resource
@@ -117,7 +118,19 @@ data CommandsRun
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
   withSystemTempDir "smos-golden" $ \tdir -> do
-    af <- resolveFile tdir "example.smos"
+    workflowDir <- resolveDir tdir "workflow"
+    let testConf :: SmosConfig
+        testConf =
+          defaultConfig
+            { configReportConfig =
+                defaultReportConfig
+                  { smosReportConfigDirectoryConfig =
+                      defaultDirectoryConfig
+                        { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
+                        }
+                  }
+            }
+    af <- resolveFile workflowDir "example.smos"
     mapM_ (writeSmosFile af) mstart
     runResourceT $ do
       mErrOrEC <- startEditorCursor af
@@ -129,16 +142,15 @@ runCommandsOn mstart commands =
             zt <- liftIO getZonedTime
             let startState =
                   initStateWithCursor zt ec
-            (fs, rs) <- foldM go (startState, []) commands
+            (fs, rs) <- foldM (go testConf) (startState, []) commands
             pure $
               CommandsRun
                 { intermidiaryResults = reverse rs,
                   finalResult = rebuildSmosFileEditorCursor <$> editorCursorFileCursor (smosStateCursor fs)
                 }
   where
-    testConf = error "tried to access the config"
-    go :: (SmosState, [(Command, Maybe SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, Maybe SmosFile)])
-    go (ss, rs) c = do
+    go :: SmosConfig -> (SmosState, [(Command, Maybe SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, Maybe SmosFile)])
+    go testConf (ss, rs) c = do
       let func =
             case c of
               CommandPlain a -> actionFunc a
