@@ -94,5 +94,5 @@ jobs:
       with:
         name: smos
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build default.nix
+    - run: nix run -f nix/pkgs.nix nix-build-uncached -c nix-build-uncached default.nix
       
