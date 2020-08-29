@@ -56,4 +56,4 @@ To use it, use `cachix use smos` or add the appropriate details to your nixos co
 
 Smos is free and open-source software.
 Building it takes time, energy and money.
-Please consider supporting the project at https://smos.cs-syd.eu/page/support
+Please consider supporting the project at https://smos.cs-syd.eu/support
