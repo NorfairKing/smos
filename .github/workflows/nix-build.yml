@@ -18,7 +18,7 @@ jobs:
           - macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v8
+    - uses: cachix/install-nix-action@v10
       with:
         skip_adding_nixpkgs_channel: true
     - name: free disk space
@@ -29,30 +29,11 @@ jobs:
         fi
     - uses: cachix/cachix-action@v6
       with:
-        name: iohk
-    - uses: cachix/cachix-action@v6
-      with:
-        name: validity
-    - uses: cachix/cachix-action@v6
-      with:
-        name: dirforest
-    - uses: cachix/cachix-action@v6
-      with:
-        name: cursor
-    - uses: cachix/cachix-action@v6
-      with:
-        name: cursor-dirforest
-    - uses: cachix/cachix-action@v6
-      with:
-        name: mergeful
-    - uses: cachix/cachix-action@v6
-      with:
-        name: yamlparse
-    - uses: cachix/cachix-action@v6
-      with:
         name: smos
+        extraPullNames: iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build default.nix
+
   macos_perf_test:
     name: macos_perf_test / Nix
     runs-on: macos-latest
@@ -63,36 +44,10 @@ jobs:
         sudo spctl --master-disable
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
-    - name: free disk space
-      run: |
-        if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
-        then
-          sudo rm -rf /opt
-        fi
-    - uses: cachix/cachix-action@v6
-      with:
-        name: iohk
-    - uses: cachix/cachix-action@v6
-      with:
-        name: validity
-    - uses: cachix/cachix-action@v6
-      with:
-        name: dirforest
-    - uses: cachix/cachix-action@v6
-      with:
-        name: cursor
-    - uses: cachix/cachix-action@v6
-      with:
-        name: cursor-dirforest
-    - uses: cachix/cachix-action@v6
-      with:
-        name: mergeful
-    - uses: cachix/cachix-action@v6
-      with:
-        name: yamlparse
     - uses: cachix/cachix-action@v6
       with:
         name: smos
+        extraPullNames: iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build
       
