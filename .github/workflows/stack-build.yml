@@ -36,9 +36,12 @@ jobs:
           path: ~/.stack
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack
 
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - uses: purescript-contrib/setup-purescript@main
       - name: Build frontend
-        run: |
-          cd smos-web-server/front && nix-shell --run "yarn bundle"
+        run: cd smos-web-server/front && yarn bundle
 
       - name: Build dependencies
         run: |

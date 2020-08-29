@@ -16,19 +16,8 @@ let
       echo "$HASH" > $out
     '';
   };
-  haskellNix = import (
-    final.fetchFromGitHub {
-      owner = "input-output-hk";
-      repo = "haskell.nix";
-      rev = "f4136211c933b444ab2e0f358abd223929970220";
-      sha256 = "sha256:1b9nxzkg29hwczr6pb6a7arxka8z0swzq7b2bqyxqzr4qvpcjlc1";
-    }
-  ) {};
-  nixpkgsSrc = haskellNix.sources.nixpkgs-2003;
-  nixpkgsArgs = haskellNix.nixpkgsArgs;
-  haskellNixPkgs = import nixpkgsSrc nixpkgsArgs;
   isMacos = builtins.currentSystem == "x86_64-darwin";
-  sPkgs = haskellNixPkgs.haskell-nix.stackProject {
+  sPkgs = final.haskell-nix.stackProject {
     src = final.gitignoreSource ../.;
     modules = [
       {
@@ -170,7 +159,7 @@ let
         let
           testCommand = testname: test:
             let
-              testOutput = haskellNixPkgs.haskell-nix.haskellLib.check test;
+              testOutput = final.haskell-nix.haskellLib.check test;
               testOutputCommand = optionalString test.config.doCheck
                 ''
                   mkdir -p $out/test-output
