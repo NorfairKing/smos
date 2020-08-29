@@ -17,8 +17,7 @@ let
         allowBroken = true;
       };
       overlays =
-        haskellNix.overlays ++
-        [
+        haskellNix.overlays ++ [
           yamlparse-applicative-overlay
           linkcheck-overlay
           (import ./gitignore-src.nix)
