@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: '12.x'
       - name: Build frontend
-        run: | cd smos-web-server/front && yarn bundle
+        run: cd smos-web-server/front && yarn bundle
 
       - name: Build dependencies
         run: |
