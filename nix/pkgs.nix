@@ -1,5 +1,6 @@
 let
-  pkgsv = import (import ./nixpkgs.nix);
+  haskellNix = import ./haskell-nix.nix;
+  pkgsv = import haskellNix.sources.nixpkgs;
   pkgs = pkgsv {};
   yamlparse-applicative-overlay =
     import (
@@ -11,7 +12,12 @@ let
     );
   smosPkgs =
     pkgsv {
+      config = haskellNix.config // {
+        allowUnfree = true;
+        allowBroken = true;
+      };
       overlays =
+        haskellNix.overlays ++
         [
           yamlparse-applicative-overlay
           linkcheck-overlay
@@ -19,8 +25,6 @@ let
           (import ../smos-web-server/front/nix/overlay.nix)
           (import ./overlay.nix)
         ];
-      config.allowUnfree = true;
-      config.allowBroken = true;
     };
 in
 smosPkgs
