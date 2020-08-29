@@ -19,6 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v8
+      skip_adding_nixpkgs_channel: true
     - name: free disk space
       run: |
         if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
