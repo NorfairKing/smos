@@ -3,6 +3,7 @@
 module Smos.Cursor.FileBrowserSpec where
 
 import Cursor.Simple.DirForest
+import Cursor.Types
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
 import Data.Maybe
@@ -34,6 +35,13 @@ spec = do
   describe "fileBrowserCursorSelectPrev"
     $ it "produces valid cursors"
     $ producesValidsOnValids fileBrowserCursorSelectPrev
+  describe "fileBrowserCursorStartNew" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNew
+  describe "fileBrowserCursorInsertChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorInsertChar
+  describe "fileBrowserCursorAppendChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorAppendChar
+  describe "fileBrowserCursorRemoveChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorRemoveChar
+  describe "fileBrowserCursorDeleteChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorDeleteChar
+  describe "fileBrowserCursorSelectPrevChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectPrevChar
+  describe "fileBrowserCursorSelectNextChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectNextChar
   describe "fileBrowserCursorToggle"
     $ it "produces valid cursors"
     $ producesValidsOnValids fileBrowserCursorToggle
@@ -60,9 +68,11 @@ spec = do
                   let cts = smosFileYamlBS sf
                   let af = base </> rf
                   let goDown c = case dirForestCursorSelectFirstChild c of
-                        Nothing -> c
-                        Just c' -> goDown c'
-                  let dfc = goDown . (\c -> fromMaybe c (dirForestCursorOpenRecursively c)) <$> makeDirForestCursor (DF.singletonFile rf ())
+                        Deleted -> Nothing
+                        Updated Nothing -> Just c
+                        Updated (Just c') -> goDown c'
+                  let dfc :: Maybe (DirForestCursor ())
+                      dfc = ((\c -> fromMaybe c (dirForestCursorOpenRecursively c)) <$> makeDirForestCursor (DF.singletonFile rf ())) >>= goDown
                   dfc `shouldSatisfy` isJust -- Sanity test
                   let fbc =
                         FileBrowserCursor

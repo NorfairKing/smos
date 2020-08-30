@@ -5,10 +5,12 @@ module Smos.Cursor.FileBrowser where
 
 import Control.DeepSeq
 import Control.Monad.IO.Class
+import Cursor.FileOrDir
 import Cursor.Simple.DirForest
 import Cursor.Types
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
+import Data.Maybe
 import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
@@ -40,10 +42,17 @@ makeFileBrowserCursor base df =
     }
 
 rebuildFileBrowserCursor :: FileBrowserCursor -> DirForest ()
-rebuildFileBrowserCursor FileBrowserCursor {..} = maybe DF.empty rebuildDirForestCursor fileBrowserCursorDirForestCursor
+rebuildFileBrowserCursor FileBrowserCursor {..} = maybe DF.empty (fromMaybe DF.empty . dullDelete . rebuildDirForestCursor) fileBrowserCursorDirForestCursor
 
 fileBrowserCursorDirForestCursorL :: Lens' FileBrowserCursor (Maybe (DirForestCursor ()))
 fileBrowserCursorDirForestCursorL = lens fileBrowserCursorDirForestCursor $ \fbc fc -> fbc {fileBrowserCursorDirForestCursor = fc}
+
+fileBrowserRecordMovementHistory :: FileBrowserCursor -> Maybe (DirForestCursor ()) -> FileBrowserCursor
+fileBrowserRecordMovementHistory fbc new =
+  fbc
+    { fileBrowserCursorDirForestCursor = new,
+      fileBrowserCursorUndoStack = undoStackPush (Movement new) (fileBrowserCursorUndoStack fbc)
+    }
 
 fileBrowserCursorDoMaybe :: (DirForestCursor () -> Maybe (DirForestCursor ())) -> FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorDoMaybe func fbc =
@@ -51,17 +60,61 @@ fileBrowserCursorDoMaybe func fbc =
     Nothing -> Just fbc
     Just dfc -> do
       dfc' <- func dfc
-      pure $
-        fbc
-          { fileBrowserCursorDirForestCursor = Just dfc',
-            fileBrowserCursorUndoStack = undoStackPush (Movement (Just dfc)) (fileBrowserCursorUndoStack fbc)
-          }
+      pure $ fileBrowserRecordMovementHistory fbc (Just dfc')
+
+fileBrowserCursorDoDeleteOrUpdate :: (DirForestCursor () -> DeleteOrUpdate (DirForestCursor ())) -> FileBrowserCursor -> FileBrowserCursor
+fileBrowserCursorDoDeleteOrUpdate func fbc =
+  case fileBrowserCursorDirForestCursor fbc of
+    Nothing -> fbc
+    Just dfc -> fileBrowserRecordMovementHistory fbc $
+      case func dfc of
+        Deleted -> Nothing
+        Updated dfc' -> Just dfc'
+
+fileBrowserCursorDoDeleteOrUpdateMaybe :: (DirForestCursor () -> DeleteOrUpdate (Maybe (DirForestCursor ()))) -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorDoDeleteOrUpdateMaybe func fbc = case fileBrowserCursorDirForestCursor fbc of
+  Nothing -> Just fbc
+  Just dfc ->
+    case func dfc of
+      Updated Nothing -> Nothing
+      Deleted -> Just $ fileBrowserRecordMovementHistory fbc Nothing
+      Updated (Just dfc') -> Just $ fileBrowserRecordMovementHistory fbc $ Just dfc'
+
+fileBrowserCursorDoMaybeDeleteOrUpdate :: (DirForestCursor () -> Maybe (DeleteOrUpdate (DirForestCursor ()))) -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorDoMaybeDeleteOrUpdate func fbc = case fileBrowserCursorDirForestCursor fbc of
+  Nothing -> Just fbc
+  Just dfc ->
+    case func dfc of
+      Nothing -> Nothing
+      Just Deleted -> Just $ fileBrowserRecordMovementHistory fbc Nothing
+      Just (Updated dfc') -> Just $ fileBrowserRecordMovementHistory fbc $ Just dfc'
 
 fileBrowserCursorSelectNext :: FileBrowserCursor -> Maybe FileBrowserCursor
-fileBrowserCursorSelectNext = fileBrowserCursorDoMaybe dirForestCursorSelectNext
+fileBrowserCursorSelectNext = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCursorSelectNext
 
 fileBrowserCursorSelectPrev :: FileBrowserCursor -> Maybe FileBrowserCursor
-fileBrowserCursorSelectPrev = fileBrowserCursorDoMaybe dirForestCursorSelectPrev
+fileBrowserCursorSelectPrev = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCursorSelectPrev
+
+fileBrowserCursorStartNew :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorStartNew = fileBrowserCursorDoMaybe dirForestCursorStartNew
+
+fileBrowserCursorInsertChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorInsertChar c = fileBrowserCursorDoMaybe $ dirForestCursorInsertChar c
+
+fileBrowserCursorAppendChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorAppendChar c = fileBrowserCursorDoMaybe $ dirForestCursorAppendChar c
+
+fileBrowserCursorRemoveChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorRemoveChar = fileBrowserCursorDoMaybeDeleteOrUpdate dirForestCursorRemoveChar
+
+fileBrowserCursorDeleteChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorDeleteChar = fileBrowserCursorDoMaybeDeleteOrUpdate dirForestCursorDeleteChar
+
+fileBrowserCursorSelectPrevChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorSelectPrevChar = fileBrowserCursorDoMaybe dirForestCursorSelectPrevChar
+
+fileBrowserCursorSelectNextChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorSelectNextChar = fileBrowserCursorDoMaybe dirForestCursorSelectNextChar
 
 fileBrowserCursorToggle :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorToggle = fileBrowserCursorDoMaybe dirForestCursorToggle
@@ -69,7 +122,7 @@ fileBrowserCursorToggle = fileBrowserCursorDoMaybe dirForestCursorToggle
 fileBrowserCursorToggleRecursively :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorToggleRecursively = fileBrowserCursorDoMaybe dirForestCursorToggleRecursively
 
-fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Abs Dir, Path Rel Dir, FileOrDir ())
+fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Abs Dir, Path Rel Dir, FileOrDirCursor ())
 fileBrowserSelected FileBrowserCursor {..} = do
   (rd, fod) <- dirForestCursorSelected <$> fileBrowserCursorDirForestCursor
   pure (fileBrowserCursorBase, rd, fod)
@@ -86,8 +139,9 @@ fileBrowserRmEmptyDir fbc =
     Just dfc ->
       let (rd, fod) = dirForestCursorSelected dfc
        in case fod of
-            FodFile _ _ -> pure fbc
-            FodDir rdd -> do
+            InProgress _ -> pure fbc
+            Existent (FodFile _ _) -> pure fbc
+            Existent (FodDir rdd) -> do
               let dir = fileBrowserCursorBase fbc </> rd </> rdd
               let a = RmEmptyDir dir dfc
               let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
@@ -111,8 +165,9 @@ fileBrowserArchiveFile workflowDir archiveDir fbc =
     Just dfc -> do
       let (rd, fod) = dirForestCursorSelected dfc
       case fod of
-        FodDir _ -> pure fbc
-        FodFile rp _ -> do
+        InProgress _ -> pure fbc
+        Existent (FodDir _) -> pure fbc
+        Existent (FodFile rp _) -> do
           let src = fileBrowserCursorBase fbc </> rd </> rp
           today <- liftIO $ utctDay <$> getCurrentTime
           case destinationFile today workflowDir archiveDir src of

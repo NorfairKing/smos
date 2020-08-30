@@ -29,6 +29,10 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
+- /home/syd/src/cursor-dirforest/cursor-dirforest-brick
+- /home/syd/src/cursor-dirforest/cursor-dirforest-gen
+- /home/syd/src/cursor-dirforest/cursor-dirforest
+
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 
@@ -130,13 +134,13 @@ extra-deps:
     - genvalidity-dirforest
   # nix-sha256: sha256:05zx6b3vjralkjydgq6lgx84lyd0d5s3xifc4whf7jvc60ibrg8k
 
-- git: https://github.com/NorfairKing/cursor-dirforest
-  commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
-  subdirs:
-    - cursor-dirforest
-    - cursor-dirforest-gen
-    - cursor-dirforest-brick
-  # nix-sha256: sha256:0msxk90acin5kickfs9x5hmmj1bi2yfpkp7lk3dg3fn2rf9kkbvv
+      # - git: https://github.com/NorfairKing/cursor-dirforest
+      #   commit: 383ebdf881a47b5a505e377cdf78de8f848a71c4
+      #   subdirs:
+      #     - cursor-dirforest
+      #     - cursor-dirforest-gen
+      #     - cursor-dirforest-brick
+      #   # nix-sha256: sha256:0msxk90acin5kickfs9x5hmmj1bi2yfpkp7lk3dg3fn2rf9kkbvv
 
 - git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
