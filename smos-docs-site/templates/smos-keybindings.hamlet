@@ -60,8 +60,17 @@
   <h2 id="FileBrowser">
     File Browser
   <h3>
-    Browser
-  ^{keyMapTable $ keyMapBrowserKeyMap defaultKeyMap }
+    Existent
+  ^{keyMapTable $ browserKeyMapExistentMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+  <h3>
+    In Progress
+  ^{keyMapTable $ browserKeyMapInProgressMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+  <h3>
+    Empty
+  ^{keyMapTable $ browserKeyMapEmptyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+  <h3>
+    Any
+  ^{keyMapTable $ browserKeyMapAnyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
 
   <h2 id="Reports">
     Reports
