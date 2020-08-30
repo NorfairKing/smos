@@ -23,6 +23,7 @@ module Smos.Actions.Browser
   )
 where
 
+import Cursor.FileOrDir
 import Cursor.Simple.DirForest
 import Data.Text (Text)
 import Path
@@ -97,8 +98,8 @@ browserEnter =
           Just dfc ->
             case fileBrowserSelected dfc of
               Nothing -> pure ()
-              Just (_, _, FodDir _) -> modifyFileBrowserCursorM fileBrowserCursorToggle
-              Just (base, rd, FodFile rf ()) -> do
+              Just (_, _, Existent (FodDir _)) -> modifyFileBrowserCursorM fileBrowserCursorToggle
+              Just (base, rd, Existent (FodFile rf ())) -> do
                 let path = base </> rd </> rf
                 switchToFile path
           Nothing -> pure (),

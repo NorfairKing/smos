@@ -20,6 +20,7 @@ import Cursor.Brick.Map.KeyValue
 import Cursor.Brick.Text
 import Cursor.DirForest
 import Cursor.DirForest.Brick
+import Cursor.FileOrDir
 import Cursor.FuzzyLocalTime
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
@@ -232,13 +233,16 @@ drawFileBrowserCursor workflowDir s FileBrowserCursor {..} =
     $ viewport ResourceViewport Vertical
     $ maybe
       emptyScreen
-      (verticalPaddedDirForestCursorWidget sel goFodUnselected defaultPaddingAmount)
+      (verticalPaddedDirForestCursorWidget goFodCursor goFodUnselected defaultPaddingAmount)
       fileBrowserCursorDirForestCursor
   where
     emptyScreen = str "No files to show."
-    sel = case s of
-      MaybeSelected -> goFodSelected
-      NotSelected -> goFodUnselected
+    goFodCursor :: FileOrDirCursor () -> Widget ResourceName
+    goFodCursor = \case
+      InProgress tc -> drawTextCursor s tc
+      Existent fod -> case sel of
+        MaybeSelected -> goFodSelected fod
+        NotSelected -> goFodUnselected fod
     goFodSelected :: FileOrDir () -> Widget ResourceName
     goFodSelected = forceAttr selectedAttr . visible . (str [pointerChar, ' '] <+>) . goFod
     goFodUnselected :: FileOrDir () -> Widget ResourceName
