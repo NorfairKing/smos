@@ -15,6 +15,7 @@ module Smos.Config
     catchAll,
     KeyMap (..),
     FileKeyMap (..),
+    BrowserKeyMap (..),
     ReportsKeyMap (..),
     HelpKeyMap (..),
     KeyMapping (..),

@@ -19,6 +19,7 @@ import Control.Monad.Reader
 import Control.Monad.State
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Writer
+import Cursor.FileOrDir
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
@@ -50,7 +51,7 @@ data SmosConfig
 data KeyMap
   = KeyMap
       { keyMapFileKeyMap :: !FileKeyMap,
-        keyMapBrowserKeyMap :: !KeyMappings,
+        keyMapBrowserKeyMap :: !BrowserKeyMap,
         keyMapReportsKeyMap :: !ReportsKeyMap,
         keyMapHelpKeyMap :: !HelpKeyMap,
         keyMapAnyKeyMap :: !KeyMappings
@@ -75,7 +76,7 @@ keyMapActions :: KeyMap -> [AnyAction]
 keyMapActions (KeyMap keyMapFileKeyMap keyMapBrowserKeyMap keyMapReportsKeyMap keyMapHelpKeyMap keyMapAnyKeyMap) =
   concat
     [ fileKeyMapActions keyMapFileKeyMap,
-      keyMappingsActions keyMapBrowserKeyMap,
+      browserKeyMapActions keyMapBrowserKeyMap,
       reportsKeyMapActions keyMapReportsKeyMap,
       helpKeyMapActions keyMapHelpKeyMap,
       keyMappingsActions keyMapAnyKeyMap
@@ -157,6 +158,24 @@ fileKeyMapActions
         fileKeyMapLogbookMatchers,
         fileKeyMapAnyMatchers
       ]
+
+data BrowserKeyMap
+  = BrowserKeyMap
+      { browserKeyMapExistentMatchers :: KeyMappings
+      }
+  deriving (Generic)
+
+browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
+browserKeyMapActions BrowserKeyMap {..} = concatMap keyMappingsActions [browserKeyMapExistentMatchers]
+
+instance Semigroup BrowserKeyMap where
+  bkm1 <> bkm2 =
+    BrowserKeyMap
+      { browserKeyMapExistentMatchers = browserKeyMapExistentMatchers bkm1 <> browserKeyMapExistentMatchers bkm2
+      }
+
+instance Monoid BrowserKeyMap where
+  mempty = BrowserKeyMap {browserKeyMapExistentMatchers = mempty}
 
 data ReportsKeyMap
   = ReportsKeyMap
@@ -613,7 +632,12 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                             LogbookSelected -> ("Logbook", fileKeyMapLogbookMatchers)
             BrowserSelected -> case editorCursorBrowserCursor ec of
               Nothing -> Nothing
-              Just _ -> withHelpBindings "keyMapBrowserKeyMap" keyMapBrowserKeyMap
+              Just fbc ->
+                let BrowserKeyMap {..} = keyMapBrowserKeyMap
+                 in case fileBrowserSelected fbc of
+                      Nothing -> undefined
+                      Just (_, _, InProgress _) -> undefined
+                      Just (_, _, Existent _) -> withHelpBindings "File Browser: Existent file or directory" browserKeyMapExistentMatchers
             ReportSelected -> case editorCursorReportCursor ec of
               Nothing -> Nothing
               Just rc -> case rc of

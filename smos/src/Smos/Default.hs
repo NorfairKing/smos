@@ -222,23 +222,26 @@ defaultFileKeyMap =
           ]
     }
 
-defaultBrowserKeyMap :: KeyMappings
+defaultBrowserKeyMap :: BrowserKeyMap
 defaultBrowserKeyMap =
-  listMatchers
-    [ exactKey KDown browserSelectNext,
-      exactChar 'j' browserSelectNext,
-      exactKey KUp browserSelectPrev,
-      exactChar 'k' browserSelectPrev,
-      exactChar '\t' browserToggleCollapse,
-      exactKey KEnter browserEnter,
-      exactKey KBackTab browserToggleCollapseRecursively,
-      exactString "ded" browserRemoveEmptyDir,
-      exactChar 'a' browserArchive,
-      exactChar 'u' browserUndo,
-      modifiedChar 'u' [MMeta] browserRedo,
-      exactKey KEsc selectEditor,
-      exactChar 'q' stop
-    ]
+  BrowserKeyMap
+    { browserKeyMapExistentMatchers =
+        listMatchers
+          [ exactKey KDown browserSelectNext,
+            exactChar 'j' browserSelectNext,
+            exactKey KUp browserSelectPrev,
+            exactChar 'k' browserSelectPrev,
+            exactChar '\t' browserToggleCollapse,
+            exactKey KEnter browserEnter,
+            exactKey KBackTab browserToggleCollapseRecursively,
+            exactString "ded" browserRemoveEmptyDir,
+            exactChar 'a' browserArchive,
+            exactChar 'u' browserUndo,
+            modifiedChar 'u' [MMeta] browserRedo,
+            exactKey KEsc selectEditor,
+            exactChar 'q' stop
+          ]
+    }
 
 defaultReportsKeyMap :: ReportsKeyMap
 defaultReportsKeyMap =
