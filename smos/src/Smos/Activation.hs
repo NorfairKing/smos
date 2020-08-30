@@ -70,10 +70,13 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             Nothing -> []
             Just fbc ->
               let BrowserKeyMap {..} = keyMapBrowserKeyMap
-               in case fileBrowserSelected fbc of
-                    Nothing -> undefined
-                    Just (_, _, InProgress _) -> undefined
-                    Just (_, _, Existent _) -> map ((,) SpecificMatcher) browserKeyMapExistentMatchers
+                  browserSpecifics =
+                    case fileBrowserSelected fbc of
+                      Nothing -> browserKeyMapEmptyMatchers
+                      Just (_, _, InProgress _) -> browserKeyMapInProgressMatchers
+                      Just (_, _, Existent _) -> browserKeyMapExistentMatchers
+                  browserAnys = map ((,) AnyMatcher) browserKeyMapAnyMatchers
+               in browserAnys ++ map ((,) SpecificMatcher) browserSpecifics
 
 findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =

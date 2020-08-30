@@ -6,6 +6,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Types
   ( module Smos.Types,
@@ -161,21 +162,43 @@ fileKeyMapActions
 
 data BrowserKeyMap
   = BrowserKeyMap
-      { browserKeyMapExistentMatchers :: KeyMappings
+      { browserKeyMapExistentMatchers :: KeyMappings,
+        browserKeyMapInProgressMatchers :: KeyMappings,
+        browserKeyMapEmptyMatchers :: KeyMappings,
+        browserKeyMapAnyMatchers :: KeyMappings
       }
   deriving (Generic)
 
 browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
-browserKeyMapActions BrowserKeyMap {..} = concatMap keyMappingsActions [browserKeyMapExistentMatchers]
+browserKeyMapActions BrowserKeyMap {..} =
+  let BrowserKeyMap _ _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ browserKeyMapExistentMatchers,
+          browserKeyMapInProgressMatchers,
+          browserKeyMapEmptyMatchers,
+          browserKeyMapAnyMatchers
+        ]
 
 instance Semigroup BrowserKeyMap where
   bkm1 <> bkm2 =
-    BrowserKeyMap
-      { browserKeyMapExistentMatchers = browserKeyMapExistentMatchers bkm1 <> browserKeyMapExistentMatchers bkm2
-      }
+    let BrowserKeyMap _ _ _ _ = undefined
+     in BrowserKeyMap
+          { browserKeyMapExistentMatchers = browserKeyMapExistentMatchers bkm1 <> browserKeyMapExistentMatchers bkm2,
+            browserKeyMapInProgressMatchers = browserKeyMapInProgressMatchers bkm1 <> browserKeyMapInProgressMatchers bkm2,
+            browserKeyMapEmptyMatchers = browserKeyMapEmptyMatchers bkm1 <> browserKeyMapEmptyMatchers bkm2,
+            browserKeyMapAnyMatchers = browserKeyMapAnyMatchers bkm1 <> browserKeyMapAnyMatchers bkm2
+          }
 
 instance Monoid BrowserKeyMap where
-  mempty = BrowserKeyMap {browserKeyMapExistentMatchers = mempty}
+  mempty =
+    let BrowserKeyMap _ _ _ _ = undefined
+     in BrowserKeyMap
+          { browserKeyMapExistentMatchers = mempty,
+            browserKeyMapInProgressMatchers = mempty,
+            browserKeyMapEmptyMatchers = mempty,
+            browserKeyMapAnyMatchers = mempty
+          }
 
 data ReportsKeyMap
   = ReportsKeyMap
@@ -634,10 +657,13 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
               Nothing -> Nothing
               Just fbc ->
                 let BrowserKeyMap {..} = keyMapBrowserKeyMap
-                 in case fileBrowserSelected fbc of
-                      Nothing -> undefined
-                      Just (_, _, InProgress _) -> undefined
-                      Just (_, _, Existent _) -> withHelpBindings "File Browser: Existent file or directory" browserKeyMapExistentMatchers
+                 in ( \(t, ms) ->
+                        withHelpBindings t $ ms ++ browserKeyMapAnyMatchers
+                    )
+                      $ case fileBrowserSelected fbc of
+                        Nothing -> ("File Browser: Empty directory", browserKeyMapEmptyMatchers)
+                        Just (_, _, InProgress _) -> ("File Browser: New file or directory in progress", browserKeyMapInProgressMatchers)
+                        Just (_, _, Existent _) -> ("File Browser: Existent file or directory", browserKeyMapExistentMatchers)
             ReportSelected -> case editorCursorReportCursor ec of
               Nothing -> Nothing
               Just rc -> case rc of

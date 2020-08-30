@@ -20,7 +20,6 @@ import Cursor.Brick.Map.KeyValue
 import Cursor.Brick.Text
 import Cursor.DirForest
 import Cursor.DirForest.Brick
-import Cursor.FileOrDir
 import Cursor.FuzzyLocalTime
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
@@ -239,22 +238,32 @@ drawFileBrowserCursor workflowDir s FileBrowserCursor {..} =
     emptyScreen = str "No files to show."
     goFodCursor :: FileOrDirCursor () -> Widget ResourceName
     goFodCursor = \case
-      InProgress tc -> drawTextCursor s tc
+      InProgress tc ->
+        ( case s of
+            MaybeSelected -> addPointer
+            NotSelected -> addLister
+        )
+          $ drawTextCursor s tc
       Existent fod -> case s of
         MaybeSelected -> goFodSelected fod
         NotSelected -> goFodUnselected fod
     goFodSelected :: FileOrDir () -> Widget ResourceName
-    goFodSelected = forceAttr selectedAttr . visible . (str [pointerChar, ' '] <+>) . goFod
+    goFodSelected = addPointer . goFod
+    addPointer :: Widget n -> Widget n
+    addPointer = forceAttr selectedAttr . visible . (str [pointerChar, ' '] <+>)
     goFodUnselected :: FileOrDir () -> Widget ResourceName
-    goFodUnselected = (str [listerChar, ' '] <+>) . goFod
+    goFodUnselected = addLister . goFod
+    addLister :: Widget n -> Widget n
+    addLister = (str [listerChar, ' '] <+>)
     goFod :: FileOrDir () -> Widget ResourceName
     goFod fod = case fod of
-      FodFile rf () ->
-        let extraStyle = case fileExtension rf of
-              Just ".smos" -> id -- TODO maybe also something fancy?
-              _ -> forceAttr nonSmosFileAttr
-         in extraStyle $ drawFilePath rf
+      FodFile rf () -> fileStyle rf $ drawFilePath rf
       FodDir rd -> drawDirPath rd
+    fileStyle :: Path Rel File -> Widget n -> Widget n
+    fileStyle rf =
+      case fileExtension rf of
+        Just ".smos" -> forceAttr fileAttr -- TODO maybe also something fancy?
+        _ -> forceAttr nonSmosFileAttr
 
 drawFileEditorCursor :: Path Abs Dir -> KeyMap -> Select -> SmosFileEditorCursor -> Drawer
 drawFileEditorCursor workflowDir keyMap s SmosFileEditorCursor {..} = do
