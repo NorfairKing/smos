@@ -21,6 +21,10 @@ instance GenValid FileKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid BrowserKeyConfigs where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid ReportsKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

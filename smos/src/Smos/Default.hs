@@ -33,7 +33,6 @@ defaultFileKeyMap =
           [ exactKey KEsc stop,
             exactChar 'e' startHeaderFromEmptyAndSelectHeader,
             exactChar 'E' startHeaderFromEmptyAndSelectHeader,
-            exactChar '?' selectHelp,
             exactString "co" forestClockOutEverywhereInAllFiles
           ],
       fileKeyMapEntryMatchers =
@@ -118,7 +117,6 @@ defaultFileKeyMap =
             exactString " rw" convRespondedButStillWaiting,
             exactString " ce" convNewEntryAndClockIn,
             -- Collapsing
-            exactChar '?' selectHelp,
             exactChar '\t' forestToggleCollapse,
             exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively,
             exactKey KBackTab forestToggleCollapseEntireEntry,
@@ -222,23 +220,44 @@ defaultFileKeyMap =
           ]
     }
 
-defaultBrowserKeyMap :: KeyMappings
+defaultBrowserKeyMap :: BrowserKeyMap
 defaultBrowserKeyMap =
-  listMatchers
-    [ exactKey KDown browserSelectNext,
-      exactChar 'j' browserSelectNext,
-      exactKey KUp browserSelectPrev,
-      exactChar 'k' browserSelectPrev,
-      exactChar '\t' browserToggleCollapse,
-      exactKey KEnter browserEnter,
-      exactKey KBackTab browserToggleCollapseRecursively,
-      exactString "ded" browserRemoveEmptyDir,
-      exactChar 'a' browserArchive,
-      exactChar 'u' browserUndo,
-      modifiedChar 'u' [MMeta] browserRedo,
-      exactKey KEsc selectEditor,
-      exactChar 'q' stop
-    ]
+  BrowserKeyMap
+    { browserKeyMapExistentMatchers =
+        listMatchers
+          [ exactKey KDown browserSelectNext,
+            exactChar 'j' browserSelectNext,
+            exactKey KUp browserSelectPrev,
+            exactChar 'k' browserSelectPrev,
+            exactChar '\t' browserToggleCollapse,
+            exactKey KEnter browserEnter,
+            exactKey KBackTab browserToggleCollapseRecursively,
+            exactString "ded" browserRemoveEmptyDir,
+            exactChar 'e' browserStartNew,
+            exactChar 'n' browserStartNew,
+            exactChar 'a' browserArchive
+          ],
+      browserKeyMapInProgressMatchers =
+        listMatchers
+          [ anyChar browserInsertChar,
+            exactKey KBS browserRemoveChar,
+            exactKey KDel browserDeleteChar,
+            exactKey KLeft browserSelectPrevChar,
+            exactKey KRight browserSelectNextChar
+          ],
+      browserKeyMapEmptyMatchers =
+        listMatchers
+          [ exactChar 'e' browserStartNew,
+            exactChar 'n' browserStartNew
+          ],
+      browserKeyMapAnyMatchers =
+        listMatchers
+          [ exactKey KEsc selectEditor,
+            exactChar 'q' stop,
+            exactChar 'u' browserUndo,
+            modifiedChar 'u' [MMeta] browserRedo
+          ]
+    }
 
 defaultReportsKeyMap :: ReportsKeyMap
 defaultReportsKeyMap =
@@ -254,7 +273,6 @@ defaultReportsKeyMap =
             exactKey KEnd lastNextAction,
             exactChar 'G' lastNextAction,
             exactKey KEnter enterNextActionFile,
-            exactChar '?' selectHelp,
             exactChar '/' selectNextActionFilter,
             exactKey KEsc selectEditor,
             exactChar 'q' stop
@@ -299,7 +317,8 @@ defaultHelpKeyMap =
 defaultAnyKeyMap :: KeyMappings
 defaultAnyKeyMap =
   listMatchers
-    [ exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
+    [ exactChar '?' selectHelp,
+      exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
       -- Browser
       exactString "bp" selectBrowserProjects,
       exactString "bw" selectBrowserWorkflow,

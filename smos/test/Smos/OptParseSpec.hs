@@ -16,6 +16,8 @@ spec = do
   jsonSpecOnValid @KeyConfigs
   genValidSpec @FileKeyConfigs
   jsonSpecOnValid @FileKeyConfigs
+  genValidSpec @BrowserKeyConfigs
+  jsonSpecOnValid @BrowserKeyConfigs
   genValidSpec @HelpKeyConfigs
   jsonSpecOnValid @HelpKeyConfigs
   genValidSpec @ReportsKeyConfigs

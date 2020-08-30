@@ -6,6 +6,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Types
   ( module Smos.Types,
@@ -19,6 +20,7 @@ import Control.Monad.Reader
 import Control.Monad.State
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Writer
+import Cursor.FileOrDir
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
@@ -50,7 +52,7 @@ data SmosConfig
 data KeyMap
   = KeyMap
       { keyMapFileKeyMap :: !FileKeyMap,
-        keyMapBrowserKeyMap :: !KeyMappings,
+        keyMapBrowserKeyMap :: !BrowserKeyMap,
         keyMapReportsKeyMap :: !ReportsKeyMap,
         keyMapHelpKeyMap :: !HelpKeyMap,
         keyMapAnyKeyMap :: !KeyMappings
@@ -75,7 +77,7 @@ keyMapActions :: KeyMap -> [AnyAction]
 keyMapActions (KeyMap keyMapFileKeyMap keyMapBrowserKeyMap keyMapReportsKeyMap keyMapHelpKeyMap keyMapAnyKeyMap) =
   concat
     [ fileKeyMapActions keyMapFileKeyMap,
-      keyMappingsActions keyMapBrowserKeyMap,
+      browserKeyMapActions keyMapBrowserKeyMap,
       reportsKeyMapActions keyMapReportsKeyMap,
       helpKeyMapActions keyMapHelpKeyMap,
       keyMappingsActions keyMapAnyKeyMap
@@ -157,6 +159,46 @@ fileKeyMapActions
         fileKeyMapLogbookMatchers,
         fileKeyMapAnyMatchers
       ]
+
+data BrowserKeyMap
+  = BrowserKeyMap
+      { browserKeyMapExistentMatchers :: KeyMappings,
+        browserKeyMapInProgressMatchers :: KeyMappings,
+        browserKeyMapEmptyMatchers :: KeyMappings,
+        browserKeyMapAnyMatchers :: KeyMappings
+      }
+  deriving (Generic)
+
+browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
+browserKeyMapActions BrowserKeyMap {..} =
+  let BrowserKeyMap _ _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ browserKeyMapExistentMatchers,
+          browserKeyMapInProgressMatchers,
+          browserKeyMapEmptyMatchers,
+          browserKeyMapAnyMatchers
+        ]
+
+instance Semigroup BrowserKeyMap where
+  bkm1 <> bkm2 =
+    let BrowserKeyMap _ _ _ _ = undefined
+     in BrowserKeyMap
+          { browserKeyMapExistentMatchers = browserKeyMapExistentMatchers bkm1 <> browserKeyMapExistentMatchers bkm2,
+            browserKeyMapInProgressMatchers = browserKeyMapInProgressMatchers bkm1 <> browserKeyMapInProgressMatchers bkm2,
+            browserKeyMapEmptyMatchers = browserKeyMapEmptyMatchers bkm1 <> browserKeyMapEmptyMatchers bkm2,
+            browserKeyMapAnyMatchers = browserKeyMapAnyMatchers bkm1 <> browserKeyMapAnyMatchers bkm2
+          }
+
+instance Monoid BrowserKeyMap where
+  mempty =
+    let BrowserKeyMap _ _ _ _ = undefined
+     in BrowserKeyMap
+          { browserKeyMapExistentMatchers = mempty,
+            browserKeyMapInProgressMatchers = mempty,
+            browserKeyMapEmptyMatchers = mempty,
+            browserKeyMapAnyMatchers = mempty
+          }
 
 data ReportsKeyMap
   = ReportsKeyMap
@@ -613,7 +655,15 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                             LogbookSelected -> ("Logbook", fileKeyMapLogbookMatchers)
             BrowserSelected -> case editorCursorBrowserCursor ec of
               Nothing -> Nothing
-              Just _ -> withHelpBindings "keyMapBrowserKeyMap" keyMapBrowserKeyMap
+              Just fbc ->
+                let BrowserKeyMap {..} = keyMapBrowserKeyMap
+                 in ( \(t, ms) ->
+                        withHelpBindings t $ ms ++ browserKeyMapAnyMatchers
+                    )
+                      $ case fileBrowserSelected fbc of
+                        Nothing -> ("File Browser: Empty directory", browserKeyMapEmptyMatchers)
+                        Just (_, _, InProgress _) -> ("File Browser: New file or directory in progress", browserKeyMapInProgressMatchers)
+                        Just (_, _, Existent _) -> ("File Browser: Existent file or directory", browserKeyMapExistentMatchers)
             ReportSelected -> case editorCursorReportCursor ec of
               Nothing -> Nothing
               Just rc -> case rc of

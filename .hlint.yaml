@@ -5,6 +5,8 @@
 - ignore:
     name: "Use uncurry"
 - ignore:
+    name: "Use record patterns"
+- ignore:
     name: "Use String"
 - ignore:
     name: "Use second"

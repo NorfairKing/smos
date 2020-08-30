@@ -74,7 +74,7 @@ data KeybindingsConfiguration
   = KeybindingsConfiguration
       { confReset :: !(Maybe Bool),
         confFileKeyConfig :: !(Maybe FileKeyConfigs),
-        confBrowserKeyConfig :: !(Maybe KeyConfigs),
+        confBrowserKeyConfig :: !(Maybe BrowserKeyConfigs),
         confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
         confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
         confAnyKeyConfig :: !(Maybe KeyConfigs)
@@ -114,7 +114,7 @@ backToKeybindingsConfiguration KeyMap {..} =
    in KeybindingsConfiguration
         { confReset = Just True,
           confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap,
-          confBrowserKeyConfig = Just $ backToKeyConfigs keyMapBrowserKeyMap,
+          confBrowserKeyConfig = Just $ backToBrowserKeyConfigs keyMapBrowserKeyMap,
           confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap,
           confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap,
           confAnyKeyConfig = Just $ backToKeyConfigs keyMapAnyKeyMap
@@ -184,6 +184,49 @@ backToFileKeyConfigs FileKeyMap {..} =
           tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers,
           logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers,
           anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
+        }
+
+data BrowserKeyConfigs
+  = BrowserKeyConfigs
+      { browserExistentKeyConfigs :: Maybe KeyConfigs,
+        browserInProgressKeyConfigs :: Maybe KeyConfigs,
+        browserEmptyKeyConfigs :: Maybe KeyConfigs,
+        browserAnyKeyConfigs :: Maybe KeyConfigs
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity BrowserKeyConfigs
+
+instance ToJSON BrowserKeyConfigs where
+  toJSON BrowserKeyConfigs {..} =
+    let BrowserKeyMap _ _ _ _ = undefined
+     in object
+          [ "existent" .= browserExistentKeyConfigs,
+            "in-progress" .= browserInProgressKeyConfigs,
+            "empty" .= browserEmptyKeyConfigs,
+            "any" .= browserAnyKeyConfigs
+          ]
+
+instance FromJSON BrowserKeyConfigs where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema BrowserKeyConfigs where
+  yamlSchema =
+    objectParser "BrowserKeyConfigs" $
+      BrowserKeyConfigs
+        <$> optionalField "existent" "Keybindings for when an existing file or directory is selected"
+        <*> optionalField "in-progress" "Keybindings for when an in-progress file or directory is selected"
+        <*> optionalField "empty" "Keybindings for when the directory being browsed is empty"
+        <*> optionalField "any" "Keybindings for any of the other file browser situations"
+
+backToBrowserKeyConfigs :: BrowserKeyMap -> BrowserKeyConfigs
+backToBrowserKeyConfigs BrowserKeyMap {..} =
+  let BrowserKeyMap _ _ _ _ = undefined
+   in BrowserKeyConfigs
+        { browserExistentKeyConfigs = Just $ backToKeyConfigs browserKeyMapExistentMatchers,
+          browserInProgressKeyConfigs = Just $ backToKeyConfigs browserKeyMapInProgressMatchers,
+          browserEmptyKeyConfigs = Just $ backToKeyConfigs browserKeyMapEmptyMatchers,
+          browserAnyKeyConfigs = Just $ backToKeyConfigs browserKeyMapAnyMatchers
         }
 
 data ReportsKeyConfigs

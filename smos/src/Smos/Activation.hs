@@ -7,12 +7,14 @@ module Smos.Activation
   )
 where
 
+import Cursor.DirForest
 import Data.Ord as Ord
 import qualified Data.Sequence as Seq
 import qualified Graphics.Vty as Vty
 import Import
 import Lens.Micro
 import Smos.Cursor.Entry
+import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Next
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
@@ -64,7 +66,17 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                         NextActionReportSelected -> reportsKeymapNextActionReportMatchers
                         NextActionReportFilterSelected -> reportsKeymapNextActionReportFilterMatchers
         BrowserSelected ->
-          map ((,) SpecificMatcher) keyMapBrowserKeyMap
+          case editorCursorBrowserCursor of
+            Nothing -> []
+            Just fbc ->
+              let BrowserKeyMap {..} = keyMapBrowserKeyMap
+                  browserSpecifics =
+                    case fileBrowserSelected fbc of
+                      Nothing -> browserKeyMapEmptyMatchers
+                      Just (_, _, InProgress _) -> browserKeyMapInProgressMatchers
+                      Just (_, _, Existent _) -> browserKeyMapExistentMatchers
+                  browserAnys = map ((,) AnyMatcher) browserKeyMapAnyMatchers
+               in browserAnys ++ map ((,) SpecificMatcher) browserSpecifics
 
 findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =
