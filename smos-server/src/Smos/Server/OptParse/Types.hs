@@ -64,10 +64,10 @@ instance YamlSchema Configuration where
 configurationObjectParser :: ObjectParser Configuration
 configurationObjectParser =
   Configuration
-    <$> optionalFieldWith "api-log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
+    <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
     <*> optionalField "uuid-file" "The file in which to store the server uuid"
     <*> optionalField "database-file" "The file in which to store the database"
-    <*> optionalField "api-port" "The port on which to serve api requests"
+    <*> optionalField "port" "The port on which to serve api requests"
 
 newtype Dispatch
   = DispatchServe ServeSettings

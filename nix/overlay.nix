@@ -36,9 +36,37 @@ let
         '';
 
         # The smos web server front-end.
-        packages.smos-web-server.components.library.preBuild = ''
-          export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
-        '';
+        packages.smos-web-server.components.library.preBuild =
+          let
+            jqueryJS = builtins.fetchurl {
+              url = "https://code.jquery.com/jquery-3.3.1.min.js";
+              sha256 = "sha256:1vq2bp290rhby5l09dv5khqwv3ysnzbddggbgk6m4hl9y9pl42hn";
+            };
+            xtermJS = builtins.fetchurl {
+              url = "https://cdn.jsdelivr.net/npm/xterm@4.8.1/lib/xterm.min.js";
+              sha256 = "sha256:1vzha04sy8qhg833xb829pqd1ar7kpdxfklzc30xbb6wcwgrqh0j";
+            };
+            xtermCSS = builtins.fetchurl {
+              url = "https://cdn.jsdelivr.net/npm/xterm@4.8.1/css/xterm.css";
+              sha256 = "sha256:070zqrzizm5kdkkrfv19rhg8q4v9kr4hrfr544im6h5w5hy3i1j0";
+            };
+            xtermAttachJS = builtins.fetchurl {
+              url = "https://cdn.jsdelivr.net/npm/xterm-addon-attach@0.6.0/lib/xterm-addon-attach.min.js";
+              sha256 = "sha256:1dpn6c8gc9xgq2xk7l0pikf59gw2h3c741p0hsiw4w3gysl93lkc";
+            };
+            xtermFitJS = builtins.fetchurl {
+              url = "https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.4.0/lib/xterm-addon-fit.min.js";
+              sha256 = "sha256:1mpw2a2x96b26xfymz6prk4z41k45x9idfc7li48vam08d7x8rfn";
+            };
+          in
+            ''
+              cp ${jqueryJS} jquery.js
+              cp ${xtermJS} xterm.js
+              cp ${xtermCSS} xterm.css
+              cp ${xtermAttachJS} xterm-attach.js
+              cp ${xtermFitJS} xterm-fit.js
+              export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
+            '';
 
         # The smos docs site
         #

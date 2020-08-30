@@ -1,8 +1,12 @@
 / HomeR GET
 
+/file/*Texts FileR GET
+/ws/instance/*Texts InstanceR GET
+/ws/resize ResizeR POST
+
 /files FilesR GET
 
-/file/*Texts FileR GET
+/old-file/*Texts OldFileR GET
 
 /report/next ReportNextR GET
 /report/agenda ReportAgendaR GET

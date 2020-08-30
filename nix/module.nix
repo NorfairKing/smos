@@ -20,7 +20,7 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf types.str;
-                      example = "smos.cs-syd.eu";
+                      example = "docs.smos.online";
                       description = "The host to serve the docs site on";
                     };
                   port =
@@ -32,13 +32,13 @@ in
                 };
             };
         };
-      sync-server =
+      api-server =
         mkOption {
           type =
             types.submodule {
               options =
                 {
-                  enable = mkEnableOption "Smos Sync Server";
+                  enable = mkEnableOption "Smos API Server";
                   log-level =
                     mkOption {
                       type = types.str;
@@ -49,14 +49,56 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf (types.str);
-                      example = "api.smos.cs-syd.eu";
-                      description = "The host to serve sync requests on";
+                      example = "api.smos.online";
+                      description = "The host to serve api requests on";
                     };
                   port =
                     mkOption {
                       type = types.int;
                       example = 8001;
-                      description = "The port to serve sync requests on";
+                      description = "The port to serve api requests on";
+                    };
+                };
+            };
+        };
+      web-server =
+        mkOption {
+          type =
+            types.submodule {
+              options =
+                {
+                  enable = mkEnableOption "Smos Web Server";
+                  docs-url =
+                    mkOption {
+                      type = types.str;
+                      example = "docs.smos.online";
+                      default = "docs.smos.online";
+                      description = "The url for the docs to refer to";
+                    };
+                  api-url =
+                    mkOption {
+                      type = types.str;
+                      example = "api.smos.online";
+                      description = "The url for the api to use";
+                    };
+                  log-level =
+                    mkOption {
+                      type = types.str;
+                      example = "Debug";
+                      default = "Warn";
+                      description = "The log level to use";
+                    };
+                  hosts =
+                    mkOption {
+                      type = types.listOf (types.str);
+                      example = "smos.online";
+                      description = "The host to serve web requests on";
+                    };
+                  port =
+                    mkOption {
+                      type = types.int;
+                      example = 8002;
+                      description = "The port to serve web requests on";
                     };
                 };
             };
@@ -65,10 +107,11 @@ in
   config =
     let
       smosPkgs = (import ../nix/pkgs.nix).smosPackages;
+      # The docs server
       docs-site-service =
         with cfg.docs-site;
         optionalAttrs enable {
-          "smos-docs-${envname}" = {
+          "smos-docs-site-${envname}" = {
             description = "Smos docs site ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment =
@@ -106,15 +149,16 @@ in
               serverAliases = tail hosts;
             };
         };
-      sync-server-service =
-        with cfg.sync-server;
+      # The api server
+      api-server-service =
+        with cfg.api-server;
 
         let
-          workingDir = "/www/smos/${envname}/data/";
+          workingDir = "/www/smos/${envname}/api-server/";
         in
           optionalAttrs enable {
-            "smos-sync-${envname}" = {
-              description = "Smos sync server ${envname} Service";
+            "smos-api-server-${envname}" = {
+              description = "Smos API Server ${envname} Service";
               wantedBy = [ "multi-user.target" ];
               environment =
                 {
@@ -143,8 +187,8 @@ in
                 };
             };
           };
-      sync-server-host =
-        with cfg.sync-server;
+      api-server-host =
+        with cfg.api-server;
 
         optionalAttrs enable {
           "${head hosts}" =
@@ -161,21 +205,83 @@ in
               serverAliases = tail hosts;
             };
         };
+      # The web server
+      web-server-service =
+        with cfg.web-server;
+
+        let
+          workingDir = "/www/smos/${envname}/web-server/";
+        in
+          optionalAttrs enable {
+            "smos-web-server-${envname}" = {
+              description = "Smos web server ${envname} Service";
+              wantedBy = [ "multi-user.target" ];
+              environment =
+                {
+                  "SMOS_WEB_SERVER_API_URL" = "${api-url}";
+                  "SMOS_WEB_SERVER_DOCS_URL" = "${docs-url}";
+                  "SMOS_WEB_SERVER_LOG_LEVEL" = "${builtins.toString log-level}";
+                  "SMOS_WEB_SERVER_PORT" = "${builtins.toString port}";
+                  "SMOS_WEB_SERVER_DATA_DIR" = workingDir + "workflows/";
+                  "TERM" = "xterm-256color";
+                };
+              script =
+                ''
+                  mkdir -p "${workingDir}"
+                  cd "${workingDir}"
+                  ${smosPkgs.smos-web-server}/bin/smos-web-server \
+                    serve
+                '';
+              serviceConfig =
+                {
+                  Restart = "always";
+                  RestartSec = 1;
+                  Nice = 15;
+                };
+              unitConfig =
+                {
+                  StartLimitIntervalSec = 0;
+                  # ensure Restart=always is always honoured
+                };
+            };
+          };
+      web-server-host =
+        with cfg.web-server;
+
+        optionalAttrs enable {
+          "${head hosts}" =
+            {
+              enableACME = true;
+              forceSSL = true;
+              locations."/" = {
+                proxyPass = "http://localhost:${builtins.toString port}";
+                proxyWebsockets = true;
+                # Just to make sure we don't run into 413 errors on big syncs
+                extraConfig = ''
+                  client_max_body_size 0;
+                '';
+              };
+              serverAliases = tail hosts;
+            };
+        };
     in
       mkIf cfg.enable {
         systemd.services =
           concatAttrs [
             docs-site-service
-            sync-server-service
+            api-server-service
+            web-server-service
           ];
         networking.firewall.allowedTCPPorts = builtins.concatLists [
           (optional cfg.docs-site.enable cfg.docs-site.port)
-          (optional cfg.sync-server.enable cfg.sync-server.port)
+          (optional cfg.api-server.enable cfg.api-server.port)
+          (optional cfg.web-server.enable cfg.web-server.port)
         ];
         services.nginx.virtualHosts =
           concatAttrs [
             docs-site-host
-            sync-server-host
+            api-server-host
+            web-server-host
           ];
       };
 }

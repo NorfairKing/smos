@@ -9,7 +9,6 @@ module Smos.GoldenSpec
   )
 where
 
-import Brick hiding (on)
 import qualified Data.ByteString.Char8 as SB8
 import Data.Function
 import Data.List
@@ -21,8 +20,10 @@ import Smos
 import Smos.App
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
+import Smos.Default
 import Smos.Types
 import TestImport
+import UnliftIO.Resource
 
 spec :: Spec
 spec = do
@@ -117,38 +118,47 @@ data CommandsRun
 runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
   withSystemTempDir "smos-golden" $ \tdir -> do
-    af <- resolveFile tdir "example.smos"
+    workflowDir <- resolveDir tdir "workflow"
+    let testConf :: SmosConfig
+        testConf =
+          defaultConfig
+            { configReportConfig =
+                defaultReportConfig
+                  { smosReportConfigDirectoryConfig =
+                      defaultDirectoryConfig
+                        { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
+                        }
+                  }
+            }
+    af <- resolveFile workflowDir "example.smos"
     mapM_ (writeSmosFile af) mstart
-    mErrOrEC <- startEditorCursor af
-    case mErrOrEC of
-      Nothing -> die "Could not lock pretend file."
-      Just errOrEC -> case errOrEC of
-        Left err -> die $ "Not a smos file: " <> err
-        Right ec -> do
-          zt <- getZonedTime
-          let startState =
-                initStateWithCursor zt ec
-          (fs, rs) <- foldM go (startState, []) commands
-          pure $
-            CommandsRun
-              { intermidiaryResults = reverse rs,
-                finalResult = rebuildSmosFileEditorCursor <$> editorCursorFileCursor (smosStateCursor fs)
-              }
+    runResourceT $ do
+      mErrOrEC <- startEditorCursor af
+      case mErrOrEC of
+        Nothing -> liftIO $ die "Could not lock pretend file."
+        Just errOrEC -> case errOrEC of
+          Left err -> liftIO $ die $ "Not a smos file: " <> err
+          Right ec -> do
+            zt <- liftIO getZonedTime
+            let startState =
+                  initStateWithCursor zt ec
+            (fs, rs) <- foldM (go testConf) (startState, []) commands
+            pure $
+              CommandsRun
+                { intermidiaryResults = reverse rs,
+                  finalResult = rebuildSmosFileEditorCursor <$> editorCursorFileCursor (smosStateCursor fs)
+                }
   where
-    testConf = error "tried to access the config"
-    go :: (SmosState, [(Command, Maybe SmosFile)]) -> Command -> IO (SmosState, [(Command, Maybe SmosFile)])
-    go (ss, rs) c = do
+    go :: SmosConfig -> (SmosState, [(Command, Maybe SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, Maybe SmosFile)])
+    go testConf (ss, rs) c = do
       let func =
             case c of
               CommandPlain a -> actionFunc a
               CommandUsing a arg -> actionUsingFunc a arg
-      let eventFunc = runSmosM testConf ss func
-      (((s, ss'), _), _) <-
-        runStateT
-          (runReaderT (runEventM eventFunc) (error "Tried to access the brick env"))
-          (error "Tried to access the brick state")
+      let eventFunc = runSmosM' testConf ss func
+      ((s, ss'), _) <- eventFunc
       case s of
-        Stop -> failure "Premature stop"
+        Stop -> liftIO $ failure "Premature stop"
         Continue () ->
           pure
             ( ss',

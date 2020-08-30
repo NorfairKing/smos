@@ -35,6 +35,12 @@ $maybe _ <- maid
     <a href=@{FilesR}>
       Files
 
+  <h2>
+    Cli Tryout
+  <p>
+    <a href=@{FileR ["example.smos"]}>
+      Cli example
+
 $nothing
   <h2>
     Auth

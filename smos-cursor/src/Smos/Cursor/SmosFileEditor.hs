@@ -16,6 +16,7 @@ import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.History
 import System.FileLock
+import UnliftIO.Resource
 
 -- This represents a SmosFile on disk
 data SmosFileEditorCursor
@@ -30,10 +31,10 @@ data SmosFileEditorCursor
   deriving (Eq, Generic)
 
 -- | Left if there was a problem while reading
-startSmosFileEditorCursor :: MonadIO m => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
+startSmosFileEditorCursor :: (MonadIO m, MonadResource m) => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
 startSmosFileEditorCursor p = do
   ensureDir (parent p)
-  mfl <- liftIO $ tryLockFile (fromAbsFile p) Exclusive -- We will edit the file so we need an exclusive lock
+  (_, mfl) <- allocate (tryLockFile (fromAbsFile p) Exclusive) (mapM_ unlockFile) -- We will edit the file so we need an exclusive lock
   forM mfl $ \fl -> do
     mErrOrSF <- liftIO $ readSmosFile p
     let errOrStartingPoint = case mErrOrSF of
@@ -58,10 +59,10 @@ startSmosFileEditorCursor p = do
           }
 
 -- TODO do something if the contents on disk have changed instead of just overwriting
-startSmosFileEditorCursorWithCursor :: MonadIO m => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
+startSmosFileEditorCursorWithCursor :: (MonadIO m, MonadResource m) => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
 startSmosFileEditorCursorWithCursor p msfc = do
   ensureDir (parent p)
-  mfl <- liftIO $ tryLockFile (fromAbsFile p) Exclusive -- We will edit the file so we need an exclusive lock
+  (_, mfl) <- allocate (tryLockFile (fromAbsFile p) Exclusive) (mapM_ unlockFile) -- We will edit the file so we need an exclusive lock
   forM mfl $ \fl -> do
     now <- liftIO getCurrentTime
     pure

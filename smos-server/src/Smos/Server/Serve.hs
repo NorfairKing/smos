@@ -35,7 +35,8 @@ serveSmosServer ss = do
   runSmosServer ss
 
 runSmosServer :: ServeSettings -> IO ()
-runSmosServer ServeSettings {..} =
+runSmosServer ServeSettings {..} = do
+  ensureDir $ parent serveSetDatabaseFile
   runStderrLoggingT
     $ filterLogger (\_ ll -> ll >= serveSetLogLevel)
     $ DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1
