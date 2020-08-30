@@ -1,30 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Smos.Actions.Browser
-  ( allPlainBrowserActions,
-    allBrowserUsingCharActions,
-    selectBrowserProjects,
-    selectBrowserWorkflow,
-    selectBrowserArchive,
-    selectBrowserReview,
-    selectBrowserClient,
-    browserSelectPrev,
-    browserSelectNext,
-    browserToggleCollapse,
-    browserToggleCollapseRecursively,
-    browserRemoveEmptyDir,
-    browserArchive,
-    browserEnter,
-    browserUndo,
-    browserUndoAny,
-    browserRedo,
-    browserRedoAny,
-  )
-where
+module Smos.Actions.Browser where
 
 import Cursor.FileOrDir
-import Cursor.Simple.DirForest
 import Data.Text (Text)
 import Path
 import Smos.Actions.File
@@ -42,6 +21,11 @@ allPlainBrowserActions =
     selectBrowserClient,
     browserSelectPrev,
     browserSelectNext,
+    browserStartNew,
+    browserRemoveChar,
+    browserDeleteChar,
+    browserSelectPrevChar,
+    browserSelectNextChar,
     browserToggleCollapse,
     browserToggleCollapseRecursively,
     browserEnter,
@@ -54,8 +38,12 @@ allPlainBrowserActions =
   ]
 
 allBrowserUsingCharActions :: [ActionUsing Char]
-allBrowserUsingCharActions = []
+allBrowserUsingCharActions =
+  [ browserInsertChar,
+    browserAppendChar
+  ]
 
+-- TODO: rename this to browserSelectPrevFileOrDir ?
 browserSelectPrev :: Action
 browserSelectPrev =
   Action
@@ -70,6 +58,62 @@ browserSelectNext =
     { actionName = "browserSelectNext",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectNext,
       actionDescription = "Select the next file or directory in the file browser."
+    }
+
+browserStartNew :: Action
+browserStartNew =
+  Action
+    { actionName = "browserStartNew",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNew,
+      actionDescription = "Start a new file or directory in the file browser."
+    }
+
+browserInsertChar :: ActionUsing Char
+browserInsertChar =
+  ActionUsing
+    { actionUsingName = "browserInsertChar",
+      actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorInsertChar c,
+      actionUsingDescription = "Insert a character into the new file or directory being created in the file browser."
+    }
+
+browserAppendChar :: ActionUsing Char
+browserAppendChar =
+  ActionUsing
+    { actionUsingName = "browserAppendChar",
+      actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorAppendChar c,
+      actionUsingDescription = "Append a character into the new file or directory being created in the file browser."
+    }
+
+browserRemoveChar :: Action
+browserRemoveChar =
+  Action
+    { actionName = "browserRemoveChar",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorRemoveChar,
+      actionDescription = "Remove a characer from the new file or directory being created in the file browser."
+    }
+
+browserDeleteChar :: Action
+browserDeleteChar =
+  Action
+    { actionName = "browserDeleteChar",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorDeleteChar,
+      actionDescription = "Delete a characer from the new file or directory being created in the file browser."
+    }
+
+browserSelectNextChar :: Action
+browserSelectNextChar =
+  Action
+    { actionName = "browserSelectNextChar",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectNextChar,
+      actionDescription = "Select the next characer in the new file or directory being created in the file browser."
+    }
+
+browserSelectPrevChar :: Action
+browserSelectPrevChar =
+  Action
+    { actionName = "browserSelectPrevChar",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectPrevChar,
+      actionDescription = "Select the previous characer in the new file or directory being created in the file browser."
     }
 
 browserToggleCollapse :: Action
@@ -98,6 +142,7 @@ browserEnter =
           Just dfc ->
             case fileBrowserSelected dfc of
               Nothing -> pure ()
+              Just (_, _, InProgress _) -> pure () -- TODO
               Just (_, _, Existent (FodDir _)) -> modifyFileBrowserCursorM fileBrowserCursorToggle
               Just (base, rd, Existent (FodFile rf ())) -> do
                 let path = base </> rd </> rf

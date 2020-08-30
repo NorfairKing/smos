@@ -240,7 +240,7 @@ drawFileBrowserCursor workflowDir s FileBrowserCursor {..} =
     goFodCursor :: FileOrDirCursor () -> Widget ResourceName
     goFodCursor = \case
       InProgress tc -> drawTextCursor s tc
-      Existent fod -> case sel of
+      Existent fod -> case s of
         MaybeSelected -> goFodSelected fod
         NotSelected -> goFodUnselected fod
     goFodSelected :: FileOrDir () -> Widget ResourceName
