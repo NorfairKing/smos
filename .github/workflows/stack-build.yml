@@ -27,8 +27,6 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           stack-version: ${{ matrix.stack }}
 
-      - uses: cachix/install-nix-action@v8
-
 
       - uses: actions/cache@v1
         name: Cache ~/.stack
