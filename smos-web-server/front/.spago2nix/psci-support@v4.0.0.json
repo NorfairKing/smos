@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-psci-support.git","sha256":"0jd773zcklr6hjddqingzmk20a0afpm2r9pczfjbj0d93pbxb4xh","rev":"a66a0fa8661eb8b5fe75cc862f4e2df2835c058d"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-psci-support.git"},"packageName":"psci-support"}}}

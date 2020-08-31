@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-profunctor.git","sha256":"1zwbxgimpknmashmq2rb773kbwbksr4ahcdkpnvvcapasxhds0a7","rev":"9b3d014b38c69ea2dd4b1f597330b095034fe2c4"},"package":{"version":"v4.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-profunctor.git"},"packageName":"profunctor"}}}

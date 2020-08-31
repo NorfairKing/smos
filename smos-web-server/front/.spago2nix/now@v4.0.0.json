@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-contrib/purescript-now.git","sha256":"18h5pif2dy4r7w1xg2zw4mvdqlar9xqp3rawkiavmsc946ncf3zs","rev":"090feddf7c7dec2a812eca090cd211e87ccad606"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-contrib/purescript-now.git"},"packageName":"now"}}}

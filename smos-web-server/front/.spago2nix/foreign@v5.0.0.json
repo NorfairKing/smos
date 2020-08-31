@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-foreign.git","sha256":"15mz2s4f8crkd721z4df2aag4s0wil6fs07cpcmi7dpnkn7a4nab","rev":"3b8f3ae608db339ed5cff35d2017a07efb905b4d"},"package":{"version":"v5.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-foreign.git"},"packageName":"foreign"}}}

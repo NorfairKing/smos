@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/slamdata/purescript-fork.git","sha256":"1jygqzyci40c28gw2ygnx8v52hilhajj1bdpn7ndvss4i7yh1lcp","rev":"27b9f223645a08b42731531a154892eaa263b590"},"package":{"version":"v4.0.0","repo":{"tag":"Remote","contents":"https://github.com/slamdata/purescript-fork.git"},"packageName":"fork"}}}

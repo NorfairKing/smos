@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-st.git","sha256":"1jpz8rpk2ac6kshflri8pdw4s1hf8g4alz5bw69x23sj9sccxgs0","rev":"8133841b8b545f3a273caebb6103f7c640fc35eb"},"package":{"version":"v4.1.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-st.git"},"packageName":"st"}}}

@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-proxy.git","sha256":"0rqf25b1n9p5sgx7gdsxwrfv9rb3sqxgqmqpp5kdm30lfk7snz24","rev":"4a529b1f874fa2f32fc4c575cafaf46e0ab69fb6"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-proxy.git"},"packageName":"proxy"}}}

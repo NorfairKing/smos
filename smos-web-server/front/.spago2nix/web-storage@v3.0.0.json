@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript-web/purescript-web-storage.git","sha256":"1ycb2s29aw9w6lqik6hfmp9nf9i2yhn0q26hc4p3450jam5mj8bx","rev":"c2dedea1ee10ca7e94af5547c90274fb63ab3bc6"},"package":{"version":"v3.0.0","repo":{"tag":"Remote","contents":"https://github.com/purescript-web/purescript-web-storage.git"},"packageName":"web-storage"}}}

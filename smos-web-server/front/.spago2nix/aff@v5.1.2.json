@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/slamdata/purescript-aff.git","sha256":"1ygjxbm2bqw82sm17szhzz4jihvbg9mszx1ii0n3sj72bnz02avz","rev":"78916a9c7e6d203f1d9f441c8eaa257d6475e978"},"package":{"version":"v5.1.2","repo":{"tag":"Remote","contents":"https://github.com/slamdata/purescript-aff.git"},"packageName":"aff"}}}

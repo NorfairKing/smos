@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-strings.git","sha256":"147l3l3fzn7liparhm2y3p8j4ck1lblra5j493p2hy5yy5ndznc8","rev":"94c843b93142d0edf1c31ec075c40b6984c3dc7b"},"package":{"version":"v4.0.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-strings.git"},"packageName":"strings"}}}

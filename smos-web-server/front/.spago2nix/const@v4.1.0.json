@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-const.git","sha256":"0qbd2aisax52yw6sybdhs7na943cbsd6mylhhgsamrf7hzh6v51p","rev":"bc5db27b0ed3947fa5e2074ccbab01236eec3fa4"},"package":{"version":"v4.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-const.git"},"packageName":"const"}}}

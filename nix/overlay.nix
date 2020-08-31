@@ -36,6 +36,8 @@ let
         '';
 
         # The smos web server front-end.
+        #
+        # We put these remote assets in place before the build so that they do not get fetched during the build
         packages.smos-web-server.components.library.preBuild =
           let
             jqueryJS = builtins.fetchurl {
@@ -65,7 +67,6 @@ let
               cp ${xtermCSS} xterm.css
               cp ${xtermAttachJS} xterm-attach.js
               cp ${xtermFitJS} xterm-fit.js
-              export SMOS_WEB_SERVER_FRONT_JS=${final.smos-web-server-front}
             '';
 
         # The smos docs site

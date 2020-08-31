@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-globals.git","sha256":"03h4npdbsjr1mkjasdi071l0cl7zdf3l76a8f0x4ghx47yvpgadn","rev":"8e6d69c36b6fd8c988a3664fc033ad11dbdd5860"},"package":{"version":"v4.1.0","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-globals.git"},"packageName":"globals"}}}

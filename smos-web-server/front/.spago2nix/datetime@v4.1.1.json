@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/purescript/purescript-datetime.git","sha256":"06ghfvbvd5sd0q014qi8j8glk2g2j9f8z8cwq2318kllp92gz07q","rev":"9e76abe96f45a68eb0bb23d0afd56031a8070bee"},"package":{"version":"v4.1.1","repo":{"tag":"Remote","contents":"https://github.com/purescript/purescript-datetime.git"},"packageName":"datetime"}}}

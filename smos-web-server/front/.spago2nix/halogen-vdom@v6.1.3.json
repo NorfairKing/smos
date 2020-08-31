@@ -1,1 +1,0 @@
-{"type":"Fetched","value":{"result":{"url":"https://github.com/slamdata/purescript-halogen-vdom.git","sha256":"0apcdf7hhph57bnqw7nn0wyrlas8lv4nsvf964a3phhy06x1jw8m","rev":"8b91e55019060f50779dba20959f47cf4b60678d"},"package":{"version":"v6.1.3","repo":{"tag":"Remote","contents":"https://github.com/slamdata/purescript-halogen-vdom.git"},"packageName":"halogen-vdom"}}}

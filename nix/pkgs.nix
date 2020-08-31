@@ -21,7 +21,6 @@ let
           yamlparse-applicative-overlay
           linkcheck-overlay
           (import ./gitignore-src.nix)
-          (import ../smos-web-server/front/nix/overlay.nix)
           (import ./overlay.nix)
         ];
     };

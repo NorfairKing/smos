@@ -6,8 +6,6 @@
 
 /files FilesR GET
 
-/old-file/*Texts OldFileR GET
-
 /report/next ReportNextR GET
 /report/agenda ReportAgendaR GET
 
