@@ -29,6 +29,12 @@ stack install smos-single
 stack install smos-sync-client
 ```
 
+If you just want to make sure to get everything:
+
+```
+stack install
+```
+
 #### Troubleshooting Autoconf
 
 You may get an error about `autoreconf` not being available if `autoconf` is not installed.
