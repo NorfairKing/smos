@@ -190,6 +190,22 @@ fileBrowserArchiveFile workflowDir archiveDir fbc =
                 NotAllDone sf -> goOn sf
                 _ -> pure fbc
 
+fileBrowserCompleteToDir :: MonadIO m => Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToDir workflowDir fbc =
+  case fileBrowserCursorDirForestCursor fbc of
+    Nothing -> pure fbc
+    Just dfc ->
+      case dirForestCursorCompleteToDir dfc of
+        Nothing -> pure fbc
+        Just (rd, dfc') -> do
+          let a = DirCreation (workflowDir </> rd) dfc
+          let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+          pure $
+            fbc
+              { fileBrowserCursorDirForestCursor = Just dfc',
+                fileBrowserCursorUndoStack = us'
+              }
+
 -- Fails if there is nothing to undo
 fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserUndo fbc = do
@@ -248,6 +264,9 @@ fileBrowserRedoAction a mdfc =
       case r of
         MoveDestinationAlreadyExists _ -> pure mdfc
         ArchivedSuccesfully -> pure $ Just dfc'
+    DirCreation dp dfc' -> do
+      redoDirCreation dp
+      pure $ Just dfc'
 
 fileBrowserUndoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
 fileBrowserUndoAction a _ =
@@ -258,6 +277,9 @@ fileBrowserUndoAction a _ =
       pure $ Just dfc'
     ArchiveSmosFile src dest sf dfc' -> do
       undoArchiveFile src dest sf
+      pure $ Just dfc'
+    DirCreation dp dfc' -> do
+      undoDirCreation dp
       pure $ Just dfc'
 
 redoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
@@ -280,6 +302,12 @@ undoArchiveFile src dest sf =
     removeFile dest
     writeSmosFile src sf
 
+redoDirCreation :: MonadIO m => Path Abs Dir -> m ()
+redoDirCreation = undoRmEmptyDir
+
+undoDirCreation :: MonadIO m => Path Abs Dir -> m ()
+undoDirCreation = redoRmEmptyDir
+
 data FileBrowserCursorAction
   = -- | The previous version, to reset to
     Movement (Maybe (DirForestCursor ()))
@@ -294,6 +322,7 @@ data FileBrowserCursorAction
       (Path Abs File)
       SmosFile
       (DirForestCursor ())
+  | DirCreation (Path Abs Dir) (DirForestCursor ())
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursorAction

@@ -243,7 +243,8 @@ defaultBrowserKeyMap =
             exactKey KBS browserRemoveChar,
             exactKey KDel browserDeleteChar,
             exactKey KLeft browserSelectPrevChar,
-            exactKey KRight browserSelectNextChar
+            exactKey KRight browserSelectNextChar,
+            exactKeyPress (KeyPress KEnter [MMeta]) browserCompleteDir
           ],
       browserKeyMapEmptyMatchers =
         listMatchers

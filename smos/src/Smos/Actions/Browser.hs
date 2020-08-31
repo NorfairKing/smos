@@ -31,6 +31,7 @@ allPlainBrowserActions =
     browserEnter,
     browserRemoveEmptyDir,
     browserArchive,
+    browserCompleteDir,
     browserUndo,
     browserUndoAny,
     browserRedo,
@@ -212,6 +213,17 @@ browserArchive =
         wd <- liftIO $ resolveReportWorkflowDir src
         fileBrowserArchiveFile wd ad fbc,
       actionDescription = "Remove the currently selected empty directory. This does nothing if the directory is not empty."
+    }
+
+browserCompleteDir :: Action
+browserCompleteDir =
+  Action
+    { actionName = "browserCompleteDir",
+      actionFunc = modifyFileBrowserCursorS $ \fbc -> do
+        src <- asks configReportConfig
+        wd <- liftIO $ resolveReportWorkflowDir src
+        fileBrowserCompleteToDir wd fbc,
+      actionDescription = "Complete the current file or directory in progress to a new directory."
     }
 
 browserUndo :: Action
