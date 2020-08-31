@@ -62,11 +62,11 @@ let
             };
           in
             ''
-              cp ${jqueryJS} jquery.js
-              cp ${xtermJS} xterm.js
-              cp ${xtermCSS} xterm.css
-              cp ${xtermAttachJS} xterm-attach.js
-              cp ${xtermFitJS} xterm-fit.js
+              cp ${jqueryJS}      static/jquery.js
+              cp ${xtermJS}       static/xterm.js
+              cp ${xtermCSS}      static/xterm.css
+              cp ${xtermAttachJS} static/xterm-attach.js
+              cp ${xtermFitJS}    static/xterm-fit.js
             '';
 
         # The smos docs site
@@ -102,11 +102,11 @@ let
             copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
           in
             ''
-              cp ${bulmaCSS} bulma.css
-              cp ${fontawesomeCSS} font-awesome.css
-              cp ${faviconICO} favicon.ico
-              cp ${asciinemaJS} asciinema-player.js
-              cp ${asciinemaCSS} asciinema-player.css
+              cp ${bulmaCSS}       static/bulma.css
+              cp ${fontawesomeCSS} static/font-awesome.css
+              cp ${faviconICO}     static/favicon.ico
+              cp ${asciinemaJS}    static/asciinema-player.js
+              cp ${asciinemaCSS}   static/asciinema-player.css
               ${copyCasts}
             '';
 

@@ -11,7 +11,7 @@ export SMOS_SERVER_LOG_LEVEL=Debug
 export SMOS_WEB_SERVER_LOG_LEVEL=Debug
 
 
-nice -n19 stack install :smos-web-server \
+nice -n19 stack install :smos-server :smos-web-server \
   --file-watch \
   --exec='./scripts/restart-web-server.sh' \
   --ghc-options='-freverse-errors -O0' \
