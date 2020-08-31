@@ -33,21 +33,3 @@ jobs:
         extraPullNames: iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build default.nix
-
-  macos_perf_test:
-    name: macos_perf_test / Nix
-    runs-on: macos-latest
-    steps:
-    - name: Disable syspolicy assessments
-      run: |
-        spctl --status
-        sudo spctl --master-disable
-    - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v8
-    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
-      with:
-        name: smos
-        extraPullNames: iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
-        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build
-      
