@@ -1,0 +1,13 @@
+before:
+- hello
+commands:
+- selectBrowserWorkflow
+- browserStartNew
+- browserInsertChar d
+- browserInsertChar i
+- browserInsertChar r
+- browserCompleteDir
+- browserUndo
+after:
+  example.smos:
+    - hello
