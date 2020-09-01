@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.GoldenSpec
@@ -9,12 +10,17 @@ module Smos.GoldenSpec
   )
 where
 
+import Control.Applicative
 import qualified Data.ByteString.Char8 as SB8
+import Data.DirForest (DirForest)
+import qualified Data.DirForest as DF
+import Data.Either
 import Data.Function
+import Data.Functor.Classes
 import Data.List
 import qualified Data.Text as T
 import Data.Time
-import Data.Yaml
+import Data.Yaml as Yaml
 import Data.Yaml.Builder as Yaml
 import Smos
 import Smos.App
@@ -44,9 +50,9 @@ spec = do
 
 data GoldenTestCase
   = GoldenTestCase
-      { goldenTestCaseBefore :: Maybe SmosFile,
+      { goldenTestCaseBefore :: DirForest SmosFile,
         goldenTestCaseCommands :: [Command],
-        goldenTestCaseAfter :: Maybe SmosFile
+        goldenTestCaseAfter :: DirForest SmosFile
       }
   deriving (Show, Generic)
 
@@ -55,7 +61,15 @@ instance Validity GoldenTestCase
 instance FromJSON GoldenTestCase where
   parseJSON =
     withObject "GoldenTestCase" $ \o ->
-      GoldenTestCase <$> o .:? "before" <*> o .: "commands" <*> o .:? "after"
+      let dirForestParser :: Text -> Parser (DirForest SmosFile)
+          dirForestParser k =
+            ( (o .: k :: Parser (DirForest SmosFile))
+                <|> (DF.singletonFile [relfile|example.smos|] <$> (o .: k :: Parser SmosFile))
+            )
+       in GoldenTestCase
+            <$> dirForestParser "before"
+            <*> o .:? "commands" .!= []
+            <*> dirForestParser "after"
 
 makeTestcases :: [Path Abs File] -> Spec
 makeTestcases = mapM_ makeTestcase
@@ -111,11 +125,11 @@ parseCommand t =
 
 data CommandsRun
   = CommandsRun
-      { intermidiaryResults :: [(Command, Maybe SmosFile)],
-        finalResult :: Maybe SmosFile
+      { intermidiaryResults :: [(Command, DirForest SmosFile)],
+        finalResult :: DirForest SmosFile
       }
 
-runCommandsOn :: Maybe SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn :: DirForest SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn mstart commands =
   withSystemTempDir "smos-golden" $ \tdir -> do
     workflowDir <- resolveDir tdir "workflow"
@@ -143,37 +157,39 @@ runCommandsOn mstart commands =
             let startState =
                   initStateWithCursor zt ec
             (fs, rs) <- foldM (go testConf) (startState, []) commands
+            finalState <- readWorkflowDir testConf
             pure $
               CommandsRun
                 { intermidiaryResults = reverse rs,
-                  finalResult = rebuildSmosFileEditorCursor <$> editorCursorFileCursor (smosStateCursor fs)
+                  finalResult = finalState
                 }
   where
-    go :: SmosConfig -> (SmosState, [(Command, Maybe SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, Maybe SmosFile)])
+    readWorkflowDir :: MonadIO m => SmosConfig -> m (DirForest SmosFile)
+    readWorkflowDir testConf = liftIO $ do
+      workflowDir <- resolveReportWorkflowDir (configReportConfig testConf)
+      DF.read workflowDir (fmap (fromRight (error "A smos file was not valid.") . fromJust) . readSmosFile)
+    go :: SmosConfig -> (SmosState, [(Command, DirForest SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, DirForest SmosFile)])
     go testConf (ss, rs) c = do
-      let func =
+      let func = do
             case c of
               CommandPlain a -> actionFunc a
               CommandUsing a arg -> actionUsingFunc a arg
+            actionFunc saveFile
       let eventFunc = runSmosM' testConf ss func
       ((s, ss'), _) <- eventFunc
+      intermadiateState <- readWorkflowDir testConf
       case s of
         Stop -> liftIO $ failure "Premature stop"
         Continue () ->
           pure
             ( ss',
-              ( c,
-                rebuildSmosFileEditorCursor
-                  <$> editorCursorFileCursor
-                    ( smosStateCursor ss'
-                    )
-              )
+              (c, intermadiateState)
                 : rs
             )
 
-expectResults :: Path Abs File -> Maybe SmosFile -> Maybe SmosFile -> CommandsRun -> IO ()
+expectResults :: Path Abs File -> DirForest SmosFile -> DirForest SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =
-  unless (finalResult `mEqForTest` af)
+  unless (finalResult `dEqForTest` af)
     $ failure
     $ unlines
     $ concat
@@ -200,19 +216,16 @@ expectResults p bf af CommandsRun {..} =
               "by the following:"
             ],
           "---[START]---",
-          SB8.unpack (Yaml.toByteString finalResult) <> "---[END]---"
+          SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
         ]
       ]
   where
-    go :: Command -> Maybe SmosFile -> [String]
+    go :: Command -> DirForest SmosFile -> [String]
     go c isf =
       ["After running the following command:", show c, "The file looked as follows:", ppShow isf]
 
-mEqForTest :: Maybe SmosFile -> Maybe SmosFile -> Bool
-mEqForTest m1 m2 = case (m1, m2) of
-  (Nothing, Nothing) -> True
-  (Just f1, Just f2) -> eqForTest f1 f2
-  _ -> False
+dEqForTest :: DirForest SmosFile -> DirForest SmosFile -> Bool
+dEqForTest = liftEq eqForTest
 
 eqForTest :: SmosFile -> SmosFile -> Bool
 eqForTest = forestEqForTest `on` smosFileForest

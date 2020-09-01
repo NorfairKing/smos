@@ -198,8 +198,10 @@ fileBrowserCompleteToDir workflowDir fbc =
       case dirForestCursorCompleteToDir dfc of
         Nothing -> pure fbc
         Just (rd, dfc') -> do
-          let a = DirCreation (workflowDir </> rd) dfc
+          let dir = workflowDir </> rd
+          let a = DirCreation dir dfc
           let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+          redoDirCreation dir
           pure $
             fbc
               { fileBrowserCursorDirForestCursor = Just dfc',
