@@ -55,15 +55,25 @@ spec = modifyMaxShrinks (const 1) $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelect
     it "inserts an entry below the currently selected entry" pending
-  describe "smosFileCursorInsertEntryBelow" $ do
-    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelow
+  describe "smosFileCursorInsertEntryBelowAtStart" $ do
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtStart
     it "produces a cursor in which you can select below" $ forAllValid $ \sfc ->
-      let sfc' = smosFileCursorInsertEntryBelow sfc
+      let sfc' = smosFileCursorInsertEntryBelowAtStart sfc
        in smosFileCursorSelectBelowAtStart sfc' `shouldSatisfy` isJust
     it "inserts an entry below the currently selected entry" pending
-  describe "smosFileCursorInsertEntryBelowAndSelect" $ do
+  describe "smosFileCursorInsertEntryBelowAtStartAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBelowAndSelect
+      producesValidsOnValids smosFileCursorInsertEntryBelowAtStartAndSelect
+    it "inserts an entry below the currently selected entry" pending
+  describe "smosFileCursorInsertEntryBelowAtEnd" $ do
+    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtEnd
+    it "produces a cursor in which you can select below" $ forAllValid $ \sfc ->
+      let sfc' = smosFileCursorInsertEntryBelowAtEnd sfc
+       in smosFileCursorSelectBelowAtEnd sfc' `shouldSatisfy` isJust
+    it "inserts an entry below the currently selected entry" pending
+  describe "smosFileCursorInsertEntryBelowAtEndAndSelect" $ do
+    it "produces valid cursors" $
+      producesValidsOnValids smosFileCursorInsertEntryBelowAtEndAndSelect
     it "inserts an entry below the currently selected entry" pending
   describe "smosFileCursorInsertEntryAfter" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryAfter

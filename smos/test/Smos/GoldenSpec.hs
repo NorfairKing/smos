@@ -21,10 +21,8 @@ import Data.List
 import qualified Data.Text as T
 import Data.Time
 import Data.Yaml as Yaml
-import Data.Yaml.Builder as Yaml
 import Smos
 import Smos.App
-import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Default
 import Smos.Types
@@ -147,7 +145,6 @@ runCommandsOn startingFile start commands =
                         }
                   }
             }
-    workflowDir <- resolveReportWorkflowDir (configReportConfig testConf)
     DF.write workflowDir start writeSmosFile
     runResourceT $ do
       mErrOrEC <- startEditorCursor $ workflowDir </> startingFile
@@ -159,7 +156,7 @@ runCommandsOn startingFile start commands =
             zt <- liftIO getZonedTime
             let startState =
                   initStateWithCursor zt ec
-            (fs, rs) <- foldM (go testConf) (startState, []) commands
+            (_, rs) <- foldM (go testConf) (startState, []) commands
             finalState <- readWorkflowDir testConf
             pure $
               CommandsRun
