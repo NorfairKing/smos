@@ -31,8 +31,9 @@ defaultFileKeyMap =
     { fileKeyMapEmptyMatchers =
         listMatchers
           [ exactKey KEsc stop,
-            exactChar 'e' startHeaderFromEmptyAndSelectHeader,
-            exactChar 'E' startHeaderFromEmptyAndSelectHeader,
+            exactChar 'e' startEntryFromEmptyAndSelectHeader,
+            exactChar 'E' startEntryFromEmptyAndSelectHeader,
+            exactKeyPress (KeyPress (KChar 'e') [MMeta]) startEntryFromEmptyAndSelectHeader,
             exactString "co" forestClockOutEverywhereInAllFiles
           ],
       fileKeyMapEntryMatchers =
@@ -65,7 +66,8 @@ defaultFileKeyMap =
             modifiedChar 'L' [MMeta] forestDemoteSubTree,
             -- Forest manipulation
             exactChar 'e' forestInsertEntryAfterAndSelectHeader,
-            exactChar 'E' forestInsertEntryBelowAndSelectHeader,
+            exactChar 'E' forestInsertEntryBelowAtStartAndSelectHeader,
+            exactKeyPress (KeyPress (KChar 'e') [MMeta]) forestInsertEntryBelowAtEndAndSelectHeader,
             -- Deletion
             exactChar 'd' forestDeleteCurrentEntry,
             exactChar 'D' forestDeleteCurrentSubTree,

@@ -46,7 +46,7 @@ allActions = map PlainAction allPlainActions ++ map UsingCharAction allUsingChar
 allPlainActions :: [Action]
 allPlainActions =
   concat
-    [ [ startHeaderFromEmptyAndSelectHeader,
+    [ [ startEntryFromEmptyAndSelectHeader,
         selectHelp,
         selectEditor,
         saveFile,
@@ -83,12 +83,12 @@ allUsingCharActions =
       allReportNextActionsUsingActions
     ]
 
-startHeaderFromEmptyAndSelectHeader :: Action
-startHeaderFromEmptyAndSelectHeader =
+startEntryFromEmptyAndSelectHeader :: Action
+startEntryFromEmptyAndSelectHeader =
   Action
-    { actionName = "startHeaderFromEmptyAndSelectHeader",
+    { actionName = "startEntryFromEmptyAndSelectHeader",
       actionFunc = modifyEmptyFile startSmosFile,
-      actionDescription = "Start a first header in an empty Smos File"
+      actionDescription = "Start a first entry in an empty Smos File and select its header"
     }
 
 selectHelp :: Action

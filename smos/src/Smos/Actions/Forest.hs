@@ -12,8 +12,10 @@ module Smos.Actions.Forest
     forestToggleCollapseEntryLogbook,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
-    forestInsertEntryBelow,
-    forestInsertEntryBelowAndSelectHeader,
+    forestInsertEntryBelowAtStart,
+    forestInsertEntryBelowAtStartAndSelectHeader,
+    forestInsertEntryBelowAtEnd,
+    forestInsertEntryBelowAtEndAndSelectHeader,
     forestInsertEntryAfter,
     forestInsertEntryAfterAndSelectHeader,
     forestDeleteCurrentEntry,
@@ -60,8 +62,10 @@ allForestPlainActions =
     forestToggleCollapseEntryLogbook,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
-    forestInsertEntryBelow,
-    forestInsertEntryBelowAndSelectHeader,
+    forestInsertEntryBelowAtStart,
+    forestInsertEntryBelowAtStartAndSelectHeader,
+    forestInsertEntryBelowAtEnd,
+    forestInsertEntryBelowAtEndAndSelectHeader,
     forestInsertEntryAfter,
     forestInsertEntryAfterAndSelectHeader,
     forestDeleteCurrentEntry,
@@ -120,20 +124,36 @@ forestInsertEntryBeforeAndSelectHeader =
         "Insert an entry before the currently selected entry, on the same level, and select its header"
     }
 
-forestInsertEntryBelow :: Action
-forestInsertEntryBelow =
+forestInsertEntryBelowAtStart :: Action
+forestInsertEntryBelowAtStart =
   Action
-    { actionName = "forestInsertEntryBelow",
+    { actionName = "forestInsertEntryBelowAtStart",
       actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore,
-      actionDescription = "Insert an entry below the currently selected entry"
+      actionDescription = "Insert an entry below the currently selected entry at the end of the list of child nodes"
     }
 
-forestInsertEntryBelowAndSelectHeader :: Action
-forestInsertEntryBelowAndSelectHeader =
+forestInsertEntryBelowAtStartAndSelectHeader :: Action
+forestInsertEntryBelowAtStartAndSelectHeader =
   Action
-    { actionName = "forestInsertEntryBelowAndSelectHeader",
-      actionFunc = modifyFileCursor smosFileCursorInsertEntryBelowAndSelectHeader,
-      actionDescription = "Insert an entry below the currently selected entry"
+    { actionName = "forestInsertEntryBelowAtStartAndSelectHeader",
+      actionFunc = modifyFileCursor smosFileCursorInsertEntryBelowAtStartAndSelectHeader,
+      actionDescription = "Insert an entry below the currently selected entry at the end of the list of child nodes and select its header"
+    }
+
+forestInsertEntryBelowAtEnd :: Action
+forestInsertEntryBelowAtEnd =
+  Action
+    { actionName = "forestInsertEntryBelowAtEnd",
+      actionFunc = modifyFileCursor smosFileCursorInsertEntryBefore,
+      actionDescription = "Insert an entry below the currently selected entry at the start of the list of child nodes"
+    }
+
+forestInsertEntryBelowAtEndAndSelectHeader :: Action
+forestInsertEntryBelowAtEndAndSelectHeader =
+  Action
+    { actionName = "forestInsertEntryBelowAtEndAndSelectHeader",
+      actionFunc = modifyFileCursor smosFileCursorInsertEntryBelowAtEndAndSelectHeader,
+      actionDescription = "Insert an entry below the currently selected entry at the start of the list of child nodes and select its header"
     }
 
 forestInsertEntryAfter :: Action

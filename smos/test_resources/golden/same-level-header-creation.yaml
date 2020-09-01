@@ -1,6 +1,6 @@
 before: []
 commands:
-- startHeaderFromEmptyAndSelectHeader
+- startEntryFromEmptyAndSelectHeader
 - forestInsertEntryAfter
 - forestInsertEntryAfter
 - forestInsertEntryAfter

@@ -1,0 +1,14 @@
+before: []
+commands:
+- startEntryFromEmptyAndSelectHeader
+- headerInsert a
+- forestInsertEntryBelowAtStartAndSelectHeader
+- headerInsert b
+- forestMoveUp
+- forestInsertEntryBelowAtEndAndSelectHeader
+- headerInsert c
+after:
+  - entry: a
+    forest:
+      - b
+      - c

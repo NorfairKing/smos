@@ -1,6 +1,6 @@
 before: []
 commands:
-- startHeaderFromEmptyAndSelectHeader
+- startEntryFromEmptyAndSelectHeader
 - headerInsert h
 - headerInsert e
 - headerInsert l
