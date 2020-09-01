@@ -208,6 +208,24 @@ fileBrowserCompleteToDir workflowDir fbc =
                 fileBrowserCursorUndoStack = us'
               }
 
+fileBrowserCompleteToFile :: MonadIO m => Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToFile workflowDir fbc =
+  case fileBrowserCursorDirForestCursor fbc of
+    Nothing -> pure fbc
+    Just dfc ->
+      case dirForestCursorCompleteToFile () dfc of
+        Nothing -> pure fbc
+        Just (rf, dfc') -> do
+          let file = workflowDir </> rf
+          let a = FileCreation file dfc
+          let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+          redoFileCreation file
+          pure $
+            fbc
+              { fileBrowserCursorDirForestCursor = Just dfc',
+                fileBrowserCursorUndoStack = us'
+              }
+
 -- Fails if there is nothing to undo
 fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserUndo fbc = do
@@ -258,31 +276,23 @@ fileBrowserRedoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirFores
 fileBrowserRedoAction a mdfc =
   case a of
     Movement mdfc' -> pure mdfc'
-    RmEmptyDir dir dfc' -> do
-      redoRmEmptyDir dir
-      pure $ Just dfc'
+    RmEmptyDir dir dfc' -> redoRmEmptyDir dir >> pure (Just dfc')
     ArchiveSmosFile src dest sf dfc' -> do
       r <- redoArchiveFile src dest sf
       case r of
         MoveDestinationAlreadyExists _ -> pure mdfc
         ArchivedSuccesfully -> pure $ Just dfc'
-    DirCreation dp dfc' -> do
-      redoDirCreation dp
-      pure $ Just dfc'
+    DirCreation dp dfc' -> redoDirCreation dp >> pure (Just dfc')
+    FileCreation fp dfc' -> redoFileCreation fp >> pure (Just dfc')
 
 fileBrowserUndoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
 fileBrowserUndoAction a _ =
   case a of
     Movement mdfc' -> pure mdfc'
-    RmEmptyDir dir dfc' -> do
-      undoRmEmptyDir dir
-      pure $ Just dfc'
-    ArchiveSmosFile src dest sf dfc' -> do
-      undoArchiveFile src dest sf
-      pure $ Just dfc'
-    DirCreation dp dfc' -> do
-      undoDirCreation dp
-      pure $ Just dfc'
+    RmEmptyDir dir dfc' -> undoRmEmptyDir dir >> pure (Just dfc')
+    ArchiveSmosFile src dest sf dfc' -> undoArchiveFile src dest sf >> pure (Just dfc')
+    DirCreation dp dfc' -> undoDirCreation dp >> pure (Just dfc')
+    FileCreation fp dfc' -> undoFileCreation fp >> pure (Just dfc')
 
 redoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
 redoRmEmptyDir dir = do
@@ -310,6 +320,12 @@ redoDirCreation = undoRmEmptyDir
 undoDirCreation :: MonadIO m => Path Abs Dir -> m ()
 undoDirCreation = redoRmEmptyDir
 
+redoFileCreation :: MonadIO m => Path Abs File -> m ()
+redoFileCreation p = liftIO $ writeSmosFile p emptySmosFile
+
+undoFileCreation :: MonadIO m => Path Abs File -> m ()
+undoFileCreation = removeFile
+
 data FileBrowserCursorAction
   = -- | The previous version, to reset to
     Movement (Maybe (DirForestCursor ()))
@@ -325,6 +341,7 @@ data FileBrowserCursorAction
       SmosFile
       (DirForestCursor ())
   | DirCreation (Path Abs Dir) (DirForestCursor ())
+  | FileCreation (Path Abs File) (DirForestCursor ())
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursorAction
