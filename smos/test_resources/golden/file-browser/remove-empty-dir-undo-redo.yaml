@@ -1,0 +1,12 @@
+before:
+  example.smos:
+    - hello
+  dir: {}
+commands:
+- selectBrowserWorkflow
+- browserRemoveEmptyDir
+- browserUndo
+- browserRedo
+after:
+  example.smos:
+    - hello

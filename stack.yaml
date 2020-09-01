@@ -29,12 +29,6 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
-- /home/syd/src/dirforest/dirforest
-- /home/syd/src/dirforest/genvalidity-dirforest
-- /home/syd/src/cursor-dirforest/cursor-dirforest-brick
-- /home/syd/src/cursor-dirforest/cursor-dirforest-gen
-- /home/syd/src/cursor-dirforest/cursor-dirforest
-
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 
@@ -129,20 +123,20 @@ extra-deps:
     - fuzzy-time-gen
   # nix-sha256: sha256:056k8maj6bq6gfbgq8xjxphgn1x97n34gqwh2mx55srmmdjzdnic
 
-# - git: https://github.com/NorfairKing/dirforest
-#   commit: e8c63dae86099c3c50e7908f84487126048cd93b
-#   subdirs:
-#     - dirforest
-#     - genvalidity-dirforest
-#   # nix-sha256: sha256:05zx6b3vjralkjydgq6lgx84lyd0d5s3xifc4whf7jvc60ibrg8k
-# 
-# - git: https://github.com/NorfairKing/cursor-dirforest
-#   commit: f47b17a64d2ab4f841a4d0afcb39080a6269ddff
-#   subdirs:
-#     - cursor-dirforest
-#     - cursor-dirforest-gen
-#     - cursor-dirforest-brick
-#   # nix-sha256: sha256:17fk2lvm7ms4bbm2119gqsllpgm8xvmarp27pm5xpz0liq11f2vh
+- git: https://github.com/NorfairKing/dirforest
+  commit: 0698877dc9f2dedf2289e94b25f52106a765324e
+  subdirs:
+    - dirforest
+    - genvalidity-dirforest
+  # nix-sha256: sha256:0nlw1dlvyxrfcq6c4mvibv1szskadhnb77l9wryaixljnfcf7z59
+
+- git: https://github.com/NorfairKing/cursor-dirforest
+  commit: aa4a0e5b38fc99bf8ff03fd684bd89632167b6a8
+  subdirs:
+    - cursor-dirforest
+    - cursor-dirforest-gen
+    - cursor-dirforest-brick
+  # nix-sha256: sha256:0lr9lxvycs0hppp4x53gdhgq5js0wlsmaqrnxfyng527v5i3w5yf
 
 - git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c

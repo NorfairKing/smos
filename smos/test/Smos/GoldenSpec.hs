@@ -50,7 +50,8 @@ spec = do
 
 data GoldenTestCase
   = GoldenTestCase
-      { goldenTestCaseBefore :: DirForest SmosFile,
+      { goldenTestCaseStartingFile :: Path Rel File,
+        goldenTestCaseBefore :: DirForest SmosFile,
         goldenTestCaseCommands :: [Command],
         goldenTestCaseAfter :: DirForest SmosFile
       }
@@ -61,13 +62,15 @@ instance Validity GoldenTestCase
 instance FromJSON GoldenTestCase where
   parseJSON =
     withObject "GoldenTestCase" $ \o ->
-      let dirForestParser :: Text -> Parser (DirForest SmosFile)
+      let defaultFile = [relfile|example.smos|]
+          dirForestParser :: Text -> Parser (DirForest SmosFile)
           dirForestParser k =
             ( (o .: k :: Parser (DirForest SmosFile))
-                <|> (DF.singletonFile [relfile|example.smos|] <$> (o .: k :: Parser SmosFile))
+                <|> (DF.singletonFile defaultFile <$> (o .: k :: Parser SmosFile))
             )
        in GoldenTestCase
-            <$> dirForestParser "before"
+            <$> o .:? "starting-file" .!= defaultFile
+            <*> dirForestParser "before"
             <*> o .:? "commands" .!= []
             <*> dirForestParser "after"
 
@@ -78,7 +81,7 @@ makeTestcase :: Path Abs File -> Spec
 makeTestcase p =
   it (fromAbsFile p) $ do
     gtc@GoldenTestCase {..} <- decodeFileThrow (fromAbsFile p)
-    run <- runCommandsOn goldenTestCaseBefore goldenTestCaseCommands
+    run <- runCommandsOn goldenTestCaseStartingFile goldenTestCaseBefore goldenTestCaseCommands
     shouldBeValid gtc
     expectResults p goldenTestCaseBefore goldenTestCaseAfter run
 
@@ -129,8 +132,8 @@ data CommandsRun
         finalResult :: DirForest SmosFile
       }
 
-runCommandsOn :: DirForest SmosFile -> [Command] -> IO CommandsRun
-runCommandsOn mstart commands =
+runCommandsOn :: Path Rel File -> DirForest SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn startingFile start commands =
   withSystemTempDir "smos-golden" $ \tdir -> do
     workflowDir <- resolveDir tdir "workflow"
     let testConf :: SmosConfig
@@ -144,10 +147,10 @@ runCommandsOn mstart commands =
                         }
                   }
             }
-    af <- resolveFile workflowDir "example.smos"
-    mapM_ (writeSmosFile af) mstart
+    workflowDir <- resolveReportWorkflowDir (configReportConfig testConf)
+    DF.write workflowDir start writeSmosFile
     runResourceT $ do
-      mErrOrEC <- startEditorCursor af
+      mErrOrEC <- startEditorCursor $ workflowDir </> startingFile
       case mErrOrEC of
         Nothing -> liftIO $ die "Could not lock pretend file."
         Just errOrEC -> case errOrEC of
@@ -194,7 +197,7 @@ expectResults p bf af CommandsRun {..} =
     $ unlines
     $ concat
       [ [ "The expected result did not match the actual result.",
-          "The starting file looked as follows:",
+          "The starting situation looked as follows:",
           ppShow bf,
           "The commands to run were these:",
           ppShow $ map fst intermidiaryResults,
@@ -222,7 +225,7 @@ expectResults p bf af CommandsRun {..} =
   where
     go :: Command -> DirForest SmosFile -> [String]
     go c isf =
-      ["After running the following command:", show c, "The file looked as follows:", ppShow isf]
+      ["After running the following command:", show c, "The situation looked as follows:", ppShow isf]
 
 dEqForTest :: DirForest SmosFile -> DirForest SmosFile -> Bool
 dEqForTest = liftEq eqForTest
