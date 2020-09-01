@@ -1,5 +1,6 @@
 working-dir: ../../demo-workflow
 workflow-dir: ../../demo-workflow
+file: new-file.smos
 input:
 - type: "smos\n"
 - wait: 1000
@@ -25,6 +26,16 @@ input:
 - wait: 500
 - send: "\n"
 - wait: 1000
+- send: 'bw'
+- wait: 500
+- send: 'n'
+- wait: 1000
+- type: "new-file.smos\n"
+- wait: 1000
+- send: "\n"
+- wait: 1000
+- send: "bp"
+- wait: 500
 - type: "q" 
 - wait: 1000
 
