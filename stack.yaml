@@ -131,12 +131,12 @@ extra-deps:
   # nix-sha256: sha256:0nlw1dlvyxrfcq6c4mvibv1szskadhnb77l9wryaixljnfcf7z59
 
 - git: https://github.com/NorfairKing/cursor-dirforest
-  commit: aa4a0e5b38fc99bf8ff03fd684bd89632167b6a8
+  commit: 06dbe90a272f0f99bfb6aadbbbde33f247f60a02
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
-  # nix-sha256: sha256:0lr9lxvycs0hppp4x53gdhgq5js0wlsmaqrnxfyng527v5i3w5yf
+  # nix-sha256: sha256:0lr9lxvycs0hppp4x53gdhgq5js0wlsmaqrnxfyng527v5i3w5aa
 
 - git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
@@ -145,11 +145,11 @@ extra-deps:
   # nix-sha256: sha256:1mdi8bpd9i2l4rcmcr19c5wyghasiwkzymskidn7fan57wmj921v
 
 - git: https://github.com/NorfairKing/cursor
-  commit: ea6724d2a0127614e9062a5ea53de8f042506dd0
+  commit: 043cab71318b752bde9dcb79db9ed60a58ecdccf
   subdirs:
     - cursor
     - cursor-gen
-  # nix-sha256: sha256:0d3aky2hr3xz7mr3vcvvsgiv4ahw8xm2k7v8aaj6lkfpzrvrbvgk
+  # nix-sha256: sha256:0d3aky2hr3xz7mr3vcvvsgiv4ahw8xm2k7v8aaj6lkfpzrvrbvaa
 
 - git: https://github.com/NorfairKing/validity
   commit: 44c45bc2a858a2c4c0c1e75c5ae9a649456f0020

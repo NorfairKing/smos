@@ -235,6 +235,10 @@ defaultBrowserKeyMap =
             exactString "ded" browserRemoveEmptyDir,
             exactChar 'e' browserStartNew,
             exactChar 'n' browserStartNew,
+            exactChar 'E' browserStartNewBelowAtStart,
+            exactChar 'N' browserStartNewBelowAtEnd,
+            exactKeyPress (KeyPress (KChar 'e') [MMeta]) browserStartNewBelowAtStart,
+            exactKeyPress (KeyPress (KChar 'n') [MMeta]) browserStartNewBelowAtEnd,
             exactChar 'a' browserArchive
           ],
       browserKeyMapInProgressMatchers =

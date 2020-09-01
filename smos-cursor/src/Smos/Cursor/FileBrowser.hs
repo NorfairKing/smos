@@ -98,6 +98,12 @@ fileBrowserCursorSelectPrev = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCu
 fileBrowserCursorStartNew :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorStartNew = fileBrowserCursorDoMaybe dirForestCursorStartNew
 
+fileBrowserCursorStartNewBelowAtStart :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorStartNewBelowAtStart = fileBrowserCursorDoMaybe dirForestCursorStartNewBelowAtStart
+
+fileBrowserCursorStartNewBelowAtEnd :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorStartNewBelowAtEnd = fileBrowserCursorDoMaybe dirForestCursorStartNewBelowAtEnd
+
 fileBrowserCursorInsertChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorInsertChar c = fileBrowserCursorDoMaybe $ dirForestCursorInsertChar c
 
@@ -195,36 +201,38 @@ fileBrowserCompleteToDir workflowDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
     Just dfc ->
-      case dirForestCursorCompleteToDir dfc of
-        Nothing -> pure fbc
-        Just (rd, dfc') -> do
-          let dir = workflowDir </> rd
-          let a = DirCreation dir dfc
-          let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
-          redoDirCreation dir
-          pure $
-            fbc
-              { fileBrowserCursorDirForestCursor = Just dfc',
-                fileBrowserCursorUndoStack = us'
-              }
+      let (rd1, _) = dirForestCursorSelected dfc
+       in case dirForestCursorCompleteToDir dfc of
+            Nothing -> pure fbc
+            Just (rd2, dfc') -> do
+              let dir = workflowDir </> rd1 </> rd2
+              let a = DirCreation dir dfc
+              let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+              redoDirCreation dir
+              pure $
+                fbc
+                  { fileBrowserCursorDirForestCursor = Just dfc',
+                    fileBrowserCursorUndoStack = us'
+                  }
 
 fileBrowserCompleteToFile :: MonadIO m => Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
 fileBrowserCompleteToFile workflowDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
     Just dfc ->
-      case dirForestCursorCompleteToFile () dfc of
-        Nothing -> pure fbc
-        Just (rf, dfc') -> do
-          let file = workflowDir </> rf
-          let a = FileCreation file dfc
-          let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
-          redoFileCreation file
-          pure $
-            fbc
-              { fileBrowserCursorDirForestCursor = Just dfc',
-                fileBrowserCursorUndoStack = us'
-              }
+      let (rd, _) = dirForestCursorSelected dfc
+       in case dirForestCursorCompleteToFile () dfc of
+            Nothing -> pure fbc
+            Just (rf, dfc') -> do
+              let file = workflowDir </> rd </> rf
+              let a = FileCreation file dfc
+              let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
+              redoFileCreation file
+              pure $
+                fbc
+                  { fileBrowserCursorDirForestCursor = Just dfc',
+                    fileBrowserCursorUndoStack = us'
+                  }
 
 -- Fails if there is nothing to undo
 fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)

@@ -22,6 +22,8 @@ allPlainBrowserActions =
     browserSelectPrev,
     browserSelectNext,
     browserStartNew,
+    browserStartNewBelowAtStart,
+    browserStartNewBelowAtEnd,
     browserRemoveChar,
     browserDeleteChar,
     browserSelectPrevChar,
@@ -68,6 +70,22 @@ browserStartNew =
     { actionName = "browserStartNew",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNew,
       actionDescription = "Start a new file or directory in the file browser."
+    }
+
+browserStartNewBelowAtStart :: Action
+browserStartNewBelowAtStart =
+  Action
+    { actionName = "browserStartNewBelowAtStart",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNewBelowAtStart,
+      actionDescription = "Start a new file or directory within the selected directory in the file browser, at the start."
+    }
+
+browserStartNewBelowAtEnd :: Action
+browserStartNewBelowAtEnd =
+  Action
+    { actionName = "browserStartNewBelowAtEnd",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNewBelowAtEnd,
+      actionDescription = "Start a new file or directory within the selected directory in the file browser, at the end."
     }
 
 browserInsertChar :: ActionUsing Char
