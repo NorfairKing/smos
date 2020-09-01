@@ -30,5 +30,5 @@ instance YamlSchema ASCIInemaCommand where
 commandDelay :: ASCIInemaCommand -> Word
 commandDelay = \case
   Wait w -> w
-  SendInput _ -> 0
+  SendInput _ -> 1
   Type s i -> genericLength s * i

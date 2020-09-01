@@ -12,6 +12,7 @@ import Smos.ASCIInema.Input as ASCIInema
 import Smos.ASCIInema.OptParse.Types as ASCIInema
 import Smos.ASCIInema.Output as ASCIInema
 import Smos.Docs.Site.Constants
+import System.Environment
 import Yesod.EmbeddedStatic
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
@@ -35,6 +36,7 @@ ensureCast specFile = do
     then putStrLn $ unwords ["Not casting because the cast already exists:", fromAbsFile outputFile]
     else do
       putStrLn $ "Casting " <> fromAbsFile specFile
+      setEnv "SMOS_EXPLAINER_MODE" "True"
       let sets =
             RecordSettings
               { recordSetSpecFile = specFile,
