@@ -20,8 +20,8 @@ import qualified Data.Text as T
 import Network.HTTP.Types.Status (badRequest400)
 import Path
 import Smos.Client hiding (Header)
+import Smos.Instance
 import Smos.Web.Server.Foundation
-import Smos.Web.Server.SmosInstance
 import Smos.Web.Server.SmosSession
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget

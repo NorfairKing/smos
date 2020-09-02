@@ -46,6 +46,8 @@ library:
   - smos-version
   - text
   - time
+  - unix
+  - unliftio
   - unordered-containers
   - validity
   - validity-containers

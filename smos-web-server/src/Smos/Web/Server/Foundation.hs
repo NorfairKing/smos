@@ -31,8 +31,8 @@ import Path.IO
 import Servant.Auth.Client (Token (..))
 import Servant.Client
 import Smos.Client
+import Smos.Instance
 import Smos.Web.Server.Constants
-import Smos.Web.Server.SmosInstance
 import Smos.Web.Server.Widget
 import qualified System.FilePath as FP
 import Text.Hamlet

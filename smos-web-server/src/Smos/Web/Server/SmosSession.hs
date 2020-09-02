@@ -6,7 +6,6 @@ module Smos.Web.Server.SmosSession where
 
 import Conduit
 import Control.Monad.Logger
-import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -14,10 +13,12 @@ import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
 import Smos.Client hiding (Header)
+import Smos.Config
+import Smos.Default
+import Smos.Instance
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
 import Smos.Web.Server.Foundation
-import Smos.Web.Server.SmosInstance
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 
@@ -34,7 +35,17 @@ withSmosSession userName token instancesVar relFile func = do
   case mInstance of
     Nothing -> withReadiedDir userName token $ \workflowDir -> do
       let startingFile = workflowDir </> relFile
-      withSmosInstance workflowDir startingFile func
+      let config =
+            defaultConfig
+              { configReportConfig =
+                  defaultReportConfig
+                    { smosReportConfigDirectoryConfig =
+                        defaultDirectoryConfig
+                          { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
+                          }
+                    }
+              }
+      withSmosInstance config startingFile func
     Just i -> do
       -- Should not happen, but it's fine if it does, I guess...
       -- We'll assume that whatever opened this instance will deal with cleanup as well.

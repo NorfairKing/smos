@@ -1,16 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Web.Server.SmosInstance where
+module Smos.Instance where
 
 import Conduit
 import Data.Aeson
 import Data.ByteString (ByteString)
+import Data.Word
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
 import Path
 import Smos
-import Smos.Default
 import System.Posix
 import UnliftIO
 
@@ -22,11 +22,11 @@ data SmosInstanceHandle
         smosInstanceHandleAsync :: Async ()
       }
 
-withSmosInstance :: MonadUnliftIO m => Path Abs Dir -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
-withSmosInstance workflowDir startingFile = bracket (makeSmosInstance workflowDir startingFile) destroySmosInstance
+withSmosInstance :: MonadUnliftIO m => SmosConfig -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
+withSmosInstance config startingFile = bracket (makeSmosInstance config startingFile) destroySmosInstance
 
-makeSmosInstance :: MonadUnliftIO m => Path Abs Dir -> Path Abs File -> m SmosInstanceHandle
-makeSmosInstance workflowDir startingFile = do
+makeSmosInstance :: MonadUnliftIO m => SmosConfig -> Path Abs File -> m SmosInstanceHandle
+makeSmosInstance config startingFile = do
   (masterFd, slaveFd) <- liftIO openPseudoTerminal
   let smosInstanceHandleResizeFd = slaveFd
   smosInstanceHandleMasterHandle <- liftIO $ fdToHandle masterFd
@@ -40,16 +40,6 @@ makeSmosInstance workflowDir startingFile = do
               }
         setWindowSize smosInstanceHandleResizeFd (80, 24)
         pure vty
-  let config =
-        defaultConfig
-          { configReportConfig =
-              defaultReportConfig
-                { smosReportConfigDirectoryConfig =
-                    defaultDirectoryConfig
-                      { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
-                      }
-                }
-          }
   let runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
   smosInstanceHandleAsync <- async runSmos
   mErrOrDone <- poll smosInstanceHandleAsync
@@ -61,15 +51,7 @@ makeSmosInstance workflowDir startingFile = do
 
 destroySmosInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
 destroySmosInstance SmosInstanceHandle {..} = do
-  liftIO $ putStrLn "Destroying smos instance"
   cancel smosInstanceHandleAsync
-  liftIO $ putStrLn "Cancelled the async"
-
--- For some reason these won't close ...
--- hClose smosInstanceHandleMasterHandle
--- liftIO $ putStrLn "Closed the master"
--- hClose smosInstanceHandleSlaveHandle
--- liftIO $ putStrLn "Closed the slave"
 
 smosInstanceInputSink :: MonadIO m => SmosInstanceHandle -> ConduitT ByteString o m ()
 smosInstanceInputSink = sinkHandle . smosInstanceHandleMasterHandle
@@ -79,8 +61,8 @@ smosInstanceOutputSource = sourceHandle . smosInstanceHandleMasterHandle
 
 data TerminalSize
   = TerminalSize
-      { terminalWidth :: !Word,
-        terminalHeight :: !Word
+      { terminalWidth :: !Word16,
+        terminalHeight :: !Word16
       }
   deriving (Show)
 
@@ -92,4 +74,5 @@ instance FromJSON TerminalSize where
       pure TerminalSize {..}
 
 smosInstanceResize :: SmosInstanceHandle -> TerminalSize -> IO ()
-smosInstanceResize SmosInstanceHandle {..} TerminalSize {..} = setWindowSize smosInstanceHandleResizeFd (fromIntegral terminalWidth, fromIntegral terminalHeight)
+smosInstanceResize SmosInstanceHandle {..} TerminalSize {..} =
+  setWindowSize smosInstanceHandleResizeFd (fromIntegral terminalWidth, fromIntegral terminalHeight)
