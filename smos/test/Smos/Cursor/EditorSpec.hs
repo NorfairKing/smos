@@ -13,7 +13,7 @@ import UnliftIO.Resource
 
 spec :: Spec
 spec =
-  modifyMaxShrinks (const 1) $ do
+  modifyMaxSuccess (`div` 10) $ modifyMaxShrinks (const 1) $ do
     describe "startEditorCursor" $ it "works on any valid smos file" $ forAllValid $ \sf ->
       forAllValid $ \rp ->
         withSystemTempDir "smos-test" $ \tdir -> do

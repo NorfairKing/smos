@@ -13,6 +13,8 @@ import Path
 import Smos
 import System.Posix
 import UnliftIO
+import UnliftIO.Concurrent
+import UnliftIO.Resource
 
 data SmosInstanceHandle
   = SmosInstanceHandle
@@ -22,15 +24,12 @@ data SmosInstanceHandle
         smosInstanceHandleAsync :: Async ()
       }
 
-withSmosInstance :: MonadUnliftIO m => SmosConfig -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
-withSmosInstance config startingFile = bracket (makeSmosInstance config startingFile) destroySmosInstance
-
-makeSmosInstance :: MonadUnliftIO m => SmosConfig -> Path Abs File -> m SmosInstanceHandle
-makeSmosInstance config startingFile = do
+withSmosInstance :: (MonadUnliftIO m, MonadResource m) => SmosConfig -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
+withSmosInstance config startingFile func = do
   (masterFd, slaveFd) <- liftIO openPseudoTerminal
   let smosInstanceHandleResizeFd = slaveFd
-  smosInstanceHandleMasterHandle <- liftIO $ fdToHandle masterFd
-  smosInstanceHandleSlaveHandle <- liftIO $ fdToHandle slaveFd
+  (_, smosInstanceHandleMasterHandle) <- allocate (fdToHandle masterFd) hClose -- TODO make sure to close these
+  (_, smosInstanceHandleSlaveHandle) <- allocate (fdToHandle slaveFd) hClose
   let vtyBuilder = do
         vty <-
           Vty.mkVty $
@@ -40,18 +39,10 @@ makeSmosInstance config startingFile = do
               }
         setWindowSize smosInstanceHandleResizeFd (80, 24)
         pure vty
-  let runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
-  smosInstanceHandleAsync <- async runSmos
-  mErrOrDone <- poll smosInstanceHandleAsync
-  case mErrOrDone of
-    Just (Left err) -> throwIO err
-    Just (Right ()) -> throwString "Smos exited."
-    Nothing -> pure ()
-  pure SmosInstanceHandle {..}
-
-destroySmosInstance :: MonadUnliftIO m => SmosInstanceHandle -> m ()
-destroySmosInstance SmosInstanceHandle {..} = do
-  cancel smosInstanceHandleAsync
+  let runSmos :: MonadIO m => m ()
+      runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
+  withAsync runSmos $ \smosInstanceHandleAsync ->
+    func SmosInstanceHandle {..}
 
 smosInstanceInputSink :: MonadIO m => SmosInstanceHandle -> ConduitT ByteString o m ()
 smosInstanceInputSink = sinkHandle . smosInstanceHandleMasterHandle

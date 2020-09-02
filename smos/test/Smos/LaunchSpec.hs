@@ -1,8 +1,5 @@
 module Smos.LaunchSpec where
 
-import Control.Concurrent (threadDelay)
-import Control.Concurrent.Async
-import Control.Exception
 import Data.GenValidity.Path ()
 import Path
 import Path.IO
@@ -15,6 +12,9 @@ import System.Environment
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
+import UnliftIO
+import UnliftIO.Concurrent
+import UnliftIO.Resource
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 50) $ do
@@ -95,7 +95,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                   startupSpec (DirInHome rd) file
 
 startupSpec :: WorkflowDirSpec -> Path Abs File -> IO ()
-startupSpec workflowDirSpec startupFile = do
+startupSpec workflowDirSpec startupFile = runResourceT $ do
   let config =
         defaultConfig
           { configReportConfig =
@@ -107,11 +107,11 @@ startupSpec workflowDirSpec startupFile = do
                 }
           }
   withSmosInstance config startupFile $ \smosHandle -> do
-    threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos did the initialisation
+    threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos did the initialisation
     let smosAsync = smosInstanceHandleAsync smosHandle
     link smosAsync
     mErrOrDone <- poll smosAsync
     case mErrOrDone of
-      Just (Left err) -> expectationFailure $ displayException err
-      Just (Right ()) -> expectationFailure "Smos exited."
+      Just (Left err) -> liftIO $ expectationFailure $ displayException err
+      Just (Right ()) -> liftIO $ expectationFailure "Smos exited."
       Nothing -> cancel smosAsync

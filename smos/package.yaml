@@ -123,6 +123,7 @@ tests:
     - text
     - time
     - unix
+    - unliftio
     - validity
     - vty
     - yaml

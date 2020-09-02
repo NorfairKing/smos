@@ -1,7 +1,6 @@
 module Smos.ShutdownSpec where
 
-import Control.Concurrent (threadDelay)
-import Control.Concurrent.Async
+import Control.Concurrent.Async (AsyncCancelled (..))
 import Control.Exception
 import Data.GenValidity.Path ()
 import Path
@@ -15,18 +14,21 @@ import System.FileLock
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
+import UnliftIO
+import UnliftIO.Concurrent
+import UnliftIO.Resource
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 50) $ do
   describe "Shutting down a smos file" $ do
     -- This first test is just sanity checking
-    it "cannot lock two files at the same time" $ do
+    it "cannot lock the same file two times at the same time" $ do
       forAllValid $ \relFile ->
         withSystemTempDir "smos-shutdown-test" $ \tdir -> do
           let startupFile = tdir </> relFile
           res1 <- tryLockFile (fromAbsFile startupFile) Exclusive
           case res1 of
-            Nothing -> expectationFailure "This shouldn't fail."
+            Nothing -> expectationFailure "Locking the first time should not fail."
             Just _ -> pure ()
           res2 <- tryLockFile (fromAbsFile startupFile) Exclusive
           case res2 of
@@ -35,9 +37,9 @@ spec = modifyMaxSuccess (`div` 50) $ do
     it "releases the file lock when cancelled" $ do
       forAllValid $ \sf ->
         forAllValid $ \relFile ->
-          withSystemTempDir "smos-shutdown-test" $ \tdir -> do
+          withSystemTempDir "smos-shutdown-test" $ \tdir -> runResourceT $ do
             let startupFile = tdir </> relFile
-            writeSmosFile startupFile sf
+            liftIO $ writeSmosFile startupFile sf :: ResourceT IO ()
             let config =
                   defaultConfig
                     { configReportConfig =
@@ -49,33 +51,26 @@ spec = modifyMaxSuccess (`div` 50) $ do
                           }
                     }
             withSmosInstance config startupFile $ \smos1 -> do
-              threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock
+              threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock
               let smos1Async = smosInstanceHandleAsync smos1
               mErrOrDone1 <- poll smos1Async
-              case mErrOrDone1 of
+              liftIO $ case mErrOrDone1 of
                 Just (Left err) -> expectationFailure $ displayException err
                 Just (Right ()) -> expectationFailure "Smos 1 exited."
                 Nothing -> pure ()
-              cancel smos1Async
-              threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos 1 is definitely done
+              cancel smos1Async -- Use waitCatch instead of this and use a timeout
               res1 <- poll smos1Async
-              case res1 of
+              liftIO $ case res1 of
                 Nothing -> expectationFailure "Smos should have exited by now."
                 Just (Left e) -> case fromException e of
                   Nothing -> expectationFailure "Should not have failed differently."
                   Just AsyncCancelled -> pure ()
                 Just (Right ()) -> expectationFailure "Should have been canceled, not exited normally."
               withSmosInstance config startupFile $ \smos2 -> do
-                threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock
+                threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock and exited
                 let smos2Async = smosInstanceHandleAsync smos2
-                mErrOrDone2 <- poll smos2Async
-                case mErrOrDone2 of
-                  Just (Left err) -> expectationFailure $ displayException err
-                  Just (Right ()) -> expectationFailure "Smos 2 exited."
-                  Nothing -> pure ()
-                threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos 2 has definitely exited
                 res2 <- poll smos2Async
-                case res2 of
+                liftIO $ case res2 of
                   Nothing -> pure ()
                   Just (Left e) -> expectationFailure $ "Smos two should not have failed, but got this exception: " <> displayException e
                   Just (Right ()) -> expectationFailure "Should not have errored."

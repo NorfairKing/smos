@@ -2,7 +2,7 @@
 
 module Smos.App
   ( mkSmosApp,
-    buildInitState,
+    buildInitialState,
     initStateWithCursor,
   )
 where
@@ -115,8 +115,8 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-buildInitState :: Path Abs File -> ResourceT IO SmosState
-buildInitState p = do
+buildInitialState :: Path Abs File -> ResourceT IO SmosState
+buildInitialState p = do
   mErrOrEC <- startEditorCursor p
   case mErrOrEC of
     Nothing -> liftIO $ die "Failed to lock. Has this file already been opened in another instance of smos?"
@@ -134,5 +134,8 @@ initStateWithCursor zt ec =
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],
       smosStateErrorMessages = [],
-      smosStateDebugInfo = DebugInfo {debugInfoLastMatches = Nothing}
+      smosStateDebugInfo =
+        DebugInfo
+          { debugInfoLastMatches = Nothing
+          }
     }

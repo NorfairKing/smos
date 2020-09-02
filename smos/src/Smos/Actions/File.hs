@@ -9,6 +9,7 @@ module Smos.Actions.File
   )
 where
 
+import Control.Monad.Trans.Resource
 import Path
 import Smos.Actions.Utils
 import Smos.Cursor.SmosFileEditor
@@ -70,5 +71,5 @@ switchToCursor path msfc = modifyEditorCursorS $ \ec -> do
 -- Note that this leaves the file cursor invalidated, so it must not end up in the editor cursor sum after this.
 closeCurrentFile :: SmosM ()
 closeCurrentFile = modifySmosFileEditorCursorS $ \sfec -> do
-  liftIO $ smosFileEditorCursorClose sfec
+  liftResourceT (smosFileEditorCursorClose sfec)
   pure sfec

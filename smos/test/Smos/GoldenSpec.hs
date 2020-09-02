@@ -146,7 +146,7 @@ runCommandsOn startingFile start commands =
                   }
             }
     DF.write workflowDir start writeSmosFile
-    runResourceT $ do
+    rs <- runResourceT $ do
       mErrOrEC <- startEditorCursor $ workflowDir </> startingFile
       case mErrOrEC of
         Nothing -> liftIO $ die "Could not lock pretend file."
@@ -157,12 +157,13 @@ runCommandsOn startingFile start commands =
             let startState =
                   initStateWithCursor zt ec
             (_, rs) <- foldM (go testConf) (startState, []) commands
-            finalState <- readWorkflowDir testConf
-            pure $
-              CommandsRun
-                { intermidiaryResults = reverse rs,
-                  finalResult = finalState
-                }
+            pure rs
+    finalState <- readWorkflowDir testConf
+    pure $
+      CommandsRun
+        { intermidiaryResults = reverse rs,
+          finalResult = finalState
+        }
   where
     readWorkflowDir :: MonadIO m => SmosConfig -> m (DirForest SmosFile)
     readWorkflowDir testConf = liftIO $ do

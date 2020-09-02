@@ -16,7 +16,7 @@ import Brick.Types as B hiding (Next)
 import Control.Monad.Reader
 import Control.Monad.State
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
-import Control.Monad.Trans.Resource hiding (runResourceT)
+import Control.Monad.Trans.Resource
 import Control.Monad.Trans.Resource.Internal (unResourceT)
 import Control.Monad.Writer
 import Import

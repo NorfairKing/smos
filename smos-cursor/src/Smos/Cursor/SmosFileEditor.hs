@@ -26,27 +26,21 @@ data SmosFileEditorCursor
         smosFileEditorCursorHistory :: !(History (Maybe SmosFileCursor)), -- Nothing means an empty smos file, s othe Maybe needs to be in the history.
         smosFileEditorUnsavedChanges :: !Bool, -- Whether any changes have been made since the 'last saved' or since the beginning
         smosFileEditorLastSaved :: !UTCTime, -- Starts with the opening of the file
-        smosFileEditorLock :: !FileLock -- The file lock that proves we have a lock on the file. We also need it to close it at the end.
+        smosFileEditorLock :: !FileLock, -- The file lock that proves we have a lock on the file. We also need it to close it at the end but we do that using:
+        smosFileEditorReleaseKey :: !ReleaseKey -- The key to release the file lock early
       }
-  deriving (Eq, Generic)
+  deriving (Generic)
 
 -- | Left if there was a problem while reading
 startSmosFileEditorCursor :: (MonadIO m, MonadResource m) => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
 startSmosFileEditorCursor p = do
-  ensureDir (parent p)
-  (_, mfl) <- allocate (tryLockFile (fromAbsFile p) Exclusive) (mapM_ unlockFile) -- We will edit the file so we need an exclusive lock
+  (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do
     mErrOrSF <- liftIO $ readSmosFile p
     let errOrStartingPoint = case mErrOrSF of
           Nothing -> Right Nothing
           Just errOrSF -> Just <$> errOrSF
-    forM errOrStartingPoint $ \msf -> do
-      -- This is necessary because 'tryLockFile' creates an empty file
-      -- so there is no way to differentiate between an empty file and a
-      -- nonexistent file.
-      -- So we'll just always consider an empty smos file a nonexistent file.
-      -- The assumption is that empty smos files aren't useful anyway.
-      let startingPoint = if msf == Just emptySmosFile then Nothing else msf
+    forM errOrStartingPoint $ \startingPoint -> do
       now <- liftIO getCurrentTime
       pure
         SmosFileEditorCursor
@@ -55,14 +49,14 @@ startSmosFileEditorCursor p = do
             smosFileEditorCursorHistory = startingHistory $ smosFileCursorReadyForStartup . makeSmosFileCursor <$> (smosFileForest <$> startingPoint >>= NE.nonEmpty),
             smosFileEditorUnsavedChanges = isNothing startingPoint, -- Because we'll be editing an empty file, not a nonexistent file
             smosFileEditorLastSaved = now,
-            smosFileEditorLock = fl
+            smosFileEditorLock = fl,
+            smosFileEditorReleaseKey = rk
           }
 
 -- TODO do something if the contents on disk have changed instead of just overwriting
 startSmosFileEditorCursorWithCursor :: (MonadIO m, MonadResource m) => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
 startSmosFileEditorCursorWithCursor p msfc = do
-  ensureDir (parent p)
-  (_, mfl) <- allocate (tryLockFile (fromAbsFile p) Exclusive) (mapM_ unlockFile) -- We will edit the file so we need an exclusive lock
+  (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do
     now <- liftIO getCurrentTime
     pure
@@ -72,14 +66,27 @@ startSmosFileEditorCursorWithCursor p msfc = do
           smosFileEditorCursorHistory = startingHistory msfc,
           smosFileEditorUnsavedChanges = False,
           smosFileEditorLastSaved = now,
-          smosFileEditorLock = fl
+          smosFileEditorLock = fl,
+          smosFileEditorReleaseKey = rk
         }
+
+tryLockSmosFile :: MonadResource m => Path Abs File -> m (ReleaseKey, Maybe FileLock)
+tryLockSmosFile p = do
+  ensureDir (parent p)
+  lockFilePath <- liftIO $ addExtension ".lock" p
+  allocate
+    (tryLockFile (fromAbsFile lockFilePath) Exclusive) -- We will edit the file so we need an exclusive lock
+    ( \mfl ->
+        forM_ mfl $ \fl -> do
+          ignoringAbsence $ removeFile lockFilePath
+          unlockFile fl
+    )
 
 -- | The cursor should be considered invalidated after this
 --
 -- It closes the lock but _does not_ save the file
-smosFileEditorCursorClose :: MonadIO m => SmosFileEditorCursor -> m ()
-smosFileEditorCursorClose = liftIO . unlockFile . smosFileEditorLock
+smosFileEditorCursorClose :: MonadResource m => SmosFileEditorCursor -> m ()
+smosFileEditorCursorClose SmosFileEditorCursor {..} = release smosFileEditorReleaseKey
 
 smosFileEditorCursorSave :: MonadIO m => SmosFileEditorCursor -> m SmosFileEditorCursor
 smosFileEditorCursorSave sfec@SmosFileEditorCursor {..} = do
