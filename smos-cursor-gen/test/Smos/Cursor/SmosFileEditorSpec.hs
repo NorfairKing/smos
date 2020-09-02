@@ -2,6 +2,7 @@
 
 module Smos.Cursor.SmosFileEditorSpec where
 
+import Control.Monad
 import Control.Monad.IO.Class
 import Data.GenValidity.Path ()
 import Path
@@ -45,21 +46,8 @@ spec = modifyMaxShrinks (const 1) $ do
           Nothing -> expectationFailure "Locking should have been possible"
           Just (Left err) -> expectationFailure err
           Just (Right sfec) -> do
-            sfec' <- smosFileEditorCursorSave sfec
-            smosFileEditorCursorClose sfec'
-            doesFileExist p `shouldReturn` False
-    it "does not create a file if an empty file is not changed and did not exist yet" $withSystemTempDir "smos-test" $ \d -> do
-      p <- resolveFile d "test.smos"
-      writeFile (toFilePath p) mempty
-      runResourceT $ do
-        errOrCursor <- startSmosFileEditorCursor p
-        liftIO $ case errOrCursor of
-          Nothing -> expectationFailure "Locking should have been possible"
-          Just (Left err) -> expectationFailure err
-          Just (Right sfec) -> do
-            sfec' <- smosFileEditorCursorSave sfec
-            smosFileEditorCursorClose sfec'
-            doesFileExist p `shouldReturn` False
+            void $ smosFileEditorCursorSave sfec
+      doesFileExist p `shouldReturn` False
   describe "saveSmosFile" $ do
     it "does not create a file if a nonexistent file is not changed"
       $ withSystemTempDir "smos-test"

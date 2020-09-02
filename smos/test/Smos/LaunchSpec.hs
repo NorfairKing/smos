@@ -14,7 +14,6 @@ import Test.Hspec.QuickCheck
 import Test.Validity
 import UnliftIO
 import UnliftIO.Concurrent
-import UnliftIO.Resource
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 50) $ do
@@ -95,7 +94,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                   startupSpec (DirInHome rd) file
 
 startupSpec :: WorkflowDirSpec -> Path Abs File -> IO ()
-startupSpec workflowDirSpec startupFile = runResourceT $ do
+startupSpec workflowDirSpec startupFile = do
   let config =
         defaultConfig
           { configReportConfig =

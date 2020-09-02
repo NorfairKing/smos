@@ -13,7 +13,7 @@ import Brick.BChan as Brick
 import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
-import Control.Monad.Trans.Resource (runInternalState, withInternalState)
+import Control.Monad.Trans.Resource (withInternalState)
 import Graphics.Vty as Vty (Vty, defaultConfig, mkVty)
 import Import
 import Smos.Actions.File
@@ -23,7 +23,6 @@ import Smos.Cursor.SmosFileEditor
 import Smos.OptParse
 import Smos.OptParse.Bare
 import Smos.Types
-import System.FileLock
 import UnliftIO.Resource
 
 smos :: SmosConfig -> IO ()
