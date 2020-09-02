@@ -76,6 +76,6 @@ spec = modifyMaxSuccess (`div` 50) $ do
                 threadDelay $ 250 * 1000 -- Wait a bit to be sure that smos 2 has definitely exited
                 res2 <- poll smos2Async
                 case res2 of
-                  Nothing -> pure () -- expectationFailure "Smos two should not have exited normally."
+                  Nothing -> pure ()
                   Just (Left e) -> expectationFailure $ "Smos two should not have failed, but got this exception: " <> displayException e
                   Just (Right ()) -> expectationFailure "Should not have errored."
