@@ -504,8 +504,6 @@ drawEntryCursor s tc edc e = do
                 | let e_ = rebuildEntryCursor ec
                    in or
                         [ not (collapseEntryShowContents e) && isJust (entryContents e_),
-                          not (collapseEntryShowHistory e)
-                            && not (nullStateHistory $ entryStateHistory e_),
                           not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
                         ]
               ],
@@ -555,7 +553,6 @@ drawEntry tc edc e = do
               [ str "..."
                 | or
                     [ not (collapseEntryShowContents e) && isJust entryContents,
-                      not (collapseEntryShowHistory e) && not (nullStateHistory entryStateHistory),
                       not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
                     ]
               ],
