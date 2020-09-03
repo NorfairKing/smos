@@ -126,14 +126,16 @@ defaultFileKeyMap =
             exactString "zh" forestToggleCollapseEntryHistory,
             exactString "zl" forestToggleCollapseEntryLogbook,
             -- Entering contents
-            combo [KeyPress KEnter [], KeyPress KEnter []] entrySelectContents,
+            exactKey KEnter entrySelectContentsAtStart,
+            exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtEnd,
             -- Entering tags
             exactString "gi" entrySelectTagsFromStart,
             exactString "ga" entrySelectTagsFromBack
           ],
       fileKeyMapHeaderMatchers =
         listMatchers
-          [ exactKey KEnter entrySelectContents,
+          [ exactKey KEnter entrySelectContentsAtStart,
+            exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtEnd,
             anyChar headerInsert,
             exactKey KBS headerRemove,
             exactKey KDel headerDelete,

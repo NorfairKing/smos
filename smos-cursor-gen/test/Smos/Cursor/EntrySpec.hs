@@ -35,9 +35,12 @@ spec = do
   describe "entryCursorSelectHeaderAtEnd"
     $ it "produces valid cursors"
     $ producesValidsOnValids entryCursorSelectHeaderAtEnd
-  describe "entryCursorSelectContents"
+  describe "entryCursorSelectContentsAtStart"
     $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectContents
+    $ producesValidsOnValids entryCursorSelectContentsAtStart
+  describe "entryCursorSelectContentsAtEnd"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids entryCursorSelectContentsAtEnd
   describe "entryCursorSelectTimestamps"
     $ it "produces valid cursors"
     $ producesValidsOnValids entryCursorSelectTimestamps

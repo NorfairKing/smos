@@ -6,7 +6,8 @@ module Smos.Actions.Entry
     entrySelectWhole,
     entrySelectHeaderAtStart,
     entrySelectHeaderAtEnd,
-    entrySelectContents,
+    entrySelectContentsAtStart,
+    entrySelectContentsAtEnd,
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
@@ -26,7 +27,8 @@ allEntryPlainActions =
   [ entrySelectWhole,
     entrySelectHeaderAtStart,
     entrySelectHeaderAtEnd,
-    entrySelectContents,
+    entrySelectContentsAtStart,
+    entrySelectContentsAtEnd,
     entrySelectProperties,
     entrySelectTimestamps,
     entrySelectStateHistory,
@@ -63,12 +65,20 @@ entrySelectHeaderAtEnd =
       actionDescription = "Select the current Entry's header and select the end"
     }
 
-entrySelectContents :: Action
-entrySelectContents =
+entrySelectContentsAtStart :: Action
+entrySelectContentsAtStart =
+  Action
+    { actionName = "entrySelectContentsAtStart",
+      actionFunc = modifyEntryCursor entryCursorSelectContentsAtStart,
+      actionDescription = "Select the current Entry's contents at the start"
+    }
+
+entrySelectContentsAtEnd :: Action
+entrySelectContentsAtEnd =
   Action
     { actionName = "entrySelectContents",
-      actionFunc = modifyEntryCursor entryCursorSelectContents,
-      actionDescription = "Select the current Entry's contents"
+      actionFunc = modifyEntryCursor entryCursorSelectContentsAtEnd,
+      actionDescription = "Select the current Entry's contents at the end"
     }
 
 entrySelectTimestamps :: Action
