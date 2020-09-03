@@ -10,3 +10,9 @@ commands:
 after:
   example.smos:
     - header: Next action
+      state-history:
+         - state: null
+           time: 2020-09-03 06:51:59.595561390000
+         - state: NEXT
+           time: 2020-09-03 06:51:59.594842945000
+

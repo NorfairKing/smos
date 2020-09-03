@@ -53,20 +53,34 @@ switchToFile path = modifyEditorCursorS $ \ec -> do
 
 switchToCursor :: Path Abs File -> Maybe SmosFileCursor -> SmosM ()
 switchToCursor path msfc = modifyEditorCursorS $ \ec -> do
-  saveCurrentSmosFile
-  closeCurrentFile
-  mSmec <- startSmosFileEditorCursorWithCursor path msfc
-  case mSmec of
-    Nothing -> do
-      addErrorMessage "Unable to get a lock on the file to switch to"
-      pure ec -- Couldn't get a lock, do nothing
-    Just smec -> do
-      pure $
-        ec
-          { editorCursorLastOpenedFile = path,
-            editorCursorSelection = FileSelected,
-            editorCursorFileCursor = Just smec
-          }
+  case editorCursorFileCursor ec of
+    Nothing -> doSwitchEntirely ec
+    Just sfec ->
+      if smosFileEditorPath sfec == path
+        then do
+          -- Don't close this file and open the same, but keep the same one open and just change the cursor.
+          pure
+            ec
+              { editorCursorFileCursor = Just $ resetSmosFileEditorCursor msfc sfec,
+                editorCursorSelection = FileSelected
+              }
+        else doSwitchEntirely ec
+  where
+    doSwitchEntirely ec = do
+      saveCurrentSmosFile
+      closeCurrentFile
+      mSmec <- startSmosFileEditorCursorWithCursor path msfc
+      case mSmec of
+        Nothing -> do
+          addErrorMessage "Unable to get a lock on the file to switch to"
+          pure ec -- Couldn't get a lock, do nothing
+        Just smec -> do
+          pure $
+            ec
+              { editorCursorLastOpenedFile = path,
+                editorCursorSelection = FileSelected,
+                editorCursorFileCursor = Just smec
+              }
 
 -- Note that this leaves the file cursor invalidated, so it must not end up in the editor cursor sum after this.
 closeCurrentFile :: SmosM ()

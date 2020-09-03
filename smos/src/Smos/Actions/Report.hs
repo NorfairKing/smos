@@ -38,8 +38,7 @@ reportNextActions =
         pure $
           ec
             { editorCursorSelection = ReportSelected,
-              editorCursorReportCursor = Just $ ReportNextActions narc,
-              editorCursorFileCursor = Nothing
+              editorCursorReportCursor = Just $ ReportNextActions narc
             },
       actionDescription = "Next action report"
     }

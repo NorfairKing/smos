@@ -126,7 +126,7 @@ parseCommand t =
 
 data CommandsRun
   = CommandsRun
-      { intermidiaryResults :: [(Command, DirForest SmosFile)],
+      { intermidiaryResults :: [(Command, DirForest SmosFile, [Text])],
         finalResult :: DirForest SmosFile
       }
 
@@ -169,7 +169,7 @@ runCommandsOn startingFile start commands =
     readWorkflowDir testConf = liftIO $ do
       workflowDir <- resolveReportWorkflowDir (configReportConfig testConf)
       DF.read workflowDir (fmap (fromRight (error "A smos file was not valid.") . fromJust) . readSmosFile)
-    go :: SmosConfig -> (SmosState, [(Command, DirForest SmosFile)]) -> Command -> ResourceT IO (SmosState, [(Command, DirForest SmosFile)])
+    go :: SmosConfig -> (SmosState, [(Command, DirForest SmosFile, [Text])]) -> Command -> ResourceT IO (SmosState, [(Command, DirForest SmosFile, [Text])])
     go testConf (ss, rs) c = do
       let func = do
             case c of
@@ -177,14 +177,14 @@ runCommandsOn startingFile start commands =
               CommandUsing a arg -> actionUsingFunc a arg
             actionFunc saveFile
       let eventFunc = runSmosM' testConf ss func
-      ((s, ss'), _) <- eventFunc
+      ((s, ss'), errs) <- eventFunc
       intermadiateState <- readWorkflowDir testConf
       case s of
         Stop -> liftIO $ failure "Premature stop"
         Continue () ->
           pure
             ( ss',
-              (c, intermadiateState)
+              (c, intermadiateState, errs)
                 : rs
             )
 
@@ -198,14 +198,14 @@ expectResults p bf af CommandsRun {..} =
           "The starting situation looked as follows:",
           ppShow bf,
           "The commands to run were these:",
-          ppShow $ map fst intermidiaryResults,
+          ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
           "The result was supposed to look like this:",
           ppShow af,
           "",
           "The intermediary steps built up to the result as follows:",
           ""
         ],
-        concatMap (uncurry go) intermidiaryResults,
+        concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
         [ "The expected result was the following:",
           ppShow af,
           "The actual result was the following:",
@@ -221,9 +221,19 @@ expectResults p bf af CommandsRun {..} =
         ]
       ]
   where
-    go :: Command -> DirForest SmosFile -> [String]
-    go c isf =
-      ["After running the following command:", show c, "The situation looked as follows:", ppShow isf]
+    go :: Command -> DirForest SmosFile -> [Text] -> [String]
+    go c isf errs =
+      concat
+        [ [ "After running the following command:",
+            show c,
+            "The situation looked as follows:",
+            ppShow isf
+          ],
+          if null errs
+            then []
+            else "Note that there were these errors: " : map T.unpack errs,
+          [""]
+        ]
 
 dEqForTest :: DirForest SmosFile -> DirForest SmosFile -> Bool
 dEqForTest = liftEq eqForTest

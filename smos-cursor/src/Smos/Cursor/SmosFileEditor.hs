@@ -6,6 +6,7 @@ module Smos.Cursor.SmosFileEditor where
 import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
+import Data.Function
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
@@ -70,6 +71,14 @@ startSmosFileEditorCursorWithCursor p msfc = do
           smosFileEditorLock = fl,
           smosFileEditorReleaseKey = rk
         }
+
+resetSmosFileEditorCursor :: Maybe SmosFileCursor -> SmosFileEditorCursor -> SmosFileEditorCursor
+resetSmosFileEditorCursor msfc sfc =
+  sfc
+    { smosFileEditorStartingPoint = rebuildSmosFileCursorEntirely <$> msfc,
+      smosFileEditorCursorHistory = startingHistory msfc,
+      smosFileEditorUnsavedChanges = ((/=) `on` fmap rebuildSmosFileCursorEntirely) msfc (smosFileEditorCursorPresent sfc)
+    }
 
 tryLockSmosFile :: MonadResource m => Path Abs File -> m (ReleaseKey, Maybe FileLock)
 tryLockSmosFile p = do
