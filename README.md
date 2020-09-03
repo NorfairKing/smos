@@ -45,6 +45,18 @@ smos-web-server          : The smos web server
 smos-docs-site           : The generator for the documentation website.
 ```
 
+### Development
+
+Before starting development, make sure to run `nix-shell` at least once to install pre-commit hooks.
+
+Before submitting a PR, make sure that these commands _all_ succeed:
+
+```
+nix-build ci.nix
+stack clean
+stack build --test --bench --no-run-benchmarks --pedantic
+```
+
 ## Cachix cache
 
 There is a [cachix](https://cachix.org) cache for this project.
