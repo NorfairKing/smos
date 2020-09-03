@@ -101,7 +101,7 @@ window.onload = async function() {
       'foreground': col_S_base00,
       'background': col_S_base03,
       'cursor': col_S_base1,
-      'cursorAccent': col_S_base1,
+      'cursorAccent': col_S_base02,
 
       'black': col_S_base02,
       'brightBlack': col_S_base03,
