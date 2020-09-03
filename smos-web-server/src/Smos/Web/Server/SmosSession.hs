@@ -8,7 +8,6 @@ import Conduit
 import Control.Monad.Logger
 import qualified Data.Map as M
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
@@ -58,8 +57,7 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
     toWorkflowDir = (</> [reldir|workflow|])
     readyDir :: m (Path Abs Dir)
     readyDir = do
-      dataDir <- getsYesod appDataDir
-      userDir <- resolveDir dataDir $ usernameToPath userName
+      userDir <- userDataDir userName
       let workflowDir = toWorkflowDir userDir
       ensureDir workflowDir
       doSync userDir
@@ -81,6 +79,3 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
         $ DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1
         $ \pool ->
           doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
-
-usernameToPath :: Username -> FilePath
-usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText

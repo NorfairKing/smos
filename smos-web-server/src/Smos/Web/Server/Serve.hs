@@ -8,6 +8,7 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Path.IO
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
@@ -23,6 +24,9 @@ serveSmosWebServer ss = do
 
 runSmosWebServer :: ServeSettings -> IO ()
 runSmosWebServer ServeSettings {..} = do
+  -- Just to make sure we don't get into trouble with reading files from here.
+  -- This also allows to error out early if something is wrong with permissions.
+  ensureDir serveSetDataDir
   man <- liftIO $ Http.newManager Http.tlsManagerSettings
   loginVar <- liftIO $ newTVarIO M.empty
   instancesVar <- liftIO $ newTVarIO M.empty

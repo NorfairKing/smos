@@ -16,6 +16,7 @@ import Control.Monad
 import Control.Monad.Logger
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Base16 as Base16
 import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
@@ -237,52 +238,17 @@ withLogin' func = do
 
 lookupToginToken :: Username -> Handler (Maybe Token)
 lookupToginToken un = do
-  whenPersistLogins loadLogins
   tokenMapVar <- getsYesod appLoginTokens
   tokenMap <- liftIO $ readTVarIO tokenMapVar
-  pure $ M.lookup un tokenMap
+  case M.lookup un tokenMap of
+    Nothing -> loadUserToken un -- If there is no token in the cache, try loading from file
+    Just t -> pure $ Just t
 
 recordLoginToken :: Username -> Token -> Handler ()
 recordLoginToken un token = do
   tokenMapVar <- getsYesod appLoginTokens
   liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un token
-  whenPersistLogins storeLogins
-
-whenPersistLogins :: Handler () -> Handler ()
-whenPersistLogins = when development
-
-loadLogins :: Handler ()
-loadLogins = do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ do
-    logins <- readLogins
-    atomically $ modifyTVar tokenMapVar $ \m -> fromMaybe m logins
-
-storeLogins :: Handler ()
-storeLogins = do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ do
-    m <- readTVarIO tokenMapVar
-    writeLogins m
-
-loginsFile :: IO (Path Abs File)
-loginsFile = resolveFile' "logins.json"
-
-readLogins :: IO (Maybe (Map Username Token))
-readLogins = do
-  lf <- loginsFile
-  mErrOrLogins <- forgivingAbsence $ JSON.eitherDecode <$> LB.readFile (toFilePath lf)
-  case mErrOrLogins of
-    Nothing -> pure Nothing
-    Just (Left err) -> do
-      putStrLn $ unwords ["Failed to load logins from", fromAbsFile lf, "with error:", err]
-      pure Nothing
-    Just (Right r) -> pure $ Just r
-
-writeLogins :: Map Username Token -> IO ()
-writeLogins m = do
-  lf <- loginsFile
-  LB.writeFile (toFilePath lf) (JSON.encodePretty m)
+  saveUserToken un token
 
 instance FromJSON Token where
   parseJSON =
@@ -333,3 +299,29 @@ runClientOrDisallow func = do
 
 fileR :: Path Rel File -> Route App
 fileR = FileR . map T.pack . FP.splitDirectories . fromRelFile
+
+usernameToPath :: Username -> FilePath
+usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
+
+userDataDir :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Path Abs Dir)
+userDataDir un = do
+  dataDir <- getsYesod appDataDir
+  usersDataDir <- resolveDir dataDir "users"
+  resolveDir usersDataDir $ usernameToPath un
+
+userTokenFile :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Path Abs File)
+userTokenFile un = do
+  dd <- userDataDir un
+  resolveFile dd "token.dat"
+
+saveUserToken :: (MonadHandler m, HandlerSite m ~ App) => Username -> Token -> m ()
+saveUserToken un t = do
+  tf <- userTokenFile un
+  liftIO $ do
+    ensureDir (parent tf)
+    SB.writeFile (fromAbsFile tf) (getToken t)
+
+loadUserToken :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Maybe Token)
+loadUserToken un = do
+  tf <- userTokenFile un
+  liftIO $ fmap (fmap Token) $ forgivingAbsence $ SB.readFile (fromAbsFile tf)
