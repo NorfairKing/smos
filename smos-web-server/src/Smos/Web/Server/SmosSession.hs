@@ -42,7 +42,8 @@ withSmosSession userName token instancesVar relFile func = do
                         defaultDirectoryConfig
                           { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
                           }
-                    }
+                    },
+                configExplainerMode = True
               }
       withSmosInstance config startingFile func
     Just i -> do
