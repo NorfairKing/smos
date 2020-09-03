@@ -9,6 +9,7 @@ module Smos.Cursor.SmosFile
     rebuildSmosFileCursorEntirely,
     startSmosFile,
     smosFileCursorForestCursorL,
+    smosFileCursorSelectedCollapseEntryL,
     smosFileCursorSelectedEntryL,
     smosFileCursorEntrySelectionL,
     smosFileCursorReadyForStartup,
@@ -110,11 +111,11 @@ startSmosFile =
     Node emptyEntry []
       :| []
 
-smosFileCursorSelectedEntireL :: Lens' SmosFileCursor (CollapseEntry EntryCursor)
-smosFileCursorSelectedEntireL = smosFileCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL
+smosFileCursorSelectedCollapseEntryL :: Lens' SmosFileCursor (CollapseEntry EntryCursor)
+smosFileCursorSelectedCollapseEntryL = smosFileCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL
 
 smosFileCursorSelectedEntryL :: Lens' SmosFileCursor EntryCursor
-smosFileCursorSelectedEntryL = smosFileCursorSelectedEntireL . collapseEntryValueL
+smosFileCursorSelectedEntryL = smosFileCursorSelectedCollapseEntryL . collapseEntryValueL
 
 smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL = smosFileCursorSelectedEntryL . entryCursorSelectionL
@@ -145,7 +146,7 @@ smosFileCursorReadyForStartup = unclockStarted . goToEnd
 
 smosFileCursorToggleCollapseEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleCollapseEntireEntry =
-  smosFileCursorSelectedEntireL
+  smosFileCursorSelectedCollapseEntryL
     %~ ( \c ->
            collapseEntrySetShowAll
              (not $ c ^. collapseEntryShowContentsL && c ^. collapseEntryShowHistoryL)
@@ -154,7 +155,7 @@ smosFileCursorToggleCollapseEntireEntry =
 
 smosFileCursorToggleCollapseEntryLens :: Lens' (CollapseEntry EntryCursor) Bool -> SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleCollapseEntryLens field =
-  smosFileCursorSelectedEntireL %~ over field not
+  smosFileCursorSelectedCollapseEntryL %~ over field not
 
 smosFileCursorSelectPrev :: SmosFileCursor -> Maybe SmosFileCursor
 smosFileCursorSelectPrev = smosFileCursorForestCursorL $ forestCursorSelectPrev rebuild make
@@ -277,7 +278,7 @@ smosFileCursorClockOutEverywhereAndClockInHere now sfc =
   let sfc' = smosFileCursorClockOutEverywhere now sfc
    in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL)
         %~ (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
-        & (smosFileCursorSelectedEntireL . collapseEntryShowLogbookL .~ True)
+        & (smosFileCursorSelectedCollapseEntryL . collapseEntryShowLogbookL .~ True)
 
 smosFileCursorUpdateTime :: ZonedTime -> SmosFileCursor -> SmosFileCursor
 smosFileCursorUpdateTime zt = smosFileCursorSelectedEntryL %~ entryCursorUpdateTime zt

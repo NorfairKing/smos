@@ -17,6 +17,7 @@
  -}
 module Smos.Actions.Utils
   ( module Smos.Actions.Utils,
+    module Smos.Cursor.Collapse,
     module Smos.Cursor.Contents,
     module Smos.Cursor.Entry,
     module Smos.Cursor.Header,
@@ -34,6 +35,7 @@ import Cursor.Types
 import Data.Maybe
 import Data.Time
 import Lens.Micro
+import Smos.Cursor.Collapse
 import Smos.Cursor.Contents
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
@@ -211,7 +213,13 @@ modifyEntryCursor :: (EntryCursor -> EntryCursor) -> SmosM ()
 modifyEntryCursor func = modifyEntryCursorS $ pure . func
 
 modifyEntryCursorS :: (EntryCursor -> SmosM EntryCursor) -> SmosM ()
-modifyEntryCursorS func = modifyFileCursorS $ smosFileCursorSelectedEntryL func
+modifyEntryCursorS func = modifyCollapseEntryCursorS $ collapseEntryValueL func
+
+modifyCollapseEntryCursor :: (CollapseEntry EntryCursor -> CollapseEntry EntryCursor) -> SmosM ()
+modifyCollapseEntryCursor func = modifyCollapseEntryCursorS $ pure . func
+
+modifyCollapseEntryCursorS :: (CollapseEntry EntryCursor -> SmosM (CollapseEntry EntryCursor)) -> SmosM ()
+modifyCollapseEntryCursorS func = modifyFileCursorS $ smosFileCursorSelectedCollapseEntryL func
 
 modifyEmptyFile :: SmosFileCursor -> SmosM ()
 modifyEmptyFile = modifyEmptyFileS . pure

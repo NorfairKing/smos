@@ -44,7 +44,6 @@ import Data.Text (Text, toLower, toTitle)
 import Data.Time
 import Lens.Micro
 import Smos.Actions.Utils
-import Smos.Cursor.Collapse
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config

@@ -12,6 +12,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Test.Hspec
 import Test.Hspec.QuickCheck
+import Test.QuickCheck
 import Test.Validity
 import UnliftIO.Resource
 
@@ -19,7 +20,8 @@ spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
   describe "startSmosFileCursor" $ do
     it "works on any valid smos file" $ forAllValid $ \sf ->
-      forAllValid $ \rp ->
+      -- to make sure paths are not too big
+      forAllShrink (scale (`div` 5) genValid) shrinkValid $ \rp ->
         withSystemTempDir "smos-cursor-test" $ \tdir -> do
           let p = tdir </> rp
           writeSmosFile p sf

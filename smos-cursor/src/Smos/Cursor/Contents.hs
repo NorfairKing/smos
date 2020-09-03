@@ -10,7 +10,9 @@ module Smos.Cursor.Contents
     nullContentsCursor,
     contentsCursorSelection,
     contentsCursorSelectPrevLine,
+    contentsCursorSelectPrevLineOrTheStartOfThisLine,
     contentsCursorSelectNextLine,
+    contentsCursorSelectNextLineOrTheEndOfThisLine,
     contentsCursorSelectFirstLine,
     contentsCursorSelectLastLine,
     contentsCursorSelectPrevChar,
@@ -81,8 +83,24 @@ contentsCursorSelection = textFieldCursorSelection . contentsCursorTextFieldCurs
 contentsCursorSelectPrevLine :: ContentsCursor -> Maybe ContentsCursor
 contentsCursorSelectPrevLine = contentsCursorTextFieldCursorL textFieldCursorSelectPrevLine
 
+contentsCursorSelectPrevLineOrTheStartOfThisLine :: ContentsCursor -> ContentsCursor
+contentsCursorSelectPrevLineOrTheStartOfThisLine =
+  contentsCursorTextFieldCursorL
+    %~ ( \tc -> case textFieldCursorSelectPrevLine tc of
+           Nothing -> textFieldCursorSelectStartOfLine tc
+           Just tc' -> tc'
+       )
+
 contentsCursorSelectNextLine :: ContentsCursor -> Maybe ContentsCursor
 contentsCursorSelectNextLine = contentsCursorTextFieldCursorL textFieldCursorSelectNextLine
+
+contentsCursorSelectNextLineOrTheEndOfThisLine :: ContentsCursor -> ContentsCursor
+contentsCursorSelectNextLineOrTheEndOfThisLine =
+  contentsCursorTextFieldCursorL
+    %~ ( \tc -> case textFieldCursorSelectNextLine tc of
+           Nothing -> textFieldCursorSelectEndOfLine tc
+           Just tc' -> tc'
+       )
 
 contentsCursorSelectFirstLine :: ContentsCursor -> ContentsCursor
 contentsCursorSelectFirstLine = contentsCursorTextFieldCursorL %~ textFieldCursorSelectFirstLine

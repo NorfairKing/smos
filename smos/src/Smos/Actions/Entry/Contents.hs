@@ -118,7 +118,7 @@ contentsMoveUp :: Action
 contentsMoveUp =
   Action
     { actionName = "contentsMoveUp",
-      actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectPrevLine,
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectPrevLineOrTheStartOfThisLine,
       actionDescription = "Move up in the contents"
     }
 
@@ -126,7 +126,7 @@ contentsMoveDown :: Action
 contentsMoveDown =
   Action
     { actionName = "contentsMoveDown",
-      actionFunc = modifyContentsCursorWhenSelectedM contentsCursorSelectNextLine,
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectNextLineOrTheEndOfThisLine,
       actionDescription = "Move down in the contents"
     }
 

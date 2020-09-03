@@ -36,7 +36,6 @@ import Import hiding ((<+>))
 import Lens.Micro
 import Paths_smos
 import Smos.Actions
-import Smos.Cursor.Collapse
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.Tag

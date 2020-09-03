@@ -50,9 +50,15 @@ spec = do
   describe "contentsCursorSelectPrevLine"
     $ it "produces valid cursors"
     $ producesValidsOnValids contentsCursorSelectPrevLine
+  describe "contentsCursorSelectPrevLineOrTheStartOfThisLine"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectPrevLineOrTheStartOfThisLine
   describe "contentsCursorSelectNextLine"
     $ it "produces valid cursors"
     $ producesValidsOnValids contentsCursorSelectNextLine
+  describe "contentsCursorSelectNextLineOrTheEndOfThisLine"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectNextLineOrTheEndOfThisLine
   describe "contentsCursorSelectFirstLine"
     $ it "produces valid cursors"
     $ producesValidsOnValids contentsCursorSelectFirstLine

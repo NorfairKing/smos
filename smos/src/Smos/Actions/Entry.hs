@@ -18,6 +18,7 @@ module Smos.Actions.Entry
   )
 where
 
+import Lens.Micro
 import Smos.Actions.Entry.TodoState
 import Smos.Actions.Utils
 import Smos.Types
@@ -69,7 +70,7 @@ entrySelectContentsAtStart :: Action
 entrySelectContentsAtStart =
   Action
     { actionName = "entrySelectContentsAtStart",
-      actionFunc = modifyEntryCursor entryCursorSelectContentsAtStart,
+      actionFunc = modifyCollapseEntryCursor (fmap entryCursorSelectContentsAtStart . (collapseEntryShowContentsL .~ True)),
       actionDescription = "Select the current Entry's contents at the start"
     }
 
@@ -77,7 +78,7 @@ entrySelectContentsAtEnd :: Action
 entrySelectContentsAtEnd =
   Action
     { actionName = "entrySelectContents",
-      actionFunc = modifyEntryCursor entryCursorSelectContentsAtEnd,
+      actionFunc = modifyCollapseEntryCursor (fmap entryCursorSelectContentsAtEnd . (collapseEntryShowContentsL .~ True)),
       actionDescription = "Select the current Entry's contents at the end"
     }
 
