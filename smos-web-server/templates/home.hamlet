@@ -22,22 +22,33 @@
       $maybe _ <- maid
         <div .navbar-item>
           <div .buttons>
-            <a .button .is-light href=@{AuthR LogoutR}>
+            <a .button href=@{AuthR LogoutR}>
               Log out
       $nothing
         <div .navbar-item>
           <div .buttons>
-            <a .button .is-dark href=@{AuthR registerR}>
-              <strong>Sign up
-            
-            <a .button .is-light href=@{AuthR LoginR}>
+            <a .button .is-dark href=@{AuthR LoginR}>
               Log in
+            <a .button .is-light href=@{AuthR registerR}>
+              Sign up
           
           
             
           
 
 
-<section .section>
-  <a .button .is-centered href=@{FileR ["example.smos"]}>
-    Open Editor
+<section .hero .is-fullheight .section>
+  <div .hero-body>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-5-tablet .is-4-desktop .is-3-widescreen>
+          <div .box .has-text-centered>
+            $maybe _ <- maid
+              <a .button .is-light .is-large .is-fullwidth href=@{FileR ["example.smos"]}>
+                Open Smos Online
+            $nothing
+              <div .buttons>
+                <a .button .is-dark .has-text-weight-bold .has-text-light .has-background-grey .is-fullwidth href=@{AuthR LoginR}>
+                  Log in
+                <a .button .has-text-weight-bold .has-text-grey  .has-background-light .is-fullwidth href=@{AuthR registerR}>
+                  Sign up
