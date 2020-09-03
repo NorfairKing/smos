@@ -58,7 +58,6 @@ instance Yesod App where
   defaultLayout widget = do
     pageContent <- widgetToPageContent $ do
       addStylesheet $ StaticR bulma_css
-      addStylesheet $ StaticR font_awesome_css
       toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
       $(widgetFile "default-body")
     withUrlRenderer $ do

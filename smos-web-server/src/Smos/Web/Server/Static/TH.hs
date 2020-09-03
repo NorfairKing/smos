@@ -15,7 +15,6 @@ mkStatic =
         development
         "smosWebServerStatic"
         [ remoteStatic "favicon.ico" "https://cs-syd.eu/logo/res/favicon.ico",
-          remoteStatic "font-awesome.css" "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
           remoteStatic "bulma.css" "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css",
           remoteStatic "jquery.js" "https://code.jquery.com/jquery-3.3.1.min.js",
           remoteStatic "xterm.js" "https://cdn.jsdelivr.net/npm/xterm@4.8.1/lib/xterm.min.js",

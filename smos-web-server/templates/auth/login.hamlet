@@ -1,25 +1,51 @@
-Login
-<form
-  method="post"
-  action=@{AuthR loginFormPostTargetR}>
-    <input
-      name="user"
-      placeholder="Username or Email"
-      required=""
-      value=""
-      type="text">
-    <input
-      name="passphrase"
-      placeholder="Passphrase"
-      required=""
-      value=""
-      type="password">
-    ^{token}
-    <button>
-      Login
+<section .hero .is-light .is-fullheight>
+  <div .hero-body>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-7-tablet .is-6-desktop .is-5-widescreen>
+          <form .box
+            method="post"
+            action=@{AuthR loginFormPostTargetR}>
+            <div .field>
+              <label for="user" .label>
+                Username
+              <div .control>
+                <input .input
+                  name="user"
+                  placeholder="username"
+                  required=""
+                  value=""
+                  autofocus="autofocus"
+                  type="text">
+                
+              
+            <div .field>
+              <label for="passhprase" .label>
+                Passphrase
+              <div .control>
+                <input .input
+                  name="passphrase"
+                  placeholder="*****************************"
+                  required=""
+                  value=""
+                  type="password">
+                
 
-<a href=@{AuthR registerR}>
-  Sign Up
+            ^{token}
+            
+            $if not (null msgs)
+              <div .field>
+                $forall (_, msg) <- msgs
+                  <p .help .is-danger>
+                    #{msg}
+              
+            
+            <div .field .is-grouped>
+              <div .control>
+                <button .button .is-dark type="submit">
+                  Login
+              
 
-$forall (_, msg) <- msgs
-  #{msg}
+              <div .control>
+                <a .button .is-light href=@{AuthR registerR}>
+                  Register

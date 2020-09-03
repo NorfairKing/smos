@@ -3,14 +3,14 @@
     <a .title .is-3 .navbar-item href=@{HomeR}>
       Smos Online
 
-    <a role="button" .navbar-burger burger aria-label="menu" aria-expanded="false" data-target="navbar-id">
+    <a role="button" .navbar-burger burger aria-label="menu" aria-expanded="false" data-target="myNavbar">
       <span aria-hidden="true">
       <span aria-hidden="true">
       <span aria-hidden="true">
     
   
 
-  <div id="navbar-id" .navbar-menu>
+  <div id="myNavbar" .navbar-menu>
     <div .navbar-start>
 
       $maybe docsUrl <- mDocsUrl

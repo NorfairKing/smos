@@ -1,34 +1,62 @@
-Registration
-<form
-  method="post"
-  action=@{AuthR registerR}>
-  <input
-    id="login-email"
-    name="username"
-    placeholder="Username"
-    required=""
-    value=""
-    type="text">
-  <input
-    id="login-passphrase1"
-    name="passphrase"
-    placeholder="Passphrase"
-    required=""
-    value=""
-    type="password">
-  <input
-    id="login-passphrase2"
-    name="passphrase-confirm"
-    placeholder="Passphrase"
-    required=""
-    value=""
-    type="password">
-  ^{token}
-  <button>
-    Sign Up
+<section .hero .is-light .is-fullheight>
+  <div .hero-body>
+    <div .container>
+      <div .columns .is-centered>
+        <div .column .is-7-tablet .is-6-desktop .is-5-widescreen>
+          <form .box
+            method="post"
+            action=@{AuthR registerR}>
+            <div .field>
+              <label for="user" .label>
+                Username
+              <div .control>
+                <input .input
+                  name="username"
+                  placeholder="Username"
+                  required=""
+                  value=""
+                  autofocus="autofocus"
+                  type="text">
 
-<a href=@{AuthR LoginR}>
-  Log in
+            <div .field>
+              <label for="passhprase" .label>
+                Passphrase
+              <div .control>
+                <input .input
+                  name="passphrase"
+                  placeholder="*****************************"
+                  required=""
+                  value=""
+                  type="password">
 
- $forall (_, msg) <- msgs
-     #{msg}
+            <div .field>
+              <label for="passhprase" .label>
+                Confirm Passphrase
+              <div .control>
+                <input .input
+                  name="passphrase-confirm"
+                  placeholder="*****************************"
+                  required=""
+                  value=""
+                  type="password">
+
+
+            ^{token}
+
+            $if not (null msgs)
+              <div .field>
+                $forall (_, msg) <- msgs
+                  <p .help .is-danger>
+                    #{msg}
+
+
+            <div .field .is-grouped>
+              <div .control>
+                <button .button .is-dark type="submit">
+                  Sign up
+
+
+              <div .control>
+                <a .button .is-light href=@{AuthR LoginR}>
+                  Log in
+
