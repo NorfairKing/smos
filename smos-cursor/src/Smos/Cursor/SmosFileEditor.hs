@@ -4,6 +4,7 @@
 module Smos.Cursor.SmosFileEditor where
 
 import Control.Monad
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
@@ -73,7 +74,7 @@ startSmosFileEditorCursorWithCursor p msfc = do
 tryLockSmosFile :: MonadResource m => Path Abs File -> m (ReleaseKey, Maybe FileLock)
 tryLockSmosFile p = do
   ensureDir (parent p)
-  lockFilePath <- liftIO $ addExtension ".lock" p
+  lockFilePath <- liftIO $ lockFilePathFor p
   allocate
     (tryLockFile (fromAbsFile lockFilePath) Exclusive) -- We will edit the file so we need an exclusive lock
     ( \mfl ->
@@ -81,6 +82,14 @@ tryLockSmosFile p = do
           ignoringAbsence $ removeFile lockFilePath
           unlockFile fl
     )
+
+lockFilePathFor :: MonadThrow m => Path Abs File -> m (Path Abs File)
+lockFilePathFor p = do
+  p' <- addExtension ".lock" p
+  let par = parent p'
+      fn = filename p'
+  fn' <- parseRelFile $ "." <> fromRelFile fn
+  pure $ par </> fn'
 
 -- | The cursor should be considered invalidated after this
 --
