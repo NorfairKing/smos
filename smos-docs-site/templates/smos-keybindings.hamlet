@@ -89,6 +89,9 @@
   <h3>
     Search
   ^{keyMapTable $ helpKeyMapSearchMatchers $ keyMapHelpKeyMap defaultKeyMap }
+  <h3>
+    Any
+  ^{keyMapTable $ helpKeyMapHelpMatchers $ keyMapHelpKeyMap defaultKeyMap }
 
   <h2 id="Any">
     Any

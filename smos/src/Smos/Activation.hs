@@ -27,13 +27,15 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
    in -- Note that the ordering matters so we need to put the anys at the end.
       (++ anys) $ case editorCursorSelection of
         HelpSelected ->
-          case editorCursorHelpCursor of
-            Nothing -> []
-            Just HelpCursor {..} ->
-              map ((,) SpecificMatcher) $
-                case helpCursorSelection of
-                  HelpCursorHelpSelected -> helpKeyMapHelpMatchers keyMapHelpKeyMap
-                  HelpCursorSearchSelected -> helpKeyMapSearchMatchers keyMapHelpKeyMap
+          let HelpKeyMap {..} = keyMapHelpKeyMap
+              helpAnys = map ((,) AnyMatcher) helpKeyMapAnyMatchers
+           in (++ helpAnys) $ case editorCursorHelpCursor of
+                Nothing -> []
+                Just HelpCursor {..} ->
+                  map ((,) SpecificMatcher) $
+                    case helpCursorSelection of
+                      HelpCursorHelpSelected -> helpKeyMapHelpMatchers
+                      HelpCursorSearchSelected -> helpKeyMapSearchMatchers
         FileSelected ->
           let FileKeyMap {..} = keyMapFileKeyMap
               fileAnys = map ((,) AnyMatcher) fileKeyMapAnyMatchers

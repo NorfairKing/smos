@@ -266,7 +266,8 @@ backToReportsKeyConfig ReportsKeyMap {..} =
 data HelpKeyConfigs
   = HelpKeyConfigs
       { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
-        helpSearchKeyConfigs :: !(Maybe KeyConfigs)
+        helpSearchKeyConfigs :: !(Maybe KeyConfigs),
+        helpAnyKeyConfigs :: !(Maybe KeyConfigs)
       }
   deriving (Show, Eq, Generic)
 
@@ -274,20 +275,31 @@ instance Validity HelpKeyConfigs
 
 instance ToJSON HelpKeyConfigs where
   toJSON HelpKeyConfigs {..} =
-    object ["help" .= helpHelpKeyConfigs, "search" .= helpSearchKeyConfigs]
+    let HelpKeyConfigs _ _ _ = undefined
+     in object
+          [ "help" .= helpHelpKeyConfigs,
+            "search" .= helpSearchKeyConfigs,
+            "any" .= helpAnyKeyConfigs
+          ]
 
 instance FromJSON HelpKeyConfigs where
   parseJSON = viaYamlSchema
 
 instance YamlSchema HelpKeyConfigs where
-  yamlSchema = objectParser "HelpKeyConfigs" $ HelpKeyConfigs <$> optionalField "help" "Keybindings for when in the help screen" <*> optionalField "search" "Keybindings for when the search bar is selected within the help screen"
+  yamlSchema =
+    objectParser "HelpKeyConfigs" $
+      HelpKeyConfigs
+        <$> optionalField "help" "Keybindings for when in the help screen"
+        <*> optionalField "search" "Keybindings for when the search bar is selected within the help screen"
+        <*> optionalField "any" "Keybindings for at any time in the help screen"
 
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =
-  let HelpKeyMap _ _ = undefined
+  let HelpKeyMap _ _ _ = undefined
    in HelpKeyConfigs
         { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers,
-          helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers
+          helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers,
+          helpAnyKeyConfigs = Just $ backToKeyConfigs helpKeyMapAnyMatchers
         }
 
 newtype KeyConfigs

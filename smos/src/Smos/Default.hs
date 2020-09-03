@@ -315,7 +315,10 @@ defaultHelpKeyMap =
             exactKey KDel helpDelete,
             exactKey KEnter helpSelectHelp,
             exactKey KEsc helpSelectHelp
-          ]
+          ],
+      helpKeyMapAnyMatchers =
+        listMatchers
+          []
     }
 
 defaultAnyKeyMap :: KeyMappings

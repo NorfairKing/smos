@@ -235,7 +235,8 @@ keyMapHelpMatchers km =
 data HelpKeyMap
   = HelpKeyMap
       { helpKeyMapHelpMatchers :: !KeyMappings,
-        helpKeyMapSearchMatchers :: !KeyMappings
+        helpKeyMapSearchMatchers :: !KeyMappings,
+        helpKeyMapAnyMatchers :: !KeyMappings
       }
   deriving (Generic)
 
@@ -243,14 +244,26 @@ instance Semigroup HelpKeyMap where
   hkm1 <> hkm2 =
     HelpKeyMap
       { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2,
-        helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2
+        helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2,
+        helpKeyMapAnyMatchers = helpKeyMapAnyMatchers hkm1 <> helpKeyMapAnyMatchers hkm2
       }
 
 instance Monoid HelpKeyMap where
-  mempty = HelpKeyMap {helpKeyMapHelpMatchers = mempty, helpKeyMapSearchMatchers = mempty}
+  mempty =
+    HelpKeyMap
+      { helpKeyMapHelpMatchers = mempty,
+        helpKeyMapSearchMatchers = mempty,
+        helpKeyMapAnyMatchers = mempty
+      }
 
 helpKeyMapActions :: HelpKeyMap -> [AnyAction]
-helpKeyMapActions (HelpKeyMap helpKeyMapHelpMatchers helpKeyMapSearchMatchers) = concatMap keyMappingsActions [helpKeyMapHelpMatchers, helpKeyMapSearchMatchers]
+helpKeyMapActions (HelpKeyMap helpKeyMapHelpMatchers helpKeyMapSearchMatchers helpKeyMapAnyMatchers) =
+  concatMap
+    keyMappingsActions
+    [ helpKeyMapHelpMatchers,
+      helpKeyMapSearchMatchers,
+      helpKeyMapAnyMatchers
+    ]
 
 type KeyMappings = [KeyMapping]
 

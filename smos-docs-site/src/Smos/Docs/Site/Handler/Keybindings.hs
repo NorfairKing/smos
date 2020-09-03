@@ -20,7 +20,7 @@ getSmosKeybindingsR = do
       FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
       BrowserKeyMap _ _ _ _ = undefined
       ReportsKeyMap _ _ = undefined
-      HelpKeyMap _ _ = undefined
+      HelpKeyMap _ _ _ = undefined
   defaultLayout
     $(widgetFile "smos-keybindings")
 
