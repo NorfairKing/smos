@@ -30,8 +30,7 @@ defaultFileKeyMap =
   FileKeyMap
     { fileKeyMapEmptyMatchers =
         listMatchers
-          [ exactKey KEsc stop,
-            exactChar 'e' startEntryFromEmptyAndSelectHeader,
+          [ exactChar 'e' startEntryFromEmptyAndSelectHeader,
             exactChar 'E' startEntryFromEmptyAndSelectHeader,
             exactKeyPress (KeyPress (KChar 'e') [MMeta]) startEntryFromEmptyAndSelectHeader,
             exactString "co" forestClockOutEverywhereInAllFiles
@@ -215,8 +214,7 @@ defaultFileKeyMap =
       fileKeyMapLogbookMatchers = listMatchers [],
       fileKeyMapAnyMatchers =
         listMatchers
-          [ exactChar 'q' stop,
-            exactChar 'u' undo,
+          [ exactChar 'u' undo,
             modifiedChar 'u' [MMeta] redo,
             exactKey KEsc entrySelectWhole
           ]
@@ -260,9 +258,7 @@ defaultBrowserKeyMap =
           ],
       browserKeyMapAnyMatchers =
         listMatchers
-          [ exactKey KEsc selectEditor,
-            exactChar 'q' stop,
-            exactChar 'u' browserUndo,
+          [ exactChar 'u' browserUndo,
             modifiedChar 'u' [MMeta] browserRedo
           ]
     }
@@ -282,16 +278,15 @@ defaultReportsKeyMap =
             exactChar 'G' lastNextAction,
             exactKey KEnter enterNextActionFile,
             exactChar '/' selectNextActionFilter,
-            exactKey KEsc selectEditor,
-            exactChar 'q' stop
+            exactChar 'q' selectEditor
           ],
       reportsKeymapNextActionReportFilterMatchers =
         listMatchers
           [ anyChar insertNextActionFilter,
             exactKey KEnter selectNextActionReport,
+            exactKey KEsc selectNextActionReport,
             exactKey KBS removeNextActionFilter,
-            exactKey KDel deleteNextActionFilter,
-            exactKey KEsc stop
+            exactKey KDel deleteNextActionFilter
           ]
     }
 
@@ -309,7 +304,6 @@ defaultHelpKeyMap =
             exactKey KEnd helpEnd,
             exactChar 'G' helpEnd,
             exactChar '/' helpSelectSearch,
-            exactKey KEsc selectEditor,
             exactChar 'q' selectEditor
           ],
       helpKeyMapSearchMatchers =
@@ -317,15 +311,17 @@ defaultHelpKeyMap =
           [ anyChar helpInsert,
             exactKey KBS helpRemove,
             exactKey KDel helpDelete,
-            exactKey KEsc selectEditor,
-            exactKey KEnter helpSelectHelp
+            exactKey KEnter helpSelectHelp,
+            exactKey KEsc helpSelectHelp
           ]
     }
 
 defaultAnyKeyMap :: KeyMappings
 defaultAnyKeyMap =
   listMatchers
-    [ exactChar '?' selectHelp,
+    [ exactChar 'q' stop,
+      -- Help
+      exactChar '?' selectHelp,
       exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,
       -- Browser
       exactString "bp" selectBrowserProjects,

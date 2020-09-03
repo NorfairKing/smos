@@ -24,7 +24,8 @@ import Smos.Types
 currentKeyMappings :: KeyMap -> EditorCursor -> [(Precedence, KeyMapping)]
 currentKeyMappings KeyMap {..} EditorCursor {..} =
   let anys = map ((,) AnyMatcher) keyMapAnyKeyMap
-   in anys ++ case editorCursorSelection of
+   in -- Note that the ordering matters so we need to put the anys at the end.
+      (++ anys) $ case editorCursorSelection of
         HelpSelected ->
           case editorCursorHelpCursor of
             Nothing -> []
@@ -36,25 +37,22 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
         FileSelected ->
           let FileKeyMap {..} = keyMapFileKeyMap
               fileAnys = map ((,) AnyMatcher) fileKeyMapAnyMatchers
-           in fileAnys
-                ++ case editorCursorFileCursor of
+           in (++ fileAnys) $
+                case editorCursorFileCursor of
                   Nothing -> []
                   Just sfec@SmosFileEditorCursor {..} ->
-                    let with :: KeyMappings -> [(Precedence, KeyMapping)]
-                        with specificMappings =
-                          map ((,) SpecificMatcher) specificMappings
-                     in case smosFileEditorCursorPresent sfec of
-                          Nothing -> with fileKeyMapEmptyMatchers
-                          Just sfc ->
-                            case sfc ^. smosFileCursorEntrySelectionL of
-                              WholeEntrySelected -> with fileKeyMapEntryMatchers
-                              HeaderSelected -> with fileKeyMapHeaderMatchers
-                              ContentsSelected -> with fileKeyMapContentsMatchers
-                              TimestampsSelected -> with fileKeyMapTimestampsMatchers
-                              PropertiesSelected -> with fileKeyMapPropertiesMatchers
-                              StateHistorySelected -> with fileKeyMapStateHistoryMatchers
-                              TagsSelected -> with fileKeyMapTagsMatchers
-                              LogbookSelected -> with fileKeyMapLogbookMatchers
+                    map ((,) SpecificMatcher) $ case smosFileEditorCursorPresent sfec of
+                      Nothing -> fileKeyMapEmptyMatchers
+                      Just sfc ->
+                        case sfc ^. smosFileCursorEntrySelectionL of
+                          WholeEntrySelected -> fileKeyMapEntryMatchers
+                          HeaderSelected -> fileKeyMapHeaderMatchers
+                          ContentsSelected -> fileKeyMapContentsMatchers
+                          TimestampsSelected -> fileKeyMapTimestampsMatchers
+                          PropertiesSelected -> fileKeyMapPropertiesMatchers
+                          StateHistorySelected -> fileKeyMapStateHistoryMatchers
+                          TagsSelected -> fileKeyMapTagsMatchers
+                          LogbookSelected -> fileKeyMapLogbookMatchers
         ReportSelected -> case editorCursorReportCursor of
           Nothing -> []
           Just rc ->
@@ -70,13 +68,12 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             Nothing -> []
             Just fbc ->
               let BrowserKeyMap {..} = keyMapBrowserKeyMap
-                  browserSpecifics =
+                  browserAnys = map ((,) AnyMatcher) browserKeyMapAnyMatchers
+               in (++ browserAnys) $ map ((,) SpecificMatcher) $
                     case fileBrowserSelected fbc of
                       Nothing -> browserKeyMapEmptyMatchers
                       Just (_, _, InProgress _) -> browserKeyMapInProgressMatchers
                       Just (_, _, Existent _) -> browserKeyMapExistentMatchers
-                  browserAnys = map ((,) AnyMatcher) browserKeyMapAnyMatchers
-               in browserAnys ++ map ((,) SpecificMatcher) browserSpecifics
 
 findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =
