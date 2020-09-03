@@ -54,13 +54,14 @@ fileBrowserRecordMovementHistory fbc new =
       fileBrowserCursorUndoStack = undoStackPush (Movement new) (fileBrowserCursorUndoStack fbc)
     }
 
+-- Start with a possibly empty dirforest cursor, possibly fail
+fileBrowserCursorMaybeDoMaybe :: (Maybe (DirForestCursor ()) -> Maybe (DirForestCursor ())) -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorMaybeDoMaybe func fbc = do
+  dfc' <- func $ fileBrowserCursorDirForestCursor fbc
+  pure $ fileBrowserRecordMovementHistory fbc (Just dfc')
+
 fileBrowserCursorDoMaybe :: (DirForestCursor () -> Maybe (DirForestCursor ())) -> FileBrowserCursor -> Maybe FileBrowserCursor
-fileBrowserCursorDoMaybe func fbc =
-  case fileBrowserCursorDirForestCursor fbc of
-    Nothing -> Just fbc
-    Just dfc -> do
-      dfc' <- func dfc
-      pure $ fileBrowserRecordMovementHistory fbc (Just dfc')
+fileBrowserCursorDoMaybe func = fileBrowserCursorMaybeDoMaybe (>>= func)
 
 fileBrowserCursorDoDeleteOrUpdate :: (DirForestCursor () -> DeleteOrUpdate (DirForestCursor ())) -> FileBrowserCursor -> FileBrowserCursor
 fileBrowserCursorDoDeleteOrUpdate func fbc =
@@ -96,7 +97,7 @@ fileBrowserCursorSelectPrev :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorSelectPrev = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCursorSelectPrev
 
 fileBrowserCursorStartNew :: FileBrowserCursor -> Maybe FileBrowserCursor
-fileBrowserCursorStartNew = fileBrowserCursorDoMaybe dirForestCursorStartNew
+fileBrowserCursorStartNew = fileBrowserCursorMaybeDoMaybe dirForestCursorStartNew
 
 fileBrowserCursorStartNewBelowAtStart :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorStartNewBelowAtStart = fileBrowserCursorDoMaybe dirForestCursorStartNewBelowAtStart

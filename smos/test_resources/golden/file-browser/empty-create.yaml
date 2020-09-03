@@ -1,0 +1,16 @@
+before: {}
+commands:
+- selectBrowserWorkflow
+- browserStartNew
+- browserInsertChar f
+- browserInsertChar i
+- browserInsertChar l
+- browserInsertChar e
+- browserInsertChar .
+- browserInsertChar s
+- browserInsertChar m
+- browserInsertChar o
+- browserInsertChar s
+- browserCompleteFile
+after:
+  file.smos: []

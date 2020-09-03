@@ -132,12 +132,12 @@ extra-deps:
   # nix-sha256: sha256:0nlw1dlvyxrfcq6c4mvibv1szskadhnb77l9wryaixljnfcf7z59
 
 - git: https://github.com/NorfairKing/cursor-dirforest
-  commit: 06dbe90a272f0f99bfb6aadbbbde33f247f60a02
+  commit: c4c8b736edab7604561082742a1d7fdf7881fa9c
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
-  # nix-sha256: sha256:1zx1vjzs4q8s4lybck8bd9cpxchnch11y7wvp2qb0kagjaj14085
+  # nix-sha256: sha256:0k7j5sqik9l3n26kl09ncpw7nihzlhbgshwl5pfzr96090dwvxpp
 
 - git: https://github.com/NorfairKing/cursor-brick
   commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
