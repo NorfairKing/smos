@@ -64,6 +64,9 @@ instance Yesod App where
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
   authRoute _ = Just $ AuthR LoginR
+  makeSessionBackend y = do
+    clientSessionKeyFile <- resolveFile (appDataDir y) "client_session_key.aes"
+    Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) (fromAbsFile clientSessionKeyFile)
 
 instance YesodAuth App where
   type AuthId App = Username
