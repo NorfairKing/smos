@@ -1,0 +1,12 @@
+before:
+  example.smos:
+    - Next action
+commands:
+- entrySetTodoState_NEXT
+- reportNextActions
+# This tests that it is possible to get back into the file.
+- enterNextActionFile
+- entryUnsetTodoState
+after:
+  example.smos:
+    - header: Next action

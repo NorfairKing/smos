@@ -1,0 +1,7 @@
+before:
+  example.smos: []
+commands:
+- selectBrowserWorkflow
+- browserEnter
+after:
+  example.smos: []
