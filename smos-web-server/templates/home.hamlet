@@ -1,9 +1,9 @@
 <nav .navbar role="navigation" aria-label="main navigation">
   <div .navbar-brand>
-    <a .title .is-3 .navbar-item href=@{HomeR}>
+    <a .navbar-item .my-1 .has-text-weight-bold .is-size-4 href=@{HomeR}>
       Smos Online
 
-    <a role="button" .navbar-burger burger aria-label="menu" aria-expanded="false" data-target="myNavbar">
+    <a role="button" .navbar-burger .burger aria-label="menu" aria-expanded="false" data-target="myNavbar">
       <span aria-hidden="true">
       <span aria-hidden="true">
       <span aria-hidden="true">
@@ -22,15 +22,15 @@
       $maybe _ <- maid
         <div .navbar-item>
           <div .buttons>
-            <a .button is-light href=@{AuthR LogoutR}>
+            <a .button .is-light href=@{AuthR LogoutR}>
               Log out
       $nothing
         <div .navbar-item>
           <div .buttons>
-            <a .button is-primary href=@{AuthR registerR}>
+            <a .button .is-dark href=@{AuthR registerR}>
               <strong>Sign up
             
-            <a .button is-light href=@{AuthR LoginR}>
+            <a .button .is-light href=@{AuthR LoginR}>
               Log in
           
           
