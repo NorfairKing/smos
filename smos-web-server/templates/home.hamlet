@@ -1,51 +1,43 @@
+<nav .navbar role="navigation" aria-label="main navigation">
+  <div .navbar-brand>
+    <a .title .is-3 .navbar-item href=@{HomeR}>
+      Smos Online
 
-<h1>
-  Smos Web Server
+    <a role="button" .navbar-burger burger aria-label="menu" aria-expanded="false" data-target="navbar-id">
+      <span aria-hidden="true">
+      <span aria-hidden="true">
+      <span aria-hidden="true">
+    
+  
 
-$maybe docsUrl <- mDocsUrl
-  <h2>
-    Docs
+  <div id="navbar-id" .navbar-menu>
+    <div .navbar-start>
 
-  <p>
-    <a href="#{showBaseUrl docsUrl}">
-      Docs Site
+      $maybe docsUrl <- mDocsUrl
+        <a .navbar-item href="#{showBaseUrl docsUrl}">
+          Documentation
+      
+
+    <div .navbar-end>
+      $maybe _ <- maid
+        <div .navbar-item>
+          <div .buttons>
+            <a .button is-light href=@{AuthR LogoutR}>
+              Log out
+      $nothing
+        <div .navbar-item>
+          <div .buttons>
+            <a .button is-primary href=@{AuthR registerR}>
+              <strong>Sign up
+            
+            <a .button is-light href=@{AuthR LoginR}>
+              Log in
+          
+          
+            
+          
 
 
-$maybe _ <- maid
-  <h2>
-    Auth
-  <p>
-    <a href=@{AuthR LogoutR}>
-      Logout
-
-
-  <h2>
-    Reports
-
-  <p>
-    <a href=@{ReportNextR}>
-      Next
-    <a href=@{ReportAgendaR}>
-      Agenda
-
-  <h2>
-    Files
-
-  <p>
-    <a href=@{FilesR}>
-      Files
-
-  <h2>
-    Cli Tryout
-  <p>
-    <a href=@{FileR ["example.smos"]}>
-      Cli example
-
-$nothing
-  <h2>
-    Auth
-  <p>
-    <a href=@{AuthR LoginR}>
-      Login
-    <a href=@{AuthR registerR}>
-      Register
+<section .section>
+  <a .button .is-centered href=@{FileR ["example.smos"]}>
+    Open Editor

@@ -1,7 +1,0 @@
-^{dirForestWidget df}
-
-<details>
-  <summary>
-    Raw structure
-  <pre>
-    #{ppShow df}

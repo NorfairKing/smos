@@ -9,6 +9,7 @@ export SMOS_SERVER_PORT=8001
 export SMOS_WEB_SERVER_PORT=8000
 export SMOS_SERVER_LOG_LEVEL=Debug
 export SMOS_WEB_SERVER_LOG_LEVEL=Debug
+export SMOS_WEB_SERVER_DOCS_URL=https://docs.smos.online
 
 
 nice -n19 stack install :smos-server :smos-web-server \

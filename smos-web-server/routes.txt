@@ -1,13 +1,9 @@
 / HomeR GET
 
+-- Editor
 /file/*Texts FileR GET
 /ws/instance/*Texts InstanceR GET
 /ws/resize ResizeR POST
-
-/files FilesR GET
-
-/report/next ReportNextR GET
-/report/agenda ReportAgendaR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

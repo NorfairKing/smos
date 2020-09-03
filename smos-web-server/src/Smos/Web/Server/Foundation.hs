@@ -12,13 +12,10 @@ module Smos.Web.Server.Foundation where
 
 import Control.Arrow (left)
 import Control.Concurrent.STM
-import Control.Monad
 import Control.Monad.Logger
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Base16 as Base16
-import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -33,7 +30,7 @@ import Servant.Auth.Client (Token (..))
 import Servant.Client
 import Smos.Client
 import Smos.Instance
-import Smos.Web.Server.Constants
+import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import qualified System.FilePath as FP
 import Text.Hamlet
@@ -60,7 +57,9 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     pageContent <- widgetToPageContent $ do
-      addStylesheetRemote "https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"
+      addStylesheet $ StaticR bulma_css
+      addStylesheet $ StaticR font_awesome_css
+      toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
       $(widgetFile "default-body")
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")

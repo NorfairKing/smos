@@ -40,6 +40,18 @@ let
         # We put these remote assets in place before the build so that they do not get fetched during the build
         packages.smos-web-server.components.library.preBuild =
           let
+            bulmaCSS = builtins.fetchurl {
+              url = "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css";
+              sha256 = "sha256:0lhpzahlszi5nr82n3sny5fjk4k1vaq11rdrddjmka23np53klqg";
+            };
+            fontawesomeCSS = builtins.fetchurl {
+              url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
+              sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
+            };
+            faviconICO = builtins.fetchurl {
+              url = "https://cs-syd.eu/logo/res/favicon.ico";
+              sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
+            };
             jqueryJS = builtins.fetchurl {
               url = "https://code.jquery.com/jquery-3.3.1.min.js";
               sha256 = "sha256:1vq2bp290rhby5l09dv5khqwv3ysnzbddggbgk6m4hl9y9pl42hn";
@@ -62,11 +74,14 @@ let
             };
           in
             ''
-              cp ${jqueryJS}      static/jquery.js
-              cp ${xtermJS}       static/xterm.js
-              cp ${xtermCSS}      static/xterm.css
-              cp ${xtermAttachJS} static/xterm-attach.js
-              cp ${xtermFitJS}    static/xterm-fit.js
+              cp ${bulmaCSS}       static/bulma.css
+              cp ${fontawesomeCSS} static/font-awesome.css
+              cp ${faviconICO}     static/favicon.ico
+              cp ${jqueryJS}       static/jquery.js
+              cp ${xtermJS}        static/xterm.js
+              cp ${xtermCSS}       static/xterm.css
+              cp ${xtermAttachJS}  static/xterm-attach.js
+              cp ${xtermFitJS}     static/xterm-fit.js
             '';
 
         # The smos docs site
