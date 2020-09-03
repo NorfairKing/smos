@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Smos.Web.Server.Handler.Cli
+module Smos.Web.Server.Handler.File
   ( getFileR,
     getInstanceR,
     postResizeR,
