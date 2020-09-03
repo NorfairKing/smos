@@ -283,12 +283,18 @@ drawFileEditorCursor workflowDir keyMap s SmosFileEditorCursor {..} = do
 drawOpenedFilePath :: Path Abs Dir -> Path Abs File -> Widget n
 drawOpenedFilePath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
   Nothing -> drawFilePath currentFile
-  Just rf -> drawFilePath $ [reldir|workflow|] </> rf
+  Just rf -> drawFilePath $ workflowRelDir </> rf
 
 drawOpenedDirPath :: Path Abs Dir -> Path Abs Dir -> Widget n
-drawOpenedDirPath workflowDir currentDir = case stripProperPrefix workflowDir currentDir of
-  Nothing -> drawDirPath currentDir
-  Just rf -> drawDirPath $ [reldir|workflow|] </> rf
+drawOpenedDirPath workflowDir currentDir =
+  if workflowDir == currentDir
+    then drawDirPath workflowRelDir
+    else case stripProperPrefix workflowDir currentDir of
+      Nothing -> drawDirPath currentDir
+      Just rd -> drawDirPath $ workflowRelDir </> rd
+
+workflowRelDir :: Path Rel Dir
+workflowRelDir = [reldir|workflow|]
 
 drawSmosFileCursor :: Select -> SmosFileCursor -> Drawer
 drawSmosFileCursor s =
