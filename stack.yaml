@@ -146,11 +146,11 @@ extra-deps:
   # nix-sha256: sha256:1mdi8bpd9i2l4rcmcr19c5wyghasiwkzymskidn7fan57wmj921v
 
 - git: https://github.com/NorfairKing/cursor
-  commit: 043cab71318b752bde9dcb79db9ed60a58ecdccf
+  commit: 421a9b67d300087145000116e4ebe12749e30dac
   subdirs:
     - cursor
     - cursor-gen
-  # nix-sha256: sha256:1k1r06rdx1ykrg2qhsmx3h2xd3r255m1kafmwdmn47mnrkm68v2x
+  # nix-sha256: sha256:0a98z08a8nwwjnynzgxriklva1lax0510ydfcmhkg6c35m4k5dn5
 
 - git: https://github.com/NorfairKing/validity
   commit: 44c45bc2a858a2c4c0c1e75c5ae9a649456f0020
