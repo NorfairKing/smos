@@ -7,4 +7,4 @@ let
     sha256 = "sha256:1snwsmn8qcbvilhn0wqspqz3zkb0dhrb8bpbclbazi94dsgksxjy";
   };
 in
-import (nixBuildUncached + "/default.nix")
+import (nixBuildUncached + "/default.nix") { inherit pkgs; }
