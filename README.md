@@ -5,7 +5,7 @@
 
 A semantic tree-based editor to replace Emacs Org Mode
 
-See [the documentation site](https://smos.cs-syd.eu) for more information.
+See [the documentation site](https://docs.smos.online) for more information.
 
 <img src="logo.png" width="200" alt="logo"/>
 
@@ -68,4 +68,4 @@ To use it, use `cachix use smos` or add the appropriate details to your nixos co
 
 Smos is free and open-source software.
 Building it takes time, energy and money.
-Please consider supporting the project at https://smos.cs-syd.eu/support
+Please consider supporting the project at https://docs.smos.online/support
