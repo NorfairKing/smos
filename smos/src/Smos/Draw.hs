@@ -392,8 +392,8 @@ drawEntryCTree (CNode t cf) =
       etws <- mapM drawEntryCTree $ NE.toList ts
       pure $ ew <=> padLeft defaultPadding (vBox etws)
 
-completedForestNumbersWidget :: Maybe TodoState -> EntryDrawContext -> Maybe (Widget t)
-completedForestNumbersWidget mts edc =
+completedForestNumbersWidget :: EntryDrawContext -> Maybe (Widget t)
+completedForestNumbersWidget edc =
   let es@EntryStats {..} = goF (entryDrawContextForest edc)
    in if es == mempty
         then Nothing
@@ -507,7 +507,7 @@ drawEntryCursor s tc edc e = do
                           not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
                         ]
               ],
-              maybeToList $ completedForestNumbersWidget (entryState $ rebuildEntryCursor ec) edc,
+              maybeToList $ completedForestNumbersWidget edc,
               maybeToList $ collapsedForestNumbersWidget tc edc
             ],
         drawIfM collapseEntryShowContents $
@@ -556,7 +556,7 @@ drawEntry tc edc e = do
                       not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
                     ]
               ],
-              maybeToList $ completedForestNumbersWidget (entryState $ collapseEntryValue e) edc,
+              maybeToList $ completedForestNumbersWidget edc,
               maybeToList $ collapsedForestNumbersWidget tc edc
             ],
         drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
