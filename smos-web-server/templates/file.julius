@@ -43,6 +43,54 @@ window.onload = async function() {
   // Get the container element
   terminalContainer = document.querySelector('#terminal')
 
+  
+  const col_S_rebase03 = '#002b36';
+  const col_S_rebase02 = '#073642';
+  const col_S_rebase01 = '#586e75';
+  const col_S_rebase00 = '#657b83';
+  const col_S_rebase0  = '#839496';
+  const col_S_rebase1  = '#93a1a1';
+  const col_S_rebase2  = '#eee8d5';
+  const col_S_rebase3  = '#fdf6e3';
+  const col_S_yellow   = '#b58900';
+  const col_S_orange   = '#cb4b16';
+  const col_S_red      = '#dc322f';
+  const col_S_magenta  = '#d33682';
+  const col_S_violet   = '#6c71c4';
+  const col_S_blue     = '#268bd2';
+  const col_S_cyan     = '#2aa198';
+  const col_S_green    = '#859900';
+
+  const light = false;
+
+  var col_S_base03;
+  var col_S_base02;
+  var col_S_base01;
+  var col_S_base00;
+  var col_S_base0;
+  var col_S_base1;
+  var col_S_base2;
+  var col_S_base3;
+
+  if (light) {
+    col_S_base03 = col_S_rebase3;
+    col_S_base02 = col_S_rebase2;
+    col_S_base01 = col_S_rebase1;
+    col_S_base00 = col_S_rebase0;
+    col_S_base0  = col_S_rebase00;
+    col_S_base1  = col_S_rebase01;
+    col_S_base2  = col_S_rebase02;
+    col_S_base3  = col_S_rebase03;
+  } else {
+    col_S_base03 = col_S_rebase03;
+    col_S_base02 = col_S_rebase02;
+    col_S_base01 = col_S_rebase01;
+    col_S_base00 = col_S_rebase00;
+    col_S_base0  = col_S_rebase0;
+    col_S_base1  = col_S_rebase1;
+    col_S_base2  = col_S_rebase2;
+    col_S_base3  = col_S_rebase3;
+  }
   // Create a terminal
   const options = {
     'cursorBlink': true,
@@ -50,34 +98,34 @@ window.onload = async function() {
     'fontWeightBold': '900',
     'fontFamily': 'monospace',
     'theme': {
-      'foreground': '#657b83',
-      'background': '#001b1a',
-      'cursor': '#93a1a1',
-      'cursorAccent': '#93a1a1',
+      'foreground': col_S_base00,
+      'background': col_S_base03,
+      'cursor': col_S_base1,
+      'cursorAccent': col_S_base1,
 
-      'black': '#073642',
-      'brightBlack': '#001b1a',
+      'black': col_S_base02,
+      'brightBlack': col_S_base03,
 
-      'red': '#dc322f',
-      'brightRed': '#cb4b16',
+      'red': col_S_red,
+      'brightRed': col_S_orange,
 
-      'green': '#859900',
-      'brightGreen': '#586e75',
+      'green': col_S_green,
+      'brightGreen': col_S_base01,
 
-      'yellow': '#b58900',
-      'brightYellow': '#657b83',
+      'yellow': col_S_yellow,
+      'brightYellow': col_S_base00,
 
-      'blue': '#268bd2',
-      'brightBlue': '#839496',
+      'blue': col_S_blue,
+      'brightBlue': col_S_base0,
 
-      'magenta': '#d33682',
-      'brightMagenta': '#6c71c4',
+      'magenta': col_S_magenta,
+      'brightMagenta': col_S_violet,
 
-      'cyan': '#2aa198',
-      'brightCyan': '#93a1a1',
+      'cyan': col_S_cyan,
+      'brightCyan': col_S_base1,
 
-      'white': '#eee8d5',
-      'brightWhite': '#fdf6e3'
+      'white': col_S_base2,
+      'brightWhite': col_S_base3
     }
   };
   const term = new Terminal(options);
@@ -123,8 +171,8 @@ window.onload = async function() {
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(data){
-        // console.log("Succeeded in resizing the terminal.");
-        // console.log(data);
+        console.log("Succeeded in resizing the terminal.");
+        console.log(data);
       },
       failure: function(data){
         console.log("Failed to resize the terminal.");
