@@ -394,12 +394,11 @@ drawEntryCTree (CNode t cf) =
 
 completedForestNumbersWidget :: Maybe TodoState -> EntryDrawContext -> Maybe (Widget t)
 completedForestNumbersWidget mts edc =
-  let es = goF (entryDrawContextForest edc)
-      es'@EntryStats {..} = es <> countTodo mts
+  let es@EntryStats {..} = goF (entryDrawContextForest edc)
    in if es == mempty
         then Nothing
         else
-          if es' == mempty || (justOne es' && es /= es)
+          if es == mempty || justOne es
             then Nothing
             else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
   where
