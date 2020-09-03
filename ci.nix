@@ -1,6 +1,5 @@
 let
-  pkgsv = import ./nix/pkgsv.nix;
-  pkgs = pkgsv { overlays = [ (import ./nix/ci-overlay.nix) ]; };
+  pkgs = import ./nix/ci-pkgs.nix;
   pre-commit-hooks = import ./nix/pre-commit.nix;
 in
 pkgs.smosPackages // {
