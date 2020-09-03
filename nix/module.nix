@@ -29,6 +29,13 @@ in
                       example = 8000;
                       description = "The port to serve sync requests on";
                     };
+                  web-url =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      default = null;
+                      example = "https://smos.online";
+                      description = "The url for the web server to refer to";
+                    };
                 };
             };
         };
@@ -116,8 +123,9 @@ in
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SMOS_DOCS_SITE_PORT" =
-                  "${builtins.toString port}";
+                "SMOS_DOCS_SITE_PORT" = "${builtins.toString port}";
+              } // optionalAttrs (!(builtins.isNull web-url)) {
+                "SMOS_DOCS_SITE_WEB_SERVER_URL" = "${web-url}";
               };
             script =
               ''

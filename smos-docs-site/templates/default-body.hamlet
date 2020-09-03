@@ -2,7 +2,12 @@
   <div .hero-body>
     <div .container>
       <h1 .title>
-        Smos
+        $maybe weburl <- appWebserverUrl
+          <a .cancela href=#{weburl}>
+            Smos
+        $nothing
+          <a .cancela href=@{HomeR}>
+            Smos
       <h2 .subtitle>
         A comprehensive self-management system
 

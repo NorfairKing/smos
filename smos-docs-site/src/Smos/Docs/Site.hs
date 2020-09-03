@@ -20,4 +20,11 @@ smosDocsSite = do
     Just s -> case readMaybe s of
       Nothing -> die "Unable to read port environment variable."
       Just p -> pure p
-  Yesod.warp port App {appAssets = assets, appCasts = casts}
+  urlVar <- lookupEnv "SMOS_DOCS_SITE_WEB_SERVER_URL"
+  Yesod.warp
+    port
+    App
+      { appWebserverUrl = urlVar,
+        appAssets = assets,
+        appCasts = casts
+      }

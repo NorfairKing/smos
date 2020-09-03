@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -29,12 +30,18 @@ import Text.Read
 import Yesod
 import Yesod.EmbeddedStatic
 
-data App = App {appAssets :: EmbeddedStatic, appCasts :: EmbeddedStatic}
+data App
+  = App
+      { appWebserverUrl :: Maybe String,
+        appAssets :: EmbeddedStatic,
+        appCasts :: EmbeddedStatic
+      }
 
 mkYesodData "App" $(parseRoutesFile "routes")
 
 instance Yesod App where
   defaultLayout widget = do
+    App {..} <- getYesod
     pageContent <-
       widgetToPageContent $ do
         addStylesheet $ AssetsStaticR bulma_css
