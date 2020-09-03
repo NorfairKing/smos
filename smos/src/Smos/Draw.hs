@@ -130,7 +130,8 @@ drawInfo km =
                   withAttr keyAttr $ txt kpt,
                   str " key"
                 ],
-              str "for an overview of the available commands."
+              str "for an overview of the available commands",
+              str "or visit https://docs.smos.online"
             ],
         [ str " ",
           str $ "Version " <> showVersion version,
@@ -140,7 +141,7 @@ drawInfo km =
   where
     lookupStartingActionInKeymap :: Maybe Text
     lookupStartingActionInKeymap =
-      let emptyMatchers = fileKeyMapEmptyMatchers $ keyMapFileKeyMap km
+      let emptyMatchers = keyMapAnyKeyMap km
           matchAction a = actionName a == actionName selectHelp
           matchActionUsing a = actionUsingName a == actionName selectHelp
           matchKeyMapping =
