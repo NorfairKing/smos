@@ -41,6 +41,7 @@ import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap (MetaMap (..))
+import qualified Smos.Sync.Client.MetaMap as MM
 import Smos.Sync.Client.OptParse
 import System.Exit
 import System.FileLock
@@ -163,7 +164,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
                         (Mergeful.syncRequestKnownButChangedItems s)
                   }
       syncedChangedAndDeleted =
-        M.foldlWithKey go1 Mergeful.initialSyncRequest $ metaMapFiles clientMetaDataMap
+        M.foldlWithKey go1 Mergeful.initialSyncRequest $ MM.metaMapFiles clientMetaDataMap
       go2 ::
         Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile ->
         Path Rel File ->
@@ -175,7 +176,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
    in M.foldlWithKey
         go2
         syncedChangedAndDeleted
-        (contentsMapFiles contentsMap `M.difference` metaMapFiles clientMetaDataMap)
+        (contentsMapFiles contentsMap `M.difference` MM.metaMapFiles clientMetaDataMap)
 
 clientMergeInitialSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
 clientMergeInitialSyncResponse contentsDir ignoreFiles Mergeful.SyncResponse {..} = do

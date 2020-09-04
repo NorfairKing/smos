@@ -110,7 +110,7 @@ data SyncFileMeta
       { syncFileMetaHash :: SHA256,
         syncFileMetaTime :: Mergeful.ServerTime
       }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity SyncFileMeta
 

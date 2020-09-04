@@ -22,6 +22,7 @@ library:
   - containers
   - cookie
   - deepseq
+  - dirforest
   - envparse
   - filelock
   - filepath
@@ -49,8 +50,8 @@ library:
   - smos-report
   - smos-version
   - stm
-  - time
   - text
+  - time
   - typed-uuid
   - unliftio
   - uuid

@@ -29,6 +29,9 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
+- /home/syd/src/dirforest/dirforest
+- /home/syd/src/dirforest/genvalidity-dirforest
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
@@ -124,12 +127,12 @@ extra-deps:
     - fuzzy-time-gen
   # nix-sha256: sha256:056k8maj6bq6gfbgq8xjxphgn1x97n34gqwh2mx55srmmdjzdnic
 
-- git: https://github.com/NorfairKing/dirforest
-  commit: 0698877dc9f2dedf2289e94b25f52106a765324e
-  subdirs:
-    - dirforest
-    - genvalidity-dirforest
-  # nix-sha256: sha256:0nlw1dlvyxrfcq6c4mvibv1szskadhnb77l9wryaixljnfcf7z59
+# - git: https://github.com/NorfairKing/dirforest
+#   commit: 0698877dc9f2dedf2289e94b25f52106a765324e
+#   subdirs:
+#     - dirforest
+#     - genvalidity-dirforest
+#   # nix-sha256: sha256:0nlw1dlvyxrfcq6c4mvibv1szskadhnb77l9wryaixljnfcf7z59
 
 - git: https://github.com/NorfairKing/cursor-dirforest
   commit: c4c8b736edab7604561082742a1d7fdf7881fa9c

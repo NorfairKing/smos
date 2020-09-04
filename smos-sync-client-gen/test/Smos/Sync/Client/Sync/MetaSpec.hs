@@ -20,7 +20,6 @@ import Test.Validity
 
 spec :: Spec
 spec = do
-  describe "makeClientMetaData" $ it "produces valid meta maps" $ producesValidsOnValids2 makeClientMetaData
   clientDBSpec $ describe "writeClientMetadata" $ do
     it "can read exactly what was just written" $ \pool ->
       forAllValid $ \m -> do

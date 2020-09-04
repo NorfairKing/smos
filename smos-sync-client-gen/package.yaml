@@ -19,6 +19,7 @@ library:
   - bytestring
   - containers
   - genvalidity
+  - genvalidity-dirforest
   - genvalidity-hspec
   - hspec
   - hspec-core
@@ -100,6 +101,7 @@ benchmarks:
     dependencies:
     - QuickCheck
     - criterion
+    - genvalidity
     - genvalidity-criterion
     - smos-api
     - smos-client
@@ -109,4 +111,3 @@ benchmarks:
     - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen
-    - genvalidity
