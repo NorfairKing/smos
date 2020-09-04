@@ -7,12 +7,9 @@ module Smos.Sync.Client.ContentsMap.Gen where
 import Data.ByteString
 import qualified Data.DirForest as DF
 import Data.GenValidity
-import qualified Data.Map as M
 import Data.Maybe
-import Debug.Trace
 import Path
 import Smos.API.Gen ()
-import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.TestUtils
@@ -227,7 +224,7 @@ twoChangedMapsAndTheirUnionsWith cm = do
   (cm1, cm1m) <- genValid `suchThatMap` (\cm1 -> (,) cm1 <$> CM.union cm1 cm)
   (cm2, cm12m) <- genValid `suchThatMap` (\cm2 -> (,) cm2 <$> CM.union cm2 cm1m)
   (cm3, cm123m) <- changedContentsMap cm1 `suchThatMap` (\cm3 -> (,) cm3 <$> CM.union cm3 cm12m)
-  (cm4, cm1234m) <- changedContentsMap cm2 `suchThatMap` (\cm4 -> (,) cm4 <$> CM.union cm4 cm123m)
+  (cm4, _) <- changedContentsMap cm2 `suchThatMap` (\cm4 -> (,) cm4 <$> CM.union cm4 cm123m)
   let cm12 = fromJust $ CM.unions [cm1, cm2, cm] -- Safe because we just checked above
   let cm23 = fromJust $ CM.unions [cm2, cm3, cm] -- Safe because we just checked above
   let cm34 = fromJust $ CM.unions [cm3, cm4, cm] -- Safe because we just checked above

@@ -8,7 +8,6 @@ import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()

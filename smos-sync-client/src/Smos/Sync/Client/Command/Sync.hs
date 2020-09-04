@@ -16,7 +16,6 @@ import Control.Monad.Reader
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M

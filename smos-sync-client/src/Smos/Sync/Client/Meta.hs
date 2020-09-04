@@ -5,17 +5,12 @@ module Smos.Sync.Client.Meta where
 
 import Control.Monad.Reader
 import qualified Data.Map as M
-import qualified Data.Mergeful as Mergeful
 import Database.Persist.Sql as DB
 import Path
-import Smos.API.SHA256 as SHA256
-import Smos.Client
-import Smos.Sync.Client.Contents
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.MetaMap (MetaMap (..))
 import qualified Smos.Sync.Client.MetaMap as MM
-import Smos.Sync.Client.OptParse.Types
 
 readClientMetadata :: MonadIO m => SqlPersistT m MetaMap
 readClientMetadata = do

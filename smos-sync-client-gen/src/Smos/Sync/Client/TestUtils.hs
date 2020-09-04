@@ -13,13 +13,11 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
 import Data.GenValidity.DirForest
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Pool
-import qualified Data.Set as S
 import Database.Persist.Sqlite as DB
 import Lens.Micro
 import Path

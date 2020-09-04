@@ -13,13 +13,11 @@ module Smos.Sync.Client.MetaMap
 where
 
 import Control.DeepSeq
-import Control.Monad
 import qualified Data.DirForest as DF
 import Data.DirForest (DirForest)
 import Data.Foldable
 import Data.List (sortOn)
 import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Ord
 import Data.Validity
 import Data.Validity.ByteString ()

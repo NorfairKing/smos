@@ -17,14 +17,12 @@ module Smos.Sync.Client.ContentsMap
 where
 
 import Control.DeepSeq
-import Control.Monad
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
 import Data.Foldable
 import Data.List (sortOn)
 import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Ord
 import Data.Validity
 import Data.Validity.ByteString ()
