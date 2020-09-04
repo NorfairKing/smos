@@ -317,6 +317,7 @@ defaultHelpKeyMap =
             exactKey KEnd helpEnd,
             exactChar 'G' helpEnd,
             exactChar '/' helpSelectSearch,
+            exactKey KEsc selectEditor,
             exactChar 'q' selectEditor
           ],
       helpKeyMapSearchMatchers =

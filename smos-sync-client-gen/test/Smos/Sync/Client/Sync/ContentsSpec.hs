@@ -5,15 +5,11 @@ module Smos.Sync.Client.Sync.ContentsSpec
   )
 where
 
-import qualified Data.Mergeful as Mergeful
-import Data.Pool
-import Database.Persist.Sqlite as DB
+import Data.GenValidity.ByteString ()
+import Data.GenValidity.Path ()
 import Path
 import Path.IO
-import Smos.API.SHA256 as SHA256
 import Smos.Sync.Client.Contents
-import Smos.Sync.Client.DB
-import Smos.Sync.Client.TestUtils
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity
@@ -84,7 +80,6 @@ spec =
           forAllValid $ \contents1 ->
             forAllValid $ \contents2 ->
               withSystemTempDir "smos-sync-client-contents" $ \tdir -> do
-                let af1 = tdir </> rf1
                 case parseRelDir (fromRelFile rf1) of
                   Nothing -> pure ()
                   Just rd -> do
@@ -100,7 +95,6 @@ spec =
             forAllValid $ \contents1 ->
               forAllValid $ \contents2 ->
                 withSystemTempDir "smos-sync-client-contents" $ \tdir -> do
-                  let af1 = tdir </> rf1
                   case parseRelDir (fromRelFile rf1) of
                     Nothing -> pure ()
                     Just rd -> do

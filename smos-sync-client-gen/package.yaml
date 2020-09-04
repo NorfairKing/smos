@@ -62,9 +62,11 @@ tests:
     - bytestring
     - containers
     - genvalidity
+    - genvalidity-bytestring
     - genvalidity-hspec
     - genvalidity-hspec-aeson
     - genvalidity-hspec-optics
+    - genvalidity-path
     - hspec
     - hspec-core
     - mergeful

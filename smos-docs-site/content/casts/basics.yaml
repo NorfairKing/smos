@@ -1,3 +1,5 @@
+working-dir: ../../demo-workflow
+workflow-dir: ../../demo-workflow
 file: foo.smos
 input:
 - type: "smos foo.smos\n"

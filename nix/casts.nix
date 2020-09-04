@@ -33,6 +33,8 @@ let
             stty sane
 
             export PS1="\\$ "
+            set -e
+            set pipefail
           '';
         in
           ''

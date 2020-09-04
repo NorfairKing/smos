@@ -129,7 +129,7 @@ extra-deps:
   subdirs:
     - dirforest
     - genvalidity-dirforest
-  # nix-sha256: sha256:12scdr2wsfi82w5igs2bz4kaf0qdx0fjcxvxp1gddcibb035pnaa
+  # nix-sha256: sha256:08s3finqpbxvbq69248cyrljmwza2pp2rn370pv654l55rjbkjjx
 
 - git: https://github.com/NorfairKing/cursor-dirforest
   commit: c4c8b736edab7604561082742a1d7fdf7881fa9c
