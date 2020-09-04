@@ -105,9 +105,7 @@ spec =
                     Nothing -> pure ()
                     Just rd -> do
                       let rf2' = rd </> rd2 </> rf2
-                      print ("Putting this in the way:", tdir </> rf1)
                       writeFileSafely tdir rf1 contents1
-                      print ("Trying to write this:", tdir </> rf2')
                       writeFileSafely tdir rf2' contents2
                       let af2 = tdir </> rf2'
                       contents' <- readFileSafely af2

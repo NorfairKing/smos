@@ -57,45 +57,31 @@ writeFileSafely top rf bs = liftIO $ do
   let af = top </> rf
   let afp = fromAbsFile af
       writeUncarefully = do
-        putStrLn "Writing uncarefully"
-        print ("creating dir", parent af)
         ensureDir (parent af)
-        print ("writing file", afp)
         SB.writeFile afp bs
       writeOverDir = forM_ (parseAbsDir afp :: Maybe (Path Abs Dir)) $ \ad -> do
-        putStrLn "Writing over dir"
-        print ("writing over dir", ad)
-        removeDirRecur ad
+        ignoringAbsence $ removeDirRecur ad
         writeUncarefully
       removeFilesUpwards = do
-        putStrLn "Removing files upward"
-        print ("starting at", parent rf)
         go (parent rf)
-        writeUncarefully
+        writeOverDir
         where
           go rd = case parseRelFile (FP.dropTrailingPathSeparator $ fromRelDir rd) of
             Nothing -> pure ()
             Just rf' -> do
-              print ("Checking if this file exists", top </> rf')
               fileExists <- doesFileExist $ top </> rf'
               if fileExists
                 then do
-                  print ("Removing file", top </> rf')
                   removeFile $ top </> rf'
                 else
                   let p = parent rd
                    in if p == [reldir|./|]
                         then pure ()
                         else do
-                          print ("Recursing up", p)
                           go p
   catchJust
-    (\(e :: IOException) -> if ioe_type e == AlreadyExists then Just e else Nothing)
-    ( catchJust
-        (\(e :: IOException) -> if ioe_type e == InappropriateType then Just e else Nothing)
-        writeUncarefully
-        (const writeOverDir)
-    )
+    (\(e :: IOException) -> if ioe_type e == AlreadyExists || ioe_type e == InappropriateType then Just e else Nothing)
+    writeUncarefully
     (const removeFilesUpwards)
 
 -- ensureDir (parent af)
