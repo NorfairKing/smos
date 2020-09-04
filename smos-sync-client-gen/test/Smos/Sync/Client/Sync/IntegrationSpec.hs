@@ -605,13 +605,33 @@ twoClientsFromBothClientsConcurrentlySpec =
 twoClientsNastySyncSpec :: SpecWith ClientEnv
 twoClientsNastySyncSpec =
   describe "Nasty sync" $ do
-    it "does not go horribly wrong when clients add foo and foo/bar respectively" $ \cenv ->
-      withNewRegisteredUser cenv $ \r ->
-        withSyncClient cenv r $ \c1 ->
-          withSyncClient cenv r $ \c2 -> do
-            setupClientContents c1 $ CM.singleton [relfile|foo|] "abc"
-            setupClientContents c2 $ CM.singleton [relfile|foo/bar|] "cde"
-            fullySyncTwoClients c1 c2
-            cm1 <- readClientContents c1
-            cm2 <- readClientContents c2
-            cm1 `shouldBe` cm2
+    it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar respectively" $ \cenv ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          withNewRegisteredUser cenv $ \r ->
+            withSyncClient cenv r $ \c1 ->
+              withSyncClient cenv r $ \c2 -> do
+                let cm1 = CM.singleton [relfile|foo|] bs1
+                    cm2 = CM.singleton [relfile|foo/bar|] bs2
+                setupClientContents c1 cm1
+                setupClientContents c2 cm2
+                fullySyncTwoClients c1 c2
+                cm1' <- readClientContents c1
+                cm2' <- readClientContents c2
+                cm1' `shouldBe` cm2
+                cm2' `shouldBe` cm2
+    it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar/quux respectively" $ \cenv ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          withNewRegisteredUser cenv $ \r ->
+            withSyncClient cenv r $ \c1 ->
+              withSyncClient cenv r $ \c2 -> do
+                let cm1 = CM.singleton [relfile|foo|] bs1
+                    cm2 = CM.singleton [relfile|foo/bar/quux|] bs2
+                setupClientContents c1 cm1
+                setupClientContents c2 cm2
+                fullySyncTwoClients c1 c2
+                cm1' <- readClientContents c1
+                cm2' <- readClientContents c2
+                cm1' `shouldBe` cm2
+                cm2' `shouldBe` cm2
