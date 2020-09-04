@@ -1,5 +1,3 @@
-
-
 function initWebsocket() {
   // Build the websocket
   const loc = window.location;
@@ -13,8 +11,8 @@ function initWebsocket() {
   }
   // Listen for the close connection event
   socket.onclose = function(e) {
-    // console.log("Disconnected: ");
-    // console.log(e);
+    console.log("Disconnected: ");
+    console.log(e);
 
     // Remove the terminal and go back to the previous page.
     terminal.parentNode.removeChild(terminal);
@@ -171,10 +169,10 @@ window.onload = async function() {
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(data){
-        console.log("Succeeded in resizing the terminal.");
-        console.log(data);
+        // console.log("Succeeded in resizing the terminal.");
+        // console.log(data);
       },
-      failure: function(data){
+      error: function(data){
         console.log("Failed to resize the terminal.");
         console.log(data);
         resize(); // Try again

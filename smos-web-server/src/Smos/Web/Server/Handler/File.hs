@@ -65,8 +65,6 @@ postResizeR :: Handler Value
 postResizeR = do
   jb <- parseCheckJsonBody
   withLogin' $ \un _ -> do
-    let makeError :: Text -> Value
-        makeError txt = object ["error" .= txt]
     case jb of
       Aeson.Error err ->
         sendStatusJSON badRequest400 $
@@ -79,6 +77,9 @@ postResizeR = do
           Just instanceHandle -> do
             liftIO $ smosInstanceResize instanceHandle terminalSize
             pure $ object ["success" .= True]
+  where
+    makeError :: Text -> Value
+    makeError txt = object ["error" .= txt]
 
 communicate :: SmosInstanceHandle -> WebSocketsT Handler ()
 communicate sih = do
