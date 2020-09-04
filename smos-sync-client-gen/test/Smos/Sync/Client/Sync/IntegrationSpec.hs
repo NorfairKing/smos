@@ -1,8 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+
 module Smos.Sync.Client.Sync.IntegrationSpec
   ( spec,
   )
 where
 
+import Path
 import Servant.Client (ClientEnv)
 import Smos.Server.TestUtils
 import qualified Smos.Sync.Client.ContentsMap as CM
@@ -170,6 +174,7 @@ twoClientSpec = do
     twoClientsFromOneClientSpec
     twoClientsFromBothClientsSpec
     twoClientsFromBothClientsConcurrentlySpec
+    twoClientsNastySyncSpec
 
 twoClientsEmptySpec :: SpecWith ClientEnv
 twoClientsEmptySpec =
@@ -574,7 +579,7 @@ twoClientsFromBothClientsSpec = do
                     assertClientContents c2 m1
 
 twoClientsFromBothClientsConcurrentlySpec :: SpecWith ClientEnv
-twoClientsFromBothClientsConcurrentlySpec = do
+twoClientsFromBothClientsConcurrentlySpec =
   describe "From two clients, concurrently" $ do
     it "succesfully syncs two of the same client concurrently" $ \cenv ->
       forAllValid $ \m1 ->
@@ -596,3 +601,17 @@ twoClientsFromBothClientsConcurrentlySpec = do
                 cm1 <- readClientContents c1
                 cm2 <- readClientContents c2
                 cm1 `shouldBe` cm2
+
+twoClientsNastySyncSpec :: SpecWith ClientEnv
+twoClientsNastySyncSpec =
+  describe "Nasty sync" $ do
+    it "does not go horribly wrong when clients add foo and foo/bar respectively" $ \cenv ->
+      withNewRegisteredUser cenv $ \r ->
+        withSyncClient cenv r $ \c1 ->
+          withSyncClient cenv r $ \c2 -> do
+            setupClientContents c1 $ CM.singleton [relfile|foo|] "abc"
+            setupClientContents c2 $ CM.singleton [relfile|foo/bar|] "cde"
+            fullySyncTwoClients c1 c2
+            cm1 <- readClientContents c1
+            cm2 <- readClientContents c2
+            cm1 `shouldBe` cm2
