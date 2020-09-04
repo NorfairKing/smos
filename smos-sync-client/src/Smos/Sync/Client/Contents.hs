@@ -6,6 +6,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
@@ -17,32 +18,17 @@ import Path.IO
 import Smos.API
 import Smos.Report.Streaming
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
+import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.OptParse.Types
 
 readFilteredSyncFiles :: IgnoreFiles -> Path Abs Dir -> IO ContentsMap
-readFilteredSyncFiles igf dir = do
-  let filePred =
-        case igf of
-          IgnoreNothing -> const True
-          IgnoreHiddenFiles -> not . isHidden
-  fs <- fromMaybe [] <$> forgivingAbsence (snd <$> listDirRecurRel dir)
-  fmap (ContentsMap . M.fromList . catMaybes)
-    $ forM fs
-    $ \rp ->
-      if filePred rp
-        then do
-          mContents <- readFileSafely $ dir </> rp
-          pure $ (,) rp <$> mContents
-        else pure Nothing -- No need to even read the file, right
+readFilteredSyncFiles igf dir =
+  case igf of
+    IgnoreNothing -> readSyncFiles dir
+    IgnoreHiddenFiles -> ContentsMap <$> DF.readNonHidden dir (SB.readFile . fromAbsFile)
 
 readSyncFiles :: Path Abs Dir -> IO ContentsMap
-readSyncFiles dir = do
-  fs <- snd <$> listDirRecurRel dir
-  fmap (ContentsMap . M.fromList . catMaybes)
-    $ forM fs
-    $ \rp -> do
-      mContents <- readFileSafely $ dir </> rp
-      pure $ (,) rp <$> mContents
+readSyncFiles dir = ContentsMap <$> DF.read dir (SB.readFile . fromAbsFile)
 
 -- |
 --
@@ -72,12 +58,11 @@ writeFileSafely af bs = liftIO $ do
 
 filterContentsMap :: IgnoreFiles -> ContentsMap -> ContentsMap
 filterContentsMap IgnoreNothing = id
-filterContentsMap IgnoreHiddenFiles =
-  ContentsMap . M.filterWithKey (\p _ -> not $ isHidden p) . contentsMapFiles
+filterContentsMap IgnoreHiddenFiles = CM.filterHidden
 
 makeContentsMap :: Mergeful.ClientStore (Path Rel File) (Path Rel File) SyncFile -> ContentsMap
 makeContentsMap Mergeful.ClientStore {..} =
-  ContentsMap $ M.map syncFileContents $
+  CM.fromListIgnoringCollisions $ M.toList $ M.map syncFileContents $
     M.unions
       [ clientStoreAddedItems,
         M.map Mergeful.timedValue clientStoreSyncedItems,

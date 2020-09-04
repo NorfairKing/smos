@@ -125,11 +125,11 @@ extra-deps:
   # nix-sha256: sha256:056k8maj6bq6gfbgq8xjxphgn1x97n34gqwh2mx55srmmdjzdnic
 
 - git: https://github.com/NorfairKing/dirforest
-  commit: b3f044a78bfb6ce5fde95092b9d193f8341beff1
+  commit: 8e30537d1628ff5bcb56f99d60a9384d5e9b46ea
   subdirs:
     - dirforest
     - genvalidity-dirforest
-  # nix-sha256: sha256:12scdr2wsfi82w5igs2bz4kaf0qdx0fjcxvxp1gddcibb035pnh3
+  # nix-sha256: sha256:12scdr2wsfi82w5igs2bz4kaf0qdx0fjcxvxp1gddcibb035pnaa
 
 - git: https://github.com/NorfairKing/cursor-dirforest
   commit: c4c8b736edab7604561082742a1d7fdf7881fa9c

@@ -1,7 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Sync.Client.TestUtils where
+module Smos.Sync.Client.TestUtils
+  ( module Smos.Sync.Client.TestUtils,
+    module Data.GenValidity.DirForest,
+  )
+where
 
 import Control.Concurrent.Async
 import Control.Monad
@@ -9,6 +13,9 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
+import Data.DirForest (DirForest)
+import qualified Data.DirForest as DF
+import Data.GenValidity.DirForest
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Pool
@@ -22,6 +29,7 @@ import Smos.API
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
+import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.Sync.Gen ()
@@ -64,17 +72,13 @@ assertContents dir m = do
 readContents :: Path Abs Dir -> IO ContentsMap
 readContents dir = do
   fs <- snd <$> listDirRecurRel dir
-  fmap (ContentsMap . M.fromList) $ forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
+  fmap CM.fromListIgnoringCollisions $ forM fs $ \f -> (,) f <$> SB.readFile (fromAbsFile $ dir </> f)
 
 setupClientContents :: SyncClientSettings -> ContentsMap -> IO ()
 setupClientContents (SyncClientSettings ss _) = setupContents (syncSetContentsDir ss)
 
 setupContents :: Path Abs Dir -> ContentsMap -> IO ()
-setupContents dir (ContentsMap m) = do
-  resetDir dir
-  let parents = S.map (parent . (dir </>)) (M.keysSet m)
-  forM_ parents ensureDir
-  forM_ (M.toList m) $ uncurry $ setupFile dir
+setupContents dir (ContentsMap df) = DF.write dir df $ \file contents -> SB.writeFile (fromAbsFile file) contents
 
 setupFile :: Path Abs Dir -> Path Rel File -> ByteString -> IO ()
 setupFile dir file contents = do

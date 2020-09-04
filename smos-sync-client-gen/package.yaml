@@ -18,6 +18,7 @@ library:
   - async
   - bytestring
   - containers
+  - dirforest
   - genvalidity
   - genvalidity-dirforest
   - genvalidity-hspec

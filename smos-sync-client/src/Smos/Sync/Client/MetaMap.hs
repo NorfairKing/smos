@@ -12,10 +12,6 @@ module Smos.Sync.Client.MetaMap
   )
 where
 
--- insert,
--- union,
--- unions,
-
 import Control.DeepSeq
 import Control.Monad
 import qualified Data.DirForest as DF
@@ -78,11 +74,3 @@ fromListIgnoringCollisions = MetaMap . foldl' go DF.empty . sortOn (Down . fst)
     go df (rf, sfm) = case DF.insertFile rf sfm df of
       Left _ -> df
       Right df' -> df'
--- insert :: Path Rel File -> SyncFileMeta -> MetaMap -> Maybe MetaMap
--- insert k v (MetaMap m) = constructValid $ MetaMap $ M.insert k v m
-
--- union :: MetaMap -> MetaMap -> MetaMap
--- union (MetaMap m1) (MetaMap m2) = MetaMap $ DF.union m1 m2
---
--- unions :: [MetaMap] -> MetaMap
--- unions = MetaMap . DF.unions . map metaMapDirForest

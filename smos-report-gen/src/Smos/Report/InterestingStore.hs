@@ -9,6 +9,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
 import Data.DirForest (DirForest (..), DirTree (..))
+import Data.Either
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.DirForest
@@ -47,7 +48,12 @@ instance GenValid InterestingStore where
     pure $ InterestingStore {..}
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance Validity InterestingStore
+instance Validity InterestingStore where
+  validate is@InterestingStore {..} =
+    mconcat
+      [ genericValidate is,
+        declare "The files all fit in one dirforest without insertion errors" $ isRight $ interestingStoreSafeSmosFileDF is
+      ]
 
 writeInterestingStore :: MonadIO m => Path Abs Dir -> InterestingStore -> m ()
 writeInterestingStore dir is@InterestingStore {..} = do
@@ -60,7 +66,10 @@ writeInterestingStore dir is@InterestingStore {..} = do
   liftIO $ DF.write dir otherFiles writeSBF
 
 interestingStoreSmosFileDF :: InterestingStore -> DirForest SmosFile
-interestingStoreSmosFileDF InterestingStore {..} =
+interestingStoreSmosFileDF = fromRight (error "Cannot happen for valid interesting stores") . interestingStoreSafeSmosFileDF
+
+interestingStoreSafeSmosFileDF :: InterestingStore -> Either (DF.InsertionError SmosFile) (DirForest SmosFile)
+interestingStoreSafeSmosFileDF InterestingStore {..} =
   DF.unions
     [ DirForest $ M.singleton "projects" $ NodeDir projectFiles,
       DirForest $ M.singleton "archive" $ NodeDir archiveFiles,

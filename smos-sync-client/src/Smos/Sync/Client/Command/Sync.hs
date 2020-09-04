@@ -37,6 +37,7 @@ import Smos.API.SHA256 as SHA256
 import Smos.Client
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
+import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.Meta
@@ -129,7 +130,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
         SyncFileMeta ->
         Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
       go1 s rf sfm@SyncFileMeta {..} =
-        case M.lookup rf $ contentsMapFiles contentsMap of
+        case M.lookup rf $ CM.contentsMapFiles contentsMap of
           Nothing ->
             -- The file is not there, that means that it must have been deleted.
             -- so we will mark it as such
@@ -176,7 +177,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
    in M.foldlWithKey
         go2
         syncedChangedAndDeleted
-        (contentsMapFiles contentsMap `M.difference` MM.metaMapFiles clientMetaDataMap)
+        (CM.contentsMapFiles contentsMap `M.difference` MM.metaMapFiles clientMetaDataMap)
 
 clientMergeInitialSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
 clientMergeInitialSyncResponse contentsDir ignoreFiles Mergeful.SyncResponse {..} = do
