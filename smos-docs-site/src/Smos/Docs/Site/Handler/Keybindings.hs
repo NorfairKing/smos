@@ -19,7 +19,7 @@ getSmosKeybindingsR = do
   let KeyMap _ _ _ _ _ = undefined
       FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
       BrowserKeyMap _ _ _ _ = undefined
-      ReportsKeyMap _ _ = undefined
+      ReportsKeyMap _ _ _ = undefined
       HelpKeyMap _ _ _ = undefined
   defaultLayout
     $(widgetFile "smos-keybindings")

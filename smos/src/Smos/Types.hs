@@ -203,28 +203,39 @@ instance Monoid BrowserKeyMap where
 data ReportsKeyMap
   = ReportsKeyMap
       { reportsKeymapNextActionReportMatchers :: KeyMappings,
-        reportsKeymapNextActionReportFilterMatchers :: KeyMappings
+        reportsKeymapNextActionReportFilterMatchers :: KeyMappings,
+        reportsKeymapAnyMatchers :: KeyMappings
       }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
-    ReportsKeyMap
-      { reportsKeymapNextActionReportMatchers =
-          reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2,
-        reportsKeymapNextActionReportFilterMatchers =
-          reportsKeymapNextActionReportFilterMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2
-      }
+    let ReportsKeyMap _ _ _ = undefined
+     in ReportsKeyMap
+          { reportsKeymapNextActionReportMatchers =
+              reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2,
+            reportsKeymapNextActionReportFilterMatchers =
+              reportsKeymapNextActionReportFilterMatchers rkm1 <> reportsKeymapNextActionReportFilterMatchers rkm2,
+            reportsKeymapAnyMatchers =
+              reportsKeymapAnyMatchers rkm1 <> reportsKeymapAnyMatchers rkm2
+          }
 
 instance Monoid ReportsKeyMap where
-  mempty = ReportsKeyMap {reportsKeymapNextActionReportMatchers = mempty, reportsKeymapNextActionReportFilterMatchers = mempty}
+  mempty =
+    let ReportsKeyMap _ _ _ = undefined
+     in ReportsKeyMap
+          { reportsKeymapNextActionReportMatchers = mempty,
+            reportsKeymapNextActionReportFilterMatchers = mempty,
+            reportsKeymapAnyMatchers = mempty
+          }
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
-reportsKeyMapActions (ReportsKeyMap reportsKeymapNextActionReportMatchers reportsKeymapNextActionReportFilterMatchers) =
+reportsKeyMapActions (ReportsKeyMap reportsKeymapNextActionReportMatchers reportsKeymapNextActionReportFilterMatchers reportsKeymapAnyMatchers) =
   concatMap
     keyMappingsActions
     [ reportsKeymapNextActionReportMatchers,
-      reportsKeymapNextActionReportFilterMatchers
+      reportsKeymapNextActionReportFilterMatchers,
+      reportsKeymapAnyMatchers
     ]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings

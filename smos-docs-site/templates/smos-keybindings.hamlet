@@ -80,6 +80,9 @@
   <h3>
     Filter
   ^{keyMapTable $ reportsKeymapNextActionReportFilterMatchers $ keyMapReportsKeyMap defaultKeyMap }
+  <h3>
+    Any
+  ^{keyMapTable $ reportsKeymapAnyMatchers $ keyMapReportsKeyMap defaultKeyMap }
 
   <h2 id="Help">
     Help

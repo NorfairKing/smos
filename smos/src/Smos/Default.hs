@@ -297,7 +297,10 @@ defaultReportsKeyMap =
             exactKey KEsc selectNextActionReport,
             exactKey KBS removeNextActionFilter,
             exactKey KDel deleteNextActionFilter
-          ]
+          ],
+      reportsKeymapAnyMatchers =
+        listMatchers
+          []
     }
 
 defaultHelpKeyMap :: HelpKeyMap
