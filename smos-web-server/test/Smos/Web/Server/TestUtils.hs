@@ -37,7 +37,7 @@ webServerSpec spec = withTestTempDir $ flip yesodSpecWithSiteGeneratorAndArgumen
   instancesVar <- newTVarIO M.empty
   let app =
         App
-          { appLogLevel = LevelDebug,
+          { appLogLevel = LevelWarn,
             appStatic = smosWebServerStatic,
             appAPIBaseUrl = burl,
             appDocsBaseUrl = Nothing,

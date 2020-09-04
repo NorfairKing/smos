@@ -76,7 +76,9 @@ setupClientContents :: SyncClientSettings -> ContentsMap -> IO ()
 setupClientContents (SyncClientSettings ss _) = setupContents (syncSetContentsDir ss)
 
 setupContents :: Path Abs Dir -> ContentsMap -> IO ()
-setupContents dir (ContentsMap df) = DF.write dir df $ \file contents -> SB.writeFile (fromAbsFile file) contents
+setupContents dir (ContentsMap df) = do
+  resetDir dir
+  DF.write dir df $ \file contents -> SB.writeFile (fromAbsFile file) contents
 
 setupFile :: Path Abs Dir -> Path Rel File -> ByteString -> IO ()
 setupFile dir file contents = do
