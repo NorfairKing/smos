@@ -604,6 +604,8 @@ twoClientsFromBothClientsConcurrentlySpec =
 
 twoClientsNastySyncSpec :: SpecWith ClientEnv
 twoClientsNastySyncSpec =
+  -- It's ambiguous what should happen here.
+  -- We opt for the "whatever reaches the server first, wins"
   describe "Nasty sync" $ do
     it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar respectively" $ \cenv ->
       forAllValid $ \bs1 ->
@@ -618,8 +620,8 @@ twoClientsNastySyncSpec =
                 fullySyncTwoClients c1 c2
                 cm1' <- readClientContents c1
                 cm2' <- readClientContents c2
-                cm1' `shouldBe` cm2
-                cm2' `shouldBe` cm2
+                cm1' `shouldBe` cm1
+                cm2' `shouldBe` cm1
     it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar/quux respectively" $ \cenv ->
       forAllValid $ \bs1 ->
         forAllValid $ \bs2 ->
@@ -633,5 +635,35 @@ twoClientsNastySyncSpec =
                 fullySyncTwoClients c1 c2
                 cm1' <- readClientContents c1
                 cm2' <- readClientContents c2
-                cm1' `shouldBe` cm2
-                cm2' `shouldBe` cm2
+                cm1' `shouldBe` cm1
+                cm2' `shouldBe` cm1
+    it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar respectively, backwards" $ \cenv ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          withNewRegisteredUser cenv $ \r ->
+            withSyncClient cenv r $ \c1 ->
+              withSyncClient cenv r $ \c2 -> do
+                let cm1 = CM.singleton [relfile|foo/bar|] bs2
+                    cm2 = CM.singleton [relfile|foo|] bs1
+                setupClientContents c1 cm1
+                setupClientContents c2 cm2
+                fullySyncTwoClients c1 c2
+                cm1' <- readClientContents c1
+                cm2' <- readClientContents c2
+                cm1' `shouldBe` cm1
+                cm2' `shouldBe` cm1
+    it "does not go horribly wrong in the nasty situation where clients add foo and foo/bar/quux respectively, backwards" $ \cenv ->
+      forAllValid $ \bs1 ->
+        forAllValid $ \bs2 ->
+          withNewRegisteredUser cenv $ \r ->
+            withSyncClient cenv r $ \c1 ->
+              withSyncClient cenv r $ \c2 -> do
+                let cm1 = CM.singleton [relfile|foo/bar/quux|] bs2
+                    cm2 = CM.singleton [relfile|foo|] bs1
+                setupClientContents c1 cm1
+                setupClientContents c2 cm2
+                fullySyncTwoClients c1 c2
+                cm1' <- readClientContents c1
+                cm2' <- readClientContents c2
+                cm1' `shouldBe` cm1
+                cm2' `shouldBe` cm1

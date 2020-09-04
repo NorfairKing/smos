@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Sync.Client.Sync.ContentsMapSpec
@@ -107,6 +108,13 @@ spec = do
   describe "empty" $ it "is valid" $ shouldBeValid CM.empty
   describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
   describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 CM.insert
-  describe "fromListIgnoringCollisions" $ it "produces valid content maps" $ producesValidsOnValids CM.fromListIgnoringCollisions
+  describe "fromListIgnoringCollisions" $ do
+    it "produces valid content maps" $ producesValidsOnValids CM.fromListIgnoringCollisions
+    it "Remembers the longest paths it can for this example" $ forAllValid $ \bs1 -> forAllValid $ \bs2 -> do
+      let p1 = [relfile|foo|]
+          p2 = [relfile|foo/bar|]
+          list = [(p1, bs1), (p2, bs2)]
+      CM.fromListIgnoringCollisions list `shouldBe` CM.singleton p2 bs2
+      CM.fromListIgnoringCollisions (reverse list) `shouldBe` CM.singleton p2 bs2
   describe "union" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.union
   describe "unions" $ it "produces valid contents maps" $ producesValidsOnValids CM.unions
