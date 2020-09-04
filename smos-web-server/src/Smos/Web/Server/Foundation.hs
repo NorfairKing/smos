@@ -73,12 +73,12 @@ instance YesodAuth App where
   logoutDest _ = HomeR
   authHttpManager = getsYesod appHttpManager
   authenticate creds =
-    if credsPlugin creds == donnaAuthPluginName
+    if credsPlugin creds == smosAuthPluginName
       then case parseUsername $ credsIdent creds of
         Nothing -> pure $ UserError Msg.InvalidLogin
         Just un -> pure $ Authenticated un
       else pure $ ServerError $ T.unwords ["Unknown authentication plugin:", credsPlugin creds]
-  authPlugins _ = [donnaAuthPlugin]
+  authPlugins _ = [smosAuthPlugin]
   maybeAuthId = do
     msv <- lookupSession credsKey
     case msv of
@@ -88,11 +88,11 @@ instance YesodAuth App where
 instance RenderMessage App FormMessage where
   renderMessage _ _ = defaultFormMessage
 
-donnaAuthPluginName :: Text
-donnaAuthPluginName = "donna-auth-plugin"
+smosAuthPluginName :: Text
+smosAuthPluginName = "smos-auth-plugin"
 
-donnaAuthPlugin :: AuthPlugin App
-donnaAuthPlugin = AuthPlugin donnaAuthPluginName dispatch loginWidget
+smosAuthPlugin :: AuthPlugin App
+smosAuthPlugin = AuthPlugin smosAuthPluginName dispatch loginWidget
   where
     dispatch :: Text -> [Text] -> AuthHandler App TypedContent
     dispatch "POST" ["login"] = postLoginR >>= sendResponse
@@ -106,7 +106,7 @@ donnaAuthPlugin = AuthPlugin donnaAuthPluginName dispatch loginWidget
       $(widgetFile "auth/login")
 
 loginFormPostTargetR :: AuthRoute
-loginFormPostTargetR = PluginR donnaAuthPluginName ["login"]
+loginFormPostTargetR = PluginR smosAuthPluginName ["login"]
 
 usernameField ::
   Monad m =>
@@ -128,10 +128,10 @@ postLoginR = do
   case muser of
     Left err -> loginErrorMessageI LoginR err
     Right un -> do
-      setCredsRedirect $ Creds donnaAuthPluginName (usernameText un) []
+      setCredsRedirect $ Creds smosAuthPluginName (usernameText un) []
 
 registerR :: AuthRoute
-registerR = PluginR donnaAuthPluginName ["register"]
+registerR = PluginR smosAuthPluginName ["register"]
 
 getNewAccountR :: AuthHandler App Html
 getNewAccountR = do
@@ -200,7 +200,7 @@ postNewAccountR = do
           liftHandler $ do
             loginWeb
               Login {loginUsername = registerUsername reg, loginPassword = registerPassword reg}
-            setCredsRedirect $ Creds donnaAuthPluginName (usernameText $ registerUsername reg) []
+            setCredsRedirect $ Creds smosAuthPluginName (usernameText $ registerUsername reg) []
 
 loginWeb :: Login -> Handler ()
 loginWeb form = do
