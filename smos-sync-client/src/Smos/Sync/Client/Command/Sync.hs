@@ -201,10 +201,10 @@ clientMergeInitialServerAdditions ::
   IgnoreFiles ->
   Map (Path Rel File) (Mergeful.Timed SyncFile) ->
   C ()
-clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> do
-  let p = contentsDir </> rf
+clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) ->
   if filePred rf
     then do
+      logDebugN $ "Reading: " <> T.pack (fromAbsFile (contentsDir </> rf))
       mContents <- readFileSafely $ contentsDir </> rf
       -- Insert the metadata in any case
       runDB $
@@ -217,11 +217,11 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
       case mContents of
         -- We don't have this file yet. Save it.
         Nothing -> do
-          logDebugN $ "Saving file because we got it from the server and we didn't have it yet: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logDebugN $ "Saving file because we got it from the server and we didn't have it yet: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
         -- We already have a file at this path, don't overwrite it. It will be marked as 'changed' in the next sync.
-        Just _ -> logDebugN $ "Not writing to file that we got from the server because we already have a file at that path: " <> T.pack (fromAbsFile p)
-    else logDebugN $ "Not considering file because it was supposed to be hidden: " <> T.pack (fromAbsFile p)
+        Just _ -> logDebugN $ "Not writing to file that we got from the server because we already have a file at that path: " <> T.pack (fromAbsFile (contentsDir </> rf))
+    else logDebugN $ "Not considering file because it was supposed to be hidden: " <> T.pack (fromAbsFile (contentsDir </> rf))
   where
     filePred = case ignoreFiles of
       IgnoreNothing -> const True
@@ -283,9 +283,8 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
               delete cfid
         clientSyncProcessorSyncClientDeletedConflictTakeRemoteChanged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncClientDeletedConflictTakeRemoteChanged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
-          let p = contentsDir </> rf
-          logInfoN $ "Adding a client-deleted-conflict item that needs to be added locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logInfoN $ "Adding a client-deleted-conflict item that needs to be added locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
           insert_ ClientFile {clientFilePath = rf, clientFileSha256 = SHA256.hashBytes syncFileContents, clientFileTime = st}
         clientSyncProcessorSyncClientDeletedConflictStayDeleted :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> ReaderT SqlBackend C ()
         clientSyncProcessorSyncClientDeletedConflictStayDeleted _ = pure ()
@@ -307,32 +306,28 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
         clientSyncProcessorSyncChangeConflictKeepLocal _ = pure ()
         clientSyncProcessorSyncChangeConflictMerged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncChangeConflictMerged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
-          let p = contentsDir </> rf
-          logInfoN $ "Backing up a change-conflict item locally before merging it: " <> T.pack (fromAbsFile p)
+          logInfoN $ "Backing up a change-conflict item locally before merging it: " <> T.pack (fromAbsFile (contentsDir </> rf))
           lift $ backupFile contentsDir backupDir rf
-          logInfoN $ "Updating a merged change-conflict item locally on disk but not its metadata: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logInfoN $ "Updating a merged change-conflict item locally on disk but not its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
           -- Don't update the hashes so the item stays marked as 'changed'
           updateWhere [ClientFilePath ==. rf] [ClientFileTime =. st]
         clientSyncProcessorSyncChangeConflictTakeRemote :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncChangeConflictTakeRemote m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
-          let p = contentsDir </> rf
-          logInfoN $ "Backing up a change-conflict item locally before taking it from the remote: " <> T.pack (fromAbsFile p)
+          logInfoN $ "Backing up a change-conflict item locally before taking it from the remote: " <> T.pack (fromAbsFile (contentsDir </> rf))
           lift $ backupFile contentsDir backupDir rf
-          logInfoN $ "Updating a change-conflict item that will be taken from the remote locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logInfoN $ "Updating a change-conflict item that will be taken from the remote locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
           updateWhere [ClientFilePath ==. rf] [ClientFileSha256 =. SHA256.hashBytes syncFileContents, ClientFileTime =. st]
         clientSyncProcessorSyncServerAdded :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncServerAdded m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
-          let p = contentsDir </> rf
-          logInfoN $ "Adding a server-added item locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logInfoN $ "Adding a server-added item locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
           insert_ ClientFile {clientFilePath = rf, clientFileSha256 = SHA256.hashBytes syncFileContents, clientFileTime = st}
         clientSyncProcessorSyncServerChanged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncServerChanged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
-          let p = contentsDir </> rf
-          logInfoN $ "Updating a server-changed item locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
-          writeFileSafely p syncFileContents
+          logInfoN $ "Updating a server-changed item locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
+          writeFileSafely contentsDir rf syncFileContents
           updateWhere [ClientFilePath ==. rf] [ClientFileSha256 =. SHA256.hashBytes syncFileContents, ClientFileTime =. st]
         clientSyncProcessorSyncServerDeleted :: Set (Path Rel File) -> SqlPersistT C ()
         clientSyncProcessorSyncServerDeleted s = forM_ (S.toList s) $ \rf -> do
