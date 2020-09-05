@@ -1,4 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -33,64 +32,6 @@ readFilteredSyncFiles igf dir =
 
 readSyncFiles :: Path Abs Dir -> IO ContentsMap
 readSyncFiles dir = ContentsMap <$> DF.read dir (SB.readFile . fromAbsFile)
-
--- |
---
--- Nothing means the path doesn't exist as a file.
--- This could mean that the file doesn't exist, but it doesn't have to mean that there is nothing at that path.
--- There could be a directory, in which case you also get 'Nothing'
-readFileSafely :: MonadIO m => Path Abs File -> m (Maybe ByteString)
-readFileSafely af = liftIO $ do
-  catchJust
-    (\(e :: IOException) -> if ioe_type e == InappropriateType then Just e else Nothing)
-    (forgivingAbsence (SB.readFile $ fromAbsFile af))
-    (const $ pure Nothing)
-
--- |
---
--- The first argument is the top-level directory
--- The file that will be written will be the combination of the first two arguments.
--- Every file on the path up can be deleted to make space for the one being written, but no further than the first argument
-writeFileSafely :: MonadIO m => Path Abs Dir -> Path Rel File -> ByteString -> m ()
-writeFileSafely top rf bs = liftIO $ do
-  ensureDir top
-  let af = top </> rf
-  let afp = fromAbsFile af
-      writeUncarefully = do
-        ensureDir (parent af)
-        SB.writeFile afp bs
-      writeOverDir = forM_ (parseAbsDir afp :: Maybe (Path Abs Dir)) $ \ad -> do
-        ignoringAbsence $ removeDirRecur ad
-        writeUncarefully
-      removeFilesUpwards = do
-        go (parent rf)
-        writeOverDir
-        where
-          go rd = case parseRelFile (FP.dropTrailingPathSeparator $ fromRelDir rd) of
-            Nothing -> pure ()
-            Just rf' -> do
-              fileExists <- doesFileExist $ top </> rf'
-              if fileExists
-                then do
-                  removeFile $ top </> rf'
-                else
-                  let p = parent rd
-                   in if p == [reldir|./|]
-                        then pure ()
-                        else do
-                          go p
-  catchJust
-    (\(e :: IOException) -> if ioe_type e == AlreadyExists || ioe_type e == InappropriateType then Just e else Nothing)
-    writeUncarefully
-    (const removeFilesUpwards)
-
--- ensureDir (parent af)
--- case parseAbsDir (fromAbsFile af) of
---   Nothing -> pure ()
---   Just ad -> do
---     dirExists <- doesDirExist ad
---     when dirExists $ removeDirRecur ad
--- SB.writeFile (fromAbsFile af) bs
 
 filterContentsMap :: IgnoreFiles -> ContentsMap -> ContentsMap
 filterContentsMap IgnoreNothing = id

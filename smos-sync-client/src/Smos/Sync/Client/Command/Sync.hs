@@ -1,12 +1,16 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Smos.Sync.Client.Command.Sync
   ( syncSmosSyncClient,
     doActualSync,
+    readFileSafely,
+    writeFileSafely,
   )
 where
 
@@ -16,6 +20,7 @@ import Control.Monad.Reader
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -29,6 +34,7 @@ import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Validity.UUID ()
 import Database.Persist.Sqlite as DB
+import GHC.IO.Exception
 import Path
 import Path.IO
 import Servant.Client
@@ -45,7 +51,11 @@ import qualified Smos.Sync.Client.MetaMap as MM
 import Smos.Sync.Client.OptParse
 import System.Exit
 import System.FileLock
+import qualified System.FilePath as FP
+import System.IO
 import Text.Show.Pretty
+import UnliftIO
+import UnliftIO.Exception
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} = do
@@ -70,7 +80,7 @@ doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
     serverUUID <- case mServerUUID of
       -- Never synced before
       Nothing -> do
-        serverUUID <- runInitialSync contentsDir ignoreFiles token
+        serverUUID <- runInitialSync contentsDir backupDir ignoreFiles token
         liftIO $ writeServerUUID uuidFile serverUUID
         pure serverUUID
       -- Already synced before
@@ -78,8 +88,8 @@ doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
     runSync contentsDir backupDir ignoreFiles serverUUID token
   logDebugN "CLIENT END"
 
-runInitialSync :: Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
-runInitialSync contentsDir ignoreFiles token = do
+runInitialSync :: Path Abs Dir -> Path Abs Dir -> IgnoreFiles -> Token -> C ServerUUID
+runInitialSync contentsDir backupDir ignoreFiles token = do
   logDebugN "INITIAL SYNC START"
   let req = SyncRequest {syncRequestItems = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile}
   logDebugData "INITIAL SYNC REQUEST" req
@@ -87,7 +97,7 @@ runInitialSync contentsDir ignoreFiles token = do
   resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
-  clientMergeInitialSyncResponse contentsDir ignoreFiles syncResponseItems
+  clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
   logDebugN "INITIAL SYNC END"
   pure syncResponseServerId
 
@@ -178,8 +188,8 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
         syncedChangedAndDeleted
         (CM.contentsMapFiles contentsMap `M.difference` MM.metaMapFiles clientMetaDataMap)
 
-clientMergeInitialSyncResponse :: Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
-clientMergeInitialSyncResponse contentsDir ignoreFiles Mergeful.SyncResponse {..} = do
+clientMergeInitialSyncResponse :: Path Abs Dir -> Path Abs Dir -> IgnoreFiles -> Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile -> C ()
+clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles Mergeful.SyncResponse {..} = do
   unless
     ( and
         [ null syncResponseClientAdded,
@@ -194,14 +204,15 @@ clientMergeInitialSyncResponse contentsDir ignoreFiles Mergeful.SyncResponse {..
     )
     $ liftIO
     $ die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
-  clientMergeInitialServerAdditions contentsDir ignoreFiles syncResponseServerAdded
+  clientMergeInitialServerAdditions contentsDir backupDir ignoreFiles syncResponseServerAdded
 
 clientMergeInitialServerAdditions ::
+  Path Abs Dir ->
   Path Abs Dir ->
   IgnoreFiles ->
   Map (Path Rel File) (Mergeful.Timed SyncFile) ->
   C ()
-clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) ->
+clientMergeInitialServerAdditions contentsDir backupDir ignoreFiles m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) ->
   if filePred rf
     then do
       logDebugN $ "Reading: " <> T.pack (fromAbsFile (contentsDir </> rf))
@@ -218,7 +229,7 @@ clientMergeInitialServerAdditions contentsDir ignoreFiles m = forM_ (M.toList m)
         -- We don't have this file yet. Save it.
         Nothing -> do
           logDebugN $ "Saving file because we got it from the server and we didn't have it yet: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ writeFileSafely contentsDir backupDir rf syncFileContents
         -- We already have a file at this path, don't overwrite it. It will be marked as 'changed' in the next sync.
         Just _ -> logDebugN $ "Not writing to file that we got from the server because we already have a file at that path: " <> T.pack (fromAbsFile (contentsDir </> rf))
     else logDebugN $ "Not considering file because it was supposed to be hidden: " <> T.pack (fromAbsFile (contentsDir </> rf))
@@ -284,7 +295,7 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
         clientSyncProcessorSyncClientDeletedConflictTakeRemoteChanged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncClientDeletedConflictTakeRemoteChanged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           logInfoN $ "Adding a client-deleted-conflict item that needs to be added locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ lift $ writeFileSafely contentsDir backupDir rf syncFileContents
           insert_ ClientFile {clientFilePath = rf, clientFileSha256 = SHA256.hashBytes syncFileContents, clientFileTime = st}
         clientSyncProcessorSyncClientDeletedConflictStayDeleted :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> ReaderT SqlBackend C ()
         clientSyncProcessorSyncClientDeletedConflictStayDeleted _ = pure ()
@@ -298,7 +309,7 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
             Just (Entity cfid ClientFile {..}) -> do
               let p = contentsDir </> clientFilePath
               logInfoN $ "Backing up a server-deleted-conflict item locally before deleting it: " <> T.pack (fromAbsFile p)
-              lift $ backupFile contentsDir backupDir rf
+              lift $ lift $ backupFile contentsDir backupDir rf
               logInfoN $ "Deleting a server-deleted-conflict item that has to be deleted locally, both on disk and its metadata: " <> T.pack (fromAbsFile p)
               ignoringAbsence $ removeFile p
               delete cfid
@@ -307,27 +318,27 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
         clientSyncProcessorSyncChangeConflictMerged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncChangeConflictMerged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           logInfoN $ "Backing up a change-conflict item locally before merging it: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          lift $ backupFile contentsDir backupDir rf
+          lift $ lift $ backupFile contentsDir backupDir rf
           logInfoN $ "Updating a merged change-conflict item locally on disk but not its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ lift $ writeFileSafely contentsDir backupDir rf syncFileContents
           -- Don't update the hashes so the item stays marked as 'changed'
           updateWhere [ClientFilePath ==. rf] [ClientFileTime =. st]
         clientSyncProcessorSyncChangeConflictTakeRemote :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncChangeConflictTakeRemote m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           logInfoN $ "Backing up a change-conflict item locally before taking it from the remote: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          lift $ backupFile contentsDir backupDir rf
+          lift $ lift $ backupFile contentsDir backupDir rf
           logInfoN $ "Updating a change-conflict item that will be taken from the remote locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ lift $ writeFileSafely contentsDir backupDir rf syncFileContents
           updateWhere [ClientFilePath ==. rf] [ClientFileSha256 =. SHA256.hashBytes syncFileContents, ClientFileTime =. st]
         clientSyncProcessorSyncServerAdded :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncServerAdded m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           logInfoN $ "Adding a server-added item locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ lift $ writeFileSafely contentsDir backupDir rf syncFileContents
           insert_ ClientFile {clientFilePath = rf, clientFileSha256 = SHA256.hashBytes syncFileContents, clientFileTime = st}
         clientSyncProcessorSyncServerChanged :: Map (Path Rel File) (Mergeful.Timed SyncFile) -> SqlPersistT C ()
         clientSyncProcessorSyncServerChanged m = forM_ (M.toList m) $ \(rf, Mergeful.Timed SyncFile {..} st) -> when (filePred rf) $ do
           logInfoN $ "Updating a server-changed item locally, both on disk and its metadata: " <> T.pack (fromAbsFile (contentsDir </> rf))
-          writeFileSafely contentsDir rf syncFileContents
+          lift $ lift $ writeFileSafely contentsDir backupDir rf syncFileContents
           updateWhere [ClientFilePath ==. rf] [ClientFileSha256 =. SHA256.hashBytes syncFileContents, ClientFileTime =. st]
         clientSyncProcessorSyncServerDeleted :: Set (Path Rel File) -> SqlPersistT C ()
         clientSyncProcessorSyncServerDeleted s = forM_ (S.toList s) $ \rf -> do
@@ -342,6 +353,57 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
         filePred = case ignoreFiles of
           IgnoreNothing -> const True
           IgnoreHiddenFiles -> not . isHidden
+
+-- |
+--
+-- Nothing means the path doesn't exist as a file.
+-- This could mean that the file doesn't exist, but it doesn't have to mean that there is nothing at that path.
+-- There could be a directory, in which case you also get 'Nothing'
+readFileSafely :: MonadIO m => Path Abs File -> m (Maybe ByteString)
+readFileSafely af = liftIO $ do
+  catchJust
+    (\(e :: IOException) -> if ioe_type e == InappropriateType then Just e else Nothing)
+    (liftIO $ forgivingAbsence (SB.readFile $ fromAbsFile af))
+    (const $ pure Nothing)
+
+-- |
+--
+-- The first argument is the top-level directory
+-- The file that will be written will be the combination of the first two arguments.
+-- Every file on the path up can be deleted to make space for the one being written, but no further than the first argument
+writeFileSafely :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> ByteString -> LoggingT IO ()
+writeFileSafely contentsDir backupDir rf bs = do
+  let af = contentsDir </> rf
+  let afp = fromAbsFile af
+      writeUncarefully = liftIO $ do
+        ensureDir (parent af)
+        SB.writeFile afp bs
+      writeOverDir = forM_ (parseAbsDir afp :: Maybe (Path Abs Dir)) $ \ad -> do
+        ignoringAbsence $ removeDirRecur ad
+        writeUncarefully
+      removeFilesUpwards = do
+        go (parent rf)
+        writeOverDir
+        where
+          go rd = case parseRelFile (FP.dropTrailingPathSeparator $ fromRelDir rd) of
+            Nothing -> pure ()
+            Just rf' -> do
+              fileExists <- doesFileExist $ contentsDir </> rf'
+              if fileExists
+                then do
+                  backupFile contentsDir backupDir rf'
+                  removeFile $ contentsDir </> rf'
+                else
+                  let p = parent rd
+                   in if p == [reldir|./|]
+                        then pure ()
+                        else do
+                          go p
+  liftIO $ ensureDir contentsDir
+  catchJust
+    (\(e :: IOException) -> if ioe_type e == AlreadyExists || ioe_type e == InappropriateType then Just e else Nothing)
+    writeUncarefully
+    (const removeFilesUpwards)
 
 logInfoJsonData :: ToJSON a => Text -> a -> C ()
 logInfoJsonData name a =
@@ -368,7 +430,7 @@ isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents =
   SHA256.hashBytes contents == syncFileMetaHash
 
-backupFile :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> C ()
+backupFile :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> LoggingT IO ()
 backupFile contentsDir backupDir sourceFile = do
   now <- liftIO getCurrentTime
   let timeStr = formatTime defaultTimeLocale ".%F_%T" now
