@@ -26,7 +26,6 @@ import Smos.Web.Server.SmosSession
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import UnliftIO hiding (Handler)
-import UnliftIO.Concurrent hiding (yield)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
