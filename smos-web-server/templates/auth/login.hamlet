@@ -42,10 +42,10 @@
             
             <div .field .is-grouped>
               <div .control>
-                <button .button .is-dark type="submit">
+                <button .button .is-light type="submit">
                   Login
               
 
               <div .control>
-                <a .button .is-light href=@{AuthR registerR}>
+                <a .button .is-text href=@{AuthR registerR}>
                   Register
