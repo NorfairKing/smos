@@ -1,4 +1,14 @@
 <aside class="menu">
+
+  <p .menu-label>
+    Training
+
+  <ul .menu-list>
+    <li>
+      <a href="https://cs-syd.eu/self-management">
+        Self-management training
+
+
   <p .menu-label>
     Smos
 
