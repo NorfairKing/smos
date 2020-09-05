@@ -65,8 +65,26 @@ in
                       example = 8001;
                       description = "The port to serve api requests on";
                     };
+                  local-backup =
+                    mkOption {
+                      type = types.nullOr (
+                        types.submodule {
+                          options = {
+                            enable = mkEnableOption "Smos API Server Local Backup Service";
+                            backup-dir = mkOption {
+                              type = types.str;
+                              example = "backup/api-server";
+                              default = "backup/api-server";
+                              description = "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
+                            };
+                          };
+                        }
+                      );
+                      default = null;
+                    };
                 };
             };
+          default = null;
         };
       web-server =
         mkOption {
@@ -114,6 +132,7 @@ in
   config =
     let
       smosPkgs = (import ../nix/pkgs.nix).smosPackages;
+      working-dir = "/www/smos/${envname}/";
       # The docs server
       docs-site-service =
         with cfg.docs-site;
@@ -157,44 +176,44 @@ in
               serverAliases = tail hosts;
             };
         };
+
+      api-server-working-dir = working-dir + "api-server/";
+      api-server-database-file = api-server-working-dir + "smos-server-database.sqlite3";
       # The api server
       api-server-service =
         with cfg.api-server;
-
-        let
-          workingDir = "/www/smos/${envname}/api-server/";
-        in
-          optionalAttrs enable {
-            "smos-api-server-${envname}" = {
-              description = "Smos API Server ${envname} Service";
-              wantedBy = [ "multi-user.target" ];
-              environment =
-                {
-                  "SMOS_SERVER_LOG_LEVEL" =
-                    "${builtins.toString log-level}";
-                  "SMOS_SERVER_PORT" =
-                    "${builtins.toString port}";
-                };
-              script =
-                ''
-                  mkdir -p "${workingDir}"
-                  cd "${workingDir}"
-                  ${smosPkgs.smos-server}/bin/smos-server \
-                    serve
-                '';
-              serviceConfig =
-                {
-                  Restart = "always";
-                  RestartSec = 1;
-                  Nice = 15;
-                };
-              unitConfig =
-                {
-                  StartLimitIntervalSec = 0;
-                  # ensure Restart=always is always honoured
-                };
-            };
+        optionalAttrs enable {
+          "smos-api-server-${envname}" = {
+            description = "Smos API Server ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment =
+              {
+                "SMOS_SERVER_LOG_LEVEL" =
+                  "${builtins.toString log-level}";
+                "SMOS_SERVER_PORT" =
+                  "${builtins.toString port}";
+                "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
+              };
+            script =
+              ''
+                mkdir -p "${api-server-working-dir}"
+                ${smosPkgs.smos-server}/bin/smos-server \
+                  serve
+              '';
+            serviceConfig =
+              {
+                WorkingDirectory = api-server-working-dir;
+                Restart = "always";
+                RestartSec = 1;
+                Nice = 15;
+              };
+            unitConfig =
+              {
+                StartLimitIntervalSec = 0;
+                # ensure Restart=always is always honoured
+              };
           };
+        };
       api-server-host =
         with cfg.api-server;
 
@@ -213,46 +232,85 @@ in
               serverAliases = tail hosts;
             };
         };
+
+      # Local backup
+      local-backup-service =
+        optionalAttrs (cfg.api-server.enable or false) (
+          optionalAttrs (cfg.api-server.local-backup.enable or false) (
+            with cfg.api-server.local-backup;
+            {
+              "smos-api-server-local-backup-${envname}" = {
+                description = "Backup smos-api-server database locally for ${envname}";
+                wantedBy = [];
+                script =
+                  ''
+                    mkdir -p ${backup-dir}
+                    file="${backup-dir}/''$(date +%F_%T).db"
+                    ${pkgs.sqlite}/bin/sqlite3 ${api-server-database-file} ".backup ''${file}"
+                  '';
+                serviceConfig = {
+                  WorkingDirectory = working-dir;
+                  Type = "oneshot";
+                };
+              };
+            }
+          )
+        );
+      local-backup-timer =
+        optionalAttrs (cfg.api-server.enable or false) (
+          optionalAttrs (cfg.api-server.local-backup.enable or false) (
+            with cfg.api-server.local-backup;
+            {
+              "smos-api-server-local-backup-${envname}" = {
+                description = "Backup smos-api-server database locally for ${envname} every twelve hours.";
+                wantedBy = [ "timers.target" ];
+                timerConfig = {
+                  OnCalendar = "00/12:00";
+                  Persistent = true;
+                };
+              };
+            }
+          )
+        );
+
       # The web server
+      web-server-working-dir = working-dir + "web-server/";
+      web-server-data-dir = web-server-working-dir + "web-server/";
       web-server-service =
         with cfg.web-server;
-
-        let
-          workingDir = "/www/smos/${envname}/web-server/";
-        in
-          optionalAttrs enable {
-            "smos-web-server-${envname}" = {
-              description = "Smos web server ${envname} Service";
-              wantedBy = [ "multi-user.target" ];
-              environment =
-                {
-                  "SMOS_WEB_SERVER_API_URL" = "${api-url}";
-                  "SMOS_WEB_SERVER_DOCS_URL" = "${docs-url}";
-                  "SMOS_WEB_SERVER_LOG_LEVEL" = "${builtins.toString log-level}";
-                  "SMOS_WEB_SERVER_PORT" = "${builtins.toString port}";
-                  "SMOS_WEB_SERVER_DATA_DIR" = workingDir + "workflows/";
-                  "TERM" = "xterm-256color";
-                };
-              script =
-                ''
-                  mkdir -p "${workingDir}"
-                  cd "${workingDir}"
-                  ${smosPkgs.smos-web-server}/bin/smos-web-server \
-                    serve
-                '';
-              serviceConfig =
-                {
-                  Restart = "always";
-                  RestartSec = 1;
-                  Nice = 15;
-                };
-              unitConfig =
-                {
-                  StartLimitIntervalSec = 0;
-                  # ensure Restart=always is always honoured
-                };
-            };
+        optionalAttrs enable {
+          "smos-web-server-${envname}" = {
+            description = "Smos web server ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment =
+              {
+                "SMOS_WEB_SERVER_API_URL" = "${api-url}";
+                "SMOS_WEB_SERVER_DOCS_URL" = "${docs-url}";
+                "SMOS_WEB_SERVER_LOG_LEVEL" = "${builtins.toString log-level}";
+                "SMOS_WEB_SERVER_PORT" = "${builtins.toString port}";
+                "SMOS_WEB_SERVER_DATA_DIR" = web-server-data-dir;
+                "TERM" = "xterm-256color";
+              };
+            script =
+              ''
+                mkdir -p "${web-server-working-dir}"
+                ${smosPkgs.smos-web-server}/bin/smos-web-server \
+                  serve
+              '';
+            serviceConfig =
+              {
+                WorkingDirectory = web-server-working-dir;
+                Restart = "always";
+                RestartSec = 1;
+                Nice = 15;
+              };
+            unitConfig =
+              {
+                StartLimitIntervalSec = 0;
+                # ensure Restart=always is always honoured
+              };
           };
+        };
       web-server-host =
         with cfg.web-server;
 
@@ -263,6 +321,7 @@ in
               forceSSL = true;
               locations."/" = {
                 proxyPass = "http://localhost:${builtins.toString port}";
+                # To make the websockets api work
                 proxyWebsockets = true;
                 # Just to make sure we don't run into 413 errors on big syncs
                 extraConfig = ''
@@ -279,6 +338,11 @@ in
             docs-site-service
             api-server-service
             web-server-service
+            local-backup-service
+          ];
+        systemd.timers =
+          concatAttrs [
+            local-backup-timer
           ];
         networking.firewall.allowedTCPPorts = builtins.concatLists [
           (optional cfg.docs-site.enable cfg.docs-site.port)
