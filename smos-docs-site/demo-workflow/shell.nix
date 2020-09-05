@@ -1,5 +1,5 @@
 let
-  pkgs = import ../../nix/pkgs.nix;
+  pkgs = import ../../nix/ci-pkgs.nix;
 in
 pkgs.stdenv.mkDerivation rec {
   name = "smos-demo-workflow-shell";
