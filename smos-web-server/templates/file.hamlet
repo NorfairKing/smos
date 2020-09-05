@@ -1,1 +1,2 @@
-<div id="terminal">
+<section .section .hero .is-fullheight>
+  <div id="terminal" style="flex-grow:1;">

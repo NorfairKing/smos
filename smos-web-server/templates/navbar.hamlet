@@ -1,0 +1,37 @@
+<nav .navbar role="navigation" aria-label="main navigation">
+  <div .navbar-brand>
+    <a .navbar-item .my-1 .has-text-weight-bold .is-size-4 href=@{HomeR}>
+      Smos Online
+
+    <a role="button" .navbar-burger .burger aria-label="menu" aria-expanded="false" data-target="myNavbar">
+      <span aria-hidden="true">
+      <span aria-hidden="true">
+      <span aria-hidden="true">
+    
+  
+
+  <div id="myNavbar" .navbar-menu>
+    <div .navbar-start>
+
+      $maybe docsUrl <- mDocsUrl
+        <a .navbar-item href="#{showBaseUrl docsUrl}">
+          Documentation
+
+      <a .navbar-item href="https://cs-syd.eu/self-management">
+        Self-management training
+      
+
+    <div .navbar-end>
+      $maybe _ <- maid
+        <div .navbar-item>
+          <div .buttons>
+            <a .button href=@{AuthR LogoutR}>
+              Log out
+      $nothing
+        <div .navbar-item>
+          <div .buttons>
+            <a .button .is-light href=@{AuthR LoginR}>
+              Log in
+            <a .button .is-text href=@{AuthR registerR}>
+              Sign up
+          

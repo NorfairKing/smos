@@ -323,3 +323,14 @@ loadUserToken :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Maybe T
 loadUserToken un = do
   tf <- userTokenFile un
   liftIO $ fmap (fmap Token) $ forgivingAbsence $ SB.readFile (fromAbsFile tf)
+
+withNavBar :: Widget -> Handler Html
+withNavBar body = do
+  maid <- maybeAuthId
+  mDocsUrl <- getsYesod appDocsBaseUrl
+  let navbar = $(widgetFile "navbar")
+  defaultLayout
+    [whamlet|
+      ^{navbar}
+      ^{body}
+    |]

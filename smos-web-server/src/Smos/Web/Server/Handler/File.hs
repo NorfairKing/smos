@@ -31,7 +31,7 @@ import Yesod.WebSockets
 
 getFileR :: [Text] -> Handler Html
 getFileR ts = withLogin $ \_ ->
-  defaultLayout $ do
+  withNavBar $ do
     setTitle "Smos Web TUI"
     addScript $ StaticR xterm_js
     addScript $ StaticR xterm_attach_js
