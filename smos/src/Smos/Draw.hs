@@ -397,10 +397,7 @@ completedForestNumbersWidget edc =
   let es@EntryStats {..} = goF (entryDrawContextForest edc)
    in if es == mempty
         then Nothing
-        else
-          if es == mempty || justOne es
-            then Nothing
-            else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
+        else Just $ str $ bracketed $ concat [show entryStatsDone, "/", show entryStatsTotal]
   where
     countDone :: Maybe TodoState -> Word
     countDone (Just "DONE") = 1
@@ -439,9 +436,6 @@ instance Semigroup EntryStats where
 instance Monoid EntryStats where
   mempty = EntryStats 0 0
   mappend = (<>)
-
-justOne :: EntryStats -> Bool
-justOne es = entryStatsTotal es <= 1
 
 collapsedForestNumbersWidget :: TreeCollapsing -> EntryDrawContext -> Maybe (Widget t)
 collapsedForestNumbersWidget tc edc =
