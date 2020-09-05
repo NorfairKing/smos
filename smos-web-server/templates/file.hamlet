@@ -1,2 +1,2 @@
 <section .section .hero .is-fullheight>
-  <div id="terminal" style="flex-grow:1;">
+  <div id="terminal" style="flex-grow:1;border-style:solid; border-width:10px;border-color:#002b36">
