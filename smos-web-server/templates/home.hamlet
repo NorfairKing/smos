@@ -44,8 +44,11 @@
         <div .column .is-5-tablet .is-4-desktop .is-3-widescreen>
           <div .box .has-text-centered>
             $maybe _ <- maid
-              <a .button .is-light .is-large .is-fullwidth href=@{FileR ["example.smos"]}>
-                Open Smos Online
+              <form
+                method="get"
+                action=@{FileR ["example.smos"]}>
+                <button .button .is-light .is-large .is-fullwidth autofocus="autofocus" type="submit">
+                  Open Smos Online
             $nothing
               <div .buttons>
                 <a .button .is-light .is-large .is-fullwidth href=@{AuthR LoginR}>
