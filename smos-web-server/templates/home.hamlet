@@ -16,6 +16,9 @@
       $maybe docsUrl <- mDocsUrl
         <a .navbar-item href="#{showBaseUrl docsUrl}">
           Documentation
+
+      <a .navbar-item href="https://cs-syd.eu/self-management">
+        Self-management training
       
 
     <div .navbar-end>
