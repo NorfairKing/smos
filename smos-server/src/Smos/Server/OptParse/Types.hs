@@ -23,35 +23,38 @@ newtype Command
 
 data ServeFlags
   = ServeFlags
-      { serveFlagLogLevel :: Maybe LogLevel,
-        serveFlagUUIDFile :: Maybe FilePath,
-        serveFlagDatabaseFile :: Maybe FilePath,
-        serveFlagPort :: Maybe Int
+      { serveFlagLogLevel :: !(Maybe LogLevel),
+        serveFlagUUIDFile :: !(Maybe FilePath),
+        serveFlagDatabaseFile :: !(Maybe FilePath),
+        serveFlagSigningKeyFile :: !(Maybe FilePath),
+        serveFlagPort :: !(Maybe Int)
       }
   deriving (Show, Eq)
 
-newtype Flags
+data Flags
   = Flags
-      { flagConfigFile :: Maybe FilePath
+      { flagConfigFile :: !(Maybe FilePath)
       }
   deriving (Show, Eq, Generic)
 
 data Environment
   = Environment
-      { envConfigFile :: Maybe FilePath,
-        envLogLevel :: Maybe LogLevel,
-        envUUIDFile :: Maybe FilePath,
-        envDatabaseFile :: Maybe FilePath,
-        envPort :: Maybe Int
+      { envConfigFile :: !(Maybe FilePath),
+        envLogLevel :: !(Maybe LogLevel),
+        envUUIDFile :: !(Maybe FilePath),
+        envDatabaseFile :: !(Maybe FilePath),
+        envSigningKeyFile :: !(Maybe FilePath),
+        envPort :: !(Maybe Int)
       }
   deriving (Show, Eq, Generic)
 
 data Configuration
   = Configuration
-      { confLogLevel :: Maybe LogLevel,
-        confUUIDFile :: Maybe FilePath,
-        confDatabaseFile :: Maybe FilePath,
-        confPort :: Maybe Int
+      { confLogLevel :: !(Maybe LogLevel),
+        confUUIDFile :: !(Maybe FilePath),
+        confDatabaseFile :: !(Maybe FilePath),
+        confSigningKeyFile :: !(Maybe FilePath),
+        confPort :: !(Maybe Int)
       }
   deriving (Show, Eq, Generic)
 
@@ -67,6 +70,7 @@ configurationObjectParser =
     <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
     <*> optionalField "uuid-file" "The file in which to store the server uuid"
     <*> optionalField "database-file" "The file in which to store the database"
+    <*> optionalField "signing-key-file" "The file in which to store signing key for JWT tokens"
     <*> optionalField "port" "The port on which to serve api requests"
 
 newtype Dispatch
@@ -75,9 +79,10 @@ newtype Dispatch
 
 data ServeSettings
   = ServeSettings
-      { serveSetLogLevel :: LogLevel,
-        serveSetUUIDFile :: Path Abs File,
-        serveSetDatabaseFile :: Path Abs File,
+      { serveSetLogLevel :: !LogLevel,
+        serveSetUUIDFile :: !(Path Abs File),
+        serveSetDatabaseFile :: !(Path Abs File),
+        serveSetSigningKeyFile :: !(Path Abs File),
         serveSetPort :: Int
       }
   deriving (Show, Eq, Generic)

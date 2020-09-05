@@ -44,7 +44,7 @@ runSmosServer ServeSettings {..} = do
       liftIO $ do
         uuid <- readServerUUID serveSetUUIDFile
         flip DB.runSqlPool pool $ DB.runMigration migrateAll
-        jwtKey <- loadSigningKey
+        jwtKey <- loadSigningKey serveSetSigningKeyFile
         let env =
               ServerEnv
                 { serverEnvServerUUID = uuid,
@@ -59,27 +59,21 @@ runSmosServer ServeSettings {..} = do
                 else Wai.logStdout
         Warp.run serveSetPort $ middles $ makeSyncApp env
 
--- TODO put this file in settings
-signingKeyFile :: IO (Path Abs File)
-signingKeyFile = resolveFile' "signing-key.json"
-
-storeSigningKey :: JWK -> IO ()
-storeSigningKey key_ = do
-  skf <- signingKeyFile
-  LB.writeFile (toFilePath skf) (JSON.encodePretty key_)
-
-loadSigningKey :: IO JWK
-loadSigningKey = do
-  skf <- signingKeyFile
+loadSigningKey :: Path Abs File -> IO JWK
+loadSigningKey skf = do
   mErrOrKey <- forgivingAbsence $ JSON.eitherDecode <$> LB.readFile (toFilePath skf)
   case mErrOrKey of
     Nothing -> do
       key_ <- Auth.generateKey
-      storeSigningKey key_
+      storeSigningKey skf key_
       pure key_
     Just (Left err) ->
       die $ unlines ["Failed to load signing key from file", fromAbsFile skf, "with error:", err]
     Just (Right r) -> pure r
+
+storeSigningKey :: Path Abs File -> JWK -> IO ()
+storeSigningKey skf key_ = do
+  LB.writeFile (toFilePath skf) (JSON.encodePretty key_)
 
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =

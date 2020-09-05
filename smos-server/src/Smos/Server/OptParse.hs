@@ -42,6 +42,10 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
             case serveFlagDatabaseFile <|> envDatabaseFile <|> (mc >>= confDatabaseFile) of
               Nothing -> resolveFile' "smos-server-database.sqlite3"
               Just fp -> resolveFile' fp
+          serveSetSigningKeyFile <-
+            case serveFlagSigningKeyFile <|> envSigningKeyFile <|> (mc >>= confSigningKeyFile) of
+              Nothing -> resolveFile' "smos-signing-key.json"
+              Just fp -> resolveFile' fp
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -56,6 +60,7 @@ environmentParser =
       <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
       <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The file to store the server uuid in")
       <*> Env.var (fmap Just . Env.str) "DATABASE_FILE" (mE <> Env.help "The file to store the server database in")
+      <*> Env.var (fmap Just . Env.str) "SIGNING_KEY_FILE" (mE <> Env.help "The file to store the JWT signing key in")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
   where
     mE = Env.def Nothing <> Env.keep
@@ -129,6 +134,15 @@ parseServeFlags =
       ( mconcat
           [ long "database-file",
             help "The file to use for the server database",
+            metavar "FILEPATH",
+            value Nothing
+          ]
+      )
+    <*> option
+      (Just <$> str)
+      ( mconcat
+          [ long "signing-key-file",
+            help "The file to use for the JWT signing key database",
             metavar "FILEPATH",
             value Nothing
           ]
