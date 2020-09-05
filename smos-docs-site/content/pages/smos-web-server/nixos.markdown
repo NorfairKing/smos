@@ -1,5 +1,5 @@
 ---
-title: Setting up your own Smos server on Nixos
+title: Setting up your own Smos web server on Nixos
 ---
 
 A NixOs module has to run your own smos server on NixOs has been provided at `nix/module.nix` and can be used as follows:
@@ -28,8 +28,9 @@ in
         enable = true;
         docs-site = {
           enable = true;
-          hosts = [ "smos.example.com" ];
+          hosts = [ "docs.smos.example.com" ];
           port = 8401;
+          web-url = "https://${builtins.head config.services.smos.production.web-server.hosts}";
         };
         api-server = {
           enable = true;
@@ -39,6 +40,14 @@ in
           local-backup = {
             enable = true;
           };
+        };
+        web-server = {
+          enable = true;
+          log-level = "Warn";
+          hosts = [ "smos.example.com" ];
+          port = 8403;
+          docs-url = "https://${builtins.head config.services.smos.production.docs-site.hosts}";
+          api-url = "https://${builtins.head config.services.smos.production.api-server.hosts}";
         };
       };
     };
