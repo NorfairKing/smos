@@ -1,2 +1,2 @@
-<section .section .hero .is-fullheight>
-  <div id="terminal" style="flex-grow:1">
+<section .hero .is-fullheight-with-navbar>
+    <div id="terminal" style="flex-grow:1">
