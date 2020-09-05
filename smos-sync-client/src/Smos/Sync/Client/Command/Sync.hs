@@ -52,10 +52,8 @@ import Smos.Sync.Client.OptParse
 import System.Exit
 import System.FileLock
 import qualified System.FilePath as FP
-import System.IO
 import Text.Show.Pretty
 import UnliftIO
-import UnliftIO.Exception
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} = do

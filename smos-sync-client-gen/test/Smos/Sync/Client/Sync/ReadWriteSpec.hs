@@ -12,7 +12,6 @@ import Data.GenValidity.Path ()
 import Path
 import Path.IO
 import Smos.Sync.Client.Command.Sync
-import Smos.Sync.Client.Contents
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.Validity

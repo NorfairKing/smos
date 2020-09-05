@@ -3,26 +3,19 @@
 
 module Smos.Sync.Client.Contents where
 
-import Control.Exception
-import Control.Monad
-import Control.Monad.IO.Class
 import qualified Data.ByteString as SB
-import Data.ByteString (ByteString)
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Data.Validity.ByteString ()
 import Data.Validity.Containers ()
 import Data.Validity.Path ()
-import GHC.IO.Exception
 import Path
-import Path.IO
 import Smos.API
 import Smos.Report.Streaming
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.OptParse.Types
-import qualified System.FilePath as FP
 
 readFilteredSyncFiles :: IgnoreFiles -> Path Abs Dir -> IO ContentsMap
 readFilteredSyncFiles igf dir =
