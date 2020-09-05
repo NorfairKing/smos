@@ -51,7 +51,10 @@ runSmosServer ServeSettings {..} = do
                   serverEnvConnection = pool,
                   serverEnvCookieSettings = defaultCookieSettings,
                   serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                  serverEnvPasswordDifficulty = if development then 4 else 14 -- Rather slower
+                  serverEnvPasswordDifficulty =
+                    if development
+                      then 4
+                      else 10 -- Rather slower
                 }
         let middles =
               if development
