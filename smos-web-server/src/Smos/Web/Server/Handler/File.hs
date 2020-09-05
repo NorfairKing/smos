@@ -26,6 +26,7 @@ import Smos.Web.Server.SmosSession
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import UnliftIO hiding (Handler)
+import UnliftIO.Concurrent hiding (yield)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
@@ -92,7 +93,9 @@ communicate sih = do
   sendClose ("Close" :: Text)
 
 debugConduit :: MonadIO m => String -> ConduitT ByteString ByteString m ()
-debugConduit _ = iterMC $ \_ -> pure ()
+debugConduit _ = iterMC $ \_ -> do
+  -- liftIO $ threadDelay $ 150 * 1000 -- Artificial delay
+  pure ()
 -- debugConduit name = iterMC go
 --   where
 --     go bs = liftIO $ putStrLn $ name <> ": " <> show bs
