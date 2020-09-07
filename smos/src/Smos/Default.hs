@@ -65,8 +65,8 @@ defaultFileKeyMap =
             modifiedChar 'L' [MMeta] forestDemoteSubTree,
             -- Forest manipulation
             exactChar 'e' forestInsertEntryAfterAndSelectHeader,
-            exactChar 'E' forestInsertEntryBelowAtStartAndSelectHeader,
-            exactKeyPress (KeyPress (KChar 'e') [MMeta]) forestInsertEntryBelowAtEndAndSelectHeader,
+            exactChar 'E' forestInsertEntryBelowAtEndAndSelectHeader,
+            exactKeyPress (KeyPress (KChar 'e') [MMeta]) forestInsertEntryBelowAtStartAndSelectHeader,
             -- Deletion
             exactChar 'd' forestDeleteCurrentEntry,
             exactChar 'D' forestDeleteCurrentSubTree,
