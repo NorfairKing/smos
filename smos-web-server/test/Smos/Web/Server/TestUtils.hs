@@ -34,7 +34,6 @@ webServerSpec :: YesodSpec App -> SpecWith ClientEnv
 webServerSpec spec = withTestTempDir $ flip yesodSpecWithSiteGeneratorAndArgument spec $ \(ClientEnv _ burl _, tdir) -> do
   man <- Http.newManager Http.defaultManagerSettings
   loginVar <- newTVarIO M.empty
-  instancesVar <- newTVarIO M.empty
   let app =
         App
           { appLogLevel = LevelWarn,
@@ -42,7 +41,6 @@ webServerSpec spec = withTestTempDir $ flip yesodSpecWithSiteGeneratorAndArgumen
             appAPIBaseUrl = burl,
             appDocsBaseUrl = Nothing,
             appLoginTokens = loginVar,
-            appSmosInstances = instancesVar,
             appDataDir = tdir,
             appHttpManager = man
           }

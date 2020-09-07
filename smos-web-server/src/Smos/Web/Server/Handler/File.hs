@@ -9,7 +9,6 @@ module Smos.Web.Server.Handler.File
 where
 
 import Conduit
-import Control.Monad
 import Data.Aeson as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
