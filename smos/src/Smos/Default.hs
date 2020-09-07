@@ -242,10 +242,10 @@ defaultBrowserKeyMap =
             exactChar '\t' browserToggleCollapse,
             exactKey KEnter browserEnter,
             exactKey KBackTab browserToggleCollapseRecursively,
-            exactString "ded" browserRemoveEmptyDir,
             exactChar 'n' browserStartNew,
             exactChar 'N' browserStartNewBelowAtEnd,
-            exactKeyPress (KeyPress (KChar 'n') [MMeta]) browserStartNewBelowAtEnd,
+            exactKeyPress (KeyPress (KChar 'n') [MMeta]) browserStartNewBelowAtStart,
+            exactString "ded" browserRemoveEmptyDir,
             exactChar 'a' browserArchive
           ],
       browserKeyMapInProgressMatchers =
@@ -256,7 +256,8 @@ defaultBrowserKeyMap =
             exactKey KLeft browserSelectPrevChar,
             exactKey KRight browserSelectNextChar,
             exactKey KEnter browserCompleteFile,
-            exactKeyPress (KeyPress KEnter [MMeta]) browserCompleteDir
+            exactKeyPress (KeyPress KEnter [MMeta]) browserCompleteDir,
+            exactKey KEsc browserStopNew
           ],
       browserKeyMapEmptyMatchers =
         listMatchers

@@ -24,6 +24,7 @@ allPlainBrowserActions =
     browserStartNew,
     browserStartNewBelowAtStart,
     browserStartNewBelowAtEnd,
+    browserStopNew,
     browserRemoveChar,
     browserDeleteChar,
     browserSelectPrevChar,
@@ -86,6 +87,14 @@ browserStartNewBelowAtEnd =
     { actionName = "browserStartNewBelowAtEnd",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNewBelowAtEnd,
       actionDescription = "Start a new file or directory within the selected directory in the file browser, at the end."
+    }
+
+browserStopNew :: Action
+browserStopNew =
+  Action
+    { actionName = "browserStopNew",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorStopNew,
+      actionDescription = "Abort creating the new file or directory in the file browser."
     }
 
 browserInsertChar :: ActionUsing Char

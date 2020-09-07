@@ -105,6 +105,9 @@ fileBrowserCursorStartNewBelowAtStart = fileBrowserCursorDoMaybe dirForestCursor
 fileBrowserCursorStartNewBelowAtEnd :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorStartNewBelowAtEnd = fileBrowserCursorDoMaybe dirForestCursorStartNewBelowAtEnd
 
+fileBrowserCursorStopNew :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorStopNew = fileBrowserCursorDoMaybeDeleteOrUpdate dirForestCursorStopNew
+
 fileBrowserCursorInsertChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorInsertChar c = fileBrowserCursorDoMaybe $ dirForestCursorInsertChar c
 

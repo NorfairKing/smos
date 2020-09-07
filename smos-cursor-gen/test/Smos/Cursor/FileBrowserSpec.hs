@@ -36,6 +36,9 @@ spec = do
     $ it "produces valid cursors"
     $ producesValidsOnValids fileBrowserCursorSelectPrev
   describe "fileBrowserCursorStartNew" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNew
+  describe "fileBrowserCursorStartNewBelowAtStart" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNewBelowAtStart
+  describe "fileBrowserCursorStartNewBelowAtEnd" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNewBelowAtEnd
+  describe "fileBrowserCursorStopNew" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStopNew
   describe "fileBrowserCursorInsertChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorInsertChar
   describe "fileBrowserCursorAppendChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorAppendChar
   describe "fileBrowserCursorRemoveChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorRemoveChar
