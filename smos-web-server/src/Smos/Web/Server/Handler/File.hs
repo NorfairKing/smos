@@ -51,10 +51,21 @@ communicate sih = do
   let inputConduit = sourceWS .| debugConduit "Input" .| resizeConduit sih .| smosInstanceInputSink sih
       outputConduit = smosInstanceOutputSource sih .| debugConduit "Output" .| sinkWSText
   runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
-  inputAsync <- async $ runConduit inputConduit
-  outputAsync <- async $ runConduit outputConduit
-  void $ waitAnyCancel [inputAsync, outputAsync, smosInstanceHandleAsync sih]
-  sendClose ("Close" :: Text)
+  res <- race (wait (smosInstanceHandleAsync sih)) (race (runConduit inputConduit) (runConduit outputConduit))
+  case res of
+    Left () -> do
+      -- The smos instance quit succesfully.
+      -- Send a succesful finish
+      sendClose ("Success" :: Text)
+    Right res' -> case res' of
+      Left () -> do
+        -- The browser disconnected
+        -- There's nothing else we can do, just exit
+        pure ()
+      Right () -> do
+        -- The smos instance's handle got closed
+        -- No idea why this would happen.
+        sendClose ("???" :: Text)
 
 resizeConduit :: MonadIO m => SmosInstanceHandle -> ConduitT ByteString ByteString m ()
 resizeConduit instanceHandle = awaitForever $ \bs -> do

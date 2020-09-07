@@ -33,9 +33,18 @@ function initWebsocket(term, fitAddon) {
     console.log("Disconnected: ");
     console.log(e);
 
-    // Remove the terminal and go back to the previous page.
-    terminal.parentNode.removeChild(terminal);
-    window.location.replace("@{HomeR}");
+    // If we quit on purpose.
+    if (e.wasClean) {
+      terminal.parentNode.removeChild(terminal);
+      window.location.replace("@{HomeR}");
+    } else {
+      const refresh = () => {
+        location.reload();
+      };
+      terminal.parentNode.appendChild(document.createTextNode("Server disconnected, refreshing in 2 seconds."));
+      setTimeout(refresh, 2000);
+      terminal.parentNode.removeChild(terminal);
+    };
   }
 
   // Listen for connection errors
