@@ -67,6 +67,9 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           let syncSetIgnoreFiles =
                 fromMaybe IgnoreHiddenFiles $
                   syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
+          case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
+            Nothing -> pure ()
+            Just _ -> die "The metadata database must not be in the sync contents directory."
           pure $ DispatchSync SyncSettings {..}
     getSettings = do
       setServerUrl <-
