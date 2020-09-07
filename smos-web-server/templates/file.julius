@@ -1,4 +1,22 @@
-function initWebsocket() {
+// A function to resize the terminal
+function resize(term, fitAddon, socket) {
+  // console.log("trying to resize");
+
+  // We avoid using fitAddon.fit() as that would incur the expensive dimension calculations twice
+  const dimensions = fitAddon.proposeDimensions();
+
+  // Do the resizing locally
+  term.resize(dimensions.cols, dimensions.rows);
+
+  let dims = {
+      "width": term.cols,
+      "height": term.rows
+  };
+  socket.send(JSON.stringify(dims));
+};
+
+
+function initWebsocket(term, fitAddon) {
   // Build the websocket
   const loc = window.location;
   var new_uri = "@{InstanceR ts}".replace(/^http/i, "ws");
@@ -8,6 +26,7 @@ function initWebsocket() {
   socket.onopen = function(e) {
     // console.log("Connected: ");
     // console.log(e);
+    resize(term, fitAddon, socket);
   }
   // Listen for the close connection event
   socket.onclose = function(e) {
@@ -129,62 +148,30 @@ window.onload = async function() {
   const term = new Terminal(options);
   window.term = term;
 
-  // Load the attach addon to attach to the remote instance via websockets
-  socket = initWebsocket();
-  const attachAddon = new AttachAddon.AttachAddon(socket);
-  term.loadAddon(attachAddon);
-
-
   // Load the fit addon
   const fitAddon = new FitAddon.FitAddon();
   term.loadAddon(fitAddon);
+
+  // Load the attach addon to attach to the remote instance via websockets
+  socket = initWebsocket(term, fitAddon);
+  const attachAddon = new AttachAddon.AttachAddon(socket);
+  term.loadAddon(attachAddon);
+
 
 
   // Open the terminal
   term.open(terminalContainer);
 
   // Fit the to the container
-  fitAddon.fit();
+  // fitAddon.fit();
+
+  // Focus the terminal
   term.focus();
 
 
-  // A function to resize the terminal
-  const resize = () => {
-    // console.log("trying to resize");
-
-    // We avoid using fitAddon.fit() as that would incur the expensive dimension calculations twice
-    const dimensions = fitAddon.proposeDimensions();
-
-    // Do the resizing locally
-    term.resize(dimensions.cols, dimensions.rows);
-
-    // Do the resizing remotely
-    $.ajax({
-      type: "POST",
-      url: "@{ResizeR}",
-      data: JSON.stringify({
-        "width": term.cols,
-        "height": term.rows
-      }),
-      contentType: "application/json; charset=utf-8",
-      dataType: "json",
-      success: function(data){
-        // console.log("Succeeded in resizing the terminal.");
-        // console.log(data);
-      },
-      error: function(data){
-        console.log("Failed to resize the terminal.");
-        console.log(data);
-        resize(); // Try again
-      }
-    });
+  const resizeHere = () => {
+    resize(term, fitAddon, socket);
   };
-
-  
-
   // Make sure to resize when the window changes in size
-  window.addEventListener('resize', resize);
-
-  // resize initially
-  resize();
+  window.addEventListener('resize', resizeHere);
 };

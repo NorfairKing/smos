@@ -29,7 +29,6 @@ import Path.IO
 import Servant.Auth.Client (Token (..))
 import Servant.Client
 import Smos.Client
-import Smos.Instance
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import qualified System.FilePath as FP
@@ -47,7 +46,6 @@ data App
         appStatic :: !EmbeddedStatic,
         appLoginTokens :: !(TVar (Map Username Token)),
         appHttpManager :: !Http.Manager,
-        appSmosInstances :: !(TVar (Map Username SmosInstanceHandle)),
         appDataDir :: !(Path Abs Dir)
       }
 

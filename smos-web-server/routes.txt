@@ -3,7 +3,6 @@
 -- Editor
 /file/*Texts FileR GET
 /ws/instance/*Texts InstanceR GET
-/ws/resize ResizeR POST
 
 -- Subsites
 /auth AuthR Auth getAuth

@@ -29,7 +29,6 @@ runSmosWebServer ServeSettings {..} = do
   ensureDir serveSetDataDir
   man <- liftIO $ Http.newManager Http.tlsManagerSettings
   loginVar <- liftIO $ newTVarIO M.empty
-  instancesVar <- liftIO $ newTVarIO M.empty
   let app =
         App
           { appLogLevel = serveSetLogLevel,
@@ -38,7 +37,6 @@ runSmosWebServer ServeSettings {..} = do
             appDocsBaseUrl = serveSetDocsUrl,
             appLoginTokens = loginVar,
             appHttpManager = man,
-            appSmosInstances = instancesVar,
             appDataDir = serveSetDataDir
           }
   let defMiddles = defaultMiddlewaresNoLogging
