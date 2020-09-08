@@ -106,6 +106,7 @@ enterNextActionFile =
               case nextActionReportCursorBuildSmosFileCursor wd narc of
                 Nothing -> pure ()
                 Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
+            _ -> pure ()
           Nothing -> pure (),
       actionDescription = "Enter the currently selected next action"
     }

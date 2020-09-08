@@ -128,12 +128,14 @@ combineBrowserKeyMap bkm (Just bkc) = do
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
-  let ReportsKeyMap _ _ = undefined
+  let ReportsKeyMap _ _ _ = undefined
   narkms <- combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
+  wrkms <- combineWaitingReportKeyMap (reportsKeymapWaitingReportKeyMap rkm) (waitingReportKeyConfigs rkc)
   ams <- combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
   return $
     rkm
       { reportsKeymapNextActionReportKeyMap = narkms,
+        reportsKeymapWaitingReportKeyMap = wrkms,
         reportsKeymapAnyMatchers = ams
       }
 
@@ -149,6 +151,18 @@ combineNextActionReportKeyMap narkm (Just narkc) = do
       { nextActionReportMatchers = nms,
         nextActionReportSearchMatchers = sms,
         nextActionReportAnyMatchers = ams
+      }
+
+combineWaitingReportKeyMap :: WaitingReportKeyMap -> Maybe WaitingReportKeyConfigs -> Comb WaitingReportKeyMap
+combineWaitingReportKeyMap narkm Nothing = pure narkm
+combineWaitingReportKeyMap narkm (Just narkc) = do
+  let WaitingReportKeyMap _ _ = undefined
+  nms <- combineKeyMappings (waitingReportMatchers narkm) (waitingReportNormalKeyConfigs narkc)
+  ams <- combineKeyMappings (waitingReportAnyMatchers narkm) (waitingReportAnyKeyConfigs narkc)
+  return $
+    narkm
+      { waitingReportMatchers = nms,
+        waitingReportAnyMatchers = ams
       }
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap

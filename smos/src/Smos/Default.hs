@@ -275,6 +275,7 @@ defaultReportsKeyMap :: ReportsKeyMap
 defaultReportsKeyMap =
   ReportsKeyMap
     { reportsKeymapNextActionReportKeyMap = defaultNextActionReportKeyMap,
+      reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
           []
@@ -306,6 +307,13 @@ defaultNextActionReportKeyMap =
             exactKey KDel deleteNextActionFilter
           ],
       nextActionReportAnyMatchers = listMatchers []
+    }
+
+defaultWaitingReportKeyMap :: WaitingReportKeyMap
+defaultWaitingReportKeyMap =
+  WaitingReportKeyMap
+    { waitingReportMatchers = listMatchers [],
+      waitingReportAnyMatchers = listMatchers []
     }
 
 defaultHelpKeyMap :: HelpKeyMap

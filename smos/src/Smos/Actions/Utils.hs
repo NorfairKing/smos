@@ -327,8 +327,9 @@ modifyNextActionReportCursor func = modifyNextActionReportCursorS $ pure . func
 modifyNextActionReportCursorS ::
   (NextActionReportCursor -> SmosM NextActionReportCursor) -> SmosM ()
 modifyNextActionReportCursorS func =
-  modifyReportCursorS $ \case
+  modifyReportCursorS $ \rc -> case rc of
     ReportNextActions narc -> ReportNextActions <$> func narc
+    _ -> pure rc
 
 modifyReportCursorM :: (ReportCursor -> Maybe ReportCursor) -> SmosM ()
 modifyReportCursorM func = modifyReportCursor $ \hc -> fromMaybe hc $ func hc

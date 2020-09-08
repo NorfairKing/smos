@@ -203,34 +203,38 @@ instance Monoid BrowserKeyMap where
 
 data ReportsKeyMap
   = ReportsKeyMap
-      { reportsKeymapNextActionReportKeyMap :: NextActionReportKeyMap,
-        reportsKeymapAnyMatchers :: KeyMappings
+      { reportsKeymapNextActionReportKeyMap :: !NextActionReportKeyMap,
+        reportsKeymapWaitingReportKeyMap :: !WaitingReportKeyMap,
+        reportsKeymapAnyMatchers :: !KeyMappings
       }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
-    let ReportsKeyMap _ _ = undefined
+    let ReportsKeyMap _ _ _ = undefined
      in ReportsKeyMap
           { reportsKeymapNextActionReportKeyMap =
               reportsKeymapNextActionReportKeyMap rkm1 <> reportsKeymapNextActionReportKeyMap rkm2,
+            reportsKeymapWaitingReportKeyMap =
+              reportsKeymapWaitingReportKeyMap rkm1 <> reportsKeymapWaitingReportKeyMap rkm2,
             reportsKeymapAnyMatchers =
               reportsKeymapAnyMatchers rkm1 <> reportsKeymapAnyMatchers rkm2
           }
 
 instance Monoid ReportsKeyMap where
   mempty =
-    let ReportsKeyMap _ _ = undefined
-     in ReportsKeyMap
-          { reportsKeymapNextActionReportKeyMap = mempty,
-            reportsKeymapAnyMatchers = mempty
-          }
+    ReportsKeyMap
+      { reportsKeymapNextActionReportKeyMap = mempty,
+        reportsKeymapWaitingReportKeyMap = mempty,
+        reportsKeymapAnyMatchers = mempty
+      }
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
 reportsKeyMapActions ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ = undefined
+  let ReportsKeyMap _ _ _ = undefined
    in concat
         [ nextActionReportKeyMapActions reportsKeymapNextActionReportKeyMap,
+          waitingReportKeyMapActions reportsKeymapWaitingReportKeyMap,
           keyMappingsActions reportsKeymapAnyMatchers
         ]
 
@@ -268,6 +272,38 @@ nextActionReportKeyMapActions NextActionReportKeyMap {..} =
         [ nextActionReportMatchers,
           nextActionReportSearchMatchers,
           nextActionReportAnyMatchers
+        ]
+
+data WaitingReportKeyMap
+  = WaitingReportKeyMap
+      { waitingReportMatchers :: KeyMappings,
+        waitingReportAnyMatchers :: KeyMappings
+      }
+  deriving (Generic)
+
+instance Semigroup WaitingReportKeyMap where
+  narkm1 <> narkm2 =
+    let WaitingReportKeyMap _ _ = undefined
+     in WaitingReportKeyMap
+          { waitingReportMatchers = waitingReportMatchers narkm1 <> waitingReportMatchers narkm2,
+            waitingReportAnyMatchers = waitingReportAnyMatchers narkm1 <> waitingReportAnyMatchers narkm2
+          }
+
+instance Monoid WaitingReportKeyMap where
+  mappend = (<>)
+  mempty =
+    WaitingReportKeyMap
+      { waitingReportMatchers = mempty,
+        waitingReportAnyMatchers = mempty
+      }
+
+waitingReportKeyMapActions :: WaitingReportKeyMap -> [AnyAction]
+waitingReportKeyMapActions WaitingReportKeyMap {..} =
+  let WaitingReportKeyMap _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ waitingReportMatchers,
+          waitingReportAnyMatchers
         ]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings
@@ -737,6 +773,9 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                                   case nextActionReportCursorSelection narc of
                                     NextActionReportSelected -> ("Next Action Report", nextActionReportMatchers)
                                     NextActionReportFilterSelected -> ("Next Action Report, Search", nextActionReportSearchMatchers)
+                          ReportWaiting _ ->
+                            let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
+                             in ("Waiting Report", waitingReportMatchers ++ waitingReportAnyMatchers)
             HelpSelected -> Nothing, -- Should not happen
           editorCursorSelection = HelpSelected
         }

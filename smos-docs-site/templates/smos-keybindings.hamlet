@@ -86,6 +86,14 @@
     Any
   ^{keyMapTable $ nextActionReportAnyMatchers $ reportsKeymapNextActionReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
   <h3>
+    Waiting Report
+  <h4>
+    Normal
+  ^{keyMapTable $ waitingReportMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Any
+  ^{keyMapTable $ waitingReportAnyMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h3>
     Any
   ^{keyMapTable $ reportsKeymapAnyMatchers $ keyMapReportsKeyMap defaultKeyMap }
 
