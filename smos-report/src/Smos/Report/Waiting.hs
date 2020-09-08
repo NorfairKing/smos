@@ -5,6 +5,7 @@
 module Smos.Report.Waiting where
 
 import Conduit
+import Cursor.Simple.Forest
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import Data.List
@@ -42,18 +43,22 @@ produceWaitingReport ef ha dc = produceReport ha dc (waitingReportConduit ef)
 
 waitingReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m WaitingReport
 waitingReportConduit ef =
-  finishWaitingReport . WaitingReport
-    <$> ( smosFileCursors
-            .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
-            .| smosCursorCurrents
+  finishWaitingReport
+    <$> ( waitingReportConduitHelper ef .| smosCursorCurrents
             .| C.concatMap (uncurry makeWaitingEntry)
             .| sinkList
         )
+
+waitingReportConduitHelper :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+waitingReportConduitHelper ef =
+  smosFileCursors
+    .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
   where
     isWaitingFilter :: EntryFilterRel
     isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "WAITING"
-    finishWaitingReport :: WaitingReport -> WaitingReport
-    finishWaitingReport wr = wr {waitingReportEntries = sortOn waitingEntryTimestamp (waitingReportEntries wr)}
+
+finishWaitingReport :: [WaitingEntry] -> WaitingReport
+finishWaitingReport = WaitingReport . sortOn waitingEntryTimestamp
 
 data WaitingEntry
   = WaitingEntry
