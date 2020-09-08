@@ -278,7 +278,8 @@ defaultReportsKeyMap =
       reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
-          []
+          [ exactChar 'q' selectEditor
+          ]
     }
 
 defaultNextActionReportKeyMap :: NextActionReportKeyMap
@@ -295,8 +296,7 @@ defaultNextActionReportKeyMap =
             exactKey KEnd lastNextAction,
             exactChar 'G' lastNextAction,
             exactKey KEnter enterNextActionFile,
-            exactChar '/' selectNextActionFilter,
-            exactChar 'q' selectEditor
+            exactChar '/' selectNextActionFilter
           ],
       nextActionReportSearchMatchers =
         listMatchers
