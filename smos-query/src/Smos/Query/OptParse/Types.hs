@@ -82,7 +82,7 @@ data WorkFlags
 
 data WaitingFlags
   = WaitingFlags
-      { waitingFlagFilter :: Maybe EntryFilter,
+      { waitingFlagFilter :: Maybe EntryFilterRel,
         waitingFlagHideArchive :: Maybe HideArchive,
         waitingFlagThreshold :: Maybe Word
       }
@@ -295,7 +295,7 @@ data WorkSettings
 
 data WaitingSettings
   = WaitingSettings
-      { waitingSetFilter :: Maybe EntryFilter,
+      { waitingSetFilter :: Maybe EntryFilterRel,
         waitingSetHideArchive :: HideArchive,
         waitingSetThreshold :: Word
       }

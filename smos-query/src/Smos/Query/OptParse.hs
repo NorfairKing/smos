@@ -276,7 +276,7 @@ parseCommandWaiting = info parser modifier
     modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
     parser =
       CommandWaiting
-        <$> (WaitingFlags <$> parseFilterArgs <*> parseHideArchiveFlag <*> parseThresholdFlag)
+        <$> (WaitingFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag <*> parseThresholdFlag)
 
 parseThresholdFlag :: Parser (Maybe Word)
 parseThresholdFlag =

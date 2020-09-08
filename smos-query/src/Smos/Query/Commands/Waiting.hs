@@ -7,27 +7,19 @@ module Smos.Query.Commands.Waiting
 where
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
 import Data.Time
 import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
-import Smos.Report.Streaming
 import Smos.Report.Waiting
 
 smosQueryWaiting :: WaitingSettings -> Q ()
 smosQueryWaiting WaitingSettings {..} = do
-  tups <-
-    sourceToList $
-      streamSmosFiles waitingSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
-        .| smosFileCursors
-        .| smosMFilter waitingSetFilter
-        .| smosCursorCurrents
-        .| C.filter (isWaitingAction . snd)
+  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  report <- produceWaitingReport waitingSetFilter waitingSetHideArchive dc
   now <- liftIO getCurrentTime
-  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now $ makeWaitingReport tups
+  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now report
 
 renderWaitingActionReport :: Word -> UTCTime -> WaitingReport -> Table
 renderWaitingActionReport threshold now =
@@ -35,7 +27,7 @@ renderWaitingActionReport threshold now =
 
 formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk]
 formatWaitingActionEntry threshold now WaitingActionEntry {..} =
-  [ rootedPathChunk waitingActionEntryFilePath,
+  [ pathChunk waitingActionEntryFilePath,
     headerChunk waitingActionEntryHeader,
     maybe (chunk "") (showDaysSince threshold now) waitingActionEntryTimestamp
   ]

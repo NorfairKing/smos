@@ -82,6 +82,7 @@ module Smos.Data.Types
     -- Utils
     ForYaml (..),
     utcFormat,
+    utcSchema,
     getLocalTime,
   )
 where
@@ -207,6 +208,9 @@ instance YamlSchema (ForYaml UTCTime) where
 
 utcFormat :: String
 utcFormat = "%F %H:%M:%S.%q"
+
+utcSchema :: YamlParser UTCTime
+utcSchema = maybeParser (parseTimeM True defaultTimeLocale utcFormat) yamlSchema <?> T.pack utcFormat
 
 data Entry
   = Entry
