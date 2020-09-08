@@ -1,6 +1,7 @@
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.OptParse
   ( module Smos.OptParse,
@@ -54,25 +55,31 @@ combineToInstructions sc@SmosConfig {..} fp Flags {..} Environment {..} mc = do
 combineKeymap :: KeyMap -> Maybe KeybindingsConfiguration -> Comb KeyMap
 combineKeymap km Nothing = pure km
 combineKeymap km (Just kbc) = do
+  let KeyMap _ _ _ _ _ = undefined
   let startingPoint =
         case confReset kbc of
           Just True -> mempty
           Just False -> km
           Nothing -> km
   keyMapFileKeyMap <- combineFileKeymap (keyMapFileKeyMap startingPoint) (confFileKeyConfig kbc)
+  keyMapBrowserKeyMap <- combineBrowserKeyMap (keyMapBrowserKeyMap km) (confBrowserKeyConfig kbc)
   keyMapReportsKeyMap <-
     combineReportsKeymap (keyMapReportsKeyMap startingPoint) (confReportsKeyConfig kbc)
   keyMapHelpKeyMap <- combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
+  keyMapAnyKeyMap <- combineKeyMappings (keyMapAnyKeyMap km) (confAnyKeyConfig kbc)
   return
     startingPoint
       { keyMapFileKeyMap = keyMapFileKeyMap,
+        keyMapBrowserKeyMap = keyMapBrowserKeyMap,
         keyMapReportsKeyMap = keyMapReportsKeyMap,
-        keyMapHelpKeyMap = keyMapHelpKeyMap
+        keyMapHelpKeyMap = keyMapHelpKeyMap,
+        keyMapAnyKeyMap = keyMapAnyKeyMap
       }
 
 combineFileKeymap :: FileKeyMap -> Maybe FileKeyConfigs -> Comb FileKeyMap
 combineFileKeymap fkm Nothing = pure fkm
 combineFileKeymap fkm (Just fkc) = do
+  let FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
   fileKeyMapEmptyMatchers <- combineKeyMappings (fileKeyMapEmptyMatchers fkm) (emptyKeyConfigs fkc)
   fileKeyMapEntryMatchers <- combineKeyMappings (fileKeyMapEntryMatchers fkm) (entryKeyConfigs fkc)
   fileKeyMapHeaderMatchers <-
@@ -103,21 +110,60 @@ combineFileKeymap fkm (Just fkc) = do
         fileKeyMapAnyMatchers = fileKeyMapAnyMatchers
       }
 
+combineBrowserKeyMap :: BrowserKeyMap -> Maybe BrowserKeyConfigs -> Comb BrowserKeyMap
+combineBrowserKeyMap bkm Nothing = pure bkm
+combineBrowserKeyMap bkm (Just bkc) = do
+  ekms <- combineKeyMappings (browserKeyMapExistentMatchers bkm) (browserExistentKeyConfigs bkc)
+  pms <- combineKeyMappings (browserKeyMapInProgressMatchers bkm) (browserInProgressKeyConfigs bkc)
+  ems <- combineKeyMappings (browserKeyMapEmptyMatchers bkm) (browserEmptyKeyConfigs bkc)
+  ams <- combineKeyMappings (browserKeyMapAnyMatchers bkm) (browserAnyKeyConfigs bkc)
+  return $
+    bkm
+      { browserKeyMapExistentMatchers = ekms,
+        browserKeyMapInProgressMatchers = pms,
+        browserKeyMapEmptyMatchers = ems,
+        browserKeyMapAnyMatchers = ams
+      }
+
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
-  nams <-
-    combineKeyMappings (reportsKeymapNextActionReportMatchers rkm) (nextActionReportKeyConfigs rkc)
-  nafms <-
-    combineKeyMappings (reportsKeymapNextActionReportFilterMatchers rkm) (nextActionReportKeyConfigs rkc)
-  return $ rkm {reportsKeymapNextActionReportMatchers = nams, reportsKeymapNextActionReportFilterMatchers = nafms}
+  let ReportsKeyMap _ _ = undefined
+  narkms <- combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
+  ams <- combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
+  return $
+    rkm
+      { reportsKeymapNextActionReportKeyMap = narkms,
+        reportsKeymapAnyMatchers = ams
+      }
+
+combineNextActionReportKeyMap :: NextActionReportKeyMap -> Maybe NextActionReportKeyConfigs -> Comb NextActionReportKeyMap
+combineNextActionReportKeyMap narkm Nothing = pure narkm
+combineNextActionReportKeyMap narkm (Just narkc) = do
+  let NextActionReportKeyMap _ _ _ = undefined
+  nms <- combineKeyMappings (nextActionReportMatchers narkm) (nextActionReportNormalKeyConfigs narkc)
+  sms <- combineKeyMappings (nextActionReportSearchMatchers narkm) (nextActionReportSearchKeyConfigs narkc)
+  ams <- combineKeyMappings (nextActionReportAnyMatchers narkm) (nextActionReportAnyKeyConfigs narkc)
+  return $
+    narkm
+      { nextActionReportMatchers = nms,
+        nextActionReportSearchMatchers = sms,
+        nextActionReportAnyMatchers = ams
+      }
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
 combineHelpKeymap hkm Nothing = pure hkm
 combineHelpKeymap hkm (Just hkc) = do
+  let HelpKeyMap _ _ _ = undefined
   hms <- combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
   sms <- combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
-  return $ hkm {helpKeyMapHelpMatchers = hms, helpKeyMapSearchMatchers = sms}
+  ams <- combineKeyMappings (helpKeyMapAnyMatchers hkm) (helpAnyKeyConfigs hkc)
+  return $
+    hkm
+      { helpKeyMapHelpMatchers = hms,
+        helpKeyMapSearchMatchers = sms,
+        helpKeyMapAnyMatchers = ams
+      }
 
 combineKeyMappings :: KeyMappings -> Maybe KeyConfigs -> Comb KeyMappings
 combineKeyMappings kms Nothing = pure kms

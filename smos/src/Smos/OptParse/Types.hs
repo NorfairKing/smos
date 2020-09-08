@@ -231,8 +231,7 @@ backToBrowserKeyConfigs BrowserKeyMap {..} =
 
 data ReportsKeyConfigs
   = ReportsKeyConfigs
-      { nextActionReportKeyConfigs :: Maybe KeyConfigs,
-        nextActionReportFilterKeyConfigs :: Maybe KeyConfigs,
+      { nextActionReportKeyConfigs :: Maybe NextActionReportKeyConfigs,
         anyReportKeyConfigs :: Maybe KeyConfigs
       }
   deriving (Show, Eq, Generic)
@@ -241,10 +240,9 @@ instance Validity ReportsKeyConfigs
 
 instance ToJSON ReportsKeyConfigs where
   toJSON ReportsKeyConfigs {..} =
-    let ReportsKeyConfigs _ _ _ = undefined
+    let ReportsKeyConfigs _ _ = undefined
      in object
           [ "next-action" .= nextActionReportKeyConfigs,
-            "next-action-filter" .= nextActionReportFilterKeyConfigs,
             "any" .= anyReportKeyConfigs
           ]
 
@@ -256,16 +254,53 @@ instance YamlSchema ReportsKeyConfigs where
     objectParser "ReportsKeyConfigs" $
       ReportsKeyConfigs
         <$> optionalField "next-action" "Keybindings for the interactive next action report"
-        <*> optionalField "next-action-filter" "Keybindings for when the filter bar is selected in the interactive next action report"
         <*> optionalField "any" "Keybindings for at any point in any report"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ _ = undefined
+  let ReportsKeyMap _ _ = undefined
    in ReportsKeyConfigs
-        { nextActionReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportMatchers,
-          nextActionReportFilterKeyConfigs = Just $ backToKeyConfigs reportsKeymapNextActionReportFilterMatchers,
+        { nextActionReportKeyConfigs = Just $ backToNextActionReportKeyConfigs reportsKeymapNextActionReportKeyMap,
           anyReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapAnyMatchers
+        }
+
+data NextActionReportKeyConfigs
+  = NextActionReportKeyConfigs
+      { nextActionReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+        nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+        nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+      }
+  deriving (Show, Eq, Generic)
+
+instance Validity NextActionReportKeyConfigs
+
+instance ToJSON NextActionReportKeyConfigs where
+  toJSON NextActionReportKeyConfigs {..} =
+    let NextActionReportKeyConfigs _ _ _ = undefined
+     in object
+          [ "normal" .= nextActionReportNormalKeyConfigs,
+            "search" .= nextActionReportSearchKeyConfigs,
+            "any" .= nextActionReportAnyKeyConfigs
+          ]
+
+instance FromJSON NextActionReportKeyConfigs where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema NextActionReportKeyConfigs where
+  yamlSchema =
+    objectParser "NextActionReportKeyConfigs" $
+      NextActionReportKeyConfigs
+        <$> optionalField "normal" "Keybindings for interacting with the next-action report"
+        <*> optionalField "search" "Keybindings for the search in the next-action report"
+        <*> optionalField "any" "Keybindings for at any point in the next action report"
+
+backToNextActionReportKeyConfigs :: NextActionReportKeyMap -> NextActionReportKeyConfigs
+backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
+  let NextActionReportKeyMap _ _ _ = undefined
+   in NextActionReportKeyConfigs
+        { nextActionReportNormalKeyConfigs = Just $ backToKeyConfigs nextActionReportMatchers,
+          nextActionReportSearchKeyConfigs = Just $ backToKeyConfigs nextActionReportSearchMatchers,
+          nextActionReportAnyKeyConfigs = Just $ backToKeyConfigs nextActionReportAnyMatchers
         }
 
 data HelpKeyConfigs

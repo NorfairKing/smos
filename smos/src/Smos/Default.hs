@@ -274,7 +274,16 @@ defaultBrowserKeyMap =
 defaultReportsKeyMap :: ReportsKeyMap
 defaultReportsKeyMap =
   ReportsKeyMap
-    { reportsKeymapNextActionReportMatchers =
+    { reportsKeymapNextActionReportKeyMap = defaultNextActionReportKeyMap,
+      reportsKeymapAnyMatchers =
+        listMatchers
+          []
+    }
+
+defaultNextActionReportKeyMap :: NextActionReportKeyMap
+defaultNextActionReportKeyMap =
+  NextActionReportKeyMap
+    { nextActionReportMatchers =
         listMatchers
           [ exactKey KUp prevNextAction,
             exactChar 'k' prevNextAction,
@@ -288,7 +297,7 @@ defaultReportsKeyMap =
             exactChar '/' selectNextActionFilter,
             exactChar 'q' selectEditor
           ],
-      reportsKeymapNextActionReportFilterMatchers =
+      nextActionReportSearchMatchers =
         listMatchers
           [ anyChar insertNextActionFilter,
             exactKey KEnter selectNextActionReport,
@@ -296,9 +305,7 @@ defaultReportsKeyMap =
             exactKey KBS removeNextActionFilter,
             exactKey KDel deleteNextActionFilter
           ],
-      reportsKeymapAnyMatchers =
-        listMatchers
-          []
+      nextActionReportAnyMatchers = listMatchers []
     }
 
 defaultHelpKeyMap :: HelpKeyMap

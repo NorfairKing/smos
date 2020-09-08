@@ -59,12 +59,15 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
           Nothing -> []
           Just rc ->
             let ReportsKeyMap {..} = keyMapReportsKeyMap
-             in case rc of
+                reportsAnys = map ((,) AnyMatcher) reportsKeymapAnyMatchers
+             in (++ reportsAnys) $ case rc of
                   ReportNextActions NextActionReportCursor {..} ->
-                    map ((,) SpecificMatcher) $
-                      case nextActionReportCursorSelection of
-                        NextActionReportSelected -> reportsKeymapNextActionReportMatchers
-                        NextActionReportFilterSelected -> reportsKeymapNextActionReportFilterMatchers
+                    let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
+                        nextactionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
+                     in (++ nextactionReportAnys) $ map ((,) SpecificMatcher) $
+                          case nextActionReportCursorSelection of
+                            NextActionReportSelected -> nextActionReportMatchers
+                            NextActionReportFilterSelected -> nextActionReportSearchMatchers
         BrowserSelected ->
           case editorCursorBrowserCursor of
             Nothing -> []

@@ -202,41 +202,72 @@ instance Monoid BrowserKeyMap where
 
 data ReportsKeyMap
   = ReportsKeyMap
-      { reportsKeymapNextActionReportMatchers :: KeyMappings,
-        reportsKeymapNextActionReportFilterMatchers :: KeyMappings,
+      { reportsKeymapNextActionReportKeyMap :: NextActionReportKeyMap,
         reportsKeymapAnyMatchers :: KeyMappings
       }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
-    let ReportsKeyMap _ _ _ = undefined
+    let ReportsKeyMap _ _ = undefined
      in ReportsKeyMap
-          { reportsKeymapNextActionReportMatchers =
-              reportsKeymapNextActionReportMatchers rkm1 <> reportsKeymapNextActionReportMatchers rkm2,
-            reportsKeymapNextActionReportFilterMatchers =
-              reportsKeymapNextActionReportFilterMatchers rkm1 <> reportsKeymapNextActionReportFilterMatchers rkm2,
+          { reportsKeymapNextActionReportKeyMap =
+              reportsKeymapNextActionReportKeyMap rkm1 <> reportsKeymapNextActionReportKeyMap rkm2,
             reportsKeymapAnyMatchers =
               reportsKeymapAnyMatchers rkm1 <> reportsKeymapAnyMatchers rkm2
           }
 
 instance Monoid ReportsKeyMap where
   mempty =
-    let ReportsKeyMap _ _ _ = undefined
+    let ReportsKeyMap _ _ = undefined
      in ReportsKeyMap
-          { reportsKeymapNextActionReportMatchers = mempty,
-            reportsKeymapNextActionReportFilterMatchers = mempty,
+          { reportsKeymapNextActionReportKeyMap = mempty,
             reportsKeymapAnyMatchers = mempty
           }
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
-reportsKeyMapActions (ReportsKeyMap reportsKeymapNextActionReportMatchers reportsKeymapNextActionReportFilterMatchers reportsKeymapAnyMatchers) =
-  concatMap
-    keyMappingsActions
-    [ reportsKeymapNextActionReportMatchers,
-      reportsKeymapNextActionReportFilterMatchers,
-      reportsKeymapAnyMatchers
-    ]
+reportsKeyMapActions ReportsKeyMap {..} =
+  let ReportsKeyMap _ _ = undefined
+   in concat
+        [ nextActionReportKeyMapActions reportsKeymapNextActionReportKeyMap,
+          keyMappingsActions reportsKeymapAnyMatchers
+        ]
+
+data NextActionReportKeyMap
+  = NextActionReportKeyMap
+      { nextActionReportMatchers :: KeyMappings,
+        nextActionReportSearchMatchers :: KeyMappings,
+        nextActionReportAnyMatchers :: KeyMappings
+      }
+  deriving (Generic)
+
+instance Semigroup NextActionReportKeyMap where
+  narkm1 <> narkm2 =
+    let NextActionReportKeyMap _ _ _ = undefined
+     in NextActionReportKeyMap
+          { nextActionReportMatchers = nextActionReportMatchers narkm1 <> nextActionReportMatchers narkm2,
+            nextActionReportSearchMatchers = nextActionReportSearchMatchers narkm1 <> nextActionReportSearchMatchers narkm2,
+            nextActionReportAnyMatchers = nextActionReportAnyMatchers narkm1 <> nextActionReportAnyMatchers narkm2
+          }
+
+instance Monoid NextActionReportKeyMap where
+  mappend = (<>)
+  mempty =
+    NextActionReportKeyMap
+      { nextActionReportMatchers = mempty,
+        nextActionReportSearchMatchers = mempty,
+        nextActionReportAnyMatchers = mempty
+      }
+
+nextActionReportKeyMapActions :: NextActionReportKeyMap -> [AnyAction]
+nextActionReportKeyMapActions NextActionReportKeyMap {..} =
+  let NextActionReportKeyMap _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ nextActionReportMatchers,
+          nextActionReportSearchMatchers,
+          nextActionReportAnyMatchers
+        ]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings
 keyMapHelpMatchers km =
@@ -253,28 +284,31 @@ data HelpKeyMap
 
 instance Semigroup HelpKeyMap where
   hkm1 <> hkm2 =
-    HelpKeyMap
-      { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2,
-        helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2,
-        helpKeyMapAnyMatchers = helpKeyMapAnyMatchers hkm1 <> helpKeyMapAnyMatchers hkm2
-      }
+    let HelpKeyMap _ _ _ = undefined
+     in HelpKeyMap
+          { helpKeyMapHelpMatchers = helpKeyMapHelpMatchers hkm1 <> helpKeyMapHelpMatchers hkm2,
+            helpKeyMapSearchMatchers = helpKeyMapSearchMatchers hkm1 <> helpKeyMapSearchMatchers hkm2,
+            helpKeyMapAnyMatchers = helpKeyMapAnyMatchers hkm1 <> helpKeyMapAnyMatchers hkm2
+          }
 
 instance Monoid HelpKeyMap where
   mempty =
-    HelpKeyMap
-      { helpKeyMapHelpMatchers = mempty,
-        helpKeyMapSearchMatchers = mempty,
-        helpKeyMapAnyMatchers = mempty
-      }
+    let HelpKeyMap _ _ _ = undefined
+     in HelpKeyMap
+          { helpKeyMapHelpMatchers = mempty,
+            helpKeyMapSearchMatchers = mempty,
+            helpKeyMapAnyMatchers = mempty
+          }
 
 helpKeyMapActions :: HelpKeyMap -> [AnyAction]
-helpKeyMapActions (HelpKeyMap helpKeyMapHelpMatchers helpKeyMapSearchMatchers helpKeyMapAnyMatchers) =
-  concatMap
-    keyMappingsActions
-    [ helpKeyMapHelpMatchers,
-      helpKeyMapSearchMatchers,
-      helpKeyMapAnyMatchers
-    ]
+helpKeyMapActions HelpKeyMap {..} =
+  let HelpKeyMap _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ helpKeyMapHelpMatchers,
+          helpKeyMapSearchMatchers,
+          helpKeyMapAnyMatchers
+        ]
 
 type KeyMappings = [KeyMapping]
 
@@ -688,12 +722,20 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                         Nothing -> ("File Browser: Empty directory", browserKeyMapEmptyMatchers)
                         Just (_, _, InProgress _) -> ("File Browser: New file or directory in progress", browserKeyMapInProgressMatchers)
                         Just (_, _, Existent _) -> ("File Browser: Existent file or directory", browserKeyMapExistentMatchers)
-            ReportSelected -> case editorCursorReportCursor ec of
-              Nothing -> Nothing
-              Just rc -> case rc of
-                ReportNextActions _ ->
+            ReportSelected ->
+              case editorCursorReportCursor ec of
+                Nothing -> Nothing
+                Just rc ->
                   let ReportsKeyMap {..} = keyMapReportsKeyMap
-                   in withHelpBindings "Next Action Report" reportsKeymapNextActionReportMatchers
+                   in ( \(t, ms) -> withHelpBindings t $ ms ++ reportsKeymapAnyMatchers
+                      )
+                        $ case rc of
+                          ReportNextActions narc ->
+                            let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
+                             in (\(t, ms) -> (t, ms ++ nextActionReportAnyMatchers)) $
+                                  case nextActionReportCursorSelection narc of
+                                    NextActionReportSelected -> ("Next Action Report", nextActionReportMatchers)
+                                    NextActionReportFilterSelected -> ("Next Action Report, Search", nextActionReportSearchMatchers)
             HelpSelected -> Nothing, -- Should not happen
           editorCursorSelection = HelpSelected
         }
