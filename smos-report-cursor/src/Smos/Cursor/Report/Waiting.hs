@@ -4,7 +4,7 @@
 module Smos.Cursor.Report.Waiting where
 
 import Conduit
-import Cursor.Simple.Forest
+import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import qualified Data.Conduit.Combinators as C
 import Data.List
@@ -15,7 +15,10 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
 import Path
+import Smos.Cursor.Collapse
+import Smos.Cursor.Entry
 import Smos.Cursor.Report.Streaming
+import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.Report.Config
 import Smos.Report.Filter
@@ -51,10 +54,20 @@ waitingReportCursorNonEmptyCursorL = lens waitingReportCursorWaitingEntryCursors
 makeWaitingReportCursor :: [WaitingEntryCursor] -> WaitingReportCursor
 makeWaitingReportCursor = WaitingReportCursor . fmap makeNonEmptyCursor . NE.nonEmpty . sortOn waitingEntryCursorTimestamp
 
+waitingReportCursorBuildSmosFileCursor :: Path Abs Dir -> WaitingReportCursor -> Maybe (Path Abs File, SmosFileCursor)
+waitingReportCursorBuildSmosFileCursor pad wrc = do
+  selected <- nonEmptyCursorCurrent <$> waitingReportCursorWaitingEntryCursors wrc
+  let go :: ForestCursor Entry Entry -> SmosFileCursor
+      go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
+  pure
+    ( pad </> waitingEntryCursorFilePath selected,
+      go $ waitingEntryCursorForestCursor selected
+    )
+
 data WaitingEntryCursor
   = WaitingEntryCursor
       { waitingEntryCursorFilePath :: Path Rel File,
-        waitingEntryCursorForestCursor :: ForestCursor Entry,
+        waitingEntryCursorForestCursor :: ForestCursor Entry Entry,
         waitingEntryCursorTimestamp :: UTCTime
       }
   deriving (Show, Eq, Generic)
@@ -67,7 +80,7 @@ instance Validity WaitingEntryCursor where
           parseWaitingStateTimestamp (forestCursorCurrent waitingEntryCursorForestCursor) == Just waitingEntryCursorTimestamp
       ]
 
-makeWaitingEntryCursor :: Path Rel File -> ForestCursor Entry -> Maybe WaitingEntryCursor
+makeWaitingEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> Maybe WaitingEntryCursor
 makeWaitingEntryCursor path fc = do
   timestamp <- parseWaitingStateTimestamp $ forestCursorCurrent fc
   pure $

@@ -312,7 +312,18 @@ defaultNextActionReportKeyMap =
 defaultWaitingReportKeyMap :: WaitingReportKeyMap
 defaultWaitingReportKeyMap =
   WaitingReportKeyMap
-    { waitingReportMatchers = listMatchers [],
+    { waitingReportMatchers =
+        listMatchers
+          [ exactKey KUp prevWaiting,
+            exactChar 'k' prevWaiting,
+            exactKey KDown nextWaiting,
+            exactChar 'j' nextWaiting,
+            exactKey KHome firstWaiting,
+            exactString "gg" firstWaiting,
+            exactKey KEnd lastWaiting,
+            exactChar 'G' lastWaiting,
+            exactKey KEnter enterWaitingFile
+          ],
       waitingReportAnyMatchers = listMatchers []
     }
 
