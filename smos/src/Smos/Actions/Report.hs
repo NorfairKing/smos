@@ -10,6 +10,7 @@ import Smos.Types
 allPlainReportNextActions :: [Action]
 allPlainReportNextActions =
   [ reportNextActions,
+    reportWaiting,
     nextNextAction,
     prevNextAction,
     firstNextAction,
@@ -41,6 +42,22 @@ reportNextActions =
               editorCursorReportCursor = Just $ ReportNextActions narc
             },
       actionDescription = "Next action report"
+    }
+
+reportWaiting :: Action
+reportWaiting =
+  Action
+    { actionName = "reportWaiting",
+      actionFunc = modifyEditorCursorS $ \ec -> do
+        saveCurrentSmosFile
+        dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+        narc <- liftIO $ produceWaitingReportCursor dc
+        pure $
+          ec
+            { editorCursorSelection = ReportSelected,
+              editorCursorReportCursor = Just $ ReportWaiting narc
+            },
+      actionDescription = "Waiting report"
     }
 
 nextNextAction :: Action

@@ -33,6 +33,7 @@ import Lens.Micro
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Waiting
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
@@ -755,8 +756,9 @@ data EditorSelection
 
 instance Validity EditorSelection
 
-newtype ReportCursor
+data ReportCursor
   = ReportNextActions NextActionReportCursor
+  | ReportWaiting WaitingReportCursor
   deriving (Show, Eq, Generic)
 
 instance Validity ReportCursor

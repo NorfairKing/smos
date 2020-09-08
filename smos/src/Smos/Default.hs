@@ -352,5 +352,6 @@ defaultAnyKeyMap =
       exactString "br" selectBrowserReview,
       exactString "bc" selectBrowserClient,
       -- Reports
-      exactString "rn" reportNextActions
+      exactString "rn" reportNextActions,
+      exactString "rw" reportWaiting
     ]

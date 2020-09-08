@@ -24,6 +24,7 @@ module Smos.Actions.Utils
     module Smos.Cursor.Logbook,
     module Smos.Cursor.Properties,
     module Smos.Cursor.Report.Next,
+    module Smos.Cursor.Report.Waiting,
     module Smos.Cursor.SmosFile,
     module Smos.Cursor.StateHistory,
     module Smos.Cursor.Tags,
@@ -43,6 +44,7 @@ import Smos.Cursor.Header
 import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
 import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Waiting
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Cursor.StateHistory
