@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -55,7 +56,7 @@ waitingReportConduitHelper ef =
     .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
   where
     isWaitingFilter :: EntryFilterRel
-    isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "WAITING"
+    isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub waitingState
 
 finishWaitingReport :: [WaitingEntry] -> WaitingReport
 finishWaitingReport = WaitingReport . sortOn waitingEntryTimestamp
@@ -90,14 +91,28 @@ instance ToJSON WaitingEntry where
       ]
 
 makeWaitingEntry :: Path Rel File -> Entry -> Maybe WaitingEntry
-makeWaitingEntry rp Entry {..} = do
-  time <-
-    case unStateHistory entryStateHistory of
-      [] -> Nothing
-      x : _ -> Just $ stateHistoryEntryTimestamp x
+makeWaitingEntry rp e@Entry {..} = do
+  time <- parseWaitingStateTimestamp e
   pure
     WaitingEntry
       { waitingEntryHeader = entryHeader,
         waitingEntryTimestamp = time,
         waitingEntryFilePath = rp
       }
+
+parseWaitingStateTimestamp :: Entry -> Maybe UTCTime
+parseWaitingStateTimestamp =
+  firstWaiting
+    . unStateHistory
+    . entryStateHistory
+  where
+    firstWaiting :: [StateHistoryEntry] -> Maybe UTCTime
+    firstWaiting = \case
+      [] -> Nothing
+      (StateHistoryEntry {..} : _) ->
+        if stateHistoryEntryNewState == Just waitingState
+          then Just stateHistoryEntryTimestamp
+          else Nothing
+
+waitingState :: TodoState
+waitingState = "WAITING"

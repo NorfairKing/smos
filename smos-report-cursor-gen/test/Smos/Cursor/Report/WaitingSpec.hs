@@ -14,7 +14,6 @@ spec :: Spec
 spec = do
   genValidSpec @WaitingReportCursor
   genValidSpec @WaitingEntryCursor
-  describe "waitingReportCursorNonEmptyCursorL" $ lensSpecOnValid waitingReportCursorNonEmptyCursorL
   describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor
   modifyMaxSuccess (`div` 10) $ describe "produceWaitingReportCursor" $ it "produces valid reports for interesting stores"
     $ withInterestingStore

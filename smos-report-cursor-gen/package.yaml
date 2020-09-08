@@ -14,10 +14,12 @@ library:
   dependencies:
   - QuickCheck
   - base >=4.9 && <=5
+  - cursor
+  - cursor-gen
   - genvalidity
   - genvalidity-path
+  - microlens
   - smos-data
-  - cursor-gen
   - smos-data-gen
   - smos-report
   - smos-report-cursor
