@@ -19,15 +19,15 @@ smosQueryWaiting WaitingSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   report <- produceWaitingReport waitingSetFilter waitingSetHideArchive dc
   now <- liftIO getCurrentTime
-  liftIO $ putTableLn $ renderWaitingActionReport waitingSetThreshold now report
+  liftIO $ putTableLn $ renderWaitingReport waitingSetThreshold now report
 
-renderWaitingActionReport :: Word -> UTCTime -> WaitingReport -> Table
-renderWaitingActionReport threshold now =
-  formatAsTable . map (formatWaitingActionEntry threshold now) . waitingReportEntries
+renderWaitingReport :: Word -> UTCTime -> WaitingReport -> Table
+renderWaitingReport threshold now =
+  formatAsTable . map (formatWaitingEntry threshold now) . waitingReportEntries
 
-formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk]
-formatWaitingActionEntry threshold now WaitingActionEntry {..} =
-  [ pathChunk waitingActionEntryFilePath,
-    headerChunk waitingActionEntryHeader,
-    showDaysSince threshold now waitingActionEntryTimestamp
+formatWaitingEntry :: Word -> UTCTime -> WaitingEntry -> [Chunk]
+formatWaitingEntry threshold now WaitingEntry {..} =
+  [ pathChunk waitingEntryFilePath,
+    headerChunk waitingEntryHeader,
+    showDaysSince threshold now waitingEntryTimestamp
   ]

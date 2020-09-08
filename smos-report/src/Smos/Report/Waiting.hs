@@ -22,7 +22,7 @@ import YamlParse.Applicative
 
 newtype WaitingReport
   = WaitingReport
-      { waitingReportEntries :: [WaitingActionEntry]
+      { waitingReportEntries :: [WaitingEntry]
       }
   deriving (Show, Eq, Generic)
 
@@ -30,7 +30,7 @@ instance Validity WaitingReport where
   validate wr@WaitingReport {..} =
     mconcat
       [ genericValidate wr,
-        declare "The waiting report entries are in order" $ sortOn waitingActionEntryTimestamp waitingReportEntries == waitingReportEntries
+        declare "The waiting report entries are in order" $ sortOn waitingEntryTimestamp waitingReportEntries == waitingReportEntries
       ]
 
 instance FromJSON WaitingReport
@@ -46,53 +46,53 @@ waitingReportConduit ef =
     <$> ( smosFileCursors
             .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
             .| smosCursorCurrents
-            .| C.concatMap (uncurry makeWaitingActionEntry)
+            .| C.concatMap (uncurry makeWaitingEntry)
             .| sinkList
         )
   where
     isWaitingFilter :: EntryFilterRel
     isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "WAITING"
     finishWaitingReport :: WaitingReport -> WaitingReport
-    finishWaitingReport wr = wr {waitingReportEntries = sortOn waitingActionEntryTimestamp (waitingReportEntries wr)}
+    finishWaitingReport wr = wr {waitingReportEntries = sortOn waitingEntryTimestamp (waitingReportEntries wr)}
 
-data WaitingActionEntry
-  = WaitingActionEntry
-      { waitingActionEntryHeader :: Header,
-        waitingActionEntryTimestamp :: UTCTime,
-        waitingActionEntryFilePath :: Path Rel File
+data WaitingEntry
+  = WaitingEntry
+      { waitingEntryHeader :: Header,
+        waitingEntryTimestamp :: UTCTime,
+        waitingEntryFilePath :: Path Rel File
       }
   deriving (Show, Eq, Generic)
 
-instance Validity WaitingActionEntry
+instance Validity WaitingEntry
 
-instance YamlSchema WaitingActionEntry where
+instance YamlSchema WaitingEntry where
   yamlSchema =
-    objectParser "WaitingActionEntry" $
-      WaitingActionEntry
+    objectParser "WaitingEntry" $
+      WaitingEntry
         <$> requiredField "header" "The entry header"
         <*> requiredFieldWith "timestamp" "The timestamp at which this entry became WAITING" utcSchema
         <*> requiredField "path" "The path of the file that contained this waiting entry"
 
-instance FromJSON WaitingActionEntry where
+instance FromJSON WaitingEntry where
   parseJSON = viaYamlSchema
 
-instance ToJSON WaitingActionEntry where
-  toJSON WaitingActionEntry {..} =
+instance ToJSON WaitingEntry where
+  toJSON WaitingEntry {..} =
     object
-      [ "header" .= waitingActionEntryHeader,
-        "timestamp" .= formatTime defaultTimeLocale utcFormat waitingActionEntryTimestamp,
-        "path" .= waitingActionEntryFilePath
+      [ "header" .= waitingEntryHeader,
+        "timestamp" .= formatTime defaultTimeLocale utcFormat waitingEntryTimestamp,
+        "path" .= waitingEntryFilePath
       ]
 
-makeWaitingActionEntry :: Path Rel File -> Entry -> Maybe WaitingActionEntry
-makeWaitingActionEntry rp Entry {..} = do
+makeWaitingEntry :: Path Rel File -> Entry -> Maybe WaitingEntry
+makeWaitingEntry rp Entry {..} = do
   time <-
     case unStateHistory entryStateHistory of
       [] -> Nothing
       x : _ -> Just $ stateHistoryEntryTimestamp x
   pure
-    WaitingActionEntry
-      { waitingActionEntryHeader = entryHeader,
-        waitingActionEntryTimestamp = time,
-        waitingActionEntryFilePath = rp
+    WaitingEntry
+      { waitingEntryHeader = entryHeader,
+        waitingEntryTimestamp = time,
+        waitingEntryFilePath = rp
       }

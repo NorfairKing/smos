@@ -12,9 +12,9 @@ import Smos.Report.TimeBlock.Gen ()
 import Smos.Report.Waiting
 
 instance GenValid WaitingReport where
-  genValid = WaitingReport . sortOn waitingActionEntryTimestamp <$> genValid
+  genValid = WaitingReport . sortOn waitingEntryTimestamp <$> genValid
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid WaitingActionEntry where
+instance GenValid WaitingEntry where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

@@ -16,8 +16,8 @@ spec :: Spec
 spec = do
   genValidSpec @WaitingReport
   jsonSpecOnValid @WaitingReport
-  genValidSpec @WaitingActionEntry
-  jsonSpecOnValid @WaitingActionEntry
+  genValidSpec @WaitingEntry
+  jsonSpecOnValid @WaitingEntry
   modifyMaxSuccess (`div` 10) $ describe "produceWaitingReport" $ it "produces valid reports for interesting stores"
     $ forAllValid
     $ \mFilter ->
