@@ -15,26 +15,20 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
 import Path
+import Smos.Cursor.Report.Streaming
 import Smos.Data
-import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 import Smos.Report.Waiting
 
 produceWaitingReportCursor :: DirectoryConfig -> IO WaitingReportCursor
-produceWaitingReportCursor dc = do
-  wd <- resolveDirWorkflowDir dc
-  runConduit
-    $ fmap makeWaitingReportCursor
-    $ streamSmosFilesFromWorkflowRel HideArchive dc
-      .| filterSmosFilesRel
-      .| parseSmosFilesRel wd
-      .| printShouldPrint DontPrint
-      .| waitingReportConduitHelper Nothing
-      .| C.concatMap (uncurry makeWaitingEntryCursor)
-      .| sinkList
+produceWaitingReportCursor dc =
+  makeWaitingReportCursor
+    <$> produceReportCursorEntries
+      ( waitingReportConduitHelper Nothing
+          .| C.concatMap (uncurry makeWaitingEntryCursor)
+      )
+      dc
 
 data WaitingReportCursor
   = WaitingReportCursor

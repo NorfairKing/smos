@@ -8,7 +8,6 @@ import Cursor.Text.Gen ()
 import Cursor.Tree
 import Data.GenValidity
 import Data.GenValidity.Path ()
-import Debug.Trace
 import Lens.Micro
 import Smos.Cursor.Report.Waiting
 import Smos.Data

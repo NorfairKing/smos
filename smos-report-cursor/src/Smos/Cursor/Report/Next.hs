@@ -19,27 +19,21 @@ import Lens.Micro
 import Path
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
+import Smos.Cursor.Report.Streaming
 import Smos.Cursor.SmosFile
 import Smos.Data
-import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Next
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 
 produceNextActionReportCursor :: DirectoryConfig -> IO NextActionReportCursor
-produceNextActionReportCursor dc = do
-  wd <- resolveDirWorkflowDir dc
-  runConduit
-    $ fmap makeNextActionReportCursor
-    $ streamSmosFilesFromWorkflowRel HideArchive dc
-      .| filterSmosFilesRel
-      .| parseSmosFilesRel wd
-      .| printShouldPrint DontPrint
-      .| nextActionConduitHelper Nothing
-      .| C.map (uncurry makeNextActionEntryCursor)
-      .| sinkList
+produceNextActionReportCursor dc =
+  makeNextActionReportCursor
+    <$> produceReportCursorEntries
+      ( nextActionConduitHelper Nothing
+          .| C.map (uncurry makeNextActionEntryCursor)
+      )
+      dc
 
 data NextActionReportCursor
   = NextActionReportCursor
