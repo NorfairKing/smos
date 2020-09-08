@@ -46,7 +46,7 @@ waitingReportConduit ef =
     <$> ( smosFileCursors
             .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
             .| smosCursorCurrents
-            .| C.map (uncurry makeWaitingActionEntry)
+            .| C.concatMap (uncurry makeWaitingActionEntry)
             .| sinkList
         )
   where
@@ -58,7 +58,7 @@ waitingReportConduit ef =
 data WaitingActionEntry
   = WaitingActionEntry
       { waitingActionEntryHeader :: Header,
-        waitingActionEntryTimestamp :: Maybe UTCTime,
+        waitingActionEntryTimestamp :: UTCTime,
         waitingActionEntryFilePath :: Path Rel File
       }
   deriving (Show, Eq, Generic)
@@ -70,7 +70,7 @@ instance YamlSchema WaitingActionEntry where
     objectParser "WaitingActionEntry" $
       WaitingActionEntry
         <$> requiredField "header" "The entry header"
-        <*> optionalFieldWith "timestamp" "The timestamp at which this entry became WAITING" utcSchema
+        <*> requiredFieldWith "timestamp" "The timestamp at which this entry became WAITING" utcSchema
         <*> requiredField "path" "The path of the file that contained this waiting entry"
 
 instance FromJSON WaitingActionEntry where
@@ -80,21 +80,19 @@ instance ToJSON WaitingActionEntry where
   toJSON WaitingActionEntry {..} =
     object
       [ "header" .= waitingActionEntryHeader,
-        "timestamp" .= (formatTime defaultTimeLocale utcFormat <$> waitingActionEntryTimestamp),
+        "timestamp" .= formatTime defaultTimeLocale utcFormat waitingActionEntryTimestamp,
         "path" .= waitingActionEntryFilePath
       ]
 
-makeWaitingActionEntry :: Path Rel File -> Entry -> WaitingActionEntry
-makeWaitingActionEntry rp Entry {..} =
-  let time =
-        case unStateHistory entryStateHistory of
-          [] -> Nothing
-          x : _ -> Just $ stateHistoryEntryTimestamp x
-   in WaitingActionEntry
-        { waitingActionEntryHeader = entryHeader,
-          waitingActionEntryTimestamp = time,
-          waitingActionEntryFilePath = rp
-        }
-
-isWaitingAction :: Entry -> Bool
-isWaitingAction entry = entryState entry == Just "WAITING"
+makeWaitingActionEntry :: Path Rel File -> Entry -> Maybe WaitingActionEntry
+makeWaitingActionEntry rp Entry {..} = do
+  time <-
+    case unStateHistory entryStateHistory of
+      [] -> Nothing
+      x : _ -> Just $ stateHistoryEntryTimestamp x
+  pure
+    WaitingActionEntry
+      { waitingActionEntryHeader = entryHeader,
+        waitingActionEntryTimestamp = time,
+        waitingActionEntryFilePath = rp
+      }

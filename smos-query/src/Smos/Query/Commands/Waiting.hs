@@ -29,5 +29,5 @@ formatWaitingActionEntry :: Word -> UTCTime -> WaitingActionEntry -> [Chunk]
 formatWaitingActionEntry threshold now WaitingActionEntry {..} =
   [ pathChunk waitingActionEntryFilePath,
     headerChunk waitingActionEntryHeader,
-    maybe (chunk "") (showDaysSince threshold now) waitingActionEntryTimestamp
+    showDaysSince threshold now waitingActionEntryTimestamp
   ]
