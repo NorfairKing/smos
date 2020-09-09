@@ -324,11 +324,15 @@ loadUserToken un = do
 
 withNavBar :: Widget -> Handler Html
 withNavBar body = do
-  maid <- maybeAuthId
-  mDocsUrl <- getsYesod appDocsBaseUrl
-  let navbar = $(widgetFile "navbar")
+  navbar <- makeNavBar
   defaultLayout
     [whamlet|
       ^{navbar}
       ^{body}
     |]
+
+makeNavBar :: Handler Widget
+makeNavBar = do
+  maid <- maybeAuthId
+  mDocsUrl <- getsYesod appDocsBaseUrl
+  pure $(widgetFile "navbar")

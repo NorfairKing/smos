@@ -1,4 +1,6 @@
 #terminal {
     display: block;
-    position: relative;
+    position: absolute;
+    height: calc(100% - 3.25rem);
+    width: 100%;
 }
