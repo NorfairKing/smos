@@ -24,6 +24,8 @@ spec = do
   jsonSpecOnValid @ReportsKeyConfigs
   genValidSpec @NextActionReportKeyConfigs
   jsonSpecOnValid @NextActionReportKeyConfigs
+  genValidSpec @WaitingReportKeyConfigs
+  jsonSpecOnValid @WaitingReportKeyConfigs
   genValidSpec @KeybindingsConfiguration
   jsonSpecOnValid @KeybindingsConfiguration
   genValidSpec @Configuration

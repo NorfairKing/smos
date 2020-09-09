@@ -4,6 +4,7 @@
 module Smos.Cursor.Report.Waiting where
 
 import Conduit
+import Control.Monad
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import qualified Data.Conduit.Combinators as C
@@ -89,3 +90,15 @@ makeWaitingEntryCursor path fc = do
         waitingEntryCursorForestCursor = fc,
         waitingEntryCursorTimestamp = timestamp
       }
+
+waitingReportCursorNext :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorNext = waitingReportCursorNonEmptyCursorL $ mapM nonEmptyCursorSelectNext
+
+waitingReportCursorPrev :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorPrev = waitingReportCursorNonEmptyCursorL $ mapM nonEmptyCursorSelectPrev
+
+waitingReportCursorFirst :: WaitingReportCursor -> WaitingReportCursor
+waitingReportCursorFirst = waitingReportCursorNonEmptyCursorL %~ fmap nonEmptyCursorSelectFirst
+
+waitingReportCursorLast :: WaitingReportCursor -> WaitingReportCursor
+waitingReportCursorLast = waitingReportCursorNonEmptyCursorL %~ fmap nonEmptyCursorSelectLast

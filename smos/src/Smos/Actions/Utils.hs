@@ -317,6 +317,20 @@ modifyMHelpCursorM func = modifyMHelpCursorMS $ pure . func
 modifyMHelpCursorMS :: (Maybe HelpCursor -> SmosM (Maybe HelpCursor)) -> SmosM ()
 modifyMHelpCursorMS func = modifyEditorCursorS $ editorCursorHelpCursorL func
 
+modifyWaitingReportCursorM ::
+  (WaitingReportCursor -> Maybe WaitingReportCursor) -> SmosM ()
+modifyWaitingReportCursorM func = modifyWaitingReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyWaitingReportCursor :: (WaitingReportCursor -> WaitingReportCursor) -> SmosM ()
+modifyWaitingReportCursor func = modifyWaitingReportCursorS $ pure . func
+
+modifyWaitingReportCursorS ::
+  (WaitingReportCursor -> SmosM WaitingReportCursor) -> SmosM ()
+modifyWaitingReportCursorS func =
+  modifyReportCursorS $ \rc -> case rc of
+    ReportWaiting narc -> ReportWaiting <$> func narc
+    _ -> pure rc
+
 modifyNextActionReportCursorM ::
   (NextActionReportCursor -> Maybe NextActionReportCursor) -> SmosM ()
 modifyNextActionReportCursorM func = modifyNextActionReportCursor $ \hc -> fromMaybe hc $ func hc

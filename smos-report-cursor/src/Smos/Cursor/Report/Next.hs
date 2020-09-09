@@ -110,19 +110,10 @@ nextActionReportCursorBuildSmosFileCursor pad narc = do
   pure (pad </> nextActionEntryCursorFilePath selected, go $ nextActionEntryCursorForestCursor selected)
 
 nextActionReportCursorNext :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorNext = nextActionReportCursorSelectedNextActionEntryCursorsL $
-  \msc ->
-    Just
-      <$> case msc of
-        Nothing -> Nothing
-        Just sc -> nonEmptyCursorSelectNext sc
+nextActionReportCursorNext = nextActionReportCursorSelectedNextActionEntryCursorsL $ mapM nonEmptyCursorSelectNext
 
 nextActionReportCursorPrev :: NextActionReportCursor -> Maybe NextActionReportCursor
-nextActionReportCursorPrev = nextActionReportCursorSelectedNextActionEntryCursorsL $ \msc ->
-  Just
-    <$> case msc of
-      Nothing -> Nothing
-      Just sc -> nonEmptyCursorSelectPrev sc
+nextActionReportCursorPrev = nextActionReportCursorSelectedNextActionEntryCursorsL $ mapM nonEmptyCursorSelectPrev
 
 nextActionReportCursorFirst :: NextActionReportCursor -> NextActionReportCursor
 nextActionReportCursorFirst = nextActionReportCursorSelectedNextActionEntryCursorsL %~ fmap nonEmptyCursorSelectFirst

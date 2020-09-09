@@ -8,7 +8,14 @@ import Smos.Report.Config
 import Smos.Types
 
 allPlainReportWaitingActions :: [Action]
-allPlainReportWaitingActions = [reportWaiting]
+allPlainReportWaitingActions =
+  [ reportWaiting,
+    enterWaitingFile,
+    prevWaiting,
+    nextWaiting,
+    firstWaiting,
+    lastWaiting
+  ]
 
 allReportWaitingUsingActions :: [ActionUsing Char]
 allReportWaitingUsingActions = []
@@ -52,30 +59,30 @@ prevWaiting :: Action
 prevWaiting =
   Action
     { actionName = "prevWaiting",
-      actionFunc = undefined,
-      actionDescription = "TODO"
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorPrev,
+      actionDescription = "Select the previous entry in the waiting report"
     }
 
 nextWaiting :: Action
 nextWaiting =
   Action
     { actionName = "nextWaiting",
-      actionFunc = undefined,
-      actionDescription = "TODO"
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorNext,
+      actionDescription = "Select the next entry in the waiting report"
     }
 
 firstWaiting :: Action
 firstWaiting =
   Action
     { actionName = "firstWaiting",
-      actionFunc = undefined,
-      actionDescription = "TODO"
+      actionFunc = modifyWaitingReportCursor waitingReportCursorFirst,
+      actionDescription = "Select the first entry in the waiting report"
     }
 
 lastWaiting :: Action
 lastWaiting =
   Action
     { actionName = "lastWaiting",
-      actionFunc = undefined,
-      actionDescription = "TODO"
+      actionFunc = modifyWaitingReportCursor waitingReportCursorLast,
+      actionDescription = "Select the last entry in the waiting report"
     }
