@@ -13,5 +13,5 @@ withDirectoryConfig :: InterestingStore -> (DirectoryConfig -> IO a) -> IO a
 withDirectoryConfig is func =
   withSystemTempDir "smos-report-test" $ \tempDir -> do
     writeInterestingStore tempDir is
-    let dc = defaultDirectoryConfig {directoryConfigWorkflowFileSpec = DirAbsolute tempDir}
+    let dc = defaultDirectoryConfig {directoryConfigWorkflowFileSpec = AbsoluteWorkflow tempDir}
     func dc

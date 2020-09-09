@@ -20,7 +20,7 @@ testConfig td =
           { smosReportConfigWorkConfig = defaultWorkReportConfig,
             smosReportConfigDirectoryConfig =
               defaultDirectoryConfig
-                { directoryConfigWorkflowFileSpec = DirAbsolute td
+                { directoryConfigWorkflowFileSpec = AbsoluteWorkflow td
                 }
           }
     }

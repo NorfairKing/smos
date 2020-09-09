@@ -139,8 +139,8 @@ backToDirectoryConfiguration DirectoryConfig {..} =
           else Just
             $ T.pack
             $ case directoryConfigWorkflowFileSpec of
-              DirInHome rd -> "~/" <> fromRelDir rd
-              DirAbsolute ad -> fromAbsDir ad,
+              WorkflowInHome rd -> "~/" <> fromRelDir rd
+              AbsoluteWorkflow ad -> fromAbsDir ad,
       directoryConfArchiveDir =
         if directoryConfigArchiveFileSpec == defaultArchiveDirSpec
           then Nothing

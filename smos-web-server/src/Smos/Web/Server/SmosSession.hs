@@ -61,7 +61,7 @@ withSmosSessionIn workflowDir relFile func = do
               defaultReportConfig
                 { smosReportConfigDirectoryConfig =
                     defaultDirectoryConfig
-                      { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
+                      { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
                       }
                 },
             configExplainerMode = True

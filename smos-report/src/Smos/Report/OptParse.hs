@@ -38,7 +38,7 @@ combineToDirectoryConfig dc DirectoryFlags {..} DirectoryEnvironment {..} mc = d
       Nothing -> pure $ directoryConfigWorkflowFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
-        pure $ DirAbsolute ad
+        pure $ AbsoluteWorkflow ad
   afs <-
     case msum [dirFlagArchiveDir, dirEnvArchiveDir, mc >>= (fmap T.unpack . directoryConfArchiveDir)] of
       Nothing -> pure $ directoryConfigArchiveFileSpec dc

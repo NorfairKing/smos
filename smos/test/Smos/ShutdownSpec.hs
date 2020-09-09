@@ -45,7 +45,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                         defaultReportConfig
                           { smosReportConfigDirectoryConfig =
                               defaultDirectoryConfig
-                                { directoryConfigWorkflowFileSpec = DirAbsolute tdir
+                                { directoryConfigWorkflowFileSpec = AbsoluteWorkflow tdir
                                 }
                           }
                     }

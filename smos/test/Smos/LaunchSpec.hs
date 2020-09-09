@@ -25,7 +25,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
             withSystemTempDir "smos-test" $ \td -> do
               let wd = td </> rd
               let file = td </> rf
-              startupSpec (DirAbsolute wd) file
+              startupSpec (AbsoluteWorkflow wd) file
         specify "on an existent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \rf ->
             forAllValid $ \sf ->
@@ -33,7 +33,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                 let wd = td </> rd
                 let file = td </> rf
                 writeSmosFile file sf
-                startupSpec (DirAbsolute wd) file
+                startupSpec (AbsoluteWorkflow wd) file
       describe "existent workflow dir" $ do
         specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \rf ->
@@ -41,7 +41,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
               let wd = td </> rd
               ensureDir wd
               let file = td </> rf
-              startupSpec (DirAbsolute wd) file
+              startupSpec (AbsoluteWorkflow wd) file
         specify "on an existent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \rf ->
             forAllValid $ \sf ->
@@ -50,7 +50,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                 ensureDir wd
                 let file = td </> rf
                 writeSmosFile file sf
-                startupSpec (DirAbsolute wd) file
+                startupSpec (AbsoluteWorkflow wd) file
     describe "an unspecified" $ do
       describe "nonexistent workflow dir" $ do
         specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
@@ -60,7 +60,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                 let home = td </> homeRel
                 let file = td </> rf
                 setEnv "HOME" $ fromAbsDir home
-                startupSpec (DirInHome rd) file
+                startupSpec (WorkflowInHome rd) file
         specify "on an existent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \homeRel ->
             forAllValid $ \rf ->
@@ -70,7 +70,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                   let file = td </> rf
                   writeSmosFile file sf
                   setEnv "HOME" $ fromAbsDir home
-                  startupSpec (DirInHome rd) file
+                  startupSpec (WorkflowInHome rd) file
       describe "existent workflow dir" $ do
         specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \homeRel ->
@@ -80,7 +80,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                 ensureDir $ home </> rd
                 let file = td </> rf
                 setEnv "HOME" $ fromAbsDir home
-                startupSpec (DirInHome rd) file
+                startupSpec (WorkflowInHome rd) file
         specify "on an existent file works fine" $ forAllValid $ \rd ->
           forAllValid $ \homeRel ->
             forAllValid $ \rf ->
@@ -91,7 +91,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                   let file = td </> rf
                   writeSmosFile file sf
                   setEnv "HOME" $ fromAbsDir home
-                  startupSpec (DirInHome rd) file
+                  startupSpec (WorkflowInHome rd) file
 
 startupSpec :: WorkflowDirSpec -> Path Abs File -> IO ()
 startupSpec workflowDirSpec startupFile = do

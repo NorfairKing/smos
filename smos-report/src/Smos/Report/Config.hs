@@ -102,18 +102,18 @@ defaultWorkBaseFilter =
     $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 data WorkflowDirSpec
-  = DirInHome (Path Rel Dir)
-  | DirAbsolute (Path Abs Dir)
+  = WorkflowInHome (Path Rel Dir)
+  | AbsoluteWorkflow (Path Abs Dir)
   deriving (Show, Eq, Generic)
 
 defaultWorkflowDirSpec :: WorkflowDirSpec
-defaultWorkflowDirSpec = DirInHome [reldir|workflow|]
+defaultWorkflowDirSpec = WorkflowInHome [reldir|workflow|]
 
 resolveWorkflowDir :: WorkflowDirSpec -> IO (Path Abs Dir)
 resolveWorkflowDir afs =
   case afs of
-    DirInHome rp -> getHomeDir >>= (`resolveDir` fromRelDir rp)
-    DirAbsolute ad -> pure ad
+    WorkflowInHome rp -> getHomeDir >>= (`resolveDir` fromRelDir rp)
+    AbsoluteWorkflow ad -> pure ad
 
 data ArchiveDirSpec
   = ArchiveInWorkflow (Path Rel Dir)
