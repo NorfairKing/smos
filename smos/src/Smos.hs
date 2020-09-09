@@ -14,7 +14,7 @@ import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad.Trans.Resource (withInternalState)
-import Graphics.Vty as Vty (Vty, defaultConfig, mkVty)
+import Graphics.Vty as Vty (Vty, defaultConfig, mkVty, setWindowTitle)
 import Import
 import Smos.Actions.File
 import Smos.App
@@ -36,7 +36,12 @@ smosWithoutRuntimeConfig sc = do
   startSmosOn p sc
 
 startSmosOn :: Path Abs File -> SmosConfig -> IO ()
-startSmosOn = startSmosWithVtyBuilderOn (mkVty defaultConfig)
+startSmosOn p = startSmosWithVtyBuilderOn vtyBuilder p
+  where
+    vtyBuilder = do
+      vty <- mkVty defaultConfig
+      setWindowTitle vty "smos"
+      pure vty
 
 startSmosWithVtyBuilderOn :: IO Vty.Vty -> Path Abs File -> SmosConfig -> IO ()
 startSmosWithVtyBuilderOn vtyBuilder p sc@SmosConfig {..} = runResourceT $ do

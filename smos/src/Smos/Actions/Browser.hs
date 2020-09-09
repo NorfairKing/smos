@@ -171,7 +171,7 @@ browserEnter =
           Just dfc ->
             case fileBrowserSelected dfc of
               Nothing -> pure ()
-              Just (_, _, InProgress _) -> pure () -- TODO
+              Just (_, _, InProgress _) -> pure ()
               Just (_, _, Existent (FodDir _)) -> modifyFileBrowserCursorM fileBrowserCursorToggle
               Just (base, rd, Existent (FodFile rf ())) -> do
                 let path = base </> rd </> rf
@@ -258,10 +258,12 @@ browserCompleteFile :: Action
 browserCompleteFile =
   Action
     { actionName = "browserCompleteFile",
-      actionFunc = modifyFileBrowserCursorS $ \fbc -> do
-        src <- asks configReportConfig
-        wd <- liftIO $ resolveReportWorkflowDir src
-        fileBrowserCompleteToFile wd fbc,
+      actionFunc = do
+        modifyFileBrowserCursorS $ \fbc -> do
+          src <- asks configReportConfig
+          wd <- liftIO $ resolveReportWorkflowDir src
+          fileBrowserCompleteToFile wd fbc
+        actionFunc browserEnter,
       actionDescription = "Complete the current file or directory in progress to a new file."
     }
 
