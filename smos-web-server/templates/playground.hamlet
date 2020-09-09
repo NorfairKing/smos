@@ -53,7 +53,7 @@
               <code>
                 example.smos
               as you can see at the top of the editor.
-              For each of your projects, you will be able to make a file like this and mark it one entry as
+              For each of your projects, you will be able to make a file like this and mark one entry as
               <code>
                 NEXT
               so that it will show up in your "Next Action" report.
