@@ -1,8 +1,11 @@
 / HomeR GET
 
 -- Editor
+/playground PlaygroundR GET
+/ws/playground-instance PlaygroundInstanceR GET
+
 /file/*Texts FileR GET
-/ws/instance/*Texts InstanceR GET
+/ws/file-instance/*Texts FileInstanceR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

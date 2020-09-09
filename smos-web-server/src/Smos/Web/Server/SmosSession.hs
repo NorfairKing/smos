@@ -20,6 +20,23 @@ import Smos.Web.Server.Foundation
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 
+-- TODO refactor this together with 'withSmosSession' because the only difference is the dir.
+withPlaygroundSession ::
+  (MonadUnliftIO m) =>
+  Path Rel File ->
+  (SmosInstanceHandle -> m a) ->
+  m a
+withPlaygroundSession relFile func =
+  withPlaygroundDir $ \workflowDir -> withSmosSessionIn workflowDir relFile func
+
+withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m a
+withPlaygroundDir func = withRunInIO $ \runInIO ->
+  withSystemTempDir "smos-web-server-playground" $ \tempDir ->
+    runInIO $ bracket_ (ensureDir tempDir) (removeDirRecur tempDir) (func (toWorkflowDir tempDir))
+  where
+    toWorkflowDir :: Path Abs Dir -> Path Abs Dir
+    toWorkflowDir = (</> [reldir|workflow|])
+
 withSmosSession ::
   (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
   Username ->
@@ -28,20 +45,28 @@ withSmosSession ::
   (SmosInstanceHandle -> m a) ->
   m a
 withSmosSession userName token relFile func =
-  withReadiedDir userName token $ \workflowDir -> do
-    let startingFile = workflowDir </> relFile
-    let config =
-          defaultConfig
-            { configReportConfig =
-                defaultReportConfig
-                  { smosReportConfigDirectoryConfig =
-                      defaultDirectoryConfig
-                        { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
-                        }
-                  },
-              configExplainerMode = True
-            }
-    withSmosInstance config startingFile func
+  withReadiedDir userName token $ \workflowDir -> withSmosSessionIn workflowDir relFile func
+
+withSmosSessionIn ::
+  MonadUnliftIO m =>
+  Path Abs Dir ->
+  Path Rel File ->
+  (SmosInstanceHandle -> m a) ->
+  m a
+withSmosSessionIn workflowDir relFile func = do
+  let startingFile = workflowDir </> relFile
+  let config =
+        defaultConfig
+          { configReportConfig =
+              defaultReportConfig
+                { smosReportConfigDirectoryConfig =
+                    defaultDirectoryConfig
+                      { directoryConfigWorkflowFileSpec = DirAbsolute workflowDir
+                      }
+                },
+            configExplainerMode = True
+          }
+  withSmosInstance config startingFile func
 
 withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a
 withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkflowDir)

@@ -57,7 +57,7 @@ function resize(term, fitAddon, socket) {
 function initWebsocket(term, fitAddon) {
   // Build the websocket
   const loc = window.location;
-  var new_uri = "@{InstanceR ts}".replace(/^http/i, "ws");
+  var new_uri = "@{websocketRoute}".replace(/^http/i, "ws");
   // console.log("Connecting to: " + new_uri);
   const socket = new WebSocket(new_uri);
 
@@ -72,7 +72,7 @@ function initWebsocket(term, fitAddon) {
     console.log(e);
 
     // If we quit on purpose.
-    if (e.wasClean) {
+    if (e.reason === "Success" || e.wasClean) {
       terminal.parentNode.removeChild(terminal);
       window.location.replace("@{HomeR}");
     } else {

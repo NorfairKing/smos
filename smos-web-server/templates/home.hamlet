@@ -3,14 +3,19 @@
     <div .container>
       <div .columns .is-centered>
         <div .column .is-5-tablet .is-4-desktop .is-3-widescreen>
-          <div .box .has-text-centered>
-            $maybe _ <- maid
+          $maybe _ <- maid
+            <div .box .has-text-centered>
               <form
                 method="get"
                 action=@{FileR ["example.smos"]}>
                 <button .button .is-light .is-large .is-fullwidth autofocus="autofocus" type="submit">
                   Open Smos Online
-            $nothing
+          $nothing
+            <div .box .has-text-centered>
+              <div .buttons>
+                <a .button .is-light .is-fullwidth href=@{PlaygroundR}>
+                  Playground
+            <div .box .has-text-centered>
               <div .buttons>
                 <a .button .is-light .is-large .is-fullwidth href=@{AuthR LoginR}>
                   Log in
