@@ -73,7 +73,7 @@ drawEditorCursor workflowDir configKeyMap EditorCursor {..} =
       Just fbc -> pure $ drawFileBrowserCursor workflowDir MaybeSelected fbc
     ReportSelected -> case editorCursorReportCursor of
       Nothing -> pure $ str "No report selected" -- TODO make this a nice view
-      Just rc -> pure $ drawReportCursor MaybeSelected rc
+      Just rc -> drawReportCursor MaybeSelected rc
 
 drawErrorMessages :: [Text] -> Widget n
 drawErrorMessages = vBox . map (withAttr errorAttr . txtWrap)
@@ -846,14 +846,6 @@ drawUTCLocal utct = do
   tz <- asks zonedTimeZone
   let localTime = utcToLocalTime tz utct
   pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
-
-type DrawEnv = ZonedTime
-
-type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
-
-type Drawer = Drawer' (Widget ResourceName)
-
-type Drawer' = Reader DrawEnv
 
 drawActionName :: ActionName -> Widget n
 drawActionName = withAttr keyAttr . txt . actionNameText

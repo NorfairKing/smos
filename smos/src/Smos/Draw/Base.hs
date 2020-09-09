@@ -16,6 +16,14 @@ import Smos.Style
 import Smos.Types
 import Text.Printf
 
+type DrawEnv = ZonedTime
+
+type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
+
+type Drawer = Drawer' (Widget ResourceName)
+
+type Drawer' = Reader DrawEnv
+
 data Select
   = MaybeSelected
   | NotSelected

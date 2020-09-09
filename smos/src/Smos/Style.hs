@@ -20,6 +20,10 @@ module Smos.Style
     propertyNameSpecificAttr,
     tagAttr,
     tagSpecificAttr,
+    waitingReportLongWait,
+    waitingReportMidWait,
+    waitingReportShortWait,
+    waitingReportNoWait,
     helpNameAttr,
     helpKeyCombinationAttr,
     helpDescriptionAttr,
@@ -62,6 +66,10 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "timewindow", fg magenta),
           (propertyNameSpecificAttr "brainpower", fg brown),
           (propertyNameSpecificAttr "client", fg green),
+          (waitingReportLongWait, fg red),
+          (waitingReportMidWait, fg yellow),
+          (waitingReportShortWait, fg blue),
+          (waitingReportNoWait, fg green),
           (selectedAttr <> tagAttr, fg brightWhite),
           (selectedAttr <> headerAttr, fg brightWhite),
           (fileAttr, fg V.yellow),
@@ -134,6 +142,18 @@ tagAttr = "tag"
 
 tagSpecificAttr :: Tag -> AttrName
 tagSpecificAttr t = fromString $ "tag-" ++ T.unpack (tagText t)
+
+waitingReportLongWait :: AttrName
+waitingReportLongWait = "waiting-report-long-wait"
+
+waitingReportMidWait :: AttrName
+waitingReportMidWait = "waiting-report-mid-wait"
+
+waitingReportShortWait :: AttrName
+waitingReportShortWait = "waiting-report-short-wait"
+
+waitingReportNoWait :: AttrName
+waitingReportNoWait = "waiting-report-no-wait"
 
 helpNameAttr :: AttrName
 helpNameAttr = "helpdescription"

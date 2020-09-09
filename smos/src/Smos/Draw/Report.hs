@@ -11,17 +11,20 @@ where
 import Brick.Types as B
 import Brick.Widgets.Core as B
 import Cursor.Brick.Text
+import Data.Time
 import Lens.Micro
+import Path
 import Smos.Actions
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
+import Smos.Report.Formatting
 import Smos.Style
 import Smos.Types
 
-drawReportCursor :: Select -> ReportCursor -> Widget ResourceName
+drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
-  ReportNextActions narc -> drawNextActionReportCursor s narc
+  ReportNextActions narc -> pure $ drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
@@ -59,25 +62,38 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
         sel $ drawHeader entryHeader
       ]
 
-drawWaitingReportCursor :: Select -> WaitingReportCursor -> Widget ResourceName
-drawWaitingReportCursor s WaitingReportCursor {..} =
-  withHeading (str "Waiting Report")
+drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
+drawWaitingReportCursor s WaitingReportCursor {..} = do
+  now <- asks zonedTimeToUTC
+  let go = drawWaitingEntryCursor now
+  pure $ withHeading (str "Waiting Report")
     $ padAll 1
     $ viewport ResourceViewport Vertical
     $ case waitingReportCursorWaitingEntryCursors of
       Nothing -> txtWrap "Empty waiting report"
       Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
-  where
-    go = drawWaitingEntryCursor
 
-drawWaitingEntryCursor :: Select -> WaitingEntryCursor -> [Widget ResourceName]
-drawWaitingEntryCursor s WaitingEntryCursor {..} =
+drawWaitingEntryCursor :: UTCTime -> Select -> WaitingEntryCursor -> [Widget ResourceName]
+drawWaitingEntryCursor now s WaitingEntryCursor {..} =
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-   in [ drawFilePath waitingEntryCursorFilePath,
-        drawTodoState "WAITING",
-        sel $ drawHeader $ entryHeader $ forestCursorCurrent waitingEntryCursorForestCursor
+   in [ str $ toFilePath waitingEntryCursorFilePath,
+        sel $ drawHeader $ entryHeader $ forestCursorCurrent waitingEntryCursorForestCursor,
+        daysSinceWidget 7 now waitingEntryCursorTimestamp
       ]
+
+daysSinceWidget :: Word -> UTCTime -> UTCTime -> Widget n
+daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
+  where
+    th1 = fromIntegral threshold :: Int
+    th2 = floor ((fromIntegral threshold :: Double) / 3 * 2) :: Int
+    th3 = floor ((fromIntegral threshold :: Double) / 3) :: Int
+    style
+      | i >= th1 = waitingReportLongWait
+      | i >= th2 = waitingReportMidWait
+      | i >= th3 = waitingReportShortWait
+      | otherwise = waitingReportNoWait
+    i = daysSince now t

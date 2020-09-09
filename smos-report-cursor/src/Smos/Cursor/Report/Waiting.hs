@@ -4,7 +4,6 @@
 module Smos.Cursor.Report.Waiting where
 
 import Conduit
-import Control.Monad
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import qualified Data.Conduit.Combinators as C

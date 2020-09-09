@@ -16,6 +16,7 @@ import Rainbox as Box
 import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Entry
+import Smos.Report.Formatting
 import Smos.Report.Path
 import Smos.Report.Projection
 import Text.Time.Pretty
@@ -53,9 +54,7 @@ showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
       | i >= th2 = yellow
       | i >= th3 = blue
       | otherwise = green
-    i = diffInDays now t :: Int
-    diffInDays :: UTCTime -> UTCTime -> Int
-    diffInDays t1 t2 = floor $ diffUTCTime t1 t2 / nominalDay
+    i = daysSince now t
 
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk]
 formatAgendaEntry now AgendaEntry {..} =
