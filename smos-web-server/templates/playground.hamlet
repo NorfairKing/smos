@@ -1,1 +1,98 @@
-^{tuiWidget}
+<div .columns id="twoColumns">
+  <div .column .is-one-third>
+    <article .panel .is-text>
+      <p .panel-heading>
+        Playground
+        <div .panel-block>
+          <div .content>
+            <p>
+              This is the Smos Web TUI Playground.
+            <p>
+              Here you can try out the web tui without an account and without saving any changes.
+            <p>
+              On the right-hand side you can see the web TUI.
+              You can only control it via the keyboard.
+              This is on purpose, but it means that you cannot use smos from your phone.
+              (See
+              <a href="https://intray.eu">
+                Intray
+              if that bothers you.)
+            <p>
+              To try it out, try pressing
+              <code>
+                e
+              to make a first entry, and type a header like "Learning to use smos".
+              Press
+              <code>
+                Enter
+              to finish the title.
+            <p>
+              Now press
+              <code>
+                E
+              to make an entry below the title.
+              Give it a header like "Learn about todo states"
+            <p>
+              You can move around the file using the arrow keys.
+              Move your cursor (the arrow) back to the first entry and press
+              <code>
+                tt
+              to mark it as
+              <code>
+                TODO
+              .
+              Now move your cursor to the second entry and press
+              <code>
+                tn
+              to mark it as
+              <code>
+                NEXT
+              .
+            <p>
+              The file you have been editing is called
+              <code>
+                example.smos
+              as you can see at the top of the editor.
+              For each of your projects, you will be able to make a file like this and mark it one entry as
+              <code>
+                NEXT
+              so that it will show up in your "Next Action" report.
+            <p>
+              Press
+              <code>
+                rn
+              to see your "Next Action" report now.
+              You will be able to use this report to help you to decide what to work on next.
+            <p>
+              You have learnt about todo states and the next action report.
+              You can mark the next action as
+              <code>
+                DONE
+              by pressing
+              <code>
+                Enter
+              to jump back into the example file and
+              <code>
+                td
+              to mark the entry as
+              <code>
+                DONE
+            <p>
+              To learn more about smos and self-management,
+              $maybe docsUrl <- mDocsUrl
+                have a look at
+                <a url="#{showBaseUrl docsUrl}">
+                  the documentation
+                and
+               create a free account to continue.
+              You don't even need to enter an email address to sign up.
+            <a .button .is-light .is-fullwidth href=@{AuthR registerR}>
+              Sign up for free
+              
+
+              
+
+                
+                  
+  <div .column .is-two-thirds>
+    ^{tuiWidget}

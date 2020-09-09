@@ -142,8 +142,7 @@ defaultFileKeyMap =
           ],
       fileKeyMapHeaderMatchers =
         listMatchers
-          [ exactKey KEnter entrySelectContentsAtStart,
-            exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtEnd,
+          [ exactKey KEnter entrySelectWhole,
             anyChar headerInsert,
             exactKey KBS headerRemove,
             exactKey KDel headerDelete,

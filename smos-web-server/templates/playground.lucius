@@ -1,0 +1,10 @@
+#terminal {
+    display: block;
+    position: absolute;
+    width: calc(65% - 1em);
+    height: calc(95% - 3.25em);
+
+}
+#twoColumns {
+  margin: 1em;
+}
