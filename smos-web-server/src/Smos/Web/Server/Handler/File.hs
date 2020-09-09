@@ -15,7 +15,6 @@ import qualified Data.ByteString.Lazy as LB
 import Data.Text (Text)
 import qualified Data.Text as T
 import Path
-import Servant.Client
 import Smos.Instance
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosSession
@@ -23,7 +22,6 @@ import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
-import Yesod.Auth
 import Yesod.WebSockets
 
 getFileR :: [Text] -> Handler Html

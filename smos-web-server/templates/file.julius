@@ -1,6 +1,11 @@
-// A function to resize the terminal
-function resize(term, fitAddon, socket) {
-  // console.log("trying to resize");
+const minResizeDelay = 250; // The minimum number of milliseconds between resizes
+const resizeSchedulingDelay = 1000; // The number of milliseconds ahead to schedule a resize
+var lastResize = null; // The last time the window was resized
+var resizeScheduled = false; // Whether a window resize has already be scheduled
+
+// A function to do the actual resizing
+function doResize(term, fitAddon, socket) {
+  console.log("Actually resizing.")
 
   // We avoid using fitAddon.fit() as that would incur the expensive dimension calculations twice
   const dimensions = fitAddon.proposeDimensions();
@@ -13,6 +18,39 @@ function resize(term, fitAddon, socket) {
       "height": term.rows
   };
   socket.send(JSON.stringify(dims));
+
+  resizeScheduled = false; // No more resize is scheduled now
+  lastResize = Date.now(); // Right now is the latest time at which we actually resized.
+}
+
+// A function to make a resize request.
+function resize(term, fitAddon, socket) {
+  console.log("trying to resize.");
+
+  // If a resize is already scheduled, don't do anything so we don't do it too often.
+  if (resizeScheduled) {
+    console.log("Resize already scheduled, not resizing.");
+    return;
+  }
+
+  const now = Date.now();
+  const diff = now - lastResize;
+
+  const resizeNow = () => {
+    doResize(term, fitAddon, socket);
+  };
+
+  // If we've already resized in the last minResizeDelay milliseconds, don't resize again immediately
+  // but schedule a resize in resizeSchedulingDelay milliseconds instead.
+  if (diff < minResizeDelay) {
+    console.log("Trying to resize too soon, scheduling a resize instead.");
+    resizeScheduled = true;
+    setTimeout(resizeNow, resizeSchedulingDelay);
+  } else {
+    console.log("Resizing immediately");
+    resizeNow();
+  };
+
 };
 
 
@@ -38,11 +76,11 @@ function initWebsocket(term, fitAddon) {
       terminal.parentNode.removeChild(terminal);
       window.location.replace("@{HomeR}");
     } else {
-      const refresh = () => {
+      const reload = () => {
         location.reload();
       };
       terminal.parentNode.appendChild(document.createTextNode("Server disconnected, refreshing in 2 seconds."));
-      setTimeout(refresh, 2000);
+      setTimeout(reload, 2000);
       terminal.parentNode.removeChild(terminal);
     };
   }
