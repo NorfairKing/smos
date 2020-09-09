@@ -128,6 +128,7 @@ let
         packages.smos-cursor-gen.doCheck = !isMacos;
         packages.smos-query.doCheck = !isMacos;
         packages.smos-report-gen.doCheck = !isMacos;
+        packages.smos-report-cursor-gen.doCheck = !isMacos;
         packages.smos-scheduler.doCheck = !isMacos;
         packages.smos-sync-client-gen.doCheck = !isMacos;
         packages.smos.doCheck = !isMacos;
