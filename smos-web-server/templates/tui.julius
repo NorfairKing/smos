@@ -73,8 +73,11 @@ function initWebsocket(term, fitAddon) {
 
     // If we quit on purpose.
     if (e.reason === "Success" || e.wasClean) {
-      terminal.parentNode.removeChild(terminal);
-      window.location.replace("@{HomeR}");
+      const quitOnPurpose = () => {
+        terminal.parentNode.removeChild(terminal);
+        window.history.back();
+      };
+      setTimeout(quitOnPurpose, 500);
     } else {
       const reload = () => {
         location.reload();
