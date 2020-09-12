@@ -4,90 +4,132 @@
       <p .panel-heading>
         Playground
         <div .panel-block>
-          <div .content>
+          <div id="instructions" .content>
             <p>
               This is the Smos Web TUI Playground.
             <p>
-              Here you can try out the web tui without an account and without saving any changes.
+              Here you can try out the web tui without having to create an account
             <p>
-              On the right-hand side you can see the web TUI.
-              You can only control it via the keyboard.
-              This is on purpose, but it means that you cannot use smos from your phone.
-              (See
-              <a href="https://intray.eu">
-                Intray
-              if that bothers you.)
+              It should give you an idea of what using Smos is like.
+              The changes within this playground are not persistent, it is just there to let you try things out.
+              Read this playground guide and follow the instructions to get started.
+
+            <h4>
+              Getting started
             <p>
-              To try it out, try pressing
+              On the right-hand side you can see the web TUI (Terminal User Interface).
+              It is used to edit special files called Smos files, as well as to run reports about the information in them.
+            
+            <p>
+              Your collection of Smos files will contain all the results of the thinking you to do organise your life.
+              This means that all your projects can and should be organised in Smos files, one project per Smos file.
+              The reports that you will run on this information will then help you to make decisions about what to do next.
+
+            <p>
+              You can only control the TUI it via the keyboard.
+              This is because using the mouse is four times slower, and you need to be able to use your self-management system as quickly as you can think.
+
+            <h5>
+              Your first project
+
+            <p>
+              The editor on the right-hand side is opened on the file called `example.smos` in your workflow directory.
+              You can see this at the top where it says `Editor:`.
+              This is where you will make your first example project.
+              The project will be to try out Smos.
+
+            <p>
+              To start organising this project, first create a title.
+              Using the
               <code>
                 e
-              to make a first entry, and type a header like "Learning to use smos".
+              key, you can make a first entry.
+              This first entry will become the title of the project.
+              You can then type a header like "Trying out Smos".
               Press
               <code>
                 Enter
               to finish the title.
+
             <p>
-              Now press
+              Next, you will add the first task.
+              Press
               <code>
                 E
               to make an entry below the title.
               Give it a header like "Learn about todo states"
+
             <p>
-              You can move around the file using the arrow keys.
-              Move your cursor (the arrow) back to the first entry and press
+              Note that there is an arrow in front of the second entry you just made.
+              This is the cursor, and you can move around the file using the arrow keys.
+
+            <p>
+              Move to the first entry and press
               <code>
                 tt
               to mark it as
               <code>
                 TODO
               .
-              Now move your cursor to the second entry and press
+
+            <p>
+              Then move your cursor to the second entry and press
               <code>
                 tn
               to mark it as
               <code>
                 NEXT
               .
+
             <p>
-              The file you have been editing is called
-              <code>
-                example.smos
-              as you can see at the top of the editor.
               For each of your projects, you will be able to make a file like this and mark one entry as
               <code>
                 NEXT
-              so that it will show up in your "Next Action" report.
+              .
+              What that state means is that that entry is the very next thing you can do to move that project forward.
+            <h5>
+              The first report
+            <p>
+              The next action report is the most important report to get started.
+              It shows you all the
+              <code>
+                NEXT
+              actions in your system so that you can make a quick intuitive decision about what to do next.
+
             <p>
               Press
               <code>
                 rn
               to see your "Next Action" report now.
-              You will be able to use this report to help you to decide what to work on next.
+
             <p>
-              You have learnt about todo states and the next action report.
-              You can mark the next action as
+              You can scroll around in this report using the arrow keys and press
+              <code>
+                Enter
+              to jump into the file of the selected entry.
+
+            <p>
+              To finish a task, mark the entry as 
               <code>
                 DONE
               by pressing
               <code>
-                Enter
-              to jump back into the example file and
-              <code>
                 td
-              to mark the entry as
-              <code>
-                DONE
+
+            <h4>
+              Next steps
             <p>
-              To learn more about smos and self-management,
+              To learn more about Smos and self-management,
               $maybe docsUrl <- mDocsUrl
                 have a look at
                 <a url="#{showBaseUrl docsUrl}">
                   the documentation
                 and
                create a free account to continue.
-              You don't even need to enter an email address to sign up.
-            <a .button .is-light .is-fullwidth href=@{AuthR registerR}>
-              Sign up for free
+              You do not even need to enter an email address to sign up.
+        <div .panel-block>
+          <a .button .is-large .is-light .is-fullwidth href=@{AuthR registerR} .has-text-weight-bold>
+            Sign up for free
               
 
               
