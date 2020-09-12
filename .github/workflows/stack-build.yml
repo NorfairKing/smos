@@ -28,10 +28,12 @@ jobs:
           stack-version: ${{ matrix.stack }}
 
 
-      - uses: actions/cache@v1
-        name: Cache ~/.stack
+      - name: Cache for stack
+        uses: actions/cache@v2
         with:
-          path: ~/.stack
+          path: |
+            ~/.stack
+            .stack-work
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack
 
       - name: Build dependencies
