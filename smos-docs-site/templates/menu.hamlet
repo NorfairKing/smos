@@ -13,6 +13,10 @@
     Smos
 
   <ul .menu-list>
+    $maybe weburl <- appWebserverUrl
+      <li>
+        <a href=#{weburl}>
+          Smos Online
     <li>
       <a href=@{PageR features}>
         Features
