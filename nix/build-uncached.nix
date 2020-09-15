@@ -1,5 +1,5 @@
 let
-  pkgs = import ./ci-pkgs.nix;
+  pkgs = import ./pkgs.nix;
   nixBuildUncached = pkgs.fetchFromGitHub {
     owner = "Mic92";
     repo = "nix-build-uncached";
