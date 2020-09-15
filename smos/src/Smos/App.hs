@@ -115,13 +115,13 @@ activationDebug Activation {..} =
 smosStartEvent :: s -> EventM n s
 smosStartEvent = pure
 
-buildInitialState :: Path Abs File -> ResourceT IO SmosState
+buildInitialState :: StartingPath -> ResourceT IO SmosState
 buildInitialState p = do
   mErrOrEC <- startEditorCursor p
   case mErrOrEC of
     Nothing -> liftIO $ die "Failed to lock. Has this file already been opened in another instance of smos?"
     Just errOrEC -> case errOrEC of
-      Left err -> liftIO $ die $ unlines ["Failed to read smos file", fromAbsFile p, "could not parse it:", err]
+      Left err -> liftIO $ die err
       Right ec -> do
         zt <- liftIO getZonedTime
         pure $ initStateWithCursor zt ec

@@ -17,7 +17,7 @@ import Smos.Types
 import YamlParse.Applicative
 
 data Arguments
-  = Arguments FilePath (Report.FlagsWithConfigFile Flags)
+  = Arguments (Maybe FilePath) (Report.FlagsWithConfigFile Flags)
 
 data Flags
   = Flags
@@ -433,7 +433,7 @@ backToKeyConfig km =
        in KeyConfig {keyConfigMatcher = MatchConfCombination kp_ mc, keyConfigAction = a}
 
 data Instructions
-  = Instructions (Path Abs File) SmosConfig
+  = Instructions (Maybe StartingPath) SmosConfig
 
 data CombineError
   = ActionNotFound ActionName

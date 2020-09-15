@@ -9,8 +9,8 @@ import Data.ByteString (ByteString)
 import Data.Word
 import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
-import Path
 import Smos
+import Smos.Types
 import System.Posix
 import UnliftIO
 
@@ -22,8 +22,8 @@ data SmosInstanceHandle
         smosInstanceHandleAsync :: Async ()
       }
 
-withSmosInstance :: MonadUnliftIO m => SmosConfig -> Path Abs File -> (SmosInstanceHandle -> m a) -> m a
-withSmosInstance config startingFile func = do
+withSmosInstance :: MonadUnliftIO m => SmosConfig -> Maybe StartingPath -> (SmosInstanceHandle -> m a) -> m a
+withSmosInstance config mStartingPath func = do
   (masterFd, slaveFd) <- liftIO openPseudoTerminal
   let smosInstanceHandleResizeFd = slaveFd
   smosInstanceHandleMasterHandle <- liftIO $ fdToHandle masterFd
@@ -40,7 +40,7 @@ withSmosInstance config startingFile func = do
             setWindowSize smosInstanceHandleResizeFd (80, 24)
             pure vty
       let runSmos :: MonadIO m => m ()
-          runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder startingFile config
+          runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder mStartingPath config
       withAsync runSmos $ \smosInstanceHandleAsync ->
         func SmosInstanceHandle {..}
 

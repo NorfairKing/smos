@@ -24,6 +24,7 @@ library:
   - cursor-dirforest
   - cursor-dirforest-brick
   - cursor-fuzzy-time
+  - directory
   - dirforest
   - envparse
   - filelock

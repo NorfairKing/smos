@@ -147,7 +147,7 @@ runCommandsOn startingFile start commands =
             }
     DF.write workflowDir start writeSmosFile
     rs <- runResourceT $ do
-      mErrOrEC <- startEditorCursor $ workflowDir </> startingFile
+      mErrOrEC <- startEditorCursor $ StartingFile $ workflowDir </> startingFile
       case mErrOrEC of
         Nothing -> liftIO $ die "Could not lock pretend file."
         Just errOrEC -> case errOrEC of

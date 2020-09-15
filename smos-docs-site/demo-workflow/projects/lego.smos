@@ -10,10 +10,19 @@
     properties:
       timewindow: 15m
     state-history:
+    - state: DONE
+      time: 2020-09-15 11:14:34.758993545000
     - state: NEXT
       time: 2020-06-13 13:39:06.191178208000
     tags:
     - online
+    logbook:
+    - start: 2020-09-15 11:13:46.361425667000
+      end: 2020-09-15 11:14:40.942763472000
+  - header: for a response from Moritz
+    state-history:
+    - state: WAITING
+      time: 2020-09-15 11:14:34.758993545000
   - header: buy the boxes
     state-history:
     - state: TODO

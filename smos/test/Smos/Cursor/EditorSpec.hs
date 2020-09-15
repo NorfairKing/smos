@@ -20,7 +20,7 @@ spec =
           let p = tdir </> rp
           writeSmosFile p sf
           runResourceT $ do
-            errOrCursor <- startEditorCursor p
+            errOrCursor <- startEditorCursor (StartingFile p)
             case errOrCursor of
               Nothing -> liftIO $ expectationFailure "Locking should have been possible"
               Just (Left err) -> liftIO $ expectationFailure err

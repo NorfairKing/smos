@@ -27,25 +27,28 @@ import UnliftIO.Resource
 
 smos :: SmosConfig -> IO ()
 smos sc = do
-  Instructions p sc' <- getInstructions sc
-  startSmosOn p sc'
+  Instructions mst sc' <- getInstructions sc
+  startSmosOn mst sc'
 
 smosWithoutRuntimeConfig :: SmosConfig -> IO ()
 smosWithoutRuntimeConfig sc = do
-  p <- getPathArgument
-  startSmosOn p sc
+  mst <- getPathArgument
+  startSmosOn mst sc
 
-startSmosOn :: Path Abs File -> SmosConfig -> IO ()
-startSmosOn p = startSmosWithVtyBuilderOn vtyBuilder p
+startSmosOn :: Maybe StartingPath -> SmosConfig -> IO ()
+startSmosOn mst = startSmosWithVtyBuilderOn vtyBuilder mst
   where
     vtyBuilder = do
       vty <- mkVty defaultConfig
       setWindowTitle vty "smos"
       pure vty
 
-startSmosWithVtyBuilderOn :: IO Vty.Vty -> Path Abs File -> SmosConfig -> IO ()
-startSmosWithVtyBuilderOn vtyBuilder p sc@SmosConfig {..} = runResourceT $ do
-  s <- buildInitialState p
+startSmosWithVtyBuilderOn :: IO Vty.Vty -> Maybe StartingPath -> SmosConfig -> IO ()
+startSmosWithVtyBuilderOn vtyBuilder mst sc@SmosConfig {..} = runResourceT $ do
+  st <- liftIO $ case mst of
+    Nothing -> StartingDir <$> resolveReportWorkflowDir configReportConfig
+    Just st -> pure st
+  s <- buildInitialState st
   withInternalState $ \res -> do
     chan <- Brick.newBChan maxBound
     initialVty <- vtyBuilder

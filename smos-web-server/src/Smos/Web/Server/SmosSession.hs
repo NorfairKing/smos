@@ -16,6 +16,7 @@ import Smos.Default
 import Smos.Instance
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
+import Smos.Types
 import Smos.Web.Server.Foundation
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
@@ -66,7 +67,7 @@ withSmosSessionIn workflowDir relFile func = do
                 },
             configExplainerMode = True
           }
-  withSmosInstance config startingFile func
+  withSmosInstance config (Just $ StartingFile startingFile) func
 
 withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a
 withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkflowDir)

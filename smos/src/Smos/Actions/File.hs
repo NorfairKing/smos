@@ -46,7 +46,7 @@ switchToFile path = modifyEditorCursorS $ \ec -> do
               closeCurrentFile
               pure $
                 ec
-                  { editorCursorLastOpenedFile = path,
+                  { editorCursorLastOpenedFile = Just path,
                     editorCursorSelection = FileSelected,
                     editorCursorFileCursor = Just smec
                   }
@@ -77,7 +77,7 @@ switchToCursor path msfc = modifyEditorCursorS $ \ec -> do
         Just smec -> do
           pure $
             ec
-              { editorCursorLastOpenedFile = path,
+              { editorCursorLastOpenedFile = Just path,
                 editorCursorSelection = FileSelected,
                 editorCursorFileCursor = Just smec
               }

@@ -25,15 +25,15 @@ import System.Exit (die)
 
 getInstructions :: SmosConfig -> IO Instructions
 getInstructions conf = do
-  Arguments fp flags <- getArguments
+  Arguments mfp flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions conf fp (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions conf mfp (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 combineToInstructions ::
-  SmosConfig -> FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions sc@SmosConfig {..} fp Flags {..} Environment {..} mc = do
-  p <- resolveFile' fp
+  SmosConfig -> Maybe FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
+  mst <- mapM resolveStartingPath mfp
   src <-
     Report.combineToConfig
       configReportConfig
@@ -50,7 +50,7 @@ combineToInstructions sc@SmosConfig {..} fp Flags {..} Environment {..} mc = do
             configReportConfig = src,
             configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode)
           }
-  pure $ Instructions p sc'
+  pure $ Instructions mst sc'
 
 combineKeymap :: KeyMap -> Maybe KeybindingsConfiguration -> Comb KeyMap
 combineKeymap km Nothing = pure km

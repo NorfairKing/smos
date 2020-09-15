@@ -680,7 +680,7 @@ renderKeyCombination = go
 -- Cannot factor this out because of the problem with help cursor.
 data EditorCursor
   = EditorCursor
-      { editorCursorLastOpenedFile :: Path Abs File,
+      { editorCursorLastOpenedFile :: Maybe (Path Abs File),
         editorCursorFileCursor :: Maybe SmosFileEditorCursor,
         editorCursorBrowserCursor :: Maybe FileBrowserCursor,
         editorCursorReportCursor :: Maybe ReportCursor,
@@ -688,19 +688,36 @@ data EditorCursor
         editorCursorSelection :: EditorSelection
       }
 
-startEditorCursor :: (MonadIO m, MonadResource m) => Path Abs File -> m (Maybe (Either String EditorCursor))
-startEditorCursor p = do
-  mErrOrCursor <- startSmosFileEditorCursor p
-  let go sfec =
-        EditorCursor
-          { editorCursorLastOpenedFile = p,
-            editorCursorFileCursor = Just sfec,
-            editorCursorBrowserCursor = Nothing,
-            editorCursorReportCursor = Nothing,
-            editorCursorHelpCursor = Nothing,
-            editorCursorSelection = FileSelected
-          }
-  pure $ fmap (fmap go) mErrOrCursor
+data StartingPath
+  = StartingFile (Path Abs File)
+  | StartingDir (Path Abs Dir)
+  deriving (Show, Eq)
+
+startEditorCursor :: (MonadIO m, MonadResource m) => StartingPath -> m (Maybe (Either String EditorCursor))
+startEditorCursor st = case st of
+  StartingFile fp -> do
+    mErrOrCursor <- startSmosFileEditorCursor fp
+    let go sfec =
+          EditorCursor
+            { editorCursorLastOpenedFile = Just fp,
+              editorCursorFileCursor = Just sfec,
+              editorCursorBrowserCursor = Nothing,
+              editorCursorReportCursor = Nothing,
+              editorCursorHelpCursor = Nothing,
+              editorCursorSelection = FileSelected
+            }
+    pure $ fmap (fmap go) mErrOrCursor
+  StartingDir dp -> do
+    fbc <- startFileBrowserCursor dp
+    pure $ Just $ Right $
+      EditorCursor
+        { editorCursorLastOpenedFile = Nothing,
+          editorCursorFileCursor = Nothing,
+          editorCursorBrowserCursor = Just fbc,
+          editorCursorReportCursor = Nothing,
+          editorCursorHelpCursor = Nothing,
+          editorCursorSelection = BrowserSelected
+        }
 
 editorCursorFileCursorL :: Lens' EditorCursor (Maybe SmosFileEditorCursor)
 editorCursorFileCursorL =

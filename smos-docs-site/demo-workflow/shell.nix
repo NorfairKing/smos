@@ -17,6 +17,7 @@ pkgs.stdenv.mkDerivation rec {
   shellHook = ''
     export SMOS_WORKFLOW_DIR=$(pwd)
     export SMOS_CONFIG_FILE=$(pwd)/config.yaml
+    export SMOS_EXPLAINER_MODE=True
 
     # Sync setup
     export SMOS_CONTENTS_DIR=$(pwd)

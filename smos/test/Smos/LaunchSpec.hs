@@ -8,6 +8,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
 import Smos.Instance
+import Smos.Types
 import System.Environment
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -105,7 +106,7 @@ startupSpec workflowDirSpec startupFile = do
                       }
                 }
           }
-  withSmosInstance config startupFile $ \smosHandle -> do
+  withSmosInstance config (Just $ StartingFile startupFile) $ \smosHandle -> do
     threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos did the initialisation
     let smosAsync = smosInstanceHandleAsync smosHandle
     link smosAsync

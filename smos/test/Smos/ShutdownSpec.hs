@@ -10,6 +10,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
 import Smos.Instance
+import Smos.Types
 import System.FileLock
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -49,7 +50,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                                 }
                           }
                     }
-            withSmosInstance config startupFile $ \smos1 -> do
+            withSmosInstance config (Just $ StartingFile startupFile) $ \smos1 -> do
               threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock
               let smos1Async = smosInstanceHandleAsync smos1
               mErrOrDone1 <- poll smos1Async
@@ -65,7 +66,7 @@ spec = modifyMaxSuccess (`div` 50) $ do
                   Nothing -> expectationFailure "Should not have failed differently."
                   Just AsyncCancelled -> pure ()
                 Just (Right ()) -> expectationFailure "Should have been canceled, not exited normally."
-              withSmosInstance config startupFile $ \smos2 -> do
+              withSmosInstance config (Just $ StartingFile startupFile) $ \smos2 -> do
                 threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos definitely tried to take the lock and exited
                 let smos2Async = smosInstanceHandleAsync smos2
                 res2 <- poll smos2Async
