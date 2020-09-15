@@ -27,6 +27,7 @@ library:
   - dirforest
   - envparse
   - filelock
+  - filepath
   - fuzzy-time
   - megaparsec
   - microlens

@@ -14,6 +14,7 @@ import Path
 import Smos.Data
 import Smos.Style
 import Smos.Types
+import qualified System.FilePath as FP
 import Text.Printf
 
 type DrawEnv = ZonedTime
@@ -87,7 +88,10 @@ drawTodoState ts =
   withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textLineWidget $ todoStateText ts
 
 drawFilePath :: Path b File -> Widget n
-drawFilePath = withAttr fileAttr . str . toFilePath
+drawFilePath fp =
+  case fileExtension fp of
+    Just ".smos" -> withAttr fileAttr . str . FP.dropExtension . toFilePath $ fp
+    _ -> withAttr nonSmosFileAttr . str . toFilePath $ fp
 
 drawDirPath :: Path b Dir -> Widget n
 drawDirPath = withAttr dirAttr . str . toFilePath

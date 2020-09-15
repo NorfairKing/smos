@@ -225,7 +225,7 @@ fileBrowserCompleteToFile workflowDir fbc =
     Nothing -> pure fbc
     Just dfc ->
       let (rd, _) = dirForestCursorSelected dfc
-       in case dirForestCursorCompleteToFile () dfc of
+       in case dirForestCursorCompleteToFile' (replaceExtension ".smos") () dfc of
             Nothing -> pure fbc
             Just (rf, dfc') -> do
               let file = workflowDir </> rd </> rf
