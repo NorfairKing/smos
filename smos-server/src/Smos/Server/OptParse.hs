@@ -9,11 +9,12 @@ where
 
 import Control.Monad.Logger
 import Data.Maybe
+import Data.Version
 import qualified Env
 import Options.Applicative
 import Path.IO
+import Paths_smos_server
 import Smos.Server.OptParse.Types
-import Smos.Version
 import qualified System.Environment as System
 import YamlParse.Applicative (readConfigFile)
 
@@ -90,7 +91,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos Server: " <> smosVersion
+    description = "Smos Server version " <> showVersion version
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags

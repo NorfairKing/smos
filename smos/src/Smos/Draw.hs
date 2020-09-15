@@ -46,7 +46,6 @@ import Smos.History
 import Smos.Keys
 import Smos.Style
 import Smos.Types
-import Smos.Version
 import Text.Time.Pretty
 
 smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
@@ -133,8 +132,7 @@ drawInfo km =
               str "or visit https://docs.smos.online"
             ],
         [ str " ",
-          str $ "Version " <> showVersion version,
-          str smosVersion
+          str $ "Version " <> showVersion version
         ]
       ]
   where

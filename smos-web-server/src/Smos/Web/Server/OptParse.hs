@@ -9,11 +9,12 @@ where
 
 import Control.Monad.Logger
 import Data.Maybe
+import Data.Version
 import qualified Env
 import Options.Applicative
 import Path.IO
+import Paths_smos_web_server
 import Servant.Client
-import Smos.Version
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -87,7 +88,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos Web Server: " <> smosVersion
+    description = "Smos Web Server version " <> showVersion version
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags

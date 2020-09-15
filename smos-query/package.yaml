@@ -34,7 +34,6 @@ library:
   - rainbox
   - smos-data
   - smos-report
-  - smos-version
   - text
   - time
   - validity

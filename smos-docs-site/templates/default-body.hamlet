@@ -19,8 +19,3 @@
 
     <div .column .is-9>
       ^{widget}
-
-<footer .footer>
-  <div .content .has-text-centered>
-    <pre>
-      Version #{smosVersion}

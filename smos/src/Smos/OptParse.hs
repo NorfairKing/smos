@@ -10,16 +10,17 @@ module Smos.OptParse
 where
 
 import qualified Data.Text as T
+import Data.Version
 import qualified Env
 import Import
 import Options.Applicative
+import Paths_smos
 import Smos.Actions
 import Smos.Keys
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
 import Smos.Types
-import Smos.Version
 import qualified System.Environment as System
 import System.Exit (die)
 
@@ -268,7 +269,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos TUI Editor: " <> smosVersion
+    description = "Smos TUI Editor version " <> showVersion version
 
 parseArgs :: Parser Arguments
 parseArgs =

@@ -19,8 +19,10 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time
+import Data.Version
 import qualified Env
 import Options.Applicative as OptParse
+import Paths_smos_query
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Filter
@@ -30,7 +32,6 @@ import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
-import Smos.Version
 import qualified System.Environment as System
 
 getInstructions :: SmosQueryConfig -> IO Instructions
@@ -206,7 +207,7 @@ argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos Query Tool: " <> smosVersion
+    description = "Smos Query Tool version " <> showVersion version
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags

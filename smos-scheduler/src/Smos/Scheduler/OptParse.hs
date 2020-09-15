@@ -9,14 +9,15 @@ module Smos.Scheduler.OptParse
 where
 
 import Data.Maybe
+import Data.Version
 import qualified Env
 import Options.Applicative
 import Path
 import Path.IO
+import Paths_smos_scheduler
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
-import Smos.Version
 import qualified System.Environment as System
 
 getInstructions :: IO Instructions
@@ -89,7 +90,7 @@ argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos Scheduler Tool: " <> smosVersion
+    description = "Smos Scheduler Tool version " <> showVersion version
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

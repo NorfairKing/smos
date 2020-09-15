@@ -8,14 +8,15 @@ module Smos.ASCIInema.OptParse
 where
 
 import Data.Maybe
+import Data.Version
 import qualified Env
 import Options.Applicative
 import Path.IO
+import Paths_smos_asciinema
 import Smos.ASCIInema.Input
 import Smos.ASCIInema.OptParse.Types
 import Smos.ASCIInema.Output
 import Smos.ASCIInema.WindowSize
-import Smos.Version
 import qualified System.Environment as System
 import System.Posix.IO (stdOutput)
 
@@ -67,7 +68,7 @@ argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
     help_ = fullDesc <> progDesc description
-    description = "Smos ASCII cast Recorder: " <> smosVersion
+    description = "Smos ASCII cast Recorder version " <> showVersion version
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

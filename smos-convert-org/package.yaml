@@ -23,7 +23,6 @@ library:
   - path-io
   - pretty-show
   - smos-data
-  - smos-version
   - text
   - time
   - unordered-containers
