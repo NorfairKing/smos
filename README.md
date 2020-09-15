@@ -3,8 +3,6 @@
 ![Stack Build](https://github.com/NorfairKing/smos/workflows/Stack%20Build/badge.svg)
 ![Nix Build](https://github.com/NorfairKing/smos/workflows/Nix%20Build/badge.svg)
 
-A semantic tree-based editor to replace Emacs Org Mode
-
 See [the documentation site](https://docs.smos.online) for more information.
 
 <img src="logo.png" width="200" alt="logo"/>
