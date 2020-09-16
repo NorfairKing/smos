@@ -19,6 +19,7 @@ allPlainBrowserActions =
     selectBrowserArchive,
     selectBrowserReview,
     selectBrowserClient,
+    selectBrowserSide,
     browserSelectPrev,
     browserSelectNext,
     browserStartNew,
@@ -194,6 +195,9 @@ selectBrowserReview = selectBrowserHelper "Review" (fmap (</> [reldir|review|]) 
 
 selectBrowserClient :: Action
 selectBrowserClient = selectBrowserHelper "Client" (fmap (</> [reldir|client|]) . resolveReportProjectsDir)
+
+selectBrowserSide :: Action
+selectBrowserSide = selectBrowserHelper "Side" (fmap (</> [reldir|side|]) . resolveReportProjectsDir)
 
 selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =

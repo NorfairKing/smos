@@ -369,6 +369,7 @@ defaultAnyKeyMap =
       exactString "ba" selectBrowserArchive,
       exactString "br" selectBrowserReview,
       exactString "bc" selectBrowserClient,
+      exactString "bs" selectBrowserSide,
       -- Reports
       exactString "rn" reportNextActions,
       exactString "rw" reportWaiting
