@@ -11,11 +11,10 @@ You can use it like this in your `home.nix`:
 with lib;
 let
   smosModule =
-    (import <nixpkgs> {}).fetchgit {
+    builtins.fetchGit {
       url = "https://github.com/NorfairKing/smos";
       rev = "0000000000000000000000000000000000000000"; # Put a recent commit hash here.
-      sha256 = "sha256:0000000000000000000000000000000000000000000000000000";
-      leaveDotGit = true;
+      ref = "master"
     } + "/nix/program.nix";
 in
 {

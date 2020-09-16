@@ -8,13 +8,13 @@ If you are building with nix, you probably know what you are doing.
 Start with a regular build, and go from there using the multiple results:
 
 ```
-$ nix-build -A release
+$ nix-build
 ```
 
 To install the executables in your user environment directly:
 
 ```
-nix-env -if default.nix -A release
+nix-env -if default.nix
 ```
 
 ### Optional: Using the cachix cache
