@@ -1,0 +1,8 @@
+before: []
+starting-file: example.smos
+commands:
+- selectHelp
+- exitHelp
+- startEntryFromEmptyAndSelectHeader
+after:
+  - ''

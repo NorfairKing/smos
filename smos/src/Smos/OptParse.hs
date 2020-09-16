@@ -34,7 +34,8 @@ getInstructions conf = do
 combineToInstructions ::
   SmosConfig -> Maybe FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
-  mst <- mapM resolveStartingPath mfp
+  curDir <- getCurrentDir
+  mst <- mapM (resolveStartingPath curDir) mfp
   src <-
     Report.combineToConfig
       configReportConfig

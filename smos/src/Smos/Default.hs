@@ -339,9 +339,7 @@ defaultHelpKeyMap =
             exactString "gg" helpStart,
             exactKey KEnd helpEnd,
             exactChar 'G' helpEnd,
-            exactChar '/' helpSelectSearch,
-            exactKey KEsc selectEditor,
-            exactChar 'q' selectEditor
+            exactChar '/' helpSelectSearch
           ],
       helpKeyMapSearchMatchers =
         listMatchers
@@ -353,7 +351,9 @@ defaultHelpKeyMap =
           ],
       helpKeyMapAnyMatchers =
         listMatchers
-          []
+          [ exactKey KEsc exitHelp,
+            exactChar 'q' exitHelp
+          ]
     }
 
 defaultAnyKeyMap :: KeyMappings

@@ -25,6 +25,7 @@ import Smos
 import Smos.App
 import Smos.Data
 import Smos.Default
+import Smos.OptParse.Bare
 import Smos.Types
 import TestImport
 import UnliftIO.Resource
@@ -48,7 +49,7 @@ spec = do
 
 data GoldenTestCase
   = GoldenTestCase
-      { goldenTestCaseStartingFile :: Path Rel File,
+      { goldenTestCaseStartingFile :: FilePath,
         goldenTestCaseBefore :: DirForest SmosFile,
         goldenTestCaseCommands :: [Command],
         goldenTestCaseAfter :: DirForest SmosFile
@@ -67,7 +68,7 @@ instance FromJSON GoldenTestCase where
                 <|> (DF.singletonFile defaultFile <$> (o .: k :: Parser SmosFile))
             )
        in GoldenTestCase
-            <$> o .:? "starting-file" .!= defaultFile
+            <$> o .:? "starting-file" .!= fromRelFile defaultFile
             <*> dirForestParser "before"
             <*> o .:? "commands" .!= []
             <*> dirForestParser "after"
@@ -130,40 +131,43 @@ data CommandsRun
         finalResult :: DirForest SmosFile
       }
 
-runCommandsOn :: Path Rel File -> DirForest SmosFile -> [Command] -> IO CommandsRun
-runCommandsOn startingFile start commands =
+runCommandsOn :: FilePath -> DirForest SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn startingFilePath start commands =
   withSystemTempDir "smos-golden" $ \tdir -> do
     workflowDir <- resolveDir tdir "workflow"
-    let testConf :: SmosConfig
-        testConf =
-          defaultConfig
-            { configReportConfig =
-                defaultReportConfig
-                  { smosReportConfigDirectoryConfig =
-                      defaultDirectoryConfig
-                        { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
-                        }
-                  }
-            }
-    DF.write workflowDir start writeSmosFile
-    rs <- runResourceT $ do
-      mErrOrEC <- startEditorCursor $ StartingFile $ workflowDir </> startingFile
-      case mErrOrEC of
-        Nothing -> liftIO $ die "Could not lock pretend file."
-        Just errOrEC -> case errOrEC of
-          Left err -> liftIO $ die $ "Not a smos file: " <> err
-          Right ec -> do
-            zt <- liftIO getZonedTime
-            let startState =
-                  initStateWithCursor zt ec
-            (_, rs) <- foldM (go testConf) (startState, []) commands
-            pure rs
-    finalState <- readWorkflowDir testConf
-    pure $
-      CommandsRun
-        { intermidiaryResults = reverse rs,
-          finalResult = finalState
-        }
+    ensureDir workflowDir
+    withCurrentDir workflowDir $ do
+      let testConf :: SmosConfig
+          testConf =
+            defaultConfig
+              { configReportConfig =
+                  defaultReportConfig
+                    { smosReportConfigDirectoryConfig =
+                        defaultDirectoryConfig
+                          { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
+                          }
+                    }
+              }
+      DF.write workflowDir start writeSmosFile
+      rs <- runResourceT $ do
+        startingPath <- liftIO $ resolveStartingPath workflowDir startingFilePath
+        mErrOrEC <- startEditorCursor startingPath
+        case mErrOrEC of
+          Nothing -> liftIO $ die "Could not lock pretend file."
+          Just errOrEC -> case errOrEC of
+            Left err -> liftIO $ die $ "Not a smos file: " <> err
+            Right ec -> do
+              zt <- liftIO getZonedTime
+              let startState =
+                    initStateWithCursor zt ec
+              (_, rs) <- foldM (go testConf) (startState, []) commands
+              pure rs
+      finalState <- readWorkflowDir testConf
+      pure $
+        CommandsRun
+          { intermidiaryResults = reverse rs,
+            finalResult = finalState
+          }
   where
     readWorkflowDir :: MonadIO m => SmosConfig -> m (DirForest SmosFile)
     readWorkflowDir testConf = liftIO $ do

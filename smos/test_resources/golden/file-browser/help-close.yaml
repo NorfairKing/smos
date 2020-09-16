@@ -1,0 +1,13 @@
+before: {}
+starting-file: ./
+commands:
+- selectHelp
+- exitHelp
+- browserStartNew
+- browserInsertChar f
+- browserInsertChar i
+- browserInsertChar l
+- browserInsertChar e
+- browserCompleteFile
+after:
+  file.smos: []

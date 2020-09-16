@@ -14,15 +14,16 @@ import System.Environment (getArgs)
 getPathArgument :: IO (Maybe StartingPath)
 getPathArgument = do
   fp <- runArgumentsParser <$> getArgs >>= handleParseResult
-  mapM resolveStartingPath fp
+  curDir <- getCurrentDir
+  mapM (resolveStartingPath curDir) fp
 
-resolveStartingPath :: FilePath -> IO StartingPath
-resolveStartingPath fp = do
+resolveStartingPath :: Path Abs Dir -> FilePath -> IO StartingPath
+resolveStartingPath curDir fp = do
   dirExists <- FP.doesDirectoryExist fp
   if dirExists
-    then StartingDir <$> resolveDir' fp
+    then StartingDir <$> resolveDir curDir fp
     else do
-      p <- resolveFile' fp
+      p <- resolveFile curDir fp
       StartingFile <$> case fileExtension p of
         Nothing -> replaceExtension ".smos" p
         Just _ -> pure p

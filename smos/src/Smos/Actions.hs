@@ -51,7 +51,6 @@ allPlainActions :: [Action]
 allPlainActions =
   concat
     [ [ startEntryFromEmptyAndSelectHeader,
-        selectHelp,
         selectEditor,
         saveFile,
         stop
@@ -93,16 +92,6 @@ startEntryFromEmptyAndSelectHeader =
     { actionName = "startEntryFromEmptyAndSelectHeader",
       actionFunc = modifyEmptyFile startSmosFile,
       actionDescription = "Start a first entry in an empty Smos File and select its header"
-    }
-
-selectHelp :: Action
-selectHelp =
-  Action
-    { actionName = "selectHelp",
-      actionFunc = modifyEditorCursorS $ \ec -> do
-        km <- asks configKeyMap
-        pure $ editorCursorSwitchToHelp km ec,
-      actionDescription = "Show the (contextual) help screen"
     }
 
 selectEditor :: Action

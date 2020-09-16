@@ -3,6 +3,7 @@
 module Smos.Actions.Help
   ( allHelpPlainActions,
     allHelpUsingCharActions,
+    selectHelp,
     helpUp,
     helpDown,
     helpStart,
@@ -14,15 +15,19 @@ module Smos.Actions.Help
     helpDelete,
     helpSelectHelp,
     helpToggleSelection,
+    exitHelp,
   )
 where
 
+import Smos.Actions.Browser
+import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Types
 
 allHelpPlainActions :: [Action]
 allHelpPlainActions =
-  [ helpUp,
+  [ selectHelp,
+    helpUp,
     helpDown,
     helpStart,
     helpEnd,
@@ -30,11 +35,22 @@ allHelpPlainActions =
     helpRemove,
     helpDelete,
     helpSelectHelp,
-    helpToggleSelection
+    helpToggleSelection,
+    exitHelp
   ]
 
 allHelpUsingCharActions :: [ActionUsing Char]
 allHelpUsingCharActions = [helpInsert, helpAppend]
+
+selectHelp :: Action
+selectHelp =
+  Action
+    { actionName = "selectHelp",
+      actionFunc = modifyEditorCursorS $ \ec -> do
+        km <- asks configKeyMap
+        pure $ editorCursorSwitchToHelp km ec,
+      actionDescription = "Show the (contextual) help screen"
+    }
 
 helpUp :: Action
 helpUp =
@@ -122,4 +138,24 @@ helpToggleSelection =
     { actionName = "helpToggleSelection",
       actionDescription = "Toggle between selecting and deselecting the search bar",
       actionFunc = modifyHelpCursor helpCursorToggleSelection
+    }
+
+exitHelp :: Action
+exitHelp =
+  Action
+    { actionName = "exitHelp",
+      actionDescription = "Exit the help screen",
+      actionFunc = do
+        ec <- gets smosStateCursor
+        if editorCursorSelection ec == HelpSelected
+          then case editorCursorFileCursor ec of
+            Just _ -> modifyEditorCursor $ editorCursorSelect FileSelected
+            Nothing -> case editorCursorLastOpenedFile ec of
+              Just fp -> switchToFile fp
+              Nothing -> case editorCursorBrowserCursor ec of
+                Just _ -> modifyEditorCursor $ editorCursorSelect BrowserSelected
+                Nothing -> case editorCursorReportCursor ec of
+                  Just _ -> modifyEditorCursor $ editorCursorSelect ReportSelected
+                  Nothing -> actionFunc selectBrowserWorkflow
+          else pure ()
     }
