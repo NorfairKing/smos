@@ -21,7 +21,11 @@ resolveStartingPath fp = do
   dirExists <- FP.doesDirectoryExist fp
   if dirExists
     then StartingDir <$> resolveDir' fp
-    else StartingFile <$> resolveFile' fp
+    else do
+      p <- resolveFile' fp
+      StartingFile <$> case fileExtension p of
+        Nothing -> replaceExtension ".smos" p
+        Just _ -> pure p
 
 runArgumentsParser :: [String] -> ParserResult (Maybe FilePath)
 runArgumentsParser = execParserPure prefs_ argParser
