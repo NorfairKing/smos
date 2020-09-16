@@ -1,7 +1,39 @@
 <h1 .title .is-1>
   Smos
 
-<p>
-  To get started, have a look at
-  <a href=@{PageR blogposts}>
-    the blogposts
+<div .content>
+  <p>
+    <b>
+      Smos is a comprehensive self-management system.
+
+
+  <p>
+    It draws inspiration from Emacs' Org mode, Taskwarrior, Todoist and many other self-management tools, but it is specifically designed to be the fastest and/or most automated tool to use for self-management.
+
+
+  <p>
+    It has a TUI, an API server and a web server, all available for free.
+
+  <p>
+    You can find the source code under a free license
+    <a href="https://github.com/NorfairKing/smos">
+      on GitHub.
+
+  <p>
+    $maybe weburl <- mWebUrl
+      You can try it out online at
+      <a href=#{weburl}>
+        the public deployment.
+    
+  <p>
+    If this is your first time visiting this page, you probably do not know where to start.
+    To get started, have a look at
+    <a href=@{PageR blogposts}>
+      the blogposts about how to use Smos.
+
+  <p>
+    Be sure to also consider our
+    <a href="https://cs-syd.eu/self-management">
+      self-management training
+    if you are a busy person.
+

@@ -56,6 +56,7 @@ instance Yesod App where
 getHomeR :: Handler Html
 getHomeR = defaultLayout $ do
   setTitle "Smos Documentation"
+  mWebUrl <- getsYesod appWebserverUrl
   $(widgetFile "home")
 
 getCastsR :: [Text] -> Handler Html
