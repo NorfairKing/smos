@@ -1,5 +1,5 @@
 let
-  pkgs = import ./nix/ci-pkgs.nix;
+  pkgs = import ./nix/pkgs.nix;
   pre-commit-hooks = import ./nix/pre-commit.nix;
 in
 pkgs.mkShell {
