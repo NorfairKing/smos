@@ -12,7 +12,7 @@ let
       builtins.fetchGit {
         url = "https://github.com/NorfairKing/smos";
         rev = "0000000000000000000000000000000000000000"; # Put a recent commit hash here.
-        ref = "master"
+        ref = "master";
       } + "/nix/module.nix"
     ) { envname = "production"; }
   );
@@ -43,5 +43,4 @@ in
     };
   };
 }
-
 ```
