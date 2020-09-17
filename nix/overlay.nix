@@ -17,6 +17,17 @@ let
           ${final.autoconf}/bin/autoreconf -i
         '';
 
+        # A smos mime setup. This allows users to open smos files with xdg-open.
+        packages.smos.components.library.postBuild = ''
+          # Set up the types
+          mkdir -p $out/share/mime/packages
+          cp ${../mime/smos.mime-type} $out/share/mime/packages/smos.xml
+
+          # Set up the .desktop files
+          mkdir -p $out/share/applications
+          cp ${../mime/smos.desktop} $out/share/applications/smos.desktop
+        '';
+
         # The smos web server front-end.
         #
         # We put these remote assets in place before the build so that they do not get fetched during the build

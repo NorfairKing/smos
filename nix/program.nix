@@ -364,8 +364,6 @@ scheduler: ${builtins.toJSON schedulerCfg}
           cfg.extraConfig
         ];
 
-      mimeSetup = pkgs.callPackage ./mime-setup.nix {};
-
       services =
         (
           optionalAttrs (cfg.sync.enable or false) {
@@ -406,7 +404,6 @@ scheduler: ${builtins.toJSON schedulerCfg}
           smosPkgs.smos-scheduler
           smosPkgs.smos-single
           smosPkgs.smos-sync-client
-          mimeSetup
         ];
 
 
