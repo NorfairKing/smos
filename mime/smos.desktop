@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Exec=smos %u
+Name=Smos
+Terminal=true
+MimeType=application/smos;text/smos
