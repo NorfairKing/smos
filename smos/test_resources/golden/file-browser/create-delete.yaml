@@ -1,0 +1,12 @@
+before:
+  file.smos: []
+starting-file: ./
+commands:
+- selectBrowserWorkflow
+- browserStartNew
+- browserDeleteChar
+- browserEnter
+- startEntryFromEmptyAndSelectHeader
+after:
+  file.smos:
+    - ''
