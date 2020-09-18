@@ -37,7 +37,7 @@ in
                         backupDir =
                           mkOption {
                             type = types.str;
-                            default = ".smos/backup";
+                            default = "${config.xdg.dataHome}/smos/backup";
                             description = "The directory to backup to";
                           };
                       };
@@ -192,7 +192,7 @@ in
                   ''
                     export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
                     set -ex
-                    backupdir="$HOME/${cfg.backup.backupDir}"
+                    backupdir="${cfg.backup.backupDir}"
                     mkdir -p "''${backupdir}"
                     backupfile="''${backupdir}/''$(date +%F_%T).tar.gz"
                     tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
