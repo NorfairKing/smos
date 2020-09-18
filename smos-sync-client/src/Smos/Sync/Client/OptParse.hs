@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Sync.Client.OptParse
@@ -39,87 +40,80 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConf <$> mc)
-  s <- getSettings
-  d <- getDispatch dc
+  cacheDir <- defaultCacheDir $ flagCacheDir <|> cM syncConfCacheDir
+  dataDir <- defaultDataDir $ flagDataDir <|> cM syncConfDataDir
+  s <- do
+    setServerUrl <-
+      case flagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
+        Nothing ->
+          die
+            "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
+        Just s -> Servant.parseBaseUrl s
+    let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
+    let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
+    setPassword <-
+      case flagPassword of
+        Just p -> do
+          putStrLn "WARNING: Plaintext password in flags may end up in shell history."
+          pure (Just p)
+        Nothing ->
+          case envPassword of
+            Just p -> pure (Just p)
+            Nothing ->
+              case cM syncConfPassword of
+                Just p -> do
+                  putStrLn "WARNING: Plaintext password in config file."
+                  pure (Just p)
+                Nothing -> pure Nothing
+    setSessionPath <-
+      case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
+        Nothing -> resolveFile cacheDir "sync-session.dat"
+        Just f -> resolveFile' f
+    pure $ Settings {..}
+  d <-
+    case c of
+      CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
+      CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
+      CommandSync SyncFlags {..} -> do
+        syncSetContentsDir <-
+          case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
+            Nothing -> Report.resolveDirWorkflowDir dc
+            Just d -> resolveDir' d
+        syncSetUUIDFile <-
+          case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
+            Nothing -> resolveFile dataDir "server-uuid.json"
+            Just d -> resolveFile' d
+        syncSetMetadataDB <-
+          case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
+            Nothing -> resolveFile dataDir "sync-metadata.sqlite3"
+            Just d -> resolveFile' d
+        syncSetBackupDir <- case syncFlagBackupDir <|> envBackupDir <|> cM syncConfBackupDir of
+          Nothing -> resolveDir dataDir "conflict-backups"
+          Just d -> resolveDir' d
+        let syncSetIgnoreFiles =
+              fromMaybe IgnoreHiddenFiles $
+                syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
+        case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
+          Nothing -> pure ()
+          Just _ -> die "The metadata database must not be in the sync contents directory."
+        pure $ DispatchSync SyncSettings {..}
   pure $ Instructions d s
   where
     cM :: (SyncConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSyncConf >>= func
-    getDispatch dc =
-      case c of
-        CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
-        CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
-        CommandSync SyncFlags {..} -> do
-          syncSetContentsDir <-
-            case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-              Nothing -> Report.resolveDirWorkflowDir dc
-              Just d -> resolveDir' d
-          syncSetUUIDFile <-
-            case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
-              Nothing -> defaultUUIDFile
-              Just d -> resolveFile' d
-          syncSetMetadataDB <-
-            case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
-              Nothing -> defaultMetadataDB
-              Just d -> resolveFile' d
-          syncSetBackupDir <- case syncFlagBackupDir <|> envBackupDir <|> cM syncConfBackupDir of
-            Nothing -> defaultBackupDir
-            Just d -> resolveDir' d
-          let syncSetIgnoreFiles =
-                fromMaybe IgnoreHiddenFiles $
-                  syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
-          case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
-            Nothing -> pure ()
-            Just _ -> die "The metadata database must not be in the sync contents directory."
-          pure $ DispatchSync SyncSettings {..}
-    getSettings = do
-      setServerUrl <-
-        case flagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
-          Nothing ->
-            die
-              "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
-          Just s -> Servant.parseBaseUrl s
-      let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
-      let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
-      setPassword <-
-        case flagPassword of
-          Just p -> do
-            putStrLn "WARNING: Plaintext password in flags may end up in shell history."
-            pure (Just p)
-          Nothing ->
-            case envPassword of
-              Just p -> pure (Just p)
-              Nothing ->
-                case cM syncConfPassword of
-                  Just p -> do
-                    putStrLn "WARNING: Plaintext password in config file."
-                    pure (Just p)
-                  Nothing -> pure Nothing
-      setSessionPath <-
-        case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
-          Nothing -> defaultSessionPath
-          Just f -> resolveFile' f
-      pure $ Settings {..}
 
-defaultUUIDFile :: IO (Path Abs File)
-defaultUUIDFile = do
-  home <- getHomeDir
-  resolveFile home ".smos/server-uuid.json"
+smosRelDir :: Path Rel Dir
+smosRelDir = [reldir|smos|]
 
-defaultMetadataDB :: IO (Path Abs File)
-defaultMetadataDB = do
-  home <- getHomeDir
-  resolveFile home ".smos/sync-metadata.sqlite3"
+defaultDataDir :: Maybe FilePath -> IO (Path Abs Dir)
+defaultDataDir md = case md of
+  Nothing -> getXdgDir XdgData (Just smosRelDir)
+  Just fp -> resolveDir' fp
 
-defaultSessionPath :: IO (Path Abs File)
-defaultSessionPath = do
-  home <- getHomeDir
-  resolveFile home ".smos/sync-session.dat"
-
-defaultBackupDir :: IO (Path Abs Dir)
-defaultBackupDir = do
-  home <- getHomeDir
-  resolveDir home ".smos/conflict-backups"
+defaultCacheDir :: Maybe FilePath -> IO (Path Abs Dir)
+defaultCacheDir md = case md of
+  Nothing -> getXdgDir XdgCache (Just smosRelDir)
+  Just fp -> resolveDir' fp
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -272,4 +266,10 @@ parseFlags =
       )
     <*> option
       (Just <$> str)
-      (mconcat [long "session-path", help "The path to store the login session", value Nothing])
+      (mconcat [metavar "DIRECTORY", long "data-dir", help "The directory to store state metadata in (not the contents to be synced)", value Nothing])
+    <*> option
+      (Just <$> str)
+      (mconcat [metavar "DIRECTORY", long "cache-dir", help "The directory to cache state data in", value Nothing])
+    <*> option
+      (Just <$> str)
+      (mconcat [metavar "FILEPATH", long "session-path", help "The path to store the login session", value Nothing])

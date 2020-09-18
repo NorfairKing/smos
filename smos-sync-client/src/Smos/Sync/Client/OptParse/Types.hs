@@ -52,6 +52,8 @@ data Flags
         flagServerUrl :: Maybe String,
         flagUsername :: Maybe Username,
         flagPassword :: Maybe Password,
+        flagDataDir :: Maybe FilePath,
+        flagCacheDir :: Maybe FilePath,
         flagSessionPath :: Maybe FilePath
       }
   deriving (Show, Generic)
@@ -90,6 +92,8 @@ data SyncConfiguration
   = SyncConfiguration
       { syncConfLogLevel :: Maybe LogLevel,
         syncConfServerUrl :: Maybe String,
+        syncConfDataDir :: Maybe FilePath,
+        syncConfCacheDir :: Maybe FilePath,
         syncConfContentsDir :: Maybe FilePath,
         syncConfUUIDFile :: Maybe FilePath,
         syncConfMetadataDB :: Maybe FilePath,
@@ -110,6 +114,8 @@ instance YamlSchema SyncConfiguration where
       SyncConfiguration
         <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
         <*> optionalField "server-url" "The url of the sync server. Example: api.smos.cs-syd.eu"
+        <*> optionalField "data-dir" "The directory to store state metadata in (not the contents to be synced)"
+        <*> optionalField "cache-dir" "The directory to cache state data in"
         <*> optionalField "contents-dir" "The directory of the files to synchronise. By default this will be the workflow directory."
         <*> optionalField "uuid-file" "The file in which to store the server uuid"
         <*> optionalField "metadata-db" "The file to store the metadata database in"

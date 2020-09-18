@@ -27,16 +27,10 @@ spec =
                 let t = test cenv tmpDir
                 t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 t ["login", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
-                up <- resolveFile tmpDir "uuid.jon"
-                mp <- resolveFile tmpDir "metadata.db"
                 t
                   [ "sync",
                     "--contents-dir",
-                    fromAbsDir contentsDir,
-                    "--metadata-db",
-                    fromAbsFile mp,
-                    "--uuid-file",
-                    fromAbsFile up
+                    fromAbsDir contentsDir
                   ]
       it "just works (tm) without manual login" $ \cenv ->
         forAllValid $ \un ->
@@ -45,8 +39,6 @@ spec =
               withSystemTempDir "smos-sync-client-test-meta" $ \tmpDir -> do
                 let t = test cenv tmpDir
                 t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
-                up <- resolveFile tmpDir "uuid.jon"
-                mp <- resolveFile tmpDir "metadata.db"
                 t
                   [ "--username",
                     usernameString un,
@@ -54,11 +46,7 @@ spec =
                     T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
-                    fromAbsDir contentsDir,
-                    "--metadata-db",
-                    fromAbsFile mp,
-                    "--uuid-file",
-                    fromAbsFile up
+                    fromAbsDir contentsDir
                   ]
       it "just works (tm) when the contents dir doesn't exist yet" $ \cenv ->
         forAllValid $ \un ->
@@ -68,8 +56,6 @@ spec =
                 let t = test cenv tmpDir
                 t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 cd <- resolveDir contentsDir "subdir/for/contents"
-                up <- resolveFile tmpDir "uuid.jon"
-                mp <- resolveFile tmpDir "metadata.db"
                 t
                   [ "--username",
                     usernameString un,
@@ -77,11 +63,7 @@ spec =
                     T.unpack $ unsafeShowPassword pw,
                     "sync",
                     "--contents-dir",
-                    fromAbsDir cd,
-                    "--metadata-db",
-                    fromAbsFile mp,
-                    "--uuid-file",
-                    fromAbsFile up
+                    fromAbsDir cd
                   ]
       it "just works (tm) when the directory for the metadata doesn't exist yet" $ \cenv ->
         forAllValid $ \un ->
@@ -91,7 +73,6 @@ spec =
                 let t = test cenv tmpDir
                 t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 tmpSubDir <- resolveDir tmpDir "subdir/for/metadata"
-                up <- resolveFile tmpDir "uuid.jon"
                 mp <- resolveFile tmpSubDir "metadata.db"
                 t
                   [ "--username",
@@ -102,9 +83,7 @@ spec =
                     "--contents-dir",
                     fromAbsDir contentsDir,
                     "--metadata-db",
-                    fromAbsFile mp,
-                    "--uuid-file",
-                    fromAbsFile up
+                    fromAbsFile mp
                   ]
       it "just works (tm) when the directory for the uuid file doesn't exist yet" $ \cenv ->
         forAllValid $ \un ->
@@ -115,7 +94,6 @@ spec =
                 t ["register", "--username", usernameString un, "--password", T.unpack $ unsafeShowPassword pw]
                 tmpSubDir <- resolveDir tmpDir "subdir/for/uuid"
                 up <- resolveFile tmpSubDir "uuid.jon"
-                mp <- resolveFile tmpDir "metadata.db"
                 t
                   [ "--username",
                     usernameString un,
@@ -124,15 +102,12 @@ spec =
                     "sync",
                     "--contents-dir",
                     fromAbsDir contentsDir,
-                    "--metadata-db",
-                    fromAbsFile mp,
                     "--uuid-file",
                     fromAbsFile up
                   ]
 
 test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
 test cenv tmpDir args = do
-  sp <- resolveFile tmpDir "session.dat"
-  let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--session-path", fromAbsFile sp]
+  let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--data-dir", fromAbsDir tmpDir, "--cache-dir", fromAbsDir tmpDir]
   putStrLn $ unwords ["running", unwords $ map show $ "smos-sync-client" : args']
   withArgs args' smosSyncClient
