@@ -4,6 +4,7 @@
 module Smos.Web.Server.OptParse.Types where
 
 import Control.Monad.Logger
+import Data.Text (Text)
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
@@ -28,7 +29,9 @@ data ServeFlags
         serveFlagPort :: !(Maybe Int),
         serveFlagDocsUrl :: !(Maybe String),
         serveFlagAPIUrl :: !(Maybe String),
-        serveFlagDataDir :: !(Maybe FilePath)
+        serveFlagDataDir :: !(Maybe FilePath),
+        serveFlagGoogleAnalyticsTracking :: !(Maybe String),
+        serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
       }
   deriving (Show, Eq)
 
@@ -45,7 +48,9 @@ data Environment
         envPort :: !(Maybe Int),
         envDocsUrl :: !(Maybe String),
         envAPIUrl :: !(Maybe String),
-        envDataDir :: !(Maybe FilePath)
+        envDataDir :: !(Maybe FilePath),
+        envGoogleAnalyticsTracking :: !(Maybe String),
+        envGoogleSearchConsoleVerification :: !(Maybe String)
       }
   deriving (Show, Eq, Generic)
 
@@ -55,7 +60,9 @@ data Configuration
         confPort :: !(Maybe Int),
         confDocsUrl :: !(Maybe String),
         confAPIUrl :: !(Maybe String),
-        confDataDir :: !(Maybe FilePath)
+        confDataDir :: !(Maybe FilePath),
+        confGoogleAnalyticsTracking :: !(Maybe String),
+        confGoogleSearchConsoleVerification :: !(Maybe String)
       }
   deriving (Show, Eq, Generic)
 
@@ -71,6 +78,8 @@ instance YamlSchema Configuration where
         <*> optionalField "docs-url" "The url for the documentation site to refer to"
         <*> optionalField "api-url" "The url for the api to use"
         <*> optionalField "data-dir" "The directory to store workflows during editing"
+        <*> optionalField "google-analytics-tracking" "The google analytics tracking code"
+        <*> optionalField "google-search-console-verification" "The google search console verification code"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -82,7 +91,9 @@ data ServeSettings
         serveSetPort :: !Int,
         serveSetDocsUrl :: !(Maybe BaseUrl),
         serveSetAPIUrl :: !BaseUrl,
-        serveSetDataDir :: !(Path Abs Dir)
+        serveSetDataDir :: !(Path Abs Dir),
+        serveSetGoogleAnalyticsTracking :: !(Maybe Text),
+        serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
       }
   deriving (Show, Eq, Generic)
 

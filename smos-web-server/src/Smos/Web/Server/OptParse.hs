@@ -9,6 +9,7 @@ where
 
 import Control.Monad.Logger
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -40,6 +41,8 @@ combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Envi
   serveSetDataDir <- case serveFlagDataDir <|> envDataDir <|> mc confDataDir of
     Nothing -> getCurrentDir
     Just dd -> resolveDir' dd
+  let serveSetGoogleAnalyticsTracking = T.pack <$> (serveFlagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking)
+  let serveSetGoogleSearchConsoleVerification = T.pack <$> (serveFlagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification)
   pure (Instructions (DispatchServe ServeSettings {..}) Settings)
 
 getEnvironment :: IO Environment
@@ -60,6 +63,8 @@ environmentParser =
     <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
     <*> Env.var (fmap Just . Env.str) "API_URL" (mE <> Env.help "The url for the api to use")
     <*> Env.var (fmap Just . Env.str) "DATA_DIR" (mE <> Env.help "The directory to store workflows during editing")
+    <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "The Google analytics tracking code")
+    <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "The Google search console verification code")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -148,6 +153,24 @@ parseCommandServe = info parser modifier
                       [ long "data-dir",
                         metavar "FILEPATH",
                         help "The directory to store workflows during editing",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "google-analytics-tracking",
+                        metavar "CODE",
+                        help "The Google analytics tracking code",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "google-search-console-verification",
+                        metavar "CODE",
+                        help "The Google search console verification code",
                         value Nothing
                       ]
                   )

@@ -46,7 +46,9 @@ data App
         appStatic :: !EmbeddedStatic,
         appLoginTokens :: !(TVar (Map Username Token)),
         appHttpManager :: !Http.Manager,
-        appDataDir :: !(Path Abs Dir)
+        appDataDir :: !(Path Abs Dir),
+        appGoogleAnalyticsTracking :: !(Maybe Text),
+        appGoogleSearchConsoleVerification :: !(Maybe Text)
       }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
@@ -54,6 +56,7 @@ mkYesodData "App" $(parseRoutesFile "routes.txt")
 instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
+    app <- getYesod
     pageContent <- widgetToPageContent $ do
       addStylesheet $ StaticR bulma_css
       toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]

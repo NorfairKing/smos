@@ -42,7 +42,9 @@ webServerSpec spec = withTestTempDir $ flip yesodSpecWithSiteGeneratorAndArgumen
             appDocsBaseUrl = Nothing,
             appLoginTokens = loginVar,
             appDataDir = tdir,
-            appHttpManager = man
+            appHttpManager = man,
+            appGoogleAnalyticsTracking = Nothing,
+            appGoogleSearchConsoleVerification = Nothing
           }
   pure app
 

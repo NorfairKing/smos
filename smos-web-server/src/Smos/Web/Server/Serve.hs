@@ -37,7 +37,9 @@ runSmosWebServer ServeSettings {..} = do
             appDocsBaseUrl = serveSetDocsUrl,
             appLoginTokens = loginVar,
             appHttpManager = man,
-            appDataDir = serveSetDataDir
+            appDataDir = serveSetDataDir,
+            appGoogleAnalyticsTracking = serveSetGoogleAnalyticsTracking,
+            appGoogleSearchConsoleVerification = serveSetGoogleSearchConsoleVerification
           }
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =

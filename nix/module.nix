@@ -125,6 +125,20 @@ in
                       example = 8002;
                       description = "The port to serve web requests on";
                     };
+                  google-analytics-tracking =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      example = "XX-XXXXXXXX-XX";
+                      default = null;
+                      description = "The Google analytics tracking code";
+                    };
+                  google-search-console-verification =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+                      default = null;
+                      description = "The Google search console verification code";
+                    };
                 };
             };
         };
@@ -290,6 +304,10 @@ in
                 "SMOS_WEB_SERVER_PORT" = "${builtins.toString port}";
                 "SMOS_WEB_SERVER_DATA_DIR" = web-server-data-dir;
                 "TERM" = "xterm-256color";
+              } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
+                "SMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
+              } // optionalAttrs (!builtins.isNull google-search-console-verification) {
+                "SMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
               };
             script =
               ''
