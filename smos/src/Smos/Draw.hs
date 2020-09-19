@@ -69,7 +69,7 @@ drawEditorCursor workflowDir configKeyMap EditorCursor {..} =
       Just sfec -> drawFileEditorCursor workflowDir configKeyMap MaybeSelected sfec
     BrowserSelected -> case editorCursorBrowserCursor of
       Nothing -> pure $ str "No directory selected" -- TODO make this a nice view
-      Just fbc -> pure $ drawFileBrowserCursor workflowDir MaybeSelected fbc
+      Just fbc -> pure $ drawFileBrowserCursor workflowDir configKeyMap MaybeSelected fbc
     ReportSelected -> case editorCursorReportCursor of
       Nothing -> pure $ str "No report selected" -- TODO make this a nice view
       Just rc -> drawReportCursor MaybeSelected rc
@@ -224,16 +224,14 @@ defaultPadding = Pad defaultPaddingAmount
 defaultPaddingAmount :: Int
 defaultPaddingAmount = 2
 
-drawFileBrowserCursor :: Path Abs Dir -> Select -> FileBrowserCursor -> Widget ResourceName
-drawFileBrowserCursor workflowDir s FileBrowserCursor {..} =
-  withHeading (str "File Browser: " <+> drawOpenedDirPath workflowDir fileBrowserCursorBase)
-    $ viewport ResourceViewport Vertical
-    $ maybe
-      emptyScreen
-      (verticalPaddedDirForestCursorWidget goFodCursor goFodUnselected defaultPaddingAmount)
+drawFileBrowserCursor :: Path Abs Dir -> KeyMap -> Select -> FileBrowserCursor -> Widget ResourceName
+drawFileBrowserCursor workflowDir keyMap s FileBrowserCursor {..} =
+  withHeading (str "File Browser: " <+> drawOpenedDirPath workflowDir fileBrowserCursorBase) $
+    maybe
+      (drawInfo keyMap)
+      (viewport ResourceViewport Vertical . verticalPaddedDirForestCursorWidget goFodCursor goFodUnselected defaultPaddingAmount)
       fileBrowserCursorDirForestCursor
   where
-    emptyScreen = str "No files to show."
     goFodCursor :: FileOrDirCursor () -> Widget ResourceName
     goFodCursor = \case
       InProgress tc ->
