@@ -69,15 +69,3 @@ You can write your own tools to operate on these files.
 Files are made to make diffs easy and disjoint.
 Derived data is never stored, but instead computed or rendered.
 There is also built-in sychronisation using `smos-sync-client`.
-
-## A replacement for emacs org mode
-
-Smos intends to deprecate Emacs org mode by being more robust, more
-customisable, by providing a better and more tool-friendly file
-format and by using a more sane configuration language.
-
-## A replacement for taskwarrior
-
-The machine-interaction capabilities of [taskwarrior](https://taskwarrior.org)
-are great, and have inspired smos greatly.
-See also [TaskLite](https://tasklite.org/) for a more taskwarrior-like alternative for Smos.
