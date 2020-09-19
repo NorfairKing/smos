@@ -118,8 +118,6 @@ defaultFileKeyMap =
             -- Clocking
             exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere,
             exactString "co" forestClockOutEverywhereInAllFiles,
-            -- Reports
-            exactString "rn" reportNextActions,
             -- Convenience
             exactString " nw" convDoneAndWaitForResponse,
             exactString " rp" convRepinged,
