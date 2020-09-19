@@ -25,6 +25,7 @@ import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
 import Data.Aeson
+import qualified Data.Char as Char
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
 import Data.Time
@@ -521,8 +522,11 @@ makeHelpCursor title kms =
     khcs = makeKeyHelpCursors kms
 
 makeKeyHelpCursors :: KeyMappings -> [KeyHelpCursor]
-makeKeyHelpCursors = combine . map makeKeyHelpCursor
+makeKeyHelpCursors = sortKeyHelpCursors . combine . map makeKeyHelpCursor
   where
+    sortKeyHelpCursors = sortOn $ \khc -> case keyHelpCursorKeyBinding khc of
+      [] -> Nothing
+      kbs -> Just $ minimum $ map keyCombinationComplexity kbs
     combine =
       map (combineKeyHelpCursors . NE.fromList) -- Safe because of 'groupBy'
         . groupBy ((==) `on` keyHelpCursorName)
@@ -662,7 +666,7 @@ data KeyCombination
   | PressAnyChar
   | PressAny
   | PressCombination KeyPress KeyCombination
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity KeyCombination
 
@@ -674,6 +678,20 @@ renderKeyCombination = go
     go PressAnyChar = "<any char>"
     go PressAny = "<any key>"
     go (PressCombination kp km) = renderKeyPress kp <> go km
+
+-- Some measure of the complexity of a key combination.
+-- This is only for ordering them in the help cursor
+keyCombinationComplexity :: KeyCombination -> Word
+keyCombinationComplexity = \case
+  PressExactly kp -> keyPressComplexity kp
+  PressAnyChar -> 2
+  PressAny -> 2
+  PressCombination kp kc -> 1 + keyPressComplexity kp + keyCombinationComplexity kc
+
+keyPressComplexity :: KeyPress -> Word
+keyPressComplexity (KeyPress key mods) = (+ genericLength mods) $ case key of
+  KChar c -> if Char.isAlpha c then 1 else 2
+  _ -> 3
 
 -- [ Editor Cursor ] --
 --
