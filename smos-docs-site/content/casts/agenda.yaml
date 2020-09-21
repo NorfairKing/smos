@@ -9,7 +9,7 @@ input:
 - type: "smos projects/gym.smos\n"
 - wait: 500
 - send: "e"
-- type: "Gym habit\nGoal: Set up a gym schedule"
+- type: "Gym habit\n\nGoal: Set up a gym schedule"
 - wait: 500
 - send: "\e"
 - wait: 500
@@ -17,8 +17,8 @@ input:
 - wait: 500
 - send: "E"
 - wait: 500
-- type: "Call the gym I found online\n"
-- wait: 100
+- type: "Call the gym I found online\n\n"
+- wait: 200
 - send: "https://example-gym.com"
 - wait: 100
 - send: "\e"

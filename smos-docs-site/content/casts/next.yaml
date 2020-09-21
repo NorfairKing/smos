@@ -8,7 +8,7 @@ input:
 - wait: 2000
 - send: 'e'
 - wait: 500
-- type: "Next-action blogpost\nGoal: Write a blogpost about how to use smos' next-action report"
+- type: "Next-action blogpost\n\nGoal: Write a blogpost about how to use smos' next-action report"
 - wait: 250
 - send: "\e"
 - wait: 250
