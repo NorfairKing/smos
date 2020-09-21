@@ -31,16 +31,18 @@ import Yesod.EmbeddedStatic
 
 data App
   = App
-      { appWebserverUrl :: Maybe Text,
-        appAssets :: EmbeddedStatic,
-        appCasts :: EmbeddedStatic
+      { appWebserverUrl :: !(Maybe Text),
+        appAssets :: !EmbeddedStatic,
+        appCasts :: !EmbeddedStatic,
+        appGoogleAnalyticsTracking :: !(Maybe Text),
+        appGoogleSearchConsoleVerification :: !(Maybe Text)
       }
 
 mkYesodData "App" $(parseRoutesFile "routes")
 
 instance Yesod App where
   defaultLayout widget = do
-    App {..} <- getYesod
+    app <- getYesod
     pageContent <-
       widgetToPageContent $ do
         addStylesheet $ AssetsStaticR bulma_css

@@ -13,7 +13,7 @@
     Smos
 
   <ul .menu-list>
-    $maybe weburl <- appWebserverUrl
+    $maybe weburl <- appWebserverUrl app
       <li>
         <a href=#{weburl}>
           Smos Online

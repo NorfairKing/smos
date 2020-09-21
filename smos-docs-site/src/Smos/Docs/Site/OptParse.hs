@@ -42,7 +42,7 @@ getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 prefixedEnvironmentParser :: Env.Parser Env.Error Environment
 prefixedEnvironmentParser =
   Env.prefixed
-    "SMOS_WEB_SERVER_"
+    "SMOS_DOCS_SITE_"
     environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment

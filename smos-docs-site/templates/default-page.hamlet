@@ -7,6 +7,21 @@
 
     ^{pageHead pageContent}
 
+    $maybe verification <- appGoogleSearchConsoleVerification app
+      <meta name="google-site-verification" content="#{verification}"/>
+
+    $maybe trackingId <- appGoogleAnalyticsTracking app
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=#{trackingId}">
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', '#{trackingId}');
+
+
+
     <script type="text/javascript" src="//downloads.mailchimp.com/js/signup-forms/popup/unique-methods/embed.js" data-dojo-config="usePlainJson: true, isDebug: false"></script><script type="text/javascript">window.dojoRequire(["mojo/signup-forms/Loader"], function(L) { L.start({"baseUrl":"mc.us18.list-manage.com","uuid":"906beec94e365e9d842611ad9","lid":"c25af385ac","uniqueMethods":true}) })
 
   <body>

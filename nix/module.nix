@@ -183,9 +183,9 @@ in
               } // optionalAttrs (!builtins.isNull web-url) {
                 "SMOS_DOCS_SITE_WEB_SERVER_URL" = "${web-url}";
               } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
-                "SMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
+                "SMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
               } // optionalAttrs (!builtins.isNull google-search-console-verification) {
-                "SMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
+                "SMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
               };
             script =
               ''

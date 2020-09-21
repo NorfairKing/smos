@@ -17,7 +17,9 @@ smosDocsSite = do
   Yesod.warp
     serveSetPort
     App
-      { appWebserverUrl = serveSetWebServerUrl,
-        appAssets = assets,
-        appCasts = casts
+      { appAssets = assets,
+        appCasts = casts,
+        appWebserverUrl = serveSetWebServerUrl,
+        appGoogleAnalyticsTracking = serveSetGoogleAnalyticsTracking,
+        appGoogleSearchConsoleVerification = serveSetGoogleSearchConsoleVerification
       }

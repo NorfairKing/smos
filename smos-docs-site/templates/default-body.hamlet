@@ -2,7 +2,7 @@
   <div .hero-body>
     <div .container>
       <h1 .title>
-        $maybe weburl <- appWebserverUrl
+        $maybe weburl <- appWebserverUrl app
           <a .cancela href=#{weburl}>
             Smos
         $nothing
