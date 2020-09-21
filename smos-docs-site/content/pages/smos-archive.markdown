@@ -1,5 +1,5 @@
 ---
-title: The Smos Archiving tool
+title: The Smos Archiving Tool
 ---
 
 You can archive files that you are done with.

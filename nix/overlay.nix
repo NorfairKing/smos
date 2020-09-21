@@ -278,7 +278,7 @@ in
               mkdir -p $out
               cp -r ${rawDocsSite}/. $out
 
-              $out/bin/smos-docs-site &
+              $out/bin/smos-docs-site serve &
               sleep 1
               linkcheck http://localhost:8000
               killall smos-docs-site

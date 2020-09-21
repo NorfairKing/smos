@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Docs.Site
   ( smosDocsSite,
@@ -7,24 +8,16 @@ where
 
 import Smos.Docs.Site.Application ()
 import Smos.Docs.Site.Foundation
-import System.Environment
-import System.Exit
-import Text.Read
+import Smos.Docs.Site.OptParse
 import Yesod
 
 smosDocsSite :: IO ()
 smosDocsSite = do
-  portVar <- lookupEnv "SMOS_DOCS_SITE_PORT"
-  port <- case portVar of
-    Nothing -> pure 8000
-    Just s -> case readMaybe s of
-      Nothing -> die "Unable to read port environment variable."
-      Just p -> pure p
-  urlVar <- lookupEnv "SMOS_DOCS_SITE_WEB_SERVER_URL"
+  Instructions (DispatchServe ServeSettings {..}) Settings <- getInstructions
   Yesod.warp
-    port
+    serveSetPort
     App
-      { appWebserverUrl = urlVar,
+      { appWebserverUrl = serveSetWebServerUrl,
         appAssets = assets,
         appCasts = casts
       }

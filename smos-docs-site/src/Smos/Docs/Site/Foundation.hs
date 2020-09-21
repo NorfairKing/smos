@@ -31,7 +31,7 @@ import Yesod.EmbeddedStatic
 
 data App
   = App
-      { appWebserverUrl :: Maybe String,
+      { appWebserverUrl :: Maybe Text,
         appAssets :: EmbeddedStatic,
         appCasts :: EmbeddedStatic
       }

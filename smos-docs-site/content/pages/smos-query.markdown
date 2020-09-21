@@ -1,5 +1,5 @@
 ---
-title: Using smos-query
+title: The Smos Query Tool
 ---
 
 The `smos` editor comes with some handy companion tools.

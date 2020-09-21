@@ -1,5 +1,5 @@
 ---
-title: The Smos Scheduler tool
+title: The Smos Scheduler Tool
 ---
 
 The `smos-scheduler` tool is configured most easily using a configuration file.

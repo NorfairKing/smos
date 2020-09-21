@@ -4,4 +4,4 @@ set -e
 set -x
 
 killall smos-docs-site || true
-smos-docs-site &
+smos-docs-site serve &

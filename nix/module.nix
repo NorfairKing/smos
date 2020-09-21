@@ -29,12 +29,33 @@ in
                       example = 8000;
                       description = "The port to serve sync requests on";
                     };
+                  api-url =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      default = null;
+                      example = "https://api.smos.online";
+                      description = "The url for the api server to refer to";
+                    };
                   web-url =
                     mkOption {
                       type = types.nullOr types.str;
                       default = null;
                       example = "https://smos.online";
                       description = "The url for the web server to refer to";
+                    };
+                  google-analytics-tracking =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      example = "XX-XXXXXXXX-XX";
+                      default = null;
+                      description = "The Google analytics tracking code";
+                    };
+                  google-search-console-verification =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+                      default = null;
+                      description = "The Google search console verification code";
                     };
                 };
             };
@@ -157,12 +178,18 @@ in
             environment =
               {
                 "SMOS_DOCS_SITE_PORT" = "${builtins.toString port}";
-              } // optionalAttrs (!(builtins.isNull web-url)) {
+              } // optionalAttrs (!builtins.isNull api-url) {
+                "SMOS_DOCS_SITE_API_SERVER_URL" = "${api-url}";
+              } // optionalAttrs (!builtins.isNull web-url) {
                 "SMOS_DOCS_SITE_WEB_SERVER_URL" = "${web-url}";
+              } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
+                "SMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
+              } // optionalAttrs (!builtins.isNull google-search-console-verification) {
+                "SMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
               };
             script =
               ''
-                ${smosPkgs.smos-docs-site}/bin/smos-docs-site
+                ${smosPkgs.smos-docs-site}/bin/smos-docs-site serve
               '';
             serviceConfig =
               {

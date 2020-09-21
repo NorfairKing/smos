@@ -1,5 +1,5 @@
 ---
-title: The Smos Calendar Import tool
+title: The Smos Calendar Import Tool
 ---
 
 This tool exists to import your calendar from an external source into Smos.

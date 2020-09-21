@@ -1,4 +1,6 @@
-# Smos calendar import
+# The Smos Calendar Import tool
+
+See https://docs.smos.online/smos-calendar-import
 
 
 ## Hacking on this:
@@ -9,6 +11,7 @@ The workflow goes:
 ICal  -[ pick ]-> RecurringEvents
       -[ recur ]-> UnresolvedEvents
       -[ resolve ]-> [Events]
+      -[ render ]-> SmosFile
 ```
 
 ## Known issues (that still need to be resolved)
