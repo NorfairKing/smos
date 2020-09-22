@@ -179,9 +179,9 @@ in
               {
                 "SMOS_DOCS_SITE_PORT" = "${builtins.toString port}";
               } // optionalAttrs (!builtins.isNull api-url) {
-                "SMOS_DOCS_SITE_API_SERVER_URL" = "${api-url}";
+                "SMOS_DOCS_SITE_API_URL" = "${api-url}";
               } // optionalAttrs (!builtins.isNull web-url) {
-                "SMOS_DOCS_SITE_WEB_SERVER_URL" = "${web-url}";
+                "SMOS_DOCS_SITE_WEB_URL" = "${web-url}";
               } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
                 "SMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
               } // optionalAttrs (!builtins.isNull google-search-console-verification) {
