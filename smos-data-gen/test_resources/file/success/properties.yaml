@@ -1,0 +1,4 @@
+- header: Hello
+  properties:
+    client: example
+    timewindow: 5m

@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Data.FormatSpec where
+module Smos.Data.GoldenSpec where
 
 import Control.Monad
 import Data.Aeson

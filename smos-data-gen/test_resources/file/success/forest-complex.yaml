@@ -1,8 +1,11 @@
 - entry:
     header: Hello
-    tags: 
-      - world
+    tags:
+    - world
   forest:
-    - foo
-    - bar
-    - quux
+  - header: foo
+    contents: woohoo
+  - bar
+  - header: quux
+    properties:
+      timewindow: 3m
