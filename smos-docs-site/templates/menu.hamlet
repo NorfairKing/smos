@@ -22,6 +22,10 @@
         Features
 
     <li>
+      <a href=@{ChangelogR}>
+        Changelog
+
+    <li>
       <a href=@{PageR building_installation}>
         Building/Installation
       <ul>
