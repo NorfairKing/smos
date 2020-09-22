@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -101,8 +102,8 @@ renderKey k = T.pack $ go $ show k
 keyP :: P Key
 keyP =
   choice'
-    [ string' "<tab>" $> KChar '\t',
-      string' "<space>" $> KChar ' ',
+    [ string' "<Tab>" $> KChar '\t',
+      string' "<Space>" $> KChar ' ',
       string' "<UpRight>" $> KUpRight,
       string' "<UpLeft>" $> KUpLeft,
       string' "<Up>" $> KUp,
@@ -135,20 +136,30 @@ keyP =
     ]
 
 renderModifier :: Modifier -> Text
-renderModifier MShift = "S"
-renderModifier MCtrl = "C"
-renderModifier MMeta = "M"
-renderModifier MAlt = "A"
+renderModifier = \case
+  MShift -> "Shift"
+  MCtrl -> "Ctrl"
+  MMeta -> "Meta"
+  MAlt -> "Alt"
 
 modifierP :: P Modifier
 modifierP =
-  choice [string' "S" $> MShift, string' "C" $> MCtrl, string' "M" $> MMeta, string' "A" $> MAlt]
+  choice
+    [ string' "Shift" $> MShift,
+      string' "Ctrl" $> MCtrl,
+      string' "Meta" $> MMeta,
+      string' "Alt" $> MAlt,
+      string' "S" $> MShift,
+      string' "C" $> MCtrl,
+      string' "M" $> MMeta,
+      string' "A" $> MAlt
+    ]
 
 renderKeyPress :: KeyPress -> Text
 renderKeyPress (KeyPress key mods) =
   case mods of
     [] -> renderKey key
-    _ -> T.intercalate "-" $ map renderModifier mods ++ [renderKey key]
+    _ -> T.intercalate "+" $ map renderModifier mods ++ [renderKey key]
 
 keyPressP :: P KeyPress
 keyPressP = do
@@ -157,14 +168,11 @@ keyPressP = do
       $ try
       $ do
         m <- modifierP
-        void $ string' "-"
+        void $ string' "+" <|> string "-"
         pure m
   key <- keyP
   pure $ KeyPress key mods
 
--- a <char>
--- a <any>
--- ab M-c <any>
 data MatcherConfig
   = MatchConfKeyPress !KeyPress
   | MatchConfAnyChar

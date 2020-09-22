@@ -38,6 +38,14 @@ spec = do
   genValidSpec @Modifier
   describe "modifierP" $ do
     parsesValidSpec modifierP modText
+    parseJustSpec modifierP "Shift" MShift
+    parseJustSpec modifierP "shift" MShift
+    parseJustSpec modifierP "Ctrl" MCtrl
+    parseJustSpec modifierP "ctrl" MCtrl
+    parseJustSpec modifierP "Meta" MMeta
+    parseJustSpec modifierP "meta" MMeta
+    parseJustSpec modifierP "Alt" MAlt
+    parseJustSpec modifierP "alt" MAlt
     parseJustSpec modifierP "S" MShift
     parseJustSpec modifierP "s" MShift
     parseJustSpec modifierP "C" MCtrl
@@ -56,31 +64,49 @@ spec = do
     parsesValidSpec keyPressP keyPressText
     parseJustSpec keyPressP "a" $ KeyPress (KChar 'a') []
     parseJustSpec keyPressP "M-a" $ KeyPress (KChar 'a') [MMeta]
+    parseJustSpec keyPressP "M+a" $ KeyPress (KChar 'a') [MMeta]
     parseJustSpec keyPressP "M-S-a" $ KeyPress (KChar 'a') [MMeta, MShift]
+    parseJustSpec keyPressP "M+S+a" $ KeyPress (KChar 'a') [MMeta, MShift]
     parseJustSpec keyPressP "m" $ KeyPress (KChar 'm') []
     parseJustSpec keyPressP "M-m" $ KeyPress (KChar 'm') [MMeta]
+    parseJustSpec keyPressP "M+m" $ KeyPress (KChar 'm') [MMeta]
     parseJustSpec keyPressP "M-S-m" $ KeyPress (KChar 'm') [MMeta, MShift]
+    parseJustSpec keyPressP "M+S+m" $ KeyPress (KChar 'm') [MMeta, MShift]
     parseJustSpec keyPressP "M" $ KeyPress (KChar 'M') []
     parseJustSpec keyPressP "M-M" $ KeyPress (KChar 'M') [MMeta]
+    parseJustSpec keyPressP "M+M" $ KeyPress (KChar 'M') [MMeta]
     parseJustSpec keyPressP "M-S-M" $ KeyPress (KChar 'M') [MMeta, MShift]
+    parseJustSpec keyPressP "M+S+M" $ KeyPress (KChar 'M') [MMeta, MShift]
     parseJustSpec keyPressP "-" $ KeyPress (KChar '-') []
     parseJustSpec keyPressP "M--" $ KeyPress (KChar '-') [MMeta]
+    parseJustSpec keyPressP "M++" $ KeyPress (KChar '+') [MMeta]
     parseJustSpec keyPressP "M-S--" $ KeyPress (KChar '-') [MMeta, MShift]
+    parseJustSpec keyPressP "M+S++" $ KeyPress (KChar '+') [MMeta, MShift]
     parseJustSpec keyPressP "A" $ KeyPress (KChar 'A') []
     parseJustSpec keyPressP "m-a" $ KeyPress (KChar 'a') [MMeta]
+    parseJustSpec keyPressP "m+a" $ KeyPress (KChar 'a') [MMeta]
     parseJustSpec keyPressP "M-s-A" $ KeyPress (KChar 'A') [MMeta, MShift]
+    parseJustSpec keyPressP "M+s+A" $ KeyPress (KChar 'A') [MMeta, MShift]
     parseJustSpec keyPressP "<Enter>" $ KeyPress KEnter []
     parseJustSpec keyPressP "M-<Enter>" $ KeyPress KEnter [MMeta]
+    parseJustSpec keyPressP "M+<Enter>" $ KeyPress KEnter [MMeta]
     parseJustSpec keyPressP "M-S-<Enter>" $ KeyPress KEnter [MMeta, MShift]
+    parseJustSpec keyPressP "M+S+<Enter>" $ KeyPress KEnter [MMeta, MShift]
     parseJustSpec keyPressP "<enter>" $ KeyPress KEnter []
     parseJustSpec keyPressP "m-<enter>" $ KeyPress KEnter [MMeta]
+    parseJustSpec keyPressP "m+<enter>" $ KeyPress KEnter [MMeta]
     parseJustSpec keyPressP "m-s-<enter>" $ KeyPress KEnter [MMeta, MShift]
+    parseJustSpec keyPressP "m+s+<enter>" $ KeyPress KEnter [MMeta, MShift]
     parseJustSpec keyPressP "<F12>" $ KeyPress (KFun 12) []
     parseJustSpec keyPressP "M-<F12>" $ KeyPress (KFun 12) [MMeta]
+    parseJustSpec keyPressP "M+<F12>" $ KeyPress (KFun 12) [MMeta]
     parseJustSpec keyPressP "M-S-<F12>" $ KeyPress (KFun 12) [MMeta, MShift]
+    parseJustSpec keyPressP "M+S+<F12>" $ KeyPress (KFun 12) [MMeta, MShift]
     parseJustSpec keyPressP "<f12>" $ KeyPress (KFun 12) []
     parseJustSpec keyPressP "m-<f12>" $ KeyPress (KFun 12) [MMeta]
+    parseJustSpec keyPressP "m+<f12>" $ KeyPress (KFun 12) [MMeta]
     parseJustSpec keyPressP "m-S-<f12>" $ KeyPress (KFun 12) [MMeta, MShift]
+    parseJustSpec keyPressP "m+S+<f12>" $ KeyPress (KFun 12) [MMeta, MShift]
     parseNothingSpec keyPressP "<Enbler>"
     parseNothingSpec keyPressP "<Tal>"
     parseNothingSpec keyPressP "<maB>"
