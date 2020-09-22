@@ -5,7 +5,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.GoldenSpec
+module Smos.ScenarioSpec
   ( spec,
   )
 where
@@ -34,7 +34,7 @@ spec :: Spec
 spec = do
   tfs <-
     runIO $ do
-      resourcesDir <- resolveDir' "test_resources/golden"
+      resourcesDir <- resolveDir' "test_resources/scenario"
       fs <- snd <$> listDirRecur resourcesDir
       pure $ filter ((== Just ".yaml") . fileExtension) fs
   describe "Preconditions"
@@ -45,29 +45,29 @@ spec = do
             [] -> pure () -- impossible, but fine
             [_] -> pure () -- fine
             (an : _) -> expectationFailure $ unwords ["This action name occurred more than once: ", T.unpack (actionNameText an)]
-  describe "Golden" $ makeTestcases tfs
+  describe "Scenario" $ makeTestcases tfs
 
-data GoldenTestCase
-  = GoldenTestCase
-      { goldenTestCaseStartingFile :: FilePath,
-        goldenTestCaseBefore :: DirForest SmosFile,
-        goldenTestCaseCommands :: [Command],
-        goldenTestCaseAfter :: DirForest SmosFile
+data ScenarioTestCase
+  = ScenarioTestCase
+      { scenarioTestCaseStartingFile :: FilePath,
+        scenarioTestCaseBefore :: DirForest SmosFile,
+        scenarioTestCaseCommands :: [Command],
+        scenarioTestCaseAfter :: DirForest SmosFile
       }
   deriving (Show, Generic)
 
-instance Validity GoldenTestCase
+instance Validity ScenarioTestCase
 
-instance FromJSON GoldenTestCase where
+instance FromJSON ScenarioTestCase where
   parseJSON =
-    withObject "GoldenTestCase" $ \o ->
+    withObject "ScenarioTestCase" $ \o ->
       let defaultFile = [relfile|example.smos|]
           dirForestParser :: Text -> Parser (DirForest SmosFile)
           dirForestParser k =
             ( (o .: k :: Parser (DirForest SmosFile))
                 <|> (DF.singletonFile defaultFile <$> (o .: k :: Parser SmosFile))
             )
-       in GoldenTestCase
+       in ScenarioTestCase
             <$> o .:? "starting-file" .!= fromRelFile defaultFile
             <*> dirForestParser "before"
             <*> o .:? "commands" .!= []
@@ -79,10 +79,10 @@ makeTestcases = mapM_ makeTestcase
 makeTestcase :: Path Abs File -> Spec
 makeTestcase p =
   it (fromAbsFile p) $ do
-    gtc@GoldenTestCase {..} <- decodeFileThrow (fromAbsFile p)
-    run <- runCommandsOn goldenTestCaseStartingFile goldenTestCaseBefore goldenTestCaseCommands
+    gtc@ScenarioTestCase {..} <- decodeFileThrow (fromAbsFile p)
+    run <- runCommandsOn scenarioTestCaseStartingFile scenarioTestCaseBefore scenarioTestCaseCommands
     shouldBeValid gtc
-    expectResults p goldenTestCaseBefore goldenTestCaseAfter run
+    expectResults p scenarioTestCaseBefore scenarioTestCaseAfter run
 
 failure :: String -> IO a
 failure s = expectationFailure s >> undefined
@@ -133,7 +133,7 @@ data CommandsRun
 
 runCommandsOn :: FilePath -> DirForest SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn startingFilePath start commands =
-  withSystemTempDir "smos-golden" $ \tdir -> do
+  withSystemTempDir "smos-scenario" $ \tdir -> do
     workflowDir <- resolveDir tdir "workflow"
     ensureDir workflowDir
     withCurrentDir workflowDir $ do
