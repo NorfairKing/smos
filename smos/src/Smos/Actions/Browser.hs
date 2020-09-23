@@ -251,10 +251,7 @@ browserCompleteDir :: Action
 browserCompleteDir =
   Action
     { actionName = "browserCompleteDir",
-      actionFunc = modifyFileBrowserCursorS $ \fbc -> do
-        src <- asks configReportConfig
-        wd <- liftIO $ resolveReportWorkflowDir src
-        fileBrowserCompleteToDir wd fbc,
+      actionFunc = modifyFileBrowserCursorS fileBrowserCompleteToDir,
       actionDescription = "Complete the current file or directory in progress to a new directory."
     }
 
@@ -263,10 +260,7 @@ browserCompleteFile =
   Action
     { actionName = "browserCompleteFile",
       actionFunc = do
-        modifyFileBrowserCursorS $ \fbc -> do
-          src <- asks configReportConfig
-          wd <- liftIO $ resolveReportWorkflowDir src
-          fileBrowserCompleteToFile wd fbc
+        modifyFileBrowserCursorS fileBrowserCompleteToFile
         actionFunc browserEnter,
       actionDescription = "Complete the current file or directory in progress to a new file."
     }

@@ -200,8 +200,8 @@ fileBrowserArchiveFile workflowDir archiveDir fbc =
                 NotAllDone sf -> goOn sf
                 _ -> pure fbc
 
-fileBrowserCompleteToDir :: MonadIO m => Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
-fileBrowserCompleteToDir workflowDir fbc =
+fileBrowserCompleteToDir :: MonadIO m => FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
     Just dfc ->
@@ -209,7 +209,7 @@ fileBrowserCompleteToDir workflowDir fbc =
        in case dirForestCursorCompleteToDir dfc of
             Nothing -> pure fbc
             Just (rd2, dfc') -> do
-              let dir = workflowDir </> rd1 </> rd2
+              let dir = fileBrowserCursorBase fbc </> rd1 </> rd2
               let a = DirCreation dir dfc
               let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
               redoDirCreation dir
@@ -219,8 +219,8 @@ fileBrowserCompleteToDir workflowDir fbc =
                     fileBrowserCursorUndoStack = us'
                   }
 
-fileBrowserCompleteToFile :: MonadIO m => Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
-fileBrowserCompleteToFile workflowDir fbc =
+fileBrowserCompleteToFile :: MonadIO m => FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToFile fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
     Just dfc ->
@@ -228,7 +228,7 @@ fileBrowserCompleteToFile workflowDir fbc =
        in case dirForestCursorCompleteToFile' (replaceExtension ".smos") () dfc of
             Nothing -> pure fbc
             Just (rf, dfc') -> do
-              let file = workflowDir </> rd </> rf
+              let file = fileBrowserCursorBase fbc </> rd </> rf
               let a = FileCreation file dfc
               let us' = undoStackPush a (fileBrowserCursorUndoStack fbc)
               redoFileCreation file

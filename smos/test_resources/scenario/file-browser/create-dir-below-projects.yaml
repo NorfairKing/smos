@@ -1,0 +1,19 @@
+before: {}
+commands:
+- selectBrowserProjects
+- browserStartNew
+- browserInsertChar d
+- browserInsertChar i
+- browserInsertChar r
+- browserInsertChar 1
+- browserCompleteDir
+- browserStartNewBelowAtStart
+- browserInsertChar d
+- browserInsertChar i
+- browserInsertChar r
+- browserInsertChar 2
+- browserCompleteDir
+after:
+  projects:
+    dir1:
+      dir2: {}

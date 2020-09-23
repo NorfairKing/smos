@@ -1,0 +1,24 @@
+before: {}
+commands:
+- selectBrowserProjects
+- browserStartNew
+- browserInsertChar d
+- browserInsertChar i
+- browserInsertChar r
+- browserInsertChar 1
+- browserCompleteDir
+- browserStartNewBelowAtStart
+- browserInsertChar f
+- browserInsertChar i
+- browserInsertChar l
+- browserInsertChar e
+- browserInsertChar .
+- browserInsertChar s
+- browserInsertChar m
+- browserInsertChar o
+- browserInsertChar s
+- browserCompleteFile
+after:
+  projects:
+    dir1:
+      file.smos: []
