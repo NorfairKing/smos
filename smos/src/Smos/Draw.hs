@@ -124,9 +124,9 @@ drawInfo km =
               hBox
                 [ str "activate the ",
                   drawActionName $ actionName selectHelp,
-                  str " command using the ",
+                  str " action using the ",
                   withAttr keyAttr $ txt kpt,
-                  str " key"
+                  str " key."
                 ],
               str "for an overview of the available commands",
               str "or visit https://docs.smos.online"
@@ -137,67 +137,86 @@ drawInfo km =
       ]
   where
     lookupStartingActionInKeymap :: Maybe Text
-    lookupStartingActionInKeymap =
-      let emptyMatchers = keyMapAnyKeyMap km
-          matchAction a = actionName a == actionName selectHelp
-          matchActionUsing a = actionUsingName a == actionName selectHelp
-          matchKeyMapping =
-            \case
-              MapVtyExactly kp a ->
-                if matchAction a
-                  then Just (renderKeyPress kp)
-                  else Nothing
-              MapCatchAll a ->
-                if matchAction a
-                  then Just "any"
-                  else Nothing
-              MapAnyTypeableChar au ->
-                if matchActionUsing au
-                  then Just "<char>"
-                  else Nothing
-              MapCombination kp km' -> (renderKeyPress kp <>) <$> matchKeyMapping km'
-       in msum $ map matchKeyMapping emptyMatchers
+    lookupStartingActionInKeymap = lookupActionByName (keyMapAnyKeyMap km) (actionName selectHelp)
+
+lookupActionByName :: KeyMappings -> ActionName -> Maybe Text
+lookupActionByName matchers an =
+  let matchAction a = actionName a == an
+      matchActionUsing a = actionUsingName a == actionName selectHelp
+      matchKeyMapping =
+        \case
+          MapVtyExactly kp a ->
+            if matchAction a
+              then Just (renderKeyPress kp)
+              else Nothing
+          MapCatchAll a ->
+            if matchAction a
+              then Just "any"
+              else Nothing
+          MapAnyTypeableChar au ->
+            if matchActionUsing au
+              then Just "<char>"
+              else Nothing
+          MapCombination kp km' -> (renderKeyPress kp <>) <$> matchKeyMapping km'
+   in msum $ map matchKeyMapping matchers
 
 drawHelpCursor :: KeyMap -> Select -> Maybe HelpCursor -> Widget ResourceName
 drawHelpCursor km _ Nothing = drawInfo km
-drawHelpCursor _ s (Just HelpCursor {..}) =
-  centerLayer
-    $ ( hBorderWithLabel
-          (withAttr selectedAttr $ txt ("[Help page for context: " <> helpCursorTitle <> "]"))
-          <=>
-      )
-    $ hBox
-      [ vBox
-          [ padAll 1
-              $ viewport ResourceViewport Vertical
-              $ case helpCursorSelectedKeyHelpCursors of
-                Nothing -> txtWrap "No matching keybindings found."
-                Just hcs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs,
-            ( case helpCursorSelection of
-                HelpCursorSearchSelected -> withAttr selectedAttr
-                _ -> id
-            )
-              $ let ms =
-                      case helpCursorSelection of
-                        HelpCursorSearchSelected -> MaybeSelected
-                        _ -> NotSelected
-                 in hBox [textLineWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
-          ],
-        vBorder,
-        padAll 1 $
-          case helpCursorSelectedKeyHelpCursors of
-            Nothing -> emptyWidget
-            Just hcs ->
-              let KeyHelpCursor {..} = nonEmptyCursorCurrent hcs
-               in vBox
-                    [ txt "Name: "
-                        <+> withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName),
-                      hBox [txt "Key Bindings: ", drawKeyCombinations keyHelpCursorKeyBinding],
-                      txt "Description: ",
-                      withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
-                    ]
+drawHelpCursor km s (Just HelpCursor {..}) =
+  ( hBorderWithLabel
+      (withAttr selectedAttr $ txt ("[Help page for context: " <> helpCursorTitle <> "]"))
+      <=>
+  )
+    $ vBox
+    $ concat
+      [ [ hBox
+            [ vBox
+                [ padAll 1
+                    $ viewport ResourceViewport Vertical
+                    $ case helpCursorSelectedKeyHelpCursors of
+                      Nothing -> txtWrap "No matching keybindings found."
+                      Just hcs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) hcs,
+                  ( case helpCursorSelection of
+                      HelpCursorSearchSelected -> withAttr selectedAttr
+                      _ -> id
+                  )
+                    $ let ms =
+                            case helpCursorSelection of
+                              HelpCursorSearchSelected -> MaybeSelected
+                              _ -> NotSelected
+                       in hBox [textLineWidget "Search:", txt " ", drawTextCursor ms helpCursorSearchBar]
+                ],
+              vBorder,
+              padAll 1 $
+                case helpCursorSelectedKeyHelpCursors of
+                  Nothing -> emptyWidget
+                  Just hcs ->
+                    let KeyHelpCursor {..} = nonEmptyCursorCurrent hcs
+                     in vBox
+                          [ txt "Name: "
+                              <+> withAttr selectedAttr (textWidget $ actionNameText keyHelpCursorName),
+                            hBox [txt "Key Bindings: ", drawKeyCombinations keyHelpCursorKeyBinding],
+                            txt "Description: ",
+                            withAttr helpDescriptionAttr $ txtWrap keyHelpCursorDescription
+                          ]
+            ]
+        ],
+        case lookupExitHelpActionInKeymap of
+          Nothing -> []
+          Just kpt ->
+            [ hBorder,
+              hBox
+                [ str "To exit the help screen, activate the ",
+                  drawActionName $ actionName exitHelp,
+                  str " action using the ",
+                  withAttr keyAttr $ txt kpt,
+                  str " key."
+                ]
+            ]
       ]
   where
+    lookupExitHelpActionInKeymap :: Maybe Text
+    lookupExitHelpActionInKeymap = lookupActionByName (helpKeyMapAnyMatchers $ keyMapHelpKeyMap km) (actionName exitHelp)
     go :: Select -> KeyHelpCursor -> [Widget n]
     go s_ KeyHelpCursor {..} =
       let msel =
