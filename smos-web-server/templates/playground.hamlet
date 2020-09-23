@@ -122,7 +122,7 @@
               To learn more about Smos and self-management,
               $maybe docsUrl <- mDocsUrl
                 have a look at
-                <a url="#{showBaseUrl docsUrl}">
+                <a href="#{showBaseUrl docsUrl}">
                   the documentation
                 and
                create a free account to continue.
