@@ -18,6 +18,7 @@ library:
   - containers
   - data-default
   - envparse
+  - file-embed
   - filepath
   - optparse-applicative
   - path
