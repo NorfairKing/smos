@@ -357,7 +357,7 @@ defaultHelpKeyMap =
 defaultAnyKeyMap :: KeyMappings
 defaultAnyKeyMap =
   listMatchers
-    [ exactChar 'q' stop,
+    [ exactChar 'q' quit,
       -- Help
       exactChar '?' selectHelp,
       exactKeyPress (KeyPress (KChar '?') [MMeta]) selectHelp,

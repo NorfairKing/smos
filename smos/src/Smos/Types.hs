@@ -472,11 +472,11 @@ data ResourceName
   | ResourceViewport
   deriving (Show, Eq, Ord, Generic)
 
-stop :: Action
-stop =
+quit :: Action
+quit =
   Action
-    { actionName = "stop",
-      actionDescription = "Stop Smos",
+    { actionName = "quit",
+      actionDescription = "Quit Smos",
       actionFunc = MkSmosM $ NextT $ pure Stop
     }
 

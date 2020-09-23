@@ -23,7 +23,7 @@ module Smos.Config
     KeyMapping (..),
     KeyMappings,
     ActionUsing (..),
-    stop,
+    quit,
     module Graphics.Vty.Input.Events,
     -- Report config
     module Smos.Report.Config,

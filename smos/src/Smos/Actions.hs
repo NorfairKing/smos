@@ -53,7 +53,7 @@ allPlainActions =
     [ [ startEntryFromEmptyAndSelectHeader,
         selectEditor,
         saveFile,
-        stop
+        quit
       ],
       allContentsPlainActions,
       allEntryPlainActions,
