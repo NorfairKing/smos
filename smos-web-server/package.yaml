@@ -7,6 +7,10 @@ copyright: ! 'Copyright: (c) 2020 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+extra-source-files:
+- routes.txt
+- templates/**/*
+
 dependencies:
 - base
 

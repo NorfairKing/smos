@@ -63,6 +63,7 @@ let
             };
           in
             ''
+              mkdir -p static
               cp ${bulmaCSS}       static/bulma.css
               cp ${faviconICO}     static/favicon.ico
               cp ${jqueryJS}       static/jquery.js
@@ -105,11 +106,14 @@ let
             copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
           in
             ''
+              mkdir -p static
               cp ${bulmaCSS}       static/bulma.css
               cp ${fontawesomeCSS} static/font-awesome.css
               cp ${faviconICO}     static/favicon.ico
               cp ${asciinemaJS}    static/asciinema-player.js
               cp ${asciinemaCSS}   static/asciinema-player.css
+
+              mkdir -p content/casts
               ${copyCasts}
             '';
 
@@ -132,37 +136,110 @@ let
         packages =
           # Set extra flags (see stack.yaml) until https://github.com/input-output-hk/haskell.nix/issues/827 is fixed.
           let
+            ps = [
+              "smos"
+              "smos-data"
+              "smos-data-gen"
+              "smos-cursor"
+              "smos-cursor-gen"
+              "smos-report"
+              "smos-report-gen"
+              "smos-report-cursor"
+              "smos-report-cursor-gen"
+              "smos-query"
+              "smos-single"
+              "smos-scheduler"
+              "smos-archive"
+              "smos-convert-org"
+              "smos-calendar-import"
+              "smos-asciinema"
+              "smos-api"
+              "smos-api-gen"
+              "smos-server"
+              "smos-server-gen"
+              "smos-client"
+              "smos-client-gen"
+              "smos-sync-client"
+              "smos-sync-client-gen"
+              "smos-web-server"
+              "smos-docs-site"
+            ];
             extraFlags = "-Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat";
           in
-            {
-              smos-version.package.ghcOptions = extraFlags;
-              smos.package.ghcOptions = extraFlags;
-              smos-data.package.ghcOptions = extraFlags;
-              smos-data-gen.package.ghcOptions = extraFlags;
-              smos-cursor.package.ghcOptions = extraFlags;
-              smos-cursor-gen.package.ghcOptions = extraFlags;
-              smos-report.package.ghcOptions = extraFlags;
-              smos-report-gen.package.ghcOptions = extraFlags;
-              smos-report-cursor.package.ghcOptions = extraFlags;
-              smos-report-cursor-gen.package.ghcOptions = extraFlags;
-              smos-query.package.ghcOptions = extraFlags;
-              smos-single.package.ghcOptions = extraFlags;
-              smos-scheduler.package.ghcOptions = extraFlags;
-              smos-archive.package.ghcOptions = extraFlags;
-              smos-convert-org.package.ghcOptions = extraFlags;
-              smos-calendar-import.package.ghcOptions = extraFlags;
-              smos-asciinema.package.ghcOptions = extraFlags;
-              smos-api.package.ghcOptions = extraFlags;
-              smos-api-gen.package.ghcOptions = extraFlags;
-              smos-server.package.ghcOptions = extraFlags;
-              smos-server-gen.package.ghcOptions = extraFlags;
-              smos-client.package.ghcOptions = extraFlags;
-              smos-client-gen.package.ghcOptions = extraFlags;
-              smos-sync-client.package.ghcOptions = extraFlags;
-              smos-sync-client-gen.package.ghcOptions = extraFlags;
-              smos-web-server.package.ghcOptions = extraFlags;
-              smos-docs-site.package.ghcOptions = extraFlags;
-            };
+            genAttrs ps (p: { package.ghcOptions = extraFlags; });
+      }
+      # Set cleanHpack to true so that we don't get the traces during evaluation.
+      # This makes the build more strict, we need the 'extra-source-files', but I'm thinking that's good.
+      {
+        packages =
+          let
+            ps = [
+              "smos"
+              "smos-data"
+              "smos-data-gen"
+              "smos-cursor"
+              "smos-cursor-gen"
+              "smos-report"
+              "smos-report-gen"
+              "smos-report-cursor"
+              "smos-report-cursor-gen"
+              "smos-query"
+              "smos-single"
+              "smos-scheduler"
+              "smos-archive"
+              "smos-convert-org"
+              "smos-calendar-import"
+              "smos-asciinema"
+              "smos-api"
+              "smos-api-gen"
+              "smos-server"
+              "smos-server-gen"
+              "smos-client"
+              "smos-client-gen"
+              "smos-sync-client"
+              "smos-sync-client-gen"
+              "smos-web-server"
+              "smos-docs-site"
+              "cursor"
+              "cursor-brick"
+              "cursor-fuzzy-time"
+              "cursor-fuzzy-time-gen"
+              "cursor-gen"
+              "fuzzy-time"
+              "fuzzy-time-gen"
+              "genvalidity"
+              "genvalidity-bytestring"
+              "genvalidity-containers"
+              "genvalidity-criterion"
+              "genvalidity-hspec"
+              "genvalidity-hspec-aeson"
+              "genvalidity-hspec-optics"
+              "genvalidity-mergeful"
+              "genvalidity-path"
+              "genvalidity-property"
+              "genvalidity-text"
+              "genvalidity-time"
+              "genvalidity-typed-uuid"
+              "genvalidity-unordered-containers"
+              "genvalidity-uuid"
+              "mergeful"
+              "mergeful-persistent"
+              "pretty-relative-time"
+              "typed-uuid"
+              "validity"
+              "validity-aeson"
+              "validity-bytestring"
+              "validity-containers"
+              "validity-path"
+              "validity-scientific"
+              "validity-text"
+              "validity-time"
+              "validity-unordered-containers"
+              "validity-uuid"
+              "validity-vector"
+            ];
+          in
+            genAttrs ps (p: { package.cleanHpack = true; });
       }
     ];
   };

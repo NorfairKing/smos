@@ -4,8 +4,12 @@ github: "NorfairKing/smos"
 license: MIT
 author: "Tom Sydney Kerckhove"
 maintainer: "syd@cs-syd.eu"
-copyright: "2018-2019 Tom Sydney Kerckhove"
+copyright: "2018-2020 Tom Sydney Kerckhove"
 
+extra-source-files:
+- routes
+- content/**/*
+- templates/**/*
 
 library:
   source-dirs: src
