@@ -40,6 +40,7 @@ module Smos.Actions.Forest
 where
 
 import Conduit
+import qualified Data.Conduit.Combinators as C
 import Data.Text (Text, toLower, toTitle)
 import Data.Time
 import Lens.Micro
@@ -356,13 +357,13 @@ clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
   dirConfig <- asks $ smosReportConfigDirectoryConfig . configReportConfig
   runSmosAsync $ do
-    agendaFiles <- sourceToList $ streamSmosFilesFromWorkflow HideArchive dirConfig
-    forM_ agendaFiles $ \rp -> do
-      let af = resolveRootedPath rp
-      merrOrFile <- readSmosFile af
-      case merrOrFile of
-        Nothing -> pure () -- Should not happen
-        Just (Left _) -> pure () -- Nothing we can do
-        Just (Right sf) -> do
-          let sf' = smosFileClockOutEverywhere now sf
-          unless (sf == sf') $ writeSmosFile af sf'
+    let clockOutSingle rp = do
+          let af = resolveRootedPath rp
+          merrOrFile <- readSmosFile af
+          case merrOrFile of
+            Nothing -> pure () -- Should not happen
+            Just (Left _) -> pure () -- Nothing we can do
+            Just (Right sf) -> do
+              let sf' = smosFileClockOutEverywhere now sf
+              unless (sf == sf') $ writeSmosFile af sf'
+    runConduit $ streamSmosFilesFromWorkflow HideArchive dirConfig .| C.mapM_ clockOutSingle
