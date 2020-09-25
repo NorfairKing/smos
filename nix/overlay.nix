@@ -241,6 +241,30 @@ let
           in
             genAttrs ps (p: { package.cleanHpack = true; });
       }
+      {
+        packages = optionalAttrs final.stdenv.hostPlatform.isMusl {
+          smos-single = {
+            enableStatic = true;
+            components.exes.smos-single = {
+              enableStatic = true;
+              dontStrip = false;
+              enableShared = false;
+              configureFlags = [
+                "--disable-executable-dynamic"
+                "--disable-shared"
+                "--ghc-option=-optl=-pthread"
+                "--ghc-option=-optl=-static"
+                "--extra-lib-dirs=${final.numactl}/lib"
+                "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                "--extra-lib-dirs=${final.ncurses}/lib"
+                "--extra-lib-dirs=${final.musl}/lib"
+                "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
+                "--extra-lib-dirs=${final.zlib}/lib"
+              ];
+            };
+          };
+        };
+      }
     ];
   };
 

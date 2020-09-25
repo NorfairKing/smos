@@ -11,20 +11,22 @@ let
       pkgs.fetchFromGitHub (import ./linkcheck-version.nix) + "/nix/overlay.nix"
     );
 in
-attrset: pkgsv (
-  attrset // {
-    config = (attrset.config or {}) // haskellNix.config // {
-      allowUnfree = true;
-      allowBroken = true;
-    };
-    overlays =
-      haskellNix.overlays
-      ++ [
-        yamlparse-applicative-overlay
-        linkcheck-overlay
-        (import ./gitignore-src.nix)
-        (import ./overlay.nix)
-      ]
-      ++ (attrset.overlays or []);
-  }
-)
+attrset: (
+  pkgsv (
+    attrset // {
+      config = (attrset.config or {}) // haskellNix.config // {
+        allowUnfree = true;
+        allowBroken = true;
+      };
+      overlays =
+        haskellNix.overlays
+        ++ [
+          yamlparse-applicative-overlay
+          linkcheck-overlay
+          (import ./gitignore-src.nix)
+          (import ./overlay.nix)
+        ]
+        ++ (attrset.overlays or []);
+    }
+  )
+).pkgsMusl
