@@ -256,7 +256,7 @@ let
                 "--ghc-option=-optl=-static"
                 "--extra-lib-dirs=${final.numactl}/lib"
                 "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                "--extra-lib-dirs=${final.ncurses}/lib"
+                "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; enableShared = true; } }/lib"
                 "--extra-lib-dirs=${final.musl}/lib"
                 "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
                 "--extra-lib-dirs=${final.zlib}/lib"
@@ -335,6 +335,11 @@ let
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
 in
 {
+  libffi = previous.libffi.overrideAttrs (old: { dontDisableStatic = true; });
+  ncurses = previous.ncurses.override { enableStatic = true; enableShared = true; };
+  gmp = previous.gmp.override { withStatic = true; };
+  gmp6 = previous.gmp6.override { withStatic = true; };
+
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";
