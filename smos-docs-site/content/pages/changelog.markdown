@@ -2,7 +2,7 @@
 title:
 ---
 
-# [TODO Date](#TODO-date)
+# [Version 0.1.0 - 2020-09-25](#0.1.0_2020-09-25)
 
 - [smos 0.1.0](#smos-0.1.0)
 - [smos-query 0.1.0](#smos-query-0.1.0)
