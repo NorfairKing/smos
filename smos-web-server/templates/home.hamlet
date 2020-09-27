@@ -17,7 +17,9 @@
                   Playground
             <div .box .has-text-centered>
               <div .buttons>
-                <a .button .is-light .is-large .is-fullwidth href=@{AuthR LoginR}>
+                <a .button .is-light .is-large .is-fullwidth
+                  href=@{AuthR registerR}>
+                  Try Now
+                <a .button .is-text .is-fullwidth
+                  href=@{AuthR LoginR}>
                   Log in
-                <a .button .is-text .is-fullwidth href=@{AuthR registerR}>
-                  Sign up
