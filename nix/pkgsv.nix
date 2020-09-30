@@ -25,6 +25,17 @@ let
     }
   );
 
+  # When using 'pkgsMusl' instead of 'pkgsCross.musl64', I'm getting this error while building ghc:
+  #
+  # /nix/store/382fnvik7v4zfm659rzm51xf45ljq5ij-binutils-2.31.1/bin/ld: /nix/store/5w14whxfj3dq1ah3fmbyp9m9azxyd4zp-ghc-8.4.4/lib/ghc-8.4.4/rts/libHSrts.a(Hpc.o): in function `startupHpc':
+  # /home/ben/bin-dist-8.4.4-Linux/ghc/rts/Hpc.c:214:0: error:
+  #      undefined reference to `__strdup'
+  # 
+  # nomeata advises to use pkgs.Cross.musl64 instead, here: 
+  # https://github.com/NixOS/nixpkgs/issues/57238#issuecomment-473513922
+  #
+  # However, this was on a closed issue and static-haskell-nix uses pkgsMusl.
+
   haskellNix = haskellNixV { pkgs = nixpkgs-special.pkgsCross.musl64; };
 
   # We need a 'clean' pkgs to use 'fetchFromGitHub' here.
