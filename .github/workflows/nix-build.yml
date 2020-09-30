@@ -7,8 +7,22 @@ on:
       - master
 
 jobs:
-  nix-build:
-    name: ${{ matrix.os }} / Nix
+  hooks:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: cachix/install-nix-action@v11
+    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
+      with:
+        name: smos
+        extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
+        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+    - run: nix run -f nix/build-uncached.nix -c nix-build-uncached static.nix
+
+
+  dynamic:
+    name: Normal build: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -18,9 +32,7 @@ jobs:
           - macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v10
-      with:
-        skip_adding_nixpkgs_channel: true
+    - uses: cachix/install-nix-action@v11
     - name: free disk space
       run: |
         if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
@@ -30,6 +42,22 @@ jobs:
     - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
       with:
         name: smos
-        extraPullNames: iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
+        extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix run -f nix/build-uncached.nix -c nix-build-uncached ci.nix
+    - run: nix run -f nix/build-uncached.nix -c nix-build-uncached default.nix
+
+
+  static:
+    name: Static Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: cachix/install-nix-action@v11
+    - name: free disk space
+      run: sudo rm -rf /opt
+    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
+      with:
+        name: smos
+        extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
+        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+    - run: nix run -f nix/build-uncached.nix -c nix-build-uncached static.nix

@@ -1,5 +1,5 @@
 let
-  pkgs = import ./nix/pkgs.nix;
+  pkgs = import ./nix/pkgs.nix { static = false; };
   pre-commit-hooks = import ./nix/pre-commit.nix;
 in
 pkgs.mkShell {

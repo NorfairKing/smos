@@ -1,3 +1,5 @@
+{ static ? false
+}:
 let
   # A very specific version of nixpkgs.
 
@@ -36,7 +38,12 @@ let
   #
   # However, this was on a closed issue and static-haskell-nix uses pkgsMusl.
 
-  haskellNix = haskellNixV { pkgs = nixpkgs-special.pkgsCross.musl64; };
+  haskellNix = haskellNixV {
+    pkgs =
+      if static
+      then nixpkgs-special.pkgsCross.musl64
+      else haskellNixV.sources.nixpkgs;
+  };
 
   # We need a 'clean' pkgs to use 'fetchFromGitHub' here.
   # TODO use builtins.fetchTarball here instead, to save on evaluation.
@@ -60,22 +67,27 @@ let
 in
   # Instead of directly using the haskell.nix nixpkgs result, we want to add our own overlays here.
   # I don't think there's a way to supply one's own overlays into haskell.nix.
-attrset: (
-  pkgsv (
-    attrset // {
-      config = (attrset.config or {}) // haskellNix.config // {
-        allowUnfree = true;
-        allowBroken = true;
-      };
-      overlays =
-        haskellNix.overlays
-        ++ [
-          yamlparse-applicative-overlay
-          linkcheck-overlay
-          (import ./gitignore-src.nix)
-          (import ./overlay.nix)
-        ]
-        ++ (attrset.overlays or []);
-    }
-  )
-).pkgsCross.musl64
+attrset:
+
+  let
+    p = (
+      pkgsv (
+        attrset // {
+          config = (attrset.config or {}) // haskellNix.config // {
+            allowUnfree = true;
+            allowBroken = true;
+          };
+          overlays =
+            haskellNix.overlays
+            ++ [
+              yamlparse-applicative-overlay
+              linkcheck-overlay
+              (import ./gitignore-src.nix)
+              (import ./overlay.nix)
+            ]
+            ++ (attrset.overlays or []);
+        }
+      )
+    );
+  in
+    if static then p.pkgsCross.musl64 else p
