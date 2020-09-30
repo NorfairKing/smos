@@ -22,7 +22,7 @@ jobs:
 
 
   dynamic:
-    name: Normal build: ${{ matrix.os }}
+    name: Normal build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
