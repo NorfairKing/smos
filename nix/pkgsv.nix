@@ -25,7 +25,7 @@ let
     }
   );
 
-  haskellNix = haskellNixV { pkgs = nixpkgs-special.pkgsMusl; };
+  haskellNix = haskellNixV { pkgs = nixpkgs-special.pkgsCross.musl64; };
 
   # We need a 'clean' pkgs to use 'fetchFromGitHub' here.
   # TODO use builtins.fetchTarball here instead, to save on evaluation.
@@ -67,4 +67,4 @@ attrset: (
         ++ (attrset.overlays or []);
     }
   )
-).pkgsMusl
+).pkgsCross.musl64
