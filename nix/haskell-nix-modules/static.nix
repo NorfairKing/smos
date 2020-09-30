@@ -20,7 +20,6 @@ in
     lib.genAttrs exes (
       exe:
         {
-          enableStatic = true;
           components.exes."${exe}" = {
             enableStatic = true;
             dontStrip = false;
@@ -28,9 +27,8 @@ in
             configureFlags = [
               "--disable-executable-dynamic"
               "--disable-shared"
-              # "--ghc-option=-optl=-pthread"
               "--ghc-option=-optl=-static"
-              # "--extra-lib-dirs=${final.numactl}/lib"
+              "--ghc-option=-static"
               "--extra-lib-dirs=${pkgs.gmp6.override { withStatic = true; }}/lib"
               "--extra-lib-dirs=${pkgs.zlib}/lib"
               "--extra-lib-dirs=${pkgs.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"

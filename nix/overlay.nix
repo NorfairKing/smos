@@ -231,15 +231,14 @@ in
         in
           final.stdenv.mkDerivation {
             name = "smos-docs-site";
-            buildInputs = [ final.haskellPackages.linkcheck final.killall ];
             buildCommand = ''
               mkdir -p $out
-              cp -r ${rawDocsSite}/. $out
+              ${final.xorg.lndir}/bin/lndir -silent ${rawDocsSite} $out
 
               $out/bin/smos-docs-site serve &
               sleep 1
-              linkcheck http://localhost:8000
-              killall smos-docs-site
+              ${final.haskellPackages.linkcheck}/bin/linkcheck http://localhost:8000
+              ${final.killall}/bin/killall smos-docs-site
             '';
           };
     };
