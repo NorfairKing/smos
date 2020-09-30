@@ -191,7 +191,13 @@ let
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
 in
 {
-  ncurses = previous.ncurses.override { enableStatic = true; enableShared = true; };
+  smosReleaseZip = final.stdenv.mkDerivation {
+    name = "smos-release.zip";
+    buildCommand = ''
+      cd ${final.smosRelease}
+      ${final.pkgs.zip}/bin/zip -r $out *
+    '';
+  };
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";
@@ -244,4 +250,5 @@ in
     };
 
   smosCasts = import ./casts.nix final;
+  ncurses = previous.ncurses.override { enableStatic = true; enableShared = true; };
 }
