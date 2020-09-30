@@ -1,6 +1,5 @@
 final: previous:
 with final.lib;
-with final.haskell.lib;
 
 let
   isMacos = builtins.currentSystem == "x86_64-darwin";
@@ -117,154 +116,11 @@ let
               ${copyCasts}
             '';
 
-        # Turn off certain test suites on macos because they generate random
-        # filepaths and that fails for some reason that I cannot investigate
-        # because I don't own any apple products.
-        doCheck = true;
-        packages.smos-archive.doCheck = !isMacos;
-        packages.smos-cursor-gen.doCheck = !isMacos;
-        packages.smos-query.doCheck = !isMacos;
-        packages.smos-report-gen.doCheck = !isMacos;
-        packages.smos-report-cursor-gen.doCheck = !isMacos;
-        packages.smos-scheduler.doCheck = !isMacos;
-        packages.smos-sync-client-gen.doCheck = !isMacos;
-        packages.smos.doCheck = !isMacos;
-
       }
-      # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.
-      {
-        packages =
-          # Set extra flags (see stack.yaml) until https://github.com/input-output-hk/haskell.nix/issues/827 is fixed.
-          let
-            ps = [
-              "smos"
-              "smos-data"
-              "smos-data-gen"
-              "smos-cursor"
-              "smos-cursor-gen"
-              "smos-report"
-              "smos-report-gen"
-              "smos-report-cursor"
-              "smos-report-cursor-gen"
-              "smos-query"
-              "smos-single"
-              "smos-scheduler"
-              "smos-archive"
-              "smos-convert-org"
-              "smos-calendar-import"
-              "smos-asciinema"
-              "smos-api"
-              "smos-api-gen"
-              "smos-server"
-              "smos-server-gen"
-              "smos-client"
-              "smos-client-gen"
-              "smos-sync-client"
-              "smos-sync-client-gen"
-              "smos-web-server"
-              "smos-docs-site"
-            ];
-            extraFlags = "-Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat";
-          in
-            genAttrs ps (p: { package.ghcOptions = extraFlags; });
-      }
-      # Set cleanHpack to true so that we don't get the traces during evaluation.
-      # This makes the build more strict, we need the 'extra-source-files', but I'm thinking that's good.
-      {
-        packages =
-          let
-            ps = [
-              "smos"
-              "smos-data"
-              "smos-data-gen"
-              "smos-cursor"
-              "smos-cursor-gen"
-              "smos-report"
-              "smos-report-gen"
-              "smos-report-cursor"
-              "smos-report-cursor-gen"
-              "smos-query"
-              "smos-single"
-              "smos-scheduler"
-              "smos-archive"
-              "smos-convert-org"
-              "smos-calendar-import"
-              "smos-asciinema"
-              "smos-api"
-              "smos-api-gen"
-              "smos-server"
-              "smos-server-gen"
-              "smos-client"
-              "smos-client-gen"
-              "smos-sync-client"
-              "smos-sync-client-gen"
-              "smos-web-server"
-              "smos-docs-site"
-              "cursor"
-              "cursor-brick"
-              "cursor-fuzzy-time"
-              "cursor-fuzzy-time-gen"
-              "cursor-gen"
-              "fuzzy-time"
-              "fuzzy-time-gen"
-              "genvalidity"
-              "genvalidity-bytestring"
-              "genvalidity-containers"
-              "genvalidity-criterion"
-              "genvalidity-hspec"
-              "genvalidity-hspec-aeson"
-              "genvalidity-hspec-optics"
-              "genvalidity-mergeful"
-              "genvalidity-path"
-              "genvalidity-property"
-              "genvalidity-text"
-              "genvalidity-time"
-              "genvalidity-typed-uuid"
-              "genvalidity-unordered-containers"
-              "genvalidity-uuid"
-              "mergeful"
-              "mergeful-persistent"
-              "pretty-relative-time"
-              "typed-uuid"
-              "validity"
-              "validity-aeson"
-              "validity-bytestring"
-              "validity-containers"
-              "validity-path"
-              "validity-scientific"
-              "validity-text"
-              "validity-time"
-              "validity-unordered-containers"
-              "validity-uuid"
-              "validity-vector"
-            ];
-          in
-            genAttrs ps (p: { package.cleanHpack = true; });
-      }
-      {
-        packages = optionalAttrs final.stdenv.hostPlatform.isMusl {
-          smos-single = {
-            enableStatic = true;
-            components.exes.smos-single = {
-              enableStatic = true;
-              dontStrip = false;
-              enableShared = false;
-              configureFlags = [
-                "--disable-executable-dynamic"
-                "--disable-shared"
-                "--ghc-option=-optl=-pthread"
-                "--ghc-option=-optl=-static"
-                "--extra-lib-dirs=${final.numactl}/lib"
-                "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; enableShared = true; } }/lib"
-                "--extra-lib-dirs=${final.musl}/lib"
-                "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-                "--extra-lib-dirs=${final.zlib}/lib"
-              ];
-            };
-          };
-        };
-      }
+      (import ./haskell-nix-modules/do-check-macos.nix)
+      (import ./haskell-nix-modules/extra-ghc-flags.nix)
+      (import ./haskell-nix-modules/clean-hpack.nix)
+      (import ./haskell-nix-modules/static.nix)
     ];
   };
 
@@ -335,11 +191,7 @@ let
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
 in
 {
-  libffi = previous.libffi.overrideAttrs (old: { dontDisableStatic = true; });
   ncurses = previous.ncurses.override { enableStatic = true; enableShared = true; };
-  gmp = previous.gmp.override { withStatic = true; };
-  gmp6 = previous.gmp6.override { withStatic = true; };
-
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";

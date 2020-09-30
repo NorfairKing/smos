@@ -1,16 +1,23 @@
 let
   owner = "input-output-hk";
   repo = "haskell.nix";
-  rev = "f4136211c933b444ab2e0f358abd223929970220";
-  sha256 = "sha256:1b9nxzkg29hwczr6pb6a7arxka8z0swzq7b2bqyxqzr4qvpcjlc1";
+  rev = "48b8674f5f726cfb5083c025d3c53ff01fef009a";
+  sha256 = "sha256:0b90xnxn72kv5qskp3gxfcmql8cqbank7nlp0m6353yhqp6kr5mc";
   haskellNixV = import (
     builtins.fetchTarball {
-      url =
-        "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
+      url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
       inherit sha256;
     }
   );
-  pkgs = haskellNixV.sources.nixpkgs haskellNixV.nixpkgsArgs;
+
+  # This comes from https://github.com/srid/neuron/blob/static/nix/sources.json#L32-L33
+  # See https://github.com/srid/neuron/pull/417/files
+  nixpkgs-special = builtins.fetchTarball {
+    url = "https://github.com/srid/nixpkgs/archive/312f5dc940b1a2c627e8cce4adc192cfa3e730db.tar.gz";
+    sha256 = "1x1h6j43wp2fgzjlv0nf8h5syvpdp3nhp8xb85hxzdz8k7hkhi4s";
+  };
+
+  pkgs = nixpkgs-special haskellNixV.nixpkgsArgs;
   haskellNix = haskellNixV { pkgs = pkgs.pkgsCross.musl64; };
 in
 haskellNix
