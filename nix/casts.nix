@@ -21,7 +21,6 @@ let
         smos
         smos-query
         smos-archive
-        smos-asciinema
         smos-calendar-import
       ]; # Add the smos packages here one by one because smos-docs-site shouldn't be in here.
       buildCommand =
@@ -61,7 +60,7 @@ let
             export SMOS_EXPLAINER_MODE=True
 
             # Record the cast
-            smos-asciinema record "./smos-docs-site/content/casts/${path}.yaml" "./${path}.cast" \
+            ${pkgs.smosPackages.smos-asciinema}/bin/smos-asciinema record "./smos-docs-site/content/casts/${path}.yaml" "./${path}.cast" \
               --columns 80 \
               --rows 25 \
               --progress

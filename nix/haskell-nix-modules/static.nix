@@ -4,7 +4,6 @@ let
     "smos"
     "smos-archive"
     "smos-asciinema"
-    "smos-asciinema-test"
     "smos-calendar-import"
     "smos-convert-org"
     "smos-docs-site"
