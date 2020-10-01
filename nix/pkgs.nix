@@ -45,5 +45,8 @@ let
       else haskellNixV.sources.nixpkgs;
   };
 
+
 in
-haskellNix.pkgs
+if static
+then haskellNix.pkgs.pkgsCross.musl64
+else haskellNix.pkgs

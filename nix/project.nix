@@ -200,7 +200,7 @@ let
   };
   smosRelease =
     pkgs.symlinkJoin {
-      name = "smos-release";
+      name = "smos-release" + optionalString pkgs.stdenv.hostPlatform.isMusl "-static";
       paths = attrValues smosPackages;
     };
   smosPackages =
