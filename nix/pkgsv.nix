@@ -45,25 +45,6 @@ let
       else haskellNixV.sources.nixpkgs;
   };
 
-  # We need a 'clean' pkgs to use 'fetchFromGitHub' here.
-  # TODO use builtins.fetchTarball here instead, to save on evaluation.
-  pkgs = pkgsv {};
-
-  # TODO get rid of the yamlparse-applicative overlay, we don't need it anymore now that we use haskell.nix
-  # , I think ...
-  yamlparse-applicative-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./yamlparse-applicative-version.nix) + "/nix/overlay.nix"
-    );
-
-  # TODO get rid of the linkcheck overlay and just use linkcheck's 'default.nix'.
-  # Building its dependencies twice is fine by me if we can save on complexity.
-  linkcheck-overlay =
-    import (
-      pkgs.fetchFromGitHub (import ./linkcheck-version.nix) + "/nix/overlay.nix"
-    );
-
-
 in
   # Instead of directly using the haskell.nix nixpkgs result, we want to add our own overlays here.
   # I don't think there's a way to supply one's own overlays into haskell.nix.
@@ -80,8 +61,6 @@ attrset:
           overlays =
             haskellNix.overlays
             ++ [
-              yamlparse-applicative-overlay
-              linkcheck-overlay
               (import ./gitignore-src.nix)
               (import ./overlay.nix)
             ]

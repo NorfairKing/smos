@@ -234,6 +234,15 @@ in
       "smos-docs-site" =
         let
           rawDocsSite = smosPkg "smos-docs-site";
+          linkcheck = (
+            import (
+              builtins.fetchGit {
+                url = "https://github.com/NorfairKing/linkcheck";
+                rev = "dc65f22965d92e6145814cdc674d160f3c422559";
+                ref = "master";
+              }
+            )
+          ).linkcheck;
         in
           final.stdenv.mkDerivation {
             name = "smos-docs-site";
@@ -243,7 +252,7 @@ in
 
               $out/bin/smos-docs-site serve &
               sleep 1
-              ${final.haskellPackages.linkcheck}/bin/linkcheck http://localhost:8000
+              ${linkcheck}/bin/linkcheck http://localhost:8000
               ${final.killall}/bin/killall smos-docs-site
             '';
           };
