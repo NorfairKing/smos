@@ -1,4 +1,4 @@
 let
-  pkgs = import ./nix/pkgs.nix { static = false; };
+  pkgs = import ./nix/project.nix { pkgs = import ./nix/pkgs.nix { static = false; }; };
 in
 pkgs.smosRelease

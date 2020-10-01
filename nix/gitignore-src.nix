@@ -1,4 +1,6 @@
-final: previous:
+{ lib
+, ...
+}:
 let
   gitignoreSrc =
     builtins.fetchGit {
@@ -6,7 +8,6 @@ let
       ref = "master";
       rev = "c4662e662462e7bf3c2a968483478a665d00e717";
     };
+  gitignoreSource = (import gitignoreSrc { inherit lib; }).gitignoreSource;
 in
-{
-  inherit (import gitignoreSrc { inherit (final) lib; }) gitignoreSource gitignoreFilter;
-}
+gitignoreSource

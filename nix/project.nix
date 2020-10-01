@@ -1,10 +1,12 @@
-final: previous:
-with final.lib;
+{ pkgs ? import ./pkgs.nix {}
+}:
+with pkgs.lib;
 
 let
+  gitignoreSource = pkgs.callPackage ./gitignore-src.nix {};
   isMacos = builtins.currentSystem == "x86_64-darwin";
-  sPkgs = final.haskell-nix.stackProject {
-    src = final.gitignoreSource ../.;
+  sPkgs = pkgs.haskell-nix.stackProject {
+    src = gitignoreSource ../.;
     modules = [
       {
         testFlags = [
@@ -13,7 +15,7 @@ let
 
         reinstallableLibGhc = true; # Because we override the 'time' version
         packages.time.components.library.preConfigure = ''
-          ${final.autoconf}/bin/autoreconf -i
+          ${pkgs.autoconf}/bin/autoreconf -i
         '';
 
         # A smos mime setup. This allows users to open smos files with xdg-open.
@@ -102,7 +104,7 @@ let
             copyCastScript = name: cast: ''
               cp ${cast} content/casts/${name}.cast
             '';
-            copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
+            copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript smosCasts);
           in
             ''
               mkdir -p static
@@ -127,7 +129,7 @@ let
   # Until this is built-in to the haskell.nix workings.
   # https://github.com/input-output-hk/haskell.nix/issues/624
   completionsFor = exeName: exe:
-    final.stdenv.mkDerivation {
+    pkgs.stdenv.mkDerivation {
       name = "${exeName}-completion";
       buildCommand =
         ''
@@ -147,14 +149,14 @@ let
     };
   smosPkg = name:
     with sPkgs."${name}".components;
-    final.stdenv.mkDerivation {
+    pkgs.stdenv.mkDerivation {
       name = "${name}";
       buildInputs = [ library ];
       buildCommand =
         let
           testCommand = testname: test:
             let
-              testOutput = final.haskell-nix.haskellLib.check test;
+              testOutput = pkgs.haskell-nix.haskellLib.check test;
               testOutputCommand = optionalString test.config.doCheck
                 ''
                   mkdir -p $out/test-output
@@ -165,7 +167,7 @@ let
               concatStringsSep "\n" [ testOutputCommand testLinkCommand ];
           benchCommand = benchname: bench: lndir "${bench}";
           exeCommand = exename: exe: lndir "${exe}";
-          lndir = dir: "${final.xorg.lndir}/bin/lndir -silent ${dir} $out";
+          lndir = dir: "${pkgs.xorg.lndir}/bin/lndir -silent ${dir} $out";
         in
           ''
             mkdir -p $out
@@ -181,7 +183,7 @@ let
           '';
     };
   smosPkgWithComp = exeName: name:
-    final.symlinkJoin {
+    pkgs.symlinkJoin {
       name = "${exeName}-with-completion";
       paths = [
         (smosPkg name)
@@ -189,19 +191,17 @@ let
       ];
     };
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
-in
-{
-  smosReleaseZip = final.stdenv.mkDerivation {
+  smosReleaseZip = pkgs.stdenv.mkDerivation {
     name = "smos-release.zip";
     buildCommand = ''
-      cd ${final.smosRelease}
-      ${final.pkgs.zip}/bin/zip -r $out *
+      cd ${pkgs.smosRelease}
+      ${pkgs.pkgs.zip}/bin/zip -r $out *
     '';
   };
   smosRelease =
-    final.symlinkJoin {
+    pkgs.symlinkJoin {
       name = "smos-release";
-      paths = attrValues final.smosPackages;
+      paths = attrValues smosPackages;
     };
   smosPackages =
     {
@@ -244,20 +244,24 @@ in
             )
           ).linkcheck;
         in
-          final.stdenv.mkDerivation {
+          pkgs.stdenv.mkDerivation {
             name = "smos-docs-site";
             buildCommand = ''
               mkdir -p $out
-              ${final.xorg.lndir}/bin/lndir -silent ${rawDocsSite} $out
+              ${pkgs.xorg.lndir}/bin/lndir -silent ${rawDocsSite} $out
 
               $out/bin/smos-docs-site serve &
               sleep 1
               ${linkcheck}/bin/linkcheck http://localhost:8000
-              ${final.killall}/bin/killall smos-docs-site
+              ${pkgs.killall}/bin/killall smos-docs-site
             '';
           };
     };
-
-  smosCasts = import ./casts.nix final;
-  ncurses = previous.ncurses.override { enableStatic = true; enableShared = true; };
+  smosCasts = import ./casts.nix { inherit pkgs; inherit gitignoreSource; inherit smosPackages; };
+in
+{
+  inherit smosReleaseZip;
+  inherit smosRelease;
+  inherit smosPackages;
+  inherit smosCasts;
 }
