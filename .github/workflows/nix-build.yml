@@ -18,7 +18,7 @@ jobs:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build hooks.nix
+    - run: nix-build ci.nix -A pre-commit-hooks
 
 
   dynamic:
@@ -44,7 +44,7 @@ jobs:
         name: smos
         extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build default.nix
+    - run: nix-build ci.nix -A release
 
 
   static:
@@ -60,4 +60,4 @@ jobs:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build static.nix
+    - run: nix-build ci.nix -A release-static
