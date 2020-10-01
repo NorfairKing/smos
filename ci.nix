@@ -1,8 +1,10 @@
 let
-  pkgs = import ./nix/pkgs.nix;
+  pkgsNormal = import ./nix/project.nix { pkgs = import ./nix/pkgs.nix { static = false; }; };
+  pkgsStatic = import ./nix/project.nix { pkgs = import ./nix/pkgs.nix { static = true; }; };
   pre-commit-hooks = import ./nix/pre-commit.nix;
 in
-pkgs.smosPackages // {
-  release = pkgs.smosRelease;
-  pre-commit-check = pre-commit-hooks.run;
+{
+  "release" = pkgsNormal.smosRelease;
+  "release-static" = pkgsStatic.smosRelease;
+  "pre-commit-hooks" = pre-commit-hooks.run;
 }

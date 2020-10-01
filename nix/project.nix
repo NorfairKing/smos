@@ -1,11 +1,12 @@
-final: previous:
-with final.lib;
-with final.haskell.lib;
+{ pkgs ? import ./pkgs.nix {}
+}:
+with pkgs.lib;
 
 let
+  gitignoreSource = pkgs.callPackage ./gitignore-src.nix {};
   isMacos = builtins.currentSystem == "x86_64-darwin";
-  sPkgs = final.haskell-nix.stackProject {
-    src = final.gitignoreSource ../.;
+  sPkgs = pkgs.haskell-nix.stackProject {
+    src = gitignoreSource ../.;
     modules = [
       {
         testFlags = [
@@ -14,7 +15,7 @@ let
 
         reinstallableLibGhc = true; # Because we override the 'time' version
         packages.time.components.library.preConfigure = ''
-          ${final.autoconf}/bin/autoreconf -i
+          ${pkgs.autoconf}/bin/autoreconf -i
         '';
 
         # A smos mime setup. This allows users to open smos files with xdg-open.
@@ -103,7 +104,7 @@ let
             copyCastScript = name: cast: ''
               cp ${cast} content/casts/${name}.cast
             '';
-            copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript final.smosCasts);
+            copyCasts = concatStringsSep "\n" (mapAttrsToList copyCastScript smosCasts);
           in
             ''
               mkdir -p static
@@ -117,137 +118,18 @@ let
               ${copyCasts}
             '';
 
-        # Turn off certain test suites on macos because they generate random
-        # filepaths and that fails for some reason that I cannot investigate
-        # because I don't own any apple products.
-        doCheck = true;
-        packages.smos-archive.doCheck = !isMacos;
-        packages.smos-cursor-gen.doCheck = !isMacos;
-        packages.smos-query.doCheck = !isMacos;
-        packages.smos-report-gen.doCheck = !isMacos;
-        packages.smos-report-cursor-gen.doCheck = !isMacos;
-        packages.smos-scheduler.doCheck = !isMacos;
-        packages.smos-sync-client-gen.doCheck = !isMacos;
-        packages.smos.doCheck = !isMacos;
-
       }
-      # Set the pedantic build up with https://github.com/input-output-hk/haskell.nix/issues/519 when that works.
-      {
-        packages =
-          # Set extra flags (see stack.yaml) until https://github.com/input-output-hk/haskell.nix/issues/827 is fixed.
-          let
-            ps = [
-              "smos"
-              "smos-data"
-              "smos-data-gen"
-              "smos-cursor"
-              "smos-cursor-gen"
-              "smos-report"
-              "smos-report-gen"
-              "smos-report-cursor"
-              "smos-report-cursor-gen"
-              "smos-query"
-              "smos-single"
-              "smos-scheduler"
-              "smos-archive"
-              "smos-convert-org"
-              "smos-calendar-import"
-              "smos-asciinema"
-              "smos-api"
-              "smos-api-gen"
-              "smos-server"
-              "smos-server-gen"
-              "smos-client"
-              "smos-client-gen"
-              "smos-sync-client"
-              "smos-sync-client-gen"
-              "smos-web-server"
-              "smos-docs-site"
-            ];
-            extraFlags = "-Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat";
-          in
-            genAttrs ps (p: { package.ghcOptions = extraFlags; });
-      }
-      # Set cleanHpack to true so that we don't get the traces during evaluation.
-      # This makes the build more strict, we need the 'extra-source-files', but I'm thinking that's good.
-      {
-        packages =
-          let
-            ps = [
-              "smos"
-              "smos-data"
-              "smos-data-gen"
-              "smos-cursor"
-              "smos-cursor-gen"
-              "smos-report"
-              "smos-report-gen"
-              "smos-report-cursor"
-              "smos-report-cursor-gen"
-              "smos-query"
-              "smos-single"
-              "smos-scheduler"
-              "smos-archive"
-              "smos-convert-org"
-              "smos-calendar-import"
-              "smos-asciinema"
-              "smos-api"
-              "smos-api-gen"
-              "smos-server"
-              "smos-server-gen"
-              "smos-client"
-              "smos-client-gen"
-              "smos-sync-client"
-              "smos-sync-client-gen"
-              "smos-web-server"
-              "smos-docs-site"
-              "cursor"
-              "cursor-brick"
-              "cursor-fuzzy-time"
-              "cursor-fuzzy-time-gen"
-              "cursor-gen"
-              "fuzzy-time"
-              "fuzzy-time-gen"
-              "genvalidity"
-              "genvalidity-bytestring"
-              "genvalidity-containers"
-              "genvalidity-criterion"
-              "genvalidity-hspec"
-              "genvalidity-hspec-aeson"
-              "genvalidity-hspec-optics"
-              "genvalidity-mergeful"
-              "genvalidity-path"
-              "genvalidity-property"
-              "genvalidity-text"
-              "genvalidity-time"
-              "genvalidity-typed-uuid"
-              "genvalidity-unordered-containers"
-              "genvalidity-uuid"
-              "mergeful"
-              "mergeful-persistent"
-              "pretty-relative-time"
-              "typed-uuid"
-              "validity"
-              "validity-aeson"
-              "validity-bytestring"
-              "validity-containers"
-              "validity-path"
-              "validity-scientific"
-              "validity-text"
-              "validity-time"
-              "validity-unordered-containers"
-              "validity-uuid"
-              "validity-vector"
-            ];
-          in
-            genAttrs ps (p: { package.cleanHpack = true; });
-      }
+      (import ./haskell-nix-modules/do-check-macos.nix)
+      (import ./haskell-nix-modules/extra-ghc-flags.nix)
+      (import ./haskell-nix-modules/clean-hpack.nix)
+      (import ./haskell-nix-modules/static.nix)
     ];
   };
 
   # Until this is built-in to the haskell.nix workings.
   # https://github.com/input-output-hk/haskell.nix/issues/624
   completionsFor = exeName: exe:
-    final.stdenv.mkDerivation {
+    pkgs.stdenv.mkDerivation {
       name = "${exeName}-completion";
       buildCommand =
         ''
@@ -267,14 +149,14 @@ let
     };
   smosPkg = name:
     with sPkgs."${name}".components;
-    final.stdenv.mkDerivation {
+    pkgs.stdenv.mkDerivation {
       name = "${name}";
       buildInputs = [ library ];
       buildCommand =
         let
           testCommand = testname: test:
             let
-              testOutput = final.haskell-nix.haskellLib.check test;
+              testOutput = pkgs.haskell-nix.haskellLib.check test;
               testOutputCommand = optionalString test.config.doCheck
                 ''
                   mkdir -p $out/test-output
@@ -285,7 +167,7 @@ let
               concatStringsSep "\n" [ testOutputCommand testLinkCommand ];
           benchCommand = benchname: bench: lndir "${bench}";
           exeCommand = exename: exe: lndir "${exe}";
-          lndir = dir: "${final.xorg.lndir}/bin/lndir -silent ${dir} $out";
+          lndir = dir: "${pkgs.xorg.lndir}/bin/lndir -silent ${dir} $out";
         in
           ''
             mkdir -p $out
@@ -301,7 +183,7 @@ let
           '';
     };
   smosPkgWithComp = exeName: name:
-    final.symlinkJoin {
+    pkgs.symlinkJoin {
       name = "${exeName}-with-completion";
       paths = [
         (smosPkg name)
@@ -309,12 +191,17 @@ let
       ];
     };
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
-in
-{
+  smosReleaseZip = pkgs.stdenv.mkDerivation {
+    name = "smos-release.zip";
+    buildCommand = ''
+      cd ${pkgs.smosRelease}
+      ${pkgs.pkgs.zip}/bin/zip -r $out *
+    '';
+  };
   smosRelease =
-    final.symlinkJoin {
-      name = "smos-release";
-      paths = attrValues final.smosPackages;
+    pkgs.symlinkJoin {
+      name = "smos-release" + optionalString pkgs.stdenv.hostPlatform.isMusl "-static";
+      paths = attrValues smosPackages;
     };
   smosPackages =
     {
@@ -347,21 +234,34 @@ in
       "smos-docs-site" =
         let
           rawDocsSite = smosPkg "smos-docs-site";
+          linkcheck = (
+            import (
+              builtins.fetchGit {
+                url = "https://github.com/NorfairKing/linkcheck";
+                rev = "dc65f22965d92e6145814cdc674d160f3c422559";
+                ref = "master";
+              }
+            )
+          ).linkcheck;
         in
-          final.stdenv.mkDerivation {
+          pkgs.stdenv.mkDerivation {
             name = "smos-docs-site";
-            buildInputs = [ final.haskellPackages.linkcheck final.killall ];
             buildCommand = ''
               mkdir -p $out
-              cp -r ${rawDocsSite}/. $out
+              ${pkgs.xorg.lndir}/bin/lndir -silent ${rawDocsSite} $out
 
               $out/bin/smos-docs-site serve &
               sleep 1
-              linkcheck http://localhost:8000
-              killall smos-docs-site
+              ${linkcheck}/bin/linkcheck http://localhost:8000
+              ${pkgs.killall}/bin/killall smos-docs-site
             '';
           };
     };
-
-  smosCasts = import ./casts.nix final;
+  smosCasts = import ./casts.nix { inherit pkgs; inherit gitignoreSource; inherit smosPackages; };
+in
+{
+  inherit smosReleaseZip;
+  inherit smosRelease;
+  inherit smosPackages;
+  inherit smosCasts;
 }
