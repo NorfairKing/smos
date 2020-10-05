@@ -113,16 +113,12 @@ insertHourLines now = go [8 .. 18]
 insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
 insertNowLine now = go
   where
-    go = \case
-      [] -> [NowLine]
-      [x] ->
-        if isBefore now x
-          then [NowLine, x]
-          else [x, NowLine]
-      (x : y : zs) ->
-        if isBetween x now y
-          then x : NowLine : y : zs
-          else x : go (y : zs)
+      go = \case
+        [] -> [NowLine]
+        (x : xs) ->
+          if isBefore now x
+            then NowLine : x : xs
+            else x : go xs
 
 isBefore :: ZonedTime -> AgendaReportLine -> Bool
 isBefore now after =
@@ -134,19 +130,6 @@ isBefore now after =
         Just afterLT ->
           nowUTC <= localTimeToUTC tz afterLT
         _ -> False
-
-isBetween :: AgendaReportLine -> ZonedTime -> AgendaReportLine -> Bool
-isBetween before now after =
-  let ZonedTime lt tz = now
-      today = localDay lt
-      mBeforeLT = agendaReportLineLocalTime today before
-      mAfterLT = agendaReportLineLocalTime today after
-      nowUTC = zonedTimeToUTC now
-   in case (mBeforeLT, mAfterLT) of
-        (Just beforeLT, Just afterLT) ->
-          localTimeToUTC tz beforeLT <= nowUTC
-            && nowUTC <= localTimeToUTC tz afterLT
-        (_, _) -> False
 
 agendaReportLineLocalTime :: Day -> AgendaReportLine -> Maybe LocalTime
 agendaReportLineLocalTime d = \case
