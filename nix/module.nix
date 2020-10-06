@@ -166,7 +166,7 @@ in
     };
   config =
     let
-      smosPkgs = (import ../nix/pkgs.nix).smosPackages;
+      smosPkgs = (import ./project.nix {}).smosPackages;
       working-dir = "/www/smos/${envname}/";
       # The docs server
       docs-site-service =
