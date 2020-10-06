@@ -109,9 +109,23 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
               AgendaSettings
                 { agendaSetFilter = agendaFlagFilter,
                   agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
-                  agendaSetBlock = fromMaybe DayBlock agendaFlagBlock,
+                  agendaSetBlock =
+                    -- See Note [Agenda command defaults]
+                    fromMaybe OneBlock agendaFlagBlock,
                   agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
-                  agendaSetPeriod = fromMaybe Today agendaFlagPeriod
+                  agendaSetPeriod =
+                    -- Note [Agenda command defaults]
+                    -- The default here is 'AllTime' for good reason.
+                    --
+                    -- You may think that 'Today' is a better default because smos-calendar-import fills up
+                    -- your agenda too much for it to be useful.
+                    --
+                    -- However, as a beginner you want to be able to run smos-query agenda to see your
+                    -- SCHEDULED and DEADLINE timestamps in the near future.
+                    -- By the time users figure out how to use smos-calendar-import, they will probably
+                    -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
+                    -- if they need it.
+                    fromMaybe AllTime agendaFlagPeriod
                 }
         CommandWork WorkFlags {..} -> do
           let wc func = func <$> (mc >>= confWorkConfiguration)

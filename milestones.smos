@@ -39,6 +39,8 @@
     forest:
     - header: '10'
       state-history:
+      - state: DONE
+        time: 2020-10-06 08:45:23.568442051000
       - state: TODO
         time: 2019-12-19 10:39:06.663413557000
     - header: '100'
@@ -99,7 +101,7 @@
     state-history:
     - state: TODO
       time: 2019-12-19 10:39:06.663413557000
-  - header: Best in class for GTD on the command-line
+  - header: Best in class for GTD in a TUI
     state-history:
     - state: TODO
       time: 2019-12-19 10:39:06.663413557000

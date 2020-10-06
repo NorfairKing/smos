@@ -2,6 +2,22 @@
 title:
 ---
 
+# Unreleased
+
+- smos-query
+
+## Added
+
+- Static builds for all executables
+
+## Changed
+
+- smos-query:
+  Make 'AllTime' the default period and 'OneBlock' the default block for the agenda command instead of 'Today'.
+  See the Note `[Agenda command defaults]` in the code for more info.
+
+
+
 # [Version 0.1.0 - 2020-09-25](#0.1.0_2020-09-25)
 
 - [smos 0.1.0](#smos-0.1.0)
