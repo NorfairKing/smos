@@ -6,8 +6,6 @@ The waiting report shows you all of the entries that you are waiting for input f
 
 <asciinema-player
   src="/casts/waiting.cast"
-  rows="25"
-  cols="80"
   autoplay="true"
   preloop="true"
   loop="true">

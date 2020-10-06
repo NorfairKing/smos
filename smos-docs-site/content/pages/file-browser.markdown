@@ -9,8 +9,6 @@ From here, you can switch between files and archive files.
 
 <asciinema-player
   src="/casts/browser.cast"
-  rows="25"
-  cols="80"
   autoplay="true"
   preloop="true"
   loop="true">

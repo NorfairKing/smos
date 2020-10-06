@@ -66,8 +66,8 @@ let
 
             # Record the cast
             ${smosPackages.smos-asciinema}/bin/smos-asciinema record "./smos-docs-site/content/casts/${path}.yaml" "./${path}.cast" \
-              --columns 80 \
-              --rows 25 \
+              --columns 110 \
+              --rows 30 \
               --progress
 
             # Output the cast

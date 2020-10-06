@@ -8,8 +8,6 @@ Smos is a comprehensive system for implementing self-management as a power-user.
 
 <asciinema-player
   src="/casts/basics.cast"
-  rows="25"
-  cols="80"
   autoplay="true"
   preloop="true"
   loop="true">

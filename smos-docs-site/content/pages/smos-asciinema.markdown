@@ -7,8 +7,6 @@ You can use it to produce a cast this:
 
 <asciinema-player
   src="/casts/example.cast"
-  rows="25"
-  cols="80"
   autoplay="true"
   preloop="true"
   loop="true">
