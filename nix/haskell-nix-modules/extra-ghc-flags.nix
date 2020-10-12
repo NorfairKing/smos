@@ -20,7 +20,6 @@
         "smos-archive"
         "smos-convert-org"
         "smos-calendar-import"
-        "smos-asciinema"
         "smos-api"
         "smos-api-gen"
         "smos-server"

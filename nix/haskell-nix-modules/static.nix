@@ -3,7 +3,6 @@ let
   exes = [
     "smos"
     "smos-archive"
-    "smos-asciinema"
     "smos-calendar-import"
     "smos-convert-org"
     "smos-docs-site"
