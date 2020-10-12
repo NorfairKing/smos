@@ -1,6 +1,10 @@
 working-dir: ../../demo-workflow
-workflow-dir: ../../demo-workflow
-config-file: ../../demo-workflow/config.yaml
+packages:
+- smos-calendar-import
+- smos-query
+environment:
+  SMOS_CONFIG_FILE: config.yaml
+  SMOS_WORKFLOW_DIR: .
 files:
   - calendar.smos
   - projects/gym.smos

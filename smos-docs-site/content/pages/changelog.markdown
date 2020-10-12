@@ -16,6 +16,9 @@ title:
   Make 'AllTime' the default period and 'OneBlock' the default block for the agenda command instead of 'Today'.
   See the Note `[Agenda command defaults]` in the code for more info.
 
+## Removed
+
+- smos-asciinema: This package has been entirely removed and split out to [a separate project](https://github.com/NorfairKing/autorecorder)
 
 
 # [Version 0.1.0 - 2020-09-25](#0.1.0_2020-09-25)

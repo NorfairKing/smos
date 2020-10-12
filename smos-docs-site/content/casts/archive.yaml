@@ -1,5 +1,12 @@
 working-dir: ../../demo-workflow
-workflow-dir: ../../demo-workflow
+packages:
+- tree
+- smos-query
+- smos
+- smos-archive
+environment:
+  SMOS_WORKFLOW_DIR: .
+  SMOS_EXPLAINER_MODE: 'True'
 files:
   - projects/smos.smos
   - archive

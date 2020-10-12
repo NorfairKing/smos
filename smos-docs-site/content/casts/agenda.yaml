@@ -1,8 +1,13 @@
 working-dir: ../../demo-workflow
-workflow-dir: ../../demo-workflow
+packages:
+- smos
+- smos-query
 files:
   - calendar.smos
   - projects/gym.smos
+environment:
+  SMOS_WORKFLOW_DIR: .
+  SMOS_EXPLAINER_MODE: 'True'
 input:
 - type: "smos-query agenda\n"
 - wait: 1000

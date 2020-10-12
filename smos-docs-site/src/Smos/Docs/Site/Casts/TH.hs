@@ -1,18 +1,18 @@
-{-# OPTIONS_GHC -ddump-splices #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Docs.Site.Casts.TH where
 
+import Control.Monad
 import Instances.TH.Lift ()
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Path
 import Path.IO
-import Smos.ASCIInema.Commands.Record as ASCIInema
-import Smos.ASCIInema.Input as ASCIInema
-import Smos.ASCIInema.OptParse.Types as ASCIInema
-import Smos.ASCIInema.Output as ASCIInema
 import Smos.Docs.Site.Constants
-import System.Environment
+import System.Exit
+import System.IO
+import System.Process.Typed
 import Yesod.EmbeddedStatic
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
@@ -24,28 +24,28 @@ mkCasts = do
     fs <- snd <$> listDirRecur cs
     pure $ filter ((== Just ".yaml") . fileExtension) fs
   mapM_ (qAddDependentFile . fromAbsFile) specs
-  tups <- runIO $ mapM ensureCast specs
+  tups <- runIO $ ensureCasts specs
   mapM_ (qAddDependentFile . snd) tups
   mkEmbeddedStatic development "casts" $ map (uncurry embedFileAt) tups
 
-ensureCast :: Path Abs File -> IO (String, FilePath)
-ensureCast specFile = do
-  outputFile <- replaceExtension ".cast" specFile
-  alreadyExists <- doesFileExist outputFile
-  if alreadyExists
-    then putStrLn $ unwords ["Not casting because the cast already exists:", fromAbsFile outputFile]
-    else do
-      putStrLn $ "Casting " <> fromAbsFile specFile
-      setEnv "SMOS_EXPLAINER_MODE" "True"
-      let sets =
-            RecordSettings
-              { recordSetSpecFile = specFile,
-                recordSetOutputFile = outputFile,
-                recordSetSpeed = 1,
-                recordSetColumns = 80,
-                recordSetRows = 25,
-                recordSetMistakes = NoMistakes, -- TODO make the mistakes work: MistakesWithProbability 0.03,
-                recordSetOutputView = ProgressOutputView -- DebugOutputView
-              }
-      ASCIInema.record sets
-  pure (fromRelFile (filename outputFile), fromAbsFile outputFile)
+ensureCasts :: [Path Abs File] -> IO [(String, FilePath)]
+ensureCasts specFiles = do
+  hSetBuffering stdout LineBuffering -- To make sure the lines come out ok.
+  hSetBuffering stderr LineBuffering
+  mAutorecorderExecutable <- findExecutable [relfile|autorecorder|]
+  forM specFiles $ \specFile -> do
+    outputFile <- replaceExtension ".cast" specFile
+    alreadyExists <- doesFileExist outputFile
+    if alreadyExists
+      then putStrLn $ unwords ["Not casting because the cast already exists:", fromAbsFile outputFile]
+      else do
+        case mAutorecorderExecutable of
+          Nothing -> die "The autorecorder executable is not found. You can install it from https://github.com/NorfairKing/autorecorder ."
+          Just autorecorderExecutable -> do
+            putStrLn $ "Casting " <> fromAbsFile specFile
+            let cmd = fromAbsFile autorecorderExecutable
+            let args = ["record", fromAbsFile specFile, fromAbsFile outputFile, "--progress"]
+            putStrLn $ unwords $ cmd : map show args
+            runProcess_ $ setStderr inherit $ setStdout inherit $ proc cmd args
+            putStrLn $ "Done casting " <> fromAbsFile specFile
+    pure (fromRelFile (filename outputFile), fromAbsFile outputFile)

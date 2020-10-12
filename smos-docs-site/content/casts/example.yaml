@@ -1,5 +1,9 @@
 command: smos example.smos
+packages:
+- smos
 file: example.smos
+rows: 25
+columns: 80
 input:
 - send: e
 - wait: 1000
