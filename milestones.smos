@@ -29,6 +29,8 @@
         time: 2019-12-19 10:39:06.663413557000
     - header: NixOs
       state-history:
+      - state: DONE
+        time: 2020-10-12 10:32:47.142411757000
       - state: TODO
         time: 2019-12-19 10:39:29.543295169000
   - entry:
