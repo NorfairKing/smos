@@ -16,7 +16,6 @@ packages:
 - smos-archive
 - smos-convert-org
 - smos-calendar-import
-- smos-asciinema
 - smos-docs-site
 - smos-api
 - smos-api-gen
