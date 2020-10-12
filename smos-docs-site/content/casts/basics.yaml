@@ -1,5 +1,9 @@
 working-dir: ../../demo-workflow
-workflow-dir: ../../demo-workflow
+packages:
+- smos
+environment:
+  SMOS_WORKFLOW_DIR: .
+  SMOS_EXPLAINER_MODE: 'True'
 file: foo.smos
 input:
 - type: "smos foo.smos\n"

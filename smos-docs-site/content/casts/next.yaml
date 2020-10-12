@@ -1,6 +1,11 @@
 working-dir: ../../demo-workflow
-workflow-dir: ../../demo-workflow
 file: projects/blog.smos
+environment:
+  SMOS_WORKFLOW_DIR: .
+  SMOS_EXPLAINER_MODE: 'True'
+packages:
+- smos-query
+- smos
 input:
 - type: "smos-query next\n"
 - wait: 2000

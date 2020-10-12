@@ -31,7 +31,6 @@ library:
   - shakespeare
   - smos
   - smos-archive
-  - smos-asciinema
   - smos-calendar-import
   - smos-data
   - smos-query

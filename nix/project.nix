@@ -220,7 +220,6 @@ let
       "smos-archive" = smosPkgWithOwnComp "smos-archive";
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
       "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-      "smos-asciinema" = smosPkgWithOwnComp "smos-asciinema";
       "smos-api" = smosPkg "smos-api";
       "smos-api-gen" = smosPkg "smos-api-gen";
       "smos-server" = smosPkgWithOwnComp "smos-server";
