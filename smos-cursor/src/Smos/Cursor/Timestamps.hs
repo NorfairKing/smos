@@ -23,6 +23,7 @@ module Smos.Cursor.Timestamps
     rebuildTimestampNameCursor,
     makeTimestampCursor,
     rebuildTimestampCursor,
+    timestampsCursorDeleteElem,
   )
 where
 
@@ -208,3 +209,11 @@ rebuildTimestampCursor fltc =
   case rebuildFuzzyLocalTimeCursor fltc of
     OnlyDaySpecified d -> TimestampDay d
     BothTimeAndDay lt -> TimestampLocalTime lt
+
+timestampsCursorDeleteElem :: TimestampsCursor -> Maybe TimestampsCursor
+timestampsCursorDeleteElem = timestampsCursorMapCursorL . localMapCursorListL $ remo
+  where
+    localMapCursorListL = lens mapCursorList (\x y -> x {mapCursorList = y})
+    -- This should be removed if mapCursorListL is added to the Cursor library
+    mkcursor (k, v) = makeKeyValueCursorKey (makeTimestampNameCursor k) v
+    remo = dullMDelete . nonEmptyCursorDeleteElemAndSelectNext mkcursor

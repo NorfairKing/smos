@@ -111,6 +111,7 @@ defaultFileKeyMap =
             exactString "se" $ timestampsSelect "END",
             exactString "sd" $ timestampsSelect "DEADLINE",
             exactString "ss" $ timestampsSelect "SCHEDULED",
+            exactString "s " timestampsDeleteStamp,
             exactString "pi" entrySelectProperties,
             exactString "pc" $ propertiesEditProperty "client",
             exactString "pt" $ propertiesEditProperty "timewindow",

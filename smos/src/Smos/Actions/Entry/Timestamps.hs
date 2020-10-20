@@ -11,6 +11,7 @@ module Smos.Actions.Entry.Timestamps
     timestampsRemove,
     timestampsDelete,
     timestampsToggle,
+    timestampsDeleteStamp,
   )
 where
 
@@ -30,7 +31,8 @@ allTimestampsPlainActions =
         timestampsMoveRight,
         timestampsRemove,
         timestampsDelete,
-        timestampsToggle
+        timestampsToggle,
+        timestampsDeleteStamp
       ]
     ]
 
@@ -111,4 +113,12 @@ timestampsToggle =
     { actionName = "timestampsToggle",
       actionFunc = modifyTimestampsCursor timestampsCursorToggleSelected,
       actionDescription = "Switch between selecting the timestamp name or date"
+    }
+
+timestampsDeleteStamp :: Action
+timestampsDeleteStamp =
+  Action
+    { actionName = "timeStampsDeleteStamp",
+      actionFunc = modifyMTimestampsCursorM (timestampsCursorDeleteElem =<<),
+      actionDescription = "Delete the timestamp"
     }
