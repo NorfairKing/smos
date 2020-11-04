@@ -23,6 +23,9 @@
 
 /smos-web-server SmosWebServerR GET
 
+/sitemap.xml SitemapR GET
+/robots.txt RobotsR GET
+
 !/*DocPage PageR GET
 
 /assets/*Texts AssetsR GET
@@ -30,3 +33,4 @@
 
 /casts/*Texts CastsR GET
 /casts-static CastsStaticR EmbeddedStatic appCasts
+

@@ -48,6 +48,7 @@ library:
   - yaml
   - yamlparse-applicative
   - yesod
+  - yesod-sitemap
   - yesod-static
   - yesod-static-remote
 
