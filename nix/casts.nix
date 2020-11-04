@@ -8,9 +8,10 @@ let
   mkCastDerivation = import (
     builtins.fetchGit {
       url = "https://github.com/NorfairKing/autorecorder";
-      rev = "1a2e0109a77d918242e75165da2ae4aba1afbe07";
+      rev = "b6d411946258bded132762d2c1e0c6ba256d01a2";
       ref = "master";
     } + "/nix/cast.nix"
+    # /home/syd/src/autorecorder/nix/cast.nix
   ) { pkgs = pkgs // smosPackages; };
   specFiles =
     builtins.map (pkgs.lib.removeSuffix ".yaml")

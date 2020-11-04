@@ -5,6 +5,8 @@ let
 in
 {
   "release" = pkgsNormal.smosRelease;
+  "casts" = pkgsNormal.smosCasts;
   "release-static" = pkgsStatic.smosRelease;
+  "casts-static" = pkgsStatic.smosCasts;
   "pre-commit-hooks" = pre-commit-hooks.run;
 }
