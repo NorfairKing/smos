@@ -1,5 +1,6 @@
 ---
 title: Directories in a workflow
+description: An overview of the directories that you can expect to have in your Smos workflow directory
 ---
 
 The `smos` TUI and the `smos-query` executable use certain directories to function correctly and efficiently.

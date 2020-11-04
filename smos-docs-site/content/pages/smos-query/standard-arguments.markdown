@@ -1,5 +1,6 @@
 ---
-title: Standard arguments to `smos-query` commands
+title: Standard arguments to smos-query commands
+description: Documentation about the standard arguments that you can pass to multiple of the smos-query commands
 ---
 
 ## Filters

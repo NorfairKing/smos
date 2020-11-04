@@ -1,5 +1,6 @@
 ---
 title: Customisation
+description: Documentation about the different ways to customise your usage of Smos
 ---
 
 Smos can be configured very flexibly, via flags, environment variables and configuration files.

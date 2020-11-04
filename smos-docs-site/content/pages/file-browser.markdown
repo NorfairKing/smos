@@ -1,5 +1,6 @@
 ---
 title: File Browser
+description: Documentation for the built-in File Browser in Smos
 ---
 
 Smos has a built-in file browser for easy navigation within your workflow.

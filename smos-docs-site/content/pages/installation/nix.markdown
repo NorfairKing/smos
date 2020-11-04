@@ -1,5 +1,6 @@
 ---
 title: Installation with Nix
+description: Documentation about building and installing Smos and the related tools using Nix
 ---
 
 ### Building with Nix

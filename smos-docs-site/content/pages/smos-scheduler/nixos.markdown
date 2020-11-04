@@ -1,5 +1,6 @@
 ---
 title: Running on NixOs
+description: Documentation about setting up automated scheduling of projects on NixOS
 ---
 
 There is a nix-home-manager module available in the repo as described [in the relevant installation page](/installation/nixos).

@@ -1,5 +1,6 @@
 ---
 title: Support
+description: Information on how to support the Smos project
 ---
 
 

@@ -1,5 +1,6 @@
 ---
 title: Database Migration
+description: Documentation for what you need to do when the Smos Sync Client runs into a migration issue
 ---
 
 When upgrading `smos-sync-client`, you may at times run into an error like this:

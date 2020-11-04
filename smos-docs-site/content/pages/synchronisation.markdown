@@ -1,5 +1,6 @@
 ---
 title: Synchronisation
+description: Documentation for the setting up synchronisation of your Smos workflow across devices
 ---
 
 ## Synchronising Client

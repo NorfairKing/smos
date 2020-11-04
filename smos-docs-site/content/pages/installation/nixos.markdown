@@ -1,5 +1,6 @@
 ---
 title: Installation on Nixos
+description: Documentation about using Smos from NixOS
 ---
 
 To install smos on nixos, [a `home-manager` module](https://rycee.gitlab.io/home-manager/) has been provided in the smos repository at `nix/program.nix`.

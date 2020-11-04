@@ -1,5 +1,6 @@
 ---
 title: Features
+description: An overview of Smos' features
 ---
 
 ## Self-management for power-users

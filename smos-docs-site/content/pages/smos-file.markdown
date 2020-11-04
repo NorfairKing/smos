@@ -1,5 +1,6 @@
 ---
 title: Pieces of a Smos File
+description: Documentation for the structure of a Smos file
 ---
 
 A Smos file is a YAML document, for example:

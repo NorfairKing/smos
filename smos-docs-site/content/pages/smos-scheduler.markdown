@@ -1,5 +1,6 @@
 ---
 title: The Smos Scheduler Tool
+description: Documentation for the Smos Scheduler Tool, for scheduling projects on a recurring basis
 ---
 
 The `smos-scheduler` tool is configured most easily using a configuration file.

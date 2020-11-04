@@ -1,5 +1,6 @@
 ---
-title: Running on NixOs
+title: Running on NixOS
+description: Documentation about automatically importing your calendar into Smos on NixOS
 ---
 
 There is a nix-home-manager module available in the repo as described [in the relevant installation page](/installation/nixos).

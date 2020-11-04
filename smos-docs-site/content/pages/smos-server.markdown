@@ -1,5 +1,6 @@
 ---
 title: The Smos Server
+description: Documentation for the Smos Server, for hosting your own Smos API
 ---
 
 You can set up your own Smos server to host your own syncing.

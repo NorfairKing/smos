@@ -1,5 +1,6 @@
 ---
 title: Building with stack
+description: Documentation about installing Smos using stack
 ---
 
 To build Smos using [Stack](https://haskellstack.org), first clone the repository:

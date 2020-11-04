@@ -1,5 +1,6 @@
 ---
 title: Customisation Reference
+description: Reference documentation for the customisation
 ---
 
 Keybindings in smos are context sensitive.

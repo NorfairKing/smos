@@ -1,5 +1,6 @@
 ---
-title: Setting up your own Smos web server on Nixos
+title: Setting up your own Smos Web Server on Nixos
+description: Documentation for the Smos Web Server, for setting up your own online Smos usage on NixOS
 ---
 
 A NixOs module has to run your own smos server on NixOs has been provided at `nix/module.nix` and can be used as follows:

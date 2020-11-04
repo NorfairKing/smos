@@ -1,5 +1,6 @@
 ---
 title: The Smos Sync Client
+description: Documentation for the Smos Synchronisation Client, for synchronising your workflow across devices
 ---
 
 Your can synchronise your workflow directory using `smos-sync-client`.

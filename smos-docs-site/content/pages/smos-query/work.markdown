@@ -1,5 +1,6 @@
 ---
 title: Work report
+description: Documentation about the smos-query work command, for the contextual work report
 ---
 
 The work report is the most important report that you will use.

@@ -1,5 +1,6 @@
 ---
 title: The Smos Query Tool
+description: Documentation for the Smos Query tool, for querying the entries in your workflow
 ---
 
 The `smos` editor comes with some handy companion tools.

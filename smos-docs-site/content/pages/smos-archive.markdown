@@ -1,5 +1,6 @@
 ---
 title: The Smos Archiving Tool
+description: Documentation for the Smos Archiving tool, for getting smos files out of your way when you are done with them
 ---
 
 You can archive files that you are done with.

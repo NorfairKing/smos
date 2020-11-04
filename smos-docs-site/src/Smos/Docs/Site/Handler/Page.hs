@@ -7,12 +7,11 @@ module Smos.Docs.Site.Handler.Page
   )
 where
 
-import Data.Maybe
 import Smos.Docs.Site.Foundation
 
 getPageR :: DocPage -> Handler Html
 getPageR DocPage {..} =
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
-    setDescription $ fromMaybe ("Documentation for " <> docPageTitle) docPageDescription
+    setDescription docPageDescription
     $(widgetFile "page")

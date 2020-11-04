@@ -1,5 +1,6 @@
 ---
 title: Customisation in Haskell
+description: Documentation for customising your Smos usage from Haskell like you do with Xmonad
 ---
 
 

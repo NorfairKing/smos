@@ -1,5 +1,6 @@
 ---
-title:
+title: Changelog
+description: The changelog for all of the Smos tools
 ---
 
 # Unreleased
@@ -13,8 +14,9 @@ title:
 ## Changed
 
 - smos-query:
-  Make 'AllTime' the default period and 'OneBlock' the default block for the agenda command instead of 'Today'.
+  Make `AllTime` the default period and `OneBlock` the default block for the agenda command instead of 'Today'.
   See the Note `[Agenda command defaults]` in the code for more info.
+  The default block now also changes per period. For year-based periods the default block will by month, for month-based periods the block will be by week, for week-based persiods the default block will be by day.
 
 ## Removed
 

@@ -1,5 +1,6 @@
 ---
 title: Featured blogposts
+description: Lists of blogposts about smos and related projects
 ---
 
 #### CS Syd:

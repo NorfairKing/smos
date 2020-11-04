@@ -1,5 +1,6 @@
 ---
 title: Entry report: generic querying
+description: Documentation about the smos-query entry command, for generic querying of the entries in your workflow
 ---
 
 The first command to consider is the `entry` command.

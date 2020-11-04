@@ -1,5 +1,6 @@
 ---
-title: Running on NixOs
+title: Running on NixOS
+description: Documentation about setting up automated synchronisation of your Smos workflow on NixOS
 ---
 
 There is a nix-home-manager module available in the repo as described [in the relevant installation page](/installation/nixos).
