@@ -8,7 +8,7 @@ let
   mkCastDerivation = import (
     builtins.fetchGit {
       url = "https://github.com/NorfairKing/autorecorder";
-      rev = "da5bf9d61108a4a89addc8203b1579a364ce8c01";
+      rev = "ad755b24009044e37c5d756d0573fa9e8ab6d71f";
       ref = "master";
     } + "/nix/cast.nix"
   ) { pkgs = pkgs // smosPackages; };
