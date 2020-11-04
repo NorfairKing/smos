@@ -191,18 +191,6 @@ let
       ];
     };
   smosPkgWithOwnComp = name: smosPkgWithComp name name;
-  smosReleaseZip = pkgs.stdenv.mkDerivation {
-    name = "smos-release.zip";
-    buildCommand = ''
-      cd ${pkgs.smosRelease}
-      ${pkgs.pkgs.zip}/bin/zip -r $out *
-    '';
-  };
-  smosRelease =
-    pkgs.symlinkJoin {
-      name = "smos-release" + optionalString pkgs.stdenv.hostPlatform.isMusl "-static";
-      paths = attrValues smosPackages;
-    };
   smosPackages =
     {
       "smos" = smosPkgWithOwnComp "smos";
@@ -269,6 +257,18 @@ let
           };
     };
   smosCasts = import ./casts.nix { inherit pkgs; inherit gitignoreSource; inherit smosPackages; };
+  smosRelease =
+    pkgs.symlinkJoin {
+      name = "smos-release" + optionalString pkgs.stdenv.hostPlatform.isMusl "-static";
+      paths = attrValues smosPackages;
+    };
+  smosReleaseZip = pkgs.stdenv.mkDerivation {
+    name = "smos-release.zip";
+    buildCommand = ''
+      cd ${smosRelease}
+      ${pkgs.pkgs.zip}/bin/zip -r $out *
+    '';
+  };
 in
 {
   inherit smosReleaseZip;

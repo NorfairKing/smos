@@ -9,4 +9,5 @@ in
   "release-static" = pkgsStatic.smosRelease;
   "casts-static" = pkgsStatic.smosCasts;
   "pre-commit-hooks" = pre-commit-hooks.run;
+  "release-zip" = pkgsStatic.smosReleaseZip;
 }
