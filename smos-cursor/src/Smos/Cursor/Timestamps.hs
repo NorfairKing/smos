@@ -167,11 +167,11 @@ timestampsCursorSelectOrAdd tsn d =
   timestampsCursorMapCursorL
     %~ mapCursorSelectValue rebuildTimestampNameCursor makeTimestampCursor
     . mapCursorSelectOrAdd
-        rebuildTimestampNameCursor
-        makeTimestampNameCursor
-        rebuildTimestampCursor
-        (\t _ -> t == tsn)
-        (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
+      rebuildTimestampNameCursor
+      makeTimestampNameCursor
+      rebuildTimestampCursor
+      (\t _ -> t == tsn)
+      (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
 
 timestampsCursorUpdateTime :: ZonedTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~ go

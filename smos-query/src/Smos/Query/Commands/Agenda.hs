@@ -113,12 +113,12 @@ insertHourLines now = go [8 .. 18]
 insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
 insertNowLine now = go
   where
-      go = \case
-        [] -> [NowLine]
-        (x : xs) ->
-          if isBefore now x
-            then NowLine : x : xs
-            else x : go xs
+    go = \case
+      [] -> [NowLine]
+      (x : xs) ->
+        if isBefore now x
+          then NowLine : x : xs
+          else x : go xs
 
 isBefore :: ZonedTime -> AgendaReportLine -> Bool
 isBefore now after =

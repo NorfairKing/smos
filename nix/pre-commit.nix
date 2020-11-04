@@ -8,7 +8,7 @@ let
 in
 {
   run = pre-commit-hooks.run {
-    src = ./.;
+    src = ../.;
     hooks = {
       nixpkgs-fmt.enable = true;
       hlint.enable = true;
