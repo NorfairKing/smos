@@ -21,7 +21,7 @@ main :: IO ()
 main = do
   here <- getCurrentDir
   dirs <- fst <$> listDir here
-  packageYamls <- forM (filter (isJust . stripPrefix "smos-" . fromRelDir . dirname) dirs) $ \d -> do
+  packageYamls <- forM (filter (isJust . stripPrefix "smos" . fromRelDir . dirname) dirs) $ \d -> do
     packageYamlFile <- resolveFile d "package.yaml"
     decodeFileThrow (fromAbsFile packageYamlFile)
   tagsContents <- readProcessStdout_ $ shell "git tag --color=never"
