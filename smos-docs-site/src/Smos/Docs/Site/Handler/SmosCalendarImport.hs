@@ -22,7 +22,8 @@ getSmosCalendarImportR = do
       envHelpText = Env.helpDoc CalendarImport.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @CalendarImport.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-calendar-import"
+    setSmosTitle "smos-calendar-import"
+    setDescription "Documentation for the Smos Calendar Import tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

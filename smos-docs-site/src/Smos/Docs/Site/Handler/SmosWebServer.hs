@@ -22,7 +22,8 @@ getSmosWebServerR = do
       envHelpText = Env.helpDoc WebServer.environmentParser
       confHelpText = prettySchemaDoc @WebServer.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-web-server"
+    setSmosTitle "smos-web-server"
+    setDescription "Documentation for the Smos Web Server"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

@@ -58,6 +58,7 @@ instance Yesod App where
 getHomeR :: Handler Html
 getHomeR = defaultLayout $ do
   setTitle "Smos Documentation"
+  setDescription "Documentation for the Smos Self-Management Tool"
   mWebUrl <- getsYesod appWebserverUrl
   $(widgetFile "home")
 
@@ -89,3 +90,6 @@ instance PathMultiPiece DocPage where
   fromPathMultiPiece url =
     find ((== T.intercalate "/" url) . docPageUrl) docPages
   toPathMultiPiece = T.splitOn "/" . docPageUrl
+
+setSmosTitle :: MonadWidget m => Html -> m ()
+setSmosTitle t = setTitle $ "Smos Documentation - " <> t

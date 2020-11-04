@@ -22,7 +22,8 @@ getSmosSingleR = do
       envHelpText = Env.helpDoc Single.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Single.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-single"
+    setSmosTitle "smos-single"
+    setDescription "Documentation for the Smos Single tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

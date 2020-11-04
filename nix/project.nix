@@ -242,6 +242,17 @@ let
               }
             )
           ).linkcheck;
+          seocheck =
+            (
+              import (
+                builtins.fetchGit {
+                  url = "https://github.com/NorfairKing/seocheck";
+                  rev = "5a0314f103a2146ed5f3798e5a5821ab44e27c99";
+                  ref = "master";
+                }
+              )
+            ).seocheck;
+
         in
           pkgs.stdenv.mkDerivation {
             name = "smos-docs-site";
@@ -252,6 +263,7 @@ let
               $out/bin/smos-docs-site serve &
               sleep 1
               ${linkcheck}/bin/linkcheck http://localhost:8000
+              ${seocheck}/bin/seocheck http://localhost:8000
               ${pkgs.killall}/bin/killall smos-docs-site
             '';
           };

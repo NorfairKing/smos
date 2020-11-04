@@ -44,6 +44,7 @@ data DocPage
       { docPagePath :: !(Path Rel File),
         docPageUrl :: !Text,
         docPageTitle :: !Text,
+        docPageDescription :: !(Maybe Text),
         docPageAttributes :: ![(Text, Text)],
         docPageContents :: !Text,
         docPageRendered :: !Text
@@ -124,12 +125,14 @@ mkDocPages' fp = do
                           ]
                     Just a -> pure a
             title <- maybeAtt "title"
+            let description = lookup "description" attributes
             let rendered = MD.commonmarkToHtml [optUnsafe] [] contents
             pure
               DocPage
                 { docPagePath = rp,
                   docPageUrl = url,
                   docPageTitle = title,
+                  docPageDescription = description,
                   docPageAttributes = attributes,
                   docPageContents = contents,
                   docPageRendered = rendered

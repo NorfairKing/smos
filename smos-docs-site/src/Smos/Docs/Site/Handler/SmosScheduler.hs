@@ -25,14 +25,16 @@ getSmosSchedulerR = do
       envHelpText = Env.helpDoc Scheduler.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Scheduler.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-scheduler"
+    setSmosTitle "smos-scheduler"
+    setDescription "Documentation for the Smos Scheduler tool"
     $(widgetFile "args")
 
 getSmosSchedulerTemplateR :: Handler Html
 getSmosSchedulerTemplateR = do
   let confHelpText = prettySchemaDoc @Scheduler.EntryTemplate
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-scheduler templates"
+    setSmosTitle "smos-scheduler templates"
+    setDescription "Documentation for smos-scheduler template file format"
     $(widgetFile "smos-scheduler/template")
 
 templateExample :: String

@@ -15,7 +15,9 @@ import Smos.Types
 
 getSmosActionsR :: Handler Html
 getSmosActionsR =
-  defaultLayout
+  defaultLayout $ do
+    setSmosTitle "Actions"
+    setDescription "A full reference list of all actions that can be bound to keys"
     $(widgetFile "smos-actions")
 
 actionTable :: [AnyAction] -> Widget

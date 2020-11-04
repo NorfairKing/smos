@@ -22,7 +22,8 @@ getSmosArchiveR = do
       envHelpText = Env.helpDoc Archive.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Archive.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-archive"
+    setSmosTitle "smos-archive"
+    setDescription "Documentation for the Smos Archiving tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

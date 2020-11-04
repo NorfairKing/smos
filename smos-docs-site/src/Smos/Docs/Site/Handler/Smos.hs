@@ -34,14 +34,16 @@ getSmosR = do
       envHelpText = Env.helpDoc TUI.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @TUI.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos"
+    setSmosTitle "smos"
+    setDescription "Documentation for the Smos TUI"
     $(widgetFile "args")
 
 getSmosFileR :: Handler Html
 getSmosFileR = do
   DocPage {..} <- lookupPage "smos-file"
   defaultLayout $ do
-    setTitle "Smos Documentation - Smos File"
+    setTitle "Smos File"
+    setDescription "Documentation for the smos file format"
     $(widgetFile "smos-file")
 
 headerDesc :: Text

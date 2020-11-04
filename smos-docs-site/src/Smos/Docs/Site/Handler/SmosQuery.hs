@@ -28,7 +28,8 @@ getSmosQueryR = do
       envHelpText = Env.helpDoc Query.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Query.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-query"
+    setSmosTitle "smos-query"
+    setDescription "Documentation for the Smos Query Tool"
     $(widgetFile "args")
 
 getSmosQueryCommandR :: Text -> Handler Html
@@ -42,7 +43,8 @@ getSmosQueryCommandR cmd = do
         "waiting" -> confDocsWithKey @Query.WaitingConfiguration waitingConfigurationKey
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
-    setTitle $ toHtml $ "Smos Documentation - " <> docPageTitle
+    setSmosTitle $ toHtml docPageTitle
+    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-query tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

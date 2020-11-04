@@ -22,7 +22,8 @@ getSmosSyncClientR = do
       envHelpText = Env.helpDoc Sync.prefixedEnvironmentParser
       confHelpText = prettySchemaDoc @Sync.Configuration
   defaultLayout $ do
-    setTitle "Smos Documentation - smos-sync-client"
+    setTitle "smos-sync-client"
+    setDescription "Documentation for the Smos Synchronisation Client"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

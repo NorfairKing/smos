@@ -21,19 +21,19 @@ title:
 - smos-asciinema: This package has been entirely removed and split out to [a separate project](https://github.com/NorfairKing/autorecorder)
 
 
-# [Version 0.1.0 - 2020-09-25](#0.1.0_2020-09-25)
+# [Version 0.1.0 - 2020-09-25](/changelog#0.1.0_2020-09-25)
 
-- [smos 0.1.0](#smos-0.1.0)
-- [smos-query 0.1.0](#smos-query-0.1.0)
-- [smos-single 0.1.0](#smos-single-0.1.0)
-- [smos-archive 0.1.0](#smos-archive-0.1.0)
-- [smos-asciinema 0.1.0](#smos-asciinema-0.1.0)
-- [smos-calendar-import 0.1.0](#smos-calendar-import-0.1.0)
-- [smos-convert-org 0.1.0](#smos-convert-org-0.1.0)
-- [smos-scheduler 0.1.0](#smos-scheduler-0.1.0)
-- [smos-server 0.1.0](#smos-server-0.1.0)
-- [smos-sync-client 0.1.0](#smos-sync-client-0.1.0)
-- [smos-web-server 0.1.0](#smos-web-server-0.1.0)
+- [smos 0.1.0](/changelog#smos-0.1.0)
+- [smos-query 0.1.0](/changelog#smos-query-0.1.0)
+- [smos-single 0.1.0](/changelog#smos-single-0.1.0)
+- [smos-archive 0.1.0](/changelog#smos-archive-0.1.0)
+- [smos-asciinema 0.1.0](/changelog#smos-asciinema-0.1.0)
+- [smos-calendar-import 0.1.0](/changelog#smos-calendar-import-0.1.0)
+- [smos-convert-org 0.1.0](/changelog#smos-convert-org-0.1.0)
+- [smos-scheduler 0.1.0](/changelog#smos-scheduler-0.1.0)
+- [smos-server 0.1.0](/changelog#smos-server-0.1.0)
+- [smos-sync-client 0.1.0](/changelog#smos-sync-client-0.1.0)
+- [smos-web-server 0.1.0](/changelog#smos-web-server-0.1.0)
 
 ## Added
 
