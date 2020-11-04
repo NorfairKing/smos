@@ -151,7 +151,7 @@ extra-deps:
   # nix-sha256: sha256:1r3vi0bj3syapwi2jb77wf8w4h4v8z6vnjvcsvlzif6l17m92wzn
 
 - github: NorfairKing/validity
-  commit: 2ef8be2fba631460d770d8cbc7dd67709400fe3d
+  commit: c38fc635f98580548f82314504e9f8742519f94d
   subdirs:
   - genvalidity
   - genvalidity-aeson
@@ -187,7 +187,7 @@ extra-deps:
   - validity-unordered-containers
   - validity-uuid
   - validity-vector
-  # nix-sha256: sha256:15cn4p2irb5pff977587lp2967gmb84dq9y9lkgvfkkjjad6fd9m
+  # nix-sha256: sha256:106q361wj8aspggvdj319jny6j6rfdmljha912sf8mdbsxl2gp5i
 
 - git: https://github.com/NorfairKing/yamlparse-applicative
   commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
