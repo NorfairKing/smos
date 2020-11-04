@@ -8,7 +8,7 @@ let
   mkCastDerivation = import (
     builtins.fetchGit {
       url = "https://github.com/NorfairKing/autorecorder";
-      rev = "ad755b24009044e37c5d756d0573fa9e8ab6d71f";
+      rev = "1a2e0109a77d918242e75165da2ae4aba1afbe07";
       ref = "master";
     } + "/nix/cast.nix"
   ) { pkgs = pkgs // smosPackages; };
@@ -18,7 +18,7 @@ let
         builtins.attrNames
           (
             pkgs.lib.filterAttrs
-              (p: v: v == "regular" && pkgs.lib.hasSuffix ".yaml" p) # TODO: filter by extension too?
+              (p: v: v == "regular" && pkgs.lib.hasSuffix ".yaml" p)
               (builtins.readDir castsDir)
           )
       );
