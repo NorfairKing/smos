@@ -3,6 +3,13 @@ title: Changelog
 description: The changelog for all of the Smos tools
 ---
 
+# Unreleased
+
+## Added
+
+- `smos`: Word-based movements in headers and contents
+
+
 # <a name="2020-11-04">[2020-11-04](#2020-11-04)
 
 - <a name="smos-0.1.1">[smos 0.1.1](#smos0-1.1)
