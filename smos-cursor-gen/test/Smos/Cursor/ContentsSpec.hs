@@ -71,6 +71,18 @@ spec = do
   describe "contentsCursorSelectNextChar"
     $ it "produces valid cursors"
     $ producesValidsOnValids contentsCursorSelectNextChar
+  describe "contentsCursorSelectPrevWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectPrevWord
+  describe "contentsCursorSelectNextWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectNextWord
+  describe "contentsCursorSelectBeginWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectBeginWord
+  describe "contentsCursorSelectEndWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids contentsCursorSelectEndWord
   describe "contentsCursorIndexOnLine"
     $ it "produces valid cursors"
     $ producesValidsOnValids contentsCursorIndexOnLine

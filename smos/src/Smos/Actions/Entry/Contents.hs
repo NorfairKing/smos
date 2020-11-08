@@ -15,6 +15,10 @@ module Smos.Actions.Entry.Contents
     contentsMoveDown,
     contentsMoveToStartOfLine,
     contentsMoveToEndOfLine,
+    contentsMoveToNextWord,
+    contentsMoveToPrevWord,
+    contentsMoveToBeginningOfWord,
+    contentsMoveToEndOfWord,
   )
 where
 
@@ -32,7 +36,11 @@ allContentsPlainActions =
     contentsMoveUp,
     contentsMoveDown,
     contentsMoveToStartOfLine,
-    contentsMoveToEndOfLine
+    contentsMoveToEndOfLine,
+    contentsMoveToNextWord,
+    contentsMoveToPrevWord,
+    contentsMoveToBeginningOfWord,
+    contentsMoveToEndOfWord
   ]
 
 allContentsUsingCharActions :: [ActionUsing Char]
@@ -144,4 +152,36 @@ contentsMoveToEndOfLine =
     { actionName = "contentsMoveToEndOfLine",
       actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectEndOfLine,
       actionDescription = "Move to the of the current line in the contents"
+    }
+
+contentsMoveToNextWord :: Action
+contentsMoveToNextWord =
+  Action
+    { actionName = "contentsMoveToNextWord",
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectNextWord,
+      actionDescription = "Move to the next word in the contents"
+    }
+
+contentsMoveToPrevWord :: Action
+contentsMoveToPrevWord =
+  Action
+    { actionName = "contentsMoveToPrevWord",
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectPrevWord,
+      actionDescription = "Move to the previous word in the contents"
+    }
+
+contentsMoveToEndOfWord :: Action
+contentsMoveToEndOfWord =
+  Action
+    { actionName = "contentsMoveToEndOfWord",
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectEndWord,
+      actionDescription = "Move to the end of the word in the contents"
+    }
+
+contentsMoveToBeginningOfWord :: Action
+contentsMoveToBeginningOfWord =
+  Action
+    { actionName = "contentsMoveToBeginningOfWord",
+      actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectBeginWord,
+      actionDescription = "Move to the beginning of the word in the contents"
     }

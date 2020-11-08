@@ -17,6 +17,10 @@ module Smos.Cursor.Contents
     contentsCursorSelectLastLine,
     contentsCursorSelectPrevChar,
     contentsCursorSelectNextChar,
+    contentsCursorSelectPrevWord,
+    contentsCursorSelectNextWord,
+    contentsCursorSelectBeginWord,
+    contentsCursorSelectEndWord,
     contentsCursorIndexOnLine,
     contentsCursorSelectIndexOnLine,
     contentsCursorInsertChar,
@@ -113,6 +117,18 @@ contentsCursorSelectPrevChar = contentsCursorTextFieldCursorL textFieldCursorSel
 
 contentsCursorSelectNextChar :: ContentsCursor -> Maybe ContentsCursor
 contentsCursorSelectNextChar = contentsCursorTextFieldCursorL textFieldCursorSelectNextChar
+
+contentsCursorSelectPrevWord :: ContentsCursor -> ContentsCursor
+contentsCursorSelectPrevWord = contentsCursorTextFieldCursorL %~ textFieldCursorSelectPrevWord
+
+contentsCursorSelectNextWord :: ContentsCursor -> ContentsCursor
+contentsCursorSelectNextWord = contentsCursorTextFieldCursorL %~ textFieldCursorSelectNextWord
+
+contentsCursorSelectBeginWord :: ContentsCursor -> ContentsCursor
+contentsCursorSelectBeginWord = contentsCursorTextFieldCursorL %~ textFieldCursorSelectBeginWord
+
+contentsCursorSelectEndWord :: ContentsCursor -> ContentsCursor
+contentsCursorSelectEndWord = contentsCursorTextFieldCursorL %~ textFieldCursorSelectEndWord
 
 contentsCursorIndexOnLine :: ContentsCursor -> Int
 contentsCursorIndexOnLine = textFieldCursorIndexOnLine . contentsCursorTextFieldCursor
