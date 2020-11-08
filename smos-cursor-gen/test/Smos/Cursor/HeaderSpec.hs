@@ -57,3 +57,15 @@ spec = do
   describe "headerCursorSelectEnd"
     $ it "produces valid cursors"
     $ producesValidsOnValids headerCursorSelectEnd
+  describe "headerCursorSelectPrevWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids headerCursorSelectPrevWord
+  describe "headerCursorSelectNextWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids headerCursorSelectNextWord
+  describe "headerCursorSelectBeginWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids headerCursorSelectBeginWord
+  describe "headerCursorSelectEndWord"
+    $ it "produces valid cursors"
+    $ producesValidsOnValids headerCursorSelectEndWord

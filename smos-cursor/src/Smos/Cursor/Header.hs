@@ -17,6 +17,10 @@ module Smos.Cursor.Header
     headerCursorSelectEnd,
     headerCursorSelectPrev,
     headerCursorSelectNext,
+    headerCursorSelectPrevWord,
+    headerCursorSelectNextWord,
+    headerCursorSelectBeginWord,
+    headerCursorSelectEndWord,
   )
 where
 
@@ -98,3 +102,15 @@ headerCursorSelectPrev = headerCursorTextCursorL textCursorSelectPrev
 
 headerCursorSelectNext :: HeaderCursor -> Maybe HeaderCursor
 headerCursorSelectNext = headerCursorTextCursorL textCursorSelectNext
+
+headerCursorSelectPrevWord :: HeaderCursor -> HeaderCursor
+headerCursorSelectPrevWord = headerCursorTextCursorL %~ textCursorSelectPrevWord
+
+headerCursorSelectNextWord :: HeaderCursor -> HeaderCursor
+headerCursorSelectNextWord = headerCursorTextCursorL %~ textCursorSelectNextWord
+
+headerCursorSelectBeginWord :: HeaderCursor -> HeaderCursor
+headerCursorSelectBeginWord = headerCursorTextCursorL %~ textCursorSelectBeginWord
+
+headerCursorSelectEndWord :: HeaderCursor -> HeaderCursor
+headerCursorSelectEndWord = headerCursorTextCursorL %~ textCursorSelectEndWord

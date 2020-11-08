@@ -11,6 +11,10 @@ module Smos.Actions.Entry.Header
     headerMoveRight,
     headerMoveToStart,
     headerMoveToEnd,
+    headerMoveToPrevWord,
+    headerMoveToNextWord,
+    headerMoveToBeginningOfWord,
+    headerMoveToEndOfWord,
   )
 where
 
@@ -19,7 +23,17 @@ import Smos.Types
 
 allHeaderPlainActions :: [Action]
 allHeaderPlainActions =
-  [headerRemove, headerDelete, headerMoveLeft, headerMoveRight, headerMoveToStart, headerMoveToEnd]
+  [ headerRemove,
+    headerDelete,
+    headerMoveLeft,
+    headerMoveRight,
+    headerMoveToStart,
+    headerMoveToEnd,
+    headerMoveToPrevWord,
+    headerMoveToNextWord,
+    headerMoveToBeginningOfWord,
+    headerMoveToEndOfWord
+  ]
 
 allHeaderUsingCharActions :: [ActionUsing Char]
 allHeaderUsingCharActions = [headerInsert, headerAppend]
@@ -94,4 +108,36 @@ headerMoveToEnd =
     { actionName = "headerMoveToEnd",
       actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectEnd,
       actionDescription = "Move to the end of the header"
+    }
+
+headerMoveToPrevWord :: Action
+headerMoveToPrevWord =
+  Action
+    { actionName = "headerMoveToPrevWord",
+      actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectPrevWord,
+      actionDescription = "Move to the previous word in the header"
+    }
+
+headerMoveToNextWord :: Action
+headerMoveToNextWord =
+  Action
+    { actionName = "headerMoveToNextWord",
+      actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectNextWord,
+      actionDescription = "Move to the next word in the header"
+    }
+
+headerMoveToBeginningOfWord :: Action
+headerMoveToBeginningOfWord =
+  Action
+    { actionName = "headerMoveToBeginningOfWord",
+      actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectBeginWord,
+      actionDescription = "Move to the beginning of a word in the header"
+    }
+
+headerMoveToEndOfWord :: Action
+headerMoveToEndOfWord =
+  Action
+    { actionName = "headerMoveToEndOfWord",
+      actionFunc = modifyHeaderCursorWhenSelected headerCursorSelectEndWord,
+      actionDescription = "Move to the end of a word in the header"
     }
