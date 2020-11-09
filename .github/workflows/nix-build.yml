@@ -45,6 +45,7 @@ jobs:
         extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release
+    - run: nix-build ci.nix -A nixos-module-test
 
 
   static:
@@ -61,3 +62,4 @@ jobs:
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release-static
+    - run: nix-build ci.nix -A release-zip
