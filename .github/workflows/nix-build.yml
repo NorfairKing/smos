@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v11
-    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
+    - uses: cachix/cachix-action@v7
       with:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
@@ -39,19 +39,12 @@ jobs:
         then
           sudo rm -rf /opt
         fi
-    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
+    - uses: cachix/cachix-action@v7
       with:
         name: smos
         extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release
-    - name: nixos module test
-      run: |
-        if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
-        then
-          nix-build ci.nix -A nixos-module-test
-        fi
-
 
   static:
     name: Static Build
@@ -61,7 +54,7 @@ jobs:
     - uses: cachix/install-nix-action@v11
     - name: free disk space
       run: sudo rm -rf /opt
-    - uses: cachix/cachix-action@ffed6b919f842f223dbee6fde9d3d1cdf23a118e
+    - uses: cachix/cachix-action@v7
       with:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
