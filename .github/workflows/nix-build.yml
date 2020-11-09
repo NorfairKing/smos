@@ -45,7 +45,12 @@ jobs:
         extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release
-    - run: nix-build ci.nix -A nixos-module-test
+    - name: nixos module test
+      run: |
+        if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
+        then
+          nix-build ci.nix -A nixos-module-test
+        fi
 
 
   static:
