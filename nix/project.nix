@@ -13,11 +13,6 @@ let
           "--seed 42" # To make sure the tests are reproducable
         ];
 
-        reinstallableLibGhc = true; # Because we override the 'time' version
-        packages.time.components.library.preConfigure = ''
-          ${pkgs.autoconf}/bin/autoreconf -i
-        '';
-
         # A smos mime setup. This allows users to open smos files with xdg-open.
         packages.smos.components.library.postBuild = ''
           # Set up the types

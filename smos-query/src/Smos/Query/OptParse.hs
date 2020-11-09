@@ -18,7 +18,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Data.Time
+import Data.Time hiding (parseTime)
 import Data.Version
 import qualified Env
 import Options.Applicative as OptParse

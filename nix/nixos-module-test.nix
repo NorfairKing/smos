@@ -1,4 +1,4 @@
-{ pkgs ? import ./pkgs.nix }:
+{ pkgs ? import ./pkgs.nix { static = false; } }:
 let
   smos-production = import (./nixos-module.nix) { envname = "production"; };
   home-manager = import (
