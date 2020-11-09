@@ -3,7 +3,7 @@ title: Setting up your own Smos Web Server on Nixos
 description: Documentation for the Smos Web Server, for setting up your own online Smos usage on NixOS
 ---
 
-A NixOs module has to run your own smos server on NixOs has been provided at `nix/module.nix` and can be used as follows:
+A NixOs module has to run your own smos server on NixOs has been provided at `nix/nixos-module.nix` and can be used as follows:
 
 ``` nix
 { lib, pkgs, config, ... }:
@@ -14,7 +14,7 @@ let
         url = "https://github.com/NorfairKing/smos";
         rev = "0000000000000000000000000000000000000000"; # Put a recent commit hash here.
         ref = "master";
-      } + "/nix/module.nix"
+      } + "/nix/nixos-module.nix"
     ) { envname = "production"; }
   );
 in

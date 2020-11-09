@@ -89,6 +89,7 @@ in
                         sources =
                           mkOption {
                             description = "The list of sources to import from";
+                            default = [];
                             type = types.listOf (
                               types.submodule {
                                 options = {
@@ -133,6 +134,7 @@ in
                         schedule =
                           mkOption {
                             description = "The schedule to activate";
+                            default = [];
                             type = types.listOf (
                               types.submodule {
                                 options = {

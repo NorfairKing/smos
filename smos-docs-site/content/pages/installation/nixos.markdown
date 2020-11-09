@@ -3,7 +3,7 @@ title: Installation on Nixos
 description: Documentation about using Smos from NixOS
 ---
 
-To install smos on nixos, [a `home-manager` module](https://rycee.gitlab.io/home-manager/) has been provided in the smos repository at `nix/program.nix`.
+To install smos on nixos, [a `home-manager` module](https://rycee.gitlab.io/home-manager/) has been provided in the smos repository at `nix/home-manager-module.nix`.
 
 You can use it like this in your `home.nix`:
 
@@ -16,7 +16,7 @@ let
       url = "https://github.com/NorfairKing/smos";
       rev = "0000000000000000000000000000000000000000"; # Put a recent commit hash here.
       ref = "master";
-    } + "/nix/program.nix";
+    } + "/nix/home-manager-module.nix";
 in
 {
   imports = [

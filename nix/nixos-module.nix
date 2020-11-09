@@ -20,7 +20,8 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf types.str;
-                      example = "docs.smos.online";
+                      default = [];
+                      example = [ "docs.smos.online" ];
                       description = "The host to serve the docs site on";
                     };
                   port =
@@ -137,7 +138,8 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf (types.str);
-                      example = "smos.online";
+                      default = [];
+                      example = [ "smos.online" ];
                       description = "The host to serve web requests on";
                     };
                   port =
@@ -207,7 +209,7 @@ in
       docs-site-host =
         with cfg.docs-site;
 
-        optionalAttrs enable {
+        optionalAttrs (enable && hosts != []) {
           "${head hosts}" =
             {
               enableACME = true;
@@ -238,12 +240,12 @@ in
             script =
               ''
                 mkdir -p "${api-server-working-dir}"
+                cd ${api-server-working-dir}
                 ${smosPkgs.smos-server}/bin/smos-server \
                   serve
               '';
             serviceConfig =
               {
-                WorkingDirectory = api-server-working-dir;
                 Restart = "always";
                 RestartSec = 1;
                 Nice = 15;
@@ -258,7 +260,7 @@ in
       api-server-host =
         with cfg.api-server;
 
-        optionalAttrs enable {
+        optionalAttrs (enable && hosts != []) {
           "${head hosts}" =
             {
               enableACME = true;
@@ -286,11 +288,11 @@ in
                 script =
                   ''
                     mkdir -p ${backup-dir}
+                    cd ${working-dir}
                     file="${backup-dir}/''$(date +%F_%T).db"
                     ${pkgs.sqlite}/bin/sqlite3 ${api-server-database-file} ".backup ''${file}"
                   '';
                 serviceConfig = {
-                  WorkingDirectory = working-dir;
                   Type = "oneshot";
                 };
               };
@@ -339,12 +341,12 @@ in
             script =
               ''
                 mkdir -p "${web-server-working-dir}"
+                cd ${web-server-working-dir};
                 ${smosPkgs.smos-web-server}/bin/smos-web-server \
                   serve
               '';
             serviceConfig =
               {
-                WorkingDirectory = web-server-working-dir;
                 Restart = "always";
                 RestartSec = 1;
                 Nice = 15;
