@@ -12,6 +12,8 @@ let
         testFlags = [
           "--seed 42" # To make sure the tests are reproducable
         ];
+      }
+      {
 
         # A smos mime setup. This allows users to open smos files with xdg-open.
         packages.smos.components.library.postBuild = ''
@@ -270,4 +272,5 @@ in
   inherit smosRelease;
   inherit smosPackages;
   inherit smosCasts;
+  inherit sPkgs;
 }

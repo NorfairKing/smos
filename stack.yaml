@@ -32,7 +32,6 @@ ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
 
 extra-deps:
-# No idea why these have to be here ... ? 
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 
 - git: https://github.com/jtdaugherty/vty.git

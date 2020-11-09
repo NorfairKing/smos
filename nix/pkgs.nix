@@ -18,8 +18,8 @@ let
   # This is the latest version at the time of writing, nothing special.
   owner = "input-output-hk";
   repo = "haskell.nix";
-  rev = "48b8674f5f726cfb5083c025d3c53ff01fef009a";
-  sha256 = "sha256:0b90xnxn72kv5qskp3gxfcmql8cqbank7nlp0m6353yhqp6kr5mc";
+  rev = "e94de404e1a0655c055a8f9f4b29b07364ce8b4c";
+  sha256 = "sha256:0arcn7d65yv2krmfl411adij6w7dyd7yxzjybswg7hr5pj17c1p9";
   haskellNixV = import (
     builtins.fetchTarball {
       url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
