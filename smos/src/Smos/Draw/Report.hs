@@ -10,7 +10,7 @@ where
 
 import Brick.Types as B
 import Brick.Widgets.Core as B
-import Cursor.Brick.Text
+import Cursor.Brick
 import Data.Time
 import Lens.Micro
 import Path

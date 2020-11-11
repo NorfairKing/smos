@@ -11,7 +11,7 @@ dependencies:
 - base
 
 library:
-  source-dirs: src/
+  # source-dirs: src/
   ghc-options: -Wall
   dependencies:
   - QuickCheck

@@ -5,7 +5,6 @@ module Smos.Draw.Base where
 import Brick.Types as B
 import Brick.Widgets.Core as B
 import Cursor.Brick
-import Cursor.List.NonEmpty
 import Cursor.Text
 import Cursor.TextField
 import Data.List
@@ -71,11 +70,6 @@ listerChar = '-'
 
 pointerChar :: Char
 pointerChar = '❯'
-
-verticalNonEmptyCursorTable ::
-  (b -> [Widget n]) -> (a -> [Widget n]) -> (b -> [Widget n]) -> NonEmptyCursor a b -> Widget n
-verticalNonEmptyCursorTable prevFunc curFunc nextFunc =
-  nonEmptyCursorWidget (\ps c ns -> drawTable $ map prevFunc ps ++ [curFunc c] ++ map nextFunc ns)
 
 drawTable :: [[Widget n]] -> Widget n
 drawTable = hBox . intersperse (str " ") . map vBox . transpose

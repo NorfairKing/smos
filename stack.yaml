@@ -86,41 +86,41 @@ extra-deps:
 
 
 - github: NorfairKing/typed-uuid
-  commit: 5415eaeee9817dfc4846fe4d73efce9312281b27
+  commit: ec82b82a545d06094ac355bd65a03f25f86c0a48
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
-  # nix-sha256: sha256:1illk01gyhhrjmz19n5wc07n61d0s2d2m348n7ibwf2795pjkrwj
+  # nix-sha256: sha256:034g3ciyd7khn98n8ii1gpjynkl15in5i4b7d4i2sy6075hi4987
 
 - github: GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
   # nix-sha256: sha256:1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk
 
 - github: NorfairKing/mergeful
-  commit: 15af41c244ce733f5e514d04a770479baa409370
+  commit: b520f251010e80748c4eea1ba7216f2594c4f760
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
-  # nix-sha256: sha256:15485mb6dp4p8zwr9ka5aib7rz2v64jhdmh36wypvrakn77fjyq2
+  # nix-sha256: sha256:177a2f9nrsqkr0n2pb8kg64bd0dj6vvxr51chz2nqlsh1zq7vq10
   
 - github: NorfairKing/pretty-relative-time
-  commit: fc62907b36f6f7348d6ae0e97aceb4d41039d57b
-  # nix-sha256: sha256:0dalpi3kwlr7m14sjjf2jvxfq8ydskarra2gc5j4w134m4r1m2ca
+  commit: 1c0ca0e24b2a5973e5ccf4e83d24097a22bb9a4a
+  # nix-sha256: sha256:1h4ff6lll3sz940amy696iqglkizipca8zw892vfdr107qpixkjn
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: 0b1d393a64b0fd357a9ead86c1ef0d6bd2a4c19f
+  commit: e364adc5ed04e59321aecc9a6158ca3c16f5c0bf
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
-  # nix-sha256: sha256:0kxz4iw7qmgc0c8rrwfy6d0pwlcbsi7igsgfrmcgwszcymq2w8ki
+  # nix-sha256: sha256:01iccg472xrxpmg4fcrippm29m7lhprj7d62gd2pixdzvlvrcx3z
   
 - github: NorfairKing/fuzzy-time
-  commit: 9f93ff36ccfd69b4b2958f5dc458b6f6400aa97e
+  commit: 8995f7d6dc4bb4798d13d005b47aabc45346ee3e
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
-  # nix-sha256: sha256:056k8maj6bq6gfbgq8xjxphgn1x97n34gqwh2mx55srmmdjzdnic
+  # nix-sha256: sha256:0hz7mdzbdwnj0ndya9047413iv2h01ymiyvmmi60whg5jixj6fma
 
 - github: NorfairKing/dirforest
   commit: 8e30537d1628ff5bcb56f99d60a9384d5e9b46ea
@@ -138,17 +138,17 @@ extra-deps:
   # nix-sha256: sha256:1a4vjr8ghsqlxigcdhckk1hiz88w3k8gvqvhd2ly1hfqwms07wqn
 
 - github: NorfairKing/cursor-brick
-  commit: 58b2c811c721885eaa3c066b41bc4d4883e4566c
+  commit: a7b47b03c8c5525234aaccc0c372e49a80134b9d
   subdirs:
     - cursor-brick
-  # nix-sha256: sha256:1mdi8bpd9i2l4rcmcr19c5wyghasiwkzymskidn7fan57wmj921v
+  # nix-sha256: sha256:1wk2sixf1ld48j6a14zgfadg41si6rl8gwmwdlkn0cqjiw9n7f4p
 
 - github: NorfairKing/cursor
-  commit: bb7afb5974acd92ded23072cbaed4149006f3c41
+  commit: 9a9972bda3ea8f11579ebd63163d0a72c6a751a9
   subdirs:
     - cursor
     - cursor-gen
-  # nix-sha256: sha256:0g78nkmi0yg8ci7h47cw3ncnfgmszsvx1jav3pbab2b0ix8f36bz
+  # nix-sha256: sha256:0292pyzlgdal109cwl9hffsd5lvczvs5lx9d1lm6rkf12n09n78i
 
 - github: NorfairKing/validity
   commit: c38fc635f98580548f82314504e9f8742519f94d
