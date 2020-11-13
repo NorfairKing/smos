@@ -8,16 +8,17 @@ import Criterion.Main as Criterion
 import Cursor.Simple.Forest
 import Data.GenValidity.Containers ()
 import Data.GenValidity.Criterion
+import Data.GenValidity.Path ()
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
+import Path
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Agenda
 import Smos.Report.Agenda.Gen ()
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
-import Smos.Report.Path
 import Smos.Report.Time
 
 main :: IO ()
@@ -28,7 +29,6 @@ main =
         [ genValidBench @Part,
           genValidBench @Piece,
           genValidBench @Ast,
-          genValidBench @(Filter RootedPath),
           genValidBench @(Filter Time),
           genValidBench @(Filter Tag),
           genValidBench @(Filter Header),
@@ -41,7 +41,7 @@ main =
           genValidBench @(Filter (Map PropertyName PropertyValue)),
           genValidBench @(Filter (ForestCursor Header)),
           genValidBench @(Filter (ForestCursor Entry)),
-          genValidBench @(Filter (RootedPath, ForestCursor Entry))
+          genValidBench @(Filter (Path Rel File, ForestCursor Entry))
         ],
       bgroup
         "Agenda"

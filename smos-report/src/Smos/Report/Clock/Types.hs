@@ -15,8 +15,8 @@ import Data.Validity.Path ()
 import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
+import Path
 import Smos.Data
-import Smos.Report.Path
 import Smos.Report.TimeBlock
 
 -- Note: the order of these constructors matters
@@ -64,7 +64,7 @@ type ClockTableBlock = Block Text ClockTableFile
 
 data ClockTableFile
   = ClockTableFile
-      { clockTableFile :: RootedPath,
+      { clockTableFile :: Path Rel File,
         clockTableForest :: Forest ClockTableHeaderEntry
       }
   deriving (Show, Eq, Generic)
@@ -129,7 +129,7 @@ type ClockTimeBlock a = Block a FileTimes
 
 data FileTimes
   = FileTimes
-      { clockTimeFile :: RootedPath,
+      { clockTimeFile :: Path Rel File,
         clockTimeForest :: TForest HeaderTimes
       }
   deriving (Generic)

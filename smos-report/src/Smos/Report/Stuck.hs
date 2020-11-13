@@ -11,10 +11,11 @@ import Data.Ord
 import Data.Time
 import Data.Tree
 import Data.Validity
+import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import Path
 import Safe
 import Smos.Data
-import Smos.Report.Path
 
 data StuckReport
   = StuckReport
@@ -26,7 +27,7 @@ instance Validity StuckReport
 
 data StuckReportEntry
   = StuckReportEntry
-      { stuckReportEntryFilePath :: RootedPath,
+      { stuckReportEntryFilePath :: Path Rel File,
         stuckReportEntryState :: Maybe TodoState,
         stuckReportEntryHeader :: Header,
         stuckReportEntryLatestChange :: Maybe UTCTime
@@ -38,7 +39,7 @@ instance Validity StuckReportEntry
 makeStuckReport :: [StuckReportEntry] -> StuckReport
 makeStuckReport = StuckReport . sortOn stuckReportEntryLatestChange
 
-makeStuckReportEntry :: RootedPath -> SmosFile -> Maybe StuckReportEntry
+makeStuckReportEntry :: Path Rel File -> SmosFile -> Maybe StuckReportEntry
 makeStuckReportEntry stuckReportEntryFilePath sf = do
   e <- latestEntryInSmosFile sf
   let stuckReportEntryHeader = entryHeader e

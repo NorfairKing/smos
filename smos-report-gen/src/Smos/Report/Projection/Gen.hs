@@ -8,7 +8,6 @@ module Smos.Report.Projection.Gen where
 import Data.GenValidity
 import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
-import Smos.Report.Path.Gen ()
 import Smos.Report.Projection
 
 instance GenValid Projection where

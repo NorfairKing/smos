@@ -8,7 +8,6 @@ where
 
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
-import Smos.Report.Path.Gen ()
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 import Test.Hspec

@@ -21,8 +21,6 @@ import Smos.Data
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
-import Smos.Report.Path
-import Smos.Report.Path.Gen ()
 import Smos.Report.Time hiding (P)
 import Test.Hspec
 import Test.QuickCheck as QC
@@ -129,8 +127,6 @@ spec = do
     filterArgumentSpec @TimestampName
     filterArgumentSpec @Timestamp
     filterArgumentSpec @(Path Rel File)
-    eqSpecOnValid @(Filter RootedPath)
-    genValidSpec @(Filter RootedPath)
     eqSpecOnValid @(Filter Time)
     genValidSpec @(Filter Time)
     eqSpecOnValid @(Filter Tag)
@@ -141,9 +137,9 @@ spec = do
     genValidSpec @(Filter TodoState)
     eqSpecOnValid @(Filter PropertyValue)
     genValidSpec @(Filter PropertyValue)
-    eqSpecOnValid @EntryFilter
-    genValidSpec @EntryFilter
-    jsonSpecOnValid @EntryFilter
+    eqSpecOnValid @EntryFilterRel
+    genValidSpec @EntryFilterRel
+    jsonSpecOnValid @EntryFilterRel
     describe "tcWithTopLevelBranches" $ do
       tcSpec
         (tcWithTopLevelBranches tcSub)
@@ -175,11 +171,6 @@ spec = do
             (FilterSub (fromJust $ header "header1"))
             (FilterSub (fromJust $ header "header2"))
         )
-    describe "tcRootedPathFilter" $
-      tcSpec
-        tcRootedPathFilter
-        (AstUnOp (Piece "file") (AstPiece (Piece "side")))
-        (FilterRootedPath [relfile|side|])
     describe "tcFilePathFilter" $
       tcSpec
         tcFilePathFilter
@@ -385,15 +376,15 @@ spec = do
     describe "renderFilterAst" $ do
       it "produces valid asts for header filters" $ producesValidsOnValids (renderFilterAst @Header)
       it "produces valid asts for file filters" $
-        producesValidsOnValids (renderFilterAst @RootedPath)
+        producesValidsOnValids (renderFilterAst @(Path Rel File))
       it "produces valid asts for entryFilters" $
-        producesValidsOnValids (renderFilterAst @(RootedPath, ForestCursor Entry))
+        producesValidsOnValids (renderFilterAst @(Path Rel File, ForestCursor Entry))
     describe "parseEntryFilterAst"
       $ it "parses back whatever 'renderFilterAst' renders"
       $ forAllValid
       $ \f ->
         let t = renderFilterAst f
-         in case parseEntryFilterAst t of
+         in case parseEntryFilterRelAst t of
               Left err ->
                 expectationFailure $
                   unlines
@@ -417,13 +408,13 @@ spec = do
                     ]
     describe "renderFilter"
       $ it "produces valid text"
-      $ producesValidsOnValids (renderFilter @(RootedPath, ForestCursor Entry))
+      $ producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))
     describe "parseEntryFilter"
       $ it "parses back whatever 'renderFilter' renders"
       $ forAllValid
       $ \f ->
         let t = renderFilter f
-         in case parseEntryFilter t of
+         in case parseEntryFilterRel t of
               Left err ->
                 expectationFailure $
                   unlines
@@ -450,14 +441,14 @@ spec = do
     $ producesValidsOnValids (foldFilterAnd @Header)
   describe "filterPredicate"
     $ it "produces valid results"
-    $ producesValidsOnValids2 (filterPredicate @(RootedPath, ForestCursor Entry))
-  describe "parseEntryFilter" $ do
+    $ producesValidsOnValids2 (filterPredicate @(Path Rel File, ForestCursor Entry))
+  describe "parseEntryFilterRel" $ do
     let pe input expected =
           it (unwords ["succesfully parses", show input, "into", show expected]) $
-            parseEntryFilter input `shouldBe` Right expected
+            parseEntryFilterRel input `shouldBe` Right expected
         pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
-    pe "fst:file:side" (FilterFst $ FilterRootedPath [relfile|side|])
-    pe "file:side" (FilterFst $ FilterRootedPath [relfile|side|])
+    pe "fst:file:side" (FilterFst $ FilterFile [relfile|side|])
+    pe "file:side" (FilterFst $ FilterFile [relfile|side|])
     pee "header:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "header:sub:head" (FilterEntryHeader $ FilterSub $ fromJust $ header "head")
     pee "tag:toast" (FilterEntryTags $ FilterAny $ FilterSub $ fromJust $ tag "toast")

@@ -12,13 +12,13 @@ import Data.Tree
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
-import Smos.Report.Path
 import Smos.Report.Period
 
 data StatsReportContext
   = StatsReportContext
       { statsReportContextNow :: ZonedTime,
         statsReportContextPeriod :: Period,
+        statsReportContextWorkflowDir :: Path Abs Dir,
         statsReportContextArchiveDir :: Path Abs Dir,
         statsReportContextProjectsDir :: Path Abs Dir,
         statsReportContextArchivedProjectsDir :: Path Abs Dir
@@ -45,7 +45,7 @@ instance Monoid StatsReport where
   mempty =
     StatsReport {statsReportProjectStatsReport = mempty, statsReportStateStatsReport = mempty}
 
-makeStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> StatsReport
+makeStatsReport :: StatsReportContext -> Path Rel File -> SmosFile -> StatsReport
 makeStatsReport src@StatsReportContext {..} rp sf =
   StatsReport
     { statsReportProjectStatsReport = makeProjectsStatsReport src rp sf,
@@ -55,7 +55,7 @@ makeStatsReport src@StatsReportContext {..} rp sf =
           $ smosFileForest sf
     }
 
-makeProjectsStatsReport :: StatsReportContext -> RootedPath -> SmosFile -> ProjectStatsReport
+makeProjectsStatsReport :: StatsReportContext -> Path Rel File -> SmosFile -> ProjectStatsReport
 makeProjectsStatsReport StatsReportContext {..} rp sf =
   ProjectStatsReport
     { projectStatsReportArchivedProjects = countIf $ active && isArchivedProject,
@@ -67,10 +67,10 @@ makeProjectsStatsReport StatsReportContext {..} rp sf =
     }
   where
     active = smosFileActiveDuringPeriod statsReportContextNow statsReportContextPeriod sf
-    isArchived = isProperPrefixOf statsReportContextArchiveDir $ resolveRootedPath rp
-    isArchivedProject =
-      isProperPrefixOf statsReportContextArchivedProjectsDir $ resolveRootedPath rp
-    isProject = isProperPrefixOf statsReportContextProjectsDir $ resolveRootedPath rp
+    fullPath = (statsReportContextWorkflowDir </>)
+    isArchived = isProperPrefixOf statsReportContextArchiveDir $ fullPath rp
+    isArchivedProject = isProperPrefixOf statsReportContextArchivedProjectsDir $ fullPath rp
+    isProject = isProperPrefixOf statsReportContextProjectsDir $ fullPath rp
     countIf b =
       if b
         then 1

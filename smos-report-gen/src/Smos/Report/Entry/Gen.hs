@@ -6,7 +6,6 @@ import Data.GenValidity
 import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
 import Smos.Report.Entry
-import Smos.Report.Path.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.Projection.Gen ()
 import Smos.Report.TimeBlock.Gen ()

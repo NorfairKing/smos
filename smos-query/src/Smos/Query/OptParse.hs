@@ -325,7 +325,7 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock
-        <$> ( ClockFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*> parseOutputFormat
+        <$> ( ClockFlags <$> parseFilterArgsRel <*> parsePeriod <*> parseTimeBlock <*> parseOutputFormat
                 <*> parseClockFormatFlags
                 <*> parseClockReportStyle
                 <*> parseHideArchiveFlag
@@ -390,7 +390,7 @@ parseCommandLog = info parser modifier
     modifier = fullDesc <> progDesc "Print a log of what has happened."
     parser =
       CommandLog
-        <$> (LogFlags <$> parseFilterArgs <*> parsePeriod <*> parseTimeBlock <*> parseHideArchiveFlag)
+        <$> (LogFlags <$> parseFilterArgsRel <*> parsePeriod <*> parseTimeBlock <*> parseHideArchiveFlag)
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
@@ -402,7 +402,7 @@ parseCommandTags :: ParserInfo Command
 parseCommandTags = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print all the tags that are in use"
-    parser = CommandTags <$> (TagsFlags <$> parseFilterArgs)
+    parser = CommandTags <$> (TagsFlags <$> parseFilterArgsRel)
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags
@@ -434,16 +434,6 @@ parseTimeFilterArg =
       (eitherReader (parseTime . T.pack))
       (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
 
--- TODO: eventually get rid of this
-parseFilterArgs :: Parser (Maybe EntryFilter)
-parseFilterArgs =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to filter entries by"])
-      )
-
 parseFilterOptionsRel :: Parser (Maybe EntryFilterRel)
 parseFilterOptionsRel =
   fmap foldFilterAnd . NE.nonEmpty
@@ -461,12 +451,6 @@ parseFilterArgsRel =
           (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
       )
-
-parseFilterArg :: Parser (Maybe EntryFilter)
-parseFilterArg =
-  argument
-    (Just <$> eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-    (mconcat [value Nothing, metavar "FILTER", help "A filter to filter entries by"])
 
 parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
 parseProjectFilterArgs =

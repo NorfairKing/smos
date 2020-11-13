@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Report.Streaming where
@@ -20,37 +19,12 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
-import Smos.Report.Path
 import Smos.Report.ShouldPrint
 
-streamSmosProjectsFiles :: MonadIO m => DirectoryConfig -> ConduitT i RootedPath m ()
+streamSmosProjectsFiles :: MonadIO m => DirectoryConfig -> ConduitT i (Path Rel File) m ()
 streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
-  sourceFilesInNonHiddenDirsRecursively pd .| filterSmosFiles
-
--- TODO eventually get rid of this
-streamSmosFilesFromWorkflow ::
-  MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i RootedPath m ()
-streamSmosFilesFromWorkflow ha dc = do
-  wd <- liftIO $ resolveDirWorkflowDir dc
-  case directoryConfigArchiveFileSpec dc of
-    ArchiveInWorkflow rf -> do
-      let source =
-            case ha of
-              HideArchive -> sourceFilesInNonHiddenDirsRecursivelyExceptSubdir rf wd
-              Don'tHideArchive -> sourceFilesInNonHiddenDirsRecursively wd
-      source .| filterSmosFiles
-    _ -> do
-      ad <- liftIO $ resolveDirArchiveDir dc
-      let maybeFilterOutArchived =
-            case ha of
-              HideArchive -> (filterOutDir ad .|)
-              Don'tHideArchive -> id
-      sourceFilesInNonHiddenDirsRecursively wd .| maybeFilterOutArchived filterSmosFiles
-
--- TODO I think we can do fancier filtering based on the other ArchiveDirSpecs
-filterOutDir :: Monad m => Path Abs Dir -> ConduitT RootedPath RootedPath m ()
-filterOutDir ad = Conduit.filter (not . isProperPrefixOf ad . resolveRootedPath)
+  sourceFilesInNonHiddenDirsRecursivelyRel pd .| filterSmosFilesRel
 
 streamSmosFilesFromWorkflowRel ::
   MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i (Path Rel File) m ()
@@ -71,14 +45,6 @@ streamSmosFilesFromWorkflowRel ha dc = do
               Don'tHideArchive -> id
       sourceFilesInNonHiddenDirsRecursivelyRel wd .| maybeFilterOutArchived filterSmosFilesRel
 
--- TODO eventually remove this one.
-sourceFilesInNonHiddenDirsRecursively ::
-  forall m i.
-  MonadIO m =>
-  Path Abs Dir ->
-  ConduitT i RootedPath m ()
-sourceFilesInNonHiddenDirsRecursively dir = sourceFilesInNonHiddenDirsRecursivelyRel dir .| Conduit.map (Relative dir)
-
 sourceFilesInNonHiddenDirsRecursivelyRel ::
   forall m i.
   MonadIO m =>
@@ -94,15 +60,6 @@ sourceFilesInNonHiddenDirsRecursivelyRel = walkSafeRel go
     go curdir subdirs files = do
       Conduit.yieldMany $ map (curdir </>) files
       pure $ WalkExclude $ filter (isHiddenIn curdir) subdirs
-
--- TODO eventually remove this one
-sourceFilesInNonHiddenDirsRecursivelyExceptSubdir ::
-  forall m i.
-  MonadIO m =>
-  Path Rel Dir ->
-  Path Abs Dir ->
-  ConduitT i RootedPath m ()
-sourceFilesInNonHiddenDirsRecursivelyExceptSubdir subdir dir = sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel subdir dir .| Conduit.map (Relative dir)
 
 sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel ::
   forall m i.
@@ -136,43 +93,15 @@ walkSafeRel go dir = do
     then walkDirRel go dir
     else pure ()
 
-rootedIn :: Path Abs Dir -> Path Abs File -> RootedPath
-rootedIn dir ap =
-  case stripProperPrefix dir ap of
-    Nothing -> Absolute ap
-    Just rd -> Relative dir rd
-
 isHiddenIn :: Path b Dir -> Path b t -> Bool
 isHiddenIn curdir ad =
   case stripProperPrefix curdir ad of
     Nothing -> False
     Just rd -> "." `isPrefixOf` toFilePath rd
 
-filterSmosFiles :: Monad m => ConduitT RootedPath RootedPath m ()
-filterSmosFiles =
-  Conduit.filter $ \case
-    Relative _ prf -> fileExtension prf == Just ".smos"
-    Absolute paf -> fileExtension paf == Just ".smos"
-
 filterSmosFilesRel :: Monad m => ConduitT (Path b File) (Path b File) m ()
 filterSmosFilesRel =
   Conduit.filter $ (== Just ".smos") . fileExtension
-
--- TODO eventually get rid of this
-parseSmosFiles ::
-  MonadIO m => ConduitT RootedPath (RootedPath, Either ParseSmosFileException SmosFile) m ()
-parseSmosFiles =
-  Conduit.mapM $ \p -> do
-    let ap = resolveRootedPath p
-    mErrOrSmosFile <- liftIO $ readSmosFile ap
-    let ei =
-          case mErrOrSmosFile of
-            Nothing -> Left $ FileDoesntExist ap
-            Just errOrSmosFile ->
-              case errOrSmosFile of
-                Left err -> Left $ SmosFileParseError ap err
-                Right sf -> Right sf
-    pure (p, ei)
 
 parseSmosFilesRel ::
   MonadIO m => Path Abs Dir -> ConduitT (Path Rel File) (Path Rel File, Either ParseSmosFileException SmosFile) m ()

@@ -10,7 +10,6 @@ import Smos.Report.Agenda
 import Smos.Report.Agenda.Gen ()
 import Smos.Report.Config.Gen ()
 import Smos.Report.Filter.Gen ()
-import Smos.Report.Path.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.Sorter.Gen ()
 import Smos.Report.TimeBlock.Gen ()

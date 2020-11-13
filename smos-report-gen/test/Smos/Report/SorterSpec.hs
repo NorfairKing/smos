@@ -9,7 +9,6 @@ where
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
 import Path
-import Smos.Report.Path.Gen ()
 import Smos.Report.Sorter
 import Smos.Report.Sorter.Gen ()
 import Test.Hspec

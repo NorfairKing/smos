@@ -20,7 +20,6 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Comparison.Gen ()
 import Smos.Report.Filter
-import Smos.Report.Path
 import Smos.Report.Time
 import Smos.Report.Time.Gen ()
 import Test.QuickCheck
@@ -69,19 +68,6 @@ instance GenValid (Filter (Path Rel File)) where
   genValid =
     withTopLevelBranches $
       ( FilterFile
-          <$> ( genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar))
-                  `suchThat` (not . null)
-              )
-          `suchThatMap` parseRelFile
-      )
-        `suchThat` isValid
-  shrinkValid = shrinkValidFilter
-
--- TODO eventually remove this
-instance GenValid (Filter RootedPath) where
-  genValid =
-    withTopLevelBranches $
-      ( FilterRootedPath
           <$> ( genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar))
                   `suchThat` (not . null)
               )
@@ -210,7 +196,6 @@ shrinkValidFilter = go
       filter isValid $
         case f of
           FilterFile rf -> FilterFile <$> shrinkValid rf
-          FilterRootedPath rf -> FilterRootedPath <$> shrinkValid rf
           FilterPropertyTime f' -> FilterPropertyTime <$> go f'
           FilterEntryHeader f' -> FilterEntryHeader <$> go f'
           FilterEntryTodoState f' -> FilterEntryTodoState <$> go f'

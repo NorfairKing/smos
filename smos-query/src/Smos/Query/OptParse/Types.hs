@@ -97,7 +97,7 @@ data NextFlags
 
 data ClockFlags
   = ClockFlags
-      { clockFlagFilter :: Maybe EntryFilter,
+      { clockFlagFilter :: Maybe EntryFilterRel,
         clockFlagPeriodFlags :: Maybe Period,
         clockFlagBlockFlags :: Maybe TimeBlock,
         clockFlagOutputFormat :: Maybe OutputFormat,
@@ -136,7 +136,7 @@ data StuckFlags
 
 data LogFlags
   = LogFlags
-      { logFlagFilter :: Maybe EntryFilter,
+      { logFlagFilter :: Maybe EntryFilterRel,
         logFlagPeriodFlags :: Maybe Period,
         logFlagBlockFlags :: Maybe TimeBlock,
         logFlagHideArchive :: Maybe HideArchive
@@ -151,7 +151,7 @@ newtype StatsFlags
 
 newtype TagsFlags
   = TagsFlags
-      { tagsFlagFilter :: Maybe EntryFilter
+      { tagsFlagFilter :: Maybe EntryFilterRel
       }
   deriving (Show, Eq, Generic)
 
@@ -310,7 +310,7 @@ data NextSettings
 
 data ClockSettings
   = ClockSettings
-      { clockSetFilter :: Maybe EntryFilter,
+      { clockSetFilter :: Maybe EntryFilterRel,
         clockSetPeriod :: Period,
         clockSetBlock :: TimeBlock,
         clockSetOutputFormat :: OutputFormat,
@@ -344,7 +344,7 @@ data StuckSettings
 
 data LogSettings
   = LogSettings
-      { logSetFilter :: Maybe EntryFilter,
+      { logSetFilter :: Maybe EntryFilterRel,
         logSetPeriod :: Period,
         logSetBlock :: TimeBlock,
         logSetHideArchive :: HideArchive
@@ -359,7 +359,7 @@ newtype StatsSettings
 
 newtype TagsSettings
   = TagsSettings
-      { tagsSetFilter :: Maybe EntryFilter
+      { tagsSetFilter :: Maybe EntryFilterRel
       }
   deriving (Show, Eq, Generic)
 

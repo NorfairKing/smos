@@ -23,7 +23,8 @@ smosQueryTags :: TagsSettings -> Q ()
 smosQueryTags TagsSettings {..} = do
   es <-
     sourceToList $
-      streamSmosFiles HideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
+      streamSmosFiles HideArchive
+        .| streamParseSmosFiles
         .| smosFileCursors
         .| smosMFilter tagsSetFilter
         .| smosCursorCurrents

@@ -28,12 +28,12 @@ import Data.Set (Set)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Validity
+import Data.Validity.Path ()
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
 import Smos.Data
 import Smos.Report.Comparison
-import Smos.Report.Path
 import Smos.Report.Time hiding (P)
 import Text.Parsec.Combinator
 import Text.Parsec.Error
@@ -409,21 +409,9 @@ spaceP =
           _ -> False
       )
 
--- TODO eventuall  remove this
-type EntryFilter = Filter (RootedPath, ForestCursor Entry)
-
 type EntryFilterRel = Filter (Path Rel File, ForestCursor Entry)
 
-type ProjectFilter = Filter RootedPath
-
-data SmosFileAtPath
-  = SmosFileAtPath
-      { smosFilePath :: RootedPath,
-        smosFileFile :: SmosFile
-      }
-  deriving (Show, Eq, Generic)
-
-instance NFData SmosFileAtPath
+type ProjectFilter = Filter (Path Rel File)
 
 forestCursorCurrent :: ForestCursor a -> a
 forestCursorCurrent fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
@@ -450,8 +438,7 @@ forestCursorLevel fc = go' $ fc ^. forestCursorSelectedTreeL
 
 data Filter a where
   FilterFile :: Path Rel File -> Filter (Path Rel File)
-  FilterRootedPath :: Path Rel File -> Filter RootedPath -- TODO: Eventually get rid of this.
-      -- Parsing filters
+  -- Parsing filters
   FilterPropertyTime :: Filter (Maybe Time) -> Filter PropertyValue
   -- Entry mapping filters
   FilterEntryHeader :: Filter Header -> Filter Entry
@@ -499,7 +486,6 @@ instance NFData (Filter a) where
   rnf =
     \case
       FilterFile f -> rnf f
-      FilterRootedPath f -> rnf f
       FilterPropertyTime f' -> rnf f'
       FilterEntryHeader f' -> rnf f'
       FilterEntryTodoState f' -> rnf f'
@@ -625,12 +611,6 @@ instance Validity (Filter a) where
                 declare "The argument is not empty" $ not $ null $ fromRelFile s,
                 decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
               ]
-          FilterRootedPath s ->
-            mconcat
-              [ validate s,
-                declare "The argument is not empty" $ not $ null $ fromRelFile s,
-                decorate "The characters are restricted" $ validateArgumentStr $ fromRelFile s
-              ]
           FilterPropertyTime f' -> validate f'
           FilterEntryHeader f' -> validate f'
           FilterEntryTodoState f' -> validate f'
@@ -661,12 +641,6 @@ deriving instance Eq (Filter a)
 
 deriving instance Ord (Filter a)
 
-instance FromJSON (Filter (RootedPath, ForestCursor Entry)) where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema (Filter (RootedPath, ForestCursor Entry)) where
-  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilter) yamlSchema
-
 instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
   parseJSON = viaYamlSchema
 
@@ -689,7 +663,6 @@ filterPredicate = go
           goProj func f' = go f' $ func a
        in case f of
             FilterFile rp -> fromRelFile rp `isInfixOf` fromRelFile a
-            FilterRootedPath rp -> fromRelFile rp `isInfixOf` fromAbsFile (resolveRootedPath a)
             -- Parsing filters
             FilterPropertyTime f' -> goProj (time . propertyValueText) f'
             -- Entry mapping filters
@@ -747,7 +720,6 @@ renderFilterAst = go
           kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
        in \case
             FilterFile rp -> kwp KeyWordFile rp
-            FilterRootedPath rp -> kwp KeyWordFile rp
             FilterPropertyTime f' -> kwa KeyWordTime f'
             FilterEntryHeader f' -> kwa KeyWordHeader f'
             FilterEntryTodoState f' -> kwa KeyWordTodoState f'
@@ -785,10 +757,6 @@ prettyFilterParseError =
     ParsingError pe -> T.pack $ show pe
     TypeCheckingError te -> renderFilterTypeError te
 
--- TODO: eventually get rid of this.
-parseEntryFilter :: Text -> Either FilterParseError EntryFilter
-parseEntryFilter = parseTextFilter parseEntryFilterAst
-
 parseEntryFilterRel :: Text -> Either FilterParseError EntryFilterRel
 parseEntryFilterRel = parseTextFilter parseEntryFilterRelAst
 
@@ -817,15 +785,11 @@ type TCE a = Either FilterTypeError a
 
 type TC a = Ast -> TCE a
 
--- TODO: eventually get rid of this.
-parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
-parseEntryFilterAst = tcTupleFilter tcRootedPathFilter (tcForestCursorFilter tcEntryFilter)
-
 parseEntryFilterRelAst :: Ast -> Either FilterTypeError EntryFilterRel
 parseEntryFilterRelAst = tcTupleFilter tcFilePathFilter (tcForestCursorFilter tcEntryFilter)
 
 parseProjectFilterAst :: Ast -> Either FilterTypeError ProjectFilter
-parseProjectFilterAst = tcRootedPathFilter
+parseProjectFilterAst = tcFilePathFilter
 
 tcPiece :: (Piece -> TCE a) -> TC a
 tcPiece func =
@@ -882,13 +846,6 @@ tcWithTopLevelBranches func ast =
         Just KeyWordNot -> FilterNot <$> tcWithTopLevelBranches func a
         _ -> func ast
     _ -> func ast
-
--- TODO: eventually get rid of this
-tcRootedPathFilter :: TC (Filter RootedPath)
-tcRootedPathFilter = tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
-  case parseArgumentPiece p2 of
-    Right rp -> Right $ FilterRootedPath rp
-    Left err -> Left $ FTEArgumentExpected p2 err
 
 tcFilePathFilter :: TC (Filter (Path Rel File))
 tcFilePathFilter = tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->

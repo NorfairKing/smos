@@ -22,7 +22,8 @@ smosQueryProjects :: ProjectsSettings -> Q ()
 smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
-      streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning
+      streamSmosProjects
+        .| streamParseSmosFiles
         .| smosMFilter (FilterFst <$> projectsSetFilter)
   liftIO $ putTableLn $ renderProjectsReport $ makeProjectsReport projs
 
@@ -31,7 +32,7 @@ renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEn
 
 renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =
-  rootedPathChunk projectEntryFilePath
+  pathChunk projectEntryFilePath
     : case projectEntryCurrentEntry of
       Nothing -> [chunk "No next action"]
       Just e@Entry {..} -> [mTodoStateChunk $ entryState e, headerChunk entryHeader]

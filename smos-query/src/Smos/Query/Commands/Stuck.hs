@@ -24,7 +24,8 @@ smosQueryStuck StuckSettings {..} = do
   stuckReport <-
     fmap makeStuckReport
       $ sourceToList
-      $ streamSmosProjects .| parseSmosFiles .| printShouldPrint PrintWarning
+      $ streamSmosProjects
+        .| streamParseSmosFiles
         .| smosMFilter (FilterFst <$> stuckSetFilter)
         .| C.map (uncurry makeStuckReportEntry)
         .| C.catMaybes
@@ -37,7 +38,7 @@ renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuck
 
 renderStuckReportEntry :: UTCTime -> StuckReportEntry -> [Chunk]
 renderStuckReportEntry now StuckReportEntry {..} =
-  [ rootedPathChunk stuckReportEntryFilePath,
+  [ pathChunk stuckReportEntryFilePath,
     mTodoStateChunk stuckReportEntryState,
     headerChunk stuckReportEntryHeader,
     maybe (chunk "") (showDaysSince 21 now) stuckReportEntryLatestChange

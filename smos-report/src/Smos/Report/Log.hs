@@ -8,9 +8,10 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
+import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import Path
 import Smos.Data
-import Smos.Report.Path
 import Smos.Report.Period
 import Smos.Report.TimeBlock
 
@@ -20,7 +21,7 @@ type LogTableBlock a = Block a LogEntry
 
 data LogEntry
   = LogEntry
-      { logEntryFilePath :: RootedPath,
+      { logEntryFilePath :: Path Rel File,
         logEntryHeader :: Header,
         logEntryEvent :: LogEvent
       }
@@ -47,7 +48,7 @@ data LogEventType
 
 instance Validity LogEventType
 
-makeLogReport :: ZonedTime -> Period -> TimeBlock -> [(RootedPath, Entry)] -> LogReport
+makeLogReport :: ZonedTime -> Period -> TimeBlock -> [(Path Rel File, Entry)] -> LogReport
 makeLogReport zt pe tb =
   divideIntoBlocks (logEntryDay $ zonedTimeZone zt) tb
     . filter (filterPeriod zt pe . logEventTimestamp . logEntryEvent)
@@ -57,7 +58,7 @@ makeLogReport zt pe tb =
 logEntryDay :: TimeZone -> LogEntry -> Day
 logEntryDay tz = localDay . utcToLocalTime tz . logEventTimestamp . logEntryEvent
 
-makeLogEntries :: TimeZone -> RootedPath -> Entry -> [LogEntry]
+makeLogEntries :: TimeZone -> Path Rel File -> Entry -> [LogEntry]
 makeLogEntries tz rp e =
   map (\le -> LogEntry {logEntryHeader = entryHeader e, logEntryFilePath = rp, logEntryEvent = le}) $
     concat [makeLogbookLogEntries e, makeStateHistoryLogEntries e, makeTimestampLogEntries tz e]

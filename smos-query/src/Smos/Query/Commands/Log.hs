@@ -24,7 +24,8 @@ smosQueryLog LogSettings {..} = do
   zt <- liftIO getZonedTime
   es <-
     sourceToList $
-      streamSmosFiles logSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
+      streamSmosFiles logSetHideArchive
+        .| streamParseSmosFiles
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
@@ -44,7 +45,7 @@ renderLogReport zt lrbs =
 renderLogEntry :: ZonedTime -> LogEntry -> [Chunk]
 renderLogEntry zt LogEntry {..} =
   let LogEvent {..} = logEntryEvent
-   in [ rootedPathChunk logEntryFilePath,
+   in [ pathChunk logEntryFilePath,
         headerChunk logEntryHeader,
         chunk
           $ T.pack

@@ -1,21 +1,29 @@
 module Smos.Query.Streaming where
 
 import Conduit
+import Path
+import Smos.Data
 import Smos.Query.Config
-import Smos.Report.Path
+import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-streamSmosProjects :: ConduitT i RootedPath Q ()
+streamSmosProjects :: ConduitT i (Path Rel File) Q ()
 streamSmosProjects = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   streamSmosProjectsFiles src
 
-streamSmosFiles :: HideArchive -> ConduitT i RootedPath Q ()
+streamSmosFiles :: HideArchive -> ConduitT i (Path Rel File) Q ()
 streamSmosFiles ha = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  streamSmosFilesFromWorkflow ha src
+  streamSmosFilesFromWorkflowRel ha src
 
-streamAllSmosFiles :: ConduitT i RootedPath Q ()
+streamAllSmosFiles :: ConduitT i (Path Rel File) Q ()
 streamAllSmosFiles = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  streamSmosFilesFromWorkflow Don'tHideArchive src
+  streamSmosFilesFromWorkflowRel Don'tHideArchive src
+
+streamParseSmosFiles :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
+streamParseSmosFiles = do
+  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  wd <- liftIO $ resolveDirWorkflowDir src
+  parseSmosFilesRel wd .| printShouldPrint PrintWarning

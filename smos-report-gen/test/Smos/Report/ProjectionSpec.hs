@@ -8,7 +8,6 @@ where
 
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
-import Smos.Report.Path.Gen ()
 import Smos.Report.Projection
 import Smos.Report.Projection.Gen ()
 import Test.Hspec

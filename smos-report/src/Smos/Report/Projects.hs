@@ -7,9 +7,10 @@ import Control.Applicative
 import Control.Monad
 import Data.List
 import Data.Validity
+import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import Path
 import Smos.Data
-import Smos.Report.Path
 
 newtype ProjectsReport
   = ProjectsReport
@@ -19,7 +20,7 @@ newtype ProjectsReport
 
 instance Validity ProjectsReport
 
-makeProjectsReport :: [(RootedPath, SmosFile)] -> ProjectsReport
+makeProjectsReport :: [(Path Rel File, SmosFile)] -> ProjectsReport
 makeProjectsReport =
   ProjectsReport
     . sortOn (fmap entryState . projectEntryCurrentEntry)
@@ -27,14 +28,14 @@ makeProjectsReport =
 
 data ProjectEntry
   = ProjectEntry
-      { projectEntryFilePath :: RootedPath,
+      { projectEntryFilePath :: Path Rel File,
         projectEntryCurrentEntry :: Maybe Entry
       }
   deriving (Show, Eq, Generic)
 
 instance Validity ProjectEntry
 
-makeProjectEntry :: RootedPath -> SmosFile -> ProjectEntry
+makeProjectEntry :: Path Rel File -> SmosFile -> ProjectEntry
 makeProjectEntry rp sf =
   ProjectEntry {projectEntryFilePath = rp, projectEntryCurrentEntry = getCurrentEntry sf}
 

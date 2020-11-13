@@ -23,16 +23,16 @@ import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Path ()
 import Lens.Micro
+import Path
 import Smos.Data
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
-import Smos.Report.Path
 import Smos.Report.Period
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 -- | Reset the timers of every entry that doesn't match the filter to zero
-zeroOutByFilter :: EntryFilter -> RootedPath -> SmosFile -> SmosFile
+zeroOutByFilter :: EntryFilterRel -> Path Rel File -> SmosFile -> SmosFile
 zeroOutByFilter f rp sf =
   let cursors = forestCursors $ smosFileForest sf
    in SmosFile $ map (fmap go) cursors
@@ -48,7 +48,7 @@ zeroOutByFilter f rp sf =
 zeroOutEntry :: Entry -> Entry
 zeroOutEntry e = e {entryLogbook = emptyLogbook}
 
-findFileTimes :: UTCTime -> RootedPath -> SmosFile -> Maybe FileTimes
+findFileTimes :: UTCTime -> Path Rel File -> SmosFile -> Maybe FileTimes
 findFileTimes now rp (SmosFile ts) = do
   ne <- goF ts
   pure $ FileTimes {clockTimeFile = rp, clockTimeForest = ne}

@@ -27,7 +27,6 @@ import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
 import Smos.Report.Clock
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 import Text.Printf
 
@@ -36,7 +35,7 @@ smosQueryClock ClockSettings {..} = do
   now <- liftIO getZonedTime
   tups <-
     sourceToList $
-      streamSmosFiles clockSetHideArchive .| parseSmosFiles .| printShouldPrint PrintWarning
+      streamSmosFiles clockSetHideArchive .| streamParseSmosFiles
         .| ( case clockSetFilter of
                Nothing -> C.map id
                Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))
@@ -104,7 +103,7 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
         FileRow rp ndt ->
           [ map
               cell
-              [ fore green $ rootedPathChunk rp,
+              [ fore green $ pathChunk rp,
                 chunk "",
                 chunk "",
                 chunk "",

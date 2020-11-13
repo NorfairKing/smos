@@ -9,7 +9,6 @@ import Data.Time
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Agenda
-import Smos.Report.Path.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.TimeBlock.Gen ()
 

@@ -5,12 +5,12 @@ module Smos.Query.Clock.Types where
 import Data.Text (Text)
 import Data.Time
 import GHC.Generics (Generic)
+import Path
 import Smos.Data
-import Smos.Report.Path
 
 data ClockTableRow
   = BlockTitleRow Text
-  | FileRow RootedPath NominalDiffTime
+  | FileRow (Path Rel File) NominalDiffTime
   | EntryRow
       Int -- Levels deep (0 is the top level)
       Header

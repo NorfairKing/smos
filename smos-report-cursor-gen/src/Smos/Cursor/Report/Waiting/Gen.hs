@@ -12,7 +12,6 @@ import Lens.Micro
 import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Data.Gen ()
-import Smos.Report.Path.Gen ()
 import Smos.Report.Waiting
 import Test.QuickCheck
 

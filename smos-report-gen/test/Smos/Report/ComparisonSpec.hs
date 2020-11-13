@@ -13,7 +13,6 @@ import Cursor.Forest.Gen ()
 import Data.Maybe
 import Smos.Report.Comparison
 import Smos.Report.Comparison.Gen ()
-import Smos.Report.Path.Gen ()
 import Test.Hspec
 import Test.Validity
 import Test.Validity.Aeson

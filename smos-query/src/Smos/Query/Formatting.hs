@@ -17,7 +17,6 @@ import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Formatting
-import Smos.Report.Path
 import Smos.Report.Projection
 import Text.Time.Pretty
 
@@ -77,14 +76,6 @@ formatAgendaEntry now AgendaEntry {..} =
         headerChunk agendaEntryHeader,
         func $ pathChunk agendaEntryFilePath
       ]
-
-rootedPathChunk :: RootedPath -> Chunk
-rootedPathChunk rp =
-  chunk
-    $ T.pack
-    $ case rp of
-      Relative _ rf -> fromRelFile rf
-      Absolute af -> fromAbsFile af
 
 pathChunk :: Path b t -> Chunk
 pathChunk = chunk . T.pack . toFilePath

@@ -88,6 +88,8 @@ benchmarks:
     - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
+    - genvalidity-path
+    - path
     - smos-data
     - smos-data-gen
     - smos-report

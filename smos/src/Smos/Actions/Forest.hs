@@ -44,11 +44,11 @@ import qualified Data.Conduit.Combinators as C
 import Data.Text (Text, toLower, toTitle)
 import Data.Time
 import Lens.Micro
+import Path
 import Smos.Actions.Utils
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Path
 import Smos.Report.Streaming
 import Smos.Types
 
@@ -357,8 +357,9 @@ clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
   dirConfig <- asks $ smosReportConfigDirectoryConfig . configReportConfig
   runSmosAsync $ do
+    wd <- resolveDirWorkflowDir dirConfig
     let clockOutSingle rp = do
-          let af = resolveRootedPath rp
+          let af = wd </> rp
           merrOrFile <- readSmosFile af
           case merrOrFile of
             Nothing -> pure () -- Should not happen
@@ -366,4 +367,4 @@ clockOutInAllAgendaFiles now = do
             Just (Right sf) -> do
               let sf' = smosFileClockOutEverywhere now sf
               unless (sf == sf') $ writeSmosFile af sf'
-    runConduit $ streamSmosFilesFromWorkflow HideArchive dirConfig .| C.mapM_ clockOutSingle
+    runConduit $ streamSmosFilesFromWorkflowRel HideArchive dirConfig .| C.mapM_ clockOutSingle

@@ -11,19 +11,20 @@ import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
 import Data.Map (Map)
 import Data.Time
+import Path
 import Rainbow
 import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Query.Streaming
-import Smos.Report.Path
 import Smos.Report.Stats
 import Smos.Report.Streaming
 
 smosQueryStats :: StatsSettings -> Q ()
 smosQueryStats StatsSettings {..} = do
   now <- liftIO getZonedTime
+  wd <- askWorkflowDir
   ad <- askArchiveDir
   pd <- askProjectsDir
   apd <- askArchivedProjectsDir
@@ -31,17 +32,19 @@ smosQueryStats StatsSettings {..} = do
         StatsReportContext
           { statsReportContextNow = now,
             statsReportContextPeriod = statsSetPeriod,
+            statsReportContextWorkflowDir = wd,
             statsReportContextArchiveDir = ad,
             statsReportContextProjectsDir = pd,
             statsReportContextArchivedProjectsDir = apd
           }
   sr <-
     runConduit $
-      streamAllSmosFiles .| parseSmosFiles .| printShouldPrint PrintWarning
+      streamAllSmosFiles
+        .| streamParseSmosFiles
         .| accumulateStatsReport src
   liftIO $ putTableLn $ renderStatsReport sr
 
-accumulateStatsReport :: StatsReportContext -> ConduitT (RootedPath, SmosFile) Void Q StatsReport
+accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
 accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
 renderStatsReport :: StatsReport -> Table
