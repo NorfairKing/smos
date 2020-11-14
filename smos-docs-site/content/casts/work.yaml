@@ -1,0 +1,14 @@
+working-dir: ../../demo-workflow
+packages:
+- smos-query
+environment:
+  SMOS_WORKFLOW_DIR: .
+  SMOS_CONFIG_FILE: config.yaml
+  SMOS_EXPLAINER_MODE: 'True'
+input:
+- type: "smos-query work\n"
+- wait: 2000
+- type: "smos-query work home\n"
+- wait: 2000
+- type: "smos-query work home 10m\n"
+- wait: 2000

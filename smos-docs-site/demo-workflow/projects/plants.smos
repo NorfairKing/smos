@@ -1,0 +1,23 @@
+- entry:
+    header: Plants
+    state-history:
+    - state: TODO
+      time: 2020-11-14 15:39:10.373569553000
+  forest:
+  - header: Buy office plants
+    state-history:
+    - state: DONE
+      time: 2020-11-14 15:39:19.482705717000
+    - state: NEXT
+      time: 2020-11-14 15:39:18.314701128000
+    - state: TODO
+      time: 2020-11-14 15:39:17.882685419000
+  - header: water my plants
+    properties:
+      timewindow: 5m
+    state-history:
+    - state: NEXT
+      time: 2020-11-14 15:39:23.194656469000
+    tags:
+    - office
+    - toast

@@ -4,9 +4,18 @@ description: Documentation about the smos-query work command, for the contextual
 ---
 
 The work report is the most important report that you will use.
-This report shows you your agenda for the day, and the next actions that you can perform in your current context.
+This report shows you your agenda for the day, and the next actions that you can perform in your current context, as well as any warnings that you need to see about the state of your workflow.
 
-To set up a work report, you will first need contexts.
+<asciinema-player
+  src="/casts/work.cast"
+  autoplay="true"
+  preloop="true"
+  loop="true">
+  </asciinema-player>
+
+## Contexts
+
+For context-based work reports, you will first need contexts.
 For example, you can use these in your config file:
 
 ``` yaml

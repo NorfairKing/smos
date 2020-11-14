@@ -1,10 +1,7 @@
 work:
   contexts:
-    home: 'ancestor:(tag:home or (tag:online or (tag:offline or tag:power)))'
-    plug: '(not:ancestor:tag:home and ancestor:(tag:transport or (tag:power or (tag:offline or tag:online))))'
-    transport: '(not:ancestor:(tag:home or tag:power) and ancestor:(tag:transport or (tag:offline or tag:online)))'
-    airplane: '(not:ancestor:(tag:online or (tag:home or tag:power)) and ancestor:tag:offline)'
-    toast: 'ancestor:tag:toast'
+    home: '(tag:home or not:tag:office)'
+    office: '(tag:office and not:tag:home)'
   time-filter: timewindow
   checks:
     - property:timewindow
