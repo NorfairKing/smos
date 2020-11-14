@@ -5,11 +5,13 @@
 module Smos.Report.Work where
 
 import Conduit
+import Control.Monad
 import Cursor.Simple.Forest
 import qualified Data.Conduit.Combinators as C
 import Data.Function
 import qualified Data.Map as M
 import Data.Map (Map)
+import Data.Maybe
 import Data.Set (Set)
 import Data.Time
 import Data.Validity
@@ -26,6 +28,7 @@ import Smos.Report.Filter
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Time
+import Smos.Report.Waiting
 
 produceWorkReport :: MonadIO m => HideArchive -> DirectoryConfig -> WorkReportContext -> m WorkReport
 produceWorkReport ha dc wrc = produceReport ha dc $ workReportConduit (workReportContextNow wrc) wrc
@@ -38,9 +41,10 @@ workReportConduit now wrc@WorkReportContext {..} =
 data IntermediateWorkReport
   = IntermediateWorkReport
       { intermediateWorkReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
-        intermediateWorkReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         intermediateWorkReportAgendaEntries :: [AgendaEntry],
         intermediateWorkReportNextBegin :: Maybe AgendaEntry,
+        intermediateWorkReportOverdueWaiting :: [WaitingEntry],
+        intermediateWorkReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         intermediateWorkReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
@@ -51,11 +55,7 @@ instance Semigroup IntermediateWorkReport where
   wr1 <> wr2 =
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = intermediateWorkReportResultEntries wr1 <> intermediateWorkReportResultEntries wr2,
-        intermediateWorkReportEntriesWithoutContext =
-          intermediateWorkReportEntriesWithoutContext wr1 <> intermediateWorkReportEntriesWithoutContext wr2,
         intermediateWorkReportAgendaEntries = intermediateWorkReportAgendaEntries wr1 <> intermediateWorkReportAgendaEntries wr2,
-        intermediateWorkReportCheckViolations =
-          M.unionWith (++) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
         intermediateWorkReportNextBegin = case (intermediateWorkReportNextBegin wr1, intermediateWorkReportNextBegin wr2) of
           (Nothing, Nothing) -> Nothing
           (Just ae, Nothing) -> Just ae
@@ -64,16 +64,22 @@ instance Semigroup IntermediateWorkReport where
             Just $
               if ((<=) `on` (timestampLocalTime . agendaEntryTimestamp)) ae1 ae2
                 then ae1
-                else ae2
+                else ae2,
+        intermediateWorkReportOverdueWaiting = intermediateWorkReportOverdueWaiting wr1 <> intermediateWorkReportOverdueWaiting wr2,
+        intermediateWorkReportCheckViolations =
+          M.unionWith (++) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
+        intermediateWorkReportEntriesWithoutContext =
+          intermediateWorkReportEntriesWithoutContext wr1 <> intermediateWorkReportEntriesWithoutContext wr2
       }
 
 instance Monoid IntermediateWorkReport where
   mempty =
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = mempty,
-        intermediateWorkReportEntriesWithoutContext = mempty,
         intermediateWorkReportAgendaEntries = [],
         intermediateWorkReportNextBegin = Nothing,
+        intermediateWorkReportOverdueWaiting = [],
+        intermediateWorkReportEntriesWithoutContext = mempty,
         intermediateWorkReportCheckViolations = M.empty
       }
 
@@ -87,7 +93,8 @@ data WorkReportContext
         workReportContextAdditionalFilter :: Maybe EntryFilterRel,
         workReportContextContexts :: Map ContextName EntryFilterRel,
         workReportContextChecks :: Set EntryFilterRel,
-        workReportContextSorter :: Maybe Sorter
+        workReportContextSorter :: Maybe Sorter,
+        workReportContextWaitingThreshold :: Word
       }
   deriving (Show, Generic)
 
@@ -125,7 +132,9 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
+      allAgendaEntries :: [AgendaEntry]
       allAgendaEntries = makeAgendaEntry rp $ forestCursorCurrent fc
+      agendaEntries :: [AgendaEntry]
       agendaEntries =
         let go ae =
               let day = timestampDay (agendaEntryTimestamp ae)
@@ -137,19 +146,29 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                     "END" -> False
                     _ -> day == today
          in filter go allAgendaEntries
+      beginEntries :: [AgendaEntry]
       beginEntries =
         let go ae = case agendaEntryTimestampName ae of
               "BEGIN" -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime workReportContextNow
               _ -> False
          in sortAgendaEntries $ filter go allAgendaEntries
+      nextBeginEntry :: Maybe AgendaEntry
+      nextBeginEntry = headMay $ sortAgendaEntries beginEntries
+      mWaitingEntry :: Maybe WaitingEntry
+      mWaitingEntry = do
+        we <- makeWaitingEntry rp $ forestCursorCurrent fc
+        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) (waitingEntryTimestamp we)
+        guard (diff >= fromIntegral workReportContextWaitingThreshold * nominalDay)
+        pure we
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,
+          intermediateWorkReportAgendaEntries = agendaEntries,
+          intermediateWorkReportNextBegin = nextBeginEntry,
+          intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
           intermediateWorkReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
                 && matchesNoContext,
-          intermediateWorkReportAgendaEntries = agendaEntries,
-          intermediateWorkReportNextBegin = headMay beginEntries,
           intermediateWorkReportCheckViolations =
             if matchesAnyContext
               then
@@ -165,9 +184,10 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
 data WorkReport
   = WorkReport
       { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
-        workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         workReportAgendaEntries :: [AgendaEntry],
         workReportNextBegin :: Maybe AgendaEntry,
+        workReportOverdueWaiting :: [WaitingEntry],
+        workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
         workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
       }
   deriving (Show, Eq, Generic)
@@ -203,6 +223,7 @@ finishWorkReport now pn mt ms wr =
         { workReportAgendaEntries = sortAgendaEntries $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
           workReportNextBegin = intermediateWorkReportNextBegin wr,
+          workReportOverdueWaiting = sortWaitingEntries $ intermediateWorkReportOverdueWaiting wr,
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }

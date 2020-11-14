@@ -75,7 +75,8 @@ data WorkFlags
         workFlagFilter :: Maybe EntryFilterRel,
         workFlagProjection :: Maybe (NonEmpty Projection),
         workFlagSorter :: Maybe Sorter,
-        workFlagHideArchive :: Maybe HideArchive
+        workFlagHideArchive :: Maybe HideArchive,
+        workFlagWaitingThreshold :: Maybe Word
       }
   deriving (Show, Eq)
 
@@ -285,7 +286,8 @@ data WorkSettings
         workSetChecks :: Set EntryFilterRel,
         workSetProjection :: NonEmpty Projection,
         workSetSorter :: Maybe Sorter,
-        workSetHideArchive :: HideArchive
+        workSetHideArchive :: HideArchive,
+        workSetWaitingThreshold :: Word
       }
   deriving (Show, Eq, Generic)
 

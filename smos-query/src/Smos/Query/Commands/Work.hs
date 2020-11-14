@@ -44,13 +44,14 @@ smosQueryWork WorkSettings {..} = do
             workReportContextAdditionalFilter = workSetFilter,
             workReportContextContexts = contexts,
             workReportContextChecks = workSetChecks,
-            workReportContextSorter = workSetSorter
+            workReportContextSorter = workSetSorter,
+            workReportContextWaitingThreshold = workSetWaitingThreshold
           }
   wr <- produceWorkReport workSetHideArchive (smosReportConfigDirectoryConfig src) wrc
-  liftIO $ putTableLn $ renderWorkReport now contexts workSetProjection wr
+  liftIO $ putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetProjection wr
 
-renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> NonEmpty Projection -> WorkReport -> Table
-renderWorkReport now ctxs ne WorkReport {..} =
+renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> NonEmpty Projection -> WorkReport -> Table
+renderWorkReport now ctxs threshold ne WorkReport {..} =
   mconcat
     $ (concat . concat)
     $ intersperse [spacer]
@@ -68,7 +69,14 @@ renderWorkReport now ctxs ne WorkReport {..} =
           ],
         unlessNull
           workReportResultEntries
-          [sectionHeading "Next actions:", [entryTable workReportResultEntries]],
+          [ sectionHeading "Next actions:",
+            [entryTable workReportResultEntries]
+          ],
+        unlessNull
+          workReportOverdueWaiting
+          [ warningHeading "Overdue Waiting Entries:",
+            [waitingTable]
+          ],
         unlessNull
           ctxs
           $ unlessNull
@@ -96,3 +104,4 @@ renderWorkReport now ctxs ne WorkReport {..} =
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne
     agendaTable = formatAsTable $ map (formatAgendaEntry now) workReportAgendaEntries
+    waitingTable = formatAsTable $ map (formatWaitingEntry threshold (zonedTimeToUTC now)) workReportOverdueWaiting

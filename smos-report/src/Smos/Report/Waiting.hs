@@ -32,7 +32,7 @@ instance Validity WaitingReport where
   validate wr@WaitingReport {..} =
     mconcat
       [ genericValidate wr,
-        declare "The waiting report entries are in order" $ sortOn waitingEntryTimestamp waitingReportEntries == waitingReportEntries
+        declare "The waiting report entries are in order" $ sortWaitingEntries waitingReportEntries == waitingReportEntries
       ]
 
 instance FromJSON WaitingReport
@@ -59,7 +59,7 @@ waitingReportConduitHelper ef =
     isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub waitingState
 
 finishWaitingReport :: [WaitingEntry] -> WaitingReport
-finishWaitingReport = WaitingReport . sortOn waitingEntryTimestamp
+finishWaitingReport = WaitingReport . sortWaitingEntries
 
 data WaitingEntry
   = WaitingEntry
@@ -89,6 +89,9 @@ instance ToJSON WaitingEntry where
         "timestamp" .= formatTime defaultTimeLocale utcFormat waitingEntryTimestamp,
         "path" .= waitingEntryFilePath
       ]
+
+sortWaitingEntries :: [WaitingEntry] -> [WaitingEntry]
+sortWaitingEntries = sortOn waitingEntryTimestamp
 
 makeWaitingEntry :: Path Rel File -> Entry -> Maybe WaitingEntry
 makeWaitingEntry rp e@Entry {..} = do

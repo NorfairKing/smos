@@ -7,15 +7,22 @@ description: The changelog for all of the Smos tools
 
 ## Added
 
-- `smos`: Word-based movements in headers and contents
+- `smos`: 
+  You can now use Word-based movements in headers and contents.
+  [cursor/#12](https://github.com/NorfairKing/cursor/pull/12)
+  Thank you [@chiroptical](https://github.com/chiroptical/)!
 
 ## Changed
 
-- `smos-query` allow running the work report without any context
+- `smos-query`:
+  It is now possible to run the work report without any context.
+- `smos-query`:
+  The work report now also shows overdue waiting entries.
 
 ## Removed
 
-- `smos-query` the 'smart' mode for the work command has been removed. It is now the default.
+- `smos-query`:
+  The 'smart' mode for the work command has been removed. It is now the default.
 
 
 # <a name="2020-11-04">[2020-11-04](#2020-11-04)
@@ -37,11 +44,13 @@ description: The changelog for all of the Smos tools
 ## Fixed
 
 - `smos-query`:
-  The agenda report now shows the "Now" line in the right place at night. [#164](https://github.com/NorfairKing/smos/pull/164).
-  Thank you @jecaro!
+  The agenda report now shows the "Now" line in the right place at night.
+  [#164](https://github.com/NorfairKing/smos/pull/164).
+  Thank you [@jecaro](https://github.com/jecaro)!
 - `smos`:
-  When selecting a timestamp, smos now correctly selects the value instead of the name. [#170](https://github.com/NorfairKing/smos/pull/170)
-  Thank you @jecaro!
+  When selecting a timestamp, smos now correctly selects the value instead of the name.
+  [#170](https://github.com/NorfairKing/smos/pull/170)
+  Thank you [@jecaro](https://github.com/jecaro)!
 
 ## Removed
 

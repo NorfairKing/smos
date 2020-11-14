@@ -48,6 +48,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
   where
     hideArchiveWithDefault def mflag =
       fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
+    waitingThresholdWith = fromMaybe 7
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -75,7 +76,7 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                 { waitingSetFilter = waitingFlagFilter,
                   waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
                   waitingSetThreshold =
-                    fromMaybe 7 $ waitingFlagThreshold <|> mwc waitingConfThreshold
+                    waitingThresholdWith $ waitingFlagThreshold <|> mwc waitingConfThreshold
                 }
         CommandNext NextFlags {..} ->
           pure $
@@ -164,7 +165,8 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
                     fromMaybe defaultProjection $
                       combineMaybe (<>) (mwc workConfProjection) workFlagProjection,
                   workSetSorter = mwc workConfSorter <|> workFlagSorter,
-                  workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive
+                  workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
+                  workSetWaitingThreshold = waitingThresholdWith $ workFlagWaitingThreshold <|> (mc >>= confWaitingConfiguration >>= waitingConfThreshold)
                 }
         CommandProjects ProjectsFlags {..} ->
           pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
@@ -292,6 +294,7 @@ parseCommandWork = info parser modifier
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
                 <*> parseHideArchiveFlag
+                <*> parseThresholdFlag
             )
 
 parseCommandWaiting :: ParserInfo Command

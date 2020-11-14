@@ -18,6 +18,7 @@ import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Formatting
 import Smos.Report.Projection
+import Smos.Report.Waiting
 import Text.Time.Pretty
 
 type Table = Seq Chunk
@@ -76,6 +77,13 @@ formatAgendaEntry now AgendaEntry {..} =
         headerChunk agendaEntryHeader,
         func $ pathChunk agendaEntryFilePath
       ]
+
+formatWaitingEntry :: Word -> UTCTime -> WaitingEntry -> [Chunk]
+formatWaitingEntry threshold now WaitingEntry {..} =
+  [ pathChunk waitingEntryFilePath,
+    headerChunk waitingEntryHeader,
+    showDaysSince threshold now waitingEntryTimestamp
+  ]
 
 pathChunk :: Path b t -> Chunk
 pathChunk = chunk . T.pack . toFilePath
