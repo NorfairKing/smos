@@ -75,7 +75,6 @@ data WorkFlags
         workFlagFilter :: Maybe EntryFilterRel,
         workFlagProjection :: Maybe (NonEmpty Projection),
         workFlagSorter :: Maybe Sorter,
-        workFlagSmartMode :: Maybe Bool,
         workFlagHideArchive :: Maybe HideArchive
       }
   deriving (Show, Eq)
@@ -231,8 +230,7 @@ data WorkConfiguration
       { workConfChecks :: Set EntryFilterRel,
         workConfTimeFilterProperty :: Maybe PropertyName,
         workConfProjection :: Maybe (NonEmpty Projection),
-        workConfSorter :: Maybe Sorter,
-        workConfSmartMode :: Maybe Bool
+        workConfSorter :: Maybe Sorter
       }
   deriving (Show, Eq, Generic)
 
@@ -246,7 +244,6 @@ instance YamlSchema WorkConfiguration where
         <*> optionalField "time-filter" "The property to use to filter by time"
         <*> optionalField "columns" "The columns in the report"
         <*> optionalField "sorter" "The sorter to use to sort the rows"
-        <*> optionalField "smart" "Smart mode: figure out the amount of time based on the next BEGIN timestamp"
 
 data Dispatch
   = DispatchEntry EntrySettings
@@ -288,7 +285,6 @@ data WorkSettings
         workSetChecks :: Set EntryFilterRel,
         workSetProjection :: NonEmpty Projection,
         workSetSorter :: Maybe Sorter,
-        workSetSmartMode :: Bool,
         workSetHideArchive :: HideArchive
       }
   deriving (Show, Eq, Generic)

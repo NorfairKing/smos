@@ -10,7 +10,7 @@ import Conduit
 import Data.List (intersperse)
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map as M
-import Data.Maybe
+import Data.Map (Map)
 import qualified Data.Text as T
 import Data.Time
 import Rainbow
@@ -26,7 +26,6 @@ import System.Exit
 smosQueryWork :: WorkSettings -> Q ()
 smosQueryWork WorkSettings {..} = do
   src <- asks smosQueryConfigReportConfig
-  liftIO $ when (not workSetSmartMode && isNothing workSetTime) $ die "No time filter provided."
   now <- liftIO getZonedTime
   let wc = smosReportConfigWorkConfig src
   let contexts = workReportConfigContexts wc
@@ -48,10 +47,10 @@ smosQueryWork WorkSettings {..} = do
             workReportContextSorter = workSetSorter
           }
   wr <- produceWorkReport workSetHideArchive (smosReportConfigDirectoryConfig src) wrc
-  liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
+  liftIO $ putTableLn $ renderWorkReport now contexts workSetProjection wr
 
-renderWorkReport :: ZonedTime -> NonEmpty Projection -> WorkReport -> Table
-renderWorkReport now ne WorkReport {..} =
+renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> NonEmpty Projection -> WorkReport -> Table
+renderWorkReport now ctxs ne WorkReport {..} =
   mconcat
     $ (concat . concat)
     $ intersperse [spacer]
@@ -71,10 +70,12 @@ renderWorkReport now ne WorkReport {..} =
           workReportResultEntries
           [sectionHeading "Next actions:", [entryTable workReportResultEntries]],
         unlessNull
-          workReportEntriesWithoutContext
-          [ warningHeading "WARNING, the following Entries don't match any context:",
-            [entryTable workReportEntriesWithoutContext]
-          ],
+          ctxs
+          $ unlessNull
+            workReportEntriesWithoutContext
+            [ warningHeading "WARNING, the following Entries don't match any context:",
+              [entryTable workReportEntriesWithoutContext]
+            ],
         unlessNull
           workReportCheckViolations
           [ warningHeading "WARNING, the following Entries did not pass the checks:",

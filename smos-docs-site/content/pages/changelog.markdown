@@ -13,6 +13,10 @@ description: The changelog for all of the Smos tools
 
 - `smos-query` allow running the work report without any context
 
+## Removed
+
+- `smos-query` the 'smart' mode for the work command has been removed. It is now the default.
+
 
 # <a name="2020-11-04">[2020-11-04](#2020-11-04)
 
