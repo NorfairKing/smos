@@ -9,6 +9,10 @@ description: The changelog for all of the Smos tools
 
 - `smos`: Word-based movements in headers and contents
 
+## Changed
+
+- `smos-query` allow running the work report without any context
+
 
 # <a name="2020-11-04">[2020-11-04](#2020-11-04)
 

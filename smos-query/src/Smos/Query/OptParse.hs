@@ -423,9 +423,9 @@ parseHideArchiveFlag =
   )
     <|> pure Nothing
 
-parseContextNameArg :: Parser ContextName
+parseContextNameArg :: Parser (Maybe ContextName)
 parseContextNameArg =
-  argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
+  optional $ argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
 
 parseTimeFilterArg :: Parser (Maybe Time)
 parseTimeFilterArg =

@@ -31,23 +31,24 @@ smosQueryWork WorkSettings {..} = do
   let wc = smosReportConfigWorkConfig src
   let contexts = workReportConfigContexts wc
   let baseFilter = workReportConfigBaseFilter wc
-  case M.lookup workSetContext contexts of
-    Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText workSetContext]
-    Just cf -> do
-      let wrc =
-            WorkReportContext
-              { workReportContextNow = now,
-                workReportContextBaseFilter = baseFilter,
-                workReportContextCurrentContext = cf,
-                workReportContextTimeProperty = workSetTimeProperty,
-                workReportContextTime = workSetTime,
-                workReportContextAdditionalFilter = workSetFilter,
-                workReportContextContexts = contexts,
-                workReportContextChecks = workSetChecks,
-                workReportContextSorter = workSetSorter
-              }
-      wr <- produceWorkReport workSetHideArchive (smosReportConfigDirectoryConfig src) wrc
-      liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
+  mcf <- forM workSetContext $ \cn ->
+    case M.lookup cn contexts of
+      Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
+      Just cf -> pure cf
+  let wrc =
+        WorkReportContext
+          { workReportContextNow = now,
+            workReportContextBaseFilter = baseFilter,
+            workReportContextCurrentContext = mcf,
+            workReportContextTimeProperty = workSetTimeProperty,
+            workReportContextTime = workSetTime,
+            workReportContextAdditionalFilter = workSetFilter,
+            workReportContextContexts = contexts,
+            workReportContextChecks = workSetChecks,
+            workReportContextSorter = workSetSorter
+          }
+  wr <- produceWorkReport workSetHideArchive (smosReportConfigDirectoryConfig src) wrc
+  liftIO $ putTableLn $ renderWorkReport now workSetProjection wr
 
 renderWorkReport :: ZonedTime -> NonEmpty Projection -> WorkReport -> Table
 renderWorkReport now ne WorkReport {..} =

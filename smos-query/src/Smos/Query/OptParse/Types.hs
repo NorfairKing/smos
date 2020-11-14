@@ -70,7 +70,7 @@ data ReportFlags
 
 data WorkFlags
   = WorkFlags
-      { workFlagContext :: ContextName,
+      { workFlagContext :: Maybe ContextName,
         workFlagTime :: Maybe Time,
         workFlagFilter :: Maybe EntryFilterRel,
         workFlagProjection :: Maybe (NonEmpty Projection),
@@ -281,7 +281,7 @@ data ReportSettings
 
 data WorkSettings
   = WorkSettings
-      { workSetContext :: ContextName,
+      { workSetContext :: Maybe ContextName,
         workSetTimeProperty :: PropertyName,
         workSetTime :: Maybe Time,
         workSetFilter :: Maybe EntryFilterRel,

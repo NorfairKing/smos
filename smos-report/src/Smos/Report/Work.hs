@@ -81,7 +81,7 @@ data WorkReportContext
   = WorkReportContext
       { workReportContextNow :: ZonedTime,
         workReportContextBaseFilter :: Maybe EntryFilterRel,
-        workReportContextCurrentContext :: EntryFilterRel,
+        workReportContextCurrentContext :: Maybe EntryFilterRel,
         workReportContextTimeProperty :: PropertyName,
         workReportContextTime :: Maybe Time,
         workReportContextAdditionalFilter :: Maybe EntryFilterRel,
@@ -96,10 +96,21 @@ instance Validity WorkReportContext
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =
   let match b = [(rp, fc) | b]
+      combineFilter :: EntryFilterRel -> Maybe EntryFilterRel -> EntryFilterRel
       combineFilter f = maybe f (FilterAnd f)
+      combineMFilter :: Maybe EntryFilterRel -> Maybe EntryFilterRel -> Maybe EntryFilterRel
+      combineMFilter mf1 mf2 = case (mf1, mf2) of
+        (Nothing, Nothing) -> Nothing
+        (Just f1, Nothing) -> Just f1
+        (Nothing, Just f2) -> Just f2
+        (Just f1, Just f2) -> Just $ FilterAnd f1 f2
+      filterWithBase :: EntryFilterRel -> EntryFilterRel
       filterWithBase f = combineFilter f workReportContextBaseFilter
+      filterMWithBase :: Maybe EntryFilterRel -> Maybe EntryFilterRel
+      filterMWithBase mf = combineMFilter mf workReportContextBaseFilter
+      totalCurrent :: Maybe EntryFilterRel
       totalCurrent =
-        combineFilter workReportContextCurrentContext $
+        combineMFilter workReportContextCurrentContext $
           FilterSnd
             . FilterWithinCursor
             . FilterEntryProperties
@@ -108,8 +119,9 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
             . FilterPropertyTime
             . FilterMaybe False
             . FilterOrd LEC <$> workReportContextTime
-      currentFilter = filterWithBase $ combineFilter totalCurrent workReportContextAdditionalFilter
-      matchesSelectedContext = filterPredicate currentFilter (rp, fc)
+      currentFilter :: Maybe EntryFilterRel
+      currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
+      matchesSelectedContext = maybe True (`filterPredicate` (rp, fc)) currentFilter
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
