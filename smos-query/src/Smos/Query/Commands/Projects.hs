@@ -23,7 +23,7 @@ smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
       streamSmosProjects
-        .| streamParseSmosFiles
+        .| streamParseSmosProjects
         .| smosMFilter (FilterFst <$> projectsSetFilter)
   liftIO $ putTableLn $ renderProjectsReport $ makeProjectsReport projs
 

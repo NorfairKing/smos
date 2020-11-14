@@ -22,6 +22,12 @@ streamAllSmosFiles = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   streamSmosFilesFromWorkflowRel Don'tHideArchive src
 
+streamParseSmosProjects :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
+streamParseSmosProjects = do
+  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  pd <- liftIO $ resolveDirProjectsDir src
+  parseSmosFilesRel pd .| printShouldPrint PrintWarning
+
 streamParseSmosFiles :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosFiles = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig

@@ -25,7 +25,7 @@ smosQueryStuck StuckSettings {..} = do
     fmap makeStuckReport
       $ sourceToList
       $ streamSmosProjects
-        .| streamParseSmosFiles
+        .| streamParseSmosProjects
         .| smosMFilter (FilterFst <$> stuckSetFilter)
         .| C.map (uncurry makeStuckReportEntry)
         .| C.catMaybes
