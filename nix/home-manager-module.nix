@@ -178,7 +178,7 @@ in
     };
   config =
     let
-      smosPkgs = (import ./project.nix {}).smosPackages;
+      smosPkgs = (import ./pkgs.nix {}).smosPackages;
       backupSmosName = "backup-smos";
       backupSmosService =
         {

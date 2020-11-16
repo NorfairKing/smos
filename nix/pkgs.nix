@@ -1,52 +1,82 @@
 { static ? false
 }:
 let
-  # A very specific version of nixpkgs.
-
-  # This comes from https://github.com/srid/neuron/blob/static/nix/sources.json#L32-L33
-  # See https://github.com/srid/neuron/pull/417/files
-  nixpkgs-special = import (
-    builtins.fetchTarball {
-      url = "https://github.com/srid/nixpkgs/archive/312f5dc940b1a2c627e8cce4adc192cfa3e730db.tar.gz";
-      sha256 = "1x1h6j43wp2fgzjlv0nf8h5syvpdp3nhp8xb85hxzdz8k7hkhi4s";
-    }
-  );
-  pkgsv = nixpkgs-special;
-
-
-  # Haskell.nix
-  # This is the latest version at the time of writing, nothing special.
-  owner = "input-output-hk";
-  repo = "haskell.nix";
-  rev = "e94de404e1a0655c055a8f9f4b29b07364ce8b4c";
-  sha256 = "sha256:0arcn7d65yv2krmfl411adij6w7dyd7yxzjybswg7hr5pj17c1p9";
-  haskellNixV = import (
-    builtins.fetchTarball {
-      url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
-      inherit sha256;
-    }
-  );
-
-  # When using 'pkgsMusl' instead of 'pkgsCross.musl64', I'm getting this error while building ghc:
-  #
-  # /nix/store/382fnvik7v4zfm659rzm51xf45ljq5ij-binutils-2.31.1/bin/ld: /nix/store/5w14whxfj3dq1ah3fmbyp9m9azxyd4zp-ghc-8.4.4/lib/ghc-8.4.4/rts/libHSrts.a(Hpc.o): in function `startupHpc':
-  # /home/ben/bin-dist-8.4.4-Linux/ghc/rts/Hpc.c:214:0: error:
-  #      undefined reference to `__strdup'
-  # 
-  # nomeata advises to use pkgs.Cross.musl64 instead, here: 
-  # https://github.com/NixOS/nixpkgs/issues/57238#issuecomment-473513922
-  #
-  # However, this was on a closed issue and static-haskell-nix uses pkgsMusl.
-
-  haskellNix = haskellNixV {
-    pkgs =
-      if static
-      then nixpkgs-special.pkgsCross.musl64
-      else haskellNixV.sources.nixpkgs;
-  };
-
-
+  pkgsv = import (import ./nixpkgs.nix);
+  validity-overlay =
+    import (
+      builtins.fetchGit (import ./validity-version.nix) + "/nix/overlay.nix"
+    );
+  typed-uuid-overlay =
+    import (
+      builtins.fetchGit (import ./typed-uuid-version.nix) + "/nix/overlay.nix"
+    );
+  pretty-relative-time-overlay =
+    import (
+      builtins.fetchGit (import ./pretty-relative-time-version.nix) + "/nix/overlay.nix"
+    );
+  cursor-overlay =
+    import (
+      builtins.fetchGit (import ./cursor-version.nix) + "/nix/overlay.nix"
+    );
+  cursor-brick-overlay =
+    import (
+      builtins.fetchGit (import ./cursor-brick-version.nix) + "/nix/overlay.nix"
+    );
+  dirforest-overlay =
+    import (
+      builtins.fetchGit (import ./dirforest-version.nix) + "/nix/overlay.nix"
+    );
+  cursor-dirforest-overlay =
+    import (
+      builtins.fetchGit (import ./cursor-dirforest-version.nix) + "/nix/overlay.nix"
+    );
+  fuzzy-time-overlay =
+    import (
+      builtins.fetchGit (import ./fuzzy-time-version.nix) + "/nix/overlay.nix"
+    );
+  cursor-fuzzy-time-overlay =
+    import (
+      builtins.fetchGit (import ./cursor-fuzzy-time-version.nix) + "/nix/overlay.nix"
+    );
+  yamlparse-applicative-overlay =
+    import (
+      builtins.fetchGit (import ./yamlparse-applicative-version.nix) + "/nix/overlay.nix"
+    );
+  mergeful-overlay =
+    import (
+      builtins.fetchGit (import ./mergeful-version.nix) + "/nix/overlay.nix"
+    );
+  yesod-static-remote-overlay =
+    import (
+      builtins.fetchGit (import ./yesod-static-remote-version.nix) + "/nix/overlay.nix"
+    );
+  autorecorder-overlay =
+    import (
+      builtins.fetchGit (import ./autorecorder-version.nix) + "/nix/overlay.nix"
+    );
+  pkgFunc = pkgs: if static then pkgs.pkgsCross.musl64 else pkgs;
+  smosPkgs = pkgFunc
+    (
+      pkgsv {
+        overlays = [
+          validity-overlay
+          typed-uuid-overlay
+          pretty-relative-time-overlay
+          cursor-overlay
+          cursor-brick-overlay
+          dirforest-overlay
+          cursor-dirforest-overlay
+          fuzzy-time-overlay
+          cursor-fuzzy-time-overlay
+          yamlparse-applicative-overlay
+          mergeful-overlay
+          yesod-static-remote-overlay
+          autorecorder-overlay
+          (import ./gitignore-src.nix)
+          (import ./overlay.nix)
+        ];
+        config.allowUnfree = true;
+      }
+    );
 in
-if static
-then haskellNix.pkgs.pkgsCross.musl64
-else haskellNix.pkgs
+smosPkgs

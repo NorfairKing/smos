@@ -1,6 +1,6 @@
 { pkgs ? import ./pkgs.nix { static = false; } }:
 let
-  smos-production = import (./nixos-module.nix) { envname = "production"; };
+  smos-production = import ./nixos-module.nix { envname = "production"; };
   home-manager = import (
     builtins.fetchTarball {
       url = "https://github.com/rycee/home-manager/archive/472ca211cac604efdf621337067a237be9df389e.tar.gz";

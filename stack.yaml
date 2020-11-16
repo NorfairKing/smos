@@ -36,27 +36,24 @@ extra-deps:
 
 - git: https://github.com/jtdaugherty/vty.git
   commit: 6a9c90da0e093cec1d4903924eb0f6a33be489cb
-  # nix-sha256: sha256:07mdgaqw3m5m8nxsi47grqkhvk6jvlqr7q7bj3jp9xc9gf08bqxh
 
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
-  # nix-sha256: sha256:0czqqvib9wndhyh18n20ckny2xyn9f7cr6bmrkzspl0aligkb3rv
 
 # Calendar
 - github: MasseR/iCalendar
   commit: d8acdad06988e527debef034458ddc74715f77ce
-  # nix-sha256: sha256:00k49flapqrj2yiryy1yvl1yiw710r32aiq7vvf0m5ddw88bixyg
 
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 - github: haskell-servant/servant-auth
-  commit: 23971e889f8cbe8790305bda8915f00aa8be5ad9
+  commit: 296de3cb69135f83f0f01169fc10f8b3a2539405
   subdirs:
+    - servant-auth
     - servant-auth-client
     - servant-auth-docs
     - servant-auth-swagger
     - servant-auth-server
-  # nix-sha256: sha256:0q1n0s126ywqw3g9xiiaw59s9jn2543v7p4zgxw99p68pihdlysv
 - servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
 
@@ -66,7 +63,6 @@ extra-deps:
   subdirs:
     - password
     - password-instances
-  # nix-sha256: sha256:0kbrw7zcn687h61h574z5k8p7z671whblcrmd6q21gsa2pyrk4ll
 
 
 
@@ -78,11 +74,9 @@ extra-deps:
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
-  # nix-sha256: sha256:034g3ciyd7khn98n8ii1gpjynkl15in5i4b7d4i2sy6075hi4987
 
 - github: GaloisInc/sqlite
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
-  # nix-sha256: sha256:1ia3i97lcpsgi4zmk67hi2f2crffpiqndhl11dllw1mkqr92hklk
 
 - github: NorfairKing/mergeful
   commit: b520f251010e80748c4eea1ba7216f2594c4f760
@@ -90,32 +84,27 @@ extra-deps:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
-  # nix-sha256: sha256:177a2f9nrsqkr0n2pb8kg64bd0dj6vvxr51chz2nqlsh1zq7vq10
   
 - github: NorfairKing/pretty-relative-time
   commit: 1c0ca0e24b2a5973e5ccf4e83d24097a22bb9a4a
-  # nix-sha256: sha256:1h4ff6lll3sz940amy696iqglkizipca8zw892vfdr107qpixkjn
 
 - github: NorfairKing/cursor-fuzzy-time
   commit: e364adc5ed04e59321aecc9a6158ca3c16f5c0bf
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
-  # nix-sha256: sha256:01iccg472xrxpmg4fcrippm29m7lhprj7d62gd2pixdzvlvrcx3z
   
 - github: NorfairKing/fuzzy-time
   commit: 8995f7d6dc4bb4798d13d005b47aabc45346ee3e
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
-  # nix-sha256: sha256:0hz7mdzbdwnj0ndya9047413iv2h01ymiyvmmi60whg5jixj6fma
 
 - github: NorfairKing/dirforest
   commit: 8e30537d1628ff5bcb56f99d60a9384d5e9b46ea
   subdirs:
     - dirforest
     - genvalidity-dirforest
-  # nix-sha256: sha256:08s3finqpbxvbq69248cyrljmwza2pp2rn370pv654l55rjbkjjx
 
 - github: NorfairKing/cursor-dirforest
   commit: 01e862938e7950b70d0c725dbe639f6a3d369e93
@@ -123,20 +112,17 @@ extra-deps:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
-  # nix-sha256: sha256:1a4vjr8ghsqlxigcdhckk1hiz88w3k8gvqvhd2ly1hfqwms07wqn
 
 - github: NorfairKing/cursor-brick
   commit: a7b47b03c8c5525234aaccc0c372e49a80134b9d
   subdirs:
     - cursor-brick
-  # nix-sha256: sha256:1wk2sixf1ld48j6a14zgfadg41si6rl8gwmwdlkn0cqjiw9n7f4p
 
 - github: NorfairKing/cursor
-  commit: 9a9972bda3ea8f11579ebd63163d0a72c6a751a9
+  commit: 71ec3154809e229efbf35d500ac6d1a42ae5fdc0
   subdirs:
     - cursor
     - cursor-gen
-  # nix-sha256: sha256:0292pyzlgdal109cwl9hffsd5lvczvs5lx9d1lm6rkf12n09n78i
 
 - github: NorfairKing/validity
   commit: c38fc635f98580548f82314504e9f8742519f94d
@@ -178,14 +164,12 @@ extra-deps:
   # nix-sha256: sha256:106q361wj8aspggvdj319jny6j6rfdmljha912sf8mdbsxl2gp5i
 
 - git: https://github.com/NorfairKing/yamlparse-applicative
-  commit: ba2544632a21d0cfa0e2590f9a6a96fbbd026640
+  commit: 1d381a4cbc9736a2defc916a93cfcf8000ee7e37
   subdirs:
   - yamlparse-applicative
-  # nix-sha256: sha256:1ap6xpckj756ap9rgvl6vb3if986zp3f3lgxir7lbq35k9qqib1y
  
 - git: https://github.com/NorfairKing/yesod-static-remote
   commit: f91fdbc2ac74cf8d005f536cfbbf9b4385cbbba6
-  # nix-sha256: sha256:04cn2mi2lkjl65drq84ch4cd19kshaz04alm617kaw0pdkmq2ld1
 
 - normaldistribution-1.1.0.3@sha256:2615b784c4112cbf6ffa0e2b55b76790290a9b9dff18a05d8c89aa374b213477,2160
 

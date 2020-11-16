@@ -6,7 +6,6 @@ module Smos.Docs.Site.Static
   )
 where
 
-import Path
 import Smos.Docs.Site.Static.TH
 
 $mkDocPages

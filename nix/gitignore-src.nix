@@ -1,13 +1,13 @@
-{ lib
-, ...
-}:
+final: previous:
 let
   gitignoreSrc =
-    builtins.fetchGit {
-      url = "https://github.com/hercules-ci/gitignore.nix";
-      ref = "master";
+    final.fetchFromGitHub {
+      owner = "hercules-ci";
+      repo = "gitignore.nix";
       rev = "c4662e662462e7bf3c2a968483478a665d00e717";
+      sha256 = "sha256:1npnx0h6bd0d7ql93ka7azhj40zgjp815fw2r6smg8ch9p7mzdlx";
     };
-  gitignoreSource = (import gitignoreSrc { inherit lib; }).gitignoreSource;
 in
-gitignoreSource
+{
+  inherit (import gitignoreSrc { inherit (final) lib; }) gitignoreSource;
+}
