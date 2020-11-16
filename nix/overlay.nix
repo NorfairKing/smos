@@ -67,7 +67,7 @@ in
                         "--extra-lib-dirs=${final.zlib.static}/lib"
                         "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
                         "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-                        "--extra-lib-dirs=${final.sqlite}/lib"
+                        "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
                       ];
                       # Assert that the executables are indeed static
                       postInstall = (old.postBuild or "") + optionalString static ''
@@ -262,7 +262,6 @@ in
     '';
   };
 
-  sqlite = previous.sqlite.overrideAttrs (old: { dontDisableStatic = true; });
 
 
   haskellPackages =
