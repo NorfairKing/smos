@@ -30,7 +30,6 @@ in
       };
     in
       genAttrs castNames castDerivation;
-  sqlite = previous.sqlite.overrideAttrs (old: { dontDisableStatic = true; });
   smosPackages = with final.haskell.lib;
     let
       smosPkg =
@@ -68,7 +67,7 @@ in
                         "--extra-lib-dirs=${final.zlib.static}/lib"
                         "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
                         "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-                        "--extra-lib-dirs=${final.sqlite}/lib"
+                        "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
                       ];
                       # Assert that the executables are indeed static
                       postInstall = (old.postBuild or "") + optionalString static ''
@@ -322,7 +321,9 @@ in
                     }
                   ) {};
                   terminfo = self.callHackage "terminfo" "0.4.1.4" {};
-                  persistent-sqlite = super.persistent-sqlite.override { sqlite = final.sqlite; };
+                  persistent-sqlite = if static
+                  then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); }
+                  else super.persistent-sqlite;
                 } // final.smosPackages
             );
         }
