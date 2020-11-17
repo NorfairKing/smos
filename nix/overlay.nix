@@ -258,7 +258,7 @@ in
     name = "smos-release.zip";
     buildCommand = ''
       cd ${final.smosRelease}
-      ${final.pkgs.zip}/bin/zip -r $out *
+      ${final.pkgs.zip}/bin/zip -r $out bin share/{zsh,bash-completion,mime,fish,applications}
     '';
   };
 
