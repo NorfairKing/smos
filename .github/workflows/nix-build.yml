@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v11
-    - uses: cachix/cachix-action@v7
+    - uses: cachix/install-nix-action@v12
+    - uses: cachix/cachix-action@v8
       with:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
@@ -32,14 +32,14 @@ jobs:
           - macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v11
+    - uses: cachix/install-nix-action@v12
     - name: free disk space
       run: |
         if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
         then
           sudo rm -rf /opt
         fi
-    - uses: cachix/cachix-action@v7
+    - uses: cachix/cachix-action@v8
       with:
         name: smos
         extraPullNames: cachix
@@ -51,10 +51,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v11
+    - uses: cachix/install-nix-action@v12
     - name: free disk space
       run: sudo rm -rf /opt
-    - uses: cachix/cachix-action@v7
+    - uses: cachix/cachix-action@v8
       with:
         name: smos
         extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
