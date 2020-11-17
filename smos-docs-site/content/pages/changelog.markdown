@@ -18,6 +18,8 @@ description: The changelog for all of the Smos tools
   It is now possible to run the work report without any context.
 - `smos-query`:
   The work report now also shows overdue waiting entries.
+- `smos-calendar-import`:
+  The importer no longer fails on malformed URIs.
 
 ## Removed
 

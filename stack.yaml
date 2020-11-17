@@ -41,8 +41,8 @@ extra-deps:
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 
 # Calendar
-- github: MasseR/iCalendar
-  commit: d8acdad06988e527debef034458ddc74715f77ce
+- github: NorfairKing/iCalendar
+  commit: 70c924ad6275ba05a514e31af1607a5b175f98ad
 
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 

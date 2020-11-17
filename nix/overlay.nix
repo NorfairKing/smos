@@ -301,9 +301,8 @@ in
                   password-instances = passwordPkg "password-instances";
                   iCalendar = self.callCabal2nix "iCalendar" (
                     builtins.fetchGit {
-                      url = "https://github.com/MasseR/iCalendar";
-                      rev = "d8acdad06988e527debef034458ddc74715f77ce";
-                      ref = "dependencies";
+                      url = "https://github.com/NorfairKing/iCalendar";
+                      rev = "70c924ad6275ba05a514e31af1607a5b175f98ad";
                     }
                   ) {};
                   vty = dontCheck (
