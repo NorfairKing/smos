@@ -20,6 +20,10 @@ description: The changelog for all of the Smos tools
   The work report now also shows overdue waiting entries.
 - `smos-calendar-import`:
   The importer no longer fails on malformed URIs.
+- `smos-calendar-import`:
+  The importer no longer fails on all other sources if any of them fails to parse.
+- `smos-calendar-import`:
+  The importer now has a failing exit code if one of the sources failed to parse.
 
 ## Removed
 

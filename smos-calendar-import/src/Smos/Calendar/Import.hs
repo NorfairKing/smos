@@ -56,7 +56,7 @@ smosCalendarImport = do
   let recurrenceLimit = addDays 30 today
   hereTZ <- getCurrentTimeZone
   man <- HTTP.newTlsManager
-  forM_ (NE.toList setSources) $ \Source {..} -> do
+  results <- forM (NE.toList setSources) $ \Source {..} -> do
     let originName = case sourceName of
           Just n -> n
           Nothing -> case sourceOrigin of
@@ -71,7 +71,13 @@ smosCalendarImport = do
         pure errOrCal
       FileOrigin af -> parseICalendarFile def $ fromAbsFile af
     case errOrCal of
-      Left err -> die err
+      Left err -> do
+        putStrLn $
+          unlines
+            [ unwords ["Error while parsing calendar from source:", originName],
+              err
+            ]
+        pure False
       Right (cals, warnings) -> do
         forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> warning
         let conf =
@@ -88,6 +94,8 @@ smosCalendarImport = do
         putStrLn $ "Saving to " <> fromRelFile sourceDestinationFile
         let fp = wd </> sourceDestinationFile
         writeSmosFile fp sf
+        pure True
+  unless (and results) $ exitWith (ExitFailure 1)
 
 data ProcessConf
   = ProcessConf
