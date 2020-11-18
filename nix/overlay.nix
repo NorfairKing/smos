@@ -323,6 +323,9 @@ in
                   persistent-sqlite = if static
                   then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); }
                   else super.persistent-sqlite;
+                  thyme = if isMacos
+                  then addBuildDepend super.thyme final.haskellPackages.cpphs
+                  else super.thyme;
                 } // final.smosPackages
             );
         }
