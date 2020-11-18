@@ -324,7 +324,8 @@ in
                   persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
                   # These are turned off for the same reason as the local packages tests
                   dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
-                  cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursordirforest;
+                  genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
+                  cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
                 } // final.smosPackages
             );
         }
