@@ -233,7 +233,6 @@ in
         "smos-single" = smosPkgWithOwnComp "smos-single";
         "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
         "smos-archive" = smosPkgWithOwnComp "smos-archive";
-        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
         "smos-api" = smosPkg "smos-api";
         "smos-api-gen" = smosPkg "smos-api-gen";
@@ -245,6 +244,8 @@ in
         "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
         inherit smos-web-server;
       } // optionalAttrs (!isMacos) {
+        # The 'thyme' dependency does not build on macos
+        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
         inherit smos-docs-site;
       };
 
@@ -323,9 +324,6 @@ in
                   persistent-sqlite = if static
                   then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); }
                   else super.persistent-sqlite;
-                  thyme = if isMacos
-                  then addBuildDepend super.thyme final.haskellPackages.cpphs
-                  else super.thyme;
                 } // final.smosPackages
             );
         }
