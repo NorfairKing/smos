@@ -13,7 +13,7 @@ export SMOS_WEB_SERVER_DOCS_URL=https://docs.smos.online
 
 
 nice -n19 stack install :smos-server :smos-web-server \
-  --file-watch \
+  --file-watch --watch-all\
   --exec='./scripts/restart-web-server.sh' \
   --ghc-options='-freverse-errors -O0' \
   --no-nix-pure \

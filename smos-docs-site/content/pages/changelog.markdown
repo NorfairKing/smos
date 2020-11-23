@@ -24,6 +24,8 @@ description: The changelog for all of the Smos tools
   The importer no longer fails on all other sources if any of them fails to parse.
 - `smos-calendar-import`:
   The importer now has a failing exit code if one of the sources failed to parse.
+- `smos-web-server`:
+  The web server now sanitises output from the smos instance to make extra-sure that no non-UTF8 text gets to the client.
 
 ## Removed
 
