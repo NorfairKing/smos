@@ -87,7 +87,7 @@ drawExplainerMode DebugInfo {..} =
           Just ActivationDebug {..} ->
             vBox
               [ hBox
-                  [ str "Last action activated: ",
+                  [ str "Last activated action: ",
                     drawActionName activationDebugName,
                     str " (",
                     drawKeyPresses activationDebugMatch,
