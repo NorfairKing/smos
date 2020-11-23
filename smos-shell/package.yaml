@@ -1,0 +1,41 @@
+name:                smos-shell
+version:             0.0.0.0
+github:              "NorfairKing/smos"
+license:             MIT
+author:              "Tom Sydney Kerckhove"
+maintainer:          "syd@cs-syd.eu"
+copyright:           "Copyright (c) 2020 Tom Sydney Kerckhove"
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - haskeline
+  - optparse-applicative
+  - smos-query
+  - smos-report
+
+executables:
+  smos-shell:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - smos-shell
+
+tests:
+  smos-shell-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hspec
+    - smos-shell

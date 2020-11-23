@@ -43,12 +43,27 @@ data Environment
       }
   deriving (Show, Eq, Generic)
 
+emptyEnvironment :: Environment
+emptyEnvironment =
+  Environment
+    { envDirectoryEnvironment = emptyDirectoryEnvironment
+    }
+
 data EnvWithConfigFile a
   = EnvWithConfigFile
       { envWithConfigFile :: Maybe FilePath,
         envWithRestEnv :: a
       }
   deriving (Show, Eq, Generic)
+
+emptyDirectoryEnvironment :: DirectoryEnvironment
+emptyDirectoryEnvironment =
+  DirectoryEnvironment
+    { dirEnvWorkflowDir = Nothing,
+      dirEnvArchiveDir = Nothing,
+      dirEnvProjectsDir = Nothing,
+      dirEnvArchivedProjectsDir = Nothing
+    }
 
 data DirectoryEnvironment
   = DirectoryEnvironment

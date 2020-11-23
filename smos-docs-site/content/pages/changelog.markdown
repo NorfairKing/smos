@@ -11,6 +11,8 @@ description: The changelog for all of the Smos tools
   You can now use Word-based movements in headers and contents.
   [cursor/#12](https://github.com/NorfairKing/cursor/pull/12)
   Thank you [@chiroptical](https://github.com/chiroptical/)!
+- `smos-shell`:
+  A new package, to run smos commands in the browser without allowing full shell access.
 
 ## Changed
 

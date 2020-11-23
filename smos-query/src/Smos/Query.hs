@@ -2,6 +2,7 @@
 
 module Smos.Query
   ( smosQuery,
+    smosQueryWithInstructions,
     module Smos.Query.Config,
   )
 where
@@ -12,8 +13,11 @@ import Smos.Query.OptParse
 
 smosQuery :: SmosQueryConfig -> IO ()
 smosQuery sqc = do
-  Instructions disp sqc' <- getInstructions sqc
-  runReaderT (execute disp) sqc'
+  ins <- getInstructions sqc
+  smosQueryWithInstructions ins
+
+smosQueryWithInstructions :: Instructions -> IO ()
+smosQueryWithInstructions (Instructions disp sqc') = runReaderT (execute disp) sqc'
 
 execute :: Dispatch -> Q ()
 execute =

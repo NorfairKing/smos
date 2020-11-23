@@ -161,6 +161,13 @@ newtype Flags
       }
   deriving (Show, Eq, Generic)
 
+emptyEnvironment :: Environment
+emptyEnvironment =
+  Environment
+    { envReportEnvironment = Report.emptyEnvironment,
+      envHideArchive = Nothing
+    }
+
 data Environment
   = Environment
       { envReportEnvironment :: Report.Environment,
