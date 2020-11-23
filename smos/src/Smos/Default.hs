@@ -358,7 +358,8 @@ defaultHelpKeyMap =
       helpKeyMapAnyMatchers =
         listMatchers
           [ exactKey KEsc exitHelp,
-            exactChar 'q' exitHelp
+            exactChar 'q' exitHelp,
+            exactChar '?' exitHelp
           ]
     }
 
