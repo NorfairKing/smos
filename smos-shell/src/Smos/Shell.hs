@@ -14,7 +14,10 @@ import System.Console.Haskeline
 import System.Exit
 
 smosShell :: IO ()
-smosShell = runInputT defaultSettings $ loop Nothing
+smosShell = smosShellWith Query.defaultReportConfig
+
+smosShellWith :: Query.SmosReportConfig -> IO ()
+smosShellWith rc = runInputT defaultSettings $ loop Nothing
   where
     loop :: Maybe ExitCode -> InputT IO ()
     loop mex = do
@@ -25,6 +28,7 @@ smosShell = runInputT defaultSettings $ loop Nothing
       minput <- getInputLine prompt
       case words <$> minput of
         Nothing -> pure ()
+        Just ["exit"] -> pure ()
         Just ["quit"] -> pure ()
         Just [] -> loop Nothing
         Just ("query" : input) -> do
@@ -40,7 +44,7 @@ smosShell = runInputT defaultSettings $ loop Nothing
                 instructions <-
                   liftIO $
                     Query.combineToInstructions
-                      Query.defaultSmosQueryConfig
+                      (Query.defaultSmosQueryConfig {Query.smosQueryConfigReportConfig = rc})
                       cmd
                       (Report.flagWithRestFlags flags)
                       Query.emptyEnvironment

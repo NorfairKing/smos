@@ -2,9 +2,9 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Smos.Web.Server.Handler.File
-  ( getFileR,
-    getFileInstanceR,
+module Smos.Web.Server.Handler.TUI
+  ( getTUIR,
+    getTUIInstanceR,
   )
 where
 
@@ -18,15 +18,15 @@ import Smos.Web.Server.Widget
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
-getFileR :: [Text] -> Handler Html
-getFileR ts = withLogin $ \_ -> do
-  let tuiWidget = makeTuiWidget $ FileInstanceR ts
+getTUIR :: [Text] -> Handler Html
+getTUIR ts = withLogin $ \_ -> do
+  let terminalWidget = makeTerminalWidget $ TUIInstanceR ts
   withNavBar $ do
     setTitle "Smos Web TUI"
-    $(widgetFile "file")
+    $(widgetFile "tui")
 
-getFileInstanceR :: [Text] -> Handler ()
-getFileInstanceR ts = do
+getTUIInstanceR :: [Text] -> Handler ()
+getTUIInstanceR ts = do
   withLogin' $ \userName token -> do
     case parseRelFile $ T.unpack $ T.intercalate "/" ts of
       Nothing -> notFound

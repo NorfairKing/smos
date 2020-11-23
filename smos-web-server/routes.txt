@@ -4,8 +4,8 @@
 /playground PlaygroundR GET
 /ws/playground-instance PlaygroundInstanceR GET
 
-/file/*Texts FileR GET
-/ws/file-instance/*Texts FileInstanceR GET
+/tui/*Texts TUIR GET
+/ws/tui-instance/*Texts TUIInstanceR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

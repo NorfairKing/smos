@@ -20,7 +20,7 @@ import Yesod.WebSockets
 
 getPlaygroundR :: Handler Html
 getPlaygroundR = do
-  let tuiWidget = makeTuiWidget PlaygroundInstanceR
+  let terminalWidget = makeTerminalWidget PlaygroundInstanceR
   mDocsUrl <- getsYesod appDocsBaseUrl
   withNavBar $ do
     setTitle "Smos Web TUI Playground"

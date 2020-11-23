@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Smos.Web.Server.TUI
-  ( makeTuiWidget,
+  ( makeTerminalWidget,
     communicateWithSmosInstance,
   )
 where
@@ -25,14 +25,14 @@ import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 import Yesod.WebSockets
 
-makeTuiWidget :: Route App -> Widget
-makeTuiWidget websocketRoute = do
+makeTerminalWidget :: Route App -> Widget
+makeTerminalWidget websocketRoute = do
   addScript $ StaticR xterm_js
   addScript $ StaticR xterm_attach_js
   addScript $ StaticR xterm_fit_js
   addStylesheet $ StaticR xterm_css
   addScript $ StaticR jquery_js
-  $(widgetFile "tui")
+  $(widgetFile "terminal")
 
 communicateWithSmosInstance :: SmosInstanceHandle -> WebSocketsT Handler ()
 communicateWithSmosInstance sih = do

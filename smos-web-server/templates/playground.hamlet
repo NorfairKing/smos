@@ -137,4 +137,4 @@
                 
                   
   <div .column .is-two-thirds>
-    ^{tuiWidget}
+    ^{terminalWidget}

@@ -7,7 +7,7 @@
             <div .box .has-text-centered>
               <form
                 method="get"
-                action=@{FileR ["example.smos"]}>
+                action=@{TUIR ["example.smos"]}>
                 <button .button .is-light .is-large .is-fullwidth autofocus="autofocus" type="submit">
                   Open Smos Online
           $nothing
