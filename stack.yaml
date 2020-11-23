@@ -164,15 +164,18 @@ extra-deps:
   - validity-vector
   # nix-sha256: sha256:106q361wj8aspggvdj319jny6j6rfdmljha912sf8mdbsxl2gp5i
 
-- git: https://github.com/NorfairKing/yamlparse-applicative
+- github: NorfairKing/yamlparse-applicative
   commit: 1d381a4cbc9736a2defc916a93cfcf8000ee7e37
   subdirs:
   - yamlparse-applicative
  
-- git: https://github.com/NorfairKing/yesod-static-remote
+- github: NorfairKing/yesod-static-remote
   commit: f91fdbc2ac74cf8d005f536cfbbf9b4385cbbba6
 
 - normaldistribution-1.1.0.3@sha256:2615b784c4112cbf6ffa0e2b55b76790290a9b9dff18a05d8c89aa374b213477,2160
+
+- github: NorfairKing/haskeline
+  commit: 7c6491c55741608255c2681702381ce488692d15
 
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]

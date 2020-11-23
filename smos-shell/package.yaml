@@ -14,8 +14,11 @@ library:
   dependencies:
   - haskeline
   - optparse-applicative
+  - smos
+  - mtl
   - smos-query
   - smos-report
+  - unliftio
 
 executables:
   smos-shell:

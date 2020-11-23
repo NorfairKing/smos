@@ -48,6 +48,7 @@ library:
   - smos-client
   - smos-data
   - smos-report
+  - smos-shell
   - smos-sync-client
   - stm
   - template-haskell

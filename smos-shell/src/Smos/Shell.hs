@@ -1,24 +1,54 @@
 module Smos.Shell
   ( smosShell,
+    smosShellWith,
   )
 where
 
 import Control.Exception as Exception
 import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Data.IORef
 import qualified Options.Applicative as OptParse
 import qualified Smos.Query as Query
 import qualified Smos.Query.Default as Query
 import qualified Smos.Query.OptParse as Query
 import qualified Smos.Report.OptParse as Report
-import System.Console.Haskeline
+import System.Console.Haskeline as Haskeline
+import System.Console.Haskeline.Command.KillRing as Haskeline
+import System.Console.Haskeline.History as Haskeline
+import System.Console.Haskeline.InputT as Haskeline
+import System.Console.Haskeline.Term as Haskeline
 import System.Exit
+import System.IO
 
 smosShell :: IO ()
-smosShell = smosShellWith Query.defaultReportConfig
+smosShell = smosShellWith Query.defaultReportConfig stdin stdout
 
-smosShellWith :: Query.SmosReportConfig -> IO ()
-smosShellWith rc = runInputT defaultSettings $ loop Nothing
+smosShellWith :: Query.SmosReportConfig -> Handle -> Handle -> IO ()
+smosShellWith rc inputH outputH = customRunInputT $ loop Nothing
   where
+    customRunInputT :: InputT IO a -> IO a
+    customRunInputT inputT = do
+      historyRef <- newIORef Haskeline.emptyHistory
+      withBehavior (useFileHandle inputH) $ \rt -> do
+        let runTerm =
+              rt
+                { putStrOut = \s -> do
+                    hPutStr outputH s
+                    hFlush outputH
+                }
+        runReaderT
+          ( runReaderT
+              ( Haskeline.runKillRing
+                  ( runReaderT
+                      ( runReaderT (unInputT inputT) runTerm
+                      )
+                      historyRef
+                  )
+              )
+              Haskeline.defaultPrefs
+          )
+          Haskeline.defaultSettings
     loop :: Maybe ExitCode -> InputT IO ()
     loop mex = do
       let prompt = case mex of
