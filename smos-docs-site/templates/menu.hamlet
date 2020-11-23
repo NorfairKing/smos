@@ -102,7 +102,7 @@
             Tags report
         <li>
           <a href=@{SmosQueryCommandR "report"}>
-            Custom Reports
+            Custom reports
         <li>
           <a href=@{SmosQueryCommandR "entry"}>
             Entry report
