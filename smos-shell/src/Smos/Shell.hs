@@ -36,8 +36,8 @@ smosShellWith rc inputH outputH errorH = do
   colouredBsMaker <- byteStringMakerFromHandle outputH
   let prependECSign :: Maybe ExitCode -> [Chunk] -> [Chunk]
       prependECSign = \case
-        Just (ExitFailure _) -> (fore red (chunk "✖ ") :)
-        Just ExitSuccess -> (fore green (chunk "✔ ") :)
+        Just (ExitFailure _) -> (fore red (chunk "ERR ") :)
+        Just ExitSuccess -> (fore green (chunk "OK! ") :)
         Nothing -> id
       makePrompt :: Maybe ExitCode -> [Chunk]
       makePrompt mex = prependECSign mex [fore white $ chunk "smos > "]
@@ -50,6 +50,9 @@ smosShellWith rc inputH outputH errorH = do
           Nothing -> pure ()
           Just ["exit"] -> pure ()
           Just ["quit"] -> pure ()
+          Just ["help"] -> do
+            outputStrLn "Try running query --help to see an overview of the reports you can run."
+            loop Nothing
           Just [] -> loop Nothing
           Just ("query" : input) -> do
             case OptParse.execParserPure OptParse.defaultPrefs Query.argParser input of

@@ -44,23 +44,25 @@ communicateWithTerminal th = do
       outputConduit =
         terminalOutputSource th
           .| debugConduit "Output"
-          .| sanitiseUtf8Conduit
-          .| sinkWSText
+          .| sinkWSBinary
   runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
   res <- race (wait (terminalHandleAsync th)) (race (runConduit inputConduit) (runConduit outputConduit))
   case res of
     Left () -> do
       -- The smos instance quit succesfully.
       -- Send a succesful finish
+      $(logInfo) "The smos instance quit sucessfully"
       sendClose ("Success" :: Text)
     Right res' -> case res' of
       Left () -> do
         -- The browser disconnected
         -- There's nothing else we can do, just exit
+        $(logWarn) "The browser disconnected."
         pure ()
       Right () -> do
         -- The smos instance's handle got closed
         -- No idea why this would happen.
+        $(logWarn) "The smos instance's handle got closed."
         sendClose ("???" :: Text)
 
 resizeConduit :: MonadIO m => TerminalHandle -> ConduitT ByteString ByteString m ()
@@ -73,14 +75,3 @@ debugConduit :: MonadHandler m => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC $ \bs -> do
   $(logDebug) (T.pack (name <> ": " <> show bs))
   pure ()
-
--- Just to see what happens if smos sends some non-utf8 for some reason
--- troubleConduit :: MonadHandler m => ConduitT ByteString ByteString m ()
--- troubleConduit = awaitForever $ \bs -> do
---   b <- liftIO $ (> (9 :: Int)) <$> randomRIO (1, 10)
---   when b $ yield $ SB.pack [0xc0]
---   yield bs
-
--- This makes sure that no non-utf8 gets to the client.
-sanitiseUtf8Conduit :: Monad m => ConduitT ByteString Text m ()
-sanitiseUtf8Conduit = C.map (TE.decodeUtf8With TE.ignore)
