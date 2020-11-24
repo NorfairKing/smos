@@ -12,12 +12,15 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
+  - bytestring
   - haskeline
-  - optparse-applicative
-  - smos
   - mtl
+  - optparse-applicative
+  - rainbow
+  - smos
   - smos-query
   - smos-report
+  - text
   - unliftio
 
 executables:
