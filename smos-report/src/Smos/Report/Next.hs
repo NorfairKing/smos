@@ -18,11 +18,12 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
-produceNextActionReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> m NextActionReport
-produceNextActionReport ef ha dc = produceReport ha dc (nextActionReportConduit ef)
+produceNextActionReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> m NextActionReport
+produceNextActionReport ef ha sp dc = produceReport ha sp dc (nextActionReportConduit ef)
 
 nextActionReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
 nextActionReportConduit ef =

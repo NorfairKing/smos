@@ -43,15 +43,15 @@ smosQueryClock ClockSettings {..} = do
         .| C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now))
         .| C.mapMaybe (trimFileTimes now clockSetPeriod)
   let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
-  liftIO $
-    case clockSetOutputFormat of
-      OutputPretty ->
-        putBoxLn
-          $ renderClockTable clockSetReportStyle clockSetClockFormat
-          $ clockTableRows clockTable
-      OutputYaml -> SB.putStr $ Yaml.toByteString clockTable
-      OutputJSON -> LB.putStr $ JSON.encode clockTable
-      OutputJSONPretty -> LB.putStr $ JSON.encodePretty clockTable
+  out <- asks smosQueryConfigOutputHandle
+  case clockSetOutputFormat of
+    OutputPretty ->
+      putBoxLn
+        $ renderClockTable clockSetReportStyle clockSetClockFormat
+        $ clockTableRows clockTable
+    OutputYaml -> liftIO $ SB.hPutStr out $ Yaml.toByteString clockTable
+    OutputJSON -> liftIO $ LB.hPutStr out $ JSON.encode clockTable
+    OutputJSONPretty -> liftIO $ LB.hPutStr out $ JSON.encodePretty clockTable
 
 clockTableRows :: ClockTable -> [ClockTableRow]
 clockTableRows ctbs =

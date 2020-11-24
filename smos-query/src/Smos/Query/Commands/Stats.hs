@@ -42,7 +42,7 @@ smosQueryStats StatsSettings {..} = do
       streamAllSmosFiles
         .| streamParseSmosFiles
         .| accumulateStatsReport src
-  liftIO $ putTableLn $ renderStatsReport sr
+  putTableLn $ renderStatsReport sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
 accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid

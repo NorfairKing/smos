@@ -7,10 +7,7 @@ import Conduit
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Word
-import qualified Graphics.Vty as Vty (Config (..), defaultConfig, mkVty)
 import Graphics.Vty.Output.TerminfoBased (setWindowSize)
-import Smos
-import Smos.Types
 import System.Posix
 import UnliftIO
 

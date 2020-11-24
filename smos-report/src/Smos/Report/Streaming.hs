@@ -203,16 +203,16 @@ forestCursors ts =
               Just fc' -> go fc'
           )
 
-produceReport :: MonadIO m => HideArchive -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
-produceReport ha dc rc = do
+produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
+produceReport ha sp dc rc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
-  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles wd .| rc
+  runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles sp wd .| rc
 
-produceReportFromFiles :: MonadIO m => Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
-produceReportFromFiles wd =
+produceReportFromFiles :: MonadIO m => ShouldPrint -> Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
+produceReportFromFiles sp wd =
   filterSmosFilesRel
     .| parseSmosFilesRel wd
-    .| printShouldPrint PrintWarning
+    .| printShouldPrint sp
 
 accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a void m a
 accumulateSink operation = go

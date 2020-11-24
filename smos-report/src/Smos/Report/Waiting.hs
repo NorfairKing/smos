@@ -19,6 +19,7 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
@@ -39,8 +40,8 @@ instance FromJSON WaitingReport
 
 instance ToJSON WaitingReport
 
-produceWaitingReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> DirectoryConfig -> m WaitingReport
-produceWaitingReport ef ha dc = produceReport ha dc (waitingReportConduit ef)
+produceWaitingReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> m WaitingReport
+produceWaitingReport ef ha sp dc = produceReport ha sp dc (waitingReportConduit ef)
 
 waitingReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m WaitingReport
 waitingReportConduit ef =

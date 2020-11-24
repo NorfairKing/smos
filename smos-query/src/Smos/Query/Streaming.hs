@@ -4,7 +4,6 @@ import Conduit
 import Path
 import Smos.Data
 import Smos.Query.Config
-import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
 streamSmosProjects :: ConduitT i (Path Rel File) Q ()
@@ -26,10 +25,15 @@ streamParseSmosProjects :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q 
 streamParseSmosProjects = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   pd <- liftIO $ resolveDirProjectsDir src
-  parseSmosFilesRel pd .| printShouldPrint PrintWarning
+  parseSmosFilesRel pd .| shouldPrintC
 
 streamParseSmosFiles :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosFiles = do
   src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   wd <- liftIO $ resolveDirWorkflowDir src
-  parseSmosFilesRel wd .| printShouldPrint PrintWarning
+  parseSmosFilesRel wd .| shouldPrintC
+
+shouldPrintC :: ConduitT (a, Either ParseSmosFileException b) (a, b) Q ()
+shouldPrintC = do
+  sp <- lift getShouldPrint
+  printShouldPrint sp

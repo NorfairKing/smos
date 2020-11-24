@@ -30,7 +30,7 @@ smosQueryTags TagsSettings {..} = do
         .| smosCursorCurrents
         .| C.map snd
   let tr = makeTagsReport es
-  liftIO $ putTableLn $ renderTagsReport tr
+  putTableLn $ renderTagsReport tr
 
 renderTagsReport :: TagsReport -> Table
 renderTagsReport TagsReport {..} =

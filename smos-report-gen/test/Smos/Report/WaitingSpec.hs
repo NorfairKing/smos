@@ -4,6 +4,7 @@ module Smos.Report.WaitingSpec where
 
 import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Smos.Report.Waiting
 import Smos.Report.Waiting.Gen ()
@@ -23,5 +24,5 @@ spec = do
     $ \mFilter ->
       forAllValid $ \ha ->
         withInterestingStore $ \dc -> do
-          nar <- produceWaitingReport mFilter ha dc
+          nar <- produceWaitingReport mFilter ha DontPrint dc
           shouldBeValid nar

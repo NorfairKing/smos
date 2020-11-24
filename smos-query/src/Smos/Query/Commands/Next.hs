@@ -16,9 +16,9 @@ import Smos.Report.Next
 smosQueryNext :: NextSettings -> Q ()
 smosQueryNext NextSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  liftIO $ do
-    report <- produceNextActionReport nextSetFilter nextSetHideArchive dc
-    putTableLn $ renderNextActionReport report
+  sp <- getShouldPrint
+  report <- liftIO $ produceNextActionReport nextSetFilter nextSetHideArchive sp dc
+  putTableLn $ renderNextActionReport report
 
 renderNextActionReport :: NextActionReport -> Table
 renderNextActionReport = formatAsTable . map formatNextActionEntry . nextActionReportEntries

@@ -47,8 +47,9 @@ smosQueryWork WorkSettings {..} = do
             workReportContextSorter = workSetSorter,
             workReportContextWaitingThreshold = workSetWaitingThreshold
           }
-  wr <- produceWorkReport workSetHideArchive (smosReportConfigDirectoryConfig src) wrc
-  liftIO $ putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetProjection wr
+  sp <- getShouldPrint
+  wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
+  putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetProjection wr
 
 renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> NonEmpty Projection -> WorkReport -> Table
 renderWorkReport now ctxs threshold ne WorkReport {..} =

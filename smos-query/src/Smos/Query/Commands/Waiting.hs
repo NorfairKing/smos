@@ -16,9 +16,10 @@ import Smos.Report.Waiting
 smosQueryWaiting :: WaitingSettings -> Q ()
 smosQueryWaiting WaitingSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  report <- produceWaitingReport waitingSetFilter waitingSetHideArchive dc
+  sp <- getShouldPrint
+  report <- produceWaitingReport waitingSetFilter waitingSetHideArchive sp dc
   now <- liftIO getCurrentTime
-  liftIO $ putTableLn $ renderWaitingReport waitingSetThreshold now report
+  putTableLn $ renderWaitingReport waitingSetThreshold now report
 
 renderWaitingReport :: Word -> UTCTime -> WaitingReport -> Table
 renderWaitingReport threshold now =

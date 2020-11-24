@@ -15,11 +15,12 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
+import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Streaming
 
-produceEntryReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> NonEmpty Projection -> Maybe Sorter -> DirectoryConfig -> m EntryReport
-produceEntryReport ef ha p s dc = produceReport ha dc (entryReportConduit ef p s)
+produceEntryReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> NonEmpty Projection -> Maybe Sorter -> DirectoryConfig -> m EntryReport
+produceEntryReport ef ha sp p s dc = produceReport ha sp dc (entryReportConduit ef p s)
 
 entryReportConduit :: Monad m => Maybe EntryFilterRel -> NonEmpty Projection -> Maybe Sorter -> ConduitT (Path Rel File, SmosFile) void m EntryReport
 entryReportConduit ef p s =

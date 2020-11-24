@@ -35,6 +35,7 @@ tests:
   smos-shell-test:
     main:                Spec.hs
     source-dirs:         test
+    build-tools: hspec-discover
     ghc-options:
     - -threaded
     - -rtsopts

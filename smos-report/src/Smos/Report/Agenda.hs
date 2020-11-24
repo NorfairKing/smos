@@ -28,18 +28,18 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
-produceAgendaReport :: MonadIO m => ZonedTime -> Period -> TimeBlock -> HideArchive -> AgendaHistoricity -> Maybe EntryFilterRel -> DirectoryConfig -> m AgendaReport
-produceAgendaReport now period timeBlock ha h f dc = do
+produceAgendaReport :: MonadIO m => ZonedTime -> Period -> TimeBlock -> HideArchive -> ShouldPrint -> AgendaHistoricity -> Maybe EntryFilterRel -> DirectoryConfig -> m AgendaReport
+produceAgendaReport now period timeBlock ha sp h f dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $
     streamSmosFilesFromWorkflowRel ha dc
-      .| produceAgendaReportFromFiles now period timeBlock h f wd
+      .| produceAgendaReportFromFiles now period timeBlock h f sp wd
 
-produceAgendaReportFromFiles :: MonadIO m => ZonedTime -> Period -> TimeBlock -> AgendaHistoricity -> Maybe EntryFilterRel -> Path Abs Dir -> ConduitT (Path Rel File) void m AgendaReport
-produceAgendaReportFromFiles now p tb h f wd = do
+produceAgendaReportFromFiles :: MonadIO m => ZonedTime -> Period -> TimeBlock -> AgendaHistoricity -> Maybe EntryFilterRel -> ShouldPrint -> Path Abs Dir -> ConduitT (Path Rel File) void m AgendaReport
+produceAgendaReportFromFiles now p tb h f sp wd = do
   filterSmosFilesRel
     .| parseSmosFilesRel wd
-    .| printShouldPrint PrintWarning
+    .| printShouldPrint sp
     .| agendaReportConduit now p tb h f
 
 agendaReportConduit :: Monad m => ZonedTime -> Period -> TimeBlock -> AgendaHistoricity -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m AgendaReport

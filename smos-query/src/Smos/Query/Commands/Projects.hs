@@ -25,7 +25,7 @@ smosQueryProjects ProjectsSettings {..} = do
       streamSmosProjects
         .| streamParseSmosProjects
         .| smosMFilter (FilterFst <$> projectsSetFilter)
-  liftIO $ putTableLn $ renderProjectsReport $ makeProjectsReport projs
+  putTableLn $ renderProjectsReport $ makeProjectsReport projs
 
 renderProjectsReport :: ProjectsReport -> Table
 renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEntries

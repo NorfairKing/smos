@@ -6,6 +6,7 @@ import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Next
 import Smos.Report.Next.Gen ()
+import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -23,5 +24,5 @@ spec = do
     $ \mFilter ->
       forAllValid $ \ha ->
         withInterestingStore $ \dc -> do
-          nar <- produceNextActionReport mFilter ha dc
+          nar <- produceNextActionReport mFilter ha DontPrint dc
           shouldBeValid nar

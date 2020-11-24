@@ -6,6 +6,7 @@ import Smos.Report.Archive.Gen ()
 import Smos.Report.Entry
 import Smos.Report.Entry.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.ShouldPrint
 import Smos.Report.Sorter.Gen ()
 import Smos.Report.TestUtils
 import Test.Hspec
@@ -22,5 +23,5 @@ spec = do
         forAllValid $ \mSorter ->
           forAllValid $ \ha ->
             withInterestingStore $ \dc -> do
-              er <- produceEntryReport mFilter ha proj mSorter dc
+              er <- produceEntryReport mFilter ha DontPrint proj mSorter dc
               shouldBeValid er

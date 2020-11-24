@@ -3,6 +3,7 @@ module Smos.Query.TestUtils where
 import Path
 import Path.IO
 import Smos.Query
+import Smos.Query.Default
 import Smos.Report.InterestingStore
 import System.Environment
 
@@ -14,7 +15,7 @@ testSmosQuery is args = withSystemTempDir "smos-query" $ \tdir -> do
 
 testConfig :: Path Abs Dir -> SmosQueryConfig
 testConfig td =
-  SmosQueryConfig
+  defaultSmosQueryConfig
     { smosQueryConfigReportConfig =
         SmosReportConfig
           { smosReportConfigWorkConfig = defaultWorkReportConfig,

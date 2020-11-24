@@ -4,7 +4,6 @@
 
 module Smos.Query.Formatting where
 
-import qualified Data.ByteString as SB
 import Data.Foldable
 import qualified Data.Sequence as S
 import Data.Sequence (Seq)
@@ -32,16 +31,6 @@ formatAsTable =
 
 mkCell :: Chunk -> Cell
 mkCell c = Cell (S.singleton (S.singleton c)) center left mempty
-
-putTableLn :: Seq Chunk -> IO ()
-putTableLn myChunks = do
-  printer <- byteStringMakerFromEnvironment
-  mapM_ SB.putStr $ chunksToByteStrings printer $ toList myChunks
-
-putBoxLn :: Orientation a => Box a -> IO ()
-putBoxLn box = do
-  printer <- byteStringMakerFromEnvironment
-  mapM_ SB.putStr $ chunksToByteStrings printer $ toList $ Box.render box
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"

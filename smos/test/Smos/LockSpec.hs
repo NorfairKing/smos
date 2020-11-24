@@ -9,6 +9,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
 import Smos.Instance
+import Smos.Terminal
 import Smos.Types
 import System.Exit
 import Test.Hspec
@@ -62,7 +63,7 @@ lockSpec workflowDir startupFile = do
           }
   withSmosInstance config (Just $ StartingFile startupFile) $ \smos1 -> do
     threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos 1 did the initialisation
-    let smos1Async = smosInstanceHandleAsync smos1
+    let smos1Async = terminalHandleAsync smos1
     link smos1Async
     mErrOrDone1 <- poll smos1Async
     case mErrOrDone1 of
@@ -71,7 +72,7 @@ lockSpec workflowDir startupFile = do
       Nothing -> pure ()
     withSmosInstance config (Just $ StartingFile startupFile) $ \smos2 -> do
       threadDelay $ 50 * 1000 -- Wait a bit to be sure that smos 2 did the initialisation
-      let smos2Async = smosInstanceHandleAsync smos2
+      let smos2Async = terminalHandleAsync smos2
       mErrOrDone2 <- poll smos2Async
       case mErrOrDone2 of
         Just (Left e) -> case fromException e of

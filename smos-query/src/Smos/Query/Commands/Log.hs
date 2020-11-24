@@ -29,7 +29,7 @@ smosQueryLog LogSettings {..} = do
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
-  liftIO $ putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
+  putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 
 renderLogReport :: ZonedTime -> LogReport -> Table
 renderLogReport zt lrbs =

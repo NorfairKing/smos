@@ -9,7 +9,6 @@ import Control.Monad.Reader
 import Data.IORef
 import qualified Options.Applicative as OptParse
 import qualified Smos.Query as Query
-import qualified Smos.Query.Default as Query
 import qualified Smos.Query.OptParse as Query
 import qualified Smos.Report.OptParse as Report
 import System.Console.Haskeline as Haskeline
@@ -80,7 +79,13 @@ smosShellWith rc inputH outputH errorH = customRunInputT $ loop Nothing
                 instructions <-
                   liftIO $
                     Query.combineToInstructions
-                      (Query.defaultSmosQueryConfig {Query.smosQueryConfigReportConfig = rc})
+                      ( Query.SmosQueryConfig
+                          { Query.smosQueryConfigReportConfig = rc,
+                            Query.smosQueryConfigInputHandle = inputH,
+                            Query.smosQueryConfigOutputHandle = outputH,
+                            Query.smosQueryConfigErrorHandle = errorH
+                          }
+                      )
                       cmd
                       (Report.flagWithRestFlags flags)
                       Query.emptyEnvironment

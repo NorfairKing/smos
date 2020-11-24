@@ -32,8 +32,9 @@ smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive agendaSetHistoricity agendaSetFilter dc
-  liftIO $ putTableLn $ renderAgendaReport now report
+  sp <- getShouldPrint
+  report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
+  putTableLn $ renderAgendaReport now report
 
 renderAgendaReport :: ZonedTime -> AgendaReport -> Table
 renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now

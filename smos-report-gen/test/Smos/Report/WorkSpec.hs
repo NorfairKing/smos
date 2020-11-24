@@ -6,6 +6,7 @@ import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
 import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()
@@ -32,5 +33,5 @@ spec = do
     $ \wrc ->
       forAllValid $ \ha ->
         withInterestingStore $ \dc -> do
-          nar <- produceWorkReport ha dc wrc
+          nar <- produceWorkReport ha DontPrint dc wrc
           shouldBeValid nar

@@ -242,6 +242,7 @@ in
         "smos-client-gen" = smosPkg "smos-client-gen";
         "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
         "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+        "smos-shell" = smosPkg "smos-shell";
         inherit smos-web-server;
       } // optionalAttrs (!isMacos) {
         # The 'thyme' dependency does not build on macos
@@ -320,6 +321,14 @@ in
                       rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
                     }
                   ) {};
+                  haskeline = dontCheck (
+                    self.callCabal2nix "haskeline" (
+                      builtins.fetchGit {
+                        url = "https://github.com/NorfairKing/haskeline";
+                        rev = "7c6491c55741608255c2681702381ce488692d15";
+                      }
+                    ) {}
+                  );
                   terminfo = self.callHackage "terminfo" "0.4.1.4" {};
                   persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
                   # These are turned off for the same reason as the local packages tests

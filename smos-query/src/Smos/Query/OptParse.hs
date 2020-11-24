@@ -43,7 +43,7 @@ getInstructions sqc = do
 
 combineToInstructions ::
   SmosQueryConfig -> Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
+combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
     hideArchiveWithDefault def mflag =
@@ -193,7 +193,10 @@ combineToInstructions SmosQueryConfig {..} c Flags {..} Environment {..} mc =
           flagReportFlags
           envReportEnvironment
           (confReportConf <$> mc)
-      pure $ SmosQueryConfig {smosQueryConfigReportConfig = src}
+      pure $
+        sqc
+          { smosQueryConfigReportConfig = src
+          }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser

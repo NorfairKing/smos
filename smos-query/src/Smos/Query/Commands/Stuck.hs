@@ -29,9 +29,8 @@ smosQueryStuck StuckSettings {..} = do
         .| smosMFilter (FilterFst <$> stuckSetFilter)
         .| C.map (uncurry makeStuckReportEntry)
         .| C.catMaybes
-  liftIO $ do
-    now <- getCurrentTime
-    putTableLn $ renderStuckReport now stuckReport
+  now <- liftIO getCurrentTime
+  putTableLn $ renderStuckReport now stuckReport
 
 renderStuckReport :: UTCTime -> StuckReport -> Table
 renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuckReportEntries
