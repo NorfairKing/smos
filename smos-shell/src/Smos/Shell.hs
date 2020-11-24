@@ -4,6 +4,7 @@ module Smos.Shell
   )
 where
 
+import Control.Exception
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.IORef
@@ -22,6 +23,7 @@ import System.IO
 smosShell :: IO ()
 smosShell = smosShellWith Query.defaultReportConfig stdin stdout stderr
 
+-- TODO use a config based on actual optparse
 smosShellWith :: Query.SmosReportConfig -> Handle -> Handle -> Handle -> IO ()
 smosShellWith rc inputH outputH errorH = customRunInputT $ loop Nothing
   where
@@ -75,7 +77,7 @@ smosShellWith rc inputH outputH errorH = customRunInputT $ loop Nothing
               outputStrLn msg -- TODO not sure what to do with this yet.
               loop Nothing
             OptParse.Success (Query.Arguments cmd flags) -> do
-              liftIO $ do
+              ec <- liftIO $ do
                 instructions <-
                   liftIO $
                     Query.combineToInstructions
@@ -90,8 +92,8 @@ smosShellWith rc inputH outputH errorH = customRunInputT $ loop Nothing
                       (Report.flagWithRestFlags flags)
                       Query.emptyEnvironment
                       Nothing
-                Query.smosQueryWithInstructions instructions
-              loop (Just ExitSuccess)
+                (ExitSuccess <$ Query.smosQueryWithInstructions instructions) `catch` (\ec -> pure ec) -- TODO Catch synchronous exceptions too.
+              loop (Just ec)
         Just (cmd : _) -> do
           outputStrLn $ "Command not recognised: " <> cmd
           loop Nothing
