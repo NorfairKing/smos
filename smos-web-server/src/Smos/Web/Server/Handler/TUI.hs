@@ -33,4 +33,4 @@ getTUIInstanceR ts = do
       Just relFile -> do
         webSockets
           $ withSmosSession userName token relFile
-          $ \instanceHandle -> communicateWithSmosInstance instanceHandle
+          $ \instanceHandle -> communicateWithTerminal instanceHandle

@@ -4,7 +4,7 @@
 
 module Smos.Web.Server.TUI
   ( makeTerminalWidget,
-    communicateWithSmosInstance,
+    communicateWithTerminal,
   )
 where
 
@@ -17,7 +17,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
-import Smos.Instance
+import Smos.Terminal
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
@@ -34,20 +34,20 @@ makeTerminalWidget websocketRoute = do
   addScript $ StaticR jquery_js
   $(widgetFile "terminal")
 
-communicateWithSmosInstance :: SmosInstanceHandle -> WebSocketsT Handler ()
-communicateWithSmosInstance sih = do
+communicateWithTerminal :: TerminalHandle -> WebSocketsT Handler ()
+communicateWithTerminal th = do
   let inputConduit =
         sourceWS
           .| debugConduit "Input"
-          .| resizeConduit sih
-          .| smosInstanceInputSink sih
+          .| resizeConduit th
+          .| terminalInputSink th
       outputConduit =
-        smosInstanceOutputSource sih
+        terminalOutputSource th
           .| debugConduit "Output"
           .| sanitiseUtf8Conduit
           .| sinkWSText
   runConduit (yield ("\ESC[?25h" :: Text) .| sinkWSText) -- turn on cursor
-  res <- race (wait (smosInstanceHandleAsync sih)) (race (runConduit inputConduit) (runConduit outputConduit))
+  res <- race (wait (terminalHandleAsync th)) (race (runConduit inputConduit) (runConduit outputConduit))
   case res of
     Left () -> do
       -- The smos instance quit succesfully.
@@ -63,11 +63,11 @@ communicateWithSmosInstance sih = do
         -- No idea why this would happen.
         sendClose ("???" :: Text)
 
-resizeConduit :: MonadIO m => SmosInstanceHandle -> ConduitT ByteString ByteString m ()
+resizeConduit :: MonadIO m => TerminalHandle -> ConduitT ByteString ByteString m ()
 resizeConduit instanceHandle = awaitForever $ \bs -> do
   case JSON.decode (LB.fromStrict bs) of
     Nothing -> yield bs -- It's not a resize request, just let it through.
-    Just terminalSize -> liftIO $ smosInstanceResize instanceHandle terminalSize
+    Just terminalSize -> liftIO $ terminalResize instanceHandle terminalSize
 
 debugConduit :: MonadHandler m => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC $ \bs -> do

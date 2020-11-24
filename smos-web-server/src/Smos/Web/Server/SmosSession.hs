@@ -14,6 +14,7 @@ import Smos.Client hiding (Header)
 import Smos.Config
 import Smos.Default
 import Smos.Instance
+import Smos.Shell.Instance
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
 import Smos.Types
@@ -25,7 +26,7 @@ import Yesod hiding (Header)
 withPlaygroundSession ::
   (MonadUnliftIO m) =>
   Path Rel File ->
-  (SmosInstanceHandle -> m a) ->
+  (TerminalHandle -> m a) ->
   m a
 withPlaygroundSession relFile func =
   withPlaygroundDir $ \workflowDir -> withSmosSessionIn workflowDir relFile func
@@ -43,7 +44,7 @@ withSmosSession ::
   Username ->
   Token ->
   Path Rel File ->
-  (SmosInstanceHandle -> m a) ->
+  (TerminalHandle -> m a) ->
   m a
 withSmosSession userName token relFile func =
   withReadiedDir userName token $ \workflowDir -> withSmosSessionIn workflowDir relFile func
@@ -52,7 +53,7 @@ withSmosSessionIn ::
   MonadUnliftIO m =>
   Path Abs Dir ->
   Path Rel File ->
-  (SmosInstanceHandle -> m a) ->
+  (TerminalHandle -> m a) ->
   m a
 withSmosSessionIn workflowDir relFile func = do
   let startingFile = workflowDir </> relFile
@@ -63,6 +64,24 @@ withSmosSessionIn workflowDir relFile func = do
             configExplainerMode = True
           }
   withSmosInstance config (Just $ StartingFile startingFile) func
+
+withSmosShellSession ::
+  (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
+  Username ->
+  Token ->
+  (TerminalHandle -> m a) ->
+  m a
+withSmosShellSession userName token func =
+  withReadiedDir userName token $ \workflowDir -> withSmosShellSessionIn workflowDir func
+
+withSmosShellSessionIn ::
+  MonadUnliftIO m =>
+  Path Abs Dir ->
+  (TerminalHandle -> m a) ->
+  m a
+withSmosShellSessionIn workflowDir func = do
+  let reportConfig = reportConfigFor workflowDir
+  withSmosShellInstance reportConfig func
 
 reportConfigFor ::
   Path Abs Dir -> SmosReportConfig

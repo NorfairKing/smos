@@ -29,4 +29,4 @@ getPlaygroundR = do
 getPlaygroundInstanceR :: Handler ()
 getPlaygroundInstanceR = do
   let relFile = [relfile|example.smos|]
-  webSockets $ withPlaygroundSession relFile $ \instanceHandle -> communicateWithSmosInstance instanceHandle
+  webSockets $ withPlaygroundSession relFile $ \instanceHandle -> communicateWithTerminal instanceHandle

@@ -4,7 +4,6 @@ module Smos.Shell
   )
 where
 
-import Control.Exception as Exception
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.IORef
@@ -22,11 +21,12 @@ import System.Exit
 import System.IO
 
 smosShell :: IO ()
-smosShell = smosShellWith Query.defaultReportConfig stdin stdout
+smosShell = smosShellWith Query.defaultReportConfig stdin stdout stderr
 
-smosShellWith :: Query.SmosReportConfig -> Handle -> Handle -> IO ()
-smosShellWith rc inputH outputH = customRunInputT $ loop Nothing
+smosShellWith :: Query.SmosReportConfig -> Handle -> Handle -> Handle -> IO ()
+smosShellWith rc inputH outputH errorH = customRunInputT $ loop Nothing
   where
+    -- TODO try to use the special TTY handles instead so history works too.
     customRunInputT :: InputT IO a -> IO a
     customRunInputT inputT = do
       historyRef <- newIORef Haskeline.emptyHistory
@@ -49,6 +49,8 @@ smosShellWith rc inputH outputH = customRunInputT $ loop Nothing
               Haskeline.defaultPrefs
           )
           Haskeline.defaultSettings
+    progName :: String
+    progName = "query"
     loop :: Maybe ExitCode -> InputT IO ()
     loop mex = do
       let prompt = case mex of
@@ -62,14 +64,18 @@ smosShellWith rc inputH outputH = customRunInputT $ loop Nothing
         Just ["quit"] -> pure ()
         Just [] -> loop Nothing
         Just ("query" : input) -> do
-          errOrExit <-
-            liftIO
-              ( (Right <$> OptParse.handleParseResult (OptParse.execParserPure OptParse.defaultPrefs Query.argParser input))
-                  `Exception.catch` (pure . Left)
-              )
-          case errOrExit of
-            Left exitCode -> loop $ Just exitCode
-            Right (Query.Arguments cmd flags) -> do
+          case OptParse.execParserPure OptParse.defaultPrefs Query.argParser input of
+            OptParse.Failure failure -> do
+              let (renderedError, exitCode) = OptParse.renderFailure failure progName
+              case exitCode of
+                ExitSuccess -> outputStrLn renderedError
+                ExitFailure _ -> liftIO $ hPutStrLn errorH renderedError
+              loop (Just exitCode)
+            OptParse.CompletionInvoked completion -> do
+              msg <- liftIO $ OptParse.execCompletion completion progName
+              outputStrLn msg -- TODO not sure what to do with this yet.
+              loop Nothing
+            OptParse.Success (Query.Arguments cmd flags) -> do
               liftIO $ do
                 instructions <-
                   liftIO $

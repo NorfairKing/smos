@@ -7,6 +7,10 @@
 /tui/*Texts TUIR GET
 /ws/tui-instance/*Texts TUIInstanceR GET
 
+-- Reports
+/reports ReportsR GET
+/ws/reports-instance ReportsInstanceR GET
+
 -- Subsites
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic

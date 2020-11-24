@@ -13,4 +13,4 @@ type SmosShellInstanceHandle = TerminalHandle
 
 withSmosShellInstance :: MonadUnliftIO m => SmosReportConfig -> (TerminalHandle -> m a) -> m a
 withSmosShellInstance reportConfig = withTerminal $ \slaveHandle _ ->
-  liftIO $ smosShellWith reportConfig slaveHandle slaveHandle
+  liftIO $ smosShellWith reportConfig slaveHandle slaveHandle slaveHandle

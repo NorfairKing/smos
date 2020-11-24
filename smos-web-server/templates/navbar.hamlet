@@ -13,6 +13,13 @@
   <div id="myNavbar" .navbar-menu>
     <div .navbar-start>
 
+      $maybe _ <- maid
+        <a .navbar-item href=@{TUIR ["example.smos"]}>
+          Editor
+
+        <a .navbar-item href=@{ReportsR}>
+          Reports
+
       $maybe docsUrl <- mDocsUrl
         <a .navbar-item href="#{showBaseUrl docsUrl}">
           Documentation
