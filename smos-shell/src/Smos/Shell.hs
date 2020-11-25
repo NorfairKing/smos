@@ -40,7 +40,7 @@ smosShellWith rc inputH outputH errorH = do
         Just ExitSuccess -> (fore green (chunk "OK! ") :)
         Nothing -> id
       makePrompt :: Maybe ExitCode -> [Chunk]
-      makePrompt mex = prependECSign mex [fore white $ chunk "smos > "]
+      makePrompt mex = prependECSign mex [fore white $ chunk "smos-query > "]
       renderChunks = T.unpack . TE.decodeUtf8 . SB.concat . chunksToByteStrings colouredBsMaker
       loop :: Maybe ExitCode -> InputT IO ()
       loop mex = do
@@ -54,7 +54,7 @@ smosShellWith rc inputH outputH errorH = do
             outputStrLn "Try running query --help to see an overview of the reports you can run."
             loop Nothing
           Just [] -> loop Nothing
-          Just ("query" : input) -> do
+          Just input -> do
             case OptParse.execParserPure OptParse.defaultPrefs Query.argParser input of
               OptParse.Failure failure -> do
                 let (renderedError, exitCode) = OptParse.renderFailure failure progName
@@ -85,9 +85,6 @@ smosShellWith rc inputH outputH errorH = do
                   -- TODO Catch synchronous exceptions too.
                   (ExitSuccess <$ Query.smosQueryWithInstructions instructions) `catch` (\ec -> pure ec)
                 loop (Just ec)
-          Just (cmd : _) -> do
-            outputStrLn $ "Command not recognised: " <> cmd
-            loop Nothing
   customRunInputT $ loop Nothing
   where
     -- TODO try to use the special TTY handles instead so history works too.
