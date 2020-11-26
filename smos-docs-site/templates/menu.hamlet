@@ -36,8 +36,12 @@
           <a href=@{PageR installation_nix}>
             Building with Nix
         <li>
+          <a href=@{PageR installation_windows}>
+            Installing on Windows
+        <li>
           <a href=@{PageR installation_nixos}>
             Installing on Nixos
+
 
     <li>
       <a href=@{PageR directories}>
