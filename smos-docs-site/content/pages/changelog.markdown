@@ -30,6 +30,8 @@ description: The changelog for all of the Smos tools
   The web server now sanitises output from the smos instance to make extra-sure that no non-UTF8 text gets to the client.
 - `smos`:
   When pressing `?` twice, the help screen now gets closed instead of ending up in a strange empty help screen state.
+- `smos-query`:
+  The stuck report now also takes timestamps of not-done entries into account.
 
 ## Removed
 

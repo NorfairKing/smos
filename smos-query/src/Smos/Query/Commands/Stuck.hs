@@ -21,16 +21,16 @@ import Smos.Report.Stuck
 
 smosQueryStuck :: StuckSettings -> Q ()
 smosQueryStuck StuckSettings {..} = do
+  now <- liftIO getZonedTime
   stuckReport <-
     fmap makeStuckReport
       $ sourceToList
       $ streamSmosProjects
         .| streamParseSmosProjects
         .| smosMFilter (FilterFst <$> stuckSetFilter)
-        .| C.map (uncurry makeStuckReportEntry)
+        .| C.map (uncurry (makeStuckReportEntry (zonedTimeZone now)))
         .| C.catMaybes
-  now <- liftIO getCurrentTime
-  putTableLn $ renderStuckReport now stuckReport
+  putTableLn $ renderStuckReport (zonedTimeToUTC now) stuckReport
 
 renderStuckReport :: UTCTime -> StuckReport -> Table
 renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuckReportEntries
@@ -40,5 +40,9 @@ renderStuckReportEntry now StuckReportEntry {..} =
   [ pathChunk stuckReportEntryFilePath,
     mTodoStateChunk stuckReportEntryState,
     headerChunk stuckReportEntryHeader,
-    maybe (chunk "") (showDaysSince 21 now) stuckReportEntryLatestChange
+    maybe
+      (chunk "")
+      ( \ts -> if ts > now then "future" else showDaysSince 21 now ts
+      )
+      stuckReportEntryLatestChange
   ]

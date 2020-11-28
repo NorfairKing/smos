@@ -1,11 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Stuck where
 
 import Data.Function
 import Data.List
+import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
 import Data.Time
@@ -39,30 +42,40 @@ instance Validity StuckReportEntry
 makeStuckReport :: [StuckReportEntry] -> StuckReport
 makeStuckReport = StuckReport . sortOn stuckReportEntryLatestChange
 
-makeStuckReportEntry :: Path Rel File -> SmosFile -> Maybe StuckReportEntry
-makeStuckReportEntry stuckReportEntryFilePath sf = do
-  e <- latestEntryInSmosFile sf
+makeStuckReportEntry :: TimeZone -> Path Rel File -> SmosFile -> Maybe StuckReportEntry
+makeStuckReportEntry tz stuckReportEntryFilePath sf = do
+  e <- latestEntryInSmosFile tz sf
   let stuckReportEntryHeader = entryHeader e
       stuckReportEntryState = entryState e
-      stuckReportEntryLatestChange = latestTimestampInEntry e
+      stuckReportEntryLatestChange = latestTimestampInEntry tz e
   pure StuckReportEntry {..}
 
-latestEntryInSmosFile :: SmosFile -> Maybe Entry
-latestEntryInSmosFile =
+latestEntryInSmosFile :: TimeZone -> SmosFile -> Maybe Entry
+latestEntryInSmosFile tz =
   fmap last
     . headMay
-    . groupBy ((==) `on` latestTimestampInEntry)
-    . sortOn (Down . latestTimestampInEntry)
+    . groupBy ((==) `on` latestTimestampInEntry tz)
+    . sortOn (Down . latestTimestampInEntry tz)
     . concatMap flatten
     . smosFileForest
 
-latestTimestampInEntry :: Entry -> Maybe UTCTime
-latestTimestampInEntry Entry {..} =
-  maximumMay $
-    catMaybes
-      [ latestStateChange entryStateHistory,
-        latestClockChange entryLogbook
+latestTimestampInEntry :: TimeZone -> Entry -> Maybe UTCTime
+latestTimestampInEntry tz e@Entry {..} =
+  maximumMay
+    $ catMaybes
+    $ concat
+      [ [ latestStateChange entryStateHistory,
+          latestClockChange entryLogbook
+        ],
+        [ latestTimestamp tz entryTimestamps | not (isDone (entryState e))
+        ]
       ]
+
+isDone :: Maybe TodoState -> Bool
+isDone (Just "CANCELLED") = True
+isDone (Just "DONE") = True
+isDone (Just "FAILED") = True
+isDone _ = False
 
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =
@@ -76,3 +89,6 @@ latestClockChange = \case
   LogClosed les -> case les of
     [] -> Nothing
     (le : _) -> Just $ logbookEntryEnd le
+
+latestTimestamp :: TimeZone -> Map TimestampName Timestamp -> Maybe UTCTime
+latestTimestamp tz = fmap snd . M.lookupMax . M.map (localTimeToUTC tz . timestampLocalTime)
