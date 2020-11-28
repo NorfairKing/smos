@@ -32,6 +32,10 @@ description: The changelog for all of the Smos tools
   When pressing `?` twice, the help screen now gets closed instead of ending up in a strange empty help screen state.
 - `smos-query`:
   The stuck report now also takes timestamps of not-done entries into account.
+- `smos-query`:
+  The stuck report now takes a `--threshold` argument.
+- `smos-query`:
+  The work report now shows overdue stuck projects as well.
 
 ## Removed
 

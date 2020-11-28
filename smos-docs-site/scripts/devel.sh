@@ -7,7 +7,7 @@ export DEVELOPMENT=True
 export PATH="$HOME/.local/bin:$PATH"
 
 nice -n19 stack install :smos-docs-site \
-  --file-watch \
+  --file-watch --watch-all \
   --exec='./scripts/restart.sh' \
   --ghc-options="-freverse-errors -O0" \
   --no-nix-pure \

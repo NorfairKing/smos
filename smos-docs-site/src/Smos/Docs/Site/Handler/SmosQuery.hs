@@ -41,6 +41,7 @@ getSmosQueryCommandR cmd = do
         "work" -> confDocsWithKey2 @Report.WorkReportConfiguration @Query.WorkConfiguration workConfigurationKey
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey
         "waiting" -> confDocsWithKey @Query.WaitingConfiguration waitingConfigurationKey
+        "stuck" -> confDocsWithKey @Query.StuckConfiguration stuckConfigurationKey
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
