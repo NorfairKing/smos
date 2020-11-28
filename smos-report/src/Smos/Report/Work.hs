@@ -9,8 +9,8 @@ import Control.Monad
 import Cursor.Simple.Forest
 import qualified Data.Conduit.Combinators as C
 import Data.Function
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import Data.Time
@@ -28,6 +28,7 @@ import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Streaming
+import Smos.Report.Stuck
 import Smos.Report.Time
 import Smos.Report.Waiting
 
@@ -41,12 +42,13 @@ workReportConduit now wrc@WorkReportContext {..} =
 
 data IntermediateWorkReport
   = IntermediateWorkReport
-      { intermediateWorkReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
-        intermediateWorkReportAgendaEntries :: [AgendaEntry],
-        intermediateWorkReportNextBegin :: Maybe AgendaEntry,
-        intermediateWorkReportOverdueWaiting :: [WaitingEntry],
-        intermediateWorkReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
-        intermediateWorkReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
+      { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
+        intermediateWorkReportAgendaEntries :: ![AgendaEntry],
+        intermediateWorkReportNextBegin :: !(Maybe AgendaEntry),
+        intermediateWorkReportOverdueWaiting :: ![WaitingEntry],
+        intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
+        intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
+        intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
       }
   deriving (Show, Eq, Generic)
 
@@ -67,6 +69,7 @@ instance Semigroup IntermediateWorkReport where
                 then ae1
                 else ae2,
         intermediateWorkReportOverdueWaiting = intermediateWorkReportOverdueWaiting wr1 <> intermediateWorkReportOverdueWaiting wr2,
+        intermediateWorkReportOverdueStuck = intermediateWorkReportOverdueStuck wr1 <> intermediateWorkReportOverdueStuck wr2,
         intermediateWorkReportCheckViolations =
           M.unionWith (++) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
         intermediateWorkReportEntriesWithoutContext =
@@ -80,6 +83,7 @@ instance Monoid IntermediateWorkReport where
         intermediateWorkReportAgendaEntries = [],
         intermediateWorkReportNextBegin = Nothing,
         intermediateWorkReportOverdueWaiting = [],
+        intermediateWorkReportOverdueStuck = [],
         intermediateWorkReportEntriesWithoutContext = mempty,
         intermediateWorkReportCheckViolations = M.empty
       }
@@ -95,7 +99,8 @@ data WorkReportContext
         workReportContextContexts :: Map ContextName EntryFilterRel,
         workReportContextChecks :: Set EntryFilterRel,
         workReportContextSorter :: Maybe Sorter,
-        workReportContextWaitingThreshold :: Word
+        workReportContextWaitingThreshold :: Word,
+        workReportContextStuckThreshold :: Word
       }
   deriving (Show, Generic)
 
@@ -126,7 +131,8 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
             . FilterMaybe False
             . FilterPropertyTime
             . FilterMaybe False
-            . FilterOrd LEC <$> workReportContextTime
+            . FilterOrd LEC
+            <$> workReportContextTime
       currentFilter :: Maybe EntryFilterRel
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
       matchesSelectedContext = maybe True (`filterPredicate` (rp, fc)) currentFilter
@@ -161,11 +167,19 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) (waitingEntryTimestamp we)
         guard (diff >= fromIntegral workReportContextWaitingThreshold * nominalDay)
         pure we
+      mStuckEntry :: Maybe StuckReportEntry
+      mStuckEntry = do
+        se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp undefined
+        latestChange <- stuckReportEntryLatestChange se
+        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
+        guard (diff >= fromIntegral workReportContextStuckThreshold * nominalDay)
+        pure se
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,
           intermediateWorkReportAgendaEntries = agendaEntries,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
+          intermediateWorkReportOverdueStuck = maybeToList mStuckEntry,
           intermediateWorkReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
@@ -207,7 +221,8 @@ finishWorkReport now pn mt ms wr =
       mAutoFilter = do
         ae <- intermediateWorkReportNextBegin wr
         let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
-        pure $ FilterSnd
+        pure
+          $ FilterSnd
           $ FilterWithinCursor
           $ FilterEntryProperties
           $ FilterMapVal pn

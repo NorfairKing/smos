@@ -49,6 +49,7 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
     hideArchiveWithDefault def mflag =
       fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
     waitingThresholdWith = fromMaybe 7
+    stuckThresholdWith = fromMaybe 21
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -166,12 +167,20 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                       combineMaybe (<>) (mwc workConfProjection) workFlagProjection,
                   workSetSorter = mwc workConfSorter <|> workFlagSorter,
                   workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
-                  workSetWaitingThreshold = waitingThresholdWith $ workFlagWaitingThreshold <|> (mc >>= confWaitingConfiguration >>= waitingConfThreshold)
+                  workSetWaitingThreshold = waitingThresholdWith $ workFlagWaitingThreshold <|> (mc >>= confWaitingConfiguration >>= waitingConfThreshold),
+                  workSetStuckThreshold = stuckThresholdWith $ workFlagStuckThreshold <|> (mc >>= confStuckConfiguration >>= stuckConfThreshold)
                 }
         CommandProjects ProjectsFlags {..} ->
           pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
-        CommandStuck StuckFlags {..} ->
-          pure $ DispatchStuck StuckSettings {stuckSetFilter = stuckFlagFilter}
+        CommandStuck StuckFlags {..} -> do
+          let msc func = mc >>= confStuckConfiguration >>= func
+          pure $
+            DispatchStuck
+              StuckSettings
+                { stuckSetFilter = stuckFlagFilter,
+                  stuckSetThreshold =
+                    stuckThresholdWith $ stuckFlagThreshold <|> msc stuckConfThreshold
+                }
         CommandLog LogFlags {..} ->
           pure $
             DispatchLog
@@ -297,7 +306,8 @@ parseCommandWork = info parser modifier
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
                 <*> parseHideArchiveFlag
-                <*> parseThresholdFlag
+                <*> parseWaitingThresholdFlag
+                <*> parseStuckThresholdFlag
             )
 
 parseCommandWaiting :: ParserInfo Command
@@ -306,13 +316,13 @@ parseCommandWaiting = info parser modifier
     modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
     parser =
       CommandWaiting
-        <$> (WaitingFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag <*> parseThresholdFlag)
+        <$> (WaitingFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag <*> parseWaitingThresholdFlag)
 
-parseThresholdFlag :: Parser (Maybe Word)
-parseThresholdFlag =
+parseWaitingThresholdFlag :: Parser (Maybe Word)
+parseWaitingThresholdFlag =
   option
     (Just <$> auto)
-    (mconcat [long "threshold", value Nothing, help "The threshold at which to color entries red"])
+    (mconcat [long "threshold", value Nothing, help "The threshold at which to color waiting entries red"])
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
@@ -383,7 +393,13 @@ parseCommandStuck :: ParserInfo Command
 parseCommandStuck = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the stuck projects overview"
-    parser = CommandStuck <$> (StuckFlags <$> parseProjectFilterArgs)
+    parser = CommandStuck <$> (StuckFlags <$> parseProjectFilterArgs <*> parseStuckThresholdFlag)
+
+parseStuckThresholdFlag :: Parser (Maybe Word)
+parseStuckThresholdFlag =
+  option
+    (Just <$> auto)
+    (mconcat [long "threshold", value Nothing, help "The threshold at which to color stuck projects red"])
 
 parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier

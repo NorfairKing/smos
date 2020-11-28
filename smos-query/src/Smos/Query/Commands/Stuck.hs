@@ -30,19 +30,19 @@ smosQueryStuck StuckSettings {..} = do
         .| smosMFilter (FilterFst <$> stuckSetFilter)
         .| C.map (uncurry (makeStuckReportEntry (zonedTimeZone now)))
         .| C.catMaybes
-  putTableLn $ renderStuckReport (zonedTimeToUTC now) stuckReport
+  putTableLn $ renderStuckReport (zonedTimeToUTC now) stuckSetThreshold stuckReport
 
-renderStuckReport :: UTCTime -> StuckReport -> Table
-renderStuckReport now = formatAsTable . map (renderStuckReportEntry now) . stuckReportEntries
+renderStuckReport :: UTCTime -> Word -> StuckReport -> Table
+renderStuckReport now threshold = formatAsTable . map (renderStuckReportEntry now threshold) . stuckReportEntries
 
-renderStuckReportEntry :: UTCTime -> StuckReportEntry -> [Chunk]
-renderStuckReportEntry now StuckReportEntry {..} =
+renderStuckReportEntry :: UTCTime -> Word -> StuckReportEntry -> [Chunk]
+renderStuckReportEntry now threshold StuckReportEntry {..} =
   [ pathChunk stuckReportEntryFilePath,
     mTodoStateChunk stuckReportEntryState,
     headerChunk stuckReportEntryHeader,
     maybe
       (chunk "")
-      ( \ts -> if ts > now then "future" else showDaysSince 21 now ts
+      ( \ts -> if ts > now then "future" else showDaysSince threshold now ts
       )
       stuckReportEntryLatestChange
   ]

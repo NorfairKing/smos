@@ -76,7 +76,8 @@ data WorkFlags
         workFlagProjection :: Maybe (NonEmpty Projection),
         workFlagSorter :: Maybe Sorter,
         workFlagHideArchive :: Maybe HideArchive,
-        workFlagWaitingThreshold :: Maybe Word
+        workFlagWaitingThreshold :: Maybe Word,
+        workFlagStuckThreshold :: Maybe Word
       }
   deriving (Show, Eq)
 
@@ -130,7 +131,8 @@ data ProjectsFlags
 
 data StuckFlags
   = StuckFlags
-      { stuckFlagFilter :: Maybe ProjectFilter
+      { stuckFlagFilter :: Maybe ProjectFilter,
+        stuckFlagThreshold :: Maybe Word
       }
   deriving (Show, Eq)
 
@@ -181,6 +183,7 @@ data Configuration
         confHideArchive :: Maybe HideArchive,
         confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
         confWaitingConfiguration :: Maybe WaitingConfiguration,
+        confStuckConfiguration :: Maybe StuckConfiguration,
         confWorkConfiguration :: Maybe WorkConfiguration
       }
   deriving (Show, Eq, Generic)
@@ -190,13 +193,14 @@ instance FromJSON Configuration where
 
 instance YamlSchema Configuration where
   yamlSchema =
-    (\reportConf (a, b, c, d) -> Configuration reportConf a b c d)
+    (\reportConf (a, b, c, d, e) -> Configuration reportConf a b c d e)
       <$> yamlSchema
       <*> objectParser
         "Configuration"
-        ( (,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
+        ( (,,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
             <*> optionalField preparedReportConfigurationKey "Prepared report config"
             <*> optionalField waitingConfigurationKey "Waiting report config"
+            <*> optionalField stuckConfigurationKey "Stuck report config"
             <*> optionalField workConfigurationKey "Work report config"
         )
 
@@ -205,6 +209,9 @@ preparedReportConfigurationKey = "report"
 
 waitingConfigurationKey :: Text
 waitingConfigurationKey = "waiting"
+
+stuckConfigurationKey :: Text
+stuckConfigurationKey = "stuck"
 
 workConfigurationKey :: Text
 workConfigurationKey = "work"
@@ -231,7 +238,23 @@ instance FromJSON WaitingConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema WaitingConfiguration where
-  yamlSchema = objectParser "WaitingConfiguration" $ WaitingConfiguration <$> optionalField "threshold" "The number of days before you've been waiting for something for too long"
+  yamlSchema =
+    objectParser "WaitingConfiguration" $
+      WaitingConfiguration <$> optionalField "threshold" "The number of days before you've been waiting for something for too long"
+
+data StuckConfiguration
+  = StuckConfiguration
+      { stuckConfThreshold :: Maybe Word
+      }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON StuckConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema StuckConfiguration where
+  yamlSchema =
+    objectParser "StuckConfiguration" $
+      StuckConfiguration <$> optionalField "threshold" "The number of days before a project has been stuck for too long"
 
 data WorkConfiguration
   = WorkConfiguration
@@ -294,7 +317,8 @@ data WorkSettings
         workSetProjection :: NonEmpty Projection,
         workSetSorter :: Maybe Sorter,
         workSetHideArchive :: HideArchive,
-        workSetWaitingThreshold :: Word
+        workSetWaitingThreshold :: Word,
+        workSetStuckThreshold :: Word
       }
   deriving (Show, Eq, Generic)
 
@@ -343,7 +367,8 @@ data ProjectsSettings
 
 data StuckSettings
   = StuckSettings
-      { stuckSetFilter :: Maybe ProjectFilter
+      { stuckSetFilter :: Maybe ProjectFilter,
+        stuckSetThreshold :: Word
       }
   deriving (Show, Eq, Generic)
 

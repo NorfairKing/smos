@@ -9,8 +9,8 @@ where
 import Conduit
 import Data.List (intersperse)
 import Data.List.NonEmpty (NonEmpty)
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
 import Rainbow
@@ -45,7 +45,8 @@ smosQueryWork WorkSettings {..} = do
             workReportContextContexts = contexts,
             workReportContextChecks = workSetChecks,
             workReportContextSorter = workSetSorter,
-            workReportContextWaitingThreshold = workSetWaitingThreshold
+            workReportContextWaitingThreshold = workSetWaitingThreshold,
+            workReportContextStuckThreshold = workSetStuckThreshold
           }
   sp <- getShouldPrint
   wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
