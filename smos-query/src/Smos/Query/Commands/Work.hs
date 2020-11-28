@@ -13,6 +13,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
+import Path
 import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -34,9 +35,13 @@ smosQueryWork WorkSettings {..} = do
     case M.lookup cn contexts of
       Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
       Just cf -> pure cf
+  wd <- liftIO $ resolveReportWorkflowDir src
+  pd <- liftIO $ resolveReportProjectsDir src
+  let mpd = stripProperPrefix wd pd
   let wrc =
         WorkReportContext
           { workReportContextNow = now,
+            workReportContextProjectsSubdir = mpd,
             workReportContextBaseFilter = baseFilter,
             workReportContextCurrentContext = mcf,
             workReportContextTimeProperty = workSetTimeProperty,

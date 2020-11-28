@@ -90,17 +90,18 @@ instance Monoid IntermediateWorkReport where
 
 data WorkReportContext
   = WorkReportContext
-      { workReportContextNow :: ZonedTime,
-        workReportContextBaseFilter :: Maybe EntryFilterRel,
-        workReportContextCurrentContext :: Maybe EntryFilterRel,
-        workReportContextTimeProperty :: PropertyName,
-        workReportContextTime :: Maybe Time,
-        workReportContextAdditionalFilter :: Maybe EntryFilterRel,
-        workReportContextContexts :: Map ContextName EntryFilterRel,
-        workReportContextChecks :: Set EntryFilterRel,
-        workReportContextSorter :: Maybe Sorter,
-        workReportContextWaitingThreshold :: Word,
-        workReportContextStuckThreshold :: Word
+      { workReportContextNow :: !ZonedTime,
+        workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)),
+        workReportContextBaseFilter :: !(Maybe EntryFilterRel),
+        workReportContextCurrentContext :: !(Maybe EntryFilterRel),
+        workReportContextTimeProperty :: !PropertyName,
+        workReportContextTime :: !(Maybe Time),
+        workReportContextAdditionalFilter :: !(Maybe EntryFilterRel),
+        workReportContextContexts :: !(Map ContextName EntryFilterRel),
+        workReportContextChecks :: !(Set EntryFilterRel),
+        workReportContextSorter :: !(Maybe Sorter),
+        workReportContextWaitingThreshold :: !Word,
+        workReportContextStuckThreshold :: !Word
       }
   deriving (Show, Generic)
 
@@ -111,6 +112,10 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
   let iwr = foldMap (makeIntermediateWorkReport ctx rp) (allCursors sf)
       mStuckEntry :: Maybe StuckReportEntry
       mStuckEntry = do
+        -- To make sure that only projects are considered
+        _ <- case workReportContextProjectsSubdir of
+          Nothing -> Just ()
+          Just psd -> () <$ stripProperPrefix psd rp
         se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp sf
         latestChange <- stuckReportEntryLatestChange se
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
