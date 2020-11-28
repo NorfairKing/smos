@@ -3,6 +3,7 @@
 module Smos.Report.StuckSpec where
 
 import Data.GenValidity.Path ()
+import Data.Time
 import Data.Tree
 import Smos.Data
 import Smos.Data.Gen ()
@@ -17,9 +18,9 @@ spec = do
   genValidSpec @StuckReport
   describe "makeStuckReportEntry"
     $ it "produces valid reports"
-    $ producesValidsOnValids2 makeStuckReportEntry
+    $ producesValidsOnValids3 makeStuckReportEntry
   describe "latestEntryInSmosFile" $ do
-    it "selects a valid entry" $ producesValidsOnValids latestEntryInSmosFile
+    it "selects a valid entry" $ producesValidsOnValids2 latestEntryInSmosFile
     it "works for this example with an entry without state"
       $ forAllValid
       $ \h1 ->
@@ -38,7 +39,7 @@ spec = do
                       }
                   e2 = newEntry h2
                   sf = SmosFile [Node e1 [], Node e2 []]
-               in latestEntryInSmosFile sf `shouldBe` Just e1
+               in latestEntryInSmosFile utc sf `shouldBe` Just e1
     it
       "works for this example with two entries with the same modification time. Then it uses the latter"
       $ forAllValid
@@ -68,7 +69,7 @@ spec = do
                               ]
                         }
                     sf = SmosFile [Node e1 [], Node e2 []]
-                 in latestEntryInSmosFile sf `shouldBe` Just e2
+                 in latestEntryInSmosFile utc sf `shouldBe` Just e2
   describe "latestStateChange"
     $ it "selects a valid entry"
     $ producesValidsOnValids latestStateChange

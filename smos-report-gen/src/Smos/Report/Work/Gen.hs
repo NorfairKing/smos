@@ -12,6 +12,7 @@ import Smos.Report.Config.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.Sorter.Gen ()
+import Smos.Report.Stuck.Gen ()
 import Smos.Report.TimeBlock.Gen ()
 import Smos.Report.Waiting.Gen ()
 import Smos.Report.Work
@@ -29,6 +30,7 @@ instance GenValid WorkReport where
     WorkReport
       <$> genValid
       <*> (sortAgendaEntries <$> genValid)
+      <*> genValid
       <*> genValid
       <*> genValid
       <*> genValid
