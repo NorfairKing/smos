@@ -306,9 +306,21 @@ parseCommandWork = info parser modifier
                 <*> parseProjectionArgs
                 <*> parseSorterArgs
                 <*> parseHideArchiveFlag
-                <*> parseWaitingThresholdFlag
-                <*> parseStuckThresholdFlag
+                <*> parseWorkWaitingThresholdFlag
+                <*> parseWorkStuckThresholdFlag
             )
+
+parseWorkWaitingThresholdFlag :: Parser (Maybe Word)
+parseWorkWaitingThresholdFlag =
+  option
+    (Just <$> auto)
+    (mconcat [long "waiting-threshold", value Nothing, help "The threshold at which to color waiting entries red"])
+
+parseWorkStuckThresholdFlag :: Parser (Maybe Word)
+parseWorkStuckThresholdFlag =
+  option
+    (Just <$> auto)
+    (mconcat [long "stuck-threshold", value Nothing, help "The threshold at which to color stuck projects red"])
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier

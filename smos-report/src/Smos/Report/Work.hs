@@ -38,7 +38,7 @@ produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit (wor
 workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
 workReportConduit now wrc@WorkReportContext {..} =
   fmap (finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter) $
-    smosFileCursors .| C.map (uncurry $ makeIntermediateWorkReport wrc) .| accumulateMonoid
+    C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| accumulateMonoid
 
 data IntermediateWorkReport
   = IntermediateWorkReport
@@ -106,6 +106,20 @@ data WorkReportContext
 
 instance Validity WorkReportContext
 
+makeIntermediateWorkReportForFile :: WorkReportContext -> Path Rel File -> SmosFile -> IntermediateWorkReport
+makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
+  let iwr = foldMap (makeIntermediateWorkReport ctx rp) (allCursors sf)
+      mStuckEntry :: Maybe StuckReportEntry
+      mStuckEntry = do
+        se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp sf
+        latestChange <- stuckReportEntryLatestChange se
+        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
+        guard (diff >= fromIntegral workReportContextStuckThreshold * nominalDay)
+        pure se
+   in iwr
+        { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry
+        }
+
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =
   let match b = [(rp, fc) | b]
@@ -167,19 +181,12 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) (waitingEntryTimestamp we)
         guard (diff >= fromIntegral workReportContextWaitingThreshold * nominalDay)
         pure we
-      mStuckEntry :: Maybe StuckReportEntry
-      mStuckEntry = do
-        se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp undefined
-        latestChange <- stuckReportEntryLatestChange se
-        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
-        guard (diff >= fromIntegral workReportContextStuckThreshold * nominalDay)
-        pure se
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,
           intermediateWorkReportAgendaEntries = agendaEntries,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
-          intermediateWorkReportOverdueStuck = maybeToList mStuckEntry,
+          intermediateWorkReportOverdueStuck = [],
           intermediateWorkReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
@@ -198,12 +205,13 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
 
 data WorkReport
   = WorkReport
-      { workReportResultEntries :: [(Path Rel File, ForestCursor Entry)],
-        workReportAgendaEntries :: [AgendaEntry],
-        workReportNextBegin :: Maybe AgendaEntry,
-        workReportOverdueWaiting :: [WaitingEntry],
-        workReportEntriesWithoutContext :: [(Path Rel File, ForestCursor Entry)],
-        workReportCheckViolations :: Map EntryFilterRel [(Path Rel File, ForestCursor Entry)]
+      { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
+        workReportAgendaEntries :: ![AgendaEntry],
+        workReportNextBegin :: !(Maybe AgendaEntry),
+        workReportOverdueWaiting :: ![WaitingEntry],
+        workReportOverdueStuck :: ![StuckReportEntry],
+        workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
+        workReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
       }
   deriving (Show, Eq, Generic)
 
@@ -240,6 +248,7 @@ finishWorkReport now pn mt ms wr =
           workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
           workReportNextBegin = intermediateWorkReportNextBegin wr,
           workReportOverdueWaiting = sortWaitingEntries $ intermediateWorkReportOverdueWaiting wr,
+          workReportOverdueStuck = sortStuckEntries $ intermediateWorkReportOverdueStuck wr,
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }

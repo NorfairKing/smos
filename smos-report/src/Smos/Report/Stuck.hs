@@ -40,7 +40,10 @@ data StuckReportEntry
 instance Validity StuckReportEntry
 
 makeStuckReport :: [StuckReportEntry] -> StuckReport
-makeStuckReport = StuckReport . sortOn stuckReportEntryLatestChange
+makeStuckReport = StuckReport . sortStuckEntries
+
+sortStuckEntries :: [StuckReportEntry] -> [StuckReportEntry]
+sortStuckEntries = sortOn stuckReportEntryLatestChange
 
 makeStuckReportEntry :: TimeZone -> Path Rel File -> SmosFile -> Maybe StuckReportEntry
 makeStuckReportEntry tz stuckReportEntryFilePath sf = do

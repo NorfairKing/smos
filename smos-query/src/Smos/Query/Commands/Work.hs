@@ -50,10 +50,10 @@ smosQueryWork WorkSettings {..} = do
           }
   sp <- getShouldPrint
   wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
-  putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetProjection wr
+  putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetStuckThreshold workSetProjection wr
 
-renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> NonEmpty Projection -> WorkReport -> Table
-renderWorkReport now ctxs threshold ne WorkReport {..} =
+renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> Table
+renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
   mconcat
     $ (concat . concat)
     $ intersperse [spacer]
@@ -78,6 +78,11 @@ renderWorkReport now ctxs threshold ne WorkReport {..} =
           workReportOverdueWaiting
           [ warningHeading "Overdue Waiting Entries:",
             [waitingTable]
+          ],
+        unlessNull
+          workReportOverdueStuck
+          [ warningHeading "Overdue Stuck Reports:",
+            [stuckTable]
           ],
         unlessNull
           ctxs
@@ -106,4 +111,5 @@ renderWorkReport now ctxs threshold ne WorkReport {..} =
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne
     agendaTable = formatAsTable $ map (formatAgendaEntry now) workReportAgendaEntries
-    waitingTable = formatAsTable $ map (formatWaitingEntry threshold (zonedTimeToUTC now)) workReportOverdueWaiting
+    waitingTable = formatAsTable $ map (formatWaitingEntry waitingThreshold (zonedTimeToUTC now)) workReportOverdueWaiting
+    stuckTable = formatAsTable $ map (formatStuckReportEntry stuckThreshold (zonedTimeToUTC now)) workReportOverdueStuck

@@ -5,8 +5,8 @@
 module Smos.Query.Formatting where
 
 import Data.Foldable
-import qualified Data.Sequence as S
 import Data.Sequence (Seq)
+import qualified Data.Sequence as S
 import qualified Data.Text as T
 import Data.Time
 import Path
@@ -17,6 +17,7 @@ import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Formatting
 import Smos.Report.Projection
+import Smos.Report.Stuck
 import Smos.Report.Waiting
 import Text.Time.Pretty
 
@@ -57,8 +58,13 @@ formatAgendaEntry now AgendaEntry {..} =
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func $ bold $ chunk $ T.pack $ renderTimeAgoAuto $ timeAgo $
-          diffUTCTime
+        func
+          $ bold
+          $ chunk
+          $ T.pack
+          $ renderTimeAgoAuto
+          $ timeAgo
+          $ diffUTCTime
             (zonedTimeToUTC now)
             (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
         timestampNameChunk agendaEntryTimestampName,
@@ -72,6 +78,18 @@ formatWaitingEntry threshold now WaitingEntry {..} =
   [ pathChunk waitingEntryFilePath,
     headerChunk waitingEntryHeader,
     showDaysSince threshold now waitingEntryTimestamp
+  ]
+
+formatStuckReportEntry :: Word -> UTCTime -> StuckReportEntry -> [Chunk]
+formatStuckReportEntry threshold now StuckReportEntry {..} =
+  [ pathChunk stuckReportEntryFilePath,
+    mTodoStateChunk stuckReportEntryState,
+    headerChunk stuckReportEntryHeader,
+    maybe
+      (chunk "")
+      ( \ts -> if ts > now then "future" else showDaysSince threshold now ts
+      )
+      stuckReportEntryLatestChange
   ]
 
 pathChunk :: Path b t -> Chunk
