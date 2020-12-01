@@ -131,6 +131,7 @@ defaultFileKeyMap =
             exactString "zc" forestToggleCollapseEntryContents,
             exactString "zh" forestToggleCollapseEntryHistory,
             exactString "zl" forestToggleCollapseEntryLogbook,
+            exactString "zt" forestToggleCollapseEntryTimestamps,
             -- Entering contents
             exactKey KEnter entrySelectContentsAtEnd,
             exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtStart,

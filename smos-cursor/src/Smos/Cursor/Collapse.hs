@@ -10,6 +10,7 @@ module Smos.Cursor.Collapse
     collapseEntryShowContentsL,
     collapseEntryShowHistoryL,
     collapseEntryShowLogbookL,
+    collapseEntryShowTimestampsL,
     collapseEntrySetShowAll,
   )
 where
@@ -24,7 +25,8 @@ data CollapseEntry a
       { collapseEntryValue :: a,
         collapseEntryShowContents :: Bool,
         collapseEntryShowHistory :: Bool,
-        collapseEntryShowLogbook :: Bool
+        collapseEntryShowLogbook :: Bool,
+        collapseEntryShowTimestamps :: Bool
       }
   deriving (Show, Eq, Generic, Functor)
 
@@ -38,7 +40,8 @@ makeCollapseEntry !a =
     { collapseEntryValue = a,
       collapseEntryShowContents = True,
       collapseEntryShowHistory = False,
-      collapseEntryShowLogbook = False
+      collapseEntryShowLogbook = False,
+      collapseEntryShowTimestamps = True
     }
 
 rebuildCollapseEntry :: CollapseEntry a -> a
@@ -59,8 +62,15 @@ collapseEntryShowLogbookL :: Lens' (CollapseEntry a) Bool
 collapseEntryShowLogbookL =
   lens collapseEntryShowLogbook $ \ct b -> ct {collapseEntryShowLogbook = b}
 
+collapseEntryShowTimestampsL :: Lens' (CollapseEntry a) Bool
+collapseEntryShowTimestampsL =
+  lens collapseEntryShowTimestamps $ \ct b -> ct {collapseEntryShowTimestamps = b}
+
 collapseEntrySetShowAll :: Bool -> CollapseEntry a -> CollapseEntry a
 collapseEntrySetShowAll b e =
-  e & collapseEntryShowContentsL .~ b & collapseEntryShowHistoryL .~ b
-    & collapseEntryShowLogbookL
-    .~ b
+  e
+    { collapseEntryShowContents = b,
+      collapseEntryShowHistory = b,
+      collapseEntryShowLogbook = b,
+      collapseEntryShowTimestamps = b
+    }

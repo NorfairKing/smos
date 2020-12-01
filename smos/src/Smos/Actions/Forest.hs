@@ -10,6 +10,7 @@ module Smos.Actions.Forest
     forestToggleCollapseEntryContents,
     forestToggleCollapseEntryHistory,
     forestToggleCollapseEntryLogbook,
+    forestToggleCollapseEntryTimestamps,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
     forestInsertEntryBelowAtStart,
@@ -60,6 +61,7 @@ allForestPlainActions =
     forestToggleCollapseEntryContents,
     forestToggleCollapseEntryHistory,
     forestToggleCollapseEntryLogbook,
+    forestToggleCollapseEntryTimestamps,
     forestInsertEntryBefore,
     forestInsertEntryBeforeAndSelectHeader,
     forestInsertEntryBelowAtStart,
@@ -310,6 +312,9 @@ forestToggleCollapseEntryHistory = mkForestToggleCollapseEntryPart "history" col
 
 forestToggleCollapseEntryLogbook :: Action
 forestToggleCollapseEntryLogbook = mkForestToggleCollapseEntryPart "logbook" collapseEntryShowLogbookL
+
+forestToggleCollapseEntryTimestamps :: Action
+forestToggleCollapseEntryTimestamps = mkForestToggleCollapseEntryPart "timestamps" collapseEntryShowTimestampsL
 
 forestClockOutEverywhereInThisFile :: Action
 forestClockOutEverywhereInThisFile =

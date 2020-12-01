@@ -28,8 +28,8 @@ import Cursor.Tree hiding (drawTreeCursor)
 import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time
 import Data.Version (showVersion)
 import Import hiding ((<+>))
@@ -485,12 +485,17 @@ data TreeCollapsing
 drawEntryCursor ::
   Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer
 drawEntryCursor s tc edc e = do
-  tscw <- forM entryCursorTimestampsCursor $ drawTimestampsCursor (selectWhen TimestampsSelected)
-  lbcw <- drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
+  tscw <- drawIfM collapseEntryShowTimestamps <$> forM entryCursorTimestampsCursor (drawTimestampsCursor (selectWhen TimestampsSelected))
+  lbcw <- drawIfM collapseEntryShowLogbook <$> drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
   shcw <-
-    fmap join
-      $ forM entryCursorStateHistoryCursor
-      $ drawStateHistoryCursor (selectWhen StateHistorySelected)
+    drawIfM collapseEntryShowHistory
+      <$> fmap
+        join
+        ( forM
+            entryCursorStateHistoryCursor
+            ( drawStateHistoryCursor (selectWhen StateHistorySelected)
+            )
+        )
   pure
     $ ( case s of
           NotSelected -> id
@@ -513,7 +518,8 @@ drawEntryCursor s tc edc e = do
                 | let e_ = rebuildEntryCursor ec
                    in or
                         [ not (collapseEntryShowContents e) && isJust (entryContents e_),
-                          not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_)
+                          not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_),
+                          not (collapseEntryShowHistory e) && not (M.null $ entryTimestamps e_)
                         ]
               ],
               maybeToList $ completedForestNumbersWidget edc,
@@ -523,8 +529,8 @@ drawEntryCursor s tc edc e = do
           drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
         tscw,
         drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
-        drawIfM collapseEntryShowHistory shcw,
-        drawIfM collapseEntryShowLogbook lbcw
+        shcw,
+        lbcw
       ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
@@ -545,9 +551,9 @@ drawEntryCursor s tc edc e = do
 
 drawEntry :: TreeCollapsing -> EntryDrawContext -> CollapseEntry Entry -> Drawer
 drawEntry tc edc e = do
-  tsw <- drawTimestamps entryTimestamps
-  lbw <- drawLogbook entryLogbook
-  shw <- drawStateHistory entryStateHistory
+  tsw <- drawIfM collapseEntryShowTimestamps <$> drawTimestamps entryTimestamps
+  lbw <- drawIfM collapseEntryShowLogbook <$> drawLogbook entryLogbook
+  shw <- drawIfM collapseEntryShowHistory <$> drawStateHistory entryStateHistory
   pure
     $ vBox
     $ catMaybes
@@ -562,7 +568,8 @@ drawEntry tc edc e = do
               [ str "..."
                 | or
                     [ not (collapseEntryShowContents e) && isJust entryContents,
-                      not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook)
+                      not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                      not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
                     ]
               ],
               maybeToList $ completedForestNumbersWidget edc,
@@ -571,8 +578,8 @@ drawEntry tc edc e = do
         drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
         tsw,
         drawProperties entryProperties,
-        drawIfM collapseEntryShowHistory shw,
-        drawIfM collapseEntryShowLogbook lbw
+        shw,
+        lbw
       ]
   where
     Entry {..} = collapseEntryValue e
