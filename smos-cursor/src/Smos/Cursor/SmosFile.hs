@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Smos.Cursor.SmosFile
@@ -107,8 +108,9 @@ rebuildSmosFileCursorEntirely = SmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
-  (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) $ makeSmosFileCursor $
-    Node emptyEntry []
+  (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart)
+    $ makeSmosFileCursor
+    $ Node emptyEntry []
       :| []
 
 smosFileCursorSelectedCollapseEntryL :: Lens' SmosFileCursor (CollapseEntry EntryCursor)
@@ -121,7 +123,7 @@ smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL = smosFileCursorSelectedEntryL . entryCursorSelectionL
 
 smosFileCursorReadyForStartup :: SmosFileCursor -> SmosFileCursor
-smosFileCursorReadyForStartup = unclockStarted . goToEnd
+smosFileCursorReadyForStartup = collapseDone . unclockStarted . goToEnd
   where
     goToEnd :: SmosFileCursor -> SmosFileCursor
     goToEnd sfc =
@@ -143,6 +145,23 @@ smosFileCursorReadyForStartup = unclockStarted . goToEnd
           if func (collapseEntryValue ce)
             then ce {collapseEntryShowLogbook = True}
             else ce
+    collapseDone :: SmosFileCursor -> SmosFileCursor
+    collapseDone =
+      smosFileCursorForestCursorL
+        %~ mapForestCursor
+          (mapCollapseDone (isDone . entryState . rebuildEntryCursor))
+          (mapCollapseDone (isDone . entryState))
+      where
+        mapCollapseDone :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
+        mapCollapseDone func ce =
+          if func (collapseEntryValue ce)
+            then ce {collapseEntryShowTimestamps = False}
+            else ce
+        isDone :: Maybe TodoState -> Bool
+        isDone (Just "DONE") = True
+        isDone (Just "CANCELLED") = True
+        isDone (Just "FAILED") = True
+        isDone _ = False
 
 smosFileCursorToggleCollapseEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleCollapseEntireEntry =

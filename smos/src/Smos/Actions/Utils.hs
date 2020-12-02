@@ -187,7 +187,9 @@ modifyMTimestampsCursorM :: (Maybe TimestampsCursor -> Maybe TimestampsCursor) -
 modifyMTimestampsCursorM func = modifyMTimestampsCursorSM $ pure . func
 
 modifyMTimestampsCursorSM :: (Maybe TimestampsCursor -> SmosM (Maybe TimestampsCursor)) -> SmosM ()
-modifyMTimestampsCursorSM func = modifyEntryCursorS $ entryCursorTimestampsCursorL func
+modifyMTimestampsCursorSM func = modifyCollapseEntryCursorS $ \ce -> do
+  ce' <- (collapseEntryValueL . entryCursorTimestampsCursorL) func ce
+  pure $ ce' & collapseEntryShowTimestampsL .~ True
 
 modifyMTodoStateM :: (Maybe TodoState -> Maybe TodoState) -> SmosM ()
 modifyMTodoStateM func =
@@ -277,12 +279,14 @@ modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History 
 modifyMFileCursorMHistoryS func = modifySmosFileEditorCursorS $ smosFileEditorCursorHistoryL func
 
 modifySmosFileEditorCursorS :: (SmosFileEditorCursor -> SmosM SmosFileEditorCursor) -> SmosM ()
-modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS $ mapM $ \sfec -> do
-  sfec' <- func sfec
-  pure $
-    sfec'
-      { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
-      }
+modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS
+  $ mapM
+  $ \sfec -> do
+    sfec' <- func sfec
+    pure $
+      sfec'
+        { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
+        }
 
 modifyMSmosFileEditorCursorMS :: (Maybe SmosFileEditorCursor -> SmosM (Maybe SmosFileEditorCursor)) -> SmosM ()
 modifyMSmosFileEditorCursorMS func = modifyEditorCursorS $ editorCursorFileCursorL func

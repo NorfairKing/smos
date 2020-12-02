@@ -13,6 +13,9 @@ description: The changelog for all of the Smos tools
   Thank you [@chiroptical](https://github.com/chiroptical/)!
 - `smos-shell`:
   A new package, to run smos commands in the browser without allowing full shell access.
+- `smos`:
+  It is now possible to hide timestamps.
+  Timestamps of done entries are hidden by default.
 
 ## Changed
 
