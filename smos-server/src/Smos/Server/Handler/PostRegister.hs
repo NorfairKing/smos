@@ -30,9 +30,9 @@ servePostRegister Register {..} = do
       throwError
         err409
           { errBody =
-              LB.fromStrict
-                $ TE.encodeUtf8
-                $ T.unwords
-                  ["Account with the username", usernameText registerUsername, "already exists."]
+              LB.fromStrict $
+                TE.encodeUtf8 $
+                  T.unwords
+                    ["Account with the username", usernameText registerUsername, "already exists."]
           }
   pure NoContent

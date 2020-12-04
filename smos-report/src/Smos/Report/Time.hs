@@ -7,8 +7,8 @@ import Control.Arrow
 import Control.DeepSeq
 import Data.Aeson
 import Data.Function
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Void
 import GHC.Generics (Generic)

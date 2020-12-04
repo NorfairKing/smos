@@ -4,8 +4,8 @@ module Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly where
 import Control.Monad
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
@@ -88,11 +88,11 @@ yearlyYearRecurrence ::
 yearlyYearRecurrence d_ limitDay (Interval interval) = do
   let (year_, _, _) = toGregorian d_
   let (limitYear, _, _) = toGregorian limitDay
-  takeEvery interval
-    $ takeWhile (<= limitYear)
-    $ dropWhile
-      (< year_)
-      [year_ ..]
+  takeEvery interval $
+    takeWhile (<= limitYear) $
+      dropWhile
+        (< year_)
+        [year_ ..]
 
 yearlyDayCandidate :: Day -> DayOfWeek -> Integer -> Set ByMonth -> Set ByWeekNo -> Set ByYearDay -> Set ByMonthDay -> Set ByDay -> [Day]
 yearlyDayCandidate

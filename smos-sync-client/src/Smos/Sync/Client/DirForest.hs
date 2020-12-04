@@ -23,10 +23,9 @@ import GHC.Generics (Generic)
 import Path
 import qualified System.FilePath as FP
 
-newtype DirForest a
-  = DirForest
-      { dirForestMap :: Map FilePath (DirOrFile a)
-      }
+newtype DirForest a = DirForest
+  { dirForestMap :: Map FilePath (DirOrFile a)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity a => Validity (DirForest a) where

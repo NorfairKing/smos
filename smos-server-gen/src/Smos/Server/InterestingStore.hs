@@ -7,8 +7,8 @@ import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.DirForest as DF
 import Data.Foldable (foldl')
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import Path
@@ -17,8 +17,8 @@ import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.InterestingStore
-import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap (ContentsMap)
+import qualified Smos.Sync.Client.ContentsMap as CM
 
 interestingStoreToContentsMap :: InterestingStore -> ContentsMap
 interestingStoreToContentsMap is@InterestingStore {..} =

@@ -40,7 +40,7 @@ allEntryPlainActions =
     ++ allTodoStatePlainActions
 
 allEntryUsingCharActions :: [ActionUsing Char]
-allEntryUsingCharActions = [] ++ allTodoStateUsingCharActions
+allEntryUsingCharActions = allTodoStateUsingCharActions
 
 entrySelectWhole :: Action
 entrySelectWhole =

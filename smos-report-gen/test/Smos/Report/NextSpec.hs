@@ -19,10 +19,12 @@ spec = do
   jsonSpecOnValid @NextActionReport
   genValidSpec @NextActionEntry
   jsonSpecOnValid @NextActionEntry
-  modifyMaxSuccess (`div` 10) $ describe "produceNextActionReport" $ it "produces valid reports for interesting stores"
-    $ forAllValid
-    $ \mFilter ->
-      forAllValid $ \ha ->
-        withInterestingStore $ \dc -> do
-          nar <- produceNextActionReport mFilter ha DontPrint dc
-          shouldBeValid nar
+  modifyMaxSuccess (`div` 10) $
+    describe "produceNextActionReport" $
+      it "produces valid reports for interesting stores" $
+        forAllValid $
+          \mFilter ->
+            forAllValid $ \ha ->
+              withInterestingStore $ \dc -> do
+                nar <- produceNextActionReport mFilter ha DontPrint dc
+                shouldBeValid nar

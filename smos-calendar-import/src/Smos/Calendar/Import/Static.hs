@@ -13,11 +13,10 @@ import Data.Validity.Text (validateTextSingleLine)
 import GHC.Generics (Generic)
 import YamlParse.Applicative
 
-data Static
-  = Static
-      { staticSummary :: !(Maybe Text),
-        staticDescription :: !(Maybe Text)
-      }
+data Static = Static
+  { staticSummary :: !(Maybe Text),
+    staticDescription :: !(Maybe Text)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Static where

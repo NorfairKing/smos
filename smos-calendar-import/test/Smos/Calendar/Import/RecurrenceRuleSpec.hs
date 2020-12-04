@@ -44,9 +44,10 @@ spec = do
   jsonSpecOnValid @RRule
   describe "rruleDateTimeOccurrencesUntil" $ do
     xit "produces valid results" $ producesValidsOnValids3 rruleDateTimeOccurrencesUntil
-    xit "produces results within the 'Count' range for 'Count' rules" $ forAllValid $ \start ->
-      forAllValid $ \limit ->
-        forAllValid $ \c ->
-          forAll (((\r -> r {rRuleUntilCount = Count c}) <$> genValid) `suchThat` isValid) $ \rule ->
-            let s = rruleDateTimeOccurrencesUntil start rule limit
-             in fromIntegral (S.size s) `shouldSatisfy` (<= c)
+    xit "produces results within the 'Count' range for 'Count' rules" $
+      forAllValid $ \start ->
+        forAllValid $ \limit ->
+          forAllValid $ \c ->
+            forAll (((\r -> r {rRuleUntilCount = Count c}) <$> genValid) `suchThat` isValid) $ \rule ->
+              let s = rruleDateTimeOccurrencesUntil start rule limit
+               in fromIntegral (S.size s) `shouldSatisfy` (<= c)

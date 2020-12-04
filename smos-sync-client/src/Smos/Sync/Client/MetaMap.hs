@@ -13,8 +13,8 @@ module Smos.Sync.Client.MetaMap
 where
 
 import Control.DeepSeq
-import qualified Data.DirForest as DF
 import Data.DirForest (DirForest)
+import qualified Data.DirForest as DF
 import Data.Foldable
 import Data.List (sortOn)
 import Data.Map (Map)
@@ -27,10 +27,9 @@ import GHC.Generics (Generic)
 import Path
 import Smos.Sync.Client.Env
 
-newtype MetaMap
-  = MetaMap
-      { metaMapDirForest :: DirForest SyncFileMeta -- A dirforest where we don't care about the dirs
-      }
+newtype MetaMap = MetaMap
+  { metaMapDirForest :: DirForest SyncFileMeta -- A dirforest where we don't care about the dirs
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity MetaMap where

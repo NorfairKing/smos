@@ -13,8 +13,9 @@ spec =
         configuredActions = keyMapActions defaultKeyMap
      in forM_ configuredActions $ \ca ->
           let an = anyActionName ca
-           in unless (an `elem` allActionNames) $ expectationFailure $
-                unwords
-                  [ "This action was not found in the 'allActions' list:",
-                    T.unpack (actionNameText an)
-                  ]
+           in unless (an `elem` allActionNames) $
+                expectationFailure $
+                  unwords
+                    [ "This action was not found in the 'allActions' list:",
+                      T.unpack (actionNameText an)
+                    ]

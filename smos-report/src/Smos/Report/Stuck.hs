@@ -20,21 +20,19 @@ import Path
 import Safe
 import Smos.Data
 
-data StuckReport
-  = StuckReport
-      { stuckReportEntries :: [StuckReportEntry]
-      }
+data StuckReport = StuckReport
+  { stuckReportEntries :: [StuckReportEntry]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReport
 
-data StuckReportEntry
-  = StuckReportEntry
-      { stuckReportEntryFilePath :: Path Rel File,
-        stuckReportEntryState :: Maybe TodoState,
-        stuckReportEntryHeader :: Header,
-        stuckReportEntryLatestChange :: Maybe UTCTime
-      }
+data StuckReportEntry = StuckReportEntry
+  { stuckReportEntryFilePath :: Path Rel File,
+    stuckReportEntryState :: Maybe TodoState,
+    stuckReportEntryHeader :: Header,
+    stuckReportEntryLatestChange :: Maybe UTCTime
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReportEntry
@@ -64,15 +62,15 @@ latestEntryInSmosFile tz =
 
 latestTimestampInEntry :: TimeZone -> Entry -> Maybe UTCTime
 latestTimestampInEntry tz e@Entry {..} =
-  maximumMay
-    $ catMaybes
-    $ concat
-      [ [ latestStateChange entryStateHistory,
-          latestClockChange entryLogbook
-        ],
-        [ latestTimestamp tz entryTimestamps | not (isDone (entryState e))
+  maximumMay $
+    catMaybes $
+      concat
+        [ [ latestStateChange entryStateHistory,
+            latestClockChange entryLogbook
+          ],
+          [ latestTimestamp tz entryTimestamps | not (isDone (entryState e))
+          ]
         ]
-      ]
 
 isDone :: Maybe TodoState -> Bool
 isDone (Just "CANCELLED") = True

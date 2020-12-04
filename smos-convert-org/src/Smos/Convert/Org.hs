@@ -101,21 +101,21 @@ convertHeadline h = do
 
 convertPlannings :: Org.Plannings -> Convert (Map Smos.TimestampName Smos.Timestamp)
 convertPlannings (Plns hm) =
-  fmap M.fromList
-    $ forM (HM.toList hm)
-    $ \(kw, ots) -> do
-      tsn <- lleft InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
-      ts <- constructTimestamp $ tsTime ots
-      pure (tsn, ts)
+  fmap M.fromList $
+    forM (HM.toList hm) $
+      \(kw, ots) -> do
+        tsn <- lleft InvalidTimestampName $ parseTimestampName $ T.pack $ show kw
+        ts <- constructTimestamp $ tsTime ots
+        pure (tsn, ts)
 
 convertProperties :: Org.Properties -> Convert (Map Smos.PropertyName Smos.PropertyValue)
 convertProperties ps =
-  fmap M.fromList
-    $ forM (HM.toList $ unProperties ps)
-    $ \(kt, vt) -> do
-      k <- lleft InvalidPropertyName $ parsePropertyName kt
-      v <- lleft InvalidPropertyValue $ parsePropertyValue vt
-      pure (k, v)
+  fmap M.fromList $
+    forM (HM.toList $ unProperties ps) $
+      \(kt, vt) -> do
+        k <- lleft InvalidPropertyName $ parsePropertyName kt
+        v <- lleft InvalidPropertyValue $ parsePropertyValue vt
+        pure (k, v)
 
 convertStateHistory :: Maybe Org.StateKeyword -> Convert Smos.StateHistory
 convertStateHistory mkw = do

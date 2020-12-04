@@ -117,10 +117,9 @@ import GHC.Generics (Generic)
 import Path
 import YamlParse.Applicative
 
-newtype SmosFile
-  = SmosFile
-      { smosFileForest :: Forest Entry
-      }
+newtype SmosFile = SmosFile
+  { smosFileForest :: Forest Entry
+  }
   deriving (Show, Eq, Generic)
 
 instance Ord SmosFile where
@@ -139,10 +138,9 @@ instance ToYaml SmosFile where
 instance FromJSON SmosFile where
   parseJSON v = SmosFile . unForYaml <$> parseJSON v
 
-newtype ForYaml a
-  = ForYaml
-      { unForYaml :: a
-      }
+newtype ForYaml a = ForYaml
+  { unForYaml :: a
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity a => Validity (ForYaml a)
@@ -212,16 +210,15 @@ utcFormat = "%F %H:%M:%S.%q"
 utcSchema :: YamlParser UTCTime
 utcSchema = maybeParser (parseTimeM True defaultTimeLocale utcFormat) yamlSchema <?> T.pack utcFormat
 
-data Entry
-  = Entry
-      { entryHeader :: Header,
-        entryContents :: Maybe Contents,
-        entryTimestamps :: Map TimestampName Timestamp, -- SCHEDULED, DEADLINE, etc.
-        entryProperties :: Map PropertyName PropertyValue,
-        entryStateHistory :: StateHistory, -- TODO, DONE, etc.
-        entryTags :: Set Tag, -- '@home', 'toast', etc.
-        entryLogbook :: Logbook
-      }
+data Entry = Entry
+  { entryHeader :: Header,
+    entryContents :: Maybe Contents,
+    entryTimestamps :: Map TimestampName Timestamp, -- SCHEDULED, DEADLINE, etc.
+    entryProperties :: Map PropertyName PropertyValue,
+    entryStateHistory :: StateHistory, -- TODO, DONE, etc.
+    entryTags :: Set Tag, -- '@home', 'toast', etc.
+    entryLogbook :: Logbook
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Entry
@@ -307,10 +304,9 @@ newEntry h =
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
 
-newtype Header
-  = Header
-      { headerText :: Text
-      }
+newtype Header = Header
+  { headerText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Header where
@@ -343,10 +339,9 @@ validateHeaderChar c =
       declare "The character is not a newline" $ c /= '\n'
     ]
 
-newtype Contents
-  = Contents
-      { contentsText :: Text
-      }
+newtype Contents = Contents
+  { contentsText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Contents where
@@ -380,10 +375,9 @@ validateContentsChar :: Char -> Validation
 validateContentsChar c =
   declare "The character is a printable or space" $ Char.isPrint c || Char.isSpace c
 
-newtype PropertyName
-  = PropertyName
-      { propertyNameText :: Text
-      }
+newtype PropertyName = PropertyName
+  { propertyNameText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyName where
@@ -425,10 +419,9 @@ validPropertyNameChar = validationIsValid . validatePropertyNameChar
 validatePropertyNameChar :: Char -> Validation
 validatePropertyNameChar = validateTagChar
 
-newtype PropertyValue
-  = PropertyValue
-      { propertyValueText :: Text
-      }
+newtype PropertyValue = PropertyValue
+  { propertyValueText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity PropertyValue where
@@ -471,10 +464,9 @@ parsePropertyValue = prettyValidate . PropertyValue
 validPropertyValueChar :: Char -> Bool
 validPropertyValueChar = validTagChar
 
-newtype TimestampName
-  = TimestampName
-      { timestampNameText :: Text
-      }
+newtype TimestampName = TimestampName
+  { timestampNameText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
 
 instance Validity TimestampName where
@@ -594,10 +586,9 @@ timestampLocalTime ts =
     TimestampDay d -> LocalTime d midnight
     TimestampLocalTime lt -> lt
 
-newtype TodoState
-  = TodoState
-      { todoStateText :: Text
-      }
+newtype TodoState = TodoState
+  { todoStateText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity TodoState where
@@ -624,10 +615,9 @@ validTodoStateChar = validationIsValid . validateTodoStateChar
 validateTodoStateChar :: Char -> Validation
 validateTodoStateChar = validateHeaderChar
 
-newtype StateHistory
-  = StateHistory
-      { unStateHistory :: [StateHistoryEntry]
-      }
+newtype StateHistory = StateHistory
+  { unStateHistory :: [StateHistoryEntry]
+  }
   deriving (Show, Eq, Ord, Generic, ToJSON, ToYaml)
 
 instance Validity StateHistory where
@@ -649,11 +639,10 @@ emptyStateHistory = StateHistory []
 nullStateHistory :: StateHistory -> Bool
 nullStateHistory = (== emptyStateHistory)
 
-data StateHistoryEntry
-  = StateHistoryEntry
-      { stateHistoryEntryNewState :: Maybe TodoState,
-        stateHistoryEntryTimestamp :: UTCTime
-      }
+data StateHistoryEntry = StateHistoryEntry
+  { stateHistoryEntryNewState :: Maybe TodoState,
+    stateHistoryEntryTimestamp :: UTCTime
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity StateHistoryEntry
@@ -691,10 +680,9 @@ instance YamlSchema StateHistoryEntry where
                     )
             )
 
-newtype Tag
-  = Tag
-      { tagText :: Text
-      }
+newtype Tag = Tag
+  { tagText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
 
 instance Validity Tag where
@@ -741,20 +729,20 @@ instance Validity Logbook where
           case lbes of
             [] -> True
             (lbe : _) -> utct >= logbookEntryEnd lbe,
-        decorate "The consecutive logbook entries happen after each other"
-          $ decorateList (conseqs lbes)
-          $ \(lbe1, lbe2) ->
-            declare "The former happens after the latter" $
-              logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+        decorate "The consecutive logbook entries happen after each other" $
+          decorateList (conseqs lbes) $
+            \(lbe1, lbe2) ->
+              declare "The former happens after the latter" $
+                logbookEntryStart lbe1 >= logbookEntryEnd lbe2
       ]
   validate lc@(LogClosed lbes) =
     mconcat
       [ genericValidate lc,
-        decorate "The consecutive logbook entries happen after each other"
-          $ decorateList (conseqs lbes)
-          $ \(lbe1, lbe2) ->
-            declare "The former happens after the latter" $
-              logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+        decorate "The consecutive logbook entries happen after each other" $
+          decorateList (conseqs lbes) $
+            \(lbe1, lbe2) ->
+              declare "The former happens after the latter" $
+                logbookEntryStart lbe1 >= logbookEntryEnd lbe2
       ]
 
 conseqs :: [a] -> [(a, a)]
@@ -810,11 +798,10 @@ logbookClosed =
     LogClosed _ -> True
     _ -> False
 
-data LogbookEntry
-  = LogbookEntry
-      { logbookEntryStart :: UTCTime,
-        logbookEntryEnd :: UTCTime
-      }
+data LogbookEntry = LogbookEntry
+  { logbookEntryStart :: UTCTime,
+    logbookEntryEnd :: UTCTime
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity LogbookEntry where
@@ -840,11 +827,11 @@ instance FromJSON LogbookEntry where
 
 instance YamlSchema LogbookEntry where
   yamlSchema =
-    eitherParser prettyValidate
-      $ objectParser "LogbookEntry"
-      $ LogbookEntry
-        <$> (unForYaml <$> requiredField "start" "The start of the logbook entry")
-        <*> (unForYaml <$> requiredField "end" "The end of the logbook entry.")
+    eitherParser prettyValidate $
+      objectParser "LogbookEntry" $
+        LogbookEntry
+          <$> (unForYaml <$> requiredField "start" "The start of the logbook entry")
+          <*> (unForYaml <$> requiredField "end" "The end of the logbook entry.")
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart

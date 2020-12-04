@@ -21,19 +21,18 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Data.Types
 
-newtype StateHistoryCursor
-  = StateHistoryCursor
-      { stateHistoryCursorNonEmptyCursor :: NonEmptyCursor StateHistoryEntry
-      }
+newtype StateHistoryCursor = StateHistoryCursor
+  { stateHistoryCursorNonEmptyCursor :: NonEmptyCursor StateHistoryEntry
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity StateHistoryCursor where
   validate shc =
     mconcat
       [ genericValidate shc,
-        decorate "it rebuilds to a valid state history"
-          $ validate
-          $ rebuildStateHistoryCursor (Just shc)
+        decorate "it rebuilds to a valid state history" $
+          validate $
+            rebuildStateHistoryCursor (Just shc)
       ]
 
 instance NFData StateHistoryCursor

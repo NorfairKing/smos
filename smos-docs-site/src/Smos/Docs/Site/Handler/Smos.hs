@@ -13,8 +13,8 @@ where
 
 import Data.Map (Map)
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Data.Time

@@ -20,14 +20,13 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
 
-data CollapseEntry a
-  = CollapseEntry
-      { collapseEntryValue :: a,
-        collapseEntryShowContents :: Bool,
-        collapseEntryShowHistory :: Bool,
-        collapseEntryShowLogbook :: Bool,
-        collapseEntryShowTimestamps :: Bool
-      }
+data CollapseEntry a = CollapseEntry
+  { collapseEntryValue :: a,
+    collapseEntryShowContents :: Bool,
+    collapseEntryShowHistory :: Bool,
+    collapseEntryShowLogbook :: Bool,
+    collapseEntryShowTimestamps :: Bool
+  }
   deriving (Show, Eq, Generic, Functor)
 
 instance Validity a => Validity (CollapseEntry a)

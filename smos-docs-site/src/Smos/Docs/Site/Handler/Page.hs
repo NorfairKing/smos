@@ -7,10 +7,13 @@ module Smos.Docs.Site.Handler.Page
   )
 where
 
+import Data.Text (Text)
 import Smos.Docs.Site.Foundation
 
-getPageR :: DocPage -> Handler Html
-getPageR DocPage {..} =
+getPageR :: [Text] -> Handler Html
+getPageR ts = do
+  liftIO $ print ts
+  DocPage {..} <- lookupPage' ts
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
     setDescription docPageDescription

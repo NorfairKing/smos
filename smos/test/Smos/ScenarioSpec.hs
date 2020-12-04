@@ -37,9 +37,9 @@ spec = do
       resourcesDir <- resolveDir' "test_resources/scenario"
       fs <- snd <$> listDirRecur resourcesDir
       pure $ filter ((== Just ".yaml") . fileExtension) fs
-  describe "Preconditions"
-    $ specify "all actions have unique names"
-    $ let allActionNames = map anyActionName allActions
+  describe "Preconditions" $
+    specify "all actions have unique names" $
+      let allActionNames = map anyActionName allActions
           grouped = group $ sort allActionNames
        in forM_ grouped $ \case
             [] -> pure () -- impossible, but fine
@@ -47,13 +47,12 @@ spec = do
             (an : _) -> expectationFailure $ unwords ["This action name occurred more than once: ", T.unpack (actionNameText an)]
   describe "Scenario" $ makeTestcases tfs
 
-data ScenarioTestCase
-  = ScenarioTestCase
-      { scenarioTestCaseStartingFile :: FilePath,
-        scenarioTestCaseBefore :: DirForest SmosFile,
-        scenarioTestCaseCommands :: [Command],
-        scenarioTestCaseAfter :: DirForest SmosFile
-      }
+data ScenarioTestCase = ScenarioTestCase
+  { scenarioTestCaseStartingFile :: FilePath,
+    scenarioTestCaseBefore :: DirForest SmosFile,
+    scenarioTestCaseCommands :: [Command],
+    scenarioTestCaseAfter :: DirForest SmosFile
+  }
   deriving (Show, Generic)
 
 instance Validity ScenarioTestCase
@@ -125,11 +124,10 @@ parseCommand t =
         _ -> Left "Multichar operand"
     _ -> Left "Unable to parse command: more than two words"
 
-data CommandsRun
-  = CommandsRun
-      { intermidiaryResults :: [(Command, DirForest SmosFile, [Text])],
-        finalResult :: DirForest SmosFile
-      }
+data CommandsRun = CommandsRun
+  { intermidiaryResults :: [(Command, DirForest SmosFile, [Text])],
+    finalResult :: DirForest SmosFile
+  }
 
 runCommandsOn :: FilePath -> DirForest SmosFile -> [Command] -> IO CommandsRun
 runCommandsOn startingFilePath start commands =
@@ -188,42 +186,42 @@ runCommandsOn startingFilePath start commands =
         Continue () ->
           pure
             ( ss',
-              (c, intermadiateState, errs)
-                : rs
+              (c, intermadiateState, errs) :
+              rs
             )
 
 expectResults :: Path Abs File -> DirForest SmosFile -> DirForest SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =
-  unless (finalResult `dEqForTest` af)
-    $ failure
-    $ unlines
-    $ concat
-      [ [ "The expected result did not match the actual result.",
-          "The starting situation looked as follows:",
-          ppShow bf,
-          "The commands to run were these:",
-          ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
-          "The result was supposed to look like this:",
-          ppShow af,
-          "",
-          "The intermediary steps built up to the result as follows:",
-          ""
-        ],
-        concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
-        [ "The expected result was the following:",
-          ppShow af,
-          "The actual result was the following:",
-          ppShow finalResult
-        ],
-        [ unwords
-            [ "If this was intentional, you can replace the contents of the 'after' part in",
-              fromAbsFile p,
-              "by the following:"
+  unless (finalResult `dEqForTest` af) $
+    failure $
+      unlines $
+        concat
+          [ [ "The expected result did not match the actual result.",
+              "The starting situation looked as follows:",
+              ppShow bf,
+              "The commands to run were these:",
+              ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
+              "The result was supposed to look like this:",
+              ppShow af,
+              "",
+              "The intermediary steps built up to the result as follows:",
+              ""
             ],
-          "---[START]---",
-          SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
-        ]
-      ]
+            concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
+            [ "The expected result was the following:",
+              ppShow af,
+              "The actual result was the following:",
+              ppShow finalResult
+            ],
+            [ unwords
+                [ "If this was intentional, you can replace the contents of the 'after' part in",
+                  fromAbsFile p,
+                  "by the following:"
+                ],
+              "---[START]---",
+              SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
+            ]
+          ]
   where
     go :: Command -> DirForest SmosFile -> [Text] -> [String]
     go c isf errs =

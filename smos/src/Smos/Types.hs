@@ -43,22 +43,20 @@ import Smos.Report.Config
 import UnliftIO.Resource
 import YamlParse.Applicative
 
-data SmosConfig
-  = SmosConfig
-      { configKeyMap :: !KeyMap,
-        configReportConfig :: !SmosReportConfig,
-        configExplainerMode :: !Bool
-      }
+data SmosConfig = SmosConfig
+  { configKeyMap :: !KeyMap,
+    configReportConfig :: !SmosReportConfig,
+    configExplainerMode :: !Bool
+  }
   deriving (Generic)
 
-data KeyMap
-  = KeyMap
-      { keyMapFileKeyMap :: !FileKeyMap,
-        keyMapBrowserKeyMap :: !BrowserKeyMap,
-        keyMapReportsKeyMap :: !ReportsKeyMap,
-        keyMapHelpKeyMap :: !HelpKeyMap,
-        keyMapAnyKeyMap :: !KeyMappings
-      }
+data KeyMap = KeyMap
+  { keyMapFileKeyMap :: !FileKeyMap,
+    keyMapBrowserKeyMap :: !BrowserKeyMap,
+    keyMapReportsKeyMap :: !ReportsKeyMap,
+    keyMapHelpKeyMap :: !HelpKeyMap,
+    keyMapAnyKeyMap :: !KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup KeyMap where
@@ -85,19 +83,18 @@ keyMapActions (KeyMap keyMapFileKeyMap keyMapBrowserKeyMap keyMapReportsKeyMap k
       keyMappingsActions keyMapAnyKeyMap
     ]
 
-data FileKeyMap
-  = FileKeyMap
-      { fileKeyMapEmptyMatchers :: !KeyMappings,
-        fileKeyMapEntryMatchers :: !KeyMappings,
-        fileKeyMapHeaderMatchers :: !KeyMappings,
-        fileKeyMapContentsMatchers :: !KeyMappings,
-        fileKeyMapTimestampsMatchers :: !KeyMappings,
-        fileKeyMapPropertiesMatchers :: !KeyMappings,
-        fileKeyMapStateHistoryMatchers :: !KeyMappings,
-        fileKeyMapTagsMatchers :: !KeyMappings,
-        fileKeyMapLogbookMatchers :: !KeyMappings,
-        fileKeyMapAnyMatchers :: !KeyMappings
-      }
+data FileKeyMap = FileKeyMap
+  { fileKeyMapEmptyMatchers :: !KeyMappings,
+    fileKeyMapEntryMatchers :: !KeyMappings,
+    fileKeyMapHeaderMatchers :: !KeyMappings,
+    fileKeyMapContentsMatchers :: !KeyMappings,
+    fileKeyMapTimestampsMatchers :: !KeyMappings,
+    fileKeyMapPropertiesMatchers :: !KeyMappings,
+    fileKeyMapStateHistoryMatchers :: !KeyMappings,
+    fileKeyMapTagsMatchers :: !KeyMappings,
+    fileKeyMapLogbookMatchers :: !KeyMappings,
+    fileKeyMapAnyMatchers :: !KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup FileKeyMap where
@@ -162,13 +159,12 @@ fileKeyMapActions
         fileKeyMapAnyMatchers
       ]
 
-data BrowserKeyMap
-  = BrowserKeyMap
-      { browserKeyMapExistentMatchers :: KeyMappings,
-        browserKeyMapInProgressMatchers :: KeyMappings,
-        browserKeyMapEmptyMatchers :: KeyMappings,
-        browserKeyMapAnyMatchers :: KeyMappings
-      }
+data BrowserKeyMap = BrowserKeyMap
+  { browserKeyMapExistentMatchers :: KeyMappings,
+    browserKeyMapInProgressMatchers :: KeyMappings,
+    browserKeyMapEmptyMatchers :: KeyMappings,
+    browserKeyMapAnyMatchers :: KeyMappings
+  }
   deriving (Generic)
 
 browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
@@ -202,12 +198,11 @@ instance Monoid BrowserKeyMap where
             browserKeyMapAnyMatchers = mempty
           }
 
-data ReportsKeyMap
-  = ReportsKeyMap
-      { reportsKeymapNextActionReportKeyMap :: !NextActionReportKeyMap,
-        reportsKeymapWaitingReportKeyMap :: !WaitingReportKeyMap,
-        reportsKeymapAnyMatchers :: !KeyMappings
-      }
+data ReportsKeyMap = ReportsKeyMap
+  { reportsKeymapNextActionReportKeyMap :: !NextActionReportKeyMap,
+    reportsKeymapWaitingReportKeyMap :: !WaitingReportKeyMap,
+    reportsKeymapAnyMatchers :: !KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
@@ -239,12 +234,11 @@ reportsKeyMapActions ReportsKeyMap {..} =
           keyMappingsActions reportsKeymapAnyMatchers
         ]
 
-data NextActionReportKeyMap
-  = NextActionReportKeyMap
-      { nextActionReportMatchers :: KeyMappings,
-        nextActionReportSearchMatchers :: KeyMappings,
-        nextActionReportAnyMatchers :: KeyMappings
-      }
+data NextActionReportKeyMap = NextActionReportKeyMap
+  { nextActionReportMatchers :: KeyMappings,
+    nextActionReportSearchMatchers :: KeyMappings,
+    nextActionReportAnyMatchers :: KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup NextActionReportKeyMap where
@@ -275,11 +269,10 @@ nextActionReportKeyMapActions NextActionReportKeyMap {..} =
           nextActionReportAnyMatchers
         ]
 
-data WaitingReportKeyMap
-  = WaitingReportKeyMap
-      { waitingReportMatchers :: KeyMappings,
-        waitingReportAnyMatchers :: KeyMappings
-      }
+data WaitingReportKeyMap = WaitingReportKeyMap
+  { waitingReportMatchers :: KeyMappings,
+    waitingReportAnyMatchers :: KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup WaitingReportKeyMap where
@@ -312,12 +305,11 @@ keyMapHelpMatchers km =
   let HelpKeyMap {..} = keyMapHelpKeyMap km
    in helpKeyMapHelpMatchers <> helpKeyMapSearchMatchers
 
-data HelpKeyMap
-  = HelpKeyMap
-      { helpKeyMapHelpMatchers :: !KeyMappings,
-        helpKeyMapSearchMatchers :: !KeyMappings,
-        helpKeyMapAnyMatchers :: !KeyMappings
-      }
+data HelpKeyMap = HelpKeyMap
+  { helpKeyMapHelpMatchers :: !KeyMappings,
+    helpKeyMapSearchMatchers :: !KeyMappings,
+    helpKeyMapAnyMatchers :: !KeyMappings
+  }
   deriving (Generic)
 
 instance Semigroup HelpKeyMap where
@@ -366,10 +358,9 @@ keyMappingAction = \case
   MapCatchAll a -> PlainAction a
   MapCombination _ km -> keyMappingAction km
 
-newtype ActionName
-  = ActionName
-      { actionNameText :: Text
-      }
+newtype ActionName = ActionName
+  { actionNameText :: Text
+  }
   deriving (Show, Read, Eq, Ord, Generic, IsString, Semigroup, Monoid, FromJSON, ToJSON)
 
 instance Validity ActionName
@@ -377,20 +368,18 @@ instance Validity ActionName
 instance YamlSchema ActionName where
   yamlSchema = ActionName <$> yamlSchema
 
-data Action
-  = Action
-      { actionName :: ActionName,
-        actionFunc :: SmosM (),
-        actionDescription :: Text
-      }
+data Action = Action
+  { actionName :: ActionName,
+    actionFunc :: SmosM (),
+    actionDescription :: Text
+  }
   deriving (Generic)
 
-data ActionUsing a
-  = ActionUsing
-      { actionUsingName :: ActionName,
-        actionUsingFunc :: a -> SmosM (),
-        actionUsingDescription :: Text
-      }
+data ActionUsing a = ActionUsing
+  { actionUsingName :: ActionName,
+    actionUsingFunc :: a -> SmosM (),
+    actionUsingDescription :: Text
+  }
   deriving (Generic)
 
 instance Contravariant ActionUsing where
@@ -422,15 +411,14 @@ runSmosM = runMkSmosM
 runSmosM' :: SmosConfig -> SmosState -> SmosM a -> ResourceT IO ((MStop a, SmosState), [Text])
 runSmosM' = runMkSmosM'
 
-data SmosState
-  = SmosState
-      { smosStateTime :: !ZonedTime,
-        smosStateCursor :: !EditorCursor,
-        smosStateKeyHistory :: !(Seq KeyPress),
-        smosStateAsyncs :: ![Async ()],
-        smosStateDebugInfo :: !DebugInfo,
-        smosStateErrorMessages :: [Text] -- In reverse order
-      }
+data SmosState = SmosState
+  { smosStateTime :: !ZonedTime,
+    smosStateCursor :: !EditorCursor,
+    smosStateKeyHistory :: !(Seq KeyPress),
+    smosStateAsyncs :: ![Async ()],
+    smosStateDebugInfo :: !DebugInfo,
+    smosStateErrorMessages :: [Text] -- In reverse order
+  }
   deriving (Generic)
 
 addErrorMessage :: Text -> SmosM ()
@@ -441,19 +429,17 @@ runSmosAsync func = do
   (_, a) <- allocate (async func) wait
   modify (\ss -> ss {smosStateAsyncs = a : smosStateAsyncs ss})
 
-data DebugInfo
-  = DebugInfo
-      { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
-      }
+data DebugInfo = DebugInfo
+  { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
+  }
   deriving (Show, Eq, Generic)
 
-data ActivationDebug
-  = ActivationDebug
-      { activationDebugPrecedence :: Precedence,
-        activationDebugPriority :: Priority,
-        activationDebugMatch :: Seq KeyPress,
-        activationDebugName :: ActionName
-      }
+data ActivationDebug = ActivationDebug
+  { activationDebugPrecedence :: Precedence,
+    activationDebugPriority :: Priority,
+    activationDebugMatch :: Seq KeyPress,
+    activationDebugName :: ActionName
+  }
   deriving (Show, Eq, Generic)
 
 data Priority
@@ -489,14 +475,13 @@ quit =
 -- SmosState <- SmosM
 --
 -- and EditorCursor depends on HelpCursor, so that has the same problem
-data HelpCursor
-  = HelpCursor
-      { helpCursorTitle :: Text,
-        helpCursorSearchBar :: TextCursor,
-        helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
-        helpCursorKeyHelpCursors :: [KeyHelpCursor],
-        helpCursorSelection :: HelpCursorSelection
-      }
+data HelpCursor = HelpCursor
+  { helpCursorTitle :: Text,
+    helpCursorSearchBar :: TextCursor,
+    helpCursorSelectedKeyHelpCursors :: Maybe (NonEmptyCursor KeyHelpCursor),
+    helpCursorKeyHelpCursors :: [KeyHelpCursor],
+    helpCursorSelection :: HelpCursorSelection
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity HelpCursor
@@ -644,12 +629,11 @@ helpCursorDelete =
       Just Deleted -> Nothing
       Just (Updated hc) -> Just hc
 
-data KeyHelpCursor
-  = KeyHelpCursor
-      { keyHelpCursorKeyBinding :: [KeyCombination],
-        keyHelpCursorName :: ActionName,
-        keyHelpCursorDescription :: Text
-      }
+data KeyHelpCursor = KeyHelpCursor
+  { keyHelpCursorKeyBinding :: [KeyCombination],
+    keyHelpCursorName :: ActionName,
+    keyHelpCursorDescription :: Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity KeyHelpCursor
@@ -696,15 +680,14 @@ keyPressComplexity (KeyPress key mods) = (+ genericLength mods) $ case key of
 -- [ Editor Cursor ] --
 --
 -- Cannot factor this out because of the problem with help cursor.
-data EditorCursor
-  = EditorCursor
-      { editorCursorLastOpenedFile :: Maybe (Path Abs File),
-        editorCursorFileCursor :: Maybe SmosFileEditorCursor,
-        editorCursorBrowserCursor :: Maybe FileBrowserCursor,
-        editorCursorReportCursor :: Maybe ReportCursor,
-        editorCursorHelpCursor :: Maybe HelpCursor,
-        editorCursorSelection :: EditorSelection
-      }
+data EditorCursor = EditorCursor
+  { editorCursorLastOpenedFile :: Maybe (Path Abs File),
+    editorCursorFileCursor :: Maybe SmosFileEditorCursor,
+    editorCursorBrowserCursor :: Maybe FileBrowserCursor,
+    editorCursorReportCursor :: Maybe ReportCursor,
+    editorCursorHelpCursor :: Maybe HelpCursor,
+    editorCursorSelection :: EditorSelection
+  }
 
 data StartingPath
   = StartingFile (Path Abs File)
@@ -727,15 +710,17 @@ startEditorCursor st = case st of
     pure $ fmap (fmap go) mErrOrCursor
   StartingDir dp -> do
     fbc <- startFileBrowserCursor dp
-    pure $ Just $ Right $
-      EditorCursor
-        { editorCursorLastOpenedFile = Nothing,
-          editorCursorFileCursor = Nothing,
-          editorCursorBrowserCursor = Just fbc,
-          editorCursorReportCursor = Nothing,
-          editorCursorHelpCursor = Nothing,
-          editorCursorSelection = BrowserSelected
-        }
+    pure $
+      Just $
+        Right $
+          EditorCursor
+            { editorCursorLastOpenedFile = Nothing,
+              editorCursorFileCursor = Nothing,
+              editorCursorBrowserCursor = Just fbc,
+              editorCursorReportCursor = Nothing,
+              editorCursorHelpCursor = Nothing,
+              editorCursorSelection = BrowserSelected
+            }
 
 editorCursorFileCursorL :: Lens' EditorCursor (Maybe SmosFileEditorCursor)
 editorCursorFileCursorL =

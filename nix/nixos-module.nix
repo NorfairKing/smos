@@ -1,10 +1,9 @@
 { envname }:
 { lib, pkgs, config, ... }:
 with lib;
-
 let
   cfg = config.services.smos."${envname}";
-  concatAttrs = attrList: fold (x: y: x // y) {} attrList;
+  concatAttrs = attrList: fold (x: y: x // y) { } attrList;
 in
 {
   options.services.smos."${envname}" =
@@ -20,7 +19,7 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf types.str;
-                      default = [];
+                      default = [ ];
                       example = [ "docs.smos.online" ];
                       description = "The host to serve the docs site on";
                     };
@@ -138,7 +137,7 @@ in
                   hosts =
                     mkOption {
                       type = types.listOf (types.str);
-                      default = [];
+                      default = [ ];
                       example = [ "smos.online" ];
                       description = "The host to serve web requests on";
                     };
@@ -168,7 +167,7 @@ in
     };
   config =
     let
-      smosPkgs = (import ./pkgs.nix {}).smosPackages;
+      smosPkgs = (import ./pkgs.nix { }).smosPackages;
       working-dir = "/www/smos/${envname}/";
       # The docs server
       docs-site-service =
@@ -209,7 +208,7 @@ in
       docs-site-host =
         with cfg.docs-site;
 
-        optionalAttrs (enable && hosts != []) {
+        optionalAttrs (enable && hosts != [ ]) {
           "${head hosts}" =
             {
               enableACME = true;
@@ -260,7 +259,7 @@ in
       api-server-host =
         with cfg.api-server;
 
-        optionalAttrs (enable && hosts != []) {
+        optionalAttrs (enable && hosts != [ ]) {
           "${head hosts}" =
             {
               enableACME = true;
@@ -284,7 +283,7 @@ in
             {
               "smos-api-server-local-backup-${envname}" = {
                 description = "Backup smos-api-server database locally for ${envname}";
-                wantedBy = [];
+                wantedBy = [ ];
                 script =
                   ''
                     mkdir -p ${backup-dir}
@@ -379,28 +378,28 @@ in
             };
         };
     in
-      mkIf cfg.enable {
-        systemd.services =
-          concatAttrs [
-            docs-site-service
-            api-server-service
-            web-server-service
-            local-backup-service
-          ];
-        systemd.timers =
-          concatAttrs [
-            local-backup-timer
-          ];
-        networking.firewall.allowedTCPPorts = builtins.concatLists [
-          (optional cfg.docs-site.enable cfg.docs-site.port)
-          (optional cfg.api-server.enable cfg.api-server.port)
-          (optional cfg.web-server.enable cfg.web-server.port)
+    mkIf cfg.enable {
+      systemd.services =
+        concatAttrs [
+          docs-site-service
+          api-server-service
+          web-server-service
+          local-backup-service
         ];
-        services.nginx.virtualHosts =
-          concatAttrs [
-            docs-site-host
-            api-server-host
-            web-server-host
-          ];
-      };
+      systemd.timers =
+        concatAttrs [
+          local-backup-timer
+        ];
+      networking.firewall.allowedTCPPorts = builtins.concatLists [
+        (optional cfg.docs-site.enable cfg.docs-site.port)
+        (optional cfg.api-server.enable cfg.api-server.port)
+        (optional cfg.web-server.enable cfg.web-server.port)
+      ];
+      services.nginx.virtualHosts =
+        concatAttrs [
+          docs-site-host
+          api-server-host
+          web-server-host
+        ];
+    };
 }

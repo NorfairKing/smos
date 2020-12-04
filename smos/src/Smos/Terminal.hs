@@ -11,13 +11,12 @@ import Graphics.Vty.Output.TerminfoBased (setWindowSize)
 import System.Posix
 import UnliftIO
 
-data TerminalHandle
-  = TerminalHandle
-      { terminalHandleMasterHandle :: !Handle,
-        terminalHandleSlaveHandle :: !Handle,
-        terminalHandleResizeFd :: Fd,
-        terminalHandleAsync :: Async ()
-      }
+data TerminalHandle = TerminalHandle
+  { terminalHandleMasterHandle :: !Handle,
+    terminalHandleSlaveHandle :: !Handle,
+    terminalHandleResizeFd :: Fd,
+    terminalHandleAsync :: Async ()
+  }
 
 withTerminal :: MonadUnliftIO m => (Handle -> Fd -> m ()) -> (TerminalHandle -> m a) -> m a
 withTerminal programFunc func = do
@@ -39,11 +38,10 @@ terminalInputSink = sinkHandle . terminalHandleMasterHandle
 terminalOutputSource :: MonadIO m => TerminalHandle -> ConduitT i ByteString m ()
 terminalOutputSource = sourceHandle . terminalHandleMasterHandle
 
-data TerminalSize
-  = TerminalSize
-      { terminalWidth :: !Word16,
-        terminalHeight :: !Word16
-      }
+data TerminalSize = TerminalSize
+  { terminalWidth :: !Word16,
+    terminalHeight :: !Word16
+  }
   deriving (Show)
 
 instance FromJSON TerminalSize where

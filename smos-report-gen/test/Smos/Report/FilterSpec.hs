@@ -46,13 +46,13 @@ spec = do
       parseSuccessSpec partP "a" (PartPiece (Piece "a"))
       parseSuccessSpec partP "o" (PartPiece (Piece "o"))
       parsesValidSpec partP
-      it "parses back whatever 'renderPart' renders"
-        $ forAllValid
-        $ \p ->
-          let t = renderPart p
-           in case parsePart t of
-                Left err -> expectationFailure $ show err
-                Right p' -> p' `shouldBe` p
+      it "parses back whatever 'renderPart' renders" $
+        forAllValid $
+          \p ->
+            let t = renderPart p
+             in case parsePart t of
+                  Left err -> expectationFailure $ show err
+                  Right p' -> p' `shouldBe` p
     describe "partsP" $ do
       parseSuccessSpec
         partsP
@@ -76,13 +76,13 @@ spec = do
             ]
         )
       parsesValidSpec partsP
-      it "parses back whatever 'renderParts' renders"
-        $ forAllValid
-        $ \parts ->
-          let t = renderParts parts
-           in case parseParts t of
-                Left err -> expectationFailure $ show err
-                Right parts' -> parts' `shouldBe` parts
+      it "parses back whatever 'renderParts' renders" $
+        forAllValid $
+          \parts ->
+            let t = renderParts parts
+             in case parseParts t of
+                  Left err -> expectationFailure $ show err
+                  Right parts' -> parts' `shouldBe` parts
   describe "Parsing" $ do
     genValidSpec @Ast
     describe "astP" $ do
@@ -110,13 +110,13 @@ spec = do
             (AstUnOp (Piece "level") (AstPiece (Piece "3")))
         )
       parsesValidSpec astP
-      it "parses back whatever 'renderAst' renders"
-        $ forAllValid
-        $ \ast ->
-          let t = renderAst ast
-           in case parseAst t of
-                Left err -> expectationFailure $ show err
-                Right ast' -> ast' `shouldBe` ast
+      it "parses back whatever 'renderAst' renders" $
+        forAllValid $
+          \ast ->
+            let t = renderAst ast
+             in case parseAst t of
+                  Left err -> expectationFailure $ show err
+                  Right ast' -> ast' `shouldBe` ast
   describe "Type-checking" $ do
     filterArgumentSpec @Time
     filterArgumentSpec @Tag
@@ -379,69 +379,69 @@ spec = do
         producesValidsOnValids (renderFilterAst @(Path Rel File))
       it "produces valid asts for entryFilters" $
         producesValidsOnValids (renderFilterAst @(Path Rel File, ForestCursor Entry))
-    describe "parseEntryFilterAst"
-      $ it "parses back whatever 'renderFilterAst' renders"
-      $ forAllValid
-      $ \f ->
-        let t = renderFilterAst f
-         in case parseEntryFilterRelAst t of
-              Left err ->
-                expectationFailure $
-                  unlines
-                    [ "Original filter:",
-                      ppShow f,
-                      "rendered ast:",
-                      ppShow t,
-                      "parse failure:",
-                      show err
-                    ]
-              Right f' ->
-                unless (f == f')
-                  $ expectationFailure
-                  $ unlines
-                    [ "Original filter:",
-                      ppShow f,
-                      "rendered ast:",
-                      ppShow t,
-                      "parsed filter:",
-                      ppShow f'
-                    ]
-    describe "renderFilter"
-      $ it "produces valid text"
-      $ producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))
-    describe "parseEntryFilter"
-      $ it "parses back whatever 'renderFilter' renders"
-      $ forAllValid
-      $ \f ->
-        let t = renderFilter f
-         in case parseEntryFilterRel t of
-              Left err ->
-                expectationFailure $
-                  unlines
-                    [ "Original filter:",
-                      ppShow f,
-                      "rendered text:",
-                      show t,
-                      "parse failure:",
-                      show err
-                    ]
-              Right f' ->
-                unless (f == f')
-                  $ expectationFailure
-                  $ unlines
-                    [ "Original filter:",
-                      ppShow f,
-                      "rendered text:",
-                      show t,
-                      "parsed filter:",
-                      ppShow f'
-                    ]
-  describe "foldFilterAnd"
-    $ it "produces valid results"
-    $ producesValidsOnValids (foldFilterAnd @Header)
-  describe "filterPredicate"
-    $ it "produces valid results"
-    $ producesValidsOnValids2 (filterPredicate @(Path Rel File, ForestCursor Entry))
+    describe "parseEntryFilterAst" $
+      it "parses back whatever 'renderFilterAst' renders" $
+        forAllValid $
+          \f ->
+            let t = renderFilterAst f
+             in case parseEntryFilterRelAst t of
+                  Left err ->
+                    expectationFailure $
+                      unlines
+                        [ "Original filter:",
+                          ppShow f,
+                          "rendered ast:",
+                          ppShow t,
+                          "parse failure:",
+                          show err
+                        ]
+                  Right f' ->
+                    unless (f == f') $
+                      expectationFailure $
+                        unlines
+                          [ "Original filter:",
+                            ppShow f,
+                            "rendered ast:",
+                            ppShow t,
+                            "parsed filter:",
+                            ppShow f'
+                          ]
+    describe "renderFilter" $
+      it "produces valid text" $
+        producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))
+    describe "parseEntryFilter" $
+      it "parses back whatever 'renderFilter' renders" $
+        forAllValid $
+          \f ->
+            let t = renderFilter f
+             in case parseEntryFilterRel t of
+                  Left err ->
+                    expectationFailure $
+                      unlines
+                        [ "Original filter:",
+                          ppShow f,
+                          "rendered text:",
+                          show t,
+                          "parse failure:",
+                          show err
+                        ]
+                  Right f' ->
+                    unless (f == f') $
+                      expectationFailure $
+                        unlines
+                          [ "Original filter:",
+                            ppShow f,
+                            "rendered text:",
+                            show t,
+                            "parsed filter:",
+                            ppShow f'
+                          ]
+  describe "foldFilterAnd" $
+    it "produces valid results" $
+      producesValidsOnValids (foldFilterAnd @Header)
+  describe "filterPredicate" $
+    it "produces valid results" $
+      producesValidsOnValids2 (filterPredicate @(Path Rel File, ForestCursor Entry))
   describe "parseEntryFilterRel" $ do
     let pe input expected =
           it (unwords ["succesfully parses", show input, "into", show expected]) $
@@ -460,35 +460,35 @@ spec = do
       (FilterEntryProperties $ FilterMapHas $ fromJust $ propertyName "timewindow")
     pee
       "property:client:nasa"
-      ( FilterEntryProperties
-          $ FilterMapVal (fromJust $ propertyName "client")
-          $ FilterMaybe False
-          $ FilterSub
-          $ fromJust
-          $ propertyValue "nasa"
+      ( FilterEntryProperties $
+          FilterMapVal (fromJust $ propertyName "client") $
+            FilterMaybe False $
+              FilterSub $
+                fromJust $
+                  propertyValue "nasa"
       )
     pee
       "property:timewindow:time:lt:2h"
-      ( FilterEntryProperties
-          $ FilterMapVal (fromJust $ propertyName "timewindow")
-          $ FilterMaybe False
-          $ FilterPropertyTime
-          $ FilterMaybe False
-          $ FilterOrd LTC
-          $ Hours 2
+      ( FilterEntryProperties $
+          FilterMapVal (fromJust $ propertyName "timewindow") $
+            FilterMaybe False $
+              FilterPropertyTime $
+                FilterMaybe False $
+                  FilterOrd LTC $
+                    Hours 2
       )
     pe
       "ancestor:tag:(home or (online or offline))"
-      ( FilterSnd
-          $ FilterAncestor
-          $ FilterWithinCursor
-          $ FilterEntryTags
-          $ FilterOr
-            (FilterAny $ FilterSub (fromJust $ tag "home"))
-            ( FilterOr
-                (FilterAny $ FilterSub (fromJust $ tag "online"))
-                (FilterAny $ FilterSub (fromJust $ tag "offline"))
-            )
+      ( FilterSnd $
+          FilterAncestor $
+            FilterWithinCursor $
+              FilterEntryTags $
+                FilterOr
+                  (FilterAny $ FilterSub (fromJust $ tag "home"))
+                  ( FilterOr
+                      (FilterAny $ FilterSub (fromJust $ tag "online"))
+                      (FilterAny $ FilterSub (fromJust $ tag "offline"))
+                  )
       )
 
 tcSpec :: (Show a, Eq a) => TC a -> Ast -> a -> Spec
@@ -501,16 +501,16 @@ tcSpec tc ast a =
 parsesValidSpec ::
   (Show a, Validity a, Show s, Stream s Identity m, GenValid s) => Parsec s () a -> Spec
 parsesValidSpec parser =
-  it "produces valid values whenever parsing succeeds"
-    $ forAllValid
-    $ \input ->
-      let isRight (Right _) = True
-          isRight _ = False
-          res = parse parser "test input" input
-       in cover 10 (isRight res) "parses" $
-            case res of
-              Left _ -> pure ()
-              Right actual -> shouldBeValid actual
+  it "produces valid values whenever parsing succeeds" $
+    forAllValid $
+      \input ->
+        let isRight (Right _) = True
+            isRight _ = False
+            res = parse parser "test input" input
+         in cover 10 (isRight res) "parses" $
+              case res of
+                Left _ -> pure ()
+                Right actual -> shouldBeValid actual
 
 parseSuccessSpec :: (Show a, Eq a, Show s, Stream s Identity m) => Parsec s () a -> s -> a -> Spec
 parseSuccessSpec parser input expected =
@@ -528,6 +528,6 @@ filterArgumentSpec ::
   (Show a, Eq a, GenValid a, FilterArgument a) =>
   Spec
 filterArgumentSpec =
-  specify "parseArgument and renderArgument are inverses"
-    $ forAllValid
-    $ \a -> parseArgument (renderArgument (a :: a)) `shouldBe` Right (a :: a)
+  specify "parseArgument and renderArgument are inverses" $
+    forAllValid $
+      \a -> parseArgument (renderArgument (a :: a)) `shouldBe` Right (a :: a)

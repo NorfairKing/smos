@@ -19,21 +19,19 @@ type LogReport = [LogTableBlock Text]
 
 type LogTableBlock a = Block a LogEntry
 
-data LogEntry
-  = LogEntry
-      { logEntryFilePath :: Path Rel File,
-        logEntryHeader :: Header,
-        logEntryEvent :: LogEvent
-      }
+data LogEntry = LogEntry
+  { logEntryFilePath :: Path Rel File,
+    logEntryHeader :: Header,
+    logEntryEvent :: LogEvent
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity LogEntry
 
-data LogEvent
-  = LogEvent
-      { logEventTimestamp :: UTCTime,
-        logEventType :: LogEventType
-      }
+data LogEvent = LogEvent
+  { logEventTimestamp :: UTCTime,
+    logEventType :: LogEventType
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity LogEvent

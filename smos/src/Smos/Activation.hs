@@ -64,10 +64,11 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                   ReportNextActions NextActionReportCursor {..} ->
                     let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
                         nextactionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
-                     in (++ nextactionReportAnys) $ map ((,) SpecificMatcher) $
-                          case nextActionReportCursorSelection of
-                            NextActionReportSelected -> nextActionReportMatchers
-                            NextActionReportFilterSelected -> nextActionReportSearchMatchers
+                     in (++ nextactionReportAnys) $
+                          map ((,) SpecificMatcher) $
+                            case nextActionReportCursorSelection of
+                              NextActionReportSelected -> nextActionReportMatchers
+                              NextActionReportFilterSelected -> nextActionReportSearchMatchers
                   ReportWaiting _ ->
                     let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
                         waitingReportAnys = map ((,) AnyMatcher) waitingReportAnyMatchers
@@ -78,11 +79,12 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
             Just fbc ->
               let BrowserKeyMap {..} = keyMapBrowserKeyMap
                   browserAnys = map ((,) AnyMatcher) browserKeyMapAnyMatchers
-               in (++ browserAnys) $ map ((,) SpecificMatcher) $
-                    case fileBrowserSelected fbc of
-                      Nothing -> browserKeyMapEmptyMatchers
-                      Just (_, _, InProgress _) -> browserKeyMapInProgressMatchers
-                      Just (_, _, Existent _) -> browserKeyMapExistentMatchers
+               in (++ browserAnys) $
+                    map ((,) SpecificMatcher) $
+                      case fileBrowserSelected fbc of
+                        Nothing -> browserKeyMapEmptyMatchers
+                        Just (_, _, InProgress _) -> browserKeyMapInProgressMatchers
+                        Just (_, _, Existent _) -> browserKeyMapExistentMatchers
 
 findActivations :: Seq KeyPress -> KeyPress -> [(Precedence, KeyMapping)] -> [Activation]
 findActivations history kp mappings =
@@ -186,14 +188,13 @@ findExactActivations history mappings =
 keyPressMatch :: KeyPress -> KeyPress -> Bool
 keyPressMatch (KeyPress k1 mods1) (KeyPress k2 mods2) = k1 == k2 && sort mods1 == sort mods2
 
-data Activation
-  = Activation
-      { activationPrecedence :: Precedence,
-        activationPriority :: Priority,
-        activationMatch :: Seq KeyPress,
-        activationName :: ActionName,
-        activationFunc :: SmosM ()
-      }
+data Activation = Activation
+  { activationPrecedence :: Precedence,
+    activationPriority :: Priority,
+    activationMatch :: Seq KeyPress,
+    activationName :: ActionName,
+    activationFunc :: SmosM ()
+  }
 
 sortActivations :: [Activation] -> [Activation]
 sortActivations =

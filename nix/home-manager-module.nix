@@ -1,7 +1,6 @@
 { lib, pkgs, config, ... }:
 
 with lib;
-
 let
   cfg = config.programs.smos;
 
@@ -89,7 +88,7 @@ in
                         sources =
                           mkOption {
                             description = "The list of sources to import from";
-                            default = [];
+                            default = [ ];
                             type = types.listOf (
                               types.submodule {
                                 options = {
@@ -134,7 +133,7 @@ in
                         schedule =
                           mkOption {
                             description = "The schedule to activate";
-                            default = [];
+                            default = [ ];
                             type = types.listOf (
                               types.submodule {
                                 options = {
@@ -178,7 +177,7 @@ in
     };
   config =
     let
-      smosPkgs = (import ./pkgs.nix {}).smosPackages;
+      smosPkgs = (import ./pkgs.nix { }).smosPackages;
       backupSmosName = "backup-smos";
       backupSmosService =
         {
@@ -221,7 +220,7 @@ in
 
       syncConfigContents =
         syncCfg:
-          optionalString (syncCfg.enable or false) ''
+        optionalString (syncCfg.enable or false) ''
 
 sync:
   server-url: "${cfg.sync.server-url}"
@@ -268,7 +267,7 @@ sync:
 
       calendarConfigContents =
         calendarCfg:
-          optionalString (calendarCfg.enable or false) ''
+        optionalString (calendarCfg.enable or false) ''
 
 calendar: ${builtins.toJSON calendarCfg}
 
@@ -313,7 +312,7 @@ calendar: ${builtins.toJSON calendarCfg}
 
       schedulerConfigContents =
         schedulerCfg:
-          optionalString (schedulerCfg.enable or false) ''
+        optionalString (schedulerCfg.enable or false) ''
 
 scheduler: ${builtins.toJSON schedulerCfg}
 
@@ -367,9 +366,10 @@ scheduler: ${builtins.toJSON schedulerCfg}
 
       services =
         (
-          optionalAttrs (cfg.sync.enable or false) {
-            "${syncSmosName}" = syncSmosService;
-          }
+          optionalAttrs (cfg.sync.enable or false)
+            {
+              "${syncSmosName}" = syncSmosService;
+            }
           // optionalAttrs (cfg.backup.enable or false) {
             "${backupSmosName}" = backupSmosService;
           }
@@ -382,9 +382,10 @@ scheduler: ${builtins.toJSON schedulerCfg}
         );
       timers =
         (
-          optionalAttrs (cfg.sync.enable or false) {
-            "${syncSmosName}" = syncSmosTimer;
-          }
+          optionalAttrs (cfg.sync.enable or false)
+            {
+              "${syncSmosName}" = syncSmosTimer;
+            }
           // optionalAttrs (cfg.backup.enable or false) {
             "${backupSmosName}" = backupSmosTimer;
           }
@@ -409,22 +410,22 @@ scheduler: ${builtins.toJSON schedulerCfg}
 
 
     in
-      mkIf cfg.enable {
-        xdg = {
-          configFile."smos/config.yaml".text = smosConfigContents;
-          mimeApps = {
-            defaultApplications = {
-              "text/smos" = [ "smos.desktop" ];
-              "application/smos" = [ "smos.desktop" ];
-            };
+    mkIf cfg.enable {
+      xdg = {
+        configFile."smos/config.yaml".text = smosConfigContents;
+        mimeApps = {
+          defaultApplications = {
+            "text/smos" = [ "smos.desktop" ];
+            "application/smos" = [ "smos.desktop" ];
           };
         };
-        systemd.user =
-          {
-            startServices = true;
-            services = services;
-            timers = timers;
-          };
-        home.packages = packages;
       };
+      systemd.user =
+        {
+          startServices = true;
+          services = services;
+          timers = timers;
+        };
+      home.packages = packages;
+    };
 }

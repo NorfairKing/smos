@@ -14,11 +14,11 @@ spec :: Spec
 spec = smosWebServerSpec $ do
   let dummyUN = Username "dummy"
   let dummyPW = "dummy"
-  ydescribe "Register"
-    $ yit "just works for a dummy username and password"
-    $ withFreshAccount dummyUN dummyPW
-    $ pure ()
-  ydescribe "Login"
-    $ yit "just works for a dummy username and password"
-    $ withFreshAccount dummyUN dummyPW
-    $ loginTo dummyUN dummyPW
+  ydescribe "Register" $
+    yit "just works for a dummy username and password" $
+      withFreshAccount dummyUN dummyPW $
+        pure ()
+  ydescribe "Login" $
+    yit "just works for a dummy username and password" $
+      withFreshAccount dummyUN dummyPW $
+        loginTo dummyUN dummyPW

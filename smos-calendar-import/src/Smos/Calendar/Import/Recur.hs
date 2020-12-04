@@ -23,8 +23,9 @@ recurRecurringEvents :: LocalTime -> RecurringEvents -> UnresolvedEvents
 recurRecurringEvents limit RecurringEvents {..} =
   let ctx = RecurCtx {recurCtxLimit = limit}
    in flip runReader ctx $ do
-        unresolvedEventGroups <- fmap (deduplicateBasedOnId . S.unions) $ forM (M.toList recurringEvents) $ \(_, res) ->
-          S.fromList <$> mapM recurEvent (S.toList res)
+        unresolvedEventGroups <- fmap (deduplicateBasedOnId . S.unions) $
+          forM (M.toList recurringEvents) $ \(_, res) ->
+            S.fromList <$> mapM recurEvent (S.toList res)
         let unresolvedEventsTimeZones = recurringEventsTimeZones
         pure UnresolvedEvents {..}
 
@@ -204,13 +205,15 @@ recurUTCTime rules utct = do
 recurLocalTime :: Set RRule -> LocalTime -> R (Set LocalTime)
 recurLocalTime rules lt = do
   limit <- asks recurCtxLimit
-  pure $ S.unions
-    $ flip map (S.toList rules)
-    $ \rrule -> rruleDateTimeOccurrencesUntil lt rrule limit
+  pure $
+    S.unions $
+      flip map (S.toList rules) $
+        \rrule -> rruleDateTimeOccurrencesUntil lt rrule limit
 
 recurDate :: Set RRule -> Day -> R (Set Day)
 recurDate rules d = do
   limit <- asks recurCtxLimit
-  pure $ S.unions
-    $ flip map (S.toList rules)
-    $ \rrule -> rruleDateOccurrencesUntil d rrule $ localDay limit
+  pure $
+    S.unions $
+      flip map (S.toList rules) $
+        \rrule -> rruleDateOccurrencesUntil d rrule $ localDay limit

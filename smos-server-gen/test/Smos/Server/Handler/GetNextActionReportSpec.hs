@@ -14,16 +14,16 @@ import Test.Validity
 
 spec :: Spec
 spec =
-  serverSpec
-    $ describe "GetNextActionReport"
-    $ do
-      it "produces empty reports if there are no files" $ \cenv ->
-        withNewUser cenv $ \t -> do
-          report <- testClientOrErr cenv (clientGetNextActionReport t)
-          report `shouldBe` NextActionReport []
-      it "produces valid resuls" $ \cenv ->
-        forAllValid $ \store ->
+  serverSpec $
+    describe "GetNextActionReport" $
+      do
+        it "produces empty reports if there are no files" $ \cenv ->
           withNewUser cenv $ \t -> do
-            testClientOrErr cenv $ setupInterestingStore t store
             report <- testClientOrErr cenv (clientGetNextActionReport t)
-            shouldBeValid report
+            report `shouldBe` NextActionReport []
+        it "produces valid resuls" $ \cenv ->
+          forAllValid $ \store ->
+            withNewUser cenv $ \t -> do
+              testClientOrErr cenv $ setupInterestingStore t store
+              report <- testClientOrErr cenv (clientGetNextActionReport t)
+              shouldBeValid report

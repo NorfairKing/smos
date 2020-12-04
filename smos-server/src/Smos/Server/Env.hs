@@ -20,14 +20,13 @@ import Smos.Server.DB
 
 type ServerHandler = ReaderT ServerEnv Handler
 
-data ServerEnv
-  = ServerEnv
-      { serverEnvServerUUID :: !ServerUUID,
-        serverEnvConnection :: !DB.ConnectionPool,
-        serverEnvCookieSettings :: !CookieSettings,
-        serverEnvJWTSettings :: !JWTSettings,
-        serverEnvPasswordDifficulty :: !Int
-      }
+data ServerEnv = ServerEnv
+  { serverEnvServerUUID :: !ServerUUID,
+    serverEnvConnection :: !DB.ConnectionPool,
+    serverEnvCookieSettings :: !CookieSettings,
+    serverEnvJWTSettings :: !JWTSettings,
+    serverEnvPasswordDifficulty :: !Int
+  }
   deriving (Generic)
 
 runDB :: DB.SqlPersistT IO a -> ServerHandler a
@@ -38,17 +37,17 @@ runDB func = do
 readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do
   sfs <- selectList [ServerFileUser ==. uid] []
-  pure
-    $ ServerStore
-    $ M.fromList
-    $ map
-      ( \(Entity _ ServerFile {..}) ->
-          ( serverFilePath,
-            Timed
-              { timedValue =
-                  SyncFile {syncFileContents = serverFileContents},
-                timedTime = serverFileTime
-              }
+  pure $
+    ServerStore $
+      M.fromList $
+        map
+          ( \(Entity _ ServerFile {..}) ->
+              ( serverFilePath,
+                Timed
+                  { timedValue =
+                      SyncFile {syncFileContents = serverFileContents},
+                    timedTime = serverFileTime
+                  }
+              )
           )
-      )
-      sfs
+          sfs

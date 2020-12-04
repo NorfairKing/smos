@@ -30,10 +30,10 @@ spec = do
     parseJustSpec keyP "<bs>" KBS
     parseNothingSpec keyP "<g12>"
     parseNothingSpec keyP "<g12>"
-  describe "renderKey"
-    $ it "renders the something that keyP can parse to the same thing"
-    $ forAllValid
-    $ \k -> parseJust keyP (renderKey k) k
+  describe "renderKey" $
+    it "renders the something that keyP can parse to the same thing" $
+      forAllValid $
+        \k -> parseJust keyP (renderKey k) k
   jsonSpecOnValid @Key
   genValidSpec @Modifier
   describe "modifierP" $ do
@@ -54,10 +54,10 @@ spec = do
     parseJustSpec modifierP "m" MMeta
     parseJustSpec modifierP "A" MAlt
     parseJustSpec modifierP "a" MAlt
-  describe "renderModifier"
-    $ it "renders the something that modifierP can parse to the same thing"
-    $ forAllValid
-    $ \k -> parseJust modifierP (renderModifier k) k
+  describe "renderModifier" $
+    it "renders the something that modifierP can parse to the same thing" $
+      forAllValid $
+        \k -> parseJust modifierP (renderModifier k) k
   jsonSpecOnValid @Modifier
   genValidSpec @KeyPress
   describe "keyPressP" $ do
@@ -110,10 +110,10 @@ spec = do
     parseNothingSpec keyPressP "<Enbler>"
     parseNothingSpec keyPressP "<Tal>"
     parseNothingSpec keyPressP "<maB>"
-  describe "renderKeyPress"
-    $ it "renders the something that keyPressP can parse to the same thing"
-    $ forAllValid
-    $ \k -> parseJust keyPressP (renderKeyPress k) k
+  describe "renderKeyPress" $
+    it "renders the something that keyPressP can parse to the same thing" $
+      forAllValid $
+        \k -> parseJust keyPressP (renderKeyPress k) k
   jsonSpecOnValid @KeyPress
   genValidSpec @MatcherConfig
   describe "matcherConfigP" $ do
@@ -123,34 +123,34 @@ spec = do
     describe "single keypress" $ do
       parseJustSpec matcherConfigP "a" $ MatchConfKeyPress $ KeyPress (KChar 'a') []
       parseJustSpec matcherConfigP "M-a" $ MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
-      parseJustSpec matcherConfigP "M-S-a"
-        $ MatchConfKeyPress
-        $ KeyPress (KChar 'a') [MMeta, MShift]
+      parseJustSpec matcherConfigP "M-S-a" $
+        MatchConfKeyPress $
+          KeyPress (KChar 'a') [MMeta, MShift]
       parseJustSpec matcherConfigP "A" $ MatchConfKeyPress $ KeyPress (KChar 'A') []
       parseJustSpec matcherConfigP "m-a" $ MatchConfKeyPress $ KeyPress (KChar 'a') [MMeta]
-      parseJustSpec matcherConfigP "M-s-A"
-        $ MatchConfKeyPress
-        $ KeyPress (KChar 'A') [MMeta, MShift]
+      parseJustSpec matcherConfigP "M-s-A" $
+        MatchConfKeyPress $
+          KeyPress (KChar 'A') [MMeta, MShift]
       parseJustSpec matcherConfigP "<Enter>" $ MatchConfKeyPress $ KeyPress KEnter []
       parseJustSpec matcherConfigP "M-<Enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
-      parseJustSpec matcherConfigP "M-S-<Enter>"
-        $ MatchConfKeyPress
-        $ KeyPress KEnter [MMeta, MShift]
+      parseJustSpec matcherConfigP "M-S-<Enter>" $
+        MatchConfKeyPress $
+          KeyPress KEnter [MMeta, MShift]
       parseJustSpec matcherConfigP "<enter>" $ MatchConfKeyPress $ KeyPress KEnter []
       parseJustSpec matcherConfigP "m-<enter>" $ MatchConfKeyPress $ KeyPress KEnter [MMeta]
-      parseJustSpec matcherConfigP "m-s-<enter>"
-        $ MatchConfKeyPress
-        $ KeyPress KEnter [MMeta, MShift]
+      parseJustSpec matcherConfigP "m-s-<enter>" $
+        MatchConfKeyPress $
+          KeyPress KEnter [MMeta, MShift]
       parseJustSpec matcherConfigP "<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
       parseJustSpec matcherConfigP "M-<F12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
-      parseJustSpec matcherConfigP "M-S-<F12>"
-        $ MatchConfKeyPress
-        $ KeyPress (KFun 12) [MMeta, MShift]
+      parseJustSpec matcherConfigP "M-S-<F12>" $
+        MatchConfKeyPress $
+          KeyPress (KFun 12) [MMeta, MShift]
       parseJustSpec matcherConfigP "<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) []
       parseJustSpec matcherConfigP "m-<f12>" $ MatchConfKeyPress $ KeyPress (KFun 12) [MMeta]
-      parseJustSpec matcherConfigP "m-S-<f12>"
-        $ MatchConfKeyPress
-        $ KeyPress (KFun 12) [MMeta, MShift]
+      parseJustSpec matcherConfigP "m-S-<f12>" $
+        MatchConfKeyPress $
+          KeyPress (KFun 12) [MMeta, MShift]
     describe "multi-keypress" $ do
       let ab =
             MatchConfCombination
@@ -203,10 +203,10 @@ spec = do
       parseJustSpec matcherConfigP "M-S-c<char>" $
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfAnyChar
   jsonSpecOnValid @MatcherConfig
-  describe "renderMatcherConfig"
-    $ it "renders the something that matcherConfigP can parse to the same thing"
-    $ forAllValid
-    $ \k -> parseJust matcherConfigP (renderMatcherConfig k) k
+  describe "renderMatcherConfig" $
+    it "renders the something that matcherConfigP can parse to the same thing" $
+      forAllValid $
+        \k -> parseJust matcherConfigP (renderMatcherConfig k) k
 
 matcherConfigText :: Gen Text
 matcherConfigText = genValid

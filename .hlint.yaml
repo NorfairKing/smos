@@ -11,9 +11,13 @@
 - ignore:
     name: "Use second"
 - ignore:
+    name: "Use Just"
+- ignore:
     name: "Reduce duplication"
 - ignore:
     name: "Redundant do"
+- ignore:
+    name: "Redundant <$>"
 - ignore:
     name: "Use ++"
 - ignore:
@@ -33,6 +37,8 @@
       - "Smos.Report.Filter.astUnOpP"
 - ignore: 
     name: "Avoid lambda"
+- ignore: 
+    name: "Avoid lambda using `infix`"
 - ignore: 
     name: "Eta reduce"
 - ignore:

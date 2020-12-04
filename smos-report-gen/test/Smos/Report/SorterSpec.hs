@@ -20,12 +20,12 @@ spec :: Spec
 spec = do
   genValidSpec @Sorter
   jsonSpecOnValid @Sorter
-  describe "sorterOrdering"
-    $ it "produces valid orderings"
-    $ forAllValid
-    $ \s ->
-      forAllValid $ \(rp1, fc1) ->
-        forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s (rp1 :: Path Rel File) fc1 (rp2 :: Path Rel File) fc2
+  describe "sorterOrdering" $
+    it "produces valid orderings" $
+      forAllValid $
+        \s ->
+          forAllValid $ \(rp1, fc1) ->
+            forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s (rp1 :: Path Rel File) fc1 (rp2 :: Path Rel File) fc2
   describe "byFileP" $ parsesValidSpec byFileP
   describe "byPropertyP" $ parsesValidSpec byPropertyP
   describe "reverseP" $ parsesValidSpec reverseP
@@ -39,9 +39,9 @@ spec = do
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
     it "produces valid texts" $ producesValidsOnValids renderSorter
-    it "renders bys that parse to the same"
-      $ forAllValid
-      $ \s -> parseJust sorterP (renderSorter s) s
+    it "renders bys that parse to the same" $
+      forAllValid $
+        \s -> parseJust sorterP (renderSorter s) s
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res

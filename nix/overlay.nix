@@ -1,7 +1,6 @@
 final: previous:
 
 with final.lib;
-
 let
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
@@ -29,16 +28,17 @@ in
         # debug = true;
       };
     in
-      genAttrs castNames castDerivation;
+    genAttrs castNames castDerivation;
   smosPackages = with final.haskell.lib;
     let
       smosPkg =
         name:
-          doBenchmark (
-            addBuildDepend (
+        doBenchmark (
+          addBuildDepend
+            (
               failOnAllWarnings (
                 disableLibraryProfiling (
-                  overrideCabal (final.haskellPackages.callCabal2nix name (final.gitignoreSource (../. + "/${name}")) {}) (
+                  overrideCabal (final.haskellPackages.callCabal2nix name (final.gitignoreSource (../. + "/${name}")) { }) (
                     old: {
                       preCheck = ''
                         ${old.preCheck or ""}
@@ -48,7 +48,7 @@ in
                       # filepaths and that fails for some reason that I cannot investigate
                       # because I don't own any apple products.
                       doCheck = !isMacos;
-                      buildFlags = (old.buildFlags or []) ++ [
+                      buildFlags = (old.buildFlags or [ ]) ++ [
                         "--ghc-options=-Wincomplete-uni-patterns"
                         "--ghc-options=-Wincomplete-record-updates"
                         "--ghc-options=-Wpartial-fields"
@@ -58,7 +58,7 @@ in
                         "--ghc-options=-Wcompat"
                       ];
                       # Whatever is necessary for a static build.
-                      configureFlags = (old.configureFlags or []) ++ optionals static [
+                      configureFlags = (old.configureFlags or [ ]) ++ optionals static [
                         "--enable-executable-static"
                         "--disable-executable-dynamic"
                         "--ghc-option=-optl=-static"
@@ -86,11 +86,12 @@ in
                   )
                 )
               )
-            ) (final.haskellPackages.autoexporter)
-          );
+            )
+            (final.haskellPackages.autoexporter)
+        );
       smosPkgWithComp =
         exeName: name:
-          generateOptparseApplicativeCompletion exeName (smosPkg name);
+        generateOptparseApplicativeCompletion exeName (smosPkg name);
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
       withLinksChecked = exeName: pkg:
         let
@@ -115,37 +116,37 @@ in
             ).seocheck;
 
         in
-          final.stdenv.mkDerivation {
-            name = "${exeName}-linkchecked";
-            buildCommand = ''
-              mkdir -p $out
-              ${final.xorg.lndir}/bin/lndir -silent ${pkg} $out
+        final.stdenv.mkDerivation {
+          name = "${exeName}-linkchecked";
+          buildCommand = ''
+            mkdir -p $out
+            ${final.xorg.lndir}/bin/lndir -silent ${pkg} $out
 
-              $out/bin/${exeName} serve &
-              sleep 1
-              ${linkcheck}/bin/linkcheck http://localhost:8000
-              ${seocheck}/bin/seocheck http://localhost:8000
-              ${final.killall}/bin/killall ${exeName}
-            '';
-          };
+            $out/bin/${exeName} serve &
+            sleep 1
+            ${linkcheck}/bin/linkcheck http://localhost:8000
+            ${seocheck}/bin/seocheck http://localhost:8000
+            ${final.killall}/bin/killall ${exeName}
+          '';
+        };
       withStaticResources = pkg: resources: overrideCabal pkg (
         old:
-          {
-            preConfigure =
-              let
-                copyResource = path: resource:
-                  ''
-                    local path="${path}"
-                    mkdir --parents $(dirname "''$path")
-                    cp ${resource} "''$path"
-                  '';
-                copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
-              in
+        {
+          preConfigure =
+            let
+              copyResource = path: resource:
                 ''
-                  ${old.preConfigure or ""}
-                  ${copyScript}
+                  local path="${path}"
+                  mkdir --parents $(dirname "''$path")
+                  cp ${resource} "''$path"
                 '';
-          }
+              copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
+            in
+            ''
+              ${old.preConfigure or ""}
+              ${copyScript}
+            '';
+        }
       );
 
       smos-docs-site = withLinksChecked "smos-docs-site" (
@@ -219,36 +220,36 @@ in
         }
       );
     in
-      {
-        inherit smos;
-        "smos-data" = smosPkg "smos-data";
-        "smos-data-gen" = smosPkg "smos-data-gen";
-        "smos-cursor" = smosPkg "smos-cursor";
-        "smos-cursor-gen" = smosPkg "smos-cursor-gen";
-        "smos-report" = smosPkg "smos-report";
-        "smos-report-gen" = smosPkg "smos-report-gen";
-        "smos-report-cursor" = smosPkg "smos-report-cursor";
-        "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-        "smos-query" = smosPkgWithOwnComp "smos-query";
-        "smos-single" = smosPkgWithOwnComp "smos-single";
-        "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
-        "smos-archive" = smosPkgWithOwnComp "smos-archive";
-        "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
-        "smos-api" = smosPkg "smos-api";
-        "smos-api-gen" = smosPkg "smos-api-gen";
-        "smos-server" = smosPkgWithOwnComp "smos-server";
-        "smos-server-gen" = smosPkg "smos-server-gen";
-        "smos-client" = smosPkg "smos-client";
-        "smos-client-gen" = smosPkg "smos-client-gen";
-        "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-        "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
-        "smos-shell" = smosPkg "smos-shell";
-        inherit smos-web-server;
-      } // optionalAttrs (!isMacos) {
-        # The 'thyme' dependency does not build on macos
-        "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
-        inherit smos-docs-site;
-      };
+    {
+      inherit smos;
+      "smos-data" = smosPkg "smos-data";
+      "smos-data-gen" = smosPkg "smos-data-gen";
+      "smos-cursor" = smosPkg "smos-cursor";
+      "smos-cursor-gen" = smosPkg "smos-cursor-gen";
+      "smos-report" = smosPkg "smos-report";
+      "smos-report-gen" = smosPkg "smos-report-gen";
+      "smos-report-cursor" = smosPkg "smos-report-cursor";
+      "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
+      "smos-query" = smosPkgWithOwnComp "smos-query";
+      "smos-single" = smosPkgWithOwnComp "smos-single";
+      "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
+      "smos-archive" = smosPkgWithOwnComp "smos-archive";
+      "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
+      "smos-api" = smosPkg "smos-api";
+      "smos-api-gen" = smosPkg "smos-api-gen";
+      "smos-server" = smosPkgWithOwnComp "smos-server";
+      "smos-server-gen" = smosPkg "smos-server-gen";
+      "smos-client" = smosPkg "smos-client";
+      "smos-client-gen" = smosPkg "smos-client-gen";
+      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
+      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+      "smos-shell" = smosPkg "smos-shell";
+      inherit smos-web-server;
+    } // optionalAttrs (!isMacos) {
+      # The 'thyme' dependency does not build on macos
+      "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+      inherit smos-docs-site;
+    };
 
   smosRelease =
     final.symlinkJoin {
@@ -269,74 +270,94 @@ in
   haskellPackages =
     previous.haskellPackages.override (
       old:
-        {
-          overrides =
-            final.lib.composeExtensions (
+      {
+        overrides =
+          final.lib.composeExtensions
+            (
               old.overrides or (
                 _:
                 _:
-                  final.smosPackages
+                final.smosPackages
               )
-            ) (
+            )
+            (
               self: super: with final.haskell.lib;
               let
                 passwordRepo = builtins.fetchGit {
                   url = "https://github.com/cdepillabout/password";
                   rev = "26434d4f6888faf8dc36425b20b59f0b5056d7f5";
                 };
-                passwordPkg = name: self.callCabal2nix name (passwordRepo + "/${name}") {};
+                passwordPkg = name: self.callCabal2nix name (passwordRepo + "/${name}") { };
                 servantAuthRepo = builtins.fetchGit {
                   url = "https://github.com/haskell-servant/servant-auth";
                   rev = "296de3cb69135f83f0f01169fc10f8b3a2539405";
                 };
-                servantAuthPkg = name: self.callCabal2nix name (servantAuthRepo + "/${name}") {};
+                servantAuthPkg = name: self.callCabal2nix name (servantAuthRepo + "/${name}") { };
                 servantAuthPackages = genAttrs [
                   "servant-auth"
                   "servant-auth-client"
                   "servant-auth-server"
                   "servant-auth-docs"
                   "servant-auth-swagger"
-                ] servantAuthPkg;
+                ]
+                  servantAuthPkg;
               in
-                servantAuthPackages // {
-                  password = passwordPkg "password";
-                  password-instances = passwordPkg "password-instances";
-                  iCalendar = self.callCabal2nix "iCalendar" (
+              servantAuthPackages // {
+                password = passwordPkg "password";
+                password-instances = passwordPkg "password-instances";
+                iCalendar = self.callCabal2nix "iCalendar"
+                  (
                     builtins.fetchGit {
                       url = "https://github.com/NorfairKing/iCalendar";
                       rev = "70c924ad6275ba05a514e31af1607a5b175f98ad";
                     }
-                  ) {};
-                  vty = dontCheck (
-                    self.callCabal2nix "vty" (
+                  )
+                  { };
+                vty = dontCheck (
+                  self.callCabal2nix "vty"
+                    (
                       builtins.fetchGit {
                         url = "https://github.com/jtdaugherty/vty";
                         rev = "6a9c90da0e093cec1d4903924eb0f6a33be489cb";
                       }
-                    ) {}
-                  );
-                  ormode-parse = self.callCabal2nix "orgmode-parse" (
+                    )
+                    { }
+                );
+                ormode-parse = self.callCabal2nix "orgmode-parse"
+                  (
                     builtins.fetchGit {
                       url = "https://github.com/ixmatus/orgmode-parse";
                       rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
                     }
-                  ) {};
-                  haskeline = dontCheck (
-                    self.callCabal2nix "haskeline" (
+                  )
+                  { };
+                haskeline = dontCheck (
+                  self.callCabal2nix "haskeline"
+                    (
                       builtins.fetchGit {
                         url = "https://github.com/NorfairKing/haskeline";
                         rev = "7c6491c55741608255c2681702381ce488692d15";
                       }
-                    ) {}
-                  );
-                  terminfo = self.callHackage "terminfo" "0.4.1.4" {};
-                  persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
-                  # These are turned off for the same reason as the local packages tests
-                  dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
-                  genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
-                  cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
-                } // final.smosPackages
+                    )
+                    { }
+                );
+                template-haskell-reload = self.callCabal2nix "template-haskell-reload"
+                  (
+                    builtins.fetchGit
+                      {
+                        url = "https://github.com/NorfairKing/template-haskell-reload";
+                        rev = "7111b945e3ae00ac48d905af1d925c138c334960";
+                      } + "/template-haskell-reload"
+                  )
+                  { };
+                terminfo = self.callHackage "terminfo" "0.4.1.4" { };
+                persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
+                # These are turned off for the same reason as the local packages tests
+                dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
+                genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
+                cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
+              } // final.smosPackages
             );
-        }
+      }
     );
 }

@@ -20,8 +20,10 @@ spec = do
   describe "nextActionReportCursorSelectionL" $ lensSpecOnValid nextActionReportCursorSelectionL
   describe "nextActionReportCursorFilterBarL" $ lensSpecOnValid nextActionReportCursorFilterBarL
   describe "makeNextActionEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeNextActionEntryCursor
-  modifyMaxSuccess (`div` 10) $ describe "produceNextActionReportCursor" $ it "produces valid reports for interesting stores"
-    $ withInterestingStore
-    $ \dc -> do
-      narc <- produceNextActionReportCursor dc
-      shouldBeValid narc
+  modifyMaxSuccess (`div` 10) $
+    describe "produceNextActionReportCursor" $
+      it "produces valid reports for interesting stores" $
+        withInterestingStore $
+          \dc -> do
+            narc <- produceNextActionReportCursor dc
+            shouldBeValid narc

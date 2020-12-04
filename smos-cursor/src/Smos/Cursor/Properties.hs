@@ -40,10 +40,9 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import Smos.Data.Types
 
-newtype PropertiesCursor
-  = PropertiesCursor
-      { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
-      }
+newtype PropertiesCursor = PropertiesCursor
+  { propertiesCursorMapCursor :: MapCursor TextCursor TextCursor PropertyName PropertyValue
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity PropertiesCursor where

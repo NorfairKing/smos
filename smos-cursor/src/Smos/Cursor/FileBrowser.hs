@@ -21,12 +21,11 @@ import Smos.Archive as Archive
 import Smos.Data
 import Smos.Undo
 
-data FileBrowserCursor
-  = FileBrowserCursor
-      { fileBrowserCursorBase :: Path Abs Dir,
-        fileBrowserCursorDirForestCursor :: !(Maybe (DirForestCursor ())), -- Nothing means there are no files to display
-        fileBrowserCursorUndoStack :: !(UndoStack FileBrowserCursorAction)
-      }
+data FileBrowserCursor = FileBrowserCursor
+  { fileBrowserCursorBase :: Path Abs Dir,
+    fileBrowserCursorDirForestCursor :: !(Maybe (DirForestCursor ())), -- Nothing means there are no files to display
+    fileBrowserCursorUndoStack :: !(UndoStack FileBrowserCursorAction)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity FileBrowserCursor

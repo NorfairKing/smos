@@ -12,10 +12,9 @@ import GHC.Generics (Generic)
 import Path
 import Smos.Data
 
-newtype ProjectsReport
-  = ProjectsReport
-      { projectsReportEntries :: [ProjectEntry]
-      }
+newtype ProjectsReport = ProjectsReport
+  { projectsReportEntries :: [ProjectEntry]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ProjectsReport
@@ -26,11 +25,10 @@ makeProjectsReport =
     . sortOn (fmap entryState . projectEntryCurrentEntry)
     . map (uncurry makeProjectEntry)
 
-data ProjectEntry
-  = ProjectEntry
-      { projectEntryFilePath :: Path Rel File,
-        projectEntryCurrentEntry :: Maybe Entry
-      }
+data ProjectEntry = ProjectEntry
+  { projectEntryFilePath :: Path Rel File,
+    projectEntryCurrentEntry :: Maybe Entry
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ProjectEntry

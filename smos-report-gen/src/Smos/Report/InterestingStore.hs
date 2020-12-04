@@ -7,8 +7,8 @@ module Smos.Report.InterestingStore where
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import qualified Data.DirForest as DF
 import Data.DirForest (DirForest (..), DirTree (..))
+import qualified Data.DirForest as DF
 import Data.Either
 import Data.GenValidity
 import Data.GenValidity.ByteString ()
@@ -17,25 +17,24 @@ import Data.GenValidity.Path ()
 import Data.GenValidity.Tree
 import Data.List
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
 import Smos.Data.Gen ()
 import Test.QuickCheck
 
-data InterestingStore
-  = InterestingStore
-      { workflowFiles :: DirForest SmosFile,
-        projectFiles :: DirForest SmosFile,
-        archiveFiles :: DirForest SmosFile,
-        archivedProjectFiles :: DirForest SmosFile,
-        otherFiles :: DirForest ByteString
-      }
+data InterestingStore = InterestingStore
+  { workflowFiles :: DirForest SmosFile,
+    projectFiles :: DirForest SmosFile,
+    archiveFiles :: DirForest SmosFile,
+    archivedProjectFiles :: DirForest SmosFile,
+    otherFiles :: DirForest ByteString
+  }
   deriving (Show, Eq, Generic)
 
 instance GenValid InterestingStore where

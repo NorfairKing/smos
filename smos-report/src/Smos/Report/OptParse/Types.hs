@@ -5,8 +5,8 @@
 module Smos.Report.OptParse.Types where
 
 import Data.Map (Map)
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -15,32 +15,28 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import YamlParse.Applicative as YamlParse
 
-data Flags
-  = Flags
-      { flagDirectoryFlags :: DirectoryFlags
-      }
+data Flags = Flags
+  { flagDirectoryFlags :: DirectoryFlags
+  }
   deriving (Show, Eq, Generic)
 
-data FlagsWithConfigFile a
-  = FlagsWithConfigFile
-      { flagWithConfigFile :: Maybe FilePath,
-        flagWithRestFlags :: a
-      }
+data FlagsWithConfigFile a = FlagsWithConfigFile
+  { flagWithConfigFile :: Maybe FilePath,
+    flagWithRestFlags :: a
+  }
   deriving (Show, Eq, Generic)
 
-data DirectoryFlags
-  = DirectoryFlags
-      { dirFlagWorkflowDir :: Maybe FilePath,
-        dirFlagArchiveDir :: Maybe FilePath,
-        dirFlagProjectsDir :: Maybe FilePath,
-        dirFlagArchivedProjectsDir :: Maybe FilePath
-      }
+data DirectoryFlags = DirectoryFlags
+  { dirFlagWorkflowDir :: Maybe FilePath,
+    dirFlagArchiveDir :: Maybe FilePath,
+    dirFlagProjectsDir :: Maybe FilePath,
+    dirFlagArchivedProjectsDir :: Maybe FilePath
+  }
   deriving (Show, Eq, Generic)
 
-data Environment
-  = Environment
-      { envDirectoryEnvironment :: DirectoryEnvironment
-      }
+data Environment = Environment
+  { envDirectoryEnvironment :: DirectoryEnvironment
+  }
   deriving (Show, Eq, Generic)
 
 emptyEnvironment :: Environment
@@ -49,11 +45,10 @@ emptyEnvironment =
     { envDirectoryEnvironment = emptyDirectoryEnvironment
     }
 
-data EnvWithConfigFile a
-  = EnvWithConfigFile
-      { envWithConfigFile :: Maybe FilePath,
-        envWithRestEnv :: a
-      }
+data EnvWithConfigFile a = EnvWithConfigFile
+  { envWithConfigFile :: Maybe FilePath,
+    envWithRestEnv :: a
+  }
   deriving (Show, Eq, Generic)
 
 emptyDirectoryEnvironment :: DirectoryEnvironment
@@ -65,20 +60,18 @@ emptyDirectoryEnvironment =
       dirEnvArchivedProjectsDir = Nothing
     }
 
-data DirectoryEnvironment
-  = DirectoryEnvironment
-      { dirEnvWorkflowDir :: Maybe FilePath,
-        dirEnvArchiveDir :: Maybe FilePath,
-        dirEnvProjectsDir :: Maybe FilePath,
-        dirEnvArchivedProjectsDir :: Maybe FilePath
-      }
+data DirectoryEnvironment = DirectoryEnvironment
+  { dirEnvWorkflowDir :: Maybe FilePath,
+    dirEnvArchiveDir :: Maybe FilePath,
+    dirEnvProjectsDir :: Maybe FilePath,
+    dirEnvArchivedProjectsDir :: Maybe FilePath
+  }
   deriving (Show, Eq, Generic)
 
-data Configuration
-  = Configuration
-      { confDirectoryConf :: !DirectoryConfiguration,
-        confWorkReportConf :: !(Maybe WorkReportConfiguration)
-      }
+data Configuration = Configuration
+  { confDirectoryConf :: !DirectoryConfiguration,
+    confWorkReportConf :: !(Maybe WorkReportConfiguration)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Configuration
@@ -107,13 +100,12 @@ backToConfiguration SmosReportConfig {..} =
       confWorkReportConf = if smosReportConfigWorkConfig == defaultWorkReportConfig then Nothing else Just $ backToWorkReportConfiguration smosReportConfigWorkConfig
     }
 
-data DirectoryConfiguration
-  = DirectoryConfiguration
-      { directoryConfWorkflowDir :: !(Maybe Text),
-        directoryConfArchiveDir :: !(Maybe Text),
-        directoryConfProjectsDir :: !(Maybe Text),
-        directoryConfArchivedProjectsDir :: !(Maybe Text)
-      }
+data DirectoryConfiguration = DirectoryConfiguration
+  { directoryConfWorkflowDir :: !(Maybe Text),
+    directoryConfArchiveDir :: !(Maybe Text),
+    directoryConfProjectsDir :: !(Maybe Text),
+    directoryConfArchivedProjectsDir :: !(Maybe Text)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity DirectoryConfiguration
@@ -151,45 +143,44 @@ backToDirectoryConfiguration DirectoryConfig {..} =
     { directoryConfWorkflowDir =
         if directoryConfigWorkflowFileSpec == defaultWorkflowDirSpec
           then Nothing
-          else Just
-            $ T.pack
-            $ case directoryConfigWorkflowFileSpec of
-              WorkflowInHome rd -> "~/" <> fromRelDir rd
-              AbsoluteWorkflow ad -> fromAbsDir ad,
+          else Just $
+            T.pack $
+              case directoryConfigWorkflowFileSpec of
+                WorkflowInHome rd -> "~/" <> fromRelDir rd
+                AbsoluteWorkflow ad -> fromAbsDir ad,
       directoryConfArchiveDir =
         if directoryConfigArchiveFileSpec == defaultArchiveDirSpec
           then Nothing
-          else Just
-            $ T.pack
-            $ case directoryConfigArchiveFileSpec of
-              ArchiveInWorkflow ard -> fromRelDir ard
-              ArchiveInHome ard -> "~/" <> fromRelDir ard
-              ArchiveAbsolute aad -> fromAbsDir aad,
+          else Just $
+            T.pack $
+              case directoryConfigArchiveFileSpec of
+                ArchiveInWorkflow ard -> fromRelDir ard
+                ArchiveInHome ard -> "~/" <> fromRelDir ard
+                ArchiveAbsolute aad -> fromAbsDir aad,
       directoryConfProjectsDir =
         if directoryConfigProjectsFileSpec == defaultProjectsDirSpec
           then Nothing
-          else Just
-            $ T.pack
-            $ case directoryConfigProjectsFileSpec of
-              ProjectsInWorkflow ard -> fromRelDir ard
-              ProjectsInHome ard -> "~/" <> fromRelDir ard
-              ProjectsAbsolute aad -> fromAbsDir aad,
+          else Just $
+            T.pack $
+              case directoryConfigProjectsFileSpec of
+                ProjectsInWorkflow ard -> fromRelDir ard
+                ProjectsInHome ard -> "~/" <> fromRelDir ard
+                ProjectsAbsolute aad -> fromAbsDir aad,
       directoryConfArchivedProjectsDir =
         if directoryConfigArchivedProjectsFileSpec == defaultArchivedProjectsDirSpec
           then Nothing
-          else Just
-            $ T.pack
-            $ case directoryConfigArchivedProjectsFileSpec of
-              ArchivedProjectsInArchive ard -> fromRelDir ard
-              ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
-              ArchivedProjectsAbsolute aad -> fromAbsDir aad
+          else Just $
+            T.pack $
+              case directoryConfigArchivedProjectsFileSpec of
+                ArchivedProjectsInArchive ard -> fromRelDir ard
+                ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
+                ArchivedProjectsAbsolute aad -> fromAbsDir aad
     }
 
-data WorkReportConfiguration
-  = WorkReportConfiguration
-      { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
-        workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel))
-      }
+data WorkReportConfiguration = WorkReportConfiguration
+  { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
+    workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel))
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportConfiguration

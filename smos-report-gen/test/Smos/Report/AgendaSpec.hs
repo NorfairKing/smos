@@ -17,10 +17,10 @@ spec = do
   genValidSpec @AgendaReport
   jsonSpecOnValid @AgendaReport
   describe "makeAgendaReport" $ do
-    it "produces valid reports"
-      $ forAllValid
-      $ \zt ->
-        forAllValid $ \p ->
-          forAllValid $ \tb ->
-            forAllValid $ \aes ->
-              shouldBeValid $ makeAgendaReport zt p tb aes
+    it "produces valid reports" $
+      forAllValid $
+        \zt ->
+          forAllValid $ \p ->
+            forAllValid $ \tb ->
+              forAllValid $ \aes ->
+                shouldBeValid $ makeAgendaReport zt p tb aes

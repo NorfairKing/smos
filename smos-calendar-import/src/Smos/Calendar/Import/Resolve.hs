@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Resolve where
@@ -34,9 +33,9 @@ resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
    in S.fromList $ mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
 
 filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
-filterEvents start end e@Events {..} = case S.filter (filterEvent start end) events of
-  [] -> Nothing
-  es -> Just $ e {events = es}
+filterEvents start end e@Events {..} =
+  let s = S.filter (filterEvent start end) events
+   in if S.null s then Nothing else Just $ e {events = s}
 
 filterEvent :: LocalTime -> LocalTime -> Event -> Bool
 filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
@@ -47,11 +46,10 @@ filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
     timestampLocalTime start <= hi
       && lo <= timestampLocalTime end
 
-data RecurCtx
-  = RecurCtx
-      { resolveCtxTimeZone :: TimeZone,
-        resolveCtxTimeZones :: Map TimeZoneId TimeZoneHistory
-      }
+data RecurCtx = RecurCtx
+  { resolveCtxTimeZone :: TimeZone,
+    resolveCtxTimeZones :: Map TimeZoneId TimeZoneHistory
+  }
   deriving (Show, Eq, Generic)
 
 type R = Reader RecurCtx

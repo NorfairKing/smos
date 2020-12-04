@@ -52,12 +52,11 @@ agendaReportConduit now p tb h f =
             .| sinkList
         )
 
-data AgendaReport
-  = AgendaReport
-      { agendaReportPast :: [AgendaTableBlock Text],
-        agendaReportPresent :: AgendaTodayReport,
-        agendaReportFuture :: [AgendaTableBlock Text]
-      }
+data AgendaReport = AgendaReport
+  { agendaReportPast :: [AgendaTableBlock Text],
+    agendaReportPresent :: AgendaTodayReport,
+    agendaReportFuture :: [AgendaTableBlock Text]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaReport
@@ -116,10 +115,9 @@ divideIntoPastPresentFuture now =
                 (ys, zs) -> (a : ys, zs)
             GT -> ([], a : as)
 
-newtype AgendaTodayReport
-  = AgendaTodayReport
-      { agendaTodayReportEntries :: [AgendaEntry]
-      }
+newtype AgendaTodayReport = AgendaTodayReport
+  { agendaTodayReportEntries :: [AgendaEntry]
+  }
   deriving (Show, Eq, Generic, FromJSON, ToJSON, Semigroup, Monoid)
 
 instance Validity AgendaTodayReport where
@@ -128,11 +126,11 @@ instance Validity AgendaTodayReport where
       [ genericValidate atr,
         declare "The entries are in chronological order" $
           agendaEntriesAreSorted agendaTodayReportEntries,
-        declare "All the entries are in the same day"
-          $ (<= 1)
-          $ length
-          $ group
-          $ map (timestampDay . agendaEntryTimestamp) agendaTodayReportEntries
+        declare "All the entries are in the same day" $
+          (<= 1) $
+            length $
+              group $
+                map (timestampDay . agendaEntryTimestamp) agendaTodayReportEntries
       ]
 
 instance NFData AgendaTodayReport
@@ -161,14 +159,13 @@ agendaEntrySortingProjection =
       comparing agendaEntryTodoState
     ]
 
-data AgendaEntry
-  = AgendaEntry
-      { agendaEntryFilePath :: Path Rel File,
-        agendaEntryHeader :: Header,
-        agendaEntryTodoState :: Maybe TodoState,
-        agendaEntryTimestampName :: TimestampName,
-        agendaEntryTimestamp :: Timestamp
-      }
+data AgendaEntry = AgendaEntry
+  { agendaEntryFilePath :: Path Rel File,
+    agendaEntryHeader :: Header,
+    agendaEntryTodoState :: Maybe TodoState,
+    agendaEntryTimestampName :: TimestampName,
+    agendaEntryTimestamp :: Timestamp
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity AgendaEntry

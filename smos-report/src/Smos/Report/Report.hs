@@ -15,14 +15,13 @@ import Smos.Report.Projection
 import Smos.Report.Sorter
 import YamlParse.Applicative
 
-data PreparedReport
-  = PreparedReport
-      { preparedReportDescription :: Maybe Text,
-        perparedReportFilter :: Maybe EntryFilterRel,
-        perparedReportProjection :: Maybe (NonEmpty Projection),
-        preparedReportSorter :: Maybe Sorter,
-        preparedReportHideArchive :: Maybe HideArchive
-      }
+data PreparedReport = PreparedReport
+  { preparedReportDescription :: Maybe Text,
+    perparedReportFilter :: Maybe EntryFilterRel,
+    perparedReportProjection :: Maybe (NonEmpty Projection),
+    preparedReportSorter :: Maybe Sorter,
+    preparedReportHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity PreparedReport

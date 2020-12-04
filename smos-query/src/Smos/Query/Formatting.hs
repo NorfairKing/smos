@@ -51,22 +51,23 @@ formatAgendaEntry now AgendaEntry {..} =
   let tz = zonedTimeZone now
       d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
       func =
-        if  | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+        if
+            | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
             | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
             | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
             | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func
-          $ bold
-          $ chunk
-          $ T.pack
-          $ renderTimeAgoAuto
-          $ timeAgo
-          $ diffUTCTime
-            (zonedTimeToUTC now)
-            (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
+        func $
+          bold $
+            chunk $
+              T.pack $
+                renderTimeAgoAuto $
+                  timeAgo $
+                    diffUTCTime
+                      (zonedTimeToUTC now)
+                      (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
         timestampNameChunk agendaEntryTimestampName,
         maybe (chunk "") todoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,
@@ -98,8 +99,8 @@ pathChunk = chunk . T.pack . toFilePath
 renderEntryReport :: EntryReport -> Table
 renderEntryReport EntryReport {..} =
   formatAsTable $
-    map renderProjectionHeader (toList entryReportHeaders)
-      : map (renderProjectees . toList) entryReportCells
+    map renderProjectionHeader (toList entryReportHeaders) :
+    map (renderProjectees . toList) entryReportCells
 
 renderProjectionHeader :: Projection -> Chunk
 renderProjectionHeader p =

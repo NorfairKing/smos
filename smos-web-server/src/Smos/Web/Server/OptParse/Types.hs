@@ -23,47 +23,43 @@ newtype Command
   = CommandServe ServeFlags
   deriving (Show, Eq)
 
-data ServeFlags
-  = ServeFlags
-      { serveFlagLogLevel :: !(Maybe LogLevel),
-        serveFlagPort :: !(Maybe Int),
-        serveFlagDocsUrl :: !(Maybe String),
-        serveFlagAPIUrl :: !(Maybe String),
-        serveFlagDataDir :: !(Maybe FilePath),
-        serveFlagGoogleAnalyticsTracking :: !(Maybe String),
-        serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data ServeFlags = ServeFlags
+  { serveFlagLogLevel :: !(Maybe LogLevel),
+    serveFlagPort :: !(Maybe Int),
+    serveFlagDocsUrl :: !(Maybe String),
+    serveFlagAPIUrl :: !(Maybe String),
+    serveFlagDataDir :: !(Maybe FilePath),
+    serveFlagGoogleAnalyticsTracking :: !(Maybe String),
+    serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq)
 
-data Flags
-  = Flags
-      { flagConfigFile :: !(Maybe FilePath)
-      }
+data Flags = Flags
+  { flagConfigFile :: !(Maybe FilePath)
+  }
   deriving (Show, Eq, Generic)
 
-data Environment
-  = Environment
-      { envConfigFile :: !(Maybe FilePath),
-        envLogLevel :: !(Maybe LogLevel),
-        envPort :: !(Maybe Int),
-        envDocsUrl :: !(Maybe String),
-        envAPIUrl :: !(Maybe String),
-        envDataDir :: !(Maybe FilePath),
-        envGoogleAnalyticsTracking :: !(Maybe String),
-        envGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data Environment = Environment
+  { envConfigFile :: !(Maybe FilePath),
+    envLogLevel :: !(Maybe LogLevel),
+    envPort :: !(Maybe Int),
+    envDocsUrl :: !(Maybe String),
+    envAPIUrl :: !(Maybe String),
+    envDataDir :: !(Maybe FilePath),
+    envGoogleAnalyticsTracking :: !(Maybe String),
+    envGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq, Generic)
 
-data Configuration
-  = Configuration
-      { confLogLevel :: !(Maybe LogLevel),
-        confPort :: !(Maybe Int),
-        confDocsUrl :: !(Maybe String),
-        confAPIUrl :: !(Maybe String),
-        confDataDir :: !(Maybe FilePath),
-        confGoogleAnalyticsTracking :: !(Maybe String),
-        confGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data Configuration = Configuration
+  { confLogLevel :: !(Maybe LogLevel),
+    confPort :: !(Maybe Int),
+    confDocsUrl :: !(Maybe String),
+    confAPIUrl :: !(Maybe String),
+    confDataDir :: !(Maybe FilePath),
+    confGoogleAnalyticsTracking :: !(Maybe String),
+    confGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
@@ -85,16 +81,15 @@ newtype Dispatch
   = DispatchServe ServeSettings
   deriving (Show, Eq, Generic)
 
-data ServeSettings
-  = ServeSettings
-      { serveSetLogLevel :: !LogLevel,
-        serveSetPort :: !Int,
-        serveSetDocsUrl :: !(Maybe BaseUrl),
-        serveSetAPIUrl :: !BaseUrl,
-        serveSetDataDir :: !(Path Abs Dir),
-        serveSetGoogleAnalyticsTracking :: !(Maybe Text),
-        serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
-      }
+data ServeSettings = ServeSettings
+  { serveSetLogLevel :: !LogLevel,
+    serveSetPort :: !Int,
+    serveSetDocsUrl :: !(Maybe BaseUrl),
+    serveSetAPIUrl :: !BaseUrl,
+    serveSetDataDir :: !(Path Abs Dir),
+    serveSetGoogleAnalyticsTracking :: !(Maybe Text),
+    serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
+  }
   deriving (Show, Eq, Generic)
 
 data Settings

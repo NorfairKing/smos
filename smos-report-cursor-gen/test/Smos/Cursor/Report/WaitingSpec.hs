@@ -18,8 +18,10 @@ spec = do
   describe "waitingReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorFirst
   describe "waitingReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorLast
   describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor
-  modifyMaxSuccess (`div` 10) $ describe "produceWaitingReportCursor" $ it "produces valid reports for interesting stores"
-    $ withInterestingStore
-    $ \dc -> do
-      wrc <- produceWaitingReportCursor dc
-      shouldBeValid wrc
+  modifyMaxSuccess (`div` 10) $
+    describe "produceWaitingReportCursor" $
+      it "produces valid reports for interesting stores" $
+        withInterestingStore $
+          \dc -> do
+            wrc <- produceWaitingReportCursor dc
+            shouldBeValid wrc

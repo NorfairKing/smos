@@ -11,8 +11,8 @@ where
 
 import Control.Arrow
 import Control.Monad
-import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Aeson (FromJSON)
+import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)

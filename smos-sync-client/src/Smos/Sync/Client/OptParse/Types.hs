@@ -35,50 +35,46 @@ data LoginFlags
   = LoginFlags
   deriving (Show)
 
-data SyncFlags
-  = SyncFlags
-      { syncFlagContentsDir :: Maybe FilePath,
-        syncFlagUUIDFile :: Maybe FilePath,
-        syncFlagMetadataDB :: Maybe FilePath,
-        syncFlagIgnoreFiles :: Maybe IgnoreFiles,
-        syncFlagBackupDir :: Maybe FilePath
-      }
+data SyncFlags = SyncFlags
+  { syncFlagContentsDir :: Maybe FilePath,
+    syncFlagUUIDFile :: Maybe FilePath,
+    syncFlagMetadataDB :: Maybe FilePath,
+    syncFlagIgnoreFiles :: Maybe IgnoreFiles,
+    syncFlagBackupDir :: Maybe FilePath
+  }
   deriving (Show)
 
-data Flags
-  = Flags
-      { flagDirectoryFlags :: Report.DirectoryFlags,
-        flagLogLevel :: Maybe LogLevel,
-        flagServerUrl :: Maybe String,
-        flagUsername :: Maybe Username,
-        flagPassword :: Maybe Password,
-        flagDataDir :: Maybe FilePath,
-        flagCacheDir :: Maybe FilePath,
-        flagSessionPath :: Maybe FilePath
-      }
+data Flags = Flags
+  { flagDirectoryFlags :: Report.DirectoryFlags,
+    flagLogLevel :: Maybe LogLevel,
+    flagServerUrl :: Maybe String,
+    flagUsername :: Maybe Username,
+    flagPassword :: Maybe Password,
+    flagDataDir :: Maybe FilePath,
+    flagCacheDir :: Maybe FilePath,
+    flagSessionPath :: Maybe FilePath
+  }
   deriving (Show, Generic)
 
-data Environment
-  = Environment
-      { envDirectoryEnvironment :: Report.DirectoryEnvironment,
-        envLogLevel :: Maybe LogLevel,
-        envServerUrl :: Maybe String,
-        envContentsDir :: Maybe FilePath,
-        envUUIDFile :: Maybe FilePath,
-        envMetadataDB :: Maybe FilePath,
-        envIgnoreFiles :: Maybe IgnoreFiles,
-        envUsername :: Maybe Username,
-        envPassword :: Maybe Password,
-        envSessionPath :: Maybe FilePath,
-        envBackupDir :: Maybe FilePath
-      }
+data Environment = Environment
+  { envDirectoryEnvironment :: Report.DirectoryEnvironment,
+    envLogLevel :: Maybe LogLevel,
+    envServerUrl :: Maybe String,
+    envContentsDir :: Maybe FilePath,
+    envUUIDFile :: Maybe FilePath,
+    envMetadataDB :: Maybe FilePath,
+    envIgnoreFiles :: Maybe IgnoreFiles,
+    envUsername :: Maybe Username,
+    envPassword :: Maybe Password,
+    envSessionPath :: Maybe FilePath,
+    envBackupDir :: Maybe FilePath
+  }
   deriving (Show, Generic)
 
-data Configuration
-  = Configuration
-      { confDirectoryConf :: Report.DirectoryConfiguration,
-        confSyncConf :: Maybe SyncConfiguration
-      }
+data Configuration = Configuration
+  { confDirectoryConf :: Report.DirectoryConfiguration,
+    confSyncConf :: Maybe SyncConfiguration
+  }
   deriving (Show, Generic)
 
 instance FromJSON Configuration where
@@ -88,21 +84,20 @@ instance YamlSchema Configuration where
   yamlSchema =
     Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "sync" "Synchronisation configuration")
 
-data SyncConfiguration
-  = SyncConfiguration
-      { syncConfLogLevel :: Maybe LogLevel,
-        syncConfServerUrl :: Maybe String,
-        syncConfDataDir :: Maybe FilePath,
-        syncConfCacheDir :: Maybe FilePath,
-        syncConfContentsDir :: Maybe FilePath,
-        syncConfUUIDFile :: Maybe FilePath,
-        syncConfMetadataDB :: Maybe FilePath,
-        syncConfIgnoreFiles :: Maybe IgnoreFiles,
-        syncConfUsername :: Maybe Username,
-        syncConfPassword :: Maybe Password,
-        syncConfSessionPath :: Maybe FilePath,
-        syncConfBackupDir :: Maybe FilePath
-      }
+data SyncConfiguration = SyncConfiguration
+  { syncConfLogLevel :: Maybe LogLevel,
+    syncConfServerUrl :: Maybe String,
+    syncConfDataDir :: Maybe FilePath,
+    syncConfCacheDir :: Maybe FilePath,
+    syncConfContentsDir :: Maybe FilePath,
+    syncConfUUIDFile :: Maybe FilePath,
+    syncConfMetadataDB :: Maybe FilePath,
+    syncConfIgnoreFiles :: Maybe IgnoreFiles,
+    syncConfUsername :: Maybe Username,
+    syncConfPassword :: Maybe Password,
+    syncConfSessionPath :: Maybe FilePath,
+    syncConfBackupDir :: Maybe FilePath
+  }
   deriving (Show, Generic)
 
 instance FromJSON SyncConfiguration where
@@ -131,14 +126,13 @@ data Dispatch
   | DispatchSync SyncSettings
   deriving (Show, Eq, Generic)
 
-data SyncSettings
-  = SyncSettings
-      { syncSetContentsDir :: Path Abs Dir,
-        syncSetUUIDFile :: Path Abs File,
-        syncSetMetadataDB :: Path Abs File,
-        syncSetBackupDir :: Path Abs Dir,
-        syncSetIgnoreFiles :: IgnoreFiles
-      }
+data SyncSettings = SyncSettings
+  { syncSetContentsDir :: Path Abs Dir,
+    syncSetUUIDFile :: Path Abs File,
+    syncSetMetadataDB :: Path Abs File,
+    syncSetBackupDir :: Path Abs Dir,
+    syncSetIgnoreFiles :: IgnoreFiles
+  }
   deriving (Show, Eq, Generic)
 
 data RegisterSettings
@@ -172,12 +166,11 @@ parseLogLevel s = readMaybe $ "Level" <> s
 renderLogLevel :: LogLevel -> String
 renderLogLevel = drop 5 . show
 
-data Settings
-  = Settings
-      { setServerUrl :: BaseUrl,
-        setLogLevel :: LogLevel,
-        setUsername :: Maybe Username,
-        setPassword :: Maybe Password,
-        setSessionPath :: Path Abs File
-      }
+data Settings = Settings
+  { setServerUrl :: BaseUrl,
+    setLogLevel :: LogLevel,
+    setUsername :: Maybe Username,
+    setPassword :: Maybe Password,
+    setSessionPath :: Path Abs File
+  }
   deriving (Show, Generic)

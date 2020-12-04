@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -21,12 +20,12 @@ import Data.Char as Char
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
@@ -73,10 +72,9 @@ renderBinOp =
     AndOp -> "and"
     OrOp -> "or"
 
-newtype Piece
-  = Piece
-      { pieceText :: Text
-      }
+newtype Piece = Piece
+  { pieceText :: Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Piece where
@@ -128,10 +126,9 @@ renderPart =
     PartPiece p -> pieceText p
     PartBinOp bo -> renderBinOp bo
 
-newtype Parts
-  = Parts
-      { unParts :: [Part]
-      }
+newtype Parts = Parts
+  { unParts :: [Part]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Parts where
@@ -848,10 +845,12 @@ tcWithTopLevelBranches func ast =
     _ -> func ast
 
 tcFilePathFilter :: TC (Filter (Path Rel File))
-tcFilePathFilter = tcWithTopLevelBranches $ tcThisKeyWordOp KeyWordFile $ tcPiece $ \p2 ->
-  case parseArgumentPiece p2 of
-    Right rp -> Right $ FilterFile rp
-    Left err -> Left $ FTEArgumentExpected p2 err
+tcFilePathFilter = tcWithTopLevelBranches $
+  tcThisKeyWordOp KeyWordFile $
+    tcPiece $ \p2 ->
+      case parseArgumentPiece p2 of
+        Right rp -> Right $ FilterFile rp
+        Left err -> Left $ FTEArgumentExpected p2 err
 
 tcSub :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterSubString a) => TC (Filter a)
 tcSub =
@@ -895,74 +894,80 @@ tcMapFilter ::
   TC (Filter v) ->
   TC (Filter (Map k v))
 tcMapFilter func =
-  tcWithTopLevelBranches $ tcChoices $
-    let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
-        hasTC = tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
-     in [ tcKeyWordOp $ \kw ->
-            case kw of
-              KeyWordVal -> valTC
-              KeyWordHas -> hasTC
-              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw,
-          valTC,
-          hasTC
-        ]
+  tcWithTopLevelBranches $
+    tcChoices $
+      let valTC = tcArgumentOp $ \arg1 -> fmap (FilterMapVal arg1) . tcMaybeFilter func
+          hasTC = tcArgumentPiece $ \arg -> pure $ FilterMapHas arg
+       in [ tcKeyWordOp $ \kw ->
+              case kw of
+                KeyWordVal -> valTC
+                KeyWordHas -> hasTC
+                _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordVal, KeyWordHas] kw,
+            valTC,
+            hasTC
+          ]
 
 tcPropertiesFilter :: TC (Filter (Map PropertyName PropertyValue))
 tcPropertiesFilter = tcMapFilter tcPropertyValueFilter
 
 tcSetFilter :: TC (Filter a) -> TC (Filter (Set a))
 tcSetFilter func =
-  tcWithTopLevelBranches $ tcChoices $
-    let anyTC = fmap FilterAny . func
-        allTC = fmap FilterAll . func
-     in [ tcKeyWordOp $ \kw ->
-            case kw of
-              KeyWordAny -> anyTC
-              KeyWordAll -> allTC
-              _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw,
-          anyTC
-        ]
+  tcWithTopLevelBranches $
+    tcChoices $
+      let anyTC = fmap FilterAny . func
+          allTC = fmap FilterAll . func
+       in [ tcKeyWordOp $ \kw ->
+              case kw of
+                KeyWordAny -> anyTC
+                KeyWordAll -> allTC
+                _ -> const $ Left $ FTEThisKeyWordExpected [KeyWordAny, KeyWordAll] kw,
+            anyTC
+          ]
 
 tcTagsFilter :: TC (Filter (Set Tag))
 tcTagsFilter = tcSetFilter tcTagFilter
 
 tcEntryFilter :: TC (Filter Entry)
 tcEntryFilter =
-  tcWithTopLevelBranches $ tcKeyWordOp $ \kw ->
-    case kw of
-      KeyWordHeader -> fmap FilterEntryHeader . tcHeaderFilter
-      KeyWordTodoState -> fmap FilterEntryTodoState . tcMaybeFilter tcTodoStateFilter
-      KeyWordProperties -> fmap FilterEntryProperties . tcPropertiesFilter
-      KeyWordTags -> fmap FilterEntryTags . tcTagsFilter
-      _ ->
-        const $ Left $
-          FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
+  tcWithTopLevelBranches $
+    tcKeyWordOp $ \kw ->
+      case kw of
+        KeyWordHeader -> fmap FilterEntryHeader . tcHeaderFilter
+        KeyWordTodoState -> fmap FilterEntryTodoState . tcMaybeFilter tcTodoStateFilter
+        KeyWordProperties -> fmap FilterEntryProperties . tcPropertiesFilter
+        KeyWordTags -> fmap FilterEntryTags . tcTagsFilter
+        _ ->
+          const $
+            Left $
+              FTEThisKeyWordExpected [KeyWordHeader, KeyWordTodoState, KeyWordProperties, KeyWordTags] kw
 
 tcForestCursorFilter :: TC (Filter a) -> TC (Filter (ForestCursor a))
 tcForestCursorFilter tc =
-  tcWithTopLevelBranches $ tcChoices $
-    let withinCursorTC = fmap FilterWithinCursor . tc
-     in [ tcKeyWordOp $ \kw ->
-            case kw of
-              KeyWordParent -> fmap FilterParent . tcForestCursorFilter tc
-              KeyWordAncestor -> fmap FilterAncestor . tcForestCursorFilter tc
-              KeyWordChild -> fmap FilterChild . tcForestCursorFilter tc
-              KeyWordLegacy -> fmap FilterLegacy . tcForestCursorFilter tc
-              KeyWordLevel -> fmap FilterLevel . tcArgumentPiece pure
-              KeyWordCursor -> withinCursorTC
-              _ ->
-                const $ Left $
-                  FTEThisKeyWordExpected
-                    [ KeyWordParent,
-                      KeyWordAncestor,
-                      KeyWordChild,
-                      KeyWordLegacy,
-                      KeyWordLevel,
-                      KeyWordCursor
-                    ]
-                    kw,
-          withinCursorTC
-        ]
+  tcWithTopLevelBranches $
+    tcChoices $
+      let withinCursorTC = fmap FilterWithinCursor . tc
+       in [ tcKeyWordOp $ \kw ->
+              case kw of
+                KeyWordParent -> fmap FilterParent . tcForestCursorFilter tc
+                KeyWordAncestor -> fmap FilterAncestor . tcForestCursorFilter tc
+                KeyWordChild -> fmap FilterChild . tcForestCursorFilter tc
+                KeyWordLegacy -> fmap FilterLegacy . tcForestCursorFilter tc
+                KeyWordLevel -> fmap FilterLevel . tcArgumentPiece pure
+                KeyWordCursor -> withinCursorTC
+                _ ->
+                  const $
+                    Left $
+                      FTEThisKeyWordExpected
+                        [ KeyWordParent,
+                          KeyWordAncestor,
+                          KeyWordChild,
+                          KeyWordLegacy,
+                          KeyWordLevel,
+                          KeyWordCursor
+                        ]
+                        kw,
+            withinCursorTC
+          ]
 
 tcTupleFilter :: TC (Filter a) -> TC (Filter b) -> TC (Filter (a, b))
 tcTupleFilter tc1 tc2 =

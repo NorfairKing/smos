@@ -16,12 +16,14 @@ import Test.Validity
 spec :: Spec
 spec = do
   genValidSpec @EntryReport
-  modifyMaxSuccess (`div` 10) $ describe "produceEntryReport" $ it "produces valid reports for interesting stores"
-    $ forAllValid
-    $ \mFilter ->
-      forAllValid $ \proj ->
-        forAllValid $ \mSorter ->
-          forAllValid $ \ha ->
-            withInterestingStore $ \dc -> do
-              er <- produceEntryReport mFilter ha DontPrint proj mSorter dc
-              shouldBeValid er
+  modifyMaxSuccess (`div` 10) $
+    describe "produceEntryReport" $
+      it "produces valid reports for interesting stores" $
+        forAllValid $
+          \mFilter ->
+            forAllValid $ \proj ->
+              forAllValid $ \mSorter ->
+                forAllValid $ \ha ->
+                  withInterestingStore $ \dc -> do
+                    er <- produceEntryReport mFilter ha DontPrint proj mSorter dc
+                    shouldBeValid er

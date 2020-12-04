@@ -28,7 +28,7 @@
   <p>
     If this is your first time visiting this page, you probably do not know where to start.
     To get started, have a look at
-    <a href=@{PageR blogposts}>
+    <a href=@{PageR ["blogposts"]}>
       the blogposts about how to use Smos.
 
   <p>

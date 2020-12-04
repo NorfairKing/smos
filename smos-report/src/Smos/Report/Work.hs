@@ -40,16 +40,15 @@ workReportConduit now wrc@WorkReportContext {..} =
   fmap (finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter) $
     C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| accumulateMonoid
 
-data IntermediateWorkReport
-  = IntermediateWorkReport
-      { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
-        intermediateWorkReportAgendaEntries :: ![AgendaEntry],
-        intermediateWorkReportNextBegin :: !(Maybe AgendaEntry),
-        intermediateWorkReportOverdueWaiting :: ![WaitingEntry],
-        intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
-        intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
-        intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
-      }
+data IntermediateWorkReport = IntermediateWorkReport
+  { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
+    intermediateWorkReportAgendaEntries :: ![AgendaEntry],
+    intermediateWorkReportNextBegin :: !(Maybe AgendaEntry),
+    intermediateWorkReportOverdueWaiting :: ![WaitingEntry],
+    intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
+    intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
+    intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity IntermediateWorkReport
@@ -88,21 +87,20 @@ instance Monoid IntermediateWorkReport where
         intermediateWorkReportCheckViolations = M.empty
       }
 
-data WorkReportContext
-  = WorkReportContext
-      { workReportContextNow :: !ZonedTime,
-        workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)),
-        workReportContextBaseFilter :: !(Maybe EntryFilterRel),
-        workReportContextCurrentContext :: !(Maybe EntryFilterRel),
-        workReportContextTimeProperty :: !PropertyName,
-        workReportContextTime :: !(Maybe Time),
-        workReportContextAdditionalFilter :: !(Maybe EntryFilterRel),
-        workReportContextContexts :: !(Map ContextName EntryFilterRel),
-        workReportContextChecks :: !(Set EntryFilterRel),
-        workReportContextSorter :: !(Maybe Sorter),
-        workReportContextWaitingThreshold :: !Word,
-        workReportContextStuckThreshold :: !Word
-      }
+data WorkReportContext = WorkReportContext
+  { workReportContextNow :: !ZonedTime,
+    workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)),
+    workReportContextBaseFilter :: !(Maybe EntryFilterRel),
+    workReportContextCurrentContext :: !(Maybe EntryFilterRel),
+    workReportContextTimeProperty :: !PropertyName,
+    workReportContextTime :: !(Maybe Time),
+    workReportContextAdditionalFilter :: !(Maybe EntryFilterRel),
+    workReportContextContexts :: !(Map ContextName EntryFilterRel),
+    workReportContextChecks :: !(Set EntryFilterRel),
+    workReportContextSorter :: !(Maybe Sorter),
+    workReportContextWaitingThreshold :: !Word,
+    workReportContextStuckThreshold :: !Word
+  }
   deriving (Show, Generic)
 
 instance Validity WorkReportContext
@@ -208,16 +206,15 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
               else M.empty
         }
 
-data WorkReport
-  = WorkReport
-      { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
-        workReportAgendaEntries :: ![AgendaEntry],
-        workReportNextBegin :: !(Maybe AgendaEntry),
-        workReportOverdueWaiting :: ![WaitingEntry],
-        workReportOverdueStuck :: ![StuckReportEntry],
-        workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
-        workReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
-      }
+data WorkReport = WorkReport
+  { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
+    workReportAgendaEntries :: ![AgendaEntry],
+    workReportNextBegin :: !(Maybe AgendaEntry),
+    workReportOverdueWaiting :: ![WaitingEntry],
+    workReportOverdueStuck :: ![StuckReportEntry],
+    workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
+    workReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReport where
@@ -234,15 +231,15 @@ finishWorkReport now pn mt ms wr =
       mAutoFilter = do
         ae <- intermediateWorkReportNextBegin wr
         let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
-        pure
-          $ FilterSnd
-          $ FilterWithinCursor
-          $ FilterEntryProperties
-          $ FilterMapVal pn
-          $ FilterMaybe False
-          $ FilterPropertyTime
-          $ FilterMaybe False
-          $ FilterOrd LEC t
+        pure $
+          FilterSnd $
+            FilterWithinCursor $
+              FilterEntryProperties $
+                FilterMapVal pn $
+                  FilterMaybe False $
+                    FilterPropertyTime $
+                      FilterMaybe False $
+                        FilterOrd LEC t
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True
         Just autoFilter -> case mt of

@@ -97,14 +97,13 @@ smosCalendarImport = do
         pure True
   unless (and results) $ exitWith (ExitFailure 1)
 
-data ProcessConf
-  = ProcessConf
-      { processConfDebug :: Bool,
-        processConfStart :: Day,
-        processConfLimit :: Day,
-        processConfTimeZone :: TimeZone,
-        processConfName :: Maybe String
-      }
+data ProcessConf = ProcessConf
+  { processConfDebug :: Bool,
+    processConfStart :: Day,
+    processConfLimit :: Day,
+    processConfTimeZone :: TimeZone,
+    processConfName :: Maybe String
+  }
   deriving (Show, Eq)
 
 instance ToJSON ProcessConf where

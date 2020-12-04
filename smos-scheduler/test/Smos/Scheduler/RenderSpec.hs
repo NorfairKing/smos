@@ -38,18 +38,18 @@ spec = do
   describe "renderPathTemplate" $ it "produces valid results" $ rendersValid renderPathTemplate
   describe "renderTimeTemplateNow" $ do
     it "produces valid results" $ rendersValid renderTimeTemplateNow
-    it "works for only literal text"
-      $ forAllValid
-      $ \rc ->
-        forAllValid $ \t ->
-          runReaderT (renderTimeTemplateNow (Template [TLit t])) rc `shouldBe` Success t
-    it "works for any formatting string relative to the exact context"
-      $ forAllValid
-      $ \fs ->
-        forAllValid $
-          \now ->
-            let rc = RenderContext {renderContextTime = now}
-             in runReaderT (renderTimeTemplateNow (Template [TTime (T.pack fs)])) rc `shouldBe` Success (T.pack $ formatTime defaultTimeLocale fs now)
+    it "works for only literal text" $
+      forAllValid $
+        \rc ->
+          forAllValid $ \t ->
+            runReaderT (renderTimeTemplateNow (Template [TLit t])) rc `shouldBe` Success t
+    it "works for any formatting string relative to the exact context" $
+      forAllValid $
+        \fs ->
+          forAllValid $
+            \now ->
+              let rc = RenderContext {renderContextTime = now}
+               in runReaderT (renderTimeTemplateNow (Template [TTime (T.pack fs)])) rc `shouldBe` Success (T.pack $ formatTime defaultTimeLocale fs now)
     it "works for this case for relative timestamp templates" $ do
       let rel lt fs ft out =
             let now = ZonedTime lt utc

@@ -21,16 +21,15 @@ import System.FileLock
 import UnliftIO.Resource
 
 -- This represents a SmosFile on disk
-data SmosFileEditorCursor
-  = SmosFileEditorCursor
-      { smosFileEditorPath :: !(Path Abs File),
-        smosFileEditorStartingPoint :: !(Maybe SmosFile), -- Nothing means it was an empty file
-        smosFileEditorCursorHistory :: !(History (Maybe SmosFileCursor)), -- Nothing means an empty smos file, s othe Maybe needs to be in the history.
-        smosFileEditorUnsavedChanges :: !Bool, -- Whether any changes have been made since the 'last saved' or since the beginning
-        smosFileEditorLastSaved :: !UTCTime, -- Starts with the opening of the file
-        smosFileEditorLock :: !FileLock, -- The file lock that proves we have a lock on the file. We also need it to close it at the end but we do that using:
-        smosFileEditorReleaseKey :: !ReleaseKey -- The key to release the file lock early
-      }
+data SmosFileEditorCursor = SmosFileEditorCursor
+  { smosFileEditorPath :: !(Path Abs File),
+    smosFileEditorStartingPoint :: !(Maybe SmosFile), -- Nothing means it was an empty file
+    smosFileEditorCursorHistory :: !(History (Maybe SmosFileCursor)), -- Nothing means an empty smos file, s othe Maybe needs to be in the history.
+    smosFileEditorUnsavedChanges :: !Bool, -- Whether any changes have been made since the 'last saved' or since the beginning
+    smosFileEditorLastSaved :: !UTCTime, -- Starts with the opening of the file
+    smosFileEditorLock :: !FileLock, -- The file lock that proves we have a lock on the file. We also need it to close it at the end but we do that using:
+    smosFileEditorReleaseKey :: !ReleaseKey -- The key to release the file lock early
+  }
   deriving (Generic)
 
 -- | Left if there was a problem while reading
@@ -48,7 +47,7 @@ startSmosFileEditorCursor p = do
         SmosFileEditorCursor
           { smosFileEditorPath = p,
             smosFileEditorStartingPoint = startingPoint,
-            smosFileEditorCursorHistory = startingHistory $ smosFileCursorReadyForStartup . makeSmosFileCursor <$> (smosFileForest <$> startingPoint >>= NE.nonEmpty),
+            smosFileEditorCursorHistory = startingHistory $ smosFileCursorReadyForStartup . makeSmosFileCursor <$> (startingPoint >>= NE.nonEmpty . smosFileForest),
             smosFileEditorUnsavedChanges = isNothing startingPoint, -- Because we'll be editing an empty file, not a nonexistent file
             smosFileEditorLastSaved = now,
             smosFileEditorLock = fl,

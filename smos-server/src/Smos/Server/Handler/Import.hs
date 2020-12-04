@@ -42,8 +42,9 @@ withUserId un func = withUserEntity un $ func . entityKey
 streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
 streamSmosFiles uid ha conduit = do
   acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
-  liftIO $ withAcquire acqSource $ \source ->
-    runConduit $ source .| parseServerFileC ha .| conduit
+  liftIO $
+    withAcquire acqSource $ \source ->
+      runConduit $ source .| parseServerFileC ha .| conduit
 
 parseServerFileC :: Monad m => HideArchive -> ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
 parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->

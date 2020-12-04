@@ -2,10 +2,11 @@
 let
   smos-production = import ./nixos-module.nix { envname = "production"; };
   home-manager = import (
-    builtins.fetchTarball {
-      url = "https://github.com/rycee/home-manager/archive/472ca211cac604efdf621337067a237be9df389e.tar.gz";
-      sha256 = "sha256:1gbfsnd7zsxwqryxd4r6jz9sgdz6ghlkapws1cdxshrbxlwhqad1";
-    } + "/nixos/default.nix"
+    builtins.fetchTarball
+      {
+        url = "https://github.com/rycee/home-manager/archive/472ca211cac604efdf621337067a237be9df389e.tar.gz";
+        sha256 = "sha256:1gbfsnd7zsxwqryxd4r6jz9sgdz6ghlkapws1cdxshrbxlwhqad1";
+      } + "/nixos/default.nix"
   );
 
   docs-port = 8001;

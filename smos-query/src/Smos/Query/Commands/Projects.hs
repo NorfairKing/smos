@@ -1,4 +1,3 @@
-{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -32,7 +31,7 @@ renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEn
 
 renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =
-  pathChunk projectEntryFilePath
-    : case projectEntryCurrentEntry of
-      Nothing -> [chunk "No next action"]
-      Just e@Entry {..} -> [mTodoStateChunk $ entryState e, headerChunk entryHeader]
+  pathChunk projectEntryFilePath :
+  case projectEntryCurrentEntry of
+    Nothing -> [chunk "No next action"]
+    Just e@Entry {..} -> [mTodoStateChunk $ entryState e, headerChunk entryHeader]

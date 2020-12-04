@@ -62,11 +62,10 @@ type ClockTable = [ClockTableBlock]
 
 type ClockTableBlock = Block Text ClockTableFile
 
-data ClockTableFile
-  = ClockTableFile
-      { clockTableFile :: Path Rel File,
-        clockTableForest :: Forest ClockTableHeaderEntry
-      }
+data ClockTableFile = ClockTableFile
+  { clockTableFile :: Path Rel File,
+    clockTableForest :: Forest ClockTableHeaderEntry
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ClockTableFile
@@ -101,11 +100,10 @@ instance ToYaml (ForYaml (Tree ClockTableHeaderEntry)) where
       then toYaml rootLabel
       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
-data ClockTableHeaderEntry
-  = ClockTableHeaderEntry
-      { clockTableHeaderEntryHeader :: Header,
-        clockTableHeaderEntryTime :: NominalDiffTime
-      }
+data ClockTableHeaderEntry = ClockTableHeaderEntry
+  { clockTableHeaderEntryHeader :: Header,
+    clockTableHeaderEntryTime :: NominalDiffTime
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ClockTableHeaderEntry
@@ -127,18 +125,16 @@ instance ToYaml ClockTableHeaderEntry where
 -- Intermediary types
 type ClockTimeBlock a = Block a FileTimes
 
-data FileTimes
-  = FileTimes
-      { clockTimeFile :: Path Rel File,
-        clockTimeForest :: TForest HeaderTimes
-      }
+data FileTimes = FileTimes
+  { clockTimeFile :: Path Rel File,
+    clockTimeForest :: TForest HeaderTimes
+  }
   deriving (Generic)
 
-data HeaderTimes f
-  = HeaderTimes
-      { headerTimesHeader :: Header,
-        headerTimesEntries :: f LogbookEntry
-      }
+data HeaderTimes f = HeaderTimes
+  { headerTimesHeader :: Header,
+    headerTimesEntries :: f LogbookEntry
+  }
   deriving (Generic)
 
 type TForest a = NonEmpty (TTree a)

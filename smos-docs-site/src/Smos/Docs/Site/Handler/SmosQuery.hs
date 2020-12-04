@@ -34,7 +34,7 @@ getSmosQueryR = do
 
 getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do
-  DocPage {..} <- lookupPage $ "smos-query/" <> cmd
+  DocPage {..} <- lookupPage' ["smos-query", cmd]
   let argsHelpText = getHelpPageOf [T.unpack cmd]
       envHelpText = "This command does not use any extra environment variables." :: String
       confHelpText = case cmd of

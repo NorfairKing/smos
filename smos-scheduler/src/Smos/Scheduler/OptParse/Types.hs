@@ -34,18 +34,16 @@ data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
 data Command = CommandCheck | CommandSchedule
   deriving (Show, Eq)
 
-data Flags
-  = Flags
-      { flagDirectoryFlags :: !Report.DirectoryFlags,
-        flagStateFile :: !(Maybe FilePath)
-      }
+data Flags = Flags
+  { flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagStateFile :: !(Maybe FilePath)
+  }
   deriving (Show, Eq)
 
-data Configuration
-  = Configuration
-      { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
-        confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
-      }
+data Configuration = Configuration
+  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+    confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
+  }
   deriving (Show, Eq)
 
 instance FromJSON Configuration where
@@ -54,11 +52,10 @@ instance FromJSON Configuration where
 instance YamlSchema Configuration where
   yamlSchema = Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
 
-data SchedulerConfiguration
-  = SchedulerConfiguration
-      { schedulerConfStateFile :: !(Maybe FilePath),
-        schedulerConfSchedule :: !(Maybe Schedule)
-      }
+data SchedulerConfiguration = SchedulerConfiguration
+  { schedulerConfStateFile :: !(Maybe FilePath),
+    schedulerConfSchedule :: !(Maybe Schedule)
+  }
   deriving (Show, Eq)
 
 instance FromJSON SchedulerConfiguration where
@@ -71,22 +68,20 @@ instance YamlSchema SchedulerConfiguration where
         <$> optionalField "state-file" "The file to store the scheduler state in"
         <*> optionalField "schedule" "The scheduler schedule"
 
-newtype Schedule
-  = Schedule
-      { scheduleItems :: [ScheduleItem]
-      }
+newtype Schedule = Schedule
+  { scheduleItems :: [ScheduleItem]
+  }
   deriving (Show, Eq, Generic, FromJSON)
 
 instance YamlSchema Schedule where
   yamlSchema = Schedule <$> yamlSchema
 
-data ScheduleItem
-  = ScheduleItem
-      { scheduleItemDescription :: !(Maybe Text),
-        scheduleItemTemplate :: !(Path Rel File),
-        scheduleItemDestination :: !DestinationPathTemplate,
-        scheduleItemCronSchedule :: !CronSchedule
-      }
+data ScheduleItem = ScheduleItem
+  { scheduleItemDescription :: !(Maybe Text),
+    scheduleItemTemplate :: !(Path Rel File),
+    scheduleItemDestination :: !DestinationPathTemplate,
+    scheduleItemCronSchedule :: !CronSchedule
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ScheduleItem
@@ -124,11 +119,10 @@ instance Hashable DestinationPathTemplate
 instance YamlSchema DestinationPathTemplate where
   yamlSchema = DestinationPathTemplate <$> yamlSchema
 
-data Environment
-  = Environment
-      { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-        envStateFile :: !(Maybe FilePath)
-      }
+data Environment = Environment
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envStateFile :: !(Maybe FilePath)
+  }
   deriving (Show, Eq)
 
 data Instructions = Instructions Dispatch Settings
@@ -137,19 +131,17 @@ data Instructions = Instructions Dispatch Settings
 data Dispatch = DispatchCheck | DispatchSchedule
   deriving (Show, Eq)
 
-data Settings
-  = Settings
-      { setDirectorySettings :: !Report.DirectoryConfig,
-        setStateFile :: !(Path Abs File),
-        setSchedule :: !Schedule
-      }
+data Settings = Settings
+  { setDirectorySettings :: !Report.DirectoryConfig,
+    setStateFile :: !(Path Abs File),
+    setSchedule :: !Schedule
+  }
   deriving (Show, Eq)
 
-data ScheduleState
-  = ScheduleState
-      { scheduleStateLastRun :: UTCTime,
-        scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
-      }
+data ScheduleState = ScheduleState
+  { scheduleStateLastRun :: UTCTime,
+    scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
+  }
   deriving (Show, Eq, Generic)
 
 instance ToJSON ScheduleState where
@@ -164,10 +156,9 @@ newtype ScheduleItemHash = ScheduleItemHash Word64
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
 
-newtype ScheduleTemplate
-  = ScheduleTemplate
-      { scheduleTemplateForest :: Forest EntryTemplate
-      }
+newtype ScheduleTemplate = ScheduleTemplate
+  { scheduleTemplateForest :: Forest EntryTemplate
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ScheduleTemplate
@@ -201,15 +192,14 @@ instance FromJSON (ForYaml (Tree EntryTemplate)) where
                 v
         _ -> Node <$> parseJSON v <*> pure []
 
-data EntryTemplate
-  = EntryTemplate
-      { entryTemplateHeader :: Header,
-        entryTemplateContents :: Maybe Contents,
-        entryTemplateTimestamps :: Map TimestampName TimestampTemplate,
-        entryTemplateProperties :: Map PropertyName PropertyValue,
-        entryTemplateState :: Maybe TodoState,
-        entryTemplateTags :: Set Tag
-      }
+data EntryTemplate = EntryTemplate
+  { entryTemplateHeader :: Header,
+    entryTemplateContents :: Maybe Contents,
+    entryTemplateTimestamps :: Map TimestampName TimestampTemplate,
+    entryTemplateProperties :: Map PropertyName PropertyValue,
+    entryTemplateState :: Maybe TodoState,
+    entryTemplateTags :: Set Tag
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity EntryTemplate
@@ -267,10 +257,9 @@ instance YamlSchema EntryTemplate where
             <*> optionalFieldWithDefault' "tags" S.empty
       ]
 
-newtype TimestampTemplate
-  = TimestampTemplate
-      { timestampTemplateText :: Text
-      }
+newtype TimestampTemplate = TimestampTemplate
+  { timestampTemplateText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity TimestampTemplate
@@ -278,10 +267,9 @@ instance Validity TimestampTemplate
 instance YamlSchema TimestampTemplate where
   yamlSchema = TimestampTemplate <$> yamlSchema
 
-newtype UTCTimeTemplate
-  = UTCTimeTemplate
-      { utcTimeTemplateText :: Text
-      }
+newtype UTCTimeTemplate = UTCTimeTemplate
+  { utcTimeTemplateText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
 
 instance Validity UTCTimeTemplate

@@ -9,8 +9,8 @@ import Cursor.Simple.Tree
 import Data.Aeson
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Path ()
 import Data.Void

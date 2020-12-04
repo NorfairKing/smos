@@ -75,10 +75,9 @@ import Smos.Data
 
 type FC = ForestCursor (CollapseEntry EntryCursor) (CollapseEntry Entry)
 
-newtype SmosFileCursor
-  = SmosFileCursor
-      { smosFileCursorForestCursor :: FC
-      }
+newtype SmosFileCursor = SmosFileCursor
+  { smosFileCursorForestCursor :: FC
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity SmosFileCursor
@@ -108,10 +107,10 @@ rebuildSmosFileCursorEntirely = SmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
-  (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart)
-    $ makeSmosFileCursor
-    $ Node emptyEntry []
-      :| []
+  (smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtStart) $
+    makeSmosFileCursor $
+      Node emptyEntry []
+        :| []
 
 smosFileCursorSelectedCollapseEntryL :: Lens' SmosFileCursor (CollapseEntry EntryCursor)
 smosFileCursorSelectedCollapseEntryL = smosFileCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL

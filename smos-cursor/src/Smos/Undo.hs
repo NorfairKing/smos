@@ -17,8 +17,7 @@ import GHC.Generics (Generic)
 -- The same must hold in the opposite direction when applying the undo first and then the redo.
 --
 -- See 'Smos.UndoSpec' for an example.
-newtype UndoStack a
-  = UndoStack {undoStackListCursor :: ListCursor a}
+newtype UndoStack a = UndoStack {undoStackListCursor :: ListCursor a}
   deriving (Show, Eq, Generic)
 
 instance Validity a => Validity (UndoStack a)

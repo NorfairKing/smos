@@ -10,11 +10,11 @@ where
 
 import Control.Monad
 import Control.Monad.Reader
-import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import GHC.Generics (Generic)
 import Path
@@ -141,9 +141,10 @@ scheduleItemResultMessage :: ScheduleItemResult -> Maybe String
 scheduleItemResultMessage = \case
   ScheduleItemResultSuccess -> Nothing
   ScheduleItemResultPathRenderError errs ->
-    Just $ unlines $
-      "ERROR: Validation errors while rendering template destination file name:"
-        : map prettyRenderError (NE.toList errs)
+    Just $
+      unlines $
+        "ERROR: Validation errors while rendering template destination file name:" :
+        map prettyRenderError (NE.toList errs)
   ScheduleItemResultTemplateDoesNotExist from ->
     Just $ unwords ["ERROR: template does not exist:", fromAbsFile from]
   ScheduleItemResultYamlParseError from err ->
@@ -153,10 +154,10 @@ scheduleItemResultMessage = \case
           err
         ]
   ScheduleItemResultFileRenderError errs ->
-    Just
-      $ unlines
-      $ "ERROR: Validation errors while rendering template:"
-        : map prettyRenderError (NE.toList errs)
+    Just $
+      unlines $
+        "ERROR: Validation errors while rendering template:" :
+        map prettyRenderError (NE.toList errs)
   ScheduleItemResultDestinationAlreadyExists to ->
     Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
 

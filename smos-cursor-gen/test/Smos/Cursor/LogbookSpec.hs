@@ -11,16 +11,16 @@ import Test.Validity
 spec :: Spec
 spec = do
   genValidSpec @LogbookCursor
-  describe "makeLogbookCursor"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids makeLogbookCursor
+  describe "makeLogbookCursor" $
+    it "produces valid cursors" $
+      producesValidsOnValids makeLogbookCursor
   describe "rebuildLogbookCursor" $ do
     it "produces valid cursors" $ producesValidsOnValids rebuildLogbookCursor
     it "is the inverse of makeLogbookCursor" $
       inverseFunctionsOnValid makeLogbookCursor rebuildLogbookCursor
-  describe "logbookCursorClockIn"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids2 logbookCursorClockIn
-  describe "logbookCursorClockOut"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids2 logbookCursorClockOut
+  describe "logbookCursorClockIn" $
+    it "produces valid cursors" $
+      producesValidsOnValids2 logbookCursorClockIn
+  describe "logbookCursorClockOut" $
+    it "produces valid cursors" $
+      producesValidsOnValids2 logbookCursorClockOut

@@ -31,8 +31,8 @@ where
 import Control.Arrow
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
-import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import Data.Time

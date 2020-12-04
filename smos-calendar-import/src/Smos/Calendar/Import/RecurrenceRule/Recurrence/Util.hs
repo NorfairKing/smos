@@ -9,8 +9,8 @@ import Data.Fixed
 import Data.List
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -87,55 +87,65 @@ byEveryWeekDayLimit :: Set DayOfWeek -> Day -> Bool
 byEveryWeekDayLimit = limitBy $ \d dow -> dow == dayOfWeek d
 
 byYearDayExpand :: Integer -> Set ByYearDay -> Maybe (NonEmpty Word)
-byYearDayExpand year s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(YearDay yd) ->
-  let days = daysInYear year
-   in case compare yd 0 of
-        EQ -> Nothing -- Wouldn't be valid, but that's fine
-        GT -> Just $ fromIntegral yd
-        LT -> Just $ fromIntegral $ days + yd + 1 -- Must be positive
+byYearDayExpand year s = NE.nonEmpty $
+  sort $
+    flip mapMaybe (S.toList s) $ \(YearDay yd) ->
+      let days = daysInYear year
+       in case compare yd 0 of
+            EQ -> Nothing -- Wouldn't be valid, but that's fine
+            GT -> Just $ fromIntegral yd
+            LT -> Just $ fromIntegral $ days + yd + 1 -- Must be positive
 
 byMonthDayExpandEveryMonth :: Integer -> Set ByMonthDay -> Maybe (NonEmpty (Month, Word))
-byMonthDayExpandEveryMonth year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $ \(MonthDay md) -> do
-  month <- [January .. December]
-  let days = monthLength (isLeapYear year) (monthToMonthNo month)
-  case compare md 0 of
-    EQ -> [] -- Wouldn't be valid, but that's fine
-    GT -> pure (month, fromIntegral md)
-    LT -> pure (month, fromIntegral $ days + md + 1) -- Must be positive
+byMonthDayExpandEveryMonth year s = NE.nonEmpty $
+  sort $
+    flip concatMap (S.toList s) $ \(MonthDay md) -> do
+      month <- [January .. December]
+      let days = monthLength (isLeapYear year) (monthToMonthNo month)
+      case compare md 0 of
+        EQ -> [] -- Wouldn't be valid, but that's fine
+        GT -> pure (month, fromIntegral md)
+        LT -> pure (month, fromIntegral $ days + md + 1) -- Must be positive
 
 byMonthDayExpandMonth :: Integer -> Month -> Set ByMonthDay -> Maybe (NonEmpty Word)
-byMonthDayExpandMonth year month s = NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(MonthDay md) ->
-  let days = monthLength (isLeapYear year) (monthToMonthNo month)
-   in case compare md 0 of
-        EQ -> Nothing -- Wouldn't be valid, but that's fine
-        GT -> Just $ fromIntegral md
-        LT -> Just $ fromIntegral $ days + md + 1 -- Must be positive
+byMonthDayExpandMonth year month s = NE.nonEmpty $
+  sort $
+    flip mapMaybe (S.toList s) $ \(MonthDay md) ->
+      let days = monthLength (isLeapYear year) (monthToMonthNo month)
+       in case compare md 0 of
+            EQ -> Nothing -- Wouldn't be valid, but that's fine
+            GT -> Just $ fromIntegral md
+            LT -> Just $ fromIntegral $ days + md + 1 -- Must be positive
 
 byEveryWeekDayWeek :: Set DayOfWeek -> Maybe (NonEmpty DayOfWeek)
 byEveryWeekDayWeek = NE.nonEmpty . S.toList
 
 byEveryWeekDayExpandYear :: DayOfWeek -> Integer -> Set ByDay -> Maybe (NonEmpty Day)
-byEveryWeekDayExpandYear weekStart year s = NE.nonEmpty $ sort $ flip concatMap (S.toList s) $
-  \case
-    Every dow -> do
-      wn <- [1 .. weeksInYear weekStart year]
-      maybeToList $ fromWeekDateWithStart weekStart year wn dow
-    Specific i dow -> do
-      wn <- [1 .. weeksInYear weekStart year]
-      d <- maybeToList $ fromWeekDateWithStart weekStart year wn dow
-      guard $ dayOfWeek d == dow
-      let (pn, nn) = specificYearWeekDayIndex d
-      guard $ i == pn || i == nn
-      pure d
+byEveryWeekDayExpandYear weekStart year s = NE.nonEmpty $
+  sort $
+    flip concatMap (S.toList s) $
+      \case
+        Every dow -> do
+          wn <- [1 .. weeksInYear weekStart year]
+          maybeToList $ fromWeekDateWithStart weekStart year wn dow
+        Specific i dow -> do
+          wn <- [1 .. weeksInYear weekStart year]
+          d <- maybeToList $ fromWeekDateWithStart weekStart year wn dow
+          guard $ dayOfWeek d == dow
+          let (pn, nn) = specificYearWeekDayIndex d
+          guard $ i == pn || i == nn
+          pure d
 
 byWeekNoExpand :: DayOfWeek -> Integer -> Set ByWeekNo -> Maybe (NonEmpty Word)
 byWeekNoExpand weekStart year s =
-  NE.nonEmpty $ sort $ flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
-    let weeks = weeksInYear weekStart year
-     in case compare wn 0 of
-          EQ -> Nothing -- Wouldn't be valid, but that's fine
-          GT -> Just $ fromIntegral wn
-          LT -> Just $ fromIntegral $ fromIntegral weeks + wn + 1 -- Must be positive
+  NE.nonEmpty $
+    sort $
+      flip mapMaybe (S.toList s) $ \(WeekNo wn) ->
+        let weeks = weeksInYear weekStart year
+         in case compare wn 0 of
+              EQ -> Nothing -- Wouldn't be valid, but that's fine
+              GT -> Just $ fromIntegral wn
+              LT -> Just $ fromIntegral $ fromIntegral weeks + wn + 1 -- Must be positive
 
 byDayExpand :: Integer -> Int -> Int -> Set ByDay -> [Day]
 byDayExpand y m md s =

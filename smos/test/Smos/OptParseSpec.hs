@@ -30,8 +30,8 @@ spec = do
   jsonSpecOnValid @KeybindingsConfiguration
   genValidSpec @Configuration
   jsonSpecOnValid @Configuration
-  describe "FromJSON Configuration"
-    $ it "parses the default configuration back into itself"
-    $ do
-      let config = backToConfiguration defaultConfig
-      fromJSON (toJSON config) `shouldBe` JSON.Success config
+  describe "FromJSON Configuration" $
+    it "parses the default configuration back into itself" $
+      do
+        let config = backToConfiguration defaultConfig
+        fromJSON (toJSON config) `shouldBe` JSON.Success config

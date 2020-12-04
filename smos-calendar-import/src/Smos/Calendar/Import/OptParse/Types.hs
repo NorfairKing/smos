@@ -10,25 +10,22 @@ import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import YamlParse.Applicative
 
-data Flags
-  = Flags
-      { flagDirectoryFlags :: !Report.DirectoryFlags,
-        flagDebug :: Maybe Bool
-      }
+data Flags = Flags
+  { flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagDebug :: Maybe Bool
+  }
   deriving (Show, Eq)
 
-data Configuration
-  = Configuration
-      { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
-        confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
-      }
+data Configuration = Configuration
+  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+    confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
+  }
   deriving (Show, Eq)
 
-data Environment
-  = Environment
-      { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-        envDebug :: !(Maybe Bool)
-      }
+data Environment = Environment
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envDebug :: !(Maybe Bool)
+  }
   deriving (Show, Eq)
 
 instance FromJSON Configuration where
@@ -41,11 +38,10 @@ instance YamlSchema Configuration where
         <$> Report.directoryConfigurationObjectParser
         <*> optionalField "calendar" "Calendar configuration"
 
-data CalendarImportConfiguration
-  = CalendarImportConfiguration
-      { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
-        calendarImportConfDebug :: !(Maybe Bool)
-      }
+data CalendarImportConfiguration = CalendarImportConfiguration
+  { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
+    calendarImportConfDebug :: !(Maybe Bool)
+  }
   deriving (Show, Eq)
 
 instance FromJSON CalendarImportConfiguration where
@@ -58,12 +54,11 @@ instance YamlSchema CalendarImportConfiguration where
         <$> optionalField "sources" "The sources to import from"
         <*> optionalField "debug" "Show the internal structure of every event in its entry's contents."
 
-data SourceConfiguration
-  = SourceConfiguration
-      { sourceConfName :: !(Maybe String),
-        sourceConfOrigin :: !String,
-        sourceConfDestinationFile :: !FilePath
-      }
+data SourceConfiguration = SourceConfiguration
+  { sourceConfName :: !(Maybe String),
+    sourceConfOrigin :: !String,
+    sourceConfDestinationFile :: !FilePath
+  }
   deriving (Show, Eq)
 
 instance YamlSchema SourceConfiguration where
@@ -79,20 +74,18 @@ instance YamlSchema SourceConfiguration where
             )
         <*> requiredField "destination" "The destination path within the workflow directory"
 
-data Settings
-  = Settings
-      { setDirectorySettings :: !Report.DirectoryConfig,
-        setSources :: !(NonEmpty Source),
-        setDebug :: Bool
-      }
+data Settings = Settings
+  { setDirectorySettings :: !Report.DirectoryConfig,
+    setSources :: !(NonEmpty Source),
+    setDebug :: Bool
+  }
   deriving (Show, Eq)
 
-data Source
-  = Source
-      { sourceName :: Maybe String,
-        sourceDestinationFile :: !(Path Rel File),
-        sourceOrigin :: !Origin
-      }
+data Source = Source
+  { sourceName :: Maybe String,
+    sourceDestinationFile :: !(Path Rel File),
+    sourceOrigin :: !Origin
+  }
   deriving (Show, Eq)
 
 data Origin = WebOrigin URI | FileOrigin (Path Abs File)

@@ -8,8 +8,8 @@ import Data.Aeson
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.Static
@@ -17,11 +17,10 @@ import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
 import YamlParse.Applicative
 
-data UnresolvedEvents
-  = UnresolvedEvents
-      { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
-        unresolvedEventsTimeZones :: !(Map TimeZoneId TimeZoneHistory)
-      }
+data UnresolvedEvents = UnresolvedEvents
+  { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
+    unresolvedEventsTimeZones :: !(Map TimeZoneId TimeZoneHistory)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEvents
@@ -51,11 +50,10 @@ instance ToJSON UnresolvedEvents where
             "zones" .= unresolvedEventsTimeZones
           ]
 
-data UnresolvedEventGroup
-  = UnresolvedEventGroup
-      { unresolvedEventGroupStatic :: !Static,
-        unresolvedEvents :: !(Set UnresolvedEvent)
-      }
+data UnresolvedEventGroup = UnresolvedEventGroup
+  { unresolvedEventGroupStatic :: !Static,
+    unresolvedEvents :: !(Set UnresolvedEvent)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEventGroup
@@ -82,11 +80,10 @@ instance ToJSON UnresolvedEventGroup where
           ++ [ "events" .= unresolvedEvents
              ]
 
-data UnresolvedEvent
-  = UnresolvedEvent
-      { unresolvedEventStart :: !(Maybe CalTimestamp),
-        unresolvedEventEnd :: !(Maybe CalEndDuration)
-      }
+data UnresolvedEvent = UnresolvedEvent
+  { unresolvedEventStart :: !(Maybe CalTimestamp),
+    unresolvedEventEnd :: !(Maybe CalEndDuration)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity UnresolvedEvent

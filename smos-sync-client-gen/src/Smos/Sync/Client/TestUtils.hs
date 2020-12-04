@@ -15,8 +15,8 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
 import Data.GenValidity.DirForest
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Pool
 import Database.Persist.Sqlite as DB
 import Lens.Micro
@@ -41,11 +41,11 @@ clientDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around
 
 withClientDB :: (Pool SqlBackend -> IO a) -> IO a
 withClientDB func =
-  runNoLoggingT
-    $ DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1
-    $ \pool -> do
-      DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
-      liftIO $ func pool
+  runNoLoggingT $
+    DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
+      \pool -> do
+        DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+        liftIO $ func pool
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")

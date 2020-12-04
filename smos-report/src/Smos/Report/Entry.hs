@@ -28,11 +28,10 @@ entryReportConduit ef p s =
     <$> ( smosFileCursors .| smosMFilter ef .| sinkList
         )
 
-data EntryReport
-  = EntryReport
-      { entryReportHeaders :: NonEmpty Projection,
-        entryReportCells :: [NonEmpty Projectee]
-      }
+data EntryReport = EntryReport
+  { entryReportHeaders :: NonEmpty Projection,
+    entryReportCells :: [NonEmpty Projectee]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity EntryReport

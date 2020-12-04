@@ -26,33 +26,33 @@ spec = do
   describe "entryCursorTimestampsCursorL" $ lensSpecOnValid entryCursorTimestampsCursorL
   describe "entryCursorLogbookCursorL" $ lensSpecOnValid entryCursorLogbookCursorL
   describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL
-  describe "entryCursorSelect"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids2 entryCursorSelect
-  describe "entryCursorSelectHeaderAtStart"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectHeaderAtStart
-  describe "entryCursorSelectHeaderAtEnd"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectHeaderAtEnd
-  describe "entryCursorSelectContentsAtStart"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectContentsAtStart
-  describe "entryCursorSelectContentsAtEnd"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectContentsAtEnd
-  describe "entryCursorSelectTimestamps"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectTimestamps
-  describe "entryCursorSelectProperties"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectProperties
-  describe "entryCursorSelectStateHistory"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectStateHistory
-  describe "entryCursorSelectTags"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectTags
-  describe "entryCursorSelectLogbook"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids entryCursorSelectLogbook
+  describe "entryCursorSelect" $
+    it "produces valid cursors" $
+      producesValidsOnValids2 entryCursorSelect
+  describe "entryCursorSelectHeaderAtStart" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectHeaderAtStart
+  describe "entryCursorSelectHeaderAtEnd" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectHeaderAtEnd
+  describe "entryCursorSelectContentsAtStart" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectContentsAtStart
+  describe "entryCursorSelectContentsAtEnd" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectContentsAtEnd
+  describe "entryCursorSelectTimestamps" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectTimestamps
+  describe "entryCursorSelectProperties" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectProperties
+  describe "entryCursorSelectStateHistory" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectStateHistory
+  describe "entryCursorSelectTags" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectTags
+  describe "entryCursorSelectLogbook" $
+    it "produces valid cursors" $
+      producesValidsOnValids entryCursorSelectLogbook

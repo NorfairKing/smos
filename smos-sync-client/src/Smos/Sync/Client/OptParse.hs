@@ -192,13 +192,13 @@ parseCommandRegister :: ParserInfo Command
 parseCommandRegister = info parser modifier
   where
     modifier = fullDesc <> progDesc "Register at a sync server"
-    parser = CommandRegister <$> pure RegisterFlags
+    parser = pure $ CommandRegister RegisterFlags
 
 parseCommandLogin :: ParserInfo Command
 parseCommandLogin = info parser modifier
   where
     modifier = fullDesc <> progDesc "Login at a sync server"
-    parser = CommandLogin <$> pure LoginFlags
+    parser = pure $ CommandLogin LoginFlags
 
 parseCommandSync :: ParserInfo Command
 parseCommandSync = info parser modifier

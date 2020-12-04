@@ -31,22 +31,23 @@ smosWebServerSpec :: SmosWebServerSpec -> Spec
 smosWebServerSpec = API.serverSpec . webServerSpec
 
 webServerSpec :: YesodSpec App -> SpecWith ClientEnv
-webServerSpec spec = withTestTempDir $ flip yesodSpecWithSiteGeneratorAndArgument spec $ \(ClientEnv _ burl _, tdir) -> do
-  man <- Http.newManager Http.defaultManagerSettings
-  loginVar <- newTVarIO M.empty
-  let app =
-        App
-          { appLogLevel = LevelWarn,
-            appStatic = smosWebServerStatic,
-            appAPIBaseUrl = burl,
-            appDocsBaseUrl = Nothing,
-            appLoginTokens = loginVar,
-            appDataDir = tdir,
-            appHttpManager = man,
-            appGoogleAnalyticsTracking = Nothing,
-            appGoogleSearchConsoleVerification = Nothing
-          }
-  pure app
+webServerSpec spec = withTestTempDir $
+  flip yesodSpecWithSiteGeneratorAndArgument spec $ \(ClientEnv _ burl _, tdir) -> do
+    man <- Http.newManager Http.defaultManagerSettings
+    loginVar <- newTVarIO M.empty
+    let app =
+          App
+            { appLogLevel = LevelWarn,
+              appStatic = smosWebServerStatic,
+              appAPIBaseUrl = burl,
+              appDocsBaseUrl = Nothing,
+              appLoginTokens = loginVar,
+              appDataDir = tdir,
+              appHttpManager = man,
+              appGoogleAnalyticsTracking = Nothing,
+              appGoogleSearchConsoleVerification = Nothing
+            }
+    pure app
 
 withTestTempDir :: forall a. SpecWith (a, Path Abs Dir) -> SpecWith a
 withTestTempDir = aroundWith go

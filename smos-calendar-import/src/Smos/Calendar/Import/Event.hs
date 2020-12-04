@@ -16,11 +16,10 @@ import Smos.Data
 import YamlParse.Applicative
 
 -- A collection of events from the same recurrence set
-data Events
-  = Events
-      { eventsStatic :: !Static,
-        events :: !(Set Event)
-      }
+data Events = Events
+  { eventsStatic :: !Static,
+    events :: !(Set Event)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Events
@@ -47,20 +46,19 @@ instance ToJSON Events where
           ++ [ "events" .= events
              ]
 
-data Event
-  = Event
-      { eventStart :: !(Maybe Timestamp),
-        eventEnd :: !(Maybe Timestamp)
-      }
+data Event = Event
+  { eventStart :: !(Maybe Timestamp),
+    eventEnd :: !(Maybe Timestamp)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Event where
   validate e@Event {..} =
     mconcat
       [ genericValidate e,
-        declare "The end happens before the start"
-          $ fromMaybe True
-          $ liftA2 (>=) eventStart eventEnd
+        declare "The end happens before the start" $
+          fromMaybe True $
+            liftA2 (>=) eventStart eventEnd
       ]
 
 instance YamlSchema Event where

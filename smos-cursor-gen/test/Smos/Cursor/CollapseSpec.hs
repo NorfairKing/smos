@@ -12,9 +12,9 @@ import Test.Validity.Optics
 spec :: Spec
 spec = do
   genValidSpec @(CollapseEntry Rational)
-  describe "makeCollapseEntry"
-    $ it "produces valid collapse's"
-    $ producesValidsOnValids (makeCollapseEntry @Rational)
+  describe "makeCollapseEntry" $
+    it "produces valid collapse's" $
+      producesValidsOnValids (makeCollapseEntry @Rational)
   describe "rebuildCollapseEntry" $ do
     it "produces valid values" $ producesValidsOnValids (rebuildCollapseEntry @Rational)
     it "is the inverse of makeCollapseEntry" $
@@ -24,6 +24,6 @@ spec = do
   describe "collapseEntryShowHistoryL" $ lensSpecOnValid (collapseEntryShowHistoryL @Rational)
   describe "collapseEntryShowLogbookL" $ lensSpecOnValid (collapseEntryShowLogbookL @Rational)
   describe "collapseEntryShowTimestampsL" $ lensSpecOnValid (collapseEntryShowTimestampsL @Rational)
-  describe "collapseEntrySetShowAll"
-    $ it "produces valid collapses"
-    $ producesValidsOnValids2 (collapseEntrySetShowAll @Rational)
+  describe "collapseEntrySetShowAll" $
+    it "produces valid collapses" $
+      producesValidsOnValids2 (collapseEntrySetShowAll @Rational)

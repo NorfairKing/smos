@@ -31,10 +31,9 @@ import Data.Validity.Path ()
 import GHC.Generics (Generic)
 import Path
 
-newtype ContentsMap
-  = ContentsMap
-      { contentsMapDirForest :: DirForest ByteString -- A dirforest where we don't care about the dirs
-      }
+newtype ContentsMap = ContentsMap
+  { contentsMapDirForest :: DirForest ByteString -- A dirforest where we don't care about the dirs
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ContentsMap where

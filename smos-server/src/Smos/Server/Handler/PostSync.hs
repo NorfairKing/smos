@@ -7,8 +7,8 @@ module Smos.Server.Handler.PostSync
   )
 where
 
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Path
 import Smos.Server.Handler.Import
@@ -25,13 +25,15 @@ syncProcessor uid = Mergeful.ServerSyncProcessor {..}
     serverSyncProcessorRead :: m' (Map (Path Rel File) (Mergeful.Timed SyncFile))
     serverSyncProcessorRead = do
       sfs <- selectList [ServerFileUser ==. uid] []
-      pure $ M.fromList $ flip map sfs $ \(Entity _ ServerFile {..}) ->
-        ( serverFilePath,
-          Mergeful.Timed
-            { Mergeful.timedValue = SyncFile {syncFileContents = serverFileContents},
-              Mergeful.timedTime = serverFileTime
-            }
-        )
+      pure $
+        M.fromList $
+          flip map sfs $ \(Entity _ ServerFile {..}) ->
+            ( serverFilePath,
+              Mergeful.Timed
+                { Mergeful.timedValue = SyncFile {syncFileContents = serverFileContents},
+                  Mergeful.timedTime = serverFileTime
+                }
+            )
     serverSyncProcessorAddItem :: Path Rel File -> SyncFile -> m' (Maybe (Path Rel File))
     serverSyncProcessorAddItem path SyncFile {..} = do
       mk <-

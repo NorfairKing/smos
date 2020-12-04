@@ -28,8 +28,8 @@ import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import Data.Set (Set)
 import qualified Data.Set as S
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Validity.UUID ()
@@ -59,13 +59,13 @@ syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} = do
   ensureDir $ parent syncSetMetadataDB
   withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
-    runStderrLoggingT
-      $ filterLogger (\_ ll -> ll >= setLogLevel)
-      $ DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1
-      $ \pool ->
-        withClientEnv setServerUrl $ \cenv ->
-          withLogin cenv setSessionPath setUsername setPassword $ \token ->
-            doActualSync syncSetUUIDFile pool syncSetContentsDir syncSetIgnoreFiles syncSetBackupDir cenv token
+    runStderrLoggingT $
+      filterLogger (\_ ll -> ll >= setLogLevel) $
+        DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
+          \pool ->
+            withClientEnv setServerUrl $ \cenv ->
+              withLogin cenv setSessionPath setUsername setPassword $ \token ->
+                doActualSync syncSetUUIDFile pool syncSetContentsDir syncSetIgnoreFiles syncSetBackupDir cenv token
 
 doActualSync :: Path Abs File -> ConnectionPool -> Path Abs Dir -> IgnoreFiles -> Path Abs Dir -> ClientEnv -> Token -> LoggingT IO ()
 doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
@@ -108,14 +108,14 @@ runSync contentsDir backupDir ignoreFiles serverUUID token = do
   resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
   logDebugData "SYNC RESPONSE" resp
   logInfoJsonData "SYNC RESPONSE (JSON)" resp
-  liftIO
-    $ unless (syncResponseServerId == serverUUID)
-    $ die
-    $ unlines
-      [ "The server was reset since the last time it was synced with, refusing to sync.",
-        "If you want to sync anyway, remove the client metadata file and sync again.",
-        "Note that you can lose data by doing this, so make a backup first."
-      ]
+  liftIO $
+    unless (syncResponseServerId == serverUUID) $
+      die $
+        unlines
+          [ "The server was reset since the last time it was synced with, refusing to sync.",
+            "If you want to sync anyway, remove the client metadata file and sync again.",
+            "Note that you can lose data by doing this, so make a backup first."
+          ]
   clientMergeSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
   logDebugN "SYNC END"
 
@@ -148,7 +148,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
           Just contents ->
             -- The file is there, so we need to check if it has changed.
             if isUnchanged sfm contents
-              then-- If it hasn't changed, it's still synced.
+              then -- If it hasn't changed, it's still synced.
 
                 s
                   { Mergeful.syncRequestKnownItems =
@@ -157,7 +157,7 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
                         syncFileMetaTime
                         (Mergeful.syncRequestKnownItems s)
                   }
-              else-- If it has changed, mark it as such
+              else -- If it has changed, mark it as such
 
                 s
                   { Mergeful.syncRequestKnownButChangedItems =
@@ -200,8 +200,8 @@ clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles Mergeful.SyncRe
           null syncResponseConflictsServerDeleted
         ]
     )
-    $ liftIO
-    $ die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
+    $ liftIO $
+      die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
   clientMergeInitialServerAdditions contentsDir backupDir ignoreFiles syncResponseServerAdded
 
 clientMergeInitialServerAdditions ::
@@ -243,22 +243,23 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
     proc = Mergeful.ClientSyncProcessor {..}
       where
         clientSyncProcessorQuerySyncedButChangedValues :: Set (Path Rel File) -> SqlPersistT C (Map (Path Rel File) (Mergeful.Timed SyncFile))
-        clientSyncProcessorQuerySyncedButChangedValues s = fmap (M.fromList . catMaybes) $ forM (S.toList s) $ \rf -> do
-          mcf <- getBy (UniquePath rf)
-          case mcf of
-            Nothing -> pure Nothing
-            Just (Entity _ ClientFile {..}) -> do
-              mContents <- readFileSafely $ contentsDir </> clientFilePath
-              case mContents of
-                Nothing -> pure Nothing
-                Just contents -> do
-                  let sfm = SyncFileMeta {syncFileMetaHash = clientFileSha256, syncFileMetaTime = clientFileTime}
-                  if isUnchanged sfm contents
-                    then pure Nothing
-                    else do
-                      let sf = SyncFile {syncFileContents = contents}
-                      let tsf = Mergeful.Timed sf clientFileTime
-                      pure $ Just (rf, tsf)
+        clientSyncProcessorQuerySyncedButChangedValues s = fmap (M.fromList . catMaybes) $
+          forM (S.toList s) $ \rf -> do
+            mcf <- getBy (UniquePath rf)
+            case mcf of
+              Nothing -> pure Nothing
+              Just (Entity _ ClientFile {..}) -> do
+                mContents <- readFileSafely $ contentsDir </> clientFilePath
+                case mContents of
+                  Nothing -> pure Nothing
+                  Just contents -> do
+                    let sfm = SyncFileMeta {syncFileMetaHash = clientFileSha256, syncFileMetaTime = clientFileTime}
+                    if isUnchanged sfm contents
+                      then pure Nothing
+                      else do
+                        let sf = SyncFile {syncFileContents = contents}
+                        let tsf = Mergeful.Timed sf clientFileTime
+                        pure $ Just (rf, tsf)
         clientSyncProcessorSyncClientAdded :: Map (Path Rel File) (Mergeful.ClientAddition (Path Rel File)) -> SqlPersistT C ()
         clientSyncProcessorSyncClientAdded m = forM_ (M.toList m) $ \(path, Mergeful.ClientAddition {..}) -> do
           let p = contentsDir </> path

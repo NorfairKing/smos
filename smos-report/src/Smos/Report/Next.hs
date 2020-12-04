@@ -59,10 +59,9 @@ makeNextActionEntry rf e =
       nextActionEntryFilePath = rf
     }
 
-newtype NextActionReport
-  = NextActionReport
-      { nextActionReportEntries :: [NextActionEntry]
-      }
+newtype NextActionReport = NextActionReport
+  { nextActionReportEntries :: [NextActionEntry]
+  }
   deriving (Show, Eq, Generic, Semigroup, Monoid)
 
 instance Validity NextActionReport
@@ -76,12 +75,11 @@ instance YamlSchema NextActionReport where
 instance ToJSON NextActionReport where
   toJSON = toJSON . nextActionReportEntries
 
-data NextActionEntry
-  = NextActionEntry
-      { nextActionEntryTodoState :: Maybe TodoState,
-        nextActionEntryHeader :: Header,
-        nextActionEntryFilePath :: Path Rel File -- The path within the workflow directory
-      }
+data NextActionEntry = NextActionEntry
+  { nextActionEntryTodoState :: Maybe TodoState,
+    nextActionEntryHeader :: Header,
+    nextActionEntryFilePath :: Path Rel File -- The path within the workflow directory
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntry

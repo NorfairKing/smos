@@ -23,10 +23,9 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
-newtype WaitingReport
-  = WaitingReport
-      { waitingReportEntries :: [WaitingEntry]
-      }
+newtype WaitingReport = WaitingReport
+  { waitingReportEntries :: [WaitingEntry]
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WaitingReport where
@@ -62,12 +61,11 @@ waitingReportConduitHelper ef =
 finishWaitingReport :: [WaitingEntry] -> WaitingReport
 finishWaitingReport = WaitingReport . sortWaitingEntries
 
-data WaitingEntry
-  = WaitingEntry
-      { waitingEntryHeader :: Header,
-        waitingEntryTimestamp :: UTCTime,
-        waitingEntryFilePath :: Path Rel File
-      }
+data WaitingEntry = WaitingEntry
+  { waitingEntryHeader :: Header,
+    waitingEntryTimestamp :: UTCTime,
+    waitingEntryFilePath :: Path Rel File
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WaitingEntry

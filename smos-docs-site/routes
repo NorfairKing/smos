@@ -26,11 +26,10 @@
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 
-!/*DocPage PageR GET
-
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets
 
 /casts/*Texts CastsR GET
 /casts-static CastsStaticR EmbeddedStatic appCasts
 
+!/*Texts PageR GET

@@ -7,7 +7,7 @@ module Smos.Query.Commands.Work
 where
 
 import Conduit
-import Data.List (intersperse)
+import Data.List (intercalate)
 import Data.List.NonEmpty (NonEmpty)
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -59,52 +59,52 @@ smosQueryWork WorkSettings {..} = do
 
 renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> Table
 renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
-  mconcat
-    $ (concat . concat)
-    $ intersperse [spacer]
-    $ filter
-      (not . null)
-      [ unlessNull
-          workReportNextBegin
-          [ sectionHeading "Next meeting:",
-            [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
-          ],
-        unlessNull
-          workReportAgendaEntries
-          [ sectionHeading "Deadlines:",
-            [agendaTable]
-          ],
-        unlessNull
-          workReportResultEntries
-          [ sectionHeading "Next actions:",
-            [entryTable workReportResultEntries]
-          ],
-        unlessNull
-          workReportOverdueWaiting
-          [ warningHeading "Overdue Waiting Entries:",
-            [waitingTable]
-          ],
-        unlessNull
-          workReportOverdueStuck
-          [ warningHeading "Overdue Stuck Reports:",
-            [stuckTable]
-          ],
-        unlessNull
-          ctxs
-          $ unlessNull
-            workReportEntriesWithoutContext
-            [ warningHeading "WARNING, the following Entries don't match any context:",
-              [entryTable workReportEntriesWithoutContext]
-            ],
-        unlessNull
-          workReportCheckViolations
-          [ warningHeading "WARNING, the following Entries did not pass the checks:",
-            concat
-              $ flip concatMap (M.toList workReportCheckViolations)
-              $ \(f, violations) ->
-                unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
+  mconcat $
+    concat $
+      intercalate [spacer] $
+        filter
+          (not . null)
+          [ unlessNull
+              workReportNextBegin
+              [ sectionHeading "Next meeting:",
+                [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
+              ],
+            unlessNull
+              workReportAgendaEntries
+              [ sectionHeading "Deadlines:",
+                [agendaTable]
+              ],
+            unlessNull
+              workReportResultEntries
+              [ sectionHeading "Next actions:",
+                [entryTable workReportResultEntries]
+              ],
+            unlessNull
+              workReportOverdueWaiting
+              [ warningHeading "Overdue Waiting Entries:",
+                [waitingTable]
+              ],
+            unlessNull
+              workReportOverdueStuck
+              [ warningHeading "Overdue Stuck Reports:",
+                [stuckTable]
+              ],
+            unlessNull
+              ctxs
+              $ unlessNull
+                workReportEntriesWithoutContext
+                [ warningHeading "WARNING, the following Entries don't match any context:",
+                  [entryTable workReportEntriesWithoutContext]
+                ],
+            unlessNull
+              workReportCheckViolations
+              [ warningHeading "WARNING, the following Entries did not pass the checks:",
+                concat $
+                  flip concatMap (M.toList workReportCheckViolations) $
+                    \(f, violations) ->
+                      unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
+              ]
           ]
-      ]
   where
     unlessNull l r =
       if null l

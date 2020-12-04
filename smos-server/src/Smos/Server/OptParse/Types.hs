@@ -21,41 +21,37 @@ newtype Command
   = CommandServe ServeFlags
   deriving (Show, Eq)
 
-data ServeFlags
-  = ServeFlags
-      { serveFlagLogLevel :: !(Maybe LogLevel),
-        serveFlagUUIDFile :: !(Maybe FilePath),
-        serveFlagDatabaseFile :: !(Maybe FilePath),
-        serveFlagSigningKeyFile :: !(Maybe FilePath),
-        serveFlagPort :: !(Maybe Int)
-      }
+data ServeFlags = ServeFlags
+  { serveFlagLogLevel :: !(Maybe LogLevel),
+    serveFlagUUIDFile :: !(Maybe FilePath),
+    serveFlagDatabaseFile :: !(Maybe FilePath),
+    serveFlagSigningKeyFile :: !(Maybe FilePath),
+    serveFlagPort :: !(Maybe Int)
+  }
   deriving (Show, Eq)
 
-data Flags
-  = Flags
-      { flagConfigFile :: !(Maybe FilePath)
-      }
+data Flags = Flags
+  { flagConfigFile :: !(Maybe FilePath)
+  }
   deriving (Show, Eq, Generic)
 
-data Environment
-  = Environment
-      { envConfigFile :: !(Maybe FilePath),
-        envLogLevel :: !(Maybe LogLevel),
-        envUUIDFile :: !(Maybe FilePath),
-        envDatabaseFile :: !(Maybe FilePath),
-        envSigningKeyFile :: !(Maybe FilePath),
-        envPort :: !(Maybe Int)
-      }
+data Environment = Environment
+  { envConfigFile :: !(Maybe FilePath),
+    envLogLevel :: !(Maybe LogLevel),
+    envUUIDFile :: !(Maybe FilePath),
+    envDatabaseFile :: !(Maybe FilePath),
+    envSigningKeyFile :: !(Maybe FilePath),
+    envPort :: !(Maybe Int)
+  }
   deriving (Show, Eq, Generic)
 
-data Configuration
-  = Configuration
-      { confLogLevel :: !(Maybe LogLevel),
-        confUUIDFile :: !(Maybe FilePath),
-        confDatabaseFile :: !(Maybe FilePath),
-        confSigningKeyFile :: !(Maybe FilePath),
-        confPort :: !(Maybe Int)
-      }
+data Configuration = Configuration
+  { confLogLevel :: !(Maybe LogLevel),
+    confUUIDFile :: !(Maybe FilePath),
+    confDatabaseFile :: !(Maybe FilePath),
+    confSigningKeyFile :: !(Maybe FilePath),
+    confPort :: !(Maybe Int)
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
@@ -77,14 +73,13 @@ newtype Dispatch
   = DispatchServe ServeSettings
   deriving (Show, Eq, Generic)
 
-data ServeSettings
-  = ServeSettings
-      { serveSetLogLevel :: !LogLevel,
-        serveSetUUIDFile :: !(Path Abs File),
-        serveSetDatabaseFile :: !(Path Abs File),
-        serveSetSigningKeyFile :: !(Path Abs File),
-        serveSetPort :: Int
-      }
+data ServeSettings = ServeSettings
+  { serveSetLogLevel :: !LogLevel,
+    serveSetUUIDFile :: !(Path Abs File),
+    serveSetDatabaseFile :: !(Path Abs File),
+    serveSetSigningKeyFile :: !(Path Abs File),
+    serveSetPort :: Int
+  }
   deriving (Show, Eq, Generic)
 
 data Settings

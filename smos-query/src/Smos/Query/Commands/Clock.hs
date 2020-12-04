@@ -13,8 +13,8 @@ import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.List as C
 import qualified Data.Sequence as S
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Data.Validity.Path ()
@@ -46,9 +46,9 @@ smosQueryClock ClockSettings {..} = do
   out <- asks smosQueryConfigOutputHandle
   case clockSetOutputFormat of
     OutputPretty ->
-      putBoxLn
-        $ renderClockTable clockSetReportStyle clockSetClockFormat
-        $ clockTableRows clockTable
+      putBoxLn $
+        renderClockTable clockSetReportStyle clockSetClockFormat $
+          clockTableRows clockTable
     OutputYaml -> liftIO $ SB.hPutStr out $ Yaml.toByteString clockTable
     OutputJSON -> liftIO $ LB.hPutStr out $ JSON.encode clockTable
     OutputJSONPretty -> liftIO $ LB.hPutStr out $ JSON.encodePretty clockTable
@@ -75,8 +75,8 @@ clockTableRows ctbs =
         goHF l = concatMap $ goHT l
         goHT :: Int -> Tree ClockTableHeaderEntry -> [ClockTableRow]
         goHT l t@(Node ClockTableHeaderEntry {..} f) =
-          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t)
-            : goHF (l + 1) f
+          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t) :
+          goHF (l + 1) f
     sumTable :: ClockTable -> NominalDiffTime
     sumTable = sum . map sumBlock
     sumBlock :: ClockTableBlock -> NominalDiffTime
@@ -126,17 +126,17 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
               [ [ cell $ chunk "",
                   separator mempty 1,
                   cell $ chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h,
-                  cell
-                    $ chunk
-                    $ if ndt == 0
-                      then ""
-                      else renderNominalDiffTime fmt ndt,
-                  cell
-                    $ fore brown
-                    $ chunk
-                    $ if ndt == ndtt
-                      then ""
-                      else renderNominalDiffTime fmt ndtt
+                  cell $
+                    chunk $
+                      if ndt == 0
+                        then ""
+                        else renderNominalDiffTime fmt ndt,
+                  cell $
+                    fore brown $
+                      chunk $
+                        if ndt == ndtt
+                          then ""
+                          else renderNominalDiffTime fmt ndtt
                 ]
               ]
         BlockTotalRow t ->

@@ -21,8 +21,8 @@ import Data.Bits
 import Data.ByteArray (ByteArrayAccess (..))
 import qualified Data.ByteArray
 import qualified Data.ByteArray.Encoding as Mem
-import qualified Data.ByteString as SB
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as SB
 import qualified Data.ByteString.Internal as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Data
@@ -210,7 +210,7 @@ instance DynamicBytes ByteString where
 
 class StaticBytes sbytes where
   lengthS :: proxy sbytes -> Int -- use type level literals instead?
-    -- difference list
+  -- difference list
 
   toWordsS :: sbytes -> [Word64] -> [Word64]
   usePeekS :: Int -> (Int -> IO Word64) -> IO sbytes

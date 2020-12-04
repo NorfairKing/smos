@@ -17,7 +17,7 @@ Smos is a comprehensive system for implementing self-management as a power-user.
 ## Completely customisable
 
 Smos is first and foremost a library with which you can build your own version.
-It is similar to XMonad in this respect.
+It is similar to [XMonad](https://xmonad.org/) in this respect.
 See [the default configuration](https://github.com/NorfairKing/smos/blob/master/smos/src/Smos/Default.hs)
 for an example of a configuration.
 
@@ -54,10 +54,10 @@ a subset of YAML, which is plain text:
     - work
 ```
 
-This means that if you ever stop using smos, or it becomes unavaible,
+This means that if you ever stop using Smos, or it becomes unavailable,
 your data is still available and easy to read.
 
-## Machine-readible file format
+## Machine-readable file format
 
 The file format is very easy to work with programmatically, and convenience
 functions in the `smos-data` library are provided to operate on Smos data.

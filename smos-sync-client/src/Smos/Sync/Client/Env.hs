@@ -27,11 +27,10 @@ import System.Exit
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
-data SyncClientEnv
-  = SyncClientEnv
-      { syncClientEnvServantClientEnv :: Servant.ClientEnv,
-        syncClientEnvConnection :: DB.ConnectionPool
-      }
+data SyncClientEnv = SyncClientEnv
+  { syncClientEnvServantClientEnv :: Servant.ClientEnv,
+    syncClientEnvConnection :: DB.ConnectionPool
+  }
   deriving (Generic)
 
 withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
@@ -56,9 +55,9 @@ withLogin cenv sessionPath mun mpw func = do
       un <- liftIO $ promptUsername mun
       pw <- liftIO $ promptPassword mpw
       errOrErrOrSession <-
-        liftIO
-          $ runClientOrDie cenv
-          $ clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
+        liftIO $
+          runClientOrDie cenv $
+            clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
       case errOrErrOrSession of
         Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
         Right cookie -> do
@@ -94,22 +93,20 @@ runDB func = do
   pool <- asks syncClientEnvConnection
   DB.runSqlPool func pool
 
-data ClientStore
-  = ClientStore
-      { clientStoreServerUUID :: ServerUUID,
-        clientStoreItems :: Mergeful.ClientStore (Path Rel File) (Path Rel File) SyncFile
-      }
+data ClientStore = ClientStore
+  { clientStoreServerUUID :: ServerUUID,
+    clientStoreItems :: Mergeful.ClientStore (Path Rel File) (Path Rel File) SyncFile
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ClientStore
 
 instance NFData ClientStore
 
-data SyncFileMeta
-  = SyncFileMeta
-      { syncFileMetaHash :: SHA256,
-        syncFileMetaTime :: Mergeful.ServerTime
-      }
+data SyncFileMeta = SyncFileMeta
+  { syncFileMetaHash :: SHA256,
+    syncFileMetaTime :: Mergeful.ServerTime
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity SyncFileMeta

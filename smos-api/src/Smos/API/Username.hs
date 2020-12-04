@@ -20,18 +20,17 @@ import Data.Aeson as JSON
 import Data.Aeson.Types as JSON (toJSONKeyText)
 import qualified Data.Char as Char
 import Data.Hashable
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Web.PathPieces
 import YamlParse.Applicative
 
-newtype Username
-  = Username
-      { usernameText :: Text
-      }
+newtype Username = Username
+  { usernameText :: Text
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Username where
@@ -88,10 +87,9 @@ instance ToJSON Username where
 instance ToJSONKey Username where
   toJSONKey = toJSONKeyText usernameText
 
-newtype UsernameChar
-  = UsernameChar
-      { unUsernameChar :: Char
-      }
+newtype UsernameChar = UsernameChar
+  { unUsernameChar :: Char
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity UsernameChar where

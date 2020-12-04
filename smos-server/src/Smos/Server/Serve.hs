@@ -37,30 +37,30 @@ serveSmosServer ss = do
 runSmosServer :: ServeSettings -> IO ()
 runSmosServer ServeSettings {..} = do
   ensureDir $ parent serveSetDatabaseFile
-  runStderrLoggingT
-    $ filterLogger (\_ ll -> ll >= serveSetLogLevel)
-    $ DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1
-    $ \pool ->
-      liftIO $ do
-        uuid <- readServerUUID serveSetUUIDFile
-        flip DB.runSqlPool pool $ DB.runMigration migrateAll
-        jwtKey <- loadSigningKey serveSetSigningKeyFile
-        let env =
-              ServerEnv
-                { serverEnvServerUUID = uuid,
-                  serverEnvConnection = pool,
-                  serverEnvCookieSettings = defaultCookieSettings,
-                  serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                  serverEnvPasswordDifficulty =
-                    if development
-                      then 4
-                      else 10 -- Rather slower
-                }
-        let middles =
-              if development
-                then Wai.logStdoutDev
-                else Wai.logStdout
-        Warp.run serveSetPort $ middles $ makeSyncApp env
+  runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= serveSetLogLevel) $
+      DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1 $
+        \pool ->
+          liftIO $ do
+            uuid <- readServerUUID serveSetUUIDFile
+            flip DB.runSqlPool pool $ DB.runMigration migrateAll
+            jwtKey <- loadSigningKey serveSetSigningKeyFile
+            let env =
+                  ServerEnv
+                    { serverEnvServerUUID = uuid,
+                      serverEnvConnection = pool,
+                      serverEnvCookieSettings = defaultCookieSettings,
+                      serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                      serverEnvPasswordDifficulty =
+                        if development
+                          then 4
+                          else 10 -- Rather slower
+                    }
+            let middles =
+                  if development
+                    then Wai.logStdoutDev
+                    else Wai.logStdout
+            Warp.run serveSetPort $ middles $ makeSyncApp env
 
 loadSigningKey :: Path Abs File -> IO JWK
 loadSigningKey skf = do

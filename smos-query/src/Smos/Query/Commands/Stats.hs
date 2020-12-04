@@ -8,8 +8,8 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Time
 import Path
 import Rainbow

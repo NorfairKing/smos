@@ -20,11 +20,11 @@ spec = do
   genValidSpec @Projection
   jsonSpecOnValid @Projection
   genValidSpec @Projectee
-  describe "performProjection"
-    $ it "produces valid projections"
-    $ forAllValid
-    $ \s ->
-      forAllValid $ \rp -> forAllValid $ \fc -> shouldBeValid $ performProjection s rp fc
+  describe "performProjection" $
+    it "produces valid projections" $
+      forAllValid $
+        \s ->
+          forAllValid $ \rp -> forAllValid $ \fc -> shouldBeValid $ performProjection s rp fc
   describe "ontoFileP" $ parsesValidSpec ontoFileP
   describe "ontoPropertyP" $ parsesValidSpec ontoPropertyP
   describe "ontoHeaderP" $ parsesValidSpec ontoHeaderP
@@ -37,9 +37,9 @@ spec = do
     parseJustSpec projectionP "state" OntoState
   describe "renderProjection" $ do
     it "produces valid texts" $ producesValidsOnValids renderProjection
-    it "renders bys that parse to the same"
-      $ forAllValid
-      $ \s -> parseJust projectionP (renderProjection s) s
+    it "renders bys that parse to the same" $
+      forAllValid $
+        \s -> parseJust projectionP (renderProjection s) s
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res

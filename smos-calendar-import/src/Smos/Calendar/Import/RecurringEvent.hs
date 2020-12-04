@@ -8,10 +8,10 @@ import Data.Aeson
 import Data.Aeson.Types
 import Data.Map (Map)
 import qualified Data.Map as M
-import qualified Data.Set as S
 import Data.Set (Set)
-import qualified Data.Text as T
+import qualified Data.Set as S
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics
 import Smos.Calendar.Import.RecurrenceRule
@@ -20,11 +20,10 @@ import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
 import YamlParse.Applicative
 
-data RecurringEvents
-  = RecurringEvents
-      { recurringEvents :: Map Text (Set RecurringEvent),
-        recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
-      }
+data RecurringEvents = RecurringEvents
+  { recurringEvents :: Map Text (Set RecurringEvent),
+    recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity RecurringEvents
@@ -56,13 +55,12 @@ instance ToJSON RecurringEvents where
       then toJSON recurringEvents
       else object ["events" .= recurringEvents, "zones" .= recurringEventsTimeZones]
 
-data RecurringEvent
-  = RecurringEvent
-      { recurringEventStatic :: !Static,
-        recurringEventStart :: !(Maybe CalTimestamp),
-        recurringEventEnd :: !(Maybe CalEndDuration),
-        recurringEventRecurrence :: !Recurrence
-      }
+data RecurringEvent = RecurringEvent
+  { recurringEventStatic :: !Static,
+    recurringEventStart :: !(Maybe CalTimestamp),
+    recurringEventEnd :: !(Maybe CalEndDuration),
+    recurringEventRecurrence :: !Recurrence
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity RecurringEvent
@@ -90,23 +88,22 @@ instance ToJSON RecurringEvent where
             recurrenceToObject recurringEventRecurrence
           ]
 
-data Recurrence
-  = Recurrence
-      { -- | We use a set here instead of a Maybe because the spec says:
-        --
-        -- >  ; The following is OPTIONAL,
-        -- >  ; but SHOULD NOT occur more than once.
-        -- >  ;
-        -- >  rrule /
-        --
-        -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
-        --
-        -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
-        -- so we choose to define it as the union of the recurrence sets defined by the rules.
-        recurrenceRules :: !(Set RRule),
-        recurrenceExceptions :: !(Set CalTimestamp),
-        recurrenceRDates :: !(Set CalRDate)
-      }
+data Recurrence = Recurrence
+  { -- | We use a set here instead of a Maybe because the spec says:
+    --
+    -- >  ; The following is OPTIONAL,
+    -- >  ; but SHOULD NOT occur more than once.
+    -- >  ;
+    -- >  rrule /
+    --
+    -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
+    --
+    -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
+    -- so we choose to define it as the union of the recurrence sets defined by the rules.
+    recurrenceRules :: !(Set RRule),
+    recurrenceExceptions :: !(Set CalTimestamp),
+    recurrenceRDates :: !(Set CalRDate)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity Recurrence

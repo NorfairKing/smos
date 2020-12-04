@@ -12,11 +12,11 @@ import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 import Data.Function
 import Data.List
-import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.WeekDate
@@ -220,15 +220,15 @@ divideIntoClockTimeBlocks zt cb cts =
     divideClockTimeIntoTimeBlocks ::
       (Ord t, Enum t) => (t -> Text) -> (Day -> t) -> (t -> Period) -> [ClockTimeBlock Text]
     divideClockTimeIntoTimeBlocks format fromDay toPeriod =
-      map (mapBlockTitle format)
-        $ combineBlocksByName
-        $ concatMap
-          ( divideClockTimeIntoBlocks
-              zt
-              (fromDay . localDay . utcToLocalTime (zonedTimeZone zt))
-              toPeriod
-          )
-          cts
+      map (mapBlockTitle format) $
+        combineBlocksByName $
+          concatMap
+            ( divideClockTimeIntoBlocks
+                zt
+                (fromDay . localDay . utcToLocalTime (zonedTimeZone zt))
+                toPeriod
+            )
+            cts
 
 divideClockTimeIntoBlocks ::
   forall t.

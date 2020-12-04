@@ -4,8 +4,8 @@
 
 module Smos.Report.Stats where
 
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Time
 import Data.Tree
@@ -14,22 +14,20 @@ import Path
 import Smos.Data
 import Smos.Report.Period
 
-data StatsReportContext
-  = StatsReportContext
-      { statsReportContextNow :: ZonedTime,
-        statsReportContextPeriod :: Period,
-        statsReportContextWorkflowDir :: Path Abs Dir,
-        statsReportContextArchiveDir :: Path Abs Dir,
-        statsReportContextProjectsDir :: Path Abs Dir,
-        statsReportContextArchivedProjectsDir :: Path Abs Dir
-      }
+data StatsReportContext = StatsReportContext
+  { statsReportContextNow :: ZonedTime,
+    statsReportContextPeriod :: Period,
+    statsReportContextWorkflowDir :: Path Abs Dir,
+    statsReportContextArchiveDir :: Path Abs Dir,
+    statsReportContextProjectsDir :: Path Abs Dir,
+    statsReportContextArchivedProjectsDir :: Path Abs Dir
+  }
   deriving (Show, Generic)
 
-data StatsReport
-  = StatsReport
-      { statsReportProjectStatsReport :: !ProjectStatsReport,
-        statsReportStateStatsReport :: !StateStatsReport
-      }
+data StatsReport = StatsReport
+  { statsReportProjectStatsReport :: !ProjectStatsReport,
+    statsReportStateStatsReport :: !StateStatsReport
+  }
   deriving (Show, Eq, Generic)
 
 instance Semigroup StatsReport where
@@ -50,9 +48,9 @@ makeStatsReport src@StatsReportContext {..} rp sf =
   StatsReport
     { statsReportProjectStatsReport = makeProjectsStatsReport src rp sf,
       statsReportStateStatsReport =
-        makeStateStatsReport statsReportContextNow statsReportContextPeriod
-          $ concatMap flatten
-          $ smosFileForest sf
+        makeStateStatsReport statsReportContextNow statsReportContextPeriod $
+          concatMap flatten $
+            smosFileForest sf
     }
 
 makeProjectsStatsReport :: StatsReportContext -> Path Rel File -> SmosFile -> ProjectStatsReport
@@ -87,15 +85,14 @@ stateHistoryEntriesInPeriod now p = concatMap go
     go :: Entry -> [StateHistoryEntry]
     go = mapMaybe (stateHistoryEntryInPeriod now p) . unStateHistory . entryStateHistory
 
-data ProjectStatsReport
-  = ProjectStatsReport
-      { projectStatsReportCurrentProjects :: Int,
-        projectStatsReportArchivedProjects :: Int,
-        projectStatsReportTotalProjects :: Int,
-        projectStatsReportCurrentFiles :: Int,
-        projectStatsReportArchivedFiles :: Int,
-        projectStatsReportTotalFiles :: Int
-      }
+data ProjectStatsReport = ProjectStatsReport
+  { projectStatsReportCurrentProjects :: Int,
+    projectStatsReportArchivedProjects :: Int,
+    projectStatsReportTotalProjects :: Int,
+    projectStatsReportCurrentFiles :: Int,
+    projectStatsReportArchivedFiles :: Int,
+    projectStatsReportTotalFiles :: Int
+  }
   deriving (Show, Eq, Generic)
 
 instance Semigroup ProjectStatsReport where
@@ -127,14 +124,13 @@ instance Monoid ProjectStatsReport where
       }
   mappend = (<>)
 
-data StateStatsReport
-  = StateStatsReport
-      { stateStatsReportHistoricalStates :: !(Map (Maybe TodoState) Int),
-        stateStatsReportStates :: !(Map (Maybe TodoState) Int),
-        stateStatsReportFromStateTransitions :: !(Map (Maybe TodoState) Int),
-        stateStatsReportToStateTransitions :: !(Map (Maybe TodoState) Int),
-        stateStatsReportStateTransitions :: !(Map (Maybe TodoState, Maybe TodoState) Int)
-      }
+data StateStatsReport = StateStatsReport
+  { stateStatsReportHistoricalStates :: !(Map (Maybe TodoState) Int),
+    stateStatsReportStates :: !(Map (Maybe TodoState) Int),
+    stateStatsReportFromStateTransitions :: !(Map (Maybe TodoState) Int),
+    stateStatsReportToStateTransitions :: !(Map (Maybe TodoState) Int),
+    stateStatsReportStateTransitions :: !(Map (Maybe TodoState, Maybe TodoState) Int)
+  }
   deriving (Show, Eq, Generic)
 
 instance Semigroup StateStatsReport where

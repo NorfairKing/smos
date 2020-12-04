@@ -47,10 +47,10 @@ renderLogEntry zt LogEntry {..} =
   let LogEvent {..} = logEntryEvent
    in [ pathChunk logEntryFilePath,
         headerChunk logEntryHeader,
-        chunk
-          $ T.pack
-          $ formatTime defaultTimeLocale "%F %X"
-          $ utcToLocalTime (zonedTimeZone zt) logEventTimestamp
+        chunk $
+          T.pack $
+            formatTime defaultTimeLocale "%F %X" $
+              utcToLocalTime (zonedTimeZone zt) logEventTimestamp
       ]
         <> logEventTypeChunk logEventType
 

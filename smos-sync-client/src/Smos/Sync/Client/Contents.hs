@@ -32,12 +32,14 @@ filterContentsMap IgnoreHiddenFiles = CM.filterHidden
 
 makeContentsMap :: Mergeful.ClientStore (Path Rel File) (Path Rel File) SyncFile -> ContentsMap
 makeContentsMap Mergeful.ClientStore {..} =
-  CM.fromListIgnoringCollisions $ M.toList $ M.map syncFileContents $
-    M.unions
-      [ clientStoreAddedItems,
-        M.map Mergeful.timedValue clientStoreSyncedItems,
-        M.map Mergeful.timedValue clientStoreSyncedButChangedItems
-      ]
+  CM.fromListIgnoringCollisions $
+    M.toList $
+      M.map syncFileContents $
+        M.unions
+          [ clientStoreAddedItems,
+            M.map Mergeful.timedValue clientStoreSyncedItems,
+            M.map Mergeful.timedValue clientStoreSyncedButChangedItems
+          ]
 
 isHidden :: Path Rel File -> Bool
 isHidden = go

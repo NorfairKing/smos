@@ -53,59 +53,53 @@ data Command
   | CommandTags TagsFlags
   deriving (Show, Eq)
 
-data EntryFlags
-  = EntryFlags
-      { entryFlagFilter :: Maybe EntryFilterRel,
-        entryFlagProjection :: Maybe (NonEmpty Projection),
-        entryFlagSorter :: Maybe Sorter,
-        entryFlagHideArchive :: Maybe HideArchive
-      }
+data EntryFlags = EntryFlags
+  { entryFlagFilter :: Maybe EntryFilterRel,
+    entryFlagProjection :: Maybe (NonEmpty Projection),
+    entryFlagSorter :: Maybe Sorter,
+    entryFlagHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq)
 
-data ReportFlags
-  = ReportFlags
-      { reportFlagReportName :: Maybe Text
-      }
+data ReportFlags = ReportFlags
+  { reportFlagReportName :: Maybe Text
+  }
   deriving (Show, Eq)
 
-data WorkFlags
-  = WorkFlags
-      { workFlagContext :: Maybe ContextName,
-        workFlagTime :: Maybe Time,
-        workFlagFilter :: Maybe EntryFilterRel,
-        workFlagProjection :: Maybe (NonEmpty Projection),
-        workFlagSorter :: Maybe Sorter,
-        workFlagHideArchive :: Maybe HideArchive,
-        workFlagWaitingThreshold :: Maybe Word,
-        workFlagStuckThreshold :: Maybe Word
-      }
+data WorkFlags = WorkFlags
+  { workFlagContext :: Maybe ContextName,
+    workFlagTime :: Maybe Time,
+    workFlagFilter :: Maybe EntryFilterRel,
+    workFlagProjection :: Maybe (NonEmpty Projection),
+    workFlagSorter :: Maybe Sorter,
+    workFlagHideArchive :: Maybe HideArchive,
+    workFlagWaitingThreshold :: Maybe Word,
+    workFlagStuckThreshold :: Maybe Word
+  }
   deriving (Show, Eq)
 
-data WaitingFlags
-  = WaitingFlags
-      { waitingFlagFilter :: Maybe EntryFilterRel,
-        waitingFlagHideArchive :: Maybe HideArchive,
-        waitingFlagThreshold :: Maybe Word
-      }
+data WaitingFlags = WaitingFlags
+  { waitingFlagFilter :: Maybe EntryFilterRel,
+    waitingFlagHideArchive :: Maybe HideArchive,
+    waitingFlagThreshold :: Maybe Word
+  }
   deriving (Show, Eq)
 
-data NextFlags
-  = NextFlags
-      { nextFlagFilter :: Maybe EntryFilterRel,
-        nextFlagHideArchive :: Maybe HideArchive
-      }
+data NextFlags = NextFlags
+  { nextFlagFilter :: Maybe EntryFilterRel,
+    nextFlagHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq)
 
-data ClockFlags
-  = ClockFlags
-      { clockFlagFilter :: Maybe EntryFilterRel,
-        clockFlagPeriodFlags :: Maybe Period,
-        clockFlagBlockFlags :: Maybe TimeBlock,
-        clockFlagOutputFormat :: Maybe OutputFormat,
-        clockFlagClockFormat :: Maybe ClockFormatFlags,
-        clockFlagReportStyle :: Maybe ClockReportStyle,
-        clockFlagHideArchive :: Maybe HideArchive
-      }
+data ClockFlags = ClockFlags
+  { clockFlagFilter :: Maybe EntryFilterRel,
+    clockFlagPeriodFlags :: Maybe Period,
+    clockFlagBlockFlags :: Maybe TimeBlock,
+    clockFlagOutputFormat :: Maybe OutputFormat,
+    clockFlagClockFormat :: Maybe ClockFormatFlags,
+    clockFlagReportStyle :: Maybe ClockReportStyle,
+    clockFlagHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq)
 
 data ClockFormatFlags
@@ -113,54 +107,47 @@ data ClockFormatFlags
   | ClockFormatDecimalFlag (Maybe DecimalClockResolution)
   deriving (Show, Eq)
 
-data AgendaFlags
-  = AgendaFlags
-      { agendaFlagFilter :: Maybe EntryFilterRel,
-        agendaFlagHistoricity :: Maybe AgendaHistoricity,
-        agendaFlagBlock :: Maybe TimeBlock,
-        agendaFlagHideArchive :: Maybe HideArchive,
-        agendaFlagPeriod :: Maybe Period
-      }
+data AgendaFlags = AgendaFlags
+  { agendaFlagFilter :: Maybe EntryFilterRel,
+    agendaFlagHistoricity :: Maybe AgendaHistoricity,
+    agendaFlagBlock :: Maybe TimeBlock,
+    agendaFlagHideArchive :: Maybe HideArchive,
+    agendaFlagPeriod :: Maybe Period
+  }
   deriving (Show, Eq)
 
-data ProjectsFlags
-  = ProjectsFlags
-      { projectsFlagFilter :: Maybe ProjectFilter
-      }
+data ProjectsFlags = ProjectsFlags
+  { projectsFlagFilter :: Maybe ProjectFilter
+  }
   deriving (Show, Eq)
 
-data StuckFlags
-  = StuckFlags
-      { stuckFlagFilter :: Maybe ProjectFilter,
-        stuckFlagThreshold :: Maybe Word
-      }
+data StuckFlags = StuckFlags
+  { stuckFlagFilter :: Maybe ProjectFilter,
+    stuckFlagThreshold :: Maybe Word
+  }
   deriving (Show, Eq)
 
-data LogFlags
-  = LogFlags
-      { logFlagFilter :: Maybe EntryFilterRel,
-        logFlagPeriodFlags :: Maybe Period,
-        logFlagBlockFlags :: Maybe TimeBlock,
-        logFlagHideArchive :: Maybe HideArchive
-      }
+data LogFlags = LogFlags
+  { logFlagFilter :: Maybe EntryFilterRel,
+    logFlagPeriodFlags :: Maybe Period,
+    logFlagBlockFlags :: Maybe TimeBlock,
+    logFlagHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-newtype StatsFlags
-  = StatsFlags
-      { statsFlagPeriodFlags :: Maybe Period
-      }
+newtype StatsFlags = StatsFlags
+  { statsFlagPeriodFlags :: Maybe Period
+  }
   deriving (Show, Eq, Generic)
 
-newtype TagsFlags
-  = TagsFlags
-      { tagsFlagFilter :: Maybe EntryFilterRel
-      }
+newtype TagsFlags = TagsFlags
+  { tagsFlagFilter :: Maybe EntryFilterRel
+  }
   deriving (Show, Eq, Generic)
 
-newtype Flags
-  = Flags
-      { flagReportFlags :: Report.Flags
-      }
+newtype Flags = Flags
+  { flagReportFlags :: Report.Flags
+  }
   deriving (Show, Eq, Generic)
 
 emptyEnvironment :: Environment
@@ -170,22 +157,20 @@ emptyEnvironment =
       envHideArchive = Nothing
     }
 
-data Environment
-  = Environment
-      { envReportEnvironment :: Report.Environment,
-        envHideArchive :: Maybe HideArchive
-      }
+data Environment = Environment
+  { envReportEnvironment :: Report.Environment,
+    envHideArchive :: Maybe HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-data Configuration
-  = Configuration
-      { confReportConf :: Report.Configuration,
-        confHideArchive :: Maybe HideArchive,
-        confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
-        confWaitingConfiguration :: Maybe WaitingConfiguration,
-        confStuckConfiguration :: Maybe StuckConfiguration,
-        confWorkConfiguration :: Maybe WorkConfiguration
-      }
+data Configuration = Configuration
+  { confReportConf :: Report.Configuration,
+    confHideArchive :: Maybe HideArchive,
+    confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
+    confWaitingConfiguration :: Maybe WaitingConfiguration,
+    confStuckConfiguration :: Maybe StuckConfiguration,
+    confWorkConfiguration :: Maybe WorkConfiguration
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
@@ -216,10 +201,9 @@ stuckConfigurationKey = "stuck"
 workConfigurationKey :: Text
 workConfigurationKey = "work"
 
-data PreparedReportConfiguration
-  = PreparedReportConfiguration
-      { preparedReportConfAvailableReports :: Maybe (Map Text PreparedReport)
-      }
+data PreparedReportConfiguration = PreparedReportConfiguration
+  { preparedReportConfAvailableReports :: Maybe (Map Text PreparedReport)
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON PreparedReportConfiguration where
@@ -228,10 +212,9 @@ instance FromJSON PreparedReportConfiguration where
 instance YamlSchema PreparedReportConfiguration where
   yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
-data WaitingConfiguration
-  = WaitingConfiguration
-      { waitingConfThreshold :: Maybe Word
-      }
+data WaitingConfiguration = WaitingConfiguration
+  { waitingConfThreshold :: Maybe Word
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON WaitingConfiguration where
@@ -242,10 +225,9 @@ instance YamlSchema WaitingConfiguration where
     objectParser "WaitingConfiguration" $
       WaitingConfiguration <$> optionalField "threshold" "The number of days before you've been waiting for something for too long"
 
-data StuckConfiguration
-  = StuckConfiguration
-      { stuckConfThreshold :: Maybe Word
-      }
+data StuckConfiguration = StuckConfiguration
+  { stuckConfThreshold :: Maybe Word
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON StuckConfiguration where
@@ -256,13 +238,12 @@ instance YamlSchema StuckConfiguration where
     objectParser "StuckConfiguration" $
       StuckConfiguration <$> optionalField "threshold" "The number of days before a project has been stuck for too long"
 
-data WorkConfiguration
-  = WorkConfiguration
-      { workConfChecks :: Set EntryFilterRel,
-        workConfTimeFilterProperty :: Maybe PropertyName,
-        workConfProjection :: Maybe (NonEmpty Projection),
-        workConfSorter :: Maybe Sorter
-      }
+data WorkConfiguration = WorkConfiguration
+  { workConfChecks :: Set EntryFilterRel,
+    workConfTimeFilterProperty :: Maybe PropertyName,
+    workConfProjection :: Maybe (NonEmpty Projection),
+    workConfSorter :: Maybe Sorter
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON WorkConfiguration where
@@ -291,106 +272,94 @@ data Dispatch
   | DispatchTags TagsSettings
   deriving (Show, Eq, Generic)
 
-data EntrySettings
-  = EntrySettings
-      { entrySetFilter :: Maybe EntryFilterRel,
-        entrySetProjection :: NonEmpty Projection,
-        entrySetSorter :: Maybe Sorter,
-        entrySetHideArchive :: HideArchive
-      }
+data EntrySettings = EntrySettings
+  { entrySetFilter :: Maybe EntryFilterRel,
+    entrySetProjection :: NonEmpty Projection,
+    entrySetSorter :: Maybe Sorter,
+    entrySetHideArchive :: HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-data ReportSettings
-  = ReportSettings
-      { reportSetReportName :: Maybe Text,
-        reportSetAvailableReports :: Map Text PreparedReport
-      }
+data ReportSettings = ReportSettings
+  { reportSetReportName :: Maybe Text,
+    reportSetAvailableReports :: Map Text PreparedReport
+  }
   deriving (Show, Eq, Generic)
 
-data WorkSettings
-  = WorkSettings
-      { workSetContext :: Maybe ContextName,
-        workSetTimeProperty :: PropertyName,
-        workSetTime :: Maybe Time,
-        workSetFilter :: Maybe EntryFilterRel,
-        workSetChecks :: Set EntryFilterRel,
-        workSetProjection :: NonEmpty Projection,
-        workSetSorter :: Maybe Sorter,
-        workSetHideArchive :: HideArchive,
-        workSetWaitingThreshold :: Word,
-        workSetStuckThreshold :: Word
-      }
+data WorkSettings = WorkSettings
+  { workSetContext :: Maybe ContextName,
+    workSetTimeProperty :: PropertyName,
+    workSetTime :: Maybe Time,
+    workSetFilter :: Maybe EntryFilterRel,
+    workSetChecks :: Set EntryFilterRel,
+    workSetProjection :: NonEmpty Projection,
+    workSetSorter :: Maybe Sorter,
+    workSetHideArchive :: HideArchive,
+    workSetWaitingThreshold :: Word,
+    workSetStuckThreshold :: Word
+  }
   deriving (Show, Eq, Generic)
 
-data WaitingSettings
-  = WaitingSettings
-      { waitingSetFilter :: Maybe EntryFilterRel,
-        waitingSetHideArchive :: HideArchive,
-        waitingSetThreshold :: Word
-      }
+data WaitingSettings = WaitingSettings
+  { waitingSetFilter :: Maybe EntryFilterRel,
+    waitingSetHideArchive :: HideArchive,
+    waitingSetThreshold :: Word
+  }
   deriving (Show, Eq, Generic)
 
-data NextSettings
-  = NextSettings
-      { nextSetFilter :: Maybe EntryFilterRel,
-        nextSetHideArchive :: HideArchive
-      }
+data NextSettings = NextSettings
+  { nextSetFilter :: Maybe EntryFilterRel,
+    nextSetHideArchive :: HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-data ClockSettings
-  = ClockSettings
-      { clockSetFilter :: Maybe EntryFilterRel,
-        clockSetPeriod :: Period,
-        clockSetBlock :: TimeBlock,
-        clockSetOutputFormat :: OutputFormat,
-        clockSetClockFormat :: ClockFormat,
-        clockSetReportStyle :: ClockReportStyle,
-        clockSetHideArchive :: HideArchive
-      }
+data ClockSettings = ClockSettings
+  { clockSetFilter :: Maybe EntryFilterRel,
+    clockSetPeriod :: Period,
+    clockSetBlock :: TimeBlock,
+    clockSetOutputFormat :: OutputFormat,
+    clockSetClockFormat :: ClockFormat,
+    clockSetReportStyle :: ClockReportStyle,
+    clockSetHideArchive :: HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-data AgendaSettings
-  = AgendaSettings
-      { agendaSetFilter :: Maybe EntryFilterRel,
-        agendaSetHistoricity :: AgendaHistoricity,
-        agendaSetBlock :: TimeBlock,
-        agendaSetHideArchive :: HideArchive,
-        agendaSetPeriod :: Period
-      }
+data AgendaSettings = AgendaSettings
+  { agendaSetFilter :: Maybe EntryFilterRel,
+    agendaSetHistoricity :: AgendaHistoricity,
+    agendaSetBlock :: TimeBlock,
+    agendaSetHideArchive :: HideArchive,
+    agendaSetPeriod :: Period
+  }
   deriving (Show, Eq, Generic)
 
-data ProjectsSettings
-  = ProjectsSettings
-      { projectsSetFilter :: Maybe ProjectFilter
-      }
+data ProjectsSettings = ProjectsSettings
+  { projectsSetFilter :: Maybe ProjectFilter
+  }
   deriving (Show, Eq, Generic)
 
-data StuckSettings
-  = StuckSettings
-      { stuckSetFilter :: Maybe ProjectFilter,
-        stuckSetThreshold :: Word
-      }
+data StuckSettings = StuckSettings
+  { stuckSetFilter :: Maybe ProjectFilter,
+    stuckSetThreshold :: Word
+  }
   deriving (Show, Eq, Generic)
 
-data LogSettings
-  = LogSettings
-      { logSetFilter :: Maybe EntryFilterRel,
-        logSetPeriod :: Period,
-        logSetBlock :: TimeBlock,
-        logSetHideArchive :: HideArchive
-      }
+data LogSettings = LogSettings
+  { logSetFilter :: Maybe EntryFilterRel,
+    logSetPeriod :: Period,
+    logSetBlock :: TimeBlock,
+    logSetHideArchive :: HideArchive
+  }
   deriving (Show, Eq, Generic)
 
-newtype StatsSettings
-  = StatsSettings
-      { statsSetPeriod :: Period
-      }
+newtype StatsSettings = StatsSettings
+  { statsSetPeriod :: Period
+  }
   deriving (Show, Eq, Generic)
 
-newtype TagsSettings
-  = TagsSettings
-      { tagsSetFilter :: Maybe EntryFilterRel
-      }
+newtype TagsSettings = TagsSettings
+  { tagsSetFilter :: Maybe EntryFilterRel
+  }
   deriving (Show, Eq, Generic)
 
 data OutputFormat

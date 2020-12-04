@@ -18,9 +18,9 @@ spec :: Spec
 spec =
   describe "forestCursors" $ do
     it "produces valid forests" $ producesValidsOnValids (forestCursors @Entry)
-    it "produces congruent forests"
-      $ forAllValid
-      $ \f -> () <$ forestCursors @Entry f `shouldBe` () <$ f
+    it "produces congruent forests" $
+      forAllValid $
+        \f -> () <$ forestCursors @Entry f `shouldBe` () <$ f
     it "works for this simple case" $
       concatMap flatten (forestCursors [Node 'a' [Node 'b' []], Node 'c' []])
         `shouldBe` [ ForestCursor

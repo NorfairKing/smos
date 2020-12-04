@@ -28,10 +28,9 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import Smos.Data.Types
 
-newtype TagCursor
-  = TagCursor
-      { tagCursorTextCursor :: TextCursor
-      }
+newtype TagCursor = TagCursor
+  { tagCursorTextCursor :: TextCursor
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity TagCursor where

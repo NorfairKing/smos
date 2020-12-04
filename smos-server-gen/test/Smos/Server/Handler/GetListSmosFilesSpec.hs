@@ -13,11 +13,11 @@ import Test.Validity
 spec :: Spec
 spec =
   describe "GetListSmosFiles" $ do
-    serverSpec
-      $ it "produces a valid smos directory forest for any interesting store"
-      $ \cenv ->
-        forAllValid $ \store ->
-          withNewUser cenv $ \t -> do
-            testClientOrErr cenv $ setupInterestingStore t store
-            dirforest <- testClientOrErr cenv $ clientGetListSmosFiles t
-            shouldBeValid dirforest
+    serverSpec $
+      it "produces a valid smos directory forest for any interesting store" $
+        \cenv ->
+          forAllValid $ \store ->
+            withNewUser cenv $ \t -> do
+              testClientOrErr cenv $ setupInterestingStore t store
+              dirforest <- testClientOrErr cenv $ clientGetListSmosFiles t
+              shouldBeValid dirforest

@@ -22,78 +22,86 @@ spec = modifyMaxSuccess (`div` 50) $ do
   describe "Launching smos with" $ do
     describe "a specified" $ do
       describe "nonexistent workflow dir" $ do
-        specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \rf ->
-            withSystemTempDir "smos-test" $ \td -> do
-              let wd = td </> rd
-              let file = td </> rf
-              startupSpec (AbsoluteWorkflow wd) file
-        specify "on an existent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \rf ->
-            forAllValid $ \sf ->
+        specify "on a nonexistent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \rf ->
               withSystemTempDir "smos-test" $ \td -> do
                 let wd = td </> rd
                 let file = td </> rf
-                writeSmosFile file sf
                 startupSpec (AbsoluteWorkflow wd) file
+        specify "on an existent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \rf ->
+              forAllValid $ \sf ->
+                withSystemTempDir "smos-test" $ \td -> do
+                  let wd = td </> rd
+                  let file = td </> rf
+                  writeSmosFile file sf
+                  startupSpec (AbsoluteWorkflow wd) file
       describe "existent workflow dir" $ do
-        specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \rf ->
-            withSystemTempDir "smos-test" $ \td -> do
-              let wd = td </> rd
-              ensureDir wd
-              let file = td </> rf
-              startupSpec (AbsoluteWorkflow wd) file
-        specify "on an existent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \rf ->
-            forAllValid $ \sf ->
+        specify "on a nonexistent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \rf ->
               withSystemTempDir "smos-test" $ \td -> do
                 let wd = td </> rd
                 ensureDir wd
                 let file = td </> rf
-                writeSmosFile file sf
                 startupSpec (AbsoluteWorkflow wd) file
-    describe "an unspecified" $ do
-      describe "nonexistent workflow dir" $ do
-        specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \homeRel ->
-            forAllValid $ \rf ->
-              withSystemTempDir "smos-test" $ \td -> do
-                let home = td </> homeRel
-                let file = td </> rf
-                setEnv "HOME" $ fromAbsDir home
-                startupSpec (WorkflowInHome rd) file
-        specify "on an existent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \homeRel ->
+        specify "on an existent file works fine" $
+          forAllValid $ \rd ->
             forAllValid $ \rf ->
               forAllValid $ \sf ->
                 withSystemTempDir "smos-test" $ \td -> do
-                  let home = td </> homeRel
+                  let wd = td </> rd
+                  ensureDir wd
                   let file = td </> rf
                   writeSmosFile file sf
+                  startupSpec (AbsoluteWorkflow wd) file
+    describe "an unspecified" $ do
+      describe "nonexistent workflow dir" $ do
+        specify "on a nonexistent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \homeRel ->
+              forAllValid $ \rf ->
+                withSystemTempDir "smos-test" $ \td -> do
+                  let home = td </> homeRel
+                  let file = td </> rf
                   setEnv "HOME" $ fromAbsDir home
                   startupSpec (WorkflowInHome rd) file
+        specify "on an existent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \homeRel ->
+              forAllValid $ \rf ->
+                forAllValid $ \sf ->
+                  withSystemTempDir "smos-test" $ \td -> do
+                    let home = td </> homeRel
+                    let file = td </> rf
+                    writeSmosFile file sf
+                    setEnv "HOME" $ fromAbsDir home
+                    startupSpec (WorkflowInHome rd) file
       describe "existent workflow dir" $ do
-        specify "on a nonexistent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \homeRel ->
-            forAllValid $ \rf ->
-              withSystemTempDir "smos-test" $ \td -> do
-                let home = td </> homeRel
-                ensureDir $ home </> rd
-                let file = td </> rf
-                setEnv "HOME" $ fromAbsDir home
-                startupSpec (WorkflowInHome rd) file
-        specify "on an existent file works fine" $ forAllValid $ \rd ->
-          forAllValid $ \homeRel ->
-            forAllValid $ \rf ->
-              forAllValid $ \sf ->
+        specify "on a nonexistent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \homeRel ->
+              forAllValid $ \rf ->
                 withSystemTempDir "smos-test" $ \td -> do
                   let home = td </> homeRel
                   ensureDir $ home </> rd
                   let file = td </> rf
-                  writeSmosFile file sf
                   setEnv "HOME" $ fromAbsDir home
                   startupSpec (WorkflowInHome rd) file
+        specify "on an existent file works fine" $
+          forAllValid $ \rd ->
+            forAllValid $ \homeRel ->
+              forAllValid $ \rf ->
+                forAllValid $ \sf ->
+                  withSystemTempDir "smos-test" $ \td -> do
+                    let home = td </> homeRel
+                    ensureDir $ home </> rd
+                    let file = td </> rf
+                    writeSmosFile file sf
+                    setEnv "HOME" $ fromAbsDir home
+                    startupSpec (WorkflowInHome rd) file
 
 startupSpec :: WorkflowDirSpec -> Path Abs File -> IO ()
 startupSpec workflowDirSpec startupFile = do

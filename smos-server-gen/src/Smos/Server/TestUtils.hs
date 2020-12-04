@@ -21,11 +21,10 @@ import Smos.Server.Serve as Server
 import Test.Hspec
 import Test.Hspec.Core.QuickCheck
 
-data ServerTestEnv
-  = ServerTestEnv
-      { serverTestEnvPool :: Pool SqlBackend,
-        serverTestEnvClient :: ClientEnv
-      }
+data ServerTestEnv = ServerTestEnv
+  { serverTestEnvPool :: Pool SqlBackend,
+    serverTestEnvClient :: ClientEnv
+  }
 
 serverEnvSpec :: SpecWith ServerTestEnv -> Spec
 serverEnvSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withServerTestEnv
@@ -54,11 +53,11 @@ serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around
 
 withServerDB :: (Pool SqlBackend -> IO a) -> IO a
 withServerDB func =
-  runNoLoggingT
-    $ DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1
-    $ \pool -> do
-      DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
-      liftIO $ func pool
+  runNoLoggingT $
+    DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
+      \pool -> do
+        DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+        liftIO $ func pool
 
 serverSpec :: SpecWith ClientEnv -> Spec
 serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer

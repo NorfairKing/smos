@@ -47,14 +47,14 @@ spec = do
   genValidSpec @Timestamp
   jsonSpecOnValid @Timestamp
   textLikeJSONValid @Timestamp
-  describe "parseTimestampString"
-    $ it "parses whatever timestampString outputs"
-    $ forAllValid
-    $ \ts -> parseTimestampString (timestampString ts) `shouldBe` Just ts
-  describe "parseTimestampText"
-    $ it "parses whatever timestampText outputs"
-    $ forAllValid
-    $ \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
+  describe "parseTimestampString" $
+    it "parses whatever timestampString outputs" $
+      forAllValid $
+        \ts -> parseTimestampString (timestampString ts) `shouldBe` Just ts
+  describe "parseTimestampText" $
+    it "parses whatever timestampText outputs" $
+      forAllValid $
+        \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
   genValidSpec @TodoState
   jsonSpecOnValid @TodoState
   textLikeJSONValid @TodoState
@@ -127,10 +127,10 @@ genJSONValid ::
   Gen JSON.Value ->
   Spec
 genJSONValid gen =
-  describe (unwords ["JSON", nameOf @a])
-    $ it "parses every value into a valid value"
-    $ forAll gen
-    $ \j ->
-      case fromJSON j of
-        JSON.Error _ -> pure ()
-        JSON.Success h -> shouldBeValid (h :: a)
+  describe (unwords ["JSON", nameOf @a]) $
+    it "parses every value into a valid value" $
+      forAll gen $
+        \j ->
+          case fromJSON j of
+            JSON.Error _ -> pure ()
+            JSON.Success h -> shouldBeValid (h :: a)

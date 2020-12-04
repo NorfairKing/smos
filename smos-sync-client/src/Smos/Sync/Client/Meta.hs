@@ -15,18 +15,18 @@ import qualified Smos.Sync.Client.MetaMap as MM
 readClientMetadata :: MonadIO m => SqlPersistT m MetaMap
 readClientMetadata = do
   cfs <- selectList [] []
-  pure
-    $ MM.fromListIgnoringCollisions
-    $ map
-      ( \(Entity _ ClientFile {..}) ->
-          ( clientFilePath,
-            SyncFileMeta
-              { syncFileMetaHash = clientFileSha256,
-                syncFileMetaTime = clientFileTime
-              }
-          )
-      )
-      cfs
+  pure $
+    MM.fromListIgnoringCollisions $
+      map
+        ( \(Entity _ ClientFile {..}) ->
+            ( clientFilePath,
+              SyncFileMeta
+                { syncFileMetaHash = clientFileSha256,
+                  syncFileMetaTime = clientFileTime
+                }
+            )
+        )
+        cfs
 
 writeClientMetadata ::
   forall m.

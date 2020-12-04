@@ -12,8 +12,8 @@ import Conduit
 import Data.Aeson as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Smos.Terminal
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static

@@ -44,10 +44,9 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import Smos.Data.Types
 
-newtype TimestampsCursor
-  = TimestampsCursor
-      { timestampsCursorMapCursor :: MapCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp
-      }
+newtype TimestampsCursor = TimestampsCursor
+  { timestampsCursorMapCursor :: MapCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity TimestampsCursor where
@@ -79,10 +78,10 @@ makeTimestampsCursor m = do
 rebuildTimestampsCursor :: Maybe TimestampsCursor -> Map TimestampName Timestamp
 rebuildTimestampsCursor Nothing = M.empty
 rebuildTimestampsCursor (Just tsc) =
-  M.fromList
-    $ NE.toList
-    $ rebuildMapCursor rebuildTimestampNameCursor rebuildTimestampCursor
-    $ timestampsCursorMapCursor tsc
+  M.fromList $
+    NE.toList $
+      rebuildMapCursor rebuildTimestampNameCursor rebuildTimestampCursor $
+        timestampsCursorMapCursor tsc
 
 timestampsCursorCurrentTextCursorL :: Lens' TimestampsCursor TextCursor
 timestampsCursorCurrentTextCursorL =
@@ -166,12 +165,12 @@ timestampsCursorSelectOrAdd :: TimestampName -> LocalTime -> TimestampsCursor ->
 timestampsCursorSelectOrAdd tsn d =
   timestampsCursorMapCursorL
     %~ mapCursorSelectValue rebuildTimestampNameCursor makeTimestampCursor
-    . mapCursorSelectOrAdd
-      rebuildTimestampNameCursor
-      makeTimestampNameCursor
-      rebuildTimestampCursor
-      (\t _ -> t == tsn)
-      (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
+      . mapCursorSelectOrAdd
+        rebuildTimestampNameCursor
+        makeTimestampNameCursor
+        rebuildTimestampCursor
+        (\t _ -> t == tsn)
+        (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
 
 timestampsCursorUpdateTime :: ZonedTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~ go

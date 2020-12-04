@@ -26,20 +26,20 @@ spec = do
   cases <- runIO $ do
     testResourcesDir <- resolveDir' "test_resources"
     files <- snd <$> listDirRecur testResourcesDir
-    fmap catMaybes $ forM files $ \rf ->
-      if fileExtension rf == Just ".yaml"
-        then do
-          mgtc <- readConfigFile rf
-          pure $ (,) rf <$> mgtc
-        else pure Nothing
+    fmap catMaybes $
+      forM files $ \rf ->
+        if fileExtension rf == Just ".yaml"
+          then do
+            mgtc <- readConfigFile rf
+            pure $ (,) rf <$> mgtc
+          else pure Nothing
   mapM_ (uncurry makeTestUsingCase) cases
 
-data GoldenTestCase
-  = GoldenTestCase
-      { goldenTestTemplate :: ScheduleTemplate,
-        goldenTestNow :: UTCTime,
-        goldenTestResult :: SmosFile
-      }
+data GoldenTestCase = GoldenTestCase
+  { goldenTestTemplate :: ScheduleTemplate,
+    goldenTestNow :: UTCTime,
+    goldenTestResult :: SmosFile
+  }
 
 instance YamlSchema GoldenTestCase where
   yamlSchema =
@@ -58,14 +58,14 @@ makeTestUsingCase af GoldenTestCase {..} =
     let ctx = RenderContext {renderContextTime = utcToZonedTime utc goldenTestNow}
         actual = runReaderT (renderTemplate goldenTestTemplate) ctx
         expected = Success goldenTestResult
-    unless (actual == expected)
-      $ expectationFailure
-      $ unlines
-        [ "Golden test case failure: " <> fromAbsFile af,
-          "Expected:",
-          T.unpack $ TE.decodeUtf8 $ smosFileYamlBS goldenTestResult,
-          "Actual:",
-          case actual of
-            Success actualSuccess -> T.unpack $ TE.decodeUtf8 $ smosFileYamlBS actualSuccess
-            Failure res -> unlines $ map prettyRenderError $ NE.toList res
-        ]
+    unless (actual == expected) $
+      expectationFailure $
+        unlines
+          [ "Golden test case failure: " <> fromAbsFile af,
+            "Expected:",
+            T.unpack $ TE.decodeUtf8 $ smosFileYamlBS goldenTestResult,
+            "Actual:",
+            case actual of
+              Success actualSuccess -> T.unpack $ TE.decodeUtf8 $ smosFileYamlBS actualSuccess
+              Failure res -> unlines $ map prettyRenderError $ NE.toList res
+          ]

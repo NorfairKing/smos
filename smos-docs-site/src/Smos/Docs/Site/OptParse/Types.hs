@@ -19,41 +19,37 @@ newtype Command
   = CommandServe ServeFlags
   deriving (Show, Eq)
 
-data ServeFlags
-  = ServeFlags
-      { serveFlagPort :: !(Maybe Int),
-        serveFlagAPIServerUrl :: !(Maybe String),
-        serveFlagWebServerUrl :: !(Maybe String),
-        serveFlagGoogleAnalyticsTracking :: !(Maybe String),
-        serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data ServeFlags = ServeFlags
+  { serveFlagPort :: !(Maybe Int),
+    serveFlagAPIServerUrl :: !(Maybe String),
+    serveFlagWebServerUrl :: !(Maybe String),
+    serveFlagGoogleAnalyticsTracking :: !(Maybe String),
+    serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq)
 
-data Flags
-  = Flags
-      { flagConfigFile :: !(Maybe FilePath)
-      }
+data Flags = Flags
+  { flagConfigFile :: !(Maybe FilePath)
+  }
   deriving (Show, Eq, Generic)
 
-data Environment
-  = Environment
-      { envConfigFile :: !(Maybe FilePath),
-        envPort :: !(Maybe Int),
-        envAPIServerUrl :: !(Maybe String),
-        envWebServerUrl :: !(Maybe String),
-        envGoogleAnalyticsTracking :: !(Maybe String),
-        envGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data Environment = Environment
+  { envConfigFile :: !(Maybe FilePath),
+    envPort :: !(Maybe Int),
+    envAPIServerUrl :: !(Maybe String),
+    envWebServerUrl :: !(Maybe String),
+    envGoogleAnalyticsTracking :: !(Maybe String),
+    envGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq, Generic)
 
-data Configuration
-  = Configuration
-      { confPort :: !(Maybe Int),
-        confAPIServerUrl :: !(Maybe String),
-        confWebServerUrl :: !(Maybe String),
-        confGoogleAnalyticsTracking :: !(Maybe String),
-        confGoogleSearchConsoleVerification :: !(Maybe String)
-      }
+data Configuration = Configuration
+  { confPort :: !(Maybe Int),
+    confAPIServerUrl :: !(Maybe String),
+    confWebServerUrl :: !(Maybe String),
+    confGoogleAnalyticsTracking :: !(Maybe String),
+    confGoogleSearchConsoleVerification :: !(Maybe String)
+  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON Configuration where
@@ -73,14 +69,13 @@ newtype Dispatch
   = DispatchServe ServeSettings
   deriving (Show, Eq, Generic)
 
-data ServeSettings
-  = ServeSettings
-      { serveSetPort :: !Int,
-        serveSetAPIServerUrl :: !(Maybe Text),
-        serveSetWebServerUrl :: !(Maybe Text),
-        serveSetGoogleAnalyticsTracking :: !(Maybe Text),
-        serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
-      }
+data ServeSettings = ServeSettings
+  { serveSetPort :: !Int,
+    serveSetAPIServerUrl :: !(Maybe Text),
+    serveSetWebServerUrl :: !(Maybe Text),
+    serveSetGoogleAnalyticsTracking :: !(Maybe Text),
+    serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
+  }
   deriving (Show, Eq, Generic)
 
 data Settings

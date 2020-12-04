@@ -356,33 +356,30 @@ parseCommandClock = info parser modifier
 
 parseClockFormatFlags :: Parser (Maybe ClockFormatFlags)
 parseClockFormatFlags =
-  Just
-    <$> ( flag' ClockFormatTemporalFlag (long "temporal-resolution") <*> parseTemporalClockResolution
-            <|> flag' ClockFormatDecimalFlag (long "decimal-resolution") <*> parseDecimalClockResolution
-        )
-    <|> pure Nothing
+  optional
+    ( flag' ClockFormatTemporalFlag (long "temporal-resolution") <*> parseTemporalClockResolution
+        <|> flag' ClockFormatDecimalFlag (long "decimal-resolution") <*> parseDecimalClockResolution
+    )
 
 parseTemporalClockResolution :: Parser (Maybe TemporalClockResolution)
 parseTemporalClockResolution =
-  Just
-    <$> ( flag' TemporalSecondsResolution (long "seconds-resolution")
-            <|> flag' TemporalMinutesResolution (long "minutes-resolution")
-            <|> flag' TemporalHoursResolution (long "hours-resolution")
-        )
-    <|> pure Nothing
+  optional
+    ( flag' TemporalSecondsResolution (long "seconds-resolution")
+        <|> flag' TemporalMinutesResolution (long "minutes-resolution")
+        <|> flag' TemporalHoursResolution (long "hours-resolution")
+    )
 
 parseDecimalClockResolution :: Parser (Maybe DecimalClockResolution)
 parseDecimalClockResolution =
-  Just
-    <$> ( flag' DecimalQuarterResolution (long "quarters-resolution")
-            <|> (flag' DecimalResolution (long "resolution") <*> argument auto (help "significant digits"))
-            <|> flag' DecimalHoursResolution (long "hours-resolution")
-        )
-    <|> pure Nothing
+  optional
+    ( flag' DecimalQuarterResolution (long "quarters-resolution")
+        <|> (flag' DecimalResolution (long "resolution") <*> argument auto (help "significant digits"))
+        <|> flag' DecimalHoursResolution (long "hours-resolution")
+    )
 
 parseClockReportStyle :: Parser (Maybe ClockReportStyle)
 parseClockReportStyle =
-  Just <$> (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat")) <|> pure Nothing
+  optional (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat"))
 
 parseCommandAgenda :: ParserInfo Command
 parseCommandAgenda = info parser modifier
@@ -438,19 +435,16 @@ parseFlags = Flags <$> Report.parseFlags
 
 parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
 parseHistoricityFlag =
-  Just <$> (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future"))
-    <|> pure Nothing
+  optional (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future"))
 
 parseHideArchiveFlag :: Parser (Maybe HideArchive)
 parseHideArchiveFlag =
-  ( Just
-      <$> ( flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])
-              <|> flag'
-                Don'tHideArchive
-                (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])
-          )
-  )
-    <|> pure Nothing
+  optional
+    ( flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])
+        <|> flag'
+          Don'tHideArchive
+          (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])
+    )
 
 parseContextNameArg :: Parser (Maybe ContextName)
 parseContextNameArg =
@@ -516,15 +510,15 @@ parseSorterArgs =
 
 parseTimeBlock :: Parser (Maybe TimeBlock)
 parseTimeBlock =
-  Just
-    <$> choices
-      [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"],
-        flag' WeekBlock $ mconcat [long "week-block", help "blocks of one week"],
-        flag' MonthBlock $ mconcat [long "month-block", help "blocks of one month"],
-        flag' YearBlock $ mconcat [long "year-block", help "blocks of one year"],
-        flag' OneBlock $ mconcat [long "one-block", help "a single block"]
-      ]
-    <|> pure Nothing
+  optional
+    ( choices
+        [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"],
+          flag' WeekBlock $ mconcat [long "week-block", help "blocks of one week"],
+          flag' MonthBlock $ mconcat [long "month-block", help "blocks of one month"],
+          flag' YearBlock $ mconcat [long "year-block", help "blocks of one year"],
+          flag' OneBlock $ mconcat [long "one-block", help "a single block"]
+        ]
+    )
 
 parsePeriod :: Parser (Maybe Period)
 parsePeriod =
@@ -575,14 +569,14 @@ parsePeriod =
 
 parseOutputFormat :: Parser (Maybe OutputFormat)
 parseOutputFormat =
-  Just
-    <$> choices
-      [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"],
-        flag' OutputYaml $ mconcat [long "yaml", help "Yaml"],
-        flag' OutputJSON $ mconcat [long "json", help "single-line JSON"],
-        flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
-      ]
-    <|> pure Nothing
+  optional
+    ( choices
+        [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"],
+          flag' OutputYaml $ mconcat [long "yaml", help "Yaml"],
+          flag' OutputJSON $ mconcat [long "json", help "single-line JSON"],
+          flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
+        ]
+    )
 
 choices :: [Parser a] -> Parser a
 choices = asum

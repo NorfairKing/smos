@@ -28,8 +28,7 @@ import Lens.Micro
 -- | An simple state-based history for a state 's'
 --
 -- TODO: make this bounded?
-newtype History s
-  = History {historyNonEmptyCursor :: NonEmptyCursor s}
+newtype History s = History {historyNonEmptyCursor :: NonEmptyCursor s}
   deriving (Show, Eq, Generic)
 
 instance Validity s => Validity (History s)

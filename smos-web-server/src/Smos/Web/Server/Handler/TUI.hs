@@ -31,6 +31,6 @@ getTUIInstanceR ts = do
     case parseRelFile $ T.unpack $ T.intercalate "/" ts of
       Nothing -> notFound
       Just relFile -> do
-        webSockets
-          $ withSmosSession userName token relFile
-          $ \instanceHandle -> communicateWithTerminal instanceHandle
+        webSockets $
+          withSmosSession userName token relFile $
+            \instanceHandle -> communicateWithTerminal instanceHandle

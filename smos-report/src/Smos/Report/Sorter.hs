@@ -11,8 +11,8 @@ import Data.Aeson
 import Data.List
 import qualified Data.Map as M
 import Data.Ord
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import Data.Void
 import GHC.Generics (Generic)

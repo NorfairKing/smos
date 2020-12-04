@@ -33,10 +33,9 @@ produceWaitingReportCursor dc =
       )
       dc
 
-data WaitingReportCursor
-  = WaitingReportCursor
-      { waitingReportCursorWaitingEntryCursors :: Maybe (NonEmptyCursor WaitingEntryCursor)
-      }
+data WaitingReportCursor = WaitingReportCursor
+  { waitingReportCursorWaitingEntryCursors :: Maybe (NonEmptyCursor WaitingEntryCursor)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WaitingReportCursor where
@@ -64,12 +63,11 @@ waitingReportCursorBuildSmosFileCursor pad wrc = do
       go $ waitingEntryCursorForestCursor selected
     )
 
-data WaitingEntryCursor
-  = WaitingEntryCursor
-      { waitingEntryCursorFilePath :: Path Rel File,
-        waitingEntryCursorForestCursor :: ForestCursor Entry Entry,
-        waitingEntryCursorTimestamp :: UTCTime
-      }
+data WaitingEntryCursor = WaitingEntryCursor
+  { waitingEntryCursorFilePath :: Path Rel File,
+    waitingEntryCursorForestCursor :: ForestCursor Entry Entry,
+    waitingEntryCursorTimestamp :: UTCTime
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WaitingEntryCursor where

@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedLists #-}
-
 module Smos.Calendar.Import.WeekDateSpec
   ( spec,
   )
@@ -65,12 +63,13 @@ spec = do
         toWeekDateWithStart Sunday (d 1997 08 17) `shouldBe` (1997, 34, Sunday)
       it "works for 1997-08-17 in 1997 with a Sunday weekstart" $
         toWeekDateWithStart Monday (d 1997 08 17) `shouldBe` (1997, 33, Sunday)
-    it "produces tuples of which the last value is independent of the week start" $ forAllValid $ \ws1 ->
-      forAllValid $ \ws2 ->
-        forAllValid $ \day ->
-          let (_, _, dow1) = toWeekDateWithStart ws1 day
-              (_, _, dow2) = toWeekDateWithStart ws2 day
-           in dow1 `shouldBe` dow2
+    it "produces tuples of which the last value is independent of the week start" $
+      forAllValid $ \ws1 ->
+        forAllValid $ \ws2 ->
+          forAllValid $ \day ->
+            let (_, _, dow1) = toWeekDateWithStart ws1 day
+                (_, _, dow2) = toWeekDateWithStart ws2 day
+             in dow1 `shouldBe` dow2
     it "produces valid results" $ producesValidsOnValids2 toWeekDateWithStart
   describe "fromWeekDateWithStart" $ do
     describe "examples" $ do
@@ -99,10 +98,10 @@ spec = do
       it "works for 2015-01-05 in 2015 with a Sunday weekstart" $
         fromWeekDateWithStart Sunday 2015 01 Monday `shouldBe` Just (d 2015 01 05)
     it "produces valid results" $ forAllValid $ producesValidsOnValids3 . fromWeekDateWithStart
-    xdescribe "This fails for very negative years for unknown reasons"
-      $ it "roundtrips toWeekDateWithStart for a given week start"
-      $ forAllValid
-      $ \ws ->
-        forAllValid $ \day ->
-          let (y, wn, dow) = toWeekDateWithStart ws day
-           in fromWeekDateWithStart ws y wn dow `shouldBe` Just day
+    xdescribe "This fails for very negative years for unknown reasons" $
+      it "roundtrips toWeekDateWithStart for a given week start" $
+        forAllValid $
+          \ws ->
+            forAllValid $ \day ->
+              let (y, wn, dow) = toWeekDateWithStart ws day
+               in fromWeekDateWithStart ws y wn dow `shouldBe` Just day

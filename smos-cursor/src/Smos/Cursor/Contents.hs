@@ -42,10 +42,9 @@ import GHC.Generics
 import Lens.Micro
 import Smos.Data.Types
 
-newtype ContentsCursor
-  = ContentsCursor
-      { contentsCursorTextFieldCursor :: TextFieldCursor
-      }
+newtype ContentsCursor = ContentsCursor
+  { contentsCursorTextFieldCursor :: TextFieldCursor
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ContentsCursor where

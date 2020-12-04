@@ -279,14 +279,14 @@ modifyMFileCursorMHistoryS :: (History (Maybe SmosFileCursor) -> SmosM (History 
 modifyMFileCursorMHistoryS func = modifySmosFileEditorCursorS $ smosFileEditorCursorHistoryL func
 
 modifySmosFileEditorCursorS :: (SmosFileEditorCursor -> SmosM SmosFileEditorCursor) -> SmosM ()
-modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS
-  $ mapM
-  $ \sfec -> do
-    sfec' <- func sfec
-    pure $
-      sfec'
-        { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
-        }
+modifySmosFileEditorCursorS func = modifyMSmosFileEditorCursorMS $
+  mapM $
+    \sfec -> do
+      sfec' <- func sfec
+      pure $
+        sfec'
+          { smosFileEditorUnsavedChanges = smosFileEditorUnsavedChanges sfec || (rebuildSmosFileEditorCursor sfec /= rebuildSmosFileEditorCursor sfec')
+          }
 
 modifyMSmosFileEditorCursorMS :: (Maybe SmosFileEditorCursor -> SmosM (Maybe SmosFileEditorCursor)) -> SmosM ()
 modifyMSmosFileEditorCursorMS func = modifyEditorCursorS $ editorCursorFileCursorL func

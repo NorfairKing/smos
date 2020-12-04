@@ -11,9 +11,9 @@ import Test.Validity
 spec :: Spec
 spec = do
   genValidSpec @StateHistoryCursor
-  describe "makeStateHistoryCursor"
-    $ it "produces valid cursors"
-    $ producesValidsOnValids makeStateHistoryCursor
+  describe "makeStateHistoryCursor" $
+    it "produces valid cursors" $
+      producesValidsOnValids makeStateHistoryCursor
   describe "rebuildStateHistoryCursor" $ do
     it "produces valid cursors" $ producesValidsOnValids rebuildStateHistoryCursor
     it "is the inverse of makeStateHistoryCursor" $

@@ -177,6 +177,11 @@ extra-deps:
 - github: NorfairKing/haskeline
   commit: 7c6491c55741608255c2681702381ce488692d15
 
+- github: NorfairKing/template-haskell-reload
+  commit: 7111b945e3ae00ac48d905af1d925c138c334960
+  subdirs:
+    - template-haskell-reload
+
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]
   add-gc-roots: true

@@ -197,11 +197,11 @@ forestCursors ts =
         ( case forestCursorSelectBelowAtStart fc of
             Nothing -> []
             Just fc' -> go fc'
-        )
-        : ( case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
-              Nothing -> []
-              Just fc' -> go fc'
-          )
+        ) :
+      ( case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
+          Nothing -> []
+          Just fc' -> go fc'
+      )
 
 produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
 produceReport ha sp dc rc = do

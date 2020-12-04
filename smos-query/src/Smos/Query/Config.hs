@@ -31,13 +31,12 @@ import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import System.IO
 
-data SmosQueryConfig
-  = SmosQueryConfig
-      { smosQueryConfigReportConfig :: !SmosReportConfig,
-        smosQueryConfigInputHandle :: !Handle,
-        smosQueryConfigOutputHandle :: !Handle,
-        smosQueryConfigErrorHandle :: !Handle
-      }
+data SmosQueryConfig = SmosQueryConfig
+  { smosQueryConfigReportConfig :: !SmosReportConfig,
+    smosQueryConfigInputHandle :: !Handle,
+    smosQueryConfigOutputHandle :: !Handle,
+    smosQueryConfigErrorHandle :: !Handle
+  }
   deriving (Show, Eq, Generic)
 
 type Q = ReaderT SmosQueryConfig IO

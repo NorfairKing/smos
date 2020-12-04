@@ -15,16 +15,15 @@ where
 import Brick.Types as B hiding (Next)
 import Control.Monad.Reader
 import Control.Monad.State
-import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Trans.Resource
+import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Trans.Resource.Internal (unResourceT)
 import Control.Monad.Writer
 import Import
 
-newtype MkSmosM c s a
-  = MkSmosM
-      { unMkSmosM :: NextT (StateT s (WriterT [Text] (ReaderT c (ResourceT IO)))) a
-      }
+newtype MkSmosM c s a = MkSmosM
+  { unMkSmosM :: NextT (StateT s (WriterT [Text] (ReaderT c (ResourceT IO)))) a
+  }
   deriving (Generic, Functor, Applicative, Monad, MonadState s, MonadReader c, MonadWriter [Text])
 
 instance MonadIO (MkSmosM c s) where
@@ -50,10 +49,9 @@ instance Functor MStop where
   fmap _ Stop = Stop
   fmap f (Continue a) = Continue $ f a
 
-newtype NextT m a
-  = NextT
-      { runNextT :: m (MStop a)
-      }
+newtype NextT m a = NextT
+  { runNextT :: m (MStop a)
+  }
 
 mapNextT :: (m (MStop a) -> n (MStop b)) -> NextT m a -> NextT n b
 mapNextT f = NextT . f . runNextT

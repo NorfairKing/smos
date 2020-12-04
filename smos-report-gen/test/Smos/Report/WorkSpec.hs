@@ -19,19 +19,23 @@ spec = do
   genValidSpec @WorkReportContext
   genValidSpec @IntermediateWorkReport
   genValidSpec @WorkReport
-  describe "makeIntermediateWorkReport"
-    $ it "produces valid intermediate work reports"
-    $ producesValidsOnValids3 makeIntermediateWorkReport
-  describe "finishWorkReport" $ it "produces valid work reports" $ forAllValid $ \zt ->
-    forAllValid $ \pn ->
-      forAllValid $ \mt ->
-        forAllValid $ \ms ->
-          forAllValid $ \workReport ->
-            shouldBeValid $ finishWorkReport zt pn mt ms workReport
-  modifyMaxSuccess (`div` 10) $ describe "produceWorkReport" $ it "produces valid reports for interesting stores"
-    $ forAllValid
-    $ \wrc ->
-      forAllValid $ \ha ->
-        withInterestingStore $ \dc -> do
-          nar <- produceWorkReport ha DontPrint dc wrc
-          shouldBeValid nar
+  describe "makeIntermediateWorkReport" $
+    it "produces valid intermediate work reports" $
+      producesValidsOnValids3 makeIntermediateWorkReport
+  describe "finishWorkReport" $
+    it "produces valid work reports" $
+      forAllValid $ \zt ->
+        forAllValid $ \pn ->
+          forAllValid $ \mt ->
+            forAllValid $ \ms ->
+              forAllValid $ \workReport ->
+                shouldBeValid $ finishWorkReport zt pn mt ms workReport
+  modifyMaxSuccess (`div` 10) $
+    describe "produceWorkReport" $
+      it "produces valid reports for interesting stores" $
+        forAllValid $
+          \wrc ->
+            forAllValid $ \ha ->
+              withInterestingStore $ \dc -> do
+                nar <- produceWorkReport ha DontPrint dc wrc
+                shouldBeValid nar

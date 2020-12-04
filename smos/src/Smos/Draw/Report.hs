@@ -31,11 +31,11 @@ drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget Resourc
 drawNextActionReportCursor s NextActionReportCursor {..} =
   withHeading (str "Next Action Report") $
     vBox
-      [ padAll 1
-          $ viewport ResourceViewport Vertical
-          $ case nextActionReportCursorSelectedNextActionEntryCursors of
-            Nothing -> txtWrap "Empty next action report"
-            Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
+      [ padAll 1 $
+          viewport ResourceViewport Vertical $
+            case nextActionReportCursorSelectedNextActionEntryCursors of
+              Nothing -> txtWrap "Empty next action report"
+              Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
         ( case nextActionReportCursorSelection of
             NextActionReportFilterSelected -> withAttr selectedAttr
             NextActionReportSelected -> id
@@ -66,12 +66,13 @@ drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
   now <- asks zonedTimeToUTC
   let go = drawWaitingEntryCursor now
-  pure $ withHeading (str "Waiting Report")
-    $ padAll 1
-    $ viewport ResourceViewport Vertical
-    $ case waitingReportCursorWaitingEntryCursors of
-      Nothing -> txtWrap "Empty waiting report"
-      Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
+  pure $
+    withHeading (str "Waiting Report") $
+      padAll 1 $
+        viewport ResourceViewport Vertical $
+          case waitingReportCursorWaitingEntryCursors of
+            Nothing -> txtWrap "Empty waiting report"
+            Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
 
 drawWaitingEntryCursor :: UTCTime -> Select -> WaitingEntryCursor -> [Widget ResourceName]
 drawWaitingEntryCursor now s WaitingEntryCursor {..} =

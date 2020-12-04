@@ -19,10 +19,12 @@ spec = do
   jsonSpecOnValid @WaitingReport
   genValidSpec @WaitingEntry
   jsonSpecOnValid @WaitingEntry
-  modifyMaxSuccess (`div` 10) $ describe "produceWaitingReport" $ it "produces valid reports for interesting stores"
-    $ forAllValid
-    $ \mFilter ->
-      forAllValid $ \ha ->
-        withInterestingStore $ \dc -> do
-          nar <- produceWaitingReport mFilter ha DontPrint dc
-          shouldBeValid nar
+  modifyMaxSuccess (`div` 10) $
+    describe "produceWaitingReport" $
+      it "produces valid reports for interesting stores" $
+        forAllValid $
+          \mFilter ->
+            forAllValid $ \ha ->
+              withInterestingStore $ \dc -> do
+                nar <- produceWaitingReport mFilter ha DontPrint dc
+                shouldBeValid nar

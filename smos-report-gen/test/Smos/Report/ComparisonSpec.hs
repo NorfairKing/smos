@@ -21,9 +21,9 @@ spec :: Spec
 spec = do
   genValidSpec @Comparison
   jsonSpecOnValid @Comparison
-  describe "parseComparison"
-    $ it "produces valid comparisons"
-    $ producesValidsOnValids parseComparison
+  describe "parseComparison" $
+    it "produces valid comparisons" $
+      producesValidsOnValids parseComparison
   describe "renderComparison" $ do
     it "produces valid comparisons" $ producesValidsOnValids renderComparison
     it "is the inverse of parseComparison" $

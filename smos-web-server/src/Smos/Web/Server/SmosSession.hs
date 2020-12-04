@@ -117,8 +117,9 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
       man <- getsYesod appHttpManager
       burl <- getsYesod appAPIBaseUrl
       let cenv = mkClientEnv man burl
-      liftIO $ runStderrLoggingT
-        $ filterLogger (\_ ll -> ll >= LevelWarn)
-        $ DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1
-        $ \pool ->
-          doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
+      liftIO $
+        runStderrLoggingT $
+          filterLogger (\_ ll -> ll >= LevelWarn) $
+            DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $
+              \pool ->
+                doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token

@@ -137,20 +137,20 @@ instance GenValid (Filter a) => GenValid (Filter (Maybe a)) where
 
 instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
   genValid =
-    withTopLevelBranches
-      $ sized
-      $ \n ->
-        let withoutRecursion = oneof [FilterWithinCursor <$> genValid, FilterLevel <$> genValid]
-         in case n of
-              0 -> withoutRecursion
-              _ ->
-                oneof
-                  [ withoutRecursion,
-                    FilterParent <$> genValid,
-                    FilterAncestor <$> genValid,
-                    FilterChild <$> genValid,
-                    FilterLegacy <$> genValid
-                  ]
+    withTopLevelBranches $
+      sized $
+        \n ->
+          let withoutRecursion = oneof [FilterWithinCursor <$> genValid, FilterLevel <$> genValid]
+           in case n of
+                0 -> withoutRecursion
+                _ ->
+                  oneof
+                    [ withoutRecursion,
+                      FilterParent <$> genValid,
+                      FilterAncestor <$> genValid,
+                      FilterChild <$> genValid,
+                      FilterLegacy <$> genValid
+                    ]
   shrinkValid = shrinkValidFilter
 
 withEqAndOrToo ::

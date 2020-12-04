@@ -19,26 +19,23 @@ import YamlParse.Applicative
 data Arguments
   = Arguments (Maybe FilePath) (Report.FlagsWithConfigFile Flags)
 
-data Flags
-  = Flags
-      { flagReportFlags :: Report.Flags,
-        flagExplainerMode :: Maybe Bool
-      }
+data Flags = Flags
+  { flagReportFlags :: Report.Flags,
+    flagExplainerMode :: Maybe Bool
+  }
   deriving (Show, Eq)
 
-data Environment
-  = Environment
-      { envReportEnvironment :: Report.Environment,
-        envExplainerMode :: Maybe Bool
-      }
+data Environment = Environment
+  { envReportEnvironment :: Report.Environment,
+    envExplainerMode :: Maybe Bool
+  }
   deriving (Show, Eq)
 
-data Configuration
-  = Configuration
-      { confReportConf :: !Report.Configuration,
-        confKeybindingsConf :: !(Maybe KeybindingsConfiguration),
-        confExplainerMode :: !(Maybe Bool)
-      }
+data Configuration = Configuration
+  { confReportConf :: !Report.Configuration,
+    confKeybindingsConf :: !(Maybe KeybindingsConfiguration),
+    confExplainerMode :: !(Maybe Bool)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Configuration
@@ -70,15 +67,14 @@ backToConfiguration SmosConfig {..} =
           confExplainerMode = if configExplainerMode then Just True else Nothing
         }
 
-data KeybindingsConfiguration
-  = KeybindingsConfiguration
-      { confReset :: !(Maybe Bool),
-        confFileKeyConfig :: !(Maybe FileKeyConfigs),
-        confBrowserKeyConfig :: !(Maybe BrowserKeyConfigs),
-        confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
-        confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
-        confAnyKeyConfig :: !(Maybe KeyConfigs)
-      }
+data KeybindingsConfiguration = KeybindingsConfiguration
+  { confReset :: !(Maybe Bool),
+    confFileKeyConfig :: !(Maybe FileKeyConfigs),
+    confBrowserKeyConfig :: !(Maybe BrowserKeyConfigs),
+    confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
+    confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
+    confAnyKeyConfig :: !(Maybe KeyConfigs)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity KeybindingsConfiguration
@@ -120,19 +116,18 @@ backToKeybindingsConfiguration KeyMap {..} =
           confAnyKeyConfig = Just $ backToKeyConfigs keyMapAnyKeyMap
         }
 
-data FileKeyConfigs
-  = FileKeyConfigs
-      { emptyKeyConfigs :: !(Maybe KeyConfigs),
-        entryKeyConfigs :: !(Maybe KeyConfigs),
-        headerKeyConfigs :: !(Maybe KeyConfigs),
-        contentsKeyConfigs :: !(Maybe KeyConfigs),
-        timestampsKeyConfigs :: !(Maybe KeyConfigs),
-        propertiesKeyConfigs :: !(Maybe KeyConfigs),
-        stateHistoryKeyConfigs :: !(Maybe KeyConfigs),
-        tagsKeyConfigs :: !(Maybe KeyConfigs),
-        logbookKeyConfigs :: !(Maybe KeyConfigs),
-        anyKeyConfigs :: !(Maybe KeyConfigs)
-      }
+data FileKeyConfigs = FileKeyConfigs
+  { emptyKeyConfigs :: !(Maybe KeyConfigs),
+    entryKeyConfigs :: !(Maybe KeyConfigs),
+    headerKeyConfigs :: !(Maybe KeyConfigs),
+    contentsKeyConfigs :: !(Maybe KeyConfigs),
+    timestampsKeyConfigs :: !(Maybe KeyConfigs),
+    propertiesKeyConfigs :: !(Maybe KeyConfigs),
+    stateHistoryKeyConfigs :: !(Maybe KeyConfigs),
+    tagsKeyConfigs :: !(Maybe KeyConfigs),
+    logbookKeyConfigs :: !(Maybe KeyConfigs),
+    anyKeyConfigs :: !(Maybe KeyConfigs)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity FileKeyConfigs
@@ -186,13 +181,12 @@ backToFileKeyConfigs FileKeyMap {..} =
           anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
         }
 
-data BrowserKeyConfigs
-  = BrowserKeyConfigs
-      { browserExistentKeyConfigs :: Maybe KeyConfigs,
-        browserInProgressKeyConfigs :: Maybe KeyConfigs,
-        browserEmptyKeyConfigs :: Maybe KeyConfigs,
-        browserAnyKeyConfigs :: Maybe KeyConfigs
-      }
+data BrowserKeyConfigs = BrowserKeyConfigs
+  { browserExistentKeyConfigs :: Maybe KeyConfigs,
+    browserInProgressKeyConfigs :: Maybe KeyConfigs,
+    browserEmptyKeyConfigs :: Maybe KeyConfigs,
+    browserAnyKeyConfigs :: Maybe KeyConfigs
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity BrowserKeyConfigs
@@ -229,12 +223,11 @@ backToBrowserKeyConfigs BrowserKeyMap {..} =
           browserAnyKeyConfigs = Just $ backToKeyConfigs browserKeyMapAnyMatchers
         }
 
-data ReportsKeyConfigs
-  = ReportsKeyConfigs
-      { nextActionReportKeyConfigs :: Maybe NextActionReportKeyConfigs,
-        waitingReportKeyConfigs :: Maybe WaitingReportKeyConfigs,
-        anyReportKeyConfigs :: Maybe KeyConfigs
-      }
+data ReportsKeyConfigs = ReportsKeyConfigs
+  { nextActionReportKeyConfigs :: Maybe NextActionReportKeyConfigs,
+    waitingReportKeyConfigs :: Maybe WaitingReportKeyConfigs,
+    anyReportKeyConfigs :: Maybe KeyConfigs
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity ReportsKeyConfigs
@@ -268,12 +261,11 @@ backToReportsKeyConfig ReportsKeyMap {..} =
           anyReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapAnyMatchers
         }
 
-data NextActionReportKeyConfigs
-  = NextActionReportKeyConfigs
-      { nextActionReportNormalKeyConfigs :: !(Maybe KeyConfigs),
-        nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
-        nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
-      }
+data NextActionReportKeyConfigs = NextActionReportKeyConfigs
+  { nextActionReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionReportKeyConfigs
@@ -307,11 +299,10 @@ backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
           nextActionReportAnyKeyConfigs = Just $ backToKeyConfigs nextActionReportAnyMatchers
         }
 
-data WaitingReportKeyConfigs
-  = WaitingReportKeyConfigs
-      { waitingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
-        waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
-      }
+data WaitingReportKeyConfigs = WaitingReportKeyConfigs
+  { waitingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity WaitingReportKeyConfigs
@@ -342,12 +333,11 @@ backToWaitingReportKeyConfigs WaitingReportKeyMap {..} =
           waitingReportAnyKeyConfigs = Just $ backToKeyConfigs waitingReportAnyMatchers
         }
 
-data HelpKeyConfigs
-  = HelpKeyConfigs
-      { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
-        helpSearchKeyConfigs :: !(Maybe KeyConfigs),
-        helpAnyKeyConfigs :: !(Maybe KeyConfigs)
-      }
+data HelpKeyConfigs = HelpKeyConfigs
+  { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
+    helpSearchKeyConfigs :: !(Maybe KeyConfigs),
+    helpAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity HelpKeyConfigs
@@ -381,10 +371,9 @@ backToHelpKeyConfigs HelpKeyMap {..} =
           helpAnyKeyConfigs = Just $ backToKeyConfigs helpKeyMapAnyMatchers
         }
 
-newtype KeyConfigs
-  = KeyConfigs
-      { keyConfigs :: [KeyConfig]
-      }
+newtype KeyConfigs = KeyConfigs
+  { keyConfigs :: [KeyConfig]
+  }
   deriving (Show, Eq, Generic, Validity, ToJSON, FromJSON)
 
 instance YamlSchema KeyConfigs where
@@ -393,11 +382,10 @@ instance YamlSchema KeyConfigs where
 backToKeyConfigs :: KeyMappings -> KeyConfigs
 backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
 
-data KeyConfig
-  = KeyConfig
-      { keyConfigMatcher :: !MatcherConfig,
-        keyConfigAction :: !ActionName
-      }
+data KeyConfig = KeyConfig
+  { keyConfigMatcher :: !MatcherConfig,
+    keyConfigAction :: !ActionName
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity KeyConfig

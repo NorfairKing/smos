@@ -50,9 +50,9 @@ logbookCursorClockOut :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockOut utct lbc =
   case lbc of
     LogbookCursorOpen u lbes ->
-      constructValid
-        $ LogbookCursorClosed
-        $ let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
+      constructValid $
+        LogbookCursorClosed $
+          let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
            in Just $
                 case lbes of
                   Nothing -> singletonNonEmptyCursor e

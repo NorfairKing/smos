@@ -47,17 +47,16 @@ import Smos.Cursor.Tags
 import Smos.Cursor.Timestamps
 import Smos.Data.Types
 
-data EntryCursor
-  = EntryCursor
-      { entryCursorHeaderCursor :: HeaderCursor,
-        entryCursorContentsCursor :: Maybe ContentsCursor,
-        entryCursorTimestampsCursor :: Maybe TimestampsCursor,
-        entryCursorPropertiesCursor :: Maybe PropertiesCursor,
-        entryCursorStateHistoryCursor :: Maybe StateHistoryCursor,
-        entryCursorTagsCursor :: Maybe TagsCursor,
-        entryCursorLogbookCursor :: LogbookCursor,
-        entryCursorSelected :: EntryCursorSelection
-      }
+data EntryCursor = EntryCursor
+  { entryCursorHeaderCursor :: HeaderCursor,
+    entryCursorContentsCursor :: Maybe ContentsCursor,
+    entryCursorTimestampsCursor :: Maybe TimestampsCursor,
+    entryCursorPropertiesCursor :: Maybe PropertiesCursor,
+    entryCursorStateHistoryCursor :: Maybe StateHistoryCursor,
+    entryCursorTagsCursor :: Maybe TagsCursor,
+    entryCursorLogbookCursor :: LogbookCursor,
+    entryCursorSelected :: EntryCursorSelection
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity EntryCursor

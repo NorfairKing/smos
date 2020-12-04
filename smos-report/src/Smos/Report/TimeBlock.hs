@@ -9,8 +9,8 @@ import Control.DeepSeq
 import Data.Aeson
 import Data.Function
 import Data.List
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Calendar.WeekDate
 import Data.Validity
@@ -35,11 +35,10 @@ instance FromJSON TimeBlock
 
 instance ToJSON TimeBlock
 
-data Block a b
-  = Block
-      { blockTitle :: a,
-        blockEntries :: [b]
-      }
+data Block a b = Block
+  { blockTitle :: a,
+    blockEntries :: [b]
+  }
   deriving (Show, Eq, Generic)
 
 instance (Validity a, Validity b) => Validity (Block a b)
@@ -85,11 +84,10 @@ dayYear = (\(y, _, _) -> y) . toGregorian
 formatYearTitle :: YearNumber -> Text
 formatYearTitle = T.pack . printf "%04d"
 
-data MonthNumber
-  = MonthNumber
-      { monthNumberYear :: Integer,
-        monthNumberMonth :: Int
-      }
+data MonthNumber = MonthNumber
+  { monthNumberYear :: Integer,
+    monthNumberMonth :: Int
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity MonthNumber where
@@ -112,11 +110,10 @@ formatMonthTitle :: MonthNumber -> Text
 formatMonthTitle MonthNumber {..} =
   T.pack $ concat [printf "%04d" monthNumberYear, "-", printf "%02d" monthNumberMonth]
 
-data WeekNumber
-  = WeekNumber
-      { weekNumberYear :: Integer,
-        weekNumberWeek :: Int
-      }
+data WeekNumber = WeekNumber
+  { weekNumberYear :: Integer,
+    weekNumberWeek :: Int
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity WeekNumber where

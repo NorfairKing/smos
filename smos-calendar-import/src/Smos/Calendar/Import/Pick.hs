@@ -6,8 +6,8 @@ module Smos.Calendar.Import.Pick where
 
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text.Lazy as LT
 import Data.Time

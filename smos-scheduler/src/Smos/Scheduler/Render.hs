@@ -13,8 +13,8 @@ import Data.FuzzyTime
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Maybe
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -122,15 +122,17 @@ renderPathTemplate rf = do
 renderTimeTemplateNow :: Template -> Render Text
 renderTimeTemplateNow (Template tps) = do
   now <- asks renderContextTime
-  fmap T.concat $ forM tps $ \case
-    TLit t -> pure t
-    TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
-    TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
-      Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
-      Right flt ->
-        pure $ T.pack $ case resolveLocalTime (zonedTimeToLocalTime now) flt of
-          OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
-          BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
+  fmap T.concat $
+    forM tps $ \case
+      TLit t -> pure t
+      TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
+      TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
+        Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
+        Right flt ->
+          pure $
+            T.pack $ case resolveLocalTime (zonedTimeToLocalTime now) flt of
+              OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
+              BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
 type Render a = ReaderT RenderContext RenderValidation a
 
@@ -173,10 +175,9 @@ renderFail e = lift $ Failure (e :| [])
 prettyRenderError :: RenderError -> String
 prettyRenderError = show
 
-data RenderContext
-  = RenderContext
-      { renderContextTime :: ZonedTime
-      }
+data RenderContext = RenderContext
+  { renderContextTime :: ZonedTime
+  }
   deriving (Show, Generic)
 
 instance Validity RenderContext

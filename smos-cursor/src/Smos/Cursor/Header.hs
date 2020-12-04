@@ -35,10 +35,9 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import Smos.Data.Types
 
-newtype HeaderCursor
-  = HeaderCursor
-      { headerCursorTextCursor :: TextCursor
-      }
+newtype HeaderCursor = HeaderCursor
+  { headerCursorTextCursor :: TextCursor
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity HeaderCursor where

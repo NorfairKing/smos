@@ -13,7 +13,7 @@ import System.Environment (getArgs)
 
 getPathArgument :: IO (Maybe StartingPath)
 getPathArgument = do
-  fp <- runArgumentsParser <$> getArgs >>= handleParseResult
+  fp <- getArgs >>= handleParseResult . runArgumentsParser
   curDir <- getCurrentDir
   mapM (resolveStartingPath curDir) fp
 

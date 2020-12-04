@@ -7,8 +7,8 @@ module Smos.Query.Commands.Report
 where
 
 import Conduit
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -42,9 +42,9 @@ availableReportsReport m =
     then "No reports configured."
     else
       T.intercalate "\n" $
-        "Available reports:"
-          : map
-            ( \(n, PreparedReport {..}) ->
-                T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription]
-            )
-            (M.toList m)
+        "Available reports:" :
+        map
+          ( \(n, PreparedReport {..}) ->
+              T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription]
+          )
+          (M.toList m)

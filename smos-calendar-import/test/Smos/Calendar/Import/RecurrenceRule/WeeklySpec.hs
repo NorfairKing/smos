@@ -19,31 +19,32 @@ spec = do
   let l = LocalTime
   let t = TimeOfDay
   describe "rruleDateTimeOccurrencesUntil" $ do
-    specify "it works for this complex example" $ forAllValid $ \tod ->
-      let limit = LocalTime (d 2024 01 01) midnight
-          rule =
-            (rRule Weekly)
-              { rRuleInterval = Interval 2,
-                rRuleUntilCount = Count 11,
-                rRuleByDay = [Every Wednesday, Every Thursday],
-                rRuleByMonth = [September, November],
-                rRuleWeekStart = Wednesday
-              }
-          start = LocalTime (d 2020 08 20) tod
-       in --  This limit will be reached and cut of 2 recurrences
-          rruleDateTimeOccurrencesUntil start rule limit
-            `shouldBe` [ LocalTime (d 2020 08 20) tod,
-                         LocalTime (d 2020 09 02) tod,
-                         LocalTime (d 2020 09 03) tod,
-                         LocalTime (d 2020 09 16) tod,
-                         LocalTime (d 2020 09 17) tod,
-                         LocalTime (d 2020 09 30) tod,
-                         LocalTime (d 2020 11 11) tod,
-                         LocalTime (d 2020 11 12) tod,
-                         LocalTime (d 2020 11 25) tod,
-                         LocalTime (d 2020 11 26) tod,
-                         LocalTime (d 2021 09 01) tod
-                       ]
+    specify "it works for this complex example" $
+      forAllValid $ \tod ->
+        let limit = LocalTime (d 2024 01 01) midnight
+            rule =
+              (rRule Weekly)
+                { rRuleInterval = Interval 2,
+                  rRuleUntilCount = Count 11,
+                  rRuleByDay = [Every Wednesday, Every Thursday],
+                  rRuleByMonth = [September, November],
+                  rRuleWeekStart = Wednesday
+                }
+            start = LocalTime (d 2020 08 20) tod
+         in --  This limit will be reached and cut of 2 recurrences
+            rruleDateTimeOccurrencesUntil start rule limit
+              `shouldBe` [ LocalTime (d 2020 08 20) tod,
+                           LocalTime (d 2020 09 02) tod,
+                           LocalTime (d 2020 09 03) tod,
+                           LocalTime (d 2020 09 16) tod,
+                           LocalTime (d 2020 09 17) tod,
+                           LocalTime (d 2020 09 30) tod,
+                           LocalTime (d 2020 11 11) tod,
+                           LocalTime (d 2020 11 12) tod,
+                           LocalTime (d 2020 11 25) tod,
+                           LocalTime (d 2020 11 26) tod,
+                           LocalTime (d 2021 09 01) tod
+                         ]
     specify "It works for this BYSETPOS example: The last hour of every week" $
       --  An limit in the future because it won't be reached anyway
       let limit = LocalTime (d 2024 01 01) midnight
@@ -95,36 +96,44 @@ spec = do
     let weeklyDateTimeNextRecurrence start lim i ba bb bc bd be bf bg =
           headMay $ weeklyDateTimeRecurrence start lim i ba bb bc bd be bf bg
     describe "No ByX's" $ do
-      specify "Every week" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] []
-          `shouldBe` Just (l (d 2020 08 15) tod)
-      specify "Every other week" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 2) [] Monday [] [] [] [] []
-          `shouldBe` Just (l (d 2020 08 22) tod)
+      specify "Every week" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 1) [] Monday [] [] [] [] []
+            `shouldBe` Just (l (d 2020 08 15) tod)
+      specify "Every other week" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2020 08 08) tod) limit (Interval 2) [] Monday [] [] [] [] []
+            `shouldBe` Just (l (d 2020 08 22) tod)
     describe "ByMonth" $ do
-      specify "Every week in Sept" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 1) [September] Monday [] [] [] [] []
-          `shouldBe` Just (l (d 2020 09 07) tod)
-      specify "Every other week in Sept" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 2) [September] Monday [] [] [] [] []
-          `shouldBe` Just (l (d 2020 09 14) tod)
+      specify "Every week in Sept" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 1) [September] Monday [] [] [] [] []
+            `shouldBe` Just (l (d 2020 09 07) tod)
+      specify "Every other week in Sept" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2019 09 30) tod) limit (Interval 2) [September] Monday [] [] [] [] []
+            `shouldBe` Just (l (d 2020 09 14) tod)
     -- No 'ByWeekNo' because it's excluded by the table
     -- No 'ByYearDay' because it's excluded by the table
     -- No 'ByMonthDay' because it's excluded by the table
     describe "ByDay" $ do
-      specify "Every wednesday and thursday" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 05) tod) limit (Interval 1) [] Monday [Wednesday, Thursday] [] [] [] []
-          `shouldBe` Just (l (d 2020 08 06) tod)
-      specify "Every other thursday and friday" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 2) [] Monday [Thursday, Friday] [] [] [] []
-          `shouldBe` Just (l (d 2020 08 20) tod)
-      specify "Every sunday, at the end of the year" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2019 12 29) tod) limit (Interval 1) [] Monday [Sunday] [] [] [] []
-          `shouldBe` Just (l (d 2020 01 05) tod)
+      specify "Every wednesday and thursday" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2020 08 05) tod) limit (Interval 1) [] Monday [Wednesday, Thursday] [] [] [] []
+            `shouldBe` Just (l (d 2020 08 06) tod)
+      specify "Every other thursday and friday" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 2) [] Monday [Thursday, Friday] [] [] [] []
+            `shouldBe` Just (l (d 2020 08 20) tod)
+      specify "Every sunday, at the end of the year" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2019 12 29) tod) limit (Interval 1) [] Monday [Sunday] [] [] [] []
+            `shouldBe` Just (l (d 2020 01 05) tod)
     describe "BySetPos" $ do
-      specify "The first day of every week" $ forAllValid $ \tod ->
-        weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 1) [] Friday [Friday, Saturday] [] [] [] [SetPos 1]
-          `shouldBe` Just (l (d 2020 08 14) tod)
+      specify "The first day of every week" $
+        forAllValid $ \tod ->
+          weeklyDateTimeNextRecurrence (l (d 2020 08 07) tod) limit (Interval 1) [] Friday [Friday, Saturday] [] [] [] [SetPos 1]
+            `shouldBe` Just (l (d 2020 08 14) tod)
     describe "ByHour" $ do
       specify "16h every other week" $
         weeklyDateTimeNextRecurrence (LocalTime (d 2020 08 06) (t 16 00 00)) limit (Interval 2) [] Monday [] [Hour 16] [] [] []

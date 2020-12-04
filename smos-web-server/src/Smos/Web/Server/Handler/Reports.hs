@@ -25,6 +25,6 @@ getReportsR = withLogin $ \_ -> do
 getReportsInstanceR :: Handler ()
 getReportsInstanceR =
   withLogin' $ \userName token ->
-    webSockets
-      $ withSmosShellSession userName token
-      $ \terminalHandle -> communicateWithTerminal terminalHandle
+    webSockets $
+      withSmosShellSession userName token $
+        \terminalHandle -> communicateWithTerminal terminalHandle

@@ -6,8 +6,8 @@
 module Smos.Calendar.Import.TimeZone where
 
 import Data.Aeson
-import qualified Data.Set as S
 import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time
 import Data.Validity
 import GHC.Generics
@@ -36,14 +36,13 @@ instance ToJSON TimeZoneHistory where
   toJSON (TimeZoneHistory [x]) = toJSON x
   toJSON (TimeZoneHistory l) = toJSON l
 
-data TimeZoneHistoryRule
-  = TimeZoneHistoryRule
-      { timeZoneHistoryRuleStart :: !LocalTime, -- In the timezone at the time
-        timeZoneHistoryRuleOffsetFrom :: !UTCOffset,
-        timeZoneHistoryRuleOffsetTo :: !UTCOffset,
-        timeZoneHistoryRuleRRules :: !(Set RRule),
-        timeZoneHistoryRuleRDates :: !(Set CalRDate)
-      }
+data TimeZoneHistoryRule = TimeZoneHistoryRule
+  { timeZoneHistoryRuleStart :: !LocalTime, -- In the timezone at the time
+    timeZoneHistoryRuleOffsetFrom :: !UTCOffset,
+    timeZoneHistoryRuleOffsetTo :: !UTCOffset,
+    timeZoneHistoryRuleRRules :: !(Set RRule),
+    timeZoneHistoryRuleRDates :: !(Set CalRDate)
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity TimeZoneHistoryRule

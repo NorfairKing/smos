@@ -35,13 +35,12 @@ produceNextActionReportCursor dc =
       )
       dc
 
-data NextActionReportCursor
-  = NextActionReportCursor
-      { nextActionReportCursorNextActionEntryCursors :: [NextActionEntryCursor],
-        nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor),
-        nextActionReportCursorFilterBar :: TextCursor,
-        nextActionReportCursorSelection :: NextActionReportCursorSelection
-      }
+data NextActionReportCursor = NextActionReportCursor
+  { nextActionReportCursorNextActionEntryCursors :: [NextActionEntryCursor],
+    nextActionReportCursorSelectedNextActionEntryCursors :: Maybe (NonEmptyCursor NextActionEntryCursor),
+    nextActionReportCursorFilterBar :: TextCursor,
+    nextActionReportCursorSelection :: NextActionReportCursorSelection
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionReportCursor
@@ -157,11 +156,10 @@ nextActionReportCursorDelete =
         Just Deleted -> Nothing
         Just (Updated narc) -> Just narc
 
-data NextActionEntryCursor
-  = NextActionEntryCursor
-      { nextActionEntryCursorFilePath :: Path Rel File,
-        nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
-      }
+data NextActionEntryCursor = NextActionEntryCursor
+  { nextActionEntryCursorFilePath :: Path Rel File,
+    nextActionEntryCursorForestCursor :: ForestCursor Entry Entry
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntryCursor

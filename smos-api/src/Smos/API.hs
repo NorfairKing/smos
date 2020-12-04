@@ -55,11 +55,10 @@ smosAPI = Proxy
 
 type SmosAPI = ToServantApi APIRoutes
 
-data APIRoutes route
-  = APIRoutes
-      { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes,
-        protectedRoutes :: route :- ToServantApi ProtectedRoutes
-      }
+data APIRoutes route = APIRoutes
+  { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes,
+    protectedRoutes :: route :- ToServantApi ProtectedRoutes
+  }
   deriving (Generic)
 
 smosUnprotectedAPI :: Proxy SmosUnprotectedAPI
@@ -67,11 +66,10 @@ smosUnprotectedAPI = Proxy
 
 type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
-data UnprotectedRoutes route
-  = UnprotectedRoutes
-      { postRegister :: !(route :- PostRegister),
-        postLogin :: !(route :- PostLogin)
-      }
+data UnprotectedRoutes route = UnprotectedRoutes
+  { postRegister :: !(route :- PostRegister),
+    postLogin :: !(route :- PostLogin)
+  }
   deriving (Generic)
 
 smosProtectedAPI :: Proxy SmosProtectedAPI
@@ -79,10 +77,9 @@ smosProtectedAPI = Proxy
 
 type ProtectAPI = Auth '[JWT] AuthCookie
 
-newtype AuthCookie
-  = AuthCookie
-      { authCookieUsername :: Username
-      }
+newtype AuthCookie = AuthCookie
+  { authCookieUsername :: Username
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance FromJSON AuthCookie
@@ -95,23 +92,21 @@ instance ToJWT AuthCookie
 
 type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
-data ProtectedRoutes route
-  = ProtectedRoutes
-      { postSync :: !(route :- ProtectAPI :> PostSync),
-        getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
-        getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
-        putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
-        reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
-      }
+data ProtectedRoutes route = ProtectedRoutes
+  { postSync :: !(route :- ProtectAPI :> PostSync),
+    getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
+    getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
+    putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
+    reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
+  }
   deriving (Generic)
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
-data Register
-  = Register
-      { registerUsername :: Username,
-        registerPassword :: Text
-      }
+data Register = Register
+  { registerUsername :: Username,
+    registerPassword :: Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Register
@@ -125,11 +120,10 @@ instance FromJSON Register
 type PostLogin =
   "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
 
-data Login
-  = Login
-      { loginUsername :: Username,
-        loginPassword :: Text
-      }
+data Login = Login
+  { loginUsername :: Username,
+    loginPassword :: Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Login
@@ -161,10 +155,9 @@ instance PersistField (UUID a) where
 instance PersistFieldSql (UUID a) where
   sqlType Proxy = SqlBlob
 
-newtype SyncFile
-  = SyncFile
-      { syncFileContents :: ByteString
-      }
+newtype SyncFile = SyncFile
+  { syncFileContents :: ByteString
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncFile
@@ -186,10 +179,9 @@ instance ToJSON SyncFile where
   toJSON SyncFile {..} =
     object ["contents" .= SB8.unpack (Base64.encode syncFileContents)]
 
-data SyncRequest
-  = SyncRequest
-      { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
-      }
+data SyncRequest = SyncRequest
+  { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncRequest
@@ -203,11 +195,10 @@ instance ToJSON SyncRequest where
   toJSON SyncRequest {..} =
     object ["items" .= syncRequestItems]
 
-data SyncResponse
-  = SyncResponse
-      { syncResponseServerId :: ServerUUID,
-        syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
-      }
+data SyncResponse = SyncResponse
+  { syncResponseServerId :: ServerUUID,
+    syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity SyncResponse
@@ -235,11 +226,10 @@ type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel Fi
 
 type ReportsAPI = ToServantApi ReportRoutes
 
-data ReportRoutes route
-  = ReportRoutes
-      { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
-        getAgendaReport :: !(route :- ProtectAPI :> GetAgendaReport)
-      }
+data ReportRoutes route = ReportRoutes
+  { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
+    getAgendaReport :: !(route :- ProtectAPI :> GetAgendaReport)
+  }
   deriving (Generic)
 
 type GetNextActionReport = "next" :> Get '[JSON] NextActionReport

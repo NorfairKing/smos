@@ -64,11 +64,10 @@ instance FromJSON Modifier where
 instance YamlSchema Modifier where
   yamlSchema = eitherParser (left errorBundlePretty . parse (modifierP <* eof) "yaml text") yamlSchema
 
-data KeyPress
-  = KeyPress
-      { keyPressKey :: !Key,
-        keyPressMods :: ![Modifier]
-      }
+data KeyPress = KeyPress
+  { keyPressKey :: !Key,
+    keyPressMods :: ![Modifier]
+  }
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity KeyPress where
@@ -164,12 +163,12 @@ renderKeyPress (KeyPress key mods) =
 keyPressP :: P KeyPress
 keyPressP = do
   mods <-
-    many
-      $ try
-      $ do
-        m <- modifierP
-        void $ string' "+" <|> string "-"
-        pure m
+    many $
+      try $
+        do
+          m <- modifierP
+          void $ string' "+" <|> string "-"
+          pure m
   key <- keyP
   pure $ KeyPress key mods
 

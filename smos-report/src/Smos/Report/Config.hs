@@ -37,8 +37,8 @@ module Smos.Report.Config
 where
 
 import Data.Aeson
-import qualified Data.Map as M
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
@@ -47,11 +47,10 @@ import Path.IO
 import Smos.Report.Filter
 import YamlParse.Applicative
 
-data SmosReportConfig
-  = SmosReportConfig
-      { smosReportConfigDirectoryConfig :: !DirectoryConfig,
-        smosReportConfigWorkConfig :: !WorkReportConfig
-      }
+data SmosReportConfig = SmosReportConfig
+  { smosReportConfigDirectoryConfig :: !DirectoryConfig,
+    smosReportConfigWorkConfig :: !WorkReportConfig
+  }
   deriving (Show, Eq, Generic)
 
 defaultReportConfig :: SmosReportConfig
@@ -61,13 +60,12 @@ defaultReportConfig =
       smosReportConfigWorkConfig = defaultWorkReportConfig
     }
 
-data DirectoryConfig
-  = DirectoryConfig
-      { directoryConfigWorkflowFileSpec :: !WorkflowDirSpec,
-        directoryConfigArchiveFileSpec :: !ArchiveDirSpec,
-        directoryConfigProjectsFileSpec :: !ProjectsDirSpec,
-        directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
-      }
+data DirectoryConfig = DirectoryConfig
+  { directoryConfigWorkflowFileSpec :: !WorkflowDirSpec,
+    directoryConfigArchiveFileSpec :: !ArchiveDirSpec,
+    directoryConfigProjectsFileSpec :: !ProjectsDirSpec,
+    directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
+  }
   deriving (Show, Eq, Generic)
 
 defaultDirectoryConfig :: DirectoryConfig
@@ -79,27 +77,26 @@ defaultDirectoryConfig =
       directoryConfigArchivedProjectsFileSpec = defaultArchivedProjectsDirSpec
     }
 
-data WorkReportConfig
-  = WorkReportConfig
-      { workReportConfigBaseFilter :: Maybe EntryFilterRel,
-        workReportConfigContexts :: Map ContextName EntryFilterRel
-      }
+data WorkReportConfig = WorkReportConfig
+  { workReportConfigBaseFilter :: Maybe EntryFilterRel,
+    workReportConfigContexts :: Map ContextName EntryFilterRel
+  }
   deriving (Show, Eq, Generic)
 
 defaultWorkReportConfig :: WorkReportConfig
 defaultWorkReportConfig =
   WorkReportConfig
     { workReportConfigBaseFilter = Just defaultWorkBaseFilter,
-      workReportConfigContexts = M.fromList []
+      workReportConfigContexts = M.empty
     }
 
 defaultWorkBaseFilter :: EntryFilterRel
 defaultWorkBaseFilter =
-  FilterSnd
-    $ FilterWithinCursor
-    $ FilterEntryTodoState
-    $ FilterMaybe False
-    $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+  FilterSnd $
+    FilterWithinCursor $
+      FilterEntryTodoState $
+        FilterMaybe False $
+          FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)
@@ -194,10 +191,9 @@ resolveReportProjectsDir = resolveDirProjectsDir . smosReportConfigDirectoryConf
 resolveReportArchivedProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
 resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportConfigDirectoryConfig
 
-newtype ContextName
-  = ContextName
-      { contextNameText :: Text
-      }
+newtype ContextName = ContextName
+  { contextNameText :: Text
+  }
   deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
 
 instance Validity ContextName

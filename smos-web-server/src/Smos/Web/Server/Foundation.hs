@@ -19,8 +19,8 @@ import qualified Data.ByteString.Base16 as Base16
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Text as T
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Types as Http
@@ -38,18 +38,17 @@ import Yesod.Auth
 import qualified Yesod.Auth.Message as Msg
 import Yesod.EmbeddedStatic
 
-data App
-  = App
-      { appLogLevel :: !LogLevel,
-        appAPIBaseUrl :: !BaseUrl,
-        appDocsBaseUrl :: !(Maybe BaseUrl),
-        appStatic :: !EmbeddedStatic,
-        appLoginTokens :: !(TVar (Map Username Token)),
-        appHttpManager :: !Http.Manager,
-        appDataDir :: !(Path Abs Dir),
-        appGoogleAnalyticsTracking :: !(Maybe Text),
-        appGoogleSearchConsoleVerification :: !(Maybe Text)
-      }
+data App = App
+  { appLogLevel :: !LogLevel,
+    appAPIBaseUrl :: !BaseUrl,
+    appDocsBaseUrl :: !(Maybe BaseUrl),
+    appStatic :: !EmbeddedStatic,
+    appLoginTokens :: !(TVar (Map Username Token)),
+    appHttpManager :: !Http.Manager,
+    appDataDir :: !(Path Abs Dir),
+    appGoogleAnalyticsTracking :: !(Maybe Text),
+    appGoogleSearchConsoleVerification :: !(Maybe Text)
+  }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
 
@@ -140,12 +139,11 @@ getNewAccountR = do
   msgs <- getMessages
   liftHandler $ defaultLayout $(widgetFile "auth/register")
 
-data NewAccount
-  = NewAccount
-      { newAccountUsername :: Username,
-        newAccountPassword1 :: Text,
-        newAccountPassword2 :: Text
-      }
+data NewAccount = NewAccount
+  { newAccountUsername :: Username,
+    newAccountPassword1 :: Text,
+    newAccountPassword2 :: Text
+  }
   deriving (Show)
 
 postNewAccountR :: AuthHandler App TypedContent

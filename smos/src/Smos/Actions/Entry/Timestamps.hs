@@ -44,11 +44,11 @@ timestampsSelect tsn =
       actionFunc = do
         modifyMTimestampsCursorSM $ \mtsc -> do
           lt <- liftIO getLocalTime
-          pure
-            $ Just
-            $ case mtsc of
-              Nothing -> startTimestampsCursor tsn lt
-              Just tsc -> timestampsCursorSelectOrAdd tsn lt tsc
+          pure $
+            Just $
+              case mtsc of
+                Nothing -> startTimestampsCursor tsn lt
+                Just tsc -> timestampsCursorSelectOrAdd tsn lt tsc
         modifyEntryCursor entryCursorSelectTimestamps,
       actionDescription = "Select a timestamp for name " <> t
     }

@@ -47,10 +47,9 @@ import Lens.Micro
 import Smos.Cursor.Tag
 import Smos.Data
 
-newtype TagsCursor
-  = TagsCursor
-      { tagsCursorNonEmptyCursor :: NonEmptyCursor TagCursor Tag
-      }
+newtype TagsCursor = TagsCursor
+  { tagsCursorNonEmptyCursor :: NonEmptyCursor TagCursor Tag
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity TagsCursor

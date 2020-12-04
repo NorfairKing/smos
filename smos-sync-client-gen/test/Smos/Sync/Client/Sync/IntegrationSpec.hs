@@ -19,11 +19,11 @@ import Test.Validity
 
 spec :: Spec
 spec =
-  serverSpec
-    $ describe "testSyncSmosClient"
-    $ do
-      singleClientSpec
-      twoClientSpec
+  serverSpec $
+    describe "testSyncSmosClient" $
+      do
+        singleClientSpec
+        twoClientSpec
 
 singleClientSpec :: SpecWith ClientEnv
 singleClientSpec =
@@ -540,43 +540,43 @@ twoClientsFromBothClientsSpec = do
                 fullySyncTwoClients c1 c2
                 assertClientContents c1 m3
                 assertClientContents c2 m3
-    describe "conflicts"
-      $ describe "both changed"
-      $ do
-        it "succesfully syncs a single conflicting change" $ \cenv ->
-          forAllValid $ \rp ->
-            forAllValid $ \contents3 ->
-              forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
-                forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
-                  withNewRegisteredUser cenv $ \r ->
-                    withSyncClient cenv r $ \c1 ->
-                      withSyncClient cenv r $ \c2 -> do
-                        let m = CM.singleton rp contents3
-                        setupClientContents c1 m
-                        setupClientContents c2 m
-                        fullySyncTwoClients c1 c2
-                        let m1 = CM.singleton rp contents1
-                        let m2 = CM.singleton rp contents2
-                        setupClientContents c1 m1
-                        setupClientContents c2 m2
-                        fullySyncTwoClients c1 c2
-                        let m' = CM.singleton rp contents1 -- client 1 synced first
-                        assertClientContents c1 m'
-                        assertClientContents c2 m'
-        it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
-          forAllValid $ \m ->
-            forAll (mapsWithDifferentContentsAtNewPath3 m) $ \(m1, m2, m3) ->
-              withNewRegisteredUser cenv $ \r ->
-                withSyncClient cenv r $ \c1 ->
-                  withSyncClient cenv r $ \c2 -> do
-                    setupClientContents c1 m3
-                    setupClientContents c2 m3
-                    fullySyncTwoClients c1 c2
-                    setupClientContents c1 m1
-                    setupClientContents c2 m2
-                    fullySyncTwoClients c1 c2
-                    assertClientContents c1 m1
-                    assertClientContents c2 m1
+    describe "conflicts" $
+      describe "both changed" $
+        do
+          it "succesfully syncs a single conflicting change" $ \cenv ->
+            forAllValid $ \rp ->
+              forAllValid $ \contents3 ->
+                forAll (genValid `suchThat` (/= contents3)) $ \contents2 ->
+                  forAll (genValid `suchThat` (/= contents2) `suchThat` (/= contents3)) $ \contents1 ->
+                    withNewRegisteredUser cenv $ \r ->
+                      withSyncClient cenv r $ \c1 ->
+                        withSyncClient cenv r $ \c2 -> do
+                          let m = CM.singleton rp contents3
+                          setupClientContents c1 m
+                          setupClientContents c2 m
+                          fullySyncTwoClients c1 c2
+                          let m1 = CM.singleton rp contents1
+                          let m2 = CM.singleton rp contents2
+                          setupClientContents c1 m1
+                          setupClientContents c2 m2
+                          fullySyncTwoClients c1 c2
+                          let m' = CM.singleton rp contents1 -- client 1 synced first
+                          assertClientContents c1 m'
+                          assertClientContents c2 m'
+          it "succesfully syncs a conflicting change from a set of files" $ \cenv ->
+            forAllValid $ \m ->
+              forAll (mapsWithDifferentContentsAtNewPath3 m) $ \(m1, m2, m3) ->
+                withNewRegisteredUser cenv $ \r ->
+                  withSyncClient cenv r $ \c1 ->
+                    withSyncClient cenv r $ \c2 -> do
+                      setupClientContents c1 m3
+                      setupClientContents c2 m3
+                      fullySyncTwoClients c1 c2
+                      setupClientContents c1 m1
+                      setupClientContents c2 m2
+                      fullySyncTwoClients c1 c2
+                      assertClientContents c1 m1
+                      assertClientContents c2 m1
 
 twoClientsFromBothClientsConcurrentlySpec :: SpecWith ClientEnv
 twoClientsFromBothClientsConcurrentlySpec =

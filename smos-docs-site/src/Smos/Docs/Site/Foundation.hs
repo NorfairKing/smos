@@ -17,26 +17,26 @@ module Smos.Docs.Site.Foundation
   )
 where
 
-import Data.List
+import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
+import Language.Haskell.TH.Load
 import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Casts
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Text.Hamlet
-import Text.Read
 import Yesod
 import Yesod.EmbeddedStatic
 
-data App
-  = App
-      { appWebserverUrl :: !(Maybe Text),
-        appAssets :: !EmbeddedStatic,
-        appCasts :: !EmbeddedStatic,
-        appGoogleAnalyticsTracking :: !(Maybe Text),
-        appGoogleSearchConsoleVerification :: !(Maybe Text)
-      }
+data App = App
+  { appWebserverUrl :: !(Maybe Text),
+    appAssets :: !EmbeddedStatic,
+    appCasts :: !EmbeddedStatic,
+    appGoogleAnalyticsTracking :: !(Maybe Text),
+    appGoogleSearchConsoleVerification :: !(Maybe Text)
+  }
 
 mkYesodData "App" $(parseRoutesFile "routes")
 
@@ -54,9 +54,11 @@ instance Yesod App where
         let menu = $(widgetFile "menu")
         $(widgetFile "default-body")
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
-  errorHandler NotFound = fmap toTypedContent $ defaultLayout $ do
-    setTitle "Page not found"
-    [whamlet|
+  errorHandler NotFound = fmap toTypedContent $
+    defaultLayout $
+      do
+        setTitle "Page not found"
+        [whamlet|
       <h1>
         Page not found
       |]
@@ -80,23 +82,21 @@ getAssetsR t = do
   redirect $ T.intercalate "/" $ "/assets-static/res" : t
 
 lookupPage :: Text -> Handler DocPage
-lookupPage url =
-  case find ((== url) . docPageUrl) docPages of
+lookupPage url = do
+  dps <- loadDocPages
+  case M.lookup [url] dps of
     Nothing -> notFound
     Just dp -> pure dp
 
--- Nice little hack to make this work.
-instance Read DocPage where
-  readPrec = do
-    url <- readPrec
-    case find ((== url) . docPageUrl) docPages of
-      Nothing -> fail "No such page"
-      Just dp -> pure dp
-
-instance PathMultiPiece DocPage where
-  fromPathMultiPiece url =
-    find ((== T.intercalate "/" url) . docPageUrl) docPages
-  toPathMultiPiece = T.splitOn "/" . docPageUrl
+lookupPage' :: [Text] -> Handler DocPage
+lookupPage' url = do
+  dps <- loadDocPages
+  case M.lookup url dps of
+    Nothing -> notFound
+    Just dp -> pure dp
 
 setSmosTitle :: MonadWidget m => Html -> m ()
 setSmosTitle t = setTitle $ "Smos Documentation - " <> t
+
+loadDocPages :: MonadHandler m => m (Map [Text] DocPage)
+loadDocPages = loadIO docPages
