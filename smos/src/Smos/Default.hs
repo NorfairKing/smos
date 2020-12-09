@@ -314,7 +314,11 @@ defaultNextActionReportKeyMap =
             exactKey KBS removeNextActionFilter,
             exactKey KDel deleteNextActionFilter
           ],
-      nextActionReportAnyMatchers = listMatchers []
+      nextActionReportAnyMatchers =
+        listMatchers
+          [ exactKey KEsc exitNextActionReport,
+            exactChar 'q' exitNextActionReport
+          ]
     }
 
 defaultWaitingReportKeyMap :: WaitingReportKeyMap
