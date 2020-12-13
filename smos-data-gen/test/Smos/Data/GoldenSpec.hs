@@ -11,8 +11,8 @@ import Data.Maybe
 import Path
 import Path.IO
 import Smos.Data
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 import Text.Show.Pretty
 
 spec :: Spec

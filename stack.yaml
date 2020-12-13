@@ -28,6 +28,48 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
+- /home/syd/src/validity/validity
+- /home/syd/src/validity/validity-aeson
+- /home/syd/src/validity/validity-bytestring
+- /home/syd/src/validity/validity-containers
+- /home/syd/src/validity/validity-path
+- /home/syd/src/validity/validity-persistent
+- /home/syd/src/validity/validity-primitive
+- /home/syd/src/validity/validity-scientific
+- /home/syd/src/validity/validity-text
+- /home/syd/src/validity/validity-time
+- /home/syd/src/validity/validity-unordered-containers
+- /home/syd/src/validity/validity-uuid
+- /home/syd/src/validity/validity-vector
+- /home/syd/src/validity/genvalidity
+- /home/syd/src/validity/genvalidity-aeson
+- /home/syd/src/validity/genvalidity-bytestring
+- /home/syd/src/validity/genvalidity-containers
+- /home/syd/src/validity/genvalidity-criterion
+- /home/syd/src/validity/genvalidity-hspec
+- /home/syd/src/validity/genvalidity-hspec-aeson
+- /home/syd/src/validity/genvalidity-hspec-binary
+- /home/syd/src/validity/genvalidity-hspec-cereal
+- /home/syd/src/validity/genvalidity-hspec-hashable
+- /home/syd/src/validity/genvalidity-hspec-optics
+- /home/syd/src/validity/genvalidity-hspec-persistent
+- /home/syd/src/validity/genvalidity-path
+- /home/syd/src/validity/genvalidity-persistent
+- /home/syd/src/validity/genvalidity-property
+- /home/syd/src/validity/genvalidity-scientific
+- /home/syd/src/validity/genvalidity-sydtest
+- /home/syd/src/validity/genvalidity-sydtest-aeson
+- /home/syd/src/validity/genvalidity-sydtest-lens
+- /home/syd/src/validity/genvalidity-sydtest-persistent
+- /home/syd/src/validity/genvalidity-text
+- /home/syd/src/validity/genvalidity-time
+- /home/syd/src/validity/genvalidity-unordered-containers
+- /home/syd/src/validity/genvalidity-uuid
+- /home/syd/src/validity/genvalidity-vector
+
+- /home/syd/src/sydtest/sydtest-discover
+- /home/syd/src/sydtest/sydtest
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
@@ -125,44 +167,43 @@ extra-deps:
     - cursor
     - cursor-gen
 
-- github: NorfairKing/validity
-  commit: c38fc635f98580548f82314504e9f8742519f94d
-  subdirs:
-  - genvalidity
-  - genvalidity-aeson
-  - genvalidity-bytestring
-  - genvalidity-containers
-  - genvalidity-criterion
-  - genvalidity-hspec
-  - genvalidity-hspec-aeson
-  - genvalidity-hspec-binary
-  - genvalidity-hspec-cereal
-  - genvalidity-hspec-hashable
-  - genvalidity-hspec-optics
-  - genvalidity-hspec-persistent
-  - genvalidity-path
-  - genvalidity-persistent
-  - genvalidity-property
-  - genvalidity-scientific
-  - genvalidity-text
-  - genvalidity-time
-  - genvalidity-unordered-containers
-  - genvalidity-uuid
-  - genvalidity-vector
-  - validity
-  - validity-aeson
-  - validity-bytestring
-  - validity-containers
-  - validity-path
-  - validity-persistent
-  - validity-primitive
-  - validity-scientific
-  - validity-text
-  - validity-time
-  - validity-unordered-containers
-  - validity-uuid
-  - validity-vector
-  # nix-sha256: sha256:106q361wj8aspggvdj319jny6j6rfdmljha912sf8mdbsxl2gp5i
+# - github: NorfairKing/validity
+#   commit: c38fc635f98580548f82314504e9f8742519f94d
+#   subdirs:
+#   - genvalidity
+#   - genvalidity-aeson
+#   - genvalidity-bytestring
+#   - genvalidity-containers
+#   - genvalidity-criterion
+#   - genvalidity-hspec
+#   - genvalidity-hspec-aeson
+#   - genvalidity-hspec-binary
+#   - genvalidity-hspec-cereal
+#   - genvalidity-hspec-hashable
+#   - genvalidity-hspec-optics
+#   - genvalidity-hspec-persistent
+#   - genvalidity-path
+#   - genvalidity-persistent
+#   - genvalidity-property
+#   - genvalidity-scientific
+#   - genvalidity-text
+#   - genvalidity-time
+#   - genvalidity-unordered-containers
+#   - genvalidity-uuid
+#   - genvalidity-vector
+#   - validity
+#   - validity-aeson
+#   - validity-bytestring
+#   - validity-containers
+#   - validity-path
+#   - validity-persistent
+#   - validity-primitive
+#   - validity-scientific
+#   - validity-text
+#   - validity-time
+#   - validity-unordered-containers
+#   - validity-uuid
+#   - validity-vector
 
 - github: NorfairKing/yamlparse-applicative
   commit: 1d381a4cbc9736a2defc916a93cfcf8000ee7e37

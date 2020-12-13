@@ -14,9 +14,8 @@ import Smos.Cursor.FileBrowser.Gen ()
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Undo
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

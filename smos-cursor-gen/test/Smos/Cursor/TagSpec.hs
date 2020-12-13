@@ -5,8 +5,8 @@ module Smos.Cursor.TagSpec where
 import Smos.Cursor.Tag
 import Smos.Cursor.Tag.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

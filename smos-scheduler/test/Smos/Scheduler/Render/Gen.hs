@@ -7,7 +7,7 @@ import Data.GenValidity.Time ()
 import Smos.Data.Gen ()
 import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render
-import Test.Validity
+import Test.Syd.Validity
 
 instance GenValid RenderContext where
   genValid = genValidStructurally

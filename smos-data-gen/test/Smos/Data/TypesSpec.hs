@@ -14,11 +14,11 @@ import Data.Data
 import Data.Time
 import Smos.Data.Gen ()
 import Smos.Data.Types
-import Test.Hspec
+import Test.Syd
 import Test.QuickCheck
-import Test.Validity
-import Test.Validity.Aeson
-import Test.Validity.Utils
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
+import Test.Syd.Validity.Utils
 
 spec :: Spec
 spec = do

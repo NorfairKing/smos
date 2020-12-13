@@ -10,8 +10,8 @@ import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Smos.Client
 import Smos.Server.TestUtils
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec =

@@ -12,46 +12,46 @@ import Smos.Instance
 import Smos.Terminal
 import Smos.Types
 import System.Exit
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 import UnliftIO
 import UnliftIO.Concurrent
 
 spec :: Spec
-spec = modifyMaxSuccess (`div` 50) $ do
-  describe "Launching smos twice with the same startup file" $ do
-    describe "on a nonexistent file" $ do
-      describe "in the workflow dir" $ do
-        it "fails to start if the file is already locked." $
-          forAllValid $ \rf -> withSystemTempDir "smos-lock-test" $ \workflowDir -> do
-            let startupFile = workflowDir </> rf
-            lockSpec workflowDir startupFile
-      describe "outside the workflow dir" $ do
-        it "fails to start if the file is already locked." $
-          forAllValid $ \rf ->
-            withSystemTempDir "smos-lock-test" $ \tdir -> do
-              let startupFile = tdir </> rf
-              workflowDir <- resolveDir tdir "workflow"
+spec = modifyMaxSuccess (`div` 50) $
+  sequential $ do
+    describe "Launching smos twice with the same startup file" $ do
+      describe "on a nonexistent file" $ do
+        describe "in the workflow dir" $ do
+          it "fails to start if the file is already locked." $
+            forAllValid $ \rf -> withSystemTempDir "smos-lock-test" $ \workflowDir -> do
+              let startupFile = workflowDir </> rf
               lockSpec workflowDir startupFile
-    describe "on an existent file" $ do
-      describe "in the workflow dir" $ do
-        it "fails to start if the file is already locked." $
-          forAllValid $ \rf ->
-            forAllValid $ \sf ->
-              withSystemTempDir "smos-lock-test" $ \workflowDir -> do
-                let startupFile = workflowDir </> rf
-                writeSmosFile startupFile sf
-                lockSpec workflowDir startupFile
-      describe "outside the workflow dir" $ do
-        it "fails to start if the file is already locked." $
-          forAllValid $ \rf ->
-            forAllValid $ \sf ->
+        describe "outside the workflow dir" $ do
+          it "fails to start if the file is already locked." $
+            forAllValid $ \rf ->
               withSystemTempDir "smos-lock-test" $ \tdir -> do
                 let startupFile = tdir </> rf
-                writeSmosFile startupFile sf
                 workflowDir <- resolveDir tdir "workflow"
                 lockSpec workflowDir startupFile
+      describe "on an existent file" $ do
+        describe "in the workflow dir" $ do
+          it "fails to start if the file is already locked." $
+            forAllValid $ \rf ->
+              forAllValid $ \sf ->
+                withSystemTempDir "smos-lock-test" $ \workflowDir -> do
+                  let startupFile = workflowDir </> rf
+                  writeSmosFile startupFile sf
+                  lockSpec workflowDir startupFile
+        describe "outside the workflow dir" $ do
+          it "fails to start if the file is already locked." $
+            forAllValid $ \rf ->
+              forAllValid $ \sf ->
+                withSystemTempDir "smos-lock-test" $ \tdir -> do
+                  let startupFile = tdir </> rf
+                  writeSmosFile startupFile sf
+                  workflowDir <- resolveDir tdir "workflow"
+                  lockSpec workflowDir startupFile
 
 lockSpec :: Path Abs Dir -> Path Abs File -> IO ()
 lockSpec workflowDir startupFile = do

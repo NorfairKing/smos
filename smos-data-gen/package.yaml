@@ -34,7 +34,7 @@ tests:
   smos-data-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -44,9 +44,9 @@ tests:
     - QuickCheck
     - aeson
     - bytestring
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
-    - hspec
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - sydtest
     - path
     - path-io
     - pretty-show

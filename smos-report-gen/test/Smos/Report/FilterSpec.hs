@@ -22,10 +22,10 @@ import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Time hiding (P)
-import Test.Hspec
+import Test.Syd
 import Test.QuickCheck as QC
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 import Text.Parsec
 import Text.Show.Pretty
 

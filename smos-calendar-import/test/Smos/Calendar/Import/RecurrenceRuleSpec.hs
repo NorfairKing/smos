@@ -9,10 +9,10 @@ where
 import qualified Data.Set as S
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
-import Test.Hspec
+import Test.Syd
 import Test.QuickCheck
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = do

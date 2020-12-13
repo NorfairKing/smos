@@ -12,9 +12,9 @@ import Data.GenValidity.Path ()
 import Path
 import Path.IO
 import Smos.Sync.Client.Command.Sync
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+
+import Test.Syd.Validity
 
 spec :: Spec
 spec =

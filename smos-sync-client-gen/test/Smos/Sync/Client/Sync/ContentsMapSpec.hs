@@ -12,10 +12,10 @@ import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
-import Test.Hspec
-import Test.Hspec.QuickCheck
+import Test.Syd
+
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

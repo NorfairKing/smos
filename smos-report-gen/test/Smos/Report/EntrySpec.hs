@@ -9,9 +9,8 @@ import Smos.Report.Filter.Gen ()
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter.Gen ()
 import Smos.Report.TestUtils
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

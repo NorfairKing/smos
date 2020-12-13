@@ -5,8 +5,8 @@ module Smos.Cursor.HeaderSpec where
 import Smos.Cursor.Header
 import Smos.Cursor.Header.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

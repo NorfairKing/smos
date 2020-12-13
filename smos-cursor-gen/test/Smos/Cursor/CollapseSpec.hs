@@ -5,9 +5,9 @@ module Smos.Cursor.CollapseSpec where
 import Smos.Cursor.Collapse
 import Smos.Cursor.Collapse.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do

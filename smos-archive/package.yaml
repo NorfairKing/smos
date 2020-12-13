@@ -40,12 +40,12 @@ tests:
   smos-archive-test:
     main: Spec.hs
     source-dirs: test
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     dependencies:
     - QuickCheck
     - containers
-    - genvalidity-hspec
-    - hspec
+    - genvalidity-sydtest
+    - sydtest
     - smos-archive
     - smos-data
     - smos-data-gen

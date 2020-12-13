@@ -5,9 +5,9 @@ module Smos.Cursor.Report.WaitingSpec where
 import Smos.Cursor.Report.Waiting
 import Smos.Cursor.Report.Waiting.Gen ()
 import Smos.Report.TestUtils
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

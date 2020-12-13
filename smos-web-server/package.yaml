@@ -84,7 +84,7 @@ tests:
   smos-web-server-test:
     main: Spec.hs
     source-dirs: test
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -Wall
     - -threaded
@@ -94,8 +94,8 @@ tests:
     - bytestring
     - containers
     - genvalidity
-    - genvalidity-hspec
-    - hspec
+    - genvalidity-sydtest
+    - sydtest
     - http-client
     - http-types
     - monad-logger

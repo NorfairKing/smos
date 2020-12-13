@@ -10,8 +10,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Smos.Data
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 import Text.Show.Pretty
 
 spec :: Spec

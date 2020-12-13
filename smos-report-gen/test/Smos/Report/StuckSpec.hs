@@ -10,8 +10,8 @@ import Smos.Data.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Stuck
 import Smos.Report.Stuck.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

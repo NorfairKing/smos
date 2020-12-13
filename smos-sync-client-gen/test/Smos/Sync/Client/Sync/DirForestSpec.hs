@@ -8,8 +8,8 @@ where
 import Smos.Sync.Client.DirForest (DirForest (..))
 import qualified Smos.Sync.Client.DirForest as DF
 import Smos.Sync.Client.DirForest.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

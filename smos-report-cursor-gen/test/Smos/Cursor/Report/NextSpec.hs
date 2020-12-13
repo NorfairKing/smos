@@ -5,10 +5,10 @@ module Smos.Cursor.Report.NextSpec where
 import Smos.Cursor.Report.Next
 import Smos.Cursor.Report.Next.Gen ()
 import Smos.Report.TestUtils
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do

@@ -31,10 +31,10 @@ import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.Sync.Gen ()
-import Test.Hspec
-import Test.Hspec.QuickCheck
+import Test.Syd
+
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd.Validity
 
 clientDBSpec :: SpecWith (Pool SqlBackend) -> Spec
 clientDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withClientDB

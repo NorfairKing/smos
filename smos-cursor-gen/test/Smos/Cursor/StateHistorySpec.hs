@@ -5,8 +5,8 @@ module Smos.Cursor.StateHistorySpec where
 import Smos.Cursor.StateHistory
 import Smos.Cursor.StateHistory.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do
@@ -20,10 +20,10 @@ spec = do
       inverseFunctionsOnValid makeStateHistoryCursor rebuildStateHistoryCursor
   describe "stateHistoryCursorSetTodoState" $ do
     it "produces valid cursors" $ producesValidsOnValids3 stateHistoryCursorSetTodoState
-    it "sets the given todo state" pending
+    pending "sets the given todo state"
   describe "stateHistoryCursorToggleTodoState" $ do
     it "produces valid cursors" $ producesValidsOnValids3 stateHistoryCursorToggleTodoState
-    it "toggles the given todo state" pending
+    pending "toggles the given todo state"
   describe "stateHistoryCursorUnsetTodoState" $ do
     it "produces valid cursors" $ producesValidsOnValids2 stateHistoryCursorUnsetTodoState
-    it "unsets any todo state" pending
+    pending "unsets any todo state"

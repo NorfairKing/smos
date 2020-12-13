@@ -52,7 +52,7 @@ tests:
   smos-query-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -64,8 +64,8 @@ tests:
     - dirforest
     - genvalidity-bytestring
     - genvalidity-dirforest
-    - genvalidity-hspec
-    - hspec
+    - genvalidity-sydtest
+    - sydtest
     - path
     - path-io
     - smos-data

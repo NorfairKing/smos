@@ -9,8 +9,8 @@ import Network.HTTP.Types
 import Servant.Client
 import Smos.Client
 import Smos.Server.TestUtils
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec =

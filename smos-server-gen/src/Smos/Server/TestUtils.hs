@@ -18,8 +18,7 @@ import Smos.API.Gen ()
 import Smos.Client
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
-import Test.Hspec
-import Test.Hspec.Core.QuickCheck
+import Test.Syd
 
 data ServerTestEnv = ServerTestEnv
   { serverTestEnvPool :: Pool SqlBackend,

@@ -22,8 +22,7 @@ library:
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-path
-  - hspec
-  - hspec-core
+  - sydtest
   - http-client
   - http-types
   - mergeful
@@ -54,7 +53,7 @@ tests:
   smos-server-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -64,9 +63,9 @@ tests:
     - QuickCheck
     - containers
     - genvalidity
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
-    - hspec
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - sydtest
     - http-types
     - mergeful
     - path

@@ -20,9 +20,8 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

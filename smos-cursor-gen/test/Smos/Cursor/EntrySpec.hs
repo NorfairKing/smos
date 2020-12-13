@@ -5,9 +5,9 @@ module Smos.Cursor.EntrySpec where
 import Smos.Cursor.Entry
 import Smos.Cursor.Entry.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do

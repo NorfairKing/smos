@@ -6,9 +6,9 @@ import Data.List
 import Smos.Cursor.Help.Gen ()
 import Smos.Data.Gen ()
 import Smos.Types
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do

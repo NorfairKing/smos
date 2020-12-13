@@ -14,10 +14,10 @@ import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Utils
 import System.Cron.Types
-import Test.Hspec
-import Test.Hspec.QuickCheck
+import Test.Syd
+
 import Test.QuickCheck
-import Test.Validity hiding (check)
+import Test.Syd.Validity hiding (check)
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 10) $ do

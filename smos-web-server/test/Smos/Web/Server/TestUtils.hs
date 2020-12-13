@@ -19,7 +19,7 @@ import qualified Smos.Server.TestUtils as API
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
-import Test.Hspec
+import Test.Syd
 import Yesod.Auth
 import Yesod.Test
 

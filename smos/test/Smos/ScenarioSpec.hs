@@ -76,7 +76,7 @@ makeTestcases :: [Path Abs File] -> Spec
 makeTestcases = mapM_ makeTestcase
 
 makeTestcase :: Path Abs File -> Spec
-makeTestcase p =
+makeTestcase p = sequential $
   it (fromAbsFile p) $ do
     gtc@ScenarioTestCase {..} <- decodeFileThrow (fromAbsFile p)
     run <- runCommandsOn scenarioTestCaseStartingFile scenarioTestCaseBefore scenarioTestCaseCommands

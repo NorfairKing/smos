@@ -6,9 +6,9 @@ import Path.IO
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Types
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
+import Test.Syd
+
+import Test.Syd.Validity
 import UnliftIO.Resource
 
 spec :: Spec

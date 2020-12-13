@@ -22,7 +22,7 @@ import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.Resolve
 import Smos.Data
 import System.Exit
-import Test.Hspec
+import Test.Syd
 import Text.ICalendar.Parser
 import Text.ICalendar.Types
 import Text.Show.Pretty

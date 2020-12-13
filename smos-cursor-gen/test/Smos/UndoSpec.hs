@@ -11,9 +11,9 @@ import Data.Maybe
 import GHC.Generics (Generic)
 import Smos.Undo
 import Smos.Undo.Gen ()
-import Test.Hspec
+import Test.Syd
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

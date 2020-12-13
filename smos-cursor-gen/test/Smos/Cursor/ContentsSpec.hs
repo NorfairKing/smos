@@ -7,8 +7,8 @@ import Cursor.Types
 import Smos.Cursor.Contents
 import Smos.Cursor.Contents.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 import Text.Show.Pretty (ppShow)
 
 spec :: Spec
