@@ -54,6 +54,16 @@ instance Validity InterestingStore where
         declare "The files all fit in one dirforest without insertion errors" $ isRight $ interestingStoreSafeSmosFileDF is
       ]
 
+emptyInterestingStore :: InterestingStore
+emptyInterestingStore =
+  InterestingStore
+    { workflowFiles = DF.empty,
+      projectFiles = DF.empty,
+      archiveFiles = DF.empty,
+      archivedProjectFiles = DF.empty,
+      otherFiles = DF.empty
+    }
+
 writeInterestingStore :: MonadIO m => Path Abs Dir -> InterestingStore -> m ()
 writeInterestingStore dir is@InterestingStore {..} = do
   let writeSBF :: Path Abs File -> ByteString -> IO ()

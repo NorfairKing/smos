@@ -53,6 +53,7 @@ tests:
     - containers
     - cursor
     - cursor-gen
+    - dirforest
     - genvalidity-containers
     - genvalidity-hspec
     - genvalidity-hspec-aeson
