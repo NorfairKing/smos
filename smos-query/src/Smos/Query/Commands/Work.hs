@@ -86,7 +86,7 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
               ],
             unlessNull
               workReportOverdueStuck
-              [ warningHeading "Overdue Stuck Reports:",
+              [ warningHeading "Overdue Stuck Projects:",
                 [stuckTable]
               ],
             unlessNull
