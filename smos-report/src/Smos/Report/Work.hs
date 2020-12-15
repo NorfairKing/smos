@@ -88,18 +88,18 @@ instance Monoid IntermediateWorkReport where
       }
 
 data WorkReportContext = WorkReportContext
-  { workReportContextNow :: !ZonedTime,
-    workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)),
-    workReportContextBaseFilter :: !(Maybe EntryFilterRel),
-    workReportContextCurrentContext :: !(Maybe EntryFilterRel),
-    workReportContextTimeProperty :: !PropertyName,
-    workReportContextTime :: !(Maybe Time),
-    workReportContextAdditionalFilter :: !(Maybe EntryFilterRel),
-    workReportContextContexts :: !(Map ContextName EntryFilterRel),
-    workReportContextChecks :: !(Set EntryFilterRel),
-    workReportContextSorter :: !(Maybe Sorter),
-    workReportContextWaitingThreshold :: !Word,
-    workReportContextStuckThreshold :: !Word
+  { workReportContextNow :: !ZonedTime, -- Current time, for computing whether something is overdue
+    workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)), -- Projects, for deciding whether a file is a project
+    workReportContextBaseFilter :: !(Maybe EntryFilterRel), -- Base filter, for filtering out most things and selecting next action entries
+    workReportContextCurrentContext :: !(Maybe EntryFilterRel), -- Filter for the current context
+    workReportContextTimeProperty :: !(Maybe PropertyName), -- The property to filter time by, Nothing means no time filtering
+    workReportContextTime :: !(Maybe Time), -- The time to filter by, Nothing means don't discriminate on time
+    workReportContextAdditionalFilter :: !(Maybe EntryFilterRel), -- Additional filter, for an extra filter argument
+    workReportContextContexts :: !(Map ContextName EntryFilterRel), -- Map of contexts, for checking whether any entry has no context
+    workReportContextChecks :: !(Set EntryFilterRel), -- Extra checks to perform
+    workReportContextSorter :: !(Maybe Sorter), -- How to sort the next action entries, Nothing means no sorting
+    workReportContextWaitingThreshold :: !Word, -- When to consider waiting entries 'overdue' (days)
+    workReportContextStuckThreshold :: !Word -- When to consider stuck projects 'overdue' (days)
   }
   deriving (Show, Generic)
 
@@ -140,16 +140,20 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       filterMWithBase mf = combineMFilter mf workReportContextBaseFilter
       totalCurrent :: Maybe EntryFilterRel
       totalCurrent =
-        combineMFilter workReportContextCurrentContext $
-          FilterSnd
-            . FilterWithinCursor
-            . FilterEntryProperties
-            . FilterMapVal workReportContextTimeProperty
-            . FilterMaybe False
-            . FilterPropertyTime
-            . FilterMaybe False
-            . FilterOrd LEC
-            <$> workReportContextTime
+        combineMFilter workReportContextCurrentContext $ do
+          t <- workReportContextTime
+          pn <- workReportContextTimeProperty
+          pure $
+            FilterSnd $
+              FilterWithinCursor $
+                FilterEntryProperties $
+                  FilterMapVal pn $
+                    FilterMaybe False $
+                      FilterPropertyTime $
+                        FilterMaybe False $
+                          FilterOrd
+                            LEC
+                            t
       currentFilter :: Maybe EntryFilterRel
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
       matchesSelectedContext = maybe True (`filterPredicate` (rp, fc)) currentFilter
@@ -224,13 +228,14 @@ instance Validity WorkReport where
         declare "The agenda entries are sorted" $ sortAgendaEntries workReportAgendaEntries == workReportAgendaEntries
       ]
 
-finishWorkReport :: ZonedTime -> PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
-finishWorkReport now pn mt ms wr =
+finishWorkReport :: ZonedTime -> Maybe PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
+finishWorkReport now mpn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
       mAutoFilter :: Maybe EntryFilterRel
       mAutoFilter = do
         ae <- intermediateWorkReportNextBegin wr
         let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
+        pn <- mpn
         pure $
           FilterSnd $
             FilterWithinCursor $

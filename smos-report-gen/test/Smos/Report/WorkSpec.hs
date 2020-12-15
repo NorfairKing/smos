@@ -7,9 +7,7 @@ module Smos.Report.WorkSpec where
 import qualified Data.DirForest as DF
 import Data.GenValidity.Path ()
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Set as S
-import Data.Time
 import Path
 import Smos.Data
 import Smos.Data.Gen ()
@@ -70,7 +68,7 @@ spec = do
                             workReportContextProjectsSubdir = Just [reldir|projects|],
                             workReportContextBaseFilter = Just defaultWorkBaseFilter,
                             workReportContextCurrentContext = Nothing,
-                            workReportContextTimeProperty = "timewindow",
+                            workReportContextTimeProperty = Nothing,
                             workReportContextTime = Nothing,
                             workReportContextAdditionalFilter = Nothing,
                             workReportContextContexts = M.empty,
@@ -111,7 +109,7 @@ spec = do
                               workReportContextProjectsSubdir = Just [reldir|projects|],
                               workReportContextBaseFilter = Just defaultWorkBaseFilter,
                               workReportContextCurrentContext = Nothing,
-                              workReportContextTimeProperty = "timewindow",
+                              workReportContextTimeProperty = Nothing,
                               workReportContextTime = Nothing,
                               workReportContextAdditionalFilter = Nothing,
                               workReportContextContexts = M.empty,

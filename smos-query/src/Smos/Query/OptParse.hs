@@ -153,12 +153,11 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   (Just a, Nothing) -> Just a
                   (Nothing, Just a) -> Just a
                   (Just a1, Just a2) -> Just $ f a1 a2
-          let pn = fromMaybe "timewindow" $ mwc workConfTimeFilterProperty
           pure $
             DispatchWork
               WorkSettings
                 { workSetContext = workFlagContext,
-                  workSetTimeProperty = pn,
+                  workSetTimeProperty = mwc workConfTimeFilterProperty,
                   workSetTime = workFlagTime,
                   workSetFilter = workFlagFilter,
                   workSetChecks = fromMaybe S.empty $ wc workConfChecks,

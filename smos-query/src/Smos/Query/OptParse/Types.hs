@@ -288,7 +288,7 @@ data ReportSettings = ReportSettings
 
 data WorkSettings = WorkSettings
   { workSetContext :: Maybe ContextName,
-    workSetTimeProperty :: PropertyName,
+    workSetTimeProperty :: Maybe PropertyName,
     workSetTime :: Maybe Time,
     workSetFilter :: Maybe EntryFilterRel,
     workSetChecks :: Set EntryFilterRel,
