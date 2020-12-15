@@ -96,6 +96,7 @@ tests:
     - genvalidity
     - genvalidity-sydtest
     - sydtest
+    - sydtest-yesod
     - http-client
     - http-types
     - monad-logger
@@ -112,4 +113,3 @@ tests:
     - stm
     - text
     - yesod-auth
-    - yesod-test

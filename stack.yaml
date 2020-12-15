@@ -67,8 +67,9 @@ packages:
 - /home/syd/src/validity/genvalidity-uuid
 - /home/syd/src/validity/genvalidity-vector
 
-- /home/syd/src/sydtest/sydtest-discover
 - /home/syd/src/sydtest/sydtest
+- /home/syd/src/sydtest/sydtest-discover
+- /home/syd/src/sydtest/sydtest-yesod
 
 # These are duplicated in nix/overlay.
 ghc-options:

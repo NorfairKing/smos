@@ -20,14 +20,10 @@ import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
 import Test.Syd
+import Test.Syd.Yesod
 import Yesod.Auth
-import Yesod.Test
 
-type SmosWebServerSpec = YesodSpec App
-
-type SmosWebServerExample = YesodExample App
-
-smosWebServerSpec :: SmosWebServerSpec -> Spec
+smosWebServerSpec :: YesodSpec App -> Spec
 smosWebServerSpec = API.serverSpec . webServerSpec
 
 webServerSpec :: YesodSpec App -> SpecWith ClientEnv
