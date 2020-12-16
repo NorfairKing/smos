@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --resolver lts-14.27 script
+-- stack --resolver lts-15.15 script
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
