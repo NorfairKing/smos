@@ -244,7 +244,7 @@ browserArchive =
         ad <- liftIO $ resolveReportArchiveDir src
         wd <- liftIO $ resolveReportWorkflowDir src
         fileBrowserArchiveFile wd ad fbc,
-      actionDescription = "Remove the currently selected empty directory. This does nothing if the directory is not empty."
+      actionDescription = "Move the current file to the Archive."
     }
 
 browserCompleteDir :: Action
