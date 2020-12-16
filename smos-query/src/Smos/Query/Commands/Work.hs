@@ -22,7 +22,6 @@ import Smos.Report.Entry
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Work
-import System.Exit
 
 smosQueryWork :: WorkSettings -> Q ()
 smosQueryWork WorkSettings {..} = do
@@ -33,7 +32,7 @@ smosQueryWork WorkSettings {..} = do
   let baseFilter = workReportConfigBaseFilter wc
   mcf <- forM workSetContext $ \cn ->
     case M.lookup cn contexts of
-      Nothing -> liftIO $ die $ unwords ["Context not found:", T.unpack $ contextNameText cn]
+      Nothing -> dieQ $ unwords ["Context not found:", T.unpack $ contextNameText cn]
       Just cf -> pure cf
   wd <- liftIO $ resolveReportWorkflowDir src
   pd <- liftIO $ resolveReportProjectsDir src

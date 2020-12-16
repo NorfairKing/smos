@@ -11,6 +11,7 @@ module Smos.Query.Config
     putTableLn,
     putBoxLn,
     getShouldPrint,
+    dieQ,
     module Smos.Report.Config,
     module Control.Monad.IO.Class,
     module Control.Monad.Reader,
@@ -29,6 +30,7 @@ import Rainbox as Box
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
+import System.Exit
 import System.IO
 
 data SmosQueryConfig = SmosQueryConfig
@@ -79,3 +81,8 @@ putBoxLn box = do
 
 getShouldPrint :: Q ShouldPrint
 getShouldPrint = PrintWarning <$> asks smosQueryConfigErrorHandle
+
+dieQ :: String -> Q a
+dieQ err = do
+  errH <- asks smosQueryConfigErrorHandle
+  liftIO $ hPutStrLn errH err >> exitFailure

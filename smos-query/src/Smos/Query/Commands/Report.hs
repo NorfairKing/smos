@@ -18,7 +18,6 @@ import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Projection
 import Smos.Report.Report
-import System.Exit
 
 smosQueryReport :: ReportSettings -> Q ()
 smosQueryReport ReportSettings {..} =
@@ -26,7 +25,7 @@ smosQueryReport ReportSettings {..} =
     Nothing -> liftIO $ T.putStrLn $ availableReportsReport reportSetAvailableReports
     Just reportName ->
       case M.lookup reportName reportSetAvailableReports of
-        Nothing -> liftIO $ die $ "No such prepared report configured: " <> T.unpack reportName
+        Nothing -> dieQ $ "No such prepared report configured: " <> T.unpack reportName
         Just PreparedReport {..} ->
           smosQueryEntry
             EntrySettings
