@@ -5,7 +5,7 @@
 
 See [the documentation site](https://docs.smos.online) for more information.
 
-<img src="logo.png" width="200" alt="logo"/>
+<img src="smos-docs-site/content/assets/logo.svg" width="200" alt="logo"/>
 
 ## Try it out!
 

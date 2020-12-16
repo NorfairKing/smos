@@ -48,7 +48,7 @@ instance Yesod App where
         addStylesheet $ AssetsStaticR bulma_css
         addStylesheet $ AssetsStaticR font_awesome_css
         toWidgetHead
-          [hamlet|<link rel="icon" href=@{AssetsStaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
+          [hamlet|<link rel="icon" href=@{AssetsR ["logo.svg"]} sizes="16x16 32x32 48x48 64x84" type="image/x-icon">|]
         addScript $ AssetsStaticR asciinema_player_js
         addStylesheet $ AssetsStaticR asciinema_player_css
         let menu = $(widgetFile "menu")

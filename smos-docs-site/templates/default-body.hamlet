@@ -4,9 +4,11 @@
       <h1 .title>
         $maybe weburl <- appWebserverUrl app
           <a .cancela href=#{weburl}>
+            <img src=@{AssetsR ["logo.svg"]} alt="Smos Logo" height="30" width="30">
             Smos
         $nothing
           <a .cancela href=@{HomeR}>
+            <img src=@{AssetsR ["logo.svg"]} alt="Smos Logo" height="30" width="30">
             Smos
       <h2 .subtitle>
         A comprehensive self-management system
