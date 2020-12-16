@@ -39,6 +39,8 @@ description: The changelog for all of the Smos tools
   The stuck report now takes a `--threshold` argument.
 - `smos-query`:
   The work report now shows overdue stuck projects as well.
+- `smos-query`:
+  The work report now requires you to configure a timewindow property if you make use of the time filter feature.
 
 ## Removed
 
