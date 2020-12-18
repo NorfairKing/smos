@@ -133,7 +133,7 @@ extra-deps:
   commit: 1c0ca0e24b2a5973e5ccf4e83d24097a22bb9a4a
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: e364adc5ed04e59321aecc9a6158ca3c16f5c0bf
+  commit: 6ca085188fa71609bf1a72aaa3779f7d429392e0
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen

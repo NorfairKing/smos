@@ -3,7 +3,7 @@ module Smos.Web.Server.Handler.HomeSpec (spec) where
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.TestUtils
 import Test.Syd
-import Yesod.Test
+import Test.Syd.Yesod
 
 spec :: Spec
 spec = smosWebServerSpec $ do
