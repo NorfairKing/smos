@@ -1,4 +1,4 @@
 {
   url = "https://github.com/NorfairKing/fuzzy-time";
-  rev = "8995f7d6dc4bb4798d13d005b47aabc45346ee3e";
+  rev = "6ca085188fa71609bf1a72aaa3779f7d429392e0";
 }

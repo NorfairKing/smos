@@ -96,7 +96,7 @@ extra-deps:
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: 8995f7d6dc4bb4798d13d005b47aabc45346ee3e
+  commit: 6ca085188fa71609bf1a72aaa3779f7d429392e0
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
