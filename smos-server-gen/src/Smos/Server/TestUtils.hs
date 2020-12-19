@@ -103,12 +103,8 @@ testLogin :: ClientEnv -> Login -> IO Token
 testLogin cenv lf = do
   errOrRes <- login cenv lf
   case errOrRes of
-    Left err -> failure $ "Failed to login: " <> show err
+    Left err -> expectationFailure $ "Failed to login: " <> show err
     Right t -> pure t
-
--- TODO get rid of this, it's just a synonym now
-failure :: String -> IO a
-failure = expectationFailure
 
 withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
 withNewUser cenv func = withNewUserAndData cenv $ const func
