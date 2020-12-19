@@ -6,7 +6,6 @@ import Smos.Cursor.Report.Next
 import Smos.Cursor.Report.Next.Gen ()
 import Smos.Report.TestUtils
 import Test.Syd
-
 import Test.Syd.Validity
 import Test.Syd.Validity.Lens
 

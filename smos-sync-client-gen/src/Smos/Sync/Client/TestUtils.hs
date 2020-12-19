@@ -31,9 +31,8 @@ import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.DB
 import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.Sync.Gen ()
-import Test.Syd
-
 import Test.QuickCheck
+import Test.Syd
 import Test.Syd.Validity
 
 clientDBSpec :: SpecWith (Pool SqlBackend) -> Spec
@@ -44,7 +43,7 @@ withClientDB func =
   runNoLoggingT $
     DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
       \pool -> do
-        DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+        DB.runSqlPool (void $ DB.runMigrationQuiet migrateAll) pool
         liftIO $ func pool
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec

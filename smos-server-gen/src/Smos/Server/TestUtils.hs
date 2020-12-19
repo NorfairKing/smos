@@ -55,7 +55,7 @@ withServerDB func =
   runNoLoggingT $
     DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
       \pool -> do
-        DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+        DB.runSqlPool (void $ DB.runMigrationQuiet migrateAll) pool
         liftIO $ func pool
 
 serverSpec :: SpecWith ClientEnv -> Spec
@@ -70,7 +70,7 @@ withTestServer' pool func = do
   liftIO $ do
     let mkApp = do
           uuid <- nextRandomUUID
-          flip DB.runSqlPool pool $ void $ DB.runMigrationSilent migrateAll
+          flip DB.runSqlPool pool $ void $ DB.runMigrationQuiet migrateAll
           jwtKey <- Auth.generateKey
           let env =
                 ServerEnv

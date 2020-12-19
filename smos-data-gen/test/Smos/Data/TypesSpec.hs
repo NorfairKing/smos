@@ -14,8 +14,8 @@ import Data.Data
 import Data.Time
 import Smos.Data.Gen ()
 import Smos.Data.Types
-import Test.Syd
 import Test.QuickCheck
+import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson
 import Test.Syd.Validity.Utils

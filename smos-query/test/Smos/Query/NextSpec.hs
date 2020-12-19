@@ -2,7 +2,6 @@ module Smos.Query.NextSpec (spec) where
 
 import Smos.Query.TestUtils
 import Test.Syd
-
 import Test.Syd.Validity
 
 spec :: Spec

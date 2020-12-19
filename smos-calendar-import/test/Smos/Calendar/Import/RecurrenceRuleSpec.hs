@@ -9,8 +9,8 @@ where
 import qualified Data.Set as S
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
-import Test.Syd
 import Test.QuickCheck
+import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson
 

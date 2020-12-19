@@ -14,9 +14,8 @@ import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Utils
 import System.Cron.Types
-import Test.Syd
-
 import Test.QuickCheck
+import Test.Syd
 import Test.Syd.Validity hiding (check)
 
 spec :: Spec

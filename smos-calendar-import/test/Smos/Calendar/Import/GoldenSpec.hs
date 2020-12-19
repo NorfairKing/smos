@@ -25,7 +25,6 @@ import System.Exit
 import Test.Syd
 import Text.ICalendar.Parser
 import Text.ICalendar.Types
-import Text.Show.Pretty
 import YamlParse.Applicative
 
 spec :: Spec

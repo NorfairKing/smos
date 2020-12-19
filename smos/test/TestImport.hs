@@ -16,9 +16,8 @@ import GHC.Generics as X hiding (Selector)
 import Path as X
 import Path.IO as X
 import System.Exit as X
-import Test.Syd as X
 import Test.QuickCheck as X
+import Test.Syd as X
 import Test.Syd.Validity as X
 import Test.Syd.Validity.Aeson as X
-import Text.Show.Pretty as X (ppShow)
 import Prelude as X hiding (head, init, last, tail)

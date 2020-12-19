@@ -13,7 +13,6 @@ import Path
 import Path.IO
 import Smos.Sync.Client.Command.Sync
 import Test.Syd
-
 import Test.Syd.Validity
 
 spec :: Spec

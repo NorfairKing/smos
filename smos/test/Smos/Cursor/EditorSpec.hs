@@ -7,7 +7,6 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Types
 import Test.Syd
-
 import Test.Syd.Validity
 import UnliftIO.Resource
 
