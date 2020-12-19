@@ -21,9 +21,8 @@ library:
   - dirforest
   - genvalidity
   - genvalidity-dirforest
-  - genvalidity-hspec
-  - hspec
-  - hspec-core
+  - genvalidity-sydtest
+  - sydtest
   - http-client
   - mergeful
   - mergeful
@@ -50,7 +49,7 @@ tests:
   smos-sync-client-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -63,12 +62,11 @@ tests:
     - containers
     - genvalidity
     - genvalidity-bytestring
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
-    - genvalidity-hspec-optics
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-lens
     - genvalidity-path
-    - hspec
-    - hspec-core
+    - sydtest
     - mergeful
     - mergeful
     - monad-logger

@@ -11,9 +11,9 @@ import Data.Text (Text)
 import Path
 import Smos.Report.Sorter
 import Smos.Report.Sorter.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 import Text.Megaparsec
 
 spec :: Spec

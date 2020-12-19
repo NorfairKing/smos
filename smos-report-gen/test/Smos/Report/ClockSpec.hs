@@ -5,8 +5,8 @@ import Smos.Data.Gen ()
 import Smos.Report.Clock
 import Smos.Report.Clock.Gen ()
 import Smos.Report.Filter.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

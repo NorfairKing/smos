@@ -4,9 +4,9 @@ module Smos.Report.TimeBlockSpec where
 
 import Smos.Report.TimeBlock
 import Smos.Report.TimeBlock.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = do

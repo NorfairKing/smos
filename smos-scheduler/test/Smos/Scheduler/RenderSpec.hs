@@ -14,8 +14,8 @@ import Smos.Scheduler.Render
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Template
 import Smos.Scheduler.Template.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

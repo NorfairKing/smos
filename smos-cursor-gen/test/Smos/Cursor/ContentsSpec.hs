@@ -2,14 +2,12 @@
 
 module Smos.Cursor.ContentsSpec where
 
-import Control.Monad
 import Cursor.Types
 import Smos.Cursor.Contents
 import Smos.Cursor.Contents.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
-import Text.Show.Pretty (ppShow)
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do
@@ -32,18 +30,13 @@ spec = do
                 Nothing ->
                   expectationFailure "makeContentsCursorWithSelection should not have failed."
                 Just cc' ->
-                  unless (cc' == cc) $
-                    expectationFailure $
-                      unlines
-                        [ "expected",
-                          ppShow cc,
-                          "actual",
-                          ppShow cc',
-                          "The selection of the original (expected) cursor was:",
-                          show (x, y),
-                          "The rebuilt contents were:",
-                          ppShow c
-                        ]
+                  shouldBeWith cc' cc $
+                    unlines
+                      [ "The selection of the original (expected) cursor was:",
+                        show (x, y),
+                        "The rebuilt contents were:",
+                        ppShow c
+                      ]
   describe "contentsCursorSelection" $
     it "produces valid cursors" $
       producesValidsOnValids contentsCursorSelection

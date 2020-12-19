@@ -3,16 +3,14 @@ module Smos.Data.EncodingSpec
   )
 where
 
-import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Smos.Data
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
-import Text.Show.Pretty
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do
@@ -41,16 +39,15 @@ roundtripSpec name func =
                         show pe
                       ]
                 Right sf' ->
-                  unless (sf' == sf) $
-                    expectationFailure $
-                      unlines
-                        [ name ++ " should have roundtripped with parseSmosFile",
-                          "started with:",
-                          ppShow sf,
-                          "encoding produced the following value:",
-                          prettyBs,
-                          "expected:",
-                          ppShow sf',
-                          "actual:",
-                          ppShow sf
-                        ]
+                  shouldBeWith sf' sf $
+                    unlines
+                      [ name ++ " should have roundtripped with parseSmosFile",
+                        "started with:",
+                        ppShow sf,
+                        "encoding produced the following value:",
+                        prettyBs,
+                        "expected:",
+                        ppShow sf',
+                        "actual:",
+                        ppShow sf
+                      ]

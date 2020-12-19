@@ -79,7 +79,7 @@ tests:
   smos-test:
     main: Main.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -102,14 +102,14 @@ tests:
     - filelock
     - genvalidity
     - genvalidity-containers
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
-    - genvalidity-hspec-optics
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-lens
     - genvalidity-path
     - genvalidity-text
     - genvalidity-time
     - genvalidity-unordered-containers
-    - hspec
+    - sydtest
     - megaparsec
     - path
     - path-io

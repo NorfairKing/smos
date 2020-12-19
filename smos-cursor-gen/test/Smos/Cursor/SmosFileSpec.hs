@@ -6,10 +6,9 @@ import Data.Maybe
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFile.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
@@ -51,44 +50,44 @@ spec = modifyMaxShrinks (const 1) $ do
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBefore sfc
          in smosFileCursorSelectPrev sfc' `shouldSatisfy` isJust
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBeforeAndSelect" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelect
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtStart" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtStart
     it "produces a cursor in which you can select below" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBelowAtStart sfc
          in smosFileCursorSelectBelowAtStart sfc' `shouldSatisfy` isJust
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtStartAndSelect" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBelowAtStartAndSelect
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtEnd" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtEnd
     it "produces a cursor in which you can select below" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBelowAtEnd sfc
          in smosFileCursorSelectBelowAtEnd sfc' `shouldSatisfy` isJust
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtEndAndSelect" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryBelowAtEndAndSelect
-    it "inserts an entry below the currently selected entry" pending
+    pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryAfter" $ do
     it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryAfter
     it "produces a cursor in which you can select the next" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryAfter sfc
          in smosFileCursorSelectNext sfc' `shouldSatisfy` isJust
-    it "inserts an entry above the currently selected entry" pending
+    pending "inserts an entry above the currently selected entry"
   describe "smosFileCursorInsertEntryAfterAndSelect" $ do
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorInsertEntryAfterAndSelect
-    it "inserts an entry above the currently selected entry" pending
+    pending "inserts an entry above the currently selected entry"
   describe "smosFileCursorSwapPrev" $
     it "produces valid cursors" $
       producesValidsOnValids smosFileCursorSwapPrev

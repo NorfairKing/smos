@@ -1,4 +1,4 @@
 {
   url = "https://github.com/NorfairKing/validity";
-  rev = "c38fc635f98580548f82314504e9f8742519f94d";
+  rev = "1112c587da3ac32b5bae06d7d662e2351dbe419b";
 }

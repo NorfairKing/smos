@@ -7,8 +7,8 @@ where
 
 import Smos.Client
 import Smos.Web.Server.TestUtils
-import Test.Hspec
-import Yesod.Test
+import Test.Syd
+import Test.Syd.Yesod
 
 spec :: Spec
 spec = smosWebServerSpec $ do

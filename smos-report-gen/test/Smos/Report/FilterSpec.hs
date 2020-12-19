@@ -22,12 +22,11 @@ import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Time hiding (P)
-import Test.Hspec
 import Test.QuickCheck as QC
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 import Text.Parsec
-import Text.Show.Pretty
 
 spec :: Spec
 spec = do
@@ -396,16 +395,15 @@ spec = do
                           show err
                         ]
                   Right f' ->
-                    unless (f == f') $
-                      expectationFailure $
-                        unlines
-                          [ "Original filter:",
-                            ppShow f,
-                            "rendered ast:",
-                            ppShow t,
-                            "parsed filter:",
-                            ppShow f'
-                          ]
+                    shouldBeWith f f' $
+                      unlines
+                        [ "Original filter:",
+                          ppShow f,
+                          "rendered ast:",
+                          ppShow t,
+                          "parsed filter:",
+                          ppShow f'
+                        ]
     describe "renderFilter" $
       it "produces valid text" $
         producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))

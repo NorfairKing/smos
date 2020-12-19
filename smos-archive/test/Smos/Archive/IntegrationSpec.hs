@@ -5,7 +5,7 @@ import Path.IO
 import Smos.Archive
 import Smos.Data
 import System.Environment
-import Test.Hspec
+import Test.Syd
 
 spec :: Spec
 spec = do

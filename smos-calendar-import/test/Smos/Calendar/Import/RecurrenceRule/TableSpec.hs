@@ -7,10 +7,9 @@ import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen
-import Test.Hspec
-import Test.Hspec.QuickCheck
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 import Text.Show.Pretty
 
 spec :: Spec

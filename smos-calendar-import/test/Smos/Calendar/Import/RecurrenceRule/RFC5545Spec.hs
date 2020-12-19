@@ -11,7 +11,7 @@ import qualified Data.Set as S
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
-import Test.Hspec
+import Test.Syd
 
 spec :: Spec
 spec =

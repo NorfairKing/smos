@@ -30,7 +30,7 @@ tests:
   smos-report-cursor-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -39,10 +39,10 @@ tests:
     dependencies:
     - QuickCheck
     - base
-    - genvalidity-hspec
-    - genvalidity-hspec-optics
+    - genvalidity-sydtest
+    - genvalidity-sydtest-lens
     - genvalidity-path
-    - hspec
+    - sydtest
     - smos-data-gen
     - smos-report
     - smos-report-cursor

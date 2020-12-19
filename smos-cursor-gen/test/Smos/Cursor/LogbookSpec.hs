@@ -5,8 +5,8 @@ module Smos.Cursor.LogbookSpec where
 import Smos.Cursor.Logbook
 import Smos.Cursor.Logbook.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

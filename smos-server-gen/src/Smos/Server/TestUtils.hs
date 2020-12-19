@@ -18,8 +18,7 @@ import Smos.API.Gen ()
 import Smos.Client
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
-import Test.Hspec
-import Test.Hspec.Core.QuickCheck
+import Test.Syd
 
 data ServerTestEnv = ServerTestEnv
   { serverTestEnvPool :: Pool SqlBackend,
@@ -56,7 +55,7 @@ withServerDB func =
   runNoLoggingT $
     DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
       \pool -> do
-        DB.runSqlPool (void $ DB.runMigrationSilent migrateAll) pool
+        DB.runSqlPool (void $ DB.runMigrationQuiet migrateAll) pool
         liftIO $ func pool
 
 serverSpec :: SpecWith ClientEnv -> Spec
@@ -71,7 +70,7 @@ withTestServer' pool func = do
   liftIO $ do
     let mkApp = do
           uuid <- nextRandomUUID
-          flip DB.runSqlPool pool $ void $ DB.runMigrationSilent migrateAll
+          flip DB.runSqlPool pool $ void $ DB.runMigrationQuiet migrateAll
           jwtKey <- Auth.generateKey
           let env =
                 ServerEnv
@@ -93,9 +92,7 @@ testClientOrErr :: ClientEnv -> ClientM a -> IO a
 testClientOrErr cenv func = do
   res <- testClient cenv func
   case res of
-    Left err -> do
-      expectationFailure $ show err
-      undefined
+    Left err -> expectationFailure $ show err
     Right r -> pure r
 
 registerLogin :: Register -> Login
@@ -106,13 +103,8 @@ testLogin :: ClientEnv -> Login -> IO Token
 testLogin cenv lf = do
   errOrRes <- login cenv lf
   case errOrRes of
-    Left err -> failure $ "Failed to login: " <> show err
+    Left err -> expectationFailure $ "Failed to login: " <> show err
     Right t -> pure t
-
-failure :: String -> IO a
-failure s = do
-  expectationFailure s
-  error "Won't get here anyway"
 
 withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
 withNewUser cenv func = withNewUserAndData cenv $ const func

@@ -6,8 +6,8 @@ import Cursor.Types
 import Smos.Cursor.Properties
 import Smos.Cursor.Properties.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do
@@ -22,19 +22,19 @@ spec = do
       inverseFunctionsOnValid makePropertiesCursor rebuildPropertiesCursor
   describe "propertiesCursorToggleSelected" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorToggleSelected
-    it "is a movement" pending
+    pending "is a movement"
   describe "propertiesCursorSelectPrevChar" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectPrevChar
-    it "is a movement" pending
+    pending "is a movement"
   describe "propertiesCursorSelectNextChar" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectNextChar
-    it "is a movement" pending
+    pending "is a movement"
   describe "propertiesCursorSelectPrevProperty" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectPrevProperty
-    it "is a movement" pending
+    pending "is a movement"
   describe "propertiesCursorSelectNextProperty" $ do
     it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectNextProperty
-    it "is a movement" pending
+    pending "is a movement"
   describe "propertiesCursorInsert" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $

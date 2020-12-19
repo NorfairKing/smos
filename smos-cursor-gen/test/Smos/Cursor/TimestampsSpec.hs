@@ -6,8 +6,8 @@ import Cursor.FuzzyLocalTime.Gen ()
 import Smos.Cursor.Timestamps
 import Smos.Cursor.Timestamps.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

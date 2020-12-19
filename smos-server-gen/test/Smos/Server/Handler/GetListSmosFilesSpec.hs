@@ -7,8 +7,8 @@ import Smos.Client
 import Smos.Data.Gen ()
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec =

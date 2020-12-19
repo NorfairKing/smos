@@ -13,15 +13,15 @@ import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
 import Smos.Sync.Client.Sync.Gen ()
 import Smos.Sync.Client.TestUtils
-import Test.Hspec
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec =
   serverSpec $
-    describe "testSyncSmosClient" $
-      do
+    sequential $
+      describe "testSyncSmosClient" $ do
         singleClientSpec
         twoClientSpec
 

@@ -5,8 +5,8 @@ where
 
 import Smos.Calendar.Import.Event.Gen ()
 import Smos.Calendar.Import.Render
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

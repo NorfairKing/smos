@@ -15,8 +15,8 @@ import Smos.Sync.Client.DB
 import Smos.Sync.Client.Meta
 import Smos.Sync.Client.MetaMap.Gen ()
 import Smos.Sync.Client.TestUtils
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

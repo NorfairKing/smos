@@ -18,9 +18,8 @@ library:
   - bytestring
   - containers
   - genvalidity
-  - genvalidity-hspec
-  - hspec
-  - hspec-core
+  - genvalidity-sydtest
+  - sydtest
   - http-client
   - mergeful
   - path
@@ -37,7 +36,7 @@ tests:
   smos-client-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -49,11 +48,10 @@ tests:
     - bytestring
     - containers
     - genvalidity
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
-    - genvalidity-hspec-optics
-    - hspec
-    - hspec-core
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-lens
+    - sydtest
     - mergeful
     - monad-logger
     - mtl

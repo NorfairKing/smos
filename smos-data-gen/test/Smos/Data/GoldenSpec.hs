@@ -11,9 +11,8 @@ import Data.Maybe
 import Path
 import Path.IO
 import Smos.Data
-import Test.Hspec
-import Test.Validity
-import Text.Show.Pretty
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do
@@ -80,18 +79,17 @@ shouldFailToParse tf = do
     Left actualErr -> do
       errFile <- addExtension ".error" tf
       expectedErr <- readFile $ fromAbsFile errFile
-      unless (actualErr == expectedErr) $
-        expectationFailure $
-          unlines
-            [ "Actual error for golden test",
-              fromAbsFile tf,
-              "differs from expected error in",
-              fromAbsFile errFile,
-              "expected:",
-              expectedErr,
-              "actual:",
-              actualErr
-            ]
+      shouldBeWith actualErr expectedErr $
+        unlines
+          [ "Actual error for golden test",
+            fromAbsFile tf,
+            "differs from expected error in",
+            fromAbsFile errFile,
+            "expected:",
+            expectedErr,
+            "actual:",
+            actualErr
+          ]
       actualErr `shouldBe` expectedErr
     Right sf ->
       expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]

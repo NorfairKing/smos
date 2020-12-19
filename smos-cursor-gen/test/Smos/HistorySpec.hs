@@ -10,10 +10,10 @@ import Cursor.List.NonEmpty.Gen ()
 import Data.Maybe
 import Smos.History
 import Smos.History.Gen ()
-import Test.Hspec
 import Test.QuickCheck
-import Test.Validity
-import Test.Validity.Optics
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do

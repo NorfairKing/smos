@@ -25,7 +25,7 @@ library:
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-dirforest
-  - genvalidity-hspec
+  - genvalidity-sydtest
   - genvalidity-path
   - genvalidity-text
   - genvalidity-time
@@ -42,7 +42,7 @@ tests:
   smos-report-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -55,10 +55,10 @@ tests:
     - cursor-gen
     - dirforest
     - genvalidity-containers
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - genvalidity-path
-    - hspec
+    - sydtest
     - megaparsec
     - parsec
     - path

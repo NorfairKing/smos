@@ -125,44 +125,56 @@ extra-deps:
     - cursor
     - cursor-gen
 
-- github: NorfairKing/validity
-  commit: c38fc635f98580548f82314504e9f8742519f94d
+- github: NorfairKing/sydtest
+  commit: 23ab09d5640fb3f5f4ef0f75dd8622bfcc3ed9f0
   subdirs:
-  - genvalidity
-  - genvalidity-aeson
-  - genvalidity-bytestring
-  - genvalidity-containers
-  - genvalidity-criterion
-  - genvalidity-hspec
-  - genvalidity-hspec-aeson
-  - genvalidity-hspec-binary
-  - genvalidity-hspec-cereal
-  - genvalidity-hspec-hashable
-  - genvalidity-hspec-optics
-  - genvalidity-hspec-persistent
-  - genvalidity-path
-  - genvalidity-persistent
-  - genvalidity-property
-  - genvalidity-scientific
-  - genvalidity-text
-  - genvalidity-time
-  - genvalidity-unordered-containers
-  - genvalidity-uuid
-  - genvalidity-vector
-  - validity
-  - validity-aeson
-  - validity-bytestring
-  - validity-containers
-  - validity-path
-  - validity-persistent
-  - validity-primitive
-  - validity-scientific
-  - validity-text
-  - validity-time
-  - validity-unordered-containers
-  - validity-uuid
-  - validity-vector
-  # nix-sha256: sha256:106q361wj8aspggvdj319jny6j6rfdmljha912sf8mdbsxl2gp5i
+    - sydtest
+    - sydtest-discover
+    - sydtest-yesod
+
+- github: NorfairKing/validity
+  commit: 1112c587da3ac32b5bae06d7d662e2351dbe419b
+  subdirs:
+    - genvalidity
+    - genvalidity-aeson
+    - genvalidity-bytestring
+    - genvalidity-containers
+    - genvalidity-criterion
+    - genvalidity-hspec
+    - genvalidity-hspec-aeson
+    - genvalidity-hspec-binary
+    - genvalidity-hspec-cereal
+    - genvalidity-hspec-hashable
+    - genvalidity-hspec-optics
+    - genvalidity-hspec-persistent
+    - genvalidity-path
+    - genvalidity-persistent
+    - genvalidity-property
+    - genvalidity-scientific
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-sydtest-hashable
+    - genvalidity-sydtest-lens
+    - genvalidity-sydtest-persistent
+    - genvalidity-text
+    - genvalidity-time
+    - genvalidity-unordered-containers
+    - genvalidity-uuid
+    - genvalidity-vector
+    - validity
+    - validity-aeson
+    - validity-bytestring
+    - validity-containers
+    - validity-path
+    - validity-persistent
+    - validity-primitive
+    - validity-scientific
+    - validity-text
+    - validity-time
+    - validity-unordered-containers
+    - validity-uuid
+    - validity-vector
+
 
 - github: NorfairKing/yamlparse-applicative
   commit: 1d381a4cbc9736a2defc916a93cfcf8000ee7e37

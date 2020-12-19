@@ -4,7 +4,7 @@ import Path.IO
 import Smos.Report.Config
 import Smos.Report.InterestingStore
 import Test.QuickCheck
-import Test.Validity
+import Test.Syd.Validity
 
 withInterestingStore :: (DirectoryConfig -> IO ()) -> Property
 withInterestingStore func = forAllValid $ \is -> withDirectoryConfig is func

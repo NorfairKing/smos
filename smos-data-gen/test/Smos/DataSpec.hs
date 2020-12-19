@@ -5,8 +5,8 @@ where
 
 import Smos.Data
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

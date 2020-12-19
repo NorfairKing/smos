@@ -50,7 +50,7 @@ tests:
   smos-scheduler-test:
     main: Spec.hs
     source-dirs: test/
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     ghc-options:
     - -threaded
     - -rtsopts
@@ -61,12 +61,12 @@ tests:
     - cron
     - genvalidity
     - genvalidity-containers
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - genvalidity-path
     - genvalidity-text
     - genvalidity-time
-    - hspec
+    - sydtest
     - mtl
     - path
     - path-io

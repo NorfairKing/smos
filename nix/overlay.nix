@@ -351,6 +351,7 @@ in
                   )
                   { };
                 terminfo = self.callHackage "terminfo" "0.4.1.4" { };
+                envparse = self.callHackage "envparse" "0.4.1" { };
                 persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
                 # These are turned off for the same reason as the local packages tests
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;

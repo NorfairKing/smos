@@ -54,7 +54,7 @@ tests:
   smos-calendar-import-test:
     main: Spec.hs
     source-dirs: test
-    build-tools: hspec-discover
+    build-tools: sydtest-discover
     dependencies:
     - QuickCheck
     - bytestring
@@ -62,11 +62,11 @@ tests:
     - data-default
     - genvalidity
     - genvalidity-containers
-    - genvalidity-hspec
-    - genvalidity-hspec-aeson
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
-    - hspec
+    - sydtest
     - iCalendar
     - mtl
     - path

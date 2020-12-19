@@ -6,8 +6,8 @@ where
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.WeekDate
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

@@ -7,8 +7,8 @@ import Cursor.Types
 import Smos.Cursor.Tags
 import Smos.Cursor.Tags.Gen ()
 import Smos.Data.Gen ()
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 spec :: Spec
 spec = do

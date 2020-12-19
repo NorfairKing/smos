@@ -13,9 +13,9 @@ import Cursor.Forest.Gen ()
 import Data.Maybe
 import Smos.Report.Comparison
 import Smos.Report.Comparison.Gen ()
-import Test.Hspec
-import Test.Validity
-import Test.Validity.Aeson
+import Test.Syd
+import Test.Syd.Validity
+import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = do

@@ -18,7 +18,7 @@ import Path.IO
 import Smos.Data
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
-import Test.Hspec
+import Test.Syd
 import YamlParse.Applicative
 
 spec :: Spec

@@ -4,7 +4,7 @@ import qualified Data.Text as T
 import Smos.Actions
 import Smos.Default
 import Smos.Types
-import Test.Hspec
+import Test.Syd
 
 spec :: Spec
 spec =

@@ -7,8 +7,8 @@ module Smos.Archive.PromptSpec
 where
 
 import Smos.Archive.Prompt
-import Test.Hspec
-import Test.Validity
+import Test.Syd
+import Test.Syd.Validity
 
 instance GenUnchecked YesNo
 
