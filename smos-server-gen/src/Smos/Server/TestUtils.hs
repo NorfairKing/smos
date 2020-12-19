@@ -92,9 +92,7 @@ testClientOrErr :: ClientEnv -> ClientM a -> IO a
 testClientOrErr cenv func = do
   res <- testClient cenv func
   case res of
-    Left err -> do
-      expectationFailure $ show err
-      undefined
+    Left err -> expectationFailure $ show err
     Right r -> pure r
 
 registerLogin :: Register -> Login
@@ -108,10 +106,9 @@ testLogin cenv lf = do
     Left err -> failure $ "Failed to login: " <> show err
     Right t -> pure t
 
+-- TODO get rid of this, it's just a synonym now
 failure :: String -> IO a
-failure s = do
-  expectationFailure s
-  error "Won't get here anyway"
+failure = expectationFailure
 
 withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
 withNewUser cenv func = withNewUserAndData cenv $ const func
