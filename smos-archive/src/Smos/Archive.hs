@@ -50,12 +50,12 @@ determineToFile :: Path Abs File -> Q (Path Abs File)
 determineToFile file = do
   workflowDir <- asks resolveDirWorkflowDir >>= liftIO
   archiveDir <- asks resolveDirArchiveDir >>= liftIO
-  today <- liftIO $ utctDay <$> getCurrentTime
-  destinationFile today workflowDir archiveDir file
+  lt <- liftIO getLocalTime
+  destinationFile lt workflowDir archiveDir file
 
 destinationFile ::
   MonadThrow m =>
-  Day ->
+  LocalTime ->
   -- | Workflow dir
   Path Abs Dir ->
   -- | Archive dir
@@ -64,13 +64,13 @@ destinationFile ::
   Path Abs File ->
   -- | Archive file
   m (Path Abs File)
-destinationFile today workflowDir archiveDir file = do
+destinationFile lt workflowDir archiveDir file = do
   case stripProperPrefix workflowDir file of
     Nothing -> throwM (NotInWorkflowDir workflowDir file)
     Just rf -> do
       let mext = fileExtension rf :: Maybe String
       let withoutExt = FP.dropExtensions (fromRelFile rf)
-      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F" today
+      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F_%T" lt
       arf' <- parseRelFile newRelFile
       arf'' <- maybe (pure arf') (`replaceExtension` arf') mext
       pure $ archiveDir </> arf''

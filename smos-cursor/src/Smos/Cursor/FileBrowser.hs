@@ -11,7 +11,6 @@ import Cursor.Types
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
 import Data.Maybe
-import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -178,8 +177,8 @@ fileBrowserArchiveFile workflowDir archiveDir fbc =
         Existent (FodDir _) -> pure fbc
         Existent (FodFile rp _) -> do
           let src = fileBrowserCursorBase fbc </> rd </> rp
-          today <- liftIO $ utctDay <$> getCurrentTime
-          case destinationFile today workflowDir archiveDir src of
+          lt <- liftIO getLocalTime
+          case destinationFile lt workflowDir archiveDir src of
             Nothing -> pure fbc
             Just dest -> do
               acr <- liftIO $ checkFromFile src

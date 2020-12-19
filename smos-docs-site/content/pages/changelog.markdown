@@ -3,6 +3,14 @@ title: Changelog
 description: The changelog for all of the Smos tools and libraries
 ---
 
+# Unreleased
+
+## Changed
+
+- `smos-archive`: The timestamp appended to the filename during archiving now includes the local time of day instead of only the day.
+
+
+
 # <a name="2020-12-16">[2020-12-16](#2020-12-16)
 
 - <a name="smos-0.1.2">[smos 0.1.2](#smos0-1.2)
