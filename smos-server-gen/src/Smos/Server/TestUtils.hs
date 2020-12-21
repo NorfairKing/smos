@@ -1,14 +1,12 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.TestUtils where
 
-import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Logger
 import Data.Pool
 import Database.Persist.Sqlite as DB
-import Lens.Micro
 import qualified Network.HTTP.Client as Http
 import Network.Wai.Handler.Warp as Warp (testWithApplication)
 import Servant.Auth.Client as Auth
@@ -19,21 +17,23 @@ import Smos.Client
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
 import Test.Syd
+import Test.Syd.Persistent.Sqlite
 
 data ServerTestEnv = ServerTestEnv
   { serverTestEnvPool :: Pool SqlBackend,
     serverTestEnvClient :: ClientEnv
   }
 
-serverEnvSpec :: SpecWith ServerTestEnv -> Spec
-serverEnvSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withServerTestEnv
+serverEnvSpec :: TestDef '[Http.Manager] ServerTestEnv -> Spec
+serverEnvSpec = modifyMaxSuccess (`div` 20) . beforeAll (Http.newManager Http.defaultManagerSettings) . setupAroundWith' serverTestEnvSetupFunc
 
-withServerTestEnv :: (ServerTestEnv -> IO a) -> IO a
-withServerTestEnv func = do
-  withServerDB $ \pool ->
-    withTestServer' pool $ \cenv ->
-      let ste = ServerTestEnv {serverTestEnvPool = pool, serverTestEnvClient = cenv}
-       in func ste
+serverTestEnvSetupFunc :: Http.Manager -> SetupFunc () ServerTestEnv
+serverTestEnvSetupFunc man = do
+  pool <- serverConnectionPoolSetupFunc
+  cenv <- unwrapSetupFunc (clientEnvSetupFunc' man) pool
+  makeSimpleSetupFunc $ \func ->
+    let ste = ServerTestEnv {serverTestEnvPool = pool, serverTestEnvClient = cenv}
+     in func ste
 
 serverEnvDB :: ServerTestEnv -> SqlPersistT IO a -> IO a
 serverEnvDB ServerTestEnv {..} func = DB.runSqlPool func serverTestEnvPool
@@ -47,30 +47,25 @@ serverEnvClientOrErr senv = testClientOrErr (serverTestEnvClient senv)
 withServerEnvNewUser :: ServerTestEnv -> (Token -> IO ()) -> Expectation
 withServerEnvNewUser senv = withNewUser (serverTestEnvClient senv)
 
-serverDBSpec :: SpecWith (Pool SqlBackend) -> Spec
-serverDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withServerDB
+serverDBSpec :: SpecWith ConnectionPool -> Spec
+serverDBSpec = modifyMaxSuccess (`div` 10) . setupAround serverConnectionPoolSetupFunc
 
-withServerDB :: (Pool SqlBackend -> IO a) -> IO a
-withServerDB func =
-  runNoLoggingT $
-    DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
-      \pool -> do
-        DB.runSqlPool (void $ DB.runMigrationQuiet migrateAll) pool
-        liftIO $ func pool
+serverConnectionPoolSetupFunc :: SetupFunc () ConnectionPool
+serverConnectionPoolSetupFunc = connectionPoolSetupFunc migrateAll
 
-serverSpec :: SpecWith ClientEnv -> Spec
-serverSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 20) . around withTestServer
+type ServerSpec = TestDef '[Http.Manager] ClientEnv
 
-withTestServer :: (ClientEnv -> IO a) -> IO a
-withTestServer func = withServerDB $ \pool -> withTestServer' pool func
+serverSpec :: ServerSpec -> Spec
+serverSpec = modifyMaxSuccess (`div` 20) . beforeAll (Http.newManager Http.defaultManagerSettings) . setupAroundWith' clientEnvSetupFunc
 
-withTestServer' :: Pool SqlBackend -> (ClientEnv -> IO a) -> IO a
-withTestServer' pool func = do
-  man <- Http.newManager Http.defaultManagerSettings
+clientEnvSetupFunc :: Http.Manager -> SetupFunc () ClientEnv
+clientEnvSetupFunc man = serverConnectionPoolSetupFunc `connectSetupFunc` clientEnvSetupFunc' man
+
+clientEnvSetupFunc' :: Http.Manager -> SetupFunc ConnectionPool ClientEnv
+clientEnvSetupFunc' man = SetupFunc $ \func pool -> do
   liftIO $ do
     let mkApp = do
           uuid <- nextRandomUUID
-          flip DB.runSqlPool pool $ void $ DB.runMigrationQuiet migrateAll
           jwtKey <- Auth.generateKey
           let env =
                 ServerEnv

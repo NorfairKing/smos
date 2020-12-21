@@ -22,7 +22,6 @@ library:
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-path
-  - sydtest
   - http-client
   - http-types
   - mergeful
@@ -44,6 +43,8 @@ library:
   - smos-server
   - smos-sync-client
   - stm
+  - sydtest
+  - sydtest-persistent-sqlite
   - text
   - uuid
   - wai

@@ -22,7 +22,6 @@ library:
   - genvalidity
   - genvalidity-dirforest
   - genvalidity-sydtest
-  - sydtest
   - http-client
   - mergeful
   - mergeful
@@ -40,6 +39,8 @@ library:
   - smos-server-gen
   - smos-sync-client
   - stm
+  - sydtest
+  - sydtest-persistent-sqlite
   - typed-uuid
   - uuid
   - wai

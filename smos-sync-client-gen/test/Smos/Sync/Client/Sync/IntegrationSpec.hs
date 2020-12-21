@@ -7,7 +7,6 @@ module Smos.Sync.Client.Sync.IntegrationSpec
 where
 
 import Path
-import Servant.Client (ClientEnv)
 import Smos.Server.TestUtils
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.ContentsMap.Gen
@@ -20,12 +19,11 @@ import Test.Syd.Validity
 spec :: Spec
 spec =
   serverSpec $
-    sequential $
-      describe "testSyncSmosClient" $ do
-        singleClientSpec
-        twoClientSpec
+    describe "testSyncSmosClient" $ do
+      singleClientSpec
+      twoClientSpec
 
-singleClientSpec :: SpecWith ClientEnv
+singleClientSpec :: ServerSpec
 singleClientSpec =
   describe "single client" $ do
     it "succesfully syncs an empty directory" $ \cenv ->
@@ -38,7 +36,7 @@ singleClientSpec =
     singleClientDeletionSpec
     singleClientLargeSyncSpec
 
-singleClientAdditionSpec :: SpecWith ClientEnv
+singleClientAdditionSpec :: ServerSpec
 singleClientAdditionSpec =
   describe "addition" $ do
     it "succesfully syncs a directory with one file" $ \cenv ->
@@ -66,7 +64,7 @@ singleClientAdditionSpec =
               testSyncSmosClient c
               assertClientContents c m
 
-singleClientChangeSpec :: SpecWith ClientEnv
+singleClientChangeSpec :: ServerSpec
 singleClientChangeSpec =
   describe "changes" $ do
     it "succesfully syncs a change" $ \cenv ->
@@ -111,7 +109,7 @@ singleClientChangeSpec =
               testSyncSmosClient c
               assertClientContents c m2
 
-singleClientDeletionSpec :: SpecWith ClientEnv
+singleClientDeletionSpec :: ServerSpec
 singleClientDeletionSpec =
   describe "deletion" $ do
     it "succesfully syncs a single deletion" $ \cenv ->
@@ -157,7 +155,7 @@ singleClientDeletionSpec =
               testSyncSmosClient c
               assertClientContents c m1
 
-singleClientLargeSyncSpec :: SpecWith ClientEnv
+singleClientLargeSyncSpec :: ServerSpec
 singleClientLargeSyncSpec =
   xit "can sync a large store" $ \cenv ->
     forAll (sizedContentsMap 1000) $ \m ->
@@ -167,7 +165,7 @@ singleClientLargeSyncSpec =
           testSyncSmosClient c
           assertClientContents c m
 
-twoClientSpec :: SpecWith ClientEnv
+twoClientSpec :: ServerSpec
 twoClientSpec = do
   describe "two clients" $ do
     twoClientsEmptySpec
@@ -176,7 +174,7 @@ twoClientSpec = do
     twoClientsFromBothClientsConcurrentlySpec
     twoClientsNastySyncSpec
 
-twoClientsEmptySpec :: SpecWith ClientEnv
+twoClientsEmptySpec :: ServerSpec
 twoClientsEmptySpec =
   it "succesfully syncs empty directories" $ \cenv ->
     withNewRegisteredUser cenv $ \r ->
@@ -187,7 +185,7 @@ twoClientsEmptySpec =
           assertClientContents c1 CM.empty
           assertClientContents c2 CM.empty
 
-twoClientsFromOneClientSpec :: SpecWith ClientEnv
+twoClientsFromOneClientSpec :: ServerSpec
 twoClientsFromOneClientSpec = do
   describe "From one client" $ do
     describe "additions" $ do
@@ -365,7 +363,7 @@ twoClientsFromOneClientSpec = do
                   assertClientContents c1 m'
                   assertClientContents c2 m
 
-twoClientsFromBothClientsSpec :: SpecWith ClientEnv
+twoClientsFromBothClientsSpec :: ServerSpec
 twoClientsFromBothClientsSpec = do
   describe "From both clients" $ do
     describe "Additions only" $ do
@@ -578,7 +576,7 @@ twoClientsFromBothClientsSpec = do
                       assertClientContents c1 m1
                       assertClientContents c2 m1
 
-twoClientsFromBothClientsConcurrentlySpec :: SpecWith ClientEnv
+twoClientsFromBothClientsConcurrentlySpec :: ServerSpec
 twoClientsFromBothClientsConcurrentlySpec =
   describe "From two clients, concurrently" $ do
     it "succesfully syncs two of the same client concurrently" $ \cenv ->
@@ -602,7 +600,7 @@ twoClientsFromBothClientsConcurrentlySpec =
                 cm2 <- readClientContents c2
                 cm1 `shouldBe` cm2
 
-twoClientsNastySyncSpec :: SpecWith ClientEnv
+twoClientsNastySyncSpec :: ServerSpec
 twoClientsNastySyncSpec =
   -- It's ambiguous what should happen here.
   -- We opt for the "whatever reaches the server first, wins"

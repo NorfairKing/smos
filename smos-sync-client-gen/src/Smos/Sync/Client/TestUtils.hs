@@ -9,7 +9,6 @@ where
 
 import Control.Concurrent.Async
 import Control.Monad
-import Control.Monad.IO.Class
 import Control.Monad.Logger
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -17,9 +16,7 @@ import qualified Data.DirForest as DF
 import Data.GenValidity.DirForest
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Pool
 import Database.Persist.Sqlite as DB
-import Lens.Micro
 import Path
 import Path.IO
 import Servant.Client
@@ -33,18 +30,14 @@ import Smos.Sync.Client.OptParse
 import Smos.Sync.Client.Sync.Gen ()
 import Test.QuickCheck
 import Test.Syd
+import Test.Syd.Persistent.Sqlite
 import Test.Syd.Validity
 
-clientDBSpec :: SpecWith (Pool SqlBackend) -> Spec
-clientDBSpec = modifyMaxShrinks (const 0) . modifyMaxSuccess (`div` 10) . around withClientDB
+clientDBSpec :: SpecWith ConnectionPool -> Spec
+clientDBSpec = modifyMaxSuccess (`div` 10) . setupAround clientConnectionPoolSetupFunc
 
-withClientDB :: (Pool SqlBackend -> IO a) -> IO a
-withClientDB func =
-  runNoLoggingT $
-    DB.withSqlitePoolInfo (mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False) 1 $
-      \pool -> do
-        DB.runSqlPool (void $ DB.runMigrationQuiet migrateAll) pool
-        liftIO $ func pool
+clientConnectionPoolSetupFunc :: SetupFunc () ConnectionPool
+clientConnectionPoolSetupFunc = connectionPoolSetupFunc migrateAll
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")

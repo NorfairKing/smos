@@ -28,6 +28,12 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
+  # - /home/syd/src/sydtest/sydtest-persistent-sqlite
+  # - /home/syd/src/sydtest/sydtest
+  # - /home/syd/src/sydtest/sydtest-discover
+  # - /home/syd/src/sydtest/sydtest-yesod
+
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
@@ -126,10 +132,11 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/sydtest
-  commit: 23ab09d5640fb3f5f4ef0f75dd8622bfcc3ed9f0
+  commit: ca3a147ac72a3c3aad0a17eac5a5473faa664295
   subdirs:
     - sydtest
     - sydtest-discover
+    - sydtest-persistent-sqlite
     - sydtest-yesod
 
 - github: NorfairKing/validity
