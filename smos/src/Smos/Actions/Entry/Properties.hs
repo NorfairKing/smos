@@ -36,7 +36,16 @@ allPropertiesPlainActions =
         propertiesInsertNewProperty,
         propertiesAppendNewProperty
       ],
-      fmap propertiesEditProperty ["client", "timewindow", "lead", "effort", "brainpower"]
+      fmap
+        propertiesEditProperty
+        [ "assignee",
+          "brainpower",
+          "client",
+          "effort",
+          "estimate",
+          "lead",
+          "timewindow"
+        ]
     ]
 
 allPropertiesUsingCharActions :: [ActionUsing Char]
