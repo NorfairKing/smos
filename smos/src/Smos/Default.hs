@@ -112,9 +112,11 @@ defaultFileKeyMap =
             exactString "sd" $ timestampsSelect "DEADLINE",
             exactString "ss" $ timestampsSelect "SCHEDULED",
             exactString "pi" entrySelectProperties,
-            exactString "pc" $ propertiesEditProperty "client",
-            exactString "pt" $ propertiesEditProperty "timewindow",
+            exactString "pa" $ propertiesEditProperty "assignee",
             exactString "pb" $ propertiesEditProperty "brainpower",
+            exactString "pc" $ propertiesEditProperty "client",
+            exactString "pe" $ propertiesEditProperty "estimate",
+            exactString "pt" $ propertiesEditProperty "timewindow",
             -- Clocking
             exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere,
             exactString "co" forestClockOutEverywhereInAllFiles,
