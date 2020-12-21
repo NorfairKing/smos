@@ -66,6 +66,8 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "timewindow", fg magenta),
           (propertyNameSpecificAttr "brainpower", fg brown),
           (propertyNameSpecificAttr "client", fg green),
+          (propertyNameSpecificAttr "assignee", fg blue),
+          (propertyNameSpecificAttr "estimate", fg green),
           (waitingReportLongWait, fg red),
           (waitingReportMidWait, fg yellow),
           (waitingReportShortWait, fg blue),

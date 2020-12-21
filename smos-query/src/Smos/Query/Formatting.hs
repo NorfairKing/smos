@@ -166,9 +166,11 @@ propertyNameChunk pn = fore (propertyNameColor pn) $ chunk $ propertyNameText pn
 propertyNameColor :: PropertyName -> Radiant
 propertyNameColor pn =
   case propertyNameText pn of
-    "timewindow" -> magenta
-    "client" -> green
+    "assignee" -> blue
     "brainpower" -> brown
+    "client" -> green
+    "estimate" -> green
+    "timewindow" -> magenta
     _ -> mempty
 
 tagChunk :: Tag -> Chunk
