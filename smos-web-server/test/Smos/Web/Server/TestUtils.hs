@@ -26,10 +26,15 @@ import Yesod.Auth
 smosWebServerSpec :: YesodSpec App -> Spec
 smosWebServerSpec = API.serverSpec . webServerSpec
 
-webServerSpec :: YesodSpec App -> SpecWith ClientEnv
-webServerSpec spec = withTestTempDir $
-  flip yesodSpecWithSiteGeneratorAndArgument spec $ \(ClientEnv _ burl _, tdir) -> do
-    man <- Http.newManager Http.defaultManagerSettings
+webServerSpec :: YesodSpec App -> API.ServerSpec
+webServerSpec = setupAroundWith' webServerSetupFunc
+
+webServerSetupFunc :: Http.Manager -> SetupFunc ClientEnv (YesodClient App)
+webServerSetupFunc man = connectSetupFunc webServerSetupFunc' (yesodSetupFunc man)
+
+webServerSetupFunc' :: SetupFunc ClientEnv App
+webServerSetupFunc' = SetupFunc $ \appFunc (ClientEnv man burl _) ->
+  withSystemTempDir "smos-web-server-test-data-dir" $ \tdir -> do
     loginVar <- newTVarIO M.empty
     let app =
           App
@@ -43,7 +48,7 @@ webServerSpec spec = withTestTempDir $
               appGoogleAnalyticsTracking = Nothing,
               appGoogleSearchConsoleVerification = Nothing
             }
-    pure app
+    appFunc app
 
 withTestTempDir :: forall a. SpecWith (a, Path Abs Dir) -> SpecWith a
 withTestTempDir = aroundWith go
