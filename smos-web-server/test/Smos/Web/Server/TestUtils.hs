@@ -10,7 +10,6 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Network.HTTP.Client as Http
 import Network.HTTP.Types
-import Path
 import Path.IO
 import Servant.Client
 import Smos.Client
@@ -49,12 +48,6 @@ webServerSetupFunc' = SetupFunc $ \appFunc (ClientEnv man burl _) ->
               appGoogleSearchConsoleVerification = Nothing
             }
     appFunc app
-
-withTestTempDir :: forall a. SpecWith (a, Path Abs Dir) -> SpecWith a
-withTestTempDir = aroundWith go
-  where
-    go :: ((a, Path Abs Dir) -> IO ()) -> a -> IO ()
-    go func a = withSystemTempDir "smos-web-server-test-data-dir" $ \tdir -> func (a, tdir)
 
 asDummyUser :: YesodExample App a -> YesodExample App a
 asDummyUser example_ = do
