@@ -132,7 +132,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/sydtest
-  commit: 29d7e6f5ba8cf4a2f019381e187b283751801bb5
+  commit: 8dc38b3e495ff9e333453ad9183f6ed37fef197c
   subdirs:
     - sydtest
     - sydtest-discover
