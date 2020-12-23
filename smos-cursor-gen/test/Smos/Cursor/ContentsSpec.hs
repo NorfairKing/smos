@@ -30,13 +30,14 @@ spec = do
                 Nothing ->
                   expectationFailure "makeContentsCursorWithSelection should not have failed."
                 Just cc' ->
-                  shouldBeWith cc' cc $
-                    unlines
-                      [ "The selection of the original (expected) cursor was:",
-                        show (x, y),
-                        "The rebuilt contents were:",
-                        ppShow c
-                      ]
+                  let ctx =
+                        unlines
+                          [ "The selection of the original (expected) cursor was:",
+                            show (x, y),
+                            "The rebuilt contents were:",
+                            ppShow c
+                          ]
+                   in context ctx $ cc' `shouldBe` cc
   describe "contentsCursorSelection" $
     it "produces valid cursors" $
       producesValidsOnValids contentsCursorSelection

@@ -10,7 +10,6 @@ module Smos.Report.FilterSpec
   )
 where
 
-import Control.Monad
 import Cursor.Forest.Gen ()
 import Cursor.Simple.Forest
 import Data.Functor.Identity
@@ -395,15 +394,16 @@ spec = do
                           show err
                         ]
                   Right f' ->
-                    shouldBeWith f f' $
-                      unlines
-                        [ "Original filter:",
-                          ppShow f,
-                          "rendered ast:",
-                          ppShow t,
-                          "parsed filter:",
-                          ppShow f'
-                        ]
+                    let ctx =
+                          unlines
+                            [ "Original filter:",
+                              ppShow f,
+                              "rendered ast:",
+                              ppShow t,
+                              "parsed filter:",
+                              ppShow f'
+                            ]
+                     in context ctx $ f' `shouldBe` f
     describe "renderFilter" $
       it "produces valid text" $
         producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))
@@ -424,16 +424,16 @@ spec = do
                           show err
                         ]
                   Right f' ->
-                    unless (f == f') $
-                      expectationFailure $
-                        unlines
-                          [ "Original filter:",
-                            ppShow f,
-                            "rendered text:",
-                            show t,
-                            "parsed filter:",
-                            ppShow f'
-                          ]
+                    let ctx =
+                          unlines
+                            [ "Original filter:",
+                              ppShow f,
+                              "rendered text:",
+                              show t,
+                              "parsed filter:",
+                              ppShow f'
+                            ]
+                     in context ctx $ f' `shouldBe` f
   describe "foldFilterAnd" $
     it "produces valid results" $
       producesValidsOnValids (foldFilterAnd @Header)

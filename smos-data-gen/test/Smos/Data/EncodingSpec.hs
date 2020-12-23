@@ -39,15 +39,16 @@ roundtripSpec name func =
                         show pe
                       ]
                 Right sf' ->
-                  shouldBeWith sf' sf $
-                    unlines
-                      [ name ++ " should have roundtripped with parseSmosFile",
-                        "started with:",
-                        ppShow sf,
-                        "encoding produced the following value:",
-                        prettyBs,
-                        "expected:",
-                        ppShow sf',
-                        "actual:",
-                        ppShow sf
-                      ]
+                  let ctx =
+                        unlines
+                          [ name ++ " should have roundtripped with parseSmosFile",
+                            "started with:",
+                            ppShow sf,
+                            "encoding produced the following value:",
+                            prettyBs,
+                            "expected:",
+                            ppShow sf',
+                            "actual:",
+                            ppShow sf
+                          ]
+                   in context ctx $ sf' `shouldBe` sf

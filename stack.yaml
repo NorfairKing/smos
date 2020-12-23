@@ -132,7 +132,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/sydtest
-  commit: 8dc38b3e495ff9e333453ad9183f6ed37fef197c
+  commit: 7ee9f6f51903d442f3d59d4763beaddcef9b4194
   subdirs:
     - sydtest
     - sydtest-discover
@@ -140,7 +140,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 1112c587da3ac32b5bae06d7d662e2351dbe419b
+  commit: 0f52f3ba57d099f3d3ced38a2eeae39954906306
   subdirs:
     - genvalidity
     - genvalidity-aeson
