@@ -28,9 +28,11 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
-  # - /home/syd/src/sydtest/sydtest-persistent-sqlite
   # - /home/syd/src/sydtest/sydtest
   # - /home/syd/src/sydtest/sydtest-discover
+  # - /home/syd/src/sydtest/sydtest-persistent-sqlite
+  # - /home/syd/src/sydtest/sydtest-servant
+  # - /home/syd/src/sydtest/sydtest-wai
   # - /home/syd/src/sydtest/sydtest-yesod
 
 
@@ -132,11 +134,13 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/sydtest
-  commit: 7ee9f6f51903d442f3d59d4763beaddcef9b4194
+  commit: 407f9dc6fd4a696eebbd4a785418ce00adad3011
   subdirs:
     - sydtest
     - sydtest-discover
     - sydtest-persistent-sqlite
+    - sydtest-servant
+    - sydtest-wai
     - sydtest-yesod
 
 - github: NorfairKing/validity

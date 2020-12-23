@@ -10,6 +10,7 @@ import Servant.Client
 import Smos.Client
 import Smos.Server.TestUtils
 import Test.Syd
+import Test.Syd.Servant
 import Test.Syd.Validity
 
 spec :: Spec
@@ -35,7 +36,7 @@ spec =
         it "succeeds after registering" $ \cenv ->
           forAllValid $ \r -> do
             errOrToken <-
-              testClientOrErr cenv $ do
+              testClient cenv $ do
                 NoContent <- clientPostRegister r
                 clientLoginSession $ registerLogin r
             case errOrToken of

@@ -29,25 +29,24 @@ webServerSpec :: YesodSpec App -> API.ServerSpec
 webServerSpec = setupAroundWith' webServerSetupFunc
 
 webServerSetupFunc :: Http.Manager -> SetupFunc ClientEnv (YesodClient App)
-webServerSetupFunc man = connectSetupFunc webServerSetupFunc' (yesodSetupFunc man)
+webServerSetupFunc man = connectSetupFunc webServerSetupFunc' (yesodClientSetupFunc man)
 
 webServerSetupFunc' :: SetupFunc ClientEnv App
-webServerSetupFunc' = SetupFunc $ \appFunc (ClientEnv man burl _) ->
-  withSystemTempDir "smos-web-server-test-data-dir" $ \tdir -> do
-    loginVar <- newTVarIO M.empty
-    let app =
-          App
-            { appLogLevel = LevelWarn,
-              appStatic = smosWebServerStatic,
-              appAPIBaseUrl = burl,
-              appDocsBaseUrl = Nothing,
-              appLoginTokens = loginVar,
-              appDataDir = tdir,
-              appHttpManager = man,
-              appGoogleAnalyticsTracking = Nothing,
-              appGoogleSearchConsoleVerification = Nothing
-            }
-    appFunc app
+webServerSetupFunc' = wrapSetupFunc $ \(ClientEnv man burl _) -> do
+  tdir <- makeSimpleSetupFunc $ withSystemTempDir "smos-web-server-test-data-dir"
+  loginVar <- liftIO $ newTVarIO M.empty
+  pure
+    App
+      { appLogLevel = LevelWarn,
+        appStatic = smosWebServerStatic,
+        appAPIBaseUrl = burl,
+        appDocsBaseUrl = Nothing,
+        appLoginTokens = loginVar,
+        appDataDir = tdir,
+        appHttpManager = man,
+        appGoogleAnalyticsTracking = Nothing,
+        appGoogleSearchConsoleVerification = Nothing
+      }
 
 asDummyUser :: YesodExample App a -> YesodExample App a
 asDummyUser example_ = do

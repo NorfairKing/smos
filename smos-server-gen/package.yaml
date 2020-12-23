@@ -45,6 +45,8 @@ library:
   - stm
   - sydtest
   - sydtest-persistent-sqlite
+  - sydtest-servant
+  - sydtest-wai
   - text
   - uuid
   - wai
@@ -66,7 +68,6 @@ tests:
     - genvalidity
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
-    - sydtest
     - http-types
     - mergeful
     - path
@@ -75,9 +76,11 @@ tests:
     - pretty-show
     - resource-pool
     - servant-client
-    - smos-data-gen
     - smos-client
     - smos-client-gen
+    - smos-data-gen
     - smos-report
     - smos-server
     - smos-server-gen
+    - sydtest
+    - sydtest-servant

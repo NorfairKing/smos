@@ -13,6 +13,7 @@ import Smos.Data.Gen ()
 import Smos.Server.DB
 import Smos.Server.TestUtils
 import Test.Syd
+import Test.Syd.Servant
 import Test.Syd.Validity
 
 spec :: Spec
@@ -24,7 +25,7 @@ spec =
           forAllValid $ \path ->
             forAllValid $ \sf ->
               withNewUser cenv $ \t -> do
-                actual <- testClientOrErr cenv $ do
+                actual <- testClient cenv $ do
                   NoContent <- clientPutSmosFile t path sf
                   clientGetSmosFile t path
                 actual `shouldBe` sf
