@@ -48,6 +48,7 @@ library:
   - sydtest-servant
   - sydtest-wai
   - text
+  - unliftio
   - uuid
   - wai
   - warp

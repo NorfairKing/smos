@@ -1,4 +1,4 @@
 {
   url = "https://github.com/NorfairKing/sydtest";
-  rev = "407f9dc6fd4a696eebbd4a785418ce00adad3011";
+  rev = "1343035eb300163cbd97e1b921ddfe0f23af88c9";
 }

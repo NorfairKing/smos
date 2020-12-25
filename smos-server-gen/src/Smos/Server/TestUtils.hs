@@ -1,10 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.TestUtils where
 
-import Control.Monad.IO.Class
 import Data.Pool
 import Database.Persist.Sqlite as DB
 import qualified Network.HTTP.Client as Http
@@ -19,14 +17,17 @@ import Test.Syd
 import Test.Syd.Persistent.Sqlite
 import Test.Syd.Servant
 import Test.Syd.Wai
+import UnliftIO
 
 data ServerTestEnv = ServerTestEnv
   { serverTestEnvPool :: Pool SqlBackend,
     serverTestEnvClient :: ClientEnv
   }
 
+type ServerTestEnvM a = ReaderT ServerTestEnv IO a
+
 serverEnvSpec :: TestDef '[Http.Manager] ServerTestEnv -> Spec
-serverEnvSpec = modifyMaxSuccess (`div` 20) . beforeAll (Http.newManager Http.defaultManagerSettings) . setupAroundWith' serverTestEnvSetupFunc
+serverEnvSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' serverTestEnvSetupFunc
 
 serverTestEnvSetupFunc :: Http.Manager -> SetupFunc () ServerTestEnv
 serverTestEnvSetupFunc man = do
@@ -34,17 +35,25 @@ serverTestEnvSetupFunc man = do
   cenv <- unwrapSetupFunc (serverSetupFunc' man) pool
   pure $ ServerTestEnv {serverTestEnvPool = pool, serverTestEnvClient = cenv}
 
-serverEnvDB :: ServerTestEnv -> SqlPersistT IO a -> IO a
-serverEnvDB ServerTestEnv {..} func = DB.runSqlPool func serverTestEnvPool
+serverEnvDB :: SqlPersistT IO a -> ServerTestEnvM a
+serverEnvDB func = do
+  pool <- asks serverTestEnvPool
+  liftIO $ DB.runSqlPool func pool
 
-serverEnvClient :: ServerTestEnv -> ClientM a -> IO (Either ClientError a)
-serverEnvClient senv = testClientOrError (serverTestEnvClient senv)
+serverEnvClient :: ClientM a -> ServerTestEnvM (Either ClientError a)
+serverEnvClient func = do
+  cenv <- asks serverTestEnvClient
+  liftIO $ testClientOrError cenv func
 
-serverEnvClientOrErr :: ServerTestEnv -> ClientM a -> IO a
-serverEnvClientOrErr senv = testClient (serverTestEnvClient senv)
+serverEnvClientOrErr :: ClientM a -> ServerTestEnvM a
+serverEnvClientOrErr func = do
+  cenv <- asks serverTestEnvClient
+  liftIO $ testClient cenv func
 
-withServerEnvNewUser :: ServerTestEnv -> (Token -> IO ()) -> Expectation
-withServerEnvNewUser senv = withNewUser (serverTestEnvClient senv)
+withServerEnvNewUser :: (Token -> ServerTestEnvM ()) -> ServerTestEnvM ()
+withServerEnvNewUser func = do
+  cenv <- asks serverTestEnvClient
+  withNewUser cenv func
 
 serverDBSpec :: SpecWith ConnectionPool -> Spec
 serverDBSpec = modifyMaxSuccess (`div` 10) . setupAround serverConnectionPoolSetupFunc
@@ -88,12 +97,12 @@ testLogin cenv lf = do
     Left err -> expectationFailure $ "Failed to login: " <> show err
     Right t -> pure t
 
-withNewUser :: ClientEnv -> (Token -> IO ()) -> Expectation
+withNewUser :: MonadUnliftIO m => ClientEnv -> (Token -> m ()) -> m ()
 withNewUser cenv func = withNewUserAndData cenv $ const func
 
-withNewUserAndData :: ClientEnv -> (Register -> Token -> IO a) -> IO a
+withNewUserAndData :: MonadUnliftIO m => ClientEnv -> (Register -> Token -> m a) -> m a
 withNewUserAndData cenv func = do
-  r <- randomRegistration
+  r <- liftIO randomRegistration
   withNewGivenUser cenv r $ func r
 
 withNewGivenUser :: MonadIO m => ClientEnv -> Register -> (Token -> m a) -> m a

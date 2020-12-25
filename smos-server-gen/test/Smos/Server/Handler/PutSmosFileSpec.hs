@@ -30,15 +30,14 @@ spec =
                   clientGetSmosFile t path
                 actual `shouldBe` sf
     serverEnvSpec $
-      it "updates the server time" $
-        \senv ->
-          forAllValid $ \path ->
-            forAllValid $ \sf1 ->
-              forAllValid $ \sf2 ->
-                withServerEnvNewUser senv $ \t -> do
-                  NoContent <- serverEnvClientOrErr senv $ clientPutSmosFile t path sf1
-                  NoContent <- serverEnvClientOrErr senv $ clientPutSmosFile t path sf2
-                  mServerFile <- serverEnvDB senv $ selectFirst [ServerFilePath ==. path] []
-                  case mServerFile of
-                    Nothing -> expectationFailure $ "We expected a server file at: " <> fromRelFile path
-                    Just (Entity _ ServerFile {..}) -> serverFileTime `shouldBe` Mergeful.ServerTime 1
+      it "updates the server time" $ \senv ->
+        forAllValid $ \path ->
+          forAllValid $ \sf1 ->
+            forAllValid $ \sf2 -> withTestEnv senv $
+              withServerEnvNewUser $ \t -> do
+                NoContent <- serverEnvClientOrErr $ clientPutSmosFile t path sf1
+                NoContent <- serverEnvClientOrErr $ clientPutSmosFile t path sf2
+                mServerFile <- serverEnvDB $ selectFirst [ServerFilePath ==. path] []
+                liftIO $ case mServerFile of
+                  Nothing -> expectationFailure $ "We expected a server file at: " <> fromRelFile path
+                  Just (Entity _ ServerFile {..}) -> serverFileTime `shouldBe` Mergeful.ServerTime 1

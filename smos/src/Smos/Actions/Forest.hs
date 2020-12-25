@@ -47,6 +47,7 @@ import Data.Time
 import Lens.Micro
 import Path
 import Smos.Actions.Utils
+import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -332,8 +333,7 @@ forestClockOutEverywhereInAllFiles =
     { actionName = "forestClockOutEverywhereInAllFiles",
       actionFunc = do
         now <- liftIO getCurrentTime
-        clockOutInAllAgendaFiles now
-        modifyFileCursorS $ \sfc -> pure $ smosFileCursorClockOutEverywhere now sfc,
+        clockOutInAllAgendaFiles now,
       actionDescription = "Clock out everywhere in all files"
     }
 
@@ -361,15 +361,23 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
 clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
   dirConfig <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+  mCurFile <- gets $ fmap smosFileEditorPath . editorCursorFileCursor . smosStateCursor
+  -- We won't clock out in the current file asynchronously because this produces a race condition.
+  let isCurrent af =
+        case mCurFile of
+          Nothing -> False
+          Just cur -> cur == af
   runSmosAsync $ do
     wd <- resolveDirWorkflowDir dirConfig
     let clockOutSingle rp = do
           let af = wd </> rp
-          merrOrFile <- readSmosFile af
-          case merrOrFile of
-            Nothing -> pure () -- Should not happen
-            Just (Left _) -> pure () -- Nothing we can do
-            Just (Right sf) -> do
-              let sf' = smosFileClockOutEverywhere now sf
-              unless (sf == sf') $ writeSmosFile af sf'
+          unless (isCurrent af) $ do
+            merrOrFile <- readSmosFile af
+            case merrOrFile of
+              Nothing -> pure () -- Should not happen
+              Just (Left _) -> pure () -- Nothing we can do
+              Just (Right sf) -> do
+                let sf' = smosFileClockOutEverywhere now sf
+                unless (sf == sf') $ writeSmosFile af sf'
     runConduit $ streamSmosFilesFromWorkflowRel HideArchive dirConfig .| C.mapM_ clockOutSingle
+  modifyFileCursorS $ \sfc -> pure $ smosFileCursorClockOutEverywhere now sfc

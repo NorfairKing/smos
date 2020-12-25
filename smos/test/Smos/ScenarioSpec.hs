@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -11,6 +12,7 @@ module Smos.ScenarioSpec
 where
 
 import Control.Applicative
+import Control.Exception
 import qualified Data.ByteString.Char8 as SB8
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
@@ -82,9 +84,6 @@ makeTestcase p = sequential $
     run <- runCommandsOn scenarioTestCaseStartingFile scenarioTestCaseBefore scenarioTestCaseCommands
     shouldBeValid gtc
     expectResults p scenarioTestCaseBefore scenarioTestCaseAfter run
-
-failure :: String -> IO a
-failure s = expectationFailure s >> undefined
 
 data Command where
   CommandPlain :: Action -> Command
@@ -182,7 +181,7 @@ runCommandsOn startingFilePath start commands =
       ((s, ss'), errs) <- eventFunc
       intermadiateState <- readWorkflowDir testConf
       case s of
-        Stop -> liftIO $ failure "Premature stop"
+        Stop -> liftIO $ expectationFailure "Premature stop"
         Continue () ->
           pure
             ( ss',
@@ -192,36 +191,36 @@ runCommandsOn startingFilePath start commands =
 
 expectResults :: Path Abs File -> DirForest SmosFile -> DirForest SmosFile -> CommandsRun -> IO ()
 expectResults p bf af CommandsRun {..} =
-  unless (finalResult `dEqForTest` af) $
-    failure $
-      unlines $
-        concat
-          [ [ "The expected result did not match the actual result.",
-              "The starting situation looked as follows:",
-              ppShow bf,
-              "The commands to run were these:",
-              ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
-              "The result was supposed to look like this:",
-              ppShow af,
-              "",
-              "The intermediary steps built up to the result as follows:",
-              ""
-            ],
-            concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
-            [ "The expected result was the following:",
-              ppShow af,
-              "The actual result was the following:",
-              ppShow finalResult
-            ],
-            [ unwords
-                [ "If this was intentional, you can replace the contents of the 'after' part in",
-                  fromAbsFile p,
-                  "by the following:"
-                ],
-              "---[START]---",
-              SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
+  let ctx =
+        unlines $
+          concat
+            [ [ "The expected result did not match the actual result.",
+                "The starting situation looked as follows:",
+                ppShow bf,
+                "The commands to run were these:",
+                ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
+                "The result was supposed to look like this:",
+                ppShow af,
+                "",
+                "The intermediary steps built up to the result as follows:",
+                ""
+              ],
+              concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
+              [ "The expected result was the following:",
+                ppShow af,
+                "The actual result was the following:",
+                ppShow finalResult
+              ],
+              [ unwords
+                  [ "If this was intentional, you can replace the contents of the 'after' part in",
+                    fromAbsFile p,
+                    "by the following:"
+                  ],
+                "---[START]---",
+                SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
+              ]
             ]
-          ]
+   in context ctx $ unless (finalResult `dEqForTest` af) $ throwIO $ NotEqualButShouldHaveBeenEqual (ppShow finalResult) (ppShow af)
   where
     go :: Command -> DirForest SmosFile -> [Text] -> [String]
     go c isf errs =
