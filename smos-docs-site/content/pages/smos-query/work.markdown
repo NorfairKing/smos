@@ -36,13 +36,13 @@ You can also configure checks, collumns and a sorter for this report as follows:
 ``` yaml
 work:
   checks:
-    - has-property:timewindow
+    - 'property:timewindow'
   columns:
-    - file
-    - state
-    - header
-    - property:timewindow
-  sorter: property-as-time:timewindow
+    - 'file'
+    - 'state'
+    - 'header'
+    - 'property:timewindow'
+  sorter: 'reverse:property-as-time:timewindow'
 ```
 
 Here we configure `smos-query` to warn us if any of the entries that should be reported is missing a `timewindow` property.
