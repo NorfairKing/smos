@@ -316,8 +316,8 @@ defaultNextActionReportKeyMap =
           ],
       nextActionReportAnyMatchers =
         listMatchers
-          [ exactKey KEsc exitNextActionReport,
-            exactChar 'q' exitNextActionReport
+          [ exactKey KEsc exitReport,
+            exactChar 'q' exitReport
           ]
     }
 

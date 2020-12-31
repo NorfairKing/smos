@@ -142,14 +142,3 @@ selectNextActionFilter =
       actionFunc = modifyNextActionReportCursorM nextActionReportCursorSelectFilter
     }
 
-
--- Exit the Next Action Report
--- If there is a file open, go to it (this already works?)
--- If there is no file open, go to the browser in the workflow dir
-exitNextActionReport :: Action
-exitNextActionReport =
-  Action
-    { actionName = "exitNextActionReport",
-      actionDescription = "Exit smos from the next action report screen",
-      actionFunc = MkSmosM $ NextT $ pure Stop
-    }
