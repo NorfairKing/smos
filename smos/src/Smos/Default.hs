@@ -12,7 +12,7 @@ defaultConfig =
   SmosConfig
     { configKeyMap = defaultKeyMap,
       configReportConfig = defaultReportConfig,
-      configExplainerMode = False
+      configExplainerMode = True
     }
 
 defaultKeyMap :: KeyMap
