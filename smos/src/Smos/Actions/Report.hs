@@ -8,7 +8,6 @@ import Smos.Actions.Report.Next
 import Smos.Actions.Report.Waiting
 import Smos.Types
 
-
 allPlainReportExitActions :: [Action]
 allPlainReportExitActions =
   [ exitReport
@@ -28,7 +27,6 @@ allReportUsingActions =
     [ allReportNextActionsUsingActions,
       allReportWaitingUsingActions
     ]
-
 
 -- Exit a Report
 -- If there is a file open, go to it (this already works via another Action?)
