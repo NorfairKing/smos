@@ -143,4 +143,3 @@ selectNextActionFilter =
       actionDescription = "Select the next action filter bar",
       actionFunc = modifyNextActionReportCursorM nextActionReportCursorSelectFilter
     }
-

@@ -9,6 +9,7 @@ import Smos.Actions.Report.Timestamps
 import Smos.Actions.Report.Waiting
 import Smos.Types
 
+
 allPlainReportActions :: [Action]
 allPlainReportActions =
   concat
