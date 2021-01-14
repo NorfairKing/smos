@@ -1,5 +1,7 @@
 { pkgs ? import ./pkgs.nix { static = false; } }:
 let
+  # See this for more info:
+  # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
   smos-production = import ./nixos-module.nix { envname = "production"; };
   home-manager = import (
     builtins.fetchTarball
@@ -14,34 +16,36 @@ let
   web-port = 8003;
 
   testUsers = {
-    # "nothing-enabled" = {
+    # Broken because of the config file
+    # "nothing_enabled" = {
     #   programs.smos = {
     #     enable = true;
     #   };
     # };
-    # "backup-enabled" = {
+    # Broken because of the config file
+    # "backup_enabled" = {
     #   programs.smos = {
     #     enable = true;
     #     backup.enable = true;
     #   };
     # };
-    # "sync-enabled" = {
-    #   programs.smos = {
-    #     enable = true;
-    #     sync = {
-    #       enable = true;
-    #       server-url = "localhost:${builtins.toString api-port}";
-    #       username = "testuser";
-    #       password = "testpassword";
-    #     };
-    #   };
-    # };
-    # "scheduler-enabled" = {
-    #   programs.smos = {
-    #     enable = true;
-    #     scheduler.enable = true;
-    #   };
-    # };
+    "sync_enabled" = {
+      programs.smos = {
+        enable = true;
+        sync = {
+          enable = true;
+          server-url = "localhost:${builtins.toString api-port}";
+          username = "sync_enabled";
+          password = "testpassword";
+        };
+      };
+    };
+    "scheduler_enabled" = {
+      programs.smos = {
+        enable = true;
+        scheduler.enable = true;
+      };
+    };
     "everything_enabled" = {
       programs.smos = {
         enable = true;
@@ -49,7 +53,7 @@ let
         sync = {
           enable = true;
           server-url = "localhost:${builtins.toString api-port}";
-          username = "testuser";
+          username = "everything_enabled";
           password = "testpassword";
         };
         scheduler = {
@@ -70,24 +74,30 @@ let
       home.stateVersion = "20.09";
     };
 
-
   userTestScript = username: userConfig: ''
+    print("Testing the configuration of ${username}")
     ${pkgs.lib.optionalString userConfig.programs.smos.enable or false ''
+    # Test that the config file exists.
     machine.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
-    ''}
-
+    # Make sure the user can run the smos commands.
+    machine.succeed(su("${username}", "smos --help"))
+    machine.succeed(su("${username}", "smos-archive --help"))
+    machine.succeed(su("${username}", "smos-calendar-import --help"))
+    machine.succeed(su("${username}", "smos-convert-org --help"))
+    machine.succeed(su("${username}", "smos-query --help"))
+    machine.succeed(su("${username}", "smos-scheduler --help"))
+    machine.succeed(su("${username}", "smos-sync-client --help"))
+    # Make sure the config file is parseable
+    machine.succeed(su("${username}", "smos-query next"))''}
     ${pkgs.lib.optionalString userConfig.programs.smos.sync.enable or false ''
-    # Test that syncing works
+    # Test that syncing works.
     machine.succeed(su("${username}", "smos-sync-client register"))
     machine.succeed(su("${username}", "smos-sync-client login"))
-    machine.succeed(su("${username}", "smos-sync-client sync"))
-    ''}
-
+    machine.succeed(su("${username}", "smos-sync-client sync"))''}
     ${pkgs.lib.optionalString userConfig.programs.smos.scheduler.enable or false ''
-    # Test that the scheduler can activate
+    # Test that the scheduler can activate.
     machine.succeed(su("${username}", "smos-scheduler check"))
-    machine.succeed(su("${username}", "smos-scheduler schedule"))
-    ''}
+    machine.succeed(su("${username}", "smos-scheduler schedule"))''}
   '';
 
 in
@@ -140,7 +150,7 @@ pkgs.nixosTest (
 
 
       # Run the test script for each user
-      ${lib.concatStringsSep "\n" (lib.mapAttrsToList userTestScript testUsers)}
+      ${lib.concatStrings (lib.mapAttrsToList userTestScript testUsers)}
       # would not reformat
     '';
   }
