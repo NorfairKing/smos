@@ -16,12 +16,11 @@ let
   web-port = 8003;
 
   testUsers = {
-    # Broken because of the config file
-    # "nothing_enabled" = {
-    #   programs.smos = {
-    #     enable = true;
-    #   };
-    # };
+    "nothing_enabled" = {
+      programs.smos = {
+        enable = true;
+      };
+    };
     # Broken because of the config file
     # "backup_enabled" = {
     #   programs.smos = {
