@@ -4,6 +4,15 @@ with lib;
 let
   cfg = config.programs.smos;
 
+  mergeListRecursively = attrList:
+    fold
+      (
+        x: y:
+          lib.recursiveUpdate x y
+      )
+      { }
+      attrList;
+
 
 in
 {
@@ -23,6 +32,12 @@ in
               type = types.str;
               description = "Extra contents for the config file";
               default = "";
+            };
+          config =
+            mkOption {
+              # type = types.str;
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place.";
+              default = { };
             };
           backup =
             mkOption {
@@ -218,16 +233,13 @@ in
             };
         };
 
-      syncConfigContents =
-        syncCfg:
-        optionalString (syncCfg.enable or false) ''
-
-sync:
-  server-url: "${cfg.sync.server-url}"
-  username: "${cfg.sync.username}"
-  password: "${cfg.sync.password}"
-
-    '';
+      syncConfig = optionalAttrs (cfg.sync.enable or false) {
+        sync = {
+          server-url = cfg.sync.server-url;
+          username = cfg.sync.username;
+          password = cfg.sync.password;
+        };
+      };
 
       syncSmosName = "sync-smos";
       syncSmosService =
@@ -265,13 +277,10 @@ sync:
             };
         };
 
-      calendarConfigContents =
-        calendarCfg:
-        optionalString (calendarCfg.enable or false) ''
-
-calendar: ${builtins.toJSON calendarCfg}
-
-    '';
+      calendarConfig =
+        optionalAttrs (cfg.calendar.enable or false) {
+          calendar = cfg.calendar;
+        };
 
 
       calendarSmosName = "calendar-smos";
@@ -310,14 +319,10 @@ calendar: ${builtins.toJSON calendarCfg}
             };
         };
 
-      schedulerConfigContents =
-        schedulerCfg:
-        optionalString (schedulerCfg.enable or false) ''
-
-scheduler: ${builtins.toJSON schedulerCfg}
-
-    '';
-
+      schedulerConfig =
+        optionalAttrs (cfg.scheduler.enable or false) {
+          scheduler = cfg.scheduler;
+        };
 
       schedulerSmosName = "scheduler-activate-smos";
       schedulerSmosService =
@@ -356,13 +361,13 @@ scheduler: ${builtins.toJSON schedulerCfg}
             };
         };
 
-      smosConfigContents =
-        concatStringsSep "\n" [
-          (syncConfigContents cfg.sync)
-          (calendarConfigContents cfg.calendar)
-          (schedulerConfigContents cfg.scheduler)
-          cfg.extraConfig
-        ];
+      smosConfig = cfg.config;
+      smosConfigContents = builtins.toJSON (mergeListRecursively [
+        syncConfig
+        calendarConfig
+        schedulerConfig
+        smosConfig
+      ]);
 
       services =
         (

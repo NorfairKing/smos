@@ -21,13 +21,12 @@ let
         enable = true;
       };
     };
-    # Broken because of the config file
-    # "backup_enabled" = {
-    #   programs.smos = {
-    #     enable = true;
-    #     backup.enable = true;
-    #   };
-    # };
+    "backup_enabled" = {
+      programs.smos = {
+        enable = true;
+        backup.enable = true;
+      };
+    };
     "sync_enabled" = {
       programs.smos = {
         enable = true;
@@ -73,9 +72,9 @@ let
       home.stateVersion = "20.09";
     };
 
-  userTestScript = username: userConfig: ''
-    print("Testing the configuration of ${username}")
-    ${pkgs.lib.optionalString userConfig.programs.smos.enable or false ''
+  # The strange formatting is because of the stupid linting that nixos tests do
+  commonTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.enable or false) ''
+
     # Test that the config file exists.
     machine.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
     # Make sure the user can run the smos commands.
@@ -87,17 +86,26 @@ let
     machine.succeed(su("${username}", "smos-scheduler --help"))
     machine.succeed(su("${username}", "smos-sync-client --help"))
     # Make sure the config file is parseable
-    machine.succeed(su("${username}", "smos-query next"))''}
-    ${pkgs.lib.optionalString userConfig.programs.smos.sync.enable or false ''
+    machine.succeed(su("${username}", "smos-query next"))'';
+
+  syncTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
+
     # Test that syncing works.
     machine.succeed(su("${username}", "smos-sync-client register"))
     machine.succeed(su("${username}", "smos-sync-client login"))
-    machine.succeed(su("${username}", "smos-sync-client sync"))''}
-    ${pkgs.lib.optionalString userConfig.programs.smos.scheduler.enable or false ''
+    machine.succeed(su("${username}", "smos-sync-client sync"))'';
+
+  schedulerTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
+
     # Test that the scheduler can activate.
     machine.succeed(su("${username}", "smos-scheduler check"))
-    machine.succeed(su("${username}", "smos-scheduler schedule"))''}
-  '';
+    machine.succeed(su("${username}", "smos-scheduler schedule"))'';
+
+  userTestScript = username: userConfig: pkgs.lib.concatStrings [
+    (commonTestScript username userConfig)
+    (syncTestScript username userConfig)
+    (schedulerTestScript username userConfig)
+  ];
 
 in
 pkgs.nixosTest (
@@ -150,7 +158,6 @@ pkgs.nixosTest (
 
       # Run the test script for each user
       ${lib.concatStrings (lib.mapAttrsToList userTestScript testUsers)}
-      # would not reformat
     '';
   }
 )
