@@ -68,7 +68,6 @@ let
       imports = [
         ./home-manager-module.nix
       ];
-      xdg.enable = true;
       home.stateVersion = "20.09";
     };
 
@@ -133,7 +132,10 @@ pkgs.nixosTest (
         };
       };
       users.users = lib.mapAttrs makeTestUser testUsers;
-      home-manager.users = lib.mapAttrs makeTestUserHome testUsers;
+      home-manager = {
+        useGlobalPkgs = true;
+        users = lib.mapAttrs makeTestUserHome testUsers;
+      };
     };
     testScript = ''
       from shlex import quote
