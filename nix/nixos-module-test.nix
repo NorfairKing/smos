@@ -12,6 +12,84 @@ let
   docs-port = 8001;
   api-port = 8002;
   web-port = 8003;
+
+  testUsers = {
+    # "nothing-enabled" = {
+    #   programs.smos = {
+    #     enable = true;
+    #   };
+    # };
+    # "backup-enabled" = {
+    #   programs.smos = {
+    #     enable = true;
+    #     backup.enable = true;
+    #   };
+    # };
+    # "sync-enabled" = {
+    #   programs.smos = {
+    #     enable = true;
+    #     sync = {
+    #       enable = true;
+    #       server-url = "localhost:${builtins.toString api-port}";
+    #       username = "testuser";
+    #       password = "testpassword";
+    #     };
+    #   };
+    # };
+    # "scheduler-enabled" = {
+    #   programs.smos = {
+    #     enable = true;
+    #     scheduler.enable = true;
+    #   };
+    # };
+    "everything_enabled" = {
+      programs.smos = {
+        enable = true;
+        backup.enable = true;
+        sync = {
+          enable = true;
+          server-url = "localhost:${builtins.toString api-port}";
+          username = "testuser";
+          password = "testpassword";
+        };
+        scheduler = {
+          enable = true;
+        };
+      };
+    };
+  };
+  makeTestUser = _: _: {
+    isNormalUser = true;
+  };
+  makeTestUserHome = username: userConfig: { pkgs, ... }:
+    userConfig // {
+      imports = [
+        ./home-manager-module.nix
+      ];
+      xdg.enable = true;
+      home.stateVersion = "20.09";
+    };
+
+
+  userTestScript = username: userConfig: ''
+    ${pkgs.lib.optionalString userConfig.programs.smos.enable or false ''
+    machine.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
+    ''}
+
+    ${pkgs.lib.optionalString userConfig.programs.smos.sync.enable or false ''
+    # Test that syncing works
+    machine.succeed(su("${username}", "smos-sync-client register"))
+    machine.succeed(su("${username}", "smos-sync-client login"))
+    machine.succeed(su("${username}", "smos-sync-client sync"))
+    ''}
+
+    ${pkgs.lib.optionalString userConfig.programs.smos.scheduler.enable or false ''
+    # Test that the scheduler can activate
+    machine.succeed(su("${username}", "smos-scheduler check"))
+    machine.succeed(su("${username}", "smos-scheduler schedule"))
+    ''}
+  '';
+
 in
 pkgs.nixosTest (
   { lib, pkgs, ... }: {
@@ -37,27 +115,8 @@ pkgs.nixosTest (
           api-url = "localhost:${builtins.toString api-port}";
         };
       };
-      users.users.testuser.isNormalUser = true;
-      home-manager.users.testuser = { pkgs, ... }: {
-        imports = [
-          ./home-manager-module.nix
-        ];
-        xdg.enable = true;
-        home.stateVersion = "20.09"; # To make sure it actualy use the
-        programs.smos = {
-          enable = true;
-          backup.enable = true;
-          sync = {
-            enable = true;
-            server-url = "localhost:${builtins.toString api-port}";
-            username = "testuser";
-            password = "testpassword";
-          };
-          scheduler = {
-            enable = true;
-          };
-        };
-      };
+      users.users = lib.mapAttrs makeTestUser testUsers;
+      home-manager.users = lib.mapAttrs makeTestUserHome testUsers;
     };
     testScript = ''
       from shlex import quote
@@ -72,22 +131,17 @@ pkgs.nixosTest (
       machine.wait_for_open_port(${builtins.toString web-port})
       machine.succeed("curl localhost:${builtins.toString web-port}")
 
-      machine.wait_for_unit("home-manager-testuser.service")
-
+      # Wait for all test users
+      ${lib.concatStringsSep "\n" (builtins.map (username: "machine.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
+      
 
       def su(user, cmd):
           return f"su - {user} -c {quote(cmd)}"
 
 
-      machine.succeed(su("testuser", "cat ~/.config/smos/config.yaml"))
-
-      # Sync
-      machine.succeed(su("testuser", "smos-sync-client register"))
-      machine.succeed(su("testuser", "smos-sync-client login"))
-      machine.succeed(su("testuser", "smos-sync-client sync"))
-
-      # Calendar import
-      machine.succeed(su("testuser", "smos-scheduler schedule"))
+      # Run the test script for each user
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList userTestScript testUsers)}
+      # would not reformat
     '';
   }
 )
