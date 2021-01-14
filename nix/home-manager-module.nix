@@ -361,13 +361,23 @@ in
             };
         };
 
-      smosConfig = cfg.config;
-      smosConfigContents = builtins.toJSON (mergeListRecursively [
+      smosConfig = mergeListRecursively [
         syncConfig
         calendarConfig
         schedulerConfig
-        smosConfig
-      ]);
+        cfg.config
+      ];
+
+      # Convert the config file to pretty yaml, for readability.
+      # The keys will not be in the "right" order but that's fine.
+      smosConfigContents = pkgs.stdenv.mkDerivation {
+        name = "smos-config-contents";
+        buildInputs = [ pkgs.haskellPackages.json2yaml ];
+        src = "${pkgs.writeText "smos-config.yaml" (builtins.toJSON smosConfig)}";
+        buildCommand = ''
+          json2yaml $src > $out
+        '';
+      };
 
       services =
         (
@@ -417,7 +427,7 @@ in
     in
     mkIf cfg.enable {
       xdg = {
-        configFile."smos/config.yaml".text = smosConfigContents;
+        configFile."smos/config.yaml".source = "${smosConfigContents}";
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];
