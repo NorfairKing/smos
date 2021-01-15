@@ -29,6 +29,9 @@ in
 }
 ```
 
+You can also declare your smos configuration using the `programs.smos.config` attribute.
+This will be translated to your configuration file and put into the right place automatically.
+
 ### Optional: Using the cachix cache
 
 If you use cachix, you can configure the `smos.cachix.org` cache as a public cache:
