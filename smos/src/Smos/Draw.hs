@@ -506,11 +506,11 @@ drawEntryCursor s tc edc e = do
                 [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
                 maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor,
                 [ str "..."
-                  | let e_ = rebuildEntryCursor ec
+                  | let Entry {..} = rebuildEntryCursor ec
                      in or
-                          [ not (collapseEntryShowContents e) && isJust (entryContents e_),
-                            not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_),
-                            not (collapseEntryShowHistory e) && not (M.null $ entryTimestamps e_)
+                          [ not (collapseEntryShowContents e) && isJust entryContents,
+                            not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                            not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
                           ]
                 ],
                 maybeToList $ completedForestNumbersWidget edc,

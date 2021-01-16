@@ -16,6 +16,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-archive`: The timestamp appended to the filename during archiving now includes the local time of day instead of only the day.
 - `smos`: The contents of an entry are now aligned with its state and header instead of with its list indicator.
 - `smos`: Fixed a grammatical error in the description of the `entrySelectTagsFromBack` action.
+- `smos`: Fixed incorrect logic with respect to displaying an ellipsis when parts of an entry were collapsed and selected.
 
 
 
