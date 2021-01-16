@@ -5,9 +5,17 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased
 
+## Added
+
+- `smos`: The `o` key now activates the `entrySelectContentsAtEnd` key by default, `Alt-o` activates `entrySelectContentsAtStart`.
+- `smos`: The `browserSelectFirst` and `browserSelectLast` actions, which are activated by `gg` and `G` respectively by default.
+- `smos`: The `convArchiveFile` function, activated by ` fa` by default.
+
 ## Changed
 
 - `smos-archive`: The timestamp appended to the filename during archiving now includes the local time of day instead of only the day.
+- `smos`: The contents of an entry are now aligned with its state and header instead of with its list indicator.
+- `smos`: Fixed a grammatical error in the description of the `entrySelectTagsFromBack` action.
 
 
 

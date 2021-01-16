@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -142,8 +143,8 @@ convArchiveFile =
               Just df -> do
                 result <- moveToArchive sourceFile df (rebuildSmosFileEditorCursor sfec)
                 case result of
-                  MoveDestinationAlreadyExists df -> do
-                    addErrorMessage $ "The destination file already exists: " <> T.pack (fromAbsFile df)
+                  MoveDestinationAlreadyExists df' -> do
+                    addErrorMessage $ "The destination file already exists: " <> T.pack (fromAbsFile df')
                     pure (Just sfec)
                   ArchivedSuccesfully -> pure Nothing
         actionFunc selectBrowserProjects,
