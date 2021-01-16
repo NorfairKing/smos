@@ -249,6 +249,8 @@ defaultBrowserKeyMap =
             exactChar 'j' browserSelectNext,
             exactKey KUp browserSelectPrev,
             exactChar 'k' browserSelectPrev,
+            exactString "gg" browserSelectFirst,
+            exactString "G" browserSelectLast,
             exactChar '\t' browserToggleCollapse,
             exactKey KEnter browserEnter,
             exactKey KBackTab browserToggleCollapseRecursively,

@@ -94,6 +94,12 @@ fileBrowserCursorSelectNext = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCu
 fileBrowserCursorSelectPrev :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorSelectPrev = fileBrowserCursorDoDeleteOrUpdateMaybe dirForestCursorSelectPrev
 
+fileBrowserCursorSelectFirst :: FileBrowserCursor -> FileBrowserCursor
+fileBrowserCursorSelectFirst = fileBrowserCursorDoDeleteOrUpdate dirForestCursorSelectFirst
+
+fileBrowserCursorSelectLast :: FileBrowserCursor -> FileBrowserCursor
+fileBrowserCursorSelectLast = fileBrowserCursorDoDeleteOrUpdate dirForestCursorSelectLast
+
 fileBrowserCursorStartNew :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorStartNew = fileBrowserCursorMaybeDoMaybe dirForestCursorStartNew
 

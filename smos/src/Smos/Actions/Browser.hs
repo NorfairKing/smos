@@ -22,6 +22,8 @@ allPlainBrowserActions =
     selectBrowserSide,
     browserSelectPrev,
     browserSelectNext,
+    browserSelectFirst,
+    browserSelectLast,
     browserStartNew,
     browserStartNewBelowAtStart,
     browserStartNewBelowAtEnd,
@@ -72,6 +74,22 @@ browserStartNew =
     { actionName = "browserStartNew",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorStartNew,
       actionDescription = "Start a new file or directory in the file browser."
+    }
+
+browserSelectFirst :: Action
+browserSelectFirst =
+  Action
+    { actionName = "browserSelectFirst",
+      actionFunc = modifyFileBrowserCursor fileBrowserCursorSelectFirst,
+      actionDescription = "Select the first file or directory in the file browser."
+    }
+
+browserSelectLast :: Action
+browserSelectLast =
+  Action
+    { actionName = "browserSelectLast",
+      actionFunc = modifyFileBrowserCursor fileBrowserCursorSelectLast,
+      actionDescription = "Select the last file or directory in the file browser."
     }
 
 browserStartNewBelowAtStart :: Action
