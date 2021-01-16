@@ -494,42 +494,44 @@ drawEntryCursor s tc edc e = do
             ( drawStateHistoryCursor (selectWhen StateHistorySelected)
             )
         )
+  let headerLine =
+        hBox $
+          intersperse (str " ") $
+            concat
+              [ [ case s of
+                    NotSelected -> str [listerChar]
+                    MaybeSelected -> withAttr selectedAttr $ str [pointerChar]
+                ],
+                maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor),
+                [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
+                maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor,
+                [ str "..."
+                  | let e_ = rebuildEntryCursor ec
+                     in or
+                          [ not (collapseEntryShowContents e) && isJust (entryContents e_),
+                            not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_),
+                            not (collapseEntryShowHistory e) && not (M.null $ entryTimestamps e_)
+                          ]
+                ],
+                maybeToList $ completedForestNumbersWidget edc,
+                maybeToList $ collapsedForestNumbersWidget tc edc
+              ]
   pure $
     ( case s of
         NotSelected -> id
         MaybeSelected -> visible
     )
-      $ vBox $
-        catMaybes
-          [ Just $
-              hBox $
-                intersperse (str " ") $
-                  concat
-                    [ [ case s of
-                          NotSelected -> str [listerChar]
-                          MaybeSelected -> withAttr selectedAttr $ str [pointerChar]
-                      ],
-                      maybeToList (entryCursorStateHistoryCursor >>= drawCurrentStateFromCursor),
-                      [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
-                      maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor,
-                      [ str "..."
-                        | let e_ = rebuildEntryCursor ec
-                           in or
-                                [ not (collapseEntryShowContents e) && isJust (entryContents e_),
-                                  not (collapseEntryShowLogbook e) && not (nullLogbook $ entryLogbook e_),
-                                  not (collapseEntryShowHistory e) && not (M.null $ entryTimestamps e_)
-                                ]
-                      ],
-                      maybeToList $ completedForestNumbersWidget edc,
-                      maybeToList $ collapsedForestNumbersWidget tc edc
-                    ],
-            drawIfM collapseEntryShowContents $
-              drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
-            tscw,
-            drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
-            shcw,
-            lbcw
-          ]
+      $ (headerLine <=>) $
+        padLeft defaultPadding $
+          vBox $
+            catMaybes
+              [ drawIfM collapseEntryShowContents $
+                  drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
+                tscw,
+                drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
+                shcw,
+                lbcw
+              ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
     drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
@@ -552,33 +554,35 @@ drawEntry tc edc e = do
   tsw <- drawIfM collapseEntryShowTimestamps <$> drawTimestamps entryTimestamps
   lbw <- drawIfM collapseEntryShowLogbook <$> drawLogbook entryLogbook
   shw <- drawIfM collapseEntryShowHistory <$> drawStateHistory entryStateHistory
+  let headerLine =
+        hBox $
+          intersperse (str " ") $
+            concat
+              [ [str [listerChar]],
+                maybeToList (drawCurrentState entryStateHistory),
+                [drawHeader entryHeader],
+                maybeToList (drawTags entryTags),
+                [ str "..."
+                  | or
+                      [ not (collapseEntryShowContents e) && isJust entryContents,
+                        not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                        not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
+                      ]
+                ],
+                maybeToList $ completedForestNumbersWidget edc,
+                maybeToList $ collapsedForestNumbersWidget tc edc
+              ]
   pure $
-    vBox $
-      catMaybes
-        [ Just $
-            hBox $
-              intersperse (str " ") $
-                concat
-                  [ [str [listerChar]],
-                    maybeToList (drawCurrentState entryStateHistory),
-                    [drawHeader entryHeader],
-                    maybeToList (drawTags entryTags),
-                    [ str "..."
-                      | or
-                          [ not (collapseEntryShowContents e) && isJust entryContents,
-                            not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
-                            not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
-                          ]
-                    ],
-                    maybeToList $ completedForestNumbersWidget edc,
-                    maybeToList $ collapsedForestNumbersWidget tc edc
-                  ],
-          drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
-          tsw,
-          drawProperties entryProperties,
-          shw,
-          lbw
-        ]
+    (headerLine <=>) $
+      padLeft defaultPadding $
+        vBox $
+          catMaybes
+            [ drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
+              tsw,
+              drawProperties entryProperties,
+              shw,
+              lbw
+            ]
   where
     Entry {..} = collapseEntryValue e
     drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
