@@ -123,7 +123,7 @@ entrySelectTagsFromBack =
       actionFunc = do
         modifyEntryCursor entryCursorSelectTags
         modifyMTagsCursor $ maybe (singletonTagsCursor "") $ tagsCursorSelectEndInSelectedTag . tagsCursorSelectLastTag,
-      actionDescription = "Select the current Entry's tags from back"
+      actionDescription = "Select the current Entry's tags from the back"
     }
 
 entrySelectLogbook :: Action
