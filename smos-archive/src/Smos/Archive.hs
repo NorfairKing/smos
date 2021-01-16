@@ -6,6 +6,8 @@ module Smos.Archive
   ( smosArchive,
 
     -- ** Helper functions
+    determineToFile,
+    NotInWorkflowDir (..),
     destinationFile,
     checkFromFile,
     ArchiveCheckResult (..),

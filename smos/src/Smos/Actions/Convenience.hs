@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Actions.Convenience
   ( allConveniencePlainActions,
@@ -6,21 +7,36 @@ module Smos.Actions.Convenience
     convRepinged,
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
+    convArchiveFile,
   )
 where
 
 import Control.Category ((>>>))
+import Control.Monad.Catch
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Time
 import Lens.Micro
+import Path
+import Smos.Actions.Browser
 import Smos.Actions.Entry
+import Smos.Actions.File
 import Smos.Actions.Forest
 import Smos.Actions.Utils
+import Smos.Archive
+import Smos.Cursor.SmosFileEditor
 import Smos.Data
+import Smos.Report.Config
 import Smos.Types
 
 allConveniencePlainActions :: [Action]
-allConveniencePlainActions = [convDoneAndWaitForResponse, convRepinged, convRespondedButStillWaiting, convNewEntryAndClockIn]
+allConveniencePlainActions =
+  [ convDoneAndWaitForResponse,
+    convRepinged,
+    convRespondedButStillWaiting,
+    convNewEntryAndClockIn,
+    convArchiveFile
+  ]
 
 convDoneAndWaitForResponse :: Action
 convDoneAndWaitForResponse =
@@ -103,4 +119,33 @@ convNewEntryAndClockIn =
         actionFunc forestClockOutEverywhereInAllFilesAndClockInHere
         actionFunc entrySelectHeaderAtEnd,
       actionDescription = "Create a new entry and clock in immediately"
+    }
+
+convArchiveFile :: Action
+convArchiveFile =
+  Action
+    { actionName = "convArchiveFile",
+      actionFunc = do
+        saveCurrentSmosFile
+        closeCurrentFile
+        modifyMSmosFileEditorCursorMS $ \case
+          Nothing -> pure Nothing
+          Just sfec -> do
+            dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+            let runArchiveM = liftIO . flip runReaderT dc
+            let sourceFile = smosFileEditorPath sfec
+            mdf <- runArchiveM $ (Just <$> determineToFile sourceFile) `catch` (\(_ :: NotInWorkflowDir) -> pure Nothing)
+            case mdf of
+              Nothing -> do
+                addErrorMessage "The file that you are trying to archive is not in the workflow directory."
+                pure (Just sfec)
+              Just df -> do
+                result <- moveToArchive sourceFile df (rebuildSmosFileEditorCursor sfec)
+                case result of
+                  MoveDestinationAlreadyExists df -> do
+                    addErrorMessage $ "The destination file already exists: " <> T.pack (fromAbsFile df)
+                    pure (Just sfec)
+                  ArchivedSuccesfully -> pure Nothing
+        actionFunc selectBrowserProjects,
+      actionDescription = "Archive the current file and switch to the file browser in the projects directory. Note that this action cannot be undone. It will not archive a file outside of the workflow directory but still switch to the projects directory in the browser."
     }

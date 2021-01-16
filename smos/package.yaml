@@ -30,6 +30,7 @@ library:
   - directory
   - dirforest
   - envparse
+  - exceptions
   - filelock
   - filepath
   - fuzzy-time
@@ -44,6 +45,7 @@ library:
   - process
   - resourcet
   - safe
+  - smos-archive
   - smos-cursor
   - smos-data
   - smos-report
