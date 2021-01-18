@@ -72,6 +72,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -with-rtsopts=-I0
     - -optP-Wno-nonportable-include-path # For macos
     dependencies:
     - base
