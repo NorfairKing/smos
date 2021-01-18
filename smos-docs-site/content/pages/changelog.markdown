@@ -9,7 +9,7 @@ description: The changelog for all of the Smos tools and libraries
 
 - `smos`: The `o` key now activates the `entrySelectContentsAtEnd` key by default, `Alt-o` activates `entrySelectContentsAtStart`.
 - `smos`: The `browserSelectFirst` and `browserSelectLast` actions, which are activated by `gg` and `G` respectively by default.
-- `smos`: The `convArchiveFile` function, activated by ` fa` by default.
+- `smos`: The `convArchiveFile` function, activated by `<space>fa` by default.
 
 ## Changed
 
