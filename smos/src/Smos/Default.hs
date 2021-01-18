@@ -137,7 +137,6 @@ defaultFileKeyMap =
             exactString "zt" forestToggleCollapseEntryTimestamps,
             -- Entering contents
             exactKey KEnter entrySelectContentsAtEnd,
-            exactChar 'o' entrySelectContentsAtEnd,
             exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtStart,
             exactKeyPress (KeyPress (KChar 'o') [MMeta]) entrySelectContentsAtStart,
             -- Entering tags
