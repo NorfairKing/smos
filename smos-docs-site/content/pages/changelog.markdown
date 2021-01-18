@@ -17,6 +17,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos`: The contents of an entry are now aligned with its state and header instead of with its list indicator.
 - `smos`: Fixed a grammatical error in the description of the `entrySelectTagsFromBack` action.
 - `smos`: Fixed incorrect logic with respect to displaying an ellipsis when parts of an entry were collapsed and selected.
+- `smos`: Drastically reduced the idle CPU/memory usage by turning off idle GC.
 
 
 
