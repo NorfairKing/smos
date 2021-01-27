@@ -66,7 +66,7 @@ formatTimestampLocalTime :: LocalTime -> String
 formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %R"
 
 listerChar :: Char
-listerChar = '-'
+listerChar = ' '
 
 pointerChar :: Char
 pointerChar = '❯'
