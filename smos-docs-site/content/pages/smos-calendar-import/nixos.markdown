@@ -12,7 +12,6 @@ programs.smos = {
   enable = true;
   calendar = {
     enable = true;
-    destination = "calendar.smos";
     sources = [
       {
         name = "Personal";
