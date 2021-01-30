@@ -61,17 +61,19 @@ tests:
     dependencies:
     - QuickCheck
     - bytestring
+    - containers
     - dirforest
     - genvalidity-bytestring
     - genvalidity-dirforest
     - genvalidity-sydtest
-    - sydtest
     - path
     - path-io
+    - pretty-show
     - smos-data
     - smos-data-gen
+    - smos-query
     - smos-report
     - smos-report-gen
-    - smos-query
+    - sydtest
     - text
     - time
