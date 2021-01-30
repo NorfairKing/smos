@@ -44,6 +44,21 @@ let
         scheduler.enable = true;
       };
     };
+    "calendar_enabled" = {
+      programs.smos = {
+        enable = true;
+        calendar = {
+          enable = true;
+          sources = [
+            {
+              name = "Example";
+              destination = "calendar.smos";
+              source = "${../smos-calendar-import/test_resources/example.ics}";
+            }
+          ];
+        };
+      };
+    };
     "everything_enabled" = {
       programs.smos = {
         enable = true;
@@ -56,6 +71,16 @@ let
         };
         scheduler = {
           enable = true;
+        };
+        calendar = {
+          enable = true;
+          sources = [
+            {
+              name = "Example";
+              destination = "calendar.smos";
+              source = "${../smos-calendar-import/test_resources/example.ics}";
+            }
+          ];
         };
       };
     };
@@ -100,10 +125,16 @@ let
     machine.succeed(su("${username}", "smos-scheduler check"))
     machine.succeed(su("${username}", "smos-scheduler schedule"))'';
 
+  calendarTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
+
+    # Test that the calendar can activate.
+    machine.succeed(su("${username}", "smos-calendar-import"))'';
+
   userTestScript = username: userConfig: pkgs.lib.concatStrings [
     (commonTestScript username userConfig)
     (syncTestScript username userConfig)
     (schedulerTestScript username userConfig)
+    (calendarTestScript username userConfig)
   ];
 
 in
