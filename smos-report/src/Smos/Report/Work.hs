@@ -199,7 +199,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
                 && matchesNoContext,
           intermediateWorkReportCheckViolations =
-            if matchesAnyContext
+            if matchesAnyContext || matchesSelectedContext
               then
                 let go :: EntryFilterRel -> Maybe (Path Rel File, ForestCursor Entry)
                     go f =
