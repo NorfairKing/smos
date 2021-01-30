@@ -11,8 +11,6 @@ where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
-import Data.Set (Set)
-import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -239,8 +237,7 @@ instance YamlSchema StuckConfiguration where
       StuckConfiguration <$> optionalField "threshold" "The number of days before a project has been stuck for too long"
 
 data WorkConfiguration = WorkConfiguration
-  { workConfChecks :: Set EntryFilterRel,
-    workConfTimeFilterProperty :: Maybe PropertyName,
+  { workConfTimeFilterProperty :: Maybe PropertyName,
     workConfProjection :: Maybe (NonEmpty Projection),
     workConfSorter :: Maybe Sorter
   }
@@ -252,8 +249,8 @@ instance FromJSON WorkConfiguration where
 instance YamlSchema WorkConfiguration where
   yamlSchema =
     objectParser "WorkConfiguration" $
-      WorkConfiguration <$> optionalFieldWithDefault "checks" S.empty "The checks to perform and to alert about"
-        <*> optionalField "time-filter" "The property to use to filter by time"
+      WorkConfiguration
+        <$> optionalField "time-filter" "The property to use to filter by time"
         <*> optionalField "columns" "The columns in the report"
         <*> optionalField "sorter" "The sorter to use to sort the rows"
 
@@ -291,7 +288,6 @@ data WorkSettings = WorkSettings
     workSetTimeProperty :: Maybe PropertyName,
     workSetTime :: Maybe Time,
     workSetFilter :: Maybe EntryFilterRel,
-    workSetChecks :: Set EntryFilterRel,
     workSetProjection :: NonEmpty Projection,
     workSetSorter :: Maybe Sorter,
     workSetHideArchive :: HideArchive,

@@ -75,6 +75,7 @@ combineToWorkReportConfig wrc mc =
     wrc
       { workReportConfigBaseFilter =
           (mc >>= workReportConfBaseFilter) <|> workReportConfigBaseFilter wrc,
+        workReportConfigChecks = fromMaybe (workReportConfigChecks wrc) (mc >>= workReportConfChecks),
         workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts)
       }
 

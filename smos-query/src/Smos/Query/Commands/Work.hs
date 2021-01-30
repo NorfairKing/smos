@@ -29,7 +29,6 @@ smosQueryWork WorkSettings {..} = do
   now <- liftIO getZonedTime
   let wc = smosReportConfigWorkConfig src
   let contexts = workReportConfigContexts wc
-  let baseFilter = workReportConfigBaseFilter wc
   mcf <- forM workSetContext $ \cn ->
     case M.lookup cn contexts of
       Nothing -> dieQ $ unwords ["Context not found:", T.unpack $ contextNameText cn]
@@ -41,13 +40,13 @@ smosQueryWork WorkSettings {..} = do
         WorkReportContext
           { workReportContextNow = now,
             workReportContextProjectsSubdir = mpd,
-            workReportContextBaseFilter = baseFilter,
+            workReportContextBaseFilter = workReportConfigBaseFilter wc,
             workReportContextCurrentContext = mcf,
             workReportContextTimeProperty = workSetTimeProperty,
             workReportContextTime = workSetTime,
             workReportContextAdditionalFilter = workSetFilter,
             workReportContextContexts = contexts,
-            workReportContextChecks = workSetChecks,
+            workReportContextChecks = workReportConfigChecks wc,
             workReportContextSorter = workSetSorter,
             workReportContextWaitingThreshold = workSetWaitingThreshold,
             workReportContextStuckThreshold = workSetStuckThreshold

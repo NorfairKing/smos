@@ -3,6 +3,7 @@
 module Smos.Query.WorkSpec (spec) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import Smos.Query.Config
 import Smos.Query.Default
@@ -35,3 +36,16 @@ spec = sequential $
                   rc = defaultReportConfig {smosReportConfigWorkConfig = wc}
                   sqc = defaultSmosQueryConfig {smosQueryConfigReportConfig = rc}
               testSmosQueryWithConfig sqc is ["work", "online"]
+      it "'just works' for any InterestingStore and a check but no contexts" $
+        forAllValid $ \is -> do
+          let checkString = "property:timewindow"
+          case parseEntryFilterRel checkString of
+            Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
+            Right checkFilter -> do
+              let wc =
+                    defaultWorkReportConfig
+                      { workReportConfigChecks = S.singleton checkFilter
+                      }
+                  rc = defaultReportConfig {smosReportConfigWorkConfig = wc}
+                  sqc = defaultSmosQueryConfig {smosQueryConfigReportConfig = rc}
+              testSmosQueryWithConfig sqc is ["work"]

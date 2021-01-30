@@ -39,6 +39,8 @@ where
 import Data.Aeson
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
@@ -79,6 +81,7 @@ defaultDirectoryConfig =
 
 data WorkReportConfig = WorkReportConfig
   { workReportConfigBaseFilter :: Maybe EntryFilterRel,
+    workReportConfigChecks :: Set EntryFilterRel,
     workReportConfigContexts :: Map ContextName EntryFilterRel
   }
   deriving (Show, Eq, Generic)
@@ -87,6 +90,7 @@ defaultWorkReportConfig :: WorkReportConfig
 defaultWorkReportConfig =
   WorkReportConfig
     { workReportConfigBaseFilter = Just defaultWorkBaseFilter,
+      workReportConfigChecks = S.empty,
       workReportConfigContexts = M.empty
     }
 

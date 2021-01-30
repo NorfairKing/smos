@@ -16,7 +16,6 @@ import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
 import Data.Version
@@ -144,8 +143,7 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   agendaSetPeriod = period
                 }
         CommandWork WorkFlags {..} -> do
-          let wc func = func <$> (mc >>= confWorkConfiguration)
-              mwc func = mc >>= confWorkConfiguration >>= func
+          let mwc func = mc >>= confWorkConfiguration >>= func
               combineMaybe :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
               combineMaybe f m1 m2 =
                 case (m1, m2) of
@@ -160,7 +158,6 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   workSetTimeProperty = mwc workConfTimeFilterProperty,
                   workSetTime = workFlagTime,
                   workSetFilter = workFlagFilter,
-                  workSetChecks = fromMaybe S.empty $ wc workConfChecks,
                   workSetProjection =
                     fromMaybe defaultProjection $
                       combineMaybe (<>) (mwc workConfProjection) workFlagProjection,

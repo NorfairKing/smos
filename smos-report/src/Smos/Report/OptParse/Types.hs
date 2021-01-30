@@ -5,6 +5,8 @@
 module Smos.Report.OptParse.Types where
 
 import Data.Map (Map)
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
@@ -179,6 +181,7 @@ backToDirectoryConfiguration DirectoryConfig {..} =
 
 data WorkReportConfiguration = WorkReportConfiguration
   { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
+    workReportConfChecks :: !(Maybe (Set EntryFilterRel)),
     workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel))
   }
   deriving (Show, Eq, Generic)
@@ -189,6 +192,7 @@ instance ToJSON WorkReportConfiguration where
   toJSON WorkReportConfiguration {..} =
     object
       [ "base-filter" .= workReportConfBaseFilter,
+        "checks" .= workReportConfContexts,
         "contexts" .= workReportConfContexts
       ]
 
@@ -200,6 +204,7 @@ instance YamlSchema WorkReportConfiguration where
     objectParser "WorkReportConfiguration" $
       WorkReportConfiguration
         <$> optionalField "base-filter" "The base work filter"
+        <*> optionalField "checks" "Checks for the work report"
         <*> optionalField "contexts" "Contexts for the work report"
 
 backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
@@ -209,5 +214,9 @@ backToWorkReportConfiguration WorkReportConfig {..} =
         if workReportConfigBaseFilter == Just defaultWorkBaseFilter
           then Nothing
           else Just defaultWorkBaseFilter,
+      workReportConfChecks =
+        if S.null workReportConfigChecks
+          then Nothing
+          else Just workReportConfigChecks,
       workReportConfContexts = Just workReportConfigContexts
     }
