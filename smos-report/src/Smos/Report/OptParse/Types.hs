@@ -6,7 +6,6 @@ module Smos.Report.OptParse.Types where
 
 import Data.Map (Map)
 import Data.Set (Set)
-import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
@@ -192,7 +191,7 @@ instance ToJSON WorkReportConfiguration where
   toJSON WorkReportConfiguration {..} =
     object
       [ "base-filter" .= workReportConfBaseFilter,
-        "checks" .= workReportConfContexts,
+        "checks" .= workReportConfChecks,
         "contexts" .= workReportConfContexts
       ]
 
@@ -214,9 +213,6 @@ backToWorkReportConfiguration WorkReportConfig {..} =
         if workReportConfigBaseFilter == Just defaultWorkBaseFilter
           then Nothing
           else Just defaultWorkBaseFilter,
-      workReportConfChecks =
-        if S.null workReportConfigChecks
-          then Nothing
-          else Just workReportConfigChecks,
+      workReportConfChecks = Just workReportConfigChecks,
       workReportConfContexts = Just workReportConfigContexts
     }
