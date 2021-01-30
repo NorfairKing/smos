@@ -14,6 +14,7 @@ import Smos.Data.Gen ()
 import Smos.Report.Archive
 import Smos.Report.Archive.Gen ()
 import Smos.Report.Config
+import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
 import Smos.Report.InterestingStore
 import Smos.Report.ShouldPrint
@@ -42,6 +43,13 @@ spec = do
 
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReport" $ do
+      it "produces valid reports for interesting stores" $
+        forAllValid $
+          \wrc ->
+            forAllValid $ \ha ->
+              withInterestingStore $ \dc -> do
+                nar <- produceWorkReport ha DontPrint dc wrc
+                shouldBeValid nar
       it "finds next actions even if there is no time property or filter and no contexts" $
         forAllValid $ \now ->
           forAllValid $ \ts ->
@@ -122,10 +130,45 @@ spec = do
                       [] -> expectationFailure "No results found"
                       (rp, _) : _ -> do
                         rp `shouldBe` rf
-      it "produces valid reports for interesting stores" $
-        forAllValid $
-          \wrc ->
-            forAllValid $ \ha ->
-              withInterestingStore $ \dc -> do
-                nar <- produceWorkReport ha DontPrint dc wrc
-                shouldBeValid nar
+      it "finds check failures actions even if there are no contexts" $
+        forAllValid $ \now ->
+          forAllValid $ \ts ->
+            let rf = [relfile|example.smos|]
+                e =
+                  emptyEntry
+                    { entryStateHistory =
+                        StateHistory
+                          [ StateHistoryEntry
+                              { stateHistoryEntryNewState = Just "NEXT",
+                                stateHistoryEntryTimestamp = ts
+                              }
+                          ]
+                    }
+                is =
+                  emptyInterestingStore
+                    { workflowFiles = DF.singletonFile rf (SmosFile [Node e []])
+                    }
+                checkFilterString = "property:timewindow"
+             in case parseEntryFilterRel checkFilterString of
+                  Left err -> expectationFailure $ show err
+                  Right checkFilter -> withDirectoryConfig is $ \dc -> do
+                    let ctx =
+                          WorkReportContext
+                            { workReportContextNow = now,
+                              workReportContextProjectsSubdir = Just [reldir|projects|],
+                              workReportContextBaseFilter = Just defaultWorkBaseFilter,
+                              workReportContextCurrentContext = Nothing,
+                              workReportContextTimeProperty = Nothing,
+                              workReportContextTime = Nothing,
+                              workReportContextAdditionalFilter = Nothing,
+                              workReportContextContexts = M.empty,
+                              workReportContextChecks = S.singleton checkFilter,
+                              workReportContextSorter = Nothing,
+                              workReportContextWaitingThreshold = 7,
+                              workReportContextStuckThreshold = 21
+                            }
+                    wr <- produceWorkReport HideArchive DontPrint dc ctx
+                    case M.toList $ workReportCheckViolations wr of
+                      [] -> expectationFailure "No check violations found."
+                      (cf, _) : _ -> do
+                        cf `shouldBe` checkFilter
