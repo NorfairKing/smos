@@ -4,11 +4,17 @@ description: The changelog for all of the Smos tools and libraries
 ---
 
 # Unreleased
+# <a name="2021-02-01">[2021-02-01](#2021-02-01)
+- <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
+- <a name="smos-query-0.1.2">[smos-query 0.1.2](#smos-query-0.1.2)
+- <a name="smos-archive-0.2.0">[smos-archive 0.2.0](#smos-archive-0.2.0)
+
 
 ## Added
 
 - `smos`: The `browserSelectFirst` and `browserSelectLast` actions, which are activated by `gg` and `G` respectively by default.
-- `smos`: The `convArchiveFile` function, activated by `<space>fa` by default.
+- `smos`: The `convArchiveFile` function, activated by `<space>fa` by default. You can use it to archive a file while looking at the file.
+- Nixos module tests for home-manager configurations. The home manager module is now an official deliverable.
 
 ## Changed
 
@@ -17,8 +23,9 @@ description: The changelog for all of the Smos tools and libraries
 - `smos`: Fixed a grammatical error in the description of the `entrySelectTagsFromBack` action.
 - `smos`: Fixed incorrect logic with respect to displaying an ellipsis when parts of an entry were collapsed and selected.
 - `smos`: Drastically reduced the idle CPU/memory usage by turning off idle GC.
-- `smos`: Changed the lister character `-` to a space.
-- `smos-query`: Fixed that check violations would not show up if the user had not configured any contexts.
+- `smos`: Changed the lister character `-` to a space for a cleaner UI.
+- `smos-query`: Fixed that check violations would not show up in the work report if the user had not configured any contexts.
+- Converted all test suites to using [Sydtest](https://github.com/NorfairKing/sydtest) and fixed three sources of flakiness as a result.
 
 
 
