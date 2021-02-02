@@ -51,5 +51,6 @@ state
 header
 tag:<tag-name>                    -- tag:toast
 property:<property-name>          -- property:effort
+timestamp:<timestamp-name>        -- timestamp:DEADLINE
 ancestor:<property-name>          -- ancestor:effort
 ```

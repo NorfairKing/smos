@@ -4,6 +4,12 @@ description: The changelog for all of the Smos tools and libraries
 ---
 
 # Unreleased
+
+## Added
+
+- The 'timestamp' projection.
+  You can now use `timestamp:DEADLINE` as a column in your reports.
+
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
 - <a name="smos-query-0.1.2">[smos-query 0.1.2](#smos-query-0.1.2)

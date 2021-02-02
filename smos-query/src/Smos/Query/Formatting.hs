@@ -111,6 +111,7 @@ renderProjectionHeader p =
       OntoProperty pn -> chunk $ propertyNameText pn
       OntoTag t -> chunk $ tagText t
       OntoState -> chunk "state"
+      OntoTimestamp tn -> chunk $ timestampNameText tn
       OntoAncestor p' -> renderProjectionHeader p'
 
 renderProjectees :: [Projectee] -> [Chunk]
@@ -124,6 +125,7 @@ projecteeChunk p =
     StateProjection s -> maybe (chunk "") todoStateChunk s
     TagProjection mt -> maybe (chunk "") tagChunk mt
     PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
+    TimestampProjection tn tv -> maybe (chunk "") (timestampChunk tn) tv
 
 mTodoStateChunk :: Maybe TodoState -> Chunk
 mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
@@ -143,16 +145,20 @@ todoStateChunk ts = fore color . chunk . todoStateText $ ts
         "FAILED" -> brightRed
         _ -> mempty
 
+timestampChunk :: TimestampName -> Timestamp -> Chunk
+timestampChunk tsn = fore (timestampNameColor tsn) . chunk . timestampText
+
 timestampNameChunk :: TimestampName -> Chunk
-timestampNameChunk tsn = fore color . chunk . timestampNameText $ tsn
-  where
-    color =
-      case timestampNameText tsn of
-        "BEGIN" -> brown
-        "END" -> brown
-        "SCHEDULED" -> orange
-        "DEADLINE" -> red
-        _ -> mempty
+timestampNameChunk tsn = fore (timestampNameColor tsn) . chunk . timestampNameText $ tsn
+
+timestampNameColor :: TimestampName -> Radiant
+timestampNameColor tsn =
+  case timestampNameText tsn of
+    "BEGIN" -> brown
+    "END" -> brown
+    "SCHEDULED" -> orange
+    "DEADLINE" -> red
+    _ -> mempty
 
 headerChunk :: Header -> Chunk
 headerChunk = fore yellow . chunk . headerText

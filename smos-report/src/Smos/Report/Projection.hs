@@ -29,9 +29,10 @@ data Projection
   = OntoFile
   | OntoHeader
   | OntoState
-  | OntoTag Tag
-  | OntoProperty PropertyName
-  | OntoAncestor Projection
+  | OntoTag !Tag
+  | OntoProperty !PropertyName
+  | OntoTimestamp !TimestampName
+  | OntoAncestor !Projection
   deriving (Show, Eq, Generic)
 
 instance Validity Projection
@@ -46,11 +47,12 @@ instance ToJSON Projection where
   toJSON = toJSON . renderProjection
 
 data Projectee
-  = FileProjection (Path Rel File)
-  | HeaderProjection Header
-  | StateProjection (Maybe TodoState)
-  | TagProjection (Maybe Tag)
-  | PropertyProjection PropertyName (Maybe PropertyValue)
+  = FileProjection !(Path Rel File)
+  | HeaderProjection !Header
+  | StateProjection !(Maybe TodoState)
+  | TagProjection !(Maybe Tag)
+  | PropertyProjection !PropertyName !(Maybe PropertyValue)
+  | TimestampProjection !TimestampName !(Maybe Timestamp)
   deriving (Show, Eq, Generic)
 
 instance Validity Projectee
@@ -78,6 +80,7 @@ performProjection p rp fc =
               then Just t
               else Nothing
         OntoProperty pn -> PropertyProjection pn $ M.lookup pn $ entryProperties cur
+        OntoTimestamp tn -> TimestampProjection tn $ M.lookup tn $ entryTimestamps cur
         OntoAncestor p' ->
           ( case forestCursorSelectAbove fc of
               Nothing -> id
@@ -92,7 +95,12 @@ parseProjection = parseMaybe projectionP
 
 projectionP :: P Projection
 projectionP =
-  try ontoFileP <|> try ontoHeaderP <|> try ontoStateP <|> try ontoTagP <|> ontoPropertyP
+  try ontoFileP
+    <|> try ontoHeaderP
+    <|> try ontoStateP
+    <|> try ontoTagP
+    <|> try ontoPropertyP
+    <|> try ontoTimestampP
     <|> ontoAncestorP
 
 ontoFileP :: P Projection
@@ -120,6 +128,11 @@ ontoPropertyP = do
   void $ string' "property:"
   OntoProperty <$> propertyNameP
 
+ontoTimestampP :: P Projection
+ontoTimestampP = do
+  void $ string' "timestamp:"
+  OntoTimestamp <$> timestampNameP
+
 ontoAncestorP :: P Projection
 ontoAncestorP = do
   void $ string' "ancestor:"
@@ -135,6 +148,11 @@ propertyNameP = do
   s <- many (satisfy validPropertyNameChar)
   either fail pure $ parsePropertyName $ T.pack s
 
+timestampNameP :: P TimestampName
+timestampNameP = do
+  s <- many (satisfy validTimestampNameChar)
+  either fail pure $ parseTimestampName $ T.pack s
+
 renderProjection :: Projection -> Text
 renderProjection f =
   case f of
@@ -144,3 +162,4 @@ renderProjection f =
     OntoTag t -> "tag:" <> tagText t
     OntoProperty pn -> "property:" <> propertyNameText pn
     OntoAncestor p -> "ancestor:" <> renderProjection p
+    OntoTimestamp p -> "timestamp:" <> timestampNameText p
