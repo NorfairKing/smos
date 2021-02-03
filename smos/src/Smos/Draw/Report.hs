@@ -15,6 +15,7 @@ import Data.Time
 import Lens.Micro
 import Path
 import Smos.Actions
+import Smos.Cursor.Report.Timestamps
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
@@ -26,6 +27,7 @@ drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
   ReportNextActions narc -> pure $ drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
+  ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
 drawNextActionReportCursor s NextActionReportCursor {..} =
@@ -98,3 +100,26 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | i >= th3 = waitingReportShortWait
       | otherwise = waitingReportNoWait
     i = daysSince now t
+
+drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
+drawTimestampsReportCursor s TimestampsReportCursor {..} = do
+  now <- asks zonedTimeToUTC
+  let go = drawTimestampsEntryCursor now
+  pure $
+    withHeading (str "Timestamps Report") $
+      padAll 1 $
+        viewport ResourceViewport Vertical $
+          case timestampsReportCursorTimestampsEntryCursors of
+            Nothing -> txtWrap "Empty timestamps report"
+            Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
+
+drawTimestampsEntryCursor :: UTCTime -> Select -> TimestampsEntryCursor -> [Widget ResourceName]
+drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} =
+  let sel =
+        ( case s of
+            MaybeSelected -> forceAttr selectedAttr . visible
+            NotSelected -> id
+        )
+   in [ str $ toFilePath timestampsEntryCursorFilePath,
+        sel $ drawHeader $ entryHeader $ forestCursorCurrent timestampsEntryCursorForestCursor
+      ]

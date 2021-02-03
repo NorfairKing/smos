@@ -69,7 +69,7 @@ combineKeymap km (Just kbc) = do
     combineReportsKeymap (keyMapReportsKeyMap startingPoint) (confReportsKeyConfig kbc)
   keyMapHelpKeyMap <- combineHelpKeymap (keyMapHelpKeyMap startingPoint) (confHelpKeyConfig kbc)
   keyMapAnyKeyMap <- combineKeyMappings (keyMapAnyKeyMap km) (confAnyKeyConfig kbc)
-  return
+  pure
     startingPoint
       { keyMapFileKeyMap = keyMapFileKeyMap,
         keyMapBrowserKeyMap = keyMapBrowserKeyMap,
@@ -98,7 +98,7 @@ combineFileKeymap fkm (Just fkc) = do
   fileKeyMapLogbookMatchers <-
     combineKeyMappings (fileKeyMapLogbookMatchers fkm) (logbookKeyConfigs fkc)
   fileKeyMapAnyMatchers <- combineKeyMappings (fileKeyMapAnyMatchers fkm) (anyKeyConfigs fkc)
-  return $
+  pure $
     fkm
       { fileKeyMapEmptyMatchers = fileKeyMapEmptyMatchers,
         fileKeyMapEntryMatchers = fileKeyMapEntryMatchers,
@@ -119,7 +119,7 @@ combineBrowserKeyMap bkm (Just bkc) = do
   pms <- combineKeyMappings (browserKeyMapInProgressMatchers bkm) (browserInProgressKeyConfigs bkc)
   ems <- combineKeyMappings (browserKeyMapEmptyMatchers bkm) (browserEmptyKeyConfigs bkc)
   ams <- combineKeyMappings (browserKeyMapAnyMatchers bkm) (browserAnyKeyConfigs bkc)
-  return $
+  pure $
     bkm
       { browserKeyMapExistentMatchers = ekms,
         browserKeyMapInProgressMatchers = pms,
@@ -130,14 +130,16 @@ combineBrowserKeyMap bkm (Just bkc) = do
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
-  let ReportsKeyMap _ _ _ = undefined
+  let ReportsKeyMap _ _ _ _ = undefined
   narkms <- combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
   wrkms <- combineWaitingReportKeyMap (reportsKeymapWaitingReportKeyMap rkm) (waitingReportKeyConfigs rkc)
+  tsrkms <- combineTimestampsReportKeyMap (reportsKeymapTimestampsReportKeyMap rkm) (timestampsReportKeyConfigs rkc)
   ams <- combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
-  return $
+  pure $
     rkm
       { reportsKeymapNextActionReportKeyMap = narkms,
         reportsKeymapWaitingReportKeyMap = wrkms,
+        reportsKeymapTimestampsReportKeyMap = tsrkms,
         reportsKeymapAnyMatchers = ams
       }
 
@@ -148,7 +150,7 @@ combineNextActionReportKeyMap narkm (Just narkc) = do
   nms <- combineKeyMappings (nextActionReportMatchers narkm) (nextActionReportNormalKeyConfigs narkc)
   sms <- combineKeyMappings (nextActionReportSearchMatchers narkm) (nextActionReportSearchKeyConfigs narkc)
   ams <- combineKeyMappings (nextActionReportAnyMatchers narkm) (nextActionReportAnyKeyConfigs narkc)
-  return $
+  pure $
     narkm
       { nextActionReportMatchers = nms,
         nextActionReportSearchMatchers = sms,
@@ -161,10 +163,22 @@ combineWaitingReportKeyMap narkm (Just narkc) = do
   let WaitingReportKeyMap _ _ = undefined
   nms <- combineKeyMappings (waitingReportMatchers narkm) (waitingReportNormalKeyConfigs narkc)
   ams <- combineKeyMappings (waitingReportAnyMatchers narkm) (waitingReportAnyKeyConfigs narkc)
-  return $
+  pure $
     narkm
       { waitingReportMatchers = nms,
         waitingReportAnyMatchers = ams
+      }
+
+combineTimestampsReportKeyMap :: TimestampsReportKeyMap -> Maybe TimestampsReportKeyConfigs -> Comb TimestampsReportKeyMap
+combineTimestampsReportKeyMap narkm Nothing = pure narkm
+combineTimestampsReportKeyMap narkm (Just narkc) = do
+  let TimestampsReportKeyMap _ _ = undefined
+  nms <- combineKeyMappings (timestampsReportMatchers narkm) (timestampsReportNormalKeyConfigs narkc)
+  ams <- combineKeyMappings (timestampsReportAnyMatchers narkm) (timestampsReportAnyKeyConfigs narkc)
+  pure $
+    narkm
+      { timestampsReportMatchers = nms,
+        timestampsReportAnyMatchers = ams
       }
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
@@ -174,7 +188,7 @@ combineHelpKeymap hkm (Just hkc) = do
   hms <- combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
   sms <- combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
   ams <- combineKeyMappings (helpKeyMapAnyMatchers hkm) (helpAnyKeyConfigs hkc)
-  return $
+  pure $
     hkm
       { helpKeyMapHelpMatchers = hms,
         helpKeyMapSearchMatchers = sms,

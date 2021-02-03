@@ -288,6 +288,7 @@ defaultReportsKeyMap =
   ReportsKeyMap
     { reportsKeymapNextActionReportKeyMap = defaultNextActionReportKeyMap,
       reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
+      reportsKeymapTimestampsReportKeyMap = defaultTimestampsReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
           [ exactChar 'q' selectEditor
@@ -339,6 +340,24 @@ defaultWaitingReportKeyMap =
       waitingReportAnyMatchers = listMatchers []
     }
 
+defaultTimestampsReportKeyMap :: TimestampsReportKeyMap
+defaultTimestampsReportKeyMap =
+  TimestampsReportKeyMap
+    { timestampsReportMatchers =
+        listMatchers
+          [ exactKey KUp prevTimestamps,
+            exactChar 'k' prevTimestamps,
+            exactKey KDown nextTimestamps,
+            exactChar 'j' nextTimestamps,
+            exactKey KHome firstTimestamps,
+            exactString "gg" firstTimestamps,
+            exactKey KEnd lastTimestamps,
+            exactChar 'G' lastTimestamps,
+            exactKey KEnter enterTimestampsFile
+          ],
+      timestampsReportAnyMatchers = listMatchers []
+    }
+
 defaultHelpKeyMap :: HelpKeyMap
 defaultHelpKeyMap =
   HelpKeyMap
@@ -386,5 +405,6 @@ defaultAnyKeyMap =
       exactString "bs" selectBrowserSide,
       -- Reports
       exactString "rn" reportNextActions,
-      exactString "rw" reportWaiting
+      exactString "rw" reportWaiting,
+      exactString "ra" reportTimestamps
     ]

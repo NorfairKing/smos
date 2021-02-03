@@ -73,6 +73,10 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                     let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
                         waitingReportAnys = map ((,) AnyMatcher) waitingReportAnyMatchers
                      in (++ waitingReportAnys) $ map ((,) SpecificMatcher) waitingReportMatchers
+                  ReportTimestamps _ ->
+                    let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
+                        timestampsReportAnys = map ((,) AnyMatcher) timestampsReportAnyMatchers
+                     in (++ timestampsReportAnys) $ map ((,) SpecificMatcher) timestampsReportMatchers
         BrowserSelected ->
           case editorCursorBrowserCursor of
             Nothing -> []
