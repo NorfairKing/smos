@@ -13,7 +13,6 @@ import Lens.Micro
 import Smos.Cursor.Report.Timestamps
 import Smos.Data
 import Smos.Data.Gen ()
-import Smos.Report.Filter
 import Test.QuickCheck
 
 instance GenValid TimestampsReportCursor where

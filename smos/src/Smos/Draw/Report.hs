@@ -122,9 +122,9 @@ drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} = do
       e = forestCursorCurrent timestampsEntryCursorForestCursor
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
   pure
-    [ str $ toFilePath timestampsEntryCursorFilePath,
-      drawTimestampName timestampsEntryCursorTimestampName,
+    [ drawTimestampName timestampsEntryCursorTimestampName,
       drawTimestamp timestampsEntryCursorTimestamp,
       tsw,
-      sel $ drawHeader $ entryHeader e
+      sel $ drawHeader $ entryHeader e,
+      str $ toFilePath timestampsEntryCursorFilePath
     ]

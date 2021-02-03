@@ -73,7 +73,7 @@ makeTimestampsReportCursor =
 
 sortTimestampEntryCursors :: [TimestampsEntryCursor] -> [TimestampsEntryCursor]
 sortTimestampEntryCursors =
-  sortBy (comparing timestampsEntryCursorTimestamp <> comparing timestampsEntryCursorTimestampName)
+  sortBy (comparing (timestampLocalTime . timestampsEntryCursorTimestamp) <> comparing timestampsEntryCursorTimestampName)
 
 timestampsReportCursorBuildSmosFileCursor :: Path Abs Dir -> TimestampsReportCursor -> Maybe (Path Abs File, SmosFileCursor)
 timestampsReportCursorBuildSmosFileCursor pad wrc = do
