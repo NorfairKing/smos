@@ -14,6 +14,7 @@ library:
   dependencies:
   - QuickCheck
   - base >=4.9 && <=5
+  - containers
   - cursor
   - cursor-gen
   - genvalidity
