@@ -34,7 +34,7 @@ A sorter is something of the following form:
 ``` plain
 file
 property:<property-name>          -- property:effort
-property-as-time:<property-name>     -- property:timewindow
+property-as-time:<property-name>  -- property-as-time:timewindow
 reverse:<sorter>                  -- reverse:file
 (<sorter> then <sorter>)          -- file then property:effort
 ```
@@ -52,5 +52,5 @@ header
 tag:<tag-name>                    -- tag:toast
 property:<property-name>          -- property:effort
 timestamp:<timestamp-name>        -- timestamp:DEADLINE
-ancestor:<property-name>          -- ancestor:effort
+ancestor:<projection>             -- ancestor:tag:toast
 ```
