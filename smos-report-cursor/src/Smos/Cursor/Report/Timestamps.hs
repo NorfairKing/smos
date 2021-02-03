@@ -11,7 +11,6 @@ import Data.List
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Ord
-import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
@@ -19,7 +18,6 @@ import Lens.Micro
 import Path
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
-import Smos.Cursor.Report.Streaming
 import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.Report.Archive
@@ -61,7 +59,7 @@ instance Validity TimestampsReportCursor where
       [ genericValidate wrc,
         declare "The timestamps entries are in order" $
           let es = maybe [] (NE.toList . rebuildNonEmptyCursor) timestampsReportCursorTimestampsEntryCursors
-           in sortOn timestampsEntryCursorTimestamp es == es
+           in sortTimestampEntryCursors es == es
       ]
 
 timestampsReportCursorNonEmptyCursorL :: Lens' TimestampsReportCursor (Maybe (NonEmptyCursor TimestampsEntryCursor))
@@ -71,7 +69,11 @@ makeTimestampsReportCursor :: [TimestampsEntryCursor] -> TimestampsReportCursor
 makeTimestampsReportCursor =
   TimestampsReportCursor . fmap makeNonEmptyCursor
     . NE.nonEmpty
-    . sortBy (comparing timestampsEntryCursorTimestamp <> comparing timestampsEntryCursorTimestampName)
+    . sortTimestampEntryCursors
+
+sortTimestampEntryCursors :: [TimestampsEntryCursor] -> [TimestampsEntryCursor]
+sortTimestampEntryCursors =
+  sortBy (comparing timestampsEntryCursorTimestamp <> comparing timestampsEntryCursorTimestampName)
 
 timestampsReportCursorBuildSmosFileCursor :: Path Abs Dir -> TimestampsReportCursor -> Maybe (Path Abs File, SmosFileCursor)
 timestampsReportCursorBuildSmosFileCursor pad wrc = do

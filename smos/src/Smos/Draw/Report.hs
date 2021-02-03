@@ -104,21 +104,27 @@ drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
   now <- asks zonedTimeToUTC
   let go = drawTimestampsEntryCursor now
+  tableW <- case timestampsReportCursorTimestampsEntryCursors of
+    Nothing -> pure $ txtWrap "Empty timestamps report"
+    Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
   pure $
     withHeading (str "Timestamps Report") $
       padAll 1 $
-        viewport ResourceViewport Vertical $
-          case timestampsReportCursorTimestampsEntryCursors of
-            Nothing -> txtWrap "Empty timestamps report"
-            Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
+        viewport ResourceViewport Vertical tableW
 
-drawTimestampsEntryCursor :: UTCTime -> Select -> TimestampsEntryCursor -> [Widget ResourceName]
-drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} =
+drawTimestampsEntryCursor :: UTCTime -> Select -> TimestampsEntryCursor -> Drawer' [Widget ResourceName]
+drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} = do
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-   in [ str $ toFilePath timestampsEntryCursorFilePath,
-        sel $ drawHeader $ entryHeader $ forestCursorCurrent timestampsEntryCursorForestCursor
-      ]
+      e = forestCursorCurrent timestampsEntryCursorForestCursor
+  tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
+  pure
+    [ str $ toFilePath timestampsEntryCursorFilePath,
+      drawTimestampName timestampsEntryCursorTimestampName,
+      drawTimestamp timestampsEntryCursorTimestamp,
+      tsw,
+      sel $ drawHeader $ entryHeader e
+    ]

@@ -1,4 +1,4 @@
 {
   url = "https://github.com/NorfairKing/cursor-brick";
-  rev = "a7b47b03c8c5525234aaccc0c372e49a80134b9d";
+  rev = "95345daf6a7036601bbaaf268d2a9ed7c713312b";
 }

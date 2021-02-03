@@ -15,6 +15,7 @@ import Smos.Style
 import Smos.Types
 import qualified System.FilePath as FP
 import Text.Printf
+import Text.Time.Pretty
 
 type DrawEnv = ZonedTime
 
@@ -80,6 +81,68 @@ drawHeader = withAttr headerAttr . textLineWidget . headerText
 drawTodoState :: TodoState -> Widget n
 drawTodoState ts =
   withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textLineWidget $ todoStateText ts
+
+drawTimestampName :: TimestampName -> Widget n
+drawTimestampName tsn =
+  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $
+    timestampNameText tsn
+
+drawTimestamp :: Timestamp -> Widget n
+drawTimestamp ts =
+  case ts of
+    TimestampDay d -> drawDay d
+    TimestampLocalTime lt -> drawLocalTime lt
+
+drawTimestampPrettyRelative :: Timestamp -> Drawer
+drawTimestampPrettyRelative ts =
+  case ts of
+    TimestampDay d -> drawDayPrettyRelative d
+    TimestampLocalTime lt -> drawLocalTimePrettyRelative lt
+
+drawTimestampWithPrettyRelative :: Timestamp -> Drawer
+drawTimestampWithPrettyRelative ts =
+  case ts of
+    TimestampDay d -> drawDayWithPrettyRelative d
+    TimestampLocalTime lt -> drawLocalTimeWithPrettyRelative lt
+
+drawDayWithPrettyRelative :: Day -> Drawer
+drawDayWithPrettyRelative d = do
+  prw <- drawDayPrettyRelative d
+  pure $
+    hBox
+      [ str $ formatTimestampDay d,
+        str ", ",
+        prw
+      ]
+
+drawDay :: Day -> Widget n
+drawDay d = str $ formatTimestampDay d
+
+drawDayPrettyRelative :: Day -> Drawer
+drawDayPrettyRelative d = do
+  zt <- ask
+  pure $
+    str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
+
+drawLocalTimeWithPrettyRelative :: LocalTime -> Drawer
+drawLocalTimeWithPrettyRelative lt = do
+  prw <- drawLocalTimePrettyRelative lt
+  pure $
+    hBox
+      [ str $ formatTimestampLocalTime lt,
+        str ", ",
+        prw
+      ]
+
+drawLocalTime :: LocalTime -> Widget n
+drawLocalTime lt = do
+  str $ formatTimestampLocalTime lt
+
+drawLocalTimePrettyRelative :: LocalTime -> Drawer
+drawLocalTimePrettyRelative lt = do
+  zt@(ZonedTime _ tz) <- ask
+  pure $
+    str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
 
 drawFilePath :: Path b File -> Widget n
 drawFilePath fp =
