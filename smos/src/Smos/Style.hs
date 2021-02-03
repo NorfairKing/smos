@@ -24,6 +24,8 @@ module Smos.Style
     waitingReportMidWait,
     waitingReportShortWait,
     waitingReportNoWait,
+    agendaReportRelativeAttr,
+    agendaReportNowLineAttr,
     helpNameAttr,
     helpKeyCombinationAttr,
     helpDescriptionAttr,
@@ -72,6 +74,8 @@ defaultAttrMap _ =
           (waitingReportMidWait, fg yellow),
           (waitingReportShortWait, fg blue),
           (waitingReportNoWait, fg green),
+          (agendaReportRelativeAttr, defAttr `withStyle` bold),
+          (agendaReportNowLineAttr, fg magenta),
           (selectedAttr <> tagAttr, fg brightWhite),
           (selectedAttr <> headerAttr, fg brightWhite),
           (fileAttr, fg V.yellow),
@@ -156,6 +160,12 @@ waitingReportShortWait = "waiting-report-short-wait"
 
 waitingReportNoWait :: AttrName
 waitingReportNoWait = "waiting-report-no-wait"
+
+agendaReportRelativeAttr :: AttrName
+agendaReportRelativeAttr = "agenda-report-relative-time"
+
+agendaReportNowLineAttr :: AttrName
+agendaReportNowLineAttr = "agenda-report-now-line"
 
 helpNameAttr :: AttrName
 helpNameAttr = "helpdescription"

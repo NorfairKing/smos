@@ -43,7 +43,7 @@ renderAgendaReportLines now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
   TodayLine -> [fore white $ chunk $ T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %A" now]
-  HourLine i -> [chunk $ ".......... " <> T.pack (printf "%02d" i) <> ":00 ..."]
+  HourLine i -> [chunk $ T.pack $ printf ".......... %02d:00 ..." i]
   NowLine ->
     map
       (fore magenta . chunk . T.pack)
@@ -51,11 +51,7 @@ renderAgendaReportLines now = map $ \case
         "--------",
         "---",
         "---",
-        unwords
-          [ "[",
-            formatTime defaultTimeLocale "%H:%M:%S" now,
-            "]"
-          ],
+        formatTime defaultTimeLocale "[ %H:%M:%S ]" now,
         "---"
       ]
   EntryLine ae -> formatAgendaEntry now ae

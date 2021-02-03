@@ -11,6 +11,8 @@ where
 import Brick.Types as B
 import Brick.Widgets.Core as B
 import Cursor.Brick
+import Cursor.List.NonEmpty (foldNonEmptyCursor)
+import Cursor.Simple.List.NonEmpty
 import Data.Time
 import Lens.Micro
 import Path
@@ -21,6 +23,7 @@ import Smos.Report.Filter
 import Smos.Report.Formatting
 import Smos.Style
 import Smos.Types
+import Text.Printf
 
 drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
@@ -102,18 +105,97 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
-  now <- asks zonedTimeToUTC
-  let go = drawTimestampsEntryCursor now
+  now <- ask
   tableW <- case timestampsReportCursorTimestampsEntryCursors of
     Nothing -> pure $ txtWrap "Empty timestamps report"
-    Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+    Just tsecs -> do
+      ws <- mapM (drawTimestampReportLine s) $ makeTimestampReportLines now tsecs
+      pure $ tableWidget ws
   pure $
     withHeading (str "Agenda Report: Today") $
       padAll 1 $
         viewport ResourceViewport Vertical tableW
 
-drawTimestampsEntryCursor :: UTCTime -> Select -> TimestampsEntryCursor -> Drawer' [Widget ResourceName]
-drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} = do
+data TimestampsReportLine
+  = ReportSelectedEntryLine TimestampsEntryCursor
+  | ReportEntryLine TimestampsEntryCursor
+  | ReportNowLine LocalTime
+  | ReportHourLine Int
+
+makeTimestampReportLines :: ZonedTime -> NonEmptyCursor TimestampsEntryCursor -> [TimestampsReportLine]
+makeTimestampReportLines now = foldNonEmptyCursor $ \befores current afters ->
+  insertReportNowLine now $ insertReportHourLines now $ concat [map ReportEntryLine befores, [ReportSelectedEntryLine current], map ReportEntryLine afters]
+
+drawTimestampReportLine :: Select -> TimestampsReportLine -> Drawer' [Widget ResourceName]
+drawTimestampReportLine s = \case
+  ReportSelectedEntryLine tsec -> drawTimestampsEntryCursor s tsec
+  ReportEntryLine tsec -> drawTimestampsEntryCursor NotSelected tsec
+  ReportNowLine now ->
+    pure $
+      map
+        (withAttr agendaReportNowLineAttr)
+        [ str "--------------------",
+          str "--------",
+          str "---",
+          str "---",
+          str $ formatTime defaultTimeLocale "[ %H:%M:%S ]" now,
+          str "---"
+        ]
+  ReportHourLine i ->
+    pure
+      [ str (printf ".......... %02d:00 ..." i),
+        empty,
+        empty,
+        empty,
+        empty,
+        empty
+      ]
+  where
+    empty = str " "
+
+insertReportHourLines :: ZonedTime -> [TimestampsReportLine] -> [TimestampsReportLine]
+insertReportHourLines now = go [8 .. 18]
+  where
+    ZonedTime lt _ = now
+    today = localDay lt
+    go hs [] = map ReportHourLine hs
+    go [] es = es
+    go (h : hs) (e : es) =
+      let alt = timestampsReportLineLocalTime now e
+          hlt = hourLineLocalTime today h
+       in if alt < hlt
+            then e : go (h : hs) es
+            else ReportHourLine h : go hs (e : es)
+
+timestampsReportLineLocalTime :: ZonedTime -> TimestampsReportLine -> LocalTime
+timestampsReportLineLocalTime now = \case
+  ReportSelectedEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp tec
+  ReportEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp tec
+  ReportNowLine lt -> lt
+  ReportHourLine h -> hourLineLocalTime (localDay $ zonedTimeToLocalTime now) h
+
+hourLineLocalTime :: Day -> Int -> LocalTime
+hourLineLocalTime d h = LocalTime d (TimeOfDay h 0 0)
+
+insertReportNowLine :: ZonedTime -> [TimestampsReportLine] -> [TimestampsReportLine]
+insertReportNowLine now = go
+  where
+    nowL = ReportNowLine $ zonedTimeToLocalTime now
+    go = \case
+      [] -> [nowL]
+      (x : xs) ->
+        if isBefore now x
+          then nowL : x : xs
+          else x : go xs
+
+isBefore :: ZonedTime -> TimestampsReportLine -> Bool
+isBefore now after =
+  let afterLT = timestampsReportLineLocalTime now after
+      nowUTC = zonedTimeToUTC now
+   in nowUTC <= localTimeToUTC (zonedTimeZone now) afterLT
+
+drawTimestampsEntryCursor :: Select -> TimestampsEntryCursor -> Drawer' [Widget ResourceName]
+drawTimestampsEntryCursor s TimestampsEntryCursor {..} = do
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
@@ -121,10 +203,12 @@ drawTimestampsEntryCursor _ s TimestampsEntryCursor {..} = do
         )
       e = forestCursorCurrent timestampsEntryCursorForestCursor
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
+  let lt = timestampLocalTime timestampsEntryCursorTimestamp
   pure
-    [ drawTimestampName timestampsEntryCursorTimestampName,
-      drawTimestamp timestampsEntryCursorTimestamp,
-      tsw,
+    [ str $ show lt,
+      withAttr agendaReportRelativeAttr tsw,
+      drawTimestampName timestampsEntryCursorTimestampName,
+      maybe (str " ") drawTodoState $ entryState e,
       sel $ drawHeader $ entryHeader e,
       str $ toFilePath timestampsEntryCursorFilePath
     ]
