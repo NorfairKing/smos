@@ -11,6 +11,7 @@ import Data.List
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Ord
+import Data.Time
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
@@ -23,28 +24,30 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.Period
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceTimestampsReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> IO TimestampsReportCursor
-produceTimestampsReportCursor ha sp dc = do
+produceTimestampsReportCursor :: ZonedTime -> Period -> Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO TimestampsReportCursor
+produceTimestampsReportCursor now period mf ha sp dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $
     streamSmosFilesFromWorkflowRel ha dc
-      .| timestampsReportCursorFromFilesConduit sp wd
+      .| timestampsReportCursorFromFilesConduit now period mf sp wd
 
-timestampsReportCursorFromFilesConduit :: MonadIO m => ShouldPrint -> Path Abs Dir -> ConduitT (Path Rel File) void m TimestampsReportCursor
-timestampsReportCursorFromFilesConduit sp wd =
+timestampsReportCursorFromFilesConduit :: MonadIO m => ZonedTime -> Period -> Maybe EntryFilterRel -> ShouldPrint -> Path Abs Dir -> ConduitT (Path Rel File) void m TimestampsReportCursor
+timestampsReportCursorFromFilesConduit now period mf sp wd =
   filterSmosFilesRel
     .| parseSmosFilesRel wd
     .| printShouldPrint sp
-    .| timestampsReportCursorConduit
+    .| timestampsReportCursorConduit now period mf
 
-timestampsReportCursorConduit :: Monad m => ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
-timestampsReportCursorConduit =
+timestampsReportCursorConduit :: Monad m => ZonedTime -> Period -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
+timestampsReportCursorConduit now period mf =
   makeTimestampsReportCursor
-    <$> ( smosFileCursors
+    <$> ( smosFileCursors .| smosMFilter mf
             .| C.concatMap (uncurry makeTimestampsEntryCursor)
+            .| C.filter (filterPeriodLocal now period . timestampLocalTime . timestampsEntryCursorTimestamp)
             .| sinkList
         )
 

@@ -2,10 +2,12 @@
 
 module Smos.Actions.Report.Timestamps where
 
+import Data.Time
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.Period
 import Smos.Report.ShouldPrint
 import Smos.Types
 
@@ -29,7 +31,8 @@ reportTimestamps =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        narc <- liftIO $ produceTimestampsReportCursor HideArchive DontPrint dc
+        now <- liftIO getZonedTime
+        narc <- liftIO $ produceTimestampsReportCursor now Today Nothing HideArchive DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

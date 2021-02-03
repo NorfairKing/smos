@@ -4,7 +4,9 @@ module Smos.Cursor.Report.TimestampsSpec where
 
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Timestamps.Gen ()
-import Smos.Report.Archive.Gen
+import Smos.Report.Archive.Gen ()
+import Smos.Report.Filter.Gen ()
+import Smos.Report.Period.Gen ()
 import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
@@ -23,6 +25,9 @@ spec = do
     describe "produceTimestampsReportCursor" $
       it "produces valid reports for interesting stores" $
         forAllValid $ \ha ->
-          withInterestingStore $ \dc -> do
-            wrc <- produceTimestampsReportCursor ha DontPrint dc
-            shouldBeValid wrc
+          forAllValid $ \now ->
+            forAllValid $ \period ->
+              forAllValid $ \mf ->
+                withInterestingStore $ \dc -> do
+                  wrc <- produceTimestampsReportCursor now period mf ha DontPrint dc
+                  shouldBeValid wrc
