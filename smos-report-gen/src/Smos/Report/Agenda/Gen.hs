@@ -9,6 +9,7 @@ import Data.Time
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Agenda
+import Smos.Report.Agenda.Types
 import Smos.Report.Period.Gen ()
 import Smos.Report.TimeBlock.Gen ()
 
@@ -28,5 +29,9 @@ instance GenValid AgendaTodayReport where
     pure AgendaTodayReport {agendaTodayReportEntries = sortAgendaEntries aes'}
 
 instance GenValid AgendaEntry where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenValid AgendaHistoricity where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

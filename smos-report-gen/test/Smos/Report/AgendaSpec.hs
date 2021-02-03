@@ -4,6 +4,10 @@ module Smos.Report.AgendaSpec where
 
 import Smos.Report.Agenda
 import Smos.Report.Agenda.Gen ()
+import Smos.Report.Archive.Gen ()
+import Smos.Report.Filter.Gen ()
+import Smos.Report.ShouldPrint
+import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson
@@ -18,9 +22,20 @@ spec = do
   jsonSpecOnValid @AgendaReport
   describe "makeAgendaReport" $ do
     it "produces valid reports" $
-      forAllValid $
-        \zt ->
+      forAllValid $ \zt ->
+        forAllValid $ \p ->
+          forAllValid $ \tb ->
+            forAllValid $ \aes ->
+              shouldBeValid $ makeAgendaReport zt p tb aes
+  modifyMaxSuccess (`div` 10) $
+    describe "produceAgendaReport" $
+      it "produces valid reports" $
+        forAllValid $ \zt ->
           forAllValid $ \p ->
             forAllValid $ \tb ->
-              forAllValid $ \aes ->
-                shouldBeValid $ makeAgendaReport zt p tb aes
+              forAllValid $ \ha ->
+                forAllValid $ \ah ->
+                  forAllValid $ \mFilter ->
+                    withInterestingStore $ \dc -> do
+                      ar <- produceAgendaReport zt p tb ha DontPrint ah mFilter dc
+                      shouldBeValid ar
