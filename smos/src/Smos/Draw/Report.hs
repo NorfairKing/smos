@@ -108,7 +108,7 @@ drawTimestampsReportCursor s TimestampsReportCursor {..} = do
     Nothing -> pure $ txtWrap "Empty timestamps report"
     Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
   pure $
-    withHeading (str "Timestamps Report") $
+    withHeading (str "Agenda Report: Today") $
       padAll 1 $
         viewport ResourceViewport Vertical tableW
 
