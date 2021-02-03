@@ -15,7 +15,6 @@ import Data.Time
 import Lens.Micro
 import Path
 import Smos.Actions
-import Smos.Cursor.Report.Timestamps
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter

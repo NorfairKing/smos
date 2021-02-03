@@ -25,6 +25,7 @@ module Smos.Actions.Utils
     module Smos.Cursor.Properties,
     module Smos.Cursor.Report.Next,
     module Smos.Cursor.Report.Waiting,
+    module Smos.Cursor.Report.Timestamps,
     module Smos.Cursor.SmosFile,
     module Smos.Cursor.StateHistory,
     module Smos.Cursor.Tags,
@@ -44,6 +45,7 @@ import Smos.Cursor.Header
 import Smos.Cursor.Logbook
 import Smos.Cursor.Properties
 import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
@@ -333,6 +335,20 @@ modifyWaitingReportCursorS ::
 modifyWaitingReportCursorS func =
   modifyReportCursorS $ \rc -> case rc of
     ReportWaiting narc -> ReportWaiting <$> func narc
+    _ -> pure rc
+
+modifyTimestampsReportCursorM ::
+  (TimestampsReportCursor -> Maybe TimestampsReportCursor) -> SmosM ()
+modifyTimestampsReportCursorM func = modifyTimestampsReportCursor $ \hc -> fromMaybe hc $ func hc
+
+modifyTimestampsReportCursor :: (TimestampsReportCursor -> TimestampsReportCursor) -> SmosM ()
+modifyTimestampsReportCursor func = modifyTimestampsReportCursorS $ pure . func
+
+modifyTimestampsReportCursorS ::
+  (TimestampsReportCursor -> SmosM TimestampsReportCursor) -> SmosM ()
+modifyTimestampsReportCursorS func =
+  modifyReportCursorS $ \rc -> case rc of
+    ReportTimestamps narc -> ReportTimestamps <$> func narc
     _ -> pure rc
 
 modifyNextActionReportCursorM ::
