@@ -134,16 +134,16 @@ drawTimestampReportLine s = \case
     pure $
       map
         (withAttr agendaReportNowLineAttr)
-        [ str "--------------------",
+        [ str $ formatTime defaultTimeLocale "%H:%M:%S" now,
           str "--------",
           str "---",
           str "---",
-          str $ formatTime defaultTimeLocale "[ %H:%M:%S ]" now,
+          str "------------",
           str "---"
         ]
   ReportHourLine i ->
     pure
-      [ str (printf ".......... %02d:00 ..." i),
+      [ str (printf "%02d:00   " i),
         empty,
         empty,
         empty,
@@ -205,7 +205,7 @@ drawTimestampsEntryCursor s TimestampsEntryCursor {..} = do
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
   let lt = timestampLocalTime timestampsEntryCursorTimestamp
   pure
-    [ str $ show lt,
+    [ str $ formatTime defaultTimeLocale "%H:%M" lt,
       withAttr agendaReportRelativeAttr tsw,
       drawTimestampName timestampsEntryCursorTimestampName,
       maybe (str " ") drawTodoState $ entryState e,
