@@ -75,7 +75,7 @@ defaultAttrMap _ =
           (waitingReportShortWait, fg blue),
           (waitingReportNoWait, fg green),
           (agendaReportRelativeAttr, defAttr `withStyle` bold),
-          (agendaReportNowLineAttr, fg magenta),
+          (agendaReportNowLineAttr, fg magenta `withStyle` bold),
           (selectedAttr <> tagAttr, fg brightWhite),
           (selectedAttr <> headerAttr, fg brightWhite),
           (fileAttr, fg V.yellow),
