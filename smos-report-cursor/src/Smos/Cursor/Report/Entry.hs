@@ -4,13 +4,11 @@
 
 module Smos.Cursor.Report.Entry where
 
-import Conduit
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Tree
 import Cursor.Text
 import Cursor.Types
-import qualified Data.Conduit.Combinators as C
 import Data.Foldable (toList)
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
@@ -19,31 +17,19 @@ import Lens.Micro
 import Path
 import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
-import Smos.Cursor.Report.Streaming
 import Smos.Cursor.SmosFile
 import Smos.Data
-import Smos.Report.Config
 import Smos.Report.Filter
-import Smos.Report.Next
 
-produceEntryReportCursor :: DirectoryConfig -> IO EntryReportCursor
-produceEntryReportCursor dc =
-  makeEntryReportCursor
-    <$> produceReportCursorEntries
-      ( nextActionConduitHelper Nothing
-          .| C.map (uncurry makeEntryReportEntryCursor)
-      )
-      dc
-
-data EntryReportCursor = EntryReportCursor
-  { entryReportCursorEntryReportEntryCursors :: [EntryReportEntryCursor],
-    entryReportCursorSelectedEntryReportEntryCursors :: Maybe (NonEmptyCursor EntryReportEntryCursor),
-    entryReportCursorFilterBar :: TextCursor,
-    entryReportCursorSelection :: EntryReportCursorSelection
+data EntryReportCursor a = EntryReportCursor
+  { entryReportCursorEntryReportEntryCursors :: ![EntryReportEntryCursor a],
+    entryReportCursorSelectedEntryReportEntryCursors :: !(Maybe (NonEmptyCursor (EntryReportEntryCursor a))),
+    entryReportCursorFilterBar :: !TextCursor,
+    entryReportCursorSelection :: !EntryReportCursorSelection
   }
   deriving (Show, Eq, Generic)
 
-instance Validity EntryReportCursor
+instance Validity a => Validity (EntryReportCursor a)
 
 data EntryReportCursorSelection
   = EntryReportSelected
@@ -52,20 +38,20 @@ data EntryReportCursorSelection
 
 instance Validity EntryReportCursorSelection
 
-entryReportCursorEntryReportEntryCursorsL :: Lens' EntryReportCursor [EntryReportEntryCursor]
+entryReportCursorEntryReportEntryCursorsL :: Lens' (EntryReportCursor a) [EntryReportEntryCursor a]
 entryReportCursorEntryReportEntryCursorsL =
   lens entryReportCursorEntryReportEntryCursors (\narc naecs -> narc {entryReportCursorEntryReportEntryCursors = naecs})
 
-entryReportCursorSelectedEntryReportEntryCursorsL :: Lens' EntryReportCursor (Maybe (NonEmptyCursor EntryReportEntryCursor))
+entryReportCursorSelectedEntryReportEntryCursorsL :: Lens' (EntryReportCursor a) (Maybe (NonEmptyCursor (EntryReportEntryCursor a)))
 entryReportCursorSelectedEntryReportEntryCursorsL =
   lens
     entryReportCursorSelectedEntryReportEntryCursors
     (\narc necM -> narc {entryReportCursorSelectedEntryReportEntryCursors = necM})
 
-entryReportCursorSelectionL :: Lens' EntryReportCursor EntryReportCursorSelection
+entryReportCursorSelectionL :: Lens' (EntryReportCursor a) EntryReportCursorSelection
 entryReportCursorSelectionL = lens entryReportCursorSelection (\narc cs -> narc {entryReportCursorSelection = cs})
 
-entryReportCursorFilterBarL :: Lens' EntryReportCursor TextCursor
+entryReportCursorFilterBarL :: Lens' (EntryReportCursor a) TextCursor
 entryReportCursorFilterBarL =
   lens entryReportCursorFilterBar $
     \narc@EntryReportCursor {..} tc ->
@@ -86,10 +72,10 @@ entryReportCursorFilterBarL =
                         makeNEEntryReportEntryCursor filteredIn
                     }
 
-filterEntryReportEntryCursors :: EntryFilterRel -> [EntryReportEntryCursor] -> [EntryReportEntryCursor]
+filterEntryReportEntryCursors :: EntryFilterRel -> [EntryReportEntryCursor a] -> [EntryReportEntryCursor a]
 filterEntryReportEntryCursors ef = filter (filterPredicate ef . unwrapEntryReportEntryCursor)
 
-makeEntryReportCursor :: [EntryReportEntryCursor] -> EntryReportCursor
+makeEntryReportCursor :: [EntryReportEntryCursor a] -> EntryReportCursor a
 makeEntryReportCursor naecs =
   EntryReportCursor
     { entryReportCursorEntryReportEntryCursors = naecs,
@@ -98,47 +84,47 @@ makeEntryReportCursor naecs =
       entryReportCursorSelection = EntryReportSelected
     }
 
-makeNEEntryReportEntryCursor :: [EntryReportEntryCursor] -> Maybe (NonEmptyCursor EntryReportEntryCursor)
+makeNEEntryReportEntryCursor :: [EntryReportEntryCursor a] -> Maybe (NonEmptyCursor (EntryReportEntryCursor a))
 makeNEEntryReportEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty
 
-entryReportCursorBuildSmosFileCursor :: Path Abs Dir -> EntryReportCursor -> Maybe (Path Abs File, SmosFileCursor)
+entryReportCursorBuildSmosFileCursor :: Path Abs Dir -> EntryReportCursor a -> Maybe (Path Abs File, SmosFileCursor, a)
 entryReportCursorBuildSmosFileCursor pad narc = do
   selected <- nonEmptyCursorCurrent <$> entryReportCursorSelectedEntryReportEntryCursors narc
   let go :: ForestCursor Entry Entry -> SmosFileCursor
       go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
-  pure (pad </> entryReportEntryCursorFilePath selected, go $ entryReportEntryCursorForestCursor selected)
+  pure (pad </> entryReportEntryCursorFilePath selected, go $ entryReportEntryCursorForestCursor selected, entryReportEntryCursorVal selected)
 
-entryReportCursorNext :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorNext :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorNext = entryReportCursorSelectedEntryReportEntryCursorsL $ mapM nonEmptyCursorSelectNext
 
-entryReportCursorPrev :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorPrev :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorPrev = entryReportCursorSelectedEntryReportEntryCursorsL $ mapM nonEmptyCursorSelectPrev
 
-entryReportCursorFirst :: EntryReportCursor -> EntryReportCursor
+entryReportCursorFirst :: EntryReportCursor a -> EntryReportCursor a
 entryReportCursorFirst = entryReportCursorSelectedEntryReportEntryCursorsL %~ fmap nonEmptyCursorSelectFirst
 
-entryReportCursorLast :: EntryReportCursor -> EntryReportCursor
+entryReportCursorLast :: EntryReportCursor a -> EntryReportCursor a
 entryReportCursorLast = entryReportCursorSelectedEntryReportEntryCursorsL %~ fmap nonEmptyCursorSelectLast
 
-entryReportCursorSelectReport :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorSelectReport :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorSelectReport = entryReportCursorSelectionL $
   \case
     EntryReportSelected -> Nothing
     EntryReportFilterSelected -> Just EntryReportSelected
 
-entryReportCursorSelectFilter :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorSelectFilter :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorSelectFilter = entryReportCursorSelectionL $
   \case
     EntryReportFilterSelected -> Nothing
     EntryReportSelected -> Just EntryReportFilterSelected
 
-entryReportCursorInsert :: Char -> EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorInsert :: Char -> EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorInsert c = entryReportCursorFilterBarL $ textCursorInsert c
 
-entryReportCursorAppend :: Char -> EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorAppend :: Char -> EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorAppend c = entryReportCursorFilterBarL $ textCursorAppend c
 
-entryReportCursorRemove :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorRemove :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorRemove =
   entryReportCursorFilterBarL $
     \tc ->
@@ -147,7 +133,7 @@ entryReportCursorRemove =
         Just Deleted -> Nothing
         Just (Updated narc) -> Just narc
 
-entryReportCursorDelete :: EntryReportCursor -> Maybe EntryReportCursor
+entryReportCursorDelete :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorDelete =
   entryReportCursorFilterBarL $
     \tc ->
@@ -156,29 +142,31 @@ entryReportCursorDelete =
         Just Deleted -> Nothing
         Just (Updated narc) -> Just narc
 
-data EntryReportEntryCursor = EntryReportEntryCursor
-  { entryReportEntryCursorFilePath :: Path Rel File,
-    entryReportEntryCursorForestCursor :: ForestCursor Entry Entry
+data EntryReportEntryCursor a = EntryReportEntryCursor
+  { entryReportEntryCursorFilePath :: !(Path Rel File),
+    entryReportEntryCursorForestCursor :: !(ForestCursor Entry Entry),
+    entryReportEntryCursorVal :: !a
   }
   deriving (Show, Eq, Generic)
 
-instance Validity EntryReportEntryCursor
+instance Validity a => Validity (EntryReportEntryCursor a)
 
-unwrapEntryReportEntryCursor :: EntryReportEntryCursor -> (Path Rel File, ForestCursor Entry Entry)
-unwrapEntryReportEntryCursor EntryReportEntryCursor {..} = (entryReportEntryCursorFilePath, entryReportEntryCursorForestCursor)
+unwrapEntryReportEntryCursor :: EntryReportEntryCursor a -> (Path Rel File, ForestCursor Entry Entry)
+unwrapEntryReportEntryCursor EntryReportEntryCursor {..} =
+  (entryReportEntryCursorFilePath, entryReportEntryCursorForestCursor)
 
-makeEntryReportEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> EntryReportEntryCursor
-makeEntryReportEntryCursor rp fc =
-  EntryReportEntryCursor {entryReportEntryCursorFilePath = rp, entryReportEntryCursorForestCursor = fc}
+makeEntryReportEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> a -> EntryReportEntryCursor a
+makeEntryReportEntryCursor rp fc a =
+  EntryReportEntryCursor
+    { entryReportEntryCursorFilePath = rp,
+      entryReportEntryCursorForestCursor = fc,
+      entryReportEntryCursorVal = a
+    }
 
-cursorPointsToEntry :: EntryReportEntryCursor -> Bool
-cursorPointsToEntry naec =
-  maybe False isNextTodoState . entryState $ naec ^. entryReportEntryCursorEntryL
-
-entryReportEntryCursorForestCursorL :: Lens' EntryReportEntryCursor (ForestCursor Entry Entry)
+entryReportEntryCursorForestCursorL :: Lens' (EntryReportEntryCursor a) (ForestCursor Entry Entry)
 entryReportEntryCursorForestCursorL =
   lens entryReportEntryCursorForestCursor $ \nac fc -> nac {entryReportEntryCursorForestCursor = fc}
 
-entryReportEntryCursorEntryL :: Lens' EntryReportEntryCursor Entry
+entryReportEntryCursorEntryL :: Lens' (EntryReportEntryCursor a) Entry
 entryReportEntryCursorEntryL =
   entryReportEntryCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL
