@@ -15,7 +15,9 @@ import Import
 import Lens.Micro
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
+import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Waiting
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
@@ -63,16 +65,20 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
              in (++ reportsAnys) $ case rc of
                   ReportNextActions NextActionReportCursor {..} ->
                     let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
-                        nextactionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
-                     in (++ nextactionReportAnys) $
+                        nextActionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
+                     in (++ nextActionReportAnys) $
                           map ((,) SpecificMatcher) $
                             case nextActionReportCursorSelection of
                               NextActionReportSelected -> nextActionReportMatchers
                               NextActionReportFilterSelected -> nextActionReportSearchMatchers
-                  ReportWaiting _ ->
+                  ReportWaiting WaitingReportCursor {..} ->
                     let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
                         waitingReportAnys = map ((,) AnyMatcher) waitingReportAnyMatchers
-                     in (++ waitingReportAnys) $ map ((,) SpecificMatcher) waitingReportMatchers
+                     in (++ waitingReportAnys) $
+                          map ((,) SpecificMatcher) $
+                            case entryReportCursorSelection waitingReportCursorEntryReportCursor of
+                              EntryReportSelected -> waitingReportMatchers
+                              EntryReportFilterSelected -> waitingReportSearchMatchers
                   ReportTimestamps _ ->
                     let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
                         timestampsReportAnys = map ((,) AnyMatcher) timestampsReportAnyMatchers

@@ -160,12 +160,14 @@ combineNextActionReportKeyMap narkm (Just narkc) = do
 combineWaitingReportKeyMap :: WaitingReportKeyMap -> Maybe WaitingReportKeyConfigs -> Comb WaitingReportKeyMap
 combineWaitingReportKeyMap narkm Nothing = pure narkm
 combineWaitingReportKeyMap narkm (Just narkc) = do
-  let WaitingReportKeyMap _ _ = undefined
+  let WaitingReportKeyMap _ _ _ = undefined
   nms <- combineKeyMappings (waitingReportMatchers narkm) (waitingReportNormalKeyConfigs narkc)
+  sms <- combineKeyMappings (waitingReportSearchMatchers narkm) (waitingReportSearchKeyConfigs narkc)
   ams <- combineKeyMappings (waitingReportAnyMatchers narkm) (waitingReportAnyKeyConfigs narkc)
   pure $
     narkm
       { waitingReportMatchers = nms,
+        waitingReportSearchMatchers = sms,
         waitingReportAnyMatchers = ams
       }
 

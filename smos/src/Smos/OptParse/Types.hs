@@ -292,7 +292,7 @@ instance YamlSchema NextActionReportKeyConfigs where
       NextActionReportKeyConfigs
         <$> optionalField "normal" "Keybindings for interacting with the next-action report"
         <*> optionalField "search" "Keybindings for the search in the next-action report"
-        <*> optionalField "any" "Keybindings for at any point in the next action report"
+        <*> optionalField "any" "Keybindings for at any point in the next-action report"
 
 backToNextActionReportKeyConfigs :: NextActionReportKeyMap -> NextActionReportKeyConfigs
 backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
@@ -305,6 +305,7 @@ backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
 
 data WaitingReportKeyConfigs = WaitingReportKeyConfigs
   { waitingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    waitingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving (Show, Eq, Generic)
@@ -313,9 +314,10 @@ instance Validity WaitingReportKeyConfigs
 
 instance ToJSON WaitingReportKeyConfigs where
   toJSON WaitingReportKeyConfigs {..} =
-    let WaitingReportKeyConfigs _ _ = undefined
+    let WaitingReportKeyConfigs _ _ _ = undefined
      in object
           [ "normal" .= waitingReportNormalKeyConfigs,
+            "search" .= waitingReportSearchKeyConfigs,
             "any" .= waitingReportAnyKeyConfigs
           ]
 
@@ -326,14 +328,16 @@ instance YamlSchema WaitingReportKeyConfigs where
   yamlSchema =
     objectParser "WaitingReportKeyConfigs" $
       WaitingReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the next-action report"
-        <*> optionalField "any" "Keybindings for at any point in the next action report"
+        <$> optionalField "normal" "Keybindings for interacting with the waiting report"
+        <*> optionalField "search" "Keybindings for the search in the waiting report"
+        <*> optionalField "any" "Keybindings for at any point in the waiting report"
 
 backToWaitingReportKeyConfigs :: WaitingReportKeyMap -> WaitingReportKeyConfigs
 backToWaitingReportKeyConfigs WaitingReportKeyMap {..} =
-  let WaitingReportKeyMap _ _ = undefined
+  let WaitingReportKeyMap _ _ _ = undefined
    in WaitingReportKeyConfigs
         { waitingReportNormalKeyConfigs = Just $ backToKeyConfigs waitingReportMatchers,
+          waitingReportSearchKeyConfigs = Just $ backToKeyConfigs waitingReportSearchMatchers,
           waitingReportAnyKeyConfigs = Just $ backToKeyConfigs waitingReportAnyMatchers
         }
 

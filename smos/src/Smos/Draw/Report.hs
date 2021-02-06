@@ -101,12 +101,23 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
 
 drawEntryReportCursor ::
   (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
-drawEntryReportCursor go s EntryReportCursor {..} =
-  viewport ResourceViewport Vertical
-    <$> ( case entryReportCursorSelectedEntryReportEntryCursors of
-            Nothing -> pure $ txtWrap "Empty report"
-            Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+drawEntryReportCursor go s EntryReportCursor {..} = do
+  tableW <- case entryReportCursorSelectedEntryReportEntryCursors of
+    Nothing -> pure $ txtWrap "Empty report"
+    Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+  pure $
+    vBox
+      [ viewport ResourceViewport Vertical tableW,
+        ( case entryReportCursorSelection of
+            EntryReportFilterSelected -> withAttr selectedAttr
+            EntryReportSelected -> id
         )
+          $ let ms =
+                  case entryReportCursorSelection of
+                    EntryReportFilterSelected -> MaybeSelected
+                    EntryReportSelected -> NotSelected
+             in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms entryReportCursorFilterBar]
+      ]
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do

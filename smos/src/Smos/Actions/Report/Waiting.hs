@@ -12,15 +12,22 @@ import Smos.Types
 allPlainReportWaitingActions :: [Action]
 allPlainReportWaitingActions =
   [ reportWaiting,
-    enterWaitingFile,
     prevWaiting,
     nextWaiting,
     firstWaiting,
-    lastWaiting
+    lastWaiting,
+    enterWaitingFile,
+    selectWaitingReport,
+    selectWaitingFilter,
+    removeWaitingFilter,
+    deleteWaitingFilter
   ]
 
 allReportWaitingUsingActions :: [ActionUsing Char]
-allReportWaitingUsingActions = []
+allReportWaitingUsingActions =
+  [ insertWaitingFilter,
+    appendWaitingFilter
+  ]
 
 reportWaiting :: Action
 reportWaiting =
@@ -36,25 +43,6 @@ reportWaiting =
               editorCursorReportCursor = Just $ ReportWaiting narc
             },
       actionDescription = "Waiting report"
-    }
-
-enterWaitingFile :: Action
-enterWaitingFile =
-  Action
-    { actionName = "enterWaitingFile",
-      actionFunc = do
-        ss <- get
-        case editorCursorReportCursor $ smosStateCursor ss of
-          Just rc -> case rc of
-            ReportWaiting wrc -> do
-              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-              wd <- liftIO $ resolveDirWorkflowDir dc
-              case waitingReportCursorBuildSmosFileCursor wd wrc of
-                Nothing -> pure ()
-                Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
-            _ -> pure ()
-          Nothing -> pure (),
-      actionDescription = "Enter the currently selected waiting entry"
     }
 
 prevWaiting :: Action
@@ -87,4 +75,71 @@ lastWaiting =
     { actionName = "lastWaiting",
       actionFunc = modifyWaitingReportCursor waitingReportCursorLast,
       actionDescription = "Select the last entry in the waiting report"
+    }
+
+enterWaitingFile :: Action
+enterWaitingFile =
+  Action
+    { actionName = "enterWaitingFile",
+      actionFunc = do
+        ss <- get
+        case editorCursorReportCursor $ smosStateCursor ss of
+          Just rc -> case rc of
+            ReportWaiting wrc -> do
+              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              wd <- liftIO $ resolveDirWorkflowDir dc
+              case waitingReportCursorBuildSmosFileCursor wd wrc of
+                Nothing -> pure ()
+                Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
+            _ -> pure ()
+          Nothing -> pure (),
+      actionDescription = "Enter the currently selected waiting entry"
+    }
+
+insertWaitingFilter :: ActionUsing Char
+insertWaitingFilter =
+  ActionUsing
+    { actionUsingName = "insertWaitingFilter",
+      actionUsingDescription = "Insert a character into the filter bar",
+      actionUsingFunc = \a -> modifyWaitingReportCursorM $ waitingReportCursorInsert a
+    }
+
+appendWaitingFilter :: ActionUsing Char
+appendWaitingFilter =
+  ActionUsing
+    { actionUsingName = "appendWaitingFilter",
+      actionUsingDescription = "Append a character onto the filter bar",
+      actionUsingFunc = \a -> modifyWaitingReportCursorM $ waitingReportCursorAppend a
+    }
+
+removeWaitingFilter :: Action
+removeWaitingFilter =
+  Action
+    { actionName = "removeWaitingFilter",
+      actionDescription = "Remove the character in filter bar before cursor",
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorRemove
+    }
+
+deleteWaitingFilter :: Action
+deleteWaitingFilter =
+  Action
+    { actionName = "deleteWaitingFilter",
+      actionDescription = "Remove the character in filter bar under cursor",
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorDelete
+    }
+
+selectWaitingReport :: Action
+selectWaitingReport =
+  Action
+    { actionName = "selectWaitingReport",
+      actionDescription = "Select the next action report",
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorSelectReport
+    }
+
+selectWaitingFilter :: Action
+selectWaitingFilter =
+  Action
+    { actionName = "selectWaitingFilter",
+      actionDescription = "Select the next action filter bar",
+      actionFunc = modifyWaitingReportCursorM waitingReportCursorSelectFilter
     }

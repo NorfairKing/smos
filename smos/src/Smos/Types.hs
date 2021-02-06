@@ -277,15 +277,17 @@ nextActionReportKeyMapActions NextActionReportKeyMap {..} =
 
 data WaitingReportKeyMap = WaitingReportKeyMap
   { waitingReportMatchers :: KeyMappings,
+    waitingReportSearchMatchers :: KeyMappings,
     waitingReportAnyMatchers :: KeyMappings
   }
   deriving (Generic)
 
 instance Semigroup WaitingReportKeyMap where
   narkm1 <> narkm2 =
-    let WaitingReportKeyMap _ _ = undefined
+    let WaitingReportKeyMap _ _ _ = undefined
      in WaitingReportKeyMap
           { waitingReportMatchers = waitingReportMatchers narkm1 <> waitingReportMatchers narkm2,
+            waitingReportSearchMatchers = waitingReportSearchMatchers narkm1 <> waitingReportSearchMatchers narkm2,
             waitingReportAnyMatchers = waitingReportAnyMatchers narkm1 <> waitingReportAnyMatchers narkm2
           }
 
@@ -294,15 +296,17 @@ instance Monoid WaitingReportKeyMap where
   mempty =
     WaitingReportKeyMap
       { waitingReportMatchers = mempty,
+        waitingReportSearchMatchers = mempty,
         waitingReportAnyMatchers = mempty
       }
 
 waitingReportKeyMapActions :: WaitingReportKeyMap -> [AnyAction]
 waitingReportKeyMapActions WaitingReportKeyMap {..} =
-  let WaitingReportKeyMap _ _ = undefined
+  let WaitingReportKeyMap _ _ _ = undefined
    in concatMap
         keyMappingsActions
         [ waitingReportMatchers,
+          waitingReportSearchMatchers,
           waitingReportAnyMatchers
         ]
 

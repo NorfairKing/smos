@@ -21,7 +21,7 @@ getSmosKeybindingsR = do
       BrowserKeyMap _ _ _ _ = undefined
       ReportsKeyMap _ _ _ _ = undefined
       NextActionReportKeyMap _ _ _ = undefined
-      WaitingReportKeyMap _ _ = undefined
+      WaitingReportKeyMap _ _ _ = undefined
       HelpKeyMap _ _ _ = undefined
   defaultLayout $ do
     setSmosTitle "Default Keybindings"

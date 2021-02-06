@@ -91,6 +91,9 @@
     Normal
   ^{keyMapTable $ waitingReportMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
   <h4>
+    Search
+  ^{keyMapTable $ waitingReportSearchMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
     Any
   ^{keyMapTable $ waitingReportAnyMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
     Agenda Report

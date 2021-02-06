@@ -335,7 +335,16 @@ defaultWaitingReportKeyMap =
             exactString "gg" firstWaiting,
             exactKey KEnd lastWaiting,
             exactChar 'G' lastWaiting,
-            exactKey KEnter enterWaitingFile
+            exactKey KEnter enterWaitingFile,
+            exactChar '/' selectWaitingFilter
+          ],
+      waitingReportSearchMatchers =
+        listMatchers
+          [ anyChar insertWaitingFilter,
+            exactKey KEnter selectWaitingReport,
+            exactKey KEsc selectWaitingReport,
+            exactKey KBS removeWaitingFilter,
+            exactKey KDel deleteWaitingFilter
           ],
       waitingReportAnyMatchers = listMatchers []
     }

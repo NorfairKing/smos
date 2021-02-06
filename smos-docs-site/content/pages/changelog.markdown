@@ -9,7 +9,8 @@ description: The changelog for all of the Smos tools and libraries
 
 - The 'timestamp' projection.
   You can now use `timestamp:DEADLINE` as a column in your reports.
-- Interactive agenda report.
+- Interactive agenda report
+- Filter bar for the interactive waiting report
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)

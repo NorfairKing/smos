@@ -60,6 +60,24 @@ waitingReportCursorFirst = waitingReportCursorEntryReportCursorL %~ entryReportC
 waitingReportCursorLast :: WaitingReportCursor -> WaitingReportCursor
 waitingReportCursorLast = waitingReportCursorEntryReportCursorL %~ entryReportCursorLast
 
+waitingReportCursorSelectReport :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorSelectReport = waitingReportCursorEntryReportCursorL entryReportCursorSelectReport
+
+waitingReportCursorSelectFilter :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorSelectFilter = waitingReportCursorEntryReportCursorL entryReportCursorSelectFilter
+
+waitingReportCursorInsert :: Char -> WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorInsert c = waitingReportCursorEntryReportCursorL $ entryReportCursorInsert c
+
+waitingReportCursorAppend :: Char -> WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorAppend c = waitingReportCursorEntryReportCursorL $ entryReportCursorAppend c
+
+waitingReportCursorRemove :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorRemove = waitingReportCursorEntryReportCursorL entryReportCursorRemove
+
+waitingReportCursorDelete :: WaitingReportCursor -> Maybe WaitingReportCursor
+waitingReportCursorDelete = waitingReportCursorEntryReportCursorL entryReportCursorDelete
+
 makeWaitingEntryCursor' :: Path Rel File -> ForestCursor Entry Entry -> [UTCTime]
 makeWaitingEntryCursor' _ = maybeToList . makeWaitingEntryCursor
 
