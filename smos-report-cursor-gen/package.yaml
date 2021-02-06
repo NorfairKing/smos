@@ -20,6 +20,7 @@ library:
   - genvalidity
   - genvalidity-path
   - microlens
+  - path
   - smos-data
   - smos-data-gen
   - smos-report

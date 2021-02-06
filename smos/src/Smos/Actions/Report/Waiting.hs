@@ -4,7 +4,9 @@ module Smos.Actions.Report.Waiting where
 
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.ShouldPrint
 import Smos.Types
 
 allPlainReportWaitingActions :: [Action]
@@ -27,7 +29,7 @@ reportWaiting =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        narc <- liftIO $ produceWaitingReportCursor dc
+        narc <- liftIO $ produceWaitingReportCursor Nothing HideArchive DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

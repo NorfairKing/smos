@@ -17,6 +17,7 @@ import Data.Time
 import Lens.Micro
 import Path
 import Smos.Actions
+import Smos.Cursor.Report.Entry
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
@@ -68,27 +69,22 @@ drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
 
 drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
-  now <- asks zonedTimeToUTC
-  let go = drawWaitingEntryCursor now
-  pure $
-    withHeading (str "Waiting Report") $
-      padAll 1 $
-        viewport ResourceViewport Vertical $
-          case waitingReportCursorWaitingEntryCursors of
-            Nothing -> txtWrap "Empty waiting report"
-            Just wecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) wecs
+  ercw <- drawEntryReportCursor drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
+  pure $ withHeading (str "Waiting Report") $ padAll 1 ercw
 
-drawWaitingEntryCursor :: UTCTime -> Select -> WaitingEntryCursor -> [Widget ResourceName]
-drawWaitingEntryCursor now s WaitingEntryCursor {..} =
+drawWaitingEntryCursor :: Select -> EntryReportEntryCursor UTCTime -> Drawer' [Widget ResourceName]
+drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
+  now <- asks zonedTimeToUTC
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-   in [ str $ toFilePath waitingEntryCursorFilePath,
-        sel $ drawHeader $ entryHeader $ forestCursorCurrent waitingEntryCursorForestCursor,
-        daysSinceWidget 7 now waitingEntryCursorTimestamp
-      ]
+  pure
+    [ str $ fromRelFile entryReportEntryCursorFilePath,
+      sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
+      daysSinceWidget 7 now entryReportEntryCursorVal
+    ]
 
 daysSinceWidget :: Word -> UTCTime -> UTCTime -> Widget n
 daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
@@ -102,6 +98,15 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | i >= th3 = waitingReportShortWait
       | otherwise = waitingReportNoWait
     i = daysSince now t
+
+drawEntryReportCursor ::
+  (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
+drawEntryReportCursor go s EntryReportCursor {..} =
+  viewport ResourceViewport Vertical
+    <$> ( case entryReportCursorSelectedEntryReportEntryCursors of
+            Nothing -> pure $ txtWrap "Empty report"
+            Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+        )
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
