@@ -4,11 +4,13 @@
 
 module Smos.Cursor.Report.Entry where
 
+import Conduit
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Tree
 import Cursor.Text
 import Cursor.Types
+import qualified Data.Conduit.Combinators as C
 import Data.Foldable (toList)
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
@@ -19,7 +21,11 @@ import Smos.Cursor.Collapse
 import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.Report.Archive
+import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.ShouldPrint
+import Smos.Report.Streaming
 
 data EntryReportCursor a = EntryReportCursor
   { entryReportCursorEntryReportEntryCursors :: ![EntryReportEntryCursor a],
@@ -37,6 +43,14 @@ data EntryReportCursorSelection
   deriving (Show, Eq, Generic)
 
 instance Validity EntryReportCursorSelection
+
+produceEntryReportCursor :: MonadIO m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> m (EntryReportCursor a)
+produceEntryReportCursor func mf ha sp dc = produceReport ha sp dc (entryReportCursorConduit func mf)
+
+entryReportCursorConduit :: Monad m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m (EntryReportCursor a)
+entryReportCursorConduit func mf =
+  makeEntryReportCursor
+    <$> (entryReportEntryCursorConduit func mf .| sinkList)
 
 entryReportCursorEntryReportEntryCursorsL :: Lens' (EntryReportCursor a) [EntryReportEntryCursor a]
 entryReportCursorEntryReportEntryCursorsL =
@@ -141,6 +155,12 @@ entryReportCursorDelete =
         Nothing -> Nothing
         Just Deleted -> Nothing
         Just (Updated narc) -> Just narc
+
+entryReportEntryCursorConduit :: Monad m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (EntryReportEntryCursor a) m ()
+entryReportEntryCursorConduit func mf =
+  smosFileCursors
+    .| smosMFilter mf
+    .| C.concatMap (\(rf, fc) -> makeEntryReportEntryCursor rf fc <$> func rf fc)
 
 data EntryReportEntryCursor a = EntryReportEntryCursor
   { entryReportEntryCursorFilePath :: !(Path Rel File),
