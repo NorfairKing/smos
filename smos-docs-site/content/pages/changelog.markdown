@@ -11,6 +11,11 @@ description: The changelog for all of the Smos tools and libraries
   You can now use `timestamp:DEADLINE` as a column in your reports.
 - Interactive agenda report.
 
+## Changed
+
+- `smos-scheduler`: Explicitly setting a header's `state` to `null` now leaves the generated state as null instead of setting it to `TODO`.
+
+
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
 - <a name="smos-query-0.1.2">[smos-query 0.1.2](#smos-query-0.1.2)

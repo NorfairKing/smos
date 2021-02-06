@@ -197,7 +197,7 @@ data EntryTemplate = EntryTemplate
     entryTemplateContents :: Maybe Contents,
     entryTemplateTimestamps :: Map TimestampName TimestampTemplate,
     entryTemplateProperties :: Map PropertyName PropertyValue,
-    entryTemplateState :: Maybe TodoState,
+    entryTemplateState :: Maybe (Maybe TodoState),
     entryTemplateTags :: Set Tag
   }
   deriving (Show, Eq, Generic)
@@ -217,14 +217,22 @@ newEntryTemplate h =
 
 instance ToJSON EntryTemplate where
   toJSON EntryTemplate {..} =
-    object
+    object $
       [ "header" .= entryTemplateHeader,
         "contents" .= entryTemplateContents,
         "timestamps" .= entryTemplateTimestamps,
         "properties" .= entryTemplateProperties,
-        "state" .= entryTemplateState,
         "tags" .= entryTemplateTags
       ]
+        <> stateToJson
+    where
+      stateToJson =
+        case entryTemplateState of
+          Nothing ->
+            []
+          Just v ->
+            [ "state" .= v
+            ]
 
 instance FromJSON EntryTemplate where
   parseJSON v =
@@ -238,7 +246,7 @@ instance FromJSON EntryTemplate where
                 <*> o .:? "contents"
                 <*> o .:? "timestamps" .!= M.empty
                 <*> o .:? "properties" .!= M.empty
-                <*> o .:? "state" .!= Nothing
+                <*> o .:! "state"
                 <*> o .:? "tags" .!= S.empty
           )
         v
