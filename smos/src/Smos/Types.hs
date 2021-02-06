@@ -33,6 +33,7 @@ import Import
 import Lens.Micro
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
+import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Next
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
@@ -828,15 +829,18 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                    in ( \(t, ms) -> withHelpBindings t $ ms ++ reportsKeymapAnyMatchers
                       )
                         $ case rc of
-                          ReportNextActions narc ->
+                          ReportNextActions NextActionReportCursor {..} ->
                             let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
                              in (\(t, ms) -> (t, ms ++ nextActionReportAnyMatchers)) $
-                                  case nextActionReportCursorSelection narc of
-                                    NextActionReportSelected -> ("Next Action Report", nextActionReportMatchers)
-                                    NextActionReportFilterSelected -> ("Next Action Report, Search", nextActionReportSearchMatchers)
-                          ReportWaiting _ ->
+                                  case entryReportCursorSelection nextActionReportCursorEntryReportCursor of
+                                    EntryReportSelected -> ("Next Action Report", nextActionReportMatchers)
+                                    EntryReportFilterSelected -> ("Next Action Report, Search", nextActionReportSearchMatchers)
+                          ReportWaiting WaitingReportCursor {..} ->
                             let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
-                             in ("Waiting Report", waitingReportMatchers ++ waitingReportAnyMatchers)
+                             in (\(t, ms) -> (t, ms ++ waitingReportAnyMatchers)) $
+                                  case entryReportCursorSelection waitingReportCursorEntryReportCursor of
+                                    EntryReportSelected -> ("Next Action Report", waitingReportMatchers)
+                                    EntryReportFilterSelected -> ("Next Action Report, Search", waitingReportSearchMatchers)
                           ReportTimestamps _ ->
                             let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
                              in ("Timestamps Report", timestampsReportMatchers ++ timestampsReportAnyMatchers)

@@ -4,7 +4,9 @@ module Smos.Actions.Report.Next where
 
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.ShouldPrint
 import Smos.Types
 
 allPlainReportNextActions :: [Action]
@@ -34,7 +36,7 @@ reportNextActions =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        narc <- liftIO $ produceNextActionReportCursor dc
+        narc <- liftIO $ produceNextActionReportCursor Nothing HideArchive DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

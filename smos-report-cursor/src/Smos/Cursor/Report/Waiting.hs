@@ -30,6 +30,8 @@ data WaitingReportCursor = WaitingReportCursor
   }
   deriving (Show, Eq, Generic)
 
+-- TODO validity constraint: the entry report cursor's value matches the forest cursor
+
 instance Validity WaitingReportCursor where
   validate wrc@WaitingReportCursor {..} =
     mconcat

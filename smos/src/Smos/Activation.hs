@@ -68,9 +68,9 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                         nextActionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
                      in (++ nextActionReportAnys) $
                           map ((,) SpecificMatcher) $
-                            case nextActionReportCursorSelection of
-                              NextActionReportSelected -> nextActionReportMatchers
-                              NextActionReportFilterSelected -> nextActionReportSearchMatchers
+                            case entryReportCursorSelection nextActionReportCursorEntryReportCursor of
+                              EntryReportSelected -> nextActionReportMatchers
+                              EntryReportFilterSelected -> nextActionReportSearchMatchers
                   ReportWaiting WaitingReportCursor {..} ->
                     let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
                         waitingReportAnys = map ((,) AnyMatcher) waitingReportAnyMatchers

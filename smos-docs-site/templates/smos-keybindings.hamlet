@@ -28,33 +28,43 @@
   <h3>
     Empty
   ^{keyMapTable $ fileKeyMapEmptyMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Entry
   ^{keyMapTable $ fileKeyMapEntryMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Header
   ^{keyMapTable $ fileKeyMapHeaderMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Contents
   ^{keyMapTable $ fileKeyMapContentsMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Timestamps
   ^{keyMapTable $ fileKeyMapTimestampsMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Properties
   ^{keyMapTable $ fileKeyMapPropertiesMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     State History
   ^{keyMapTable $ fileKeyMapStateHistoryMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Tags
   ^{keyMapTable $ fileKeyMapTagsMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Logbook
   ^{keyMapTable $ fileKeyMapLogbookMatchers $ keyMapFileKeyMap defaultKeyMap }
+
   <h3>
     Any
   ^{keyMapTable $ fileKeyMapAnyMatchers $ keyMapFileKeyMap defaultKeyMap }
+
 
 
   <h2 id="FileBrowser">
@@ -62,15 +72,20 @@
   <h3>
     Existent
   ^{keyMapTable $ browserKeyMapExistentMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+
   <h3>
     In Progress
   ^{keyMapTable $ browserKeyMapInProgressMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+
   <h3>
     Empty
   ^{keyMapTable $ browserKeyMapEmptyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+
   <h3>
     Any
   ^{keyMapTable $ browserKeyMapAnyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+
+
 
   <h2 id="Reports">
     Reports
@@ -85,6 +100,7 @@
   <h4>
     Any
   ^{keyMapTable $ nextActionReportAnyMatchers $ reportsKeymapNextActionReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
   <h3>
     Waiting Report
   <h4>
@@ -96,6 +112,8 @@
   <h4>
     Any
   ^{keyMapTable $ waitingReportAnyMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
+  <h3>
     Agenda Report
   <h4>
     Normal
@@ -103,9 +121,12 @@
   <h4>
     Any
   ^{keyMapTable $ timestampsReportAnyMatchers $ reportsKeymapTimestampsReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
   <h3>
     Any
   ^{keyMapTable $ reportsKeymapAnyMatchers $ keyMapReportsKeyMap defaultKeyMap }
+
+
 
   <h2 id="Help">
     Help
@@ -122,3 +143,6 @@
   <h2 id="Any">
     Any
   ^{keyMapTable $ keyMapAnyKeyMap defaultKeyMap }
+
+
+

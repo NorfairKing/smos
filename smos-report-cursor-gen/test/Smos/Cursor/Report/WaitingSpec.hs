@@ -10,6 +10,7 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
@@ -18,6 +19,13 @@ spec = do
   describe "waitingReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorPrev
   describe "waitingReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorFirst
   describe "waitingReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorLast
+  describe "waitingReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorSelectReport
+  describe "waitingReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorSelectFilter
+  describe "waitingReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 waitingReportCursorInsert
+  describe "waitingReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 waitingReportCursorAppend
+  describe "waitingReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorRemove
+  describe "waitingReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorDelete
+  describe "waitingReportCursorEntryReportCursorL" $ lensSpecOnValid waitingReportCursorEntryReportCursorL
   describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeWaitingEntryCursor
   describe "makeWaitingEntryCursor'" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor'
   modifyMaxSuccess (`div` 10) $

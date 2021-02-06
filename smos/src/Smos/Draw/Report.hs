@@ -14,7 +14,6 @@ import Cursor.Brick
 import Cursor.List.NonEmpty (foldNonEmptyCursor)
 import Cursor.Simple.List.NonEmpty
 import Data.Time
-import Lens.Micro
 import Path
 import Smos.Actions
 import Smos.Cursor.Report.Entry
@@ -28,44 +27,28 @@ import Text.Printf
 
 drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
-  ReportNextActions narc -> pure $ drawNextActionReportCursor s narc
+  ReportNextActions narc -> drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
   ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
 
-drawNextActionReportCursor :: Select -> NextActionReportCursor -> Widget ResourceName
-drawNextActionReportCursor s NextActionReportCursor {..} =
-  withHeading (str "Next Action Report") $
-    vBox
-      [ padAll 1 $
-          viewport ResourceViewport Vertical $
-            case nextActionReportCursorSelectedNextActionEntryCursors of
-              Nothing -> txtWrap "Empty next action report"
-              Just naecs -> verticalNonEmptyCursorTable (go NotSelected) (go s) (go NotSelected) naecs,
-        ( case nextActionReportCursorSelection of
-            NextActionReportFilterSelected -> withAttr selectedAttr
-            NextActionReportSelected -> id
-        )
-          $ let ms =
-                  case nextActionReportCursorSelection of
-                    NextActionReportFilterSelected -> MaybeSelected
-                    NextActionReportSelected -> NotSelected
-             in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms nextActionReportCursorFilterBar]
-      ]
-  where
-    go = drawNextActionEntryCursor
+drawNextActionReportCursor :: Select -> NextActionReportCursor -> Drawer
+drawNextActionReportCursor s NextActionReportCursor {..} = do
+  ercw <- drawEntryReportCursor drawNextActionEntryCursor s nextActionReportCursorEntryReportCursor
+  pure $ withHeading (str "NextAction Report") $ padAll 1 ercw
 
-drawNextActionEntryCursor :: Select -> NextActionEntryCursor -> [Widget ResourceName]
-drawNextActionEntryCursor s naec@NextActionEntryCursor {..} =
-  let e@Entry {..} = naec ^. nextActionEntryCursorEntryL
-      sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
-   in [ drawFilePath nextActionEntryCursorFilePath,
-        maybe emptyWidget drawTodoState $ entryState e,
-        sel $ drawHeader entryHeader
-      ]
+drawNextActionEntryCursor :: Select -> EntryReportEntryCursor (TodoState, UTCTime) -> Drawer' [Widget ResourceName]
+drawNextActionEntryCursor s EntryReportEntryCursor {..} =
+  pure $
+    let sel =
+          ( case s of
+              MaybeSelected -> forceAttr selectedAttr . visible
+              NotSelected -> id
+          )
+        (ts, _) = entryReportEntryCursorVal
+     in [ drawFilePath entryReportEntryCursorFilePath,
+          drawTodoState ts,
+          sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor
+        ]
 
 drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
