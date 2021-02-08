@@ -33,7 +33,7 @@ drawReportCursor s = \case
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Drawer
 drawNextActionReportCursor s NextActionReportCursor {..} = do
-  ercw <- drawEntryReportCursor drawNextActionEntryCursor s nextActionReportCursorEntryReportCursor
+  ercw <- drawEntryReportCursorSimple drawNextActionEntryCursor s nextActionReportCursorEntryReportCursor
   pure $ withHeading (str "NextAction Report") $ padAll 1 ercw
 
 drawNextActionEntryCursor :: Select -> EntryReportEntryCursor (TodoState, UTCTime) -> Drawer' [Widget ResourceName]
@@ -52,7 +52,7 @@ drawNextActionEntryCursor s EntryReportEntryCursor {..} =
 
 drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
-  ercw <- drawEntryReportCursor drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
+  ercw <- drawEntryReportCursorSimple drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
   pure $ withHeading (str "Waiting Report") $ padAll 1 ercw
 
 drawWaitingEntryCursor :: Select -> EntryReportEntryCursor UTCTime -> Drawer' [Widget ResourceName]
@@ -82,12 +82,22 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | otherwise = waitingReportNoWait
     i = daysSince now t
 
-drawEntryReportCursor ::
+drawEntryReportCursorSimple ::
   (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
-drawEntryReportCursor go s EntryReportCursor {..} = do
-  tableW <- case entryReportCursorSelectedEntryReportEntryCursors of
+drawEntryReportCursorSimple go = drawEntryReportCursor $ \s mnec ->
+  case mnec of
     Nothing -> pure $ txtWrap "Empty report"
     Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+
+drawEntryReportCursor :: (Select -> Maybe (NonEmptyCursor (EntryReportEntryCursor a)) -> Drawer) -> Select -> EntryReportCursor a -> Drawer
+drawEntryReportCursor func s EntryReportCursor {..} = do
+  tableW <-
+    func
+      ( case entryReportCursorSelection of
+          EntryReportFilterSelected -> NotSelected
+          EntryReportSelected -> s
+      )
+      entryReportCursorSelectedEntryReportEntryCursors
   pure $
     vBox
       [ viewport ResourceViewport Vertical tableW,
@@ -97,31 +107,35 @@ drawEntryReportCursor go s EntryReportCursor {..} = do
         )
           $ let ms =
                   case entryReportCursorSelection of
-                    EntryReportFilterSelected -> MaybeSelected
+                    EntryReportFilterSelected -> s
                     EntryReportSelected -> NotSelected
              in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms entryReportCursorFilterBar]
       ]
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
-  now <- ask
-  tableW <- case timestampsReportCursorTimestampsEntryCursors of
-    Nothing -> pure $ txtWrap "Empty timestamps report"
-    Just tsecs -> do
-      ws <- mapM (drawTimestampReportLine s) $ makeTimestampReportLines now tsecs
-      pure $ tableWidget ws
+  tsrw <-
+    drawEntryReportCursor
+      ( \s' mnec ->
+          case mnec of
+            Nothing -> pure $ txtWrap "Empty timestamps report"
+            Just tsecs -> do
+              now <- ask
+              ws <- mapM (drawTimestampReportLine s') $ makeTimestampReportLines now tsecs
+              pure $ tableWidget ws
+      )
+      s
+      timestampsReportCursorEntryReportCursor
   pure $
-    withHeading (str "Agenda Report: Today") $
-      padAll 1 $
-        viewport ResourceViewport Vertical tableW
+    withHeading (str "Agenda Report: Today") $ padAll 1 tsrw
 
 data TimestampsReportLine
-  = ReportSelectedEntryLine TimestampsEntryCursor
-  | ReportEntryLine TimestampsEntryCursor
-  | ReportNowLine LocalTime
-  | ReportHourLine Int
+  = ReportSelectedEntryLine !(EntryReportEntryCursor TimestampsEntryCursor)
+  | ReportEntryLine !(EntryReportEntryCursor TimestampsEntryCursor)
+  | ReportNowLine !LocalTime
+  | ReportHourLine !Int
 
-makeTimestampReportLines :: ZonedTime -> NonEmptyCursor TimestampsEntryCursor -> [TimestampsReportLine]
+makeTimestampReportLines :: ZonedTime -> NonEmptyCursor (EntryReportEntryCursor TimestampsEntryCursor) -> [TimestampsReportLine]
 makeTimestampReportLines now = foldNonEmptyCursor $ \befores current afters ->
   insertReportNowLine now $ insertReportHourLines now $ concat [map ReportEntryLine befores, [ReportSelectedEntryLine current], map ReportEntryLine afters]
 
@@ -168,8 +182,8 @@ insertReportHourLines now = go [8 .. 18]
 
 timestampsReportLineLocalTime :: ZonedTime -> TimestampsReportLine -> LocalTime
 timestampsReportLineLocalTime now = \case
-  ReportSelectedEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp tec
-  ReportEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp tec
+  ReportSelectedEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp $ entryReportEntryCursorVal tec
+  ReportEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp $ entryReportEntryCursorVal tec
   ReportNowLine lt -> lt
   ReportHourLine h -> hourLineLocalTime (localDay $ zonedTimeToLocalTime now) h
 
@@ -193,14 +207,15 @@ isBefore now after =
       nowUTC = zonedTimeToUTC now
    in nowUTC <= localTimeToUTC (zonedTimeZone now) afterLT
 
-drawTimestampsEntryCursor :: Select -> TimestampsEntryCursor -> Drawer' [Widget ResourceName]
-drawTimestampsEntryCursor s TimestampsEntryCursor {..} = do
+drawTimestampsEntryCursor :: Select -> EntryReportEntryCursor TimestampsEntryCursor -> Drawer' [Widget ResourceName]
+drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-      e = forestCursorCurrent timestampsEntryCursorForestCursor
+      e = forestCursorCurrent entryReportEntryCursorForestCursor
+  let TimestampsEntryCursor {..} = entryReportEntryCursorVal
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
   let lt = timestampLocalTime timestampsEntryCursorTimestamp
   pure
@@ -209,5 +224,5 @@ drawTimestampsEntryCursor s TimestampsEntryCursor {..} = do
       drawTimestampName timestampsEntryCursorTimestampName,
       maybe (str " ") drawTodoState $ entryState e,
       sel $ drawHeader $ entryHeader e,
-      str $ toFilePath timestampsEntryCursorFilePath
+      str $ fromRelFile entryReportEntryCursorFilePath
     ]

@@ -11,6 +11,7 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
+import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
@@ -20,6 +21,15 @@ spec = do
   describe "timestampsReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorPrev
   describe "timestampsReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorFirst
   describe "timestampsReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorLast
+  describe "timestampsReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorSelectReport
+  describe "timestampsReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorSelectFilter
+  describe "timestampsReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 timestampsReportCursorInsert
+  describe "timestampsReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 timestampsReportCursorAppend
+  describe "timestampsReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorRemove
+  describe "timestampsReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorDelete
+  -- Does not hold because of the validity constraint:
+  -- describe "timestampsReportCursorEntryReportCursorL" $ lensSpecOnValid timestampsReportCursorEntryReportCursorL
+
   describe "makeTimestampsEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeTimestampsEntryCursor
   modifyMaxSuccess (`div` 10) $
     describe "produceTimestampsReportCursor" $
