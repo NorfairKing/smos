@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Activation
   ( currentKeyMappings,
@@ -66,6 +67,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
              in (++ reportsAnys) $ case rc of
                   ReportNextActions NextActionReportCursor {..} ->
                     let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
+                        NextActionReportKeyMap _ _ _ = reportsKeymapNextActionReportKeyMap
                         nextActionReportAnys = map ((,) AnyMatcher) nextActionReportAnyMatchers
                      in (++ nextActionReportAnys) $
                           map ((,) SpecificMatcher) $
@@ -74,6 +76,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                               EntryReportFilterSelected -> nextActionReportSearchMatchers
                   ReportWaiting WaitingReportCursor {..} ->
                     let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
+                        WaitingReportKeyMap _ _ _ = reportsKeymapWaitingReportKeyMap
                         waitingReportAnys = map ((,) AnyMatcher) waitingReportAnyMatchers
                      in (++ waitingReportAnys) $
                           map ((,) SpecificMatcher) $
@@ -82,6 +85,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                               EntryReportFilterSelected -> waitingReportSearchMatchers
                   ReportTimestamps TimestampsReportCursor {..} ->
                     let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
+                        TimestampsReportKeyMap _ _ _ = reportsKeymapTimestampsReportKeyMap
                         timestampsReportAnys = map ((,) AnyMatcher) timestampsReportAnyMatchers
                      in (++ timestampsReportAnys) $
                           map ((,) SpecificMatcher) $

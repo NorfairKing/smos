@@ -835,18 +835,21 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                         $ case rc of
                           ReportNextActions NextActionReportCursor {..} ->
                             let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
+                                NextActionReportKeyMap _ _ _ = reportsKeymapNextActionReportKeyMap
                              in (\(t, ms) -> (t, ms ++ nextActionReportAnyMatchers)) $
                                   case entryReportCursorSelection nextActionReportCursorEntryReportCursor of
                                     EntryReportSelected -> ("Next Action Report", nextActionReportMatchers)
                                     EntryReportFilterSelected -> ("Next Action Report, Search", nextActionReportSearchMatchers)
                           ReportWaiting WaitingReportCursor {..} ->
                             let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
+                                WaitingReportKeyMap _ _ _ = reportsKeymapWaitingReportKeyMap
                              in (\(t, ms) -> (t, ms ++ waitingReportAnyMatchers)) $
                                   case entryReportCursorSelection waitingReportCursorEntryReportCursor of
                                     EntryReportSelected -> ("Waiting Report", waitingReportMatchers)
                                     EntryReportFilterSelected -> ("Waiting Report, Search", waitingReportSearchMatchers)
                           ReportTimestamps TimestampsReportCursor {..} ->
                             let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
+                                TimestampsReportKeyMap _ _ _ = reportsKeymapTimestampsReportKeyMap
                              in (\(t, ms) -> (t, ms ++ timestampsReportAnyMatchers)) $
                                   case entryReportCursorSelection timestampsReportCursorEntryReportCursor of
                                     EntryReportSelected -> ("Timestamps Report", timestampsReportMatchers)
