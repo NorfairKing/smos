@@ -843,11 +843,14 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                             let WaitingReportKeyMap {..} = reportsKeymapWaitingReportKeyMap
                              in (\(t, ms) -> (t, ms ++ waitingReportAnyMatchers)) $
                                   case entryReportCursorSelection waitingReportCursorEntryReportCursor of
-                                    EntryReportSelected -> ("Next Action Report", waitingReportMatchers)
-                                    EntryReportFilterSelected -> ("Next Action Report, Search", waitingReportSearchMatchers)
-                          ReportTimestamps _ ->
+                                    EntryReportSelected -> ("Waiting Report", waitingReportMatchers)
+                                    EntryReportFilterSelected -> ("Waiting Report, Search", waitingReportSearchMatchers)
+                          ReportTimestamps TimestampsReportCursor {..} ->
                             let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
-                             in ("Timestamps Report", timestampsReportMatchers ++ timestampsReportAnyMatchers)
+                             in (\(t, ms) -> (t, ms ++ timestampsReportAnyMatchers)) $
+                                  case entryReportCursorSelection timestampsReportCursorEntryReportCursor of
+                                    EntryReportSelected -> ("Timestamps Report", timestampsReportMatchers)
+                                    EntryReportFilterSelected -> ("Timestamps Report, Search", timestampsReportSearchMatchers)
             HelpSelected -> Nothing, -- Should not happen
           editorCursorSelection = HelpSelected
         }
