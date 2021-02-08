@@ -21,6 +21,7 @@ description: The changelog for all of the Smos tools and libraries
 ## Changed
 
 - `smos-scheduler`: Explicitly setting a header's `state` to `null` now leaves the generated state as null instead of setting it to `TODO`.
+  Thank you [@prikhi](https://github.com/prikhi)!
 
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
