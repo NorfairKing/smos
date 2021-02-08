@@ -291,7 +291,8 @@ defaultReportsKeyMap =
       reportsKeymapTimestampsReportKeyMap = defaultTimestampsReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
-          [ exactChar 'q' selectEditor
+          [ exactKey KEsc exitReport,
+            exactChar 'q' exitReport
           ]
     }
 
@@ -319,11 +320,7 @@ defaultNextActionReportKeyMap =
             exactKey KBS removeNextActionFilter,
             exactKey KDel deleteNextActionFilter
           ],
-      nextActionReportAnyMatchers =
-        listMatchers
-          [ exactKey KEsc exitReport,
-            exactChar 'q' exitReport
-          ]
+      nextActionReportAnyMatchers = []
     }
 
 defaultWaitingReportKeyMap :: WaitingReportKeyMap
