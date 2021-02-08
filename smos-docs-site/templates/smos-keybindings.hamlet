@@ -119,6 +119,9 @@
     Normal
   ^{keyMapTable $ timestampsReportMatchers $ reportsKeymapTimestampsReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
   <h4>
+    Search
+  ^{keyMapTable $ timestampsReportSearchMatchers $ reportsKeymapTimestampsReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
     Any
   ^{keyMapTable $ timestampsReportAnyMatchers $ reportsKeymapTimestampsReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
 
