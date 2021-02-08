@@ -132,7 +132,7 @@ selectWaitingReport :: Action
 selectWaitingReport =
   Action
     { actionName = "selectWaitingReport",
-      actionDescription = "Select the next action report",
+      actionDescription = "Select the waiting report",
       actionFunc = modifyWaitingReportCursorM waitingReportCursorSelectReport
     }
 
@@ -140,6 +140,6 @@ selectWaitingFilter :: Action
 selectWaitingFilter =
   Action
     { actionName = "selectWaitingFilter",
-      actionDescription = "Select the next action filter bar",
+      actionDescription = "Select the waiting filter bar",
       actionFunc = modifyWaitingReportCursorM waitingReportCursorSelectFilter
     }

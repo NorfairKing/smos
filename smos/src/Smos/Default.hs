@@ -362,7 +362,16 @@ defaultTimestampsReportKeyMap =
             exactString "gg" firstTimestamps,
             exactKey KEnd lastTimestamps,
             exactChar 'G' lastTimestamps,
-            exactKey KEnter enterTimestampsFile
+            exactKey KEnter enterTimestampsFile,
+            exactChar '/' selectTimestampsFilter
+          ],
+      timestampsReportSearchMatchers =
+        listMatchers
+          [ anyChar insertTimestampsFilter,
+            exactKey KEnter selectTimestampsReport,
+            exactKey KEsc selectTimestampsReport,
+            exactKey KBS removeTimestampsFilter,
+            exactKey KDel deleteTimestampsFilter
           ],
       timestampsReportAnyMatchers = listMatchers []
     }

@@ -313,15 +313,17 @@ waitingReportKeyMapActions WaitingReportKeyMap {..} =
 
 data TimestampsReportKeyMap = TimestampsReportKeyMap
   { timestampsReportMatchers :: KeyMappings,
+    timestampsReportSearchMatchers :: KeyMappings,
     timestampsReportAnyMatchers :: KeyMappings
   }
   deriving (Generic)
 
 instance Semigroup TimestampsReportKeyMap where
   narkm1 <> narkm2 =
-    let TimestampsReportKeyMap _ _ = undefined
+    let TimestampsReportKeyMap _ _ _ = undefined
      in TimestampsReportKeyMap
           { timestampsReportMatchers = timestampsReportMatchers narkm1 <> timestampsReportMatchers narkm2,
+            timestampsReportSearchMatchers = timestampsReportSearchMatchers narkm1 <> timestampsReportSearchMatchers narkm2,
             timestampsReportAnyMatchers = timestampsReportAnyMatchers narkm1 <> timestampsReportAnyMatchers narkm2
           }
 
@@ -330,15 +332,17 @@ instance Monoid TimestampsReportKeyMap where
   mempty =
     TimestampsReportKeyMap
       { timestampsReportMatchers = mempty,
+        timestampsReportSearchMatchers = mempty,
         timestampsReportAnyMatchers = mempty
       }
 
 timestampsReportKeyMapActions :: TimestampsReportKeyMap -> [AnyAction]
 timestampsReportKeyMapActions TimestampsReportKeyMap {..} =
-  let TimestampsReportKeyMap _ _ = undefined
+  let TimestampsReportKeyMap _ _ _ = undefined
    in concatMap
         keyMappingsActions
         [ timestampsReportMatchers,
+          timestampsReportSearchMatchers,
           timestampsReportAnyMatchers
         ]
 

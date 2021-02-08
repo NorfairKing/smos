@@ -343,6 +343,7 @@ backToWaitingReportKeyConfigs WaitingReportKeyMap {..} =
 
 data TimestampsReportKeyConfigs = TimestampsReportKeyConfigs
   { timestampsReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    timestampsReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     timestampsReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving (Show, Eq, Generic)
@@ -351,9 +352,10 @@ instance Validity TimestampsReportKeyConfigs
 
 instance ToJSON TimestampsReportKeyConfigs where
   toJSON TimestampsReportKeyConfigs {..} =
-    let TimestampsReportKeyConfigs _ _ = undefined
+    let TimestampsReportKeyConfigs _ _ _ = undefined
      in object
           [ "normal" .= timestampsReportNormalKeyConfigs,
+            "search" .= timestampsReportSearchKeyConfigs,
             "any" .= timestampsReportAnyKeyConfigs
           ]
 
@@ -364,14 +366,16 @@ instance YamlSchema TimestampsReportKeyConfigs where
   yamlSchema =
     objectParser "TimestampsReportKeyConfigs" $
       TimestampsReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the next-action report"
-        <*> optionalField "any" "Keybindings for at any point in the next action report"
+        <$> optionalField "normal" "Keybindings for interacting with the timestamps report"
+        <*> optionalField "search" "Keybindings for the search in the timestamps report"
+        <*> optionalField "any" "Keybindings for at any point in the timestamps report"
 
 backToTimestampsReportKeyConfigs :: TimestampsReportKeyMap -> TimestampsReportKeyConfigs
 backToTimestampsReportKeyConfigs TimestampsReportKeyMap {..} =
-  let TimestampsReportKeyMap _ _ = undefined
+  let TimestampsReportKeyMap _ _ _ = undefined
    in TimestampsReportKeyConfigs
         { timestampsReportNormalKeyConfigs = Just $ backToKeyConfigs timestampsReportMatchers,
+          timestampsReportSearchKeyConfigs = Just $ backToKeyConfigs timestampsReportSearchMatchers,
           timestampsReportAnyKeyConfigs = Just $ backToKeyConfigs timestampsReportAnyMatchers
         }
 

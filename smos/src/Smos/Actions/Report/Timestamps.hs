@@ -14,15 +14,22 @@ import Smos.Types
 allPlainReportTimestampsActions :: [Action]
 allPlainReportTimestampsActions =
   [ reportTimestamps,
-    enterTimestampsFile,
     prevTimestamps,
     nextTimestamps,
     firstTimestamps,
-    lastTimestamps
+    lastTimestamps,
+    enterTimestampsFile,
+    selectTimestampsReport,
+    selectTimestampsFilter,
+    removeTimestampsFilter,
+    deleteTimestampsFilter
   ]
 
 allReportTimestampsUsingActions :: [ActionUsing Char]
-allReportTimestampsUsingActions = []
+allReportTimestampsUsingActions =
+  [ insertTimestampsFilter,
+    appendTimestampsFilter
+  ]
 
 reportTimestamps :: Action
 reportTimestamps =
@@ -39,25 +46,6 @@ reportTimestamps =
               editorCursorReportCursor = Just $ ReportTimestamps narc
             },
       actionDescription = "Timestamps report"
-    }
-
-enterTimestampsFile :: Action
-enterTimestampsFile =
-  Action
-    { actionName = "enterTimestampsFile",
-      actionFunc = do
-        ss <- get
-        case editorCursorReportCursor $ smosStateCursor ss of
-          Just rc -> case rc of
-            ReportTimestamps wrc -> do
-              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-              wd <- liftIO $ resolveDirWorkflowDir dc
-              case timestampsReportCursorBuildSmosFileCursor wd wrc of
-                Nothing -> pure ()
-                Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
-            _ -> pure ()
-          Nothing -> pure (),
-      actionDescription = "Enter the currently selected timestamps entry"
     }
 
 prevTimestamps :: Action
@@ -90,4 +78,71 @@ lastTimestamps =
     { actionName = "lastTimestamps",
       actionFunc = modifyTimestampsReportCursor timestampsReportCursorLast,
       actionDescription = "Select the last entry in the timestamps report"
+    }
+
+enterTimestampsFile :: Action
+enterTimestampsFile =
+  Action
+    { actionName = "enterTimestampsFile",
+      actionFunc = do
+        ss <- get
+        case editorCursorReportCursor $ smosStateCursor ss of
+          Just rc -> case rc of
+            ReportTimestamps wrc -> do
+              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              wd <- liftIO $ resolveDirWorkflowDir dc
+              case timestampsReportCursorBuildSmosFileCursor wd wrc of
+                Nothing -> pure ()
+                Just (fp, sfc) -> void $ switchToCursor fp (Just sfc)
+            _ -> pure ()
+          Nothing -> pure (),
+      actionDescription = "Enter the currently selected timestamps entry"
+    }
+
+insertTimestampsFilter :: ActionUsing Char
+insertTimestampsFilter =
+  ActionUsing
+    { actionUsingName = "insertTimestampsFilter",
+      actionUsingDescription = "Insert a character into the filter bar",
+      actionUsingFunc = \a -> modifyTimestampsReportCursorM $ timestampsReportCursorInsert a
+    }
+
+appendTimestampsFilter :: ActionUsing Char
+appendTimestampsFilter =
+  ActionUsing
+    { actionUsingName = "appendTimestampsFilter",
+      actionUsingDescription = "Append a character onto the filter bar",
+      actionUsingFunc = \a -> modifyTimestampsReportCursorM $ timestampsReportCursorAppend a
+    }
+
+removeTimestampsFilter :: Action
+removeTimestampsFilter =
+  Action
+    { actionName = "removeTimestampsFilter",
+      actionDescription = "Remove the character in filter bar before cursor",
+      actionFunc = modifyTimestampsReportCursorM timestampsReportCursorRemove
+    }
+
+deleteTimestampsFilter :: Action
+deleteTimestampsFilter =
+  Action
+    { actionName = "deleteTimestampsFilter",
+      actionDescription = "Remove the character in filter bar under cursor",
+      actionFunc = modifyTimestampsReportCursorM timestampsReportCursorDelete
+    }
+
+selectTimestampsReport :: Action
+selectTimestampsReport =
+  Action
+    { actionName = "selectTimestampsReport",
+      actionDescription = "Select the timestamps report",
+      actionFunc = modifyTimestampsReportCursorM timestampsReportCursorSelectReport
+    }
+
+selectTimestampsFilter :: Action
+selectTimestampsFilter =
+  Action
+    { actionName = "selectTimestampsFilter",
+      actionDescription = "Select the timestamps filter bar",
+      actionFunc = modifyTimestampsReportCursorM timestampsReportCursorSelectFilter
     }

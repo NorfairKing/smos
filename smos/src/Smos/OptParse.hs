@@ -174,12 +174,14 @@ combineWaitingReportKeyMap narkm (Just narkc) = do
 combineTimestampsReportKeyMap :: TimestampsReportKeyMap -> Maybe TimestampsReportKeyConfigs -> Comb TimestampsReportKeyMap
 combineTimestampsReportKeyMap narkm Nothing = pure narkm
 combineTimestampsReportKeyMap narkm (Just narkc) = do
-  let TimestampsReportKeyMap _ _ = undefined
+  let TimestampsReportKeyMap _ _ _ = undefined
   nms <- combineKeyMappings (timestampsReportMatchers narkm) (timestampsReportNormalKeyConfigs narkc)
+  sms <- combineKeyMappings (timestampsReportSearchMatchers narkm) (timestampsReportSearchKeyConfigs narkc)
   ams <- combineKeyMappings (timestampsReportAnyMatchers narkm) (timestampsReportAnyKeyConfigs narkc)
   pure $
     narkm
       { timestampsReportMatchers = nms,
+        timestampsReportSearchMatchers = sms,
         timestampsReportAnyMatchers = ams
       }
 
