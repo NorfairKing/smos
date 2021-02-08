@@ -77,10 +77,18 @@ renderPropertyValueTemplate pv = do
     Nothing -> renderFail $ RenderErrorPropertyValueValidity pv t
     Just pv' -> pure pv'
 
-renderStateHistoryTemplate :: Maybe TodoState -> Render StateHistory
+-- | `Nothing` means the state field doesn't exist, while `Just Nothing`
+-- means it is explicitly set to `null`.
+renderStateHistoryTemplate :: Maybe (Maybe TodoState) -> Render StateHistory
 renderStateHistoryTemplate mts = do
   now <- asks renderContextTime
-  pure $ StateHistory [StateHistoryEntry {stateHistoryEntryNewState = Just $ fromMaybe "TODO" mts, stateHistoryEntryTimestamp = zonedTimeToUTC now}]
+  pure $
+    StateHistory
+      [ StateHistoryEntry
+          { stateHistoryEntryNewState = fromMaybe (Just $ TodoState "TODO") mts,
+            stateHistoryEntryTimestamp = zonedTimeToUTC now
+          }
+      ]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState
 renderTodoStateTemplate = fmap TodoState . renderTextTemplate . todoStateText
