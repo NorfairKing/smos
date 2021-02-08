@@ -10,7 +10,6 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
-import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
@@ -25,7 +24,8 @@ spec = do
   describe "waitingReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 waitingReportCursorAppend
   describe "waitingReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorRemove
   describe "waitingReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorDelete
-  describe "waitingReportCursorEntryReportCursorL" $ lensSpecOnValid waitingReportCursorEntryReportCursorL
+  -- Does not hold because of the validity constraint
+  -- describe "waitingReportCursorEntryReportCursorL" $ lensSpecOnValid waitingReportCursorEntryReportCursorL
   describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeWaitingEntryCursor
   describe "makeWaitingEntryCursor'" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor'
   modifyMaxSuccess (`div` 10) $

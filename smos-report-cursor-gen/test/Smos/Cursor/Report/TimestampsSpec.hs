@@ -11,7 +11,6 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
-import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
