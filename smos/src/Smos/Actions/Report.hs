@@ -9,7 +9,6 @@ import Smos.Actions.Report.Timestamps
 import Smos.Actions.Report.Waiting
 import Smos.Types
 
-
 allPlainReportActions :: [Action]
 allPlainReportActions =
   concat
@@ -18,7 +17,6 @@ allPlainReportActions =
       allPlainReportWaitingActions,
       allPlainReportTimestampsActions
     ]
-
 
 allPlainReportExitActions :: [Action]
 allPlainReportExitActions =
@@ -32,7 +30,6 @@ allReportUsingActions =
       allReportWaitingUsingActions,
       allReportTimestampsUsingActions
     ]
-
 
 -- Exit a Report
 -- If there is a file open, go to it (this already works via another Action?)

@@ -7,10 +7,16 @@ description: The changelog for all of the Smos tools and libraries
 
 ## Added
 
-- The 'timestamp' projection.
+- `smos-query`:
+  The 'timestamp' projection.
   You can now use `timestamp:DEADLINE` as a column in your reports.
-- Interactive agenda report with filter bar
-- Filter bar for the interactive waiting report
+- `smos`:
+  Interactive agenda report with filter bar
+- `smos`:
+  Filter bar for the interactive waiting report
+- `smos`:
+  You can now exit any report using `Esc`, even when no file had been selected beforehand.
+  Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
@@ -52,7 +58,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos`: 
   You can now use Word-based movements in headers and contents.
   [cursor/#12](https://github.com/NorfairKing/cursor/pull/12)
-  Thank you [@chiroptical](https://github.com/chiroptical/)!
+  Thank you [@chiroptical](https://github.com/chiroptical)!
 - `smos-shell`:
   A new package, to run smos commands in the browser without allowing full shell access.
 - `smos`:
