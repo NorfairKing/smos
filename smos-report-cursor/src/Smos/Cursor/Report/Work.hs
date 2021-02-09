@@ -21,8 +21,8 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Work
 
-produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> IO WorkReportCursor
-produceWorkReportCursor = undefined
+produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
+produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWorkReportToWorkReportCursor <$> intermediateWorkReportConduit wrc
 
 newtype WorkReportCursor = WorkReportCursor
   { workReportCursorResultEntries :: EntryReportCursor ()
@@ -30,3 +30,8 @@ newtype WorkReportCursor = WorkReportCursor
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportCursor
+
+intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReportCursor
+intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
+  let workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+   in WorkReportCursor {..}

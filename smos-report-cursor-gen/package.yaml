@@ -41,13 +41,15 @@ tests:
     dependencies:
     - QuickCheck
     - base
+    - containers
+    - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-lens
-    - genvalidity-path
-    - sydtest
+    - path
     - smos-data-gen
     - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen
     - smos-report-gen
+    - sydtest
     - time

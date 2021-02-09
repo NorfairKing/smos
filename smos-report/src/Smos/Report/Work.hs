@@ -37,8 +37,11 @@ produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit (wor
 
 workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
 workReportConduit now wrc@WorkReportContext {..} =
-  fmap (finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter) $
-    C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| accumulateMonoid
+  finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter <$> intermediateWorkReportConduit wrc
+
+intermediateWorkReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
+intermediateWorkReportConduit wrc =
+  C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| accumulateMonoid
 
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
