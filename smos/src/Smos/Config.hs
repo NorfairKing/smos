@@ -20,6 +20,7 @@ module Smos.Config
     NextActionReportKeyMap (..),
     WaitingReportKeyMap (..),
     TimestampsReportKeyMap (..),
+    StuckReportKeyMap (..),
     HelpKeyMap (..),
     KeyMapping (..),
     KeyMappings,

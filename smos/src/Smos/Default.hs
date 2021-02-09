@@ -289,6 +289,7 @@ defaultReportsKeyMap =
     { reportsKeymapNextActionReportKeyMap = defaultNextActionReportKeyMap,
       reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
       reportsKeymapTimestampsReportKeyMap = defaultTimestampsReportKeyMap,
+      reportsKeymapStuckReportKeyMap = defaultStuckReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
           [ exactKey KEsc exitReport,
@@ -375,6 +376,24 @@ defaultTimestampsReportKeyMap =
             exactKey KDel deleteTimestampsFilter
           ],
       timestampsReportAnyMatchers = listMatchers []
+    }
+
+defaultStuckReportKeyMap :: StuckReportKeyMap
+defaultStuckReportKeyMap =
+  StuckReportKeyMap
+    { stuckReportMatchers =
+        listMatchers
+          [ exactKey KUp prevStuck,
+            exactChar 'k' prevStuck,
+            exactKey KDown nextStuck,
+            exactChar 'j' nextStuck,
+            exactKey KHome firstStuck,
+            exactString "gg" firstStuck,
+            exactKey KEnd lastStuck,
+            exactChar 'G' lastStuck,
+            exactKey KEnter enterStuckFile
+          ],
+      stuckReportAnyMatchers = listMatchers []
     }
 
 defaultHelpKeyMap :: HelpKeyMap

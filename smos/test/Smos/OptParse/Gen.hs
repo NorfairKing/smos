@@ -41,6 +41,10 @@ instance GenValid TimestampsReportKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid StuckReportKeyConfigs where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid HelpKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

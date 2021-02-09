@@ -5,6 +5,7 @@ module Smos.Actions.Report where
 import Smos.Actions.Browser
 import Smos.Actions.File
 import Smos.Actions.Report.Next
+import Smos.Actions.Report.Stuck
 import Smos.Actions.Report.Timestamps
 import Smos.Actions.Report.Waiting
 import Smos.Types
@@ -15,7 +16,8 @@ allPlainReportActions =
     [ allPlainReportExitActions,
       allPlainReportNextActions,
       allPlainReportWaitingActions,
-      allPlainReportTimestampsActions
+      allPlainReportTimestampsActions,
+      allPlainReportStuckActions
     ]
 
 allPlainReportExitActions :: [Action]
@@ -28,7 +30,8 @@ allReportUsingActions =
   concat
     [ allReportNextActionsUsingActions,
       allReportWaitingUsingActions,
-      allReportTimestampsUsingActions
+      allReportTimestampsUsingActions,
+      allReportStuckUsingActions
     ]
 
 -- Exit a Report
