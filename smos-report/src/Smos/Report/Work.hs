@@ -42,9 +42,9 @@ workReportConduit now wrc@WorkReportContext {..} =
 
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
-    intermediateWorkReportAgendaEntries :: ![AgendaEntry],
-    intermediateWorkReportNextBegin :: !(Maybe AgendaEntry),
-    intermediateWorkReportOverdueWaiting :: ![WaitingEntry],
+    intermediateWorkReportAgendaEntries :: ![(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)],
+    intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
+    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime)],
     intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
     intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
@@ -64,7 +64,7 @@ instance Semigroup IntermediateWorkReport where
           (Nothing, Just ae) -> Just ae
           (Just ae1, Just ae2) ->
             Just $
-              if ((<=) `on` (timestampLocalTime . agendaEntryTimestamp)) ae1 ae2
+              if ((<=) `on` (timestampLocalTime . fth)) ae1 ae2
                 then ae1
                 else ae2,
         intermediateWorkReportOverdueWaiting = intermediateWorkReportOverdueWaiting wr1 <> intermediateWorkReportOverdueWaiting wr2,
@@ -160,37 +160,37 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
-      allAgendaEntries :: [AgendaEntry]
-      allAgendaEntries = makeAgendaEntry rp $ forestCursorCurrent fc
-      agendaEntries :: [AgendaEntry]
-      agendaEntries =
-        let go ae =
-              let day = timestampDay (agendaEntryTimestamp ae)
+      allAgendaQuadruples :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
+      allAgendaQuadruples = makeAgendaQuadruples rp fc
+      agendaQuadruples :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
+      agendaQuadruples =
+        let go (_, _, tsn, ts) =
+              let day = timestampDay ts
                   today = localDay (zonedTimeToLocalTime workReportContextNow)
-               in case agendaEntryTimestampName ae of
+               in case tsn of
                     "SCHEDULED" -> day <= today
                     "DEADLINE" -> day <= addDays 7 today
                     "BEGIN" -> False
                     "END" -> False
                     _ -> day == today
-         in filter go allAgendaEntries
-      beginEntries :: [AgendaEntry]
+         in filter go allAgendaQuadruples
+      beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
-        let go ae = case agendaEntryTimestampName ae of
-              "BEGIN" -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime workReportContextNow
+        let go (_, _, tsn, ts) = case tsn of
+              "BEGIN" -> timestampLocalTime ts >= zonedTimeToLocalTime workReportContextNow
               _ -> False
-         in sortAgendaEntries $ filter go allAgendaEntries
-      nextBeginEntry :: Maybe AgendaEntry
-      nextBeginEntry = headMay $ sortAgendaEntries beginEntries
-      mWaitingEntry :: Maybe WaitingEntry
+         in sortAgendaQuadruples $ filter go allAgendaQuadruples
+      nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
+      nextBeginEntry = headMay beginEntries
+      mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime)
       mWaitingEntry = do
-        we <- makeWaitingEntry rp $ forestCursorCurrent fc
-        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) (waitingEntryTimestamp we)
+        trip@(_, _, ts) <- makeWaitingTriple rp fc
+        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) ts
         guard (diff >= fromIntegral workReportContextWaitingThreshold * nominalDay)
-        pure we
+        pure trip
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,
-          intermediateWorkReportAgendaEntries = agendaEntries,
+          intermediateWorkReportAgendaEntries = agendaQuadruples,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
           intermediateWorkReportOverdueStuck = [],
@@ -233,8 +233,8 @@ finishWorkReport now mpn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
       mAutoFilter :: Maybe EntryFilterRel
       mAutoFilter = do
-        ae <- intermediateWorkReportNextBegin wr
-        let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime $ agendaEntryTimestamp ae) (zonedTimeToUTC now)
+        (_, _, _, ats) <- intermediateWorkReportNextBegin wr
+        let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ats) (zonedTimeToUTC now)
         pn <- mpn
         pure $
           FilterSnd $
@@ -251,11 +251,14 @@ finishWorkReport now mpn mt ms wr =
           Nothing -> filterPredicate autoFilter tup
           Just _ -> True
    in WorkReport
-        { workReportAgendaEntries = sortAgendaEntries $ intermediateWorkReportAgendaEntries wr,
+        { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
-          workReportNextBegin = intermediateWorkReportNextBegin wr,
-          workReportOverdueWaiting = sortWaitingEntries $ intermediateWorkReportOverdueWaiting wr,
+          workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
+          workReportOverdueWaiting = sortWaitingEntries $ map waitingTripleToWaitingEntry $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ intermediateWorkReportOverdueStuck wr,
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }
+
+fth :: (a, b, c, d) -> d
+fth (_, _, _, d) = d

@@ -7,8 +7,10 @@ module Smos.Report.Agenda where
 
 import Conduit
 import Control.DeepSeq
+import Cursor.Forest
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
+import Data.Function
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe
@@ -46,7 +48,6 @@ agendaReportConduit :: Monad m => ZonedTime -> Period -> TimeBlock -> AgendaHist
 agendaReportConduit now p tb h f =
   makeAgendaReport now p tb
     <$> ( smosFileCursors .| smosMFilter f
-            .| smosCursorCurrents
             .| C.concatMap (uncurry makeAgendaEntry)
             .| C.filter (fitsHistoricity now h)
             .| sinkList
@@ -159,6 +160,17 @@ agendaEntrySortingProjection =
       comparing agendaEntryTodoState
     ]
 
+sortAgendaQuadruples ::
+  [(Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp)] ->
+  [(Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp)]
+sortAgendaQuadruples = sortBy agendaQuadrupleSortingProjection
+
+agendaQuadrupleSortingProjection ::
+  (Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp) ->
+  (Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp) ->
+  Ordering
+agendaQuadrupleSortingProjection = agendaEntrySortingProjection `on` agendaQuadrupleToAgendaEntry
+
 data AgendaEntry = AgendaEntry
   { agendaEntryFilePath :: Path Rel File,
     agendaEntryHeader :: Header,
@@ -182,20 +194,27 @@ isDone (Just "DONE") = True
 isDone (Just "FAILED") = True
 isDone _ = False
 
-makeAgendaEntry :: Path Rel File -> Entry -> [AgendaEntry]
-makeAgendaEntry rp e =
-  flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
-    if isDone (entryState e)
-      then Nothing
-      else
-        Just
-          AgendaEntry
-            { agendaEntryFilePath = rp,
-              agendaEntryHeader = entryHeader e,
-              agendaEntryTodoState = entryState e,
-              agendaEntryTimestampName = tsn,
-              agendaEntryTimestamp = ts
-            }
+makeAgendaEntry :: Path Rel File -> ForestCursor Entry Entry -> [AgendaEntry]
+makeAgendaEntry rf fc = agendaQuadrupleToAgendaEntry <$> makeAgendaQuadruples rf fc
+
+agendaQuadrupleToAgendaEntry :: (Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp) -> AgendaEntry
+agendaQuadrupleToAgendaEntry (rf, fc, tsn, ts) =
+  let e = forestCursorCurrent fc
+   in AgendaEntry
+        { agendaEntryFilePath = rf,
+          agendaEntryHeader = entryHeader e,
+          agendaEntryTodoState = entryState e,
+          agendaEntryTimestampName = tsn,
+          agendaEntryTimestamp = ts
+        }
+
+makeAgendaQuadruples :: Path Rel File -> ForestCursor Entry Entry -> [(Path Rel File, ForestCursor Entry Entry, TimestampName, Timestamp)]
+makeAgendaQuadruples rf fc =
+  let e = forestCursorCurrent fc
+   in flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
+        if isDone (entryState e)
+          then Nothing
+          else Just (rf, fc, tsn, ts)
 
 fitsHistoricity :: ZonedTime -> AgendaHistoricity -> AgendaEntry -> Bool
 fitsHistoricity zt ah ae =

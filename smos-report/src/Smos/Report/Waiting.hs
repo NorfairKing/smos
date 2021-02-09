@@ -45,7 +45,7 @@ produceWaitingReport ef ha sp dc = produceReport ha sp dc (waitingReportConduit 
 waitingReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m WaitingReport
 waitingReportConduit ef =
   finishWaitingReport
-    <$> ( waitingReportConduitHelper ef .| smosCursorCurrents
+    <$> ( waitingReportConduitHelper ef
             .| C.concatMap (uncurry makeWaitingEntry)
             .| sinkList
         )
@@ -92,15 +92,23 @@ instance ToJSON WaitingEntry where
 sortWaitingEntries :: [WaitingEntry] -> [WaitingEntry]
 sortWaitingEntries = sortOn waitingEntryTimestamp
 
-makeWaitingEntry :: Path Rel File -> Entry -> Maybe WaitingEntry
-makeWaitingEntry rp e@Entry {..} = do
+makeWaitingEntry :: Path Rel File -> ForestCursor Entry -> Maybe WaitingEntry
+makeWaitingEntry rf fc = waitingTripleToWaitingEntry <$> makeWaitingTriple rf fc
+
+waitingTripleToWaitingEntry :: (Path Rel File, ForestCursor Entry, UTCTime) -> WaitingEntry
+waitingTripleToWaitingEntry (rf, fc, time) =
+  let e = forestCursorCurrent fc
+   in WaitingEntry
+        { waitingEntryHeader = entryHeader e,
+          waitingEntryTimestamp = time,
+          waitingEntryFilePath = rf
+        }
+
+makeWaitingTriple :: Path Rel File -> ForestCursor Entry -> Maybe (Path Rel File, ForestCursor Entry, UTCTime)
+makeWaitingTriple rf fc = do
+  let e = forestCursorCurrent fc
   time <- parseWaitingStateTimestamp e
-  pure
-    WaitingEntry
-      { waitingEntryHeader = entryHeader,
-        waitingEntryTimestamp = time,
-        waitingEntryFilePath = rp
-      }
+  pure (rf, fc, time)
 
 parseWaitingStateTimestamp :: Entry -> Maybe UTCTime
 parseWaitingStateTimestamp =
