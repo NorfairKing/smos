@@ -21,6 +21,7 @@ import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
 import Smos.Report.Formatting
+import Smos.Report.Stuck
 import Smos.Style
 import Smos.Types
 import Text.Printf
@@ -35,7 +36,7 @@ drawReportCursor s = \case
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Drawer
 drawNextActionReportCursor s NextActionReportCursor {..} = do
   ercw <- drawEntryReportCursorSimple drawNextActionEntryCursor s nextActionReportCursorEntryReportCursor
-  pure $ withHeading (str "NextAction Report") $ padAll 1 ercw
+  pure $ withHeading (str "Next Action Report") $ padAll 1 ercw
 
 drawNextActionEntryCursor :: Select -> EntryReportEntryCursor (TodoState, UTCTime) -> Drawer' [Widget ResourceName]
 drawNextActionEntryCursor s EntryReportEntryCursor {..} =
@@ -229,4 +230,27 @@ drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
     ]
 
 drawStuckReportCursor :: Select -> StuckReportCursor -> Drawer
-drawStuckReportCursor _ = pure . str . show
+drawStuckReportCursor s StuckReportCursor {..} = do
+  sprw <- case stuckReportCursorNonEmptyCursor of
+    Nothing -> pure $ str "Empty stuck projects report"
+    Just wecs -> verticalNonEmptyCursorTableM (drawStuckReportEntry NotSelected) (drawStuckReportEntry s) (drawStuckReportEntry NotSelected) wecs
+  pure $ withHeading (str "Stuck Projects Report") $ padAll 1 sprw
+
+drawStuckReportEntry :: Select -> StuckReportEntry -> Drawer' [Widget ResourceName]
+drawStuckReportEntry s StuckReportEntry {..} = do
+  now <- asks zonedTimeToUTC
+  let sel =
+        ( case s of
+            MaybeSelected -> forceAttr selectedAttr . visible
+            NotSelected -> id
+        )
+
+  pure
+    [ str $ fromRelFile stuckReportEntryFilePath,
+      maybe (str " ") drawTodoState stuckReportEntryState,
+      sel $ drawHeader stuckReportEntryHeader,
+      maybe
+        (str " ")
+        (\ts -> if ts > now then str "future" else daysSinceWidget 7 now ts)
+        stuckReportEntryLatestChange
+    ]

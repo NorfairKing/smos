@@ -21,8 +21,7 @@ smosQueryProjects :: ProjectsSettings -> Q ()
 smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
-      streamSmosProjects
-        .| streamParseSmosProjects
+      streamSmosProjectsQ
         .| smosMFilter (FilterFst <$> projectsSetFilter)
   putTableLn $ renderProjectsReport $ makeProjectsReport projs
 

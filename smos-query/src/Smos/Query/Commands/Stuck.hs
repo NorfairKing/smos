@@ -20,8 +20,7 @@ smosQueryStuck StuckSettings {..} = do
   stuckReport <-
     fmap makeStuckReport $
       sourceToList $
-        streamSmosProjects
-          .| streamParseSmosProjects
+        streamSmosProjectsQ
           .| smosMFilter (FilterFst <$> stuckSetFilter)
           .| C.map (uncurry (makeStuckReportEntry (zonedTimeZone now)))
           .| C.catMaybes

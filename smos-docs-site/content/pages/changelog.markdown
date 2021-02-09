@@ -17,6 +17,8 @@ description: The changelog for all of the Smos tools and libraries
 - `smos`:
   You can now exit any report using `Esc`, even when no file had been selected beforehand.
   Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
+- `smos`:
+  Interactive stuck projects report
 
 ## Changed
 

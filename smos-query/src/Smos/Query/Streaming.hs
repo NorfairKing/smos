@@ -6,10 +6,10 @@ import Smos.Data
 import Smos.Query.Config
 import Smos.Report.Streaming
 
-streamSmosProjects :: ConduitT i (Path Rel File) Q ()
-streamSmosProjects = do
-  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  streamSmosProjectsFiles src
+streamSmosProjectsQ :: ConduitT i (Path Rel File, SmosFile) Q ()
+streamSmosProjectsQ = do
+  dc <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  streamSmosProjectsFiles dc .| streamParseSmosProjects
 
 streamSmosFiles :: HideArchive -> ConduitT i (Path Rel File) Q ()
 streamSmosFiles ha = do

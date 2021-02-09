@@ -6,10 +6,7 @@ import Data.Time
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
-import Smos.Cursor.Report.Stuck
-import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Period
 import Smos.Report.ShouldPrint
 import Smos.Types
 
@@ -35,7 +32,7 @@ reportStuck =
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
         now <- liftIO getZonedTime
-        narc <- liftIO $ produceStuckReportCursor (zonedTimeZone now) HideArchive DontPrint dc
+        narc <- liftIO $ produceStuckReportCursor (zonedTimeZone now) DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

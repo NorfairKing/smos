@@ -126,6 +126,15 @@
   ^{keyMapTable $ timestampsReportAnyMatchers $ reportsKeymapTimestampsReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
 
   <h3>
+    Stuck Report
+  <h4>
+    Normal
+  ^{keyMapTable $ stuckReportMatchers $ reportsKeymapStuckReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Any
+  ^{keyMapTable $ stuckReportAnyMatchers $ reportsKeymapStuckReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
+  <h3>
     Any
   ^{keyMapTable $ reportsKeymapAnyMatchers $ keyMapReportsKeyMap defaultKeyMap }
 

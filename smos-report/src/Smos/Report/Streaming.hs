@@ -26,6 +26,11 @@ streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   sourceFilesInNonHiddenDirsRecursivelyRel pd .| filterSmosFilesRel
 
+streamSmosProjects :: MonadIO m => ShouldPrint -> DirectoryConfig -> ConduitT i (Path Rel File, SmosFile) m ()
+streamSmosProjects sp dc = do
+  pd <- liftIO $ resolveDirProjectsDir dc
+  streamSmosProjectsFiles dc .| parseSmosFilesRel pd .| printShouldPrint sp
+
 streamSmosFilesFromWorkflowRel ::
   MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i (Path Rel File) m ()
 streamSmosFilesFromWorkflowRel ha dc = do

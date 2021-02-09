@@ -10,7 +10,6 @@ import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
-import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
@@ -25,7 +24,6 @@ spec = do
     describe "produceStuckReportCursor" $
       it "produces valid reports for interesting stores" $
         forAllValid $ \tz ->
-          forAllValid $ \ha ->
-            withInterestingStore $ \dc -> do
-              wrc <- produceStuckReportCursor tz ha DontPrint dc
-              shouldBeValid wrc
+          withInterestingStore $ \dc -> do
+            wrc <- produceStuckReportCursor tz DontPrint dc
+            shouldBeValid wrc
