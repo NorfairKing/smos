@@ -24,8 +24,9 @@ import Smos.Report.Work
 produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
 produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWorkReportToWorkReportCursor <$> intermediateWorkReportConduit wrc
 
-newtype WorkReportCursor = WorkReportCursor
-  { workReportCursorResultEntries :: EntryReportCursor ()
+data WorkReportCursor = WorkReportCursor
+  { workReportCursorResultEntries :: !(EntryReportCursor ()),
+    workReportCursorSelection :: !WorkReportCursorSelection
   }
   deriving (Show, Eq, Generic)
 
@@ -34,4 +35,10 @@ instance Validity WorkReportCursor
 intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReportCursor
 intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
   let workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      workReportCursorSelection = ResultsSelected
    in WorkReportCursor {..}
+
+data WorkReportCursorSelection = ResultsSelected
+  deriving (Show, Eq, Generic)
+
+instance Validity WorkReportCursorSelection
