@@ -444,5 +444,6 @@ defaultAnyKeyMap =
       -- Reports
       exactString "rn" reportNextActions,
       exactString "rw" reportWaiting,
-      exactString "ra" reportTimestamps
+      exactString "ra" reportTimestamps,
+      exactString "rs" reportStuck
     ]

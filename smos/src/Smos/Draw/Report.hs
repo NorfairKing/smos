@@ -30,6 +30,7 @@ drawReportCursor s = \case
   ReportNextActions narc -> drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
   ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
+  ReportStuck src -> drawStuckReportCursor s src
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Drawer
 drawNextActionReportCursor s NextActionReportCursor {..} = do
@@ -226,3 +227,6 @@ drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
       sel $ drawHeader $ entryHeader e,
       str $ fromRelFile entryReportEntryCursorFilePath
     ]
+
+drawStuckReportCursor :: Select -> StuckReportCursor -> Drawer
+drawStuckReportCursor _ = pure . str . show
