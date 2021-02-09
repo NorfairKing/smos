@@ -25,6 +25,12 @@ spec = do
   describe "workReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
   describe "workReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
   describe "workReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorLast
+  describe "workReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorSelectReport
+  describe "workReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorSelectFilter
+  describe "workReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 workReportCursorInsert
+  describe "workReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 workReportCursorAppend
+  describe "workReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorRemove
+  describe "workReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorDelete
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReportCursor" $
       it "produces valid reports for interesting stores" $

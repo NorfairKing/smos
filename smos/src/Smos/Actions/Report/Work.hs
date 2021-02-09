@@ -23,12 +23,18 @@ allPlainReportWorkActions =
     prevWork,
     nextWork,
     firstWork,
-    lastWork
+    lastWork,
+    selectWorkReport,
+    selectWorkFilter,
+    removeWorkFilter,
+    deleteWorkFilter
   ]
 
 allReportWorkUsingActions :: [ActionUsing Char]
 allReportWorkUsingActions =
-  []
+  [ insertWorkFilter,
+    appendWorkFilter
+  ]
 
 reportWork :: Action
 reportWork =
@@ -94,4 +100,52 @@ lastWork =
     { actionName = "lastWork",
       actionFunc = modifyWorkReportCursor workReportCursorLast,
       actionDescription = "Select the last entry in the work report"
+    }
+
+insertWorkFilter :: ActionUsing Char
+insertWorkFilter =
+  ActionUsing
+    { actionUsingName = "insertWorkFilter",
+      actionUsingDescription = "Insert a character into the filter bar",
+      actionUsingFunc = \a -> modifyWorkReportCursorM $ workReportCursorInsert a
+    }
+
+appendWorkFilter :: ActionUsing Char
+appendWorkFilter =
+  ActionUsing
+    { actionUsingName = "appendWorkFilter",
+      actionUsingDescription = "Append a character onto the filter bar",
+      actionUsingFunc = \a -> modifyWorkReportCursorM $ workReportCursorAppend a
+    }
+
+removeWorkFilter :: Action
+removeWorkFilter =
+  Action
+    { actionName = "removeWorkFilter",
+      actionDescription = "Remove the character in filter bar before cursor",
+      actionFunc = modifyWorkReportCursorM workReportCursorRemove
+    }
+
+deleteWorkFilter :: Action
+deleteWorkFilter =
+  Action
+    { actionName = "deleteWorkFilter",
+      actionDescription = "Remove the character in filter bar under cursor",
+      actionFunc = modifyWorkReportCursorM workReportCursorDelete
+    }
+
+selectWorkReport :: Action
+selectWorkReport =
+  Action
+    { actionName = "selectWorkReport",
+      actionDescription = "Select the work report",
+      actionFunc = modifyWorkReportCursorM workReportCursorSelectReport
+    }
+
+selectWorkFilter :: Action
+selectWorkFilter =
+  Action
+    { actionName = "selectWorkFilter",
+      actionDescription = "Select the work filter bar",
+      actionFunc = modifyWorkReportCursorM workReportCursorSelectFilter
     }

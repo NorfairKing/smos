@@ -57,3 +57,21 @@ workReportCursorFirst = workReportCursorResultEntriesL %~ entryReportCursorFirst
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast = workReportCursorResultEntriesL %~ entryReportCursorLast
+
+workReportCursorSelectReport :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorSelectReport = workReportCursorResultEntriesL entryReportCursorSelectReport
+
+workReportCursorSelectFilter :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorSelectFilter = workReportCursorResultEntriesL entryReportCursorSelectFilter
+
+workReportCursorInsert :: Char -> WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorInsert c = workReportCursorResultEntriesL $ entryReportCursorInsert c
+
+workReportCursorAppend :: Char -> WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorAppend c = workReportCursorResultEntriesL $ entryReportCursorAppend c
+
+workReportCursorRemove :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorRemove = workReportCursorResultEntriesL entryReportCursorRemove
+
+workReportCursorDelete :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorDelete = workReportCursorResultEntriesL entryReportCursorDelete

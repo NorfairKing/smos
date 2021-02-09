@@ -409,11 +409,18 @@ defaultWorkReportKeyMap =
             exactKey KHome firstWork,
             exactString "gg" firstWork,
             exactKey KEnd lastWork,
-            exactChar 'G' lastWork
+            exactChar 'G' lastWork,
+            -- exactKey KEnter enterWorkFile,
+            exactChar '/' selectWorkFilter
           ],
       workReportSearchMatchers =
         listMatchers
-          [],
+          [ anyChar insertWorkFilter,
+            exactKey KEnter selectWorkReport,
+            exactKey KEsc selectWorkReport,
+            exactKey KBS removeWorkFilter,
+            exactKey KDel deleteWorkFilter
+          ],
       workReportAnyMatchers = listMatchers []
     }
 
