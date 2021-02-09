@@ -259,4 +259,21 @@ drawStuckReportEntry s StuckReportEntry {..} = do
     ]
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
-drawWorkReportCursor s WorkReportCursor {..} = pure $ str $ show workReportCursorResultEntries
+drawWorkReportCursor s WorkReportCursor {..} = do
+  ercw <- drawEntryReportCursorSimple drawWorkReportResultEntryCursor s workReportCursorResultEntries
+  pure $ withHeading (str "Work Report") $ padAll 1 ercw
+
+drawWorkReportResultEntryCursor :: Select -> EntryReportEntryCursor () -> Drawer' [Widget ResourceName]
+drawWorkReportResultEntryCursor s EntryReportEntryCursor {..} = do
+  -- TODO Get the drawing config from the work report config
+  let sel =
+        ( case s of
+            MaybeSelected -> forceAttr selectedAttr . visible
+            NotSelected -> id
+        )
+      e = forestCursorCurrent entryReportEntryCursorForestCursor
+  pure
+    [ str $ fromRelFile entryReportEntryCursorFilePath,
+      maybe (str " ") drawTodoState $ entryState e,
+      sel $ drawHeader $ entryHeader e
+    ]
