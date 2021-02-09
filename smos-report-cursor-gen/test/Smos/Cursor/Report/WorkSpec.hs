@@ -21,10 +21,10 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   genValidSpec @WorkReportCursor
-  -- describe "workReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
-  -- describe "workReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
-  -- describe "workReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
-  -- describe "workReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorLast
+  describe "workReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
+  describe "workReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
+  describe "workReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
+  describe "workReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorLast
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReportCursor" $
       it "produces valid reports for interesting stores" $

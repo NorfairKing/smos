@@ -42,3 +42,18 @@ data WorkReportCursorSelection = ResultsSelected
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportCursorSelection
+
+workReportCursorResultEntriesL :: Lens' WorkReportCursor (EntryReportCursor ())
+workReportCursorResultEntriesL = lens workReportCursorResultEntries $ \wrc rc -> wrc {workReportCursorResultEntries = rc}
+
+workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorNext = workReportCursorResultEntriesL entryReportCursorNext
+
+workReportCursorPrev :: WorkReportCursor -> Maybe WorkReportCursor
+workReportCursorPrev = workReportCursorResultEntriesL entryReportCursorPrev
+
+workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
+workReportCursorFirst = workReportCursorResultEntriesL %~ entryReportCursorFirst
+
+workReportCursorLast :: WorkReportCursor -> WorkReportCursor
+workReportCursorLast = workReportCursorResultEntriesL %~ entryReportCursorLast

@@ -402,7 +402,15 @@ defaultWorkReportKeyMap =
   WorkReportKeyMap
     { workReportMatchers =
         listMatchers
-          [],
+          [ exactKey KUp prevWork,
+            exactChar 'k' prevWork,
+            exactKey KDown nextWork,
+            exactChar 'j' nextWork,
+            exactKey KHome firstWork,
+            exactString "gg" firstWork,
+            exactKey KEnd lastWork,
+            exactChar 'G' lastWork
+          ],
       workReportSearchMatchers =
         listMatchers
           [],

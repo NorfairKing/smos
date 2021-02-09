@@ -44,12 +44,11 @@ spec = do
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReport" $ do
       it "produces valid reports for interesting stores" $
-        forAllValid $
-          \wrc ->
-            forAllValid $ \ha ->
-              withInterestingStore $ \dc -> do
-                nar <- produceWorkReport ha DontPrint dc wrc
-                shouldBeValid nar
+        forAllValid $ \wrc ->
+          forAllValid $ \ha ->
+            withInterestingStore $ \dc -> do
+              nar <- produceWorkReport ha DontPrint dc wrc
+              shouldBeValid nar
       it "finds next actions even if there is no time property or filter and no contexts" $
         forAllValid $ \now ->
           forAllValid $ \ts ->

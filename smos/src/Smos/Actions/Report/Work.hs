@@ -19,7 +19,11 @@ import Smos.Types
 
 allPlainReportWorkActions :: [Action]
 allPlainReportWorkActions =
-  [ reportWork
+  [ reportWork,
+    prevWork,
+    nextWork,
+    firstWork,
+    lastWork
   ]
 
 allReportWorkUsingActions :: [ActionUsing Char]
@@ -58,4 +62,36 @@ reportWork =
               editorCursorReportCursor = Just $ ReportWork wrc
             },
       actionDescription = "Work report"
+    }
+
+prevWork :: Action
+prevWork =
+  Action
+    { actionName = "prevWork",
+      actionFunc = modifyWorkReportCursorM workReportCursorPrev,
+      actionDescription = "Select the previous entry in the work report"
+    }
+
+nextWork :: Action
+nextWork =
+  Action
+    { actionName = "nextWork",
+      actionFunc = modifyWorkReportCursorM workReportCursorNext,
+      actionDescription = "Select the next entry in the work report"
+    }
+
+firstWork :: Action
+firstWork =
+  Action
+    { actionName = "firstWork",
+      actionFunc = modifyWorkReportCursor workReportCursorFirst,
+      actionDescription = "Select the first entry in the work report"
+    }
+
+lastWork :: Action
+lastWork =
+  Action
+    { actionName = "lastWork",
+      actionFunc = modifyWorkReportCursor workReportCursorLast,
+      actionDescription = "Select the last entry in the work report"
     }
