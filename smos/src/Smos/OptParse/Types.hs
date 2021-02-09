@@ -228,6 +228,7 @@ data ReportsKeyConfigs = ReportsKeyConfigs
     waitingReportKeyConfigs :: Maybe WaitingReportKeyConfigs,
     timestampsReportKeyConfigs :: Maybe TimestampsReportKeyConfigs,
     stuckReportKeyConfigs :: Maybe StuckReportKeyConfigs,
+    workReportKeyConfigs :: Maybe WorkReportKeyConfigs,
     anyReportKeyConfigs :: Maybe KeyConfigs
   }
   deriving (Show, Eq, Generic)
@@ -236,12 +237,13 @@ instance Validity ReportsKeyConfigs
 
 instance ToJSON ReportsKeyConfigs where
   toJSON ReportsKeyConfigs {..} =
-    let ReportsKeyConfigs _ _ _ _ _ = undefined
+    let ReportsKeyConfigs _ _ _ _ _ _ = undefined
      in object
           [ "next-action" .= nextActionReportKeyConfigs,
             "waiting" .= waitingReportKeyConfigs,
             "timestamps" .= timestampsReportKeyConfigs,
             "stuck" .= stuckReportKeyConfigs,
+            "work" .= workReportKeyConfigs,
             "any" .= anyReportKeyConfigs
           ]
 
@@ -256,16 +258,18 @@ instance YamlSchema ReportsKeyConfigs where
         <*> optionalField "waiting" "Keybindings for the interactive waiting report"
         <*> optionalField "timestamps" "Keybindings for the interactive timestamps report"
         <*> optionalField "stuck" "Keybindings for the interactive stuck projects report"
+        <*> optionalField "work" "Keybindings for the interactive work report"
         <*> optionalField "any" "Keybindings for at any point in any report"
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ _ _ _ = undefined
+  let ReportsKeyMap _ _ _ _ _ _ = undefined
    in ReportsKeyConfigs
         { nextActionReportKeyConfigs = Just $ backToNextActionReportKeyConfigs reportsKeymapNextActionReportKeyMap,
           waitingReportKeyConfigs = Just $ backToWaitingReportKeyConfigs reportsKeymapWaitingReportKeyMap,
           timestampsReportKeyConfigs = Just $ backToTimestampsReportKeyConfigs reportsKeymapTimestampsReportKeyMap,
           stuckReportKeyConfigs = Just $ backToStuckReportKeyConfigs reportsKeymapStuckReportKeyMap,
+          workReportKeyConfigs = Just $ backToWorkReportKeyConfigs reportsKeymapWorkReportKeyMap,
           anyReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapAnyMatchers
         }
 
@@ -415,6 +419,44 @@ backToStuckReportKeyConfigs StuckReportKeyMap {..} =
    in StuckReportKeyConfigs
         { stuckReportNormalKeyConfigs = Just $ backToKeyConfigs stuckReportMatchers,
           stuckReportAnyKeyConfigs = Just $ backToKeyConfigs stuckReportAnyMatchers
+        }
+
+data WorkReportKeyConfigs = WorkReportKeyConfigs
+  { workReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    workReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    workReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity WorkReportKeyConfigs
+
+instance ToJSON WorkReportKeyConfigs where
+  toJSON WorkReportKeyConfigs {..} =
+    let WorkReportKeyConfigs _ _ _ = undefined
+     in object
+          [ "normal" .= workReportNormalKeyConfigs,
+            "search" .= workReportSearchKeyConfigs,
+            "any" .= workReportAnyKeyConfigs
+          ]
+
+instance FromJSON WorkReportKeyConfigs where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema WorkReportKeyConfigs where
+  yamlSchema =
+    objectParser "WorkReportKeyConfigs" $
+      WorkReportKeyConfigs
+        <$> optionalField "normal" "Keybindings for interacting with the work report"
+        <*> optionalField "search" "Keybindings for the search in the work report"
+        <*> optionalField "any" "Keybindings for at any point in the work report"
+
+backToWorkReportKeyConfigs :: WorkReportKeyMap -> WorkReportKeyConfigs
+backToWorkReportKeyConfigs WorkReportKeyMap {..} =
+  let WorkReportKeyMap _ _ _ = undefined
+   in WorkReportKeyConfigs
+        { workReportNormalKeyConfigs = Just $ backToKeyConfigs workReportMatchers,
+          workReportSearchKeyConfigs = Just $ backToKeyConfigs workReportSearchMatchers,
+          workReportAnyKeyConfigs = Just $ backToKeyConfigs workReportAnyMatchers
         }
 
 data HelpKeyConfigs = HelpKeyConfigs

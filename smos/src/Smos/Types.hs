@@ -38,6 +38,7 @@ import Smos.Cursor.Report.Next
 import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
+import Smos.Cursor.Report.Work
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
@@ -206,13 +207,14 @@ data ReportsKeyMap = ReportsKeyMap
     reportsKeymapWaitingReportKeyMap :: !WaitingReportKeyMap,
     reportsKeymapTimestampsReportKeyMap :: !TimestampsReportKeyMap,
     reportsKeymapStuckReportKeyMap :: !StuckReportKeyMap,
+    reportsKeymapWorkReportKeyMap :: !WorkReportKeyMap,
     reportsKeymapAnyMatchers :: !KeyMappings
   }
   deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
-    let ReportsKeyMap _ _ _ _ _ = undefined
+    let ReportsKeyMap _ _ _ _ _ _ = undefined
      in ReportsKeyMap
           { reportsKeymapNextActionReportKeyMap =
               reportsKeymapNextActionReportKeyMap rkm1 <> reportsKeymapNextActionReportKeyMap rkm2,
@@ -222,6 +224,8 @@ instance Semigroup ReportsKeyMap where
               reportsKeymapTimestampsReportKeyMap rkm1 <> reportsKeymapTimestampsReportKeyMap rkm2,
             reportsKeymapStuckReportKeyMap =
               reportsKeymapStuckReportKeyMap rkm1 <> reportsKeymapStuckReportKeyMap rkm2,
+            reportsKeymapWorkReportKeyMap =
+              reportsKeymapWorkReportKeyMap rkm1 <> reportsKeymapWorkReportKeyMap rkm2,
             reportsKeymapAnyMatchers =
               reportsKeymapAnyMatchers rkm1 <> reportsKeymapAnyMatchers rkm2
           }
@@ -233,17 +237,19 @@ instance Monoid ReportsKeyMap where
         reportsKeymapWaitingReportKeyMap = mempty,
         reportsKeymapTimestampsReportKeyMap = mempty,
         reportsKeymapStuckReportKeyMap = mempty,
+        reportsKeymapWorkReportKeyMap = mempty,
         reportsKeymapAnyMatchers = mempty
       }
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
 reportsKeyMapActions ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ _ _ _ = undefined
+  let ReportsKeyMap _ _ _ _ _ _ = undefined
    in concat
         [ nextActionReportKeyMapActions reportsKeymapNextActionReportKeyMap,
           waitingReportKeyMapActions reportsKeymapWaitingReportKeyMap,
           timestampsReportKeyMapActions reportsKeymapTimestampsReportKeyMap,
           stuckReportKeyMapActions reportsKeymapStuckReportKeyMap,
+          workReportKeyMapActions reportsKeymapWorkReportKeyMap,
           keyMappingsActions reportsKeymapAnyMatchers
         ]
 
@@ -381,6 +387,41 @@ stuckReportKeyMapActions StuckReportKeyMap {..} =
         keyMappingsActions
         [ stuckReportMatchers,
           stuckReportAnyMatchers
+        ]
+
+data WorkReportKeyMap = WorkReportKeyMap
+  { workReportMatchers :: KeyMappings,
+    workReportSearchMatchers :: KeyMappings,
+    workReportAnyMatchers :: KeyMappings
+  }
+  deriving (Generic)
+
+instance Semigroup WorkReportKeyMap where
+  narkm1 <> narkm2 =
+    let WorkReportKeyMap _ _ _ = undefined
+     in WorkReportKeyMap
+          { workReportMatchers = workReportMatchers narkm1 <> workReportMatchers narkm2,
+            workReportSearchMatchers = workReportSearchMatchers narkm1 <> workReportSearchMatchers narkm2,
+            workReportAnyMatchers = workReportAnyMatchers narkm1 <> workReportAnyMatchers narkm2
+          }
+
+instance Monoid WorkReportKeyMap where
+  mappend = (<>)
+  mempty =
+    WorkReportKeyMap
+      { workReportMatchers = mempty,
+        workReportSearchMatchers = mempty,
+        workReportAnyMatchers = mempty
+      }
+
+workReportKeyMapActions :: WorkReportKeyMap -> [AnyAction]
+workReportKeyMapActions WorkReportKeyMap {..} =
+  let WorkReportKeyMap _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ workReportMatchers,
+          workReportSearchMatchers,
+          workReportAnyMatchers
         ]
 
 keyMapHelpMatchers :: KeyMap -> KeyMappings
@@ -895,6 +936,13 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                             let StuckReportKeyMap {..} = reportsKeymapStuckReportKeyMap
                                 StuckReportKeyMap _ _ = reportsKeymapStuckReportKeyMap
                              in (\(t, ms) -> (t, ms ++ stuckReportAnyMatchers)) ("Stuck report", stuckReportMatchers)
+                          ReportWork WorkReportCursor {..} ->
+                            let WorkReportKeyMap {..} = reportsKeymapWorkReportKeyMap
+                                WorkReportKeyMap _ _ _ = reportsKeymapWorkReportKeyMap
+                             in (\(t, ms) -> (t, ms ++ workReportAnyMatchers)) $
+                                  case entryReportCursorSelection workReportCursorResultEntries of
+                                    EntryReportSelected -> ("Work Report", workReportMatchers)
+                                    EntryReportFilterSelected -> ("Work Report, Search", workReportSearchMatchers)
             HelpSelected -> Nothing, -- Should not happen
           editorCursorSelection = HelpSelected
         }
@@ -919,6 +967,7 @@ data ReportCursor
   | ReportWaiting !WaitingReportCursor
   | ReportTimestamps !TimestampsReportCursor
   | ReportStuck !StuckReportCursor
+  | ReportWork !WorkReportCursor
   deriving (Show, Eq, Generic)
 
 instance Validity ReportCursor

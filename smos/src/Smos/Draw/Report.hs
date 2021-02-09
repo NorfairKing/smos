@@ -17,11 +17,13 @@ import Data.Time
 import Path
 import Smos.Actions
 import Smos.Cursor.Report.Entry
+import Smos.Cursor.Report.Work
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
 import Smos.Report.Formatting
 import Smos.Report.Stuck
+import Smos.Report.Work
 import Smos.Style
 import Smos.Types
 import Text.Printf
@@ -32,6 +34,7 @@ drawReportCursor s = \case
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
   ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
   ReportStuck src -> drawStuckReportCursor s src
+  ReportWork wrc -> drawWorkReportCursor s wrc
 
 drawNextActionReportCursor :: Select -> NextActionReportCursor -> Drawer
 drawNextActionReportCursor s NextActionReportCursor {..} = do
@@ -251,6 +254,9 @@ drawStuckReportEntry s StuckReportEntry {..} = do
       sel $ drawHeader stuckReportEntryHeader,
       maybe
         (str " ")
-        (\ts -> if ts > now then str "future" else daysSinceWidget 7 now ts)
+        (\ts -> if ts > now then str "future" else daysSinceWidget 21 now ts)
         stuckReportEntryLatestChange
     ]
+
+drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
+drawWorkReportCursor s WorkReportCursor {..} = pure $ str $ show workReportCursorResultEntries

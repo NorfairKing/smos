@@ -22,6 +22,7 @@ module Smos.Actions
     module Smos.Actions.Report.Waiting,
     module Smos.Actions.Report.Timestamps,
     module Smos.Actions.Report.Stuck,
+    module Smos.Actions.Report.Work,
     module Smos.Actions.Undo,
     module Smos.Actions.Utils,
   )
@@ -44,6 +45,7 @@ import Smos.Actions.Report.Next
 import Smos.Actions.Report.Stuck
 import Smos.Actions.Report.Timestamps
 import Smos.Actions.Report.Waiting
+import Smos.Actions.Report.Work
 import Smos.Actions.Undo
 import Smos.Actions.Utils
 import Smos.Types

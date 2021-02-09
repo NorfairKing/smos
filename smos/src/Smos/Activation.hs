@@ -21,6 +21,7 @@ import Smos.Cursor.Report.Next
 import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
+import Smos.Cursor.Report.Work
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
@@ -99,6 +100,15 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                         stuckReportAnys = map ((,) AnyMatcher) stuckReportAnyMatchers
                      in (++ stuckReportAnys) $
                           map ((,) SpecificMatcher) stuckReportMatchers
+                  ReportWork WorkReportCursor {..} ->
+                    let WorkReportKeyMap {..} = reportsKeymapWorkReportKeyMap
+                        WorkReportKeyMap _ _ _ = reportsKeymapWorkReportKeyMap
+                        workReportAnys = map ((,) AnyMatcher) workReportAnyMatchers
+                     in (++ workReportAnys) $
+                          map ((,) SpecificMatcher) $
+                            case entryReportCursorSelection workReportCursorResultEntries of
+                              EntryReportSelected -> workReportMatchers
+                              EntryReportFilterSelected -> workReportSearchMatchers
         BrowserSelected ->
           case editorCursorBrowserCursor of
             Nothing -> []

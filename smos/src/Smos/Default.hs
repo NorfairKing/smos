@@ -290,6 +290,7 @@ defaultReportsKeyMap =
       reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
       reportsKeymapTimestampsReportKeyMap = defaultTimestampsReportKeyMap,
       reportsKeymapStuckReportKeyMap = defaultStuckReportKeyMap,
+      reportsKeymapWorkReportKeyMap = defaultWorkReportKeyMap,
       reportsKeymapAnyMatchers =
         listMatchers
           [ exactKey KEsc exitReport,
@@ -396,6 +397,18 @@ defaultStuckReportKeyMap =
       stuckReportAnyMatchers = listMatchers []
     }
 
+defaultWorkReportKeyMap :: WorkReportKeyMap
+defaultWorkReportKeyMap =
+  WorkReportKeyMap
+    { workReportMatchers =
+        listMatchers
+          [],
+      workReportSearchMatchers =
+        listMatchers
+          [],
+      workReportAnyMatchers = listMatchers []
+    }
+
 defaultHelpKeyMap :: HelpKeyMap
 defaultHelpKeyMap =
   HelpKeyMap
@@ -445,5 +458,6 @@ defaultAnyKeyMap =
       exactString "rn" reportNextActions,
       exactString "rw" reportWaiting,
       exactString "ra" reportTimestamps,
-      exactString "rs" reportStuck
+      exactString "rs" reportStuck,
+      exactString "rr" reportWork
     ]

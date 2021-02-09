@@ -130,11 +130,12 @@ combineBrowserKeyMap bkm (Just bkc) = do
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) = do
-  let ReportsKeyMap _ _ _ _ _ = undefined
+  let ReportsKeyMap _ _ _ _ _ _ = undefined
   narkms <- combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
   wrkms <- combineWaitingReportKeyMap (reportsKeymapWaitingReportKeyMap rkm) (waitingReportKeyConfigs rkc)
   tsrkms <- combineTimestampsReportKeyMap (reportsKeymapTimestampsReportKeyMap rkm) (timestampsReportKeyConfigs rkc)
   srkms <- combineStuckReportKeyMap (reportsKeymapStuckReportKeyMap rkm) (stuckReportKeyConfigs rkc)
+  workrkms <- combineWorkReportKeyMap (reportsKeymapWorkReportKeyMap rkm) (workReportKeyConfigs rkc)
   ams <- combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
   pure $
     rkm
@@ -142,6 +143,7 @@ combineReportsKeymap rkm (Just rkc) = do
         reportsKeymapWaitingReportKeyMap = wrkms,
         reportsKeymapTimestampsReportKeyMap = tsrkms,
         reportsKeymapStuckReportKeyMap = srkms,
+        reportsKeymapWorkReportKeyMap = workrkms,
         reportsKeymapAnyMatchers = ams
       }
 
@@ -197,6 +199,20 @@ combineStuckReportKeyMap narkm (Just narkc) = do
     narkm
       { stuckReportMatchers = nms,
         stuckReportAnyMatchers = ams
+      }
+
+combineWorkReportKeyMap :: WorkReportKeyMap -> Maybe WorkReportKeyConfigs -> Comb WorkReportKeyMap
+combineWorkReportKeyMap narkm Nothing = pure narkm
+combineWorkReportKeyMap narkm (Just narkc) = do
+  let WorkReportKeyMap _ _ _ = undefined
+  nms <- combineKeyMappings (workReportMatchers narkm) (workReportNormalKeyConfigs narkc)
+  sms <- combineKeyMappings (workReportSearchMatchers narkm) (workReportSearchKeyConfigs narkc)
+  ams <- combineKeyMappings (workReportAnyMatchers narkm) (workReportAnyKeyConfigs narkc)
+  pure $
+    narkm
+      { workReportMatchers = nms,
+        workReportSearchMatchers = sms,
+        workReportAnyMatchers = ams
       }
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
