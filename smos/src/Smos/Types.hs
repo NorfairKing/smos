@@ -167,38 +167,42 @@ data BrowserKeyMap = BrowserKeyMap
   { browserKeyMapExistentMatchers :: KeyMappings,
     browserKeyMapInProgressMatchers :: KeyMappings,
     browserKeyMapEmptyMatchers :: KeyMappings,
+    browserKeyMapFilterMatchers :: KeyMappings,
     browserKeyMapAnyMatchers :: KeyMappings
   }
   deriving (Generic)
 
 browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
 browserKeyMapActions BrowserKeyMap {..} =
-  let BrowserKeyMap _ _ _ _ = undefined
+  let BrowserKeyMap _ _ _ _ _ = undefined
    in concatMap
         keyMappingsActions
         [ browserKeyMapExistentMatchers,
           browserKeyMapInProgressMatchers,
           browserKeyMapEmptyMatchers,
+          browserKeyMapFilterMatchers,
           browserKeyMapAnyMatchers
         ]
 
 instance Semigroup BrowserKeyMap where
   bkm1 <> bkm2 =
-    let BrowserKeyMap _ _ _ _ = undefined
+    let BrowserKeyMap _ _ _ _ _ = undefined
      in BrowserKeyMap
           { browserKeyMapExistentMatchers = browserKeyMapExistentMatchers bkm1 <> browserKeyMapExistentMatchers bkm2,
             browserKeyMapInProgressMatchers = browserKeyMapInProgressMatchers bkm1 <> browserKeyMapInProgressMatchers bkm2,
             browserKeyMapEmptyMatchers = browserKeyMapEmptyMatchers bkm1 <> browserKeyMapEmptyMatchers bkm2,
+            browserKeyMapFilterMatchers = browserKeyMapEmptyMatchers bkm1 <> browserKeyMapEmptyMatchers bkm2,
             browserKeyMapAnyMatchers = browserKeyMapAnyMatchers bkm1 <> browserKeyMapAnyMatchers bkm2
           }
 
 instance Monoid BrowserKeyMap where
   mempty =
-    let BrowserKeyMap _ _ _ _ = undefined
+    let BrowserKeyMap _ _ _ _ _ = undefined
      in BrowserKeyMap
           { browserKeyMapExistentMatchers = mempty,
             browserKeyMapInProgressMatchers = mempty,
             browserKeyMapEmptyMatchers = mempty,
+            browserKeyMapFilterMatchers = mempty,
             browserKeyMapAnyMatchers = mempty
           }
 
@@ -896,13 +900,16 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
               Nothing -> Nothing
               Just fbc ->
                 let BrowserKeyMap {..} = keyMapBrowserKeyMap
+                    BrowserKeyMap _ _ _ _ _ = keyMapBrowserKeyMap
                  in ( \(t, ms) ->
                         withHelpBindings t $ ms ++ browserKeyMapAnyMatchers
                     )
-                      $ case fileBrowserSelected fbc of
-                        Nothing -> ("File Browser: Empty directory", browserKeyMapEmptyMatchers)
-                        Just (_, _, InProgress _) -> ("File Browser: New file or directory in progress", browserKeyMapInProgressMatchers)
-                        Just (_, _, Existent _) -> ("File Browser: Existent file or directory", browserKeyMapExistentMatchers)
+                      $ case fileBrowserCursorSelection fbc of
+                        FileBrowserSelected -> case fileBrowserSelected fbc of
+                          Nothing -> ("File Browser: Empty directory", browserKeyMapEmptyMatchers)
+                          Just (_, _, InProgress _) -> ("File Browser: New file or directory in progress", browserKeyMapInProgressMatchers)
+                          Just (_, _, Existent _) -> ("File Browser: Existent file or directory", browserKeyMapExistentMatchers)
+                        FileBrowserFilterSelected -> ("File Browser: Filter bar", browserKeyMapFilterMatchers)
             ReportSelected ->
               case editorCursorReportCursor ec of
                 Nothing -> Nothing

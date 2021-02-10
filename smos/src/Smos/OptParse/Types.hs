@@ -185,6 +185,7 @@ data BrowserKeyConfigs = BrowserKeyConfigs
   { browserExistentKeyConfigs :: Maybe KeyConfigs,
     browserInProgressKeyConfigs :: Maybe KeyConfigs,
     browserEmptyKeyConfigs :: Maybe KeyConfigs,
+    browserFilterKeyConfigs :: Maybe KeyConfigs,
     browserAnyKeyConfigs :: Maybe KeyConfigs
   }
   deriving (Show, Eq, Generic)
@@ -193,11 +194,12 @@ instance Validity BrowserKeyConfigs
 
 instance ToJSON BrowserKeyConfigs where
   toJSON BrowserKeyConfigs {..} =
-    let BrowserKeyMap _ _ _ _ = undefined
+    let BrowserKeyMap _ _ _ _ _ = undefined
      in object
           [ "existent" .= browserExistentKeyConfigs,
             "in-progress" .= browserInProgressKeyConfigs,
             "empty" .= browserEmptyKeyConfigs,
+            "filter" .= browserFilterKeyConfigs,
             "any" .= browserAnyKeyConfigs
           ]
 
@@ -211,14 +213,16 @@ instance YamlSchema BrowserKeyConfigs where
         <$> optionalField "existent" "Keybindings for when an existing file or directory is selected"
         <*> optionalField "in-progress" "Keybindings for when an in-progress file or directory is selected"
         <*> optionalField "empty" "Keybindings for when the directory being browsed is empty"
+        <*> optionalField "filter" "Keybindings for when file browser's filter bar is selected"
         <*> optionalField "any" "Keybindings for any of the other file browser situations"
 
 backToBrowserKeyConfigs :: BrowserKeyMap -> BrowserKeyConfigs
 backToBrowserKeyConfigs BrowserKeyMap {..} =
-  let BrowserKeyMap _ _ _ _ = undefined
+  let BrowserKeyMap _ _ _ _ _ = undefined
    in BrowserKeyConfigs
         { browserExistentKeyConfigs = Just $ backToKeyConfigs browserKeyMapExistentMatchers,
           browserInProgressKeyConfigs = Just $ backToKeyConfigs browserKeyMapInProgressMatchers,
+          browserFilterKeyConfigs = Just $ backToKeyConfigs browserKeyMapFilterMatchers,
           browserEmptyKeyConfigs = Just $ backToKeyConfigs browserKeyMapEmptyMatchers,
           browserAnyKeyConfigs = Just $ backToKeyConfigs browserKeyMapAnyMatchers
         }

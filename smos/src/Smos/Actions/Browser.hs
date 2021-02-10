@@ -206,7 +206,7 @@ browserFilterInsertChar :: ActionUsing Char
 browserFilterInsertChar =
   ActionUsing
     { actionUsingName = "browserFilterInsertChar",
-      actionUsingDescription = "TODO",
+      actionUsingDescription = "Insert a character into the file browser filter bar",
       actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorFilterInsertChar c
     }
 
@@ -214,7 +214,7 @@ browserFilterAppendChar :: ActionUsing Char
 browserFilterAppendChar =
   ActionUsing
     { actionUsingName = "browserFilterAppendChar",
-      actionUsingDescription = "TODO",
+      actionUsingDescription = "Append a character to the file browser filter bar",
       actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorFilterAppendChar c
     }
 
@@ -222,7 +222,7 @@ browserFilterDeleteChar :: Action
 browserFilterDeleteChar =
   Action
     { actionName = "browserFilterDeleteChar",
-      actionDescription = "TODO",
+      actionDescription = "Delete a character from the file browser filter bar",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorFilterDeleteChar
     }
 
@@ -230,7 +230,7 @@ browserFilterRemoveChar :: Action
 browserFilterRemoveChar =
   Action
     { actionName = "browserFilterRemoveChar",
-      actionDescription = "TODO",
+      actionDescription = "Remove a character from the file browser filter bar",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorFilterRemoveChar
     }
 

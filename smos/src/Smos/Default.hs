@@ -258,7 +258,8 @@ defaultBrowserKeyMap =
             exactChar 'N' browserStartNewBelowAtEnd,
             exactKeyPress (KeyPress (KChar 'n') [MMeta]) browserStartNewBelowAtStart,
             exactString "ded" browserRemoveEmptyDir,
-            exactChar 'a' browserArchive
+            exactChar 'a' browserArchive,
+            exactChar '/' browserSelectFilter
           ],
       browserKeyMapInProgressMatchers =
         listMatchers
@@ -275,6 +276,14 @@ defaultBrowserKeyMap =
         listMatchers
           [ exactChar 'e' browserStartNew,
             exactChar 'n' browserStartNew
+          ],
+      browserKeyMapFilterMatchers =
+        listMatchers
+          [ anyChar browserFilterInsertChar,
+            exactKey KEnter browserUnselectFilter,
+            exactKey KEsc browserUnselectFilter,
+            exactKey KBS browserFilterRemoveChar,
+            exactKey KDel browserFilterDeleteChar
           ],
       browserKeyMapAnyMatchers =
         listMatchers
