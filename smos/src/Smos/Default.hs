@@ -280,7 +280,7 @@ defaultBrowserKeyMap =
       browserKeyMapFilterMatchers =
         listMatchers
           [ anyChar browserFilterInsertChar,
-            exactKey KEnter browserUnselectFilter,
+            exactKey KEnter browserEnter,
             exactKey KEsc browserUnselectFilter,
             exactKey KBS browserFilterRemoveChar,
             exactKey KDel browserFilterDeleteChar

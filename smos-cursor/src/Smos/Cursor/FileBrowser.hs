@@ -5,6 +5,7 @@
 module Smos.Cursor.FileBrowser where
 
 import Control.DeepSeq
+import Control.Monad
 import Control.Monad.IO.Class
 import Cursor.FileOrDir
 import Cursor.Simple.DirForest
@@ -70,7 +71,18 @@ fileBrowserCursorFilterBarL = lens fileBrowserCursorFilterBar $ \fbc@FileBrowser
   let query = rebuildTextCursor fileBrowserCursorFilterBar
       filteredSelection = do
         dfc <- fileBrowserCursorDirForestCursor
-        makeDirForestCursor . DF.filterWithKey (\rf _ -> T.unpack query `isInfixOf` fromRelFile rf) . fromMaybe DF.empty . dullDelete $ rebuildDirForestCursor dfc
+        let filteredDF = DF.filterWithKey (\rf _ -> T.unpack query `isInfixOf` fromRelFile rf) . fromMaybe DF.empty . dullDelete $ rebuildDirForestCursor dfc
+        prunedDF <- DF.pruneEmptyDirs filteredDF
+        dfc' <- makeDirForestCursor prunedDF
+        let goDowntoFile c =
+              let (_, fodC) = dirForestCursorSelected c
+               in case fodC of
+                    InProgress _ -> c -- should not happen, but fine.
+                    Existent (FodFile _ _) -> c -- It's a file, stay here.
+                    Existent (FodDir _) -> case dirForestCursorOpen c >>= (join . dullDelete . dirForestCursorSelectNext) of -- It's a dir, probably not interesting, recurse downwards
+                      Nothing -> c -- Done, stay here.
+                      Just c' -> goDowntoFile c'
+        pure $ goDowntoFile dfc'
    in fbc
         { fileBrowserCursorFilterBar = tc,
           fileBrowserCursorDirForestCursor = filteredSelection

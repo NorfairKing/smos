@@ -253,10 +253,7 @@ drawFileBrowserCursor workflowDir keyMap s FileBrowserCursor {..} =
           vBox
             [ viewport ResourceViewport Vertical $
                 verticalPaddedDirForestCursorWidget
-                  ( goFodCursor $ case fileBrowserCursorSelection of
-                      FileBrowserFilterSelected -> NotSelected
-                      FileBrowserSelected -> MaybeSelected
-                  )
+                  (goFodCursor s)
                   goFodUnselected
                   defaultPaddingAmount
                   fbc,
