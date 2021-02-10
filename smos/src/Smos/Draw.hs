@@ -246,31 +246,40 @@ defaultPaddingAmount = 2
 drawFileBrowserCursor :: Path Abs Dir -> KeyMap -> Select -> FileBrowserCursor -> Widget ResourceName
 drawFileBrowserCursor workflowDir keyMap s FileBrowserCursor {..} =
   withHeading (str "File Browser: " <+> drawOpenedDirPath workflowDir fileBrowserCursorBase) $
-    case fileBrowserCursorDirForestCursor of
-      Nothing -> drawInfo keyMap
-      Just fbc ->
-        vBox
-          [ viewport ResourceViewport Vertical $ verticalPaddedDirForestCursorWidget goFodCursor goFodUnselected defaultPaddingAmount fbc,
-            let ms =
-                  case fileBrowserCursorSelection of
-                    FileBrowserFilterSelected -> s
-                    FileBrowserSelected -> NotSelected
-             in hBox
-                  [ textLineWidget "Filter:",
-                    txt " ",
-                    drawTextCursor ms fileBrowserCursorFilterBar
-                  ]
-          ]
+    padAll 1 $
+      case fileBrowserCursorDirForestCursor of
+        Nothing -> drawInfo keyMap
+        Just fbc ->
+          vBox
+            [ viewport ResourceViewport Vertical $
+                verticalPaddedDirForestCursorWidget
+                  ( goFodCursor $ case fileBrowserCursorSelection of
+                      FileBrowserFilterSelected -> NotSelected
+                      FileBrowserSelected -> MaybeSelected
+                  )
+                  goFodUnselected
+                  defaultPaddingAmount
+                  fbc,
+              let ms =
+                    case fileBrowserCursorSelection of
+                      FileBrowserFilterSelected -> s
+                      FileBrowserSelected -> NotSelected
+               in hBox
+                    [ textLineWidget "Filter:",
+                      txt " ",
+                      drawTextCursor ms fileBrowserCursorFilterBar
+                    ]
+            ]
   where
-    goFodCursor :: FileOrDirCursor () -> Widget ResourceName
-    goFodCursor = \case
+    goFodCursor :: Select -> FileOrDirCursor () -> Widget ResourceName
+    goFodCursor ms = \case
       InProgress tc ->
-        ( case s of
+        ( case ms of
             MaybeSelected -> addPointer
             NotSelected -> addLister
         )
-          $ drawTextCursor s tc
-      Existent fod -> case s of
+          $ drawTextCursor ms tc
+      Existent fod -> case ms of
         MaybeSelected -> goFodSelected fod
         NotSelected -> goFodUnselected fod
     goFodSelected :: FileOrDir () -> Widget ResourceName
