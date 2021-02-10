@@ -8,6 +8,7 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
 import Smos.Cursor.Report.Entry
+import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
@@ -18,7 +19,8 @@ produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> Work
 produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWorkReportToWorkReportCursor <$> intermediateWorkReportConduit wrc
 
 data WorkReportCursor = WorkReportCursor
-  { workReportCursorResultEntries :: !(EntryReportCursor ()),
+  { workReportCursorNextBeginCursor :: Maybe (EntryReportEntryCursor (TimestampName, Timestamp)),
+    workReportCursorResultEntries :: !(EntryReportCursor ()),
     workReportCursorSelection :: !WorkReportCursorSelection
   }
   deriving (Show, Eq, Generic)
@@ -27,11 +29,12 @@ instance Validity WorkReportCursor
 
 intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReportCursor
 intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
-  let workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+  let workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
+      workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
       workReportCursorSelection = ResultsSelected
    in WorkReportCursor {..}
 
-data WorkReportCursorSelection = ResultsSelected
+data WorkReportCursorSelection = NextBeginSelected | ResultsSelected
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportCursorSelection

@@ -26,6 +26,7 @@ module Smos.Style
     waitingReportNoWait,
     agendaReportRelativeAttr,
     agendaReportNowLineAttr,
+    relativeTimestampAccentAttr,
     helpNameAttr,
     helpKeyCombinationAttr,
     helpDescriptionAttr,
@@ -76,6 +77,7 @@ defaultAttrMap _ =
           (waitingReportNoWait, fg green),
           (agendaReportRelativeAttr, defAttr `withStyle` bold),
           (agendaReportNowLineAttr, fg magenta `withStyle` bold),
+          (relativeTimestampAccentAttr, defAttr `withStyle` bold),
           (selectedAttr <> tagAttr, fg brightWhite),
           (selectedAttr <> headerAttr, fg brightWhite),
           (fileAttr, fg V.yellow),
@@ -166,6 +168,9 @@ agendaReportRelativeAttr = "agenda-report-relative-time"
 
 agendaReportNowLineAttr :: AttrName
 agendaReportNowLineAttr = "agenda-report-now-line"
+
+relativeTimestampAccentAttr :: AttrName
+relativeTimestampAccentAttr = "relative-timestamp-accent"
 
 helpNameAttr :: AttrName
 helpNameAttr = "helpdescription"

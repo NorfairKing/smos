@@ -13,6 +13,8 @@ import Brick.Widgets.Core as B
 import Cursor.Brick
 import Cursor.List.NonEmpty (foldNonEmptyCursor)
 import Cursor.Simple.List.NonEmpty
+import Data.List
+import Data.Maybe
 import Data.Time
 import Path
 import Smos.Actions
@@ -258,8 +260,45 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s WorkReportCursor {..} = do
-  ercw <- drawEntryReportCursorSimple drawWorkReportResultEntryCursor s workReportCursorResultEntries
-  pure $ withHeading (str "Work Report") $ padAll 1 ercw
+  let selectIf :: WorkReportCursorSelection -> Select
+      selectIf sel =
+        if workReportCursorSelection == sel
+          then s
+          else NotSelected
+  let section title mkW = do
+        w <- mkW
+        pure $ vBox [str title, w]
+  let sectionGens =
+        concat
+          [ [section "Next meeting" (drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec) | erec <- maybeToList workReportCursorNextBeginCursor],
+            [ section "Next actions" (drawEntryReportCursorSimple drawWorkReportResultEntryCursor (selectIf ResultsSelected) workReportCursorResultEntries)
+            ]
+          ]
+  sections <- sequence sectionGens
+  pure $
+    withHeading (str "Work Report") $
+      padAll 1 $
+        vBox $ intersperse (str " ") sections
+
+drawNextMeetingEntryCursor :: Select -> EntryReportEntryCursor (TimestampName, Timestamp) -> Drawer
+drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do
+  let sel =
+        ( case s of
+            MaybeSelected -> forceAttr selectedAttr . visible
+            NotSelected -> id
+        )
+      e = forestCursorCurrent entryReportEntryCursorForestCursor
+      (tsn, ts) = entryReportEntryCursorVal
+  tsw <- drawTimestampWithPrettyRelative ts
+  pure $
+    hBox $
+      intersperse
+        (str " ")
+        [ withAttr relativeTimestampAccentAttr tsw,
+          drawTimestampName tsn,
+          sel $ drawHeader $ entryHeader e,
+          str $ fromRelFile entryReportEntryCursorFilePath
+        ]
 
 drawWorkReportResultEntryCursor :: Select -> EntryReportEntryCursor () -> Drawer' [Widget ResourceName]
 drawWorkReportResultEntryCursor s EntryReportEntryCursor {..} = do
