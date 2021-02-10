@@ -82,6 +82,10 @@
   ^{keyMapTable $ browserKeyMapEmptyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
 
   <h3>
+    Filter
+  ^{keyMapTable $ browserKeyMapFilterMatchers $ keyMapBrowserKeyMap defaultKeyMap }
+
+  <h3>
     Any
   ^{keyMapTable $ browserKeyMapAnyMatchers $ keyMapBrowserKeyMap defaultKeyMap }
 
@@ -133,6 +137,18 @@
   <h4>
     Any
   ^{keyMapTable $ stuckReportAnyMatchers $ reportsKeymapStuckReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
+  <h3>
+    Work Report
+  <h4>
+    Normal
+  ^{keyMapTable $ workReportMatchers $ reportsKeymapWorkReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Search
+  ^{keyMapTable $ workReportSearchMatchers $ reportsKeymapWorkReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Any
+  ^{keyMapTable $ workReportAnyMatchers $ reportsKeymapWorkReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
 
   <h3>
     Any

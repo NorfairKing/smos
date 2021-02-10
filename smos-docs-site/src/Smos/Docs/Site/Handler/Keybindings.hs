@@ -18,8 +18,8 @@ getSmosKeybindingsR = do
   -- Just to force a compilation error if we forget to add new bindings here.
   let KeyMap _ _ _ _ _ = undefined
       FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
-      BrowserKeyMap _ _ _ _ = undefined
-      ReportsKeyMap _ _ _ _ _ = undefined
+      BrowserKeyMap _ _ _ _ _ = undefined
+      ReportsKeyMap _ _ _ _ _ _ = undefined
       NextActionReportKeyMap _ _ _ = undefined
       WaitingReportKeyMap _ _ _ = undefined
       TimestampsReportKeyMap _ _ _ = undefined

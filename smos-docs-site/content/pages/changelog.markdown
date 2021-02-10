@@ -19,6 +19,8 @@ description: The changelog for all of the Smos tools and libraries
   Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
 - `smos`:
   Interactive stuck projects report
+- `smos`:
+  Filter bar for the built-in file browser
 
 ## Changed
 
