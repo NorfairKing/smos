@@ -17,13 +17,11 @@ import Data.Time
 import Path
 import Smos.Actions
 import Smos.Cursor.Report.Entry
-import Smos.Cursor.Report.Work
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
 import Smos.Report.Formatting
 import Smos.Report.Stuck
-import Smos.Report.Work
 import Smos.Style
 import Smos.Types
 import Text.Printf

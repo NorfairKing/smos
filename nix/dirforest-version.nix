@@ -1,4 +1,4 @@
 {
   url = "https://github.com/NorfairKing/dirforest";
-  rev = "fa5bc20f28badff95efcb1e63e7fdec53b7bb1fe";
+  rev = "c168d6ebd3515b6800cc99b2c5343e5759f512c3";
 }

@@ -8,6 +8,7 @@ import Smos.Actions.Report.Next
 import Smos.Actions.Report.Stuck
 import Smos.Actions.Report.Timestamps
 import Smos.Actions.Report.Waiting
+import Smos.Actions.Report.Work
 import Smos.Types
 
 allPlainReportActions :: [Action]
@@ -17,7 +18,8 @@ allPlainReportActions =
       allPlainReportNextActions,
       allPlainReportWaitingActions,
       allPlainReportTimestampsActions,
-      allPlainReportStuckActions
+      allPlainReportStuckActions,
+      allPlainReportWorkActions
     ]
 
 allPlainReportExitActions :: [Action]
@@ -31,7 +33,8 @@ allReportUsingActions =
     [ allReportNextActionsUsingActions,
       allReportWaitingUsingActions,
       allReportTimestampsUsingActions,
-      allReportStuckUsingActions
+      allReportStuckUsingActions,
+      allReportWorkUsingActions
     ]
 
 -- Exit a Report

@@ -9,10 +9,8 @@ import Data.Time
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
-import Smos.Cursor.Report.Work
 import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Period
 import Smos.Report.ShouldPrint
 import Smos.Report.Work
 import Smos.Types
