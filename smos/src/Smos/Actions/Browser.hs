@@ -34,6 +34,10 @@ allPlainBrowserActions =
     browserSelectNextChar,
     browserToggleCollapse,
     browserToggleCollapseRecursively,
+    browserSelectFilter,
+    browserUnselectFilter,
+    browserFilterRemoveChar,
+    browserFilterDeleteChar,
     browserEnter,
     browserRemoveEmptyDir,
     browserArchive,
@@ -48,7 +52,9 @@ allPlainBrowserActions =
 allBrowserUsingCharActions :: [ActionUsing Char]
 allBrowserUsingCharActions =
   [ browserInsertChar,
-    browserAppendChar
+    browserAppendChar,
+    browserFilterInsertChar,
+    browserFilterAppendChar
   ]
 
 -- TODO: rename this to browserSelectPrevFileOrDir ?
@@ -178,6 +184,54 @@ browserToggleCollapseRecursively =
     { actionName = "browserToggleCollapseRecursively",
       actionFunc = modifyFileBrowserCursorM fileBrowserCursorToggleRecursively,
       actionDescription = "Select toggle collapsing the currently selected directory recursively"
+    }
+
+browserUnselectFilter :: Action
+browserUnselectFilter =
+  Action
+    { actionName = "browserUnselectFilter",
+      actionDescription = "Select the file browser, not the filter",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectBrowser
+    }
+
+browserSelectFilter :: Action
+browserSelectFilter =
+  Action
+    { actionName = "browserSelectFilter",
+      actionDescription = "Select the file browser filter bar",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorSelectFilter
+    }
+
+browserFilterInsertChar :: ActionUsing Char
+browserFilterInsertChar =
+  ActionUsing
+    { actionUsingName = "browserFilterInsertChar",
+      actionUsingDescription = "TODO",
+      actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorFilterInsertChar c
+    }
+
+browserFilterAppendChar :: ActionUsing Char
+browserFilterAppendChar =
+  ActionUsing
+    { actionUsingName = "browserFilterAppendChar",
+      actionUsingDescription = "TODO",
+      actionUsingFunc = \c -> modifyFileBrowserCursorM $ fileBrowserCursorFilterAppendChar c
+    }
+
+browserFilterDeleteChar :: Action
+browserFilterDeleteChar =
+  Action
+    { actionName = "browserFilterDeleteChar",
+      actionDescription = "TODO",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorFilterDeleteChar
+    }
+
+browserFilterRemoveChar :: Action
+browserFilterRemoveChar =
+  Action
+    { actionName = "browserFilterRemoveChar",
+      actionDescription = "TODO",
+      actionFunc = modifyFileBrowserCursorM fileBrowserCursorFilterRemoveChar
     }
 
 browserEnter :: Action
