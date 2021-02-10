@@ -31,7 +31,7 @@ intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReport
 intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
   let workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
-      workReportCursorSelection = ResultsSelected
+      workReportCursorSelection = NextBeginSelected
    in WorkReportCursor {..}
 
 data WorkReportCursorSelection = NextBeginSelected | ResultsSelected
@@ -42,17 +42,32 @@ instance Validity WorkReportCursorSelection
 workReportCursorResultEntriesL :: Lens' WorkReportCursor (EntryReportCursor ())
 workReportCursorResultEntriesL = lens workReportCursorResultEntries $ \wrc rc -> wrc {workReportCursorResultEntries = rc}
 
+workReportCursorResultSelectionL :: Lens' WorkReportCursor WorkReportCursorSelection
+workReportCursorResultSelectionL = lens workReportCursorSelection $ \wrc s -> wrc {workReportCursorSelection = s}
+
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
-workReportCursorNext = workReportCursorResultEntriesL entryReportCursorNext
+workReportCursorNext wrc = case workReportCursorSelection wrc of
+  NextBeginSelected -> Just $ wrc & workReportCursorResultSelectionL .~ ResultsSelected
+  ResultsSelected -> workReportCursorResultEntriesL entryReportCursorNext wrc
 
 workReportCursorPrev :: WorkReportCursor -> Maybe WorkReportCursor
-workReportCursorPrev = workReportCursorResultEntriesL entryReportCursorPrev
+workReportCursorPrev wrc = case workReportCursorSelection wrc of
+  NextBeginSelected -> Nothing
+  ResultsSelected -> case workReportCursorResultEntriesL entryReportCursorPrev wrc of
+    Nothing -> Just $ wrc & workReportCursorResultSelectionL .~ NextBeginSelected
+    Just wrc' -> Just wrc'
 
 workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
-workReportCursorFirst = workReportCursorResultEntriesL %~ entryReportCursorFirst
+workReportCursorFirst wrc =
+  wrc
+    & workReportCursorResultSelectionL .~ NextBeginSelected
+    & workReportCursorResultEntriesL %~ entryReportCursorFirst
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
-workReportCursorLast = workReportCursorResultEntriesL %~ entryReportCursorLast
+workReportCursorLast wrc =
+  wrc
+    & workReportCursorResultSelectionL .~ ResultsSelected
+    & workReportCursorResultEntriesL %~ entryReportCursorLast
 
 workReportCursorSelectReport :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorSelectReport = workReportCursorResultEntriesL entryReportCursorSelectReport
