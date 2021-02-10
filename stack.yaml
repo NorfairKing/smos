@@ -110,7 +110,7 @@ extra-deps:
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: 8e30537d1628ff5bcb56f99d60a9384d5e9b46ea
+  commit: fa5bc20f28badff95efcb1e63e7fdec53b7bb1fe
   subdirs:
     - dirforest
     - genvalidity-dirforest

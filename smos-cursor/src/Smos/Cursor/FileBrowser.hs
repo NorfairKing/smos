@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Cursor.FileBrowser where
@@ -7,10 +8,13 @@ import Control.DeepSeq
 import Control.Monad.IO.Class
 import Cursor.FileOrDir
 import Cursor.Simple.DirForest
+import Cursor.Text
 import Cursor.Types
 import Data.DirForest (DirForest (..))
 import qualified Data.DirForest as DF
+import Data.List
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -22,8 +26,11 @@ import Smos.Undo
 
 data FileBrowserCursor = FileBrowserCursor
   { fileBrowserCursorBase :: Path Abs Dir,
+    fileBrowserCursorDirForest :: !(DirForest ()),
     fileBrowserCursorDirForestCursor :: !(Maybe (DirForestCursor ())), -- Nothing means there are no files to display
-    fileBrowserCursorUndoStack :: !(UndoStack FileBrowserCursorAction)
+    fileBrowserCursorUndoStack :: !(UndoStack FileBrowserCursorAction),
+    fileBrowserCursorFilterBar :: !TextCursor,
+    fileBrowserCursorSelection :: !FileBrowserCursorSelection
   }
   deriving (Show, Eq, Generic)
 
@@ -31,12 +38,22 @@ instance Validity FileBrowserCursor
 
 instance NFData FileBrowserCursor
 
+data FileBrowserCursorSelection = FileBrowserSelected | FileBrowserFilterSelected
+  deriving (Show, Eq, Generic)
+
+instance Validity FileBrowserCursorSelection
+
+instance NFData FileBrowserCursorSelection
+
 makeFileBrowserCursor :: Path Abs Dir -> DirForest () -> FileBrowserCursor
 makeFileBrowserCursor base df =
   FileBrowserCursor
     { fileBrowserCursorBase = base,
+      fileBrowserCursorDirForest = df,
       fileBrowserCursorDirForestCursor = makeDirForestCursor df,
-      fileBrowserCursorUndoStack = emptyUndoStack
+      fileBrowserCursorUndoStack = emptyUndoStack,
+      fileBrowserCursorFilterBar = emptyTextCursor,
+      fileBrowserCursorSelection = FileBrowserSelected
     }
 
 rebuildFileBrowserCursor :: FileBrowserCursor -> DirForest ()
@@ -44,6 +61,20 @@ rebuildFileBrowserCursor FileBrowserCursor {..} = maybe DF.empty (fromMaybe DF.e
 
 fileBrowserCursorDirForestCursorL :: Lens' FileBrowserCursor (Maybe (DirForestCursor ()))
 fileBrowserCursorDirForestCursorL = lens fileBrowserCursorDirForestCursor $ \fbc fc -> fbc {fileBrowserCursorDirForestCursor = fc}
+
+fileBrowserCursorSelectionL :: Lens' FileBrowserCursor FileBrowserCursorSelection
+fileBrowserCursorSelectionL = lens fileBrowserCursorSelection (\narc cs -> narc {fileBrowserCursorSelection = cs})
+
+fileBrowserCursorFilterBarL :: Lens' FileBrowserCursor TextCursor
+fileBrowserCursorFilterBarL = lens fileBrowserCursorFilterBar $ \fbc@FileBrowserCursor {..} tc ->
+  let query = rebuildTextCursor fileBrowserCursorFilterBar
+      filteredSelection = do
+        dfc <- fileBrowserCursorDirForestCursor
+        makeDirForestCursor . DF.filterWithKey (\rf _ -> T.unpack query `isInfixOf` fromRelFile rf) . fromMaybe DF.empty . dullDelete $ rebuildDirForestCursor dfc
+   in fbc
+        { fileBrowserCursorFilterBar = tc,
+          fileBrowserCursorDirForestCursor = filteredSelection
+        }
 
 fileBrowserRecordMovementHistory :: FileBrowserCursor -> Maybe (DirForestCursor ()) -> FileBrowserCursor
 fileBrowserRecordMovementHistory fbc new =
@@ -135,6 +166,42 @@ fileBrowserCursorToggle = fileBrowserCursorDoMaybe dirForestCursorToggle
 
 fileBrowserCursorToggleRecursively :: FileBrowserCursor -> Maybe FileBrowserCursor
 fileBrowserCursorToggleRecursively = fileBrowserCursorDoMaybe dirForestCursorToggleRecursively
+
+fileBrowserCursorSelectBrowser :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorSelectBrowser = fileBrowserCursorSelectionL $
+  \case
+    FileBrowserSelected -> Nothing
+    FileBrowserFilterSelected -> Just FileBrowserSelected
+
+fileBrowserCursorSelectFilter :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorSelectFilter = fileBrowserCursorSelectionL $
+  \case
+    FileBrowserFilterSelected -> Nothing
+    FileBrowserSelected -> Just FileBrowserFilterSelected
+
+fileBrowserCursorFilterInsertChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorFilterInsertChar c = fileBrowserCursorFilterBarL $ textCursorInsert c
+
+fileBrowserCursorFilterAppendChar :: Char -> FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorFilterAppendChar c = fileBrowserCursorFilterBarL $ textCursorAppend c
+
+fileBrowserCursorFilterRemoveChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorFilterRemoveChar =
+  fileBrowserCursorFilterBarL $
+    \tc ->
+      case textCursorRemove tc of
+        Nothing -> Nothing
+        Just Deleted -> Nothing
+        Just (Updated narc) -> Just narc
+
+fileBrowserCursorFilterDeleteChar :: FileBrowserCursor -> Maybe FileBrowserCursor
+fileBrowserCursorFilterDeleteChar =
+  fileBrowserCursorFilterBarL $
+    \tc ->
+      case textCursorDelete tc of
+        Nothing -> Nothing
+        Just Deleted -> Nothing
+        Just (Updated narc) -> Just narc
 
 fileBrowserSelected :: FileBrowserCursor -> Maybe (Path Abs Dir, Path Rel Dir, FileOrDirCursor ())
 fileBrowserSelected FileBrowserCursor {..} = do

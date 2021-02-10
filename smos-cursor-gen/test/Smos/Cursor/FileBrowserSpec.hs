@@ -3,6 +3,7 @@
 module Smos.Cursor.FileBrowserSpec where
 
 import Cursor.Simple.DirForest
+import Cursor.Text
 import Cursor.Types
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
@@ -50,6 +51,12 @@ spec = do
   describe "fileBrowserCursorToggleRecursively" $
     it "produces valid cursors" $
       producesValidsOnValids fileBrowserCursorToggleRecursively
+  describe "fileBrowserCursorSelectBrowser" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectBrowser
+  describe "fileBrowserCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectFilter
+  describe "fileBrowserCursorFilterInsertChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorFilterInsertChar
+  describe "fileBrowserCursorFilterAppendChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorFilterAppendChar
+  describe "fileBrowserCursorFilterRemoveChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorFilterRemoveChar
+  describe "fileBrowserCursorFilterDeleteChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorFilterDeleteChar
   describe "fileBrowserRmEmptyDir" $
     it "produces the same result as if I had reread the cursor" $
       withSystemTempDir "smos-cursor-test-filebrowser" $
@@ -74,14 +81,18 @@ spec = do
                           Deleted -> Nothing
                           Updated Nothing -> Just c
                           Updated (Just c') -> goDown c'
+                        df = DF.singletonFile rf ()
                     let dfc :: Maybe (DirForestCursor ())
-                        dfc = ((\c -> fromMaybe c (dirForestCursorOpenRecursively c)) <$> makeDirForestCursor (DF.singletonFile rf ())) >>= goDown
+                        dfc = ((\c -> fromMaybe c (dirForestCursorOpenRecursively c)) <$> makeDirForestCursor df) >>= goDown
                     dfc `shouldSatisfy` isJust -- Sanity test
                     let fbc =
                           FileBrowserCursor
                             { fileBrowserCursorBase = base,
                               fileBrowserCursorDirForestCursor = dfc,
-                              fileBrowserCursorUndoStack = emptyUndoStack
+                              fileBrowserCursorUndoStack = emptyUndoStack,
+                              fileBrowserCursorDirForest = df,
+                              fileBrowserCursorFilterBar = emptyTextCursor,
+                              fileBrowserCursorSelection = FileBrowserSelected
                             }
                     -- Put the file to archive in place
                     ensureDir (parent af)
