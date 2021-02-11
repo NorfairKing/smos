@@ -419,7 +419,7 @@ defaultWorkReportKeyMap =
             exactString "gg" firstWork,
             exactKey KEnd lastWork,
             exactChar 'G' lastWork,
-            -- exactKey KEnter enterWorkFile,
+            exactKey KEnter enterWorkFile,
             exactChar '/' selectWorkFilter
           ],
       workReportSearchMatchers =

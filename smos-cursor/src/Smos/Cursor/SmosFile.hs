@@ -6,6 +6,7 @@ module Smos.Cursor.SmosFile
   ( SmosFileCursor (..),
     makeSmosFileCursor,
     makeSmosFileCursorEntirely,
+    makeSmosFileCursorFromSimpleForestCursor,
     rebuildSmosFileCursor,
     rebuildSmosFileCursorEntirely,
     startSmosFile,
@@ -95,6 +96,9 @@ makeSmosFileCursor =
 
 makeSmosFileCursorEntirely :: SmosFile -> Maybe SmosFileCursor
 makeSmosFileCursorEntirely = fmap makeSmosFileCursor . NE.nonEmpty . smosFileForest
+
+makeSmosFileCursorFromSimpleForestCursor :: ForestCursor Entry Entry -> SmosFileCursor
+makeSmosFileCursorFromSimpleForestCursor = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
 
 rebuildSmosFileCursor :: SmosFileCursor -> NonEmpty (Tree Entry)
 rebuildSmosFileCursor =

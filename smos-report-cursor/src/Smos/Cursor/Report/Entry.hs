@@ -120,9 +120,7 @@ makeNEEntryReportEntryCursor = fmap makeNonEmptyCursor . NE.nonEmpty
 entryReportCursorBuildSmosFileCursor :: Path Abs Dir -> EntryReportCursor a -> Maybe (Path Abs File, SmosFileCursor)
 entryReportCursorBuildSmosFileCursor pad narc = do
   selected <- nonEmptyCursorCurrent <$> entryReportCursorSelectedEntryReportEntryCursors narc
-  let go :: ForestCursor Entry Entry -> SmosFileCursor
-      go = SmosFileCursor . mapForestCursor (makeCollapseEntry . makeEntryCursor) makeCollapseEntry
-  pure (pad </> entryReportEntryCursorFilePath selected, go $ entryReportEntryCursorForestCursor selected)
+  pure (pad </> entryReportEntryCursorFilePath selected, makeSmosFileCursorFromSimpleForestCursor $ entryReportEntryCursorForestCursor selected)
 
 entryReportCursorNext :: EntryReportCursor a -> Maybe (EntryReportCursor a)
 entryReportCursorNext = entryReportCursorSelectedEntryReportEntryCursorsL $ mapM nonEmptyCursorSelectNext

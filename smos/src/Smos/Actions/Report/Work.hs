@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Actions.Report.Work where
 
@@ -9,6 +10,7 @@ import Data.Time
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Cursor.Report.Entry
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
@@ -22,6 +24,7 @@ allPlainReportWorkActions =
     nextWork,
     firstWork,
     lastWork,
+    enterWorkFile,
     selectWorkReport,
     selectWorkFilter,
     removeWorkFilter,
@@ -97,6 +100,32 @@ lastWork =
   Action
     { actionName = "lastWork",
       actionFunc = modifyWorkReportCursor workReportCursorLast,
+      actionDescription = "Select the last entry in the work report"
+    }
+
+enterWorkFile :: Action
+enterWorkFile =
+  Action
+    { actionName = "enterWorkFile",
+      actionFunc = do
+        ss <- get
+        case editorCursorReportCursor $ smosStateCursor ss of
+          Just rc -> case rc of
+            ReportWork wrc -> do
+              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              wd <- liftIO $ resolveDirWorkflowDir dc
+              let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
+                  switchToSelectedInEntryReportCursor ad erc =
+                    case entryReportCursorBuildSmosFileCursor ad erc of
+                      Nothing -> pure ()
+                      Just (afp, sfc) -> switchToCursor afp $ Just sfc
+              case workReportCursorSelection wrc of
+                NextBeginSelected -> case workReportCursorNextBeginCursor wrc of
+                  Nothing -> pure ()
+                  Just erc -> switchToEntryReportEntryCursor wd erc
+                ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
+            _ -> pure ()
+          Nothing -> pure (),
       actionDescription = "Select the last entry in the work report"
     }
 
