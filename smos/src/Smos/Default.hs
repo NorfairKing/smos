@@ -245,13 +245,7 @@ defaultBrowserKeyMap =
   BrowserKeyMap
     { browserKeyMapExistentMatchers =
         listMatchers
-          [ exactKey KDown browserSelectNext,
-            exactChar 'j' browserSelectNext,
-            exactKey KUp browserSelectPrev,
-            exactChar 'k' browserSelectPrev,
-            exactString "gg" browserSelectFirst,
-            exactString "G" browserSelectLast,
-            exactChar '\t' browserToggleCollapse,
+          [ exactChar '\t' browserToggleCollapse,
             exactKey KEnter browserEnter,
             exactKey KBackTab browserToggleCollapseRecursively,
             exactChar 'n' browserStartNew,
@@ -287,7 +281,13 @@ defaultBrowserKeyMap =
           ],
       browserKeyMapAnyMatchers =
         listMatchers
-          [ exactChar 'u' browserUndo,
+          [ exactKey KDown browserSelectNext,
+            exactChar 'j' browserSelectNext,
+            exactKey KUp browserSelectPrev,
+            exactChar 'k' browserSelectPrev,
+            exactString "gg" browserSelectFirst,
+            exactString "G" browserSelectLast,
+            exactChar 'u' browserUndo,
             modifiedChar 'u' [MMeta] browserRedo
           ]
     }

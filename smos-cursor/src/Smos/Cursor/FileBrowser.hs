@@ -70,8 +70,7 @@ fileBrowserCursorFilterBarL :: Lens' FileBrowserCursor TextCursor
 fileBrowserCursorFilterBarL = lens fileBrowserCursorFilterBar $ \fbc@FileBrowserCursor {..} tc ->
   let query = rebuildTextCursor fileBrowserCursorFilterBar
       filteredSelection = do
-        dfc <- fileBrowserCursorDirForestCursor
-        let filteredDF = DF.filterWithKey (\rf _ -> T.unpack query `isInfixOf` fromRelFile rf) . fromMaybe DF.empty . dullDelete $ rebuildDirForestCursor dfc
+        let filteredDF = DF.filterWithKey (\rf _ -> T.unpack query `isInfixOf` fromRelFile rf) fileBrowserCursorDirForest
         prunedDF <- DF.pruneEmptyDirs filteredDF
         dfc' <- makeDirForestCursor prunedDF
         let goDowntoFile c =
