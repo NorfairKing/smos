@@ -177,6 +177,7 @@ propertyNameColor pn =
     "client" -> green
     "estimate" -> green
     "timewindow" -> magenta
+    "goal" -> orange
     _ -> mempty
 
 tagChunk :: Tag -> Chunk

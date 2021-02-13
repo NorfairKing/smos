@@ -117,6 +117,7 @@ defaultFileKeyMap =
             exactString "pc" $ propertiesEditProperty "client",
             exactString "pe" $ propertiesEditProperty "estimate",
             exactString "pt" $ propertiesEditProperty "timewindow",
+            exactString "pg" $ propertiesEditProperty "goal",
             -- Clocking
             exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere,
             exactString "co" forestClockOutEverywhereInAllFiles,

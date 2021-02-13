@@ -72,6 +72,7 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "client", fg green),
           (propertyNameSpecificAttr "assignee", fg blue),
           (propertyNameSpecificAttr "estimate", fg green),
+          (propertyNameSpecificAttr "goal", fg orange),
           (waitingReportLongWait, fg red),
           (waitingReportMidWait, fg yellow),
           (waitingReportShortWait, fg blue),
