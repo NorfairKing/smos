@@ -23,7 +23,8 @@ import Smos.Report.Waiting
 
 produceWaitingReportCursor :: Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO WaitingReportCursor
 produceWaitingReportCursor mf ha sp dc =
-  WaitingReportCursor <$> produceEntryReportCursor makeWaitingEntryCursor' sortWaitingReport mf ha sp dc
+  WaitingReportCursor
+    <$> produceEntryReportCursor makeWaitingEntryCursor' sortWaitingReport mf ha sp dc
 
 data WaitingReportCursor = WaitingReportCursor
   { waitingReportCursorEntryReportCursor :: EntryReportCursor UTCTime -- The time at which the entry became WAITING
@@ -43,6 +44,9 @@ instance Validity WaitingReportCursor where
 
 waitingReportCursorEntryReportCursorL :: Lens' WaitingReportCursor (EntryReportCursor UTCTime)
 waitingReportCursorEntryReportCursorL = lens waitingReportCursorEntryReportCursor $ \wrc ne -> wrc {waitingReportCursorEntryReportCursor = ne}
+
+finaliseWaitingReportCursor :: [EntryReportEntryCursor UTCTime] -> WaitingReportCursor
+finaliseWaitingReportCursor = WaitingReportCursor . makeEntryReportCursor . sortWaitingReport
 
 sortWaitingReport :: [EntryReportEntryCursor UTCTime] -> [EntryReportEntryCursor UTCTime]
 sortWaitingReport = sortOn entryReportEntryCursorVal

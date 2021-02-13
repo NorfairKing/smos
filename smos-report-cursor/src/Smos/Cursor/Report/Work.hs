@@ -8,6 +8,8 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
 import Smos.Cursor.Report.Entry
+import Smos.Cursor.Report.Stuck
+import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -21,6 +23,7 @@ produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWork
 data WorkReportCursor = WorkReportCursor
   { workReportCursorNextBeginCursor :: Maybe (EntryReportEntryCursor (TimestampName, Timestamp)),
     workReportCursorResultEntries :: !(EntryReportCursor ()),
+    workReportCursorOverdueWaiting :: !WaitingReportCursor,
     workReportCursorSelection :: !WorkReportCursorSelection
   }
   deriving (Show, Eq, Generic)
@@ -32,9 +35,13 @@ intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
   let workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
       workReportCursorSelection = NextBeginSelected
+      workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
    in WorkReportCursor {..}
 
-data WorkReportCursorSelection = NextBeginSelected | ResultsSelected
+data WorkReportCursorSelection
+  = NextBeginSelected
+  | ResultsSelected
+  | WaitingSelected
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportCursorSelection
@@ -42,32 +49,43 @@ instance Validity WorkReportCursorSelection
 workReportCursorResultEntriesL :: Lens' WorkReportCursor (EntryReportCursor ())
 workReportCursorResultEntriesL = lens workReportCursorResultEntries $ \wrc rc -> wrc {workReportCursorResultEntries = rc}
 
-workReportCursorResultSelectionL :: Lens' WorkReportCursor WorkReportCursorSelection
-workReportCursorResultSelectionL = lens workReportCursorSelection $ \wrc s -> wrc {workReportCursorSelection = s}
+workReportCursorSelectionL :: Lens' WorkReportCursor WorkReportCursorSelection
+workReportCursorSelectionL = lens workReportCursorSelection $ \wrc s -> wrc {workReportCursorSelection = s}
+
+workReportCursorOverdueWaitingL :: Lens' WorkReportCursor WaitingReportCursor
+workReportCursorOverdueWaitingL = lens workReportCursorOverdueWaiting $ \wrc rc -> wrc {workReportCursorOverdueWaiting = rc}
 
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorNext wrc = case workReportCursorSelection wrc of
-  NextBeginSelected -> Just $ wrc & workReportCursorResultSelectionL .~ ResultsSelected
-  ResultsSelected -> workReportCursorResultEntriesL entryReportCursorNext wrc
+  NextBeginSelected -> Just $ wrc & workReportCursorSelectionL .~ ResultsSelected
+  ResultsSelected -> case workReportCursorResultEntriesL entryReportCursorNext wrc of
+    Nothing -> Just $ wrc & workReportCursorSelectionL .~ WaitingSelected
+    Just wrc' -> Just wrc'
+  WaitingSelected -> workReportCursorOverdueWaitingL waitingReportCursorNext wrc
 
 workReportCursorPrev :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorPrev wrc = case workReportCursorSelection wrc of
   NextBeginSelected -> Nothing
   ResultsSelected -> case workReportCursorResultEntriesL entryReportCursorPrev wrc of
-    Nothing -> Just $ wrc & workReportCursorResultSelectionL .~ NextBeginSelected
+    Nothing -> Just $ wrc & workReportCursorSelectionL .~ NextBeginSelected
+    Just wrc' -> Just wrc'
+  WaitingSelected -> case workReportCursorOverdueWaitingL waitingReportCursorPrev wrc of
+    Nothing -> Just $ wrc & workReportCursorSelectionL .~ ResultsSelected
     Just wrc' -> Just wrc'
 
 workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
 workReportCursorFirst wrc =
   wrc
-    & workReportCursorResultSelectionL .~ NextBeginSelected
+    & workReportCursorSelectionL .~ NextBeginSelected
     & workReportCursorResultEntriesL %~ entryReportCursorFirst
+    & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast wrc =
   wrc
-    & workReportCursorResultSelectionL .~ ResultsSelected
+    & workReportCursorSelectionL .~ WaitingSelected
     & workReportCursorResultEntriesL %~ entryReportCursorLast
+    & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
 
 workReportCursorSelectReport :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorSelectReport = workReportCursorResultEntriesL entryReportCursorSelectReport

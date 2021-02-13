@@ -7,6 +7,7 @@ import Cursor.Text.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
 import Smos.Cursor.Report.Entry.Gen ()
+import Smos.Cursor.Report.Waiting.Gen ()
 import Smos.Cursor.Report.Work
 import Smos.Data.Gen ()
 
