@@ -181,7 +181,9 @@ modifyMPropertiesCursorM :: (Maybe PropertiesCursor -> Maybe PropertiesCursor) -
 modifyMPropertiesCursorM func = modifyMPropertiesCursorSM $ pure . func
 
 modifyMPropertiesCursorSM :: (Maybe PropertiesCursor -> SmosM (Maybe PropertiesCursor)) -> SmosM ()
-modifyMPropertiesCursorSM func = modifyEntryCursorS $ entryCursorPropertiesCursorL func
+modifyMPropertiesCursorSM func = modifyCollapseEntryCursorS $ \ce -> do
+  ce' <- (collapseEntryValueL . entryCursorPropertiesCursorL) func ce
+  pure $ ce' & collapseEntryShowPropertiesL .~ True
 
 modifyTimestampsCursorM :: (TimestampsCursor -> Maybe TimestampsCursor) -> SmosM ()
 modifyTimestampsCursorM func = modifyTimestampsCursor $ \tsc -> fromMaybe tsc $ func tsc

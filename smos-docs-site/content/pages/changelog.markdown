@@ -21,6 +21,8 @@ description: The changelog for all of the Smos tools and libraries
   Interactive stuck projects report
 - `smos`:
   Filter bar for the built-in file browser
+- `smos`: The `forestToggleCollapseEntryProperties` action, bound to `zp` by default.
+- `smos`: Hide properties of done entries on startup.
 
 ## Changed
 

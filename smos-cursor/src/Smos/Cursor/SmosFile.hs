@@ -158,7 +158,11 @@ smosFileCursorReadyForStartup = collapseDone . unclockStarted . goToEnd
         mapCollapseDone :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
         mapCollapseDone func ce =
           if func (collapseEntryValue ce)
-            then ce {collapseEntryShowTimestamps = False}
+            then
+              ce
+                { collapseEntryShowTimestamps = False,
+                  collapseEntryShowProperties = False
+                }
             else ce
         isDone :: Maybe TodoState -> Bool
         isDone (Just "DONE") = True

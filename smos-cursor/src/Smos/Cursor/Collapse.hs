@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Cursor.Collapse
   ( CollapseEntry (..),
@@ -11,6 +12,7 @@ module Smos.Cursor.Collapse
     collapseEntryShowHistoryL,
     collapseEntryShowLogbookL,
     collapseEntryShowTimestampsL,
+    collapseEntryShowPropertiesL,
     collapseEntrySetShowAll,
   )
 where
@@ -25,7 +27,8 @@ data CollapseEntry a = CollapseEntry
     collapseEntryShowContents :: Bool,
     collapseEntryShowHistory :: Bool,
     collapseEntryShowLogbook :: Bool,
-    collapseEntryShowTimestamps :: Bool
+    collapseEntryShowTimestamps :: Bool,
+    collapseEntryShowProperties :: Bool
   }
   deriving (Show, Eq, Generic, Functor)
 
@@ -40,7 +43,8 @@ makeCollapseEntry !a =
       collapseEntryShowContents = True,
       collapseEntryShowHistory = False,
       collapseEntryShowLogbook = False,
-      collapseEntryShowTimestamps = True
+      collapseEntryShowTimestamps = True,
+      collapseEntryShowProperties = True
     }
 
 rebuildCollapseEntry :: CollapseEntry a -> a
@@ -65,11 +69,17 @@ collapseEntryShowTimestampsL :: Lens' (CollapseEntry a) Bool
 collapseEntryShowTimestampsL =
   lens collapseEntryShowTimestamps $ \ct b -> ct {collapseEntryShowTimestamps = b}
 
+collapseEntryShowPropertiesL :: Lens' (CollapseEntry a) Bool
+collapseEntryShowPropertiesL =
+  lens collapseEntryShowProperties $ \ct b -> ct {collapseEntryShowProperties = b}
+
 collapseEntrySetShowAll :: Bool -> CollapseEntry a -> CollapseEntry a
 collapseEntrySetShowAll b e =
-  e
-    { collapseEntryShowContents = b,
-      collapseEntryShowHistory = b,
-      collapseEntryShowLogbook = b,
-      collapseEntryShowTimestamps = b
-    }
+  let CollapseEntry _ _ _ _ _ _ = undefined
+   in e
+        { collapseEntryShowContents = b,
+          collapseEntryShowHistory = b,
+          collapseEntryShowLogbook = b,
+          collapseEntryShowProperties = b,
+          collapseEntryShowTimestamps = b
+        }

@@ -545,7 +545,8 @@ drawEntryCursor s tc edc e = do
               [ drawIfM collapseEntryShowContents $
                   drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
                 tscw,
-                drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
+                drawIfM collapseEntryShowProperties $
+                  drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
                 shcw,
                 lbcw
               ]
@@ -596,7 +597,7 @@ drawEntry tc edc e = do
           catMaybes
             [ drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
               tsw,
-              drawProperties entryProperties,
+              drawIfM collapseEntryShowProperties $ drawProperties entryProperties,
               shw,
               lbw
             ]
