@@ -267,7 +267,11 @@ drawWorkReportCursor s WorkReportCursor {..} = do
           else NotSelected
   let section title mkW = do
         w <- mkW
-        pure $ vBox [str title, w]
+        pure $
+          vBox
+            [ withAttr workReportTitleAttr $ str title,
+              w
+            ]
   let sectionGens =
         concat
           [ [section "Next meeting" (drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec) | erec <- maybeToList workReportCursorNextBeginCursor],
