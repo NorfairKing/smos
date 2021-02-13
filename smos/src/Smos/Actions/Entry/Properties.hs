@@ -43,6 +43,7 @@ allPropertiesPlainActions =
           "client",
           "effort",
           "estimate",
+          "goal",
           "lead",
           "timewindow"
         ]

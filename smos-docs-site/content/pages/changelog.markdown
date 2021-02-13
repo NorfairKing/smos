@@ -24,6 +24,8 @@ description: The changelog for all of the Smos tools and libraries
 - `smos`: The `forestToggleCollapseEntryProperties` action, bound to `zp` by default.
 - `smos`: Hide properties of done entries on startup.
 - All commands: Autocompletion for the `--config-file` and `--workflow-dir` options.
+- `smos`: The `propertiesEditProperty_goal` action, bound to `pg` by default.
+- `smos-data`: Allow spaces and parens in property values.
 
 ## Changed
 

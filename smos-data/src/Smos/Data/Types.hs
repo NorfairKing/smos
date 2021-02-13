@@ -462,7 +462,7 @@ parsePropertyValue :: Text -> Either String PropertyValue
 parsePropertyValue = prettyValidate . PropertyValue
 
 validPropertyValueChar :: Char -> Bool
-validPropertyValueChar = validTagChar
+validPropertyValueChar = validHeaderChar
 
 newtype TimestampName = TimestampName
   { timestampNameText :: Text
