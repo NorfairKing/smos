@@ -23,6 +23,7 @@ description: The changelog for all of the Smos tools and libraries
   Filter bar for the built-in file browser
 - `smos`: The `forestToggleCollapseEntryProperties` action, bound to `zp` by default.
 - `smos`: Hide properties of done entries on startup.
+- All commands: Autocompletion for the `--config-file` and `--workflow-dir` options.
 
 ## Changed
 

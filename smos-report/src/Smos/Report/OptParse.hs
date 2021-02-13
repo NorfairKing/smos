@@ -91,7 +91,14 @@ parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
   option
     (Just <$> str)
-    (mconcat [metavar "FILEPATH", help "The config file to use", long "config-file", value Nothing])
+    ( mconcat
+        [ metavar "FILEPATH",
+          help "The config file to use",
+          long "config-file",
+          value Nothing,
+          completer $ bashCompleter "file"
+        ]
+    )
 
 parseDirectoryFlags :: Parser DirectoryFlags
 parseDirectoryFlags =
@@ -107,7 +114,8 @@ parseWorkflowDirFlag =
         [ metavar "FILEPATH",
           help "The workflow directory to use",
           long "workflow-dir",
-          value Nothing
+          value Nothing,
+          completer $ bashCompleter "directory"
         ]
     )
 
@@ -116,7 +124,12 @@ parseArchiveDirFlag =
   option
     (Just <$> str)
     ( mconcat
-        [metavar "FILEPATH", help "The archive directory to use", long "archive-dir", value Nothing]
+        [ metavar "FILEPATH",
+          help "The archive directory to use",
+          long "archive-dir",
+          value Nothing,
+          completer $ bashCompleter "directory"
+        ]
     )
 
 parseProjectsDirFlag :: Parser (Maybe FilePath)
@@ -127,7 +140,8 @@ parseProjectsDirFlag =
         [ metavar "FILEPATH",
           help "The projects directory to use",
           long "projects-dir",
-          value Nothing
+          value Nothing,
+          completer $ bashCompleter "directory"
         ]
     )
 
@@ -139,7 +153,8 @@ parseArchivedProjectsDirFlag =
         [ metavar "FILEPATH",
           help "The archived projects directory to use",
           long "archived-projects-dir",
-          value Nothing
+          value Nothing,
+          completer $ bashCompleter "directory"
         ]
     )
 
