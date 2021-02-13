@@ -8,7 +8,6 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
 import Smos.Cursor.Report.Entry
-import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Report.Archive

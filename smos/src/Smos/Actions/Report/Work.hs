@@ -127,6 +127,7 @@ enterWorkFile =
                   Nothing -> pure ()
                   Just erc -> switchToEntryReportEntryCursor wd erc
                 ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
+                WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
             _ -> pure ()
           Nothing -> pure (),
       actionDescription = "Select the last entry in the work report"

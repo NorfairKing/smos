@@ -17,8 +17,6 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
-import Smos.Cursor.Collapse
-import Smos.Cursor.Entry
 import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.Report.Archive
