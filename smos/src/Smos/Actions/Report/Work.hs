@@ -1,11 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Actions.Report.Work where
 
-import qualified Data.Map as M
-import qualified Data.Set as S
 import Data.Time
 import Path
 import Smos.Actions.File
@@ -43,20 +40,26 @@ reportWork =
     { actionName = "reportWork",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+        src <- asks configReportConfig
         now <- liftIO getZonedTime
+        wd <- liftIO $ resolveReportWorkflowDir src
+        pd <- liftIO $ resolveReportProjectsDir src
+        let mpd = stripProperPrefix wd pd
+        let dc = smosReportConfigDirectoryConfig src
+        let wc = smosReportConfigWorkConfig src
+
         -- TODO get these pieces of config from the report config
         let ctx =
               WorkReportContext
                 { workReportContextNow = now,
-                  workReportContextProjectsSubdir = Just [reldir|projects|],
-                  workReportContextBaseFilter = Just defaultWorkBaseFilter,
+                  workReportContextProjectsSubdir = mpd,
+                  workReportContextBaseFilter = workReportConfigBaseFilter wc,
                   workReportContextCurrentContext = Nothing,
                   workReportContextTimeProperty = Nothing,
                   workReportContextTime = Nothing,
                   workReportContextAdditionalFilter = Nothing,
-                  workReportContextContexts = M.empty,
-                  workReportContextChecks = S.empty,
+                  workReportContextContexts = workReportConfigContexts wc,
+                  workReportContextChecks = workReportConfigChecks wc,
                   workReportContextSorter = Nothing,
                   workReportContextWaitingThreshold = 7,
                   workReportContextStuckThreshold = 21
