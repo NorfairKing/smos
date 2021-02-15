@@ -90,7 +90,7 @@ drawHeader :: Header -> Widget n
 drawHeader = withAttr headerAttr . textLineWidget . headerText
 
 drawTag :: Tag -> Widget n
-drawTag = textLineWidget . tagText
+drawTag t = withAttr (tagSpecificAttr t <> tagAttr) . textLineWidget . tagText $ t
 
 drawTodoState :: TodoState -> Widget n
 drawTodoState ts =

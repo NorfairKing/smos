@@ -361,11 +361,11 @@ drawProjectionHeaderNE = NE.map drawProjectionHeader
 drawProjectionHeader :: Projection -> Widget n
 drawProjectionHeader =
   withDefAttr projectionHeaderAttr . \case
-    OntoFile -> str "file"
-    OntoHeader -> str "header"
+    OntoFile -> withAttr fileAttr $ str "file"
+    OntoHeader -> withAttr headerAttr $ str "header"
     OntoProperty pn -> drawPropertyName pn
     OntoTag t -> drawTag t
-    OntoState -> str "state"
+    OntoState -> withAttr todoStateAttr $ str "state"
     OntoTimestamp tn -> drawTimestampName tn
     OntoAncestor p' -> drawProjectionHeader p'
 
