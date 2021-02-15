@@ -126,6 +126,7 @@ enterWorkFile =
                 NextBeginSelected -> case workReportCursorNextBeginCursor wrc of
                   Nothing -> pure ()
                   Just erc -> switchToEntryReportEntryCursor wd erc
+                DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
                 ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
             _ -> pure ()

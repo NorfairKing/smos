@@ -95,27 +95,43 @@ drawEntryReportCursorSimple go = drawEntryReportCursor $ \s mnec ->
     Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
 
 drawEntryReportCursor :: (Select -> Maybe (NonEmptyCursor (EntryReportEntryCursor a)) -> Drawer) -> Select -> EntryReportCursor a -> Drawer
-drawEntryReportCursor func s EntryReportCursor {..} = do
-  tableW <-
-    func
-      ( case entryReportCursorSelection of
-          EntryReportFilterSelected -> NotSelected
-          EntryReportSelected -> s
-      )
-      entryReportCursorSelectedEntryReportEntryCursors
+drawEntryReportCursor func s erc@EntryReportCursor {..} = do
+  tableW <- drawEntryReportCursorTable func s erc
   pure $
     vBox
-      [ viewport ResourceViewport Vertical tableW,
-        ( case entryReportCursorSelection of
-            EntryReportFilterSelected -> withAttr selectedAttr
-            EntryReportSelected -> id
+      [ ( case s of
+            MaybeSelected -> viewport ResourceViewport Vertical
+            NotSelected -> id
         )
-          $ let ms =
-                  case entryReportCursorSelection of
-                    EntryReportFilterSelected -> s
-                    EntryReportSelected -> NotSelected
-             in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms entryReportCursorFilterBar]
+          tableW,
+        drawEntryReportCursorFilter s erc
       ]
+
+drawEntryReportCursorTable :: (Select -> Maybe (NonEmptyCursor (EntryReportEntryCursor a)) -> Drawer) -> Select -> EntryReportCursor a -> Drawer
+drawEntryReportCursorTable func s EntryReportCursor {..} = do
+  func
+    ( case entryReportCursorSelection of
+        EntryReportFilterSelected -> NotSelected
+        EntryReportSelected -> s
+    )
+    entryReportCursorSelectedEntryReportEntryCursors
+
+drawEntryReportCursorTableSimple :: (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
+drawEntryReportCursorTableSimple go s EntryReportCursor {..} = case entryReportCursorSelectedEntryReportEntryCursors of
+  Nothing -> pure $ txtWrap "Empty report"
+  Just ercs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) ercs
+
+drawEntryReportCursorFilter :: Select -> EntryReportCursor a -> Widget ResourceName
+drawEntryReportCursorFilter s EntryReportCursor {..} =
+  ( case entryReportCursorSelection of
+      EntryReportFilterSelected -> withAttr selectedAttr
+      EntryReportSelected -> id
+  )
+    $ let ms =
+            case entryReportCursorSelection of
+              EntryReportFilterSelected -> s
+              EntryReportSelected -> NotSelected
+       in hBox [textLineWidget "Filter:", txt " ", drawTextCursor ms entryReportCursorFilterBar]
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
@@ -274,8 +290,21 @@ drawWorkReportCursor s WorkReportCursor {..} = do
             ]
   let sectionGens =
         concat
-          [ [section "Next meeting" (drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec) | erec <- maybeToList workReportCursorNextBeginCursor],
-            [ section "Next actions" (drawEntryReportCursorSimple drawWorkReportResultEntryCursor (selectIf ResultsSelected) workReportCursorResultEntries)
+          [ [ section "Next meeting" $
+                drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec
+              | erec <- maybeToList workReportCursorNextBeginCursor
+            ],
+            [ section "Deadlines" $
+                drawEntryReportCursorTableSimple
+                  drawTimestampsEntryCursor
+                  (selectIf DeadlinesSelected)
+                  (timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor)
+            ],
+            [ section "Next actions" $
+                drawEntryReportCursorTableSimple
+                  drawWorkReportResultEntryCursor
+                  (selectIf ResultsSelected)
+                  workReportCursorResultEntries
             ]
           ]
   sections <- sequence sectionGens

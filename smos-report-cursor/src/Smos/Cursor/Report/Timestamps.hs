@@ -51,6 +51,9 @@ instance Validity TimestampsReportCursor where
            in sortTimestampEntryCursors es == es
       ]
 
+finaliseTimestampsReportCursor :: [EntryReportEntryCursor TimestampsEntryCursor] -> TimestampsReportCursor
+finaliseTimestampsReportCursor = TimestampsReportCursor . makeEntryReportCursor . sortTimestampEntryCursors
+
 timestampsReportCursorEntryReportCursorL :: Lens' TimestampsReportCursor (EntryReportCursor TimestampsEntryCursor)
 timestampsReportCursorEntryReportCursorL = lens timestampsReportCursorEntryReportCursor $ \wrc ne -> wrc {timestampsReportCursorEntryReportCursor = ne}
 
