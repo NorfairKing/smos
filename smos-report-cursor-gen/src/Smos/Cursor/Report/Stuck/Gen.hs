@@ -13,7 +13,22 @@ import Smos.Cursor.Report.Stuck
 import Smos.Data.Gen ()
 import Smos.Report.Stuck
 import Smos.Report.Stuck.Gen ()
+import Test.QuickCheck
 
 instance GenValid StuckReportCursor where
-  genValid = StuckReportCursor . fmap makeNonEmptyCursor . NE.nonEmpty . sortStuckEntries <$> genValid
+  genValid =
+    StuckReportCursor
+      . fmap makeNonEmptyCursor
+      . NE.nonEmpty
+      . sortStuckEntries
+      <$> genValid
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+genNonEmptyStuckReportCursor :: Gen StuckReportCursor
+genNonEmptyStuckReportCursor =
+  StuckReportCursor
+    . fmap makeNonEmptyCursor
+    . NE.nonEmpty
+    . sortStuckEntries
+    . NE.toList
+    <$> genNonEmptyOf genValid

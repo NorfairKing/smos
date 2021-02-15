@@ -5,6 +5,7 @@
 
 module Smos.Report.Stuck where
 
+import Control.DeepSeq
 import Data.Function
 import Data.List
 import Data.Map (Map)
@@ -27,6 +28,8 @@ data StuckReport = StuckReport
 
 instance Validity StuckReport
 
+instance NFData StuckReport
+
 data StuckReportEntry = StuckReportEntry
   { stuckReportEntryFilePath :: Path Rel File,
     stuckReportEntryState :: Maybe TodoState,
@@ -36,6 +39,8 @@ data StuckReportEntry = StuckReportEntry
   deriving (Show, Eq, Generic)
 
 instance Validity StuckReportEntry
+
+instance NFData StuckReportEntry
 
 makeStuckReport :: [StuckReportEntry] -> StuckReport
 makeStuckReport = StuckReport . sortStuckEntries

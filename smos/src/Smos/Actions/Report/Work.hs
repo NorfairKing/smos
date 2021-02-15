@@ -117,7 +117,6 @@ enterWorkFile =
             ReportWork wrc -> do
               dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
-              pd <- liftIO $ resolveDirProjectsDir dc
               let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
                   switchToSelectedInEntryReportCursor ad erc =
                     case entryReportCursorBuildSmosFileCursor ad erc of
@@ -131,7 +130,7 @@ enterWorkFile =
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
                 StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of
                   Nothing -> pure ()
-                  Just rf -> switchToFile $ pd </> rf
+                  Just rf -> switchToFile $ wd </> rf
                 ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
             _ -> pure ()
           Nothing -> pure (),

@@ -3,6 +3,7 @@
 
 module Smos.Cursor.Report.Waiting where
 
+import Control.DeepSeq
 import Cursor.Forest
 import Data.List
 import Data.Maybe
@@ -42,8 +43,16 @@ instance Validity WaitingReportCursor where
            in sortWaitingReport es == es
       ]
 
+instance NFData WaitingReportCursor
+
 waitingReportCursorEntryReportCursorL :: Lens' WaitingReportCursor (EntryReportCursor UTCTime)
 waitingReportCursorEntryReportCursorL = lens waitingReportCursorEntryReportCursor $ \wrc ne -> wrc {waitingReportCursorEntryReportCursor = ne}
+
+emptyWaitingReportCursor :: WaitingReportCursor
+emptyWaitingReportCursor =
+  WaitingReportCursor
+    { waitingReportCursorEntryReportCursor = emptyEntryReportCursor
+    }
 
 finaliseWaitingReportCursor :: [EntryReportEntryCursor UTCTime] -> WaitingReportCursor
 finaliseWaitingReportCursor = WaitingReportCursor . makeEntryReportCursor . sortWaitingReport

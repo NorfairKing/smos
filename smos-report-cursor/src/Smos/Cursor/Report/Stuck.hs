@@ -4,6 +4,7 @@
 module Smos.Cursor.Report.Stuck where
 
 import Conduit
+import Control.DeepSeq
 import Cursor.Simple.List.NonEmpty
 import qualified Data.Conduit.Combinators as C
 import qualified Data.List.NonEmpty as NE
@@ -27,6 +28,9 @@ stuckReportCursorConduit tz =
   makeStuckReportCursor
     <$> (C.concatMap (uncurry $ makeStuckReportEntry tz) .| sinkList)
 
+emptyStuckReportCursor :: StuckReportCursor
+emptyStuckReportCursor = StuckReportCursor {stuckReportCursorNonEmptyCursor = Nothing}
+
 makeStuckReportCursor :: [StuckReportEntry] -> StuckReportCursor
 makeStuckReportCursor =
   StuckReportCursor
@@ -47,6 +51,8 @@ instance Validity StuckReportCursor where
           let es = maybe [] (NE.toList . rebuildNonEmptyCursor) stuckReportCursorNonEmptyCursor
            in sortStuckEntries es == es
       ]
+
+instance NFData StuckReportCursor
 
 stuckReportCursorNonEmptyCursorL :: Lens' StuckReportCursor (Maybe (NonEmptyCursor StuckReportEntry))
 stuckReportCursorNonEmptyCursorL = lens stuckReportCursorNonEmptyCursor $ \wrc ne -> wrc {stuckReportCursorNonEmptyCursor = ne}

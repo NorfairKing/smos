@@ -16,6 +16,7 @@ library:
   - conduit
   - containers
   - cursor
+  - deepseq
   - filepath
   - microlens
   - path

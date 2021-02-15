@@ -17,6 +17,9 @@ instance GenValid WaitingReportCursor where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
   genValid = WaitingReportCursor <$> genValidEntryReportCursorWith makeWaitingEntryCursor' sortWaitingReport genWaitingEntry
 
+genNonEmptyWaitingReportCursor :: Gen WaitingReportCursor
+genNonEmptyWaitingReportCursor = WaitingReportCursor <$> genNonEmptyValidEntryReportCursorWith makeWaitingEntryCursor' sortWaitingReport genWaitingEntry
+
 genWaitingEntry :: Gen Entry
 genWaitingEntry = do
   timestamp <- genValid

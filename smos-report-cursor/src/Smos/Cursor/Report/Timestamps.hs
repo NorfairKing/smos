@@ -4,6 +4,7 @@
 module Smos.Cursor.Report.Timestamps where
 
 import Conduit
+import Control.DeepSeq
 import Cursor.Forest
 import Data.List
 import qualified Data.Map as M
@@ -50,6 +51,14 @@ instance Validity TimestampsReportCursor where
           let es = timestampsReportCursorEntryReportCursor ^. entryReportCursorEntryReportEntryCursorsL
            in sortTimestampEntryCursors es == es
       ]
+
+instance NFData TimestampsReportCursor
+
+emptyTimestampsReportCursor :: TimestampsReportCursor
+emptyTimestampsReportCursor =
+  TimestampsReportCursor
+    { timestampsReportCursorEntryReportCursor = emptyEntryReportCursor
+    }
 
 finaliseTimestampsReportCursor :: [EntryReportEntryCursor TimestampsEntryCursor] -> TimestampsReportCursor
 finaliseTimestampsReportCursor = TimestampsReportCursor . makeEntryReportCursor . sortTimestampEntryCursors
@@ -105,6 +114,8 @@ data TimestampsEntryCursor = TimestampsEntryCursor
   deriving (Show, Eq, Generic)
 
 instance Validity TimestampsEntryCursor
+
+instance NFData TimestampsEntryCursor
 
 makeTimestampsEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> [TimestampsEntryCursor]
 makeTimestampsEntryCursor _ fc = do

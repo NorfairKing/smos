@@ -6,6 +6,7 @@ import Cursor.Forest
 import Cursor.Forest.Gen ()
 import Cursor.Text.Gen ()
 import Cursor.Tree
+import Data.Foldable
 import Data.GenValidity
 import Data.GenValidity.Path ()
 import Data.Maybe
@@ -27,6 +28,13 @@ instance GenValid EntryReportCursorSelection where
 instance GenValid a => GenValid (EntryReportEntryCursor a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+genNonEmptyValidEntryReportCursorWith ::
+  (Path Rel File -> ForestCursor Entry Entry -> [a]) ->
+  ([EntryReportEntryCursor a] -> [EntryReportEntryCursor a]) ->
+  Gen Entry ->
+  Gen (EntryReportCursor a)
+genNonEmptyValidEntryReportCursorWith func finalise gen = makeEntryReportCursor . finalise <$> (toList <$> genNonEmptyOf (genValidEntryReportEntryCursorWith func gen))
 
 genValidEntryReportCursorWith ::
   (Path Rel File -> ForestCursor Entry Entry -> [a]) ->

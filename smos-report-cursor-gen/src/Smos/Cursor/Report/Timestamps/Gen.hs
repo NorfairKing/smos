@@ -17,6 +17,9 @@ instance GenValid TimestampsReportCursor where
   genValid = TimestampsReportCursor <$> genValidEntryReportCursorWith makeTimestampsEntryCursor sortTimestampEntryCursors genEntryWithTimestamps
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
+genNonEmptyTimestampsReportCursor :: Gen TimestampsReportCursor
+genNonEmptyTimestampsReportCursor = TimestampsReportCursor <$> genNonEmptyValidEntryReportCursorWith makeTimestampsEntryCursor sortTimestampEntryCursors genEntryWithTimestamps
+
 instance GenValid TimestampsEntryCursor where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

@@ -2,6 +2,9 @@
 
 module Smos.Cursor.Report.WorkSpec where
 
+import Control.Concurrent
+import Control.Exception
+import Debug.Trace
 import Smos.Cursor.Report.Work
 import Smos.Cursor.Report.Work.Gen ()
 import Smos.Data.Gen ()
@@ -14,9 +17,15 @@ import Smos.Report.Work.Gen ()
 import Test.Syd
 import Test.Syd.Validity
 
+-- import Test.Syd.Validity.Lens
+
 spec :: Spec
 spec = do
   genValidSpec @WorkReportCursor
+  -- Does not hold because of the validity constraint
+  -- describe "workReportCursorSelectionL" $ lensSpecOnValid workReportCursorSelectionL
+  describe "emptyWorkReportCursor" $ it "is valid" $ shouldBeValid emptyWorkReportCursor
+  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValidsOnValids intermediateWorkReportToWorkReportCursor
   describe "workReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
   describe "workReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
   describe "workReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
