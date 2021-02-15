@@ -17,7 +17,11 @@ import qualified System.FilePath as FP
 import Text.Printf
 import Text.Time.Pretty
 
-type DrawEnv = ZonedTime
+data DrawEnv = DrawEnv
+  { drawEnvWaitingThreshold :: !Word,
+    drawEnvStuckThreshold :: !Word,
+    drawEnvNow :: !ZonedTime
+  }
 
 type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
 
@@ -120,7 +124,7 @@ drawDay d = str $ formatTimestampDay d
 
 drawDayPrettyRelative :: Day -> Drawer
 drawDayPrettyRelative d = do
-  zt <- ask
+  zt <- asks drawEnvNow
   pure $
     str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
 
@@ -140,7 +144,7 @@ drawLocalTime lt = do
 
 drawLocalTimePrettyRelative :: LocalTime -> Drawer
 drawLocalTimePrettyRelative lt = do
-  zt@(ZonedTime _ tz) <- ask
+  zt@(ZonedTime _ tz) <- asks drawEnvNow
   pure $
     str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
 

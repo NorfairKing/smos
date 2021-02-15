@@ -44,21 +44,28 @@ import Smos.Draw.Base
 import Smos.Draw.Report
 import Smos.History
 import Smos.Keys
+import Smos.Report.Config
 import Smos.Style
 import Smos.Types
 import Text.Time.Pretty
 
 smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw workflowDir SmosConfig {..} SmosState {..} =
-  [ vBox $
-      concat
-        [ [ padBottom Max $ runReader (drawEditorCursor workflowDir configKeyMap smosStateCursor) smosStateTime,
-            drawErrorMessages smosStateErrorMessages
-          ],
-          [ drawExplainerMode smosStateDebugInfo | configExplainerMode
-          ]
-        ]
-  ]
+  let denv =
+        DrawEnv
+          { drawEnvWaitingThreshold = waitingReportConfigThreshold $ smosReportConfigWaitingConfig configReportConfig,
+            drawEnvStuckThreshold = stuckReportConfigThreshold $ smosReportConfigStuckConfig configReportConfig,
+            drawEnvNow = smosStateTime
+          }
+   in [ vBox $
+          concat
+            [ [ padBottom Max $ runReader (drawEditorCursor workflowDir configKeyMap smosStateCursor) denv,
+                drawErrorMessages smosStateErrorMessages
+              ],
+              [ drawExplainerMode smosStateDebugInfo | configExplainerMode
+              ]
+            ]
+      ]
 
 drawEditorCursor :: Path Abs Dir -> KeyMap -> EditorCursor -> Drawer
 drawEditorCursor workflowDir configKeyMap EditorCursor {..} =
@@ -730,7 +737,7 @@ drawStateHistory :: StateHistory -> MDrawer
 drawStateHistory (StateHistory ls)
   | null ls = pure Nothing
   | otherwise = do
-    zt <- ask
+    zt <- asks drawEnvNow
     pure $
       Just $
         withAttr todoStateHistoryAttr $
@@ -809,7 +816,7 @@ drawLogbookTotal Nothing [] = pure Nothing
 drawLogbookTotal mopen lbes = do
   openTime <-
     forM mopen $ \open -> do
-      now <- asks zonedTimeToUTC
+      now <- asks $ zonedTimeToUTC . drawEnvNow
       pure $ diffUTCTime now open
   let total = fromMaybe 0 openTime + sum (map logbookEntryDiffTime lbes)
   pure $
@@ -832,7 +839,7 @@ drawLogbookEntry lbe@LogbookEntry {..} = do
 
 drawLogOpen :: UTCTime -> Drawer
 drawLogOpen u = do
-  now <- asks zonedTimeToUTC
+  now <- asks $ zonedTimeToUTC . drawEnvNow
   sw <- drawLogbookTimestamp u
   ew <- drawLogbookTimestamp now
   pure $
@@ -854,7 +861,7 @@ drawLogbookTimestamp utct = do
 
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
-  tz <- asks zonedTimeZone
+  tz <- asks $ zonedTimeZone . drawEnvNow
   let localTime = utcToLocalTime tz utct
   pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
 

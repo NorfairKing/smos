@@ -49,8 +49,6 @@ reportWork =
         let wc = smosReportConfigWorkConfig src
         let wac = smosReportConfigWaitingConfig src
         let sc = smosReportConfigStuckConfig src
-
-        -- TODO get these pieces of config from the report config
         let ctx =
               WorkReportContext
                 { workReportContextNow = now,

@@ -42,6 +42,8 @@ description: The changelog for all of the Smos tools and libraries
   Moved all the static configuration of the work report out of `smos-query` into `smos-report` so that `smos` can access it for the interactive work report.
 - `smos`:
   Hide properties of done entries on startup.
+- `smos`:
+  The waiting report is now drawn with the configured threshold, instead of always with threshold 7.
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)

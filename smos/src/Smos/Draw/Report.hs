@@ -62,7 +62,8 @@ drawWaitingReportCursor s WaitingReportCursor {..} = do
 
 drawWaitingEntryCursor :: Select -> EntryReportEntryCursor UTCTime -> Drawer' [Widget ResourceName]
 drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
-  now <- asks zonedTimeToUTC
+  now <- asks $ zonedTimeToUTC . drawEnvNow
+  threshold <- asks drawEnvWaitingThreshold
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
@@ -71,7 +72,7 @@ drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
   pure
     [ str $ fromRelFile entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
-      daysSinceWidget 7 now entryReportEntryCursorVal
+      daysSinceWidget threshold now entryReportEntryCursorVal
     ]
 
 daysSinceWidget :: Word -> UTCTime -> UTCTime -> Widget n
@@ -141,7 +142,7 @@ drawTimestampsReportCursor s TimestampsReportCursor {..} = do
           case mnec of
             Nothing -> pure $ txtWrap "Empty timestamps report"
             Just tsecs -> do
-              now <- ask
+              now <- asks drawEnvNow
               ws <- mapM (drawTimestampReportLine s') $ makeTimestampReportLines now tsecs
               pure $ tableWidget ws
       )
@@ -257,7 +258,8 @@ drawStuckReportCursor s StuckReportCursor {..} = do
 
 drawStuckReportEntry :: Select -> StuckReportEntry -> Drawer' [Widget ResourceName]
 drawStuckReportEntry s StuckReportEntry {..} = do
-  now <- asks zonedTimeToUTC
+  now <- asks $ zonedTimeToUTC . drawEnvNow
+  threshold <- asks drawEnvStuckThreshold
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
@@ -270,7 +272,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
       sel $ drawHeader stuckReportEntryHeader,
       maybe
         (str " ")
-        (\ts -> if ts > now then str "future" else daysSinceWidget 21 now ts)
+        (\ts -> if ts > now then str "future" else daysSinceWidget threshold now ts)
         stuckReportEntryLatestChange
     ]
 
