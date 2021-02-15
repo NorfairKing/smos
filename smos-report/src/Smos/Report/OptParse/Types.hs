@@ -4,6 +4,7 @@
 
 module Smos.Report.OptParse.Types where
 
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
@@ -12,8 +13,11 @@ import Data.Validity
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
+import Smos.Data
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.Projection
+import Smos.Report.Sorter
 import YamlParse.Applicative as YamlParse
 
 data Flags = Flags
@@ -71,6 +75,8 @@ data DirectoryEnvironment = DirectoryEnvironment
 
 data Configuration = Configuration
   { confDirectoryConf :: !DirectoryConfiguration,
+    confWaitingReportConf :: !(Maybe WaitingReportConfiguration),
+    confStuckReportConf :: !(Maybe StuckReportConfiguration),
     confWorkReportConf :: !(Maybe WorkReportConfiguration)
   }
   deriving (Show, Eq, Generic)
@@ -81,7 +87,9 @@ instance ToJSON Configuration where
   toJSON Configuration {..} =
     object $
       directoryConfigurationToObject confDirectoryConf
-        ++ [ "work" .= confWorkReportConf
+        ++ [ "waiting" .= confWaitingReportConf,
+             "stuck" .= confStuckReportConf,
+             "work" .= confWorkReportConf
            ]
 
 instance FromJSON Configuration where
@@ -92,13 +100,26 @@ instance YamlSchema Configuration where
     objectParser "Configuration" $
       Configuration
         <$> directoryConfigurationObjectParser
+        <*> optionalField "waiting" "The waiting report configuration"
+        <*> optionalField "stuck" "The stuck projects report configuration"
         <*> optionalField "work" "The work report configuration"
 
 backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
   Configuration
     { confDirectoryConf = backToDirectoryConfiguration smosReportConfigDirectoryConfig,
-      confWorkReportConf = if smosReportConfigWorkConfig == defaultWorkReportConfig then Nothing else Just $ backToWorkReportConfiguration smosReportConfigWorkConfig
+      confWaitingReportConf =
+        if smosReportConfigWaitingConfig == defaultWaitingReportConfig
+          then Nothing
+          else Just $ backToWaitingReportConfiguration smosReportConfigWaitingConfig,
+      confStuckReportConf =
+        if smosReportConfigStuckConfig == defaultStuckReportConfig
+          then Nothing
+          else Just $ backToStuckReportConfiguration smosReportConfigStuckConfig,
+      confWorkReportConf =
+        if smosReportConfigWorkConfig == defaultWorkReportConfig
+          then Nothing
+          else Just $ backToWorkReportConfiguration smosReportConfigWorkConfig
     }
 
 data DirectoryConfiguration = DirectoryConfiguration
@@ -178,10 +199,75 @@ backToDirectoryConfiguration DirectoryConfig {..} =
                 ArchivedProjectsAbsolute aad -> fromAbsDir aad
     }
 
+data WaitingReportConfiguration = WaitingReportConfiguration
+  { waitingReportConfThreshold :: !(Maybe Word)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity WaitingReportConfiguration
+
+instance ToJSON WaitingReportConfiguration where
+  toJSON WaitingReportConfiguration {..} =
+    object
+      [ "threshold" .= waitingReportConfThreshold
+      ]
+
+instance FromJSON WaitingReportConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema WaitingReportConfiguration where
+  yamlSchema =
+    objectParser "WaitingReportConfiguration" $
+      WaitingReportConfiguration
+        <$> optionalField "threshold" "waiting report threshold to consider waiting entries 'overdue'"
+
+backToWaitingReportConfiguration :: WaitingReportConfig -> WaitingReportConfiguration
+backToWaitingReportConfiguration WaitingReportConfig {..} =
+  WaitingReportConfiguration
+    { waitingReportConfThreshold =
+        if waitingReportConfigThreshold == defaultWaitingThreshold
+          then Nothing
+          else Just defaultWaitingThreshold
+    }
+
+data StuckReportConfiguration = StuckReportConfiguration
+  { stuckReportConfThreshold :: !(Maybe Word)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity StuckReportConfiguration
+
+instance ToJSON StuckReportConfiguration where
+  toJSON StuckReportConfiguration {..} =
+    object
+      [ "threshold" .= stuckReportConfThreshold
+      ]
+
+instance FromJSON StuckReportConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema StuckReportConfiguration where
+  yamlSchema =
+    objectParser "StuckReportConfiguration" $
+      StuckReportConfiguration
+        <$> optionalField "threshold" "stuck report threshold to consider stuck projects 'overdue'"
+
+backToStuckReportConfiguration :: StuckReportConfig -> StuckReportConfiguration
+backToStuckReportConfiguration StuckReportConfig {..} =
+  StuckReportConfiguration
+    { stuckReportConfThreshold =
+        if stuckReportConfigThreshold == defaultStuckThreshold
+          then Nothing
+          else Just defaultStuckThreshold
+    }
+
 data WorkReportConfiguration = WorkReportConfiguration
   { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
     workReportConfChecks :: !(Maybe (Set EntryFilterRel)),
-    workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel))
+    workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel)),
+    workReportConfTimeFilterProperty :: Maybe PropertyName,
+    workReportConfProjection :: Maybe (NonEmpty Projection),
+    workReportConfSorter :: Maybe Sorter
   }
   deriving (Show, Eq, Generic)
 
@@ -192,7 +278,10 @@ instance ToJSON WorkReportConfiguration where
     object
       [ "base-filter" .= workReportConfBaseFilter,
         "checks" .= workReportConfChecks,
-        "contexts" .= workReportConfContexts
+        "contexts" .= workReportConfContexts,
+        "time-filter" .= workReportConfTimeFilterProperty,
+        "columns" .= workReportConfProjection,
+        "sorter" .= workReportConfSorter
       ]
 
 instance FromJSON WorkReportConfiguration where
@@ -205,6 +294,9 @@ instance YamlSchema WorkReportConfiguration where
         <$> optionalField "base-filter" "The base work filter"
         <*> optionalField "checks" "Checks for the work report"
         <*> optionalField "contexts" "Contexts for the work report"
+        <*> optionalField "time-filter" "The property to use to filter by time"
+        <*> optionalField "columns" "The columns in the report"
+        <*> optionalField "sorter" "The sorter to use to sort the rows"
 
 backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
 backToWorkReportConfiguration WorkReportConfig {..} =
@@ -214,5 +306,8 @@ backToWorkReportConfiguration WorkReportConfig {..} =
           then Nothing
           else Just defaultWorkBaseFilter,
       workReportConfChecks = Just workReportConfigChecks,
-      workReportConfContexts = Just workReportConfigContexts
+      workReportConfContexts = Just workReportConfigContexts,
+      workReportConfTimeFilterProperty = workReportConfigTimeProperty,
+      workReportConfProjection = Just workReportConfigProjection,
+      workReportConfSorter = workReportConfigSorter
     }

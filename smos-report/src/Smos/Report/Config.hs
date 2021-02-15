@@ -9,6 +9,12 @@ module Smos.Report.Config
     defaultReportConfig,
     DirectoryConfig (..),
     defaultDirectoryConfig,
+    WaitingReportConfig (..),
+    defaultWaitingReportConfig,
+    defaultWaitingThreshold,
+    StuckReportConfig (..),
+    defaultStuckReportConfig,
+    defaultStuckThreshold,
     WorkReportConfig (..),
     defaultWorkReportConfig,
     defaultWorkBaseFilter,
@@ -22,6 +28,7 @@ module Smos.Report.Config
     defaultProjectsDirSpec,
     resolveProjectsDir,
     ArchivedProjectsDirSpec (..),
+    defaultProjection,
     defaultArchivedProjectsDirSpec,
     resolveArchivedProjectsDir,
     resolveDirWorkflowDir,
@@ -37,6 +44,7 @@ module Smos.Report.Config
 where
 
 import Data.Aeson
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
@@ -46,11 +54,16 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Path
 import Path.IO
+import Smos.Data
 import Smos.Report.Filter
+import Smos.Report.Projection
+import Smos.Report.Sorter
 import YamlParse.Applicative
 
 data SmosReportConfig = SmosReportConfig
   { smosReportConfigDirectoryConfig :: !DirectoryConfig,
+    smosReportConfigWaitingConfig :: !WaitingReportConfig,
+    smosReportConfigStuckConfig :: !StuckReportConfig,
     smosReportConfigWorkConfig :: !WorkReportConfig
   }
   deriving (Show, Eq, Generic)
@@ -59,6 +72,8 @@ defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
   SmosReportConfig
     { smosReportConfigDirectoryConfig = defaultDirectoryConfig,
+      smosReportConfigWaitingConfig = defaultWaitingReportConfig,
+      smosReportConfigStuckConfig = defaultStuckReportConfig,
       smosReportConfigWorkConfig = defaultWorkReportConfig
     }
 
@@ -82,7 +97,10 @@ defaultDirectoryConfig =
 data WorkReportConfig = WorkReportConfig
   { workReportConfigBaseFilter :: Maybe EntryFilterRel,
     workReportConfigChecks :: Set EntryFilterRel,
-    workReportConfigContexts :: Map ContextName EntryFilterRel
+    workReportConfigContexts :: Map ContextName EntryFilterRel,
+    workReportConfigTimeProperty :: Maybe PropertyName,
+    workReportConfigProjection :: NonEmpty Projection,
+    workReportConfigSorter :: Maybe Sorter
   }
   deriving (Show, Eq, Generic)
 
@@ -91,8 +109,14 @@ defaultWorkReportConfig =
   WorkReportConfig
     { workReportConfigBaseFilter = Just defaultWorkBaseFilter,
       workReportConfigChecks = S.empty,
-      workReportConfigContexts = M.empty
+      workReportConfigContexts = M.empty,
+      workReportConfigTimeProperty = Nothing,
+      workReportConfigProjection = defaultProjection,
+      workReportConfigSorter = Nothing
     }
+
+defaultProjection :: NonEmpty Projection
+defaultProjection = OntoFile :| [OntoState, OntoHeader]
 
 defaultWorkBaseFilter :: EntryFilterRel
 defaultWorkBaseFilter =
@@ -101,6 +125,34 @@ defaultWorkBaseFilter =
       FilterEntryTodoState $
         FilterMaybe False $
           FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+
+data WaitingReportConfig = WaitingReportConfig
+  { waitingReportConfigThreshold :: Word
+  }
+  deriving (Show, Eq, Generic)
+
+defaultWaitingReportConfig :: WaitingReportConfig
+defaultWaitingReportConfig =
+  WaitingReportConfig
+    { waitingReportConfigThreshold = defaultWaitingThreshold
+    }
+
+defaultWaitingThreshold :: Word
+defaultWaitingThreshold = 7
+
+data StuckReportConfig = StuckReportConfig
+  { stuckReportConfigThreshold :: Word
+  }
+  deriving (Show, Eq, Generic)
+
+defaultStuckReportConfig :: StuckReportConfig
+defaultStuckReportConfig =
+  StuckReportConfig
+    { stuckReportConfigThreshold = defaultStuckThreshold
+    }
+
+defaultStuckThreshold :: Word
+defaultStuckThreshold = 21
 
 data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)

@@ -16,7 +16,6 @@ import qualified Data.Text.IO as T
 import Smos.Query.Commands.Entry
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
-import Smos.Report.Projection
 import Smos.Report.Report
 
 smosQueryReport :: ReportSettings -> Q ()

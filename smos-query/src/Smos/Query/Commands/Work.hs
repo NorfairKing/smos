@@ -42,7 +42,7 @@ smosQueryWork WorkSettings {..} = do
             workReportContextProjectsSubdir = mpd,
             workReportContextBaseFilter = workReportConfigBaseFilter wc,
             workReportContextCurrentContext = mcf,
-            workReportContextTimeProperty = workSetTimeProperty,
+            workReportContextTimeProperty = workReportConfigTimeProperty wc,
             workReportContextTime = workSetTime,
             workReportContextAdditionalFilter = workSetFilter,
             workReportContextContexts = contexts,
@@ -53,7 +53,14 @@ smosQueryWork WorkSettings {..} = do
           }
   sp <- getShouldPrint
   wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
-  putTableLn $ renderWorkReport now contexts workSetWaitingThreshold workSetStuckThreshold workSetProjection wr
+  putTableLn $
+    renderWorkReport
+      now
+      contexts
+      workSetWaitingThreshold
+      workSetStuckThreshold
+      workSetProjection
+      wr
 
 renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> Table
 renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
@@ -83,16 +90,6 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
                       unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
               ],
             unlessNull
-              workReportAgendaEntries
-              [ sectionHeading "Deadlines:",
-                [agendaTable]
-              ],
-            unlessNull
-              workReportResultEntries
-              [ sectionHeading "Next actions:",
-                [entryTable workReportResultEntries]
-              ],
-            unlessNull
               workReportOverdueWaiting
               [ warningHeading "Overdue Waiting Entries:",
                 [waitingTable]
@@ -101,6 +98,16 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
               workReportOverdueStuck
               [ warningHeading "Overdue Stuck Projects:",
                 [stuckTable]
+              ],
+            unlessNull
+              workReportAgendaEntries
+              [ sectionHeading "Deadlines:",
+                [agendaTable]
+              ],
+            unlessNull
+              workReportResultEntries
+              [ sectionHeading "Next actions:",
+                [entryTable workReportResultEntries]
               ]
           ]
   where

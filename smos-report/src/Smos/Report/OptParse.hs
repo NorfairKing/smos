@@ -2,6 +2,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Report.OptParse
   ( module Smos.Report.OptParse,
@@ -28,6 +29,8 @@ combineToConfig ::
   SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
 combineToConfig src Flags {..} Environment {..} mc = do
   smosReportConfigDirectoryConfig <- combineToDirectoryConfig (smosReportConfigDirectoryConfig src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
+  smosReportConfigWaitingConfig <- combineToWaitingReportConfig (smosReportConfigWaitingConfig src) (mc >>= confWaitingReportConf)
+  smosReportConfigStuckConfig <- combineToStuckReportConfig (smosReportConfigStuckConfig src) (mc >>= confStuckReportConf)
   smosReportConfigWorkConfig <- combineToWorkReportConfig (smosReportConfigWorkConfig src) (mc >>= confWorkReportConf)
   pure $ SmosReportConfig {..}
 
@@ -69,14 +72,34 @@ combineToDirectoryConfig dc DirectoryFlags {..} DirectoryEnvironment {..} mc = d
         directoryConfigArchivedProjectsFileSpec = apfs
       }
 
+combineToWaitingReportConfig :: WaitingReportConfig -> Maybe WaitingReportConfiguration -> IO WaitingReportConfig
+combineToWaitingReportConfig wrc mc = do
+  let WaitingReportConfig _ = undefined
+  pure $
+    wrc
+      { waitingReportConfigThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
+      }
+
+combineToStuckReportConfig :: StuckReportConfig -> Maybe StuckReportConfiguration -> IO StuckReportConfig
+combineToStuckReportConfig wrc mc = do
+  let StuckReportConfig _ = undefined
+  pure $
+    wrc
+      { stuckReportConfigThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
+      }
+
 combineToWorkReportConfig :: WorkReportConfig -> Maybe WorkReportConfiguration -> IO WorkReportConfig
-combineToWorkReportConfig wrc mc =
+combineToWorkReportConfig wrc mc = do
+  let WorkReportConfig _ _ _ _ _ _ = undefined
   pure $
     wrc
       { workReportConfigBaseFilter =
           (mc >>= workReportConfBaseFilter) <|> workReportConfigBaseFilter wrc,
         workReportConfigChecks = fromMaybe (workReportConfigChecks wrc) (mc >>= workReportConfChecks),
-        workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts)
+        workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts),
+        workReportConfigTimeProperty = mc >>= workReportConfTimeFilterProperty,
+        workReportConfigProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
+        workReportConfigSorter = mc >>= workReportConfSorter
       }
 
 parseFlags :: Parser Flags

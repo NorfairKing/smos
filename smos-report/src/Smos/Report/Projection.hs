@@ -7,7 +7,6 @@ import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 import Data.Aeson
-import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -21,9 +20,6 @@ import Smos.Data
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import YamlParse.Applicative
-
-defaultProjection :: NonEmpty Projection
-defaultProjection = OntoFile :| [OntoState, OntoHeader]
 
 data Projection
   = OntoFile

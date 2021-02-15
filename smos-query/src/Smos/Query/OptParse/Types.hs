@@ -14,7 +14,6 @@ import Data.Map (Map)
 import Data.Text (Text)
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
-import Smos.Data
 import Smos.Query.Config
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
@@ -37,18 +36,18 @@ data Instructions
   = Instructions Dispatch SmosQueryConfig
 
 data Command
-  = CommandEntry EntryFlags
-  | CommandReport ReportFlags
-  | CommandWork WorkFlags
-  | CommandWaiting WaitingFlags
-  | CommandNext NextFlags
-  | CommandClock ClockFlags
-  | CommandAgenda AgendaFlags
-  | CommandProjects ProjectsFlags
-  | CommandStuck StuckFlags
-  | CommandLog LogFlags
-  | CommandStats StatsFlags
-  | CommandTags TagsFlags
+  = CommandEntry !EntryFlags
+  | CommandReport !ReportFlags
+  | CommandWaiting !WaitingFlags
+  | CommandNext !NextFlags
+  | CommandClock !ClockFlags
+  | CommandAgenda !AgendaFlags
+  | CommandProjects !ProjectsFlags
+  | CommandStuck !StuckFlags
+  | CommandWork !WorkFlags
+  | CommandLog !LogFlags
+  | CommandStats !StatsFlags
+  | CommandTags !TagsFlags
   deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
@@ -211,62 +210,45 @@ instance YamlSchema PreparedReportConfiguration where
   yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
 data WaitingConfiguration = WaitingConfiguration
-  { waitingConfThreshold :: Maybe Word
-  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON WaitingConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema WaitingConfiguration where
-  yamlSchema =
-    objectParser "WaitingConfiguration" $
-      WaitingConfiguration <$> optionalField "threshold" "The number of days before you've been waiting for something for too long"
+  yamlSchema = pure WaitingConfiguration
 
 data StuckConfiguration = StuckConfiguration
-  { stuckConfThreshold :: Maybe Word
-  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON StuckConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema StuckConfiguration where
-  yamlSchema =
-    objectParser "StuckConfiguration" $
-      StuckConfiguration <$> optionalField "threshold" "The number of days before a project has been stuck for too long"
+  yamlSchema = pure StuckConfiguration
 
 data WorkConfiguration = WorkConfiguration
-  { workConfTimeFilterProperty :: Maybe PropertyName,
-    workConfProjection :: Maybe (NonEmpty Projection),
-    workConfSorter :: Maybe Sorter
-  }
   deriving (Show, Eq, Generic)
 
 instance FromJSON WorkConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema WorkConfiguration where
-  yamlSchema =
-    objectParser "WorkConfiguration" $
-      WorkConfiguration
-        <$> optionalField "time-filter" "The property to use to filter by time"
-        <*> optionalField "columns" "The columns in the report"
-        <*> optionalField "sorter" "The sorter to use to sort the rows"
+  yamlSchema = pure WorkConfiguration
 
 data Dispatch
-  = DispatchEntry EntrySettings
-  | DispatchReport ReportSettings
-  | DispatchWork WorkSettings
-  | DispatchWaiting WaitingSettings
-  | DispatchNext NextSettings
-  | DispatchClock ClockSettings
-  | DispatchAgenda AgendaSettings
-  | DispatchProjects ProjectsSettings
-  | DispatchStuck StuckSettings
-  | DispatchLog LogSettings
-  | DispatchStats StatsSettings
-  | DispatchTags TagsSettings
+  = DispatchEntry !EntrySettings
+  | DispatchReport !ReportSettings
+  | DispatchWork !WorkSettings
+  | DispatchWaiting !WaitingSettings
+  | DispatchNext !NextSettings
+  | DispatchClock !ClockSettings
+  | DispatchAgenda !AgendaSettings
+  | DispatchProjects !ProjectsSettings
+  | DispatchStuck !StuckSettings
+  | DispatchLog !LogSettings
+  | DispatchStats !StatsSettings
+  | DispatchTags !TagsSettings
   deriving (Show, Eq, Generic)
 
 data EntrySettings = EntrySettings
@@ -284,22 +266,21 @@ data ReportSettings = ReportSettings
   deriving (Show, Eq, Generic)
 
 data WorkSettings = WorkSettings
-  { workSetContext :: Maybe ContextName,
-    workSetTimeProperty :: Maybe PropertyName,
-    workSetTime :: Maybe Time,
-    workSetFilter :: Maybe EntryFilterRel,
-    workSetProjection :: NonEmpty Projection,
-    workSetSorter :: Maybe Sorter,
-    workSetHideArchive :: HideArchive,
-    workSetWaitingThreshold :: Word,
-    workSetStuckThreshold :: Word
+  { workSetContext :: !(Maybe ContextName),
+    workSetTime :: !(Maybe Time),
+    workSetFilter :: !(Maybe EntryFilterRel),
+    workSetProjection :: !(NonEmpty Projection),
+    workSetSorter :: !(Maybe Sorter),
+    workSetHideArchive :: !HideArchive,
+    workSetWaitingThreshold :: !Word,
+    workSetStuckThreshold :: !Word
   }
   deriving (Show, Eq, Generic)
 
 data WaitingSettings = WaitingSettings
-  { waitingSetFilter :: Maybe EntryFilterRel,
-    waitingSetHideArchive :: HideArchive,
-    waitingSetThreshold :: Word
+  { waitingSetFilter :: !(Maybe EntryFilterRel),
+    waitingSetHideArchive :: !HideArchive,
+    waitingSetThreshold :: !Word
   }
   deriving (Show, Eq, Generic)
 
@@ -335,8 +316,8 @@ data ProjectsSettings = ProjectsSettings
   deriving (Show, Eq, Generic)
 
 data StuckSettings = StuckSettings
-  { stuckSetFilter :: Maybe ProjectFilter,
-    stuckSetThreshold :: Word
+  { stuckSetFilter :: !(Maybe ProjectFilter),
+    stuckSetThreshold :: !Word
   }
   deriving (Show, Eq, Generic)
 

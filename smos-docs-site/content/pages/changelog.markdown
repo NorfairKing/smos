@@ -21,18 +21,27 @@ description: The changelog for all of the Smos tools and libraries
   Interactive stuck projects report
 - `smos`:
   Filter bar for the built-in file browser
-- `smos`: The `forestToggleCollapseEntryProperties` action, bound to `zp` by default.
-- `smos`: Hide properties of done entries on startup.
-- All commands: Autocompletion for the `--config-file` and `--workflow-dir` options.
-- `smos`: The `propertiesEditProperty_goal` action, bound to `pg` by default.
-- `smos-data`: Allow spaces and parens in property values.
-- `smos-query`: Moved the work report warnings to above the  deadlines so that they are more in line with the order in which you should read the report.
+- `smos`:
+  The `forestToggleCollapseEntryProperties` action, bound to `zp` by default.
+- All commands:
+  Autocompletion for the `--config-file` and `--workflow-dir` options.
+- `smos`:
+  The `propertiesEditProperty_goal` action, bound to `pg` by default.
+
 
 ## Changed
 
+- `smos-data`:
+  Allow spaces and parens in property values.
+  Note that this means that smos files created in this new version of `smos` are potentially not backward compatible.
 - `smos-scheduler`: Explicitly setting a header's `state` to `null` now leaves the generated state as null instead of setting it to `TODO`.
   Thank you [@prikhi](https://github.com/prikhi)!
-
+- `smos-query`:
+  Moved the work report warnings to above the  deadlines so that they are more in line with the order in which you should read the report.
+- `smos-query` and `smos-report`:
+  Moved all the static configuration of the work report out of `smos-query` into `smos-report` so that `smos` can access it for the interactive work report.
+- `smos`:
+  Hide properties of done entries on startup.
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)

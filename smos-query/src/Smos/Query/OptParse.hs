@@ -47,8 +47,6 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
   where
     hideArchiveWithDefault def mflag =
       fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
-    waitingThresholdWith = fromMaybe 7
-    stuckThresholdWith = fromMaybe 21
     getDispatch =
       case c of
         CommandEntry EntryFlags {..} ->
@@ -69,14 +67,13 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
                 }
         CommandWaiting WaitingFlags {..} -> do
-          let mwc func = mc >>= confWaitingConfiguration >>= func
+          let mwc func = func $ smosReportConfigWaitingConfig smosQueryConfigReportConfig
           pure $
             DispatchWaiting
               WaitingSettings
                 { waitingSetFilter = waitingFlagFilter,
                   waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
-                  waitingSetThreshold =
-                    waitingThresholdWith $ waitingFlagThreshold <|> mwc waitingConfThreshold
+                  waitingSetThreshold = fromMaybe (mwc waitingReportConfigThreshold) waitingFlagThreshold
                 }
         CommandNext NextFlags {..} ->
           pure $
@@ -142,40 +139,32 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
                   agendaSetPeriod = period
                 }
-        CommandWork WorkFlags {..} -> do
-          let mwc func = mc >>= confWorkConfiguration >>= func
-              combineMaybe :: (a -> a -> a) -> Maybe a -> Maybe a -> Maybe a
-              combineMaybe f m1 m2 =
-                case (m1, m2) of
-                  (Nothing, Nothing) -> Nothing
-                  (Just a, Nothing) -> Just a
-                  (Nothing, Just a) -> Just a
-                  (Just a1, Just a2) -> Just $ f a1 a2
-          pure $
-            DispatchWork
-              WorkSettings
-                { workSetContext = workFlagContext,
-                  workSetTimeProperty = mwc workConfTimeFilterProperty,
-                  workSetTime = workFlagTime,
-                  workSetFilter = workFlagFilter,
-                  workSetProjection =
-                    fromMaybe defaultProjection $
-                      combineMaybe (<>) (mwc workConfProjection) workFlagProjection,
-                  workSetSorter = mwc workConfSorter <|> workFlagSorter,
-                  workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
-                  workSetWaitingThreshold = waitingThresholdWith $ workFlagWaitingThreshold <|> (mc >>= confWaitingConfiguration >>= waitingConfThreshold),
-                  workSetStuckThreshold = stuckThresholdWith $ workFlagStuckThreshold <|> (mc >>= confStuckConfiguration >>= stuckConfThreshold)
-                }
         CommandProjects ProjectsFlags {..} ->
           pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
         CommandStuck StuckFlags {..} -> do
-          let msc func = mc >>= confStuckConfiguration >>= func
+          let msc func = func $ smosReportConfigStuckConfig smosQueryConfigReportConfig
           pure $
             DispatchStuck
               StuckSettings
                 { stuckSetFilter = stuckFlagFilter,
-                  stuckSetThreshold =
-                    stuckThresholdWith $ stuckFlagThreshold <|> msc stuckConfThreshold
+                  stuckSetThreshold = fromMaybe (msc stuckReportConfigThreshold) stuckFlagThreshold
+                }
+        CommandWork WorkFlags {..} -> do
+          let mwac func = func $ smosReportConfigWaitingConfig smosQueryConfigReportConfig
+          let msc func = func $ smosReportConfigStuckConfig smosQueryConfigReportConfig
+          let mwc func = func $ smosReportConfigWorkConfig smosQueryConfigReportConfig
+
+          pure $
+            DispatchWork
+              WorkSettings
+                { workSetContext = workFlagContext,
+                  workSetTime = workFlagTime,
+                  workSetFilter = workFlagFilter,
+                  workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
+                  workSetProjection = fromMaybe (mwc workReportConfigProjection) workFlagProjection,
+                  workSetSorter = mwc workReportConfigSorter <|> workFlagSorter,
+                  workSetWaitingThreshold = fromMaybe (mwac waitingReportConfigThreshold) workFlagWaitingThreshold,
+                  workSetStuckThreshold = fromMaybe (msc stuckReportConfigThreshold) workFlagStuckThreshold
                 }
         CommandLog LogFlags {..} ->
           pure $
