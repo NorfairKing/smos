@@ -6,7 +6,6 @@ module Smos.Report.Entry where
 import Conduit
 import Cursor.Simple.Forest
 import Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NE
 import Data.Validity
 import GHC.Generics (Generic)
 import Path
@@ -40,5 +39,5 @@ makeEntryReport :: NonEmpty Projection -> [(Path Rel File, ForestCursor Entry)] 
 makeEntryReport entryReportHeaders tups =
   let entryReportCells =
         flip map tups $ \(rp, e) ->
-          flip NE.map entryReportHeaders $ \projection -> performProjection projection rp e
+          performProjectionNE entryReportHeaders rp e
    in EntryReport {..}

@@ -8,9 +8,11 @@ import Cursor.Brick
 import Cursor.Text
 import Cursor.TextField
 import Data.List
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Time
 import Path
 import Smos.Data
+import Smos.Report.Projection
 import Smos.Style
 import Smos.Types
 import qualified System.FilePath as FP
@@ -20,7 +22,12 @@ import Text.Time.Pretty
 data DrawEnv = DrawEnv
   { drawEnvWaitingThreshold :: !Word,
     drawEnvStuckThreshold :: !Word,
+    drawEnvWorkDrawEnv :: !DrawWorkEnv,
     drawEnvNow :: !ZonedTime
+  }
+
+data DrawWorkEnv = DrawWorkEnv
+  { drawWorkEnvProjection :: !(NonEmpty Projection)
   }
 
 type MDrawer = Reader DrawEnv (Maybe (Widget ResourceName))
@@ -82,9 +89,31 @@ drawTable = hBox . intersperse (str " ") . map vBox . transpose
 drawHeader :: Header -> Widget n
 drawHeader = withAttr headerAttr . textLineWidget . headerText
 
+drawTag :: Tag -> Widget n
+drawTag = textLineWidget . tagText
+
 drawTodoState :: TodoState -> Widget n
 drawTodoState ts =
   withAttr (todoStateSpecificAttr ts <> todoStateAttr) . textLineWidget $ todoStateText ts
+
+drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
+drawPropertyPair pn pv =
+  withAttr (propertyNameSpecificAttr pn) $
+    hBox [drawPropertyName pn, str ": ", drawPropertyValue pn pv]
+
+drawPropertyName :: PropertyName -> Widget ResourceName
+drawPropertyName pn =
+  withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+    textLineWidget $
+      propertyNameText pn
+
+drawPropertyValue :: PropertyName -> PropertyValue -> Widget ResourceName
+drawPropertyValue pn = withAttr (propertyNameSpecificAttr pn) . textWidget . propertyValueText
+
+drawTimestampPair :: TimestampName -> Timestamp -> Drawer
+drawTimestampPair tsn ts = do
+  dw <- drawTimestampWithPrettyRelative ts
+  pure $ hBox [drawTimestampName tsn, str ": ", dw]
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =

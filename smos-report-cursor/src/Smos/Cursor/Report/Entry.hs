@@ -12,6 +12,7 @@ import Cursor.Text
 import Cursor.Types
 import qualified Data.Conduit.Combinators as C
 import Data.Foldable (toList)
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Validity
 import GHC.Generics (Generic)
@@ -22,6 +23,7 @@ import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.Projection
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
@@ -202,3 +204,6 @@ entryReportEntryCursorForestCursorL =
 entryReportEntryCursorEntryL :: Lens' (EntryReportEntryCursor a) Entry
 entryReportEntryCursorEntryL =
   entryReportEntryCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL
+
+projectEntryReportEntryCursor :: NonEmpty Projection -> EntryReportEntryCursor () -> NonEmpty Projectee
+projectEntryReportEntryCursor projection EntryReportEntryCursor {..} = performProjectionNE projection entryReportEntryCursorFilePath entryReportEntryCursorForestCursor

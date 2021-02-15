@@ -55,6 +55,11 @@ smosDraw workflowDir SmosConfig {..} SmosState {..} =
         DrawEnv
           { drawEnvWaitingThreshold = waitingReportConfigThreshold $ smosReportConfigWaitingConfig configReportConfig,
             drawEnvStuckThreshold = stuckReportConfigThreshold $ smosReportConfigStuckConfig configReportConfig,
+            drawEnvWorkDrawEnv =
+              let WorkReportConfig {..} = smosReportConfigWorkConfig configReportConfig
+               in DrawWorkEnv
+                    { drawWorkEnvProjection = workReportConfigProjection
+                    },
             drawEnvNow = smosStateTime
           }
    in [ vBox $
@@ -665,11 +670,6 @@ drawTimestampKVCursor s = keyValueWidgetM goKey goVal
           MaybeSelected -> drawFuzzyLocalTimeCursor s fdc
       pure $ hBox [drawTimestampName tsn, str ": ", tsw]
 
-drawTimestampPair :: TimestampName -> Timestamp -> Drawer
-drawTimestampPair tsn ts = do
-  dw <- drawTimestampWithPrettyRelative ts
-  pure $ hBox [drawTimestampName tsn, str ": ", dw]
-
 drawFuzzyLocalTimeCursor :: Select -> FuzzyLocalTimeCursor -> Drawer
 drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
   dw <-
@@ -702,14 +702,9 @@ drawPropertyKVCursor s = keyValueWidget goKey goVal
         NotSelected -> id
         MaybeSelected -> withAttr selectedAttr
     goKey tc pv =
-      withAttr
-        ( maybe
-            id
-            (\pn -> (<>) (propertyNameSpecificAttr pn))
-            (propertyName $ rebuildTextCursor tc)
-            propertyNameAttr
-        )
-        $ hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pv]
+      let pn = fromMaybe "" $ propertyName $ rebuildTextCursor tc
+       in withAttr (propertyNameSpecificAttr pn) $
+            hBox [withAttr propertyNameAttr $ sel $ drawTextCursor s tc, str ": ", drawPropertyValue pn pv]
     goVal pn tc =
       withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
         hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
@@ -718,17 +713,6 @@ drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
 drawProperties m
   | M.null m = Nothing
   | otherwise = Just $ vBox $ map (uncurry drawPropertyPair) $ M.toList m
-
-drawPropertyPair :: PropertyName -> PropertyValue -> Widget ResourceName
-drawPropertyPair pn pv =
-  withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
-    hBox [drawPropertyName pn, str ": ", drawPropertyValue pv]
-
-drawPropertyName :: PropertyName -> Widget ResourceName
-drawPropertyName = textLineWidget . propertyNameText
-
-drawPropertyValue :: PropertyValue -> Widget ResourceName
-drawPropertyValue = textWidget . propertyValueText
 
 drawStateHistoryCursor :: Select -> StateHistoryCursor -> MDrawer
 drawStateHistoryCursor _ = drawStateHistory . rebuildStateHistoryCursor . Just
@@ -776,9 +760,6 @@ drawTagCursor s =
     . (<+> str ":")
     . drawTextCursor s
     . tagCursorTextCursor
-
-drawTag :: Tag -> Widget n
-drawTag = textLineWidget . tagText
 
 drawLogbookCursor :: Select -> LogbookCursor -> MDrawer
 drawLogbookCursor _ lbc =

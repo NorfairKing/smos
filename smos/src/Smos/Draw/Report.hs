@@ -13,7 +13,9 @@ import Brick.Widgets.Core as B
 import Cursor.Brick
 import Cursor.List.NonEmpty (foldNonEmptyCursor)
 import Cursor.Simple.List.NonEmpty
+import Data.Foldable
 import Data.List
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe
 import Data.Time
 import Path
@@ -23,6 +25,7 @@ import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
 import Smos.Report.Formatting
+import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Style
 import Smos.Types
@@ -336,16 +339,23 @@ drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do
         ]
 
 drawWorkReportResultEntryCursor :: Select -> EntryReportEntryCursor () -> Drawer' [Widget ResourceName]
-drawWorkReportResultEntryCursor s EntryReportEntryCursor {..} = do
-  -- TODO Get the drawing config from the work report config
+drawWorkReportResultEntryCursor s erc = do
+  DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let sel =
         ( case s of
             MaybeSelected -> forceAttr selectedAttr . visible
             NotSelected -> id
         )
-      e = forestCursorCurrent entryReportEntryCursorForestCursor
-  pure
-    [ str $ fromRelFile entryReportEntryCursorFilePath,
-      maybe (str " ") drawTodoState $ entryState e,
-      sel $ drawHeader $ entryHeader e
-    ]
+  map sel . toList <$> drawProjecteeNE (projectEntryReportEntryCursor drawWorkEnvProjection erc)
+
+drawProjecteeNE :: NonEmpty Projectee -> Drawer' (NonEmpty (Widget ResourceName))
+drawProjecteeNE = traverse drawProjectee
+
+drawProjectee :: Projectee -> Drawer
+drawProjectee = \case
+  FileProjection rf -> pure $ drawFilePath rf
+  HeaderProjection h -> pure $ drawHeader h
+  StateProjection ms -> pure $ maybe (str " ") drawTodoState ms
+  TagProjection mt -> pure $ maybe (str " ") drawTag mt
+  PropertyProjection pn mpv -> pure $ maybe (str " ") (drawPropertyValue pn) mpv
+  TimestampProjection _ mts -> maybe (pure $ str " ") drawTimestampWithPrettyRelative mts

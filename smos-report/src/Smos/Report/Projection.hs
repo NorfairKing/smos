@@ -7,6 +7,8 @@ import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 import Data.Aeson
+import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -62,6 +64,9 @@ instance Semigroup Projectee where
           then PropertyProjection pn1 $ mpv1 <|> mpv2
           else p1
       (_, _) -> p1
+
+performProjectionNE :: NonEmpty Projection -> Path Rel File -> ForestCursor Entry -> NonEmpty Projectee
+performProjectionNE ne rp fc = NE.map (\p -> performProjection p rp fc) ne
 
 performProjection :: Projection -> Path Rel File -> ForestCursor Entry -> Projectee
 performProjection p rp fc =
