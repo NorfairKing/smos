@@ -20,6 +20,7 @@ module Smos.Style
     propertyNameSpecificAttr,
     tagAttr,
     tagSpecificAttr,
+    projectionHeaderAttr,
     waitingReportLongWait,
     waitingReportMidWait,
     waitingReportShortWait,
@@ -73,6 +74,7 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "assignee", fg blue),
           (propertyNameSpecificAttr "estimate", fg green),
           (propertyNameSpecificAttr "goal", fg orange),
+          (projectionHeaderAttr, defAttr `withStyle` underline),
           (waitingReportLongWait, fg red),
           (waitingReportMidWait, fg yellow),
           (waitingReportShortWait, fg blue),
@@ -153,6 +155,9 @@ tagAttr = "tag"
 
 tagSpecificAttr :: Tag -> AttrName
 tagSpecificAttr t = fromString $ "tag-" ++ T.unpack (tagText t)
+
+projectionHeaderAttr :: AttrName
+projectionHeaderAttr = "projection-header"
 
 waitingReportLongWait :: AttrName
 waitingReportLongWait = "waiting-report-long-wait"

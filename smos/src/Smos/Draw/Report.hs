@@ -16,6 +16,7 @@ import Cursor.Simple.List.NonEmpty
 import Data.Foldable
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
 import Path
@@ -281,6 +282,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s WorkReportCursor {..} = do
+  DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
         if workReportCursorSelection == sel
@@ -305,11 +307,16 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   (selectIf DeadlinesSelected)
                   (timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor)
             ],
-            [ section "Next actions" $
-                drawEntryReportCursorTableSimple
-                  drawWorkReportResultEntryCursor
-                  (selectIf ResultsSelected)
-                  workReportCursorResultEntries
+            [ section "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
+                Nothing -> pure $ str "No results"
+                Just recs -> do
+                  let go = drawWorkReportResultEntryCursor
+                  verticalNonEmptyCursorTableWithHeaderM
+                    (go NotSelected)
+                    (go (selectIf ResultsSelected))
+                    (go NotSelected)
+                    (toList (drawProjectionHeaderNE drawWorkEnvProjection))
+                    recs
             ]
           ]
   sections <- sequence sectionGens
@@ -347,6 +354,20 @@ drawWorkReportResultEntryCursor s erc = do
             NotSelected -> id
         )
   map sel . toList <$> drawProjecteeNE (projectEntryReportEntryCursor drawWorkEnvProjection erc)
+
+drawProjectionHeaderNE :: NonEmpty Projection -> NonEmpty (Widget n)
+drawProjectionHeaderNE = NE.map drawProjectionHeader
+
+drawProjectionHeader :: Projection -> Widget n
+drawProjectionHeader =
+  withDefAttr projectionHeaderAttr . \case
+    OntoFile -> str "file"
+    OntoHeader -> str "header"
+    OntoProperty pn -> drawPropertyName pn
+    OntoTag t -> drawTag t
+    OntoState -> str "state"
+    OntoTimestamp tn -> drawTimestampName tn
+    OntoAncestor p' -> drawProjectionHeader p'
 
 drawProjecteeNE :: NonEmpty Projectee -> Drawer' (NonEmpty (Widget ResourceName))
 drawProjecteeNE = traverse drawProjectee

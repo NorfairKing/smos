@@ -101,11 +101,10 @@ drawPropertyPair pn pv =
   withAttr (propertyNameSpecificAttr pn) $
     hBox [drawPropertyName pn, str ": ", drawPropertyValue pn pv]
 
-drawPropertyName :: PropertyName -> Widget ResourceName
+drawPropertyName :: PropertyName -> Widget n
 drawPropertyName pn =
   withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
-    textLineWidget $
-      propertyNameText pn
+    textLineWidget $ propertyNameText pn
 
 drawPropertyValue :: PropertyName -> PropertyValue -> Widget ResourceName
 drawPropertyValue pn = withAttr (propertyNameSpecificAttr pn) . textWidget . propertyValueText
