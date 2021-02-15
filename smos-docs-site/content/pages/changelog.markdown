@@ -26,6 +26,7 @@ description: The changelog for all of the Smos tools and libraries
 - All commands: Autocompletion for the `--config-file` and `--workflow-dir` options.
 - `smos`: The `propertiesEditProperty_goal` action, bound to `pg` by default.
 - `smos-data`: Allow spaces and parens in property values.
+- `smos-query`: Moved the work report warnings to above the  deadlines so that they are more in line with the order in which you should read the report.
 
 ## Changed
 

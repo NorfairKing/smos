@@ -68,6 +68,21 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
                 [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
               ],
             unlessNull
+              ctxs
+              $ unlessNull
+                workReportEntriesWithoutContext
+                [ warningHeading "WARNING, the following Entries don't match any context:",
+                  [entryTable workReportEntriesWithoutContext]
+                ],
+            unlessNull
+              workReportCheckViolations
+              [ warningHeading "WARNING, the following Entries did not pass the checks:",
+                concat $
+                  flip concatMap (M.toList workReportCheckViolations) $
+                    \(f, violations) ->
+                      unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
+              ],
+            unlessNull
               workReportAgendaEntries
               [ sectionHeading "Deadlines:",
                 [agendaTable]
@@ -86,21 +101,6 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
               workReportOverdueStuck
               [ warningHeading "Overdue Stuck Projects:",
                 [stuckTable]
-              ],
-            unlessNull
-              ctxs
-              $ unlessNull
-                workReportEntriesWithoutContext
-                [ warningHeading "WARNING, the following Entries don't match any context:",
-                  [entryTable workReportEntriesWithoutContext]
-                ],
-            unlessNull
-              workReportCheckViolations
-              [ warningHeading "WARNING, the following Entries did not pass the checks:",
-                concat $
-                  flip concatMap (M.toList workReportCheckViolations) $
-                    \(f, violations) ->
-                      unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
               ]
           ]
   where
