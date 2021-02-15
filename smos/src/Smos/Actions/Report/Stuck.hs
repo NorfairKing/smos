@@ -83,10 +83,10 @@ enterStuckFile =
           Just rc -> case rc of
             ReportStuck src -> do
               dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-              wd <- liftIO $ resolveDirWorkflowDir dc
+              pd <- liftIO $ resolveDirProjectsDir dc
               case stuckReportCursorSelectedFile src of
                 Nothing -> pure ()
-                Just rp -> void $ switchToFile $ wd </> rp
+                Just rp -> void $ switchToFile $ pd </> rp
             _ -> pure ()
           Nothing -> pure (),
       actionDescription = "Enter the currently selected stuck project"
