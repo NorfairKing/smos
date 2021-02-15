@@ -47,6 +47,8 @@ reportWork =
         let mpd = stripProperPrefix wd pd
         let dc = smosReportConfigDirectoryConfig src
         let wc = smosReportConfigWorkConfig src
+        let wac = smosReportConfigWaitingConfig src
+        let sc = smosReportConfigStuckConfig src
 
         -- TODO get these pieces of config from the report config
         let ctx =
@@ -55,14 +57,14 @@ reportWork =
                   workReportContextProjectsSubdir = mpd,
                   workReportContextBaseFilter = workReportConfigBaseFilter wc,
                   workReportContextCurrentContext = Nothing,
-                  workReportContextTimeProperty = Nothing,
+                  workReportContextTimeProperty = workReportConfigTimeProperty wc,
                   workReportContextTime = Nothing,
                   workReportContextAdditionalFilter = Nothing,
                   workReportContextContexts = workReportConfigContexts wc,
                   workReportContextChecks = workReportConfigChecks wc,
-                  workReportContextSorter = Nothing,
-                  workReportContextWaitingThreshold = 7,
-                  workReportContextStuckThreshold = 21
+                  workReportContextSorter = workReportConfigSorter wc,
+                  workReportContextWaitingThreshold = waitingReportConfigThreshold wac,
+                  workReportContextStuckThreshold = stuckReportConfigThreshold sc
                 }
 
         wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint dc ctx
