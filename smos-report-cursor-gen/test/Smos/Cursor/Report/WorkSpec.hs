@@ -2,9 +2,6 @@
 
 module Smos.Cursor.Report.WorkSpec where
 
-import Control.Concurrent
-import Control.Exception
-import Debug.Trace
 import Smos.Cursor.Report.Work
 import Smos.Cursor.Report.Work.Gen ()
 import Smos.Data.Gen ()

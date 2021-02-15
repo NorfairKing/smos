@@ -7,7 +7,6 @@ import Control.DeepSeq
 import Data.Maybe
 import Data.Validity
 import Data.Validity.Path ()
-import Debug.Trace
 import GHC.Generics
 import Lens.Micro
 import Smos.Cursor.Report.Entry
@@ -20,7 +19,6 @@ import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Work
-import Text.Show.Pretty
 
 produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
 produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWorkReportToWorkReportCursor <$> intermediateWorkReportConduit wrc
