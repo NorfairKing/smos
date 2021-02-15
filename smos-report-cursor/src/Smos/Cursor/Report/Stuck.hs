@@ -24,9 +24,15 @@ produceStuckReportCursor tz sp dc = runConduit $ streamSmosProjects sp dc .| stu
 
 stuckReportCursorConduit :: Monad m => TimeZone -> ConduitT (Path Rel File, SmosFile) void m StuckReportCursor
 stuckReportCursorConduit tz =
-  StuckReportCursor . fmap makeNonEmptyCursor . NE.nonEmpty
-    . sortStuckEntries
+  makeStuckReportCursor
     <$> (C.concatMap (uncurry $ makeStuckReportEntry tz) .| sinkList)
+
+makeStuckReportCursor :: [StuckReportEntry] -> StuckReportCursor
+makeStuckReportCursor =
+  StuckReportCursor
+    . fmap makeNonEmptyCursor
+    . NE.nonEmpty
+    . sortStuckEntries
 
 newtype StuckReportCursor = StuckReportCursor
   { stuckReportCursorNonEmptyCursor :: Maybe (NonEmptyCursor StuckReportEntry)

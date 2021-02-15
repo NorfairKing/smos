@@ -117,6 +117,7 @@ enterWorkFile =
             ReportWork wrc -> do
               dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
+              pd <- liftIO $ resolveDirProjectsDir dc
               let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
                   switchToSelectedInEntryReportCursor ad erc =
                     case entryReportCursorBuildSmosFileCursor ad erc of
@@ -127,8 +128,11 @@ enterWorkFile =
                   Nothing -> pure ()
                   Just erc -> switchToEntryReportEntryCursor wd erc
                 DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
-                ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
+                StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of
+                  Nothing -> pure ()
+                  Just rf -> switchToFile $ pd </> rf
+                ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
             _ -> pure ()
           Nothing -> pure (),
       actionDescription = "Select the last entry in the work report"

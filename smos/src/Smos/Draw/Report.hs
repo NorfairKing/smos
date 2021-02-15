@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Draw.Report
   ( drawReportCursor,
@@ -282,6 +283,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s WorkReportCursor {..} = do
+  let WorkReportCursor _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -306,6 +308,20 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   drawTimestampsEntryCursor
                   (selectIf DeadlinesSelected)
                   (timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor)
+            ],
+            [ section "Overdue Waiting Entries" $
+                drawEntryReportCursorTableSimple
+                  drawWaitingEntryCursor
+                  (selectIf WaitingSelected)
+                  (waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting)
+            ],
+            [ section "Overdue Stuck Entries" $
+                verticalNonEmptyCursorTableM
+                  (drawStuckReportEntry NotSelected)
+                  (drawStuckReportEntry (selectIf StuckSelected))
+                  (drawStuckReportEntry NotSelected)
+                  sres
+              | sres <- maybeToList (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
             ],
             [ section "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
                 Nothing -> pure $ str "No results"
