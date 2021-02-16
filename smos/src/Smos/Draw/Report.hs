@@ -283,7 +283,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s WorkReportCursor {..} = do
-  let WorkReportCursor _ _ _ _ _ _ = undefined
+  let WorkReportCursor _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -302,6 +302,12 @@ drawWorkReportCursor s WorkReportCursor {..} = do
           [ [ section "Next meeting" $
                 drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec
               | erec <- maybeToList workReportCursorNextBeginCursor
+            ],
+            [ section "Entries without context" $
+                drawEntryReportCursorTableSimple
+                  drawWorkReportResultEntryCursor
+                  (selectIf WithoutContextSelected)
+                  workReportCursorEntriesWithoutContext
             ],
             [ section "Deadlines" $
                 drawEntryReportCursorTableSimple

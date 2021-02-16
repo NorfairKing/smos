@@ -90,6 +90,11 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
                       unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
               ],
             unlessNull
+              workReportAgendaEntries
+              [ sectionHeading "Deadlines:",
+                [agendaTable]
+              ],
+            unlessNull
               workReportOverdueWaiting
               [ warningHeading "Overdue Waiting Entries:",
                 [waitingTable]
@@ -98,11 +103,6 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
               workReportOverdueStuck
               [ warningHeading "Overdue Stuck Projects:",
                 [stuckTable]
-              ],
-            unlessNull
-              workReportAgendaEntries
-              [ sectionHeading "Deadlines:",
-                [agendaTable]
               ],
             unlessNull
               workReportResultEntries

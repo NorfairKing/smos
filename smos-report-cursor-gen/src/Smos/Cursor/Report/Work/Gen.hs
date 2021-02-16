@@ -7,14 +7,9 @@ import Cursor.Forest.Gen ()
 import Cursor.Text.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
-import Data.Maybe
-import Smos.Cursor.Report.Entry
-import Smos.Cursor.Report.Entry.Gen ()
-import Smos.Cursor.Report.Stuck
+import Smos.Cursor.Report.Entry.Gen
 import Smos.Cursor.Report.Stuck.Gen
-import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Timestamps.Gen
-import Smos.Cursor.Report.Waiting
 import Smos.Cursor.Report.Waiting.Gen
 import Smos.Cursor.Report.Work
 import Smos.Data.Gen ()
@@ -40,29 +35,35 @@ instance GenValid WorkReportCursor where
         wrc@WorkReportCursor {..} <- genValidStructurallyWithoutExtraChecking
         case workReportCursorSelection of
           NextBeginSelected ->
-            if isJust workReportCursorNextBeginCursor
-              then pure wrc
-              else do
+            if workReportNextBeginEmpty wrc
+              then do
                 nbc <- genValid
                 pure $ wrc {workReportCursorNextBeginCursor = Just nbc}
+              else pure wrc
+          WithoutContextSelected ->
+            if workReportWithoutContextEmpty wrc
+              then do
+                erc <- genNonEmptyValidEntryReportCursorWith (\_ _ -> [()]) id genValid
+                pure $ wrc {workReportCursorEntriesWithoutContext = erc}
+              else pure wrc
           DeadlinesSelected ->
-            if isJust $ entryReportCursorSelectedEntryReportEntryCursors $ timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor
-              then pure wrc
-              else do
+            if workReportDeadlinesEmpty wrc
+              then do
                 tsrc <- genNonEmptyTimestampsReportCursor
                 pure $ wrc {workReportCursorDeadlinesCursor = tsrc}
+              else pure wrc
           WaitingSelected ->
-            if isJust $ entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting
-              then pure wrc
-              else do
+            if workReportOverdueWaitingEmpty wrc
+              then do
                 warc <- genNonEmptyWaitingReportCursor
                 pure $ wrc {workReportCursorOverdueWaiting = warc}
+              else pure wrc
           StuckSelected ->
-            if isJust (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
-              then pure wrc
-              else do
+            if workReportOverdueStuckEmpty wrc
+              then do
                 neStuckReport <- genNonEmptyStuckReportCursor
                 pure $ wrc {workReportCursorOverdueStuck = neStuckReport}
+              else pure wrc
           ResultsSelected -> pure wrc
     )
       `suchThat` isValid
