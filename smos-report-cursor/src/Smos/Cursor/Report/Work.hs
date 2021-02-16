@@ -44,6 +44,9 @@ instance Validity WorkReportCursor where
             WaitingSelected -> isJust $ entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting
             StuckSelected -> isJust $ stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck
             ResultsSelected -> True -- Results can be empty, otherwise an empty report is not valid.
+            -- TODO add this constraint
+            -- declare "The work report cursor determines the selections of unselected parts" $ case workReportCursorSelection of
+            -- e.g. when next begin is selected then everything else needs to have its first element selected.
       ]
 
 instance NFData WorkReportCursor
