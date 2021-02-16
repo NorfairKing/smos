@@ -25,6 +25,16 @@ instance GenValid WorkReportCursor where
   -- TODO: Figure out why and fix it.
   shrinkValid _ = []
 
+  -- This mostly produces empty lists, not good either:
+  -- shrinkValid wrc = do
+  --   workReportCursorNextBeginCursor <- shrinkValid $ workReportCursorNextBeginCursor wrc
+  --   workReportCursorDeadlinesCursor <- shrinkValid $ workReportCursorDeadlinesCursor wrc
+  --   workReportCursorOverdueWaiting <- shrinkValid $ workReportCursorOverdueWaiting wrc
+  --   workReportCursorOverdueStuck <- shrinkValid $ workReportCursorOverdueStuck wrc
+  --   workReportCursorResultEntries <- shrinkValid $ workReportCursorResultEntries wrc
+  --   workReportCursorSelection <- shrinkValid $ workReportCursorSelection wrc
+  --   pure WorkReportCursor {..}
+
   genValid =
     ( do
         wrc@WorkReportCursor {..} <- genValidStructurallyWithoutExtraChecking

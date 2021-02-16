@@ -68,13 +68,18 @@ intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
       workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
    in WorkReportCursor {..}
+        & workReportCursorResultEntriesL %~ entryReportCursorFirst
+        & workReportCursorDeadlinesL %~ timestampsReportCursorLast
+        & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
+        & workReportCursorOverdueStuckL %~ stuckReportCursorLast
 
+-- The order of these constructors matters for shrinking
 data WorkReportCursorSelection
-  = NextBeginSelected
-  | DeadlinesSelected
-  | WaitingSelected
+  = ResultsSelected
   | StuckSelected
-  | ResultsSelected
+  | WaitingSelected
+  | DeadlinesSelected
+  | NextBeginSelected
   deriving (Show, Eq, Generic)
 
 instance Validity WorkReportCursorSelection
@@ -167,18 +172,32 @@ workReportCursorPrev wrc = case workReportCursorSelection wrc of
             else Just wrc'
 
 workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
-workReportCursorFirst = id -- TODO: write tests before  implementing this
-
--- wrc
---   & workReportCursorSelectionL .~ NextBeginSelected
---   & workReportCursorResultEntriesL %~ entryReportCursorFirst
---   & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
---   & workReportCursorOverdueStuckL %~ stuckReportCursorFirst
+workReportCursorFirst wrc =
+  let wrc' =
+        wrc
+          & workReportCursorSelectionL .~ NextBeginSelected
+          & workReportCursorDeadlinesL %~ timestampsReportCursorFirst
+          & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
+          & workReportCursorOverdueStuckL %~ stuckReportCursorFirst
+          & workReportCursorResultEntriesL %~ entryReportCursorFirst
+   in if workReportNextBeginEmpty wrc'
+        then
+          if workReportDeadlinesEmpty wrc'
+            then
+              if workReportOverdueWaitingEmpty wrc'
+                then
+                  if workReportOverdueStuckEmpty wrc'
+                    then wrc' {workReportCursorSelection = ResultsSelected}
+                    else wrc' {workReportCursorSelection = StuckSelected}
+                else wrc' {workReportCursorSelection = WaitingSelected}
+            else wrc' {workReportCursorSelection = DeadlinesSelected}
+        else wrc' {workReportCursorSelection = NextBeginSelected}
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast wrc =
   wrc
     & workReportCursorSelectionL .~ ResultsSelected
+    & workReportCursorDeadlinesL %~ timestampsReportCursorLast
     & workReportCursorResultEntriesL %~ entryReportCursorLast
     & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
     & workReportCursorOverdueStuckL %~ stuckReportCursorLast
