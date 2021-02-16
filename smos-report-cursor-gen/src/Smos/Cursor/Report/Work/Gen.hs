@@ -8,9 +8,13 @@ import Cursor.Map.Gen ()
 import Cursor.Text.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
+import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Entry.Gen
+import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Stuck.Gen
+import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Timestamps.Gen
+import Smos.Cursor.Report.Waiting
 import Smos.Cursor.Report.Waiting.Gen
 import Smos.Cursor.Report.Work
 import Smos.Data.Gen ()
@@ -18,19 +22,25 @@ import Smos.Report.Filter.Gen ()
 import Test.QuickCheck
 
 instance GenValid WorkReportCursor where
-  -- Turn off shrinking, because it seems to loop.
-  -- TODO: Figure out why and fix it.
-  shrinkValid _ = []
-
-  -- This mostly produces empty lists, not good either:
-  -- shrinkValid wrc = do
-  --   workReportCursorNextBeginCursor <- shrinkValid $ workReportCursorNextBeginCursor wrc
-  --   workReportCursorDeadlinesCursor <- shrinkValid $ workReportCursorDeadlinesCursor wrc
-  --   workReportCursorOverdueWaiting <- shrinkValid $ workReportCursorOverdueWaiting wrc
-  --   workReportCursorOverdueStuck <- shrinkValid $ workReportCursorOverdueStuck wrc
-  --   workReportCursorResultEntries <- shrinkValid $ workReportCursorResultEntries wrc
-  --   workReportCursorSelection <- shrinkValid $ workReportCursorSelection wrc
-  --   pure WorkReportCursor {..}
+  shrinkValid wrc =
+    let nextBeginEmpty = [wrc {workReportCursorNextBeginCursor = Nothing} | not $ workReportNextBeginEmpty wrc]
+        entriesWithoutContextEmpty = [wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} | not $ workReportWithoutContextEmpty wrc]
+        checkViolationsEmpty = [wrc {workReportCursorCheckViolations = Nothing} | not $ workReportCheckViolationsEmpty wrc]
+        deadlinesEmpty = [wrc {workReportCursorDeadlinesCursor = emptyTimestampsReportCursor} | not $ workReportDeadlinesEmpty wrc]
+        waitingEmpty = [wrc {workReportCursorOverdueWaiting = emptyWaitingReportCursor} | not $ workReportOverdueWaitingEmpty wrc]
+        stuckEmpty = [wrc {workReportCursorOverdueStuck = emptyStuckReportCursor} | not $ workReportOverdueStuckEmpty wrc]
+        resultsEmpty = [wrc {workReportCursorResultEntries = emptyEntryReportCursor} | not $ workReportResultsEmpty wrc]
+        resultsSelected = [wrc {workReportCursorSelection = ResultsSelected} | workReportCursorSelection wrc /= ResultsSelected]
+     in concat
+          [ nextBeginEmpty,
+            entriesWithoutContextEmpty,
+            checkViolationsEmpty,
+            deadlinesEmpty,
+            waitingEmpty,
+            stuckEmpty,
+            resultsEmpty,
+            resultsSelected
+          ]
 
   genValid =
     ( do

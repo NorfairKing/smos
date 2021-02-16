@@ -146,6 +146,9 @@ workReportOverdueWaitingEmpty = isNothing . entryReportCursorSelectedEntryReport
 workReportOverdueStuckEmpty :: WorkReportCursor -> Bool
 workReportOverdueStuckEmpty = isNothing . stuckReportCursorNonEmptyCursor . workReportCursorOverdueStuck
 
+workReportResultsEmpty :: WorkReportCursor -> Bool
+workReportResultsEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . workReportCursorResultEntries
+
 checkViolationsNext ::
   Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
   Maybe (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
@@ -175,12 +178,12 @@ checkViolationsPrev mmc = do
 checkViolationsFirst ::
   Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
   Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
-checkViolationsFirst = id
+checkViolationsFirst = fmap $ \mc -> mapCursorSelectFirst (mapMapCursor id entryReportCursorFirst (mapCursorSelectKey mc))
 
 checkViolationsLast ::
   Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
   Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
-checkViolationsLast = id
+checkViolationsLast = fmap $ \mc -> mapCursorSelectLast (mapMapCursor id entryReportCursorLast (mapCursorSelectKey mc))
 
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorNext wrc = case workReportCursorSelection wrc of
@@ -279,7 +282,11 @@ workReportCursorFirst wrc =
           & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
           & workReportCursorOverdueStuckL %~ stuckReportCursorFirst
           & workReportCursorResultEntriesL %~ entryReportCursorFirst
-   in fromMaybe wrc' $ workReportCursorNext wrc' >>= workReportCursorPrev
+   in case workReportCursorNext wrc' of
+        Nothing -> wrc' -- Should not happen.
+        Just wrc'' ->
+          fromMaybe wrc'' $ -- If there are only results
+            workReportCursorPrev wrc''
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast wrc =
@@ -288,9 +295,9 @@ workReportCursorLast wrc =
     & workReportCursorCheckViolationsL %~ checkViolationsLast
     & workReportCursorEntriesWithoutContextL %~ entryReportCursorLast
     & workReportCursorDeadlinesL %~ timestampsReportCursorLast
-    & workReportCursorResultEntriesL %~ entryReportCursorLast
     & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
     & workReportCursorOverdueStuckL %~ stuckReportCursorLast
+    & workReportCursorResultEntriesL %~ entryReportCursorLast
 
 workReportCursorSelectReport :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorSelectReport = workReportCursorResultEntriesL entryReportCursorSelectReport
