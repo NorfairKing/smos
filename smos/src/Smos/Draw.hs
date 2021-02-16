@@ -539,6 +539,7 @@ drawEntryCursor s tc edc e = do
                      in or
                           [ not (collapseEntryShowContents e) && isJust entryContents,
                             not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                            not (collapseEntryShowProperties e) && not (M.null entryProperties),
                             not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
                           ]
                 ],
@@ -596,6 +597,7 @@ drawEntry tc edc e = do
                   | or
                       [ not (collapseEntryShowContents e) && isJust entryContents,
                         not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                        not (collapseEntryShowProperties e) && not (M.null entryProperties),
                         not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
                       ]
                 ],
