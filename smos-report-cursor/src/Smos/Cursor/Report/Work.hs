@@ -96,27 +96,39 @@ workReportCursorOverdueWaitingL = lens workReportCursorOverdueWaiting $ \wrc rc 
 workReportCursorOverdueStuckL :: Lens' WorkReportCursor StuckReportCursor
 workReportCursorOverdueStuckL = lens workReportCursorOverdueStuck $ \wrc rc -> wrc {workReportCursorOverdueStuck = rc}
 
+workReportNextBeginEmpty :: WorkReportCursor -> Bool
+workReportNextBeginEmpty = isNothing . workReportCursorNextBeginCursor
+
+workReportDeadlinesEmpty :: WorkReportCursor -> Bool
+workReportDeadlinesEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . timestampsReportCursorEntryReportCursor . workReportCursorDeadlinesCursor
+
+workReportOverdueWaitingEmpty :: WorkReportCursor -> Bool
+workReportOverdueWaitingEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . waitingReportCursorEntryReportCursor . workReportCursorOverdueWaiting
+
+workReportOverdueStuckEmpty :: WorkReportCursor -> Bool
+workReportOverdueStuckEmpty = isNothing . stuckReportCursorNonEmptyCursor . workReportCursorOverdueStuck
+
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorNext wrc = case workReportCursorSelection wrc of
   NextBeginSelected ->
     let wrc' = wrc {workReportCursorSelection = DeadlinesSelected}
-     in case entryReportCursorSelectedEntryReportEntryCursors $ timestampsReportCursorEntryReportCursor $ workReportCursorDeadlinesCursor wrc' of
-          Nothing -> workReportCursorNext wrc' -- If there are no deadlines, keep going.
-          Just _ -> Just wrc'
+     in if workReportDeadlinesEmpty wrc'
+          then workReportCursorNext wrc' -- If there are no deadlines, keep going.
+          else Just wrc'
   DeadlinesSelected -> case workReportCursorDeadlinesL timestampsReportCursorNext wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = WaitingSelected}
-       in case entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor $ workReportCursorOverdueWaiting wrc' of
-            Nothing -> workReportCursorNext wrc' -- If there were no waiting entries, keep going.
-            Just _ -> Just wrc'
+       in if workReportOverdueWaitingEmpty wrc'
+            then workReportCursorNext wrc' -- If there were no waiting entries, keep going.
+            else Just wrc'
   WaitingSelected -> case workReportCursorOverdueWaitingL waitingReportCursorNext wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = StuckSelected}
-       in case stuckReportCursorNonEmptyCursor $ workReportCursorOverdueStuck wrc' of
-            Nothing -> workReportCursorNext wrc' -- If there are no stuck projects, keep going
-            Just _ -> Just wrc'
+       in if workReportOverdueStuckEmpty wrc'
+            then workReportCursorNext wrc' -- If there are no stuck projects, keep going
+            else Just wrc'
   StuckSelected -> case workReportCursorOverdueStuckL stuckReportCursorNext wrc of
     Just wrc' -> Just wrc'
     Nothing -> Just $ wrc {workReportCursorSelection = ResultsSelected} -- Even if there are no results, we stay in the results
@@ -129,30 +141,30 @@ workReportCursorPrev wrc = case workReportCursorSelection wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = NextBeginSelected}
-       in case workReportCursorNextBeginCursor wrc' of
-            Nothing -> Nothing -- If there is no next begin, fail here.
-            Just _ -> Just wrc'
+       in if workReportNextBeginEmpty wrc'
+            then Nothing -- If there is no next begin, fail here.
+            else Just wrc'
   WaitingSelected -> case workReportCursorOverdueWaitingL waitingReportCursorPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = DeadlinesSelected}
-       in case entryReportCursorSelectedEntryReportEntryCursors $ timestampsReportCursorEntryReportCursor $ workReportCursorDeadlinesCursor wrc' of
-            Nothing -> workReportCursorPrev wrc' -- If there are no deadlines, keep looking up
-            Just _ -> Just wrc'
+       in if workReportDeadlinesEmpty wrc'
+            then workReportCursorPrev wrc' -- If there are no deadlines, keep looking up
+            else Just wrc'
   StuckSelected -> case workReportCursorOverdueStuckL stuckReportCursorPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = WaitingSelected}
-       in case entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor $ workReportCursorOverdueWaiting wrc' of
-            Nothing -> workReportCursorPrev wrc' -- If there are no waiting entries, keep looking up
-            Just _ -> Just wrc'
+       in if workReportOverdueWaitingEmpty wrc'
+            then workReportCursorPrev wrc' -- If there are no waiting entries, keep looking up
+            else Just wrc'
   ResultsSelected -> case workReportCursorResultEntriesL entryReportCursorPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = StuckSelected}
-       in case stuckReportCursorNonEmptyCursor $ workReportCursorOverdueStuck wrc' of
-            Nothing -> workReportCursorPrev wrc' -- If there are no stuck projects, keep looking up
-            Just _ -> Just wrc'
+       in if workReportOverdueStuckEmpty wrc'
+            then workReportCursorPrev wrc' -- If there are no stuck projects, keep looking up
+            else Just wrc'
 
 workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
 workReportCursorFirst = id -- TODO: write tests before  implementing this
