@@ -63,10 +63,18 @@ stuckReportCursorSelectedFile src = do
   pure $ stuckReportEntryFilePath $ nonEmptyCursorCurrent nec
 
 stuckReportCursorNext :: StuckReportCursor -> Maybe StuckReportCursor
-stuckReportCursorNext = stuckReportCursorNonEmptyCursorL $ mapM nonEmptyCursorSelectNext
+stuckReportCursorNext = stuckReportCursorNonEmptyCursorL $ \mnec -> do
+  nec <- mnec
+  case nonEmptyCursorSelectNext nec of
+    Just nec' -> Just $ Just nec'
+    Nothing -> Nothing
 
 stuckReportCursorPrev :: StuckReportCursor -> Maybe StuckReportCursor
-stuckReportCursorPrev = stuckReportCursorNonEmptyCursorL $ mapM nonEmptyCursorSelectPrev
+stuckReportCursorPrev = stuckReportCursorNonEmptyCursorL $ \mnec -> do
+  nec <- mnec
+  case nonEmptyCursorSelectPrev nec of
+    Just nec' -> Just $ Just nec'
+    Nothing -> Nothing
 
 stuckReportCursorFirst :: StuckReportCursor -> StuckReportCursor
 stuckReportCursorFirst = stuckReportCursorNonEmptyCursorL %~ fmap nonEmptyCursorSelectFirst

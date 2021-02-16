@@ -41,10 +41,9 @@ instance Validity WorkReportCursor where
           case workReportCursorSelection of
             NextBeginSelected -> isJust workReportCursorNextBeginCursor
             DeadlinesSelected -> isJust $ entryReportCursorSelectedEntryReportEntryCursors $ timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor
-            -- WaitingSelected -> isJust $ entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting
-            -- StuckSelected -> isJust $ stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck
-            -- ResultsSelected -> True -- Results can be empty, otherwise an empty report is not valid.
-            _ -> True
+            WaitingSelected -> isJust $ entryReportCursorSelectedEntryReportEntryCursors $ waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting
+            StuckSelected -> isJust $ stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck
+            ResultsSelected -> True -- Results can be empty, otherwise an empty report is not valid.
       ]
 
 instance NFData WorkReportCursor
@@ -115,7 +114,7 @@ workReportCursorNext wrc = case workReportCursorSelection wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = StuckSelected}
-       in case stuckReportCursorNonEmptyCursor $ workReportCursorOverdueStuck wrc of
+       in case stuckReportCursorNonEmptyCursor $ workReportCursorOverdueStuck wrc' of
             Nothing -> workReportCursorNext wrc' -- If there are no stuck projects, keep going
             Just _ -> Just wrc'
   StuckSelected -> case workReportCursorOverdueStuckL stuckReportCursorNext wrc of

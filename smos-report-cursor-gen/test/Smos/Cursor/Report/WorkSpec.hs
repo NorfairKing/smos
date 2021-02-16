@@ -23,8 +23,12 @@ spec = do
   -- describe "workReportCursorSelectionL" $ lensSpecOnValid workReportCursorSelectionL
   describe "emptyWorkReportCursor" $ it "is valid" $ shouldBeValid emptyWorkReportCursor
   describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValidsOnValids intermediateWorkReportToWorkReportCursor
-  describe "workReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
-  describe "workReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
+  describe "workReportCursorNext" $ do
+    it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
+    it "is the inverse of workReportCursorPrev" $ inverseFunctionsIfSucceedOnValid workReportCursorPrev workReportCursorNext
+  describe "workReportCursorPrev" $ do
+    it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
+    it "is the inverse of workReportCursorNext" $ inverseFunctionsIfSucceedOnValid workReportCursorNext workReportCursorPrev
   describe "workReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
   describe "workReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorLast
   describe "workReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorSelectReport
