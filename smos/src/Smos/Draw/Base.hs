@@ -103,7 +103,7 @@ drawPropertyPair pn pv =
 
 drawPropertyName :: PropertyName -> Widget n
 drawPropertyName pn =
-  withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+  withAttr (propertyNameSpecificAttr pn) $
     textLineWidget $ propertyNameText pn
 
 drawPropertyValue :: PropertyName -> PropertyValue -> Widget ResourceName
@@ -116,7 +116,7 @@ drawTimestampPair tsn ts = do
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
-  withAttr (timestampNameSpecificAttr tsn <> timestampNameAttr) . textLineWidget $
+  withAttr (timestampNameAttr <> timestampNameSpecificAttr tsn) . textLineWidget $
     timestampNameText tsn
 
 drawTimestamp :: Timestamp -> Widget n

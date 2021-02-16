@@ -659,7 +659,7 @@ drawTimestampKVCursor s = keyValueWidgetM goKey goVal
         hBox
           [ case s of
               NotSelected -> drawTimestampName $ rebuildTimestampNameCursor tc
-              MaybeSelected -> drawTextCursor s tc,
+              MaybeSelected -> maybe id (\tsn -> withAttr (timestampNameSpecificAttr tsn)) (timestampName (rebuildTextCursor tc)) $ drawTextCursor s tc,
             str ": ",
             dw
           ]
@@ -704,9 +704,9 @@ drawPropertyKVCursor s = keyValueWidget goKey goVal
     goKey tc pv =
       let pn = fromMaybe "" $ propertyName $ rebuildTextCursor tc
        in withAttr (propertyNameSpecificAttr pn) $
-            hBox [withAttr propertyNameAttr $ sel $ drawTextCursor s tc, str ": ", drawPropertyValue pn pv]
+            hBox [sel $ drawTextCursor s tc, str ": ", drawPropertyValue pn pv]
     goVal pn tc =
-      withAttr (propertyNameSpecificAttr pn <> propertyNameAttr) $
+      withAttr (propertyNameSpecificAttr pn) $
         hBox [drawPropertyName pn, str ": ", sel $ drawTextCursor s tc]
 
 drawProperties :: Map PropertyName PropertyValue -> Maybe (Widget ResourceName)
