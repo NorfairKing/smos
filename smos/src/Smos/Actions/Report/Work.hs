@@ -68,10 +68,12 @@ reportWork =
                 }
 
         wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint dc ctx
+        -- If there are no contexts, we don't care about the entries without context
+        let wrc' = if null (workReportConfigContexts wc) then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} else wrc
         pure $
           ec
             { editorCursorSelection = ReportSelected,
-              editorCursorReportCursor = Just $ ReportWork wrc
+              editorCursorReportCursor = Just $ ReportWork wrc'
             },
       actionDescription = "Work report"
     }
