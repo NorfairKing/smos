@@ -14,7 +14,6 @@ module Smos.Style
     todoStateAttr,
     todoStateSpecificAttr,
     todoStateHistoryAttr,
-    timestampNameAttr,
     timestampNameSpecificAttr,
     propertyNameSpecificAttr,
     tagAttr,
@@ -138,9 +137,6 @@ todoStateSpecificAttr tss = fromString $ "todostate-" ++ T.unpack (todoStateText
 
 todoStateHistoryAttr :: AttrName
 todoStateHistoryAttr = "todostatehistory"
-
-timestampNameAttr :: AttrName
-timestampNameAttr = "timestampname"
 
 timestampNameSpecificAttr :: TimestampName -> AttrName
 timestampNameSpecificAttr tsn = fromString $ "timestampname-" ++ T.unpack (timestampNameText tsn)

@@ -116,7 +116,7 @@ drawTimestampPair tsn ts = do
 
 drawTimestampName :: TimestampName -> Widget n
 drawTimestampName tsn =
-  withAttr (timestampNameAttr <> timestampNameSpecificAttr tsn) . textLineWidget $
+  withAttr (timestampNameSpecificAttr tsn) . textLineWidget $
     timestampNameText tsn
 
 drawTimestamp :: Timestamp -> Widget n
