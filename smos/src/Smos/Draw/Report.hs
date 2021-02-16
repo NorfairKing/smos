@@ -284,7 +284,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
     ]
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
-drawWorkReportCursor s WorkReportCursor {..} = do
+drawWorkReportCursor s wrc@WorkReportCursor {..} = do
   let WorkReportCursor _ _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
@@ -317,6 +317,7 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   drawWorkReportResultEntryCursor
                   (selectIf WithoutContextSelected)
                   workReportCursorEntriesWithoutContext
+              | not $ workReportWithoutContextEmpty wrc
             ],
             [ let filterSection f w = warningSection ("Check violation for " <> T.unpack (renderFilter f)) w
                   go f erc =
@@ -340,12 +341,14 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   drawTimestampsEntryCursor
                   (selectIf DeadlinesSelected)
                   (timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor)
+              | not $ workReportDeadlinesEmpty wrc
             ],
             [ warningSection "Overdue Waiting Entries" $
                 drawEntryReportCursorTableSimple
                   drawWaitingEntryCursor
                   (selectIf WaitingSelected)
                   (waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting)
+              | not $ workReportOverdueWaitingEmpty wrc
             ],
             [ warningSection "Overdue Stuck Entries" $
                 verticalNonEmptyCursorTableM
