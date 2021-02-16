@@ -1,9 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Cursor.Report.Work where
 
 import Control.DeepSeq
+import Cursor.Simple.Map
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Validity
 import Data.Validity.Path ()
@@ -16,6 +20,7 @@ import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Report.Archive
 import Smos.Report.Config
+import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Work
@@ -26,6 +31,7 @@ produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWork
 data WorkReportCursor = WorkReportCursor
   { workReportCursorNextBeginCursor :: !(Maybe (EntryReportEntryCursor (TimestampName, Timestamp))),
     workReportCursorEntriesWithoutContext :: !(EntryReportCursor ()),
+    workReportCursorCheckViolations :: !(Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))),
     workReportCursorDeadlinesCursor :: !TimestampsReportCursor,
     workReportCursorOverdueWaiting :: !WaitingReportCursor,
     workReportCursorOverdueStuck :: !StuckReportCursor,
@@ -58,6 +64,7 @@ emptyWorkReportCursor =
   WorkReportCursor
     { workReportCursorNextBeginCursor = Nothing,
       workReportCursorEntriesWithoutContext = emptyEntryReportCursor,
+      workReportCursorCheckViolations = Nothing,
       workReportCursorDeadlinesCursor = emptyTimestampsReportCursor,
       workReportCursorOverdueWaiting = emptyWaitingReportCursor,
       workReportCursorOverdueStuck = emptyStuckReportCursor,
@@ -67,8 +74,14 @@ emptyWorkReportCursor =
 
 intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReportCursor
 intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
-  let workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
+  let IntermediateWorkReport _ _ _ _ _ _ _ = undefined
+      workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorEntriesWithoutContext = makeEntryReportCursor $ flip map intermediateWorkReportEntriesWithoutContext $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      workReportCursorCheckViolations =
+        makeMapCursor
+          . NE.map
+            (\(erf, tups) -> (erf, makeEntryReportCursor $ flip map tups $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()))
+          <$> NE.nonEmpty (M.toList intermediateWorkReportCheckViolations)
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck

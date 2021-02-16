@@ -14,11 +14,13 @@ import Brick.Widgets.Core as B
 import Cursor.Brick
 import Cursor.List.NonEmpty (foldNonEmptyCursor)
 import Cursor.Simple.List.NonEmpty
+import Cursor.Simple.Map
 import Data.Foldable
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Time
 import Path
 import Smos.Actions
@@ -283,7 +285,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s WorkReportCursor {..} = do
-  let WorkReportCursor _ _ _ _ _ _ _ = undefined
+  let WorkReportCursor _ _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -308,6 +310,23 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   drawWorkReportResultEntryCursor
                   (selectIf WithoutContextSelected)
                   workReportCursorEntriesWithoutContext
+            ],
+            [ let filterSection f w = section (T.unpack (renderFilter f)) w
+                  go f erc =
+                    filterSection f $
+                      drawEntryReportCursorTableSimple
+                        drawWorkReportResultEntryCursor
+                        NotSelected
+                        erc
+                  goKVC kvc =
+                    let (f, erc) = rebuildKeyValueCursor kvc
+                     in filterSection f $
+                          drawEntryReportCursorTableSimple
+                            drawWorkReportResultEntryCursor
+                            (selectIf WithoutContextSelected)
+                            erc
+               in verticalMapCursorWidgetM go goKVC go mc
+              | mc <- maybeToList workReportCursorCheckViolations
             ],
             [ section "Deadlines" $
                 drawEntryReportCursorTableSimple
