@@ -323,7 +323,7 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                      in filterSection f $
                           drawEntryReportCursorTableSimple
                             drawWorkReportResultEntryCursor
-                            (selectIf WithoutContextSelected)
+                            (selectIf CheckViolationsSelected)
                             erc
                in verticalMapCursorWidgetM go goKVC go mc
               | mc <- maybeToList workReportCursorCheckViolations

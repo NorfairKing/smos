@@ -42,6 +42,12 @@ instance GenValid WorkReportCursor where
                 nbc <- genValid
                 pure $ wrc {workReportCursorNextBeginCursor = Just nbc}
               else pure wrc
+          CheckViolationsSelected ->
+            if workReportCheckViolationsEmpty wrc
+              then do
+                mc <- genValid
+                pure $ wrc {workReportCursorCheckViolations = Just mc}
+              else pure wrc
           WithoutContextSelected ->
             if workReportWithoutContextEmpty wrc
               then do

@@ -3,7 +3,9 @@
 
 module Smos.Actions.Report.Work where
 
+import Cursor.Map
 import Data.Time
+import Lens.Micro
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
@@ -127,6 +129,12 @@ enterWorkFile =
                   Nothing -> pure ()
                   Just erc -> switchToEntryReportEntryCursor wd erc
                 WithoutContextSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorEntriesWithoutContext wrc)
+                CheckViolationsSelected -> case workReportCursorCheckViolations wrc of
+                  Nothing -> pure ()
+                  Just mc ->
+                    let kvc = mc ^. mapCursorElemL
+                        erc = foldKeyValueCursor (flip const) (flip const) kvc
+                     in switchToSelectedInEntryReportCursor wd erc
                 DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
                 StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of

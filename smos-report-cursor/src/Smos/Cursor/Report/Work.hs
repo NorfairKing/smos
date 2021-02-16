@@ -5,6 +5,7 @@
 module Smos.Cursor.Report.Work where
 
 import Control.DeepSeq
+import Cursor.Map.KeyValue (keyValueCursorTraverseKeyCase)
 import Cursor.Simple.Map
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -48,6 +49,7 @@ instance Validity WorkReportCursor where
           case workReportCursorSelection of
             NextBeginSelected -> not $ workReportNextBeginEmpty wrc
             WithoutContextSelected -> not $ workReportWithoutContextEmpty wrc
+            CheckViolationsSelected -> not $ workReportCheckViolationsEmpty wrc
             DeadlinesSelected -> not $ workReportDeadlinesEmpty wrc
             WaitingSelected -> not $ workReportOverdueWaitingEmpty wrc
             StuckSelected -> not $ workReportOverdueStuckEmpty wrc
@@ -86,18 +88,15 @@ intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
       workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
-      workReportCursorSelection = ResultsSelected
-   in WorkReportCursor {..}
-        & workReportCursorEntriesWithoutContextL %~ entryReportCursorLast
-        & workReportCursorDeadlinesL %~ timestampsReportCursorLast
-        & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
-        & workReportCursorOverdueStuckL %~ stuckReportCursorLast
-        & workReportCursorResultEntriesL %~ entryReportCursorFirst
+      workReportCursorSelection = NextBeginSelected
+      wrc = WorkReportCursor {..}
+   in fromMaybe wrc $ workReportCursorNext wrc -- should not fail.
 
 -- The order of these constructors matters for shrinking
 data WorkReportCursorSelection
   = ResultsSelected
   | WithoutContextSelected
+  | CheckViolationsSelected
   | StuckSelected
   | WaitingSelected
   | DeadlinesSelected
@@ -147,6 +146,42 @@ workReportOverdueWaitingEmpty = isNothing . entryReportCursorSelectedEntryReport
 workReportOverdueStuckEmpty :: WorkReportCursor -> Bool
 workReportOverdueStuckEmpty = isNothing . stuckReportCursorNonEmptyCursor . workReportCursorOverdueStuck
 
+checkViolationsNext ::
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
+  Maybe (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+checkViolationsNext mmc = do
+  mc <- mmc
+  let kvcNext :: EntryFilterRel -> EntryReportCursor () -> Maybe (EntryFilterRel, EntryReportCursor ())
+      kvcNext f erc = (,) f <$> entryReportCursorNext erc
+  case mapCursorElemL (keyValueCursorTraverseKeyCase kvcNext) mc of
+    Just mc' -> pure $ Just mc'
+    Nothing -> case mapCursorSelectNext mc of
+      Nothing -> Nothing
+      Just mc' -> Just (Just mc')
+
+checkViolationsPrev ::
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
+  Maybe (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+checkViolationsPrev mmc = do
+  mc <- mmc
+  let kvcPrev :: EntryFilterRel -> EntryReportCursor () -> Maybe (EntryFilterRel, EntryReportCursor ())
+      kvcPrev f erc = (,) f <$> entryReportCursorPrev erc
+  case mapCursorElemL (keyValueCursorTraverseKeyCase kvcPrev) mc of
+    Just mc' -> pure $ Just mc'
+    Nothing -> case mapCursorSelectPrev mc of
+      Nothing -> Nothing
+      Just mc' -> Just (Just mc')
+
+checkViolationsFirst ::
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
+checkViolationsFirst = id
+
+checkViolationsLast ::
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
+  Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
+checkViolationsLast = id
+
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorNext wrc = case workReportCursorSelection wrc of
   NextBeginSelected ->
@@ -157,9 +192,16 @@ workReportCursorNext wrc = case workReportCursorSelection wrc of
   WithoutContextSelected -> case workReportCursorEntriesWithoutContextL entryReportCursorNext wrc of
     Just wrc' -> Just wrc'
     Nothing ->
+      let wrc' = wrc {workReportCursorSelection = CheckViolationsSelected}
+       in if workReportCheckViolationsEmpty wrc'
+            then workReportCursorNext wrc' -- If there were deadlines entries, keep going.
+            else Just wrc'
+  CheckViolationsSelected -> case workReportCursorCheckViolationsL checkViolationsNext wrc of
+    Just wrc' -> Just wrc'
+    Nothing ->
       let wrc' = wrc {workReportCursorSelection = DeadlinesSelected}
        in if workReportDeadlinesEmpty wrc'
-            then workReportCursorNext wrc' -- If there were deadlines entries, keep going.
+            then workReportCursorNext wrc' -- If there are no entries without context, keep going.
             else Just wrc'
   DeadlinesSelected -> case workReportCursorDeadlinesL timestampsReportCursorNext wrc of
     Just wrc' -> Just wrc'
@@ -188,14 +230,21 @@ workReportCursorPrev wrc = case workReportCursorSelection wrc of
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = NextBeginSelected}
        in if workReportNextBeginEmpty wrc'
-            then Nothing -- If there is no next begin, fail here.
+            then workReportCursorPrev wrc' -- If there are no next begin, keep going.
             else Just wrc'
-  DeadlinesSelected -> case workReportCursorDeadlinesL timestampsReportCursorPrev wrc of
+  CheckViolationsSelected -> case workReportCursorCheckViolationsL checkViolationsPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = WithoutContextSelected}
        in if workReportWithoutContextEmpty wrc'
-            then Nothing -- If there are no entries without context, fail here.
+            then Nothing -- If there are no entries without context, keep going.
+            else Just wrc'
+  DeadlinesSelected -> case workReportCursorDeadlinesL timestampsReportCursorPrev wrc of
+    Just wrc' -> Just wrc'
+    Nothing ->
+      let wrc' = wrc {workReportCursorSelection = CheckViolationsSelected}
+       in if workReportCheckViolationsEmpty wrc'
+            then workReportCursorPrev wrc' -- If there are no check violations, keep going.
             else Just wrc'
   WaitingSelected -> case workReportCursorOverdueWaitingL waitingReportCursorPrev wrc of
     Just wrc' -> Just wrc'
@@ -224,27 +273,20 @@ workReportCursorFirst wrc =
   let wrc' =
         wrc
           & workReportCursorSelectionL .~ NextBeginSelected
+          & workReportCursorCheckViolationsL %~ checkViolationsFirst
+          & workReportCursorEntriesWithoutContextL %~ entryReportCursorFirst
           & workReportCursorDeadlinesL %~ timestampsReportCursorFirst
           & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
           & workReportCursorOverdueStuckL %~ stuckReportCursorFirst
           & workReportCursorResultEntriesL %~ entryReportCursorFirst
-   in if workReportNextBeginEmpty wrc'
-        then
-          if workReportDeadlinesEmpty wrc'
-            then
-              if workReportOverdueWaitingEmpty wrc'
-                then
-                  if workReportOverdueStuckEmpty wrc'
-                    then wrc' {workReportCursorSelection = ResultsSelected}
-                    else wrc' {workReportCursorSelection = StuckSelected}
-                else wrc' {workReportCursorSelection = WaitingSelected}
-            else wrc' {workReportCursorSelection = DeadlinesSelected}
-        else wrc' {workReportCursorSelection = NextBeginSelected}
+   in fromMaybe wrc' $ workReportCursorNext wrc' >>= workReportCursorPrev
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast wrc =
   wrc
     & workReportCursorSelectionL .~ ResultsSelected
+    & workReportCursorCheckViolationsL %~ checkViolationsLast
+    & workReportCursorEntriesWithoutContextL %~ entryReportCursorLast
     & workReportCursorDeadlinesL %~ timestampsReportCursorLast
     & workReportCursorResultEntriesL %~ entryReportCursorLast
     & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
