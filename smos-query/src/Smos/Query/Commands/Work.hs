@@ -71,42 +71,41 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
           (not . null)
           [ unlessNull
               workReportNextBegin
-              [ sectionHeading "Next meeting:",
+              [ sectionHeading "Next meeting",
                 [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
               ],
             unlessNull
               ctxs
               $ unlessNull
                 workReportEntriesWithoutContext
-                [ warningHeading "WARNING, the following Entries don't match any context:",
+                [ warningHeading
+                    "Entries without context",
                   [entryTable workReportEntriesWithoutContext]
                 ],
             unlessNull
               workReportCheckViolations
-              [ warningHeading "WARNING, the following Entries did not pass the checks:",
-                concat $
-                  flip concatMap (M.toList workReportCheckViolations) $
-                    \(f, violations) ->
-                      unlessNull violations [warningHeading (renderFilter f), [entryTable violations]]
-              ],
+              ( flip concatMap (M.toList workReportCheckViolations) $
+                  \(f, violations) ->
+                    unlessNull violations [warningHeading ("Check violation for " <> renderFilter f), [entryTable violations]]
+              ),
             unlessNull
               workReportAgendaEntries
-              [ sectionHeading "Deadlines:",
+              [ sectionHeading "Deadlines",
                 [agendaTable]
               ],
             unlessNull
               workReportOverdueWaiting
-              [ warningHeading "Overdue Waiting Entries:",
+              [ warningHeading "Overdue Waiting Entries",
                 [waitingTable]
               ],
             unlessNull
               workReportOverdueStuck
-              [ warningHeading "Overdue Stuck Projects:",
+              [ warningHeading "Overdue Stuck Projects",
                 [stuckTable]
               ],
             unlessNull
               workReportResultEntries
-              [ sectionHeading "Next actions:",
+              [ sectionHeading "Next actions",
                 [entryTable workReportResultEntries]
               ]
           ]
@@ -116,7 +115,7 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
         then []
         else r
     sectionHeading t = heading $ underline $ fore white $ chunk t
-    warningHeading t = heading $ underline $ fore red $ chunk t
+    warningHeading t = heading $ underline $ fore red $ chunk ("WARNING: " <> t)
     heading c = [formatAsTable [[c]]]
     spacer = [formatAsTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne

@@ -292,7 +292,14 @@ drawWorkReportCursor s WorkReportCursor {..} = do
         if workReportCursorSelection == sel
           then s
           else NotSelected
-  let section title mkW = do
+  let warningSection title mkW = do
+        w <- mkW
+        pure $
+          vBox
+            [ withAttr workReportWarningAttr $ str ("WARNING: " <> title),
+              w
+            ]
+      titleSection title mkW = do
         w <- mkW
         pure $
           vBox
@@ -301,17 +308,17 @@ drawWorkReportCursor s WorkReportCursor {..} = do
             ]
   let sectionGens =
         concat
-          [ [ section "Next meeting" $
+          [ [ titleSection "Next meeting" $
                 drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec
               | erec <- maybeToList workReportCursorNextBeginCursor
             ],
-            [ section "Entries without context" $
+            [ warningSection "Entries without context" $
                 drawEntryReportCursorTableSimple
                   drawWorkReportResultEntryCursor
                   (selectIf WithoutContextSelected)
                   workReportCursorEntriesWithoutContext
             ],
-            [ let filterSection f w = section (T.unpack (renderFilter f)) w
+            [ let filterSection f w = warningSection ("Check violation for " <> T.unpack (renderFilter f)) w
                   go f erc =
                     filterSection f $
                       drawEntryReportCursorTableSimple
@@ -328,19 +335,19 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                in verticalMapCursorWidgetM go goKVC go mc
               | mc <- maybeToList workReportCursorCheckViolations
             ],
-            [ section "Deadlines" $
+            [ titleSection "Deadlines" $
                 drawEntryReportCursorTableSimple
                   drawTimestampsEntryCursor
                   (selectIf DeadlinesSelected)
                   (timestampsReportCursorEntryReportCursor workReportCursorDeadlinesCursor)
             ],
-            [ section "Overdue Waiting Entries" $
+            [ warningSection "Overdue Waiting Entries" $
                 drawEntryReportCursorTableSimple
                   drawWaitingEntryCursor
                   (selectIf WaitingSelected)
                   (waitingReportCursorEntryReportCursor workReportCursorOverdueWaiting)
             ],
-            [ section "Overdue Stuck Entries" $
+            [ warningSection "Overdue Stuck Entries" $
                 verticalNonEmptyCursorTableM
                   (drawStuckReportEntry NotSelected)
                   (drawStuckReportEntry (selectIf StuckSelected))
@@ -348,7 +355,7 @@ drawWorkReportCursor s WorkReportCursor {..} = do
                   sres
               | sres <- maybeToList (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
             ],
-            [ section "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
+            [ titleSection "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
                 Nothing -> pure $ str "No results"
                 Just recs -> do
                   let go = drawWorkReportResultEntryCursor
