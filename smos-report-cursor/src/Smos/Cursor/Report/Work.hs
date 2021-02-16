@@ -232,15 +232,13 @@ workReportCursorPrev wrc = case workReportCursorSelection wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = NextBeginSelected}
-       in if workReportNextBeginEmpty wrc'
-            then workReportCursorPrev wrc' -- If there are no next begin, keep going.
-            else Just wrc'
+       in if workReportNextBeginEmpty wrc' then Nothing else Just wrc'
   CheckViolationsSelected -> case workReportCursorCheckViolationsL checkViolationsPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
       let wrc' = wrc {workReportCursorSelection = WithoutContextSelected}
        in if workReportWithoutContextEmpty wrc'
-            then Nothing -- If there are no entries without context, keep going.
+            then workReportCursorPrev wrc' -- If there are no entries without context, keep going.
             else Just wrc'
   DeadlinesSelected -> case workReportCursorDeadlinesL timestampsReportCursorPrev wrc of
     Just wrc' -> Just wrc'
