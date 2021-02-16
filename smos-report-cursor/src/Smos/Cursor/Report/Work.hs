@@ -111,6 +111,9 @@ instance NFData WorkReportCursorSelection
 workReportCursorSelectionL :: Lens' WorkReportCursor WorkReportCursorSelection
 workReportCursorSelectionL = lens workReportCursorSelection $ \wrc s -> wrc {workReportCursorSelection = s}
 
+workReportCursorCheckViolationsL :: Lens' WorkReportCursor (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+workReportCursorCheckViolationsL = lens workReportCursorCheckViolations $ \wrc rc -> wrc {workReportCursorCheckViolations = rc}
+
 workReportCursorEntriesWithoutContextL :: Lens' WorkReportCursor (EntryReportCursor ())
 workReportCursorEntriesWithoutContextL = lens workReportCursorEntriesWithoutContext $ \wrc rc -> wrc {workReportCursorEntriesWithoutContext = rc}
 
@@ -131,6 +134,9 @@ workReportNextBeginEmpty = isNothing . workReportCursorNextBeginCursor
 
 workReportWithoutContextEmpty :: WorkReportCursor -> Bool
 workReportWithoutContextEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . workReportCursorEntriesWithoutContext
+
+workReportCheckViolationsEmpty :: WorkReportCursor -> Bool
+workReportCheckViolationsEmpty = isNothing . workReportCursorCheckViolations
 
 workReportDeadlinesEmpty :: WorkReportCursor -> Bool
 workReportDeadlinesEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . timestampsReportCursorEntryReportCursor . workReportCursorDeadlinesCursor
