@@ -33,11 +33,11 @@ import Smos.Report.Time
 import Smos.Report.Waiting
 
 produceWorkReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> m WorkReport
-produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit (workReportContextNow wrc) wrc
+produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit wrc
 
-workReportConduit :: Monad m => ZonedTime -> WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
-workReportConduit now wrc@WorkReportContext {..} =
-  finishWorkReport now workReportContextTimeProperty workReportContextTime workReportContextSorter <$> intermediateWorkReportConduit wrc
+workReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
+workReportConduit wrc@WorkReportContext {..} =
+  finishWorkReport workReportContextNow workReportContextTimeProperty workReportContextTime workReportContextSorter <$> intermediateWorkReportConduit wrc
 
 intermediateWorkReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
 intermediateWorkReportConduit wrc =
@@ -235,19 +235,8 @@ finishWorkReport :: ZonedTime -> Maybe PropertyName -> Maybe Time -> Maybe Sorte
 finishWorkReport now mpn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
       mAutoFilter :: Maybe EntryFilterRel
-      mAutoFilter = do
-        (_, _, _, ats) <- intermediateWorkReportNextBegin wr
-        let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ats) (zonedTimeToUTC now)
-        pn <- mpn
-        pure $
-          FilterSnd $
-            FilterWithinCursor $
-              FilterEntryProperties $
-                FilterMapVal pn $
-                  FilterMaybe False $
-                    FilterPropertyTime $
-                      FilterMaybe False $
-                        FilterOrd LEC t
+      mAutoFilter = createAutoFilter now mpn (fth <$> intermediateWorkReportNextBegin wr)
+      applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True
         Just autoFilter -> case mt of
@@ -262,6 +251,21 @@ finishWorkReport now mpn mt ms wr =
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }
+
+createAutoFilter :: ZonedTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilterRel
+createAutoFilter now mpn mNextBegin = do
+  ats <- mNextBegin
+  let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ats) (zonedTimeToUTC now)
+  pn <- mpn
+  pure $
+    FilterSnd $
+      FilterWithinCursor $
+        FilterEntryProperties $
+          FilterMapVal pn $
+            FilterMaybe False $
+              FilterPropertyTime $
+                FilterMaybe False $
+                  FilterOrd LEC t
 
 fth :: (a, b, c, d) -> d
 fth (_, _, _, d) = d

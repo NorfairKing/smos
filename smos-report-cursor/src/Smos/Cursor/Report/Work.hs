@@ -6,6 +6,7 @@ module Smos.Cursor.Report.Work where
 
 import Control.DeepSeq
 import Cursor.Map.KeyValue (keyValueCursorTraverseKeyCase)
+import Cursor.Simple.Forest
 import Cursor.Simple.Map
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -14,6 +15,7 @@ import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
 import Lens.Micro
+import Path
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
@@ -30,7 +32,7 @@ import Smos.Report.Work
 produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
 produceWorkReportCursor ha sp dc wrc =
   produceReport ha sp dc $
-    intermediateWorkReportToWorkReportCursor (workReportContextSorter wrc)
+    intermediateWorkReportToWorkReportCursor wrc
       <$> intermediateWorkReportConduit wrc
 
 data WorkReportCursor = WorkReportCursor
@@ -78,8 +80,8 @@ emptyWorkReportCursor =
       workReportCursorSelection = ResultsSelected
     }
 
-intermediateWorkReportToWorkReportCursor :: Maybe Sorter -> IntermediateWorkReport -> WorkReportCursor
-intermediateWorkReportToWorkReportCursor mSorter IntermediateWorkReport {..} =
+intermediateWorkReportToWorkReportCursor :: WorkReportContext -> IntermediateWorkReport -> WorkReportCursor
+intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWorkReport {..} =
   let IntermediateWorkReport _ _ _ _ _ _ _ = undefined
       workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorEntriesWithoutContext = makeEntryReportCursor $ flip map intermediateWorkReportEntriesWithoutContext $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
@@ -91,8 +93,16 @@ intermediateWorkReportToWorkReportCursor mSorter IntermediateWorkReport {..} =
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
-      sortCursorList = maybe id sorterSortCursorList mSorter
-      workReportCursorResultEntries = makeEntryReportCursor $ flip map (sortCursorList intermediateWorkReportResultEntries) $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      mAutoFilter :: Maybe EntryFilterRel
+      mAutoFilter = createAutoFilter workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
+      applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
+      applyAutoFilter = filter $ \tup -> case mAutoFilter of
+        Nothing -> True
+        Just autoFilter -> case workReportContextTime of
+          Nothing -> filterPredicate autoFilter tup
+          Just _ -> True
+      sortCursorList = maybe id sorterSortCursorList workReportContextSorter
+      workReportCursorResultEntries = makeEntryReportCursor $ flip map (sortCursorList (applyAutoFilter intermediateWorkReportResultEntries)) $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
       workReportCursorSelection = NextBeginSelected
       wrc = WorkReportCursor {..}
    in fromMaybe wrc $ workReportCursorNext wrc -- should not fail.
