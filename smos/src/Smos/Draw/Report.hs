@@ -359,7 +359,13 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
               | sres <- maybeToList (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
             ],
             [ titleSection "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
-                Nothing -> pure $ str "No results"
+                Nothing ->
+                  pure $
+                    ( case selectIf ResultsSelected of
+                        MaybeSelected -> forceAttr selectedAttr . visible
+                        NotSelected -> id
+                    )
+                      $ str "No results"
                 Just recs -> do
                   let go = drawWorkReportResultEntryCursor
                   verticalNonEmptyCursorTableWithHeaderM
@@ -374,7 +380,8 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
   pure $
     withHeading (str "Work Report") $
       padAll 1 $
-        vBox $ intersperse (str " ") sections
+        viewport ResourceViewport Vertical $
+          vBox $ intersperse (str " ") sections
 
 drawNextMeetingEntryCursor :: Select -> EntryReportEntryCursor (TimestampName, Timestamp) -> Drawer
 drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do
