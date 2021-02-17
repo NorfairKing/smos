@@ -23,11 +23,15 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
+import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Work
 
 produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
-produceWorkReportCursor ha sp dc wrc = produceReport ha sp dc $ intermediateWorkReportToWorkReportCursor <$> intermediateWorkReportConduit wrc
+produceWorkReportCursor ha sp dc wrc =
+  produceReport ha sp dc $
+    intermediateWorkReportToWorkReportCursor (workReportContextSorter wrc)
+      <$> intermediateWorkReportConduit wrc
 
 data WorkReportCursor = WorkReportCursor
   { workReportCursorNextBeginCursor :: !(Maybe (EntryReportEntryCursor (TimestampName, Timestamp))),
@@ -74,8 +78,8 @@ emptyWorkReportCursor =
       workReportCursorSelection = ResultsSelected
     }
 
-intermediateWorkReportToWorkReportCursor :: IntermediateWorkReport -> WorkReportCursor
-intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
+intermediateWorkReportToWorkReportCursor :: Maybe Sorter -> IntermediateWorkReport -> WorkReportCursor
+intermediateWorkReportToWorkReportCursor mSorter IntermediateWorkReport {..} =
   let IntermediateWorkReport _ _ _ _ _ _ _ = undefined
       workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorEntriesWithoutContext = makeEntryReportCursor $ flip map intermediateWorkReportEntriesWithoutContext $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
@@ -87,7 +91,8 @@ intermediateWorkReportToWorkReportCursor IntermediateWorkReport {..} =
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
-      workReportCursorResultEntries = makeEntryReportCursor $ flip map intermediateWorkReportResultEntries $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      sortCursorList = maybe id sorterSortCursorList mSorter
+      workReportCursorResultEntries = makeEntryReportCursor $ flip map (sortCursorList intermediateWorkReportResultEntries) $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
       workReportCursorSelection = NextBeginSelected
       wrc = WorkReportCursor {..}
    in fromMaybe wrc $ workReportCursorNext wrc -- should not fail.

@@ -22,7 +22,7 @@ spec = do
   -- Does not hold because of the validity constraint
   -- describe "workReportCursorSelectionL" $ lensSpecOnValid workReportCursorSelectionL
   describe "emptyWorkReportCursor" $ it "is valid" $ shouldBeValid emptyWorkReportCursor
-  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValidsOnValids intermediateWorkReportToWorkReportCursor
+  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValidsOnValids2 intermediateWorkReportToWorkReportCursor
   describe "workReportCursorNext" $ do
     it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
   -- TODO: not sure why this doesn't seem to hold.
