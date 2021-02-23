@@ -259,26 +259,26 @@ drawFileBrowserCursor :: Path Abs Dir -> KeyMap -> Select -> FileBrowserCursor -
 drawFileBrowserCursor workflowDir keyMap s FileBrowserCursor {..} =
   withHeading (str "File Browser: " <+> drawOpenedDirPath workflowDir fileBrowserCursorBase) $
     padAll 1 $
-      case fileBrowserCursorDirForestCursor of
-        Nothing -> drawInfo keyMap
-        Just fbc ->
-          vBox
-            [ viewport ResourceViewport Vertical $
+      vBox
+        [ case fileBrowserCursorDirForestCursor of
+            Nothing -> drawInfo keyMap
+            Just fbc ->
+              viewport ResourceViewport Vertical $
                 verticalPaddedDirForestCursorWidget
                   (goFodCursor s)
                   goFodUnselected
                   defaultPaddingAmount
                   fbc,
-              let ms =
-                    case fileBrowserCursorSelection of
-                      FileBrowserFilterSelected -> s
-                      FileBrowserSelected -> NotSelected
-               in hBox
-                    [ textLineWidget "Filter:",
-                      txt " ",
-                      drawTextCursor ms fileBrowserCursorFilterBar
-                    ]
-            ]
+          let ms =
+                case fileBrowserCursorSelection of
+                  FileBrowserFilterSelected -> s
+                  FileBrowserSelected -> NotSelected
+           in hBox
+                [ textLineWidget "Filter:",
+                  txt " ",
+                  drawTextCursor ms fileBrowserCursorFilterBar
+                ]
+        ]
   where
     goFodCursor :: Select -> FileOrDirCursor () -> Widget ResourceName
     goFodCursor ms = \case
