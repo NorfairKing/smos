@@ -1,25 +1,291 @@
-<section .hero .is-fullheight .section>
-  <div .hero-body>
-    <div .container>
+<div .container>
+  <div .box>
+
+
+
+    <section .hero>
+      <div .column .has-text-centered>
+
+      <!-- hier moet het smos logo-->
+      <p .has-text-centered>
+        hier moet het smos logo
+
+      <p .title .is-size-3 .has-text-weight-semibold .has-text-centered>
+        The tool that manages your stress and workload [logo hierboven]
+
       <div .columns .is-centered>
-        <div .column .is-5-tablet .is-4-desktop .is-3-widescreen>
-          $maybe _ <- maid
-            <div .box .has-text-centered>
-              <form
-                method="get"
-                action=@{TUIR ["example.smos"]}>
-                <button .button .is-light .is-large .is-fullwidth autofocus="autofocus" type="submit">
-                  Open Smos Online
-          $nothing
-            <div .box .has-text-centered>
-              <div .buttons>
-                <a .button .is-light .is-fullwidth href=@{PlaygroundR}>
-                  Playground
-            <div .box .has-text-centered>
-              <div .buttons>
-                <a .button .is-light .is-large .is-fullwidth
-                  href=@{AuthR registerR}>
-                  Try Now
-                <a .button .is-text .is-fullwidth
-                  href=@{AuthR LoginR}>
-                  Log in
+        <div .column .is-two-thirds>
+          <p .content .is-size-5 .has-text-centered>
+            Get your work done, all of it, in time, and without stress!
+
+      <div .columns .is-centered>
+        <a .button .is-size-4 .is-primary href=https://calendly.com/cs-syd/introduction-call>
+          Get Smos
+
+
+
+    <section .section>
+      <div .columns .is-centered .is-vcentered>
+        <div .column .has-text-centered>
+          <!-- hier moet hetzelfde filmpje achtig ding als op uw docs.smos.online/features -->
+          Hier komt een filmpje.
+
+        <div .column .is-half>
+          <p .title .is-size-3 .has-text-centered .p-3>
+            Try Smos for free
+
+          <p .content .is-size-5 .has-text-centered>
+            We do suggest getting Smos together with the self-management coaching sessions for maximum efficiency.
+     
+          <div .columns .is-centered .is-vcentered .p-3>
+            <a .button .is-size-4 .is-primary href=@{PlaygroundR}>
+              Smos Playground
+
+            <a .button .is-size-4 .is-primary .is-outlined href=https://cs-syd.eu/self-management>
+              Self-management        
+
+
+
+    <!-- carousel werkende krijgen -->
+    <section .section>
+      <div .container>
+        <div id="carousel-smos-testimonials" .carousel .no-select>          
+          <div .item-1 .columns .is-centered>
+            <div .column .is-half>
+              <p .content .is-size-5 .has-text-centered>
+                "Smos has really made me realise how much work used to be on my mind before my self-management times.
+                I now get a lot more done with a lot less stress.
+                It is actually incredible."
+
+              <p .has-text-weight-semibold .has-text-centered>
+                Hendrik Steurs,
+
+              <p .has-text-weight-semibold .is-italic .has-text-centered>
+                Private Consultant
+
+          <div .item-2 .columns .is-centered>
+            <div .column .is-half>
+              <p .content .is-size-5 .has-text-centered>
+                "The most signicificant outcome from this has been the decrease of perceived stress."
+
+              <p .has-text-weight-semibold .has-text-centered>
+                Samuli Kortelainen,
+
+              <p .has-text-weight-semibold .is-italic .has-text-centered>
+                CEO
+
+          <div .item-3 .columns .is-centered>
+            <div .column .is-half>
+              <p .content .is-size-5 .has-text-centered>
+                "I believe it has the potential to prevent costly mistakes via reduced stress, missed work-items via tracking and to make team members more productive.
+                Trained team members will be more dependable and less likely to burn out."
+
+              <p .has-text-weight-semibold .has-text-centered>
+                Aniket Deshpande,
+
+              <p .has-text-weight-semibold .is-italic .has-text-centered>
+                Software Engineer
+
+
+
+    <section .section>
+      <div .columns .is-vcentered>
+        <div .column .has-text-centered>
+          <img src=@{StaticR tom_sydney_kerckhove_stress_free_svg} alt="stress-free" style="height: 400px">
+            Hier komt een afbeelding.
+
+        <div .column>
+          <p .title .is-size-4>
+            Remove stress
+
+          <p .content .is-normal .has-text-justified>
+            The most important aspect of getting more work done is doing it without stress.
+            Smos is designed with the focus on removing stress.
+            In the
+            <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
+              self-management coaching
+            you are taught that your brain is for having ideas, not for holding them.
+            To make sure no brilliant ideas of yours get lost you ought to use an exocortex.
+            Smos is that exocortex.
+            <!-- TODO_uitleg-exocortex -->
+
+
+
+    <section .section>
+      <div .columns .is-vcentered>
+        <div .column>
+          <p .title .is-size-4 .has-text-right>
+            Get more work done
+
+          <p .content .is-normal .has-text-justified>  
+            Smos' main goal is to help you get more work done.
+            It is designed and optimized for power users.
+            That means speed is one of the most important factors, which specifically means it is keyboard only, auto syncing, TODO_aanvullen
+            Moreover, Smos follows the
+            <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
+              self-management
+            theory. That means it has incorporated the concept of context-based work, TODO_aanvullen.
+
+        <div .column .has-text-centered>
+          <!-- hier moet de afbeelding tom_sydney-kerckhove_productivity_svg -->
+          Hier komt een afbeelding.
+
+
+
+    <section .section>
+      <div .columns .is-vcentered>
+        <div .column .has-text-centered>
+          <!-- hier moet de afbeelding tom_sydney-kerckhove_stress_free_svg met style="height: 400px"-->
+          Hier komt een afbeelding.
+
+        <div .column>
+          <p .title .is-size-4>
+            No coding experience needed
+
+          <p .content .is-normal .has-text-justified>
+            But it does help.
+            Because of its optimization for speed Smos is a command line interface tool.            
+            If you buy the 
+            <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
+              self-management coaching
+            you get detailed instructions of Smos' features if desired (installation, commands, reasoning, modifiability).
+            We have also published the
+            <a href=https://docs.smos.online/ target="_blank" rel="noopener noreferrer">
+              documentation of Smos
+            as well as a
+            <a href=https://smos.online/tui/example.smos target="_blank" rel="noopener noreferrer">
+              browser version of Smos          
+            and a
+            <a href=https://docs.smos.online/cheat-sheet target="_blank" rel="noopener noreferrer">
+              cheat sheet
+            with the most important commands, which should help to speed up the learning process.
+
+
+
+    <section .section>
+      <div .columns .is-vcentered>
+        <div .column>
+          <p .title .is-size-4 .has-text-right>
+            Psychological bliss
+
+          <p .content .is-normal .has-text-justified>  
+            Smos is centered around the idea of combining all psychological healthy ways of working so you know exactly what it is that you need to do.            
+            Just to name a few: the feeling of satisfaction when you have finished a task, being able to evade procrastination by knowing exactly what your next small action is, and having a smart overview of all your projects.
+
+        <div .column .has-text-centered>
+          <!-- hier moet de afbeelding tom_sydney-kerckhove_productivity_svg -->
+          Hier komt een afbeelding.
+
+
+
+    <section .section>
+      <div .columns .is-vcentered>
+        <div .column .has-text-centered>
+          <!-- hier moet de afbeelding tom_sydney-kerckhove_stress_free_svg met style="height: 400px"-->
+          Hier komt een afbeelding.
+
+        <div .column>
+          <p .title .is-size-4>
+            Reliable
+
+          <p .content .is-normal .has-text-justified>
+            One of the biggest flaws of almost any other system is its reliablity.
+            It is important for a system to be 100% reliable – no less – because only then can you trust that what you need to do gets done, without procrastination, in time, and with the appropriate amount of attention.
+            This is that system.
+            Moreover, Smos is able to incorporate other tools, such as
+            <a href=https://tickler.cs-syd.eu/ target="_blank" rel="noopener noreferrer">
+              tickler
+            and
+            <a href=https://intray.eu/ target="_blank" rel="noopener noreferrer">
+              intray
+            to satisfy even the most meticulous power users.
+            See FAQs for more information.
+
+
+
+    <section .section>
+        <div .column>
+          <p .title .is-size-3 .has-text-centered .p-3>
+            Tiref of stressing about work?
+
+          <div .columns .is-centered .is-vcentered .p-3>
+            <a .button .is-size-4 .is-primary href=https://calendly.com/cs-syd/introduction-call>
+              Subscribe to Smos
+
+
+
+    <section .section>
+      <p .title .is-3>
+        FAQ
+
+      <div .dropdown>
+        <div .dropdown-trigger>
+          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
+            <span>
+              What if I feel I can’t rely on my system anymore?
+            <span .icon .is-small>
+              <i .fas .fa-angle-down aria-hidden="true">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
+        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
+          <div .dropdown-content>
+            <div .dropdown-item">
+              Weekly reviews
+
+      <div .dropdown>
+        <div .dropdown-trigger>
+          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
+            <span>
+              What if there are things that I cannot forget to do in the future?
+            <span .icon .is-small>
+              <i .fas .fa-angle-down aria-hidden="true">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
+        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
+          <div .dropdown-content>
+            <div .dropdown-item">
+              Tickler
+              
+      <div .dropdown>
+        <div .dropdown-trigger>
+          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
+            <span>
+              What if I completely forget about certain emails?
+            <span .icon .is-small>
+              <i .fas .fa-angle-down aria-hidden="true">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
+        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
+          <div .dropdown-content>
+            <div .dropdown-item">
+              Waiting for              
+              
+      <div .dropdown>
+        <div .dropdown-trigger>
+          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
+            <span>
+              What is I am stuck on projects or procrastinate?
+            <span .icon .is-small>
+              <i .fas .fa-angle-down aria-hidden="true">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
+        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
+          <div .dropdown-content>
+            <div .dropdown-item">
+              Stuck report              
+              
+      <div .dropdown>
+        <div .dropdown-trigger>
+          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
+            <span>
+              What if I keep stressing about things I can’t do at the moment?
+            <span .icon .is-small>
+              <i .fas .fa-angle-down aria-hidden="true">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
+        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
+          <div .dropdown-content>
+            <div .dropdown-item">
+              Context-based work               
+              
+
+
+
+
+
+
