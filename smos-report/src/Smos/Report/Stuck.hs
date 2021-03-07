@@ -58,7 +58,7 @@ makeStuckReportEntry tz stuckReportEntryFilePath sf = do
 
 latestEntryInSmosFile :: TimeZone -> SmosFile -> Maybe Entry
 latestEntryInSmosFile tz =
-  fmap last
+  (>>= lastMay)
     . headMay
     . groupBy ((==) `on` latestTimestampInEntry tz)
     . sortOn (Down . latestTimestampInEntry tz)

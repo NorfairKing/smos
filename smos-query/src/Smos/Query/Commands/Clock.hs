@@ -12,6 +12,7 @@ import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.List as C
+import Data.Foldable
 import qualified Data.Sequence as S
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -78,15 +79,15 @@ clockTableRows ctbs =
           EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t) :
           goHF (l + 1) f
     sumTable :: ClockTable -> NominalDiffTime
-    sumTable = sum . map sumBlock
+    sumTable = sumDiffTimes . map sumBlock
     sumBlock :: ClockTableBlock -> NominalDiffTime
-    sumBlock = sum . map sumFile . blockEntries
+    sumBlock = sumDiffTimes . map sumFile . blockEntries
     sumFile :: ClockTableFile -> NominalDiffTime
     sumFile = sumForest . clockTableForest
     sumTree :: Tree ClockTableHeaderEntry -> NominalDiffTime
-    sumTree = sum . map clockTableHeaderEntryTime . flatten
+    sumTree = sumDiffTimes . map clockTableHeaderEntryTime . flatten
     sumForest :: Forest ClockTableHeaderEntry -> NominalDiffTime
-    sumForest = sum . map sumTree
+    sumForest = sumDiffTimes . map sumTree
 
 -- We want the following columns
 --
@@ -183,3 +184,6 @@ renderNominalDiffTime fmt ndt =
     hours = totalHours
     minutes = totalMinutes - minutesInAnHour * totalHours
     seconds = totalSeconds - secondsInAMinute * totalMinutes
+
+sumDiffTimes :: [NominalDiffTime] -> NominalDiffTime
+sumDiffTimes = foldl' (+) 0

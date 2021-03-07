@@ -22,7 +22,7 @@ import Data.OrgMode.Parse as Org (parseDocument)
 import Data.OrgMode.Types as Org
 import qualified Data.Set as S
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
@@ -35,25 +35,33 @@ import System.Exit
 convertOrg :: IO ()
 convertOrg = do
   Settings {..} <- getSettings
-  t <- T.readFile $ fromAbsFile setFromFile
-  let errOrDocument =
-        Attoparsec.parseOnly
-          (Org.parseDocument ["TODO", "NEXT", "STARTED", "WAITING", "READY", "CANCELLED", "DONE"])
-          t
-  case errOrDocument of
+  bsContents <- SB.readFile $ fromAbsFile setFromFile
+  case TE.decodeUtf8' bsContents of
     Left err ->
-      die $ unlines ["Failed to parse orgmode document", fromAbsFile setFromFile, "with error", err]
-    Right doc -> do
-      now <- getCurrentTime
-      case runReaderT (convertDocument doc) now of
-        Left err -> die $ unlines ["Failed to convert:", show err]
-        Right sf ->
-          case prettyValidate sf of
-            Left err -> die $ unlines ["The converted smos file was not valid:", err]
-            Right sf' ->
-              case setToFile of
-                Nothing -> SB.putStr $ smosFileYamlBS sf'
-                Just p -> writeSmosFile p sf'
+      die $
+        unlines
+          [ unwords ["The contents of", fromAbsFile setFromFile, "don't look like UTF8-encdoded text"],
+            show err
+          ]
+    Right textContents -> do
+      let errOrDocument =
+            Attoparsec.parseOnly
+              (Org.parseDocument ["TODO", "NEXT", "STARTED", "WAITING", "READY", "CANCELLED", "DONE"])
+              textContents
+      case errOrDocument of
+        Left err ->
+          die $ unlines ["Failed to parse orgmode document", fromAbsFile setFromFile, "with error", err]
+        Right doc -> do
+          now <- getCurrentTime
+          case runReaderT (convertDocument doc) now of
+            Left err -> die $ unlines ["Failed to convert:", show err]
+            Right sf ->
+              case prettyValidate sf of
+                Left err -> die $ unlines ["The converted smos file was not valid:", err]
+                Right sf' ->
+                  case setToFile of
+                    Nothing -> SB.putStr $ smosFileYamlBS sf'
+                    Just p -> writeSmosFile p sf'
 
 type Convert = ReaderT UTCTime (Either ConvertErr)
 

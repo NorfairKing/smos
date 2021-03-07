@@ -25,6 +25,7 @@ import Cursor.Map
 import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
 import Cursor.Text
 import Cursor.Tree hiding (drawTreeCursor)
+import Data.Foldable
 import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -420,7 +421,7 @@ entryDrawContextLegacy :: EntryDrawContext -> Word
 entryDrawContextLegacy = forestSize . entryDrawContextForest
   where
     forestSize :: Forest a -> Word
-    forestSize = sum . map treeSize
+    forestSize = foldl' (+) 0 . map treeSize
     treeSize :: Tree a -> Word
     treeSize (Node _ f) = 1 + forestSize f
 
@@ -801,7 +802,7 @@ drawLogbookTotal mopen lbes = do
     forM mopen $ \open -> do
       now <- asks $ zonedTimeToUTC . drawEnvNow
       pure $ diffUTCTime now open
-  let total = fromMaybe 0 openTime + sum (map logbookEntryDiffTime lbes)
+  let total = fromMaybe 0 openTime + foldl' (+) 0 (map logbookEntryDiffTime lbes)
   pure $
     Just $
       hBox

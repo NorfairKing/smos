@@ -19,6 +19,8 @@
 - ignore:
     name: "Redundant <$>"
 - ignore:
+    name: "Use <=<"
+- ignore:
     name: "Use ++"
 - ignore:
     name: "Use ||"
@@ -64,13 +66,86 @@
 - ignore:
     name: "Use bimap"
 
-- functions:
-  # Disallowed functions
-  - {name: unsafeDupablePerformIO, within: []}
-  - {name: unsafeInterleaveIO, within: []}
-  - {name: unsafeFixIO, within: []}
-  - {name: nub, within: []}
 
-  # Still to add:
-  # - {name: unsafePerformIO, within: []}
+# Functions that we dissallow.
+# Note that you _can_ add exceptions to these hints, but those exceptions should be thorougly reviewed.
+- functions:
+  - {name: unsafeDupablePerformIO, within: []} # Unsafe
+  - {name: unsafeInterleaveIO, within: []} # Unsafe
+  - {name: unsafeFixIO, within: []} # Unsafe
+  - name: unsafePerformIO # Unsafe
+    within:
+    - Smos.API.SHA256
+
+  - {name: throw, within: []} # Don't throw from pure code, use throwIO instead.
+
+
+  - {name: Data.List.head, within: []} # Partial
+  - {name: Data.List.tail, within: []} # Partial
+  - {name: Data.List.init, within: []} # Partial
+  - {name: Data.List.last, within: []} # Partial
+  - {name: '!!', within: []} # Partial
+
+  - {name: until, within: []} # Really confusing, use 'when' instead.
+
+  - name: toEnum # Partial
+    within:
+    - Smos.Report.TimeBlock
+
+  - {name: Data.Foldable.foldl, within: []} # Lazy. Use foldl' instead.
+
+  # This is no longer an issue as of GHC 9.0.1
+  # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/4675
+  # but we still use an older version of GHC.
+  # As soon as we upgrade the LTS, we can replace the usages of `foldl' (+) 0` in the code
+  - {name: sum, within: []} # Lazy accumulator
+  - {name: product, within: []} # Lazy accumulator
+
+  # Don't use strings to interact with files
+  - {name: System.IO.readFile, within: []}
+  - {name: System.IO.writeFile, within: []}
+  - {name: System.IO.appendFile, within: []}
+
+  # Don't use string for command-line output.
+  - {name: System.IO.putStr, within: []}
+  - {name: System.IO.print, within: []}
+  - name: System.IO.putChar
+    within:
+    - Smos.Sync.Client.Prompt
+
+  # Don't use string for command-line input either.
+  - {name: System.IO.getChar, within: []}
+  - {name: System.IO.getLine, within: []}
+  - {name: System.IO.getContents, within: []} # Does lazy IO.
+  - {name: System.IO.interact, within: []}
+  - {name: System.IO.readIO, within: []}
+  - {name: System.IO.readLn, within: []}
+
+  # Can succeed in dev, but fail in prod, because of encoding guessing
+  # It's also Lazy IO.
+  # See https://www.snoyman.com/blog/2016/12/beware-of-readfile/ for more info.
+  - {name: System.IO.readFile, within: []}
+  - {name: Data.Text.IO.readFile, within: []}
+  - {name: Data.Text.IO.Lazy.readFile, within: []}
+
+  - {name: Prelude.read, within: []} # Partial, use `Text.Read.readMaybe` instead.
+
+  - {name: nub, within: []} # O(n^2)
+
+
+  # Still to add
+  # - {name: decodeUtf8, within: []} # Partial, use decodeUtf8' instead.
+  # - {name: Prelude.putStrLn, within: []}
+
+  # # We don't disallow 'undefined' because of the undefined trick.
+  # # It wolud be nice if there was a way to automatically check that all usages of undefined were because of the undefined trick...
+  # # - {name: 'error', within: []} # Purposely fails
+
+  # # Does unexpected things, see
+  # # https://github.com/NorfairKing/haskell-WAT#real-double
+  # - {name: realToFrac, within: []}
+
+  # # Does silent truncation:
+  # # > fromIntegral (300 :: Word) :: Word8
+  # # 44
   # - {name: fromIntegral, within: []}

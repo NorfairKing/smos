@@ -315,7 +315,7 @@ makeClockTableHeaderEntry HeaderTimes {..} =
     }
 
 sumLogbookEntryTime :: [LogbookEntry] -> NominalDiffTime
-sumLogbookEntryTime = sum . map go
+sumLogbookEntryTime = foldl' (+) 0 . map go
   where
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
