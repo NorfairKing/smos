@@ -51,11 +51,7 @@ drawNextActionReportCursor s NextActionReportCursor {..} = do
 drawNextActionEntryCursor :: Select -> EntryReportEntryCursor (TodoState, UTCTime) -> Drawer' [Widget ResourceName]
 drawNextActionEntryCursor s EntryReportEntryCursor {..} =
   pure $
-    let sel =
-          ( case s of
-              MaybeSelected -> forceAttr selectedAttr . visible
-              NotSelected -> id
-          )
+    let sel = withVisibleSelected s . withSelPointer s
         (ts, _) = entryReportEntryCursorVal
      in [ drawFilePath entryReportEntryCursorFilePath,
           drawTodoState ts,
@@ -71,11 +67,7 @@ drawWaitingEntryCursor :: Select -> EntryReportEntryCursor UTCTime -> Drawer' [W
 drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
   now <- asks $ zonedTimeToUTC . drawEnvNow
   threshold <- asks drawEnvWaitingThreshold
-  let sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
+  let sel = withVisibleSelected s . withSelPointer s
   pure
     [ str $ fromRelFile entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
@@ -238,11 +230,7 @@ isBefore now after =
 
 drawTimestampsEntryCursor :: Select -> EntryReportEntryCursor TimestampsEntryCursor -> Drawer' [Widget ResourceName]
 drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
-  let sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
+  let sel = withVisibleSelected s . withSelPointer s
       e = forestCursorCurrent entryReportEntryCursorForestCursor
   let TimestampsEntryCursor {..} = entryReportEntryCursorVal
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
@@ -267,12 +255,7 @@ drawStuckReportEntry :: Select -> StuckReportEntry -> Drawer' [Widget ResourceNa
 drawStuckReportEntry s StuckReportEntry {..} = do
   now <- asks $ zonedTimeToUTC . drawEnvNow
   threshold <- asks drawEnvStuckThreshold
-  let sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
-
+  let sel = withVisibleSelected s . withSelPointer s
   pure
     [ str $ fromRelFile stuckReportEntryFilePath,
       maybe (str " ") drawTodoState stuckReportEntryState,
@@ -359,13 +342,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
               | sres <- maybeToList (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
             ],
             [ titleSection "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
-                Nothing ->
-                  pure $
-                    ( case selectIf ResultsSelected of
-                        MaybeSelected -> forceAttr selectedAttr . visible
-                        NotSelected -> id
-                    )
-                      $ str "No results"
+                Nothing -> pure $ str "No results"
                 Just recs -> do
                   let go = drawWorkReportResultEntryCursor
                   verticalNonEmptyCursorTableWithHeaderM
@@ -385,11 +362,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
 
 drawNextMeetingEntryCursor :: Select -> EntryReportEntryCursor (TimestampName, Timestamp) -> Drawer
 drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do
-  let sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
+  let sel = withVisibleSelected s . withSelPointer s
       e = forestCursorCurrent entryReportEntryCursorForestCursor
       (tsn, ts) = entryReportEntryCursorVal
   tsw <- drawTimestampWithPrettyRelative ts
@@ -406,12 +379,8 @@ drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do
 drawWorkReportResultEntryCursor :: Select -> EntryReportEntryCursor () -> Drawer' [Widget ResourceName]
 drawWorkReportResultEntryCursor s erc = do
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
-  let sel =
-        ( case s of
-            MaybeSelected -> forceAttr selectedAttr . visible
-            NotSelected -> id
-        )
-  map sel . toList <$> drawProjecteeNE (projectEntryReportEntryCursor drawWorkEnvProjection erc)
+  let sel = withVisibleSelected s
+  map sel . toList <$> drawProjecteeNE s (projectEntryReportEntryCursor drawWorkEnvProjection erc)
 
 drawProjectionHeaderNE :: NonEmpty Projection -> NonEmpty (Widget n)
 drawProjectionHeaderNE = NE.map drawProjectionHeader
@@ -427,13 +396,13 @@ drawProjectionHeader =
     OntoTimestamp tn -> drawTimestampName tn
     OntoAncestor p' -> drawProjectionHeader p'
 
-drawProjecteeNE :: NonEmpty Projectee -> Drawer' (NonEmpty (Widget ResourceName))
-drawProjecteeNE = traverse drawProjectee
+drawProjecteeNE :: Select -> NonEmpty Projectee -> Drawer' (NonEmpty (Widget ResourceName))
+drawProjecteeNE s = traverse (drawProjectee s)
 
-drawProjectee :: Projectee -> Drawer
-drawProjectee = \case
+drawProjectee :: Select -> Projectee -> Drawer
+drawProjectee s = \case
   FileProjection rf -> pure $ drawFilePath rf
-  HeaderProjection h -> pure $ drawHeader h
+  HeaderProjection h -> pure $ withSelPointer s $ drawHeader h
   StateProjection ms -> pure $ maybe (str " ") drawTodoState ms
   TagProjection mt -> pure $ maybe (str " ") drawTag mt
   PropertyProjection pn mpv -> pure $ maybe (str " ") (drawPropertyValue pn) mpv

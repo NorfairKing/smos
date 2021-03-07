@@ -27,6 +27,8 @@ description: The changelog for all of the Smos tools and libraries
   Autocompletion for the `--config-file` and `--workflow-dir` options.
 - `smos`:
   The `propertiesEditProperty_goal` action, bound to `pg` by default.
+- `smos`:
+  Non-colour-based indicators of selection, for screens without colour or colour-blind users.
 
 
 ## Changed

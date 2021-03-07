@@ -232,11 +232,7 @@ drawHelpCursor km s (Just HelpCursor {..}) =
     lookupExitHelpActionInKeymap = lookupActionByName (helpKeyMapAnyMatchers $ keyMapHelpKeyMap km) (actionName exitHelp)
     go :: Select -> KeyHelpCursor -> [Widget n]
     go s_ KeyHelpCursor {..} =
-      let msel =
-            ( case s_ of
-                MaybeSelected -> forceAttr selectedAttr . visible
-                NotSelected -> id
-            )
+      let msel = withVisibleSelected s_ . withSelPointer s_
        in [ drawKeyCombinations keyHelpCursorKeyBinding,
             msel $ withAttr helpNameAttr $ textWidget $ actionNameText keyHelpCursorName
           ]
@@ -548,11 +544,8 @@ drawEntryCursor s tc edc e = do
                 maybeToList $ collapsedForestNumbersWidget tc edc
               ]
   pure $
-    ( case s of
-        NotSelected -> id
-        MaybeSelected -> visible
-    )
-      $ (headerLine <=>) $
+    withVisible s $
+      (headerLine <=>) $
         padLeft defaultPadding $
           vBox $
             catMaybes

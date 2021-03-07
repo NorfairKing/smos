@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Draw.Base where
@@ -76,6 +77,27 @@ formatTimestampDay = formatTime defaultTimeLocale "%A %F"
 
 formatTimestampLocalTime :: LocalTime -> String
 formatTimestampLocalTime = formatTime defaultTimeLocale "%A %F %R"
+
+withVisibleSelected :: Select -> Widget n -> Widget n
+withVisibleSelected s = withSelectedAttr s . withVisible s
+
+withVisible :: Select -> Widget n -> Widget n
+withVisible = \case
+  MaybeSelected -> visible
+  NotSelected -> id
+
+withSelectedAttr :: Select -> Widget n -> Widget n
+withSelectedAttr = \case
+  MaybeSelected -> forceAttr selectedAttr
+  NotSelected -> id
+
+withSelPointer :: Select -> Widget n -> Widget n
+withSelPointer s = (selPointer s <+>)
+
+selPointer :: Select -> Widget n
+selPointer = \case
+  MaybeSelected -> str [pointerChar, ' ']
+  NotSelected -> str [listerChar, ' ']
 
 listerChar :: Char
 listerChar = ' '
