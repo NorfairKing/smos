@@ -23,15 +23,8 @@ import Text.Time.Pretty
 
 type Table = Seq Chunk
 
-formatAsTable :: [[Chunk]] -> Seq Chunk
-formatAsTable =
-  Box.render
-    . tableByRows
-    . S.fromList
-    . map (S.intersperse (separator mempty 1) . S.fromList . map mkCell)
-
-mkCell :: Chunk -> Cell
-mkCell c = Cell (S.singleton (S.singleton c)) center left mempty
+formatAsTable :: [[Chunk]] -> [Chunk]
+formatAsTable = layoutAsTable . table
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"

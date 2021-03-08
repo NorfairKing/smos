@@ -30,8 +30,8 @@ library:
   - path-io
   - pretty-relative-time
   - pretty-show
-  - rainbow
-  - rainbox
+  - safe-coloured-text
+  - safe-coloured-text-layout
   - smos-data
   - smos-report
   - text

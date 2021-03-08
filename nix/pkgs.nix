@@ -6,6 +6,10 @@ let
     import (
       builtins.fetchGit (import ./validity-version.nix) + "/nix/overlay.nix"
     );
+  safe-coloured-text-overlay =
+    import (
+      builtins.fetchGit (import ./safe-coloured-text-version.nix) + "/nix/overlay.nix"
+    );
   sydtest-overlay =
     import (
       builtins.fetchGit (import ./sydtest-version.nix) + "/nix/overlay.nix"
@@ -64,6 +68,7 @@ let
       pkgsv {
         overlays = [
           validity-overlay
+          safe-coloured-text-overlay
           sydtest-overlay
           typed-uuid-overlay
           pretty-relative-time-overlay

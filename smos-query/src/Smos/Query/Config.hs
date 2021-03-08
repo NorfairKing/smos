@@ -25,8 +25,6 @@ import Data.Foldable
 import Data.Sequence (Seq)
 import GHC.Generics (Generic)
 import Path
-import Rainbow
-import Rainbox as Box
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
