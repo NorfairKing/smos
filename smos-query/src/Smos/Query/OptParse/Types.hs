@@ -201,9 +201,11 @@ instance YamlSchema PreparedReportConfiguration where
   yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
 data ColourConfiguration = ColourConfiguration
-  { -- | The colour for bicolour tables
-    -- The first maybe layer is for whether it's in the config file, the second is for whether to use bicolour tables.
-    colourConfigurationBicolour :: Maybe (Maybe Colour)
+  { -- | How to background-colour tables
+    --
+    -- The first maybe is for whether this is defined in the configuration file.
+    -- The second maybe is for whether any background colour should be used.
+    colourConfigurationBackground :: Maybe (Maybe TableBackground)
   }
   deriving (Show, Eq, Generic)
 
@@ -214,7 +216,17 @@ instance YamlSchema ColourConfiguration where
   yamlSchema =
     objectParser "ColourConfiguration" $
       ColourConfiguration
-        <$> optionalField "bicolour" "The colour to use for bicolour tables. Set this to 'null' to turn off bicolour tables."
+        <$> optionalField "background" "The table background colours"
+
+instance YamlSchema TableBackground where
+  yamlSchema =
+    alternatives
+      [ SingleColour <$> yamlSchema <?> "A single background colour",
+        objectParser "Bicolour" $
+          Bicolour
+            <$> optionalField "even" "background for even-numbered table-rows (0-indexed)"
+            <*> optionalField "odd" "background for odd-numbered table-rows"
+      ]
 
 instance YamlSchema Colour where
   yamlSchema =

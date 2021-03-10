@@ -19,5 +19,5 @@ defaultSmosQueryConfig =
 defaultColourConfig :: ColourConfig
 defaultColourConfig =
   ColourConfig
-    { colourConfigBicolour = Nothing
+    { colourConfigBackground = Just (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))
     }

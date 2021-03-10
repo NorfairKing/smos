@@ -184,7 +184,10 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
     getColourConfig :: Maybe ColourConfiguration -> ColourConfig -> ColourConfig
     getColourConfig mcc cc =
       cc
-        { colourConfigBicolour = fromMaybe (Just (Colour8Bit 235)) (mcc >>= colourConfigurationBicolour)
+        { colourConfigBackground =
+            fromMaybe
+              (colourConfigBackground cc)
+              (mcc >>= colourConfigurationBackground)
         }
 
     getSettings = do

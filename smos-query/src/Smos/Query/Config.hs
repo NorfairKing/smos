@@ -16,6 +16,7 @@ module Smos.Query.Config
     module Control.Monad.IO.Class,
     module Control.Monad.Reader,
     module Text.Colour,
+    module Text.Colour.Layout,
   )
 where
 
@@ -29,6 +30,7 @@ import Smos.Report.ShouldPrint
 import System.Exit
 import System.IO
 import Text.Colour
+import Text.Colour.Layout
 
 data SmosQueryConfig = SmosQueryConfig
   { smosQueryConfigReportConfig :: !SmosReportConfig,
@@ -40,7 +42,7 @@ data SmosQueryConfig = SmosQueryConfig
   deriving (Show, Eq, Generic)
 
 data ColourConfig = ColourConfig
-  { colourConfigBicolour :: Maybe Colour
+  { colourConfigBackground :: Maybe TableBackground
   }
   deriving (Show, Eq, Generic)
 
