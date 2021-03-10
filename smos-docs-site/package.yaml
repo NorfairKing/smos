@@ -39,6 +39,7 @@ library:
   - smos-single
   - smos-sync-client
   - smos-web-server
+  - smos-web-style
   - template-haskell
   - template-haskell-reload
   - text

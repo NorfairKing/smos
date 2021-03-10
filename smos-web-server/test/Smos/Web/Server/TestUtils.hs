@@ -18,6 +18,7 @@ import qualified Smos.Server.TestUtils as API
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
+import Smos.Web.Style
 import Test.Syd
 import Test.Syd.Yesod
 import Yesod.Auth
@@ -39,6 +40,7 @@ webServerSetupFunc' = wrapSetupFunc $ \(ClientEnv man burl _) -> do
     App
       { appLogLevel = LevelWarn,
         appStatic = smosWebServerStatic,
+        appStyle = smosWebStyle,
         appAPIBaseUrl = burl,
         appDocsBaseUrl = Nothing,
         appLoginTokens = loginVar,

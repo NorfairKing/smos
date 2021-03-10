@@ -5,6 +5,7 @@ let
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
+
 in
 {
   smosCasts =
@@ -149,13 +150,44 @@ in
         }
       );
 
+      bulma = builtins.fetchGit {
+        url = "https://github.com/jgthms/bulma";
+        rev = "f26b871321a13ff2ce3f6270eec9b9585527d3b7";
+      };
+      bulma-carousel = builtins.fetchGit {
+        url = "https://github.com/Wikiki/bulma-carousel";
+        rev = "3de42c029917536d2f4867fd469f8187c56bcd41";
+      };
+      stylesheet = final.stdenv.mkDerivation {
+        name = "site-stylesheet.css";
+        src = final.gitignoreSource ../smos-web-style/style/mybulma.scss;
+        buildInputs = [ final.sass ];
+        buildCommand = ''
+          # Dependency submodules are fetched manually here
+          # so that we don't have to fetch the submodules of smos
+          # when importing smos from derivation.
+          ln -s ${bulma} bulma
+          ln -s ${bulma-carousel} bulma-carousel
+    
+          # The file we want to compile
+          # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
+          cp $src mybulma.scss
+          scss \
+            --sourcemap=none \
+            mybulma.scss:index.css --style compressed
+          cp index.css $out
+        '';
+      };
+      smos-web-style = overrideCabal (smosPkg "smos-web-style") (old: {
+        preConfigure = ''
+          ${old.preConfigure or ""}
+          export STYLE_FILE=${stylesheet}
+        '';
+      });
+
       smos-docs-site = withLinksChecked "smos-docs-site" (
         withStaticResources (smosPkgWithOwnComp "smos-docs-site") (
           {
-            "static/bulma.css" = builtins.fetchurl {
-              url = "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css";
-              sha256 = "sha256:0lhpzahlszi5nr82n3sny5fjk4k1vaq11rdrddjmka23np53klqg";
-            };
             "static/font-awesome.css" = builtins.fetchurl {
               url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
               sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
@@ -176,10 +208,6 @@ in
         )
       );
       smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") {
-        "static/bulma.css" = builtins.fetchurl {
-          url = "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.0/css/bulma.min.css";
-          sha256 = "sha256:0lhpzahlszi5nr82n3sny5fjk4k1vaq11rdrddjmka23np53klqg";
-        };
         "static/favicon.ico" = builtins.fetchurl {
           url = "https://cs-syd.eu/logo/res/favicon.ico";
           sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
@@ -244,6 +272,7 @@ in
       "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-shell" = smosPkg "smos-shell";
+      inherit smos-web-style;
       inherit smos-web-server;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos

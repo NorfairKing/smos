@@ -26,6 +26,7 @@ import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Casts
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
+import Smos.Web.Style
 import Text.Hamlet
 import Yesod
 import Yesod.EmbeddedStatic
@@ -34,6 +35,7 @@ data App = App
   { appWebserverUrl :: !(Maybe Text),
     appAssets :: !EmbeddedStatic,
     appCasts :: !EmbeddedStatic,
+    appStyle :: !EmbeddedStatic,
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -45,7 +47,7 @@ instance Yesod App where
     app <- getYesod
     pageContent <-
       widgetToPageContent $ do
-        addStylesheet $ AssetsStaticR bulma_css
+        addStylesheet $ StyleR index_css
         addStylesheet $ AssetsStaticR font_awesome_css
         toWidgetHead
           [hamlet|<link rel="icon" href=@{AssetsR ["logo.svg"]} sizes="16x16 32x32 48x48 64x84" type="image/x-icon">|]

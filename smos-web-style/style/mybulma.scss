@@ -1,0 +1,55 @@
+@charset "utf-8";
+
+
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+// Set your brand colors
+$jet: #353535;
+$white: #FFFFFF;
+
+$julian-background-blue: #f0f4f6;
+
+$main-brand-color: #006e7d;
+$light-accent: #499dac;
+$dark-accent: #004351;
+
+// Update Bulma's global variables
+$primary: $main-brand-color;
+$text: #242424;
+$link: $dark-accent;
+$info: $light-accent;
+
+// Code colors
+$code: $jet;
+
+// Update some of Bulma's component variables
+$body-background-color: $julian-background-blue;
+$box-background-color: $white;
+
+.navbar {
+  border-radius: 6px;
+}
+
+@import "bulma/bulma.sass";
+@import "bulma-carousel/src/sass/index.sass";
+
+.slider-navigation-previous, .slider-navigation-next {
+  box-shadow: 0px 0px;
+  margin-top: -10%
+}
+
+.slider-item {
+  cursor: grab;
+}
+
+.no-select {
+  user-select: none;
+}
+
+// a {
+//   code {
+//     color: $link;
+//   }
+// }
+// 

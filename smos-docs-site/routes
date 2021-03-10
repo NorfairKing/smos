@@ -32,4 +32,6 @@
 /casts/*Texts CastsR GET
 /casts-static CastsStaticR EmbeddedStatic appCasts
 
+/style StyleR EmbeddedStatic appStyle
+
 !/*Texts PageR GET

@@ -50,12 +50,12 @@ library:
   - smos-report
   - smos-shell
   - smos-sync-client
+  - smos-web-style
   - stm
   - template-haskell
   - text
   - unix
   - unliftio
-  - vty # We can get rid of this if we replace the setWindowSize function
   - wai
   - wai-extra
   - warp
@@ -95,8 +95,6 @@ tests:
     - containers
     - genvalidity
     - genvalidity-sydtest
-    - sydtest
-    - sydtest-yesod
     - http-client
     - http-types
     - monad-logger
@@ -110,6 +108,9 @@ tests:
     - smos-server-gen
     - smos-sync-client
     - smos-web-server
+    - smos-web-style
     - stm
+    - sydtest
+    - sydtest-yesod
     - text
     - yesod-auth

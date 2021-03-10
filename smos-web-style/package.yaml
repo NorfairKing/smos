@@ -1,0 +1,26 @@
+name: smos-web-style
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2020 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+extra-source-files:
+- style/mybulma.scss
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  build-tools: autoexporter
+  dependencies:
+  - path
+  - path-io
+  - process
+  - template-haskell
+  - yesod-static
+

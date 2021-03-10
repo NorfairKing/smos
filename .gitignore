@@ -12,3 +12,5 @@ session.json
 *.tar.gz
 .direnv/
 *:Zone.Identifier
+.sass-cache/
+*.css

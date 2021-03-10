@@ -4,7 +4,9 @@ let
 in
 pkgs.mkShell {
   name = "smos-nix-shell";
-  buildInputs = pre-commit-hooks.tools;
+  buildInputs = pre-commit-hooks.tools ++ [
+    pkgs.sass
+  ];
   shellHook = ''
     ${pre-commit-hooks.run.shellHook}
 

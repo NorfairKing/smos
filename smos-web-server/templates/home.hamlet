@@ -19,8 +19,8 @@
             Get your work done, all of it, in time, and without stress!
 
       <div .columns .is-centered>
-        <a .button .is-size-4 .is-primary href=https://calendly.com/cs-syd/introduction-call>
-          Get Smos
+        <a .button .is-size-4 .is-primary href=@{PlaygroundR}>
+          Take the tour
 
 
 
@@ -36,13 +36,10 @@
 
           <p .content .is-size-5 .has-text-centered>
             We do suggest learning Smos together with the self-management coaching sessions for maximum efficiency.
-     
-          <div .columns .is-centered .is-vcentered .p-3>
-            <a .button .is-size-4 .is-primary href=@{PlaygroundR}>
-              Smos Playground
 
-            <a .button .is-size-4 .is-primary .is-outlined href=https://cs-syd.eu/self-management>
-              Self-management        
+          <div .buttons .is-centered>
+            <a .button .is-size-5 .is-link href=https://cs-syd.eu/self-management>
+              Self-management
 
 
 

@@ -38,6 +38,7 @@ smos-client-gen          : Generators for the smos client library
 smos-server              : The smos server
 smos-server-gen          : Generators for the smos server
 smos-sync-client         : The sync client tool
+smos-web-style           : The stylesheets for the web server and docs site
 smos-web-server          : The smos web server
 smos-docs-site           : The generator for the documentation website.
 ```

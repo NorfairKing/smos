@@ -31,6 +31,7 @@ import Servant.Client
 import Smos.Client
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
+import Smos.Web.Style
 import qualified System.FilePath as FP
 import Text.Hamlet
 import Yesod
@@ -43,6 +44,7 @@ data App = App
     appAPIBaseUrl :: !BaseUrl,
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
+    appStyle :: !EmbeddedStatic,
     appLoginTokens :: !(TVar (Map Username Token)),
     appHttpManager :: !Http.Manager,
     appDataDir :: !(Path Abs Dir),
@@ -57,7 +59,7 @@ instance Yesod App where
   defaultLayout widget = do
     app <- getYesod
     pageContent <- widgetToPageContent $ do
-      addStylesheet $ StaticR bulma_css
+      addStylesheet $ StyleR index_css
       toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
       $(widgetFile "default-body")
     withUrlRenderer $ do

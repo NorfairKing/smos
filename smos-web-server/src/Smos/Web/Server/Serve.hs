@@ -14,6 +14,7 @@ import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
 import Smos.Web.Server.Static
+import Smos.Web.Style
 import Text.Show.Pretty
 import Yesod
 
@@ -32,6 +33,7 @@ runSmosWebServer ServeSettings {..} = do
   let app =
         App
           { appLogLevel = serveSetLogLevel,
+            appStyle = smosWebStyle,
             appStatic = smosWebServerStatic,
             appAPIBaseUrl = serveSetAPIUrl,
             appDocsBaseUrl = serveSetDocsUrl,
