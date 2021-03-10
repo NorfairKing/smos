@@ -17,6 +17,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Options.Applicative as OptParse
 import Rainbow
 import qualified Smos.Query as Query
+import qualified Smos.Query.Default as Query
 import qualified Smos.Query.OptParse as Query
 import qualified Smos.Report.OptParse as Report
 import System.Console.Haskeline as Haskeline
@@ -73,6 +74,7 @@ smosShellWith rc inputH outputH errorH = do
                       Query.combineToInstructions
                         ( Query.SmosQueryConfig
                             { Query.smosQueryConfigReportConfig = rc,
+                              Query.smosQueryConfigColourConfig = Query.defaultColourConfig,
                               Query.smosQueryConfigInputHandle = inputH,
                               Query.smosQueryConfigOutputHandle = outputH,
                               Query.smosQueryConfigErrorHandle = errorH

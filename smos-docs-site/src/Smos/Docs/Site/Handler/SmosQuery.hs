@@ -38,10 +38,10 @@ getSmosQueryCommandR cmd = do
   let argsHelpText = getHelpPageOf [T.unpack cmd]
       envHelpText = "This command does not use any extra environment variables." :: String
       confHelpText = case cmd of
-        "work" -> confDocsWithKey2 @Report.WorkReportConfiguration @Query.WorkConfiguration workConfigurationKey
+        "work" -> confDocsWithKey @Report.WorkReportConfiguration "work"
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey
-        "waiting" -> confDocsWithKey @Query.WaitingConfiguration waitingConfigurationKey
-        "stuck" -> confDocsWithKey @Query.StuckConfiguration stuckConfigurationKey
+        "waiting" -> confDocsWithKey @Report.WaitingReportConfiguration "waiting"
+        "stuck" -> confDocsWithKey @Report.StuckReportConfiguration "stuck"
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
@@ -59,6 +59,3 @@ getHelpPageOf args =
 
 confDocsWithKey :: forall o. YamlSchema o => Text -> Text
 confDocsWithKey key = prettyParserDoc $ objectParser "Configuration" $ optionalFieldWith' key (yamlSchema @o)
-
-confDocsWithKey2 :: forall o1 o2. (YamlSchema o1, YamlSchema o2) => Text -> Text
-confDocsWithKey2 key = prettyParserDoc $ objectParser "Configuration" $ optionalFieldWith' key $ (,) <$> (yamlSchema @o1) <*> (yamlSchema @o2)

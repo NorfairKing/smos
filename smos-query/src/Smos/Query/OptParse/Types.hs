@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Query.OptParse.Types
   ( module Smos.Report.Clock.Types,
@@ -164,9 +165,7 @@ data Configuration = Configuration
   { confReportConf :: Report.Configuration,
     confHideArchive :: Maybe HideArchive,
     confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
-    confWaitingConfiguration :: Maybe WaitingConfiguration,
-    confStuckConfiguration :: Maybe StuckConfiguration,
-    confWorkConfiguration :: Maybe WorkConfiguration
+    confColourConfiguration :: Maybe ColourConfiguration
   }
   deriving (Show, Eq, Generic)
 
@@ -175,28 +174,20 @@ instance FromJSON Configuration where
 
 instance YamlSchema Configuration where
   yamlSchema =
-    (\reportConf (a, b, c, d, e) -> Configuration reportConf a b c d e)
+    (\reportConf (a, b, c) -> Configuration reportConf a b c)
       <$> yamlSchema
       <*> objectParser
         "Configuration"
-        ( (,,,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
+        ( (,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
             <*> optionalField preparedReportConfigurationKey "Prepared report config"
-            <*> optionalField waitingConfigurationKey "Waiting report config"
-            <*> optionalField stuckConfigurationKey "Stuck report config"
-            <*> optionalField workConfigurationKey "Work report config"
+            <*> optionalField colourConfigurationKey "Colour config"
         )
 
 preparedReportConfigurationKey :: Text
 preparedReportConfigurationKey = "report"
 
-waitingConfigurationKey :: Text
-waitingConfigurationKey = "waiting"
-
-stuckConfigurationKey :: Text
-stuckConfigurationKey = "stuck"
-
-workConfigurationKey :: Text
-workConfigurationKey = "work"
+colourConfigurationKey :: Text
+colourConfigurationKey = "colour"
 
 data PreparedReportConfiguration = PreparedReportConfiguration
   { preparedReportConfAvailableReports :: Maybe (Map Text PreparedReport)
@@ -209,32 +200,29 @@ instance FromJSON PreparedReportConfiguration where
 instance YamlSchema PreparedReportConfiguration where
   yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
-data WaitingConfiguration = WaitingConfiguration
+data ColourConfiguration = ColourConfiguration
+  { -- | The colour for bicolour tables
+    -- The first maybe layer is for whether it's in the config file, the second is for whether to use bicolour tables.
+    colourConfigurationBicolour :: Maybe (Maybe Colour)
+  }
   deriving (Show, Eq, Generic)
 
-instance FromJSON WaitingConfiguration where
+instance FromJSON ColourConfiguration where
   parseJSON = viaYamlSchema
 
-instance YamlSchema WaitingConfiguration where
-  yamlSchema = pure WaitingConfiguration
+instance YamlSchema ColourConfiguration where
+  yamlSchema =
+    objectParser "ColourConfiguration" $
+      ColourConfiguration
+        <$> optionalField "bicolour" "The colour to use for bicolour tables. Set this to 'null' to turn off bicolour tables."
 
-data StuckConfiguration = StuckConfiguration
-  deriving (Show, Eq, Generic)
-
-instance FromJSON StuckConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema StuckConfiguration where
-  yamlSchema = pure StuckConfiguration
-
-data WorkConfiguration = WorkConfiguration
-  deriving (Show, Eq, Generic)
-
-instance FromJSON WorkConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema WorkConfiguration where
-  yamlSchema = pure WorkConfiguration
+instance YamlSchema Colour where
+  yamlSchema =
+    Colour8Bit <$> yamlSchema
+      <??> [ "Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.",
+             "See this overview on wikipedia for more information:",
+             "https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit"
+           ]
 
 data Dispatch
   = DispatchEntry !EntrySettings

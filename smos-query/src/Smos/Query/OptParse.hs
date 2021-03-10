@@ -59,7 +59,8 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
                   entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
                 }
         CommandReport ReportFlags {..} -> do
-          let mprc func = mc >>= confPreparedReportConfiguration >>= func
+          let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
+              mprc func = mc >>= confPreparedReportConfiguration >>= func
           pure $
             DispatchReport
               ReportSettings
@@ -180,6 +181,12 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
         CommandStats StatsFlags {..} ->
           pure $
             DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+    getColourConfig :: Maybe ColourConfiguration -> ColourConfig -> ColourConfig
+    getColourConfig mcc cc =
+      cc
+        { colourConfigBicolour = fromMaybe (Just (Colour8Bit 235)) (mcc >>= colourConfigurationBicolour)
+        }
+
     getSettings = do
       src <-
         Report.combineToConfig
@@ -189,7 +196,8 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
           (confReportConf <$> mc)
       pure $
         sqc
-          { smosQueryConfigReportConfig = src
+          { smosQueryConfigReportConfig = src,
+            smosQueryConfigColourConfig = getColourConfig (mc >>= confColourConfiguration) smosQueryConfigColourConfig
           }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
