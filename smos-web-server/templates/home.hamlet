@@ -3,15 +3,15 @@
 
 
 
-    <section .hero>
+    <section .section>
       <div .column .has-text-centered>
+        <img src=@{StaticR tom_sydney_kerckhove_logo_smos_svg} alt="Smos Logo" style="height: 100px">
 
-      <!-- hier moet het smos logo-->
-      <p .has-text-centered>
-        hier moet het smos logo
 
+
+    <section .hero>
       <p .title .is-size-3 .has-text-weight-semibold .has-text-centered>
-        The tool that manages your stress and workload [logo hierboven]
+        The tool that manages your stress and workload
 
       <div .columns .is-centered>
         <div .column .is-two-thirds>
@@ -27,7 +27,7 @@
     <section .section>
       <div .columns .is-centered .is-vcentered>
         <div .column .has-text-centered>
-          <!-- hier moet hetzelfde filmpje achtig ding als op uw docs.smos.online/features -->
+          <!-- TODO hier moet hetzelfde filmpje achtig ding als op uw docs.smos.online/features -->
           Hier komt een filmpje.
 
         <div .column .is-half>
@@ -35,7 +35,7 @@
             Try Smos for free
 
           <p .content .is-size-5 .has-text-centered>
-            We do suggest getting Smos together with the self-management coaching sessions for maximum efficiency.
+            We do suggest learning Smos together with the self-management coaching sessions for maximum efficiency.
      
           <div .columns .is-centered .is-vcentered .p-3>
             <a .button .is-size-4 .is-primary href=@{PlaygroundR}>
@@ -46,7 +46,6 @@
 
 
 
-    <!-- carousel werkende krijgen -->
     <section .section>
       <div .container>
         <div id="carousel-smos-testimonials" .carousel .no-select>          
@@ -92,7 +91,6 @@
       <div .columns .is-vcentered>
         <div .column .has-text-centered>
           <img src=@{StaticR tom_sydney_kerckhove_stress_free_svg} alt="stress-free" style="height: 400px">
-            Hier komt een afbeelding.
 
         <div .column>
           <p .title .is-size-4>
@@ -107,7 +105,7 @@
             you are taught that your brain is for having ideas, not for holding them.
             To make sure no brilliant ideas of yours get lost you ought to use an exocortex.
             Smos is that exocortex.
-            <!-- TODO_uitleg-exocortex -->
+            <!-- TODO_uitleg-exocortex(?) -->
 
 
 
@@ -127,16 +125,14 @@
             theory. That means it has incorporated the concept of context-based work, TODO_aanvullen.
 
         <div .column .has-text-centered>
-          <!-- hier moet de afbeelding tom_sydney-kerckhove_productivity_svg -->
-          Hier komt een afbeelding.
+          <img src=@{StaticR tom_sydney_kerckhove_productivity_svg} alt="productivity" style="height: 400px">
 
 
 
     <section .section>
       <div .columns .is-vcentered>
         <div .column .has-text-centered>
-          <!-- hier moet de afbeelding tom_sydney-kerckhove_stress_free_svg met style="height: 400px"-->
-          Hier komt een afbeelding.
+          <img src=@{StaticR tom_sydney_kerckhove_coding_experience_svg} alt="coding experience" style="height: 400px">
 
         <div .column>
           <p .title .is-size-4>
@@ -173,16 +169,14 @@
             Just to name a few: the feeling of satisfaction when you have finished a task, being able to evade procrastination by knowing exactly what your next small action is, and having a smart overview of all your projects.
 
         <div .column .has-text-centered>
-          <!-- hier moet de afbeelding tom_sydney-kerckhove_productivity_svg -->
-          Hier komt een afbeelding.
+          <img src=@{StaticR tom_sydney_kerckhove_mental_health_svg} alt="psychological bliss" style="height: 400px">
 
 
 
     <section .section>
       <div .columns .is-vcentered>
         <div .column .has-text-centered>
-          <!-- hier moet de afbeelding tom_sydney-kerckhove_stress_free_svg met style="height: 400px"-->
-          Hier komt een afbeelding.
+          <img src=@{StaticR tom_sydney_kerckhove_reliable_svg} alt="reliable" style="height: 400px">
 
         <div .column>
           <p .title .is-size-4>
@@ -199,7 +193,6 @@
             <a href=https://intray.eu/ target="_blank" rel="noopener noreferrer">
               intray
             to satisfy even the most meticulous power users.
-            See FAQs for more information.
 
 
 
@@ -211,81 +204,3 @@
           <div .columns .is-centered .is-vcentered .p-3>
             <a .button .is-size-4 .is-primary href=https://calendly.com/cs-syd/introduction-call>
               Subscribe to Smos
-
-
-
-    <section .section>
-      <p .title .is-3>
-        FAQ
-
-      <div .dropdown>
-        <div .dropdown-trigger>
-          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
-            <span>
-              What if I feel I can’t rely on my system anymore?
-            <span .icon .is-small>
-              <i .fas .fa-angle-down aria-hidden="true">
-                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
-        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
-          <div .dropdown-content>
-            <div .dropdown-item">
-              Weekly reviews
-
-      <div .dropdown>
-        <div .dropdown-trigger>
-          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
-            <span>
-              What if there are things that I cannot forget to do in the future?
-            <span .icon .is-small>
-              <i .fas .fa-angle-down aria-hidden="true">
-                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
-        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
-          <div .dropdown-content>
-            <div .dropdown-item">
-              Tickler
-              
-      <div .dropdown>
-        <div .dropdown-trigger>
-          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
-            <span>
-              What if I completely forget about certain emails?
-            <span .icon .is-small>
-              <i .fas .fa-angle-down aria-hidden="true">
-                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
-        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
-          <div .dropdown-content>
-            <div .dropdown-item">
-              Waiting for              
-              
-      <div .dropdown>
-        <div .dropdown-trigger>
-          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
-            <span>
-              What is I am stuck on projects or procrastinate?
-            <span .icon .is-small>
-              <i .fas .fa-angle-down aria-hidden="true">
-                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
-        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
-          <div .dropdown-content>
-            <div .dropdown-item">
-              Stuck report              
-              
-      <div .dropdown>
-        <div .dropdown-trigger>
-          <a .button aria-haspopup="true" aria-controls="dropdown-ui-actions">
-            <span>
-              What if I keep stressing about things I can’t do at the moment?
-            <span .icon .is-small>
-              <i .fas .fa-angle-down aria-hidden="true">
-                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js">
-        <div .dropdown-menu .id="dropdown-ui-actions" role="menu">
-          <div .dropdown-content>
-            <div .dropdown-item">
-              Context-based work               
-              
-
-
-
-
-
-
