@@ -19,8 +19,8 @@ smosQueryWaiting WaitingSettings {..} = do
   sp <- getShouldPrint
   report <- produceWaitingReport waitingSetFilter waitingSetHideArchive sp dc
   now <- liftIO getCurrentTime
-  putTableLn $ renderWaitingReport waitingSetThreshold now report
+  liftIO $ putChunks $ renderWaitingReport waitingSetThreshold now report
 
-renderWaitingReport :: Word -> UTCTime -> WaitingReport -> Table
+renderWaitingReport :: Word -> UTCTime -> WaitingReport -> [Chunk]
 renderWaitingReport threshold now =
-  formatAsTable . map (formatWaitingEntry threshold now) . waitingReportEntries
+  formatAsBicolourTable . map (formatWaitingEntry threshold now) . waitingReportEntries

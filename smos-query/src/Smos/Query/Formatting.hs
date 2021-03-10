@@ -2,16 +2,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Formatting where
+module Smos.Query.Formatting
+  ( module Smos.Query.Formatting,
+    module Text.Colour.Layout,
+    module Text.Colour,
+  )
+where
 
 import Data.Foldable
-import Data.Sequence (Seq)
-import qualified Data.Sequence as S
 import qualified Data.Text as T
 import Data.Time
 import Path
-import Rainbow
-import Rainbox as Box
 import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Entry
@@ -19,12 +20,12 @@ import Smos.Report.Formatting
 import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Report.Waiting
+import Text.Colour
+import Text.Colour.Layout
 import Text.Time.Pretty
 
-type Table = Seq Chunk
-
-formatAsTable :: [[Chunk]] -> [Chunk]
-formatAsTable = layoutAsTable . table
+formatAsBicolourTable :: [[Chunk]] -> [Chunk]
+formatAsBicolourTable = renderTable . (\t -> t {tableBackground = Just (Bicolour Nothing (Just $ colour256 235))}) . table
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
@@ -89,9 +90,9 @@ formatStuckReportEntry threshold now StuckReportEntry {..} =
 pathChunk :: Path b t -> Chunk
 pathChunk = chunk . T.pack . toFilePath
 
-renderEntryReport :: EntryReport -> Table
+renderEntryReport :: EntryReport -> [Chunk]
 renderEntryReport EntryReport {..} =
-  formatAsTable $
+  formatAsBicolourTable $
     map renderProjectionHeader (toList entryReportHeaders) :
     map (renderProjectees . toList) entryReportCells
 
@@ -124,54 +125,54 @@ mTodoStateChunk :: Maybe TodoState -> Chunk
 mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
 
 todoStateChunk :: TodoState -> Chunk
-todoStateChunk ts = fore color . chunk . todoStateText $ ts
+todoStateChunk ts = (\c -> c {chunkForeground = mcolor}) . chunk . todoStateText $ ts
   where
-    color =
+    mcolor =
       case todoStateText ts of
-        "TODO" -> red
-        "NEXT" -> orange
-        "STARTED" -> orange
-        "WAITING" -> blue
-        "READY" -> brown
-        "DONE" -> green
-        "CANCELLED" -> green
-        "FAILED" -> brightRed
-        _ -> mempty
+        "TODO" -> Just red
+        "NEXT" -> Just orange
+        "STARTED" -> Just orange
+        "WAITING" -> Just blue
+        "READY" -> Just brown
+        "DONE" -> Just green
+        "CANCELLED" -> Just green
+        "FAILED" -> Just brightRed
+        _ -> Nothing
 
 timestampChunk :: TimestampName -> Timestamp -> Chunk
-timestampChunk tsn = fore (timestampNameColor tsn) . chunk . timestampText
+timestampChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampText
 
 timestampNameChunk :: TimestampName -> Chunk
-timestampNameChunk tsn = fore (timestampNameColor tsn) . chunk . timestampNameText $ tsn
+timestampNameChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampNameText $ tsn
 
-timestampNameColor :: TimestampName -> Radiant
+timestampNameColor :: TimestampName -> Maybe Colour
 timestampNameColor tsn =
   case timestampNameText tsn of
-    "BEGIN" -> brown
-    "END" -> brown
-    "SCHEDULED" -> orange
-    "DEADLINE" -> red
-    _ -> mempty
+    "BEGIN" -> Just brown
+    "END" -> Just brown
+    "SCHEDULED" -> Just orange
+    "DEADLINE" -> Just red
+    _ -> Nothing
 
 headerChunk :: Header -> Chunk
 headerChunk = fore yellow . chunk . headerText
 
 propertyValueChunk :: PropertyName -> PropertyValue -> Chunk
-propertyValueChunk pn = fore (propertyNameColor pn) . chunk . propertyValueText
+propertyValueChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) . chunk . propertyValueText
 
 propertyNameChunk :: PropertyName -> Chunk
-propertyNameChunk pn = fore (propertyNameColor pn) $ chunk $ propertyNameText pn
+propertyNameChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) $ chunk $ propertyNameText pn
 
-propertyNameColor :: PropertyName -> Radiant
+propertyNameColor :: PropertyName -> Maybe Colour
 propertyNameColor pn =
   case propertyNameText pn of
-    "assignee" -> blue
-    "brainpower" -> brown
-    "client" -> green
-    "estimate" -> green
-    "timewindow" -> magenta
-    "goal" -> orange
-    _ -> mempty
+    "assignee" -> Just blue
+    "brainpower" -> Just brown
+    "client" -> Just green
+    "estimate" -> Just green
+    "timewindow" -> Just magenta
+    "goal" -> Just orange
+    _ -> Nothing
 
 tagChunk :: Tag -> Chunk
 tagChunk = fore cyan . chunk . tagText
@@ -179,8 +180,8 @@ tagChunk = fore cyan . chunk . tagText
 intChunk :: Int -> Chunk
 intChunk = chunk . T.pack . show
 
-orange :: Radiant
+orange :: Colour
 orange = color256 214
 
-brown :: Radiant
+brown :: Colour
 brown = color256 166

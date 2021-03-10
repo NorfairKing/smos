@@ -10,7 +10,6 @@ import qualified Data.Conduit.Combinators as C
 import Data.List
 import qualified Data.Map as M
 import Data.Ord
-import Rainbow
 import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -30,11 +29,11 @@ smosQueryTags TagsSettings {..} = do
         .| smosCursorCurrents
         .| C.map snd
   let tr = makeTagsReport es
-  putTableLn $ renderTagsReport tr
+  liftIO $ putChunks $ renderTagsReport tr
 
-renderTagsReport :: TagsReport -> Table
+renderTagsReport :: TagsReport -> [Chunk]
 renderTagsReport TagsReport {..} =
-  formatAsTable $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
+  formatAsBicolourTable $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
   where
     go :: Tag -> Int -> [Chunk]
     go t n = [tagChunk t, intChunk n]

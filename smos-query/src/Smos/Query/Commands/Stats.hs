@@ -12,7 +12,6 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Time
 import Path
-import Rainbow
 import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -42,21 +41,21 @@ smosQueryStats StatsSettings {..} = do
       streamAllSmosFiles
         .| streamParseSmosFiles
         .| accumulateStatsReport src
-  putTableLn $ renderStatsReport sr
+  liftIO $ putChunks $ renderStatsReport sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
 accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
-renderStatsReport :: StatsReport -> Table
+renderStatsReport :: StatsReport -> [Chunk]
 renderStatsReport StatsReport {..} =
   mconcat
     [ renderStateStatsReport statsReportStateStatsReport,
       renderProjectsStatsReport statsReportProjectStatsReport
     ]
 
-renderStateStatsReport :: StateStatsReport -> Table
+renderStateStatsReport :: StateStatsReport -> [Chunk]
 renderStateStatsReport StateStatsReport {..} =
-  formatAsTable $
+  formatAsBicolourTable $
     concat
       [ [[fore white $ chunk "Historical states"]],
         formatReportStates stateStatsReportHistoricalStates,
@@ -91,9 +90,9 @@ formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportToStateTransitions m =
   flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
 
-renderProjectsStatsReport :: ProjectStatsReport -> Table
+renderProjectsStatsReport :: ProjectStatsReport -> [Chunk]
 renderProjectsStatsReport ProjectStatsReport {..} =
-  formatAsTable
+  formatAsBicolourTable
     [ [fore white $ chunk "All Projects"],
       [chunk "Current Projects", intChunk projectStatsReportCurrentProjects],
       [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects],

@@ -8,8 +8,6 @@ module Smos.Query.Config
     askArchiveDir,
     askProjectsDir,
     askArchivedProjectsDir,
-    putTableLn,
-    putBoxLn,
     getShouldPrint,
     dieQ,
     module Smos.Report.Config,
@@ -20,9 +18,6 @@ where
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
-import qualified Data.ByteString as SB
-import Data.Foldable
-import Data.Sequence (Seq)
 import GHC.Generics (Generic)
 import Path
 import Smos.Report.Archive
@@ -60,22 +55,6 @@ askArchivedProjectsDir :: Q (Path Abs Dir)
 askArchivedProjectsDir = do
   func <- asks (resolveReportArchivedProjectsDir . smosQueryConfigReportConfig)
   liftIO func
-
-putTableLn :: Seq Chunk -> Q ()
-putTableLn myChunks = do
-  out <- asks smosQueryConfigOutputHandle
-  liftIO $ do
-    printer <- byteStringMakerFromHandle out
-    let bytestrings = chunksToByteStrings printer (toList myChunks)
-    mapM_ (SB.hPutStr out) bytestrings
-
-putBoxLn :: Orientation a => Box a -> Q ()
-putBoxLn box = do
-  out <- asks smosQueryConfigOutputHandle
-  liftIO $ do
-    printer <- byteStringMakerFromHandle out
-    let bytestrings = chunksToByteStrings printer (toList (Box.render box))
-    mapM_ (SB.hPutStr out) bytestrings
 
 getShouldPrint :: Q ShouldPrint
 getShouldPrint = PrintWarning <$> asks smosQueryConfigErrorHandle

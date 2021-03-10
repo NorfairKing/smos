@@ -28,9 +28,6 @@ packages:
 - smos-sync-client-gen
 - smos-web-server
 
-- /home/syd/src/safe-coloured-text/safe-coloured-text
-- /home/syd/src/safe-coloured-text/safe-coloured-text-layout
-
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
@@ -133,11 +130,11 @@ extra-deps:
   subdirs:
   - yamlparse-applicative
 
-    # - github: NorfairKing/safe-coloured-text
-    #   commit: 5aebc16ffb138a2fb2277a3fe3074ba68917abdd
-    #   subdirs:
-    #   - safe-coloured-text
-    #   - safe-coloured-text-layout
+- github: NorfairKing/safe-coloured-text
+  commit: ca42a55ddd5f3d9e866fe33b3b6862e9860f7604
+  subdirs:
+  - safe-coloured-text
+  - safe-coloured-text-layout
 
 - github: NorfairKing/sydtest
   commit: f495c959e7ca579fcdd0217236fe5f5c5f970685

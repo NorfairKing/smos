@@ -7,7 +7,6 @@ module Smos.Query.Commands.Projects
 where
 
 import Conduit
-import Rainbow
 import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -23,10 +22,10 @@ smosQueryProjects ProjectsSettings {..} = do
     sourceToList $
       streamSmosProjectsQ
         .| smosMFilter (FilterFst <$> projectsSetFilter)
-  putTableLn $ renderProjectsReport $ makeProjectsReport projs
+  liftIO $ putChunks $ renderProjectsReport $ makeProjectsReport projs
 
-renderProjectsReport :: ProjectsReport -> Table
-renderProjectsReport = formatAsTable . map renderProjectEntry . projectsReportEntries
+renderProjectsReport :: ProjectsReport -> [Chunk]
+renderProjectsReport = formatAsBicolourTable . map renderProjectEntry . projectsReportEntries
 
 renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =

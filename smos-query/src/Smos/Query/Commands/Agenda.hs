@@ -18,7 +18,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import GHC.Generics
-import Rainbow
 import Smos.Data
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -33,10 +32,10 @@ smosQueryAgenda AgendaSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   sp <- getShouldPrint
   report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
-  putTableLn $ renderAgendaReport now report
+  liftIO $ putChunks $ renderAgendaReport now report
 
-renderAgendaReport :: ZonedTime -> AgendaReport -> Table
-renderAgendaReport now = formatAsTable . renderAgendaReportLines now . makeAgendaReportLines now
+renderAgendaReport :: ZonedTime -> AgendaReport -> [Chunk]
+renderAgendaReport now = formatAsBicolourTable . renderAgendaReportLines now . makeAgendaReportLines now
 
 renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk]]
 renderAgendaReportLines now = map $ \case

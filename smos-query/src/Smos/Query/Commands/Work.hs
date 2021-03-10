@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
 import Path
-import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
@@ -53,16 +52,17 @@ smosQueryWork WorkSettings {..} = do
           }
   sp <- getShouldPrint
   wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
-  putTableLn $
-    renderWorkReport
-      now
-      contexts
-      workSetWaitingThreshold
-      workSetStuckThreshold
-      workSetProjection
-      wr
+  liftIO $
+    putChunks $
+      renderWorkReport
+        now
+        contexts
+        workSetWaitingThreshold
+        workSetStuckThreshold
+        workSetProjection
+        wr
 
-renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> Table
+renderWorkReport :: ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
 renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
   mconcat $
     concat $
@@ -72,7 +72,7 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
           [ unlessNull
               workReportNextBegin
               [ sectionHeading "Next meeting",
-                [formatAsTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
+                [formatAsBicolourTable $ maybe [] ((: []) . formatAgendaEntry now) workReportNextBegin]
               ],
             unlessNull
               ctxs
@@ -116,9 +116,9 @@ renderWorkReport now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
         else r
     sectionHeading t = heading $ underline $ fore white $ chunk t
     warningHeading t = heading $ underline $ fore red $ chunk ("WARNING: " <> t)
-    heading c = [formatAsTable [[c]]]
-    spacer = [formatAsTable [[chunk " "]]]
+    heading c = [formatAsBicolourTable [[c]]]
+    spacer = [formatAsBicolourTable [[chunk " "]]]
     entryTable = renderEntryReport . makeEntryReport ne
-    agendaTable = formatAsTable $ map (formatAgendaEntry now) workReportAgendaEntries
-    waitingTable = formatAsTable $ map (formatWaitingEntry waitingThreshold (zonedTimeToUTC now)) workReportOverdueWaiting
-    stuckTable = formatAsTable $ map (formatStuckReportEntry stuckThreshold (zonedTimeToUTC now)) workReportOverdueStuck
+    agendaTable = formatAsBicolourTable $ map (formatAgendaEntry now) workReportAgendaEntries
+    waitingTable = formatAsBicolourTable $ map (formatWaitingEntry waitingThreshold (zonedTimeToUTC now)) workReportOverdueWaiting
+    stuckTable = formatAsBicolourTable $ map (formatStuckReportEntry stuckThreshold (zonedTimeToUTC now)) workReportOverdueStuck

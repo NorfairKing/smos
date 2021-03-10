@@ -13,15 +13,13 @@ import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.List as C
 import Data.Foldable
-import qualified Data.Sequence as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Data.Validity.Path ()
 import qualified Data.Yaml.Builder as Yaml
-import Rainbow
-import Rainbox
+import Smos.Data
 import Smos.Query.Clock.Types
 import Smos.Query.Config
 import Smos.Query.Formatting
@@ -47,9 +45,10 @@ smosQueryClock ClockSettings {..} = do
   out <- asks smosQueryConfigOutputHandle
   case clockSetOutputFormat of
     OutputPretty ->
-      putBoxLn $
-        renderClockTable clockSetReportStyle clockSetClockFormat $
-          clockTableRows clockTable
+      liftIO $
+        putChunks $
+          renderClockTable clockSetReportStyle clockSetClockFormat $
+            clockTableRows clockTable
     OutputYaml -> liftIO $ SB.hPutStr out $ Yaml.toByteString clockTable
     OutputJSON -> liftIO $ LB.hPutStr out $ JSON.encode clockTable
     OutputJSONPretty -> liftIO $ LB.hPutStr out $ JSON.encodePretty clockTable
@@ -94,22 +93,20 @@ clockTableRows ctbs =
 -- block title
 -- file name    headers and   time
 --                           total time
-renderClockTable :: ClockReportStyle -> ClockFormat -> [ClockTableRow] -> Box Vertical
-renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap renderRows
+renderClockTable :: ClockReportStyle -> ClockFormat -> [ClockTableRow] -> [Chunk]
+renderClockTable crs fmt = formatAsBicolourTable . concatMap renderRows
   where
-    renderRows :: ClockTableRow -> [[Cell]]
+    renderRows :: ClockTableRow -> [[Chunk]]
     renderRows ctr =
       case ctr of
-        BlockTitleRow t -> [[cell $ blockTitleChunk t]]
+        BlockTitleRow t -> [[blockTitleChunk t]]
         FileRow rp ndt ->
-          [ map
-              cell
-              [ fore green $ pathChunk rp,
-                chunk "",
-                chunk "",
-                chunk "",
-                fore green $ chunk $ renderNominalDiffTime fmt ndt
-              ]
+          [ [ fore green $ pathChunk rp,
+              chunk "",
+              chunk "",
+              chunk "",
+              fore green $ chunk $ renderNominalDiffTime fmt ndt
+            ]
           ]
         EntryRow i h ndt ndtt ->
           case crs of
@@ -117,46 +114,42 @@ renderClockTable crs fmt = tableByRows . S.fromList . map S.fromList . concatMap
               [ if ndt == 0
                   then []
                   else
-                    [ cell $ chunk "",
-                      separator mempty 1,
-                      cell $ headerChunk h,
-                      cell $ chunk $ renderNominalDiffTime fmt ndt
+                    [ chunk "",
+                      chunk " ",
+                      headerChunk h,
+                      chunk $ renderNominalDiffTime fmt ndt
                     ]
               ]
             ClockForest ->
-              [ [ cell $ chunk "",
-                  separator mempty 1,
-                  cell $ chunk (T.pack $ replicate (2 * i) ' ') <> headerChunk h,
-                  cell $
+              [ [ chunk "",
+                  chunk " ",
+                  headerChunk $ Header $ T.pack (replicate (2 * i) ' ') <> headerText h,
+                  chunk $
+                    if ndt == 0
+                      then ""
+                      else renderNominalDiffTime fmt ndt,
+                  fore brown $
                     chunk $
-                      if ndt == 0
+                      if ndt == ndtt
                         then ""
-                        else renderNominalDiffTime fmt ndt,
-                  cell $
-                    fore brown $
-                      chunk $
-                        if ndt == ndtt
-                          then ""
-                          else renderNominalDiffTime fmt ndtt
+                        else renderNominalDiffTime fmt ndtt
                 ]
               ]
         BlockTotalRow t ->
           [ map
-              (cell . fore blue)
+              (fore blue)
               [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t],
             replicate 5 emptyCell
           ]
         AllTotalRow t ->
           [ map
-              (cell . fore blue)
+              (fore blue)
               [chunk "", chunk "", chunk "Total:", chunk $ renderNominalDiffTime fmt t]
           ]
     blockTitleChunk :: Text -> Chunk
     blockTitleChunk = fore blue . chunk
-    emptyCell :: Cell
-    emptyCell = cell $ chunk ""
-    cell :: Chunk -> Cell
-    cell c = mempty {_rows = S.singleton (S.singleton c), _vertical = left}
+    emptyCell :: Chunk
+    emptyCell = chunk ""
 
 renderNominalDiffTime :: ClockFormat -> NominalDiffTime -> Text
 renderNominalDiffTime fmt ndt =

@@ -10,7 +10,6 @@ import Conduit
 import Data.List
 import qualified Data.Text as T
 import Data.Time
-import Rainbow
 import Smos.Query.Config
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
@@ -29,11 +28,11 @@ smosQueryLog LogSettings {..} = do
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
-  putTableLn $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
+  liftIO $ putChunks $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
 
-renderLogReport :: ZonedTime -> LogReport -> Table
+renderLogReport :: ZonedTime -> LogReport -> [Chunk]
 renderLogReport zt lrbs =
-  formatAsTable $
+  formatAsBicolourTable $
     case lrbs of
       [] -> []
       [lrb] -> goEntries (blockEntries lrb)
