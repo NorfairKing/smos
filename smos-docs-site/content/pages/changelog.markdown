@@ -29,6 +29,9 @@ description: The changelog for all of the Smos tools and libraries
   The `propertiesEditProperty_goal` action, bound to `pg` by default.
 - `smos`:
   Non-colour-based indicators of selection, for screens without colour or colour-blind users.
+- `smos-query`:
+  All reports are now bicoloured by default. This can be configured via the configuration file.
+  
 
 
 ## Changed
