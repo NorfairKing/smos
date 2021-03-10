@@ -11,3 +11,4 @@ session.json
 *.sqlite3
 *.tar.gz
 .direnv/
+*:Zone.Identifier
