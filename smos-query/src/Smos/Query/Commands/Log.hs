@@ -28,11 +28,12 @@ smosQueryLog LogSettings {..} = do
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
-  liftIO $ putChunks $ renderLogReport zt $ makeLogReport zt logSetPeriod logSetBlock es
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderLogReport cc zt $ makeLogReport zt logSetPeriod logSetBlock es
 
-renderLogReport :: ZonedTime -> LogReport -> [Chunk]
-renderLogReport zt lrbs =
-  formatAsBicolourTable $
+renderLogReport :: ColourConfig -> ZonedTime -> LogReport -> [Chunk]
+renderLogReport cc zt lrbs =
+  formatAsBicolourTable cc $
     case lrbs of
       [] -> []
       [lrb] -> goEntries (blockEntries lrb)

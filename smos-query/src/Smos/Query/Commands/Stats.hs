@@ -41,21 +41,22 @@ smosQueryStats StatsSettings {..} = do
       streamAllSmosFiles
         .| streamParseSmosFiles
         .| accumulateStatsReport src
-  liftIO $ putChunks $ renderStatsReport sr
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderStatsReport cc sr
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
 accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
-renderStatsReport :: StatsReport -> [Chunk]
-renderStatsReport StatsReport {..} =
+renderStatsReport :: ColourConfig -> StatsReport -> [Chunk]
+renderStatsReport cc StatsReport {..} =
   mconcat
-    [ renderStateStatsReport statsReportStateStatsReport,
-      renderProjectsStatsReport statsReportProjectStatsReport
+    [ renderStateStatsReport cc statsReportStateStatsReport,
+      renderProjectsStatsReport cc statsReportProjectStatsReport
     ]
 
-renderStateStatsReport :: StateStatsReport -> [Chunk]
-renderStateStatsReport StateStatsReport {..} =
-  formatAsBicolourTable $
+renderStateStatsReport :: ColourConfig -> StateStatsReport -> [Chunk]
+renderStateStatsReport cc StateStatsReport {..} =
+  formatAsBicolourTable cc $
     concat
       [ [[fore white $ chunk "Historical states"]],
         formatReportStates stateStatsReportHistoricalStates,
@@ -90,9 +91,10 @@ formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportToStateTransitions m =
   flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
 
-renderProjectsStatsReport :: ProjectStatsReport -> [Chunk]
-renderProjectsStatsReport ProjectStatsReport {..} =
+renderProjectsStatsReport :: ColourConfig -> ProjectStatsReport -> [Chunk]
+renderProjectsStatsReport cc ProjectStatsReport {..} =
   formatAsBicolourTable
+    cc
     [ [fore white $ chunk "All Projects"],
       [chunk "Current Projects", intChunk projectStatsReportCurrentProjects],
       [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects],

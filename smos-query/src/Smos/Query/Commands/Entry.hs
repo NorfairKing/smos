@@ -15,4 +15,5 @@ smosQueryEntry EntrySettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   sp <- getShouldPrint
   report <- produceEntryReport entrySetFilter entrySetHideArchive sp entrySetProjection entrySetSorter dc
-  liftIO $ putChunks $ renderEntryReport report
+  cc <- asks smosQueryConfigColourConfig
+  liftIO $ putChunks $ renderEntryReport cc report

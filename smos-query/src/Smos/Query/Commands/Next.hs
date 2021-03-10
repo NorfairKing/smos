@@ -17,10 +17,11 @@ smosQueryNext NextSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   sp <- getShouldPrint
   report <- liftIO $ produceNextActionReport nextSetFilter nextSetHideArchive sp dc
-  liftIO $ putChunks $ renderNextActionReport report
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderNextActionReport cc report
 
-renderNextActionReport :: NextActionReport -> [Chunk]
-renderNextActionReport = formatAsBicolourTable . map formatNextActionEntry . nextActionReportEntries
+renderNextActionReport :: ColourConfig -> NextActionReport -> [Chunk]
+renderNextActionReport cc = formatAsBicolourTable cc . map formatNextActionEntry . nextActionReportEntries
 
 formatNextActionEntry :: NextActionEntry -> [Chunk]
 formatNextActionEntry NextActionEntry {..} =

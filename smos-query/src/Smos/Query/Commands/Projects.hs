@@ -22,10 +22,11 @@ smosQueryProjects ProjectsSettings {..} = do
     sourceToList $
       streamSmosProjectsQ
         .| smosMFilter (FilterFst <$> projectsSetFilter)
-  liftIO $ putChunks $ renderProjectsReport $ makeProjectsReport projs
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderProjectsReport cc $ makeProjectsReport projs
 
-renderProjectsReport :: ProjectsReport -> [Chunk]
-renderProjectsReport = formatAsBicolourTable . map renderProjectEntry . projectsReportEntries
+renderProjectsReport :: ColourConfig -> ProjectsReport -> [Chunk]
+renderProjectsReport cc = formatAsBicolourTable cc . map renderProjectEntry . projectsReportEntries
 
 renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =

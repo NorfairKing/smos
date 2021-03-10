@@ -24,7 +24,8 @@ smosQueryStuck StuckSettings {..} = do
           .| smosMFilter (FilterFst <$> stuckSetFilter)
           .| C.map (uncurry (makeStuckReportEntry (zonedTimeZone now)))
           .| C.catMaybes
-  liftIO $ putChunks $ renderStuckReport stuckSetThreshold (zonedTimeToUTC now) stuckReport
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderStuckReport cc stuckSetThreshold (zonedTimeToUTC now) stuckReport
 
-renderStuckReport :: Word -> UTCTime -> StuckReport -> [Chunk]
-renderStuckReport threshold now = formatAsBicolourTable . map (formatStuckReportEntry threshold now) . stuckReportEntries
+renderStuckReport :: ColourConfig -> Word -> UTCTime -> StuckReport -> [Chunk]
+renderStuckReport cc threshold now = formatAsBicolourTable cc . map (formatStuckReportEntry threshold now) . stuckReportEntries

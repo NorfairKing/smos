@@ -29,11 +29,12 @@ smosQueryTags TagsSettings {..} = do
         .| smosCursorCurrents
         .| C.map snd
   let tr = makeTagsReport es
-  liftIO $ putChunks $ renderTagsReport tr
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderTagsReport cc tr
 
-renderTagsReport :: TagsReport -> [Chunk]
-renderTagsReport TagsReport {..} =
-  formatAsBicolourTable $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
+renderTagsReport :: ColourConfig -> TagsReport -> [Chunk]
+renderTagsReport cc TagsReport {..} =
+  formatAsBicolourTable cc $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
   where
     go :: Tag -> Int -> [Chunk]
     go t n = [tagChunk t, intChunk n]

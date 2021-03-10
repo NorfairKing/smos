@@ -44,11 +44,11 @@ smosQueryClock ClockSettings {..} = do
   let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
   out <- asks smosQueryConfigOutputHandle
   case clockSetOutputFormat of
-    OutputPretty ->
-      liftIO $
-        putChunks $
-          renderClockTable clockSetReportStyle clockSetClockFormat $
-            clockTableRows clockTable
+    OutputPretty -> do
+      cc <- asks smosQueryConfigColourConfig
+      outputChunks $
+        renderClockTable cc clockSetReportStyle clockSetClockFormat $
+          clockTableRows clockTable
     OutputYaml -> liftIO $ SB.hPutStr out $ Yaml.toByteString clockTable
     OutputJSON -> liftIO $ LB.hPutStr out $ JSON.encode clockTable
     OutputJSONPretty -> liftIO $ LB.hPutStr out $ JSON.encodePretty clockTable
@@ -93,8 +93,8 @@ clockTableRows ctbs =
 -- block title
 -- file name    headers and   time
 --                           total time
-renderClockTable :: ClockReportStyle -> ClockFormat -> [ClockTableRow] -> [Chunk]
-renderClockTable crs fmt = formatAsBicolourTable . concatMap renderRows
+renderClockTable :: ColourConfig -> ClockReportStyle -> ClockFormat -> [ClockTableRow] -> [Chunk]
+renderClockTable cc crs fmt = formatAsBicolourTable cc . concatMap renderRows
   where
     renderRows :: ClockTableRow -> [[Chunk]]
     renderRows ctr =

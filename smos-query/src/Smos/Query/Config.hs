@@ -2,17 +2,20 @@
 
 module Smos.Query.Config
   ( SmosQueryConfig (..),
+    ColourConfig (..),
     HideArchive (..),
     Q,
     askWorkflowDir,
     askArchiveDir,
     askProjectsDir,
     askArchivedProjectsDir,
+    outputChunks,
     getShouldPrint,
     dieQ,
     module Smos.Report.Config,
     module Control.Monad.IO.Class,
     module Control.Monad.Reader,
+    module Text.Colour,
   )
 where
 
@@ -25,12 +28,19 @@ import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import System.Exit
 import System.IO
+import Text.Colour
 
 data SmosQueryConfig = SmosQueryConfig
   { smosQueryConfigReportConfig :: !SmosReportConfig,
+    smosQueryConfigColourConfig :: !ColourConfig,
     smosQueryConfigInputHandle :: !Handle,
     smosQueryConfigOutputHandle :: !Handle,
     smosQueryConfigErrorHandle :: !Handle
+  }
+  deriving (Show, Eq, Generic)
+
+data ColourConfig = ColourConfig
+  { colourConfigBicolour :: Maybe Colour
   }
   deriving (Show, Eq, Generic)
 
@@ -55,6 +65,11 @@ askArchivedProjectsDir :: Q (Path Abs Dir)
 askArchivedProjectsDir = do
   func <- asks (resolveReportArchivedProjectsDir . smosQueryConfigReportConfig)
   liftIO func
+
+outputChunks :: [Chunk] -> Q ()
+outputChunks cs = do
+  h <- asks smosQueryConfigOutputHandle
+  liftIO $ hPutChunks h cs
 
 getShouldPrint :: Q ShouldPrint
 getShouldPrint = PrintWarning <$> asks smosQueryConfigErrorHandle

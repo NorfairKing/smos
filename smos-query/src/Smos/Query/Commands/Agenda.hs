@@ -32,10 +32,11 @@ smosQueryAgenda AgendaSettings {..} = do
   dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
   sp <- getShouldPrint
   report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
-  liftIO $ putChunks $ renderAgendaReport now report
+  cc <- asks smosQueryConfigColourConfig
+  outputChunks $ renderAgendaReport cc now report
 
-renderAgendaReport :: ZonedTime -> AgendaReport -> [Chunk]
-renderAgendaReport now = formatAsBicolourTable . renderAgendaReportLines now . makeAgendaReportLines now
+renderAgendaReport :: ColourConfig -> ZonedTime -> AgendaReport -> [Chunk]
+renderAgendaReport cc now = formatAsBicolourTable cc . renderAgendaReportLines now . makeAgendaReportLines now
 
 renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk]]
 renderAgendaReportLines now = map $ \case
