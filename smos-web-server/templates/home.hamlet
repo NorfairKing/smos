@@ -9,7 +9,7 @@
 
 
 
-    <section .hero>
+    <section .section>
       <p .title .is-size-3 .has-text-weight-semibold .has-text-centered>
         The tool that manages your stress and workload
 
@@ -27,15 +27,18 @@
     <section .section>
       <div .columns .is-centered .is-vcentered>
         <div .column .has-text-centered>
-          <!-- TODO hier moet hetzelfde filmpje achtig ding als op uw docs.smos.online/features -->
-          Hier komt een filmpje.
+          <asciinema-player
+            src="/static/res/casts/basics.cast"
+            autoplay="true"
+            preloop="true"
+            loop="true">
 
         <div .column .is-half>
           <p .title .is-size-3 .has-text-centered .p-3>
-            Try Smos for free
+            Start learning
 
           <p .content .is-size-5 .has-text-centered>
-            We do suggest learning Smos together with the self-management coaching sessions for maximum efficiency.
+            We suggest learning Smos during our self-management coaching sessions for minimal stress.
 
           <div .buttons .is-centered>
             <a .button .is-size-5 .is-link href=https://cs-syd.eu/self-management>
@@ -45,7 +48,7 @@
 
     <section .section>
       <div .container>
-        <div id="carousel-smos-testimonials" .carousel .no-select>          
+        <div id="carousel-smos-testimonials" .carousel .no-select>
           <div .item-1 .columns .is-centered>
             <div .column .is-half>
               <p .content .is-size-5 .has-text-centered>
@@ -100,10 +103,8 @@
             <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
               self-management coaching
             you are taught that your brain is for having ideas, not for holding them.
-            To make sure no brilliant ideas of yours get lost you ought to use an exocortex.
+            To make sure no brilliant ideas of yours get lost you ought to use an exocortex, a brain outside of your brain.
             Smos is that exocortex.
-            <!-- TODO_uitleg-exocortex(?) -->
-
 
 
     <section .section>
@@ -112,46 +113,47 @@
           <p .title .is-size-4 .has-text-right>
             Get more work done
 
-          <p .content .is-normal .has-text-justified>  
-            Smos' main goal is to help you get more work done.
+          <p .content .is-normal .has-text-justified>
+            Smos' main goal is not to help you get more work done, but it happens inevitably when you reduce stress and stop missing things.
             It is designed and optimized for power users.
-            That means speed is one of the most important factors, which specifically means it is keyboard only, auto syncing, TODO_aanvullen
+            That means speed is one of the most important factors, which specifically means it is keyboard only and automatable.
             Moreover, Smos follows the
             <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
               self-management
-            theory. That means it has incorporated the concept of context-based work, TODO_aanvullen.
+            theory. That means that it has built-in support for all standard reports and workflows.
 
         <div .column .has-text-centered>
           <img src=@{StaticR tom_sydney_kerckhove_productivity_svg} alt="productivity" style="height: 400px">
 
 
 
-    <section .section>
-      <div .columns .is-vcentered>
-        <div .column .has-text-centered>
-          <img src=@{StaticR tom_sydney_kerckhove_coding_experience_svg} alt="coding experience" style="height: 400px">
+    $maybe docsUrl <- mDocsUrl
+      <section .section>
+        <div .columns .is-vcentered>
+          <div .column .has-text-centered>
+            <img src=@{StaticR tom_sydney_kerckhove_coding_experience_svg} alt="coding experience" style="height: 400px">
 
-        <div .column>
-          <p .title .is-size-4>
-            No coding experience needed
+          <div .column>
+            <p .title .is-size-4>
+              No coding experience needed
 
-          <p .content .is-normal .has-text-justified>
-            But it does help.
-            Because of its optimization for speed Smos is a command line interface tool.            
-            If you buy the 
-            <a href=https://cs-syd.eu/self-management target="_blank" rel="noopener noreferrer">
-              self-management coaching
-            you get detailed instructions of Smos' features if desired (installation, commands, reasoning, modifiability).
-            We have also published the
-            <a href=https://docs.smos.online/ target="_blank" rel="noopener noreferrer">
-              documentation of Smos
-            as well as a
-            <a href=https://smos.online/tui/example.smos target="_blank" rel="noopener noreferrer">
-              browser version of Smos          
-            and a
-            <a href=https://docs.smos.online/cheat-sheet target="_blank" rel="noopener noreferrer">
-              cheat sheet
-            with the most important commands, which should help to speed up the learning process.
+            <p .content .is-normal .has-text-justified>
+              Because of its optimization for speed, Smos uses a terminal user interface.
+              Do not let that scare you, you get used to it quickly.
+              If you buy the
+              <a href=https://cs-syd.eu/self-management target="_blank">
+                self-management coaching
+              you get detailed instructions of Smos' features if desired (installation, commands, reasoning, automation).
+              We have also published the
+              <a href="#{showBaseUrl docsUrl}" target="_blank">
+                documentation of Smos
+              as well as a
+              <a href=@{PlaygroundR} target="_blank">
+                browser version of Smos
+              and a
+              <a href="#{showBaseUrl docsUrl}/cheat-sheet" target="_blank">
+                cheat sheet
+              with the most important commands, which should help to speed up the learning process.
 
 
 
@@ -161,9 +163,9 @@
           <p .title .is-size-4 .has-text-right>
             Psychological bliss
 
-          <p .content .is-normal .has-text-justified>  
-            Smos is centered around the idea of combining all psychological healthy ways of working so you know exactly what it is that you need to do.            
-            Just to name a few: the feeling of satisfaction when you have finished a task, being able to evade procrastination by knowing exactly what your next small action is, and having a smart overview of all your projects.
+          <p .content .is-normal .has-text-justified>
+            Smos is centered around the idea of combining all psychological healthy ways of working so you know exactly what it is that you need to do.
+            Just to name a few: the feeling of satisfaction when you have finished a task, being able to avoid procrastination by knowing exactly what your next small action is, and having a smart overview of all your projects.
 
         <div .column .has-text-centered>
           <img src=@{StaticR tom_sydney_kerckhove_mental_health_svg} alt="psychological bliss" style="height: 400px">
@@ -193,11 +195,12 @@
 
 
 
-    <section .section>
+    $maybe docsUrl <- mDocsUrl
+      <section .section>
         <div .column>
           <p .title .is-size-3 .has-text-centered .p-3>
-            Tiref of stressing about work?
+            Looking for a more technical explanation?
 
           <div .columns .is-centered .is-vcentered .p-3>
-            <a .button .is-size-4 .is-primary href=https://calendly.com/cs-syd/introduction-call>
-              Subscribe to Smos
+            <a .button .is-size-4 .is-primary href="#{showBaseUrl docsUrl}">
+              Read the documentation

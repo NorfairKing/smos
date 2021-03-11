@@ -7,8 +7,7 @@
       <span aria-hidden="true">
       <span aria-hidden="true">
       <span aria-hidden="true">
-    
-  
+
 
   <div id="myNavbar" .navbar-menu>
     <div .navbar-start>
@@ -26,7 +25,7 @@
 
       <a .navbar-item href="https://cs-syd.eu/self-management">
         Self-management training
-      
+
 
     <div .navbar-end>
       $maybe _ <- maid
@@ -37,8 +36,8 @@
       $nothing
         <div .navbar-item>
           <div .buttons>
-            <a .button .is-light href=@{AuthR LoginR}>
+            <a .button .is-primary href=@{AuthR LoginR}>
               Log in
             <a .button .is-text href=@{AuthR registerR}>
               Sign up
-          
+
