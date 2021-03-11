@@ -272,11 +272,15 @@ in
       "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-shell" = smosPkg "smos-shell";
+    } // optionalAttrs (!static) {
+      # I couldn't get the stylesheet to build when building statically 
       inherit smos-web-style;
       inherit smos-web-server;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+    } // optionalAttrs (!static && !isMacos) {
+      # I couldn't get the stylesheet to build when building statically 
       inherit smos-docs-site;
     };
 

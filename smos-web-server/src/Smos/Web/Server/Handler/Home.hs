@@ -3,8 +3,8 @@
 
 module Smos.Web.Server.Handler.Home where
 
-import Smos.Web.Server.Static
 import Smos.Web.Server.Foundation
+import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import Yesod hiding (Header)
 

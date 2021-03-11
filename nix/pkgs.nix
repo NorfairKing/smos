@@ -82,6 +82,13 @@ let
           mergeful-overlay
           yesod-static-remote-overlay
           autorecorder-overlay
+          (final: previous: {
+            groff = previous.groff.overrideAttrs (old: {
+              patches = (old.patches or [ ]) ++ [
+                ./0001-support-musl.patch
+              ];
+            });
+          })
           (import ./gitignore-src.nix)
           (import ./overlay.nix)
         ];
