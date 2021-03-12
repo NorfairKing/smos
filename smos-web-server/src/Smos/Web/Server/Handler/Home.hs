@@ -13,7 +13,7 @@ getHomeR :: Handler Html
 getHomeR = do
   mDocsUrl <- getsYesod appDocsBaseUrl
   withNavBar $ do
-    addScriptRemote "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.3/dist/js/bulma-carousel.min.js"
+    addScript $ StaticR bulma_carousel_js
     addScript $ StaticR asciinema_player_js
     addStylesheet $ StaticR asciinema_player_css
 
