@@ -38,7 +38,7 @@ spec = do
                               ]
                         }
                     e2 = newEntry h2
-                    sf = SmosFile [Node e1 [], Node e2 []]
+                    sf = makeSmosFile [Node e1 [], Node e2 []]
                  in latestEntryInSmosFile utc sf `shouldBe` Just e1
     it
       "works for this example with two entries with the same modification time. Then it uses the latter"
@@ -68,7 +68,7 @@ spec = do
                                     }
                                 ]
                           }
-                      sf = SmosFile [Node e1 [], Node e2 []]
+                      sf = makeSmosFile [Node e1 [], Node e2 []]
                    in latestEntryInSmosFile utc sf `shouldBe` Just e2
   describe "latestStateChange" $
     it "selects a valid entry" $

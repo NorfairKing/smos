@@ -8,7 +8,11 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Data.Types
-  ( SmosFile (..),
+  ( oldestParsableDataVersion,
+    currentDataVersion,
+    newestParsableDataVersion,
+    Versioned (..),
+    SmosFile (..),
     Forest,
     Tree (..),
     Entry (..),
@@ -99,6 +103,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
+import Data.SemVer as Version
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
@@ -117,6 +122,59 @@ import GHC.Generics (Generic)
 import Path
 import YamlParse.Applicative
 
+oldestParsableDataVersion :: Version
+oldestParsableDataVersion = version 0 0 0 [] []
+
+currentDataVersion :: Version
+currentDataVersion = version 0 0 0 [] []
+
+newestParsableDataVersion :: Version
+newestParsableDataVersion = version 1 0 0 [] []
+
+instance Validity Version where
+  validate = trivialValidation
+
+instance FromJSON Version where
+  parseJSON = withText "Version" $ \t ->
+    case Version.fromText t of
+      Left err -> fail err
+      Right v -> pure v
+
+instance ToJSON Version where
+  toJSON = toJSON . Version.toText
+
+instance ToYaml Version where
+  toYaml = toYaml . Version.toText
+
+-- | A versioned value
+data Versioned a = Versioned
+  { versionedVersion :: !Version,
+    versionedValue :: !a
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity a => Validity (Versioned a)
+
+instance FromJSON a => FromJSON (Versioned a) where
+  parseJSON = withObject "Versioned" $ \o ->
+    Versioned
+      <$> o .: "version"
+      <*> o .: "value"
+
+instance ToJSON a => ToJSON (Versioned a) where
+  toJSON Versioned {..} =
+    object
+      [ "version" .= versionedVersion,
+        "value" .= versionedValue
+      ]
+
+instance ToYaml a => ToYaml (Versioned a) where
+  toYaml Versioned {..} =
+    Yaml.mapping
+      [ ("version", toYaml versionedVersion),
+        ("value", toYaml versionedValue)
+      ]
+
 newtype SmosFile = SmosFile
   { smosFileForest :: Forest Entry
   }
@@ -130,10 +188,10 @@ instance Validity SmosFile
 instance NFData SmosFile
 
 instance ToJSON SmosFile where
-  toJSON = toJSON . ForYaml . smosFileForest
+  toJSON SmosFile {..} = toJSON (ForYaml smosFileForest)
 
 instance ToYaml SmosFile where
-  toYaml = toYaml . ForYaml . smosFileForest
+  toYaml SmosFile {..} = toYaml (ForYaml smosFileForest)
 
 instance FromJSON SmosFile where
   parseJSON v = SmosFile . unForYaml <$> parseJSON v

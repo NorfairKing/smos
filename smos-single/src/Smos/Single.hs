@@ -43,7 +43,7 @@ deriveFileName h = parseRelFile $ (++ ".smos") $ map go $ T.unpack $ headerText 
     go c = Char.toLower c
 
 makeSingleSmosFile :: UTCTime -> Header -> SmosFile
-makeSingleSmosFile now h = SmosFile {smosFileForest = [Node e []]}
+makeSingleSmosFile now h = makeSmosFile [Node e []]
   where
     e :: Entry
     e =

@@ -157,7 +157,7 @@ prepareToArchive :: UTCTime -> SmosFile -> SmosFile
 prepareToArchive now = smosFileClockOutEverywhere now . setAllUndoneToCancelled now
 
 setAllUndoneToCancelled :: UTCTime -> SmosFile -> SmosFile
-setAllUndoneToCancelled now (SmosFile f) = SmosFile $ map (fmap go) f
+setAllUndoneToCancelled now sf = makeSmosFile $ map (fmap go) (smosFileForest sf)
   where
     go :: Entry -> Entry
     go e =

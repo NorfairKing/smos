@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -77,27 +78,13 @@ shouldFailToParse ::
   forall a.
   (Show a, FromJSON a) =>
   Path Abs File ->
-  IO ()
+  IO (GoldenTest String)
 shouldFailToParse tf = do
   errOrSmosFile <- readFileByExtension @a tf
+  errFile <- addExtension ".error" tf
   case errOrSmosFile of
-    Left actualErr -> do
-      errFile <- addExtension ".error" tf
-      expectedErr <- readFile $ fromAbsFile errFile
-      let ctx =
-            unlines
-              [ "Actual error for golden test",
-                fromAbsFile tf,
-                "differs from expected error in",
-                fromAbsFile errFile,
-                "expected:",
-                expectedErr,
-                "actual:",
-                actualErr
-              ]
-      context ctx $ actualErr `shouldBe` expectedErr
-    Right sf ->
-      expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
+    Left err -> pure $ pureGoldenStringFile (fromAbsFile errFile) err
+    Right sf -> expectationFailure $ unwords ["Should have failed, but got this smos file:", ppShow sf]
 
 readFileByExtension ::
   forall a.

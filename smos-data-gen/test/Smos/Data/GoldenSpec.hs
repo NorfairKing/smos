@@ -6,6 +6,7 @@ module Smos.Data.GoldenSpec (spec) where
 import Control.Monad
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
+import Data.SemVer as Version
 import qualified Data.Set as S
 import Data.Time
 import Smos.Data
@@ -75,4 +76,4 @@ goldenFormatsSpec name fp sf = do
         s -> error $ "unknown format:" <> s
   forM_ formats $ \format ->
     it (unwords ["outputs the", show name, "as", format, "the same as before"]) $
-      pureGoldenByteStringFile ("test_resources/golden/" <> fp <> format) (encodeAs format sf)
+      pureGoldenByteStringFile ("test_resources/compatibility/v" <> Version.toString currentDataVersion <> "/" <> fp <> format) (encodeAs format sf)

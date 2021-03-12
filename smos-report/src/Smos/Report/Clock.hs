@@ -35,7 +35,7 @@ import Smos.Report.TimeBlock
 zeroOutByFilter :: EntryFilterRel -> Path Rel File -> SmosFile -> SmosFile
 zeroOutByFilter f rp sf =
   let cursors = forestCursors $ smosFileForest sf
-   in SmosFile $ map (fmap go) cursors
+   in sf {smosFileForest = map (fmap go) cursors}
   where
     go :: ForestCursor Entry -> Entry
     go fc =
@@ -49,8 +49,8 @@ zeroOutEntry :: Entry -> Entry
 zeroOutEntry e = e {entryLogbook = emptyLogbook}
 
 findFileTimes :: UTCTime -> Path Rel File -> SmosFile -> Maybe FileTimes
-findFileTimes now rp (SmosFile ts) = do
-  ne <- goF ts
+findFileTimes now rp sf = do
+  ne <- goF (smosFileForest sf)
   pure $ FileTimes {clockTimeFile = rp, clockTimeForest = ne}
   where
     goF :: Forest Entry -> Maybe (TForest HeaderTimes)

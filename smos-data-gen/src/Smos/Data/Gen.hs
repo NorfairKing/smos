@@ -13,8 +13,10 @@ import Smos.Data
 import Test.QuickCheck
 
 instance GenValid SmosFile where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  genValid = SmosFile <$> genValid
+  shrinkValid sf = do
+    f <- shrinkValid (smosFileForest sf)
+    pure $ sf {smosFileForest = f}
 
 instance GenUnchecked a => GenUnchecked (ForYaml a)
 

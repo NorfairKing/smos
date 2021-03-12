@@ -88,7 +88,7 @@ data ConvertErr
 -- * Deal with state history
 -- * Deal with drawers
 convertDocument :: Org.Document -> Convert SmosFile
-convertDocument Document {..} = SmosFile <$> mapM convertHeadline documentHeadlines
+convertDocument Document {..} = makeSmosFile <$> mapM convertHeadline documentHeadlines
 
 convertHeadline :: Org.Headline -> Convert (Tree Smos.Entry)
 convertHeadline h = do

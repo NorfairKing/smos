@@ -1,0 +1,9 @@
+[
+    {
+        "forest": [
+            "bar",
+            "quux"
+        ],
+        "entry": "foo"
+    }
+]

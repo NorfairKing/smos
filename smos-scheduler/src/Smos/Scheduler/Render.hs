@@ -28,7 +28,7 @@ import Text.Megaparsec
 
 renderTemplate :: ScheduleTemplate -> Render SmosFile
 renderTemplate (ScheduleTemplate f) =
-  SmosFile <$> traverse (traverse renderEntryTemplate) f
+  makeSmosFile <$> traverse (traverse renderEntryTemplate) f
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =

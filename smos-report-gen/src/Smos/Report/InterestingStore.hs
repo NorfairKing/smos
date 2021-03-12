@@ -87,7 +87,7 @@ interestingStoreSafeSmosFileDF InterestingStore {..} =
     ]
 
 genInterestingSmosFile :: Gen SmosFile
-genInterestingSmosFile = SmosFile <$> genInterestingForest
+genInterestingSmosFile = makeSmosFile <$> genInterestingForest
 
 genInterestingForest :: Gen (Forest Entry)
 genInterestingForest =

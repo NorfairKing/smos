@@ -21,8 +21,10 @@ library:
   - containers
   - deepseq
   - hashable  
+  - microlens
   - path
   - path-io
+  - semver
   - text
   - time
   - unliftio

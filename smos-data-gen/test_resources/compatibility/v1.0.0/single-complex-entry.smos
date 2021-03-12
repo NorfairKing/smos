@@ -1,0 +1,16 @@
+version: 1.0.0
+value:
+- header: hello world
+  contents: |-
+    some
+    big
+    contents
+  timestamps:
+    DEADLINE: 2021-03-13
+    SCHEDULED: 2021-03-12
+  properties:
+    client: cssyd
+    timewindow: 30m
+  tags:
+  - home
+  - online

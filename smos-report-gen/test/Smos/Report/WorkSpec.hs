@@ -65,7 +65,7 @@ spec = do
                     }
                 is =
                   emptyInterestingStore
-                    { workflowFiles = DF.singletonFile rf (SmosFile [Node e []])
+                    { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
                     }
              in withDirectoryConfig is $ \dc -> do
                   let ctx =
@@ -106,7 +106,7 @@ spec = do
                   e2 = emptyEntry {entryTimestamps = M.singleton "BEGIN" ts2}
                   is =
                     emptyInterestingStore
-                      { workflowFiles = DF.singletonFile rf (SmosFile [Node e1 [], Node e2 []])
+                      { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e1 [], Node e2 []])
                       }
                in withDirectoryConfig is $ \dc -> do
                     let ctx =
@@ -145,7 +145,7 @@ spec = do
                     }
                 is =
                   emptyInterestingStore
-                    { workflowFiles = DF.singletonFile rf (SmosFile [Node e []])
+                    { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
                     }
                 checkFilterString = "property:timewindow"
              in case parseEntryFilterRel checkFilterString of

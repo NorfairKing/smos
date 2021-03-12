@@ -45,11 +45,14 @@ tests:
     - aeson
     - bytestring
     - containers
+    - filepath
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
+    - microlens
     - path
     - path-io
     - pretty-show
+    - semver
     - smos-data
     - smos-data-gen
     - sydtest

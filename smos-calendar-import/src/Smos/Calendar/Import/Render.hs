@@ -14,7 +14,7 @@ import Smos.Calendar.Import.Static
 import Smos.Data
 
 renderAllEvents :: Set Events -> SmosFile
-renderAllEvents = SmosFile . map renderEvents . S.toAscList
+renderAllEvents = makeSmosFile . map renderEvents . S.toAscList
 
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =

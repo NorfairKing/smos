@@ -1,0 +1,6 @@
+version: 1.0.0
+forest:
+- entry: foo
+  forest:
+  - bar
+  - quux

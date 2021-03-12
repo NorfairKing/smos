@@ -150,7 +150,7 @@ instance Exception ParseSmosFileException where
     "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
 trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
-trimByTags ts = Conduit.map $ \(rf, SmosFile sfs) -> (rf, SmosFile $ goF sfs)
+trimByTags ts = Conduit.map $ \(rf, sf) -> (rf, sf {smosFileForest = goF (smosFileForest sf)})
   where
     goF :: Forest Entry -> Forest Entry
     goF =

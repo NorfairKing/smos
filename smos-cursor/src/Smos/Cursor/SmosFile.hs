@@ -107,7 +107,7 @@ rebuildSmosFileCursor =
     . smosFileCursorForestCursor
 
 rebuildSmosFileCursorEntirely :: SmosFileCursor -> SmosFile
-rebuildSmosFileCursorEntirely = SmosFile . NE.toList . rebuildSmosFileCursor
+rebuildSmosFileCursorEntirely = makeSmosFile . NE.toList . rebuildSmosFileCursor
 
 startSmosFile :: SmosFileCursor
 startSmosFile =
