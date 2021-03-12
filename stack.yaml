@@ -138,7 +138,7 @@ extra-deps:
   - safe-coloured-text-layout
 
 - github: NorfairKing/sydtest
-  commit: f495c959e7ca579fcdd0217236fe5f5c5f970685
+  commit: 876707dbe0c8b84753d1c3f04564e10035b5836d
   subdirs:
     - sydtest
     - sydtest-discover

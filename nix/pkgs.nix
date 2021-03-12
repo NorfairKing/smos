@@ -1,72 +1,33 @@
 { static ? false
 }:
 let
+  sources = import ./sources.nix;
   pkgsv = import (import ./nixpkgs.nix);
-  validity-overlay =
-    import (
-      builtins.fetchGit (import ./validity-version.nix) + "/nix/overlay.nix"
-    );
-  safe-coloured-text-overlay =
-    import (
-      builtins.fetchGit (import ./safe-coloured-text-version.nix) + "/nix/overlay.nix"
-    );
-  sydtest-overlay =
-    import (
-      builtins.fetchGit (import ./sydtest-version.nix) + "/nix/overlay.nix"
-    );
-  typed-uuid-overlay =
-    import (
-      builtins.fetchGit (import ./typed-uuid-version.nix) + "/nix/overlay.nix"
-    );
-  pretty-relative-time-overlay =
-    import (
-      builtins.fetchGit (import ./pretty-relative-time-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-overlay =
-    import (
-      builtins.fetchGit (import ./cursor-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-brick-overlay =
-    import (
-      builtins.fetchGit (import ./cursor-brick-version.nix) + "/nix/overlay.nix"
-    );
-  dirforest-overlay =
-    import (
-      builtins.fetchGit (import ./dirforest-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-dirforest-overlay =
-    import (
-      builtins.fetchGit (import ./cursor-dirforest-version.nix) + "/nix/overlay.nix"
-    );
-  fuzzy-time-overlay =
-    import (
-      builtins.fetchGit (import ./fuzzy-time-version.nix) + "/nix/overlay.nix"
-    );
-  cursor-fuzzy-time-overlay =
-    import (
-      builtins.fetchGit (import ./cursor-fuzzy-time-version.nix) + "/nix/overlay.nix"
-    );
-  yamlparse-applicative-overlay =
-    import (
-      builtins.fetchGit (import ./yamlparse-applicative-version.nix) + "/nix/overlay.nix"
-    );
-  mergeful-overlay =
-    import (
-      builtins.fetchGit (import ./mergeful-version.nix) + "/nix/overlay.nix"
-    );
-  yesod-static-remote-overlay =
-    import (
-      builtins.fetchGit (import ./yesod-static-remote-version.nix) + "/nix/overlay.nix"
-    );
-  autorecorder-overlay =
-    import (
-      builtins.fetchGit (import ./autorecorder-version.nix) + "/nix/overlay.nix"
-    );
+  sydtest-overlay = import (sources.sydtest + "/nix/overlay.nix");
+  validity-overlay = import (sources.validity + "/nix/overlay.nix");
+  safe-coloured-text-overlay = import (sources.safe-coloured-text + "/nix/overlay.nix");
+  typed-uuid-overlay = import (sources.typed-uuid + "/nix/overlay.nix");
+  pretty-relative-time-overlay = import (sources.pretty-relative-time + "/nix/overlay.nix");
+  cursor-overlay = import (sources.cursor + "/nix/overlay.nix");
+  cursor-brick-overlay = import (sources.cursor-brick + "/nix/overlay.nix");
+  dirforest-overlay = import (sources.dirforest + "/nix/overlay.nix");
+  cursor-dirforest-overlay = import (sources.cursor-dirforest + "/nix/overlay.nix");
+  yamlparse-applicative-overlay = import (sources.yamlparse-applicative + "/nix/overlay.nix");
+  fuzzy-time-overlay = import (sources.fuzzy-time + "/nix/overlay.nix");
+  cursor-fuzzy-time-overlay = import (sources.cursor-fuzzy-time + "/nix/overlay.nix");
+  mergeful-overlay = import (sources.mergeful + "/nix/overlay.nix");
+  yesod-static-remote-overlay = import (sources.yesod-static-remote + "/nix/overlay.nix");
+  autorecorder-overlay = import (sources.autorecorder + "/nix/overlay.nix");
+  gitignore-src-overlay = final: previous:
+    {
+      inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource;
+    };
   pkgFunc = pkgs: if static then pkgs.pkgsCross.musl64 else pkgs;
   smosPkgs = pkgFunc
     (
       pkgsv {
         overlays = [
+          gitignore-src-overlay
           validity-overlay
           safe-coloured-text-overlay
           sydtest-overlay
@@ -82,13 +43,6 @@ let
           mergeful-overlay
           yesod-static-remote-overlay
           autorecorder-overlay
-          (final: previous: {
-            groff = previous.groff.overrideAttrs (old: {
-              patches = (old.patches or [ ]) ++ [
-                ./0001-support-musl.patch
-              ];
-            });
-          })
           (import ./gitignore-src.nix)
           (import ./overlay.nix)
         ];
