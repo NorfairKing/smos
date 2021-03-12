@@ -2,6 +2,7 @@ final: previous:
 
 with final.lib;
 let
+  sources = import ./sources.nix;
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
@@ -96,26 +97,8 @@ in
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
       withLinksChecked = exeName: pkg:
         let
-          linkcheck = (
-            import (
-              builtins.fetchGit {
-                url = "https://github.com/NorfairKing/linkcheck";
-                rev = "dc65f22965d92e6145814cdc674d160f3c422559";
-                ref = "master";
-              }
-            )
-          ).linkcheck;
-          seocheck =
-            (
-              import (
-                builtins.fetchGit {
-                  url = "https://github.com/NorfairKing/seocheck";
-                  rev = "5a0314f103a2146ed5f3798e5a5821ab44e27c99";
-                  ref = "master";
-                }
-              )
-            ).seocheck;
-
+          linkcheck = (import sources.linkcheck).linkcheck;
+          seocheck = (import sources.seocheck).seocheck;
         in
         final.stdenv.mkDerivation {
           name = "${exeName}-linkchecked";
@@ -150,14 +133,6 @@ in
         }
       );
 
-      bulma = builtins.fetchGit {
-        url = "https://github.com/jgthms/bulma";
-        rev = "f26b871321a13ff2ce3f6270eec9b9585527d3b7";
-      };
-      bulma-carousel = builtins.fetchGit {
-        url = "https://github.com/Wikiki/bulma-carousel";
-        rev = "3de42c029917536d2f4867fd469f8187c56bcd41";
-      };
       stylesheet = final.stdenv.mkDerivation {
         name = "site-stylesheet.css";
         src = final.gitignoreSource ../smos-web-style/style/mybulma.scss;
@@ -166,8 +141,8 @@ in
           # Dependency submodules are fetched manually here
           # so that we don't have to fetch the submodules of smos
           # when importing smos from derivation.
-          ln -s ${bulma} bulma
-          ln -s ${bulma-carousel} bulma-carousel
+          ln -s ${sources.bulma} bulma
+          ln -s ${sources.bulma-carousel} bulma-carousel
     
           # The file we want to compile
           # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
@@ -388,11 +363,8 @@ in
                 );
                 template-haskell-reload = self.callCabal2nix "template-haskell-reload"
                   (
-                    builtins.fetchGit
-                      {
-                        url = "https://github.com/NorfairKing/template-haskell-reload";
-                        rev = "7111b945e3ae00ac48d905af1d925c138c334960";
-                      } + "/template-haskell-reload"
+                    sources.template-haskell-reload
+                    + "/template-haskell-reload"
                   )
                   { };
                 terminfo = self.callHackage "terminfo" "0.4.1.4" { };
