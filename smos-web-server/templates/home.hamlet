@@ -18,8 +18,8 @@
           <p .content .is-size-5 .has-text-centered>
             Get your work done, all of it, in time, and without stress!
 
-      <div .columns .is-centered>
-        <a .button .is-size-4 .is-primary href=@{PlaygroundR}>
+      <p .has-text-centered>
+        <a .button .is-size-4 .is-primary .has-text-centered href=@{PlaygroundR}>
           Take the tour
 
 
@@ -41,7 +41,7 @@
             We suggest learning Smos during our self-management coaching sessions for minimal stress.
 
           <div .buttons .is-centered>
-            <a .button .is-size-5 .is-link href=https://cs-syd.eu/self-management>
+            <a .button .is-size-5 .is-info href=https://cs-syd.eu/self-management>
               Self-management
 
 

@@ -31,6 +31,8 @@ description: The changelog for all of the Smos tools and libraries
   Non-colour-based indicators of selection, for screens without colour or colour-blind users.
 - `smos-query`:
   All reports are now bicoloured by default. This can be configured via the configuration file.
+- `smos-web-server`:
+  A fancy home page instead of just a login button.
   
 
 
