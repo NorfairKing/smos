@@ -11,10 +11,12 @@ module Smos.Data
     parseSmosData,
     parseSmosDataYaml,
     parseSmosDataJSON,
+    smosFileBS,
     smosFileYamlBS,
     smosFileJSONBS,
     smosFileJSONPrettyBS,
     emptySmosFile,
+    makeSmosFile,
     prettySmosForest,
     smosFileClockOutEverywhere,
     entryClockIn,
@@ -56,7 +58,7 @@ readSmosFile fp = do
 writeSmosFile :: Path Abs File -> SmosFile -> IO ()
 writeSmosFile fp sf = do
   ensureDir $ parent fp
-  writeBinaryFileDurableAtomic (toFilePath fp) (smosFileYamlBS sf)
+  writeBinaryFileDurableAtomic (toFilePath fp) (smosFileBS sf)
 
 parseSmosFile :: ByteString -> Either String SmosFile
 parseSmosFile = parseSmosData
@@ -83,6 +85,9 @@ parseSmosDataYaml = left show . Yaml.decodeEither'
 parseSmosDataJSON :: FromJSON a => ByteString -> Either String a
 parseSmosDataJSON = JSON.eitherDecode . LB.fromStrict
 
+smosFileBS :: SmosFile -> ByteString
+smosFileBS = smosFileYamlBS
+
 smosFileYamlBS :: SmosFile -> ByteString
 smosFileYamlBS = Yaml.toByteString
 
@@ -94,6 +99,9 @@ smosFileJSONPrettyBS = JSON.encodePretty
 
 emptySmosFile :: SmosFile
 emptySmosFile = SmosFile []
+
+makeSmosFile :: Forest Entry -> SmosFile
+makeSmosFile = SmosFile
 
 prettySmosForest :: Forest Entry -> String
 prettySmosForest ts = unlines $ map prettySmosTree ts

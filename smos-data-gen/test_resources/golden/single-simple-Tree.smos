@@ -1,0 +1,4 @@
+- entry: foo
+  forest:
+  - bar
+  - quux

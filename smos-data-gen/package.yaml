@@ -44,14 +44,15 @@ tests:
     - QuickCheck
     - aeson
     - bytestring
+    - containers
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
-    - sydtest
     - path
     - path-io
     - pretty-show
     - smos-data
     - smos-data-gen
+    - sydtest
     - text
     - time
 
