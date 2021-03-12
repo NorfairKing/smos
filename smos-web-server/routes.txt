@@ -16,3 +16,4 @@
 /static StaticR EmbeddedStatic appStatic
 /style StyleR EmbeddedStatic appStyle
 
+/ws/reload ReloadR GET

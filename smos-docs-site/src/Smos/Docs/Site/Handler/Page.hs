@@ -12,7 +12,6 @@ import Smos.Docs.Site.Foundation
 
 getPageR :: [Text] -> Handler Html
 getPageR ts = do
-  liftIO $ print ts
   DocPage {..} <- lookupPage' ts
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle

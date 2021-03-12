@@ -29,6 +29,7 @@ import Path.IO
 import Servant.Auth.Client (Token (..))
 import Servant.Client
 import Smos.Client
+import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import Smos.Web.Style
@@ -37,6 +38,7 @@ import Text.Hamlet
 import Yesod
 import Yesod.Auth
 import qualified Yesod.Auth.Message as Msg
+import Yesod.AutoReload
 import Yesod.EmbeddedStatic
 
 data App = App
@@ -58,10 +60,11 @@ instance Yesod App where
   shouldLogIO app _ ll = pure $ ll >= appLogLevel app
   defaultLayout widget = do
     app <- getYesod
+    let addReloadWidget = if development then (<> autoReloadWidgetFor ReloadR) else id
     pageContent <- widgetToPageContent $ do
       addStylesheet $ StyleR index_css
       toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
-      $(widgetFile "default-body")
+      addReloadWidget $(widgetFile "default-body")
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
   authRoute _ = Just $ AuthR LoginR

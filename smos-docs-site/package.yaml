@@ -23,6 +23,7 @@ library:
   - envparse
   - file-embed
   - filepath
+  - fsnotify
   - optparse-applicative
   - path
   - path-io
@@ -49,9 +50,11 @@ library:
   - yaml
   - yamlparse-applicative
   - yesod
+  - yesod-autoreload
   - yesod-sitemap
   - yesod-static
   - yesod-static-remote
+  - yesod-websockets
 
 executables:
   smos-docs-site:

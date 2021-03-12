@@ -24,11 +24,13 @@ import qualified Data.Text as T
 import Language.Haskell.TH.Load
 import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Casts
+import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Smos.Web.Style
 import Text.Hamlet
 import Yesod
+import Yesod.AutoReload
 import Yesod.EmbeddedStatic
 
 data App = App
@@ -45,6 +47,7 @@ mkYesodData "App" $(parseRoutesFile "routes")
 instance Yesod App where
   defaultLayout widget = do
     app <- getYesod
+    let addReloadWidget = if development then (<> autoReloadWidgetFor ReloadR) else id
     pageContent <-
       widgetToPageContent $ do
         addStylesheet $ StyleR index_css
@@ -54,7 +57,7 @@ instance Yesod App where
         addScript $ AssetsStaticR asciinema_player_js
         addStylesheet $ AssetsStaticR asciinema_player_css
         let menu = $(widgetFile "menu")
-        $(widgetFile "default-body")
+        addReloadWidget $(widgetFile "default-body")
     withUrlRenderer $(hamletFile "templates/default-page.hamlet")
   errorHandler NotFound = fmap toTypedContent $
     defaultLayout $

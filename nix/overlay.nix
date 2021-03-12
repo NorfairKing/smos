@@ -367,6 +367,7 @@ in
                     + "/template-haskell-reload"
                   )
                   { };
+                yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                 terminfo = self.callHackage "terminfo" "0.4.1.4" { };
                 envparse = self.callHackage "envparse" "0.4.1" { };
                 persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;

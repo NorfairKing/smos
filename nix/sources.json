@@ -263,6 +263,18 @@
         "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/7a329d06ffa45595963cf98f34910887115eb471.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "yesod-autoreload": {
+        "branch": "master",
+        "description": "Automatically have the browser reload a yesod site (without having to press the refresh button).",
+        "homepage": "https://cs-syd.eu/posts/2021-02-27-watching-changes-in-yesod",
+        "owner": "NorfairKing",
+        "repo": "yesod-autoreload",
+        "rev": "2adfb0397ca82a81ee26e0e491fe8b2759d76615",
+        "sha256": "0b0fh4xqx2xc0g1lap2acrwm25zfkcf7b6h794wnfw1mwgb7grbn",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/yesod-autoreload/archive/2adfb0397ca82a81ee26e0e491fe8b2759d76615.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "yesod-static-remote": {
         "branch": "master",
         "description": "Turn runtime CDN usage into compile-time CDN usage.",

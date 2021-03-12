@@ -34,4 +34,6 @@
 
 /style StyleR EmbeddedStatic appStyle
 
+/ws/reload ReloadR GET
+
 !/*Texts PageR GET
