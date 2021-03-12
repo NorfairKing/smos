@@ -1,3 +1,7 @@
 .carousel {
   overflow: hidden;
 }
+*:focus {
+  outline: none;
+}
+
