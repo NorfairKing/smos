@@ -126,7 +126,7 @@ oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
 
 currentDataVersion :: Version
-currentDataVersion = version 0 0 0 [] []
+currentDataVersion = version 1 0 0 [] []
 
 newestParsableDataVersion :: Version
 newestParsableDataVersion = version 1 0 0 [] []
