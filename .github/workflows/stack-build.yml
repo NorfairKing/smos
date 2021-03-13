@@ -156,22 +156,6 @@ jobs:
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
             smos-sync-client-gen 
 
-      - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.3.7
-        with:
-          source: smos-web-style/style/mybulma.scss
-          destination: smos-web-style/style/mybulma.css
-
-      - name: Build smos-style
-        run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
-            smos-web-style
-
-      - name: Build smos-web-server
-        run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
-            smos-web-server
-
       - name: Build smos
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
