@@ -27,6 +27,11 @@ executables:
   smos-single:
     main: Main.hs
     source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - base
     - smos-single

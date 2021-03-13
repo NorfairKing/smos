@@ -38,6 +38,7 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - QuickCheck
     - bytestring
@@ -68,6 +69,7 @@ benchmarks:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - criterion
     - cursor
