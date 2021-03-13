@@ -4,7 +4,6 @@ set -e
 set -x
 
 export DEVELOPMENT=True
-export PATH="$HOME/.local/bin:$PATH"
 
 nice -n19 stack install :smos-docs-site \
   --file-watch --watch-all \

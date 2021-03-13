@@ -17,7 +17,9 @@
 <section .section .container>
   <div .columns>
     <div .column .is-3>
-      ^{menu}
+      <div .box>
+        ^{menu}
 
     <div .column .is-9>
-      ^{widget}
+      <div .box>
+        ^{widget}

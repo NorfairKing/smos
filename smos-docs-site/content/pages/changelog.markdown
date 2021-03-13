@@ -5,6 +5,13 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased
 
+## Changed
+
+- `smos-data`:
+  Updated the data format to include a data format version.
+  This way, we can change change the data format in the future and not get crashes.
+  The previous version was already forward-compatible with this change so you should not notice this change **unless you wrote custom tooling to work with smos files**.
+
 # <a name="2021-03-13">[2021-03-13](#2021-03-13)
 
 - <a name="smos-0.1.4">[smos 0.1.4](#smos-0.1.4)
