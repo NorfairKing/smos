@@ -165,7 +165,7 @@ jobs:
       - name: Build smos-style
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
-            smos-web-tyle
+            smos-web-style
 
       - name: Build smos-web-server
         run: |
