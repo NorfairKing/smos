@@ -1,11 +1,13 @@
 ---
-title: Pieces of a Smos File
+title: File Format Reference
 description: Documentation for the structure of a Smos file
 ---
 
 A Smos file is a YAML document, for example:
 
 ``` yaml
+version: 1.0.0
+value:
 - entry:
     header: Use Smos
     timestamps:
@@ -31,7 +33,19 @@ A Smos file is a YAML document, for example:
     - work
 ```
 
-It consists of a forest of entries.
+It consists of a versioned forest of entries.
+
+### Versioned forest
+
+The top-level of a smos file consists of an object with two fields:
+A `version` value which refers to the data format version.
+This is used for forward and backward compatibility.
+The other field is the `value` field which contains a forest of entries.
+
+``` yaml
+version: 1.0.0
+value: [...]
+```
 
 ### Forests of trees
 
