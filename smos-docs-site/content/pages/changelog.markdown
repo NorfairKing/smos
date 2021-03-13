@@ -3,6 +3,8 @@ title: Changelog
 description: The changelog for all of the Smos tools and libraries
 ---
 
+# Unreleased
+
 # <a name="2021-03-13">[2021-03-13](#2021-03-13)
 
 - <a name="smos-0.1.4">[smos 0.1.4](#smos-0.1.4)
@@ -50,8 +52,6 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-web-server`:
   A fancy home page instead of just a login button.
   
-
-
 ## Changed
 
 - `smos-data`:
@@ -67,6 +67,9 @@ description: The changelog for all of the Smos tools and libraries
   Hide properties of done entries on startup.
 - `smos`:
   The waiting report is now drawn with the configured threshold, instead of always with threshold 7.
+
+
+
 
 # <a name="2021-02-01">[2021-02-01](#2021-02-01)
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
