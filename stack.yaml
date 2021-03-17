@@ -28,6 +28,7 @@ packages:
 - smos-sync-client-gen
 - smos-web-style
 - smos-web-server
+- smos-github
 
 # These are duplicated in nix/overlay.
 ghc-options:
