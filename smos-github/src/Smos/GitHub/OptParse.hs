@@ -37,11 +37,11 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
   let setColourConfig = getColourConfig (mc >>= confColourConfiguration) (smosQueryConfigColourConfig defaultSmosQueryConfig)
+  let setGithubOauthToken = flagGithubOAuthToken <|> envGithubOAuthToken <|> cM githubConfOAuthToken
   pure (Instructions d Settings {..})
-
--- where
---   cM :: (GitHubConfiguration -> Maybe a) -> Maybe a
---   cM func = mc >>= confGitHubConfiguration >>= func
+  where
+    cM :: (GitHubConfiguration -> Maybe a) -> Maybe a
+    cM func = mc >>= confGitHubConfiguration >>= func
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration
@@ -57,9 +57,9 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-
--- where
---   mE = Env.def Nothing <> Env.keep
+      <*> Env.var (fmap Just . Env.str) "GITHUB_OAUTH_TOKEN" (mE <> Env.help "Github oauth token")
+  where
+    mE = Env.def Nothing <> Env.keep
 
 getArguments :: IO Arguments
 getArguments = do
@@ -101,4 +101,6 @@ parseCommandList = info parser modifier
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
   Report.parseFlagsWithConfigFile $
-    Flags <$> Report.parseDirectoryFlags
+    Flags
+      <$> Report.parseDirectoryFlags
+      <*> optional (strOption (mconcat [short 'g', long "github-oath-token", metavar "OAUTH_TOKEN", help "A github OAuth token"]))

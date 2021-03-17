@@ -5,6 +5,7 @@
 module Smos.GitHub.OptParse.Types where
 
 import Data.Aeson
+import Data.Text (Text)
 import Smos.Query.Config (ColourConfig)
 import Smos.Query.OptParse.Types (ColourConfiguration (..), colourConfigurationKey)
 import Smos.Report.Config as Report
@@ -18,7 +19,8 @@ data Command = CommandList
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags
+  { flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagGithubOAuthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)
 
@@ -39,7 +41,7 @@ instance YamlSchema Configuration where
       <*> objectParser "Configuration" (optionalField "github" "The github tool configuration")
 
 data GitHubConfiguration = GitHubConfiguration
-  {
+  { githubConfOAuthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)
 
@@ -47,10 +49,14 @@ instance FromJSON GitHubConfiguration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema GitHubConfiguration where
-  yamlSchema = pure GitHubConfiguration
+  yamlSchema =
+    objectParser "GithubConfiguration" $
+      GitHubConfiguration
+        <$> optionalField "oauth-token" "Oauth token for accessing the github API"
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envGithubOAuthToken :: Maybe Text
   }
   deriving (Show, Eq)
 
@@ -62,6 +68,7 @@ data Dispatch = DispatchList
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
-    setColourConfig :: !ColourConfig
+    setColourConfig :: !ColourConfig,
+    setGithubOauthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)

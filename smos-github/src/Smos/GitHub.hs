@@ -33,6 +33,9 @@ smosGitHub :: IO ()
 smosGitHub = do
   Instructions _ Settings {..} <- getInstructions
   wd <- resolveDirWorkflowDir setDirectorySettings
+  case setGithubOauthToken of
+    Nothing -> putStrLn "WARNING: No OAUTH token configured. Some functionality may not work without it."
+    Just _ -> pure ()
   report <-
     runConduit $
       streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
