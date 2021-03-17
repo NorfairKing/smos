@@ -109,6 +109,7 @@ let
     machine.succeed(su("${username}", "smos-query --help"))
     machine.succeed(su("${username}", "smos-scheduler --help"))
     machine.succeed(su("${username}", "smos-sync-client --help"))
+    machine.succeed(su("${username}", "smos-github --help"))
     # Make sure the config file is parseable
     machine.succeed(su("${username}", "smos-query next"))'';
 
