@@ -12,6 +12,7 @@ library:
   ghc-options: -Wall
   dependencies:
     - aeson
+    - async
     - base
     - conduit
     - containers
@@ -21,11 +22,13 @@ library:
     - optparse-applicative
     - path
     - path-io
+    - pretty-show
     - safe-coloured-text
     - smos-data
     - smos-query
     - smos-report
     - text
+    - time
     - yamlparse-applicative
 
 executables:

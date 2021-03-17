@@ -103,4 +103,4 @@ parseFlags =
   Report.parseFlagsWithConfigFile $
     Flags
       <$> Report.parseDirectoryFlags
-      <*> optional (strOption (mconcat [short 'g', long "github-oath-token", metavar "OAUTH_TOKEN", help "A github OAuth token"]))
+      <*> optional (strOption (mconcat [short 'g', long "github-oauth-token", metavar "OAUTH_TOKEN", help "A github OAuth token"]))

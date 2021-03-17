@@ -9,12 +9,18 @@ module Smos.GitHub
 where
 
 import Conduit
+import Control.Concurrent.Async
 import Control.Monad
+import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Data.Time
 import GHC.Generics (Generic)
-import GitHub (IssueNumber (..), Owner, Repo, unIssueNumber)
+import GitHub (IssueNumber (..), Owner, Repo, github, unIssueNumber)
+import qualified GitHub
+import GitHub.Auth (Auth (OAuth))
 import GitHub.Data.Name
 import Network.URI
 import Path
@@ -36,29 +42,17 @@ smosGitHub = do
   case setGithubOauthToken of
     Nothing -> putStrLn "WARNING: No OAUTH token configured. Some functionality may not work without it."
     Just _ -> pure ()
-  report <-
+  trips <-
     runConduit $
       streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
         .| parseSmosFilesRel wd
         .| printShouldPrint (PrintWarning stderr)
         .| smosFileEntries
         .| C.concatMap (\(rf, e) -> (,,) rf e <$> parseEntryGitHubUrl e) -- C.concatMap generalises mapMaybe
-        .| (GitHubListReport <$> sinkList)
+        .| sinkList
+  let mAuth = OAuth . TE.encodeUtf8 <$> setGithubOauthToken
+  report <- completeListReport mAuth trips
   putChunks $ renderGitHubListReport setColourConfig report
-
-newtype GitHubListReport = GitHubListReport
-  { githubListReportRows :: [(Path Rel File, Entry, GitHubUrl)]
-  }
-
-renderGitHubListReport :: ColourConfig -> GitHubListReport -> [Chunk]
-renderGitHubListReport cc GitHubListReport {..} =
-  formatAsBicolourTable cc $
-    map underline ["file", "header", "owner", "repo", "issue"] :
-    map
-      ( \(rf, e, gu) ->
-          [pathChunk rf, headerChunk $ entryHeader e] ++ githubUrlChunks gu
-      )
-      githubListReportRows
 
 parseEntryGitHubUrl :: Entry -> Maybe GitHubUrl
 parseEntryGitHubUrl e = do
@@ -81,6 +75,62 @@ data GitHubUrl
   | IssueUrl (Name Owner) (Name Repo) IssueNumber
   deriving (Show, Eq, Generic)
 
+newtype GitHubListReport = GitHubListReport {githubListReportRows :: [ListReportRow]}
+  deriving (Show, Eq, Generic)
+
+completeListReport :: Maybe GitHub.Auth -> [(Path Rel File, Entry, GitHubUrl)] -> IO GitHubListReport
+completeListReport mAuth = fmap GitHubListReport . mapConcurrently (fillInRow mAuth)
+
+renderGitHubListReport :: ColourConfig -> GitHubListReport -> [Chunk]
+renderGitHubListReport cc GitHubListReport {..} =
+  formatAsBicolourTable cc $
+    headerRow : map renderListReportRow githubListReportRows
+
+headerRow :: [Chunk]
+headerRow =
+  map underline ["file", "header", "owner", "repo", "issue", "state"]
+
+data ListReportRow = ListReportRow
+  { listReportRowPath :: !(Path Rel File),
+    listReportRowEntry :: !Entry,
+    listReportRowGitHubUrl :: !GitHubUrl,
+    listReportRowState :: !(Maybe GitHub.IssueState),
+    listReportRowMerged :: !(Maybe UTCTime)
+  }
+  deriving (Show, Eq, Generic)
+
+fillInRow :: Maybe GitHub.Auth -> (Path Rel File, Entry, GitHubUrl) -> IO ListReportRow
+fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) = do
+  let mGithub :: FromJSON result => GitHub.Request rw result -> IO (Maybe result)
+      mGithub req = case mAuth of
+        Nothing -> pure Nothing
+        Just auth -> do
+          errOrRes <- github auth req
+          pure $ case errOrRes of
+            Left _ -> Nothing -- TODO this is debatable, we probably want to die instead.
+            Right r -> Just r
+  (listReportRowState, listReportRowMerged) <- case listReportRowGitHubUrl of
+    PullRequestUrl o r i -> do
+      pr <- mGithub $ GitHub.pullRequestR o r i
+      pure (GitHub.pullRequestState <$> pr, pr >>= GitHub.pullRequestMergedAt)
+    IssueUrl o r i -> do
+      iss <- mGithub $ GitHub.issueR o r i
+      pure (GitHub.issueState <$> iss, Nothing)
+  pure ListReportRow {..}
+
+renderListReportRow :: ListReportRow -> [Chunk]
+renderListReportRow ListReportRow {..} =
+  concat
+    [ [ pathChunk listReportRowPath,
+        headerChunk $ entryHeader listReportRowEntry
+      ],
+      githubUrlChunks listReportRowGitHubUrl,
+      [ case listReportRowMerged of
+          Nothing -> maybe "" stateChunk listReportRowState
+          Just _ -> "merged"
+      ]
+    ]
+
 githubUrlChunks :: GitHubUrl -> [Chunk]
 githubUrlChunks = \case
   PullRequestUrl n r i -> [nameChunk n, nameChunk r, issueNumberChunk i]
@@ -91,3 +141,9 @@ nameChunk = chunk . untagName
 
 issueNumberChunk :: IssueNumber -> Chunk
 issueNumberChunk = chunk . T.pack . show . unIssueNumber
+
+stateChunk :: GitHub.IssueState -> Chunk
+stateChunk =
+  chunk . \case
+    GitHub.StateOpen -> "open"
+    GitHub.StateClosed -> "closed"
