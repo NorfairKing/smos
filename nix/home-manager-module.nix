@@ -421,6 +421,7 @@ in
           smosPkgs.smos-scheduler
           smosPkgs.smos-single
           smosPkgs.smos-sync-client
+          smosPkgs.smos-github
         ];
 
 
