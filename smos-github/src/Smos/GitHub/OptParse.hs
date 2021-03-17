@@ -1,12 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
-module Smos.GitHub.OptParse where
+module Smos.GitHub.OptParse
+  ( module Smos.GitHub.OptParse,
+    module Smos.GitHub.OptParse.Types,
+  )
+where
 
 import Data.Version
 import qualified Env
 import Options.Applicative
 import Paths_smos_github
 import Smos.GitHub.OptParse.Types
+import Smos.Query.Config (smosQueryConfigColourConfig)
+import Smos.Query.Default (defaultSmosQueryConfig)
+import Smos.Query.OptParse (getColourConfig)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
@@ -28,6 +36,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
+  let setColourConfig = getColourConfig (mc >>= confColourConfiguration) (smosQueryConfigColourConfig defaultSmosQueryConfig)
   pure (Instructions d Settings {..})
 
 -- where

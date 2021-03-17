@@ -13,11 +13,19 @@ library:
   dependencies:
     - aeson
     - base
+    - conduit
+    - containers
+    - envparse
+    - github
+    - network-uri
+    - optparse-applicative
     - path
     - path-io
-    - envparse
-    - optparse-applicative
+    - safe-coloured-text
+    - smos-data
+    - smos-query
     - smos-report
+    - text
     - yamlparse-applicative
 
 executables:

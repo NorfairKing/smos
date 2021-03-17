@@ -181,14 +181,6 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
         CommandStats StatsFlags {..} ->
           pure $
             DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
-    getColourConfig :: Maybe ColourConfiguration -> ColourConfig -> ColourConfig
-    getColourConfig mcc cc =
-      cc
-        { colourConfigBackground =
-            fromMaybe
-              (colourConfigBackground cc)
-              (mcc >>= colourConfigurationBackground)
-        }
 
     getSettings = do
       src <-
@@ -202,6 +194,15 @@ combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc 
           { smosQueryConfigReportConfig = src,
             smosQueryConfigColourConfig = getColourConfig (mc >>= confColourConfiguration) smosQueryConfigColourConfig
           }
+
+getColourConfig :: Maybe ColourConfiguration -> ColourConfig -> ColourConfig
+getColourConfig mcc cc =
+  cc
+    { colourConfigBackground =
+        fromMaybe
+          (colourConfigBackground cc)
+          (mcc >>= colourConfigurationBackground)
+    }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser

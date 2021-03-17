@@ -5,6 +5,8 @@
 module Smos.GitHub.OptParse.Types where
 
 import Data.Aeson
+import Smos.Query.Config (ColourConfig)
+import Smos.Query.OptParse.Types (ColourConfiguration (..), colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import YamlParse.Applicative
@@ -22,6 +24,7 @@ data Flags = Flags
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+    confColourConfiguration :: !(Maybe ColourConfiguration),
     confGitHubConfiguration :: !(Maybe GitHubConfiguration)
   }
   deriving (Show, Eq)
@@ -30,7 +33,10 @@ instance FromJSON Configuration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema Configuration where
-  yamlSchema = Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
+  yamlSchema =
+    Configuration <$> yamlSchema
+      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The github tool configuration")
+      <*> objectParser "Configuration" (optionalField "github" "The github tool configuration")
 
 data GitHubConfiguration = GitHubConfiguration
   {
@@ -55,6 +61,7 @@ data Dispatch = DispatchList
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig
+  { setDirectorySettings :: !Report.DirectoryConfig,
+    setColourConfig :: !ColourConfig
   }
   deriving (Show, Eq)
