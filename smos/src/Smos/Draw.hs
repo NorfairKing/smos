@@ -549,13 +549,13 @@ drawEntryCursor s tc edc e = do
         padLeft defaultPadding $
           vBox $
             catMaybes
-              [ drawIfM collapseEntryShowContents $
-                  drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
-                tscw,
+              [ tscw,
                 drawIfM collapseEntryShowProperties $
                   drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
-                shcw,
-                lbcw
+                drawIfM collapseEntryShowContents $
+                  drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
+                lbcw,
+                shcw
               ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
@@ -603,11 +603,11 @@ drawEntry tc edc e = do
       padLeft defaultPadding $
         vBox $
           catMaybes
-            [ drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
-              tsw,
+            [ tsw,
               drawIfM collapseEntryShowProperties $ drawProperties entryProperties,
-              shw,
-              lbw
+              drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
+              lbw,
+              shw
             ]
   where
     Entry {..} = collapseEntryValue e

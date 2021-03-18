@@ -11,6 +11,21 @@ description: The changelog for all of the Smos tools and libraries
   Updated the data format to include a data format version.
   This way, we can change change the data format in the future and not get crashes.
   The previous version was already forward-compatible with this change so you should not notice this change **unless you wrote custom tooling to work with smos files**.
+  The newest data-format version is version `1.0.0`.
+- `smos`:
+  The components of an entry are now drawn in the following order:
+  1. timestamps
+  1. properties
+  1. contents
+  1. logbook
+  1. history
+
+  where they used to be drawn in this order:
+  1. contents
+  1. timestamps
+  1. properties
+  1. history
+  1. logbook
 
 # <a name="2021-03-13">[2021-03-13](#2021-03-13)
 
