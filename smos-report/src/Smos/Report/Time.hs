@@ -70,6 +70,14 @@ timeP = do
     'h' -> pure $ Hours i
     'd' -> pure $ Days i
     'w' -> pure $ Weeks i
+    "sec" -> pure $ Seconds i
+    "min" -> pure $ Minutes i
+    "hrs" -> pure $ Hours i
+    "hr" -> pure $ Hours i
+    "days" -> pure $ Days i
+    "wk" -> pure $ Weeks i
+    "wks" -> pure $ Weeks i
+    "weeks" -> pure $ Weeks i
     _ -> fail $ "Unknown unit of time: " <> show c
 
 renderTime :: Time -> Text
