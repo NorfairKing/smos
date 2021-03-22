@@ -36,6 +36,7 @@ library:
     - smos-report
     - text
     - time
+    - time-compat
     - validity
     - validity-containers
     - validity-text

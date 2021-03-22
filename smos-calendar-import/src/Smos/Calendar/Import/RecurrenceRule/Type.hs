@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -19,6 +20,12 @@ import Data.Yaml
 import GHC.Generics (Generic)
 import Smos.Data
 import YamlParse.Applicative
+
+#if !MIN_VERSION_time_compat(1,9,5)
+deriving instance Ord DayOfWeek -- Silly that this doesn't exist. We need to be able to put days in a set
+#endif
+
+deriving instance Generic DayOfWeek
 
 -- | A recurrence rule
 --
@@ -732,10 +739,6 @@ instance FromJSON Month where
   parseJSON = viaYamlSchema
 
 instance ToJSON Month
-
-deriving instance Ord DayOfWeek -- Silly that this doesn't exist. We need to be able to put days in a set
-
-deriving instance Generic DayOfWeek
 
 instance YamlSchema DayOfWeek where -- Until we have it in yamlparse-applicative
   yamlSchema =
