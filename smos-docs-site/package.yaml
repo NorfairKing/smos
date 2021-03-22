@@ -33,6 +33,7 @@ library:
   - smos-archive
   - smos-calendar-import
   - smos-data
+  - smos-github
   - smos-query
   - smos-report
   - smos-scheduler

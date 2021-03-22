@@ -23,6 +23,8 @@
 
 /smos-web-server SmosWebServerR GET
 
+/smos-github SmosGitHubR GET
+
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 
