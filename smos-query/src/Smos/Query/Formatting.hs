@@ -171,8 +171,9 @@ propertyNameColor pn =
     "brainpower" -> Just brown
     "client" -> Just green
     "estimate" -> Just green
-    "timewindow" -> Just magenta
     "goal" -> Just orange
+    "timewindow" -> Just magenta
+    "url" -> Just green
     _ -> Nothing
 
 tagChunk :: Tag -> Chunk

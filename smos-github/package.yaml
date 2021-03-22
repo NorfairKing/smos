@@ -1,0 +1,45 @@
+name: smos-github
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2021 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+    - aeson
+    - async
+    - base
+    - conduit
+    - containers
+    - envparse
+    - github
+    - network-uri
+    - optparse-applicative
+    - path
+    - path-io
+    - pretty-show
+    - safe-coloured-text
+    - smos-data
+    - smos-query
+    - smos-report
+    - text
+    - time
+    - yamlparse-applicative
+
+executables:
+  smos-github:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - base
+    - smos-github

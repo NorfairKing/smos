@@ -45,7 +45,8 @@ allPropertiesPlainActions =
           "estimate",
           "goal",
           "lead",
-          "timewindow"
+          "timewindow",
+          "url"
         ]
     ]
 

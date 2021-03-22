@@ -28,6 +28,7 @@ packages:
 - smos-sync-client-gen
 - smos-web-style
 - smos-web-server
+- smos-github
 
 # These are duplicated in nix/overlay.
 ghc-options:
@@ -207,6 +208,12 @@ extra-deps:
   commit: 7111b945e3ae00ac48d905af1d925c138c334960
   subdirs:
     - template-haskell-reload
+
+- github-0.26@sha256:a9d4046325c3eb28cdc7bef2c3f5bb213328caeae0b7dce6f51de655f0bffaa1,7162
+- binary-instances-1.0.1@sha256:56bb2da1268415901d6ea3f46535b88b89459d7926fbfcca027e25e069ea6f2b,2647
+- time-compat-1.9.5@sha256:f343bc5339a217ecef497e3a730017e15f5c396713fe1d653b8a9e7b1f666988,4932
+
+
 
 nix:
   path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]

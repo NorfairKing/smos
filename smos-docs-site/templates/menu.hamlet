@@ -160,6 +160,10 @@
             Database migration: manual intervention required
 
     <li>
+      <a href=@{SmosGitHubR}>
+        The Smos GitHub Tool
+
+    <li>
       <a href=@{SmosServerR}>
         The Smos Server
       <ul>
