@@ -260,6 +260,7 @@ in
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-shell" = smosPkg "smos-shell";
       "smos-github" = smosPkgWithOwnComp "smos-github";
+      "smos-notify" = smosPkgWithOwnComp "smos-notify";
     } // optionalAttrs (!static) {
       # I couldn't get the stylesheet to build when building statically 
       inherit smos-web-style;

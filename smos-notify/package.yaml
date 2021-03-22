@@ -1,0 +1,31 @@
+name: smos-notify
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+copyright: ! 'Copyright: (c) 2021 Tom Sydney Kerckhove'
+license: MIT
+homepage: https://github.com/NorfairKing/smos
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+    - aeson
+    - envparse
+    - optparse-applicative
+    - path
+    - path-io
+    - smos-data
+    - smos-report
+    - yamlparse-applicative
+
+executables:
+  smos-notify:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - smos-notify
