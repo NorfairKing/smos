@@ -7,6 +7,7 @@ import Conduit
 import Control.Monad
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -45,7 +46,7 @@ smosNotify = do
 
 data Notification = Notification
   { notificationSummary :: Text,
-    notificationBody :: Text
+    notificationBody :: Maybe Text
   }
   deriving (Show, Eq)
 
@@ -61,8 +62,12 @@ parseNotification now _ e = do
   guard timestampIsSoon
   pure $
     Notification
-      { notificationSummary = T.pack $ "Event " <> prettyTimeAuto nowUTC beginUTC,
-        notificationBody = headerText (entryHeader e)
+      { notificationSummary =
+          T.unwords
+            [ T.pack $prettyTimeAuto nowUTC beginUTC,
+              headerText $ entryHeader e
+            ],
+        notificationBody = contentsText <$> entryContents e
       }
 
 isDone :: Maybe TodoState -> Bool
@@ -90,12 +95,12 @@ displayNotification e Notification {..} = do
   let logoFile = dd ++ "/assets/logo.png"
   callProcess
     (fromAbsFile e)
-    [ "--urgency=critical",
-      "--app-name=smos",
-      "--icon=" ++ logoFile,
-      T.unpack notificationSummary,
-      T.unpack notificationBody
-    ]
+    $ [ "--urgency=critical",
+        "--app-name=smos",
+        "--icon=" ++ logoFile,
+        T.unpack notificationSummary
+      ]
+      ++ maybeToList (T.unpack <$> notificationBody)
 
 playDing :: Path Abs File -> IO ()
 playDing e = do
