@@ -15,12 +15,15 @@ library:
   ghc-options: -Wall
   dependencies:
     - aeson
+    - conduit
     - envparse
     - optparse-applicative
     - path
     - path-io
+    - process
     - smos-data
     - smos-report
+    - text
     - yamlparse-applicative
 
 executables:
