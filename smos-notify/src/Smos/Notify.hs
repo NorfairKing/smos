@@ -26,7 +26,8 @@ import Text.Time.Pretty
 smosNotify :: IO ()
 smosNotify = do
   Settings {..} <- getSettings
-  executable <- findNotifySend
+  notifySendExecutable <- findNotifySend
+  mPlayExecutable <- findPlay
   now <- getZonedTime
   wd <- resolveDirWorkflowDir setDirectorySettings
   ns <-
@@ -37,7 +38,9 @@ smosNotify = do
         .| smosFileEntries
         .| C.concatMap (uncurry (parseNotification now))
         .| sinkList
-  mapM_ (displayNotification executable) ns
+  unless (null ns) $ do
+    mapM_ (displayNotification notifySendExecutable) ns
+    mapM_ playDing mPlayExecutable
 
 data Notification = Notification
   { notificationSummary :: Text,
@@ -75,6 +78,11 @@ findNotifySend = do
     Nothing -> die "could not find a notify-send executable."
     Just e -> pure e
 
+findPlay :: IO (Maybe (Path Abs File))
+findPlay = do
+  rp <- parseRelFile "play"
+  findExecutable rp
+
 displayNotification :: Path Abs File -> Notification -> IO ()
 displayNotification e Notification {..} = do
   callProcess
@@ -85,3 +93,6 @@ displayNotification e Notification {..} = do
       T.unpack notificationSummary,
       T.unpack notificationBody
     ]
+
+playDing :: Path Abs File -> IO ()
+playDing e = callProcess (fromAbsFile e) ["/home/syd/downloads/174027__robni7__news-ting.wav"]
