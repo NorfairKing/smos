@@ -56,7 +56,7 @@ parseNotification now _ e = do
   let nowUTC = zonedTimeToUTC now
   let beginUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime beginTS
   let d = diffUTCTime beginUTC nowUTC
-  let minutesAhead = 120
+  let minutesAhead = 10
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
   pure $
@@ -86,11 +86,13 @@ findPlay = do
 
 displayNotification :: Path Abs File -> Notification -> IO ()
 displayNotification e Notification {..} = do
+  dd <- getDataDir
+  let logoFile = dd ++ "/assets/logo.png"
   callProcess
     (fromAbsFile e)
     [ "--urgency=critical",
       "--app-name=smos",
-      "--icon=/home/syd/src/cs-syd.eu/site/logo/positive/logo.png",
+      "--icon=" ++ logoFile,
       T.unpack notificationSummary,
       T.unpack notificationBody
     ]
@@ -98,4 +100,5 @@ displayNotification e Notification {..} = do
 playDing :: Path Abs File -> IO ()
 playDing e = do
   dd <- getDataDir
-  callProcess (fromAbsFile e) ["--no-show-progress", dd ++ "/assets/ting.wav"]
+  let soundFile = dd ++ "/assets/ting.wav"
+  callProcess (fromAbsFile e) ["--no-show-progress", soundFile]

@@ -9,6 +9,7 @@ homepage: https://github.com/NorfairKing/smos
 
 data-files:
   - assets/ting.wav
+  - assets/logo.png
 
 dependencies:
 - base
