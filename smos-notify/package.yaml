@@ -16,14 +16,17 @@ library:
   dependencies:
     - aeson
     - conduit
+    - containers
     - envparse
     - optparse-applicative
     - path
     - path-io
+    - pretty-relative-time
     - process
     - smos-data
     - smos-report
     - text
+    - time
     - yamlparse-applicative
 
 executables:

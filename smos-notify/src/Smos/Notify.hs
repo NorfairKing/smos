@@ -4,10 +4,15 @@
 module Smos.Notify where
 
 import Conduit
+import Control.Monad
+import qualified Data.Conduit.Combinators as C
+import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import Path
 import Path.IO
+import Smos.Data
 import Smos.Notify.OptParse
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -16,23 +21,51 @@ import Smos.Report.Streaming
 import System.Exit
 import System.IO
 import System.Process
+import Text.Time.Pretty
 
 smosNotify :: IO ()
 smosNotify = do
-  -- sets@Settings {..} <- getSettings
-  -- print sets
-  -- wd <- resolveDirWorkflowDir setDirectorySettings
-  -- fs <- runConduit $ streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings .| parseSmosFilesRel wd .| printShouldPrint (PrintWarning stderr) .| smosFileEntries .| sinkList
-  -- mapM_ print fs
+  Settings {..} <- getSettings
   executable <- findNotifySend
-  let example = Notification {notificationSummary = "hello world", notificationBody = "foo bar\nquux"}
-  displayNotification executable example
+  now <- getZonedTime
+  wd <- resolveDirWorkflowDir setDirectorySettings
+  ns <-
+    runConduit $
+      streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
+        .| parseSmosFilesRel wd
+        .| printShouldPrint (PrintWarning stderr)
+        .| smosFileEntries
+        .| C.concatMap (uncurry (parseNotification now))
+        .| sinkList
+  mapM_ (displayNotification executable) ns
 
 data Notification = Notification
   { notificationSummary :: Text,
     notificationBody :: Text
   }
   deriving (Show, Eq)
+
+parseNotification :: ZonedTime -> Path Rel File -> Entry -> Maybe Notification
+parseNotification now _ e = do
+  guard (not (isDone (entryState e)))
+  beginTS <- M.lookup "BEGIN" (entryTimestamps e)
+  let nowUTC = zonedTimeToUTC now
+  let beginUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime beginTS
+  let d = diffUTCTime beginUTC nowUTC
+  let minutesAhead = 120
+      timestampIsSoon = d >= 0 && d <= minutesAhead * 60
+  guard timestampIsSoon
+  pure $
+    Notification
+      { notificationSummary = T.pack $ "Event " <> prettyTimeAuto nowUTC beginUTC,
+        notificationBody = headerText (entryHeader e)
+      }
+
+isDone :: Maybe TodoState -> Bool
+isDone (Just "DONE") = True
+isDone (Just "CANCELLED") = True
+isDone (Just "FAILED") = True
+isDone _ = False
 
 findNotifySend :: IO (Path Abs File)
 findNotifySend = do
