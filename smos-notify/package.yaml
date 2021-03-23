@@ -7,6 +7,9 @@ copyright: ! 'Copyright: (c) 2021 Tom Sydney Kerckhove'
 license: MIT
 homepage: https://github.com/NorfairKing/smos
 
+data-files:
+  - assets/ting.wav
+
 dependencies:
 - base
 

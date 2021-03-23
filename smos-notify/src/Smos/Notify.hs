@@ -12,6 +12,7 @@ import qualified Data.Text as T
 import Data.Time
 import Path
 import Path.IO
+import Paths_smos_notify
 import Smos.Data
 import Smos.Notify.OptParse
 import Smos.Report.Archive
@@ -95,4 +96,6 @@ displayNotification e Notification {..} = do
     ]
 
 playDing :: Path Abs File -> IO ()
-playDing e = callProcess (fromAbsFile e) ["/home/syd/downloads/174027__robni7__news-ting.wav"]
+playDing e = do
+  dd <- getDataDir
+  callProcess (fromAbsFile e) ["--no-show-progress", dd ++ "/assets/ting.wav"]
