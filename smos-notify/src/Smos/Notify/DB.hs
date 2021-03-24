@@ -27,14 +27,14 @@ import Path
 import Smos.Data
 
 share
-  [mkPersist sqlSettings, mkMigrate "migrateNotify"]
+  [mkPersist sqlSettings, mkMigrate "notifyMigration"]
   [persistLowerCase|
 
 SentNotification
     hash Int
     time UTCTime
 
-    UniqueSentNotification hash
+    UniqueSentNotification hash -- Hash of the notification event that the notification was sent for
 
     deriving Show
     deriving Eq

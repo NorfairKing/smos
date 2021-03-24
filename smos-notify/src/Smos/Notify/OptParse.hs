@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Notify.OptParse
@@ -10,6 +11,8 @@ where
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Path
+import Path.IO
 import Paths_smos_notify
 import Smos.Notify.OptParse.Types
 import qualified Smos.Report.Config as Report
@@ -28,13 +31,26 @@ getConfig = Report.getConfiguration
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mConf = do
+  let mc :: (NotifyConfiguration -> Maybe a) -> Maybe a
+      mc func = mConf >>= confNotifyConfiguration >>= func
   setDirectorySettings <-
     Report.combineToDirectoryConfig
       Report.defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mConf)
+  setDatabase <- case flagDatabase <|> envDatabase <|> mc notifyConfDatabase of
+    Nothing -> defaultDatabaseFile
+    Just fp -> resolveFile' fp
   pure Settings {..}
+
+smosRelDir :: Path Rel Dir
+smosRelDir = [reldir|smos|]
+
+defaultDatabaseFile :: IO (Path Abs File)
+defaultDatabaseFile = do
+  dataDir <- getXdgDir XdgData (Just smosRelDir)
+  resolveFile dataDir "notify.sqlite3"
 
 getFlags :: IO (Report.FlagsWithConfigFile Flags)
 getFlags = do
@@ -59,7 +75,17 @@ flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseDirectoryFlags
+  Flags
+    <$> Report.parseDirectoryFlags
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ metavar "FILEPATH",
+                long "database",
+                help "The path to store the notification database at"
+              ]
+          )
+      )
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -70,4 +96,8 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser =
   Report.envWithConfigFileParser $
-    Environment <$> Report.directoryEnvironmentParser
+    Environment
+      <$> Report.directoryEnvironmentParser
+      <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to store the notification database at")
+  where
+    mE = Env.def Nothing <> Env.keep

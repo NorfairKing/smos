@@ -7,6 +7,7 @@ module Smos.Notify where
 
 import Conduit
 import Control.Monad
+import Control.Monad.Logger
 import qualified Data.Conduit.Combinators as C
 import Data.Hashable
 import qualified Data.Map as M
@@ -14,11 +15,14 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Database.Persist
+import Database.Persist.Sqlite
 import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Paths_smos_notify
 import Smos.Data
+import Smos.Notify.DB
 import Smos.Notify.OptParse
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -27,7 +31,7 @@ import Smos.Report.Streaming
 import System.Exit
 import System.IO
 import System.Process
-import Text.Show.Pretty (pPrint)
+import Text.Show.Pretty (ppShow)
 import Text.Time.Pretty
 
 smosNotify :: IO ()
@@ -37,20 +41,42 @@ smosNotify = do
   mPlayExecutable <- findPlay
   now <- getZonedTime
   wd <- resolveDirWorkflowDir setDirectorySettings
-  notificationEvents <-
-    runConduit $
-      streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
-        .| parseSmosFilesRel wd
-        .| printShouldPrint (PrintWarning stderr)
-        .| smosFileEntries
-        .| C.concatMap (uncurry (parseNotificationEvent now))
-        .| sinkList
-  unless (null notificationEvents) $ do
-    forM_ notificationEvents $ \ne -> do
-      putStrLn "Sending notification:"
-      pPrint ne
-      displayNotification notifySendExecutable (renderNotification now ne)
-    mapM_ playDing mPlayExecutable
+  runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= LevelInfo) $ do
+      withSqlitePool (T.pack (fromAbsFile setDatabase)) 1 $ \pool ->
+        flip runSqlPool pool $ do
+          runMigration notifyMigration
+          notificationEvents <-
+            liftIO $ do
+              runConduit $
+                streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
+                  .| parseSmosFilesRel wd
+                  .| printShouldPrint (PrintWarning stderr)
+                  .| smosFileEntries
+                  .| C.concatMap (uncurry (parseNotificationEvent now))
+                  .| sinkList
+          notificationsToSend <- fmap catMaybes $
+            forM notificationEvents $ \ne -> do
+              let h = hash ne
+              mn <- getBy (UniqueSentNotification h)
+              case mn of
+                Just _ -> do
+                  logDebugN $ T.pack $ unwords ["Not sending notification for event with hash", show h, "because it has already had a notification sent."]
+                  pure Nothing -- Already sent, not sending another notification
+                Nothing -> pure $ Just ne
+          -- Don't play a sound if there are no notifications to send.
+          unless (null notificationsToSend) $ do
+            forM_ notificationsToSend $ \ne -> do
+              logInfoN $ T.pack $ unlines ["Sending notification:", ppShow ne]
+              displayNotification notifySendExecutable (renderNotification now ne)
+              let h = hash ne
+              logDebugN $ T.pack $ unwords ["Inserting notification with hash", show h]
+              insert_
+                SentNotification
+                  { sentNotificationHash = h,
+                    sentNotificationTime = zonedTimeToUTC now
+                  }
+            mapM_ playDing mPlayExecutable
 
 data NotificationEvent
   = NotifyBegin
@@ -121,21 +147,31 @@ findPlay = do
   rp <- parseRelFile "play"
   findExecutable rp
 
-displayNotification :: Path Abs File -> Notification -> IO ()
+displayNotification :: (MonadLogger m, MonadIO m) => Path Abs File -> Notification -> m ()
 displayNotification e Notification {..} = do
-  dd <- getDataDir
+  dd <- liftIO getDataDir
   let logoFile = dd ++ "/assets/logo.png"
-  callProcess
-    (fromAbsFile e)
-    $ [ "--urgency=critical",
-        "--app-name=smos",
-        "--icon=" ++ logoFile,
-        T.unpack notificationSummary
-      ]
-      ++ maybeToList (T.unpack <$> notificationBody)
+  logDebugN $ T.pack $ unwords ["Displaying", fromAbsFile e, T.unpack notificationSummary]
+  liftIO $
+    callProcess
+      (fromAbsFile e)
+      $ [ "--urgency=critical",
+          "--app-name=smos",
+          "--icon=" ++ logoFile,
+          T.unpack notificationSummary
+        ]
+        ++ maybeToList (T.unpack <$> notificationBody)
 
-playDing :: Path Abs File -> IO ()
+playDing :: (MonadLogger m, MonadIO m) => Path Abs File -> m ()
 playDing e = do
-  dd <- getDataDir
+  dd <- liftIO getDataDir
   let soundFile = dd ++ "/assets/ting.wav"
-  callProcess (fromAbsFile e) ["--no-show-progress", "--volume", "0.5", soundFile]
+  logDebugN $ T.pack $ unwords ["Playing", fromAbsFile e, soundFile]
+  liftIO $
+    callProcess
+      (fromAbsFile e)
+      [ "--no-show-progress",
+        "--volume",
+        "0.5",
+        soundFile
+      ]
