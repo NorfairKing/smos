@@ -59,6 +59,12 @@ let
         };
       };
     };
+    "notify_enabled" = {
+      programs.smos = {
+        enable = true;
+        notify.enable = true;
+      };
+    };
     "everything_enabled" = {
       programs.smos = {
         enable = true;
@@ -81,6 +87,9 @@ let
               source = "${../smos-calendar-import/test_resources/example.ics}";
             }
           ];
+        };
+        notify = {
+          enable = true;
         };
       };
     };
@@ -131,11 +140,17 @@ let
     # Test that the calendar can activate.
     machine.succeed(su("${username}", "smos-calendar-import"))'';
 
+  notifyTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
+
+    # Test that the notify can activate.
+    machine.succeed(su("${username}", "smos-notify"))'';
+
   userTestScript = username: userConfig: pkgs.lib.concatStrings [
     (commonTestScript username userConfig)
     (syncTestScript username userConfig)
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
+    (notifyTestScript username userConfig)
   ];
 
 in

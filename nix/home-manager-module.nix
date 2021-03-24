@@ -188,6 +188,19 @@ in
                   }
                 );
             };
+          notify =
+            mkOption {
+              default = null;
+              type =
+                types.nullOr (
+                  types.submodule {
+                    options =
+                      {
+                        enable = mkEnableOption "Smos notification activation";
+                      };
+                  }
+                );
+            };
         };
     };
   config =
@@ -361,6 +374,43 @@ in
             };
         };
 
+      notifySmosName = "notify-smos";
+      notifySmosService =
+        {
+          Unit =
+            {
+              Description = "smos-notify activation";
+            };
+          Service =
+            {
+              ExecStart =
+                "${pkgs.writeShellScript "notify-smos-service-ExecStart"
+                  ''
+                    set -e
+                    export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
+                    exec ${smosPkgs.smos-notify}/bin/smos-notify
+                  ''}";
+              Type = "oneshot";
+            };
+        };
+      notifySmosTimer =
+        {
+          Unit =
+            {
+              Description = "Activate smos notify every minute";
+            };
+          Install =
+            {
+              WantedBy = [ "timers.target" ];
+            };
+          Timer =
+            {
+              OnCalendar = "minutely";
+              Persistent = true;
+              Unit = "${notifySmosName}.service";
+            };
+        };
+
       smosConfig = mergeListRecursively [
         syncConfig
         calendarConfig
@@ -394,6 +444,9 @@ in
           // optionalAttrs (cfg.scheduler.enable or false) {
             "${schedulerSmosName}" = schedulerSmosService;
           }
+          // optionalAttrs (cfg.notify.enable or false) {
+            "${notifySmosName}" = notifySmosService;
+          }
         );
       timers =
         (
@@ -410,6 +463,9 @@ in
           // optionalAttrs (cfg.scheduler.enable or false) {
             "${schedulerSmosName}" = schedulerSmosTimer;
           }
+          // optionalAttrs (cfg.notify.enable or false) {
+            "${notifySmosName}" = notifySmosTimer;
+          }
         );
       packages =
         [
@@ -422,7 +478,7 @@ in
           smosPkgs.smos-single
           smosPkgs.smos-sync-client
           smosPkgs.smos-github
-        ];
+        ] ++ optionals (cfg.notify.enable or false) [ smosPkgs.smos-notify pkgs.libnotify ];
 
 
     in

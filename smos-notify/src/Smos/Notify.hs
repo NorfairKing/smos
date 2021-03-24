@@ -23,6 +23,7 @@ import Smos.Report.Streaming
 import System.Exit
 import System.IO
 import System.Process
+import Text.Show.Pretty (pPrint)
 import Text.Time.Pretty
 
 smosNotify :: IO ()
@@ -41,7 +42,10 @@ smosNotify = do
         .| C.concatMap (uncurry (parseNotification now))
         .| sinkList
   unless (null ns) $ do
-    mapM_ (displayNotification notifySendExecutable) ns
+    forM_ ns $ \n -> do
+      putStrLn "Sending notification:"
+      pPrint n
+      displayNotification notifySendExecutable n
     mapM_ playDing mPlayExecutable
 
 data Notification = Notification

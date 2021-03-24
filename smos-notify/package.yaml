@@ -26,6 +26,7 @@ library:
     - path
     - path-io
     - pretty-relative-time
+    - pretty-show
     - process
     - smos-data
     - smos-report
