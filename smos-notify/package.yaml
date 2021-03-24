@@ -22,9 +22,13 @@ library:
     - conduit
     - containers
     - envparse
+    - hashable
     - optparse-applicative
     - path
     - path-io
+    - persistent
+    - persistent-sqlite
+    - persistent-template
     - pretty-relative-time
     - pretty-show
     - process

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -6,11 +8,13 @@ module Smos.Notify where
 import Conduit
 import Control.Monad
 import qualified Data.Conduit.Combinators as C
+import Data.Hashable
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Paths_smos_notify
@@ -33,29 +37,61 @@ smosNotify = do
   mPlayExecutable <- findPlay
   now <- getZonedTime
   wd <- resolveDirWorkflowDir setDirectorySettings
-  ns <-
+  notificationEvents <-
     runConduit $
       streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
         .| parseSmosFilesRel wd
         .| printShouldPrint (PrintWarning stderr)
         .| smosFileEntries
-        .| C.concatMap (uncurry (parseNotification now))
+        .| C.concatMap (uncurry (parseNotificationEvent now))
         .| sinkList
-  unless (null ns) $ do
-    forM_ ns $ \n -> do
+  unless (null notificationEvents) $ do
+    forM_ notificationEvents $ \ne -> do
       putStrLn "Sending notification:"
-      pPrint n
-      displayNotification notifySendExecutable n
+      pPrint ne
+      displayNotification notifySendExecutable (renderNotification now ne)
     mapM_ playDing mPlayExecutable
 
+data NotificationEvent
+  = NotifyBegin
+      Header
+      (Maybe Contents)
+      Timestamp
+  deriving (Show, Eq, Generic)
+
+instance Hashable NotificationEvent where
+  hashWithSalt salt = \case
+    NotifyBegin h mc ts ->
+      hashWithSalt salt $
+        T.concat
+          [ headerText h,
+            maybe T.empty contentsText mc,
+            timestampText ts
+          ]
+
+renderNotification :: ZonedTime -> NotificationEvent -> Notification
+renderNotification now = \case
+  NotifyBegin h mc ts ->
+    let nowUTC = zonedTimeToUTC now
+        tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
+     in Notification
+          { notificationSummary =
+              T.unwords
+                [ T.pack $ prettyTimeAuto nowUTC tsUTC,
+                  headerText h
+                ],
+            notificationBody = contentsText <$> mc
+          }
+
+-- | What we send to notify-send
 data Notification = Notification
   { notificationSummary :: Text,
     notificationBody :: Maybe Text
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
-parseNotification :: ZonedTime -> Path Rel File -> Entry -> Maybe Notification
-parseNotification now _ e = do
+parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> Maybe NotificationEvent
+parseNotificationEvent now _ e = do
   guard (not (isDone (entryState e)))
   beginTS <- M.lookup "BEGIN" (entryTimestamps e)
   let nowUTC = zonedTimeToUTC now
@@ -64,15 +100,7 @@ parseNotification now _ e = do
   let minutesAhead = 10
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
-  pure $
-    Notification
-      { notificationSummary =
-          T.unwords
-            [ T.pack $prettyTimeAuto nowUTC beginUTC,
-              headerText $ entryHeader e
-            ],
-        notificationBody = contentsText <$> entryContents e
-      }
+  pure $ NotifyBegin (entryHeader e) (entryContents e) beginTS
 
 isDone :: Maybe TodoState -> Bool
 isDone (Just "DONE") = True
