@@ -44,6 +44,7 @@ smosNotify = do
       now <- liftIO getZonedTime
       wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
       logDebugN $ T.pack $ unwords ["Opening database at", fromAbsFile setDatabase]
+      ensureDir $ parent setDatabase
       withSqlitePool (T.pack (fromAbsFile setDatabase)) 1 $ \pool ->
         flip runSqlPool pool $ do
           runMigration notifyMigration
@@ -73,15 +74,22 @@ smosNotify = do
               displayNotification notifySendExecutable (renderNotification now ne)
               let h = hash ne
               logDebugN $ T.pack $ unwords ["Inserting notification with hash", show h]
-              insert_
+              let nowUTC = zonedTimeToUTC now
+              -- Upsert insteam of insert just in case a two events have the
+              -- same hash if we used insert here instead, the program would
+              -- crash and the rest of the notifications wouldn't be sent.
+              upsertBy
+                (UniqueSentNotification h)
                 SentNotification
                   { sentNotificationHash = h,
-                    sentNotificationTime = zonedTimeToUTC now
+                    sentNotificationTime = nowUTC
                   }
+                [SentNotificationTime =. nowUTC]
             mapM_ playDing mPlayExecutable
 
 data NotificationEvent
   = NotifyBegin
+      (Path Rel File)
       Header
       (Maybe Contents)
       Timestamp
@@ -89,17 +97,18 @@ data NotificationEvent
 
 instance Hashable NotificationEvent where
   hashWithSalt salt = \case
-    NotifyBegin h mc ts ->
+    NotifyBegin rf h mc ts ->
       hashWithSalt salt $
         T.concat
-          [ headerText h,
+          [ T.pack (fromRelFile rf),
+            headerText h,
             maybe T.empty contentsText mc,
             timestampText ts
           ]
 
 renderNotification :: ZonedTime -> NotificationEvent -> Notification
 renderNotification now = \case
-  NotifyBegin h mc ts ->
+  NotifyBegin _ h mc ts ->
     let nowUTC = zonedTimeToUTC now
         tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
      in Notification
@@ -119,7 +128,7 @@ data Notification = Notification
   deriving (Show, Eq, Generic)
 
 parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> Maybe NotificationEvent
-parseNotificationEvent now _ e = do
+parseNotificationEvent now rf e = do
   guard (not (isDone (entryState e)))
   beginTS <- M.lookup "BEGIN" (entryTimestamps e)
   let nowUTC = zonedTimeToUTC now
@@ -128,7 +137,7 @@ parseNotificationEvent now _ e = do
   let minutesAhead = 5
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
-  pure $ NotifyBegin (entryHeader e) (entryContents e) beginTS
+  pure $ NotifyBegin rf (entryHeader e) (entryContents e) beginTS
 
 isDone :: Maybe TodoState -> Bool
 isDone (Just "DONE") = True
