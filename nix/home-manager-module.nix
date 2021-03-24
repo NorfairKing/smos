@@ -478,7 +478,7 @@ in
           smosPkgs.smos-single
           smosPkgs.smos-sync-client
           smosPkgs.smos-github
-        ] ++ optionals (cfg.notify.enable or false) [ smosPkgs.smos-notify pkgs.libnotify ];
+        ] ++ optional (cfg.notify.enable or false) smosPkgs.smos-notify;
 
 
     in

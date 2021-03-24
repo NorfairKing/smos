@@ -110,4 +110,4 @@ playDing :: Path Abs File -> IO ()
 playDing e = do
   dd <- getDataDir
   let soundFile = dd ++ "/assets/ting.wav"
-  callProcess (fromAbsFile e) ["--no-show-progress", soundFile]
+  callProcess (fromAbsFile e) ["--no-show-progress", "--volume", "0.5", soundFile]
