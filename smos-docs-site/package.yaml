@@ -34,6 +34,7 @@ library:
   - smos-calendar-import
   - smos-data
   - smos-github
+  - smos-notify
   - smos-query
   - smos-report
   - smos-scheduler

@@ -138,6 +138,14 @@
             Running on NixOs
 
     <li>
+      <a href=@{SmosNotifyR}>
+        The Smos Notify Tool
+      <ul>
+        <li>
+          <a href=@{PageR ["smos-notify", "nixos"]}>
+            Running on NixOs
+
+    <li>
       <a href=@{SmosCalendarImportR}>
         The Smos Calendar Import Tool
       <ul>
