@@ -8,6 +8,8 @@ module Smos.Notify.OptParse
   )
 where
 
+import Control.Monad.Logger
+import Data.Maybe
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -42,6 +44,7 @@ deriveSettings Flags {..} Environment {..} mConf = do
   setDatabase <- case flagDatabase <|> envDatabase <|> mc notifyConfDatabase of
     Nothing -> defaultDatabaseFile
     Just fp -> resolveFile' fp
+  let setLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> mc notifyConfLogLevel
   pure Settings {..}
 
 smosRelDir :: Path Rel Dir
@@ -86,6 +89,19 @@ parseFlags =
               ]
           )
       )
+    <*> optional
+      ( option
+          (maybeReader parseLogLevel)
+          ( mconcat
+              [ long "log-level",
+                help $
+                  unwords
+                    [ "The log level to use, options:",
+                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                    ]
+              ]
+          )
+      )
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -99,5 +115,10 @@ environmentParser =
     Environment
       <$> Report.directoryEnvironmentParser
       <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to store the notification database at")
+      <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "log level")
   where
     mE = Env.def Nothing <> Env.keep
+
+    logLevelReader s = case parseLogLevel s of
+      Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
+      Just ll -> pure ll

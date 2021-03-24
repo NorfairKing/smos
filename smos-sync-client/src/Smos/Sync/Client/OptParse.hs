@@ -126,7 +126,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . logLevelReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+      <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "log level")
       <*> Env.var (fmap Just . Env.str) "SERVER_URL" (mE <> Env.help "The url of the server to sync with")
       <*> Env.var (fmap Just . Env.str) "CONTENTS_DIR" (mE <> Env.help "The path to the directory to sync")
       <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The path to the uuid file of the server")

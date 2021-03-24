@@ -23,8 +23,6 @@ import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
 import GHC.Generics (Generic)
-import Path
-import Smos.Data
 
 share
   [mkPersist sqlSettings, mkMigrate "notifyMigration"]

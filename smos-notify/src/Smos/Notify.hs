@@ -37,12 +37,13 @@ import Text.Time.Pretty
 smosNotify :: IO ()
 smosNotify = do
   Settings {..} <- getSettings
-  notifySendExecutable <- findNotifySend
-  mPlayExecutable <- findPlay
-  now <- getZonedTime
-  wd <- resolveDirWorkflowDir setDirectorySettings
   runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= LevelInfo) $ do
+    filterLogger (\_ ll -> ll >= setLogLevel) $ do
+      notifySendExecutable <- findNotifySend
+      mPlayExecutable <- findPlay
+      now <- liftIO getZonedTime
+      wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
+      logDebugN $ T.pack $ unwords ["Opening database at", fromAbsFile setDatabase]
       withSqlitePool (T.pack (fromAbsFile setDatabase)) 1 $ \pool ->
         flip runSqlPool pool $ do
           runMigration notifyMigration
@@ -65,6 +66,7 @@ smosNotify = do
                   pure Nothing -- Already sent, not sending another notification
                 Nothing -> pure $ Just ne
           -- Don't play a sound if there are no notifications to send.
+          logDebugN $ T.pack $ unwords ["Sending", show (length notificationsToSend), "notifications."]
           unless (null notificationsToSend) $ do
             forM_ notificationsToSend $ \ne -> do
               logInfoN $ T.pack $ unlines ["Sending notification:", ppShow ne]
@@ -103,7 +105,7 @@ renderNotification now = \case
      in Notification
           { notificationSummary =
               T.unwords
-                [ T.pack $ prettyTimeAuto nowUTC tsUTC,
+                [ T.pack $ prettyTimeAuto nowUTC tsUTC <> ":",
                   headerText h
                 ],
             notificationBody = contentsText <$> mc
@@ -123,7 +125,7 @@ parseNotificationEvent now _ e = do
   let nowUTC = zonedTimeToUTC now
   let beginUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime beginTS
   let d = diffUTCTime beginUTC nowUTC
-  let minutesAhead = 10
+  let minutesAhead = 5
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
   pure $ NotifyBegin (entryHeader e) (entryContents e) beginTS
@@ -134,18 +136,23 @@ isDone (Just "CANCELLED") = True
 isDone (Just "FAILED") = True
 isDone _ = False
 
-findNotifySend :: IO (Path Abs File)
+findNotifySend :: (MonadLogger m, MonadIO m) => m (Path Abs File)
 findNotifySend = do
-  rp <- parseRelFile "notify-send"
+  rp <- liftIO $ parseRelFile "notify-send"
   me <- findExecutable rp
   case me of
-    Nothing -> die "could not find a notify-send executable."
-    Just e -> pure e
+    Nothing -> liftIO $ die "could not find a notify-send executable."
+    Just e -> do
+      logDebugN $ T.pack $ unwords ["Found notify-send executable at:", fromAbsFile e]
+      pure e
 
-findPlay :: IO (Maybe (Path Abs File))
+findPlay :: (MonadLogger m, MonadIO m) => m (Maybe (Path Abs File))
 findPlay = do
-  rp <- parseRelFile "play"
-  findExecutable rp
+  rp <- liftIO $ parseRelFile "play"
+  me <- findExecutable rp
+  forM_ me $ \e ->
+    logDebugN $ T.pack $ unwords ["Found play executable at:", fromAbsFile e]
+  pure me
 
 displayNotification :: (MonadLogger m, MonadIO m) => Path Abs File -> Notification -> m ()
 displayNotification e Notification {..} = do
