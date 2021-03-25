@@ -131,11 +131,6 @@ jobs:
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
             smos-client
 
-      - name: Build smos-client-gen
-        run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
-            smos-client-gen
-
       - name: Build smos-server
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
