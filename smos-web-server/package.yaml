@@ -20,15 +20,11 @@ library:
   build-tools: autoexporter
   dependencies:
   - aeson
-  - aeson-pretty
-  - async
   - base16-bytestring
   - bytestring
   - conduit
   - containers
-  - cursor
   - data-default
-  - dirforest
   - envparse
   - filepath
   - http-client
@@ -40,23 +36,18 @@ library:
   - path-io
   - persistent-sqlite
   - pretty-show
-  - random
   - servant-auth-client
   - servant-client
   - shakespeare
   - smos
   - smos-client
-  - smos-data
-  - smos-report
   - smos-shell
   - smos-sync-client
   - smos-web-style
   - stm
   - template-haskell
   - text
-  - unix
   - unliftio
-  - wai
   - wai-extra
   - warp
   - yaml
@@ -95,17 +86,13 @@ tests:
     dependencies:
     - bytestring
     - containers
-    - genvalidity
-    - genvalidity-sydtest
     - http-client
     - http-types
     - monad-logger
     - path
     - path-io
     - servant-client
-    - smos-api-gen
     - smos-client
-    - smos-data
     - smos-data-gen
     - smos-server-gen
     - smos-sync-client

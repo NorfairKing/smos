@@ -13,7 +13,6 @@ library:
   dependencies:
     - base
     - envparse
-    - mtl
     - optparse-applicative
     - path
     - path-io

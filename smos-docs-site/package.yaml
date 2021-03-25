@@ -15,13 +15,10 @@ library:
   build-tools: autoexporter
   dependencies:
   - base >= 4.7
-  - bytestring
   - cmark-gfm
-  - conduit
   - containers
   - data-default
   - envparse
-  - file-embed
   - filepath
   - fsnotify
   - optparse-applicative
@@ -56,7 +53,6 @@ library:
   - yesod-sitemap
   - yesod-static
   - yesod-static-remote
-  - yesod-websockets
 
 executables:
   smos-docs-site:

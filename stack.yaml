@@ -22,7 +22,6 @@ packages:
 - smos-server
 - smos-server-gen
 - smos-client
-- smos-client-gen
 - smos-shell
 - smos-sync-client
 - smos-sync-client-gen

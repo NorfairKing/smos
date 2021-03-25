@@ -15,29 +15,24 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
-  - bytestring
   - conduit
   - containers
   - cursor
   - deepseq
   - deepseq
   - envparse
-  - filepath
   - megaparsec
   - microlens
   - optparse-applicative
   - parsec
   - path
   - path-io
-  - pretty-show
   - safe
   - smos-data
   - text
   - time
   - validity
-  - validity-containers
   - validity-path
-  - validity-text
   - validity-time
   - yaml
   - yamlparse-applicative

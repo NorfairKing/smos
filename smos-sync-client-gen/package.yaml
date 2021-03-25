@@ -22,29 +22,19 @@ library:
   - genvalidity
   - genvalidity-dirforest
   - genvalidity-sydtest
-  - http-client
   - mergeful
-  - mergeful
-  - microlens
   - monad-logger
   - path
   - path-io
-  - persistent
   - persistent-sqlite
   - resource-pool
   - servant-client
   - smos-api
   - smos-api-gen
-  - smos-client
   - smos-server-gen
   - smos-sync-client
-  - stm
   - sydtest
   - sydtest-persistent-sqlite
-  - typed-uuid
-  - uuid
-  - wai
-  - warp
 
 tests:
   smos-sync-client-test:
@@ -63,33 +53,22 @@ tests:
     - containers
     - genvalidity
     - genvalidity-bytestring
-    - genvalidity-sydtest
-    - genvalidity-sydtest-aeson
-    - genvalidity-sydtest-lens
     - genvalidity-path
-    - sydtest
+    - genvalidity-sydtest
     - mergeful
     - mergeful
     - monad-logger
-    - mtl
     - path
     - path-io
-    - persistent
     - persistent-sqlite
-    - pretty-show
     - resource-pool
-    - servant-auth-client
     - servant-client
     - smos-api
-    - smos-client
-    - smos-client-gen
-    - smos-report
-    - smos-server
     - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen
+    - sydtest
     - text
-    - uuid
 
 benchmarks:
   smos-sync-client-bench:
@@ -106,10 +85,6 @@ benchmarks:
     - genvalidity
     - genvalidity-criterion
     - smos-api
-    - smos-client
-    - smos-client-gen
-    - smos-report
-    - smos-server
     - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen

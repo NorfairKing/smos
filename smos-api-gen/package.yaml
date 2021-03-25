@@ -41,8 +41,6 @@ tests:
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - sydtest
-    - path
-    - path-io
     - smos-api
     - smos-api-gen
 

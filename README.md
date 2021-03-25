@@ -34,7 +34,6 @@ smos-calendar-import     : The calendar import tool: to import calendars in an o
 smos-api                 : The API for the smos server
 smos-api-gen             : Generators for the API for the smos server
 smos-client              : The smos client library
-smos-client-gen          : Generators for the smos client library
 smos-server              : The smos server
 smos-server-gen          : Generators for the smos server
 smos-sync-client         : The sync client tool

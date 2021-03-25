@@ -20,7 +20,6 @@ library:
   - bytestring
   - containers
   - deepseq
-  - hashable  
   - microlens
   - path
   - path-io
@@ -31,9 +30,7 @@ library:
   - validity
   - validity-aeson
   - validity-containers
-  - validity-path
   - validity-text
   - validity-time
-  - validity-unordered-containers
   - yaml
   - yamlparse-applicative

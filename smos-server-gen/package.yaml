@@ -14,21 +14,13 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
-  - QuickCheck
   - bytestring
   - containers
   - dirforest
-  - genvalidity
-  - genvalidity-bytestring
-  - genvalidity-containers
-  - genvalidity-path
   - http-client
   - http-types
   - mergeful
-  - microlens
-  - monad-logger
   - path
-  - path-io
   - persistent-sqlite
   - resource-pool
   - servant-auth-client
@@ -36,22 +28,16 @@ library:
   - servant-client
   - smos-api-gen
   - smos-client
-  - smos-client-gen
   - smos-data
   - smos-data-gen
   - smos-report-gen
   - smos-server
   - smos-sync-client
-  - stm
   - sydtest
   - sydtest-persistent-sqlite
   - sydtest-servant
   - sydtest-wai
-  - text
   - unliftio
-  - uuid
-  - wai
-  - warp
 
 tests:
   smos-server-test:
@@ -64,21 +50,15 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - containers
-    - genvalidity
     - genvalidity-sydtest
-    - genvalidity-sydtest-aeson
     - http-types
     - mergeful
     - path
-    - path-io
     - persistent-sqlite
-    - pretty-show
     - resource-pool
     - servant-client
     - smos-client
-    - smos-client-gen
     - smos-data-gen
     - smos-report
     - smos-server

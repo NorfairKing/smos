@@ -15,19 +15,16 @@ library:
   - base
   - bytestring
   - containers
-  - filepath
   - mtl
   - optparse-applicative
   - orgmode-parse
   - path
   - path-io
-  - pretty-show
   - smos-data
   - text
   - time
   - unordered-containers
   - validity
-  - validity-path
 
 executables:
   smos-convert-org:

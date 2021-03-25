@@ -255,7 +255,6 @@ in
       "smos-server" = smosPkgWithOwnComp "smos-server";
       "smos-server-gen" = smosPkg "smos-server-gen";
       "smos-client" = smosPkg "smos-client";
-      "smos-client-gen" = smosPkg "smos-client-gen";
       "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-shell" = smosPkg "smos-shell";

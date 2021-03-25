@@ -17,7 +17,6 @@ library:
   dependencies:
   - aeson
   - aeson-pretty
-  - base64-bytestring
   - bytestring
   - conduit
   - containers
@@ -25,7 +24,6 @@ library:
   - envparse
   - jose
   - mergeful
-  - mergeful-persistent
   - microlens
   - monad-logger
   - mtl
@@ -37,18 +35,15 @@ library:
   - persistent-template
   - pretty-show
   - servant
-  - servant-auth
   - servant-auth-server
   - servant-server
   - smos-api
   - smos-data
   - smos-report
-  - stm
   - template-haskell
   - text
   - time
   - typed-uuid
-  - uuid
   - wai
   - wai-extra
   - warp

@@ -47,7 +47,6 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - containers
     - genvalidity-sydtest
     - sydtest

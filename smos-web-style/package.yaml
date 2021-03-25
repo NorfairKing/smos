@@ -23,5 +23,4 @@ library:
   - process
   - template-haskell
   - yesod-static
-  - yesod-static-remote
 

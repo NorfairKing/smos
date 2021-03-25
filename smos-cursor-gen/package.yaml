@@ -16,15 +16,11 @@ library:
   - cursor
   - cursor-dirforest
   - cursor-dirforest-gen
-  - cursor-fuzzy-time
   - cursor-fuzzy-time-gen
   - cursor-gen
-  - fuzzy-time
-  - fuzzy-time-gen
   - genvalidity
   - genvalidity-path
   - genvalidity-text
-  - genvalidity-time
   - smos-cursor
   - smos-data
   - smos-data-gen
@@ -44,7 +40,6 @@ tests:
     - bytestring
     - cursor
     - cursor-dirforest
-    - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
     - cursor-gen
     - dirforest
@@ -54,7 +49,6 @@ tests:
     - sydtest
     - path
     - path-io
-    - pretty-show
     - resourcet
     - smos-cursor
     - smos-cursor-gen
@@ -73,7 +67,6 @@ benchmarks:
     dependencies:
     - criterion
     - cursor
-    - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
     - genvalidity-criterion
     - smos-cursor

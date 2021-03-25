@@ -12,20 +12,15 @@ library:
   ghc-options: -Wall
   dependencies:
   - base
-  - bytestring
   - conduit
   - containers
   - cursor
   - deepseq
-  - filepath
   - microlens
   - path
-  - path-io
-  - pretty-show
   - smos-cursor
   - smos-data
   - smos-report
-  - text
   - time
   - validity
   - validity-path

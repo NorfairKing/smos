@@ -21,7 +21,6 @@ library:
   - bytestring
   - conduit
   - containers
-  - contravariant
   - cursor
   - cursor-brick
   - cursor-dirforest
@@ -42,7 +41,6 @@ library:
   - path-io
   - pretty-relative-time
   - pretty-show
-  - process
   - resourcet
   - safe
   - smos-archive
@@ -54,7 +52,6 @@ library:
   - time
   - unix
   - unliftio
-  - unordered-containers
   - validity
   - validity-containers
   - validity-text
@@ -91,7 +88,6 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
-    - aeson-pretty
     - async
     - base
     - brick
@@ -99,8 +95,6 @@ tests:
     - containers
     - cursor
     - cursor-dirforest
-    - cursor-dirforest-gen
-    - cursor-gen
     - dirforest
     - filelock
     - genvalidity
@@ -125,7 +119,6 @@ tests:
     - smos-data-gen
     - smos-report
     - smos-report-cursor
-    - smos-report-cursor-gen
     - smos-report-gen
     - text
     - time

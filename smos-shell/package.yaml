@@ -34,17 +34,3 @@ executables:
     - -Wall
     dependencies:
     - smos-shell
-
-tests:
-  smos-shell-test:
-    main:                Spec.hs
-    source-dirs:         test
-    build-tools: sydtest-discover
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Wall
-    dependencies:
-    - sydtest
-    - smos-shell

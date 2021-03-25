@@ -29,7 +29,6 @@ library:
     - optparse-applicative
     - path
     - path-io
-    - pretty-show
     - smos-data
     - smos-report
     - text

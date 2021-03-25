@@ -24,7 +24,6 @@ library:
     - envparse
     - hashable
     - monad-logger
-    - mtl
     - optparse-applicative
     - path
     - path-io

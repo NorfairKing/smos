@@ -22,7 +22,6 @@ library:
   - genvalidity-path
   - microlens
   - path
-  - pretty-show
   - smos-data
   - smos-data-gen
   - smos-report
@@ -82,5 +81,4 @@ benchmarks:
     - smos-report-cursor
     - smos-report-cursor-gen
     - smos-report-gen
-    - text
     - time

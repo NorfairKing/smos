@@ -13,6 +13,7 @@ import Data.Aeson.Types (Pair)
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
+import Data.Time.Compat ()
 import Data.Validity
 import Data.Validity.Containers ()
 import Data.Validity.Time ()

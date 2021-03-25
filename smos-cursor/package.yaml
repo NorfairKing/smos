@@ -30,6 +30,4 @@ library:
   - text
   - time
   - validity
-  - validity-path
-  - validity-text
   - validity-time
