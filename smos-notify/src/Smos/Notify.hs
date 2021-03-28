@@ -88,33 +88,38 @@ smosNotify = do
             mapM_ playDing mPlayExecutable
 
 data NotificationEvent
-  = NotifyBegin
-      (Path Rel File)
-      Header
-      (Maybe Contents)
-      Timestamp
+  = NotifyTimestamp
+      !(Path Rel File)
+      !Header
+      !(Maybe Contents)
+      !TimestampName
+      !Timestamp
   deriving (Show, Eq, Generic)
 
 instance Hashable NotificationEvent where
   hashWithSalt salt = \case
-    NotifyBegin rf h mc ts ->
+    NotifyTimestamp rf h mc tsn ts ->
       hashWithSalt salt $
         T.concat
           [ T.pack (fromRelFile rf),
             headerText h,
             maybe T.empty contentsText mc,
+            timestampNameText tsn,
             timestampText ts
           ]
 
 renderNotification :: ZonedTime -> NotificationEvent -> Notification
 renderNotification now = \case
-  NotifyBegin _ h mc ts ->
+  NotifyTimestamp _ h mc tsn ts ->
     let nowUTC = zonedTimeToUTC now
         tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
      in Notification
           { notificationSummary =
-              T.unwords
-                [ T.pack $ prettyTimeAuto nowUTC tsUTC <> ":",
+              T.unlines
+                [ T.unwords
+                    [ timestampNameText tsn,
+                      T.pack (prettyTimeAuto nowUTC tsUTC) <> ":"
+                    ],
                   headerText h
                 ],
             notificationBody = contentsText <$> mc
@@ -127,17 +132,18 @@ data Notification = Notification
   }
   deriving (Show, Eq, Generic)
 
-parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> Maybe NotificationEvent
+parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> [NotificationEvent]
 parseNotificationEvent now rf e = do
   guard (not (isDone (entryState e)))
-  beginTS <- M.lookup "BEGIN" (entryTimestamps e)
+  (tsn, ts) <- M.toList (entryTimestamps e)
+  guard $ tsn `elem` ["SCHEDULED", "BEGIN", "DEADLINE"]
   let nowUTC = zonedTimeToUTC now
-  let beginUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime beginTS
-  let d = diffUTCTime beginUTC nowUTC
+  let tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
+  let d = diffUTCTime tsUTC nowUTC
   let minutesAhead = 5
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
-  pure $ NotifyBegin rf (entryHeader e) (entryContents e) beginTS
+  pure $ NotifyTimestamp rf (entryHeader e) (entryContents e) tsn ts
 
 isDone :: Maybe TodoState -> Bool
 isDone (Just "DONE") = True
