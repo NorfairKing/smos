@@ -134,7 +134,7 @@ data Notification = Notification
 
 parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> [NotificationEvent]
 parseNotificationEvent now rf e = do
-  guard (not (isDone (entryState e)))
+  guard (not (entryIsDone e))
   (tsn, ts) <- M.toList (entryTimestamps e)
   guard $ tsn `elem` ["SCHEDULED", "BEGIN", "DEADLINE"]
   let nowUTC = zonedTimeToUTC now
@@ -144,12 +144,6 @@ parseNotificationEvent now rf e = do
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
   pure $ NotifyTimestamp rf (entryHeader e) (entryContents e) tsn ts
-
-isDone :: Maybe TodoState -> Bool
-isDone (Just "DONE") = True
-isDone (Just "CANCELLED") = True
-isDone (Just "FAILED") = True
-isDone _ = False
 
 findNotifySend :: (MonadLogger m, MonadIO m) => m (Path Abs File)
 findNotifySend = do

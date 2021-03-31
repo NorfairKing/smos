@@ -188,12 +188,6 @@ instance FromJSON AgendaEntry
 
 instance ToJSON AgendaEntry
 
-isDone :: Maybe TodoState -> Bool
-isDone (Just "CANCELLED") = True
-isDone (Just "DONE") = True
-isDone (Just "FAILED") = True
-isDone _ = False
-
 makeAgendaEntry :: Path Rel File -> ForestCursor Entry Entry -> [AgendaEntry]
 makeAgendaEntry rf fc = agendaQuadrupleToAgendaEntry <$> makeAgendaQuadruples rf fc
 
@@ -212,7 +206,7 @@ makeAgendaQuadruples :: Path Rel File -> ForestCursor Entry Entry -> [(Path Rel 
 makeAgendaQuadruples rf fc =
   let e = forestCursorCurrent fc
    in flip mapMaybe (M.toList $ entryTimestamps e) $ \(tsn, ts) ->
-        if isDone (entryState e)
+        if mTodoStateIsDone (entryState e)
           then Nothing
           else Just (rf, fc, tsn, ts)
 

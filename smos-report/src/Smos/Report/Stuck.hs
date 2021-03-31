@@ -73,15 +73,9 @@ latestTimestampInEntry tz e@Entry {..} =
         [ [ latestStateChange entryStateHistory,
             latestClockChange entryLogbook
           ],
-          [ latestTimestamp tz entryTimestamps | not (isDone (entryState e))
+          [ latestTimestamp tz entryTimestamps | not (entryIsDone e)
           ]
         ]
-
-isDone :: Maybe TodoState -> Bool
-isDone (Just "CANCELLED") = True
-isDone (Just "DONE") = True
-isDone (Just "FAILED") = True
-isDone _ = False
 
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =

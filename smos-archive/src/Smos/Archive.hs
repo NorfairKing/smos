@@ -15,7 +15,6 @@ module Smos.Archive
     moveToArchive,
     ArchiveMoveResult (..),
     dealWithArchiveMoveResult,
-    isDone,
     prepareToArchive,
   )
 where
@@ -102,7 +101,7 @@ checkFromFile from = do
     Nothing -> CheckFileToArchiveDoesNotExist
     Just (Left err) -> CheckNotASmosFile err
     Just (Right sf) ->
-      let allDone = all (maybe True isDone . entryState) (concatMap flatten (smosFileForest sf))
+      let allDone = all (maybe True todoStateIsDone . entryState) (concatMap flatten (smosFileForest sf))
        in if allDone
             then ReadyToArchive sf
             else NotAllDone sf
@@ -123,12 +122,6 @@ dealWithArchiveCheckResult from = \case
     case res of
       Yes -> pure sf
       No -> die "Not archiving."
-
-isDone :: TodoState -> Bool
-isDone "DONE" = True
-isDone "CANCELLED" = True
-isDone "FAILED" = True
-isDone _ = False
 
 data ArchiveMoveResult
   = MoveDestinationAlreadyExists (Path Abs File)
@@ -161,9 +154,6 @@ setAllUndoneToCancelled now sf = makeSmosFile $ map (fmap go) (smosFileForest sf
   where
     go :: Entry -> Entry
     go e =
-      case entryState e of
-        Nothing -> e
-        Just ts ->
-          if isDone ts
-            then e
-            else fromMaybe e $ entrySetState now (Just "CANCELLED") e
+      if entryIsDone e
+        then e
+        else fromMaybe e $ entrySetState now (Just "CANCELLED") e

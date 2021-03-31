@@ -152,8 +152,8 @@ smosFileCursorReadyForStartup = collapseDone . unclockStarted . goToEnd
     collapseDone =
       smosFileCursorForestCursorL
         %~ mapForestCursor
-          (mapCollapseDone (isDone . entryState . rebuildEntryCursor))
-          (mapCollapseDone (isDone . entryState))
+          (mapCollapseDone (entryIsDone . rebuildEntryCursor))
+          (mapCollapseDone entryIsDone)
       where
         mapCollapseDone :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
         mapCollapseDone func ce =
@@ -164,11 +164,6 @@ smosFileCursorReadyForStartup = collapseDone . unclockStarted . goToEnd
                   collapseEntryShowProperties = False
                 }
             else ce
-        isDone :: Maybe TodoState -> Bool
-        isDone (Just "DONE") = True
-        isDone (Just "CANCELLED") = True
-        isDone (Just "FAILED") = True
-        isDone _ = False
 
 smosFileCursorToggleCollapseEntireEntry :: SmosFileCursor -> SmosFileCursor
 smosFileCursorToggleCollapseEntireEntry =

@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -24,6 +25,9 @@ module Smos.Data
     entryClockOut,
     logbookClockIn,
     logbookClockOut,
+    todoStateIsDone,
+    mTodoStateIsDone,
+    entryIsDone,
     stateHistoryState,
     stateHistorySetState,
     entryState,
@@ -154,6 +158,20 @@ entryClockIn now e = maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockIn now
 
 entryClockOut :: UTCTime -> Entry -> Entry
 entryClockOut now e = maybe e (\lb -> e {entryLogbook = lb}) $ logbookClockOut now (entryLogbook e)
+
+todoStateIsDone :: TodoState -> Bool
+todoStateIsDone = \case
+  "CANCELLED" -> True
+  "DONE" -> True
+  "FAILED" -> True
+  _ -> False
+
+-- | 'False' if 'Nothing'.
+mTodoStateIsDone :: Maybe TodoState -> Bool
+mTodoStateIsDone = maybe False todoStateIsDone
+
+entryIsDone :: Entry -> Bool
+entryIsDone = mTodoStateIsDone . entryState
 
 logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
 logbookClockIn now lb =

@@ -47,18 +47,13 @@ getCurrentEntry = goF . smosFileForest
       case entryState e of
         Nothing -> Nothing
         Just ts ->
-          if isDone ts
+          if todoStateIsDone ts
             then Nothing
             else
               goF f
                 <|> if isCurrent ts
                   then Just e
                   else Nothing
-    isDone :: TodoState -> Bool
-    isDone "DONE" = True
-    isDone "CANCELLED" = True
-    isDone "FAILED" = True
-    isDone _ = False
     isCurrent :: TodoState -> Bool
     isCurrent "TODO" = False
     isCurrent _ = True

@@ -1,0 +1,18 @@
+version: 1.0.0
+value:
+- entry:
+    header: Apply at CS Syd
+    state-history:
+    - state: TODO
+      time: 2021-03-31 12:52:37.602200104000
+  forest:
+  - header: Send an application email to jobs@cs-syd.eu
+    state-history:
+    - state: DONE
+      time: 2021-03-31 12:52:45.072517359000
+    - state: NEXT
+      time: 2021-03-31 12:52:43.570064758000
+  - header: for a response from jobs@cs-syd.eu
+    state-history:
+    - state: WAITING
+      time: 2021-03-31 12:52:45.072517359000
