@@ -6,4 +6,5 @@
     autoplaySpeed: 6500,
     slidesToScroll: 1,
     slidesToShow: 1,
+    pagination: false,
   });

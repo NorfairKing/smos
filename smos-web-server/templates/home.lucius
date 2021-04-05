@@ -1,7 +1,17 @@
+.item .box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.columns .button {
+  margin-top: auto;
+}
+
 .carousel {
   overflow: hidden;
 }
+
 *:focus {
   outline: none;
 }
-

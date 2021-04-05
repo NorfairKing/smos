@@ -7,9 +7,9 @@
       <div .column .has-text-centered>
         <img src=@{StaticR tom_sydney_kerckhove_logo_smos_svg} alt="Smos Logo" style="height: 100px">
 
+      <p .title .is-size-2 .has-text-weight-semibold .has-text-centered>
+        Smos
 
-
-    <section .section>
       <p .title .is-size-3 .has-text-weight-semibold .has-text-centered>
         The tool that manages your stress and workload
 
@@ -38,7 +38,7 @@
             Start learning
 
           <p .content .is-size-5 .has-text-centered>
-            We suggest learning Smos during our self-management coaching sessions for minimal stress.
+            We suggest getting Smos together with our self-management coaching sessions.
 
           <div .buttons .is-centered>
             <a .button .is-size-5 .is-info href=https://cs-syd.eu/self-management>
