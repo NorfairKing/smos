@@ -17,6 +17,7 @@ import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
 import Data.List (find)
+import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import GHC.Generics
@@ -32,12 +33,25 @@ import Smos.Report.Next
 import System.Exit
 import Web.Cookie
 
+clientGetApiVersion :: ClientM Version
 clientPostRegister :: Register -> ClientM NoContent
 clientPostLogin ::
   Login ->
   ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
-clientPostRegister
+clientGetApiVersion
+  :<|> clientPostRegister
   :<|> clientPostLogin = client (flatten smosUnprotectedAPI)
+
+clientVersionCheck :: Version -> Version -> ClientM (Version, VersionCheck)
+clientVersionCheck oldestSupported newestSupported = do
+  serverVersion <- clientGetApiVersion
+  pure
+    ( serverVersion,
+      versionCheck -- A version check of whether the server version is supported from the client's perspective
+        oldestSupported
+        newestSupported
+        serverVersion
+    )
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)

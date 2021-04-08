@@ -26,6 +26,7 @@ import Data.DirForest (DirForest (..))
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Persistent ()
 import Data.Proxy
+import Data.SemVer as Version
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.UUID as UUID
@@ -50,6 +51,9 @@ import Smos.Data hiding (Header)
 import Smos.Report.Agenda
 import Smos.Report.Next
 
+apiVersion :: Version
+apiVersion = version 0 0 0 [] []
+
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
 
@@ -67,7 +71,8 @@ smosUnprotectedAPI = Proxy
 type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
 data UnprotectedRoutes route = UnprotectedRoutes
-  { postRegister :: !(route :- PostRegister),
+  { getApiVersion :: !(route :- GetApiVersion),
+    postRegister :: !(route :- PostRegister),
     postLogin :: !(route :- PostLogin)
   }
   deriving (Generic)
@@ -100,6 +105,8 @@ data ProtectedRoutes route = ProtectedRoutes
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
   deriving (Generic)
+
+type GetApiVersion = "api-version" :> Get '[JSON] Version
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 

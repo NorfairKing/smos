@@ -23,6 +23,7 @@ library:
     - genvalidity-typed-uuid
     - genvalidity-uuid
     - smos-api
+    - smos-data-gen
     - text
 
 tests:

@@ -18,11 +18,12 @@ library:
   - cookie
   - dirforest
   - path
+  - semver
   - servant-auth-client
+  - servant-auth-server
   - servant-client
   - servant-flatten
+  - smos-api
   - smos-data
   - smos-report
-  - smos-api
   - text
-  - servant-auth-server

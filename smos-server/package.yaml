@@ -34,6 +34,7 @@ library:
   - persistent-sqlite
   - persistent-template
   - pretty-show
+  - semver
   - servant
   - servant-auth-server
   - servant-server

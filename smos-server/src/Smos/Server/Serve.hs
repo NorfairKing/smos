@@ -100,7 +100,11 @@ smosServerRecord =
 
 syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT ServerHandler)
 syncServerUnprotectedRoutes =
-  UnprotectedRoutes {postRegister = servePostRegister, postLogin = servePostLogin}
+  UnprotectedRoutes
+    { getApiVersion = serveGetApiVersion,
+      postRegister = servePostRegister,
+      postLogin = servePostLogin
+    }
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =

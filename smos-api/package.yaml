@@ -29,6 +29,7 @@ library:
   - path
   - path-pieces
   - persistent
+  - semver
   - servant
   - servant-auth
   - servant-auth-server

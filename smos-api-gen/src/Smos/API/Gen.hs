@@ -11,6 +11,7 @@ import Data.GenValidity.UUID ()
 import Data.GenValidity.UUID.Typed ()
 import qualified Data.Text as T
 import Smos.API
+import Smos.Data.Gen ()
 import Test.QuickCheck
 
 instance GenValid SHA256 where

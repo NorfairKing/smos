@@ -8,9 +8,21 @@ import Data.GenValidity.Containers ()
 import Data.GenValidity.Text
 import Data.GenValidity.Time ()
 import Data.List
+import Data.SemVer as Version
 import Data.Time
+import Data.Word
 import Smos.Data
 import Test.QuickCheck
+
+instance GenValid a => GenValid (Versioned a) where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
+instance GenValid Version where
+  shrinkValid _ = [] -- No shrinking for now
+  genValid =
+    let genComponent = fromIntegral <$> (genValid :: Gen Word32) -- This doesn't generate version numbers >2^32 but that's fine.
+     in version <$> genComponent <*> genComponent <*> genComponent <*> pure [] <*> pure [] -- No identifiers for now
 
 instance GenValid SmosFile where
   genValid = SmosFile <$> genValid

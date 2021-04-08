@@ -24,6 +24,7 @@ library:
   - genvalidity-containers
   - genvalidity-text
   - genvalidity-time
+  - semver
   - smos-data
   - text
   - time
