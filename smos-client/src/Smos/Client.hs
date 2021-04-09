@@ -42,14 +42,20 @@ clientGetApiVersion
   :<|> clientPostRegister
   :<|> clientPostLogin = client (flatten smosUnprotectedAPI)
 
-clientVersionCheck :: Version -> Version -> ClientM (Version, VersionCheck)
-clientVersionCheck oldestSupported newestSupported = do
+oldestSupportedAPIVersion :: Version
+oldestSupportedAPIVersion = version 0 0 0 [] []
+
+newestSupportedAPIVersion :: Version
+newestSupportedAPIVersion = version 1 0 0 [] []
+
+clientVersionCheck :: ClientM (Version, VersionCheck)
+clientVersionCheck = do
   serverVersion <- clientGetApiVersion
   pure
     ( serverVersion,
       versionCheck -- A version check of whether the server version is supported from the client's perspective
-        oldestSupported
-        newestSupported
+        oldestSupportedAPIVersion
+        newestSupportedAPIVersion
         serverVersion
     )
 

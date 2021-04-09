@@ -71,7 +71,7 @@ smosUnprotectedAPI = Proxy
 type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
 data UnprotectedRoutes route = UnprotectedRoutes
-  { getApiVersion :: !(route :- GetApiVersion),
+  { getApiVersion :: !(route :- GetAPIVersion),
     postRegister :: !(route :- PostRegister),
     postLogin :: !(route :- PostLogin)
   }
@@ -106,7 +106,7 @@ data ProtectedRoutes route = ProtectedRoutes
   }
   deriving (Generic)
 
-type GetApiVersion = "api-version" :> Get '[JSON] Version
+type GetAPIVersion = "api-version" :> Get '[JSON] Version
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
