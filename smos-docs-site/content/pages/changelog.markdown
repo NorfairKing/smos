@@ -5,6 +5,15 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased
 
+## Added
+
+- `smos-github`:
+  [For integrating with github](/smos-github)
+- `smos-server`:
+  The `/api-version` endpoint for querying the API version
+- `smos-client`:
+  Client functions to call the `/api-version` endpoint for checking compatibility of the client with the server's API version
+
 ## Changed
 
 - `smos-data`:
@@ -26,6 +35,11 @@ description: The changelog for all of the Smos tools and libraries
   1. properties
   1. history
   1. logbook
+- `smos-web-server`:
+  The web server now calls the API server during startup.
+  This way the web server checks for both liveness of the API server and version compatibility.
+- `smos-sync-client`:
+  The sync client now checks compatibility with the server's API version.
 
 # <a name="2021-03-13">[2021-03-13](#2021-03-13)
 

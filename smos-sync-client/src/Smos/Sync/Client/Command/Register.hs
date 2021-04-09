@@ -12,5 +12,5 @@ registerSmosSyncClient Settings {..} RegisterSettings =
     un <- promptUsername setUsername
     pw <- promptPassword setPassword
     let reg = Register {registerUsername = un, registerPassword = unsafeShowPassword pw}
-    NoContent <- runClientOrDie cenv $ clientPostRegister reg
+    NoContent <- runClientOrDie cenv $ clientWithVersionCheck $ clientPostRegister reg
     pure ()

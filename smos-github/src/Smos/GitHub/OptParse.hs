@@ -59,7 +59,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . Env.str) "GITHUB_OAUTH_TOKEN" (mE <> Env.help "Github oauth token")
+      <*> Env.var (fmap Just . Env.str) "GITHUB_OAUTH_TOKEN" (mE <> Env.help "Github Oauth Token")
   where
     mE = Env.def Nothing <> Env.keep
 

@@ -9,12 +9,15 @@ import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Path.IO
+import Servant.Client
+import Smos.Client
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
 import Smos.Web.Server.Static
 import Smos.Web.Style
+import System.Exit
 import Text.Show.Pretty
 import Yesod
 
@@ -43,12 +46,25 @@ runSmosWebServer ServeSettings {..} = do
             appGoogleAnalyticsTracking = serveSetGoogleAnalyticsTracking,
             appGoogleSearchConsoleVerification = serveSetGoogleSearchConsoleVerification
           }
-  let defMiddles = defaultMiddlewaresNoLogging
-  let extraMiddles =
-        if development
-          then Wai.logStdoutDev
-          else Wai.logStdout
-  let middle = extraMiddles . defMiddles
-  plainApp <- liftIO $ toWaiAppPlain app
-  let application = middle plainApp
-  Warp.run serveSetPort application
+  withServerVersionCheck app $ do
+    let defMiddles = defaultMiddlewaresNoLogging
+    let extraMiddles =
+          if development
+            then Wai.logStdoutDev
+            else Wai.logStdout
+    let middle = extraMiddles . defMiddles
+    plainApp <- liftIO $ toWaiAppPlain app
+    let application = middle plainApp
+    Warp.run serveSetPort application
+
+-- | Check whether the smos-server version is supported.
+--
+-- This also checks whether the smos-server is online.
+withServerVersionCheck :: App -> IO a -> IO a
+withServerVersionCheck app func = do
+  let cenv = ClientEnv (appHttpManager app) (appAPIBaseUrl app) Nothing
+  errOrUnit <- runClientM clientDoVersionCheck cenv
+  case errOrUnit of
+    Left err -> die $ unlines ["Unable to contact the smos-server, cannot run the web server:", show err]
+    Right (Left err) -> die err
+    Right (Right ()) -> func
