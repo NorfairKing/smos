@@ -5,6 +5,33 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased Changes
 
+# <a name="2021-04-09">[2021-04-09 Release](#2021-04-09)
+
+- <a name="smos-0.1.5">[smos 0.1.5](#smos-0.1.5)
+- <a name="smos-api-0.2.0">[smos-api 0.2.0](#smos-api-0.2.0)
+- <a name="smos-api-gen-0.1.1">[smos-api-gen 0.1.1](#smos-api-gen-0.1.1)
+- <a name="smos-archive-0.2.1">[smos-archive 0.2.1](#smos-archive-0.2.1)
+- <a name="smos-client-0.2.0">[smos-client 0.2.0](#smos-client-0.2.0)
+- <a name="smos-convert-org-0.1.1">[smos-convert-org 0.1.1](#smos-convert-org-0.1.1)
+- <a name="smos-data-0.2.1">[smos-data 0.2.1](#smos-data-0.2.1)
+- <a name="smos-data-gen-0.1.2">[smos-data-gen 0.1.2](#smos-data-gen-0.1.2)
+- <a name="smos-github-0.0.0">[smos-github 0.0.0](#smos-github-0.0.0)
+- <a name="smos-notify-0.0.0">[smos-notify 0.0.0](#smos-notify-0.0.0)
+- <a name="smos-query-0.2.3">[smos-query 0.2.3](#smos-query-0.2.3)
+- <a name="smos-report-0.3.0">[smos-report 0.3.0](#smos-report-0.3.0)
+- <a name="smos-report-gen-0.1.2">[smos-report-gen 0.1.2](#smos-report-gen-0.1.2)
+- <a name="smos-report-cursor-0.1.2">[smos-report-cursor 0.1.2](#smos-report-cursor-0.1.2)
+- <a name="smos-report-cursor-gen-0.1.2">[smos-report-cursor-gen 0.1.2](#smos-report-cursor-gen-0.1.2)
+- <a name="smos-scheduler-0.1.2">[smos-scheduler 0.1.2](#smos-scheduler-0.1.2)
+- <a name="smos-server-0.1.1">[smos-server 0.1.1](#smos-server-0.1.1)
+- <a name="smos-server-gen-0.1.1">[smos-server-gen 0.1.1](#smos-server-gen-0.1.1)
+- <a name="smos-shell-0.0.2">[smos-shell 0.0.2](#smos-shell-0.0.2)
+- <a name="smos-single-0.1.1">[smos-single 0.1.1](#smos-single-0.1.1)
+- <a name="smos-sync-client-0.1.2">[smos-sync-client 0.1.2](#smos-sync-client-0.1.2)
+- <a name="smos-sync-client-gen-0.1.1">[smos-sync-client-gen 0.1.1](#smos-sync-client-gen-0.1.1)
+- <a name="smos-web-server-0.2.0">[smos-web-server 0.2.0](#smos-web-server-0.2.0)
+- <a name="smos-web-style-0.0.1">[smos-web-style 0.0.1](#smos-web-style-0.0.1)
+
 ## Added
 
 - `smos-github`:
@@ -42,6 +69,10 @@ description: The changelog for all of the Smos tools and libraries
   This way the web server checks for both liveness of the API server and version compatibility.
 - `smos-sync-client`:
   The sync client now checks compatibility with the server's API version.
+
+## Deleted
+
+- `smos-client-gen`: This package was empty
 
 # <a name="2021-03-13">[2021-03-13 Release](#2021-03-13)
 
