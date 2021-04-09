@@ -14,8 +14,10 @@ import Data.Version
 import qualified Env
 import Import
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Paths_smos
 import Smos.Actions
+import Smos.Data
 import Smos.Keys
 import Smos.OptParse.Bare
 import Smos.OptParse.Types
@@ -317,8 +319,16 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos TUI Editor version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos TUI Editor version: " <> showVersion version,
+            ""
+          ]
+            ++ readWriteDataVersionsHelpMessage
 
 parseArgs :: Parser Arguments
 parseArgs =

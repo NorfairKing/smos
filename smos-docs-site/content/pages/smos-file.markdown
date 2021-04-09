@@ -47,6 +47,8 @@ version: 1.0.0
 value: [...]
 ```
 
+(Version `0.0.0` did not have this top-level object and instead only had the contents of `value`.)
+
 ### Forests of trees
 
 A forest is a list of trees.

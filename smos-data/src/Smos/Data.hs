@@ -10,6 +10,9 @@ module Smos.Data
     dataVersionCheck,
     VersionCheck (..),
     versionsErrorHelp,
+    readWriteDataVersionsHelpMessage,
+    writeDataVersionsHelpMessage,
+    readDataVersionsHelpMessage,
     readSmosFile,
     writeSmosFile,
     parseSmosFile,
@@ -140,6 +143,25 @@ versionsErrorHelp oldestSupported current newestSupported =
     unwords ["Newest supported: ", Version.toString newestSupported],
     "",
     unwords ["Checked:          ", Version.toString current]
+  ]
+
+readWriteDataVersionsHelpMessage :: [String]
+readWriteDataVersionsHelpMessage =
+  concat
+    [ writeDataVersionsHelpMessage,
+      [""],
+      readDataVersionsHelpMessage
+    ]
+
+writeDataVersionsHelpMessage :: [String]
+writeDataVersionsHelpMessage =
+  [ unwords ["Current Smos data format version:", Version.toString currentDataVersion]
+  ]
+
+readDataVersionsHelpMessage :: [String]
+readDataVersionsHelpMessage =
+  [ unwords ["Oldest parseable Smos data format version:", Version.toString oldestParsableDataVersion],
+    unwords ["Newest parseable Smos data format version:", Version.toString newestParsableDataVersion]
   ]
 
 parseSmosData :: FromJSON a => ByteString -> Either String a

@@ -7,10 +7,14 @@ module Smos.Archive.OptParse
   )
 where
 
+import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path.IO
+import Paths_smos_archive
 import Smos.Archive.OptParse.Types
+import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
@@ -55,8 +59,16 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "smos-archive"
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Archive Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ readWriteDataVersionsHelpMessage
 
 parseFlags :: Parser Flags
 parseFlags =

@@ -14,11 +14,13 @@ import qualified Data.Text as T
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_sync_client
 import Servant.Client as Servant
 import Smos.API
+import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Sync.Client.OptParse.Types
@@ -173,8 +175,16 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Sync Client version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Sync Client version: " <> showVersion version,
+            ""
+          ]
+            ++ readWriteDataVersionsHelpMessage
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags

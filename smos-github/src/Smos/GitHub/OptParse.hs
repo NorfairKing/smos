@@ -10,7 +10,9 @@ where
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_github
+import Smos.Data
 import Smos.GitHub.OptParse.Types
 import Smos.Query.Config (smosQueryConfigColourConfig)
 import Smos.Query.Default (defaultSmosQueryConfig)
@@ -79,8 +81,16 @@ runArgumentsParser = execParserPure prefs_ argumentsParser
 argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Scheduler Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos GitHub Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ readWriteDataVersionsHelpMessage
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

@@ -13,9 +13,11 @@ import Data.Maybe
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_notify
+import Smos.Data
 import Smos.Notify.OptParse.Types
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -73,8 +75,16 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Notification Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Notification Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ readDataVersionsHelpMessage
 
 parseFlags :: Parser Flags
 parseFlags =

@@ -9,9 +9,12 @@ where
 
 import Control.Monad
 import qualified Data.Text as T
+import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path
+import Paths_smos_single
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -62,8 +65,16 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "smos-single"
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Single-task Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ writeDataVersionsHelpMessage
 
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =

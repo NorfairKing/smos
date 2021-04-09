@@ -13,10 +13,12 @@ import Data.Version
 import qualified Env
 import Network.URI
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_calendar_import
 import Smos.Calendar.Import.OptParse.Types
+import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
@@ -74,8 +76,16 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Calendar Import Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Calendar Import Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ writeDataVersionsHelpMessage
 
 parseFlags :: Parser Flags
 parseFlags =

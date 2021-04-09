@@ -21,7 +21,9 @@ import Data.Time hiding (parseTime)
 import Data.Version
 import qualified Env
 import Options.Applicative as OptParse
+import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_query
+import Smos.Data
 import Smos.Query.Config
 import Smos.Query.OptParse.Types
 import Smos.Report.Filter
@@ -244,8 +246,16 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Query Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Query Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ readDataVersionsHelpMessage
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags

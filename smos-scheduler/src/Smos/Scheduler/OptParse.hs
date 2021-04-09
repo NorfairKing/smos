@@ -12,9 +12,11 @@ import Data.Maybe
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_scheduler
+import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
@@ -89,8 +91,16 @@ runArgumentsParser = execParserPure prefs_ argumentsParser
 argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Scheduler Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Scheduler Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ writeDataVersionsHelpMessage
 
 parseArguments :: Parser Arguments
 parseArguments = Arguments <$> parseCommand <*> parseFlags

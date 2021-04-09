@@ -8,9 +8,11 @@ where
 
 import Data.Version
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_convert_org
 import Smos.Convert.Org.OptParse.Types
+import Smos.Data
 import System.Environment
 
 getSettings :: IO Settings
@@ -46,8 +48,16 @@ runArgumentsParser = execParserPure prefs_ flagsParser
 flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Org-mode Conversion Tool version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          [ "",
+            "Smos Org-mode Conversion Tool version: " <> showVersion version,
+            ""
+          ]
+            ++ writeDataVersionsHelpMessage
 
 parseFlags :: Parser Flags
 parseFlags =
