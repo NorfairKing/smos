@@ -92,8 +92,8 @@ clientWithVersionCheck func = do
 
 clientVersionsHelpMessage :: [String]
 clientVersionsHelpMessage =
-  [ unwords ["Oldest supported Smos server API version:", Version.toString oldestParsableDataVersion],
-    unwords ["Newest supported Smos server API version:", Version.toString newestParsableDataVersion]
+  [ unwords ["Oldest supported Smos server API version:", Version.toString oldestSupportedAPIVersion],
+    unwords ["Newest supported Smos server API version:", Version.toString newestSupportedAPIVersion]
   ]
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse

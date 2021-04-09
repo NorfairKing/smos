@@ -25,10 +25,12 @@ library:
   - path
   - path-io
   - raw-strings-qq
+  - semver
   - shakespeare
   - smos
   - smos-archive
   - smos-calendar-import
+  - smos-client
   - smos-data
   - smos-github
   - smos-notify

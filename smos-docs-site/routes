@@ -27,6 +27,8 @@
 
 /smos-github SmosGitHubR GET
 
+/changelog ChangelogR GET
+
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 

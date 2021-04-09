@@ -41,7 +41,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-sync-client`:
   The sync client now checks compatibility with the server's API version.
 
-# <a name="2021-03-13">[2021-03-13](#2021-03-13)
+# <a name="2021-03-13">[2021-03-13 Release](#2021-03-13)
 
 - <a name="smos-0.1.4">[smos 0.1.4](#smos-0.1.4)
 - <a name="smos-cursor-0.2.1">[smos-cursor 0.2.1](#smos-cursor-0.2.1)
@@ -107,7 +107,8 @@ description: The changelog for all of the Smos tools and libraries
 
 
 
-# <a name="2021-02-01">[2021-02-01](#2021-02-01)
+# <a name="2021-02-01">[2021-02-01 Release](#2021-02-01)
+
 - <a name="smos-0.1.3">[smos 0.1.3](#smos-0.1.3)
 - <a name="smos-query-0.1.2">[smos-query 0.1.2](#smos-query-0.1.2)
 - <a name="smos-archive-0.2.0">[smos-archive 0.2.0](#smos-archive-0.2.0)
@@ -132,7 +133,7 @@ description: The changelog for all of the Smos tools and libraries
 
 
 
-# <a name="2020-12-16">[2020-12-16](#2020-12-16)
+# <a name="2020-12-16">[2020-12-16 Release](#2020-12-16)
 
 - <a name="smos-0.1.2">[smos 0.1.2](#smos0-1.2)
 - <a name="smos-calendar-import-0.2.0">[smos-calendar-import 0.2.0](#smos-calendar-import0-2.0)
@@ -185,7 +186,7 @@ description: The changelog for all of the Smos tools and libraries
   The 'smart' mode for the work command has been removed. It is now the default.
 
 
-# <a name="2020-11-04">[2020-11-04](#2020-11-04)
+# <a name="2020-11-04">[2020-11-04 Release](#2020-11-04)
 
 - <a name="smos-0.1.1">[smos 0.1.1](#smos0-1.1)
 - <a name="smos-query-0.1.1">[smos-query 0.1.1](#smos-query0-1.1)
@@ -217,7 +218,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-asciinema`: This package has been entirely removed and split out to [a separate project](https://github.com/NorfairKing/autorecorder)
 
 
-# <a name="2020-09-25">[Version 0.1.0 - 2020-09-25](#2020-09-25)
+# <a name="2020-09-25">[2020-09-25 Release](#2020-09-25)
 
 - <a name="smos-0.1.0">[smos 0.1.0](#smos-0.1.0)
 - <a name="smos-query-0.1.0">[smos-query 0.1.0](#smos-query-0.1.0)
