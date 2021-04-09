@@ -17,6 +17,8 @@ library:
   - bytestring
   - cookie
   - dirforest
+  - http-types
+  - microlens
   - path
   - semver
   - servant-auth-client

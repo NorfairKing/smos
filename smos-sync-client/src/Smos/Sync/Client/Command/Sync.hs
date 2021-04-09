@@ -63,7 +63,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
       filterLogger (\_ ll -> ll >= setLogLevel) $
         DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
           \pool ->
-            withClientEnv setServerUrl $ \cenv ->
+            withClientEnv setServerUrl $ \cenv -> withClientVersionCheck cenv $
               withLogin cenv setSessionPath setUsername setPassword $ \token ->
                 doActualSync syncSetUUIDFile pool syncSetContentsDir syncSetIgnoreFiles syncSetBackupDir cenv token
 

@@ -57,8 +57,7 @@ withLogin cenv sessionPath mun mpw func = do
       errOrErrOrSession <-
         liftIO $
           runClientOrDie cenv $
-            clientWithVersionCheck $
-              clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
+            clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
       case errOrErrOrSession of
         Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
         Right cookie -> do

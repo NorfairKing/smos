@@ -21,6 +21,8 @@ import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import GHC.Generics
+import Lens.Micro
+import qualified Network.HTTP.Types as HTTP
 import Path
 import Servant.API.Flatten
 import Servant.Auth.Client
@@ -89,6 +91,24 @@ clientWithVersionCheck func = do
   case errOrUnit of
     Left err -> liftIO $ die err
     Right () -> func
+
+withClientVersionCheck :: MonadIO m => ClientEnv -> m a -> m a
+withClientVersionCheck cenv func = do
+  errOrUnit <- liftIO $ runClientM clientDoVersionCheck cenv
+  case errOrUnit of
+    Left err ->
+      let errOut = liftIO $ die $ unlines ["Unable to contact the smos-server to perform an api version check:", show err]
+       in case err of
+            FailureResponse _ resp ->
+              if responseStatusCode resp == HTTP.notFound404 -- API version 0.0.0, before we had the version check endpoint
+                then
+                  if oldestSupportedAPIVersion ^. Version.major == 0
+                    then func
+                    else errOut
+                else errOut
+            _ -> errOut
+    Right (Left err) -> liftIO $ die err
+    Right (Right ()) -> func
 
 clientVersionsHelpMessage :: [String]
 clientVersionsHelpMessage =

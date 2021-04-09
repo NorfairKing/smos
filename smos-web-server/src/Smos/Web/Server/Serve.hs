@@ -17,7 +17,6 @@ import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
 import Smos.Web.Server.Static
 import Smos.Web.Style
-import System.Exit
 import Text.Show.Pretty
 import Yesod
 
@@ -63,8 +62,4 @@ runSmosWebServer ServeSettings {..} = do
 withServerVersionCheck :: App -> IO a -> IO a
 withServerVersionCheck app func = do
   let cenv = ClientEnv (appHttpManager app) (appAPIBaseUrl app) Nothing
-  errOrUnit <- runClientM clientDoVersionCheck cenv
-  case errOrUnit of
-    Left err -> die $ unlines ["Unable to contact the smos-server, cannot run the web server:", show err]
-    Right (Left err) -> die err
-    Right (Right ()) -> func
+  withClientVersionCheck cenv func
