@@ -59,6 +59,32 @@ clientVersionCheck = do
         serverVersion
     )
 
+clientWithVersionCheck :: ClientM a -> ClientM a
+clientWithVersionCheck func = do
+  (serverVersion, check) <- clientVersionCheck
+  case check of
+    OlderThanSupported ->
+      liftIO $
+        die $
+          unlines $
+            [ "The server API version is older than this client supports.",
+              "Interacting with this version is no longer supported in this version of your client.",
+              "Downgrade your client or upgrade your server to interact with it.",
+              ""
+            ]
+              ++ versionsErrorHelp oldestSupportedAPIVersion serverVersion newestSupportedAPIVersion
+    NewerThanSupported ->
+      liftIO $
+        die $
+          unlines $
+            [ "The server API version is newer than this client supports.",
+              "Interacting with this version is not supported in this version of your client yet.",
+              "Upgrade your client or downgrade your server to interact with it.",
+              ""
+            ]
+              ++ versionsErrorHelp oldestSupportedAPIVersion serverVersion newestSupportedAPIVersion
+    Supported -> func
+
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
