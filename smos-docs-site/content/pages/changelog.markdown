@@ -13,6 +13,8 @@ description: The changelog for all of the Smos tools and libraries
   The `/api-version` endpoint for querying the API version
 - `smos-client`:
   Client functions to call the `/api-version` endpoint for checking compatibility of the client with the server's API version
+- `smos-notify`:
+  [For integrating with desktop notifications](/smos-notify)
 
 ## Changed
 
