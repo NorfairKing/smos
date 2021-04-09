@@ -1,0 +1,52 @@
+{
+    "server-changed": {
+        "example9.smos": {
+            "time": 0,
+            "value": {
+                "contents": "Y29udGVudHM5"
+            }
+        }
+    },
+    "conflict-server-deleted": [
+        "example13.smos"
+    ],
+    "client-added": {
+        "example5.smos": {
+            "time": 0,
+            "id": "example5.smos"
+        }
+    },
+    "conflict-client-deleted": {
+        "example12.smos": {
+            "time": 0,
+            "value": {
+                "contents": "Y29udGVudHMxMg=="
+            }
+        }
+    },
+    "server-deleted": [
+        "example10.smos"
+    ],
+    "server-added": {
+        "example8.smos": {
+            "time": 0,
+            "value": {
+                "contents": "Y29udGVudHM4"
+            }
+        }
+    },
+    "client-changed": {
+        "example6.smos": 0
+    },
+    "conflict": {
+        "example11.smos": {
+            "time": 0,
+            "value": {
+                "contents": "Y29udGVudHMxMQ=="
+            }
+        }
+    },
+    "client-deleted": [
+        "example7.smos"
+    ]
+}

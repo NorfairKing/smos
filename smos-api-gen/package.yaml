@@ -38,12 +38,18 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - aeson
+    - aeson-pretty
+    - bytestring
+    - containers
     - genvalidity
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
-    - sydtest
+    - mergeful
+    - path
     - smos-api
     - smos-api-gen
+    - sydtest
 
 benchmarks:
   smos-api-bench:

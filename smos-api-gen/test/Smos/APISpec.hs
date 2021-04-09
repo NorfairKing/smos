@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Sync.APISpec
+module Smos.APISpec
   ( spec,
   )
 where
