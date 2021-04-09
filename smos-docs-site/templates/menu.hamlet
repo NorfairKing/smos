@@ -172,6 +172,10 @@
         The Smos GitHub Tool
 
     <li>
+      <a href=@{PageR ["smos-api"]}>
+        The Smos API
+
+    <li>
       <a href=@{SmosServerR}>
         The Smos Server
       <ul>
@@ -189,7 +193,7 @@
 
   <p .menu-label>
     Support
-  
+
   <ul .menu-list>
     <li>
       <a href=@{PageR ["support"]}>
