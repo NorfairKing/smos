@@ -13,9 +13,11 @@ import qualified Data.Text as T
 import Data.Version
 import qualified Env
 import Options.Applicative
+import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_web_server
 import Servant.Client
+import Smos.Client
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -92,8 +94,18 @@ runArgumentsParser = execParserPure prefs_ argParser
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
   where
-    help_ = fullDesc <> progDesc description
-    description = "Smos Web Server version " <> showVersion version
+    help_ = fullDesc <> progDescDoc (Just description)
+    description :: Doc
+    description =
+      Doc.vsep $
+        map Doc.text $
+          concat
+            [ [ "",
+                "Smos Web Server version: " <> showVersion version,
+                ""
+              ],
+              clientVersionsHelpMessage
+            ]
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> parseFlags

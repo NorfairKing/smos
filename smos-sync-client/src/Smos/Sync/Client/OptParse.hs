@@ -20,6 +20,7 @@ import Path.IO
 import Paths_smos_sync_client
 import Servant.Client as Servant
 import Smos.API
+import Smos.Client
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -180,11 +181,14 @@ argParser = info (helper <*> parseArgs) help_
     description =
       Doc.vsep $
         map Doc.text $
-          [ "",
-            "Smos Sync Client version: " <> showVersion version,
-            ""
-          ]
-            ++ readWriteDataVersionsHelpMessage
+          concat
+            [ [ "",
+                "Smos Sync Client version: " <> showVersion version,
+                ""
+              ],
+              readWriteDataVersionsHelpMessage,
+              clientVersionsHelpMessage
+            ]
 
 parseArgs :: Parser Arguments
 parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags

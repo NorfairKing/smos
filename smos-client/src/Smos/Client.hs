@@ -85,6 +85,12 @@ clientWithVersionCheck func = do
               ++ versionsErrorHelp oldestSupportedAPIVersion serverVersion newestSupportedAPIVersion
     Supported -> func
 
+clientVersionsHelpMessage :: [String]
+clientVersionsHelpMessage =
+  [ unwords ["Oldest supported Smos server API version:", Version.toString oldestParsableDataVersion],
+    unwords ["Newest supported Smos server API version:", Version.toString newestParsableDataVersion]
+  ]
+
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
