@@ -12,36 +12,40 @@ import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Mergeful as Mergeful
 import qualified Data.Set as S
 import Path
 import Smos.API
 import Smos.API.Gen ()
+import Smos.Data
+import Smos.Report.Agenda
+import Smos.Report.Next
 import Test.Syd
 import Test.Syd.Validity
 
 spec :: Spec
 spec = do
-  describe "GetAPIVersion" $ do
-    outputGoldenTest "test_resources/api-version" apiVersion
-  describe "PostRegister" $ do
+  describe "GetAPIVersion" $
+    outputGoldenTest "api-version" apiVersion
+  describe "PostRegister" $
     describe "can still parse old Register inputs" $
-      inputGoldenTest "test_resources/register" $
+      inputGoldenTest "register" $
         Register
           { registerUsername = Username "user",
             registerPassword = "password"
           }
-  describe "PostLogin" $ do
+  describe "PostLogin" $
     describe "can still parse old Login inputs" $
-      inputGoldenTest "test_resources/login" $
+      inputGoldenTest "login" $
         Login
           { loginUsername = Username "user",
             loginPassword = "password"
           }
   describe "PostSync" $
     describe "can still parse old Login inputs" $ do
-      inputGoldenTest "test_resources/sync" $
+      inputGoldenTest "sync" $
         Smos.API.SyncRequest
           { syncRequestItems =
               Mergeful.SyncRequest
@@ -65,7 +69,7 @@ spec = do
                       ]
                 }
           }
-      outputGoldenTest "test_resources/sync" $
+      outputGoldenTest "sync" $
         Mergeful.SyncResponse
           { syncResponseClientAdded =
               M.fromList
@@ -108,21 +112,42 @@ spec = do
                 ],
             syncResponseConflictsServerDeleted = S.singleton [relfile|example13.smos|]
           }
-  describe "GetListSmosFiles" $ pure ()
-  describe "GetSmosFile" $ pure ()
-  describe "PutSmosFile" $ pure ()
-  describe "GetNextActionReport" $ pure ()
-  describe "GetAgendaReport" $ pure ()
+  let smosFileExample = SmosFile [Node (newEntry "hello") []]
+  describe "GetListSmosFiles" $ outputGoldenTest "files" $ DF.singletonFile [relfile|example14.smos|] smosFileExample
+  describe "GetSmosFile" $ outputGoldenTest "file-get" smosFileExample
+  describe "PutSmosFile" $ inputGoldenTest "file-put" smosFileExample
+  describe "GetNextActionReport" $
+    outputGoldenTest "report/next" $
+      NextActionReport
+        { nextActionReportEntries =
+            [ NextActionEntry
+                { nextActionEntryTodoState = Nothing,
+                  nextActionEntryHeader = "hello",
+                  nextActionEntryFilePath = [relfile|example14.smos|]
+                }
+            ]
+        }
+  describe "GetAgendaReport" $
+    outputGoldenTest "report/agenda" $
+      AgendaReport
+        { agendaReportPast = [],
+          agendaReportPresent =
+            AgendaTodayReport
+              { agendaTodayReportEntries =
+                  []
+              },
+          agendaReportFuture = []
+        }
 
 -- TODO Replace this by a golden test for JSON.Value
 outputGoldenTest :: ToJSON a => FilePath -> a -> Spec
-outputGoldenTest fp val = it "outputs the version the same way as before" $ pureGoldenByteStringFile (fp ++ "/output.json") (LB.toStrict (JSON.encodePretty val))
+outputGoldenTest fp val = it "outputs the version the same way as before" $ pureGoldenByteStringFile ("test_resources/" ++ fp ++ "/output.json") (LB.toStrict (JSON.encodePretty val))
 
 inputGoldenTest :: forall a. (Validity a, Show a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
 inputGoldenTest fp current = do
   it "output" $
-    pureGoldenByteStringFile (fp ++ "/input.json") (LB.toStrict (JSON.encodePretty current))
-  scenarioDir (fp ++ "/old-input") $ \p ->
+    pureGoldenByteStringFile ("test_resources/" ++ fp ++ "/input.json") (LB.toStrict (JSON.encodePretty current))
+  scenarioDir ("test_resources/" ++ fp ++ "/old-input") $ \p ->
     it "can still parse the old input" $ do
       bs <- SB.readFile p
       case JSON.eitherDecode (LB.fromStrict bs) of

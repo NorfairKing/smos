@@ -76,9 +76,9 @@ instance ToJSON NextActionReport where
   toJSON = toJSON . nextActionReportEntries
 
 data NextActionEntry = NextActionEntry
-  { nextActionEntryTodoState :: Maybe TodoState,
-    nextActionEntryHeader :: Header,
-    nextActionEntryFilePath :: Path Rel File -- The path within the workflow directory
+  { nextActionEntryTodoState :: !(Maybe TodoState),
+    nextActionEntryHeader :: !Header,
+    nextActionEntryFilePath :: !(Path Rel File) -- The path within the workflow directory
   }
   deriving (Show, Eq, Generic)
 

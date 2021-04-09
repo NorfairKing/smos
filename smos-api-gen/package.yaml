@@ -42,6 +42,7 @@ tests:
     - aeson-pretty
     - bytestring
     - containers
+    - dirforest
     - genvalidity
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
@@ -49,6 +50,8 @@ tests:
     - path
     - smos-api
     - smos-api-gen
+    - smos-data
+    - smos-report
     - sydtest
 
 benchmarks:
