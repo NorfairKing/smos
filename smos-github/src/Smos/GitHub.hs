@@ -91,7 +91,7 @@ renderGitHubListReport cc GitHubListReport {..} =
 
 headerRow :: [Chunk]
 headerRow =
-  map underline ["file", "header", "owner", "repo", "number", "state", "update"]
+  map underline ["file", "state", "header", "owner", "repo", "number", "state", "update"]
 
 data ListReportRow = ListReportRow
   { listReportRowPath :: !(Path Rel File),
@@ -135,7 +135,10 @@ fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) 
   let listReportRowBall = do
         elu <- entryLastUpdate listReportRowEntry
         rlu <- mRemoteLastUpdate
-        pure $ if rlu >= elu then BallInOurCourt else BallInTheirCourt
+        let dependingOnTime = if rlu >= elu then BallInOurCourt else BallInTheirCourt
+        pure $ case entryState listReportRowEntry of
+          Just "WAITING" -> dependingOnTime
+          _ -> BallInOurCourt
   pure ListReportRow {..}
 
 entryLastUpdate :: Entry -> Maybe UTCTime
@@ -145,6 +148,7 @@ renderListReportRow :: ListReportRow -> [Chunk]
 renderListReportRow ListReportRow {..} =
   concat
     [ [ pathChunk listReportRowPath,
+        mTodoStateChunk $ entryState listReportRowEntry,
         headerChunk $ entryHeader listReportRowEntry
       ],
       githubUrlChunks listReportRowGitHubUrl,
@@ -173,7 +177,6 @@ stateChunk =
     GitHub.StateClosed -> "closed"
 
 ballChunk :: Ball -> Chunk
-ballChunk =
-  chunk . T.pack . \case
-    BallInOurCourt -> "update available"
-    BallInTheirCourt -> "waiting"
+ballChunk = \case
+  BallInOurCourt -> fore yellow "ready"
+  BallInTheirCourt -> fore blue "waiting"

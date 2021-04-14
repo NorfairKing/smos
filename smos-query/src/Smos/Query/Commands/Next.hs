@@ -26,6 +26,6 @@ renderNextActionReport cc = formatAsBicolourTable cc . map formatNextActionEntry
 formatNextActionEntry :: NextActionEntry -> [Chunk]
 formatNextActionEntry NextActionEntry {..} =
   [ pathChunk nextActionEntryFilePath,
-    maybe (chunk "") todoStateChunk nextActionEntryTodoState,
+    mTodoStateChunk nextActionEntryTodoState,
     headerChunk nextActionEntryHeader
   ]

@@ -64,7 +64,7 @@ formatAgendaEntry now AgendaEntry {..} =
                       (zonedTimeToUTC now)
                       (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
         timestampNameChunk agendaEntryTimestampName,
-        maybe (chunk "") todoStateChunk agendaEntryTodoState,
+        mTodoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,
         func $ pathChunk agendaEntryFilePath
       ]
@@ -117,7 +117,7 @@ projecteeChunk p =
   case p of
     FileProjection rp -> pathChunk rp
     HeaderProjection h -> headerChunk h
-    StateProjection s -> maybe (chunk "") todoStateChunk s
+    StateProjection s -> mTodoStateChunk s
     TagProjection mt -> maybe (chunk "") tagChunk mt
     PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
     TimestampProjection tn tv -> maybe (chunk "") (timestampChunk tn) tv
