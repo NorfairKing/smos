@@ -299,7 +299,7 @@ in
               old.overrides or (
                 _:
                 _:
-                final.smosPackages
+                { }
               )
             )
             (
