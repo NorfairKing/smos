@@ -13,7 +13,9 @@ import Control.Concurrent.Async
 import Control.Monad
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
+import Data.List
 import qualified Data.Map as M
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -79,7 +81,7 @@ newtype GitHubListReport = GitHubListReport {githubListReportRows :: [ListReport
   deriving (Show, Eq, Generic)
 
 completeListReport :: Maybe GitHub.Auth -> [(Path Rel File, Entry, GitHubUrl)] -> IO GitHubListReport
-completeListReport mAuth = fmap GitHubListReport . mapConcurrently (fillInRow mAuth)
+completeListReport mAuth = fmap (GitHubListReport . sortOn listReportRowBall) . mapConcurrently (fillInRow mAuth)
 
 renderGitHubListReport :: ColourConfig -> GitHubListReport -> [Chunk]
 renderGitHubListReport cc GitHubListReport {..} =
@@ -88,16 +90,21 @@ renderGitHubListReport cc GitHubListReport {..} =
 
 headerRow :: [Chunk]
 headerRow =
-  map underline ["file", "header", "owner", "repo", "issue", "state"]
+  map underline ["file", "header", "owner", "repo", "number", "state", "update"]
 
 data ListReportRow = ListReportRow
   { listReportRowPath :: !(Path Rel File),
     listReportRowEntry :: !Entry,
     listReportRowGitHubUrl :: !GitHubUrl,
     listReportRowState :: !(Maybe GitHub.IssueState),
-    listReportRowMerged :: !(Maybe UTCTime)
+    listReportRowMerged :: !(Maybe UTCTime),
+    listReportRowBall :: !(Maybe Ball)
   }
   deriving (Show, Eq, Generic)
+
+-- Note: The order of the constructors matters for the ordering of the list
+data Ball = BallInOurCourt | BallInTheirCourt
+  deriving (Show, Eq, Ord, Generic)
 
 fillInRow :: Maybe GitHub.Auth -> (Path Rel File, Entry, GitHubUrl) -> IO ListReportRow
 fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) = do
@@ -109,14 +116,29 @@ fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) 
           pure $ case errOrRes of
             Left _ -> Nothing -- TODO this is debatable, we probably want to die instead.
             Right r -> Just r
-  (listReportRowState, listReportRowMerged) <- case listReportRowGitHubUrl of
+  (listReportRowState, listReportRowMerged, mRemoteLastUpdate) <- case listReportRowGitHubUrl of
     PullRequestUrl o r i -> do
       pr <- mGithub $ GitHub.pullRequestR o r i
-      pure (GitHub.pullRequestState <$> pr, pr >>= GitHub.pullRequestMergedAt)
+      pure
+        ( GitHub.pullRequestState <$> pr,
+          pr >>= GitHub.pullRequestMergedAt,
+          GitHub.pullRequestUpdatedAt <$> pr
+        )
     IssueUrl o r i -> do
       iss <- mGithub $ GitHub.issueR o r i
-      pure (GitHub.issueState <$> iss, Nothing)
+      pure
+        ( GitHub.issueState <$> iss,
+          Nothing,
+          GitHub.issueUpdatedAt <$> iss
+        )
+  let listReportRowBall = do
+        elu <- entryLastUpdate listReportRowEntry
+        rlu <- mRemoteLastUpdate
+        pure $ if rlu >= elu then BallInOurCourt else BallInTheirCourt
   pure ListReportRow {..}
+
+entryLastUpdate :: Entry -> Maybe UTCTime
+entryLastUpdate = fmap stateHistoryEntryTimestamp . listToMaybe . unStateHistory . entryStateHistory
 
 renderListReportRow :: ListReportRow -> [Chunk]
 renderListReportRow ListReportRow {..} =
@@ -127,7 +149,8 @@ renderListReportRow ListReportRow {..} =
       githubUrlChunks listReportRowGitHubUrl,
       [ case listReportRowMerged of
           Nothing -> maybe "" stateChunk listReportRowState
-          Just _ -> "merged"
+          Just _ -> "merged",
+        maybe "" ballChunk listReportRowBall
       ]
     ]
 
@@ -147,3 +170,9 @@ stateChunk =
   chunk . \case
     GitHub.StateOpen -> "open"
     GitHub.StateClosed -> "closed"
+
+ballChunk :: Ball -> Chunk
+ballChunk =
+  chunk . T.pack . \case
+    BallInOurCourt -> "update available"
+    BallInTheirCourt -> "waiting"
