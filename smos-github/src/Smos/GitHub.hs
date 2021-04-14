@@ -58,6 +58,7 @@ smosGitHub = do
 
 parseEntryGitHubUrl :: Entry -> Maybe GitHubUrl
 parseEntryGitHubUrl e = do
+  guard (not (entryIsDone e))
   up <- M.lookup "url" $ entryProperties e
   uri <- parseURI (T.unpack (propertyValueText up))
   ua <- uriAuthority uri
