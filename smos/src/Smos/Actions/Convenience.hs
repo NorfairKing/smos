@@ -9,11 +9,13 @@ module Smos.Actions.Convenience
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
     convArchiveFile,
+    convOpenUrl,
   )
 where
 
 import Control.Category ((>>>))
 import Control.Monad.Catch
+import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
@@ -29,6 +31,7 @@ import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.Config
 import Smos.Types
+import System.Process
 
 allConveniencePlainActions :: [Action]
 allConveniencePlainActions =
@@ -36,7 +39,8 @@ allConveniencePlainActions =
     convRepinged,
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
-    convArchiveFile
+    convArchiveFile,
+    convOpenUrl
   ]
 
 convDoneAndWaitForResponse :: Action
@@ -149,4 +153,22 @@ convArchiveFile =
                   ArchivedSuccesfully -> pure Nothing
         actionFunc selectBrowserProjects,
       actionDescription = "Archive the current file and switch to the file browser in the projects directory. Note that this action cannot be undone. It will not archive a file outside of the workflow directory but still switch to the projects directory in the browser."
+    }
+
+convOpenUrl :: Action
+convOpenUrl =
+  Action
+    { actionName = "convOpenUrl",
+      actionFunc = modifyEntryCursorS $ \ec -> do
+        let e = rebuildEntryCursor ec
+        let murl = do
+              urlPv <- M.lookup "url" $ entryProperties e
+              pure $ propertyValueText urlPv
+        forM_ murl $ \url ->
+          runSmosAsync $ do
+            let cp = (proc "xdg-open" [T.unpack url]) {std_in = CreatePipe, std_out = CreatePipe, std_err = CreatePipe}
+            _ <- createProcess cp
+            pure ()
+        pure ec,
+      actionDescription = "Open the url in the 'url' property of the currently selected entry"
     }

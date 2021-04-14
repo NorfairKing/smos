@@ -128,6 +128,7 @@ defaultFileKeyMap =
             exactString " rw" convRespondedButStillWaiting,
             exactString " ce" convNewEntryAndClockIn,
             exactString " fa" convArchiveFile,
+            exactString " ou" convOpenUrl,
             -- Collapsing
             exactChar '\t' forestToggleCollapse,
             exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively,

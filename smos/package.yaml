@@ -41,6 +41,7 @@ library:
   - path-io
   - pretty-relative-time
   - pretty-show
+  - process
   - resourcet
   - safe
   - smos-archive
