@@ -307,7 +307,7 @@ in
               let
                 passwordRepo = builtins.fetchGit {
                   url = "https://github.com/cdepillabout/password";
-                  rev = "26434d4f6888faf8dc36425b20b59f0b5056d7f5";
+                  rev = "e90b7481af2d63de6b2d9ead3c03ddb798707d22";
                 };
                 passwordPkg = name: self.callCabal2nix name (passwordRepo + "/${name}") { };
                 servantAuthRepo = builtins.fetchGit {
@@ -326,6 +326,7 @@ in
               in
               servantAuthPackages // {
                 password = passwordPkg "password";
+                password-types = passwordPkg "password-types";
                 password-instances = passwordPkg "password-instances";
                 iCalendar = self.callCabal2nix "iCalendar"
                   (

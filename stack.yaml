@@ -1,4 +1,4 @@
-resolver: lts-15.15
+resolver: lts-16.12
 packages:
 
 - smos
@@ -62,14 +62,11 @@ extra-deps:
 
 # Password
 - github: cdepillabout/password 
-  commit: 26434d4f6888faf8dc36425b20b59f0b5056d7f5
+  commit: e90b7481af2d63de6b2d9ead3c03ddb798707d22
   subdirs:
     - password
+    - password-types
     - password-instances
-
-
-
-
 
 
 - github: NorfairKing/typed-uuid
@@ -199,8 +196,6 @@ extra-deps:
 - github: NorfairKing/yesod-autoreload
   commit: 2adfb0397ca82a81ee26e0e491fe8b2759d76615
 
-- normaldistribution-1.1.0.3@sha256:2615b784c4112cbf6ffa0e2b55b76790290a9b9dff18a05d8c89aa374b213477,2160
-
 - github: NorfairKing/haskeline
   commit: 7c6491c55741608255c2681702381ce488692d15
 
@@ -216,13 +211,5 @@ extra-deps:
 
 
 nix:
-  path: [ "nixpkgs=https://github.com/NixOS/nixpkgs/archive/e3a2247046d4de66b9b193a6ab3ff040fa3da86d.tar.gz" ]
+  shell-file: shell.nix
   add-gc-roots: true
-  packages:
-  - asciinema
-  - autoconf
-  - cacert
-  - haskellPackages.autoexporter
-  - killall
-  - sass
-  - zlib

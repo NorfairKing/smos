@@ -2,7 +2,7 @@
 }:
 let
   sources = import ./sources.nix;
-  pkgsv = import (import ./nixpkgs.nix);
+  pkgsv = import sources.nixpkgs;
   sydtest-overlay = import (sources.sydtest + "/nix/overlay.nix");
   validity-overlay = import (sources.validity + "/nix/overlay.nix");
   safe-coloured-text-overlay = import (sources.safe-coloured-text + "/nix/overlay.nix");
@@ -18,6 +18,10 @@ let
   mergeful-overlay = import (sources.mergeful + "/nix/overlay.nix");
   yesod-static-remote-overlay = import (sources.yesod-static-remote + "/nix/overlay.nix");
   autorecorder-overlay = import (sources.autorecorder + "/nix/overlay.nix");
+  niv-overlay = final: previous:
+    {
+      niv = (import sources.niv { pkgs = final; }).niv;
+    };
   gitignore-src-overlay = final: previous:
     {
       inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource;
@@ -43,7 +47,8 @@ let
           mergeful-overlay
           yesod-static-remote-overlay
           autorecorder-overlay
-          (import ./gitignore-src.nix)
+          niv-overlay
+          gitignore-src-overlay
           (import ./overlay.nix)
         ];
         config.allowUnfree = true;

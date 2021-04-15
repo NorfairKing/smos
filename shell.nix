@@ -1,15 +1,21 @@
 let
   pkgs = import ./nix/pkgs.nix { static = false; };
-  pre-commit-hooks = import ./nix/pre-commit.nix;
+  pre-commit = import ./nix/pre-commit.nix;
 in
-pkgs.mkShell {
+pkgs.haskell.lib.buildStackProject {
   name = "smos-nix-shell";
-  buildInputs = pre-commit-hooks.tools ++ [
-    pkgs.sass
-    pkgs.niv
-  ];
+  buildInputs = with pkgs; [
+    asciinema
+    autoconf
+    haskellPackages.autoexporter
+    killall
+    niv
+    sass
+    sass
+    zlib
+  ] ++ pre-commit.tools;
   shellHook = ''
-    ${pre-commit-hooks.run.shellHook}
+    ${pre-commit.run.shellHook}
 
 
     function nix-build_ {
