@@ -21,6 +21,7 @@ library:
     - network-uri
     - optparse-applicative
     - path
+    - safe-coloured-text-terminfo
     - smos-data
     - smos-query
     - smos-report

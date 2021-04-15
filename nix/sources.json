@@ -17,10 +17,10 @@
         "homepage": "https://bulma.io",
         "owner": "jgthms",
         "repo": "bulma",
-        "rev": "f26b871321a13ff2ce3f6270eec9b9585527d3b7",
-        "sha256": "1i8cmzp4lrvxrqjfc0fii6myvnd7cpdqwmmvm7r0q18kad5v10yi",
+        "rev": "6de773dfb560246c3eca8f0478c9224ecd8a1a02",
+        "sha256": "0dws2m9rk545f4dq0hn66psg8xh98kmxf92ngnzh11klxqmqp34g",
         "type": "tarball",
-        "url": "https://github.com/jgthms/bulma/archive/f26b871321a13ff2ce3f6270eec9b9585527d3b7.tar.gz",
+        "url": "https://github.com/jgthms/bulma/archive/6de773dfb560246c3eca8f0478c9224ecd8a1a02.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "bulma-carousel": {
@@ -161,10 +161,10 @@
         "homepage": "",
         "owner": "hercules-ci",
         "repo": "nix-pre-commit-hooks",
-        "rev": "c7e3896e35ceea480a7484ec1709be7bdda8849d",
-        "sha256": "0xl9f6ydgk8gnn22f392p3zna0cishwj8id1vpy0p0s06wsbhfs5",
+        "rev": "2d169bb1b23f3b71a894a66ea81f45c788943248",
+        "sha256": "1iyvi56rzszwizq0ymf1x262yhjwzk8k77qahb65fcync99jha2a",
         "type": "tarball",
-        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/c7e3896e35ceea480a7484ec1709be7bdda8849d.tar.gz",
+        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/2d169bb1b23f3b71a894a66ea81f45c788943248.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -197,10 +197,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "safe-coloured-text",
-        "rev": "ca42a55ddd5f3d9e866fe33b3b6862e9860f7604",
-        "sha256": "1xqr72hkkqrvcbb833d7pg4zc02l3gb566jdkr1dzrigjhrcwpi6",
+        "rev": "2c8698978faf5556a6f928c5a55c797c3a262808",
+        "sha256": "09gj4nqn5yi86xfld42hgs4ywq54rsb42ilnsqammai4gdz73acp",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/ca42a55ddd5f3d9e866fe33b3b6862e9860f7604.tar.gz",
+        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/2c8698978faf5556a6f928c5a55c797c3a262808.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "seocheck": {
@@ -221,10 +221,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "876707dbe0c8b84753d1c3f04564e10035b5836d",
-        "sha256": "162x9lvjng70xph607sl7a92i40256a9a064vgv0qsqkng36lbin",
+        "rev": "abb96cca367bc4de33c385cd41aa2ff8defb9c6d",
+        "sha256": "1fmrymrzj2ylpyhb4x75cjng1n29scjdaj5y7kcixrkcg9109ld9",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/876707dbe0c8b84753d1c3f04564e10035b5836d.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/abb96cca367bc4de33c385cd41aa2ff8defb9c6d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "template-haskell-reload": {

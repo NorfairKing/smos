@@ -35,6 +35,7 @@ import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import System.IO
+import Text.Colour.Term
 import Text.Read
 
 smosGitHub :: IO ()

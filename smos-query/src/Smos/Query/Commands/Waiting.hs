@@ -21,7 +21,7 @@ smosQueryWaiting WaitingSettings {..} = do
   now <- liftIO getCurrentTime
   cc <- asks smosQueryConfigColourConfig
 
-  liftIO $ putChunks $ renderWaitingReport cc waitingSetThreshold now report
+  outputChunks $ renderWaitingReport cc waitingSetThreshold now report
 
 renderWaitingReport :: ColourConfig -> Word -> UTCTime -> WaitingReport -> [Chunk]
 renderWaitingReport cc threshold now =

@@ -31,6 +31,7 @@ import System.Exit
 import System.IO
 import Text.Colour
 import Text.Colour.Layout
+import Text.Colour.Term
 
 data SmosQueryConfig = SmosQueryConfig
   { smosQueryConfigReportConfig :: !SmosReportConfig,

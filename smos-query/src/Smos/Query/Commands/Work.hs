@@ -53,16 +53,15 @@ smosQueryWork WorkSettings {..} = do
   sp <- getShouldPrint
   wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
   cc <- asks smosQueryConfigColourConfig
-  liftIO $
-    putChunks $
-      renderWorkReport
-        cc
-        now
-        contexts
-        workSetWaitingThreshold
-        workSetStuckThreshold
-        workSetProjection
-        wr
+  outputChunks $
+    renderWorkReport
+      cc
+      now
+      contexts
+      workSetWaitingThreshold
+      workSetStuckThreshold
+      workSetProjection
+      wr
 
 renderWorkReport :: ColourConfig -> ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
 renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
