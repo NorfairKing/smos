@@ -16,6 +16,7 @@ library:
   dependencies:
   - bytestring
   - cookie
+  - deepseq
   - dirforest
   - http-types
   - microlens
@@ -24,6 +25,7 @@ library:
   - servant-auth-client
   - servant-auth-server
   - servant-client
+  - servant-client-core
   - servant-flatten
   - smos-api
   - smos-data

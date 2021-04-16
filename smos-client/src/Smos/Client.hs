@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Client
   ( module Smos.Client,
@@ -13,6 +15,7 @@ module Smos.Client
   )
 where
 
+import Control.DeepSeq
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
@@ -27,7 +30,8 @@ import Path
 import Servant.API.Flatten
 import Servant.Auth.Client
 import Servant.Auth.Server
-import Servant.Client
+import Servant.Client.Generic
+import Servant.Client.Streaming
 import Smos.API as X
 import Smos.Data hiding (Header)
 import Smos.Report.Agenda
@@ -116,25 +120,38 @@ clientVersionsHelpMessage =
     unwords ["Newest supported Smos server API version:", Version.toString newestSupportedAPIVersion]
   ]
 
+smosProtectedClient :: ProtectedRoutes (AsClientT ClientM)
+smosProtectedClient = genericClient
+
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
+clientPostSync = postSync smosProtectedClient
+
 clientGetListBackups :: Token -> ClientM [Backup]
+clientGetListBackups = getListBackups smosProtectedClient
+
 clientGetBackup :: Token -> BackupUUID -> ClientM (SourceIO ByteString)
+clientGetBackup = getBackup smosProtectedClient
+
 clientPutRestoreBackup :: Token -> BackupUUID -> ClientM NoContent
+clientPutRestoreBackup = putRestoreBackup smosProtectedClient
+
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
+clientGetListSmosFiles = getListSmosFiles smosProtectedClient
+
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
+clientGetSmosFile = getSmosFile smosProtectedClient
+
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
+clientPutSmosFile = putSmosFile smosProtectedClient
+
+smosReportsClient :: ReportRoutes (AsClientT ClientM)
+smosReportsClient = genericClient
+
 clientGetNextActionReport :: Token -> ClientM NextActionReport
+clientGetNextActionReport = getNextActionReport smosReportsClient
+
 clientGetAgendaReport :: Token -> ClientM AgendaReport
-clientPostSync
-  :<|> clientGetListBackups
-  :<|> clientPostBackup
-  :<|> clientGetBackup
-  :<|> clientPutRestoreBackup
-  :<|> clientGetListSmosFiles
-  :<|> clientGetSmosFile
-  :<|> clientPutSmosFile
-  :<|> clientGetNextActionReport
-  :<|> clientGetAgendaReport = client (flatten smosProtectedAPI)
+clientGetAgendaReport = getAgendaReport smosReportsClient
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession
@@ -166,6 +183,10 @@ data HeaderProblem
   | ProblemMissingJWTCookie
   deriving (Show, Eq, Generic)
 
+instance NFData HeaderProblem
+
+instance NFData Token
+
 login :: ClientEnv -> Login -> IO (Either LoginError Token)
 login cenv lf = do
   errOrRes <- runClient cenv $ clientLogin lf
@@ -180,12 +201,10 @@ data LoginError
   | LoginHeaderProblem HeaderProblem
   deriving (Show, Eq, Generic)
 
-runClient :: ClientEnv -> ClientM a -> IO (Either ClientError a)
+runClient :: NFData a => ClientEnv -> ClientM a -> IO (Either ClientError a)
 runClient = flip runClientM
 
 runClientOrDie :: ClientEnv -> ClientM a -> IO a
-runClientOrDie cenv func = do
-  errOrResp <- runClient cenv func
-  case errOrResp of
-    Left err -> liftIO $ die $ show err
-    Right resp -> pure resp
+runClientOrDie cenv func = withClientM func cenv $ \case
+  Left err -> liftIO $ die $ show err
+  Right resp -> pure resp
