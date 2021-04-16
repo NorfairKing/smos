@@ -9,6 +9,7 @@ module Smos.Client
   ( module Smos.Client,
     module X,
     BaseUrl (..),
+    showBaseUrl,
     Scheme (..),
     ClientM,
     ClientError (..),
@@ -16,6 +17,8 @@ module Smos.Client
     SetCookie,
     ClientEnv,
     mkClientEnv,
+    Response,
+    ResponseF (..),
   )
 where
 

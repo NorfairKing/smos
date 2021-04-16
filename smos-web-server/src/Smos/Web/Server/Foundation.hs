@@ -12,6 +12,7 @@ module Smos.Web.Server.Foundation where
 
 import Control.Arrow (left)
 import Control.Concurrent.STM
+import Control.DeepSeq
 import Control.Monad.Logger
 import Data.Aeson as JSON
 import qualified Data.ByteString as SB
@@ -27,7 +28,6 @@ import qualified Network.HTTP.Types as Http
 import Path
 import Path.IO
 import Servant.Auth.Client (Token (..))
-import Servant.Client
 import Smos.Client
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
@@ -274,21 +274,21 @@ genToken = do
 getCSRFToken :: MonadHandler m => m Text
 getCSRFToken = fromMaybe "" . reqToken <$> getRequest
 
-runClientSafe :: ClientM a -> Handler (Either ClientError a)
+runClientSafe :: NFData a => ClientM a -> Handler (Either ClientError a)
 runClientSafe func = do
   man <- getsYesod appHttpManager
   burl <- getsYesod appAPIBaseUrl
-  let cenv = ClientEnv man burl Nothing
-  liftIO $ runClientM func cenv
+  let cenv = mkClientEnv man burl
+  liftIO $ runClient cenv func
 
-runClientOrErr :: ClientM a -> Handler a
+runClientOrErr :: NFData a => ClientM a -> Handler a
 runClientOrErr func = do
   errOrRes <- runClientSafe func
   case errOrRes of
     Left err -> handleStandardServantErrs err $ \resp -> error $ show resp -- TODO deal with error
     Right r -> pure r
 
-runClientOrDisallow :: ClientM a -> Handler (Maybe a)
+runClientOrDisallow :: NFData a => ClientM a -> Handler (Maybe a)
 runClientOrDisallow func = do
   errOrRes <- runClientSafe func
   case errOrRes of

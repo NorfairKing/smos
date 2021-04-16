@@ -25,6 +25,7 @@ library:
   - conduit
   - containers
   - data-default
+  - deepseq
   - envparse
   - filepath
   - http-client

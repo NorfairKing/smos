@@ -6,6 +6,7 @@ module Smos.Server.Handler.PostBackup
 where
 
 import qualified Data.ByteString as SB
+import Data.Foldable
 import Smos.Server.Handler.Import
 
 servePostBackup :: AuthCookie -> ServerHandler BackupUUID
