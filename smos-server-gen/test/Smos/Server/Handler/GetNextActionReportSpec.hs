@@ -10,7 +10,6 @@ import Smos.Report.Next
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
 import Test.Syd
-import Test.Syd.Servant
 import Test.Syd.Validity
 
 spec :: Spec

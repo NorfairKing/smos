@@ -8,6 +8,10 @@
 module Smos.Client
   ( module Smos.Client,
     module X,
+    BaseUrl (..),
+    Scheme (..),
+    ClientM,
+    ClientError (..),
     Token,
     SetCookie,
     ClientEnv,
@@ -27,7 +31,6 @@ import GHC.Generics
 import Lens.Micro
 import qualified Network.HTTP.Types as HTTP
 import Path
-import Servant.API.Flatten
 import Servant.Auth.Client
 import Servant.Auth.Server
 import Servant.Client.Generic
@@ -39,14 +42,17 @@ import Smos.Report.Next
 import System.Exit
 import Web.Cookie
 
+smosUnprotectedClient :: UnprotectedRoutes (AsClientT ClientM)
+smosUnprotectedClient = genericClient
+
 clientGetApiVersion :: ClientM Version
+clientGetApiVersion = getApiVersion smosUnprotectedClient
+
 clientPostRegister :: Register -> ClientM NoContent
-clientPostLogin ::
-  Login ->
-  ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
-clientGetApiVersion
-  :<|> clientPostRegister
-  :<|> clientPostLogin = client (flatten smosUnprotectedAPI)
+clientPostRegister = postRegister smosUnprotectedClient
+
+clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
+clientPostLogin = postLogin smosUnprotectedClient
 
 oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []

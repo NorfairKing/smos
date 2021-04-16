@@ -57,8 +57,6 @@ extra-deps:
     - servant-auth-docs
     - servant-auth-swagger
     - servant-auth-server
-- servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
-
 
 # Password
 - github: cdepillabout/password 

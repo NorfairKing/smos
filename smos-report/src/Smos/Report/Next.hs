@@ -6,6 +6,7 @@
 module Smos.Report.Next where
 
 import Conduit
+import Control.DeepSeq
 import Cursor.Simple.Forest
 import Data.Aeson
 import qualified Data.Conduit.Combinators as C
@@ -66,6 +67,8 @@ newtype NextActionReport = NextActionReport
 
 instance Validity NextActionReport
 
+instance NFData NextActionReport
+
 instance FromJSON NextActionReport where
   parseJSON = viaYamlSchema
 
@@ -83,6 +86,8 @@ data NextActionEntry = NextActionEntry
   deriving (Show, Eq, Generic)
 
 instance Validity NextActionEntry
+
+instance NFData NextActionEntry
 
 instance FromJSON NextActionEntry where
   parseJSON = viaYamlSchema

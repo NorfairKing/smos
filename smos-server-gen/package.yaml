@@ -16,6 +16,7 @@ library:
   dependencies:
   - bytestring
   - containers
+  - deepseq
   - dirforest
   - http-client
   - http-types

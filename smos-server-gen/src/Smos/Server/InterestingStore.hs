@@ -12,7 +12,6 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
 import Path
-import Servant.Client
 import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()

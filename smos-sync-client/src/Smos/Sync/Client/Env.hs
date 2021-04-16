@@ -18,7 +18,6 @@ import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Servant.Auth.Client as Auth
-import Servant.Client as Servant
 import Smos.API
 import Smos.Client
 import Smos.Sync.Client.Prompt
@@ -28,7 +27,7 @@ import System.Exit
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
 data SyncClientEnv = SyncClientEnv
-  { syncClientEnvServantClientEnv :: Servant.ClientEnv,
+  { syncClientEnvServantClientEnv :: ClientEnv,
     syncClientEnvConnection :: DB.ConnectionPool
   }
   deriving (Generic)
@@ -76,12 +75,12 @@ promptPassword mpw =
     Nothing -> mkPassword <$> promptSecret "password"
     Just pw -> pure pw
 
-runSyncClient :: Servant.ClientM a -> C (Either Servant.ClientError a)
+runSyncClient :: NFData a => ClientM a -> C (Either ClientError a)
 runSyncClient func = do
   cenv <- asks syncClientEnvServantClientEnv
-  liftIO $ Servant.runClientM func cenv
+  liftIO $ runClient cenv func
 
-runSyncClientOrDie :: Servant.ClientM a -> C a
+runSyncClientOrDie :: NFData a => ClientM a -> C a
 runSyncClientOrDie func = do
   errOrResp <- runSyncClient func
   case errOrResp of

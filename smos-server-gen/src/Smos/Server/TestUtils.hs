@@ -3,19 +3,18 @@
 
 module Smos.Server.TestUtils where
 
+import Control.DeepSeq
 import Data.Pool
 import Database.Persist.Sqlite as DB
 import qualified Network.HTTP.Client as Http
 import Servant.Auth.Client as Auth
 import Servant.Auth.Server as Auth
-import Servant.Client
 import Smos.API.Gen ()
 import Smos.Client
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
 import Test.Syd
 import Test.Syd.Persistent.Sqlite
-import Test.Syd.Servant
 import Test.Syd.Wai
 import UnliftIO
 
@@ -40,12 +39,12 @@ serverEnvDB func = do
   pool <- asks serverTestEnvPool
   liftIO $ DB.runSqlPool func pool
 
-serverEnvClient :: ClientM a -> ServerTestEnvM (Either ClientError a)
+serverEnvClient :: NFData a => ClientM a -> ServerTestEnvM (Either ClientError a)
 serverEnvClient func = do
   cenv <- asks serverTestEnvClient
-  liftIO $ testClientOrError cenv func
+  liftIO $ runClient cenv func
 
-serverEnvClientOrErr :: ClientM a -> ServerTestEnvM a
+serverEnvClientOrErr :: NFData a => ClientM a -> ServerTestEnvM a
 serverEnvClientOrErr func = do
   cenv <- asks serverTestEnvClient
   liftIO $ testClient cenv func
@@ -126,3 +125,10 @@ randomRegistration = do
   un <- parseUsername $ uuidText u1
   let pw = uuidText u2
   pure Register {registerUsername = un, registerPassword = pw}
+
+testClient :: NFData a => ClientEnv -> ClientM a -> IO a
+testClient cenv func = do
+  errOrRes <- runClient cenv func
+  case errOrRes of
+    Left err -> expectationFailure $ show err
+    Right r -> pure r

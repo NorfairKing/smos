@@ -11,7 +11,6 @@ import qualified Data.Mergeful as Mergeful
 import Smos.Client
 import Smos.Server.TestUtils
 import Test.Syd
-import Test.Syd.Servant
 import Test.Syd.Validity
 
 spec :: Spec
