@@ -9,7 +9,6 @@ module Smos.API.CompatibilitySpec
 where
 
 import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.DirForest as DF
@@ -26,6 +25,7 @@ import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Next
 import Test.Syd
+import Test.Syd.Aeson
 import Test.Syd.Validity
 
 spec :: Spec
@@ -76,9 +76,9 @@ spec = do
         Mergeful.SyncResponse
           { syncResponseClientAdded =
               M.fromList
-                [ ( [relfile|example5.smos|],
+                [ ( [relfile|example5.smos|] :: Path Rel File,
                     ClientAddition
-                      { clientAdditionId = [relfile|example5.smos|],
+                      { clientAdditionId = [relfile|example5.smos|] :: Path Rel File,
                         clientAdditionServerTime = initialServerTime
                       }
                   )
@@ -149,16 +149,17 @@ spec = do
   describe "GetBackup" $ do
     inputGoldenTest "backup-get" $ Typed.UUID (UUID.fromWords 1 2 3 4)
   describe "PostBackup" $ do
-    outputGoldenTest "backup-post" $ Typed.UUID (UUID.fromWords 1 2 3 4)
+    outputGoldenTest "backup-post" $ Typed.UUID (UUID.fromWords 2 3 4 5)
 
--- TODO Replace this by a golden test for JSON.Value
-outputGoldenTest :: ToJSON a => FilePath -> a -> Spec
-outputGoldenTest fp val = it "outputs the version the same way as before" $ pureGoldenByteStringFile ("test_resources/" ++ fp ++ "/output.json") (LB.toStrict (JSON.encodePretty val))
+outputGoldenTest :: (Show a, Eq a, ToJSON a, FromJSON a) => FilePath -> a -> Spec
+outputGoldenTest fp val =
+  it "outputs the version the same way as before" $
+    pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/output.json") val
 
-inputGoldenTest :: forall a. (Validity a, Show a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
+inputGoldenTest :: forall a. (Validity a, Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
 inputGoldenTest fp current = do
   it "output" $
-    pureGoldenByteStringFile ("test_resources/" ++ fp ++ "/input.json") (LB.toStrict (JSON.encodePretty current))
+    pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/input.json") current
   scenarioDir ("test_resources/" ++ fp ++ "/old-input") $ \p ->
     it "can still parse the old input" $ do
       bs <- SB.readFile p
