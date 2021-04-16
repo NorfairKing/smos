@@ -26,7 +26,7 @@ serveGetBackup (AuthCookie un) uuid = withUserId un $ \uid -> do
         forM_ backupFiles $ \(Entity _ BackupFile {..}) -> do
           selector <- Zip.mkEntrySelector (fromRelFile backupFilePath)
           let contents = backupFileContents
-          Zip.addEntry BZip2 contents selector
+          Zip.addEntry Zip.Deflate contents selector
       -- Stream the zip archive
       pure $
         SourceT $ \step -> do

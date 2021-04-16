@@ -325,6 +325,7 @@ in
                   servantAuthPkg;
               in
               servantAuthPackages // {
+                zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
                 password = passwordPkg "password";
                 password-types = passwordPkg "password-types";
                 password-instances = passwordPkg "password-instances";

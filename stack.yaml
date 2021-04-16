@@ -208,7 +208,9 @@ extra-deps:
 - binary-instances-1.0.1@sha256:56bb2da1268415901d6ea3f46535b88b89459d7926fbfcca027e25e069ea6f2b,2647
 - time-compat-1.9.5@sha256:f343bc5339a217ecef497e3a730017e15f5c396713fe1d653b8a9e7b1f666988,4932
 
-
+flags:
+  zip:
+    disable-bzip2: true
 
 nix:
   shell-file: shell.nix
