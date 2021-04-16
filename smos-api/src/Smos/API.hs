@@ -150,7 +150,8 @@ instance FromJSON Login
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
 data Backup = Backup
-  { -- | When the backup was made
+  { backupUUID :: !BackupUUID,
+    -- | When the backup was made
     backupTime :: !UTCTime,
     -- | In bytes
     backupSize :: !Word64
@@ -164,13 +165,15 @@ instance NFData Backup
 instance FromJSON Backup where
   parseJSON = withObject "Backup" $ \o ->
     Backup
-      <$> o .: "time"
+      <$> o .: "uuid"
+      <*> o .: "time"
       <*> o .: "size"
 
 instance ToJSON Backup where
   toJSON Backup {..} =
     object
-      [ "time" .= backupTime,
+      [ "uuid" .= backupUUID,
+        "time" .= backupTime,
         "size" .= backupSize
       ]
 
@@ -182,7 +185,7 @@ type PostBackup = "backup" :> Post '[JSON] BackupUUID
 
 type GetBackup = "backup" :> Capture "backup" BackupUUID :> StreamGet NoFraming OctetStream (SourceIO ByteString)
 
-type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> PutNoContent '[] NoContent
+type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> PutNoContent '[JSON] NoContent
 
 data SyncServer
 

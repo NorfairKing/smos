@@ -144,7 +144,11 @@ spec = do
   describe "GetListBackups" $
     outputGoldenTest
       "backups"
-      [ Backup {backupTime = UTCTime (fromGregorian 2021 04 16) 8765, backupSize = 543}
+      [ Backup
+          { backupUuid = Typed.UUID (UUID.fromWords 0 1 2 3),
+            backupTime = UTCTime (fromGregorian 2021 04 16) 8765,
+            backupSize = 543
+          }
       ]
   describe "GetBackup" $ do
     inputGoldenTest "backup-get" $ Typed.UUID (UUID.fromWords 1 2 3 4)

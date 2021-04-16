@@ -110,6 +110,10 @@ syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { postSync = withAuthResult servePostSync,
+      getListBackups = withAuthResult serveGetListBackups,
+      postBackup = withAuthResult servePostBackup,
+      getBackup = withAuthResult serveGetBackup,
+      putRestoreBackup = withAuthResult servePutRestoreBackup,
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
