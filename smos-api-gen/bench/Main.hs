@@ -18,5 +18,5 @@ main =
       genValidBench @SyncFile,
       genValidBench @SyncRequest,
       genValidBench @SyncResponse,
-      genValidBench @Backup
+      genValidBench @BackupInfo
     ]
