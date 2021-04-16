@@ -17,5 +17,6 @@ main =
       genValidBench @ServerUUID,
       genValidBench @SyncFile,
       genValidBench @SyncRequest,
-      genValidBench @SyncResponse
+      genValidBench @SyncResponse,
+      genValidBench @Backup
     ]

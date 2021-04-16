@@ -28,6 +28,10 @@ instance GenValid Username where
       <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
   shrinkValid = shrinkValidStructurally
 
+instance GenValid Password where
+  genValid = mkPassword <$> genValid
+  shrinkValid _ = [] -- Don't shrink passwords
+
 instance GenValid Register where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
@@ -48,6 +52,6 @@ instance GenValid SyncResponse where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid Password where
-  genValid = mkPassword <$> genValid
-  shrinkValid _ = [] -- Don't shrink passwords
+instance GenValid Backup where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

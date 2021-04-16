@@ -29,6 +29,7 @@ import Data.Proxy
 import Data.SemVer as Version
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
 import Data.Validity
@@ -36,6 +37,7 @@ import Data.Validity.ByteString ()
 import Data.Validity.Path ()
 import Data.Validity.Text ()
 import Data.Validity.UUID ()
+import Data.Word
 import Database.Persist
 import Database.Persist.Sql
 import Path
@@ -99,6 +101,10 @@ type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
   { postSync :: !(route :- ProtectAPI :> PostSync),
+    getListBackups :: !(route :- ProtectAPI :> GetListBackups),
+    postBackup :: !(route :- ProtectAPI :> PostBackup),
+    getBackup :: !(route :- ProtectAPI :> GetBackup),
+    putRestoreBackup :: !(route :- ProtectAPI :> PutRestoreBackup),
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
@@ -142,6 +148,41 @@ instance ToJSON Login
 instance FromJSON Login
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
+
+data Backup = Backup
+  { -- | When the backup was made
+    backupTime :: !UTCTime,
+    -- | In bytes
+    backupSize :: !Word64
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Backup
+
+instance NFData Backup
+
+instance FromJSON Backup where
+  parseJSON = withObject "Backup" $ \o ->
+    Backup
+      <$> o .: "time"
+      <*> o .: "size"
+
+instance ToJSON Backup where
+  toJSON Backup {..} =
+    object
+      [ "time" .= backupTime,
+        "size" .= backupSize
+      ]
+
+type BackupUUID = UUID Backup
+
+type GetListBackups = "backups" :> Get '[JSON] [Backup]
+
+type PostBackup = "backup" :> Post '[JSON] BackupUUID
+
+type GetBackup = "backup" :> Capture "backup" BackupUUID :> StreamGet NoFraming OctetStream (SourceIO ByteString)
+
+type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> PutNoContent '[] NoContent
 
 data SyncServer
 

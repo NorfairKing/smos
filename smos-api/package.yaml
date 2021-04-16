@@ -36,6 +36,7 @@ library:
   - smos-data
   - smos-report
   - text
+  - time
   - typed-uuid
   - uuid
   - validity

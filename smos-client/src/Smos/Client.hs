@@ -117,12 +117,19 @@ clientVersionsHelpMessage =
   ]
 
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
+clientGetListBackups :: Token -> ClientM [Backup]
+clientGetBackup :: Token -> BackupUUID -> ClientM (SourceIO ByteString)
+clientPutRestoreBackup :: Token -> BackupUUID -> ClientM NoContent
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
 clientGetSmosFile :: Token -> Path Rel File -> ClientM SmosFile
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 clientGetNextActionReport :: Token -> ClientM NextActionReport
 clientGetAgendaReport :: Token -> ClientM AgendaReport
 clientPostSync
+  :<|> clientGetListBackups
+  :<|> clientPostBackup
+  :<|> clientGetBackup
+  :<|> clientPutRestoreBackup
   :<|> clientGetListSmosFiles
   :<|> clientGetSmosFile
   :<|> clientPutSmosFile

@@ -16,6 +16,9 @@ import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Mergeful as Mergeful
 import qualified Data.Set as S
+import Data.Time
+import qualified Data.UUID as UUID
+import qualified Data.UUID.Typed as Typed
 import Path
 import Smos.API
 import Smos.API.Gen ()
@@ -138,6 +141,15 @@ spec = do
               },
           agendaReportFuture = []
         }
+  describe "GetListBackups" $
+    outputGoldenTest
+      "backups"
+      [ Backup {backupTime = UTCTime (fromGregorian 2021 04 16) 8765, backupSize = 543}
+      ]
+  describe "GetBackup" $ do
+    inputGoldenTest "backup-get" $ Typed.UUID (UUID.fromWords 1 2 3 4)
+  describe "PostBackup" $ do
+    outputGoldenTest "backup-post" $ Typed.UUID (UUID.fromWords 1 2 3 4)
 
 -- TODO Replace this by a golden test for JSON.Value
 outputGoldenTest :: ToJSON a => FilePath -> a -> Spec

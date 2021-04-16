@@ -53,6 +53,9 @@ tests:
     - smos-data
     - smos-report
     - sydtest
+    - time
+    - uuid
+    - typed-uuid
 
 benchmarks:
   smos-api-bench:
