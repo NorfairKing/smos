@@ -73,4 +73,5 @@ tests:
     - smos-server-gen
     - sydtest
     - sydtest-servant
+    - text
     - zip

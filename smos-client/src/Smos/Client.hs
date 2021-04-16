@@ -132,7 +132,7 @@ smosProtectedClient = genericClient
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientPostSync = postSync smosProtectedClient
 
-clientGetListBackups :: Token -> ClientM [Backup]
+clientGetListBackups :: Token -> ClientM [BackupInfo]
 clientGetListBackups = getListBackups smosProtectedClient
 
 clientGetBackup :: Token -> BackupUUID -> ClientM (SourceIO ByteString)

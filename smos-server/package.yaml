@@ -45,11 +45,13 @@ library:
   - text
   - time
   - typed-uuid
+  - unliftio
   - wai
   - wai-extra
   - warp
   - yaml
   - yamlparse-applicative
+  - zip
 
 executables:
   smos-server:

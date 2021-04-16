@@ -52,6 +52,6 @@ instance GenValid SyncResponse where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid Backup where
+instance GenValid BackupInfo where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

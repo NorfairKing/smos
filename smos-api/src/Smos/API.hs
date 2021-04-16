@@ -149,37 +149,37 @@ instance FromJSON Login
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
-data Backup = Backup
-  { backupUUID :: !BackupUUID,
+data BackupInfo = BackupInfo
+  { backupInfoUUID :: !BackupUUID,
     -- | When the backup was made
-    backupTime :: !UTCTime,
+    backupInfoTime :: !UTCTime,
     -- | In bytes
-    backupSize :: !Word64
+    backupInfoSize :: !Word64
   }
   deriving (Show, Eq, Generic)
 
-instance Validity Backup
+instance Validity BackupInfo
 
-instance NFData Backup
+instance NFData BackupInfo
 
-instance FromJSON Backup where
+instance FromJSON BackupInfo where
   parseJSON = withObject "Backup" $ \o ->
-    Backup
+    BackupInfo
       <$> o .: "uuid"
       <*> o .: "time"
       <*> o .: "size"
 
-instance ToJSON Backup where
-  toJSON Backup {..} =
+instance ToJSON BackupInfo where
+  toJSON BackupInfo {..} =
     object
-      [ "uuid" .= backupUUID,
-        "time" .= backupTime,
-        "size" .= backupSize
+      [ "uuid" .= backupInfoUUID,
+        "time" .= backupInfoTime,
+        "size" .= backupInfoSize
       ]
 
-type BackupUUID = UUID Backup
+type BackupUUID = UUID BackupInfo
 
-type GetListBackups = "backups" :> Get '[JSON] [Backup]
+type GetListBackups = "backups" :> Get '[JSON] [BackupInfo]
 
 type PostBackup = "backup" :> Post '[JSON] BackupUUID
 

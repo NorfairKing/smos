@@ -21,6 +21,7 @@ where
 import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
 import Data.Time
+import Data.Word
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
@@ -51,6 +52,29 @@ ServerFile
     time ServerTime
 
     UniqueServerFilePath user path
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+Backup
+    user UserId
+    uuid BackupUUID
+    time UTCTime
+    size Word64
+
+    UniqueBackupUUID user uuid
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
+BackupFile
+    backup BackupId
+    path (Path Rel File)
+    contents ByteString
 
     deriving Show
     deriving Eq
