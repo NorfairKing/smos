@@ -108,7 +108,7 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
-    reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
+    reportRoutes :: !(route :- ToServantApi ReportRoutes)
   }
   deriving (Generic)
 
@@ -283,9 +283,9 @@ data ReportRoutes route = ReportRoutes
   }
   deriving (Generic)
 
-type GetNextActionReport = "next" :> Get '[JSON] NextActionReport
+type GetNextActionReport = "report" :> "next" :> Get '[JSON] NextActionReport
 
-type GetAgendaReport = "agenda" :> Get '[JSON] AgendaReport
+type GetAgendaReport = "report" :> "agenda" :> Get '[JSON] AgendaReport
 
 reportsAPI :: Proxy ReportsAPI
 reportsAPI = Proxy

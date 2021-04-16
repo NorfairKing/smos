@@ -51,19 +51,26 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - QuickCheck
+    - bytestring
     - containers
+    - dirforest
     - genvalidity-sydtest
     - http-types
     - mergeful
     - path
+    - path-io
     - persistent-sqlite
     - resource-pool
+    - servant
     - servant-client
     - smos-api
     - smos-client
+    - smos-data
     - smos-data-gen
     - smos-report
     - smos-server
     - smos-server-gen
     - sydtest
     - sydtest-servant
+    - zip

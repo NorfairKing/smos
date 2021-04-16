@@ -6,4 +6,4 @@ where
 import Smos.Server.Handler.Import
 
 serveGetListBackups :: AuthCookie -> ServerHandler [Backup]
-serveGetListBackups (AuthCookie un) = undefined
+serveGetListBackups (AuthCookie _) = undefined

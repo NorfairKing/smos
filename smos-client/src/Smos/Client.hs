@@ -138,6 +138,9 @@ clientGetListBackups = getListBackups smosProtectedClient
 clientGetBackup :: Token -> BackupUUID -> ClientM (SourceIO ByteString)
 clientGetBackup = getBackup smosProtectedClient
 
+clientPostBackup :: Token -> ClientM BackupUUID
+clientPostBackup = postBackup smosProtectedClient
+
 clientPutRestoreBackup :: Token -> BackupUUID -> ClientM NoContent
 clientPutRestoreBackup = putRestoreBackup smosProtectedClient
 
