@@ -54,7 +54,7 @@ import Smos.Report.Agenda
 import Smos.Report.Next
 
 apiVersion :: Version
-apiVersion = version 0 0 0 [] []
+apiVersion = version 0 1 0 [] []
 
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
