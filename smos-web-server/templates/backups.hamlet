@@ -22,7 +22,7 @@
 
               <td>
                 <form
-                  method="post"
+                  method="get"
                   action=@{BackupDownloadR $ backupInfoUUID backup}>
                   ^{token}
                   <button .button

@@ -12,8 +12,8 @@ module Smos.Web.Server.Handler.Backup
 where
 
 import Conduit
-import Data.ByteString (ByteString)
-import Data.ByteString.Builder as ByteString (Builder)
+import Control.Monad.Except
+import qualified Data.ByteString.Lazy as LB
 import Data.Time
 import Data.Word
 import Servant.Types.SourceT as Source
@@ -39,39 +39,16 @@ postBackupR = withLogin $ \t -> do
 
 getBackupDownloadR :: BackupUUID -> Handler TypedContent
 getBackupDownloadR uuid = withLogin $ \t -> do
-  withClient (clientGetBackup t uuid) $ \clientSource ->
-    respondWithClientSource clientSource $ \responseSender -> do
-      Yesod.addHeader "Content-Disposition" "attachment; filename=\"smos-backup.zip\""
-      Yesod.respondSource "application/zip" responseSender
-
-respondWithClientSource :: forall a. SourceIO ByteString -> (ConduitT () (Flush ByteString.Builder) Handler () -> Handler a) -> Handler a
-respondWithClientSource (SourceT sourceFunc) func = withRunInIO $ \runHandlerInIO -> do
-  liftIO $
-    sourceFunc $ \step -> do
-      liftIO $ print "starting to respond"
-      let writerConduit :: ConduitT () (Flush ByteString.Builder) Handler ()
-          writerConduit = do
-            let go :: StepT IO ByteString -> ConduitT () (Flush ByteString.Builder) Handler ()
-                go = \case
-                  Stop -> do
-                    liftIO $ print "step"
-                    sendFlush
-                  Error err -> liftIO $ fail err
-                  Skip s -> do
-                    liftIO $ print "skip"
-                    go s
-                  Yield x s -> do
-                    liftIO $ print ("yield", x)
-                    sendChunkBS x
-                    go s
-                  Effect ms -> do
-                    liftIO $ print "effect"
-                    s <- liftIO ms
-                    go s
-            go step
-      r <- runHandlerInIO $ func writerConduit
-      liftIO $ print "done responding"
-      pure r
+  archiveBytestring <- runClientOrErr $ do
+    clientSource <- clientGetBackup t uuid
+    -- TODO; this reads the entire archive into memory, which is probably not what we want to be doing.
+    -- Try a streaming approach, but remember; we tried in 'b2badc3e80587f588d1eb6819ba673e07e7964f7' and it was a big mess.
+    errOrLB <- liftIO $ runExceptT $ LB.fromChunks <$> runSourceT clientSource
+    case errOrLB of
+      Left err -> liftIO $ fail err
+      Right lb -> pure lb
+  Yesod.addHeader "Content-Disposition" "attachment; filename=\"smos-backup.zip\""
+  Yesod.respond "application/zip" archiveBytestring
 
 postBackupRestoreR :: BackupUUID -> Handler Html
 postBackupRestoreR uuid = withLogin $ \t -> do
