@@ -9,6 +9,7 @@
           <tr>
             <th> Time
             <th> Size
+            <th> Download
             <th> Restore
         <tfoot>
           $forall backup <- backups
@@ -19,6 +20,14 @@
               <td>
                 #{prettySize $ backupInfoSize backup}
 
+              <td>
+                <form
+                  method="post"
+                  action=@{BackupDownloadR $ backupInfoUUID backup}>
+                  ^{token}
+                  <button .button
+                    type="submit">
+                    Download
               <td>
                 <form
                   method="post"

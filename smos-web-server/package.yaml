@@ -38,6 +38,7 @@ library:
   - persistent-sqlite
   - pretty-relative-time
   - pretty-show
+  - servant
   - servant-auth-client
   - servant-client
   - shakespeare

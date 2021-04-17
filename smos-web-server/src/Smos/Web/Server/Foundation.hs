@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -29,6 +30,7 @@ import qualified Network.HTTP.Types as Http
 import Path
 import Path.IO
 import Servant.Auth.Client (Token (..))
+import Servant.Client.Streaming (withClientM)
 import Smos.Client
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
@@ -299,6 +301,20 @@ runClientOrDisallow func = do
           then pure Nothing
           else error $ show resp -- TODO deal with error
     Right r -> pure $ Just r
+
+withClient :: forall a b. ClientM a -> (a -> Handler b) -> Handler b
+withClient clientFunc responseFunc = do
+  man <- getsYesod appHttpManager
+  burl <- getsYesod appAPIBaseUrl
+  withRunInIO $ \runHandlerInIO -> do
+    let cenv = mkClientEnv man burl
+    let responseFuncIO :: Either ClientError a -> IO b
+        responseFuncIO errOrResp = runHandlerInIO $ do
+          liftIO $ print (() <$ errOrResp)
+          case errOrResp of
+            Left err -> handleStandardServantErrs err $ \resp -> error $ show resp -- TODO deal with error
+            Right res -> responseFunc res
+    liftIO $ withClientM clientFunc cenv responseFuncIO
 
 tuiR :: Path Rel File -> Route App
 tuiR = TUIR . map T.pack . FP.splitDirectories . fromRelFile
