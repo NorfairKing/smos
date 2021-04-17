@@ -10,4 +10,6 @@ export SMOS_WEB_SERVER_DATA_DIR=data
 
 smos-server serve &
 
+sleep 0.1
+
 smos-web-server serve &

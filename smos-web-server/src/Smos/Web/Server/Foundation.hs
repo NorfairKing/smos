@@ -23,6 +23,7 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Data.UUID.Typed as Typed
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Types as Http
 import Path
@@ -342,3 +343,7 @@ makeNavBar = do
   maid <- maybeAuthId
   mDocsUrl <- getsYesod appDocsBaseUrl
   pure $(widgetFile "navbar")
+
+instance PathPiece (Typed.UUID a) where
+  fromPathPiece = Typed.parseUUIDText
+  toPathPiece = Typed.uuidText

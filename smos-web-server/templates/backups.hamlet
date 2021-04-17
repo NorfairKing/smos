@@ -1,0 +1,37 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Backups
+
+      <table .table>
+        <thead>
+          <tr>
+            <th> Time
+            <th> Size
+            <th> Restore
+        <tfoot>
+          $forall backup <- backups
+            <tr>
+              <td>
+                #{formatTime defaultTimeLocale "%F %H:%M"  $ backupInfoTime backup}
+                (#{prettyTimeAuto now $ backupInfoTime backup})
+              <td>
+                #{prettySize $ backupInfoSize backup}
+
+              <td>
+                <form
+                  method="post"
+                  action=@{BackupRestoreR $ backupInfoUUID backup}>
+                  ^{token}
+                  <button .button
+                    type="submit">
+                    Restore
+
+      <form
+        method="post"
+        action=@{BackupR}>
+        ^{token}
+        <button .button
+          type="submit">
+          Create backup

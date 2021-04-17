@@ -19,6 +19,9 @@
         <a .navbar-item href=@{ReportsR}>
           Reports
 
+        <a .navbar-item href=@{BackupsR}>
+          Backups
+
       $maybe docsUrl <- mDocsUrl
         <a .navbar-item href="#{showBaseUrl docsUrl}">
           Documentation

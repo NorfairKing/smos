@@ -11,6 +11,11 @@
 /reports ReportsR GET
 /ws/reports-instance ReportsInstanceR GET
 
+-- Backups
+/backups BackupsR GET
+/backup BackupR POST
+/backup/#{BackupUUID} BackupRestoreR POST
+
 -- Subsites
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic

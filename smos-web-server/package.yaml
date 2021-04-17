@@ -36,6 +36,7 @@ library:
   - path
   - path-io
   - persistent-sqlite
+  - pretty-relative-time
   - pretty-show
   - servant-auth-client
   - servant-client
@@ -48,6 +49,8 @@ library:
   - stm
   - template-haskell
   - text
+  - time
+  - typed-uuid
   - unliftio
   - wai-extra
   - warp
