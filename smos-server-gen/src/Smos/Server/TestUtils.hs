@@ -79,7 +79,9 @@ serverSetupFunc' man = wrapSetupFunc $ \pool -> do
               serverEnvConnection = pool,
               serverEnvCookieSettings = defaultCookieSettings,
               serverEnvJWTSettings = defaultJWTSettings jwtKey,
-              serverEnvPasswordDifficulty = 4 -- The lowest
+              serverEnvPasswordDifficulty = 4, -- The lowest
+              serverEnvMaxBackupsPerUser = Nothing,
+              serverEnvMaxBackupSizePerUser = Nothing
             }
     pure $ Server.makeSyncApp env
   p <- unwrapSetupFunc applicationSetupFunc application

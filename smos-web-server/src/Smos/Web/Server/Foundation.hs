@@ -343,6 +343,7 @@ makeNavBar :: Handler Widget
 makeNavBar = do
   maid <- maybeAuthId
   mDocsUrl <- getsYesod appDocsBaseUrl
+  msgs <- getMessages
   pure $(widgetFile "navbar")
 
 instance PathPiece (Typed.UUID a) where

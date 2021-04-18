@@ -9,6 +9,7 @@ import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Collection (ServerStore (..))
 import Data.Mergeful.Timed (Timed (..))
+import Data.Word
 import Database.Persist as DB
 import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
@@ -25,7 +26,9 @@ data ServerEnv = ServerEnv
     serverEnvConnection :: !DB.ConnectionPool,
     serverEnvCookieSettings :: !CookieSettings,
     serverEnvJWTSettings :: !JWTSettings,
-    serverEnvPasswordDifficulty :: !Int
+    serverEnvPasswordDifficulty :: !Int,
+    serverEnvMaxBackupsPerUser :: !(Maybe Word),
+    serverEnvMaxBackupSizePerUser :: !(Maybe Word64)
   }
   deriving (Generic)
 

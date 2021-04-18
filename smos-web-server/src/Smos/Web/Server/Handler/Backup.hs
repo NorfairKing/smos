@@ -16,6 +16,8 @@ import Control.Monad.Except
 import qualified Data.ByteString.Lazy as LB
 import Data.Time
 import Data.Word
+import qualified Network.HTTP.Client as Http
+import qualified Network.HTTP.Types as Http
 import Servant.Types.SourceT as Source
 import Smos.Client
 import Smos.Web.Server.Foundation
@@ -34,8 +36,15 @@ getBackupsR = withLogin $ \t -> do
 
 postBackupR :: Handler Html
 postBackupR = withLogin $ \t -> do
-  _ <- runClientOrErr $ clientPostBackup t
-  redirect BackupsR
+  errOrBackup <- runClientSafe $ clientPostBackup t
+  case errOrBackup of
+    Left err -> handleStandardServantErrs err $ \resp ->
+      if Http.statusCode (responseStatusCode resp) == 403
+        then do
+          addMessage "Maximum number of backups reached." "Maximum number of backups reached."
+          getBackupsR
+        else redirect BackupsR
+    Right _ -> redirect BackupsR
 
 getBackupDownloadR :: BackupUUID -> Handler TypedContent
 getBackupDownloadR uuid = withLogin $ \t -> do

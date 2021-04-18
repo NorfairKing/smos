@@ -43,4 +43,7 @@
               Log in
             <a .button .is-text href=@{AuthR registerR}>
               Sign up
+$forall (_, msgHtml) <- msgs
+  <div .notification>
+    #{msgHtml}
 

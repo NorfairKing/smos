@@ -54,7 +54,9 @@ runSmosServer ServeSettings {..} = do
                       serverEnvPasswordDifficulty =
                         if development
                           then 4
-                          else 10 -- Rather slower
+                          else 10, -- Rather slower
+                      serverEnvMaxBackupsPerUser = Just 5,
+                      serverEnvMaxBackupSizePerUser = Just $ 5 * 1024 * 1024 -- 5 MiB
                     }
             let middles =
                   if development
