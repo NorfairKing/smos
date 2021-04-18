@@ -105,6 +105,7 @@ data ProtectedRoutes route = ProtectedRoutes
     postBackup :: !(route :- ProtectAPI :> PostBackup),
     getBackup :: !(route :- ProtectAPI :> GetBackup),
     putRestoreBackup :: !(route :- ProtectAPI :> PutRestoreBackup),
+    deleteBackup :: !(route :- ProtectAPI :> DeleteBackup),
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
@@ -186,6 +187,8 @@ type PostBackup = "backup" :> Post '[JSON] BackupUUID
 type GetBackup = "backup" :> Capture "backup" BackupUUID :> StreamGet NoFraming OctetStream (SourceIO ByteString)
 
 type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> PutNoContent '[JSON] NoContent
+
+type DeleteBackup = "backup" :> Capture "backup" BackupUUID :> DeleteNoContent '[JSON] NoContent
 
 data SyncServer
 

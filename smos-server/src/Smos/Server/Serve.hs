@@ -114,6 +114,7 @@ syncServerProtectedRoutes =
       postBackup = withAuthResult servePostBackup,
       getBackup = withAuthResult serveGetBackup,
       putRestoreBackup = withAuthResult servePutRestoreBackup,
+      deleteBackup = withAuthResult serveDeleteBackup,
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,

@@ -147,6 +147,9 @@ clientPostBackup = postBackup smosProtectedClient
 clientPutRestoreBackup :: Token -> BackupUUID -> ClientM NoContent
 clientPutRestoreBackup = putRestoreBackup smosProtectedClient
 
+clientDeleteBackup :: Token -> BackupUUID -> ClientM NoContent
+clientDeleteBackup = deleteBackup smosProtectedClient
+
 clientGetListSmosFiles :: Token -> ClientM (DirForest SmosFile)
 clientGetListSmosFiles = getListSmosFiles smosProtectedClient
 
