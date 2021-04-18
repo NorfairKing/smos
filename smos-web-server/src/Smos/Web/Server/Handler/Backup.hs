@@ -17,7 +17,6 @@ import Control.Monad.Except
 import qualified Data.ByteString.Lazy as LB
 import Data.Time
 import Data.Word
-import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Types as Http
 import Servant.Types.SourceT as Source
 import Smos.Client
