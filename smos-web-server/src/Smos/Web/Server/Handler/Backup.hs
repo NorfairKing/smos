@@ -7,6 +7,7 @@ module Smos.Web.Server.Handler.Backup
   ( getBackupsR,
     postBackupR,
     getBackupDownloadR,
+    postBackupDeleteR,
     postBackupRestoreR,
   )
 where
@@ -58,6 +59,11 @@ getBackupDownloadR uuid = withLogin $ \t -> do
       Right lb -> pure lb
   Yesod.addHeader "Content-Disposition" "attachment; filename=\"smos-backup.zip\""
   Yesod.respond "application/zip" archiveBytestring
+
+postBackupDeleteR :: BackupUUID -> Handler Html
+postBackupDeleteR uuid = withLogin $ \t -> do
+  NoContent <- runClientOrErr $ clientDeleteBackup t uuid
+  redirect BackupsR
 
 postBackupRestoreR :: BackupUUID -> Handler Html
 postBackupRestoreR uuid = withLogin $ \t -> do

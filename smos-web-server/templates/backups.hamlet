@@ -31,6 +31,16 @@
               <td>
                 <form
                   method="post"
+                  action=@{BackupDeleteR $ backupInfoUUID backup}>
+                  ^{token}
+                  <button .button
+                    onclick="return confirm('Are you sure you want to DELETE this backup? This cannot be undone.');"
+                    type="submit">
+                    Delete
+              <td>
+                <form
+                  onclick="return confirm('Are you sure you want to RESTORE this backup? Your current files will be overwritten. This cannot be undone.');"
+                  method="post"
                   action=@{BackupRestoreR $ backupInfoUUID backup}>
                   ^{token}
                   <button .button

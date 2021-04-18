@@ -15,6 +15,7 @@
 /backups BackupsR GET
 /backup BackupR POST
 /backup/#{BackupUUID}/download BackupDownloadR GET
+/backup/#{BackupUUID}/delete BackupDeleteR POST
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
 -- Subsites
