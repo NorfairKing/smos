@@ -29,7 +29,7 @@ servePutRestoreBackup (AuthCookie un) uuid = withUserId un $ \uid -> do
             ServerFile
               { serverFileUser = uid,
                 serverFilePath = backupFilePath,
-                serverFileContents = backupFileContents,
+                serverFileContents = decompressByteStringOrErrorMessage backupFileContents,
                 serverFileTime = case M.lookup backupFilePath currentServerFilesMap of
                   Nothing -> initialServerTime
                   Just time -> incrementServerTime time

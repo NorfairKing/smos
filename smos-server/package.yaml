@@ -52,6 +52,7 @@ library:
   - yaml
   - yamlparse-applicative
   - zip
+  - zstd
 
 executables:
   smos-server:

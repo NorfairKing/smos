@@ -80,6 +80,7 @@ serverSetupFunc' man = wrapSetupFunc $ \pool -> do
               serverEnvCookieSettings = defaultCookieSettings,
               serverEnvJWTSettings = defaultJWTSettings jwtKey,
               serverEnvPasswordDifficulty = 4, -- The lowest
+              serverEnvCompressionLevel = 1, -- The lowest
               serverEnvMaxBackupsPerUser = Nothing,
               serverEnvMaxBackupSizePerUser = Nothing
             }

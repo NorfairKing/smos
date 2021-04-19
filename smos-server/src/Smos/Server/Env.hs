@@ -27,6 +27,7 @@ data ServerEnv = ServerEnv
     serverEnvCookieSettings :: !CookieSettings,
     serverEnvJWTSettings :: !JWTSettings,
     serverEnvPasswordDifficulty :: !Int,
+    serverEnvCompressionLevel :: !Int, -- Between 1 and Codec.Compression.Zstd.maxCLevel
     serverEnvMaxBackupsPerUser :: !(Maybe Word),
     serverEnvMaxBackupSizePerUser :: !(Maybe Word64)
   }

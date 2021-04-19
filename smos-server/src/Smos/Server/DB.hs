@@ -13,6 +13,7 @@
 
 module Smos.Server.DB
   ( module Smos.Server.DB,
+    module Smos.Server.DB.Compressed,
     module Database.Persist,
     module Database.Persist.Sql,
   )
@@ -28,6 +29,7 @@ import Database.Persist.TH
 import GHC.Generics (Generic)
 import Path
 import Smos.API
+import Smos.Server.DB.Compressed
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
@@ -74,7 +76,7 @@ Backup
 BackupFile
     backup BackupId
     path (Path Rel File)
-    contents ByteString
+    contents Compressed
 
     deriving Show
     deriving Eq

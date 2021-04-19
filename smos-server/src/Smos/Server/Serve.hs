@@ -3,6 +3,7 @@
 
 module Smos.Server.Serve where
 
+import qualified Codec.Compression.Zstd as Zstd (maxCLevel)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Crypto.JOSE.JWK (JWK)
@@ -53,8 +54,12 @@ runSmosServer ServeSettings {..} = do
                       serverEnvJWTSettings = defaultJWTSettings jwtKey,
                       serverEnvPasswordDifficulty =
                         if development
-                          then 4
+                          then 4 -- As fast as possible
                           else 10, -- Rather slower
+                      serverEnvCompressionLevel =
+                        if development
+                          then 1 -- As fast as possible
+                          else Zstd.maxCLevel, -- rather slower
                       serverEnvMaxBackupsPerUser = Just 5,
                       serverEnvMaxBackupSizePerUser = Just $ 5 * 1024 * 1024 -- 5 MiB
                     }
