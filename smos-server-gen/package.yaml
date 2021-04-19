@@ -55,6 +55,7 @@ tests:
     - bytestring
     - containers
     - dirforest
+    - genvalidity-bytestring
     - genvalidity-sydtest
     - http-types
     - mergeful
@@ -75,3 +76,4 @@ tests:
     - sydtest-servant
     - text
     - zip
+    - zstd
