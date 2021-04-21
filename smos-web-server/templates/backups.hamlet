@@ -4,48 +4,51 @@
       <h3 .title .is-3>
         Backups
 
-      <table .table>
-        <thead>
-          <tr>
-            <th> Time
-            <th> Size
-            <th> Download
-            <th> Restore
-        <tfoot>
-          $forall backup <- backups
+      $if null backups
+        No backups yet
+      $else
+        <table .table>
+          <thead>
             <tr>
-              <td>
-                #{formatTime defaultTimeLocale "%F %H:%M"  $ backupInfoTime backup}
-                (#{prettyTimeAuto now $ backupInfoTime backup})
-              <td>
-                #{prettySize $ backupInfoSize backup}
+              <th> Time
+              <th> Size
+              <th> Download
+              <th> Restore
+          <tfoot>
+            $forall backup <- backups
+              <tr>
+                <td>
+                  #{formatTime defaultTimeLocale "%F %H:%M"  $ backupInfoTime backup}
+                  (#{prettyTimeAuto now $ backupInfoTime backup})
+                <td>
+                  #{prettySize $ backupInfoSize backup}
 
-              <td>
-                <form
-                  method="get"
-                  action=@{BackupDownloadR $ backupInfoUUID backup}>
-                  ^{token}
-                  <button .button
-                    type="submit">
-                    Download
-              <td>
-                <form
-                  method="post"
-                  action=@{BackupDeleteR $ backupInfoUUID backup}>
-                  ^{token}
-                  <button .button
-                    onclick="return confirm('Are you sure you want to DELETE this backup? This cannot be undone.');"
-                    type="submit">
-                    Delete
-              <td>
-                <form
-                  onclick="return confirm('Are you sure you want to RESTORE this backup? Your current files will be overwritten. This cannot be undone.');"
-                  method="post"
-                  action=@{BackupRestoreR $ backupInfoUUID backup}>
-                  ^{token}
-                  <button .button
-                    type="submit">
-                    Restore
+                <td>
+                  <form
+                    method="get"
+                    action=@{BackupDownloadR $ backupInfoUUID backup}>
+                    ^{token}
+                    <button .button
+                      type="submit">
+                      Download
+                <td>
+                  <form
+                    method="post"
+                    action=@{BackupDeleteR $ backupInfoUUID backup}>
+                    ^{token}
+                    <button .button
+                      onclick="return confirm('Are you sure you want to DELETE this backup? This cannot be undone.');"
+                      type="submit">
+                      Delete
+                <td>
+                  <form
+                    onclick="return confirm('Are you sure you want to RESTORE this backup? Your current files will be overwritten. This cannot be undone.');"
+                    method="post"
+                    action=@{BackupRestoreR $ backupInfoUUID backup}>
+                    ^{token}
+                    <button .button
+                      type="submit">
+                      Restore
 
       <form
         method="post"

@@ -12,6 +12,7 @@ import Data.Maybe
 import Data.SemVer as Version (toString)
 import Data.Version
 import qualified Env
+import Looper
 import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path.IO
@@ -52,6 +53,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
               Just fp -> resolveFile' fp
           let serveSetMaxBackupsPerUser = serveFlagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
           let serveSetMaxBackupSizePerUser = serveFlagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
+          let serverSetAutoBackupLooperSettings =
+                deriveLooperSettings
+                  0
+                  (hours 1)
+                  serveFlagAutoBackupLooperFlags
+                  envAutoBackupLooperEnv
+                  (mc >>= confAutoBackupLooperConfiguration)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -70,6 +78,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUPS_PER_USER" (mE <> Env.help "The maximum number of backups per user")
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
+      <*> looperEnvironmentParser "AUTO_BACKUP"
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -195,6 +204,7 @@ parseServeFlags =
               ]
           )
       )
+    <*> getLooperFlags "auto-backup"
 
 parseFlags :: Parser Flags
 parseFlags =

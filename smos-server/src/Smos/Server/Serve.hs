@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Serve where
@@ -15,6 +16,7 @@ import Data.Proxy
 import qualified Data.Text as T
 import Database.Persist.Sqlite as DB
 import Lens.Micro
+import Looper
 import Network.Wai as Wai
 import Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
@@ -27,8 +29,10 @@ import Servant.Server.Generic
 import Smos.API
 import Smos.Server.Constants
 import Smos.Server.Handler
+import Smos.Server.Looper
 import Smos.Server.OptParse
 import System.Exit
+import UnliftIO hiding (Handler)
 
 serveSmosServer :: ServeSettings -> IO ()
 serveSmosServer ss = do
@@ -41,33 +45,50 @@ runSmosServer ServeSettings {..} = do
   runStderrLoggingT $
     filterLogger (\_ ll -> ll >= serveSetLogLevel) $
       DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1 $
-        \pool ->
-          liftIO $ do
-            uuid <- readServerUUID serveSetUUIDFile
-            flip DB.runSqlPool pool $ DB.runMigration migrateAll
-            jwtKey <- loadSigningKey serveSetSigningKeyFile
-            let env =
-                  ServerEnv
-                    { serverEnvServerUUID = uuid,
-                      serverEnvConnection = pool,
-                      serverEnvCookieSettings = defaultCookieSettings,
-                      serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                      serverEnvPasswordDifficulty =
-                        if development
-                          then 4 -- As fast as possible
-                          else 10, -- Rather slower
-                      serverEnvCompressionLevel =
-                        if development
-                          then 1 -- As fast as possible
-                          else Zstd.maxCLevel, -- rather slower
-                      serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
-                      serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser
-                    }
-            let middles =
-                  if development
-                    then Wai.logStdoutDev
-                    else Wai.logStdout
-            Warp.run serveSetPort $ middles $ makeSyncApp env
+        \pool -> do
+          let compressionLevel =
+                if development
+                  then 1 -- As fast as possible
+                  else Zstd.maxCLevel -- rather slower
+          let runTheServer = liftIO $ do
+                uuid <- readServerUUID serveSetUUIDFile
+                flip DB.runSqlPool pool $ DB.runMigration migrateAll
+                jwtKey <- loadSigningKey serveSetSigningKeyFile
+                let env =
+                      ServerEnv
+                        { serverEnvServerUUID = uuid,
+                          serverEnvConnection = pool,
+                          serverEnvCookieSettings = defaultCookieSettings,
+                          serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                          serverEnvPasswordDifficulty =
+                            if development
+                              then 4 -- As fast as possible
+                              else 10, -- Rather slower
+                          serverEnvCompressionLevel = compressionLevel,
+                          serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
+                          serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser
+                        }
+                let middles =
+                      if development
+                        then Wai.logStdoutDev
+                        else Wai.logStdout
+                Warp.run serveSetPort $ middles $ makeSyncApp env
+          let runTheLoopers = do
+                let looperEnv =
+                      LooperEnv
+                        { looperEnvConnection = pool,
+                          looperEnvCompressionLevel = compressionLevel
+                        }
+                    looperRunner LooperDef {..} = do
+                      logInfoNS looperDefName "Starting"
+                      looperDefFunc
+                      logInfoNS looperDefName "Done"
+                flip runReaderT looperEnv $
+                  runLoopersIgnoreOverrun
+                    looperRunner
+                    [ mkLooperDef "auto-backup" serverSetAutoBackupLooperSettings runAutoBackupLooper
+                    ]
+          concurrently_ runTheServer runTheLoopers
 
 loadSigningKey :: Path Abs File -> IO JWK
 loadSigningKey skf = do

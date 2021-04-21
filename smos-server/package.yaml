@@ -23,6 +23,7 @@ library:
   - dirforest
   - envparse
   - jose
+  - looper
   - mergeful
   - microlens
   - monad-logger

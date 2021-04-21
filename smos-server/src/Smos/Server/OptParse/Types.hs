@@ -7,6 +7,7 @@ import Control.Monad.Logger
 import Data.Word
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
+import Looper
 import Path
 import Text.Read
 import YamlParse.Applicative
@@ -29,7 +30,8 @@ data ServeFlags = ServeFlags
     serveFlagSigningKeyFile :: !(Maybe FilePath),
     serveFlagPort :: !(Maybe Int),
     serveFlagMaxBackupsPerUser :: !(Maybe Word),
-    serveFlagMaxBackupSizePerUser :: !(Maybe Word64)
+    serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
+    serveFlagAutoBackupLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq)
 
@@ -46,7 +48,8 @@ data Environment = Environment
     envSigningKeyFile :: !(Maybe FilePath),
     envPort :: !(Maybe Int),
     envMaxBackupsPerUser :: !(Maybe Word),
-    envMaxBackupSizePerUser :: !(Maybe Word64)
+    envMaxBackupSizePerUser :: !(Maybe Word64),
+    envAutoBackupLooperEnv :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -57,7 +60,8 @@ data Configuration = Configuration
     confSigningKeyFile :: !(Maybe FilePath),
     confPort :: !(Maybe Int),
     confMaxBackupsPerUser :: !(Maybe Word),
-    confMaxBackupSizePerUser :: !(Maybe Word64)
+    confMaxBackupSizePerUser :: !(Maybe Word64),
+    confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -77,6 +81,7 @@ configurationObjectParser =
     <*> optionalField "port" "The port on which to serve api requests"
     <*> optionalField "max-backup-per-user" "The maximum number of backups per user"
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
+    <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -89,7 +94,8 @@ data ServeSettings = ServeSettings
     serveSetSigningKeyFile :: !(Path Abs File),
     serveSetPort :: !Int,
     serveSetMaxBackupsPerUser :: !(Maybe Word),
-    serveSetMaxBackupSizePerUser :: !(Maybe Word64)
+    serveSetMaxBackupSizePerUser :: !(Maybe Word64),
+    serverSetAutoBackupLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 
