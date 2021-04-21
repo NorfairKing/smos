@@ -3,16 +3,9 @@
 
 module Smos.Server.Looper.AutoBackup where
 
-import Control.Monad
-import Control.Monad.IO.Class
-import Control.Monad.Logger
-import Control.Monad.Reader
 import qualified Data.Text as T
-import Data.Time
-import Database.Persist
 import Smos.Server.Backup
-import Smos.Server.DB
-import Smos.Server.Looper.Env
+import Smos.Server.Looper.Import
 
 runAutoBackupLooper :: Looper ()
 runAutoBackupLooper = do
@@ -22,7 +15,7 @@ runAutoBackupLooper = do
 
 autoBackupForUser :: UserId -> Looper ()
 autoBackupForUser uid = do
-  logDebugNS "auto-backup" $ "Checking for auto-backup for user " <> T.pack (show uid)
+  logDebugNS "auto-backup" $ "Checking for auto-backup for user " <> T.pack (show (fromSqlKey uid))
   compressionLevel <- asks looperEnvCompressionLevel
   mBackup <- looperDB $ selectFirst [BackupUser ==. uid] [Desc BackupTime]
   now <- liftIO getCurrentTime

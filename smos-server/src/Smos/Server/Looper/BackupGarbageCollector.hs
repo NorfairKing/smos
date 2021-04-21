@@ -2,16 +2,8 @@
 
 module Smos.Server.Looper.BackupGarbageCollector where
 
-import Control.Monad
-import Control.Monad.IO.Class
-import Control.Monad.Logger
-import Control.Monad.Reader
 import qualified Data.Text as T
-import Data.Time
-import Database.Persist
-import Smos.Server.Backup
-import Smos.Server.DB
-import Smos.Server.Looper.Env
+import Smos.Server.Looper.Import
 
 runBackupGarbageCollectorLooper :: Looper ()
 runBackupGarbageCollectorLooper = do
@@ -21,5 +13,5 @@ runBackupGarbageCollectorLooper = do
 
 backupGarbageCollectorForUser :: UserId -> Looper ()
 backupGarbageCollectorForUser uid = do
-  logDebugNS "auto-backup" $ "Checking for garbage collection of backups for user " <> T.pack (show uid)
+  logDebugNS "auto-backup" $ "Checking for garbage collection of backups for user " <> T.pack (show (fromSqlKey uid))
   pure ()
