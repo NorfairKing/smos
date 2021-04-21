@@ -86,7 +86,8 @@ runSmosServer ServeSettings {..} = do
                 flip runReaderT looperEnv $
                   runLoopersIgnoreOverrun
                     looperRunner
-                    [ mkLooperDef "auto-backup" serverSetAutoBackupLooperSettings runAutoBackupLooper
+                    [ mkLooperDef "auto-backup" serverSetAutoBackupLooperSettings runAutoBackupLooper,
+                      mkLooperDef "backup-garbage-collector" serverSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                     ]
           concurrently_ runTheServer runTheLoopers
 

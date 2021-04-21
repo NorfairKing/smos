@@ -31,7 +31,8 @@ data ServeFlags = ServeFlags
     serveFlagPort :: !(Maybe Int),
     serveFlagMaxBackupsPerUser :: !(Maybe Word),
     serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
-    serveFlagAutoBackupLooperFlags :: !LooperFlags
+    serveFlagAutoBackupLooperFlags :: !LooperFlags,
+    serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags
   }
   deriving (Show, Eq)
 
@@ -49,7 +50,8 @@ data Environment = Environment
     envPort :: !(Maybe Int),
     envMaxBackupsPerUser :: !(Maybe Word),
     envMaxBackupSizePerUser :: !(Maybe Word64),
-    envAutoBackupLooperEnv :: !LooperEnvironment
+    envAutoBackupLooperEnv :: !LooperEnvironment,
+    envBackupGarbageCollectionLooperEnv :: !LooperEnvironment
   }
   deriving (Show, Eq, Generic)
 
@@ -61,7 +63,8 @@ data Configuration = Configuration
     confPort :: !(Maybe Int),
     confMaxBackupsPerUser :: !(Maybe Word),
     confMaxBackupSizePerUser :: !(Maybe Word64),
-    confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration)
+    confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
+    confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -82,6 +85,7 @@ configurationObjectParser =
     <*> optionalField "max-backup-per-user" "The maximum number of backups per user"
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
     <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
+    <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -95,7 +99,8 @@ data ServeSettings = ServeSettings
     serveSetPort :: !Int,
     serveSetMaxBackupsPerUser :: !(Maybe Word),
     serveSetMaxBackupSizePerUser :: !(Maybe Word64),
-    serverSetAutoBackupLooperSettings :: !LooperSettings
+    serverSetAutoBackupLooperSettings :: !LooperSettings,
+    serverSetBackupGarbageCollectionLooperSettings :: !LooperSettings
   }
   deriving (Show, Eq, Generic)
 

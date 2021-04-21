@@ -60,6 +60,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
                   serveFlagAutoBackupLooperFlags
                   envAutoBackupLooperEnv
                   (mc >>= confAutoBackupLooperConfiguration)
+          let serverSetBackupGarbageCollectionLooperSettings =
+                deriveLooperSettings
+                  0 -- TODO make this minutes 1
+                  (hours 24)
+                  serveFlagBackupGarbageCollectionLooperFlags
+                  envBackupGarbageCollectionLooperEnv
+                  (mc >>= confBackupGarbageCollectionLooperConfiguration)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -79,6 +86,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUPS_PER_USER" (mE <> Env.help "The maximum number of backups per user")
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
       <*> looperEnvironmentParser "AUTO_BACKUP"
+      <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -205,6 +213,7 @@ parseServeFlags =
           )
       )
     <*> getLooperFlags "auto-backup"
+    <*> getLooperFlags "backup-garbage-collector"
 
 parseFlags :: Parser Flags
 parseFlags =
