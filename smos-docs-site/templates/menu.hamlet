@@ -182,6 +182,9 @@
         <li>
           <a href=@{PageR ["smos-server", "nixos"]}>
             Running on NixOs
+        <li>
+          <a href=@{PageR ["smos-server", "backups"]}>
+            Backups for users
 
     <li>
       <a href=@{SmosWebServerR}>

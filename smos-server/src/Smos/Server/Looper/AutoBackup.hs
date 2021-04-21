@@ -10,7 +10,6 @@ import Control.Monad.Reader
 import qualified Data.Text as T
 import Data.Time
 import Database.Persist
-import Database.Persist.Sql
 import Smos.Server.Backup
 import Smos.Server.DB
 import Smos.Server.Looper.Env

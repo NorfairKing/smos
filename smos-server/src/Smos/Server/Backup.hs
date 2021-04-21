@@ -3,7 +3,6 @@
 
 module Smos.Server.Backup where
 
-import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Foldable
 import qualified Data.Map as M
