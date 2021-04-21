@@ -60,8 +60,8 @@ runSmosServer ServeSettings {..} = do
                         if development
                           then 1 -- As fast as possible
                           else Zstd.maxCLevel, -- rather slower
-                      serverEnvMaxBackupsPerUser = Just 5,
-                      serverEnvMaxBackupSizePerUser = Just $ 5 * 1024 * 1024 -- 5 MiB
+                      serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
+                      serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser
                     }
             let middles =
                   if development

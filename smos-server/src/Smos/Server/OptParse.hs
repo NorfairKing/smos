@@ -50,6 +50,8 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
             case serveFlagSigningKeyFile <|> envSigningKeyFile <|> (mc >>= confSigningKeyFile) of
               Nothing -> resolveFile' "smos-signing-key.json"
               Just fp -> resolveFile' fp
+          let serveSetMaxBackupsPerUser = serveFlagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
+          let serveSetMaxBackupSizePerUser = serveFlagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -66,6 +68,8 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "DATABASE_FILE" (mE <> Env.help "The file to store the server database in")
       <*> Env.var (fmap Just . Env.str) "SIGNING_KEY_FILE" (mE <> Env.help "The file to store the JWT signing key in")
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
+      <*> Env.var (fmap Just . Env.auto) "MAX_BACKUPS_PER_USER" (mE <> Env.help "The maximum number of backups per user")
+      <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -121,48 +125,76 @@ parseCommandServe = info parser modifier
 parseServeFlags :: Parser ServeFlags
 parseServeFlags =
   ServeFlags
-    <$> option
-      (Just <$> maybeReader parseLogLevel)
-      ( mconcat
-          [ long "log-level",
-            help $
-              unwords
-                [ "The log level to use, options:",
-                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                ],
-            value Nothing
-          ]
+    <$> optional
+      ( option
+          (maybeReader parseLogLevel)
+          ( mconcat
+              [ long "log-level",
+                help $
+                  unwords
+                    [ "The log level to use, options:",
+                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                    ]
+              ]
+          )
       )
-    <*> option
-      (Just <$> str)
-      ( mconcat
-          [ long "uuid-file",
-            help "The file to use for the server uuid",
-            metavar "FILEPATH",
-            value Nothing
-          ]
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "uuid-file",
+                help "The file to use for the server uuid",
+                metavar "FILEPATH"
+              ]
+          )
       )
-    <*> option
-      (Just <$> str)
-      ( mconcat
-          [ long "database-file",
-            help "The file to use for the server database",
-            metavar "FILEPATH",
-            value Nothing
-          ]
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "database-file",
+                help "The file to use for the server database",
+                metavar "FILEPATH"
+              ]
+          )
       )
-    <*> option
-      (Just <$> str)
-      ( mconcat
-          [ long "signing-key-file",
-            help "The file to use for the JWT signing key database",
-            metavar "FILEPATH",
-            value Nothing
-          ]
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "signing-key-file",
+                help "The file to use for the JWT signing key database",
+                metavar "FILEPATH"
+              ]
+          )
       )
-    <*> option
-      (Just <$> auto)
-      (mconcat [long "port", help "The port to serve on", metavar "PORT", value Nothing])
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "port",
+                help "The port to serve on",
+                metavar "PORT"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "max-backup-per-user",
+                metavar "NUMBER",
+                help "The maximum number of backups per user"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "max-backup-size-per-user",
+                metavar "BYTES",
+                help "The maximum number of bytes that backups can take up per user"
+              ]
+          )
+      )
 
 parseFlags :: Parser Flags
 parseFlags =

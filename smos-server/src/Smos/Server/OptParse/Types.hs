@@ -4,6 +4,7 @@
 module Smos.Server.OptParse.Types where
 
 import Control.Monad.Logger
+import Data.Word
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
@@ -26,7 +27,9 @@ data ServeFlags = ServeFlags
     serveFlagUUIDFile :: !(Maybe FilePath),
     serveFlagDatabaseFile :: !(Maybe FilePath),
     serveFlagSigningKeyFile :: !(Maybe FilePath),
-    serveFlagPort :: !(Maybe Int)
+    serveFlagPort :: !(Maybe Int),
+    serveFlagMaxBackupsPerUser :: !(Maybe Word),
+    serveFlagMaxBackupSizePerUser :: !(Maybe Word64)
   }
   deriving (Show, Eq)
 
@@ -41,7 +44,9 @@ data Environment = Environment
     envUUIDFile :: !(Maybe FilePath),
     envDatabaseFile :: !(Maybe FilePath),
     envSigningKeyFile :: !(Maybe FilePath),
-    envPort :: !(Maybe Int)
+    envPort :: !(Maybe Int),
+    envMaxBackupsPerUser :: !(Maybe Word),
+    envMaxBackupSizePerUser :: !(Maybe Word64)
   }
   deriving (Show, Eq, Generic)
 
@@ -50,7 +55,9 @@ data Configuration = Configuration
     confUUIDFile :: !(Maybe FilePath),
     confDatabaseFile :: !(Maybe FilePath),
     confSigningKeyFile :: !(Maybe FilePath),
-    confPort :: !(Maybe Int)
+    confPort :: !(Maybe Int),
+    confMaxBackupsPerUser :: !(Maybe Word),
+    confMaxBackupSizePerUser :: !(Maybe Word64)
   }
   deriving (Show, Eq, Generic)
 
@@ -68,6 +75,8 @@ configurationObjectParser =
     <*> optionalField "database-file" "The file in which to store the database"
     <*> optionalField "signing-key-file" "The file in which to store signing key for JWT tokens"
     <*> optionalField "port" "The port on which to serve api requests"
+    <*> optionalField "max-backup-per-user" "The maximum number of backups per user"
+    <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -78,7 +87,9 @@ data ServeSettings = ServeSettings
     serveSetUUIDFile :: !(Path Abs File),
     serveSetDatabaseFile :: !(Path Abs File),
     serveSetSigningKeyFile :: !(Path Abs File),
-    serveSetPort :: Int
+    serveSetPort :: !Int,
+    serveSetMaxBackupsPerUser :: !(Maybe Word),
+    serveSetMaxBackupSizePerUser :: !(Maybe Word64)
   }
   deriving (Show, Eq, Generic)
 
