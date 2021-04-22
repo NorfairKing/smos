@@ -70,6 +70,7 @@ tests:
     - smos-data
     - smos-data-gen
     - smos-report
+    - smos-report-gen
     - smos-server
     - smos-server-gen
     - sydtest
