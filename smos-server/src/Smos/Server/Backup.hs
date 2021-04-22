@@ -44,3 +44,8 @@ doBackupForUser compressionLevel uid = do
         }
 
   pure uuid
+
+deleteBackupById :: BackupId -> SqlPersistT IO ()
+deleteBackupById bid = do
+  deleteWhere [BackupFileBackup ==. bid]
+  delete bid

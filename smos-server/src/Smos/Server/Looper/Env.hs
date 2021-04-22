@@ -11,7 +11,8 @@ type Looper = ReaderT LooperEnv (LoggingT IO)
 
 data LooperEnv = LooperEnv
   { looperEnvConnection :: !ConnectionPool,
-    looperEnvCompressionLevel :: !Int
+    looperEnvCompressionLevel :: !Int,
+    looperEnvMaxBackupsPerUser :: !(Maybe Word)
   }
   deriving (Generic)
 
