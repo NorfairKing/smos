@@ -22,6 +22,7 @@ module Smos.Client
   )
 where
 
+import Control.Arrow
 import Control.DeepSeq
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
@@ -54,7 +55,7 @@ clientGetApiVersion = getApiVersion smosUnprotectedClient
 clientPostRegister :: Register -> ClientM NoContent
 clientPostRegister = postRegister smosUnprotectedClient
 
-clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
+clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] UserInfo)
 clientPostLogin = postLogin smosUnprotectedClient
 
 oldestSupportedAPIVersion :: Version
@@ -168,15 +169,15 @@ clientGetNextActionReport = getNextActionReport smosReportsClient
 clientGetAgendaReport :: Token -> ClientM AgendaReport
 clientGetAgendaReport = getAgendaReport smosReportsClient
 
-clientLogin :: Login -> ClientM (Either HeaderProblem Token)
-clientLogin = fmap (fmap sessionToToken) . clientLoginSession
+clientLogin :: Login -> ClientM (Either HeaderProblem (Token, UserInfo))
+clientLogin = fmap (fmap (first sessionToToken)) . clientLoginSession
 
-clientLoginSession :: Login -> ClientM (Either HeaderProblem SetCookie)
+clientLoginSession :: Login -> ClientM (Either HeaderProblem (SetCookie, UserInfo))
 clientLoginSession lf = do
   res <- clientPostLogin lf
   pure $
     case res of
-      Headers NoContent (HCons sessionHeader HNil) ->
+      Headers userInfo (HCons sessionHeader HNil) ->
         case sessionHeader of
           MissingHeader -> Left ProblemMissingHeader
           UndecodableHeader b -> Left $ ProblemUndecodableHeader b
@@ -187,7 +188,7 @@ clientLoginSession lf = do
                   find ((== "JWT-Cookie") . setCookieName) cookies
              in case jwtCookie of
                   Nothing -> Left ProblemMissingJWTCookie
-                  Just setCookie -> Right setCookie
+                  Just setCookie -> Right (setCookie, userInfo)
 
 sessionToToken :: SetCookie -> Token
 sessionToToken = Token . setCookieValue
@@ -202,7 +203,7 @@ instance NFData HeaderProblem
 
 instance NFData Token
 
-login :: ClientEnv -> Login -> IO (Either LoginError Token)
+login :: ClientEnv -> Login -> IO (Either LoginError (Token, UserInfo))
 login cenv lf = do
   errOrRes <- runClient cenv $ clientLogin lf
   pure $

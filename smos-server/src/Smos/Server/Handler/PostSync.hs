@@ -14,7 +14,7 @@ import Path
 import Smos.Server.Handler.Import
 
 servePostSync :: AuthCookie -> SyncRequest -> ServerHandler SyncResponse
-servePostSync (AuthCookie un) SyncRequest {..} = withUserId un $ \uid -> do
+servePostSync AuthCookie {..} SyncRequest {..} = withUserId authCookieUsername $ \uid -> do
   syncResponseServerId <- asks serverEnvServerUUID
   syncResponseItems <- runDB $ Mergeful.processServerSyncCustom (syncProcessor uid) syncRequestItems
   pure SyncResponse {..}

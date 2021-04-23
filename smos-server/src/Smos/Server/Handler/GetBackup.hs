@@ -15,7 +15,7 @@ import System.FilePath.Windows as Windows
 import UnliftIO
 
 serveGetBackup :: AuthCookie -> BackupUUID -> ServerHandler (SourceIO ByteString)
-serveGetBackup (AuthCookie un) uuid = withUserId un $ \uid -> do
+serveGetBackup AuthCookie {..} uuid = withUserId authCookieUsername $ \uid -> do
   mBackup <- runDB $ getBy $ UniqueBackupUUID uid uuid
   case mBackup of
     Nothing -> throwError err404

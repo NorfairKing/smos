@@ -63,7 +63,8 @@ type SmosAPI = ToServantApi APIRoutes
 
 data APIRoutes route = APIRoutes
   { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes,
-    protectedRoutes :: route :- ToServantApi ProtectedRoutes
+    protectedRoutes :: route :- ToServantApi ProtectedRoutes,
+    adminRoutes :: route :- ToServantApi AdminRoutes
   }
   deriving (Generic)
 
@@ -84,14 +85,24 @@ smosProtectedAPI = Proxy
 
 type ProtectAPI = Auth '[JWT] AuthCookie
 
-newtype AuthCookie = AuthCookie
-  { authCookieUsername :: Username
+data AuthCookie = AuthCookie
+  { authCookieUsername :: Username,
+    authCookieIsAdmin :: Bool
   }
   deriving (Show, Eq, Ord, Generic)
 
-instance FromJSON AuthCookie
+instance FromJSON AuthCookie where
+  parseJSON = withObject "AuthCookie" $ \o ->
+    AuthCookie
+      <$> o .: "username"
+      <*> o .: "admin"
 
-instance ToJSON AuthCookie
+instance ToJSON AuthCookie where
+  toJSON AuthCookie {..} =
+    object
+      [ "username" .= authCookieUsername,
+        "admin" .= authCookieIsAdmin
+      ]
 
 instance FromJWT AuthCookie
 
@@ -132,7 +143,9 @@ instance ToJSON Register
 instance FromJSON Register
 
 type PostLogin =
-  "login" :> ReqBody '[JSON] Login :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
+  "login"
+    :> ReqBody '[JSON] Login
+    :> Post '[JSON] (Headers '[Header "Set-Cookie" T.Text] UserInfo)
 
 data Login = Login
   { loginUsername :: Username,
@@ -292,3 +305,38 @@ type GetAgendaReport = "report" :> "agenda" :> Get '[JSON] AgendaReport
 
 reportsAPI :: Proxy ReportsAPI
 reportsAPI = Proxy
+
+type ProtectAdmin = Auth '[JWT] AuthCookie
+
+newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
+  deriving (Show, Eq, Ord, Generic)
+
+data AdminRoutes route = AdminRoutes
+  { getUsers :: !(route :- ProtectAdmin :> GetUsers)
+  }
+  deriving (Generic)
+
+type GetUsers = "admin" :> "users" :> Get '[JSON] [UserInfo]
+
+data UserInfo = UserInfo
+  { userInfoUsername :: Username,
+    userInfoAdmin :: Bool
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity UserInfo
+
+instance NFData UserInfo
+
+instance ToJSON UserInfo where
+  toJSON UserInfo {..} =
+    object
+      [ "name" .= userInfoUsername,
+        "admin" .= userInfoAdmin
+      ]
+
+instance FromJSON UserInfo where
+  parseJSON = withObject "UserInfo" $ \o ->
+    UserInfo
+      <$> o .: "name"
+      <*> o .: "admin"

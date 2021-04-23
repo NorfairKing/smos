@@ -125,7 +125,8 @@ smosServerRecord :: APIRoutes (AsServerT ServerHandler)
 smosServerRecord =
   APIRoutes
     { unprotectedRoutes = toServant syncServerUnprotectedRoutes,
-      protectedRoutes = toServant syncServerProtectedRoutes
+      protectedRoutes = toServant syncServerProtectedRoutes,
+      adminRoutes = toServant syncServerAdminRoutes
     }
 
 syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT ServerHandler)
@@ -158,6 +159,12 @@ serverReportRoutes =
       getAgendaReport = withAuthResult serveGetAgendaReport
     }
 
+syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
+syncServerAdminRoutes =
+  AdminRoutes
+    { getUsers = withAdminAuthResult serveGetUsers
+    }
+
 readServerUUID :: Path Abs File -> IO ServerUUID
 readServerUUID p = do
   mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile p
@@ -180,4 +187,13 @@ withAuthResult :: ThrowAll a => (AuthCookie -> a) -> (AuthResult AuthCookie -> a
 withAuthResult func ar =
   case ar of
     Authenticated ac -> func ac
+    _ -> throwAll err401
+
+withAdminAuthResult :: ThrowAll a => (AdminCookie -> a) -> (AuthResult AuthCookie -> a)
+withAdminAuthResult func ar =
+  case ar of
+    Authenticated AuthCookie {..} ->
+      if authCookieIsAdmin
+        then func (AdminCookie {adminCookieUsername = authCookieUsername})
+        else throwAll err403
     _ -> throwAll err401

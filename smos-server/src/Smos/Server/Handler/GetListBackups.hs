@@ -8,7 +8,7 @@ where
 import Smos.Server.Handler.Import
 
 serveGetListBackups :: AuthCookie -> ServerHandler [BackupInfo]
-serveGetListBackups (AuthCookie un) = withUserId un $ \uid ->
+serveGetListBackups AuthCookie {..} = withUserId authCookieUsername $ \uid ->
   runDB $ do
     backupEntities <- selectList [BackupUser ==. uid] [Asc BackupTime]
     pure $
