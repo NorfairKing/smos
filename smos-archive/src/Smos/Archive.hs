@@ -71,7 +71,7 @@ destinationFile lt workflowDir archiveDir file = do
     Just rf -> do
       let mext = fileExtension rf :: Maybe String
       let withoutExt = FP.dropExtensions (fromRelFile rf)
-      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F_%T" lt
+      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F_%H%M%S" lt
       arf' <- parseRelFile newRelFile
       arf'' <- maybe (pure arf') (`replaceExtension` arf') mext
       pure $ archiveDir </> arf''
