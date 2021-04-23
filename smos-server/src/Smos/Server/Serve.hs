@@ -66,7 +66,8 @@ runSmosServer ServeSettings {..} = do
                               else 10, -- Rather slower
                           serverEnvCompressionLevel = compressionLevel,
                           serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
-                          serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser
+                          serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
+                          serverEnvAdmin = serveSetAdmin
                         }
                 let middles =
                       if development
@@ -87,8 +88,8 @@ runSmosServer ServeSettings {..} = do
                 flip runReaderT looperEnv $
                   runLoopersIgnoreOverrun
                     looperRunner
-                    [ mkLooperDef "auto-backup" serverSetAutoBackupLooperSettings runAutoBackupLooper,
-                      mkLooperDef "backup-garbage-collector" serverSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
+                    [ mkLooperDef "auto-backup" serveSetAutoBackupLooperSettings runAutoBackupLooper,
+                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                     ]
           concurrently_ runTheServer runTheLoopers
 

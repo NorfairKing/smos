@@ -26,15 +26,17 @@ servePostLogin Login {..} = do
               PasswordCheckFail -> throwError err401
   where
     setLoggedIn un = do
+      mAdmin <- asks serverEnvAdmin
+      let isAdmin = mAdmin == Just un
       let cookie =
             AuthCookie
               { authCookieUsername = un,
-                authCookieIsAdmin = False -- TODO set this somehow
+                authCookieIsAdmin = isAdmin
               }
       ServerEnv {..} <- ask
       mCookie <- liftIO $ makeSessionCookieBS serverEnvCookieSettings serverEnvJWTSettings cookie
       case mCookie of
         Nothing -> throwError err401
         Just setCookie -> do
-          let ui = UserInfo {userInfoUsername = un, userInfoAdmin = False} -- TODO set this somehow.
+          let ui = UserInfo {userInfoUsername = un, userInfoAdmin = isAdmin}
           pure $ addHeader (decodeUtf8 setCookie) ui

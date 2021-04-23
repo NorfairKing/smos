@@ -14,6 +14,7 @@ module Smos.Web.Server.Foundation where
 import Control.Arrow (left)
 import Control.Concurrent.STM
 import Control.DeepSeq
+import Control.Monad
 import Control.Monad.Logger
 import Data.Aeson as JSON
 import qualified Data.ByteString.Base16 as Base16
@@ -261,6 +262,7 @@ withLogin'' func = do
 
 lookupToginToken :: Username -> Handler (Maybe (Token, Bool))
 lookupToginToken un = do
+  readTokens
   tokenMapVar <- getsYesod appLoginTokens
   tokenMap <- liftIO $ readTVarIO tokenMapVar
   pure $ M.lookup un tokenMap
@@ -269,6 +271,25 @@ recordLoginToken :: Username -> Token -> UserInfo -> Handler ()
 recordLoginToken un token ui = do
   tokenMapVar <- getsYesod appLoginTokens
   liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, userInfoAdmin ui)
+  writeTokens
+
+-- These three are used so you don't have to log in again every time you restart the server during development
+developmentTokenFile :: FilePath
+developmentTokenFile = "smos-web-server-tokens.json"
+
+readTokens :: Handler ()
+readTokens = when development $ do
+  tokenMapVar <- getsYesod appLoginTokens
+  liftIO $ do
+    mts <- fmap join $ forgivingAbsence $ JSON.decodeFileStrict' developmentTokenFile
+    atomically $ writeTVar tokenMapVar $ fromMaybe M.empty mts
+
+writeTokens :: Handler ()
+writeTokens = when development $ do
+  tokenMapVar <- getsYesod appLoginTokens
+  liftIO $ do
+    tokenMap <- readTVarIO tokenMapVar
+    JSON.encodeFile developmentTokenFile tokenMap
 
 instance FromJSON Token where
   parseJSON =

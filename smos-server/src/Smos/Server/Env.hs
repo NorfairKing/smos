@@ -29,7 +29,8 @@ data ServerEnv = ServerEnv
     serverEnvPasswordDifficulty :: !Int,
     serverEnvCompressionLevel :: !Int, -- Between 1 and Codec.Compression.Zstd.maxCLevel
     serverEnvMaxBackupsPerUser :: !(Maybe Word),
-    serverEnvMaxBackupSizePerUser :: !(Maybe Word64)
+    serverEnvMaxBackupSizePerUser :: !(Maybe Word64),
+    serverEnvAdmin :: !(Maybe Username)
   }
   deriving (Generic)
 

@@ -9,6 +9,7 @@ import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Looper
 import Path
+import Smos.API
 import Text.Read
 import YamlParse.Applicative
 
@@ -32,7 +33,8 @@ data ServeFlags = ServeFlags
     serveFlagMaxBackupsPerUser :: !(Maybe Word),
     serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
     serveFlagAutoBackupLooperFlags :: !LooperFlags,
-    serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags
+    serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags,
+    serveFlagAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq)
 
@@ -51,7 +53,8 @@ data Environment = Environment
     envMaxBackupsPerUser :: !(Maybe Word),
     envMaxBackupSizePerUser :: !(Maybe Word64),
     envAutoBackupLooperEnv :: !LooperEnvironment,
-    envBackupGarbageCollectionLooperEnv :: !LooperEnvironment
+    envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
+    envAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -64,7 +67,8 @@ data Configuration = Configuration
     confMaxBackupsPerUser :: !(Maybe Word),
     confMaxBackupSizePerUser :: !(Maybe Word64),
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
-    confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration)
+    confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
+    confAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -86,6 +90,7 @@ configurationObjectParser =
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
     <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
     <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
+    <*> optionalField "admin" "The username of the user who will have admin rights"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -99,8 +104,9 @@ data ServeSettings = ServeSettings
     serveSetPort :: !Int,
     serveSetMaxBackupsPerUser :: !(Maybe Word),
     serveSetMaxBackupSizePerUser :: !(Maybe Word64),
-    serverSetAutoBackupLooperSettings :: !LooperSettings,
-    serverSetBackupGarbageCollectionLooperSettings :: !LooperSettings
+    serveSetAutoBackupLooperSettings :: !LooperSettings,
+    serveSetBackupGarbageCollectionLooperSettings :: !LooperSettings,
+    serveSetAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)
 

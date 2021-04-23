@@ -82,7 +82,8 @@ serverSetupFunc' man = wrapSetupFunc $ \pool -> do
               serverEnvPasswordDifficulty = 4, -- The lowest
               serverEnvCompressionLevel = 1, -- The lowest
               serverEnvMaxBackupsPerUser = Nothing,
-              serverEnvMaxBackupSizePerUser = Nothing
+              serverEnvMaxBackupSizePerUser = Nothing,
+              serverEnvAdmin = Nothing
             }
     pure $ Server.makeSyncApp env
   p <- unwrapSetupFunc applicationSetupFunc application

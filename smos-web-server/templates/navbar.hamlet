@@ -31,7 +31,7 @@
 
       $maybe isAdmin <- mAdmin
         $if isAdmin
-          <a .navbar-item href=@{AdminR}>
+          <a .navbar-item href=@{AdminPanelR}>
             Admin Panel
 
     <div .navbar-end>

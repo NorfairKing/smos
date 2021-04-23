@@ -7,9 +7,11 @@ module Smos.Server.OptParse
   )
 where
 
+import Control.Arrow
 import Control.Monad.Logger
 import Data.Maybe
 import Data.SemVer as Version (toString)
+import qualified Data.Text as T
 import Data.Version
 import qualified Env
 import Looper
@@ -53,20 +55,21 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
               Just fp -> resolveFile' fp
           let serveSetMaxBackupsPerUser = serveFlagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
           let serveSetMaxBackupSizePerUser = serveFlagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
-          let serverSetAutoBackupLooperSettings =
+          let serveSetAutoBackupLooperSettings =
                 deriveLooperSettings
                   0
                   (hours 1)
                   serveFlagAutoBackupLooperFlags
                   envAutoBackupLooperEnv
                   (mc >>= confAutoBackupLooperConfiguration)
-          let serverSetBackupGarbageCollectionLooperSettings =
+          let serveSetBackupGarbageCollectionLooperSettings =
                 deriveLooperSettings
-                  0 -- TODO make this minutes 1
+                  (minutes 1)
                   (hours 24)
                   serveFlagBackupGarbageCollectionLooperFlags
                   envBackupGarbageCollectionLooperEnv
                   (mc >>= confBackupGarbageCollectionLooperConfiguration)
+          let serveSetAdmin = serveFlagAdmin <|> envAdmin <|> (mc >>= confAdmin)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
 
@@ -87,6 +90,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
       <*> looperEnvironmentParser "AUTO_BACKUP"
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
+      <*> Env.var (fmap Just . (left Env.UnreadError . parseUsernameWithError . T.pack)) "ADMIN" (mE <> Env.help "The user that will have admin rights")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -214,6 +218,16 @@ parseServeFlags =
       )
     <*> getLooperFlags "auto-backup"
     <*> getLooperFlags "backup-garbage-collector"
+    <*> optional
+      ( option
+          (eitherReader $ parseUsernameWithError . T.pack)
+          ( mconcat
+              [ long "admin",
+                metavar "USERNAME",
+                help "The user that will have admin rights"
+              ]
+          )
+      )
 
 parseFlags :: Parser Flags
 parseFlags =
