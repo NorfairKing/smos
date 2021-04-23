@@ -9,7 +9,6 @@ import Codec.Archive.Zip as Zip
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Path
 import Path.IO
 import Servant.Types.SourceT
@@ -17,6 +16,7 @@ import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.InterestingStore
+import Smos.Server.Handler.GetBackup
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
 import System.IO
@@ -74,4 +74,4 @@ backupIntegrationTestForInterestingStore cenv store =
             Just (Right sf) -> pure $ Just sf
         else pure Nothing -- Ignore non-smos files because 'clientGetListSmosFiles' doesn't actually contain the non-smos files.
         -- We have to turn the files to UTF8 so that the replacement characters are in place on both sides of the equation.
-    M.mapKeys (T.pack . fromRelFile) (M.mapMaybe id (DF.toFileMap actualFiles)) `shouldBe` M.mapKeys (T.pack . fromRelFile) (DF.toFileMap expectedFiles)
+    M.mapKeys prepareBackupFilePath (M.mapMaybe id (DF.toFileMap actualFiles)) `shouldBe` M.mapKeys prepareBackupFilePath (DF.toFileMap expectedFiles)

@@ -15,3 +15,9 @@ This deletion happens once every 24 hours by default.
 
 
 See [the reference documentation for the `smos-server` for information on how to configure it](/smos-server).
+
+
+Note: When downloading a backup, the files are collected in a zip file, which
+requires filepaths that are valid on both windows and posix filesystems.
+Because of this limitation, sometimes the filenames in the resulting archive
+will be slightly different from the original.
