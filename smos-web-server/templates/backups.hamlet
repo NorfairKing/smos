@@ -7,13 +7,19 @@
       $if null backups
         No backups yet
       $else
-        <table .table>
+        <table .table .is-fullwidth .is-striped .is-hoverable>
           <thead>
             <tr>
-              <th> Time
-              <th> Size
-              <th> Download
-              <th> Restore
+              <th>
+                Time
+              <th>
+                Size
+              <th style="width: 10%;">
+                Download
+              <th style="width: 10%;">
+                Delete
+              <th style="width: 10%;">
+                Restore
           <tfoot>
             $forall backup <- backups
               <tr>

@@ -321,7 +321,8 @@ type GetUsers = "admin" :> "users" :> Get '[JSON] [UserInfo]
 data UserInfo = UserInfo
   { userInfoUsername :: !Username,
     userInfoAdmin :: !Bool,
-    userInfoCreated :: !UTCTime
+    userInfoCreated :: !UTCTime,
+    userInfoLastLogin :: !(Maybe UTCTime)
   }
   deriving (Show, Eq, Generic)
 
@@ -334,7 +335,8 @@ instance ToJSON UserInfo where
     object
       [ "name" .= userInfoUsername,
         "admin" .= userInfoAdmin,
-        "created" .= userInfoCreated
+        "created" .= userInfoCreated,
+        "last-login" .= userInfoLastLogin
       ]
 
 instance FromJSON UserInfo where
@@ -343,3 +345,4 @@ instance FromJSON UserInfo where
       <$> o .: "name"
       <*> o .: "admin"
       <*> o .: "created"
+      <*> o .:? "last-login"

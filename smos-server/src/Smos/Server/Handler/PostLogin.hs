@@ -17,14 +17,14 @@ servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of
     Nothing -> throwError err401
-    Just (Entity _ user) ->
+    Just e@(Entity _ user) ->
       if development
-        then setLoggedIn user
+        then setLoggedIn e
         else case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
-          PasswordCheckSuccess -> setLoggedIn user
+          PasswordCheckSuccess -> setLoggedIn e
           PasswordCheckFail -> throwError err401
   where
-    setLoggedIn User {..} = do
+    setLoggedIn e@(Entity uid User {..}) = do
       mAdmin <- asks serverEnvAdmin
       let isAdmin = mAdmin == Just userName
       let cookie =
@@ -37,10 +37,13 @@ servePostLogin Login {..} = do
       case mCookie of
         Nothing -> throwError err401
         Just setCookie -> do
+          now <- liftIO getCurrentTime
+          runDB $ update uid [UserLastLogin =. Just now]
           let ui =
                 UserInfo
                   { userInfoUsername = userName,
                     userInfoAdmin = isAdmin,
-                    userInfoCreated = userCreated
+                    userInfoCreated = userCreated,
+                    userInfoLastLogin = userLastLogin
                   }
           pure $ addHeader (decodeUtf8 setCookie) ui

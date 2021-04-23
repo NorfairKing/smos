@@ -16,5 +16,6 @@ serveGetUsers AdminCookie {..} = do
       UserInfo
         { userInfoUsername = userName,
           userInfoAdmin = mServerAdmin == Just userName,
-          userInfoCreated = userCreated
+          userInfoCreated = userCreated,
+          userInfoLastLogin = userLastLogin
         }

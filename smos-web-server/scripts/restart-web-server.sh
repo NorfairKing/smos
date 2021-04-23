@@ -8,6 +8,6 @@ killall 'smos-server' || true
 
 smos-server serve &
 
-sleep 0.1
+sleep 0.25
 
 smos-web-server serve &

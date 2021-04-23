@@ -4,12 +4,17 @@
       <h3 .title .is-3>
         Users
 
-      <table .table>
+      <table .table .is-fullwidth .is-striped .is-hoverable>
         <thead>
           <tr>
-            <th> Username
-            <th> Admin
-            <th> Created
+            <th>
+              Username
+            <th style="width: 5%;">
+              Admin
+            <th style="width: 20%;">
+              Created
+            <th style="width: 20%;">
+              Last Login
         <tfoot>
           $forall user <- users
             <tr>
@@ -20,3 +25,7 @@
               <td>
                 #{formatTime defaultTimeLocale "%F" $ userInfoCreated user}
                 (#{prettyTimeAuto now $ userInfoCreated user})
+              <td>
+                $maybe lastLogin <- userInfoLastLogin user
+                  #{formatTime defaultTimeLocale "%F" lastLogin}
+                  (#{prettyTimeAuto now lastLogin})
