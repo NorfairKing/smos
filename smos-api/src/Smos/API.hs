@@ -319,8 +319,9 @@ data AdminRoutes route = AdminRoutes
 type GetUsers = "admin" :> "users" :> Get '[JSON] [UserInfo]
 
 data UserInfo = UserInfo
-  { userInfoUsername :: Username,
-    userInfoAdmin :: Bool
+  { userInfoUsername :: !Username,
+    userInfoAdmin :: !Bool,
+    userInfoCreated :: !UTCTime
   }
   deriving (Show, Eq, Generic)
 
@@ -332,7 +333,8 @@ instance ToJSON UserInfo where
   toJSON UserInfo {..} =
     object
       [ "name" .= userInfoUsername,
-        "admin" .= userInfoAdmin
+        "admin" .= userInfoAdmin,
+        "created" .= userInfoCreated
       ]
 
 instance FromJSON UserInfo where
@@ -340,3 +342,4 @@ instance FromJSON UserInfo where
     UserInfo
       <$> o .: "name"
       <*> o .: "admin"
+      <*> o .: "created"

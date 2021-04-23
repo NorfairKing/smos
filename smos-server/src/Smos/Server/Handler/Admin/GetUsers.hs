@@ -15,5 +15,6 @@ serveGetUsers AdminCookie {..} = do
     flip map userEntities $ \(Entity _ User {..}) ->
       UserInfo
         { userInfoUsername = userName,
-          userInfoAdmin = mServerAdmin == Just userName
+          userInfoAdmin = mServerAdmin == Just userName,
+          userInfoCreated = userCreated
         }

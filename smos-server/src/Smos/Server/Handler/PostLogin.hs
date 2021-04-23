@@ -18,19 +18,18 @@ servePostLogin Login {..} = do
   case me of
     Nothing -> throwError err401
     Just (Entity _ user) ->
-      let un = userName user
-       in if development
-            then setLoggedIn un
-            else case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
-              PasswordCheckSuccess -> setLoggedIn un
-              PasswordCheckFail -> throwError err401
+      if development
+        then setLoggedIn user
+        else case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
+          PasswordCheckSuccess -> setLoggedIn user
+          PasswordCheckFail -> throwError err401
   where
-    setLoggedIn un = do
+    setLoggedIn User {..} = do
       mAdmin <- asks serverEnvAdmin
-      let isAdmin = mAdmin == Just un
+      let isAdmin = mAdmin == Just userName
       let cookie =
             AuthCookie
-              { authCookieUsername = un,
+              { authCookieUsername = userName,
                 authCookieIsAdmin = isAdmin
               }
       ServerEnv {..} <- ask
@@ -38,5 +37,10 @@ servePostLogin Login {..} = do
       case mCookie of
         Nothing -> throwError err401
         Just setCookie -> do
-          let ui = UserInfo {userInfoUsername = un, userInfoAdmin = isAdmin}
+          let ui =
+                UserInfo
+                  { userInfoUsername = userName,
+                    userInfoAdmin = isAdmin,
+                    userInfoCreated = userCreated
+                  }
           pure $ addHeader (decodeUtf8 setCookie) ui

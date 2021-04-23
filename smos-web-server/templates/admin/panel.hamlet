@@ -9,6 +9,7 @@
           <tr>
             <th> Username
             <th> Admin
+            <th> Created
         <tfoot>
           $forall user <- users
             <tr>
@@ -16,3 +17,6 @@
                 #{usernameText $ userInfoUsername user}
               <td>
                 #{userInfoAdmin user}
+              <td>
+                #{formatTime defaultTimeLocale "%F" $ userInfoCreated user}
+                (#{prettyTimeAuto now $ userInfoCreated user})

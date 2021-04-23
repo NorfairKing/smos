@@ -25,3 +25,5 @@ spec = do
   jsonSpecOnValid @SyncResponse
   genValidSpec @BackupInfo
   jsonSpecOnValid @BackupInfo
+  genValidSpec @UserInfo
+  jsonSpecOnValid @UserInfo
