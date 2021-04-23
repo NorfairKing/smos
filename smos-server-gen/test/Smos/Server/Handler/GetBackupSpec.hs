@@ -30,9 +30,14 @@ spec =
       it "can go through the intergration test for any valid store" $ \cenv ->
         forAllValid $ \store -> backupIntegrationTestForInterestingStore cenv store
       it "has no problem with a file that have weird filenames" $ \cenv -> do
-        let store = emptyInterestingStore {archiveFiles = DF.singletonFile [relfile|example_2021-03-24_10:46:51.smos|] emptySmosFile}
+        let store =
+              emptyInterestingStore
+                { workflowFiles = DF.singletonFile [relfile|hello\\world|] emptySmosFile,
+                  projectFiles = DF.singletonFile [relfile|foo .bar|] emptySmosFile,
+                  archiveFiles = DF.singletonFile [relfile|example_2021-03-24_10:46:51.smos|] emptySmosFile
+                }
         backupIntegrationTestForInterestingStore cenv store
-      modifyMaxSize (* 100) $
+      modifyMaxSize (* 30) $
         -- We need to have two of these, not one
         -- because the first is always done with a small size
         modifyMaxSuccess (const 2) $ do
