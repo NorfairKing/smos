@@ -16,7 +16,6 @@ import Control.Concurrent.STM
 import Control.DeepSeq
 import Control.Monad.Logger
 import Data.Aeson as JSON
-import qualified Data.ByteString as SB
 import qualified Data.ByteString.Base16 as Base16
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -49,7 +48,7 @@ data App = App
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
     appStyle :: !EmbeddedStatic,
-    appLoginTokens :: !(TVar (Map Username Token)),
+    appLoginTokens :: !(TVar (Map Username (Token, Bool))),
     appHttpManager :: !Http.Manager,
     appDataDir :: !(Path Abs Dir),
     appGoogleAnalyticsTracking :: !(Maybe Text),
@@ -220,7 +219,7 @@ loginWeb form = do
             redirect $ AuthR LoginR
           else error $ show resp
     Right (Left _) -> undefined
-    Right (Right t) -> recordLoginToken (loginUsername form) t
+    Right (Right (t, ui)) -> recordLoginToken (loginUsername form) t ui
 
 handleStandardServantErrs :: ClientError -> (Response -> Handler a) -> Handler a
 handleStandardServantErrs err func =
@@ -229,30 +228,47 @@ handleStandardServantErrs err func =
     ConnectionError e -> error $ unwords ["The api seems to be down:", show e]
     e -> error $ unwords ["Error while calling API:", show e]
 
+-- Nothing means not logged in
+userIsAdmin :: Handler (Maybe Bool)
+userIsAdmin = do
+  mun <- maybeAuthId
+  case mun of
+    Nothing -> pure Nothing
+    Just un -> fmap snd <$> lookupToginToken un
+
 withLogin :: (Token -> Handler a) -> Handler a
 withLogin func = withLogin' $ \_ t -> func t
 
+withAdminLogin :: (Token -> Handler a) -> Handler a
+withAdminLogin func = withAdminLogin' (\_ t -> func t)
+
+withAdminLogin' :: (Username -> Token -> Handler a) -> Handler a
+withAdminLogin' func = withLogin'' $ \admin un t ->
+  if admin
+    then func un t
+    else notFound
+
 withLogin' :: (Username -> Token -> Handler a) -> Handler a
-withLogin' func = do
+withLogin' func = withLogin'' (\_ un t -> func un t)
+
+withLogin'' :: (Bool -> Username -> Token -> Handler a) -> Handler a
+withLogin'' func = do
   un <- requireAuthId
   mLoginToken <- lookupToginToken un
   case mLoginToken of
     Nothing -> redirect $ AuthR LoginR
-    Just token -> func un token
+    Just (token, admin) -> func admin un token
 
-lookupToginToken :: Username -> Handler (Maybe Token)
+lookupToginToken :: Username -> Handler (Maybe (Token, Bool))
 lookupToginToken un = do
   tokenMapVar <- getsYesod appLoginTokens
   tokenMap <- liftIO $ readTVarIO tokenMapVar
-  case M.lookup un tokenMap of
-    Nothing -> loadUserToken un -- If there is no token in the cache, try loading from file
-    Just t -> pure $ Just t
+  pure $ M.lookup un tokenMap
 
-recordLoginToken :: Username -> Token -> Handler ()
-recordLoginToken un token = do
+recordLoginToken :: Username -> Token -> UserInfo -> Handler ()
+recordLoginToken un token ui = do
   tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un token
-  saveUserToken un token
+  liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, userInfoAdmin ui)
 
 instance FromJSON Token where
   parseJSON =
@@ -313,23 +329,6 @@ userDataDir un = do
   usersDataDir <- resolveDir dataDir "users"
   resolveDir usersDataDir $ usernameToPath un
 
-userTokenFile :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Path Abs File)
-userTokenFile un = do
-  dd <- userDataDir un
-  resolveFile dd "token.dat"
-
-saveUserToken :: (MonadHandler m, HandlerSite m ~ App) => Username -> Token -> m ()
-saveUserToken un t = do
-  tf <- userTokenFile un
-  liftIO $ do
-    ensureDir (parent tf)
-    SB.writeFile (fromAbsFile tf) (getToken t)
-
-loadUserToken :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Maybe Token)
-loadUserToken un = do
-  tf <- userTokenFile un
-  liftIO $ fmap (fmap Token) $ forgivingAbsence $ SB.readFile (fromAbsFile tf)
-
 withNavBar :: Widget -> Handler Html
 withNavBar body = do
   navbar <- makeNavBar
@@ -341,7 +340,7 @@ withNavBar body = do
 
 makeNavBar :: Handler Widget
 makeNavBar = do
-  maid <- maybeAuthId
+  mAdmin <- userIsAdmin
   mDocsUrl <- getsYesod appDocsBaseUrl
   msgs <- getMessages
   pure $(widgetFile "navbar")

@@ -1,0 +1,18 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Users
+
+      <table .table>
+        <thead>
+          <tr>
+            <th> Username
+            <th> Admin
+        <tfoot>
+          $forall user <- users
+            <tr>
+              <td>
+                #{usernameText $ userInfoUsername user}
+              <td>
+                #{userInfoAdmin user}

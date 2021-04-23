@@ -12,7 +12,7 @@
   <div id="myNavbar" .navbar-menu>
     <div .navbar-start>
 
-      $maybe _ <- maid
+      $maybe _ <- mAdmin
         <a .navbar-item href=@{TUIR ["example.smos"]}>
           Editor
 
@@ -29,9 +29,13 @@
       <a .navbar-item href="https://cs-syd.eu/self-management">
         Self-management training
 
+      $maybe isAdmin <- mAdmin
+        $if isAdmin
+          <a .navbar-item href=@{AdminR}>
+            Admin Panel
 
     <div .navbar-end>
-      $maybe _ <- maid
+      $maybe _ <- mAdmin
         <div .navbar-item>
           <div .buttons>
             <a .button href=@{AuthR LogoutR}>
@@ -43,6 +47,8 @@
               Log in
             <a .button .is-text href=@{AuthR registerR}>
               Sign up
+
+
 $forall (_, msgHtml) <- msgs
   <div .notification>
     #{msgHtml}

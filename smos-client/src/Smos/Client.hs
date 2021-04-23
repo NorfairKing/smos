@@ -169,6 +169,12 @@ clientGetNextActionReport = getNextActionReport smosReportsClient
 clientGetAgendaReport :: Token -> ClientM AgendaReport
 clientGetAgendaReport = getAgendaReport smosReportsClient
 
+smosAdminClient :: AdminRoutes (AsClientT ClientM)
+smosAdminClient = genericClient
+
+clientGetUsers :: Token -> ClientM [UserInfo]
+clientGetUsers = getUsers smosAdminClient
+
 clientLogin :: Login -> ClientM (Either HeaderProblem (Token, UserInfo))
 clientLogin = fmap (fmap (first sessionToToken)) . clientLoginSession
 
