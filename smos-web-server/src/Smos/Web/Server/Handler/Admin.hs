@@ -3,12 +3,7 @@
 
 module Smos.Web.Server.Handler.Admin where
 
-import Data.Time
-import Smos.Client
-import Smos.Web.Server.Foundation
-import Smos.Web.Server.Widget
-import Text.Time.Pretty
-import Yesod hiding (Header)
+import Smos.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html
 getAdminPanelR = withAdminLogin $ \t -> do

@@ -8,12 +8,7 @@ module Smos.Web.Server.Handler.Reports
   )
 where
 
-import Smos.Web.Server.Foundation
-import Smos.Web.Server.SmosSession
-import Smos.Web.Server.TUI
-import Smos.Web.Server.Widget
-import Yesod hiding (Header)
-import Yesod.WebSockets
+import Smos.Web.Server.Handler.Import
 
 getReportsR :: Handler Html
 getReportsR = withLogin $ \_ -> do

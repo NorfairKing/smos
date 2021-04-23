@@ -8,15 +8,8 @@ module Smos.Web.Server.Handler.TUI
   )
 where
 
-import Data.Text (Text)
 import qualified Data.Text as T
-import Path
-import Smos.Web.Server.Foundation
-import Smos.Web.Server.SmosSession
-import Smos.Web.Server.TUI
-import Smos.Web.Server.Widget
-import Yesod hiding (Header)
-import Yesod.WebSockets
+import Smos.Web.Server.Handler.Import
 
 getTUIR :: [Text] -> Handler Html
 getTUIR ts = withLogin $ \_ -> do

@@ -3,11 +3,7 @@
 
 module Smos.Web.Server.Handler.Home where
 
-import Servant.Client
-import Smos.Web.Server.Foundation
-import Smos.Web.Server.Static
-import Smos.Web.Server.Widget
-import Yesod hiding (Header)
+import Smos.Web.Server.Handler.Import
 
 getHomeR :: Handler Html
 getHomeR = do
