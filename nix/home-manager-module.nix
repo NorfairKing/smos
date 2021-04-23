@@ -13,6 +13,7 @@ let
       { }
       attrList;
 
+  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
 in
 {
@@ -21,23 +22,16 @@ in
       programs.smos =
         {
           enable = mkEnableOption "Smos cli and syncing";
+          config =
+            mkOption {
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              default = { };
+            };
           workflowDir =
             mkOption {
               type = types.str;
               description = "Smos' workflow directory";
               default = config.home.homeDirectory + "/workflow";
-            };
-          extraConfig =
-            mkOption {
-              type = types.str;
-              description = "Extra contents for the config file";
-              default = "";
-            };
-          config =
-            mkOption {
-              # type = types.str;
-              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place.";
-              default = { };
             };
           backup =
             mkOption {
@@ -420,14 +414,7 @@ in
 
       # Convert the config file to pretty yaml, for readability.
       # The keys will not be in the "right" order but that's fine.
-      smosConfigContents = pkgs.stdenv.mkDerivation {
-        name = "smos-config-contents";
-        buildInputs = [ pkgs.haskellPackages.json2yaml ];
-        src = "${pkgs.writeText "smos-config.yaml" (builtins.toJSON smosConfig)}";
-        buildCommand = ''
-          json2yaml $src > $out
-        '';
-      };
+      smosConfigFile = toYamlFile "smos-config" smosConfig;
 
       services =
         (
@@ -484,7 +471,7 @@ in
     in
     mkIf cfg.enable {
       xdg = {
-        configFile."smos/config.yaml".source = "${smosConfigContents}";
+        configFile."smos/config.yaml".source = "${smosConfigFile}";
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];

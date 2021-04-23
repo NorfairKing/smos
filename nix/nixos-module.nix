@@ -3,7 +3,18 @@
 with lib;
 let
   cfg = config.services.smos."${envname}";
-  concatAttrs = attrList: fold (x: y: x // y) { } attrList;
+
+  mergeListRecursively = attrList:
+    fold
+      (
+        x: y:
+          lib.recursiveUpdate x y
+      )
+      { }
+      attrList;
+
+  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
+
 in
 {
   options.services.smos."${envname}" =
@@ -16,6 +27,11 @@ in
               options =
                 {
                   enable = mkEnableOption "Smos Docs Site";
+                  config =
+                    mkOption {
+                      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+                      default = { };
+                    };
                   hosts =
                     mkOption {
                       type = types.listOf types.str;
@@ -67,6 +83,11 @@ in
               options =
                 {
                   enable = mkEnableOption "Smos API Server";
+                  config =
+                    mkOption {
+                      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+                      default = { };
+                    };
                   log-level =
                     mkOption {
                       type = types.str;
@@ -85,6 +106,13 @@ in
                       type = types.int;
                       example = 8001;
                       description = "The port to serve api requests on";
+                    };
+                  admin =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      example = "admin";
+                      default = null;
+                      description = "The username of the admin user";
                     };
                   local-backup =
                     mkOption {
@@ -114,6 +142,11 @@ in
               options =
                 {
                   enable = mkEnableOption "Smos Web Server";
+                  config =
+                    mkOption {
+                      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+                      default = { };
+                    };
                   docs-url =
                     mkOption {
                       type = types.str;
@@ -169,7 +202,16 @@ in
     let
       smosPkgs = (import ./pkgs.nix { }).smosPackages;
       working-dir = "/www/smos/${envname}/";
+      attrOrNull = name: value: optionalAttrs (!builtins.isNull value) { "${name}" = value; };
       # The docs server
+      docs-site-config = with cfg.docs-site; mergeListRecursively [
+        cfg.docs-site.config
+        (attrOrNull "port" port)
+        (attrOrNull "api-url" api-url)
+        (attrOrNull "web-url" web-url)
+        (attrOrNull "google-analytics-tracking" google-analytics-tracking)
+        (attrOrNull "google-search-console-verification" google-search-console-verification)
+      ];
       docs-site-service =
         with cfg.docs-site;
         optionalAttrs enable {
@@ -178,15 +220,7 @@ in
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SMOS_DOCS_SITE_PORT" = "${builtins.toString port}";
-              } // optionalAttrs (!builtins.isNull api-url) {
-                "SMOS_DOCS_SITE_API_URL" = "${api-url}";
-              } // optionalAttrs (!builtins.isNull web-url) {
-                "SMOS_DOCS_SITE_WEB_URL" = "${web-url}";
-              } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
-                "SMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
-              } // optionalAttrs (!builtins.isNull google-search-console-verification) {
-                "SMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
+                "SMOS_DOCS_SITE_CONFIG_FILE" = "${toYamlFile "smos-docs-site-config" docs-site-config}";
               };
             script =
               ''
@@ -221,6 +255,13 @@ in
 
       api-server-working-dir = working-dir + "api-server/";
       api-server-database-file = api-server-working-dir + "smos-server-database.sqlite3";
+      api-server-config = with cfg.api-server; mergeListRecursively [
+        cfg.api-server.config
+        (attrOrNull "log-level" log-level)
+        (attrOrNull "port" port)
+        (attrOrNull "admin" admin)
+        (attrOrNull "database-file" api-server-database-file)
+      ];
       # The api server
       api-server-service =
         with cfg.api-server;
@@ -230,10 +271,7 @@ in
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SMOS_SERVER_LOG_LEVEL" =
-                  "${builtins.toString log-level}";
-                "SMOS_SERVER_PORT" =
-                  "${builtins.toString port}";
+                "SMOS_SERVER_CONFIG_FILE" = "${toYamlFile "smos-server-config" api-server-config}";
                 "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
               };
             script =
@@ -318,6 +356,16 @@ in
       # The web server
       web-server-working-dir = working-dir + "web-server/";
       web-server-data-dir = web-server-working-dir + "web-server/";
+      web-server-config = with cfg.web-server; mergeListRecursively [
+        cfg.web-server.config
+        (attrOrNull "docs-url" docs-url)
+        (attrOrNull "api-url" api-url)
+        (attrOrNull "log-level" log-level)
+        (attrOrNull "port" port)
+        (attrOrNull "google-analytics-tracking" google-analytics-tracking)
+        (attrOrNull "google-search-console-verification" google-search-console-verification)
+        (attrOrNull "data-dir" web-server-data-dir)
+      ];
       web-server-service =
         with cfg.web-server;
         optionalAttrs enable {
@@ -326,16 +374,8 @@ in
             wantedBy = [ "multi-user.target" ];
             environment =
               {
-                "SMOS_WEB_SERVER_API_URL" = "${api-url}";
-                "SMOS_WEB_SERVER_DOCS_URL" = "${docs-url}";
-                "SMOS_WEB_SERVER_LOG_LEVEL" = "${builtins.toString log-level}";
-                "SMOS_WEB_SERVER_PORT" = "${builtins.toString port}";
-                "SMOS_WEB_SERVER_DATA_DIR" = web-server-data-dir;
+                "SMOS_WEB_SERVER_CONFIG_FILE" = "${toYamlFile "smos-web-server-config" web-server-config}";
                 "TERM" = "xterm-256color";
-              } // optionalAttrs (!builtins.isNull google-analytics-tracking) {
-                "SMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING" = "${google-analytics-tracking}";
-              } // optionalAttrs (!builtins.isNull google-search-console-verification) {
-                "SMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION" = "${google-search-console-verification}";
               };
             script =
               ''
@@ -380,14 +420,14 @@ in
     in
     mkIf cfg.enable {
       systemd.services =
-        concatAttrs [
+        mergeListRecursively [
           docs-site-service
           api-server-service
           web-server-service
           local-backup-service
         ];
       systemd.timers =
-        concatAttrs [
+        mergeListRecursively [
           local-backup-timer
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [

@@ -24,7 +24,7 @@ servePostLogin Login {..} = do
           PasswordCheckSuccess -> setLoggedIn e
           PasswordCheckFail -> throwError err401
   where
-    setLoggedIn e@(Entity uid User {..}) = do
+    setLoggedIn (Entity uid User {..}) = do
       mAdmin <- asks serverEnvAdmin
       let isAdmin = mAdmin == Just userName
       let cookie =

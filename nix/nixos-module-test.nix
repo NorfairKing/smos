@@ -171,6 +171,7 @@ pkgs.nixosTest (
         api-server = {
           enable = true;
           port = api-port;
+          admin = "admin";
         };
         web-server = {
           enable = true;
@@ -196,6 +197,13 @@ pkgs.nixosTest (
       machine.succeed("curl localhost:${builtins.toString api-port}")
       machine.wait_for_open_port(${builtins.toString web-port})
       machine.succeed("curl localhost:${builtins.toString web-port}")
+
+      _, out = machine.systemctl("cat smos-web-server-production.service")
+      print(out)
+      _, out = machine.systemctl("cat smos-api-server-production.service")
+      print(out)
+      _, out = machine.systemctl("cat smos-docs-site-production.service")
+      print(out)
 
       # Wait for all test users
       ${lib.concatStringsSep "\n" (builtins.map (username: "machine.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
