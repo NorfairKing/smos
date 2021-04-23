@@ -6,6 +6,7 @@ let
   sydtest-overlay = import (sources.sydtest + "/nix/overlay.nix");
   validity-overlay = import (sources.validity + "/nix/overlay.nix");
   safe-coloured-text-overlay = import (sources.safe-coloured-text + "/nix/overlay.nix");
+  looper-overlay = import (sources.looper + "/nix/overlay.nix");
   typed-uuid-overlay = import (sources.typed-uuid + "/nix/overlay.nix");
   pretty-relative-time-overlay = import (sources.pretty-relative-time + "/nix/overlay.nix");
   cursor-overlay = import (sources.cursor + "/nix/overlay.nix");
@@ -34,6 +35,7 @@ let
           gitignore-src-overlay
           validity-overlay
           safe-coloured-text-overlay
+          looper-overlay
           sydtest-overlay
           typed-uuid-overlay
           pretty-relative-time-overlay

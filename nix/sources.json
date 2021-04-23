@@ -131,6 +131,18 @@
         "url": "https://github.com/NorfairKing/linkcheck/archive/e703f1794b264d82d3f323ff0122c235830e0e13.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "looper": {
+        "branch": "master",
+        "description": "Run actions periodically",
+        "homepage": "http://hackage.haskell.org/package/looper",
+        "owner": "NorfairKing",
+        "repo": "looper",
+        "rev": "90e210d364eb329ed18cd28a3610e7976f2dd6db",
+        "sha256": "0yrmzc7pak87qgzw3qjm1kbw48i6r0wwai0b9is4a80wnsji91kv",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/looper/archive/90e210d364eb329ed18cd28a3610e7976f2dd6db.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "mergeful": {
         "branch": "master",
         "description": "Safely synchronise values with safe merge conflicts.",
