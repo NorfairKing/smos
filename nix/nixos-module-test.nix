@@ -32,7 +32,7 @@ let
         enable = true;
         sync = {
           enable = true;
-          server-url = "localhost:${builtins.toString api-port}";
+          server-url = "server:${builtins.toString api-port}";
           username = "sync_enabled";
           password = "testpassword";
         };
@@ -71,7 +71,7 @@ let
         backup.enable = true;
         sync = {
           enable = true;
-          server-url = "localhost:${builtins.toString api-port}";
+          server-url = "server:${builtins.toString api-port}";
           username = "everything_enabled";
           password = "testpassword";
         };
@@ -109,41 +109,41 @@ let
   commonTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.enable or false) ''
 
     # Test that the config file exists.
-    machine.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
+    client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
     # Make sure the user can run the smos commands.
-    machine.succeed(su("${username}", "smos --help"))
-    machine.succeed(su("${username}", "smos-archive --help"))
-    machine.succeed(su("${username}", "smos-calendar-import --help"))
-    machine.succeed(su("${username}", "smos-convert-org --help"))
-    machine.succeed(su("${username}", "smos-query --help"))
-    machine.succeed(su("${username}", "smos-scheduler --help"))
-    machine.succeed(su("${username}", "smos-sync-client --help"))
-    machine.succeed(su("${username}", "smos-github --help"))
+    client.succeed(su("${username}", "smos --help"))
+    client.succeed(su("${username}", "smos-archive --help"))
+    client.succeed(su("${username}", "smos-calendar-import --help"))
+    client.succeed(su("${username}", "smos-convert-org --help"))
+    client.succeed(su("${username}", "smos-query --help"))
+    client.succeed(su("${username}", "smos-scheduler --help"))
+    client.succeed(su("${username}", "smos-sync-client --help"))
+    client.succeed(su("${username}", "smos-github --help"))
     # Make sure the config file is parseable
-    machine.succeed(su("${username}", "smos-query next"))'';
+    client.succeed(su("${username}", "smos-query next"))'';
 
   syncTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that syncing works.
-    machine.succeed(su("${username}", "smos-sync-client register"))
-    machine.succeed(su("${username}", "smos-sync-client login"))
-    machine.succeed(su("${username}", "smos-sync-client sync"))'';
+    client.succeed(su("${username}", "smos-sync-client register"))
+    client.succeed(su("${username}", "smos-sync-client login"))
+    client.succeed(su("${username}", "smos-sync-client sync"))'';
 
   schedulerTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
     # Test that the scheduler can activate.
-    machine.succeed(su("${username}", "smos-scheduler check"))
-    machine.succeed(su("${username}", "smos-scheduler schedule"))'';
+    client.succeed(su("${username}", "smos-scheduler check"))
+    client.succeed(su("${username}", "smos-scheduler schedule"))'';
 
   calendarTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
-    machine.succeed(su("${username}", "smos-calendar-import"))'';
+    client.succeed(su("${username}", "smos-calendar-import"))'';
 
   notifyTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
 
     # Test that the notify can activate.
-    machine.succeed(su("${username}", "smos-notify"))'';
+    client.succeed(su("${username}", "smos-notify"))'';
 
   userTestScript = username: userConfig: pkgs.lib.concatStrings [
     (commonTestScript username userConfig)
@@ -157,56 +157,57 @@ in
 pkgs.nixosTest (
   { lib, pkgs, ... }: {
     name = "smos-module-test";
-    machine = {
-      imports = [
-        smos-production
-        home-manager
-      ];
-      services.smos.production = {
-        enable = true;
-        docs-site = {
+    nodes = {
+      server = {
+        imports = [
+          smos-production
+        ];
+        services.smos.production = {
           enable = true;
-          port = docs-port;
-        };
-        api-server = {
-          enable = true;
-          port = api-port;
-          admin = "admin";
-        };
-        web-server = {
-          enable = true;
-          port = web-port;
-          api-url = "localhost:${builtins.toString api-port}";
+          docs-site = {
+            enable = true;
+            port = docs-port;
+          };
+          api-server = {
+            enable = true;
+            port = api-port;
+            admin = "admin";
+          };
+          web-server = {
+            enable = true;
+            port = web-port;
+            api-url = "server:${builtins.toString api-port}";
+          };
         };
       };
-      users.users = lib.mapAttrs makeTestUser testUsers;
-      home-manager = {
-        useGlobalPkgs = true;
-        users = lib.mapAttrs makeTestUserHome testUsers;
+      client = {
+        imports = [
+          home-manager
+        ];
+        users.users = lib.mapAttrs makeTestUser testUsers;
+        home-manager = {
+          useGlobalPkgs = true;
+          users = lib.mapAttrs makeTestUserHome testUsers;
+        };
       };
     };
     testScript = ''
       from shlex import quote
 
-      machine.start()
-      machine.wait_for_unit("multi-user.target")
+      server.start()
+      client.start()
+      server.wait_for_unit("multi-user.target")
+      client.wait_for_unit("multi-user.target")
 
-      machine.wait_for_open_port(${builtins.toString docs-port})
-      machine.succeed("curl localhost:${builtins.toString docs-port}")
-      machine.wait_for_open_port(${builtins.toString api-port})
-      machine.succeed("curl localhost:${builtins.toString api-port}")
-      machine.wait_for_open_port(${builtins.toString web-port})
-      machine.succeed("curl localhost:${builtins.toString web-port}")
-
-      _, out = machine.systemctl("cat smos-web-server-production.service")
-      print(out)
-      _, out = machine.systemctl("cat smos-api-server-production.service")
-      print(out)
-      _, out = machine.systemctl("cat smos-docs-site-production.service")
-      print(out)
+      server.wait_for_open_port(${builtins.toString docs-port})
+      client.succeed("curl server:${builtins.toString docs-port}")
+      server.wait_for_open_port(${builtins.toString api-port})
+      client.succeed("curl server:${builtins.toString api-port}")
+      server.wait_for_open_port(${builtins.toString web-port})
+      client.succeed("curl server:${builtins.toString web-port}")
 
       # Wait for all test users
-      ${lib.concatStringsSep "\n" (builtins.map (username: "machine.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
+      ${lib.concatStringsSep "\n" (builtins.map (username: "client.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
       
 
       def su(user, cmd):
