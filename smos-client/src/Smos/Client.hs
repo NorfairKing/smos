@@ -62,7 +62,7 @@ oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []
 
 newestSupportedAPIVersion :: Version
-newestSupportedAPIVersion = version 0 0 0 [] []
+newestSupportedAPIVersion = version 0 1 0 [] []
 
 clientVersionCheck :: ClientM (Version, VersionCheck)
 clientVersionCheck = do

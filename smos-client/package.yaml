@@ -30,3 +30,19 @@ library:
   - smos-data
   - smos-report
   - text
+
+tests:
+  smos-client-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - smos-api
+    - smos-data
+    - smos-client
+    - sydtest
