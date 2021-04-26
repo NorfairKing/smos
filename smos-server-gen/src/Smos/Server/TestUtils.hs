@@ -58,7 +58,7 @@ serverDBSpec :: SpecWith ConnectionPool -> Spec
 serverDBSpec = modifyMaxSuccess (`div` 10) . setupAround serverConnectionPoolSetupFunc
 
 serverConnectionPoolSetupFunc :: SetupFunc () ConnectionPool
-serverConnectionPoolSetupFunc = connectionPoolSetupFunc migrateAll
+serverConnectionPoolSetupFunc = connectionPoolSetupFunc serverAutoMigration
 
 type ServerSpec = TestDef '[Http.Manager] ClientEnv
 

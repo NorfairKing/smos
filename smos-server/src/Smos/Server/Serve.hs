@@ -30,6 +30,7 @@ import Smos.API
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
+import Smos.Server.Migration
 import Smos.Server.OptParse
 import System.Exit
 import UnliftIO hiding (Handler)
@@ -52,7 +53,9 @@ runSmosServer ServeSettings {..} = do
                   else Zstd.maxCLevel -- rather slower
           let runTheServer = liftIO $ do
                 uuid <- readServerUUID serveSetUUIDFile
-                flip DB.runSqlPool pool $ DB.runMigration migrateAll
+                flip DB.runSqlPool pool $ do
+                  DB.runMigration serverAutoMigration
+                  serverStartupMigration
                 jwtKey <- loadSigningKey serveSetSigningKeyFile
                 let env =
                       ServerEnv

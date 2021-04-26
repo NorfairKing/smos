@@ -32,7 +32,7 @@ import Smos.API
 import Smos.Server.DB.Compressed
 
 share
-  [mkPersist sqlSettings, mkMigrate "migrateAll"]
+  [mkPersist sqlSettings, mkMigrate "serverAutoMigration"]
   [persistLowerCase|
 
 User
