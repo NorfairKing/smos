@@ -51,32 +51,33 @@ runSmosServer ServeSettings {..} = do
                 if development
                   then 1 -- As fast as possible
                   else Zstd.maxCLevel -- rather slower
-          let runTheServer = liftIO $ do
-                uuid <- readServerUUID serveSetUUIDFile
+          let runTheServer = do
                 flip DB.runSqlPool pool $ do
                   DB.runMigration serverAutoMigration
-                  serverStartupMigration
-                jwtKey <- loadSigningKey serveSetSigningKeyFile
-                let env =
-                      ServerEnv
-                        { serverEnvServerUUID = uuid,
-                          serverEnvConnection = pool,
-                          serverEnvCookieSettings = defaultCookieSettings,
-                          serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                          serverEnvPasswordDifficulty =
-                            if development
-                              then 4 -- As fast as possible
-                              else 10, -- Rather slower
-                          serverEnvCompressionLevel = compressionLevel,
-                          serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
-                          serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
-                          serverEnvAdmin = serveSetAdmin
-                        }
-                let middles =
-                      if development
-                        then Wai.logStdoutDev
-                        else Wai.logStdout
-                Warp.run serveSetPort $ middles $ makeSyncApp env
+                  serverStartupMigration compressionLevel
+                liftIO $ do
+                  uuid <- readServerUUID serveSetUUIDFile
+                  jwtKey <- loadSigningKey serveSetSigningKeyFile
+                  let env =
+                        ServerEnv
+                          { serverEnvServerUUID = uuid,
+                            serverEnvConnection = pool,
+                            serverEnvCookieSettings = defaultCookieSettings,
+                            serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                            serverEnvPasswordDifficulty =
+                              if development
+                                then 4 -- As fast as possible
+                                else 10, -- Rather slower
+                            serverEnvCompressionLevel = compressionLevel,
+                            serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
+                            serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
+                            serverEnvAdmin = serveSetAdmin
+                          }
+                  let middles =
+                        if development
+                          then Wai.logStdoutDev
+                          else Wai.logStdout
+                  Warp.run serveSetPort $ middles $ makeSyncApp env
           let runTheLoopers = do
                 let looperEnv =
                       LooperEnv
