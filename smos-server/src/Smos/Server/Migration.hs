@@ -7,6 +7,7 @@ import Conduit
 import Control.Monad.Logger
 import qualified Data.Conduit.Combinators as C
 import Data.Mergeful as Mergeful
+import qualified Data.Text as T
 import Database.Persist.Sql
 import Path
 import Smos.Data
@@ -35,7 +36,14 @@ refreshServerFile (Entity sfid ServerFile {..}) =
           let newContents = smosFileBS sf -- Re-render file
           if newContents == serverFileContents
             then pure () -- wouldn't be an update, no need to update
-            else
+            else do
+              logInfoNS "startup-migration" $
+                T.unwords
+                  [ "Migrating server file",
+                    T.pack (fromRelFile serverFilePath),
+                    "for user",
+                    T.pack (show (fromSqlKey serverFileUser))
+                  ]
               update
                 sfid
                 [ ServerFileContents =. newContents,
@@ -44,7 +52,7 @@ refreshServerFile (Entity sfid ServerFile {..}) =
     _ -> pure () -- Not a smos file, just leave it
 
 refreshBackupFile :: Int -> Entity BackupFile -> SqlPersistT (LoggingT IO) ()
-refreshBackupFile compressionLevel (Entity sfid BackupFile {..}) =
+refreshBackupFile compressionLevel (Entity bfid BackupFile {..}) =
   case fileExtension backupFilePath of
     Just ".smos" ->
       case decompressByteString backupFileContents of
@@ -56,9 +64,16 @@ refreshBackupFile compressionLevel (Entity sfid BackupFile {..}) =
               let newContents = compressByteString compressionLevel (smosFileBS sf) -- Re-render file
               if newContents == backupFileContents
                 then pure () -- wouldn't be an update, no need to update
-                else
+                else do
+                  logInfoNS "startup-migration" $
+                    T.unwords
+                      [ "Migrating backup file",
+                        T.pack (fromRelFile backupFilePath),
+                        "for backup",
+                        T.pack (show (fromSqlKey backupFileBackup))
+                      ]
                   update
-                    sfid
+                    bfid
                     [ BackupFileContents =. newContents
                     ]
     _ -> pure () -- Not a smos file, just leave it
