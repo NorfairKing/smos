@@ -31,7 +31,17 @@ refreshServerFile (Entity sfid ServerFile {..}) =
   case fileExtension serverFilePath of
     Just ".smos" ->
       case parseSmosFile serverFileContents of
-        Left _ -> pure () -- Not a parsable smos file, just leave it
+        Left err ->
+          -- Not a parsable smos file, just leave it
+          logWarnNS "startup-migration" $
+            T.unwords
+              [ "Server file",
+                T.pack (fromRelFile serverFilePath),
+                "for user",
+                T.pack (show (fromSqlKey serverFileUser)),
+                "is not a valid smos file:",
+                T.pack err
+              ]
         Right sf -> do
           let newContents = smosFileBS sf -- Re-render file
           if newContents == serverFileContents
@@ -56,10 +66,30 @@ refreshBackupFile compressionLevel (Entity bfid BackupFile {..}) =
   case fileExtension backupFilePath of
     Just ".smos" ->
       case decompressByteString backupFileContents of
-        Left _ -> pure () -- Not a valid compression of anything
+        Left err -> do
+          -- Not a valid compression of anything
+          logWarnNS "startup-migration" $
+            T.unwords
+              [ "Backup file",
+                T.pack (fromRelFile backupFilePath),
+                "for backup",
+                T.pack (show (fromSqlKey backupFileBackup)),
+                "is not a well-compressed:",
+                err
+              ]
         Right uncompressedContents ->
           case parseSmosFile uncompressedContents of
-            Left _ -> pure () -- Not a parsable smos file, just leave it
+            Left err ->
+              -- Not a parsable smos file, just leave it
+              logWarnNS "startup-migration" $
+                T.unwords
+                  [ "Backup file",
+                    T.pack (fromRelFile backupFilePath),
+                    "for backup",
+                    T.pack (show (fromSqlKey backupFileBackup)),
+                    "is not a valid smos file:",
+                    T.pack err
+                  ]
             Right sf -> do
               let newContents = compressByteString compressionLevel (smosFileBS sf) -- Re-render file
               if newContents == backupFileContents
