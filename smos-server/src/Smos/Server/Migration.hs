@@ -15,13 +15,13 @@ import Smos.Server.DB
 serverStartupMigration :: Int -> SqlPersistT (LoggingT IO) ()
 serverStartupMigration compressionLevel = do
   logInfoNS "startup-migration" "Starting server file format migration"
-  acqSource <- selectSourceRes [] [Asc ServerFileId]
-  withAcquire acqSource $ \source ->
+  acqFileSource <- selectSourceRes [] [Asc ServerFileId]
+  withAcquire acqFileSource $ \source ->
     runConduit $ source .| C.mapM_ refreshServerFile
   logInfoNS "startup-migration" "Server file format migration done"
   logInfoNS "startup-migration" "Starting backup file format migration"
-  acqSource <- selectSourceRes [] [Asc BackupFileId]
-  withAcquire acqSource $ \source ->
+  acqBackupSource <- selectSourceRes [] [Asc BackupFileId]
+  withAcquire acqBackupSource $ \source ->
     runConduit $ source .| C.mapM_ (refreshBackupFile compressionLevel)
   logInfoNS "startup-migration" "Server backup file format migration done"
 
@@ -49,8 +49,8 @@ refreshBackupFile compressionLevel (Entity sfid BackupFile {..}) =
     Just ".smos" ->
       case decompressByteString backupFileContents of
         Left _ -> pure () -- Not a valid compression of anything
-        Right contents ->
-          case parseSmosFile contents of
+        Right uncompressedContents ->
+          case parseSmosFile uncompressedContents of
             Left _ -> pure () -- Not a parsable smos file, just leave it
             Right sf -> do
               let newContents = compressByteString compressionLevel (smosFileBS sf) -- Re-render file
