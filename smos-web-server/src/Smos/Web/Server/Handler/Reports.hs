@@ -12,8 +12,9 @@ import Smos.Web.Server.Handler.Import
 
 getReportsR :: Handler Html
 getReportsR = withLogin $ \_ -> do
+  navbar <- makeNavBar
   let terminalWidget = makeTerminalWidget ReportsInstanceR
-  withNavBar $ do
+  defaultLayout $ do
     setTitle "Smos Web Reports"
     $(widgetFile "reports")
 

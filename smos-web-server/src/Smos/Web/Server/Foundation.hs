@@ -353,10 +353,12 @@ userDataDir un = do
 withNavBar :: Widget -> Handler Html
 withNavBar body = do
   navbar <- makeNavBar
+  let footer = $(widgetFile "footer")
   defaultLayout
     [whamlet|
       ^{navbar}
       ^{body}
+      ^{footer}
     |]
 
 makeNavBar :: Handler Widget

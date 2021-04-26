@@ -13,9 +13,10 @@ import Smos.Web.Server.Handler.Import
 
 getPlaygroundR :: Handler Html
 getPlaygroundR = do
+  navbar <- makeNavBar
   let terminalWidget = makeTerminalWidget PlaygroundInstanceR
   mDocsUrl <- getsYesod appDocsBaseUrl
-  withNavBar $ do
+  defaultLayout $ do
     setTitle "Smos Web TUI Playground"
     $(widgetFile "playground")
 

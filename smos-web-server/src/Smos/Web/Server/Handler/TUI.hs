@@ -13,8 +13,9 @@ import Smos.Web.Server.Handler.Import
 
 getTUIR :: [Text] -> Handler Html
 getTUIR ts = withLogin $ \_ -> do
+  navbar <- makeNavBar
   let terminalWidget = makeTerminalWidget $ TUIInstanceR ts
-  withNavBar $ do
+  defaultLayout $ do
     setTitle "Smos Web TUI"
     $(widgetFile "tui")
 
