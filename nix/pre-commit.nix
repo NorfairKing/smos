@@ -9,6 +9,7 @@ in
       nixpkgs-fmt.enable = true;
       hlint.enable = true;
       ormolu.enable = true;
+      hpack.enable = true;
     };
   };
   tools = [

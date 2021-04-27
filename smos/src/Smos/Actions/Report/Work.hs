@@ -135,7 +135,7 @@ enterWorkFile =
                   Nothing -> pure ()
                   Just mc ->
                     let kvc = mc ^. mapCursorElemL
-                        erc = foldKeyValueCursor (flip const) (flip const) kvc
+                        erc = foldKeyValueCursor (\_ x -> x) (\_ x -> x) kvc
                      in switchToSelectedInEntryReportCursor wd erc
                 DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))

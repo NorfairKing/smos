@@ -17,10 +17,10 @@
         "homepage": "https://bulma.io",
         "owner": "jgthms",
         "repo": "bulma",
-        "rev": "6de773dfb560246c3eca8f0478c9224ecd8a1a02",
-        "sha256": "0dws2m9rk545f4dq0hn66psg8xh98kmxf92ngnzh11klxqmqp34g",
+        "rev": "ee8eb6ad0d8b7bfe3ee75624218b216126a7d0a7",
+        "sha256": "1i98n4asypyn2a4nd9gkr1lfnd68bk56ri1wl3nipwzbpggyryws",
         "type": "tarball",
-        "url": "https://github.com/jgthms/bulma/archive/6de773dfb560246c3eca8f0478c9224ecd8a1a02.tar.gz",
+        "url": "https://github.com/jgthms/bulma/archive/ee8eb6ad0d8b7bfe3ee75624218b216126a7d0a7.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "bulma-carousel": {
@@ -173,10 +173,10 @@
         "homepage": "",
         "owner": "hercules-ci",
         "repo": "nix-pre-commit-hooks",
-        "rev": "2d169bb1b23f3b71a894a66ea81f45c788943248",
-        "sha256": "1iyvi56rzszwizq0ymf1x262yhjwzk8k77qahb65fcync99jha2a",
+        "rev": "8537f4e6cf110f48cf20b8591db4190ae995f08a",
+        "sha256": "18ifxsj1cb1myjmn4nikcdl0fs6mzd51gpd8p4zh7fy7iiwrs208",
         "type": "tarball",
-        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/2d169bb1b23f3b71a894a66ea81f45c788943248.tar.gz",
+        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/8537f4e6cf110f48cf20b8591db4190ae995f08a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -185,10 +185,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "dec334fa196a4aeedb1b60d8f7d61aa00d327499",
-        "sha256": "1sm1p2qliz11qw6va01knm0rikhpq2h4c70ci98vi4q26y4q9z72",
+        "rev": "d4e7af972158a14ebdd9c828b1c2e07e2ce7ef1c",
+        "sha256": "00hw41r7bcims4qxyqrmvjxjx88k0ns1k8z4yv8a4w1dwbxcjjv4",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/dec334fa196a4aeedb1b60d8f7d61aa00d327499.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/d4e7af972158a14ebdd9c828b1c2e07e2ce7ef1c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pretty-relative-time": {
@@ -233,10 +233,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "5e99c4fe56152d71982dcfba8bef4c79e19a9c8f",
-        "sha256": "0jxzj2zzz6k75p1zv6daz5i7kn0b5j3cqv0dr97vpzsaad1dmx16",
+        "rev": "9c95d8674d208380968f6325125c21d3506f561b",
+        "sha256": "0pl7d8c1nh4w0s3dvqd01cpxgasih6wq1h7l3kwh60i77b45ymn6",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/5e99c4fe56152d71982dcfba8bef4c79e19a9c8f.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/9c95d8674d208380968f6325125c21d3506f561b.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "template-haskell-reload": {

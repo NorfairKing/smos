@@ -65,7 +65,7 @@ fromWeekDateWithStart ws year w dow =
   Just $
     let firstD = firstDayOfTheFirstWsWeekOf ws year
         weekOffset = positiveMod 7 $ fromEnum dow - fromEnum ws
-     in addDays (fromIntegral $ 7 * (w -1) + fromIntegral weekOffset) firstD
+     in addDays (fromIntegral $ 7 * (w - 1) + fromIntegral weekOffset) firstD
 
 -- We want to know whethere the first 'ws' occurs in the first week of
 -- this year or in the last week of last year
