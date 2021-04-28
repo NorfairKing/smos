@@ -16,7 +16,7 @@ runBackupGarbageCollectorLooper = do
 
 backupGarbageCollectorForUser :: Word -> UserId -> Looper ()
 backupGarbageCollectorForUser maxBackups uid = do
-  logDebugNS "auto-backup" $ "Checking for garbage collection of backups for user " <> T.pack (show (fromSqlKey uid))
+  logDebugNS "backup-garbage-collector" $ "Checking for garbage collection of backups for user " <> T.pack (show (fromSqlKey uid))
   currentBackups <- looperDB $ count [BackupUser ==. uid]
   let backupsToDelete = max 0 $ currentBackups - fromIntegral maxBackups
   backupIds <-
@@ -26,4 +26,6 @@ backupGarbageCollectorForUser maxBackups uid = do
         [ Asc BackupTime, -- Delete oldest backups first
           LimitTo backupsToDelete
         ]
-  mapM_ (looperDB . deleteBackupById) backupIds
+  forM_ backupIds $ \backupId -> do
+    logInfoNS "backup-garbage-collector" $ "Deleting backup " <> T.pack (show (fromSqlKey backupId)) <> " for user " <> T.pack (show (fromSqlKey uid))
+    looperDB $ deleteBackupById backupId

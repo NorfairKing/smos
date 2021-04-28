@@ -28,7 +28,7 @@ autoBackupForUser uid = do
           diffUTCTime now backupTime >= autoBackupInterval
 
   when shouldDoBackup $ do
-    logInfoNS "auto-backup" $ "Performing backup for user " <> T.pack (show uid)
+    logInfoNS "auto-backup" $ "Performing backup for user " <> T.pack (show (fromSqlKey uid))
     void $ looperDB $ doBackupForUser compressionLevel uid
 
 autoBackupInterval :: NominalDiffTime
