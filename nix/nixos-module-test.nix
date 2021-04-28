@@ -172,6 +172,14 @@ pkgs.nixosTest (
             enable = true;
             port = api-port;
             admin = "admin";
+            auto-backup = {
+              enable = true;
+              phase = 1;
+              period = 5;
+            };
+            backup-garbage-collector = {
+              enable = false;
+            };
           };
           web-server = {
             enable = true;

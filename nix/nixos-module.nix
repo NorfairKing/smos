@@ -15,6 +15,25 @@ let
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
+  mkLooperOption = name: mkOption {
+    default = null;
+    type = types.nullOr (types.submodule {
+      options = {
+        enable = mkEnableOption "${name} looper";
+        phase = mkOption {
+          type = types.nullOr types.int;
+          default = null;
+          example = 60;
+        };
+        period = mkOption {
+          type = types.nullOr types.int;
+          default = null;
+          example = 0;
+        };
+      };
+    });
+  };
+
 in
 {
   options.services.smos."${envname}" =
@@ -32,18 +51,18 @@ in
                       description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
                       default = { };
                     };
+                  port =
+                    mkOption {
+                      type = types.int;
+                      example = 8000;
+                      description = "The port to serve sync requests on";
+                    };
                   hosts =
                     mkOption {
                       type = types.listOf types.str;
                       default = [ ];
                       example = [ "docs.smos.online" ];
                       description = "The host to serve the docs site on";
-                    };
-                  port =
-                    mkOption {
-                      type = types.int;
-                      example = 8000;
-                      description = "The port to serve sync requests on";
                     };
                   api-url =
                     mkOption {
@@ -88,6 +107,12 @@ in
                       description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
                       default = { };
                     };
+                  port =
+                    mkOption {
+                      type = types.int;
+                      example = 8001;
+                      description = "The port to serve api requests on";
+                    };
                   log-level =
                     mkOption {
                       type = types.str;
@@ -101,18 +126,26 @@ in
                       example = "api.smos.online";
                       description = "The host to serve api requests on";
                     };
-                  port =
-                    mkOption {
-                      type = types.int;
-                      example = 8001;
-                      description = "The port to serve api requests on";
-                    };
                   admin =
                     mkOption {
                       type = types.nullOr types.str;
                       example = "admin";
                       default = null;
                       description = "The username of the admin user";
+                    };
+                  max-backups-per-user =
+                    mkOption {
+                      type = types.nullOr types.int;
+                      default = null;
+                      example = 5;
+                      description = "The maximum number of backups per user";
+                    };
+                  max-backup-size-per-user =
+                    mkOption {
+                      type = types.nullOr types.int;
+                      default = null;
+                      example = 1024 * 1024;
+                      description = "The maximum number of bytes that backups can take up per user";
                     };
                   local-backup =
                     mkOption {
@@ -131,6 +164,8 @@ in
                       );
                       default = null;
                     };
+                  auto-backup = mkLooperOption "auto-backup";
+                  backup-garbage-collector = mkLooperOption "backup-garbage-collector";
                 };
             };
           default = null;
@@ -259,8 +294,12 @@ in
         cfg.api-server.config
         (attrOrNull "log-level" log-level)
         (attrOrNull "port" port)
-        (attrOrNull "admin" admin)
         (attrOrNull "database-file" api-server-database-file)
+        (attrOrNull "admin" admin)
+        (attrOrNull "max-backups-per-user" max-backups-per-user)
+        (attrOrNull "max-backup-size-per-user" max-backup-size-per-user)
+        (attrOrNull "auto-backup" auto-backup)
+        (attrOrNull "backup-garbage-collector" backup-garbage-collector)
       ];
       # The api server
       api-server-service =

@@ -86,7 +86,7 @@ configurationObjectParser =
     <*> optionalField "database-file" "The file in which to store the database"
     <*> optionalField "signing-key-file" "The file in which to store signing key for JWT tokens"
     <*> optionalField "port" "The port on which to serve api requests"
-    <*> optionalField "max-backup-per-user" "The maximum number of backups per user"
+    <*> optionalField "max-backups-per-user" "The maximum number of backups per user"
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
     <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
     <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
