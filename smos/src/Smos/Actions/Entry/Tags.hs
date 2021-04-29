@@ -79,7 +79,9 @@ tagsInsert :: ActionUsing Char
 tagsInsert =
   ActionUsing
     { actionUsingName = "tagsInsert",
-      actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorInsert c,
+      actionUsingFunc = \c -> do
+        modifyTagsCursorM $ tagsCursorInsert c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character at the cursor select the space after it"
     }
 
@@ -87,7 +89,9 @@ tagsAppend :: ActionUsing Char
 tagsAppend =
   ActionUsing
     { actionUsingName = "tagsAppend",
-      actionUsingFunc = \c -> modifyTagsCursorM $ tagsCursorAppend c,
+      actionUsingFunc = \c -> do
+        modifyTagsCursorM $ tagsCursorAppend c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character at the cursor select the space before it"
     }
 
@@ -95,7 +99,9 @@ tagsRemove :: Action
 tagsRemove =
   Action
     { actionName = "tagsRemove",
-      actionFunc = modifyTagsCursorMD tagsCursorRemove,
+      actionFunc = do
+        modifyTagsCursorMD tagsCursorRemove
+        unrecordFileCursorHistory,
       actionDescription = "Remove from the tags cursor"
     }
 
@@ -103,7 +109,9 @@ tagsDelete :: Action
 tagsDelete =
   Action
     { actionName = "tagsDelete",
-      actionFunc = modifyTagsCursorMD tagsCursorDelete,
+      actionFunc = do
+        modifyTagsCursorMD tagsCursorDelete
+        unrecordFileCursorHistory,
       actionDescription = "Delete from the tags cursor"
     }
 
@@ -143,6 +151,8 @@ tagsSplit :: Action
 tagsSplit =
   Action
     { actionName = "tagsSplit",
-      actionFunc = modifyTagsCursor tagsCursorSplit,
+      actionFunc = do
+        modifyTagsCursor tagsCursorSplit
+        unrecordFileCursorHistory,
       actionDescription = "Separate current tab into two after typing `:`"
     }

@@ -98,7 +98,9 @@ propertiesInsert :: ActionUsing Char
 propertiesInsert =
   ActionUsing
     { actionUsingName = "propertiesInsert",
-      actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorInsert c,
+      actionUsingFunc = \c -> do
+        modifyPropertiesCursorM $ propertiesCursorInsert c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character at the cursor select the space after it"
     }
 
@@ -106,7 +108,9 @@ propertiesAppend :: ActionUsing Char
 propertiesAppend =
   ActionUsing
     { actionUsingName = "propertiesAppend",
-      actionUsingFunc = \c -> modifyPropertiesCursorM $ propertiesCursorAppend c,
+      actionUsingFunc = \c -> do
+        modifyPropertiesCursorM $ propertiesCursorAppend c
+        unrecordFileCursorHistory,
       actionUsingDescription = "Insert a character at the cursor select the space before it"
     }
 
@@ -114,7 +118,9 @@ propertiesRemove :: Action
 propertiesRemove =
   Action
     { actionName = "propertiesRemove",
-      actionFunc = modifyPropertiesCursorMD propertiesCursorRemove,
+      actionFunc = do
+        modifyPropertiesCursorMD propertiesCursorRemove
+        unrecordFileCursorHistory,
       actionDescription = "Remove from the properties cursor"
     }
 
@@ -122,7 +128,9 @@ propertiesDelete :: Action
 propertiesDelete =
   Action
     { actionName = "propertiesDelete",
-      actionFunc = modifyPropertiesCursorMD propertiesCursorDelete,
+      actionFunc = do
+        modifyPropertiesCursorMD propertiesCursorDelete
+        unrecordFileCursorHistory,
       actionDescription = "Delete from the properties cursor"
     }
 
@@ -130,7 +138,9 @@ propertiesInsertNewProperty :: Action
 propertiesInsertNewProperty =
   Action
     { actionName = "propertiesInsertNewProperty",
-      actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyBefore,
+      actionFunc = do
+        modifyPropertiesCursor propertiesCursorStartNewPropertyBefore
+        unrecordFileCursorHistory,
       actionDescription = "Insert a new property before the currently selected property"
     }
 
@@ -138,7 +148,9 @@ propertiesAppendNewProperty :: Action
 propertiesAppendNewProperty =
   Action
     { actionName = "propertiesAppendNewProperty",
-      actionFunc = modifyPropertiesCursor propertiesCursorStartNewPropertyAfter,
+      actionFunc = do
+        modifyPropertiesCursor propertiesCursorStartNewPropertyAfter
+        unrecordFileCursorHistory,
       actionDescription = "Append a new property before the currently selected property"
     }
 
@@ -148,7 +160,8 @@ propertiesEditProperty pn =
     { actionName = "propertiesEditProperty_" <> ActionName (propertyNameText pn),
       actionFunc = do
         modifyMPropertiesCursorM $ Just . propertiesCursorAddOrSelect pn
-        modifyEntryCursor entryCursorSelectProperties,
+        modifyEntryCursor entryCursorSelectProperties
+        unrecordFileCursorHistory,
       actionDescription =
         "Start editing a property with the given name, create it if it does not exist yet"
     }
