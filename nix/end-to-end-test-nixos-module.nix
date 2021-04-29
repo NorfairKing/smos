@@ -54,7 +54,7 @@ in
           (test:
             with test;
             optionalAttrs enable {
-              "smos-server-end-to-end-test-${envname}-${name}" = {
+              "smos-api-server-end-to-end-test-${envname}-${name}" = {
                 description = "Smos end to end test of ${envname} to ${name}";
                 environment =
                   {

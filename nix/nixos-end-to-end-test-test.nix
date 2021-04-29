@@ -79,7 +79,8 @@ pkgs.nixosTest (
       client.succeed("curl server:${builtins.toString web-port}")
 
       print("starting end-to-end-tests")
-      client.systemctl("start smos-server-end-to-end-test-testing-testing.service --wait")
+      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.timer")
+      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.service --wait")
       print("end-to-end-tests done")
     '';
   }
