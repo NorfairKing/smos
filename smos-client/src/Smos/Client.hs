@@ -133,6 +133,9 @@ clientVersionsHelpMessage =
 smosProtectedClient :: ProtectedRoutes (AsClientT ClientM)
 smosProtectedClient = genericClient
 
+clientDeleteUser :: Token -> ClientM NoContent
+clientDeleteUser = deleteUser smosProtectedClient
+
 clientPostSync :: Token -> SyncRequest -> ClientM SyncResponse
 clientPostSync = postSync smosProtectedClient
 

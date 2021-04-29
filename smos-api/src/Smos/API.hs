@@ -111,7 +111,8 @@ instance ToJWT AuthCookie
 type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
-  { postSync :: !(route :- ProtectAPI :> PostSync),
+  { deleteUser :: !(route :- ProtectAPI :> DeleteUser),
+    postSync :: !(route :- ProtectAPI :> PostSync),
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
     postBackup :: !(route :- ProtectAPI :> PostBackup),
     getBackup :: !(route :- ProtectAPI :> GetBackup),
@@ -160,6 +161,8 @@ instance NFData Login
 instance ToJSON Login
 
 instance FromJSON Login
+
+type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 

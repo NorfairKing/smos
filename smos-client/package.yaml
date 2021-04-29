@@ -43,6 +43,6 @@ tests:
     - -Wall
     dependencies:
     - smos-api
-    - smos-data
     - smos-client
+    - smos-data
     - sydtest

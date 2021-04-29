@@ -145,7 +145,8 @@ syncServerUnprotectedRoutes =
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
-    { postSync = withAuthResult servePostSync,
+    { deleteUser = withAuthResult serveDeleteUser,
+      postSync = withAuthResult servePostSync,
       getListBackups = withAuthResult serveGetListBackups,
       postBackup = withAuthResult servePostBackup,
       getBackup = withAuthResult serveGetBackup,
