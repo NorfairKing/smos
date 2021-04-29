@@ -2,7 +2,9 @@ module Main where
 
 import Network.HTTP.Client.TLS
 import Servant.Client
-import Spec
+import Smos.Client
+import Smos.Server.E2E.LoginSpec
+import Smos.Server.E2E.VersionSpec
 import System.Environment
 import System.Exit
 import Test.Syd
@@ -14,11 +16,18 @@ main = do
   su <- case me of
     Nothing -> die $ varname <> " is not configured. Point it to the server to test. Example: api.testing.smos.online"
     Just su -> pure su
-  let makeClientEnv = do
-        man <- newTlsManager
-        bu <- parseBaseUrl su
-        pure $ mkClientEnv man bu
 
-  sydTest $ doNotRandomiseExecutionOrder $ sequential $ beforeAll makeClientEnv spec
+  man <- newTlsManager
+  bu <- parseBaseUrl su
+  let cenv = mkClientEnv man bu
+
+  serverVersion <- runClientOrDie cenv clientGetApiVersion
+
+  sydTest $
+    doNotRandomiseExecutionOrder $
+      sequential $
+        beforeAll (pure cenv) $ do
+          Smos.Server.E2E.LoginSpec.spec serverVersion
+          Smos.Server.E2E.VersionSpec.spec
 
 newtype ServerUrl = ServerUrl String

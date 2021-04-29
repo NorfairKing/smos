@@ -28,6 +28,10 @@ instance GenValid Username where
       <$> ((:) <$> genValid <*> ((:) <$> genValid <*> ((:) <$> genValid <*> genValid)))
   shrinkValid = shrinkValidStructurally
 
+instance GenValid UserPermissions where
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+
 instance GenValid Password where
   genValid = mkPassword <$> genValid
   shrinkValid _ = [] -- Don't shrink passwords

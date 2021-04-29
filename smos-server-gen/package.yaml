@@ -93,6 +93,8 @@ executables:
     - http-client
     - http-client-tls
     - http-types
+    - mtl
+    - semver
     - servant-client
     - smos-client
     - smos-data
