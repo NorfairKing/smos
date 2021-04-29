@@ -59,7 +59,7 @@ withLogin cenv sessionPath mun mpw func = do
             clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
       case errOrErrOrSession of
         Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
-        Right (cookie, _) -> do
+        Right cookie -> do
           saveSession sessionPath cookie
           func $ sessionToToken cookie
 

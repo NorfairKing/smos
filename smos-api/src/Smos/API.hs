@@ -86,8 +86,7 @@ smosProtectedAPI = Proxy
 type ProtectAPI = Auth '[JWT] AuthCookie
 
 data AuthCookie = AuthCookie
-  { authCookieUsername :: Username,
-    authCookieIsAdmin :: Bool
+  { authCookieUsername :: Username
   }
   deriving (Show, Eq, Ord, Generic)
 
@@ -95,13 +94,11 @@ instance FromJSON AuthCookie where
   parseJSON = withObject "AuthCookie" $ \o ->
     AuthCookie
       <$> o .: "username"
-      <*> o .: "admin"
 
 instance ToJSON AuthCookie where
   toJSON AuthCookie {..} =
     object
-      [ "username" .= authCookieUsername,
-        "admin" .= authCookieIsAdmin
+      [ "username" .= authCookieUsername
       ]
 
 instance FromJWT AuthCookie
@@ -111,7 +108,8 @@ instance ToJWT AuthCookie
 type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
-  { deleteUser :: !(route :- ProtectAPI :> DeleteUser),
+  { getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
+    deleteUser :: !(route :- ProtectAPI :> DeleteUser),
     postSync :: !(route :- ProtectAPI :> PostSync),
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
     postBackup :: !(route :- ProtectAPI :> PostBackup),
@@ -146,7 +144,7 @@ instance FromJSON Register
 type PostLogin =
   "login"
     :> ReqBody '[JSON] Login
-    :> Post '[JSON] (Headers '[Header "Set-Cookie" T.Text] UserInfo)
+    :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
 
 data Login = Login
   { loginUsername :: Username,
@@ -161,6 +159,28 @@ instance NFData Login
 instance ToJSON Login
 
 instance FromJSON Login
+
+type GetUserPermissions = "user" :> "permissions" :> Get '[JSON] UserPermissions
+
+data UserPermissions = UserPermissions
+  { userPermissionsIsAdmin :: Bool
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity UserPermissions
+
+instance NFData UserPermissions
+
+instance FromJSON UserPermissions where
+  parseJSON = withObject "UserPermissions" $ \o ->
+    UserPermissions
+      <$> o .:? "admin" .!= False
+
+instance ToJSON UserPermissions where
+  toJSON UserPermissions {..} =
+    object
+      [ "admin" .= userPermissionsIsAdmin
+      ]
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
 

@@ -7,8 +7,8 @@ where
 
 import Smos.Server.Handler.Import
 
-serveGetUsers :: AdminCookie -> ServerHandler [UserInfo]
-serveGetUsers AdminCookie {..} = do
+serveGetUsers :: AuthCookie -> ServerHandler [UserInfo]
+serveGetUsers AuthCookie {..} = asAdmin authCookieUsername $ do
   userEntities <- runDB $ selectList [] [Desc UserCreated]
   mServerAdmin <- asks serverEnvAdmin
   pure $

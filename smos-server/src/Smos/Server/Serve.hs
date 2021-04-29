@@ -145,7 +145,8 @@ syncServerUnprotectedRoutes =
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
-    { deleteUser = withAuthResult serveDeleteUser,
+    { getUserPermissions = withAuthResult serveGetUserPermissions,
+      deleteUser = withAuthResult serveDeleteUser,
       postSync = withAuthResult servePostSync,
       getListBackups = withAuthResult serveGetListBackups,
       postBackup = withAuthResult servePostBackup,
@@ -168,7 +169,7 @@ serverReportRoutes =
 syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
 syncServerAdminRoutes =
   AdminRoutes
-    { getUsers = withAdminAuthResult serveGetUsers
+    { getUsers = withAuthResult serveGetUsers
     }
 
 readServerUUID :: Path Abs File -> IO ServerUUID
@@ -193,13 +194,4 @@ withAuthResult :: ThrowAll a => (AuthCookie -> a) -> (AuthResult AuthCookie -> a
 withAuthResult func ar =
   case ar of
     Authenticated ac -> func ac
-    _ -> throwAll err401
-
-withAdminAuthResult :: ThrowAll a => (AdminCookie -> a) -> (AuthResult AuthCookie -> a)
-withAdminAuthResult func ar =
-  case ar of
-    Authenticated AuthCookie {..} ->
-      if authCookieIsAdmin
-        then func (AdminCookie {adminCookieUsername = authCookieUsername})
-        else throwAll err403
     _ -> throwAll err401

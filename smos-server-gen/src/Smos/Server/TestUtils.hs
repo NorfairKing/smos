@@ -98,7 +98,7 @@ testLogin cenv lf = do
   errOrRes <- login cenv lf
   case errOrRes of
     Left err -> expectationFailure $ "Failed to login: " <> show err
-    Right (t, _) -> pure t
+    Right t -> pure t
 
 withNewUser :: MonadUnliftIO m => ClientEnv -> (Token -> m ()) -> m ()
 withNewUser cenv func = withNewUserAndData cenv $ const func

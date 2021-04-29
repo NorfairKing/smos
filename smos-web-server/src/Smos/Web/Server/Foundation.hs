@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -220,7 +221,9 @@ loginWeb form = do
             redirect $ AuthR LoginR
           else error $ show resp
     Right (Left _) -> undefined
-    Right (Right (t, ui)) -> recordLoginToken (loginUsername form) t ui
+    Right (Right t) -> do
+      UserPermissions {..} <- runClientOrErr $ clientGetUserPermissions t
+      recordLoginToken (loginUsername form) t userPermissionsIsAdmin
 
 handleStandardServantErrs :: ClientError -> (Response -> Handler a) -> Handler a
 handleStandardServantErrs err func =
@@ -267,10 +270,10 @@ lookupToginToken un = do
   tokenMap <- liftIO $ readTVarIO tokenMapVar
   pure $ M.lookup un tokenMap
 
-recordLoginToken :: Username -> Token -> UserInfo -> Handler ()
-recordLoginToken un token ui = do
+recordLoginToken :: Username -> Token -> Bool -> Handler ()
+recordLoginToken un token isAdmin = do
   tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, userInfoAdmin ui)
+  liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, isAdmin)
   writeTokens
 
 -- These three are used so you don't have to log in again every time you restart the server during development

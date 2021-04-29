@@ -29,7 +29,7 @@ spec = do
                   then pure () -- We assume that it's because the account didn't exist
                   else expectationFailure $ "Unable to login for cleanup: " <> show err
               _ -> expectationFailure $ "Unable to login for cleanup: " <> show err
-          Right (t, _) -> runClientOrDie cenv $ do
+          Right t -> runClientOrDie cenv $ do
             NoContent <- clientDeleteUser t
             pure ()
         pure cenv
@@ -55,4 +55,4 @@ spec = do
                 }
         case errOrToken of
           Left err -> expectationFailure $ show err
-          Right (_, _) -> pure ()
+          Right _ -> pure ()

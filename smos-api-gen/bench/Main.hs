@@ -14,9 +14,11 @@ main =
   Criterion.defaultMain
     [ genValidBench @Register,
       genValidBench @Login,
+      genValidBench @UserPermissions,
       genValidBench @ServerUUID,
       genValidBench @SyncFile,
       genValidBench @SyncRequest,
       genValidBench @SyncResponse,
-      genValidBench @BackupInfo
+      genValidBench @BackupInfo,
+      genValidBench @UserInfo
     ]

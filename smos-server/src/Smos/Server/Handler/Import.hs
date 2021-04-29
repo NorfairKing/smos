@@ -7,6 +7,7 @@ module Smos.Server.Handler.Import
     withUserId,
     withUser,
     streamSmosFiles,
+    asAdmin,
   )
 where
 
@@ -17,7 +18,7 @@ import qualified Data.Conduit.Combinators as C
 import Data.Time as X
 import Data.UUID.Typed as X
 import Path as X
-import Path.IO as X
+import Path.IO as X hiding (getPermissions)
 import Servant.API as X
 import Servant.Server as X
 import Smos.API as X
@@ -58,3 +59,9 @@ parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->
           Left _ -> Nothing
           Right sf -> Just (serverFilePath, sf)
         else Nothing
+
+asAdmin :: Username -> ServerHandler a -> ServerHandler a
+asAdmin username func = do
+  mAdmin <- asks serverEnvAdmin
+  let isAdmin = mAdmin == Just username
+  if isAdmin then func else throwError err404

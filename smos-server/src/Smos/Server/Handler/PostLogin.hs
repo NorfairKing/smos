@@ -12,7 +12,7 @@ import Smos.Server.Handler.Import
 
 servePostLogin ::
   Login ->
-  ServerHandler (Headers '[Header "Set-Cookie" T.Text] UserInfo)
+  ServerHandler (Headers '[Header "Set-Cookie" T.Text] NoContent)
 servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of
@@ -25,12 +25,9 @@ servePostLogin Login {..} = do
           PasswordCheckFail -> throwError err401
   where
     setLoggedIn (Entity uid User {..}) = do
-      mAdmin <- asks serverEnvAdmin
-      let isAdmin = mAdmin == Just userName
       let cookie =
             AuthCookie
-              { authCookieUsername = userName,
-                authCookieIsAdmin = isAdmin
+              { authCookieUsername = userName
               }
       ServerEnv {..} <- ask
       mCookie <- liftIO $ makeSessionCookieBS serverEnvCookieSettings serverEnvJWTSettings cookie
@@ -39,11 +36,4 @@ servePostLogin Login {..} = do
         Just setCookie -> do
           now <- liftIO getCurrentTime
           runDB $ update uid [UserLastLogin =. Just now]
-          let ui =
-                UserInfo
-                  { userInfoUsername = userName,
-                    userInfoAdmin = isAdmin,
-                    userInfoCreated = userCreated,
-                    userInfoLastLogin = userLastLogin
-                  }
-          pure $ addHeader (decodeUtf8 setCookie) ui
+          pure $ addHeader (decodeUtf8 setCookie) NoContent
