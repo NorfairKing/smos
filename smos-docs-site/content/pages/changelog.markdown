@@ -17,9 +17,10 @@ description: The changelog for all of the Smos tools and libraries
 
 - `smos-github`: There is now a new column that suggests you to have another look at the issue/pr because there has been a recent enough update.
 - `smos-github`: Done entries are no longer mentioned in the `list` report.
-- `smos-github` Show the state of the entries in the `list` report as well.
-- `smos-query` Always show "no todo state" as `(none)` instead of the empty string.
-- `smos-web-server` The footer icons now no longer overlap with the terminals.
+- `smos-github`: Show the state of the entries in the `list` report as well.
+- `smos-query`: Always show "no todo state" as `(none)` instead of the empty string.
+- `smos-web-server`: The footer icons now no longer overlap with the terminals.
+- `smos-notify`: Include the time that the notification is about in the notification as well.
 
 # <a name="2021-04-09">[2021-04-09 Release](#2021-04-09)
 

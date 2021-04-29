@@ -112,13 +112,16 @@ renderNotification :: ZonedTime -> NotificationEvent -> Notification
 renderNotification now = \case
   NotifyTimestamp _ h mc tsn ts ->
     let nowUTC = zonedTimeToUTC now
-        tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
+        tsLocalTime = timestampLocalTime ts
+        tsUTC = localTimeToUTC (zonedTimeZone now) tsLocalTime
      in Notification
           { notificationSummary =
               T.unlines
                 [ T.unwords
                     [ timestampNameText tsn,
-                      T.pack (prettyTimeAuto nowUTC tsUTC) <> ":"
+                      T.pack (prettyTimeAuto nowUTC tsUTC) <> ", ",
+                      "at",
+                      T.pack (formatTime defaultTimeLocale "%H:%M" tsLocalTime <> ":")
                     ],
                   headerText h
                 ],
