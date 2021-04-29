@@ -52,7 +52,13 @@ pkgs.nixosTest (
           enable = true;
           api-server = {
             enable = true;
-            api-url = "server:${builtins.toString api-port}";
+            tests = [
+              {
+                enable = true;
+                name = "testing";
+                api-url = "server:${builtins.toString api-port}";
+              }
+            ];
           };
         };
       };
@@ -73,7 +79,7 @@ pkgs.nixosTest (
       client.succeed("curl server:${builtins.toString web-port}")
 
       print("starting end-to-end-tests")
-      client.systemctl("start smos-server-end-to-end-test.service --wait")
+      client.systemctl("start smos-server-end-to-end-test-testing-testing.service --wait")
       print("end-to-end-tests done")
     '';
   }
