@@ -21,6 +21,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-query`: Always show "no todo state" as `(none)` instead of the empty string.
 - `smos-web-server`: The footer icons now no longer overlap with the terminals.
 - `smos-notify`: Include the time that the notification is about in the notification as well.
+- `smos`: Fixed the way undo works in timestamps.
 
 # <a name="2021-04-09">[2021-04-09 Release](#2021-04-09)
 

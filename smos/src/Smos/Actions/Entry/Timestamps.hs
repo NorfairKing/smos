@@ -49,7 +49,8 @@ timestampsSelect tsn =
               case mtsc of
                 Nothing -> startTimestampsCursor tsn lt
                 Just tsc -> timestampsCursorSelectOrAdd tsn lt tsc
-        modifyEntryCursor entryCursorSelectTimestamps,
+        modifyEntryCursor entryCursorSelectTimestamps
+        unrecordFileCursorHistory,
       actionDescription = "Select a timestamp for name " <> t
     }
   where
@@ -59,7 +60,9 @@ timestampsInsert :: ActionUsing Char
 timestampsInsert =
   ActionUsing
     { actionUsingName = "timestampsInsert",
-      actionUsingFunc = \c -> modifyTimestampsCursorM $ timestampsCursorInsertChar c,
+      actionUsingFunc = \c -> do
+        modifyTimestampsCursorM $ timestampsCursorInsertChar c
+        unrecordFileCursorHistory,
       actionUsingDescription =
         "Insert a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
@@ -68,7 +71,9 @@ timestampsAppend :: ActionUsing Char
 timestampsAppend =
   ActionUsing
     { actionUsingName = "timestampsAppend",
-      actionUsingFunc = \c -> modifyTimestampsCursorM $ timestampsCursorAppendChar c,
+      actionUsingFunc = \c -> do
+        modifyTimestampsCursorM $ timestampsCursorAppendChar c
+        unrecordFileCursorHistory,
       actionUsingDescription =
         "Append a character into the current timestamp cursor, whether that be the name or the timestamp itself"
     }
@@ -93,7 +98,9 @@ timestampsRemove :: Action
 timestampsRemove =
   Action
     { actionName = "timestampsRemove",
-      actionFunc = modifyTimestampsCursorM timestampsCursorRemoveChar,
+      actionFunc = do
+        modifyTimestampsCursorM timestampsCursorRemoveChar
+        unrecordFileCursorHistory,
       actionDescription = "Remove one character in the current timestamps cursor"
     }
 
@@ -101,7 +108,9 @@ timestampsDelete :: Action
 timestampsDelete =
   Action
     { actionName = "timestampsDelete",
-      actionFunc = modifyTimestampsCursorM timestampsCursorDeleteChar,
+      actionFunc = do
+        modifyTimestampsCursorM timestampsCursorDeleteChar
+        unrecordFileCursorHistory,
       actionDescription = "Delete one character  in the current timestamps cursor"
     }
 
