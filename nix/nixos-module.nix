@@ -4,14 +4,7 @@ with lib;
 let
   cfg = config.services.smos."${envname}";
 
-  mergeListRecursively = attrList:
-    fold
-      (
-        x: y:
-          lib.recursiveUpdate x y
-      )
-      { }
-      attrList;
+  mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 

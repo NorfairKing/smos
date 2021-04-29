@@ -4,7 +4,6 @@
 module Smos.Server.E2E.LoginSpec (spec) where
 
 import Data.Text (Text)
-import Network.HTTP.Client as HTTP
 import Network.HTTP.Types as HTTP
 import Servant.Client
 import Smos.Client
