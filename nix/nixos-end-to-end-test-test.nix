@@ -3,7 +3,7 @@ let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
   smos-testing = import ./nixos-module.nix { envname = "testing"; };
-  smos-end-to-end-testing = import ./end-to-end-test-nixos-module.nix;
+  smos-end-to-end-testing = import ./end-to-end-test-nixos-module.nix { envname = "testing"; };
 
   docs-port = 8001;
   api-port = 8002;
@@ -48,7 +48,7 @@ pkgs.nixosTest (
         imports = [
           smos-end-to-end-testing
         ];
-        services.smos.end-to-end-testing = {
+        services.smos.testing.end-to-end-testing = {
           enable = true;
           api-server = {
             enable = true;

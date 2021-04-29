@@ -1,12 +1,13 @@
+{ envname }:
 { lib, pkgs, config, ... }:
 with lib;
 let
-  cfg = config.services.smos.end-to-end-testing;
+  cfg = config.services.smos."${envname}".end-to-end-testing;
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 in
 {
-  options.services.smos.end-to-end-testing =
+  options.services.smos."${envname}".end-to-end-testing =
     {
       enable = mkEnableOption "Smos End to End Testing";
       api-server =
