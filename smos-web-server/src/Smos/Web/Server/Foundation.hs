@@ -228,7 +228,10 @@ loginWeb form = do
 handleStandardServantErrs :: ClientError -> (Response -> Handler a) -> Handler a
 handleStandardServantErrs err func =
   case err of
-    FailureResponse _ resp -> func resp
+    FailureResponse _ resp ->
+      if responseStatusCode resp == Http.badGateway502
+        then error $ unwords ["The api seems to be down:", show resp]
+        else func resp
     ConnectionError e -> error $ unwords ["The api seems to be down:", show e]
     e -> error $ unwords ["Error while calling API:", show e]
 
