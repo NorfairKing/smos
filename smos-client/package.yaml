@@ -22,6 +22,7 @@ library:
   - microlens
   - path
   - semver
+  - servant
   - servant-auth-client
   - servant-auth-server
   - servant-client

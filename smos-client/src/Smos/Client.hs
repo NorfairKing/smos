@@ -34,6 +34,7 @@ import GHC.Generics
 import Lens.Micro
 import qualified Network.HTTP.Types as HTTP
 import Path
+import Servant.API.Generic
 import Servant.Auth.Client
 import Servant.Auth.Server
 import Servant.Client.Generic
@@ -45,8 +46,11 @@ import Smos.Report.Next
 import System.Exit
 import Web.Cookie
 
+smosClient :: APIRoutes (AsClientT ClientM)
+smosClient = genericClient
+
 smosUnprotectedClient :: UnprotectedRoutes (AsClientT ClientM)
-smosUnprotectedClient = genericClient
+smosUnprotectedClient = fromServant $ unprotectedRoutes smosClient
 
 clientGetApiVersion :: ClientM Version
 clientGetApiVersion = getApiVersion smosUnprotectedClient
@@ -130,7 +134,7 @@ clientVersionsHelpMessage =
   ]
 
 smosProtectedClient :: ProtectedRoutes (AsClientT ClientM)
-smosProtectedClient = genericClient
+smosProtectedClient = fromServant $ protectedRoutes smosClient
 
 clientGetUserPermissions :: Token -> ClientM UserPermissions
 clientGetUserPermissions = getUserPermissions smosProtectedClient
@@ -166,7 +170,7 @@ clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 clientPutSmosFile = putSmosFile smosProtectedClient
 
 smosReportsClient :: ReportRoutes (AsClientT ClientM)
-smosReportsClient = genericClient
+smosReportsClient = fromServant $ reportRoutes smosProtectedClient
 
 clientGetNextActionReport :: Token -> ClientM NextActionReport
 clientGetNextActionReport = getNextActionReport smosReportsClient
@@ -175,7 +179,7 @@ clientGetAgendaReport :: Token -> ClientM AgendaReport
 clientGetAgendaReport = getAgendaReport smosReportsClient
 
 smosAdminClient :: AdminRoutes (AsClientT ClientM)
-smosAdminClient = genericClient
+smosAdminClient = fromServant $ adminRoutes smosClient
 
 clientGetUsers :: Token -> ClientM [UserInfo]
 clientGetUsers = getUsers smosAdminClient

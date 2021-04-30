@@ -64,7 +64,7 @@ type SmosAPI = ToServantApi APIRoutes
 data APIRoutes route = APIRoutes
   { unprotectedRoutes :: route :- ToServantApi UnprotectedRoutes,
     protectedRoutes :: route :- ToServantApi ProtectedRoutes,
-    adminRoutes :: route :- ToServantApi AdminRoutes
+    adminRoutes :: route :- "admin" :> ToServantApi AdminRoutes
   }
   deriving (Generic)
 
@@ -119,7 +119,7 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
-    reportRoutes :: !(route :- ToServantApi ReportRoutes)
+    reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
   deriving (Generic)
 
@@ -322,9 +322,9 @@ data ReportRoutes route = ReportRoutes
   }
   deriving (Generic)
 
-type GetNextActionReport = "report" :> "next" :> Get '[JSON] NextActionReport
+type GetNextActionReport = "next" :> Get '[JSON] NextActionReport
 
-type GetAgendaReport = "report" :> "agenda" :> Get '[JSON] AgendaReport
+type GetAgendaReport = "agenda" :> Get '[JSON] AgendaReport
 
 reportsAPI :: Proxy ReportsAPI
 reportsAPI = Proxy
@@ -339,7 +339,7 @@ data AdminRoutes route = AdminRoutes
   }
   deriving (Generic)
 
-type GetUsers = "admin" :> "users" :> Get '[JSON] [UserInfo]
+type GetUsers = "users" :> Get '[JSON] [UserInfo]
 
 data UserInfo = UserInfo
   { userInfoUsername :: !Username,
