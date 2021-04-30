@@ -26,6 +26,7 @@ main = do
   sydTest $
     doNotRandomiseExecutionOrder $
       sequential $
+        -- We list these specs manually because we will want to pass in the server version in certain places
         beforeAll (pure cenv) $ do
           Smos.Server.E2E.LoginSpec.spec serverVersion
           Smos.Server.E2E.VersionSpec.spec

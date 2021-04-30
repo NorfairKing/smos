@@ -1,44 +1,22 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.E2E.LoginSpec (spec) where
 
 import Control.Monad.Reader
 import Data.SemVer
-import Data.Text (Text)
-import Network.HTTP.Types as HTTP
 import Servant.Client
 import Smos.Client
+import Smos.Server.E2E.TestUtils
 import Test.Syd
 
 spec :: Version -> TestDef '[ClientEnv] ()
 spec serverVersion =
   -- User deletion (cleanup) was introduced in version 0.1.0
   when (serverVersion >= version 0 1 0 [] []) $ do
-    let testUsername :: Username
-        testUsername = Username "test-user"
-        testPassword :: Text
-        testPassword = "test-password"
-        testLogin :: Login
-        testLogin = Login {loginUsername = testUsername, loginPassword = testPassword}
-        cleanupTestUser :: ClientEnv -> IO ClientEnv
-        cleanupTestUser cenv = do
-          errOrToken <- login cenv testLogin
-          case errOrToken of
-            Left err -> case err of
-              LoginHeaderProblem err' -> expectationFailure $ "Unable to login for cleanup: " <> show err'
-              LoginServantError ce -> case ce of
-                FailureResponse _ resp ->
-                  if responseStatusCode resp == HTTP.unauthorized401
-                    then pure () -- We assume that it's because the account didn't exist
-                    else expectationFailure $ "Unable to login for cleanup: " <> show err
-                _ -> expectationFailure $ "Unable to login for cleanup: " <> show err
-            Right t -> runClientOrDie cenv $ do
-              NoContent <- clientDeleteUser t
-              pure ()
-          pure cenv
     beforeAllWith cleanupTestUser $ do
-      describe "Register" $ do
+      describe "PostRegister" $
         itWithOuter "can register with a test user" $ \cenv -> do
           NoContent <-
             runClientOrDie cenv $
@@ -48,6 +26,7 @@ spec serverVersion =
                     registerPassword = testPassword
                   }
           pure ()
+      describe "PostLogin" $
         itWithOuter "can login with that test user" $ \cenv -> do
           errOrToken <-
             runClientOrDie cenv $
@@ -59,3 +38,13 @@ spec serverVersion =
           case errOrToken of
             Left err -> expectationFailure $ show err
             Right _ -> pure ()
+      describe "GetUserPermissions" $
+        itWithOuter "can get the test user's permissions" $ \cenv -> do
+          withTestLogin cenv $ \t -> do
+            UserPermissions {..} <- runClientOrDie cenv $ clientGetUserPermissions t
+            userPermissionsIsAdmin `shouldBe` False
+      describe "DeleteUser" $ do
+        itWithOuter "can delete the test user" $ \cenv -> do
+          withTestLogin cenv $ \t -> do
+            NoContent <- runClientOrDie cenv $ clientDeleteUser t
+            pure ()
