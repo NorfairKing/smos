@@ -82,7 +82,6 @@ in
                 wantedBy = [ "timers.target" ];
                 timerConfig = {
                   OnCalendar = "*-*-* ${time}";
-                  Persistent = true;
                 };
               };
             })
