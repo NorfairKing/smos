@@ -51,10 +51,10 @@ runSmosServer ServeSettings {..} = do
                 if development
                   then 1 -- As fast as possible
                   else Zstd.maxCLevel -- rather slower
+          flip DB.runSqlPool pool $ do
+            DB.runMigration serverAutoMigration
+            serverStartupMigration compressionLevel
           let runTheServer = do
-                flip DB.runSqlPool pool $ do
-                  DB.runMigration serverAutoMigration
-                  serverStartupMigration compressionLevel
                 liftIO $ do
                   uuid <- readServerUUID serveSetUUIDFile
                   jwtKey <- loadSigningKey serveSetSigningKeyFile
