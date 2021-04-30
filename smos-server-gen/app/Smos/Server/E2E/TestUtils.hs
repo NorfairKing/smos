@@ -33,6 +33,7 @@ cleanupTestUser cenv = do
       pure ()
   pure cenv
 
+withTestLogin :: ClientEnv -> (Token -> IO b) -> IO b
 withTestLogin cenv func = do
   errOrToken <-
     runClientOrDie cenv $
