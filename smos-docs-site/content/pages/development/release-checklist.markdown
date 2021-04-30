@@ -5,7 +5,7 @@ description: A checklist of what to do when we are ready to make a new release
 
 When a given commit on the `development` branch is supposedly ready for release, we go through the following checklist:
 
-1. Update the version numbers of each package that's been changed.
+1. Update the version numbers of each package that's been changed using `git diff release`.
 1. Update the version number of the data format if the data format has been changed.
 1. Update the version number of the API if the API has been changed.
 1. Add new release section in the changelog.

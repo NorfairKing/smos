@@ -5,6 +5,23 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased Changes
 
+# <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
+
+- <a name="smos-api-gen-smos-api-gen-0.2.0">[smos-api-gen smos-api-gen-0.2.0](#smos-api-gen-smos-api-gen-0.2.0)
+- <a name="smos-smos-0.2.0">[smos smos-0.2.0](#smos-smos-0.2.0)
+- <a name="smos-github-smos-github-0.1.0">[smos-github smos-github-0.1.0](#smos-github-smos-github-0.1.0)
+- <a name="smos-client-smos-client-0.3.0">[smos-client smos-client-0.3.0](#smos-client-smos-client-0.3.0)
+- <a name="smos-report-smos-report-0.3.1">[smos-report smos-report-0.3.1](#smos-report-smos-report-0.3.1)
+- <a name="smos-scheduler-smos-scheduler-0.1.3">[smos-scheduler smos-scheduler-0.1.3](#smos-scheduler-smos-scheduler-0.1.3)
+- <a name="smos-api-smos-api-0.2.1">[smos-api smos-api-0.2.1](#smos-api-smos-api-0.2.1)
+- <a name="smos-query-smos-query-0.3.0">[smos-query smos-query-0.3.0](#smos-query-smos-query-0.3.0)
+- <a name="smos-web-server-smos-web-server-0.3.0">[smos-web-server smos-web-server-0.3.0](#smos-web-server-smos-web-server-0.3.0)
+- <a name="smos-calendar-import-smos-calendar-import-0.2.2">[smos-calendar-import smos-calendar-import-0.2.2](#smos-calendar-import-smos-calendar-import-0.2.2)
+- <a name="smos-server-smos-server-0.2.0">[smos-server smos-server-0.2.0](#smos-server-smos-server-0.2.0)
+- <a name="smos-notify-smos-notify-0.1.0">[smos-notify smos-notify-0.1.0](#smos-notify-smos-notify-0.1.0)
+- <a name="smos-server-gen-smos-server-gen-0.2.0">[smos-server-gen smos-server-gen-0.2.0](#smos-server-gen-smos-server-gen-0.2.0)
+
+
 ## Added
 
 - `smos`: A keybinding to open the `url` property in smos: `<space>ou` by default.
