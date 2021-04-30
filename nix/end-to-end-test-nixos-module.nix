@@ -36,6 +36,12 @@ in
                               example = "api.testing.smos.online";
                               description = "The url for the api to test";
                             };
+                          time =
+                            mkOption {
+                              type = types.str;
+                              example = "03:00";
+                              description = "The time of day to start the end-to-end test.";
+                            };
                         };
                       });
                   };
@@ -81,7 +87,7 @@ in
                 description = "Run the end-to-end tests from ${envname} to ${name} every day";
                 wantedBy = [ "timers.target" ];
                 timerConfig = {
-                  OnCalendar = "daily";
+                  OnCalendar = "*-*-* ${time}";
                   Persistent = true;
                 };
               };
