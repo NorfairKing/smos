@@ -195,6 +195,20 @@
             Running on NixOs
 
   <p .menu-label>
+    Developer Documentation
+
+  <ul .menu-list>
+    <li>
+      <a href=@{PageR ["development","branch-strategy"]}>
+        Branch Strategy
+    <li>
+      <a href=@{PageR ["development","end-to-end-tests"]}>
+        End-to-end tests
+    <li>
+      <a href=@{PageR ["development","release-checklist"]}>
+        Release checklist
+
+  <p .menu-label>
     Support
 
   <ul .menu-list>

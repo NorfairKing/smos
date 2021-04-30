@@ -48,6 +48,8 @@ library:
   - th-lift-instances
   - time
   - typed-process
+  - wai-extra
+  - warp
   - yaml
   - yamlparse-applicative
   - yesod

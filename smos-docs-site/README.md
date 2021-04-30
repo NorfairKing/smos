@@ -1,39 +1,8 @@
 # Smos Docs Site
 
-## Branch workflow
+## Setting up a feedback loop
 
-The default branch of the repository is `release`, which points to the latest release.
-There are two more relevant branches:
-
-* `master`, which points to whatever is in the staging environment.
-* `development`, which points to whatever is in the testing environment.
-
-## End-to-end testing
-
-We run these end-to-end tests:
-
-* `testing` -> `testing`: Current compatibility of the release candidate
-* `testing` -> `staging`: Backward compatibility
-* `staging` -> `testing`: Forward compatibility
-* `staging` -> `staging`: Current compatibility of the previous release
-
-## Release checklist
-
-When a given commit on the `development` branch is supposedly ready for release, we go through the following checklist:
-
-1. Update the version numbers of each package that's been changed.
-1. Update the version number of the data format if the data format has been changed.
-1. Update the version number of the API if the API has been changed.
-1. Add new release section in the changelog.
-1. Make sure that CI passes.
-1. Deploy to `testing` and wait for the end-to-end tests to pass.
-   If the end-to-end tests don't pass, that means we broke either forward or backward compatibility.
-   In that case we revert testing to the previous release commit and start over with the release checklist.
-1. Merge development into `master`.
-1. Deploy to staging
-1. Wait for end-to-end tests to pass again.
-1. Merge `master` into `release`
-1. Run the release script to create the appropriate tags
-1. Make a GitHub release with the contents of the changelog.
-1. Upload the release-zip with static binaries to the artefacts of the GitHub release
-1. Double-check that `master`, `development` and `release` now all point to the same version.
+```
+$ nix-shell ../shell.nix
+nix-shell $ ./scripts/devel.sh
+```
