@@ -20,16 +20,10 @@ in
                   tests = mkOption {
                     default = [ ];
                     type =
-                      types.listOf (types.submodule {
+                      types.attrsOf (types.submodule {
                         options = {
 
                           enable = mkEnableOption "Test of this environment";
-                          name =
-                            mkOption {
-                              type = types.str;
-                              example = "testing";
-                              description = "The name of the environment under test";
-                            };
                           api-url =
                             mkOption {
                               type = types.str;
@@ -56,8 +50,8 @@ in
       working-dir = "/www/smos/end-to-end-testing/";
       end-to-end-api-server-test-services =
         with cfg.api-server;
-        optionalAttrs enable (mergeListRecursively (builtins.map
-          (test:
+        optionalAttrs enable (mergeListRecursively (mapAttrsToList
+          (name: test:
             with test;
             optionalAttrs enable {
               "smos-api-server-end-to-end-test-${envname}-${name}" = {
@@ -79,8 +73,8 @@ in
           tests));
       end-to-end-api-server-test-timers =
         with cfg.api-server;
-        optionalAttrs enable (mergeListRecursively (builtins.map
-          (test:
+        optionalAttrs enable (mergeListRecursively (mapAttrsToList
+          (name: test:
             with test;
             optionalAttrs enable {
               "smos-api-server-end-to-end-test-${envname}-${name}" = {

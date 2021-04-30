@@ -52,14 +52,13 @@ pkgs.nixosTest (
           enable = true;
           api-server = {
             enable = true;
-            tests = [
-              {
+            tests = {
+              testing = {
                 enable = true;
-                name = "testing";
                 api-url = "server:${builtins.toString api-port}";
                 time = "00:00";
-              }
-            ];
+              };
+            };
           };
         };
       };
