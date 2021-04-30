@@ -8,25 +8,8 @@ let
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
-  mkLooperOption = name: mkOption {
-    default = null;
-    type = types.nullOr (types.submodule {
-      options = {
-        enable = mkEnableOption "${name} looper";
-        phase = mkOption {
-          type = types.nullOr types.int;
-          default = null;
-          example = 60;
-        };
-        period = mkOption {
-          type = types.nullOr types.int;
-          default = null;
-          example = 0;
-        };
-      };
-    });
-  };
-
+  sources = import ./sources.nix;
+  mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
 in
 {
   options.services.smos."${envname}" =

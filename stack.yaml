@@ -84,7 +84,7 @@ extra-deps:
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: 90e210d364eb329ed18cd28a3610e7976f2dd6db
+  commit: 377af89d0bfb2e3f5d4402b5398b618ebc09ff0f
   subdirs:
     - looper
   
