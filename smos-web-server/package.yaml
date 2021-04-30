@@ -90,8 +90,10 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - QuickCheck
     - bytestring
     - containers
+    - genvalidity-sydtest
     - http-client
     - http-types
     - monad-logger

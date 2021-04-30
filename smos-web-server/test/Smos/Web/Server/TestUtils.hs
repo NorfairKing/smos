@@ -8,6 +8,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Logger
 import qualified Data.Map as M
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Network.HTTP.Client as Http
 import Network.HTTP.Types
 import Path.IO
@@ -19,7 +20,9 @@ import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
 import Smos.Web.Style
+import Test.QuickCheck
 import Test.Syd
+import Test.Syd.Validity
 import Test.Syd.Yesod
 import Yesod.Auth
 
@@ -50,14 +53,6 @@ webServerSetupFunc' = wrapSetupFunc $ \(ClientEnv man burl _) -> do
         appGoogleSearchConsoleVerification = Nothing
       }
 
-asDummyUser :: YesodExample App a -> YesodExample App a
-asDummyUser example_ = do
-  let dummyUN = Username "dummy"
-      dummyPW = "password"
-  withFreshAccount dummyUN dummyPW $ do
-    loginTo dummyUN dummyPW
-    example_
-
 loginTo :: Username -> Text -> YesodExample App ()
 loginTo username passphrase = do
   get $ AuthR LoginR
@@ -72,9 +67,19 @@ loginTo username passphrase = do
   loc <- getLocation
   liftIO $ loc `shouldBe` Right HomeR
 
-withFreshAccount ::
-  Username -> Text -> YesodExample App a -> YesodExample App a
-withFreshAccount exampleUsername examplePassphrase func = do
+withAnyFreshAccount_ :: YesodClient App -> YesodClientM App () -> Property
+withAnyFreshAccount_ yc func = withAnyFreshAccount yc (\_ _ -> func)
+
+withAnyFreshAccount :: YesodClient App -> (Username -> Text -> YesodClientM App ()) -> Property
+withAnyFreshAccount yc func = forAllValid $ \username ->
+  forAll (genValid `suchThat` (not . T.null)) $ \password -> do
+    runYesodClientM yc $ do
+      registerAccount username password
+      func username password
+
+registerAccount ::
+  Username -> Text -> YesodExample App ()
+registerAccount exampleUsername examplePassphrase = do
   get $ AuthR registerR
   statusIs 200
   request $ do
@@ -87,4 +92,3 @@ withFreshAccount exampleUsername examplePassphrase func = do
   statusIs 303
   loc <- getLocation
   liftIO $ loc `shouldBe` Right HomeR
-  func

@@ -5,20 +5,17 @@ module Smos.Web.Server.Handler.AuthSpec
   )
 where
 
-import Smos.Client
 import Smos.Web.Server.TestUtils
 import Test.Syd
 import Test.Syd.Yesod
 
 spec :: Spec
 spec = smosWebServerSpec $ do
-  let dummyUN = Username "dummy"
-  let dummyPW = "dummy"
   ydescribe "Register" $
-    yit "just works for a dummy username and password" $
-      withFreshAccount dummyUN dummyPW $
+    it "just works for a dummy username and password" $ \yc ->
+      withAnyFreshAccount_ yc $ do
         pure ()
   ydescribe "Login" $
-    yit "just works for a dummy username and password" $
-      withFreshAccount dummyUN dummyPW $
-        loginTo dummyUN dummyPW
+    it "just works for a dummy username and password" $ \yc ->
+      withAnyFreshAccount yc $ \username password -> do
+        loginTo username password
