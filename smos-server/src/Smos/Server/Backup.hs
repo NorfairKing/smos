@@ -1,11 +1,11 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Backup where
 
-import Control.Monad.Reader
-import Data.Foldable
-import qualified Data.Map as M
+import Conduit
+import qualified Data.Conduit.Combinators as C
+import Data.Monoid (Sum (..))
 import Data.Time
 import Data.UUID.Typed (nextRandomUUID)
 import Database.Persist
@@ -13,35 +13,32 @@ import Database.Persist.Sql
 import Smos.API
 import Smos.Server.DB
 
-doBackupForUser :: MonadIO m => Int -> UserId -> SqlPersistT m BackupUUID
+doBackupForUser :: MonadUnliftIO m => Int -> UserId -> SqlPersistT m BackupUUID
 doBackupForUser compressionLevel uid = do
   now <- liftIO getCurrentTime
-  serverFiles <- selectList [ServerFileUser ==. uid] []
-
-  let compressAndCount (!s, !cfs) (Entity _ ServerFile {..}) =
-        let compressedFile = compressByteString compressionLevel serverFileContents
-         in (s + compressedSize compressedFile, M.insert serverFilePath compressedFile cfs)
-
-  let (size, compressedFiles) = foldl' compressAndCount (0, M.empty) serverFiles
+  acqFileSource <- selectSourceRes [ServerFileUser ==. uid] []
 
   uuid <- nextRandomUUID
 
-  -- Do the actual backup.
+  -- Make a backup with an empty size, we'll fill it in when we've counted all the files.
   backupId <-
     insert
       Backup
         { backupUser = uid,
           backupUuid = uuid,
           backupTime = now,
-          backupSize = size
+          backupSize = 0 -- Temporarily
         }
-  insertMany_ $
-    flip map (M.toList compressedFiles) $ \(path, contents) ->
-      BackupFile
-        { backupFileBackup = backupId,
-          backupFilePath = path,
-          backupFileContents = contents
-        }
+
+  Sum size <- withAcquire acqFileSource $ \source -> do
+    let insertAndCount (Entity _ ServerFile {..}) = do
+          let compressedContents = compressByteString compressionLevel serverFileContents
+          insert_ BackupFile {backupFileBackup = backupId, backupFilePath = serverFilePath, backupFileContents = compressedContents}
+          pure $ Sum $ compressedSize compressedContents
+
+    runConduit $ source .| C.mapM insertAndCount .| C.fold
+
+  update backupId [BackupSize =. size]
 
   pure uuid
 
