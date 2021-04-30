@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Server.Migration (serverAutoMigration, serverStartupMigration) where
+module Smos.Server.Looper.FileMigrator where
 
 import Conduit
 import Control.Monad.Logger
@@ -12,19 +12,21 @@ import Database.Persist.Sql
 import Path
 import Smos.Data
 import Smos.Server.DB
+import Smos.Server.Looper.Import
 
-serverStartupMigration :: Int -> SqlPersistT (LoggingT IO) ()
-serverStartupMigration compressionLevel = do
-  logInfoNS "startup-migration" "Starting server file format migration"
-  acqFileSource <- selectSourceRes [] [Asc ServerFileId]
+runFileMigrationLooper :: Looper ()
+runFileMigrationLooper = do
+  compressionLevel <- asks looperEnvCompressionLevel
+  logInfoNS "file-migration" "Starting server file format migration"
+  acqFileSource <- looperDB $ selectSourceRes [] [Asc ServerFileId]
   withAcquire acqFileSource $ \source ->
-    runConduit $ source .| C.mapM_ refreshServerFile
-  logInfoNS "startup-migration" "Server file format migration done"
-  logInfoNS "startup-migration" "Starting backup file format migration"
-  acqBackupSource <- selectSourceRes [] [Asc BackupFileId]
+    runConduit $ source .| C.mapM_ (looperDB . refreshServerFile)
+  logInfoNS "file-migration" "Server file format migration done"
+  logInfoNS "file-migration" "Starting backup file format migration"
+  acqBackupSource <- looperDB $ selectSourceRes [] [Asc BackupFileId]
   withAcquire acqBackupSource $ \source ->
-    runConduit $ source .| C.mapM_ (refreshBackupFile compressionLevel)
-  logInfoNS "startup-migration" "Server backup file format migration done"
+    runConduit $ source .| C.mapM_ (looperDB . refreshBackupFile compressionLevel)
+  logInfoNS "file-migration" "Server backup file format migration done"
 
 refreshServerFile :: Entity ServerFile -> SqlPersistT (LoggingT IO) ()
 refreshServerFile (Entity sfid ServerFile {..}) =
@@ -33,7 +35,7 @@ refreshServerFile (Entity sfid ServerFile {..}) =
       case parseSmosFile serverFileContents of
         Left err ->
           -- Not a parsable smos file, just leave it
-          logWarnNS "startup-migration" $
+          logWarnNS "file-migration" $
             T.unwords
               [ "Server file",
                 T.pack (fromRelFile serverFilePath),
@@ -47,7 +49,7 @@ refreshServerFile (Entity sfid ServerFile {..}) =
           if newContents == serverFileContents
             then pure () -- wouldn't be an update, no need to update
             else do
-              logInfoNS "startup-migration" $
+              logInfoNS "file-migration" $
                 T.unwords
                   [ "Migrating server file",
                     T.pack (fromRelFile serverFilePath),
@@ -68,7 +70,7 @@ refreshBackupFile compressionLevel (Entity bfid BackupFile {..}) =
       case decompressByteString backupFileContents of
         Left err -> do
           -- Not a valid compression of anything
-          logWarnNS "startup-migration" $
+          logWarnNS "file-migration" $
             T.unwords
               [ "Backup file",
                 T.pack (fromRelFile backupFilePath),
@@ -81,7 +83,7 @@ refreshBackupFile compressionLevel (Entity bfid BackupFile {..}) =
           case parseSmosFile uncompressedContents of
             Left err ->
               -- Not a parsable smos file, just leave it
-              logWarnNS "startup-migration" $
+              logWarnNS "file-migration" $
                 T.unwords
                   [ "Backup file",
                     T.pack (fromRelFile backupFilePath),
@@ -95,7 +97,7 @@ refreshBackupFile compressionLevel (Entity bfid BackupFile {..}) =
               if newContents == backupFileContents
                 then pure () -- wouldn't be an update, no need to update
                 else do
-                  logInfoNS "startup-migration" $
+                  logInfoNS "file-migration" $
                     T.unwords
                       [ "Migrating backup file",
                         T.pack (fromRelFile backupFilePath),

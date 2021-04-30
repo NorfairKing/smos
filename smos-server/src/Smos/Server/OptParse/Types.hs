@@ -34,6 +34,7 @@ data ServeFlags = ServeFlags
     serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
     serveFlagAutoBackupLooperFlags :: !LooperFlags,
     serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags,
+    serveFlagFileMigrationLooperFlags :: !LooperFlags,
     serveFlagAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq)
@@ -54,6 +55,7 @@ data Environment = Environment
     envMaxBackupSizePerUser :: !(Maybe Word64),
     envAutoBackupLooperEnv :: !LooperEnvironment,
     envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
+    envFileMigrationLooperEnv :: !LooperEnvironment,
     envAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)
@@ -68,6 +70,7 @@ data Configuration = Configuration
     confMaxBackupSizePerUser :: !(Maybe Word64),
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
     confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
+    confFileMigrationLooperConfiguration :: !(Maybe LooperConfiguration),
     confAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)
@@ -90,6 +93,7 @@ configurationObjectParser =
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
     <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
     <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
+    <*> optionalField "file-migrator" "The configuration for the automatic file format migrator looper"
     <*> optionalField "admin" "The username of the user who will have admin rights"
 
 newtype Dispatch
@@ -106,6 +110,7 @@ data ServeSettings = ServeSettings
     serveSetMaxBackupSizePerUser :: !(Maybe Word64),
     serveSetAutoBackupLooperSettings :: !LooperSettings,
     serveSetBackupGarbageCollectionLooperSettings :: !LooperSettings,
+    serveSetFileMigrationLooperSettings :: !LooperSettings,
     serveSetAdmin :: !(Maybe Username)
   }
   deriving (Show, Eq, Generic)

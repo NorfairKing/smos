@@ -69,6 +69,13 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
                   serveFlagBackupGarbageCollectionLooperFlags
                   envBackupGarbageCollectionLooperEnv
                   (mc >>= confBackupGarbageCollectionLooperConfiguration)
+          let serveSetFileMigrationLooperSettings =
+                deriveLooperSettings
+                  (minutes 2)
+                  (hours 24)
+                  serveFlagFileMigrationLooperFlags
+                  envFileMigrationLooperEnv
+                  (mc >>= confFileMigrationLooperConfiguration)
           let serveSetAdmin = serveFlagAdmin <|> envAdmin <|> (mc >>= confAdmin)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
@@ -90,6 +97,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
       <*> looperEnvironmentParser "AUTO_BACKUP"
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
+      <*> looperEnvironmentParser "FILE_MIGRATOR"
       <*> Env.var (fmap Just . (left Env.UnreadError . parseUsernameWithError . T.pack)) "ADMIN" (mE <> Env.help "The user that will have admin rights")
   where
     mE = Env.def Nothing <> Env.keep
@@ -218,6 +226,7 @@ parseServeFlags =
       )
     <*> getLooperFlags "auto-backup"
     <*> getLooperFlags "backup-garbage-collector"
+    <*> getLooperFlags "file-migrator"
     <*> optional
       ( option
           (eitherReader $ parseUsernameWithError . T.pack)

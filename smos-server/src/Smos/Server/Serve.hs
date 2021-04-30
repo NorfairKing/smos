@@ -30,7 +30,6 @@ import Smos.API
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
-import Smos.Server.Migration
 import Smos.Server.OptParse
 import System.Exit
 import UnliftIO hiding (Handler)
@@ -47,13 +46,11 @@ runSmosServer ServeSettings {..} = do
     filterLogger (\_ ll -> ll >= serveSetLogLevel) $
       DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1 $
         \pool -> do
+          flip DB.runSqlPool pool $ DB.runMigration serverAutoMigration
           let compressionLevel =
                 if development
                   then 1 -- As fast as possible
                   else Zstd.maxCLevel -- rather slower
-          flip DB.runSqlPool pool $ do
-            DB.runMigration serverAutoMigration
-            serverStartupMigration compressionLevel
           let runTheServer = do
                 liftIO $ do
                   uuid <- readServerUUID serveSetUUIDFile
@@ -93,7 +90,8 @@ runSmosServer ServeSettings {..} = do
                   runLoopersIgnoreOverrun
                     looperRunner
                     [ mkLooperDef "auto-backup" serveSetAutoBackupLooperSettings runAutoBackupLooper,
-                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
+                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper,
+                      mkLooperDef "file-migrator" serveSetFileMigrationLooperSettings runFileMigrationLooper
                     ]
           concurrently_ runTheServer runTheLoopers
 

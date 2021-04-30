@@ -16,7 +16,7 @@ data LooperEnv = LooperEnv
   }
   deriving (Generic)
 
-looperDB :: DB.SqlPersistT IO a -> Looper a
+looperDB :: DB.SqlPersistT (LoggingT IO) a -> Looper a
 looperDB func = do
   pool <- asks looperEnvConnection
-  liftIO $ DB.runSqlPool func pool
+  lift $ DB.runSqlPool func pool

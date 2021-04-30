@@ -8,6 +8,7 @@ export DEVELOPMENT=True
 export SMOS_SERVER_LOG_LEVEL=Debug
 export SMOS_SERVER_PORT=8001
 export SMOS_SERVER_ADMIN=admin
+export SMOS_SERVER_FILE_MIGRATOR_PHASE=0
 export SMOS_WEB_SERVER_API_URL="http://localhost:$SMOS_SERVER_PORT"
 export SMOS_WEB_SERVER_DATA_DIR=data
 export SMOS_WEB_SERVER_DOCS_URL=https://docs.smos.online
