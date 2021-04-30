@@ -14,6 +14,7 @@ import qualified Data.ByteString.Lazy as LB
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Mergeful as Mergeful
+import Data.SemVer as Version
 import qualified Data.Set as S
 import Data.Time
 import qualified Data.UUID as UUID
@@ -162,9 +163,9 @@ outputGoldenTest fp val =
 
 inputGoldenTest :: forall a. (Validity a, Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
 inputGoldenTest fp current = do
-  it "output" $
-    pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/input.json") current
-  scenarioDir ("test_resources/" ++ fp ++ "/old-input") $ \p ->
+  it "input" $
+    pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/input/v" ++ Version.toString apiVersion ++ ".json") current
+  scenarioDir ("test_resources/" ++ fp ++ "/input") $ \p ->
     it "can still parse the old input" $ do
       bs <- SB.readFile p
       case JSON.eitherDecode (LB.fromStrict bs) of
