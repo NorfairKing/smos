@@ -32,6 +32,13 @@ $maybe (_, latestRelease) <- mLatestRelease
     <div .content>
       #{preEscapedToMarkup $ docPageRendered latestRelease}
 
-<div .pt-6 .is-primary>
-  <a .button href=@{ChangelogAllR}>
-    Older releases
+<div .pt-6 .content>
+  <ul>
+    $forall (url, release) <- releases
+      <li>
+        <a .button href=@{ChangelogReleaseR url}>
+          #{docPageTitle release}
+
+<div .pt-6>
+  <a .button .is-primary href=@{ChangelogAllR}>
+    All releases
