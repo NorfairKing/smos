@@ -5,6 +5,14 @@ description: The changelog for all of the Smos tools and libraries
 
 # Unreleased Changes
 
+## Changed
+
+- `smos` and `smos-query`: More strings are now recognised as durations: `5sec`, `6 min`, `7 hours`, etc... 
+  See [PR 195](https://github.com/NorfairKing/smos/pull/195) for more details.
+  Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
+- `smos-sync-client`: Now sends the `User-Agent` header with `smos-sync-client-<version>`.
+- `smos-web-server`: Now sends the `User-Agent` header with `smos-web-server-<version>`.
+
 # <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
 
 - <a name="smos-api-gen-smos-api-gen-0.2.0">[smos-api-gen smos-api-gen-0.2.0](#smos-api-gen-smos-api-gen-0.2.0)
