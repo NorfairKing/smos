@@ -1,0 +1,35 @@
+---
+title: Release 2020-11-04
+description: The changelog for the 2020-11-04 release
+---
+
+# <a name="2020-11-04">[2020-11-04 Release](#2020-11-04)
+
+- <a name="smos-0.1.1">[smos 0.1.1](#smos0-1.1)
+- <a name="smos-query-0.1.1">[smos-query 0.1.1](#smos-query0-1.1)
+
+## Added
+
+- Static builds for all executables
+
+## Changed
+
+- `smos-query`:
+  Make `AllTime` the default period and `OneBlock` the default block for the agenda command instead of 'Today'.
+  See the Note `[Agenda command defaults]` in the code for more info.
+  The default block now also changes per period. For year-based periods the default block will by month, for month-based periods the block will be by week, for week-based persiods the default block will be by day.
+
+## Fixed
+
+- `smos-query`:
+  The agenda report now shows the "Now" line in the right place at night.
+  [#164](https://github.com/NorfairKing/smos/pull/164).
+  Thank you [@jecaro](https://github.com/jecaro)!
+- `smos`:
+  When selecting a timestamp, smos now correctly selects the value instead of the name.
+  [#170](https://github.com/NorfairKing/smos/pull/170)
+  Thank you [@jecaro](https://github.com/jecaro)!
+
+## Removed
+
+- `smos-asciinema`: This package has been entirely removed and split out to [a separate project](https://github.com/NorfairKing/autorecorder)

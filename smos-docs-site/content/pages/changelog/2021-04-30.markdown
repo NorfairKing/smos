@@ -1,0 +1,42 @@
+---
+title: Release 2020-04-30
+description: The changelog for the 2020-04-30 release
+---
+
+# <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
+
+- <a name="smos-api-gen-smos-api-gen-0.2.0">[smos-api-gen smos-api-gen-0.2.0](#smos-api-gen-smos-api-gen-0.2.0)
+- <a name="smos-smos-0.2.0">[smos smos-0.2.0](#smos-smos-0.2.0)
+- <a name="smos-github-smos-github-0.1.0">[smos-github smos-github-0.1.0](#smos-github-smos-github-0.1.0)
+- <a name="smos-client-smos-client-0.3.0">[smos-client smos-client-0.3.0](#smos-client-smos-client-0.3.0)
+- <a name="smos-report-smos-report-0.3.1">[smos-report smos-report-0.3.1](#smos-report-smos-report-0.3.1)
+- <a name="smos-scheduler-smos-scheduler-0.1.3">[smos-scheduler smos-scheduler-0.1.3](#smos-scheduler-smos-scheduler-0.1.3)
+- <a name="smos-api-smos-api-0.2.1">[smos-api smos-api-0.2.1](#smos-api-smos-api-0.2.1)
+- <a name="smos-query-smos-query-0.3.0">[smos-query smos-query-0.3.0](#smos-query-smos-query-0.3.0)
+- <a name="smos-web-server-smos-web-server-0.3.0">[smos-web-server smos-web-server-0.3.0](#smos-web-server-smos-web-server-0.3.0)
+- <a name="smos-calendar-import-smos-calendar-import-0.2.2">[smos-calendar-import smos-calendar-import-0.2.2](#smos-calendar-import-smos-calendar-import-0.2.2)
+- <a name="smos-server-smos-server-0.2.0">[smos-server smos-server-0.2.0](#smos-server-smos-server-0.2.0)
+- <a name="smos-notify-smos-notify-0.1.0">[smos-notify smos-notify-0.1.0](#smos-notify-smos-notify-0.1.0)
+- <a name="smos-server-gen-smos-server-gen-0.2.0">[smos-server-gen smos-server-gen-0.2.0](#smos-server-gen-smos-server-gen-0.2.0)
+
+
+## Added
+
+- `smos`: A keybinding to open the `url` property in smos: `<space>ou` by default.
+- `smos-server`: Now performs auto-backups and backup garbage-collection beyond a maximum number of backups or backup size
+- `smos-server`: Now performs automatic smos file format migration for the smos files and smos backup files it stores
+- `smos-server`: Admin endpoint for the admin panel
+- `smos-web-server`: Admin panel with basic user information
+
+## Changed
+
+- `smos-github`: There is now a new column that suggests you to have another look at the issue/pr because there has been a recent enough update.
+- `smos-github`: Done entries are no longer mentioned in the `list` report.
+- `smos-github`: Show the state of the entries in the `list` report as well.
+- `smos-query`: Always show "no todo state" as `(none)` instead of the empty string.
+- `smos-web-server`: The footer icons now no longer overlap with the terminals.
+- `smos-notify`: Include the time that the notification is about in the notification as well.
+- `smos`: Fixed the way undo works in timestamps.
+- `smos`: Fixed the way undo works in tags.
+- `smos`: Fixed the way undo works in property names and property values.
+

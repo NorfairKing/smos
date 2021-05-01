@@ -1,5 +1,9 @@
 / HomeR GET
 
+/changelog ChangelogR GET
+/changelog/all ChangelogAllR GET
+!/changelog/*Texts ChangelogReleaseR GET
+
 /smos SmosR GET
 /smos/file SmosFileR GET
 /smos/keybindings SmosKeybindingsR GET
@@ -26,8 +30,6 @@
 /smos-web-server SmosWebServerR GET
 
 /smos-github SmosGitHubR GET
-
-/changelog ChangelogR GET
 
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET

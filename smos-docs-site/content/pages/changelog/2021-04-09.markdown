@@ -1,0 +1,73 @@
+---
+title: Release 2021-04-09
+description: The changelog for the 2021-04-09 release
+---
+
+# <a name="2021-04-09">[2021-04-09 Release](#2021-04-09)
+
+- <a name="smos-0.1.5">[smos 0.1.5](#smos-0.1.5)
+- <a name="smos-api-0.2.0">[smos-api 0.2.0](#smos-api-0.2.0)
+- <a name="smos-api-gen-0.1.1">[smos-api-gen 0.1.1](#smos-api-gen-0.1.1)
+- <a name="smos-archive-0.2.1">[smos-archive 0.2.1](#smos-archive-0.2.1)
+- <a name="smos-client-0.2.0">[smos-client 0.2.0](#smos-client-0.2.0)
+- <a name="smos-convert-org-0.1.1">[smos-convert-org 0.1.1](#smos-convert-org-0.1.1)
+- <a name="smos-data-0.2.1">[smos-data 0.2.1](#smos-data-0.2.1)
+- <a name="smos-data-gen-0.1.2">[smos-data-gen 0.1.2](#smos-data-gen-0.1.2)
+- <a name="smos-github-0.0.0">[smos-github 0.0.0](#smos-github-0.0.0)
+- <a name="smos-notify-0.0.0">[smos-notify 0.0.0](#smos-notify-0.0.0)
+- <a name="smos-query-0.2.3">[smos-query 0.2.3](#smos-query-0.2.3)
+- <a name="smos-report-0.3.0">[smos-report 0.3.0](#smos-report-0.3.0)
+- <a name="smos-report-gen-0.1.2">[smos-report-gen 0.1.2](#smos-report-gen-0.1.2)
+- <a name="smos-report-cursor-0.1.2">[smos-report-cursor 0.1.2](#smos-report-cursor-0.1.2)
+- <a name="smos-report-cursor-gen-0.1.2">[smos-report-cursor-gen 0.1.2](#smos-report-cursor-gen-0.1.2)
+- <a name="smos-scheduler-0.1.2">[smos-scheduler 0.1.2](#smos-scheduler-0.1.2)
+- <a name="smos-server-0.1.1">[smos-server 0.1.1](#smos-server-0.1.1)
+- <a name="smos-server-gen-0.1.1">[smos-server-gen 0.1.1](#smos-server-gen-0.1.1)
+- <a name="smos-shell-0.0.2">[smos-shell 0.0.2](#smos-shell-0.0.2)
+- <a name="smos-single-0.1.1">[smos-single 0.1.1](#smos-single-0.1.1)
+- <a name="smos-sync-client-0.1.2">[smos-sync-client 0.1.2](#smos-sync-client-0.1.2)
+- <a name="smos-sync-client-gen-0.1.1">[smos-sync-client-gen 0.1.1](#smos-sync-client-gen-0.1.1)
+- <a name="smos-web-server-0.2.0">[smos-web-server 0.2.0](#smos-web-server-0.2.0)
+- <a name="smos-web-style-0.0.1">[smos-web-style 0.0.1](#smos-web-style-0.0.1)
+
+## Added
+
+- `smos-github`:
+  [For integrating with github](/smos-github)
+- `smos-server`:
+  The `/api-version` endpoint for querying the API version
+- `smos-client`:
+  Client functions to call the `/api-version` endpoint for checking compatibility of the client with the server's API version
+- `smos-notify`:
+  [For integrating with desktop notifications](/smos-notify)
+
+## Changed
+
+- `smos-data`:
+  Updated the data format to include a data format version.
+  This way, we can change change the data format in the future and not get crashes.
+  The previous version was already forward-compatible with this change so you should not notice this change **unless you wrote custom tooling to work with smos files**.
+  The newest data-format version is version `1.0.0`.
+- `smos`:
+  The components of an entry are now drawn in the following order:
+  1. timestamps
+  1. properties
+  1. contents
+  1. logbook
+  1. history
+
+  where they used to be drawn in this order:
+  1. contents
+  1. timestamps
+  1. properties
+  1. history
+  1. logbook
+- `smos-web-server`:
+  The web server now calls the API server during startup.
+  This way the web server checks for both liveness of the API server and version compatibility.
+- `smos-sync-client`:
+  The sync client now checks compatibility with the server's API version.
+
+## Deleted
+
+- `smos-client-gen`: This package was empty
