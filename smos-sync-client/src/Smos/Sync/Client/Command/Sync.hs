@@ -61,7 +61,7 @@ syncSmosSyncClient Settings {..} SyncSettings {..} = do
   withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
     runStderrLoggingT $
       filterLogger (\_ ll -> ll >= setLogLevel) $
-        DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
+        DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB <> ".lock") 1 $
           \pool ->
             withClientEnv setServerUrl $ \cenv -> withClientVersionCheck cenv $
               withLogin cenv setSessionPath setUsername setPassword $ \token ->
