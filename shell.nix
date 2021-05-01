@@ -14,6 +14,7 @@ pkgs.haskell.lib.buildStackProject {
     sass
     zlib
     bzip2
+    git
   ] ++ pre-commit.tools;
   shellHook = ''
     ${pre-commit.run.shellHook}

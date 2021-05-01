@@ -13,7 +13,8 @@ import Data.Validity
 import Data.Void
 import GHC.Generics (Generic)
 import Text.Megaparsec
-import Text.Megaparsec.Char.Lexer
+import Text.Megaparsec.Char
+import Text.Megaparsec.Char.Lexer (decimal)
 
 data Time
   = Seconds Word
@@ -63,13 +64,32 @@ parseTime = left errorBundlePretty . parse timeP "time string"
 timeP :: P Time
 timeP = do
   i <- decimal
-  c <- charLiteral
+  space
+  c <- many asciiChar
   case c of
-    's' -> pure $ Seconds i
-    'm' -> pure $ Minutes i
-    'h' -> pure $ Hours i
-    'd' -> pure $ Days i
-    'w' -> pure $ Weeks i
+    "s" -> pure $ Seconds i
+    "sec" -> pure $ Seconds i
+    "secs" -> pure $ Seconds i
+    "second" -> pure $ Seconds i
+    "seconds" -> pure $ Seconds i
+    "m" -> pure $ Minutes i
+    "min" -> pure $ Minutes i
+    "mins" -> pure $ Minutes i
+    "minute" -> pure $ Minutes i
+    "minutes" -> pure $ Minutes i
+    "h" -> pure $ Hours i
+    "hr" -> pure $ Hours i
+    "hrs" -> pure $ Hours i
+    "hour" -> pure $ Hours i
+    "hours" -> pure $ Hours i
+    "d" -> pure $ Days i
+    "day" -> pure $ Days i
+    "days" -> pure $ Days i
+    "w" -> pure $ Weeks i
+    "wk" -> pure $ Weeks i
+    "wks" -> pure $ Weeks i
+    "week" -> pure $ Weeks i
+    "weeks" -> pure $ Weeks i
     _ -> fail $ "Unknown unit of time: " <> show c
 
 renderTime :: Time -> Text
