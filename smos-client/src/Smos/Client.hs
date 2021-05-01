@@ -114,7 +114,13 @@ withClientVersionCheck cenv func = do
   errOrUnit <- liftIO $ runClientM clientDoVersionCheck cenv
   case errOrUnit of
     Left err ->
-      let errOut = liftIO $ die $ unlines ["Unable to contact the smos-server to perform an api version check:", show err]
+      let errOut =
+            liftIO $
+              die $
+                unlines
+                  [ "Unable to contact the smos-server to perform an api version check:",
+                    show err
+                  ]
        in case err of
             FailureResponse _ resp ->
               if responseStatusCode resp == HTTP.notFound404 -- API version 0.0.0, before we had the version check endpoint

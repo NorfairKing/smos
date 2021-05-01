@@ -15,6 +15,7 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-sync-client`: Retry authenticating (once) if authentication fails.
   This should prevent users from having to remove the `.cache/smos/sync-session.dat` cache file when authentication fails because in the way authentication works.
 - `smos-sync-client`: More descriptive error messages if login fails.
+- `smos-sync-client`: Use the logger for warnings, so you can now ignore them by setting the log level higher than `LevelWarn`.
 
 # <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
 

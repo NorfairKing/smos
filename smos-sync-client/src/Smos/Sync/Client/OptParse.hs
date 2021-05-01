@@ -54,20 +54,21 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         Just s -> Servant.parseBaseUrl s
     let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
     let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
-    setPassword <-
-      case flagPassword of
-        Just p -> do
-          putStrLn "WARNING: Plaintext password in flags may end up in shell history."
-          pure (Just p)
-        Nothing ->
-          case envPassword of
-            Just p -> pure (Just p)
-            Nothing ->
-              case cM syncConfPassword of
-                Just p -> do
-                  putStrLn "WARNING: Plaintext password in config file."
-                  pure (Just p)
-                Nothing -> pure Nothing
+    setPassword <- runStderrLoggingT $
+      filterLogger (\_ ll -> ll >= setLogLevel) $
+        case flagPassword of
+          Just p -> do
+            logWarnN "Plaintext password in flags may end up in shell history."
+            pure (Just p)
+          Nothing ->
+            case envPassword of
+              Just p -> pure (Just p)
+              Nothing ->
+                case cM syncConfPassword of
+                  Just p -> do
+                    logWarnN "Plaintext password in config file."
+                    pure (Just p)
+                  Nothing -> pure Nothing
     setSessionPath <-
       case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
         Nothing -> resolveFile cacheDir "sync-session.dat"
