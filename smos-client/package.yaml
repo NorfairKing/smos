@@ -21,6 +21,7 @@ library:
   - http-types
   - microlens
   - path
+  - pretty-show
   - semver
   - servant
   - servant-auth-client

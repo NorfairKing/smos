@@ -16,6 +16,7 @@ description: The changelog for all of the Smos tools and libraries
   This should prevent users from having to remove the `.cache/smos/sync-session.dat` cache file when authentication fails because in the way authentication works.
 - `smos-sync-client`: More descriptive error messages if login fails.
 - `smos-sync-client`: Use the logger for warnings, so you can now ignore them by setting the log level higher than `LevelWarn`.
+- `smos-client`: A bit of a nicer error message when something goes wrong during the client's api-version check.
 
 # <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
 

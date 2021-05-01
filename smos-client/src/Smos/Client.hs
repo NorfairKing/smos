@@ -23,6 +23,7 @@ module Smos.Client
 where
 
 import Control.DeepSeq
+import Control.Exception
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
@@ -44,6 +45,7 @@ import Smos.Data hiding (Header)
 import Smos.Report.Agenda
 import Smos.Report.Next
 import System.Exit
+import Text.Show.Pretty
 import Web.Cookie
 
 smosClient :: APIRoutes (AsClientT ClientM)
@@ -114,16 +116,28 @@ withClientVersionCheck cenv func = do
   errOrUnit <- liftIO $ runClientM clientDoVersionCheck cenv
   case errOrUnit of
     Left err ->
-      let errOut =
-            liftIO $
-              die $
-                unlines
-                  [ "Unable to contact the smos-server to perform an api version check:",
-                    show err
-                  ]
+      let errOut = liftIO $
+            die $
+              unlines $
+                ("Unable to contact the smos-server to perform an api version check." :) $
+                  case err of
+                    FailureResponse req resp ->
+                      [ "Something went wrong with this request:",
+                        ppShow req,
+                        "Failure response:",
+                        ppShow resp
+                      ]
+                    ConnectionError e ->
+                      [ "There was a problem with the connection, no response received:",
+                        displayException e
+                      ]
+                    e -> ["Unknown problem:", ppShow e]
        in case err of
             FailureResponse _ resp ->
-              if responseStatusCode resp == HTTP.notFound404 -- API version 0.0.0, before we had the version check endpoint
+              -- API version 0.0.0, before we had the version check endpoint,
+              -- would return a 404 for this endpoint, so if we get a 404 we assume
+              -- that the server serves version 0.0.0 of the API.
+              if responseStatusCode resp == HTTP.notFound404
                 then
                   if oldestSupportedAPIVersion ^. Version.major == 0
                     then func
