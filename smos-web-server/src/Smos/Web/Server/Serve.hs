@@ -1,14 +1,19 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Web.Server.Serve where
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Data.Version
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Path.IO
+import Paths_smos_web_server
 import Servant.Client
 import Smos.Client
 import Smos.Web.Server.Application ()
@@ -30,7 +35,17 @@ runSmosWebServer ServeSettings {..} = do
   -- Just to make sure we don't get into trouble with reading files from here.
   -- This also allows to error out early if something is wrong with permissions.
   ensureDir serveSetDataDir
-  man <- liftIO $ Http.newManager Http.tlsManagerSettings
+  let managerSets =
+        Http.tlsManagerSettings
+          { Http.managerModifyRequest = \request -> do
+              let headers =
+                    ( "User-Agent",
+                      TE.encodeUtf8 $ T.pack $ "smos-web-server-" <> showVersion version
+                    ) :
+                    Http.requestHeaders request
+              pure $ request {Http.requestHeaders = headers}
+          }
+  man <- liftIO $ Http.newManager managerSets
   loginVar <- liftIO $ newTVarIO M.empty
   let app =
         App
