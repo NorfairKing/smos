@@ -11,12 +11,16 @@ import Control.Monad.Logger
 import Control.Monad.Reader
 import Data.Aeson
 import qualified Data.Mergeful as Mergeful
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Validity
+import Data.Version
 import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 import Path
+import Paths_smos_sync_client
 import Servant.Auth.Client as Auth
 import Smos.API
 import Smos.Client
@@ -34,7 +38,17 @@ data SyncClientEnv = SyncClientEnv
 
 withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
 withClientEnv burl func = do
-  man <- liftIO $ HTTP.newManager HTTP.tlsManagerSettings
+  let managerSets =
+        HTTP.tlsManagerSettings
+          { managerModifyRequest = \request -> do
+              let headers =
+                    ( "User-Agent",
+                      TE.encodeUtf8 $ T.pack $ "smos-sync-client-" <> showVersion version
+                    ) :
+                    requestHeaders request
+              pure $ request {requestHeaders = headers}
+          }
+  man <- liftIO $ HTTP.newManager managerSets
   let cenv = mkClientEnv man burl
   func cenv
 
