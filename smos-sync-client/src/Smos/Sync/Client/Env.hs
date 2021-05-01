@@ -29,6 +29,7 @@ import Smos.Client
 import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
 import System.Exit
+import Text.Show.Pretty
 import UnliftIO
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
@@ -70,11 +71,39 @@ withLogin cenv sessionPath mun mpw func = do
         pw <- liftIO $ promptPassword mpw
         errOrErrOrSession <-
           liftIO $
-            runClientOrDie cenv $
+            runClient cenv $
               clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
         case errOrErrOrSession of
-          Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
-          Right cookie -> do
+          Left ce -> do
+            logErrorN $
+              case ce of
+                FailureResponse _ resp
+                  | responseStatusCode resp == HTTP.unauthorized401 ->
+                    T.unlines
+                      [ "401 Unauthorized",
+                        "For security reasons, we do not get any more information than that.",
+                        "Please double-check your username and password and try again",
+                        T.pack $ ppShow resp
+                      ]
+                ConnectionError e ->
+                  T.unlines
+                    [ "There was a problem with the connection, no response received:",
+                      T.pack $ displayException e
+                    ]
+                _ ->
+                  T.unlines
+                    [ "There was an unknown problem during login:",
+                      T.pack $ displayException ce
+                    ]
+            liftIO $ die "Failed to login"
+          Right (Left hp) -> do
+            logErrorN $
+              T.unlines
+                [ "There was a problem with login headers, this likely indicates a bug:",
+                  T.pack (show hp)
+                ]
+            liftIO $ die "Failed to login"
+          Right (Right cookie) -> do
             saveSession sessionPath cookie
             func $ sessionToToken cookie
   case mToken of

@@ -27,6 +27,7 @@ library:
   - path
   - path-io
   - persistent-sqlite
+  - pretty-show
   - resource-pool
   - servant-client
   - smos-api
