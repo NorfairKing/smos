@@ -17,6 +17,9 @@ description: The changelog for all of the Smos tools and libraries
 - `smos-sync-client`: More descriptive error messages if login fails.
 - `smos-sync-client`: Use the logger for warnings, so you can now ignore them by setting the log level higher than `LevelWarn`.
 - `smos-client`: A bit of a nicer error message when something goes wrong during the client's api-version check.
+- `smos-sync-client`: Use a separate lock file from the database file itself to lock the database.
+  This prevents a `SQLITE_BUSY` infinite retry problem. See [Issue 202](https://github.com/NorfairKing/smos/issues/202) and [PR 203](https://github.com/NorfairKing/smos/pull/203).
+  Thank you [@jhbertra](https://github.com/jhbertra)!
 
 # <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
 

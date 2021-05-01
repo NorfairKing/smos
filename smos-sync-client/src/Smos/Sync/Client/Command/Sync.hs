@@ -58,7 +58,7 @@ import UnliftIO
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} SyncSettings {..} = do
   ensureDir $ parent syncSetMetadataDB
-  withFileLock (fromAbsFile syncSetMetadataDB) Exclusive $ \_ ->
+  withFileLock (fromAbsFile syncSetMetadataDB <> ".lock") Exclusive $ \_ ->
     runStderrLoggingT $
       filterLogger (\_ ll -> ll >= setLogLevel) $
         DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
