@@ -25,6 +25,7 @@ library:
   - envparse
   - filelock
   - filepath
+  - http-types
   - http-client
   - http-client-tls
   - mergeful

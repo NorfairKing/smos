@@ -55,19 +55,26 @@ tests:
     - genvalidity-bytestring
     - genvalidity-path
     - genvalidity-sydtest
-    - mergeful
+    - jose
     - mergeful
     - monad-logger
     - path
     - path-io
     - persistent-sqlite
     - resource-pool
+    - servant-auth-client
+    - servant-auth-server
     - servant-client
     - smos-api
+    - smos-api-gen
+    - smos-client
+    - smos-server
     - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen
     - sydtest
+    - sydtest-persistent-sqlite
+    - sydtest-wai
     - text
 
 benchmarks:

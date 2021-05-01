@@ -78,6 +78,8 @@
     within:
     - Smos.API.SHA256
 
+  - {name: forkIO, within: []} # Hard to get right, use the async library instead.
+
   - {name: throw, within: []} # Don't throw from pure code, use throwIO instead.
 
 

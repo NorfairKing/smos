@@ -12,6 +12,8 @@ description: The changelog for all of the Smos tools and libraries
   Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
 - `smos-sync-client`: Now sends the `User-Agent` header with `smos-sync-client-<version>`.
 - `smos-web-server`: Now sends the `User-Agent` header with `smos-web-server-<version>`.
+- `smos-sync-client`: Retry authenticating (once) if authentication fails.
+  This should prevent users from having to remove the `.cache/smos/sync-session.dat` cache file when authentication fails because in the way authentication works.
 
 # <a name="2021-04-30">[2021-04-30 Release](#2021-04-30)
 

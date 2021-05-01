@@ -63,7 +63,7 @@ serverConnectionPoolSetupFunc = connectionPoolSetupFunc serverAutoMigration
 type ServerSpec = TestDef '[Http.Manager] ClientEnv
 
 serverSpec :: ServerSpec -> Spec
-serverSpec = modifyMaxSuccess (`div` 20) . beforeAll (Http.newManager Http.defaultManagerSettings) . setupAroundWith' serverSetupFunc
+serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' serverSetupFunc
 
 serverSetupFunc :: Http.Manager -> SetupFunc () ClientEnv
 serverSetupFunc man = serverConnectionPoolSetupFunc `connectSetupFunc` serverSetupFunc' man

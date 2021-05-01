@@ -92,7 +92,7 @@ runInitialSync contentsDir backupDir ignoreFiles token = do
   let req = SyncRequest {syncRequestItems = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile}
   logDebugData "INITIAL SYNC REQUEST" req
   logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
+  resp@SyncResponse {..} <- runSyncClientOrThrow $ clientPostSync token req
   logDebugData "INITIAL SYNC RESPONSE" resp
   logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
@@ -105,7 +105,7 @@ runSync contentsDir backupDir ignoreFiles serverUUID token = do
   req <- clientMakeSyncRequest contentsDir ignoreFiles
   logDebugData "SYNC REQUEST" req
   logInfoJsonData "SYNC REQUEST (JSON)" req
-  resp@SyncResponse {..} <- runSyncClientOrDie $ clientPostSync token req
+  resp@SyncResponse {..} <- runSyncClientOrThrow $ clientPostSync token req
   logDebugData "SYNC RESPONSE" resp
   logInfoJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $

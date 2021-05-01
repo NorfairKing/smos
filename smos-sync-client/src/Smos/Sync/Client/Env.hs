@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -19,6 +20,7 @@ import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
+import Network.HTTP.Types as HTTP
 import Path
 import Paths_smos_sync_client
 import Servant.Auth.Client as Auth
@@ -27,6 +29,7 @@ import Smos.Client
 import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
 import System.Exit
+import UnliftIO
 
 type C = ReaderT SyncClientEnv (LoggingT IO)
 
@@ -53,7 +56,7 @@ withClientEnv burl func = do
   func cenv
 
 withLogin ::
-  MonadIO m =>
+  (MonadUnliftIO m, MonadLogger m) =>
   ClientEnv ->
   Path Abs File ->
   Maybe Username ->
@@ -62,20 +65,34 @@ withLogin ::
   m a
 withLogin cenv sessionPath mun mpw func = do
   mToken <- loadToken sessionPath
+  let loginAndPerformAction = do
+        un <- liftIO $ promptUsername mun
+        pw <- liftIO $ promptPassword mpw
+        errOrErrOrSession <-
+          liftIO $
+            runClientOrDie cenv $
+              clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
+        case errOrErrOrSession of
+          Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
+          Right cookie -> do
+            saveSession sessionPath cookie
+            func $ sessionToToken cookie
   case mToken of
-    Just token -> func token
-    Nothing -> do
-      un <- liftIO $ promptUsername mun
-      pw <- liftIO $ promptPassword mpw
-      errOrErrOrSession <-
-        liftIO $
-          runClientOrDie cenv $
-            clientLoginSession Login {loginUsername = un, loginPassword = unsafeShowPassword pw}
-      case errOrErrOrSession of
-        Left hp -> liftIO $ die $ unlines ["Problem with login headers:", show hp]
-        Right cookie -> do
-          saveSession sessionPath cookie
-          func $ sessionToToken cookie
+    Just token ->
+      -- First we try to run the given action without login in again, if it
+      -- fails because of a 401 error, we try to login and run the action again
+      let predicate :: ClientError -> Maybe ()
+          predicate = \case
+            FailureResponse _ resp -> guard (responseStatusCode resp == HTTP.unauthorized401)
+            _ -> Nothing
+       in catchJust
+            predicate
+            (func token)
+            ( \() -> do
+                logWarnN "Request failed because of a 401 response, Will re-log-in and try again."
+                loginAndPerformAction
+            )
+    Nothing -> loginAndPerformAction
 
 promptUsername :: Maybe Username -> IO Username
 promptUsername mun =
@@ -94,11 +111,11 @@ runSyncClient func = do
   cenv <- asks syncClientEnvServantClientEnv
   liftIO $ runClient cenv func
 
-runSyncClientOrDie :: NFData a => ClientM a -> C a
-runSyncClientOrDie func = do
+runSyncClientOrThrow :: NFData a => ClientM a -> C a
+runSyncClientOrThrow func = do
   errOrResp <- runSyncClient func
   case errOrResp of
-    Left err -> liftIO $ die $ show err
+    Left err -> liftIO $ throwIO err
     Right resp -> pure resp
 
 runDB :: DB.SqlPersistT C a -> C a
