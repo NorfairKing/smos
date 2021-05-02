@@ -1,9 +1,6 @@
 ---
-title: Release 2021-03-13
-description: The changelog for the 2021-03-13 release
+day: 2021-03-13
 ---
-
-# <a name="2021-03-13">[2021-03-13 Release](#2021-03-13)
 
 - <a name="smos-0.1.4">[smos 0.1.4](#smos-0.1.4)
 - <a name="smos-cursor-0.2.1">[smos-cursor 0.2.1](#smos-cursor-0.2.1)

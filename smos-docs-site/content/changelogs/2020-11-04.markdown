@@ -1,9 +1,6 @@
 ---
-title: Release 2020-11-04
-description: The changelog for the 2020-11-04 release
+day: 2020-11-04
 ---
-
-# <a name="2020-11-04">[2020-11-04 Release](#2020-11-04)
 
 - <a name="smos-0.1.1">[smos 0.1.1](#smos0-1.1)
 - <a name="smos-query-0.1.1">[smos-query 0.1.1](#smos-query0-1.1)

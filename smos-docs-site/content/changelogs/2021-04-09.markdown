@@ -1,9 +1,6 @@
 ---
-title: Release 2021-04-09
-description: The changelog for the 2021-04-09 release
+day: 2021-04-09
 ---
-
-# <a name="2021-04-09">[2021-04-09 Release](#2021-04-09)
 
 - <a name="smos-0.1.5">[smos 0.1.5](#smos-0.1.5)
 - <a name="smos-api-0.2.0">[smos-api 0.2.0](#smos-api-0.2.0)

@@ -12,6 +12,7 @@ module Smos.Docs.Site.Foundation
     module Smos.Docs.Site.Assets,
     module Smos.Docs.Site.Casts,
     module Smos.Docs.Site.Static,
+    module Smos.Docs.Site.Changelog,
     module Smos.Docs.Site.Widget,
     module Yesod,
   )
