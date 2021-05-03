@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
@@ -9,11 +10,16 @@ module Smos.Docs.Site.Changelog
 where
 
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Text (Text)
+import Data.Time
 import Language.Haskell.TH.Load
 import Path
 import Smos.Docs.Site.Changelog.TH
 import Smos.Docs.Site.Constants
 
-changelogs :: Load (Map [Text] Changelog)
+unreleasedChangelog :: Load (Maybe Changelog)
+unreleasedChangelog = $$(embedReadTextFileWith unreleasedFunc [||unreleasedFunc||] mode [relfile|content/unreleased.markdown|])
+
+changelogs :: Load (Map Day Changelog)
 changelogs = $$(embedTextFilesInWith changelogKeyFunc [||changelogKeyFunc||] changelogValFunc [||changelogValFunc||] mode [reldir|content/changelogs|])

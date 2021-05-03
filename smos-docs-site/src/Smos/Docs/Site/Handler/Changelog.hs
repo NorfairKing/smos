@@ -11,27 +11,47 @@ module Smos.Docs.Site.Handler.Changelog
 where
 
 import Data.List
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
 import Data.SemVer as Version (toString)
 import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Time
+import Language.Haskell.TH.Load
 import Smos.Client
 import Smos.Data
 import Smos.Docs.Site.Handler.Import
 
+showReleaseDay :: Day -> Text
+showReleaseDay = T.pack . formatTime defaultTimeLocale "%F"
+
 getChangelogR :: Handler Html
 getChangelogR = do
-  changelog <- lookupPage "changelog"
-  unreleased <- lookupPage' ["changelog", "unreleased"]
-  releases <- lookupPagesIn ["changelog"]
-  let mLatestRelease = find ((/= ["unreleased"]) . fst) $ sortOn (Down . fst) releases
+  mUnreleased <- loadIO unreleasedChangelog
+  releases <- loadIO changelogs
+  let (latestReleaseDay, latestRelease) = M.findMin releases
   defaultLayout $ do
     setSmosTitle "Changelog"
-    setDescription "The changelog for all of the Smos tools and libraries"
+    setDescription "The changelog for the latest release of all of the Smos tools and libraries"
     $(widgetFile "changelog")
 
 getChangelogAllR :: Handler Html
-getChangelogAllR = undefined
+getChangelogAllR = do
+  mUnreleased <- loadIO unreleasedChangelog
+  releases <- loadIO changelogs
+  defaultLayout $ do
+    setSmosTitle "Changelog"
+    setDescription "The changelog for all releases of all of the Smos tools and libraries"
+    $(widgetFile "changelog-all")
 
-getChangelogReleaseR :: [Text] -> Handler Html
-getChangelogReleaseR = undefined
+getChangelogReleaseR :: Day -> Handler Html
+getChangelogReleaseR day = do
+  releases <- loadIO changelogs
+  case M.lookup day releases of
+    Nothing -> notFound
+    Just release -> do
+      defaultLayout $ do
+        setSmosTitle $ "Changelog for the " <> toHtml (showReleaseDay day) <> " release"
+        setDescription $ "The changelog for the " <> showReleaseDay day <> " release of all of the Smos tools and libraries"
+        $(widgetFile "changelog-release")

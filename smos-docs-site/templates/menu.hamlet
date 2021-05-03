@@ -199,6 +199,9 @@
 
   <ul .menu-list>
     <li>
+      <a href=@{CurrentVersionsR}>
+        Current Versions
+    <li>
       <a href=@{PageR ["development","branch-strategy"]}>
         Branch Strategy
     <li>

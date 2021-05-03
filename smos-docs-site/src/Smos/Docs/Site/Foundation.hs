@@ -24,9 +24,11 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import Language.Haskell.TH.Load
 import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Casts
+import Smos.Docs.Site.Changelog
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget

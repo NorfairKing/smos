@@ -1,11 +1,4 @@
----
-title: Changelog for unreleased changes
-description: The changelog for everything that has not been released yet.
----
-
-# Unreleased Changes
-
-## Changed
+##### Changed
 
 - `smos` and `smos-query`: More strings are now recognised as durations: `5sec`, `6 min`, `7 hours`, etc... 
   See [PR 195](https://github.com/NorfairKing/smos/pull/195) for more details.

@@ -1,44 +1,36 @@
 <h1 .title .is-1>
-  #{docPageTitle changelog}
+  Changelog
+
 <h2 .subtitle .is-4>
-  #{docPageDescription changelog}
+  The changelog for the latest release of all of the Smos tools and libraries
 
+$maybe unreleased <- mUnreleased
+  <h3 .title .is-5 .mt-3>
+    Unreleased Changes
 
-<div .content>
-  <h1 .is-1>
-    Current Versions
-
-  <h3>
-    Data
-  <pre>
-    Current smos data format version: #{Version.toString currentDataVersion}
-
-    Oldest parseable Smos data format version: #{Version.toString oldestParsableDataVersion}
-    Newest parseable Smos data format version: #{Version.toString newestParsableDataVersion}
-
-  <h3>
-    Server API
-  <pre>
-    Current smos server API version: #{Version.toString apiVersion}
-
-    Oldest supported Smos server API version: #{Version.toString oldestSupportedAPIVersion}
-    Newest supported Smos server API version: #{Version.toString newestSupportedAPIVersion}
-
-<div .pt-6>
   <div .content>
-    #{preEscapedToMarkup $ docPageRendered unreleased}
-$maybe (_, latestRelease) <- mLatestRelease
-  <div .mt-6>
-    <div .content>
-      #{preEscapedToMarkup $ docPageRendered latestRelease}
+    #{preEscapedToMarkup $ changelogRendered unreleased}
+
+
+<div .mt-6>
+  <h3 .title .is-5>
+    Latest Release:
+    <a href=@{ChangelogReleaseR latestReleaseDay}>
+      #{formatTime defaultTimeLocale "%F" latestReleaseDay}
+
+  <div .content>
+    #{preEscapedToMarkup $ changelogRendered latestRelease}
+
 
 <div .pt-6 .content>
-  <ul>
-    $forall (url, release) <- releases
-      <li>
-        <a .button href=@{ChangelogReleaseR url}>
-          #{docPageTitle release}
+  <h3 .title .is-5>
+    Older Releases
 
-<div .pt-6>
-  <a .button .is-primary href=@{ChangelogAllR}>
-    All releases
+  $forall (day, release) <- M.toList releases
+    <p>
+      <a .button href=@{ChangelogReleaseR day}>
+        #{formatTime defaultTimeLocale "%F" day}
+
+  <p>
+    <a .button .is-primary href=@{ChangelogAllR}>
+      All release changelogs on one page

@@ -1,0 +1,22 @@
+<h1 .title .is-1>
+  Changelog
+
+<h2 .subtitle .is-4>
+  The changelog for all releases of all of the Smos tools and libraries
+
+
+$maybe unreleased <- mUnreleased
+  <h3 .title .is-5 .mt-3>
+    Unreleased Changes
+
+  <div .content>
+    #{preEscapedToMarkup $ changelogRendered unreleased}
+
+
+<div .mt-6>
+  $forall (day, release) <- M.toList releases
+    <h3 .title .is-5>
+      <a href=@{ChangelogReleaseR day}>
+        #{formatTime defaultTimeLocale "%F" day}
+    <div .content>
+      #{preEscapedToMarkup $ changelogRendered release}

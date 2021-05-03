@@ -1,0 +1,25 @@
+<h1 .title .is-1>
+  #{docPageTitle currentVersions}
+
+<h2 .subtitle .is-4>
+  #{docPageDescription currentVersions}
+
+<div .content>
+  <h3>
+    Data
+  <pre>
+    Current smos data format version: #{Version.toString currentDataVersion}
+
+    Oldest parseable Smos data format version: #{Version.toString oldestParsableDataVersion}
+    Newest parseable Smos data format version: #{Version.toString newestParsableDataVersion}
+
+  <h3>
+    Server API
+  <pre>
+    Current smos server API version: #{Version.toString apiVersion}
+
+    Oldest supported Smos server API version: #{Version.toString oldestSupportedAPIVersion}
+    Newest supported Smos server API version: #{Version.toString newestSupportedAPIVersion}
+
+<div .content>
+  #{preEscapedToMarkup $ docPageRendered currentVersions}
