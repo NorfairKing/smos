@@ -5,6 +5,7 @@
 
 module Smos.Docs.Site.Handler.Changelog
   ( getChangelogR,
+    getChangelogLatestR,
     getChangelogAllR,
     getChangelogReleaseR,
   )
@@ -30,11 +31,16 @@ getChangelogR :: Handler Html
 getChangelogR = do
   mUnreleased <- loadIO unreleasedChangelog
   releases <- loadIO changelogs
-  let (latestReleaseDay, latestRelease) = M.findMin releases
+  (latestReleaseDay, latestRelease) <- loadIO latestChangelog
   defaultLayout $ do
     setSmosTitle "Changelog"
     setDescription "The changelog for the latest release of all of the Smos tools and libraries"
     $(widgetFile "changelog")
+
+getChangelogLatestR :: Handler Html
+getChangelogLatestR = do
+  (latestReleaseDay, _) <- loadIO latestChangelog
+  redirect $ ChangelogReleaseR latestReleaseDay
 
 getChangelogAllR :: Handler Html
 getChangelogAllR = do

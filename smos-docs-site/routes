@@ -1,6 +1,7 @@
 / HomeR GET
 
 /changelog ChangelogR GET
+/changelog/latest ChangelogLatestR GET
 /changelog/all ChangelogAllR GET
 !/changelog/#Day ChangelogReleaseR GET
 

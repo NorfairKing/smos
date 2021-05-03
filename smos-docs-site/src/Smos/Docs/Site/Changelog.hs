@@ -21,5 +21,8 @@ import Smos.Docs.Site.Constants
 unreleasedChangelog :: Load (Maybe Changelog)
 unreleasedChangelog = $$(embedReadTextFileWith unreleasedFunc [||unreleasedFunc||] mode [relfile|content/unreleased.markdown|])
 
+latestChangelog :: Load (Day, Changelog)
+latestChangelog = M.findMin <$> changelogs
+
 changelogs :: Load (Map Day Changelog)
 changelogs = $$(embedTextFilesInWith changelogKeyFunc [||changelogKeyFunc||] changelogValFunc [||changelogValFunc||] mode [reldir|content/changelogs|])
