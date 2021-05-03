@@ -7,63 +7,51 @@ module Smos.Query.Commands.Work
 where
 
 import Conduit
-import Data.List (intercalate)
-import Data.List.NonEmpty (NonEmpty)
-import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
-import Data.Time
-import Path
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Report.Entry
-import Smos.Report.Filter
-import Smos.Report.Projection
+import Smos.Query.Commands.Import
 import Smos.Report.Work
 
 smosQueryWork :: WorkSettings -> Q ()
 smosQueryWork WorkSettings {..} = do
-  src <- asks smosQueryConfigReportConfig
   now <- liftIO getZonedTime
-  let wc = smosReportConfigWorkConfig src
-  let contexts = workReportConfigContexts wc
   mcf <- forM workSetContext $ \cn ->
-    case M.lookup cn contexts of
+    case M.lookup cn workSetContexts of
       Nothing -> dieQ $ unwords ["Context not found:", T.unpack $ contextNameText cn]
       Just cf -> pure cf
-  wd <- liftIO $ resolveReportWorkflowDir src
-  pd <- liftIO $ resolveReportProjectsDir src
+  dc <- asks envDirectoryConfig
+  wd <- liftIO $ resolveDirWorkflowDir dc
+  pd <- liftIO $ resolveDirProjectsDir dc
   let mpd = stripProperPrefix wd pd
   let wrc =
         WorkReportContext
           { workReportContextNow = now,
             workReportContextProjectsSubdir = mpd,
-            workReportContextBaseFilter = workReportConfigBaseFilter wc,
+            workReportContextBaseFilter = workSetBaseFilter,
             workReportContextCurrentContext = mcf,
-            workReportContextTimeProperty = workReportConfigTimeProperty wc,
+            workReportContextTimeProperty = workSetTimeProperty,
             workReportContextTime = workSetTime,
             workReportContextAdditionalFilter = workSetFilter,
-            workReportContextContexts = contexts,
-            workReportContextChecks = workReportConfigChecks wc,
+            workReportContextContexts = workSetContexts,
+            workReportContextChecks = workSetChecks,
             workReportContextSorter = workSetSorter,
             workReportContextWaitingThreshold = workSetWaitingThreshold,
             workReportContextStuckThreshold = workSetStuckThreshold
           }
   sp <- getShouldPrint
-  wr <- produceWorkReport workSetHideArchive sp (smosReportConfigDirectoryConfig src) wrc
-  cc <- asks smosQueryConfigColourConfig
+  wr <- produceWorkReport workSetHideArchive sp dc wrc
+  cc <- asks envColourSettings
   outputChunks $
     renderWorkReport
       cc
       now
-      contexts
+      workSetContexts
       workSetWaitingThreshold
       workSetStuckThreshold
       workSetProjection
       wr
 
-renderWorkReport :: ColourConfig -> ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
+renderWorkReport :: ColourSettings -> ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
 renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
   mconcat $
     concat $

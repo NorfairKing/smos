@@ -7,15 +7,9 @@ module Smos.Query.Commands.Log
 where
 
 import Conduit
-import Data.List
 import qualified Data.Text as T
-import Data.Time
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
+import Smos.Query.Commands.Import
 import Smos.Report.Log
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 smosQueryLog :: LogSettings -> Q ()
@@ -28,12 +22,13 @@ smosQueryLog LogSettings {..} = do
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderLogReport cc zt $ makeLogReport zt logSetPeriod logSetBlock es
+  let logReport = makeLogReport zt logSetPeriod logSetBlock es
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderLogReport colourSettings zt logReport
 
-renderLogReport :: ColourConfig -> ZonedTime -> LogReport -> [Chunk]
-renderLogReport cc zt lrbs =
-  formatAsBicolourTable cc $
+renderLogReport :: ColourSettings -> ZonedTime -> LogReport -> [Chunk]
+renderLogReport colourSettings zt lrbs =
+  formatAsBicolourTable colourSettings $
     case lrbs of
       [] -> []
       [lrb] -> goEntries (blockEntries lrb)

@@ -13,3 +13,15 @@
 - `smos-sync-client`: Use a separate lock file from the database file itself to lock the database.
   This prevents a `SQLITE_BUSY` infinite retry problem. See [Issue 202](https://github.com/NorfairKing/smos/issues/202) and [PR 203](https://github.com/NorfairKing/smos/pull/203).
   Thank you [@jhbertra](https://github.com/jhbertra)!
+- `smos-query`: Fixed that `smos-query` was not taking into account certain configurations for the `work`, `waiting` and `stuck` reports.
+  This fixes [Issue 201](https://github.com/NorfairKing/smos/issues/201)
+  Thank you [@vidocco](https://github.com/vidocco)!
+
+##### Removed
+
+- `smos-query`:
+  Ripped out the functionality where you could configure smos-query in haskell.
+  This functionality was complex and has already caused multiple bugs.
+  It turns out that there is no need for this functionality because you can configure everything in smos-query with the different ways of option parsing.
+  This is unlike `smos` where configuring it in Haskell is actually useful because you can define your own actions to key-bind.
+  This change does not affect users that don't use `smos-query` as a library.

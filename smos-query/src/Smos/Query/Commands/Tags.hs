@@ -7,15 +7,8 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Data.List
 import qualified Data.Map as M
-import Data.Ord
-import Smos.Data
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
-import Smos.Report.Streaming
+import Smos.Query.Commands.Import
 import Smos.Report.Tags
 
 smosQueryTags :: TagsSettings -> Q ()
@@ -28,13 +21,13 @@ smosQueryTags TagsSettings {..} = do
         .| smosMFilter tagsSetFilter
         .| smosCursorCurrents
         .| C.map snd
-  let tr = makeTagsReport es
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderTagsReport cc tr
+  let tagsReport = makeTagsReport es
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderTagsReport colourSettings tagsReport
 
-renderTagsReport :: ColourConfig -> TagsReport -> [Chunk]
-renderTagsReport cc TagsReport {..} =
-  formatAsBicolourTable cc $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
+renderTagsReport :: ColourSettings -> TagsReport -> [Chunk]
+renderTagsReport colourSettings TagsReport {..} =
+  formatAsBicolourTable colourSettings $ map (uncurry go) $ sortOn (Down . snd) $ M.toList tagsReportMap
   where
     go :: Tag -> Int -> [Chunk]
     go t n = [tagChunk t, intChunk n]

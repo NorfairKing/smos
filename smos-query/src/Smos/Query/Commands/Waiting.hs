@@ -6,22 +6,19 @@ module Smos.Query.Commands.Waiting
 where
 
 import Conduit
-import Data.Time
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
+import Smos.Query.Commands.Import
 import Smos.Report.Waiting
 
 smosQueryWaiting :: WaitingSettings -> Q ()
 smosQueryWaiting WaitingSettings {..} = do
-  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  dc <- asks envDirectoryConfig
   sp <- getShouldPrint
   report <- produceWaitingReport waitingSetFilter waitingSetHideArchive sp dc
   now <- liftIO getCurrentTime
-  cc <- asks smosQueryConfigColourConfig
+  colourSettings <- asks envColourSettings
 
-  outputChunks $ renderWaitingReport cc waitingSetThreshold now report
+  outputChunks $ renderWaitingReport colourSettings waitingSetThreshold now report
 
-renderWaitingReport :: ColourConfig -> Word -> UTCTime -> WaitingReport -> [Chunk]
-renderWaitingReport cc threshold now =
-  formatAsBicolourTable cc . map (formatWaitingEntry threshold now) . waitingReportEntries
+renderWaitingReport :: ColourSettings -> Word -> UTCTime -> WaitingReport -> [Chunk]
+renderWaitingReport colourSettings threshold now =
+  formatAsBicolourTable colourSettings . map (formatWaitingEntry threshold now) . waitingReportEntries

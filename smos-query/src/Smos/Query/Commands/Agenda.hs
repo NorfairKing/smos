@@ -13,15 +13,9 @@ module Smos.Query.Commands.Agenda
 where
 
 import Conduit
-import Data.List
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time
 import GHC.Generics
-import Smos.Data
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
+import Smos.Query.Commands.Import
 import Smos.Report.Agenda
 import Smos.Report.TimeBlock
 import Text.Printf
@@ -29,14 +23,15 @@ import Text.Printf
 smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
-  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  dc <- asks envDirectoryConfig
   sp <- getShouldPrint
   report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderAgendaReport cc now report
 
-renderAgendaReport :: ColourConfig -> ZonedTime -> AgendaReport -> [Chunk]
-renderAgendaReport cc now = formatAsBicolourTable cc . renderAgendaReportLines now . makeAgendaReportLines now
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderAgendaReport colourSettings now report
+
+renderAgendaReport :: ColourSettings -> ZonedTime -> AgendaReport -> [Chunk]
+renderAgendaReport colourSettings now = formatAsBicolourTable colourSettings . renderAgendaReportLines now . makeAgendaReportLines now
 
 renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk]]
 renderAgendaReportLines now = map $ \case

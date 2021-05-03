@@ -6,21 +6,19 @@ module Smos.Query.Commands.Next
 where
 
 import Conduit
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
+import Smos.Query.Commands.Import
 import Smos.Report.Next
 
 smosQueryNext :: NextSettings -> Q ()
 smosQueryNext NextSettings {..} = do
-  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  dc <- asks envDirectoryConfig
   sp <- getShouldPrint
   report <- liftIO $ produceNextActionReport nextSetFilter nextSetHideArchive sp dc
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderNextActionReport cc report
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderNextActionReport colourSettings report
 
-renderNextActionReport :: ColourConfig -> NextActionReport -> [Chunk]
-renderNextActionReport cc = formatAsBicolourTable cc . map formatNextActionEntry . nextActionReportEntries
+renderNextActionReport :: ColourSettings -> NextActionReport -> [Chunk]
+renderNextActionReport colourSettings = formatAsBicolourTable colourSettings . map formatNextActionEntry . nextActionReportEntries
 
 formatNextActionEntry :: NextActionEntry -> [Chunk]
 formatNextActionEntry NextActionEntry {..} =

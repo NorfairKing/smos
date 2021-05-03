@@ -12,12 +12,15 @@ where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
+import Data.Set (Set)
 import Data.Text (Text)
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
-import Smos.Query.Config
+import Smos.Data
 import Smos.Report.Agenda.Types
+import Smos.Report.Archive
 import Smos.Report.Clock.Types
+import Smos.Report.Config
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
@@ -27,6 +30,8 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
+import Text.Colour
+import Text.Colour.Layout
 import YamlParse.Applicative
 
 data Arguments
@@ -34,7 +39,7 @@ data Arguments
   deriving (Show, Eq)
 
 data Instructions
-  = Instructions Dispatch SmosQueryConfig
+  = Instructions Dispatch Settings
 
 data Command
   = CommandEntry !EntryFlags
@@ -267,7 +272,11 @@ data ReportSettings = ReportSettings
 
 data WorkSettings = WorkSettings
   { workSetContext :: !(Maybe ContextName),
+    workSetContexts :: !(Map ContextName EntryFilterRel),
+    workSetChecks :: !(Set EntryFilterRel),
     workSetTime :: !(Maybe Time),
+    workSetTimeProperty :: !(Maybe PropertyName),
+    workSetBaseFilter :: !(Maybe EntryFilterRel),
     workSetFilter :: !(Maybe EntryFilterRel),
     workSetProjection :: !(NonEmpty Projection),
     workSetSorter :: !(Maybe Sorter),
@@ -344,4 +353,15 @@ data OutputFormat
   | OutputYaml
   | OutputJSON
   | OutputJSONPretty
+  deriving (Show, Eq, Generic)
+
+data Settings = Settings
+  { settingDirectoryConfig :: !DirectoryConfig,
+    settingColourSettings :: !ColourSettings
+  }
+  deriving (Show, Eq, Generic)
+
+data ColourSettings = ColourSettings
+  { colourSettingBackground :: Maybe TableBackground
+  }
   deriving (Show, Eq, Generic)

@@ -1,36 +1,39 @@
 module Smos.Query.Streaming where
 
 import Conduit
+import Control.Monad.Reader
 import Path
 import Smos.Data
-import Smos.Query.Config
+import Smos.Query.Env
+import Smos.Report.Archive
+import Smos.Report.Config
 import Smos.Report.Streaming
 
 streamSmosProjectsQ :: ConduitT i (Path Rel File, SmosFile) Q ()
 streamSmosProjectsQ = do
-  dc <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  dc <- lift $ asks envDirectoryConfig
   streamSmosProjectsFiles dc .| streamParseSmosProjects
 
 streamSmosFiles :: HideArchive -> ConduitT i (Path Rel File) Q ()
 streamSmosFiles ha = do
-  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  streamSmosFilesFromWorkflowRel ha src
+  dc <- lift $ asks envDirectoryConfig
+  streamSmosFilesFromWorkflowRel ha dc
 
 streamAllSmosFiles :: ConduitT i (Path Rel File) Q ()
 streamAllSmosFiles = do
-  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  streamSmosFilesFromWorkflowRel Don'tHideArchive src
+  dc <- lift $ asks envDirectoryConfig
+  streamSmosFilesFromWorkflowRel Don'tHideArchive dc
 
 streamParseSmosProjects :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosProjects = do
-  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  pd <- liftIO $ resolveDirProjectsDir src
+  dc <- lift $ asks envDirectoryConfig
+  pd <- liftIO $ resolveDirProjectsDir dc
   parseSmosFilesRel pd .| shouldPrintC
 
 streamParseSmosFiles :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosFiles = do
-  src <- lift $ asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
-  wd <- liftIO $ resolveDirWorkflowDir src
+  dc <- lift $ asks envDirectoryConfig
+  wd <- liftIO $ resolveDirWorkflowDir dc
   parseSmosFilesRel wd .| shouldPrintC
 
 shouldPrintC :: ConduitT (a, Either ParseSmosFileException b) (a, b) Q ()

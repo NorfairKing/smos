@@ -14,7 +14,7 @@ import qualified Data.Text as T
 import Data.Time
 import Path
 import Smos.Data
-import Smos.Query.Config
+import Smos.Query.OptParse.Types
 import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Formatting
@@ -25,8 +25,8 @@ import Text.Colour
 import Text.Colour.Layout
 import Text.Time.Pretty
 
-formatAsBicolourTable :: ColourConfig -> [[Chunk]] -> [Chunk]
-formatAsBicolourTable cc = renderTable . (\t -> t {tableBackground = colourConfigBackground cc}) . table
+formatAsBicolourTable :: ColourSettings -> [[Chunk]] -> [Chunk]
+formatAsBicolourTable cc = renderTable . (\t -> t {tableBackground = colourSettingBackground cc}) . table
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
@@ -91,7 +91,7 @@ formatStuckReportEntry threshold now StuckReportEntry {..} =
 pathChunk :: Path b t -> Chunk
 pathChunk = chunk . T.pack . toFilePath
 
-renderEntryReport :: ColourConfig -> EntryReport -> [Chunk]
+renderEntryReport :: ColourSettings -> EntryReport -> [Chunk]
 renderEntryReport cc EntryReport {..} =
   formatAsBicolourTable cc $
     map renderProjectionHeader (toList entryReportHeaders) :

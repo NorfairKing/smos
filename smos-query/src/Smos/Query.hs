@@ -1,23 +1,31 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query
   ( smosQuery,
-    smosQueryWithInstructions,
-    module Smos.Query.Config,
+    execute,
   )
 where
 
 import Smos.Query.Commands
-import Smos.Query.Config
 import Smos.Query.OptParse
+import System.IO
 
-smosQuery :: SmosQueryConfig -> IO ()
-smosQuery sqc = do
-  ins <- getInstructions sqc
-  smosQueryWithInstructions ins
+smosQuery :: IO ()
+smosQuery = do
+  Instructions dispatch settings <- getInstructions
+  let env = makeEnvFromSettings settings
+  runReaderT (execute dispatch) env
 
-smosQueryWithInstructions :: Instructions -> IO ()
-smosQueryWithInstructions (Instructions disp sqc') = runReaderT (execute disp) sqc'
+makeEnvFromSettings :: Settings -> Env
+makeEnvFromSettings Settings {..} =
+  Env
+    { envInputHandle = stdin,
+      envOutputHandle = stdout,
+      envErrorHandle = stderr,
+      envColourSettings = settingColourSettings,
+      envDirectoryConfig = settingDirectoryConfig
+    }
 
 execute :: Dispatch -> Q ()
 execute =

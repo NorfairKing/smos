@@ -7,15 +7,11 @@ module Smos.Query.Commands.Report
 where
 
 import Conduit
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Smos.Query.Commands.Entry
-import Smos.Query.Config
-import Smos.Query.OptParse.Types
+import Smos.Query.Commands.Import
 import Smos.Report.Report
 
 smosQueryReport :: ReportSettings -> Q ()

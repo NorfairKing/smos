@@ -8,17 +8,9 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Time
-import Path
-import Smos.Data
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
+import Smos.Query.Commands.Import
 import Smos.Report.Stats
-import Smos.Report.Streaming
 
 smosQueryStats :: StatsSettings -> Q ()
 smosQueryStats StatsSettings {..} = do
@@ -36,27 +28,27 @@ smosQueryStats StatsSettings {..} = do
             statsReportContextProjectsDir = pd,
             statsReportContextArchivedProjectsDir = apd
           }
-  sr <-
+  statsReport <-
     runConduit $
       streamAllSmosFiles
         .| streamParseSmosFiles
         .| accumulateStatsReport src
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderStatsReport cc sr
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderStatsReport colourSettings statsReport
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
 accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
 
-renderStatsReport :: ColourConfig -> StatsReport -> [Chunk]
-renderStatsReport cc StatsReport {..} =
+renderStatsReport :: ColourSettings -> StatsReport -> [Chunk]
+renderStatsReport colourSettings StatsReport {..} =
   mconcat
-    [ renderStateStatsReport cc statsReportStateStatsReport,
-      renderProjectsStatsReport cc statsReportProjectStatsReport
+    [ renderStateStatsReport colourSettings statsReportStateStatsReport,
+      renderProjectsStatsReport colourSettings statsReportProjectStatsReport
     ]
 
-renderStateStatsReport :: ColourConfig -> StateStatsReport -> [Chunk]
-renderStateStatsReport cc StateStatsReport {..} =
-  formatAsBicolourTable cc $
+renderStateStatsReport :: ColourSettings -> StateStatsReport -> [Chunk]
+renderStateStatsReport colourSettings StateStatsReport {..} =
+  formatAsBicolourTable colourSettings $
     concat
       [ [[fore white $ chunk "Historical states"]],
         formatReportStates stateStatsReportHistoricalStates,
@@ -91,10 +83,10 @@ formatReportToStateTransitions :: Map (Maybe TodoState) Int -> [[Chunk]]
 formatReportToStateTransitions m =
   flip map (M.toList m) $ \(mts, i) -> [chunk "(any)", mTodoStateChunk mts, intChunk i]
 
-renderProjectsStatsReport :: ColourConfig -> ProjectStatsReport -> [Chunk]
-renderProjectsStatsReport cc ProjectStatsReport {..} =
+renderProjectsStatsReport :: ColourSettings -> ProjectStatsReport -> [Chunk]
+renderProjectsStatsReport colourSettings ProjectStatsReport {..} =
   formatAsBicolourTable
-    cc
+    colourSettings
     [ [fore white $ chunk "All Projects"],
       [chunk "Current Projects", intChunk projectStatsReportCurrentProjects],
       [chunk "Archived Projects", intChunk projectStatsReportArchivedProjects],

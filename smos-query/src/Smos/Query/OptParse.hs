@@ -24,8 +24,9 @@ import Options.Applicative as OptParse
 import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_query
 import Smos.Data
-import Smos.Query.Config
 import Smos.Query.OptParse.Types
+import Smos.Report.Archive
+import Smos.Report.Config
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
@@ -34,177 +35,189 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
+import Text.Colour
+import Text.Colour.Layout
 
-getInstructions :: SmosQueryConfig -> IO Instructions
-getInstructions sqc = do
+getInstructions :: IO Instructions
+getInstructions = do
   Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions sqc c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 combineToInstructions ::
-  SmosQueryConfig -> Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions sqc@SmosQueryConfig {..} c Flags {..} Environment {..} mc =
-  Instructions <$> getDispatch <*> getSettings
-  where
-    hideArchiveWithDefault def mflag =
-      fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
-    getDispatch =
-      case c of
-        CommandEntry EntryFlags {..} ->
-          pure $
-            DispatchEntry
-              EntrySettings
-                { entrySetFilter = entryFlagFilter,
-                  entrySetProjection = fromMaybe defaultProjection entryFlagProjection,
-                  entrySetSorter = entryFlagSorter,
-                  entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
-                }
-        CommandReport ReportFlags {..} -> do
-          let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
-              mprc func = mc >>= confPreparedReportConfiguration >>= func
-          pure $
-            DispatchReport
-              ReportSettings
-                { reportSetReportName = reportFlagReportName,
-                  reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
-                }
-        CommandWaiting WaitingFlags {..} -> do
-          let mwc func = func $ smosReportConfigWaitingConfig smosQueryConfigReportConfig
-          pure $
-            DispatchWaiting
-              WaitingSettings
-                { waitingSetFilter = waitingFlagFilter,
-                  waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
-                  waitingSetThreshold = fromMaybe (mwc waitingReportConfigThreshold) waitingFlagThreshold
-                }
-        CommandNext NextFlags {..} ->
-          pure $
-            DispatchNext
-              NextSettings
-                { nextSetFilter = nextFlagFilter,
-                  nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
-                }
-        CommandClock ClockFlags {..} ->
-          pure $
-            DispatchClock
-              ClockSettings
-                { clockSetFilter = clockFlagFilter,
-                  clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
-                  clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
-                  clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
-                  clockSetClockFormat = case clockFlagClockFormat of
-                    Nothing -> ClockFormatTemporal TemporalMinutesResolution
-                    Just cffs ->
-                      case cffs of
-                        ClockFormatTemporalFlag res ->
-                          ClockFormatTemporal $ fromMaybe TemporalMinutesResolution res
-                        ClockFormatDecimalFlag res ->
-                          ClockFormatDecimal $ fromMaybe (DecimalResolution 2) res,
-                  clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle,
-                  clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
-                }
-        CommandAgenda AgendaFlags {..} -> do
-          let period =
-                -- Note [Agenda command defaults]
-                -- The default here is 'AllTime' for good reason.
-                --
-                -- You may think that 'Today' is a better default because smos-calendar-import fills up
-                -- your agenda too much for it to be useful.
-                --
-                -- However, as a beginner you want to be able to run smos-query agenda to see your
-                -- SCHEDULED and DEADLINE timestamps in the near future.
-                -- By the time users figure out how to use smos-calendar-import, they will probably
-                -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
-                -- if they need it.
-                fromMaybe AllTime agendaFlagPeriod
-          let block =
-                -- See Note [Agenda command defaults]
-                let defaultBlock = case period of
-                      AllTime -> OneBlock
-                      LastYear -> MonthBlock
-                      ThisYear -> MonthBlock
-                      NextYear -> MonthBlock
-                      LastMonth -> WeekBlock
-                      ThisMonth -> WeekBlock
-                      NextMonth -> WeekBlock
-                      LastWeek -> DayBlock
-                      ThisWeek -> DayBlock
-                      NextWeek -> DayBlock
-                      _ -> OneBlock
-                 in fromMaybe defaultBlock agendaFlagBlock
-          pure $
-            DispatchAgenda
-              AgendaSettings
-                { agendaSetFilter = agendaFlagFilter,
-                  agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
-                  agendaSetBlock = block,
-                  agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
-                  agendaSetPeriod = period
-                }
-        CommandProjects ProjectsFlags {..} ->
-          pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
-        CommandStuck StuckFlags {..} -> do
-          let msc func = func $ smosReportConfigStuckConfig smosQueryConfigReportConfig
-          pure $
-            DispatchStuck
-              StuckSettings
-                { stuckSetFilter = stuckFlagFilter,
-                  stuckSetThreshold = fromMaybe (msc stuckReportConfigThreshold) stuckFlagThreshold
-                }
-        CommandWork WorkFlags {..} -> do
-          let mwac func = func $ smosReportConfigWaitingConfig smosQueryConfigReportConfig
-          let msc func = func $ smosReportConfigStuckConfig smosQueryConfigReportConfig
-          let mwc func = func $ smosReportConfigWorkConfig smosQueryConfigReportConfig
+  Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions c Flags {..} Environment {..} mc = do
+  let hideArchiveWithDefault def mflag = fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
 
-          pure $
-            DispatchWork
-              WorkSettings
-                { workSetContext = workFlagContext,
-                  workSetTime = workFlagTime,
-                  workSetFilter = workFlagFilter,
-                  workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
-                  workSetProjection = fromMaybe (mwc workReportConfigProjection) workFlagProjection,
-                  workSetSorter = mwc workReportConfigSorter <|> workFlagSorter,
-                  workSetWaitingThreshold = fromMaybe (mwac waitingReportConfigThreshold) workFlagWaitingThreshold,
-                  workSetStuckThreshold = fromMaybe (msc stuckReportConfigThreshold) workFlagStuckThreshold
-                }
-        CommandLog LogFlags {..} ->
-          pure $
-            DispatchLog
-              LogSettings
-                { logSetFilter = logFlagFilter,
-                  logSetPeriod = fromMaybe Today logFlagPeriodFlags,
-                  logSetBlock = fromMaybe DayBlock logFlagBlockFlags,
-                  logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
-                }
-        CommandTags TagsFlags {..} ->
-          pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
-        CommandStats StatsFlags {..} ->
-          pure $
-            DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+  src <-
+    Report.combineToConfig
+      defaultReportConfig
+      flagReportFlags
+      envReportEnvironment
+      (confReportConf <$> mc)
 
-    getSettings = do
-      src <-
-        Report.combineToConfig
-          smosQueryConfigReportConfig
-          flagReportFlags
-          envReportEnvironment
-          (confReportConf <$> mc)
-      pure $
-        sqc
-          { smosQueryConfigReportConfig = src,
-            smosQueryConfigColourConfig = getColourConfig (mc >>= confColourConfiguration) smosQueryConfigColourConfig
+  let mcc :: (ColourConfiguration -> Maybe a) -> Maybe a
+      mcc func = mc >>= confColourConfiguration >>= func
+      colourSettings :: ColourSettings
+      colourSettings =
+        ColourSettings
+          { colourSettingBackground =
+              fromMaybe
+                (Just (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
+                (mcc colourConfigurationBackground)
           }
 
-getColourConfig :: Maybe ColourConfiguration -> ColourConfig -> ColourConfig
-getColourConfig mcc cc =
-  cc
-    { colourConfigBackground =
-        fromMaybe
-          (colourConfigBackground cc)
-          (mcc >>= colourConfigurationBackground)
-    }
+  let settings =
+        Settings
+          { settingColourSettings = colourSettings,
+            settingDirectoryConfig = smosReportConfigDirectoryConfig src
+          }
+
+  dispatch <-
+    case c of
+      CommandEntry EntryFlags {..} ->
+        pure $
+          DispatchEntry
+            EntrySettings
+              { entrySetFilter = entryFlagFilter,
+                entrySetProjection = fromMaybe defaultProjection entryFlagProjection,
+                entrySetSorter = entryFlagSorter,
+                entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
+              }
+      CommandReport ReportFlags {..} -> do
+        let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
+            mprc func = mc >>= confPreparedReportConfiguration >>= func
+        pure $
+          DispatchReport
+            ReportSettings
+              { reportSetReportName = reportFlagReportName,
+                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
+              }
+      CommandWaiting WaitingFlags {..} -> do
+        let mwc :: (WaitingReportConfig -> a) -> a
+            mwc func = func $ smosReportConfigWaitingConfig src
+        pure $
+          DispatchWaiting
+            WaitingSettings
+              { waitingSetFilter = waitingFlagFilter,
+                waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
+                waitingSetThreshold = fromMaybe (mwc waitingReportConfigThreshold) waitingFlagThreshold
+              }
+      CommandNext NextFlags {..} ->
+        pure $
+          DispatchNext
+            NextSettings
+              { nextSetFilter = nextFlagFilter,
+                nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
+              }
+      CommandClock ClockFlags {..} ->
+        pure $
+          DispatchClock
+            ClockSettings
+              { clockSetFilter = clockFlagFilter,
+                clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
+                clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
+                clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
+                clockSetClockFormat = case clockFlagClockFormat of
+                  Nothing -> ClockFormatTemporal TemporalMinutesResolution
+                  Just cffs ->
+                    case cffs of
+                      ClockFormatTemporalFlag res ->
+                        ClockFormatTemporal $ fromMaybe TemporalMinutesResolution res
+                      ClockFormatDecimalFlag res ->
+                        ClockFormatDecimal $ fromMaybe (DecimalResolution 2) res,
+                clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle,
+                clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
+              }
+      CommandAgenda AgendaFlags {..} -> do
+        let period =
+              -- Note [Agenda command defaults]
+              -- The default here is 'AllTime' for good reason.
+              --
+              -- You may think that 'Today' is a better default because smos-calendar-import fills up
+              -- your agenda too much for it to be useful.
+              --
+              -- However, as a beginner you want to be able to run smos-query agenda to see your
+              -- SCHEDULED and DEADLINE timestamps in the near future.
+              -- By the time users figure out how to use smos-calendar-import, they will probably
+              -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
+              -- if they need it.
+              fromMaybe AllTime agendaFlagPeriod
+        let block =
+              -- See Note [Agenda command defaults]
+              let defaultBlock = case period of
+                    AllTime -> OneBlock
+                    LastYear -> MonthBlock
+                    ThisYear -> MonthBlock
+                    NextYear -> MonthBlock
+                    LastMonth -> WeekBlock
+                    ThisMonth -> WeekBlock
+                    NextMonth -> WeekBlock
+                    LastWeek -> DayBlock
+                    ThisWeek -> DayBlock
+                    NextWeek -> DayBlock
+                    _ -> OneBlock
+               in fromMaybe defaultBlock agendaFlagBlock
+        pure $
+          DispatchAgenda
+            AgendaSettings
+              { agendaSetFilter = agendaFlagFilter,
+                agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
+                agendaSetBlock = block,
+                agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
+                agendaSetPeriod = period
+              }
+      CommandProjects ProjectsFlags {..} ->
+        pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
+      CommandStuck StuckFlags {..} -> do
+        let msc :: (StuckReportConfig -> a) -> a
+            msc func = func $ smosReportConfigStuckConfig src
+        pure $
+          DispatchStuck
+            StuckSettings
+              { stuckSetFilter = stuckFlagFilter,
+                stuckSetThreshold = fromMaybe (msc stuckReportConfigThreshold) stuckFlagThreshold
+              }
+      CommandWork WorkFlags {..} -> do
+        let mwac :: (WaitingReportConfig -> a) -> a
+            mwac func = func $ smosReportConfigWaitingConfig src
+        let msc :: (StuckReportConfig -> a) -> a
+            msc func = func $ smosReportConfigStuckConfig src
+        let mwc :: (WorkReportConfig -> a) -> a
+            mwc func = func $ smosReportConfigWorkConfig src
+
+        pure $
+          DispatchWork
+            WorkSettings
+              { workSetContext = workFlagContext,
+                workSetTime = workFlagTime,
+                workSetFilter = workFlagFilter,
+                workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
+                workSetProjection = fromMaybe (mwc workReportConfigProjection) workFlagProjection,
+                workSetSorter = mwc workReportConfigSorter <|> workFlagSorter,
+                workSetWaitingThreshold = fromMaybe (mwac waitingReportConfigThreshold) workFlagWaitingThreshold,
+                workSetStuckThreshold = fromMaybe (msc stuckReportConfigThreshold) workFlagStuckThreshold,
+                workSetBaseFilter = mwc workReportConfigBaseFilter,
+                workSetContexts = mwc workReportConfigContexts,
+                workSetChecks = mwc workReportConfigChecks,
+                workSetTimeProperty = mwc workReportConfigTimeProperty
+              }
+      CommandLog LogFlags {..} ->
+        pure $
+          DispatchLog
+            LogSettings
+              { logSetFilter = logFlagFilter,
+                logSetPeriod = fromMaybe Today logFlagPeriodFlags,
+                logSetBlock = fromMaybe DayBlock logFlagBlockFlags,
+                logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
+              }
+      CommandTags TagsFlags {..} ->
+        pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
+      CommandStats StatsFlags {..} ->
+        pure $
+          DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
+  pure $ Instructions dispatch settings
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser

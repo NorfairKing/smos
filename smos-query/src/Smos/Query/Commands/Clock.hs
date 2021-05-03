@@ -13,18 +13,12 @@ import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.List as C
 import Data.Foldable
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time
 import Data.Tree
 import Data.Validity.Path ()
 import qualified Data.Yaml.Builder as Yaml
-import Smos.Data
 import Smos.Query.Clock.Types
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
+import Smos.Query.Commands.Import
 import Smos.Report.Clock
 import Smos.Report.TimeBlock
 import Text.Printf
@@ -42,12 +36,12 @@ smosQueryClock ClockSettings {..} = do
         .| C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now))
         .| C.mapMaybe (trimFileTimes now clockSetPeriod)
   let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
-  out <- asks smosQueryConfigOutputHandle
+  out <- asks envOutputHandle
   case clockSetOutputFormat of
     OutputPretty -> do
-      cc <- asks smosQueryConfigColourConfig
+      colourSettings <- asks envColourSettings
       outputChunks $
-        renderClockTable cc clockSetReportStyle clockSetClockFormat $
+        renderClockTable colourSettings clockSetReportStyle clockSetClockFormat $
           clockTableRows clockTable
     OutputYaml -> liftIO $ SB.hPutStr out $ Yaml.toByteString clockTable
     OutputJSON -> liftIO $ LB.hPutStr out $ JSON.encode clockTable
@@ -93,8 +87,8 @@ clockTableRows ctbs =
 -- block title
 -- file name    headers and   time
 --                           total time
-renderClockTable :: ColourConfig -> ClockReportStyle -> ClockFormat -> [ClockTableRow] -> [Chunk]
-renderClockTable cc crs fmt = formatAsBicolourTable cc . concatMap renderRows
+renderClockTable :: ColourSettings -> ClockReportStyle -> ClockFormat -> [ClockTableRow] -> [Chunk]
+renderClockTable colourSettings crs fmt = formatAsBicolourTable colourSettings . concatMap renderRows
   where
     renderRows :: ClockTableRow -> [[Chunk]]
     renderRows ctr =

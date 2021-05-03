@@ -5,15 +5,13 @@ module Smos.Query.Commands.Entry
   )
 where
 
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Report.Entry
+import Smos.Query.Commands.Import
 
 smosQueryEntry :: EntrySettings -> Q ()
 smosQueryEntry EntrySettings {..} = do
-  dc <- asks $ smosReportConfigDirectoryConfig . smosQueryConfigReportConfig
+  dc <- asks envDirectoryConfig
   sp <- getShouldPrint
   report <- produceEntryReport entrySetFilter entrySetHideArchive sp entrySetProjection entrySetSorter dc
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderEntryReport cc report
+
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderEntryReport colourSettings report

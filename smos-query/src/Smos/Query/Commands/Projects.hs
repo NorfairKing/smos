@@ -7,14 +7,8 @@ module Smos.Query.Commands.Projects
 where
 
 import Conduit
-import Smos.Data
-import Smos.Query.Config
-import Smos.Query.Formatting
-import Smos.Query.OptParse.Types
-import Smos.Query.Streaming
-import Smos.Report.Filter
+import Smos.Query.Commands.Import
 import Smos.Report.Projects
-import Smos.Report.Streaming
 
 smosQueryProjects :: ProjectsSettings -> Q ()
 smosQueryProjects ProjectsSettings {..} = do
@@ -22,11 +16,12 @@ smosQueryProjects ProjectsSettings {..} = do
     sourceToList $
       streamSmosProjectsQ
         .| smosMFilter (FilterFst <$> projectsSetFilter)
-  cc <- asks smosQueryConfigColourConfig
-  outputChunks $ renderProjectsReport cc $ makeProjectsReport projs
+  let projectsReport = makeProjectsReport projs
+  colourSettings <- asks envColourSettings
+  outputChunks $ renderProjectsReport colourSettings projectsReport
 
-renderProjectsReport :: ColourConfig -> ProjectsReport -> [Chunk]
-renderProjectsReport cc = formatAsBicolourTable cc . map renderProjectEntry . projectsReportEntries
+renderProjectsReport :: ColourSettings -> ProjectsReport -> [Chunk]
+renderProjectsReport colourSettings = formatAsBicolourTable colourSettings . map renderProjectEntry . projectsReportEntries
 
 renderProjectEntry :: ProjectEntry -> [Chunk]
 renderProjectEntry ProjectEntry {..} =
