@@ -245,10 +245,10 @@
         "homepage": "https://cs-syd.eu/posts/2021-02-27-watching-changes-in-yesod",
         "owner": "NorfairKing",
         "repo": "template-haskell-reload",
-        "rev": "5593f258edf2d89e9db4704a91cfc792ddf5ea12",
-        "sha256": "19c5y50djv2lph94jkrqy5h135d859wkavjn7izrhg0x33v90abv",
+        "rev": "6f8627b45ae63f64ad0a47d1130630aa2e24470d",
+        "sha256": "0mx8z56f6mw26pmld4f82nxyayzxz416xijqjbwlv9pz7kdm7np3",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/template-haskell-reload/archive/5593f258edf2d89e9db4704a91cfc792ddf5ea12.tar.gz",
+        "url": "https://github.com/NorfairKing/template-haskell-reload/archive/6f8627b45ae63f64ad0a47d1130630aa2e24470d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "typed-uuid": {

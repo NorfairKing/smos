@@ -2,35 +2,25 @@
   Changelog
 
 <h2 .subtitle .is-4>
-  The changelog for the latest release of all of the Smos tools and libraries
+  The changelog for all of the Smos tools and libraries
 
-$maybe unreleased <- mUnreleased
-  <h3 .title .is-5 .mt-3>
-    Unreleased Changes
+<div .buttons>
+  $maybe _ <- mUnreleased
+    <a .button .is-secondary href=@{ChangelogUnreleasedR}>
+      Unreleased changes
 
-  <div .content>
-    #{preEscapedToMarkup $ changelogRendered unreleased}
+  <a .button href=@{ChangelogLatestR}>
+    Latest Release: #{showReleaseDay latestReleaseDay}
 
+  <a .button href=@{ChangelogAllR}>
+    All Changelogs
 
-<div .mt-6>
-  <h3 .title .is-5>
-    Latest Release:
-    <a href=@{ChangelogReleaseR latestReleaseDay}>
-      #{formatTime defaultTimeLocale "%F" latestReleaseDay}
-
-  <div .content>
-    #{preEscapedToMarkup $ changelogRendered latestRelease}
-
-
-<div .pt-6 .content>
+<div .content>
   <h3 .title .is-5>
     Older Releases
 
-  $forall (day, release) <- M.toList releases
-    <p>
-      <a .button href=@{ChangelogReleaseR day}>
-        #{formatTime defaultTimeLocale "%F" day}
-
-  <p>
-    <a .button .is-primary href=@{ChangelogAllR}>
-      All release changelogs on one page
+  <ul>
+    $forall day <- M.keys releases
+      <li>
+        <a href=@{ChangelogReleaseR day}>
+          #{formatTime defaultTimeLocale "%F" day}

@@ -12,17 +12,11 @@ module Smos.Docs.Site.Handler.Changelog
   )
 where
 
-import Data.List
 import qualified Data.Map as M
-import Data.Maybe
-import Data.Ord
-import Data.SemVer as Version (toString)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Language.Haskell.TH.Load
-import Smos.Client
-import Smos.Data
 import Smos.Docs.Site.Handler.Import
 
 showReleaseDay :: Day -> Text
@@ -31,11 +25,11 @@ showReleaseDay = T.pack . formatTime defaultTimeLocale "%F"
 getChangelogR :: Handler Html
 getChangelogR = do
   mUnreleased <- loadIO unreleasedChangelog
+  (latestReleaseDay, _) <- loadIO latestChangelog
   releases <- loadIO changelogs
-  (latestReleaseDay, latestRelease) <- loadIO latestChangelog
   defaultLayout $ do
     setSmosTitle "Changelog"
-    setDescription "The changelog for the latest release of all of the Smos tools and libraries"
+    setDescription "The changelog for all of the Smos tools and libraries"
     $(widgetFile "changelog")
 
 getChangelogUnreleasedR :: Handler Html
@@ -44,6 +38,8 @@ getChangelogUnreleasedR = do
   case mUnreleased of
     Nothing -> notFound
     Just unreleased -> defaultLayout $ do
+      setSmosTitle "Changelog for unreleased changes"
+      setDescription "The changelog for unreleased changes for all of the Smos tools and libraries"
       $(widgetFile "changelog/unreleased")
 
 getChangelogLatestR :: Handler Html
