@@ -44,7 +44,7 @@ getChangelogUnreleasedR = do
   case mUnreleased of
     Nothing -> notFound
     Just unreleased -> defaultLayout $ do
-      $(widgetFile "changelog-unreleased")
+      $(widgetFile "changelog/unreleased")
 
 getChangelogLatestR :: Handler Html
 getChangelogLatestR = do
@@ -58,7 +58,7 @@ getChangelogAllR = do
   defaultLayout $ do
     setSmosTitle "Changelog"
     setDescription "The changelog for all releases of all of the Smos tools and libraries"
-    $(widgetFile "changelog-all")
+    $(widgetFile "changelog/all")
 
 getChangelogReleaseR :: Day -> Handler Html
 getChangelogReleaseR day = do
@@ -69,4 +69,4 @@ getChangelogReleaseR day = do
       defaultLayout $ do
         setSmosTitle $ "Changelog for the " <> toHtml (showReleaseDay day) <> " release"
         setDescription $ "The changelog for the " <> showReleaseDay day <> " release of all of the Smos tools and libraries"
-        $(widgetFile "changelog-release")
+        $(widgetFile "changelog/release")
