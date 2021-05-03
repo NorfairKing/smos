@@ -1,0 +1,7 @@
+<h1 .title .is-1>
+  Changelog for unreleased changes
+<h2 .subtitle .is-4>
+  The changelog for the unreleased changes of all of the Smos tools and libraries
+
+<div .content>
+  #{preEscapedToMarkup $ changelogRendered unreleased}
