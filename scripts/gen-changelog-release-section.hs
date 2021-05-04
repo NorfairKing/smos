@@ -48,11 +48,7 @@ main = do
             ")"
           ]
   let section =
-        unlines $
-          concat
-            [ [concat ["# <a name=\"", show today, "\">[", show today, " Release](#", show today, ")"], ""],
-              map versionListItem versions
-            ]
+        unlines $ map versionListItem versions
   putStrLn section
 
 data PackageYaml = PackageYaml {packageYamlName :: String, packageYamlVersion :: Version}
