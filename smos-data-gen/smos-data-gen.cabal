@@ -1,0 +1,96 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-data-gen
+version:        0.1.2
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    test_resources/version-too-new.error
+    test_resources/version-too-new.smos
+
+library
+  exposed-modules:
+      Smos.Data.Gen
+  other-modules:
+      Paths_smos_data_gen
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , containers
+    , genvalidity
+    , genvalidity-containers
+    , genvalidity-text
+    , genvalidity-time
+    , semver
+    , smos-data
+    , text
+    , time
+  default-language: Haskell2010
+
+test-suite smos-data-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Data.CompatibilitySpec
+      Smos.Data.EncodingSpec
+      Smos.Data.FormatSpec
+      Smos.Data.GoldenSpec
+      Smos.Data.TypesSpec
+      Smos.DataSpec
+      Paths_smos_data_gen
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.9 && <=5
+    , bytestring
+    , containers
+    , filepath
+    , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
+    , path
+    , path-io
+    , semver
+    , smos-data
+    , smos-data-gen
+    , sydtest
+    , text
+    , time
+  default-language: Haskell2010
+
+benchmark smos-data-bench
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_data_gen
+  hs-source-dirs:
+      bench/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , containers
+    , criterion
+    , genvalidity
+    , genvalidity-containers
+    , genvalidity-criterion
+    , smos-data
+    , smos-data-gen
+  default-language: Haskell2010

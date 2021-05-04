@@ -1,0 +1,140 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-docs-site
+version:        0.1.0
+homepage:       https://github.com/NorfairKing/smos#readme
+bug-reports:    https://github.com/NorfairKing/smos/issues
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    routes
+    content/unreleased.markdown
+    templates/args.hamlet
+    templates/changelog.hamlet
+    templates/changelog/all.hamlet
+    templates/changelog/release.hamlet
+    templates/changelog/unreleased.hamlet
+    templates/current-versions.hamlet
+    templates/default-body.hamlet
+    templates/default-body.lucius
+    templates/default-page.hamlet
+    templates/home.hamlet
+    templates/menu.hamlet
+    templates/page.hamlet
+    templates/smos-actions.hamlet
+    templates/smos-asciinema/spec.hamlet
+    templates/smos-file.hamlet
+    templates/smos-keybindings.hamlet
+    templates/smos-scheduler/template.hamlet
+
+source-repository head
+  type: git
+  location: https://github.com/NorfairKing/smos
+
+library
+  exposed-modules:
+      Smos.Docs.Site
+      Smos.Docs.Site.Application
+      Smos.Docs.Site.Assets
+      Smos.Docs.Site.Casts
+      Smos.Docs.Site.Casts.TH
+      Smos.Docs.Site.Changelog
+      Smos.Docs.Site.Changelog.TH
+      Smos.Docs.Site.Constants
+      Smos.Docs.Site.Foundation
+      Smos.Docs.Site.Handler
+      Smos.Docs.Site.Handler.Actions
+      Smos.Docs.Site.Handler.Changelog
+      Smos.Docs.Site.Handler.CurrentVersions
+      Smos.Docs.Site.Handler.Import
+      Smos.Docs.Site.Handler.Keybindings
+      Smos.Docs.Site.Handler.Page
+      Smos.Docs.Site.Handler.Reload
+      Smos.Docs.Site.Handler.Sitemap
+      Smos.Docs.Site.Handler.Smos
+      Smos.Docs.Site.Handler.SmosArchive
+      Smos.Docs.Site.Handler.SmosCalendarImport
+      Smos.Docs.Site.Handler.SmosGitHub
+      Smos.Docs.Site.Handler.SmosNotify
+      Smos.Docs.Site.Handler.SmosQuery
+      Smos.Docs.Site.Handler.SmosScheduler
+      Smos.Docs.Site.Handler.SmosServer
+      Smos.Docs.Site.Handler.SmosSingle
+      Smos.Docs.Site.Handler.SmosSyncClient
+      Smos.Docs.Site.Handler.SmosWebServer
+      Smos.Docs.Site.OptParse
+      Smos.Docs.Site.OptParse.Types
+      Smos.Docs.Site.Static
+      Smos.Docs.Site.Static.TH
+      Smos.Docs.Site.Widget
+  other-modules:
+      Paths_smos_docs_site
+  hs-source-dirs:
+      src
+  build-tool-depends:
+      autoexporter:autoexporter
+  build-depends:
+      base >=4.7
+    , cmark-gfm
+    , containers
+    , data-default
+    , envparse
+    , filepath
+    , fsnotify
+    , optparse-applicative
+    , path
+    , path-io
+    , raw-strings-qq
+    , semver
+    , shakespeare
+    , smos
+    , smos-archive
+    , smos-calendar-import
+    , smos-client
+    , smos-data
+    , smos-github
+    , smos-notify
+    , smos-query
+    , smos-report
+    , smos-scheduler
+    , smos-server
+    , smos-single
+    , smos-sync-client
+    , smos-web-server
+    , smos-web-style
+    , template-haskell
+    , template-haskell-reload
+    , text
+    , th-lift-instances
+    , time
+    , typed-process
+    , wai-extra
+    , warp
+    , yaml
+    , yamlparse-applicative
+    , yesod
+    , yesod-autoreload
+    , yesod-sitemap
+    , yesod-static
+    , yesod-static-remote
+  default-language: Haskell2010
+
+executable smos-docs-site
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_docs_site
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , smos-docs-site
+  default-language: Haskell2010

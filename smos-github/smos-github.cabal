@@ -1,0 +1,58 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-github
+version:        0.1.0
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2021 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.GitHub
+      Smos.GitHub.OptParse
+      Smos.GitHub.OptParse.Types
+  other-modules:
+      Paths_smos_github
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , async
+    , base
+    , conduit
+    , containers
+    , envparse
+    , github
+    , network-uri
+    , optparse-applicative
+    , path
+    , safe-coloured-text-terminfo
+    , smos-data
+    , smos-query
+    , smos-report
+    , text
+    , time
+    , yamlparse-applicative
+  default-language: Haskell2010
+
+executable smos-github
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_github
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base
+    , smos-github
+  default-language: Haskell2010

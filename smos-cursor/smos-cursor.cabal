@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-cursor
+version:        0.2.1
+homepage:       https://github.com/NorfairKing/smos#readme
+bug-reports:    https://github.com/NorfairKing/smos/issues
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/NorfairKing/smos
+
+library
+  exposed-modules:
+      Smos.Cursor.Collapse
+      Smos.Cursor.Contents
+      Smos.Cursor.Entry
+      Smos.Cursor.FileBrowser
+      Smos.Cursor.Header
+      Smos.Cursor.Logbook
+      Smos.Cursor.Properties
+      Smos.Cursor.SmosFile
+      Smos.Cursor.SmosFileEditor
+      Smos.Cursor.StateHistory
+      Smos.Cursor.Tag
+      Smos.Cursor.Tags
+      Smos.Cursor.Timestamps
+      Smos.History
+      Smos.Undo
+  other-modules:
+      Paths_smos_cursor
+  hs-source-dirs:
+      src
+  build-depends:
+      base
+    , containers
+    , cursor
+    , cursor-dirforest
+    , cursor-fuzzy-time
+    , deepseq
+    , dirforest
+    , exceptions
+    , filelock
+    , fuzzy-time
+    , microlens
+    , path
+    , path-io
+    , resourcet
+    , smos-archive
+    , smos-data
+    , text
+    , time
+    , validity
+    , validity-time
+  default-language: Haskell2010

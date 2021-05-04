@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-api
+version:        0.2.1
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2019-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.API
+      Smos.API.Password
+      Smos.API.SHA256
+      Smos.API.Username
+  other-modules:
+      Paths_smos_api
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , base64-bytestring
+    , bytestring
+    , cryptonite
+    , deepseq
+    , dirforest
+    , hashable
+    , memory
+    , mergeful
+    , mergeful-persistent
+    , password
+    , password-instances
+    , path
+    , path-pieces
+    , persistent
+    , semver
+    , servant
+    , servant-auth
+    , servant-auth-server
+    , smos-data
+    , smos-report
+    , text
+    , time
+    , typed-uuid
+    , uuid
+    , validity
+    , validity-bytestring
+    , validity-path
+    , validity-text
+    , validity-uuid
+    , yamlparse-applicative
+  default-language: Haskell2010

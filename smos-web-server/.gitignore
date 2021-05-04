@@ -1,6 +1,4 @@
 .stack-work/
-smos-server.cabal
-*~
-smos-server-database.sqlite3*
+*.sqlite3*
 *.json
 data/

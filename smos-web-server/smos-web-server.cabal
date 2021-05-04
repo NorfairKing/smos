@@ -1,0 +1,168 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-web-server
+version:        0.3.0
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    routes.txt
+    templates/admin/panel.hamlet
+    templates/auth/login.hamlet
+    templates/auth/register.hamlet
+    templates/backups.hamlet
+    templates/default-body.hamlet
+    templates/default-page.hamlet
+    templates/footer.hamlet
+    templates/home.hamlet
+    templates/home.julius
+    templates/home.lucius
+    templates/navbar.hamlet
+    templates/navbar.julius
+    templates/playground.hamlet
+    templates/playground.lucius
+    templates/reports.hamlet
+    templates/reports.lucius
+    templates/terminal.hamlet
+    templates/terminal.julius
+    templates/tui.hamlet
+    templates/tui.lucius
+
+library
+  exposed-modules:
+      Smos.Web.Server
+      Smos.Web.Server.Application
+      Smos.Web.Server.Constants
+      Smos.Web.Server.Foundation
+      Smos.Web.Server.Handler
+      Smos.Web.Server.Handler.Admin
+      Smos.Web.Server.Handler.Backup
+      Smos.Web.Server.Handler.Home
+      Smos.Web.Server.Handler.Import
+      Smos.Web.Server.Handler.Playground
+      Smos.Web.Server.Handler.Reload
+      Smos.Web.Server.Handler.Reports
+      Smos.Web.Server.Handler.TUI
+      Smos.Web.Server.OptParse
+      Smos.Web.Server.OptParse.Types
+      Smos.Web.Server.Serve
+      Smos.Web.Server.SmosSession
+      Smos.Web.Server.Static
+      Smos.Web.Server.Static.TH
+      Smos.Web.Server.TUI
+      Smos.Web.Server.Widget
+  other-modules:
+      Paths_smos_web_server
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-tool-depends:
+      autoexporter:autoexporter
+  build-depends:
+      aeson
+    , base
+    , base16-bytestring
+    , bytestring
+    , conduit
+    , containers
+    , data-default
+    , deepseq
+    , envparse
+    , filepath
+    , http-client
+    , http-client-tls
+    , http-types
+    , monad-logger
+    , mtl
+    , optparse-applicative
+    , path
+    , path-io
+    , persistent-sqlite
+    , pretty-relative-time
+    , pretty-show
+    , servant
+    , servant-auth-client
+    , servant-client
+    , shakespeare
+    , smos
+    , smos-client
+    , smos-shell
+    , smos-sync-client
+    , smos-web-style
+    , stm
+    , template-haskell
+    , text
+    , time
+    , typed-uuid
+    , unliftio
+    , wai-extra
+    , warp
+    , yaml
+    , yamlparse-applicative
+    , yesod
+    , yesod-auth
+    , yesod-autoreload
+    , yesod-static
+    , yesod-static-remote
+    , yesod-websockets
+  default-language: Haskell2010
+
+executable smos-web-server
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_web_server
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -optP-Wno-nonportable-include-path
+  build-depends:
+      base
+    , smos-web-server
+  default-language: Haskell2010
+
+test-suite smos-web-server-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Web.Server.Handler.AuthSpec
+      Smos.Web.Server.Handler.BackupSpec
+      Smos.Web.Server.Handler.HomeSpec
+      Smos.Web.Server.TestUtils
+      Paths_smos_web_server
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , base
+    , bytestring
+    , containers
+    , genvalidity-sydtest
+    , http-client
+    , http-types
+    , monad-logger
+    , path
+    , path-io
+    , servant-client
+    , smos-client
+    , smos-data-gen
+    , smos-server-gen
+    , smos-sync-client
+    , smos-web-server
+    , smos-web-style
+    , stm
+    , sydtest
+    , sydtest-yesod
+    , text
+    , yesod-auth
+  default-language: Haskell2010

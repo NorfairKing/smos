@@ -38,15 +38,11 @@ in
         doBenchmark (
           addBuildDepend
             (
-              failOnAllWarnings (
+              buildStrictly (
                 disableLibraryProfiling (
-                  overrideCabal (final.haskellPackages.callCabal2nix name (final.gitignoreSource (../. + "/${name}")) { }) (
+                  overrideCabal (final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}")) "--no-hpack" { }) (
                     old: {
-                      preCheck = ''
-                        ${old.preCheck or ""}
-                        export HSPEC_OPTIONS="--seed=42 --fail-fast"
-                      '';
-                      # Turn off certain suites on macos because they generate random
+                      # Turn off test suites on macos because they generate random
                       # filepaths and that fails for some reason that I cannot investigate
                       # because I don't own any apple products.
                       doCheck = !isMacos;

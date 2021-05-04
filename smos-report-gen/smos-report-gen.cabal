@@ -1,0 +1,146 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-report-gen
+version:        0.1.2
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Report.Agenda.Gen
+      Smos.Report.Archive.Gen
+      Smos.Report.Clock.Gen
+      Smos.Report.Comparison.Gen
+      Smos.Report.Config.Gen
+      Smos.Report.Entry.Gen
+      Smos.Report.Filter.Gen
+      Smos.Report.InterestingStore
+      Smos.Report.Next.Gen
+      Smos.Report.OptParse.Gen
+      Smos.Report.Period.Gen
+      Smos.Report.Projection.Gen
+      Smos.Report.Report.Gen
+      Smos.Report.Sorter.Gen
+      Smos.Report.Stuck.Gen
+      Smos.Report.TestUtils
+      Smos.Report.Time.Gen
+      Smos.Report.TimeBlock.Gen
+      Smos.Report.Waiting.Gen
+      Smos.Report.Work.Gen
+  other-modules:
+      Paths_smos_report_gen
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , bytestring
+    , containers
+    , cursor
+    , cursor-gen
+    , deepseq
+    , dirforest
+    , genvalidity
+    , genvalidity-bytestring
+    , genvalidity-containers
+    , genvalidity-dirforest
+    , genvalidity-path
+    , genvalidity-sydtest
+    , genvalidity-text
+    , genvalidity-time
+    , path
+    , path-io
+    , smos-data
+    , smos-data-gen
+    , smos-report
+    , text
+    , time
+  default-language: Haskell2010
+
+test-suite smos-report-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Report.AgendaSpec
+      Smos.Report.ClockSpec
+      Smos.Report.ComparisonSpec
+      Smos.Report.EntrySpec
+      Smos.Report.FilterSpec
+      Smos.Report.LogSpec
+      Smos.Report.NextSpec
+      Smos.Report.OptParseSpec
+      Smos.Report.ProjectionSpec
+      Smos.Report.ReportSpec
+      Smos.Report.SorterSpec
+      Smos.Report.StreamingSpec
+      Smos.Report.StuckSpec
+      Smos.Report.TimeBlockSpec
+      Smos.Report.TimeSpec
+      Smos.Report.WaitingSpec
+      Smos.Report.WorkSpec
+      Paths_smos_report_gen
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , containers
+    , cursor
+    , cursor-gen
+    , dirforest
+    , genvalidity-containers
+    , genvalidity-path
+    , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
+    , megaparsec
+    , parsec
+    , path
+    , path-io
+    , smos-data
+    , smos-data-gen
+    , smos-report
+    , smos-report-gen
+    , sydtest
+    , text
+    , time
+  default-language: Haskell2010
+
+benchmark smos-report-bench
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_report_gen
+  hs-source-dirs:
+      bench/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , containers
+    , criterion
+    , cursor
+    , genvalidity
+    , genvalidity-containers
+    , genvalidity-criterion
+    , genvalidity-path
+    , path
+    , smos-data
+    , smos-data-gen
+    , smos-report
+    , smos-report-gen
+    , text
+  default-language: Haskell2010

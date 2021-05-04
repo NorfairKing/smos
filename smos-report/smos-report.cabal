@@ -1,0 +1,76 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-report
+version:        0.3.1
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Report.Agenda
+      Smos.Report.Agenda.Types
+      Smos.Report.Archive
+      Smos.Report.Clock
+      Smos.Report.Clock.Types
+      Smos.Report.Comparison
+      Smos.Report.Config
+      Smos.Report.Entry
+      Smos.Report.Filter
+      Smos.Report.Formatting
+      Smos.Report.Log
+      Smos.Report.Next
+      Smos.Report.OptParse
+      Smos.Report.OptParse.Types
+      Smos.Report.Period
+      Smos.Report.Projection
+      Smos.Report.Projects
+      Smos.Report.Report
+      Smos.Report.ShouldPrint
+      Smos.Report.Sorter
+      Smos.Report.Stats
+      Smos.Report.Streaming
+      Smos.Report.Stuck
+      Smos.Report.Tags
+      Smos.Report.Time
+      Smos.Report.TimeBlock
+      Smos.Report.Waiting
+      Smos.Report.Work
+  other-modules:
+      Paths_smos_report
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base
+    , conduit
+    , containers
+    , cursor
+    , deepseq
+    , envparse
+    , megaparsec
+    , microlens
+    , optparse-applicative
+    , parsec
+    , path
+    , path-io
+    , safe
+    , smos-data
+    , text
+    , time
+    , validity
+    , validity-path
+    , validity-time
+    , yaml
+    , yamlparse-applicative
+  default-language: Haskell2010

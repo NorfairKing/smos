@@ -1,0 +1,247 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos
+version:        0.2.0
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    test_resources/scenario/any-move-todo-undo.yaml
+    test_resources/scenario/contents-undo.yaml
+    test_resources/scenario/conv-done-and-wait-for-response-undo.yaml
+    test_resources/scenario/conv-done-and-wait-for-response.yaml
+    test_resources/scenario/conv-new-entry-and-clock-in.yaml
+    test_resources/scenario/conv-repinged-undo.yaml
+    test_resources/scenario/conv-repinged.yaml
+    test_resources/scenario/delete-contents.yaml
+    test_resources/scenario/delete-forest.yaml
+    test_resources/scenario/delete-node.yaml
+    test_resources/scenario/delete-subtree.yaml
+    test_resources/scenario/editor/help-close.yaml
+    test_resources/scenario/entry-below-end.yaml
+    test_resources/scenario/entry-below.yaml
+    test_resources/scenario/file-browser/create-delete.yaml
+    test_resources/scenario/file-browser/create-dir-below-projects.yaml
+    test_resources/scenario/file-browser/create-dir-below.yaml
+    test_resources/scenario/file-browser/create-dir-undo-redo.yaml
+    test_resources/scenario/file-browser/create-dir-undo.yaml
+    test_resources/scenario/file-browser/create-dir.yaml
+    test_resources/scenario/file-browser/create-file-below-projects.yaml
+    test_resources/scenario/file-browser/create-file-below.yaml
+    test_resources/scenario/file-browser/create-file-undo-redo.yaml
+    test_resources/scenario/file-browser/create-file-undo.yaml
+    test_resources/scenario/file-browser/create-file.yaml
+    test_resources/scenario/file-browser/empty-create.yaml
+    test_resources/scenario/file-browser/help-close.yaml
+    test_resources/scenario/file-browser/remove-empty-dir-undo-redo.yaml
+    test_resources/scenario/file-browser/remove-empty-dir-undo.yaml
+    test_resources/scenario/file-browser/remove-empty-dir.yaml
+    test_resources/scenario/file-browser/switch-to-current.yaml
+    test_resources/scenario/header-simple.yaml
+    test_resources/scenario/header-undo.yaml
+    test_resources/scenario/logbook.yaml
+    test_resources/scenario/move-todo-undo.yaml
+    test_resources/scenario/nested-movement.yaml
+    test_resources/scenario/promotions.yaml
+    test_resources/scenario/property-new-delete.yaml
+    test_resources/scenario/property-two.yaml
+    test_resources/scenario/property.yaml
+    test_resources/scenario/report/switch-to-current.yaml
+    test_resources/scenario/same-level-header-creation.yaml
+    test_resources/scenario/swap.yaml
+    test_resources/scenario/tags/delete.yaml
+    test_resources/scenario/tags/move.yaml
+    test_resources/scenario/tags/one.yaml
+    test_resources/scenario/tags/preset.yaml
+    test_resources/scenario/tags/two.yaml
+    test_resources/scenario/todo-redo.yaml
+    test_resources/scenario/todo-single.yaml
+    test_resources/scenario/todo-undo.yaml
+
+library
+  exposed-modules:
+      Import
+      Smos
+      Smos.Actions
+      Smos.Actions.Browser
+      Smos.Actions.Convenience
+      Smos.Actions.Entry
+      Smos.Actions.Entry.Contents
+      Smos.Actions.Entry.Header
+      Smos.Actions.Entry.Logbook
+      Smos.Actions.Entry.Properties
+      Smos.Actions.Entry.Tags
+      Smos.Actions.Entry.Timestamps
+      Smos.Actions.Entry.TodoState
+      Smos.Actions.File
+      Smos.Actions.Forest
+      Smos.Actions.Help
+      Smos.Actions.Report
+      Smos.Actions.Report.Next
+      Smos.Actions.Report.Stuck
+      Smos.Actions.Report.Timestamps
+      Smos.Actions.Report.Waiting
+      Smos.Actions.Report.Work
+      Smos.Actions.Undo
+      Smos.Actions.Utils
+      Smos.Activation
+      Smos.App
+      Smos.Config
+      Smos.Default
+      Smos.Draw
+      Smos.Draw.Base
+      Smos.Draw.Report
+      Smos.Instance
+      Smos.Keys
+      Smos.Monad
+      Smos.OptParse
+      Smos.OptParse.Bare
+      Smos.OptParse.Types
+      Smos.Style
+      Smos.Terminal
+      Smos.Types
+  other-modules:
+      Paths_smos
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , async
+    , base
+    , brick
+    , bytestring
+    , conduit
+    , containers
+    , cursor
+    , cursor-brick
+    , cursor-dirforest
+    , cursor-dirforest-brick
+    , cursor-fuzzy-time
+    , directory
+    , dirforest
+    , envparse
+    , exceptions
+    , filelock
+    , filepath
+    , fuzzy-time
+    , megaparsec
+    , microlens
+    , mtl
+    , optparse-applicative
+    , path
+    , path-io
+    , pretty-relative-time
+    , pretty-show
+    , process
+    , resourcet
+    , safe
+    , smos-archive
+    , smos-cursor
+    , smos-data
+    , smos-report
+    , smos-report-cursor
+    , text
+    , time
+    , unix
+    , unliftio
+    , validity
+    , validity-containers
+    , validity-text
+    , validity-time
+    , validity-unordered-containers
+    , vty
+    , yaml
+    , yamlparse-applicative
+  default-language: Haskell2010
+
+executable smos
+  main-is: Main.hs
+  other-modules:
+      Paths_smos
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-I0 -optP-Wno-nonportable-include-path
+  build-depends:
+      base
+    , smos
+  default-language: Haskell2010
+
+test-suite smos-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Smos.ActionsSpec
+      Smos.Cursor.EditorSpec
+      Smos.Cursor.Help.Gen
+      Smos.Cursor.HelpSpec
+      Smos.Keys.Gen
+      Smos.KeysSpec
+      Smos.LaunchSpec
+      Smos.LockSpec
+      Smos.OptParse.Gen
+      Smos.OptParseSpec
+      Smos.ScenarioSpec
+      Smos.ShutdownSpec
+      Smos.Types.Gen
+      Smos.TypesSpec
+      TestImport
+      Paths_smos
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , aeson
+    , async
+    , base
+    , brick
+    , bytestring
+    , containers
+    , cursor
+    , cursor-dirforest
+    , dirforest
+    , filelock
+    , genvalidity
+    , genvalidity-containers
+    , genvalidity-path
+    , genvalidity-sydtest
+    , genvalidity-sydtest-aeson
+    , genvalidity-sydtest-lens
+    , genvalidity-text
+    , genvalidity-time
+    , genvalidity-unordered-containers
+    , megaparsec
+    , path
+    , path-io
+    , pretty-show
+    , resourcet
+    , smos
+    , smos-cursor
+    , smos-cursor-gen
+    , smos-data
+    , smos-data-gen
+    , smos-report
+    , smos-report-cursor
+    , smos-report-gen
+    , sydtest
+    , text
+    , time
+    , unix
+    , unliftio
+    , validity
+    , vty
+    , yaml
+    , yamlparse-applicative
+  default-language: Haskell2010

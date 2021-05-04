@@ -1,0 +1,81 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-archive
+version:        0.2.1
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Archive
+      Smos.Archive.OptParse
+      Smos.Archive.OptParse.Types
+      Smos.Archive.Prompt
+  other-modules:
+      Paths_smos_archive
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      base
+    , containers
+    , envparse
+    , exceptions
+    , filepath
+    , mtl
+    , optparse-applicative
+    , path
+    , path-io
+    , smos-data
+    , smos-report
+    , time
+    , validity
+    , yamlparse-applicative
+  default-language: Haskell2010
+
+executable smos-archive
+  main-is: Main.hs
+  other-modules:
+      Paths_smos_archive
+  hs-source-dirs:
+      app
+  build-depends:
+      base
+    , smos-archive
+  default-language: Haskell2010
+
+test-suite smos-archive-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Archive.IntegrationSpec
+      Smos.Archive.PromptSpec
+      Smos.ArchiveSpec
+      Paths_smos_archive
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      base
+    , containers
+    , genvalidity-sydtest
+    , path
+    , path-io
+    , smos-archive
+    , smos-data
+    , smos-data-gen
+    , sydtest
+    , time
+  default-language: Haskell2010

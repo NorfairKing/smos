@@ -1,0 +1,46 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-report-cursor
+version:        0.1.2
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Cursor.Report.Entry
+      Smos.Cursor.Report.Next
+      Smos.Cursor.Report.Streaming
+      Smos.Cursor.Report.Stuck
+      Smos.Cursor.Report.Timestamps
+      Smos.Cursor.Report.Waiting
+      Smos.Cursor.Report.Work
+  other-modules:
+      Paths_smos_report_cursor
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      base
+    , conduit
+    , containers
+    , cursor
+    , deepseq
+    , microlens
+    , path
+    , smos-cursor
+    , smos-data
+    , smos-report
+    , time
+    , validity
+    , validity-path
+  default-language: Haskell2010

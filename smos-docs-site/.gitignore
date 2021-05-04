@@ -1,6 +1,5 @@
 .stack-work/
 asciinema-player.*
-smos-docs-site.cabal
 *~
 *.aes
 *.css

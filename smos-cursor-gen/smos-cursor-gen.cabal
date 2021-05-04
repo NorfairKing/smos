@@ -1,0 +1,123 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-cursor-gen
+version:        0.1.1
+homepage:       https://github.com/NorfairKing/smos#readme
+bug-reports:    https://github.com/NorfairKing/smos/issues
+author:         Tom Sydney Kerckhove
+maintainer:     sydcs-syd.eu
+copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/NorfairKing/smos
+
+library
+  exposed-modules:
+      Smos.Cursor.Collapse.Gen
+      Smos.Cursor.Contents.Gen
+      Smos.Cursor.Entry.Gen
+      Smos.Cursor.FileBrowser.Gen
+      Smos.Cursor.Header.Gen
+      Smos.Cursor.Logbook.Gen
+      Smos.Cursor.Properties.Gen
+      Smos.Cursor.SmosFile.Gen
+      Smos.Cursor.StateHistory.Gen
+      Smos.Cursor.Tag.Gen
+      Smos.Cursor.Tags.Gen
+      Smos.Cursor.Timestamps.Gen
+      Smos.History.Gen
+      Smos.Undo.Gen
+  other-modules:
+      Paths_smos_cursor_gen
+  hs-source-dirs:
+      src
+  build-depends:
+      QuickCheck
+    , base
+    , cursor
+    , cursor-dirforest
+    , cursor-dirforest-gen
+    , cursor-fuzzy-time-gen
+    , cursor-gen
+    , genvalidity
+    , genvalidity-path
+    , genvalidity-text
+    , smos-cursor
+    , smos-data
+    , smos-data-gen
+  default-language: Haskell2010
+
+test-suite smos-cursor-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Cursor.CollapseSpec
+      Smos.Cursor.ContentsSpec
+      Smos.Cursor.EntrySpec
+      Smos.Cursor.FileBrowserSpec
+      Smos.Cursor.HeaderSpec
+      Smos.Cursor.LogbookSpec
+      Smos.Cursor.PropertiesSpec
+      Smos.Cursor.SmosFileEditorSpec
+      Smos.Cursor.SmosFileSpec
+      Smos.Cursor.StateHistorySpec
+      Smos.Cursor.TagSpec
+      Smos.Cursor.TagsSpec
+      Smos.Cursor.TimestampsSpec
+      Smos.HistorySpec
+      Smos.UndoSpec
+      Paths_smos_cursor_gen
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , bytestring
+    , cursor
+    , cursor-dirforest
+    , cursor-fuzzy-time-gen
+    , cursor-gen
+    , dirforest
+    , genvalidity-path
+    , genvalidity-sydtest
+    , genvalidity-sydtest-lens
+    , path
+    , path-io
+    , resourcet
+    , smos-cursor
+    , smos-cursor-gen
+    , smos-data
+    , smos-data-gen
+    , sydtest
+  default-language: Haskell2010
+
+benchmark smos-cursor-bench
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  other-modules:
+      Paths_smos_cursor_gen
+  hs-source-dirs:
+      bench
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base >=4.7 && <5
+    , criterion
+    , cursor
+    , cursor-fuzzy-time-gen
+    , genvalidity-criterion
+    , smos-cursor
+    , smos-cursor-gen
+    , smos-data
+    , smos-data-gen
+  default-language: Haskell2010

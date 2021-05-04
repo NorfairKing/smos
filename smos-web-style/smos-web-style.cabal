@@ -1,0 +1,38 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-web-style
+version:        0.0.1
+category:       Smos
+homepage:       https://github.com/NorfairKing/smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+copyright:      Copyright: (c) 2020 Tom Sydney Kerckhove
+license:        MIT
+build-type:     Simple
+extra-source-files:
+    style/mybulma.scss
+
+library
+  exposed-modules:
+      Smos.Web.Style
+      Smos.Web.Style.Constants
+      Smos.Web.Style.TH
+  other-modules:
+      Paths_smos_web_style
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-tool-depends:
+      autoexporter:autoexporter
+  build-depends:
+      base
+    , path
+    , path-io
+    , process
+    , template-haskell
+    , yesod-static
+  default-language: Haskell2010
