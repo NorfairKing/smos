@@ -325,16 +325,7 @@ in
                 password = passwordPkg "password";
                 password-types = passwordPkg "password-types";
                 password-instances = passwordPkg "password-instances";
-                looper = self.callCabal2nix "looper"
-                  (
-                    final.fetchFromGitHub {
-                      owner = "NorfairKing";
-                      repo = "looper";
-                      rev = "fd6d31b0ccc1a850aa1435b2fc21dcb9807eacb3";
-                      sha256 = "sha256:0p10jc3ila5yhhzipzklwcqx768qw66yr71xh9qa7dkjn18d6v04";
-                    })
-                  { };
-
+                looper = self.callCabal2nix "looper" (sources.looper + "/looper") { };
                 iCalendar = self.callCabal2nix "iCalendar"
                   (
                     builtins.fetchGit {
