@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-server
-version:        0.2.0
+version:        0.3.0
 category:       Smos
 homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove

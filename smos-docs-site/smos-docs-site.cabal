@@ -81,6 +81,7 @@ extra-source-files:
     content/changelogs/2021-03-13.markdown
     content/changelogs/2021-04-09.markdown
     content/changelogs/2021-04-30.markdown
+    content/changelogs/2021-05-04.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet
