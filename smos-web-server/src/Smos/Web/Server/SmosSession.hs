@@ -65,6 +65,13 @@ withSmosSessionIn workflowDir relFile func = do
           }
   withSmosInstance config (Just $ StartingFile startingFile) func
 
+reportConfigFor ::
+  Path Abs Dir -> SmosReportConfig
+reportConfigFor workflowDir =
+  defaultReportConfig
+    { smosReportConfigDirectoryConfig = directoryConfigFor workflowDir
+    }
+
 withSmosShellSession ::
   (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
   Username ->
@@ -80,17 +87,14 @@ withSmosShellSessionIn ::
   (TerminalHandle -> m a) ->
   m a
 withSmosShellSessionIn workflowDir func = do
-  let reportConfig = reportConfigFor workflowDir
-  withSmosShellInstance reportConfig func
+  let directoryConfig = directoryConfigFor workflowDir
+  withSmosShellInstance directoryConfig func
 
-reportConfigFor ::
-  Path Abs Dir -> SmosReportConfig
-reportConfigFor workflowDir =
-  defaultReportConfig
-    { smosReportConfigDirectoryConfig =
-        defaultDirectoryConfig
-          { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
-          }
+directoryConfigFor ::
+  Path Abs Dir -> DirectoryConfig
+directoryConfigFor workflowDir =
+  defaultDirectoryConfig
+    { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
     }
 
 withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a

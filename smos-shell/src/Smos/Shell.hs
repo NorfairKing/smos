@@ -17,8 +17,9 @@ import qualified Data.Text.Encoding as TE
 import qualified Options.Applicative as OptParse
 import Rainbow
 import qualified Smos.Query as Query
-import qualified Smos.Query.Default as Query
+import Smos.Query.Env as Query
 import qualified Smos.Query.OptParse as Query
+import Smos.Report.Config
 import qualified Smos.Report.OptParse as Report
 import System.Console.Haskeline as Haskeline
 import System.Console.Haskeline.Command.KillRing as Haskeline
@@ -28,12 +29,13 @@ import System.Console.Haskeline.Term as Haskeline
 import System.Exit
 import System.IO
 
+-- TODO do actual option parsing?
 smosShell :: IO ()
-smosShell = smosShellWith Query.defaultReportConfig stdin stdout stderr
+smosShell = smosShellWith defaultDirectoryConfig stdin stdout stderr
 
 -- TODO use a config based on actual optparse
-smosShellWith :: Query.SmosReportConfig -> Handle -> Handle -> Handle -> IO ()
-smosShellWith rc inputH outputH errorH = do
+smosShellWith :: DirectoryConfig -> Handle -> Handle -> Handle -> IO ()
+smosShellWith dc inputH outputH errorH = do
   colouredBsMaker <- byteStringMakerFromHandle outputH
   let prependECSign :: Maybe ExitCode -> [Chunk] -> [Chunk]
       prependECSign = \case
@@ -52,7 +54,7 @@ smosShellWith rc inputH outputH errorH = do
           Just ["exit"] -> pure ()
           Just ["quit"] -> pure ()
           Just ["help"] -> do
-            outputStrLn "Try running query --help to see an overview of the reports you can run."
+            outputStrLn "Try running --help to see an overview of the reports you can run."
             loop Nothing
           Just [] -> loop Nothing
           Just input -> do
@@ -69,23 +71,24 @@ smosShellWith rc inputH outputH errorH = do
                 loop Nothing
               OptParse.Success (Query.Arguments cmd flags) -> do
                 ec <- liftIO $ do
-                  instructions <-
+                  Query.Instructions dispatch settings <-
                     liftIO $
                       Query.combineToInstructions
-                        ( Query.SmosQueryConfig
-                            { Query.smosQueryConfigReportConfig = rc,
-                              Query.smosQueryConfigColourConfig = Query.defaultColourConfig,
-                              Query.smosQueryConfigInputHandle = inputH,
-                              Query.smosQueryConfigOutputHandle = outputH,
-                              Query.smosQueryConfigErrorHandle = errorH
-                            }
-                        )
                         cmd
                         (Report.flagWithRestFlags flags)
                         Query.emptyEnvironment
                         Nothing
+                  let env =
+                        Env
+                          { envInputHandle = inputH,
+                            envOutputHandle = outputH,
+                            envErrorHandle = errorH,
+                            envColourSettings = Query.settingColourSettings settings,
+                            envDirectoryConfig = dc
+                          }
+
                   -- TODO Catch synchronous exceptions too.
-                  (ExitSuccess <$ Query.smosQueryWithInstructions instructions) `catch` (\ec -> pure ec)
+                  (ExitSuccess <$ runReaderT (Query.execute dispatch) env) `catch` (\ec -> pure ec)
                 loop (Just ec)
   customRunInputT $ loop Nothing
   where

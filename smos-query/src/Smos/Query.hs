@@ -3,6 +3,7 @@
 
 module Smos.Query
   ( smosQuery,
+    smosQueryWithInstructions,
     execute,
   )
 where
@@ -12,8 +13,10 @@ import Smos.Query.OptParse
 import System.IO
 
 smosQuery :: IO ()
-smosQuery = do
-  Instructions dispatch settings <- getInstructions
+smosQuery = getInstructions >>= smosQueryWithInstructions
+
+smosQueryWithInstructions :: Instructions -> IO ()
+smosQueryWithInstructions (Instructions dispatch settings) = do
   let env = makeEnvFromSettings settings
   runReaderT (execute dispatch) env
 

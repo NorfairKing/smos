@@ -6,8 +6,7 @@ module Smos.GitHub.OptParse.Types where
 
 import Data.Aeson
 import Data.Text (Text)
-import Smos.Query.Config (ColourConfig)
-import Smos.Query.OptParse.Types (ColourConfiguration (..), colourConfigurationKey)
+import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import YamlParse.Applicative
@@ -68,7 +67,7 @@ data Dispatch = DispatchList
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
-    setColourConfig :: !ColourConfig,
+    setColourConfig :: !ColourSettings,
     setGithubOauthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)

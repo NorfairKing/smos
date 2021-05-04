@@ -14,9 +14,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_github
 import Smos.Data
 import Smos.GitHub.OptParse.Types
-import Smos.Query.Config (smosQueryConfigColourConfig)
-import Smos.Query.Default (defaultSmosQueryConfig)
-import Smos.Query.OptParse (getColourConfig)
+import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
@@ -38,7 +36,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
-  let setColourConfig = getColourConfig (mc >>= confColourConfiguration) (smosQueryConfigColourConfig defaultSmosQueryConfig)
+  let setColourConfig = getColourSettings (mc >>= confColourConfiguration)
   let setGithubOauthToken = flagGithubOAuthToken <|> envGithubOAuthToken <|> cM githubConfOAuthToken
   pure (Instructions d Settings {..})
   where

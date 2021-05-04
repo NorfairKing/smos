@@ -1,10 +1,11 @@
 ##### Added
 
-- `smos-query`: You can now configure colours more specifically: The 8 colours and 24bit colours.
+- `smos-query`: You can now configure colours more specifically: The 8 standard terminal colours and 24bit colours.
 
 ##### Changed
 
 - `smos` and `smos-query`: More strings are now recognised as durations: `5sec`, `6 min`, `7 hours`, etc... 
+  This fixes [Issue 104](https://github.com/NorfairKing/smos/issues/104)
   See [PR 195](https://github.com/NorfairKing/smos/pull/195) for more details.
   Thank you [@ketzacoatl](https://github.com/ketzacoatl)!
 - `smos-sync-client`: Now sends the `User-Agent` header with `smos-sync-client-<version>`.

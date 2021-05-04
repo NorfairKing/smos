@@ -30,12 +30,6 @@ packages:
 - smos-notify
 - smos-github
 
-- /home/syd/src/safe-coloured-text/safe-coloured-text
-- /home/syd/src/safe-coloured-text/safe-coloured-text-gen
-- /home/syd/src/safe-coloured-text/safe-coloured-text-layout
-- /home/syd/src/safe-coloured-text/safe-coloured-text-layout-gen
-- /home/syd/src/safe-coloured-text/safe-coloured-text-terminfo
-
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
@@ -138,13 +132,14 @@ extra-deps:
   subdirs:
   - yamlparse-applicative
 
-    # - github: NorfairKing/safe-coloured-text
-    #   commit: 2c8698978faf5556a6f928c5a55c797c3a262808
-    #   subdirs:
-    #   - safe-coloured-text
-    #   - safe-coloured-text-gen
-    #   - safe-coloured-text-layout
-    #   - safe-coloured-text-terminfo
+- github: NorfairKing/safe-coloured-text
+  commit: d1fa5c8f9a533f52df75356a45216d2ff48a016e
+  subdirs:
+  - safe-coloured-text
+  - safe-coloured-text-gen
+  - safe-coloured-text-layout
+  - safe-coloured-text-layout-gen
+  - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
   commit: 5e99c4fe56152d71982dcfba8bef4c79e19a9c8f

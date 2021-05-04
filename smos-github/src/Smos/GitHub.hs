@@ -28,8 +28,8 @@ import Network.URI
 import Path
 import Smos.Data
 import Smos.GitHub.OptParse
-import Smos.Query.Config (ColourConfig)
 import Smos.Query.Formatting
+import Smos.Query.OptParse.Types (ColourSettings (..))
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
@@ -85,9 +85,9 @@ newtype GitHubListReport = GitHubListReport {githubListReportRows :: [ListReport
 completeListReport :: Maybe GitHub.Auth -> [(Path Rel File, Entry, GitHubUrl)] -> IO GitHubListReport
 completeListReport mAuth = fmap (GitHubListReport . sortOn listReportRowBall) . mapConcurrently (fillInRow mAuth)
 
-renderGitHubListReport :: ColourConfig -> GitHubListReport -> [Chunk]
-renderGitHubListReport cc GitHubListReport {..} =
-  formatAsBicolourTable cc $
+renderGitHubListReport :: ColourSettings -> GitHubListReport -> [Chunk]
+renderGitHubListReport colourSettings GitHubListReport {..} =
+  formatAsBicolourTable colourSettings $
     headerRow : map renderListReportRow githubListReportRows
 
 headerRow :: [Chunk]

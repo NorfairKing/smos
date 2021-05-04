@@ -57,16 +57,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       envReportEnvironment
       (confReportConf <$> mc)
 
-  let mcc :: (ColourConfiguration -> Maybe a) -> Maybe a
-      mcc func = mc >>= confColourConfiguration >>= func
-      colourSettings :: ColourSettings
-      colourSettings =
-        ColourSettings
-          { colourSettingBackground =
-              fromMaybe
-                (UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
-                (mcc colourConfigurationBackground)
-          }
+  let colourSettings = getColourSettings $ mc >>= confColourConfiguration
 
   let settings =
         Settings
@@ -218,6 +209,15 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         pure $
           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
   pure $ Instructions dispatch settings
+
+getColourSettings :: Maybe ColourConfiguration -> ColourSettings
+getColourSettings mcc =
+  ColourSettings
+    { colourSettingBackground =
+        fromMaybe
+          (UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
+          (mcc >>= colourConfigurationBackground)
+    }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
