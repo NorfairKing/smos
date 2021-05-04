@@ -14,6 +14,29 @@ copyright:      Copyright: (c) 2019-2020 Tom Sydney Kerckhove
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
+extra-source-files:
+    test_resources/compressed/hello-world-1.dat
+    test_resources/compressed/hello-world-10.dat
+    test_resources/compressed/hello-world-11.dat
+    test_resources/compressed/hello-world-12.dat
+    test_resources/compressed/hello-world-13.dat
+    test_resources/compressed/hello-world-14.dat
+    test_resources/compressed/hello-world-15.dat
+    test_resources/compressed/hello-world-16.dat
+    test_resources/compressed/hello-world-17.dat
+    test_resources/compressed/hello-world-18.dat
+    test_resources/compressed/hello-world-19.dat
+    test_resources/compressed/hello-world-2.dat
+    test_resources/compressed/hello-world-20.dat
+    test_resources/compressed/hello-world-21.dat
+    test_resources/compressed/hello-world-22.dat
+    test_resources/compressed/hello-world-3.dat
+    test_resources/compressed/hello-world-4.dat
+    test_resources/compressed/hello-world-5.dat
+    test_resources/compressed/hello-world-6.dat
+    test_resources/compressed/hello-world-7.dat
+    test_resources/compressed/hello-world-8.dat
+    test_resources/compressed/hello-world-9.dat
 
 library
   exposed-modules:

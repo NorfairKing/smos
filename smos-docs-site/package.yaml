@@ -8,7 +8,10 @@ copyright: "2018-2020 Tom Sydney Kerckhove"
 
 extra-source-files:
 - routes
-- content/**
+- content/assets/**/*
+- content/pages/**/*
+- content/changelogs/**/*
+- content/unreleased.markdown
 - templates/**/*
 
 library:

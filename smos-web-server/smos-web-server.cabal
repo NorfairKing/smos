@@ -36,6 +36,18 @@ extra-source-files:
     templates/terminal.julius
     templates/tui.hamlet
     templates/tui.lucius
+    assets/tom-sydney-kerckhove_coding-experience.svg
+    assets/tom-sydney-kerckhove_github-icon.svg
+    assets/tom-sydney-kerckhove_linkedin-icon.svg
+    assets/tom-sydney-kerckhove_logo-smos.svg
+    assets/tom-sydney-kerckhove_mental-health.svg
+    assets/tom-sydney-kerckhove_productivity.svg
+    assets/tom-sydney-kerckhove_reliable.svg
+    assets/tom-sydney-kerckhove_smos-self-management.svg
+    assets/tom-sydney-kerckhove_stress-free.svg
+    assets/tom-sydney-kerckhove_tiktok-icon.svg
+    assets/tom-sydney-kerckhove_twitter-icon.svg
+    assets/tom-sydney-kerckhove_youtube-icon.svg
 
 library
   exposed-modules:

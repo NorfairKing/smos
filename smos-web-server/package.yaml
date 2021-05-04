@@ -10,6 +10,7 @@ homepage: https://github.com/NorfairKing/smos
 extra-source-files:
 - routes.txt
 - templates/**/*
+- assets/**/*
 
 dependencies:
 - base
