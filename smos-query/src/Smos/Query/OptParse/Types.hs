@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Query.OptParse.Types
@@ -14,6 +16,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
+import Data.Validity
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Smos.Data
@@ -31,6 +34,7 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 import Text.Colour
+import Text.Colour.Code
 import Text.Colour.Layout
 import YamlParse.Applicative
 
@@ -166,6 +170,15 @@ data Environment = Environment
   }
   deriving (Show, Eq, Generic)
 
+defaultConfiguration :: Configuration
+defaultConfiguration =
+  Configuration
+    { confReportConf = Report.defaultConfiguration,
+      confHideArchive = Nothing,
+      confPreparedReportConfiguration = Nothing,
+      confColourConfiguration = Nothing
+    }
+
 data Configuration = Configuration
   { confReportConf :: Report.Configuration,
     confHideArchive :: Maybe HideArchive,
@@ -173,6 +186,17 @@ data Configuration = Configuration
     confColourConfiguration :: Maybe ColourConfiguration
   }
   deriving (Show, Eq, Generic)
+
+instance Validity Configuration
+
+instance ToJSON Configuration where
+  toJSON Configuration {..} =
+    object $
+      Report.configurationToObject confReportConf
+        ++ [ "hide-archive" .= confHideArchive,
+             preparedReportConfigurationKey .= confPreparedReportConfiguration,
+             colourConfigurationKey .= confColourConfiguration
+           ]
 
 instance FromJSON Configuration where
   parseJSON = viaYamlSchema
@@ -199,6 +223,11 @@ data PreparedReportConfiguration = PreparedReportConfiguration
   }
   deriving (Show, Eq, Generic)
 
+instance Validity PreparedReportConfiguration
+
+instance ToJSON PreparedReportConfiguration where
+  toJSON PreparedReportConfiguration {..} = object ["reports" .= preparedReportConfAvailableReports]
+
 instance FromJSON PreparedReportConfiguration where
   parseJSON = viaYamlSchema
 
@@ -210,9 +239,17 @@ data ColourConfiguration = ColourConfiguration
     --
     -- The first maybe is for whether this is defined in the configuration file.
     -- The second maybe is for whether any background colour should be used.
-    colourConfigurationBackground :: Maybe (Maybe TableBackground)
+    colourConfigurationBackground :: Maybe TableBackgroundConfiguration
   }
   deriving (Show, Eq, Generic)
+
+instance Validity ColourConfiguration
+
+instance ToJSON ColourConfiguration where
+  toJSON ColourConfiguration {..} =
+    object
+      [ "background" .= colourConfigurationBackground
+      ]
 
 instance FromJSON ColourConfiguration where
   parseJSON = viaYamlSchema
@@ -222,6 +259,36 @@ instance YamlSchema ColourConfiguration where
     objectParser "ColourConfiguration" $
       ColourConfiguration
         <$> optionalField "background" "The table background colours"
+
+data TableBackgroundConfiguration
+  = UseTableBackground TableBackground
+  | NoTableBackground
+  deriving (Show, Eq, Generic)
+
+instance Validity TableBackgroundConfiguration
+
+instance ToJSON TableBackgroundConfiguration where
+  toJSON = \case
+    NoTableBackground -> Null
+    UseTableBackground tb -> toJSON tb
+
+instance FromJSON TableBackgroundConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema TableBackgroundConfiguration where
+  yamlSchema =
+    alternatives
+      [ NoTableBackground <$ ParseNull,
+        UseTableBackground <$> yamlSchema
+      ]
+
+instance ToJSON TableBackground where
+  toJSON = \case
+    SingleColour c -> toJSON c
+    Bicolour e o -> object ["even" .= e, "odd" .= o]
+
+instance FromJSON TableBackground where
+  parseJSON = viaYamlSchema
 
 instance YamlSchema TableBackground where
   yamlSchema =
@@ -233,13 +300,68 @@ instance YamlSchema TableBackground where
             <*> optionalField "odd" "background for odd-numbered table-rows"
       ]
 
+instance ToJSON Colour where
+  toJSON = \case
+    Colour8 intensity colour8 ->
+      toJSON $
+        mconcat
+          [ case intensity of
+              Dull -> ("" :: Text)
+              Bright -> "bright ",
+            case colour8 of
+              Black -> "black"
+              Red -> "red"
+              Green -> "green"
+              Yellow -> "yellow"
+              Blue -> "blue"
+              Magenta -> "magenta"
+              Cyan -> "cyan"
+              White -> "white"
+          ]
+    Colour8Bit w8 -> toJSON w8
+    Colour24Bit r g b -> object ["red" .= r, "green" .= g, "blue" .= b]
+
+instance FromJSON Colour where
+  parseJSON = viaYamlSchema
+
 instance YamlSchema Colour where
   yamlSchema =
-    Colour8Bit <$> yamlSchema
-      <??> [ "Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.",
-             "See this overview on wikipedia for more information:",
-             "https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit"
-           ]
+    alternatives
+      [ eitherParser
+          ( \t -> do
+              let colourCase :: String -> Either String TerminalColour
+                  colourCase = \case
+                    "black" -> Right Black
+                    "red" -> Right Red
+                    "green" -> Right Green
+                    "yellow" -> Right Yellow
+                    "blue" -> Right Blue
+                    "magenta" -> Right Magenta
+                    "cyan" -> Right Cyan
+                    "white" -> Right White
+                    s -> Left $ "Unknown colour: " <> s
+              case words t of
+                [colourStr] -> Colour8 Dull <$> colourCase colourStr
+                [intensityStr, colourStr] -> do
+                  intensity <- case intensityStr of
+                    "bright" -> Right Bright
+                    "dull" -> Right Dull
+                    _ -> Left $ "Unknown colour intensity: " <> intensityStr
+                  Colour8 intensity <$> colourCase colourStr
+                _ -> Left "Specify a terminal colour as two words, e. g. 'dull red' or 'bright blue'."
+          )
+          yamlSchema,
+        Colour8Bit <$> yamlSchema
+          <??> [ "Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.",
+                 "See this overview on wikipedia for more information:",
+                 "https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit"
+               ],
+        objectParser "Colour24Bit" $
+          Colour24Bit
+            <$> requiredField "red" "The red component, [0..255]"
+            <*> requiredField "green" "The green component, [0..255]"
+            <*> requiredField "blue" "The blue component, [0..255]"
+      ]
 
 data Dispatch
   = DispatchEntry !EntrySettings
@@ -362,6 +484,6 @@ data Settings = Settings
   deriving (Show, Eq, Generic)
 
 data ColourSettings = ColourSettings
-  { colourSettingBackground :: Maybe TableBackground
+  { colourSettingBackground :: TableBackgroundConfiguration
   }
   deriving (Show, Eq, Generic)

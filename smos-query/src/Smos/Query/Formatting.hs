@@ -26,7 +26,16 @@ import Text.Colour.Layout
 import Text.Time.Pretty
 
 formatAsBicolourTable :: ColourSettings -> [[Chunk]] -> [Chunk]
-formatAsBicolourTable cc = renderTable . (\t -> t {tableBackground = colourSettingBackground cc}) . table
+formatAsBicolourTable cc =
+  renderTable
+    . ( \t ->
+          t
+            { tableBackground = case colourSettingBackground cc of
+                UseTableBackground tb -> Just tb
+                NoTableBackground -> Nothing
+            }
+      )
+    . table
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"

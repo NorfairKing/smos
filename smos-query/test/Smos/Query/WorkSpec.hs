@@ -5,10 +5,11 @@ module Smos.Query.WorkSpec (spec) where
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Smos.Query.Config
-import Smos.Query.Default
+import Smos.Query.OptParse.Types as Query
 import Smos.Query.TestUtils
+import Smos.Report.Config as Report
 import Smos.Report.Filter
+import qualified Smos.Report.OptParse.Types as Report
 import Test.Syd
 import Test.Syd.Validity
 
@@ -26,16 +27,17 @@ spec = sequential $
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right (onlineFilter, offlineFilter) -> do
               let wc =
-                    defaultWorkReportConfig
-                      { workReportConfigContexts =
-                          M.fromList
-                            [ (ContextName "online", onlineFilter),
-                              (ContextName "offline", offlineFilter)
-                            ]
+                    Report.defaultWorkReportConfiguration
+                      { Report.workReportConfContexts =
+                          Just $
+                            M.fromList
+                              [ (ContextName "online", onlineFilter),
+                                (ContextName "offline", offlineFilter)
+                              ]
                       }
-                  rc = defaultReportConfig {smosReportConfigWorkConfig = wc}
-                  sqc = defaultSmosQueryConfig {smosQueryConfigReportConfig = rc}
-              testSmosQueryWithConfig sqc is ["work", "online"]
+                  rc = Report.defaultConfiguration {Report.confWorkReportConf = Just wc}
+                  c = Query.defaultConfiguration {confReportConf = rc}
+              testSmosQueryWithConfig c is ["work", "online"]
       it "'just works' for any InterestingStore and a check but no contexts" $
         forAllValid $ \is -> do
           let checkString = "property:timewindow"
@@ -43,9 +45,9 @@ spec = sequential $
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right checkFilter -> do
               let wc =
-                    defaultWorkReportConfig
-                      { workReportConfigChecks = S.singleton checkFilter
+                    Report.defaultWorkReportConfiguration
+                      { Report.workReportConfChecks = Just $ S.singleton checkFilter
                       }
-                  rc = defaultReportConfig {smosReportConfigWorkConfig = wc}
-                  sqc = defaultSmosQueryConfig {smosQueryConfigReportConfig = rc}
-              testSmosQueryWithConfig sqc is ["work"]
+                  rc = Report.defaultConfiguration {Report.confWorkReportConf = Just wc}
+                  c = Query.defaultConfiguration {confReportConf = rc}
+              testSmosQueryWithConfig c is ["work"]

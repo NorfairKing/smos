@@ -84,13 +84,7 @@ data Configuration = Configuration
 instance Validity Configuration
 
 instance ToJSON Configuration where
-  toJSON Configuration {..} =
-    object $
-      directoryConfigurationToObject confDirectoryConf
-        ++ [ "waiting" .= confWaitingReportConf,
-             "stuck" .= confStuckReportConf,
-             "work" .= confWorkReportConf
-           ]
+  toJSON = object . configurationToObject
 
 instance FromJSON Configuration where
   parseJSON = viaYamlSchema
@@ -103,6 +97,23 @@ instance YamlSchema Configuration where
         <*> optionalField "waiting" "The waiting report configuration"
         <*> optionalField "stuck" "The stuck projects report configuration"
         <*> optionalField "work" "The work report configuration"
+
+defaultConfiguration :: Configuration
+defaultConfiguration =
+  Configuration
+    { confDirectoryConf = defaultDirectoryConfiguration,
+      confWorkReportConf = Nothing,
+      confStuckReportConf = Nothing,
+      confWaitingReportConf = Nothing
+    }
+
+configurationToObject :: Configuration -> [(Text, Value)]
+configurationToObject Configuration {..} =
+  directoryConfigurationToObject confDirectoryConf
+    ++ [ "waiting" .= confWaitingReportConf,
+         "stuck" .= confStuckReportConf,
+         "work" .= confWorkReportConf
+       ]
 
 backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
@@ -158,6 +169,15 @@ directoryConfigurationObjectParser =
     <*> optionalField "archive-dir" "The archive directory"
     <*> optionalField "projects-dir" "The projects directory"
     <*> optionalField "archived-projects-dir" "The archived projects directory"
+
+defaultDirectoryConfiguration :: DirectoryConfiguration
+defaultDirectoryConfiguration =
+  DirectoryConfiguration
+    { directoryConfWorkflowDir = Nothing,
+      directoryConfArchiveDir = Nothing,
+      directoryConfProjectsDir = Nothing,
+      directoryConfArchivedProjectsDir = Nothing
+    }
 
 backToDirectoryConfiguration :: DirectoryConfig -> DirectoryConfiguration
 backToDirectoryConfiguration DirectoryConfig {..} =
@@ -297,6 +317,17 @@ instance YamlSchema WorkReportConfiguration where
         <*> optionalField "time-filter" "The property to use to filter by time"
         <*> optionalField "columns" "The columns in the report"
         <*> optionalField "sorter" "The sorter to use to sort the rows"
+
+defaultWorkReportConfiguration :: WorkReportConfiguration
+defaultWorkReportConfiguration =
+  WorkReportConfiguration
+    { workReportConfBaseFilter = Nothing,
+      workReportConfChecks = Nothing,
+      workReportConfContexts = Nothing,
+      workReportConfTimeFilterProperty = Nothing,
+      workReportConfProjection = Nothing,
+      workReportConfSorter = Nothing
+    }
 
 backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
 backToWorkReportConfiguration WorkReportConfig {..} =

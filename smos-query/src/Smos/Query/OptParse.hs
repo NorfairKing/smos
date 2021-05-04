@@ -64,7 +64,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         ColourSettings
           { colourSettingBackground =
               fromMaybe
-                (Just (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
+                (UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
                 (mcc colourConfigurationBackground)
           }
 

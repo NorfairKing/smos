@@ -1,3 +1,7 @@
+##### Added
+
+- `smos-query`: You can now configure colours more specifically: The 8 colours and 24bit colours.
+
 ##### Changed
 
 - `smos` and `smos-query`: More strings are now recognised as durations: `5sec`, `6 min`, `7 hours`, etc... 

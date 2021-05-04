@@ -33,6 +33,7 @@ library:
   - smos-report
   - text
   - time
+  - validity
   - validity-path
   - yaml
   - yamlparse-applicative
@@ -62,13 +63,22 @@ tests:
     dependencies:
     - bytestring
     - containers
+    - genvalidity
+    - genvalidity-containers
     - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
     - path
     - path-io
+    - safe-coloured-text
+    - safe-coloured-text-gen
+    - safe-coloured-text-layout
+    - safe-coloured-text-layout-gen
     - smos-data
     - smos-query
     - smos-report
     - smos-report-gen
+    - smos-report-gen
     - sydtest
     - text
     - time
+    - yaml
