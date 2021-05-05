@@ -86,7 +86,7 @@ smosProtectedAPI = Proxy
 type ProtectAPI = Auth '[JWT] AuthNCookie
 
 data AuthNCookie = AuthNCookie
-  { authCookieUsername :: Username
+  { authNCookieUsername :: Username
   }
   deriving (Show, Eq, Ord, Generic)
 
@@ -98,7 +98,7 @@ instance FromJSON AuthNCookie where
 instance ToJSON AuthNCookie where
   toJSON AuthNCookie {..} =
     object
-      [ "username" .= authCookieUsername
+      [ "username" .= authNCookieUsername
       ]
 
 instance FromJWT AuthNCookie

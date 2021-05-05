@@ -16,10 +16,10 @@ import Path
 import Smos.Server.Handler.Import
 
 servePostSync :: AuthNCookie -> SyncRequest -> ServerHandler SyncResponse
-servePostSync AuthNCookie {..} SyncRequest {..} = withUserId authCookieUsername $ \uid -> do
+servePostSync ac SyncRequest {..} = withUserId ac $ \uid -> do
   syncResponseServerId <- asks serverEnvServerUUID
   syncResponseItems <- runDB $ Mergeful.processServerSyncCustom (syncProcessor uid) syncRequestItems
-  logInfoN $ T.unwords ["Sync for user", T.pack (show (usernameText authCookieUsername))]
+  logInfoN $ T.unwords ["Sync for user", T.pack (show (usernameText (authNCookieUsername ac)))]
   pure SyncResponse {..}
 
 syncProcessor :: forall m m'. (MonadIO m, m' ~ SqlPersistT m) => UserId -> Mergeful.ServerSyncProcessor (Path Rel File) (Path Rel File) SyncFile m'

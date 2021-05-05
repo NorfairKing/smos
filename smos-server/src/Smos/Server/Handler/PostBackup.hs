@@ -13,7 +13,7 @@ import Smos.Server.Backup
 import Smos.Server.Handler.Import
 
 servePostBackup :: AuthNCookie -> ServerHandler BackupUUID
-servePostBackup AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
+servePostBackup ac = withUserId ac $ \uid -> do
   maxBackups <- asks serverEnvMaxBackupsPerUser
   numberOfBackupsThatWeAlreadyHave <- runDB $ count [BackupUser ==. uid]
   -- Don't let the backup happen if we already have the maximum number of backups for this user.

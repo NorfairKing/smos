@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.GetListSmosFiles
   ( serveGetListSmosFiles,
   )
@@ -14,7 +12,7 @@ import Smos.Data
 import Smos.Server.Handler.Import
 
 serveGetListSmosFiles :: AuthNCookie -> ServerHandler (DirForest SmosFile)
-serveGetListSmosFiles AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
+serveGetListSmosFiles ac = withUserId ac $ \uid -> do
   let go :: DirForest SmosFile -> (Path Rel File, SmosFile) -> DirForest SmosFile
       go df (rf, sf) = case DF.insertFile rf sf df of
         Left _ -> df

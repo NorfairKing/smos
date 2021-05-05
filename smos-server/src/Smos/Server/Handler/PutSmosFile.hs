@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PutSmosFile
   ( servePutSmosFile,
@@ -12,7 +11,7 @@ import Smos.Data
 import Smos.Server.Handler.Import
 
 servePutSmosFile :: AuthNCookie -> Path Rel File -> SmosFile -> ServerHandler NoContent
-servePutSmosFile AuthNCookie {..} p sf = withUserId authCookieUsername $ \uid -> do
+servePutSmosFile ac p sf = withUserId ac $ \uid -> do
   let contentsBS = smosFileYamlBS sf
       record =
         ServerFile

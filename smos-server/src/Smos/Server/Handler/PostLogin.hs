@@ -29,7 +29,7 @@ servePostLogin Login {..} = do
   where
     setLoggedIn (Entity uid User {..}) = do
       logInfoN $ T.unwords ["Login from user", T.pack (show (usernameText userName)), "succeeded"]
-      let cookie = AuthNCookie {authCookieUsername = userName}
+      let cookie = AuthNCookie {authNCookieUsername = userName}
       ServerEnv {..} <- ask
       mCookie <- liftIO $ makeSessionCookieBS serverEnvCookieSettings serverEnvJWTSettings cookie
       case mCookie of

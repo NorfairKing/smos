@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.DeleteUser
   ( serveDeleteUser,
   )
@@ -9,7 +7,7 @@ import Smos.Server.Backup
 import Smos.Server.Handler.Import
 
 serveDeleteUser :: AuthNCookie -> ServerHandler NoContent
-serveDeleteUser AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
+serveDeleteUser ac = withUserId ac $ \uid -> do
   runDB $ do
     -- TODO do this in a conduit way?
     backupIds <- selectKeysList [BackupUser ==. uid] []

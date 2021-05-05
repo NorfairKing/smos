@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.GetNextActionReport
   ( serveGetNextActionReport,
   )
@@ -9,5 +7,5 @@ import Smos.Report.Next
 import Smos.Server.Handler.Import
 
 serveGetNextActionReport :: AuthNCookie -> ServerHandler NextActionReport
-serveGetNextActionReport AuthNCookie {..} = withUserId authCookieUsername $ \uid ->
+serveGetNextActionReport ac = withUserId ac $ \uid ->
   streamSmosFiles uid HideArchive (nextActionReportConduit Nothing)

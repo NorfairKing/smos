@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.GetAgendaReport
   ( serveGetAgendaReport,
   )
@@ -14,6 +12,6 @@ import Smos.Report.TimeBlock
 import Smos.Server.Handler.Import
 
 serveGetAgendaReport :: AuthNCookie -> ServerHandler AgendaReport
-serveGetAgendaReport AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
+serveGetAgendaReport ac = withUserId ac $ \uid -> do
   now <- liftIO getZonedTime
   streamSmosFiles uid HideArchive (agendaReportConduit now AllTime OneBlock HistoricalAgenda Nothing)

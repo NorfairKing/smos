@@ -30,13 +30,13 @@ import Smos.Server.DB as X
 import Smos.Server.Env as X
 import Text.Show.Pretty as X
 
-withUserId :: Username -> (UserId -> ServerHandler a) -> ServerHandler a
-withUserId un func = do
-  mu <- runDB $ getBy $ UniqueUsername un
+withUserId :: AuthNCookie -> (UserId -> ServerHandler a) -> ServerHandler a
+withUserId AuthNCookie {..} func = do
+  mu <- runDB $ getBy $ UniqueUsername authNCookieUsername
   case mu of
     Nothing -> throwError err404
     Just (Entity uid _) -> do
-      logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText un))]
+      logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText authNCookieUsername))]
       func uid
 
 streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
