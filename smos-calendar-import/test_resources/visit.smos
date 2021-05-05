@@ -1,8 +1,11 @@
+version: 1.0.0
+value:
 - entry:
     header: Visit XXXXXXXXXXX at XXXXXX
     contents: Your visit to XXXXXXXXX 2017-12-08
   forest:
   - header: Visit XXXXXXXXXXX at XXXXXX
+    contents: Your visit to XXXXXXXXX 2017-12-08
     timestamps:
       BEGIN: 2017-12-08 11:45:00
       END: 2017-12-08 11:45:00
