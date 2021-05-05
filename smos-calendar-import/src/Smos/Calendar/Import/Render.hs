@@ -19,7 +19,7 @@ renderAllEvents = makeSmosFile . map renderEvents . S.toAscList
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
   Node ((newEntry h) {entryContents = mc}) $
-    map (toNode . renderEvent h) (S.toAscList events)
+    map (toNode . renderEvent h mc) (S.toAscList events)
   where
     Static {..} = eventsStatic
     h = fromMaybe "Event without Summary" $ staticSummary >>= header
@@ -30,10 +30,10 @@ renderEvents Events {..} =
     toNode :: a -> Tree a
     toNode a = Node a []
 
-renderEvent :: Header -> Event -> Entry
-renderEvent h ev@Event {..} =
+renderEvent :: Header -> Maybe Contents -> Event -> Entry
+renderEvent h mc ev@Event {..} =
   let ts = renderTimestamps ev
-   in (newEntry h) {entryTimestamps = ts}
+   in (newEntry h) {entryTimestamps = ts, entryContents = mc}
 
 renderTimestamps :: Event -> Map TimestampName Timestamp
 renderTimestamps Event {..} =
