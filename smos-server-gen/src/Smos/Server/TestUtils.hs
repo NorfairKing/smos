@@ -73,14 +73,21 @@ serverSetupFunc' man = wrapSetupFunc $ \pool -> do
   application <- liftIO $ do
     uuid <- nextRandomUUID
     jwtKey <- Auth.generateKey
+    -- We turn logging off while tests pass, but for debugging the logs will
+    -- probably be useful.  So while debugging you may want to uncomment the
+    -- next line and comment out the one after that.
+    --
+    -- logFunc <- runStderrLoggingT askLoggerIO
+    logFunc <- runNoLoggingT askLoggerIO
     let env =
           ServerEnv
             { serverEnvServerUUID = uuid,
               serverEnvConnection = pool,
               serverEnvCookieSettings = defaultCookieSettings,
               serverEnvJWTSettings = defaultJWTSettings jwtKey,
-              serverEnvPasswordDifficulty = 4, -- The lowest
-              serverEnvCompressionLevel = 1, -- The lowest
+              serverEnvPasswordDifficulty = 4, -- The lowest (fastest)
+              serverEnvCompressionLevel = 1, -- The lowest (fastest)
+              serverEnvLogFunc = logFunc,
               serverEnvMaxBackupsPerUser = Nothing,
               serverEnvMaxBackupSizePerUser = Nothing,
               serverEnvAdmin = Nothing

@@ -51,6 +51,7 @@ runSmosServer ServeSettings {..} = do
                 if development
                   then 1 -- As fast as possible
                   else Zstd.maxCLevel -- rather slower
+          logFunc <- askLoggerIO
           let runTheServer = do
                 liftIO $ do
                   uuid <- readServerUUID serveSetUUIDFile
@@ -65,6 +66,7 @@ runSmosServer ServeSettings {..} = do
                               if development
                                 then 4 -- As fast as possible
                                 else 10, -- Rather slower
+                            serverEnvLogFunc = logFunc,
                             serverEnvCompressionLevel = compressionLevel,
                             serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
                             serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
@@ -114,11 +116,13 @@ storeSigningKey skf key_ = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
+      runServerHandler :: ServerHandler a -> Handler a
+      runServerHandler func = runLoggingT (runReaderT func env) (serverEnvLogFunc env)
    in Servant.serveWithContext smosAPI cfg $
         hoistServerWithContext
           smosAPI
           (Proxy :: Proxy '[CookieSettings, JWTSettings])
-          ((`runReaderT` env) :: ServerHandler a -> Handler a)
+          runServerHandler
           smosServantServer
 
 smosServantServer :: ServerT SmosAPI ServerHandler

@@ -4,6 +4,7 @@
 
 module Smos.Server.Env where
 
+import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
@@ -19,7 +20,7 @@ import Servant.Auth.Server
 import Smos.API
 import Smos.Server.DB
 
-type ServerHandler = ReaderT ServerEnv Handler
+type ServerHandler = ReaderT ServerEnv (LoggingT Handler)
 
 data ServerEnv = ServerEnv
   { serverEnvServerUUID :: !ServerUUID,
@@ -28,16 +29,18 @@ data ServerEnv = ServerEnv
     serverEnvJWTSettings :: !JWTSettings,
     serverEnvPasswordDifficulty :: !Int,
     serverEnvCompressionLevel :: !Int, -- Between 1 and Codec.Compression.Zstd.maxCLevel
+    serverEnvLogFunc :: !(Loc -> LogSource -> LogLevel -> LogStr -> IO ()),
     serverEnvMaxBackupsPerUser :: !(Maybe Word),
     serverEnvMaxBackupSizePerUser :: !(Maybe Word64),
     serverEnvAdmin :: !(Maybe Username)
   }
   deriving (Generic)
 
-runDB :: DB.SqlPersistT IO a -> ServerHandler a
+runDB :: DB.SqlPersistT (LoggingT IO) a -> ServerHandler a
 runDB func = do
   pool <- asks serverEnvConnection
-  liftIO $ DB.runSqlPool func pool
+  logFunc <- asks serverEnvLogFunc
+  liftIO $ runLoggingT (DB.runSqlPool func pool) logFunc
 
 readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do

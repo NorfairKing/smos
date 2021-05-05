@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -13,8 +14,10 @@ where
 
 import Conduit
 import Control.Monad.Except as X
+import Control.Monad.Logger as X
 import Control.Monad.Reader as X
 import qualified Data.Conduit.Combinators as C
+import qualified Data.Text as T
 import Data.Time as X
 import Data.UUID.Typed as X
 import Path as X
@@ -34,7 +37,9 @@ withUserEntity un func = do
   mu <- runDB $ getBy $ UniqueUsername un
   case mu of
     Nothing -> throwError err404
-    Just e -> func e
+    Just e -> do
+      logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText un))]
+      func e
 
 withUser :: Username -> (User -> ServerHandler a) -> ServerHandler a
 withUser un func = withUserEntity un $ func . entityVal

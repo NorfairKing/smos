@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.PostLogin where
@@ -22,13 +23,13 @@ servePostLogin Login {..} = do
         then setLoggedIn e
         else case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
           PasswordCheckSuccess -> setLoggedIn e
-          PasswordCheckFail -> throwError err401
+          PasswordCheckFail -> do
+            logInfoN $ T.unwords ["Login for username", T.pack (show (usernameText loginUsername)), "failed"]
+            throwError err401
   where
     setLoggedIn (Entity uid User {..}) = do
-      let cookie =
-            AuthCookie
-              { authCookieUsername = userName
-              }
+      logInfoN $ T.unwords ["Login from user", T.pack (show (usernameText userName)), "succeeded"]
+      let cookie = AuthCookie {authCookieUsername = userName}
       ServerEnv {..} <- ask
       mCookie <- liftIO $ makeSessionCookieBS serverEnvCookieSettings serverEnvJWTSettings cookie
       case mCookie of

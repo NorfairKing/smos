@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -10,6 +11,7 @@ where
 import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
+import qualified Data.Text as T
 import Path
 import Smos.Server.Handler.Import
 
@@ -17,6 +19,7 @@ servePostSync :: AuthCookie -> SyncRequest -> ServerHandler SyncResponse
 servePostSync AuthCookie {..} SyncRequest {..} = withUserId authCookieUsername $ \uid -> do
   syncResponseServerId <- asks serverEnvServerUUID
   syncResponseItems <- runDB $ Mergeful.processServerSyncCustom (syncProcessor uid) syncRequestItems
+  logInfoN $ T.unwords ["Sync for user", T.pack (show (usernameText authCookieUsername))]
   pure SyncResponse {..}
 
 syncProcessor :: forall m m'. (MonadIO m, m' ~ SqlPersistT m) => UserId -> Mergeful.ServerSyncProcessor (Path Rel File) (Path Rel File) SyncFile m'
