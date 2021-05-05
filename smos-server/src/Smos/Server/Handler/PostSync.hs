@@ -15,8 +15,8 @@ import qualified Data.Text as T
 import Path
 import Smos.Server.Handler.Import
 
-servePostSync :: AuthCookie -> SyncRequest -> ServerHandler SyncResponse
-servePostSync AuthCookie {..} SyncRequest {..} = withUserId authCookieUsername $ \uid -> do
+servePostSync :: AuthNCookie -> SyncRequest -> ServerHandler SyncResponse
+servePostSync AuthNCookie {..} SyncRequest {..} = withUserId authCookieUsername $ \uid -> do
   syncResponseServerId <- asks serverEnvServerUUID
   syncResponseItems <- runDB $ Mergeful.processServerSyncCustom (syncProcessor uid) syncRequestItems
   logInfoN $ T.unwords ["Sync for user", T.pack (show (usernameText authCookieUsername))]

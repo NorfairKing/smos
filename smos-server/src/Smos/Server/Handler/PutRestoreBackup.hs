@@ -9,8 +9,8 @@ import qualified Data.Map as M
 import Data.Mergeful.Timed
 import Smos.Server.Handler.Import
 
-servePutRestoreBackup :: AuthCookie -> BackupUUID -> ServerHandler NoContent
-servePutRestoreBackup AuthCookie {..} uuid = withUserId authCookieUsername $ \uid -> do
+servePutRestoreBackup :: AuthNCookie -> BackupUUID -> ServerHandler NoContent
+servePutRestoreBackup AuthNCookie {..} uuid = withUserId authCookieUsername $ \uid -> do
   mBackup <- runDB $ getBy $ UniqueBackupUUID uid uuid
   case mBackup of
     Nothing -> throwError err404

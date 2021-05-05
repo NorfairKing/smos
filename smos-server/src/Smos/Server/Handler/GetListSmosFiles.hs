@@ -13,8 +13,8 @@ import Path
 import Smos.Data
 import Smos.Server.Handler.Import
 
-serveGetListSmosFiles :: AuthCookie -> ServerHandler (DirForest SmosFile)
-serveGetListSmosFiles AuthCookie {..} = withUserId authCookieUsername $ \uid -> do
+serveGetListSmosFiles :: AuthNCookie -> ServerHandler (DirForest SmosFile)
+serveGetListSmosFiles AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
   let go :: DirForest SmosFile -> (Path Rel File, SmosFile) -> DirForest SmosFile
       go df (rf, sf) = case DF.insertFile rf sf df of
         Left _ -> df

@@ -11,8 +11,8 @@ import Path
 import Smos.Data
 import Smos.Server.Handler.Import
 
-servePutSmosFile :: AuthCookie -> Path Rel File -> SmosFile -> ServerHandler NoContent
-servePutSmosFile AuthCookie {..} p sf = withUserId authCookieUsername $ \uid -> do
+servePutSmosFile :: AuthNCookie -> Path Rel File -> SmosFile -> ServerHandler NoContent
+servePutSmosFile AuthNCookie {..} p sf = withUserId authCookieUsername $ \uid -> do
   let contentsBS = smosFileYamlBS sf
       record =
         ServerFile

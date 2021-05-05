@@ -83,27 +83,27 @@ data UnprotectedRoutes route = UnprotectedRoutes
 smosProtectedAPI :: Proxy SmosProtectedAPI
 smosProtectedAPI = Proxy
 
-type ProtectAPI = Auth '[JWT] AuthCookie
+type ProtectAPI = Auth '[JWT] AuthNCookie
 
-data AuthCookie = AuthCookie
+data AuthNCookie = AuthNCookie
   { authCookieUsername :: Username
   }
   deriving (Show, Eq, Ord, Generic)
 
-instance FromJSON AuthCookie where
-  parseJSON = withObject "AuthCookie" $ \o ->
-    AuthCookie
+instance FromJSON AuthNCookie where
+  parseJSON = withObject "AuthNCookie" $ \o ->
+    AuthNCookie
       <$> o .: "username"
 
-instance ToJSON AuthCookie where
-  toJSON AuthCookie {..} =
+instance ToJSON AuthNCookie where
+  toJSON AuthNCookie {..} =
     object
       [ "username" .= authCookieUsername
       ]
 
-instance FromJWT AuthCookie
+instance FromJWT AuthNCookie
 
-instance ToJWT AuthCookie
+instance ToJWT AuthNCookie
 
 type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
@@ -329,7 +329,7 @@ type GetAgendaReport = "agenda" :> Get '[JSON] AgendaReport
 reportsAPI :: Proxy ReportsAPI
 reportsAPI = Proxy
 
-type ProtectAdmin = Auth '[JWT] AuthCookie
+type ProtectAdmin = Auth '[JWT] AuthNCookie
 
 newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
   deriving (Show, Eq, Ord, Generic)

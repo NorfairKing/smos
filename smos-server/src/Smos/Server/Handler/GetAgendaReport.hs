@@ -13,7 +13,7 @@ import Smos.Report.Period
 import Smos.Report.TimeBlock
 import Smos.Server.Handler.Import
 
-serveGetAgendaReport :: AuthCookie -> ServerHandler AgendaReport
-serveGetAgendaReport AuthCookie {..} = withUserId authCookieUsername $ \uid -> do
+serveGetAgendaReport :: AuthNCookie -> ServerHandler AgendaReport
+serveGetAgendaReport AuthNCookie {..} = withUserId authCookieUsername $ \uid -> do
   now <- liftIO getZonedTime
   streamSmosFiles uid HideArchive (agendaReportConduit now AllTime OneBlock HistoricalAgenda Nothing)

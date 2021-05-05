@@ -8,8 +8,8 @@ where
 import Smos.Server.Backup
 import Smos.Server.Handler.Import
 
-serveDeleteBackup :: AuthCookie -> BackupUUID -> ServerHandler NoContent
-serveDeleteBackup AuthCookie {..} uuid = withUserId authCookieUsername $ \uid -> do
+serveDeleteBackup :: AuthNCookie -> BackupUUID -> ServerHandler NoContent
+serveDeleteBackup AuthNCookie {..} uuid = withUserId authCookieUsername $ \uid -> do
   mBackup <- runDB $ getBy $ UniqueBackupUUID uid uuid
   case mBackup of
     Nothing -> throwError err404

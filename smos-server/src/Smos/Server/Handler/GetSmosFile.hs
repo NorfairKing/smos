@@ -13,8 +13,8 @@ import Path
 import Smos.Data
 import Smos.Server.Handler.Import
 
-serveGetSmosFile :: AuthCookie -> Path Rel File -> ServerHandler SmosFile
-serveGetSmosFile AuthCookie {..} p = withUserId authCookieUsername $ \uid -> do
+serveGetSmosFile :: AuthNCookie -> Path Rel File -> ServerHandler SmosFile
+serveGetSmosFile AuthNCookie {..} p = withUserId authCookieUsername $ \uid -> do
   msf <- runDB $ getBy (UniqueServerFilePath uid p)
   case msf of
     Nothing -> throwError err404

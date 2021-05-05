@@ -7,8 +7,8 @@ where
 
 import Smos.Server.Handler.Import
 
-serveGetUserPermissions :: AuthCookie -> ServerHandler UserPermissions
-serveGetUserPermissions AuthCookie {..} = do
+serveGetUserPermissions :: AuthNCookie -> ServerHandler UserPermissions
+serveGetUserPermissions AuthNCookie {..} = do
   mAdmin <- asks serverEnvAdmin
   pure
     UserPermissions
