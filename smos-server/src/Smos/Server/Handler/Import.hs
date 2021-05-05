@@ -4,9 +4,7 @@
 
 module Smos.Server.Handler.Import
   ( module X,
-    withUserEntity,
     withUserId,
-    withUser,
     streamSmosFiles,
     asAdmin,
   )
@@ -32,20 +30,14 @@ import Smos.Server.DB as X
 import Smos.Server.Env as X
 import Text.Show.Pretty as X
 
-withUserEntity :: Username -> (Entity User -> ServerHandler a) -> ServerHandler a
-withUserEntity un func = do
+withUserId :: Username -> (UserId -> ServerHandler a) -> ServerHandler a
+withUserId un func = do
   mu <- runDB $ getBy $ UniqueUsername un
   case mu of
     Nothing -> throwError err404
-    Just e -> do
+    Just (Entity uid _) -> do
       logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText un))]
-      func e
-
-withUser :: Username -> (User -> ServerHandler a) -> ServerHandler a
-withUser un func = withUserEntity un $ func . entityVal
-
-withUserId :: Username -> (UserId -> ServerHandler a) -> ServerHandler a
-withUserId un func = withUserEntity un $ func . entityKey
+      func uid
 
 streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
 streamSmosFiles uid ha conduit = do
