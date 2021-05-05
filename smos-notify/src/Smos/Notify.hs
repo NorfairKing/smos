@@ -146,6 +146,9 @@ parseNotificationEvent now rf e = do
   let minutesAhead = 5
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60
   guard timestampIsSoon
+  guard $ case entryContents e of
+    Nothing -> True
+    Just cts -> not $ "SMOS_NO_NOTIFY" `T.isInfixOf` contentsText cts
   pure $ NotifyTimestamp rf (entryHeader e) (entryContents e) tsn ts
 
 findNotifySend :: (MonadLogger m, MonadIO m) => m (Path Abs File)
