@@ -30,6 +30,7 @@ import Smos.Client
 import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
 import System.Exit
+import System.Posix.User
 import Text.Show.Pretty
 import UnliftIO
 
@@ -44,6 +45,7 @@ data SyncClientEnv = SyncClientEnv
 withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
 withClientEnv burl func = do
   hostname <- liftIO getHostName
+  username <- liftIO getEffectiveUserName
   let managerSets =
         HTTP.tlsManagerSettings
           { managerModifyRequest = \request -> do
@@ -52,7 +54,7 @@ withClientEnv burl func = do
                       TE.encodeUtf8 $ T.pack $ "smos-sync-client-" <> showVersion version
                     ) :
                     ( "Referer",
-                      TE.encodeUtf8 $ T.pack hostname
+                      TE.encodeUtf8 $ T.pack $ concat [username, "@", hostname]
                     ) :
                     requestHeaders request
               pure $ request {requestHeaders = headers}

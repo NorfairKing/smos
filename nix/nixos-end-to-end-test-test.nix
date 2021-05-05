@@ -23,6 +23,8 @@ pkgs.nixosTest (
           docs-site = {
             enable = true;
             port = docs-port;
+            api-url = "server:${builtins.toString api-port}";
+            web-url = "server:${builtins.toString web-port}";
           };
           api-server = {
             enable = true;
@@ -40,7 +42,9 @@ pkgs.nixosTest (
           web-server = {
             enable = true;
             port = web-port;
+            docs-url = "server:${builtins.toString docs-port}";
             api-url = "server:${builtins.toString api-port}";
+            web-url = "server:${builtins.toString web-port}";
           };
         };
       };

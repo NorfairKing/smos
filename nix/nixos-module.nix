@@ -226,7 +226,7 @@ in
         cfg.docs-site.config
         (attrOrNull "port" port)
         (attrOrNull "api-url" api-url)
-        (attrOrNull "web-url" web-url)
+        (attrOrNull "web-url" (if builtins.isNull web-url then head hosts else web-url))
         (attrOrNull "google-analytics-tracking" google-analytics-tracking)
         (attrOrNull "google-search-console-verification" google-search-console-verification)
       ];

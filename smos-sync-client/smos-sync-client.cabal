@@ -74,6 +74,7 @@ library
     , smos-report
     , text
     , time
+    , unix
     , unliftio
     , validity
     , validity-bytestring
