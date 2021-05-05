@@ -39,6 +39,7 @@ spec = managerSpec $
                             serverEnvJWTSettings = defaultJWTSettings key,
                             serverEnvPasswordDifficulty = 4, -- The lowest
                             serverEnvCompressionLevel = 1, -- The lowest
+                            serverEnvLogFunc = \_ _ _ _ -> pure (),
                             serverEnvMaxBackupsPerUser = Nothing,
                             serverEnvMaxBackupSizePerUser = Nothing,
                             serverEnvAdmin = Nothing

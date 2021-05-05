@@ -42,7 +42,11 @@ runSmosWebServer ServeSettings {..} = do
                     ( "User-Agent",
                       TE.encodeUtf8 $ T.pack $ "smos-web-server-" <> showVersion version
                     ) :
-                    Http.requestHeaders request
+                    -- TODO: Do this via yesod's 'getCurrentRoute' on a case-by-case basis
+                    -- so that we have the exact path as well when we get `servant-client >=0.17`.
+                    -- We can then also add the username to it.
+                    -- http://hackage.haskell.org/package/yesod-core-1.6.19.0/docs/Yesod-Core-Handler.html#v:getCurrentRoute
+                    ("Referer", TE.encodeUtf8 $ T.pack $ showBaseUrl serveSetWebUrl) : Http.requestHeaders request
               pure $ request {Http.requestHeaders = headers}
           }
   man <- liftIO $ Http.newManager managerSets

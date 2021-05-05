@@ -6,3 +6,5 @@
 
 * `smos-calendar-import`: The rendered smos entries now all contain the description of the event as contents, instead of only the top-level event.
 * `smos-notify`: You can now put the magic string `SMOS_NO_NOTIFY` into event descriptions to have `smos-notify` ignore the event entirely.
+* `smos-sync-client`: Now sends the hostname of the device that makes the requests in the `Referer` header of every request.
+* `smos-web-server`: Now requires a `WEB_URL` to be configured and sends it over in the `Referer` header of every request to the API.

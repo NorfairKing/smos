@@ -39,6 +39,9 @@ combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Envi
   serveSetAPIUrl <- case serveFlagAPIUrl <|> envAPIUrl <|> mc confAPIUrl of
     Nothing -> die "No API configured."
     Just url -> parseBaseUrl url
+  serveSetWebUrl <- case serveFlagWebUrl <|> envWebUrl <|> mc confWebUrl of
+    Nothing -> die "No web url configured."
+    Just url -> parseBaseUrl url
   serveSetDocsUrl <- mapM parseBaseUrl $ serveFlagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
   serveSetDataDir <- case serveFlagDataDir <|> envDataDir <|> mc confDataDir of
     Nothing -> getCurrentDir
@@ -64,6 +67,7 @@ environmentParser =
     <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
     <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
     <*> Env.var (fmap Just . Env.str) "API_URL" (mE <> Env.help "The url for the api to use")
+    <*> Env.var (fmap Just . Env.str) "WEB_URL" (mE <> Env.help "The url that this web server is served from")
     <*> Env.var (fmap Just . Env.str) "DATA_DIR" (mE <> Env.help "The directory to store workflows during editing")
     <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "The Google analytics tracking code")
     <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "The Google search console verification code")
@@ -156,6 +160,15 @@ parseCommandServe = info parser modifier
                       [ long "api-url",
                         metavar "URL",
                         help "The url for the api to use",
+                        value Nothing
+                      ]
+                  )
+                <*> option
+                  (Just <$> str)
+                  ( mconcat
+                      [ long "web-url",
+                        metavar "URL",
+                        help "The url that this web server is served from",
                         value Nothing
                       ]
                   )

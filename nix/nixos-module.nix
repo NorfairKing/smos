@@ -171,6 +171,13 @@ in
                       example = "api.smos.online";
                       description = "The url for the api to use";
                     };
+                  web-url =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      default = null;
+                      example = "https://smos.online";
+                      description = "The url that this web server is served from.";
+                    };
                   log-level =
                     mkOption {
                       type = types.str;
@@ -375,6 +382,7 @@ in
         cfg.web-server.config
         (attrOrNull "docs-url" docs-url)
         (attrOrNull "api-url" api-url)
+        (attrOrNull "web-url" web-url)
         (attrOrNull "log-level" log-level)
         (attrOrNull "port" port)
         (attrOrNull "google-analytics-tracking" google-analytics-tracking)

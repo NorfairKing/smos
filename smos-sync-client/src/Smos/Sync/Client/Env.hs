@@ -21,6 +21,7 @@ import GHC.Generics (Generic)
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.TLS as HTTP
 import Network.HTTP.Types as HTTP
+import Network.HostName (getHostName)
 import Path
 import Paths_smos_sync_client
 import Servant.Auth.Client as Auth
@@ -42,12 +43,16 @@ data SyncClientEnv = SyncClientEnv
 
 withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
 withClientEnv burl func = do
+  hostname <- liftIO getHostName
   let managerSets =
         HTTP.tlsManagerSettings
           { managerModifyRequest = \request -> do
               let headers =
                     ( "User-Agent",
                       TE.encodeUtf8 $ T.pack $ "smos-sync-client-" <> showVersion version
+                    ) :
+                    ( "Referer",
+                      TE.encodeUtf8 $ T.pack hostname
                     ) :
                     requestHeaders request
               pure $ request {requestHeaders = headers}

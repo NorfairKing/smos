@@ -28,6 +28,7 @@ data ServeFlags = ServeFlags
     serveFlagPort :: !(Maybe Int),
     serveFlagDocsUrl :: !(Maybe String),
     serveFlagAPIUrl :: !(Maybe String),
+    serveFlagWebUrl :: !(Maybe String),
     serveFlagDataDir :: !(Maybe FilePath),
     serveFlagGoogleAnalyticsTracking :: !(Maybe String),
     serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
@@ -45,6 +46,7 @@ data Environment = Environment
     envPort :: !(Maybe Int),
     envDocsUrl :: !(Maybe String),
     envAPIUrl :: !(Maybe String),
+    envWebUrl :: !(Maybe String),
     envDataDir :: !(Maybe FilePath),
     envGoogleAnalyticsTracking :: !(Maybe String),
     envGoogleSearchConsoleVerification :: !(Maybe String)
@@ -56,6 +58,7 @@ data Configuration = Configuration
     confPort :: !(Maybe Int),
     confDocsUrl :: !(Maybe String),
     confAPIUrl :: !(Maybe String),
+    confWebUrl :: !(Maybe String),
     confDataDir :: !(Maybe FilePath),
     confGoogleAnalyticsTracking :: !(Maybe String),
     confGoogleSearchConsoleVerification :: !(Maybe String)
@@ -73,6 +76,7 @@ instance YamlSchema Configuration where
         <*> optionalField "port" "The port on which to serve web requests"
         <*> optionalField "docs-url" "The url for the documentation site to refer to"
         <*> optionalField "api-url" "The url for the api to use"
+        <*> optionalField "web-url" "The url that this web server is served from"
         <*> optionalField "data-dir" "The directory to store workflows during editing"
         <*> optionalField "google-analytics-tracking" "The google analytics tracking code"
         <*> optionalField "google-search-console-verification" "The google search console verification code"
@@ -86,6 +90,7 @@ data ServeSettings = ServeSettings
     serveSetPort :: !Int,
     serveSetDocsUrl :: !(Maybe BaseUrl),
     serveSetAPIUrl :: !BaseUrl,
+    serveSetWebUrl :: !BaseUrl,
     serveSetDataDir :: !(Path Abs Dir),
     serveSetGoogleAnalyticsTracking :: !(Maybe Text),
     serveSetGoogleSearchConsoleVerification :: !(Maybe Text)

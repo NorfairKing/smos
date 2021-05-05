@@ -25,9 +25,10 @@ library:
   - envparse
   - filelock
   - filepath
-  - http-types
+  - hostname
   - http-client
   - http-client-tls
+  - http-types
   - mergeful
   - monad-logger
   - mtl

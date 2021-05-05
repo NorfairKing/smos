@@ -108,6 +108,18 @@ spec =
 
 test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
 test cenv tmpDir args = do
-  let args' = args ++ ["--server-url", showBaseUrl $ baseUrl cenv, "--data-dir", fromAbsDir tmpDir, "--cache-dir", fromAbsDir tmpDir]
-  putStrLn $ unwords ["running", unwords $ map show $ "smos-sync-client" : args']
+  let args' =
+        args
+          ++ [ "--server-url",
+               showBaseUrl $ baseUrl cenv,
+               "--data-dir",
+               fromAbsDir tmpDir,
+               "--cache-dir",
+               fromAbsDir tmpDir,
+               "--log-level",
+               -- You can turn this into Debug during debugging if necessary
+               "Error"
+             ]
+  -- You can uncomment this during debugging if necessary:
+  -- putStrLn $ unwords ["running", unwords $ map show $ "smos-sync-client" : args']
   withArgs args' smosSyncClient
