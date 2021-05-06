@@ -12,7 +12,6 @@ pkgs.haskell.lib.buildStackProject {
     killall
     niv
     sass
-    sass
     zlib
     bzip2
     git
