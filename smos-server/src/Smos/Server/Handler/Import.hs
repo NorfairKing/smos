@@ -37,6 +37,8 @@ withUserId AuthNCookie {..} func = do
     Nothing -> throwError err404
     Just (Entity uid _) -> do
       logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText authNCookieUsername))]
+      now <- liftIO getCurrentTime
+      runDB $ update uid [UserLastUse =. Just now]
       func uid
 
 streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r

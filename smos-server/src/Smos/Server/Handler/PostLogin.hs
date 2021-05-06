@@ -36,5 +36,5 @@ servePostLogin Login {..} = do
         Nothing -> throwError err401
         Just setCookie -> do
           now <- liftIO getCurrentTime
-          runDB $ update uid [UserLastLogin =. Just now]
+          runDB $ update uid [UserLastLogin =. Just now, UserLastUse =. Just now]
           pure $ addHeader (decodeUtf8 setCookie) NoContent

@@ -345,7 +345,8 @@ data UserInfo = UserInfo
   { userInfoUsername :: !Username,
     userInfoAdmin :: !Bool,
     userInfoCreated :: !UTCTime,
-    userInfoLastLogin :: !(Maybe UTCTime)
+    userInfoLastLogin :: !(Maybe UTCTime),
+    userInfoLastUse :: !(Maybe UTCTime)
   }
   deriving (Show, Eq, Generic)
 
@@ -359,7 +360,8 @@ instance ToJSON UserInfo where
       [ "name" .= userInfoUsername,
         "admin" .= userInfoAdmin,
         "created" .= userInfoCreated,
-        "last-login" .= userInfoLastLogin
+        "last-login" .= userInfoLastLogin,
+        "last-use" .= userInfoLastUse
       ]
 
 instance FromJSON UserInfo where
@@ -369,3 +371,4 @@ instance FromJSON UserInfo where
       <*> o .: "admin"
       <*> o .: "created"
       <*> o .:? "last-login"
+      <*> o .:? "last-use"

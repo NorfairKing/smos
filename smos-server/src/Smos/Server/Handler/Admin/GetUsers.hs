@@ -17,5 +17,6 @@ serveGetUsers ac = asAdmin (authNCookieUsername ac) $ do
         { userInfoUsername = userName,
           userInfoAdmin = mServerAdmin == Just userName,
           userInfoCreated = userCreated,
-          userInfoLastLogin = userLastLogin
+          userInfoLastLogin = userLastLogin,
+          userInfoLastUse = userLastUse
         }

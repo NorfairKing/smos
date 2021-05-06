@@ -22,7 +22,8 @@ servePostRegister Register {..} = do
           { userName = registerUsername,
             userHashedPassword = hashedPassword,
             userCreated = now,
-            userLastLogin = Nothing
+            userLastLogin = Nothing,
+            userLastUse = Nothing
           }
   maybeUserEntity <- runDB . getBy $ UniqueUsername $ userName user
   case maybeUserEntity of

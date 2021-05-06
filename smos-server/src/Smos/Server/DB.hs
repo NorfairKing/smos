@@ -40,6 +40,7 @@ User
     hashedPassword (PasswordHash Bcrypt)
     created UTCTime
     lastLogin UTCTime Maybe default=NULL
+    lastUse UTCTime Maybe default=NULL
 
     UniqueUsername name
 
