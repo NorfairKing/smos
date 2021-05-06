@@ -1,11 +1,10 @@
+{ sources ? import ./sources.nix }:
 final: previous:
 
 with final.lib;
 let
-  sources = import ./sources.nix;
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
-
 
 in
 {
@@ -325,7 +324,6 @@ in
                 password = passwordPkg "password";
                 password-types = passwordPkg "password-types";
                 password-instances = passwordPkg "password-instances";
-                looper = self.callCabal2nix "looper" (sources.looper + "/looper") { };
                 iCalendar = self.callCabal2nix "iCalendar"
                   (
                     builtins.fetchGit {

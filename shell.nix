@@ -1,6 +1,7 @@
 let
-  pkgs = import ./nix/pkgs.nix { static = false; };
-  pre-commit = import ./nix/pre-commit.nix;
+  sources = import ./nix/sources.nix;
+  pkgs = import ./nix/pkgs.nix { inherit sources; static = false; };
+  pre-commit = import ./nix/pre-commit.nix { inherit sources; };
 in
 pkgs.haskell.lib.buildStackProject {
   name = "smos-nix-shell";

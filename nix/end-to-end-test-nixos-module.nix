@@ -1,4 +1,7 @@
-{ envname }:
+{ envname
+, sources ? import ./sources.nix
+, smosPkgs ? import ./pkgs.nix { inherit sources; }
+}:
 { lib, pkgs, config, ... }:
 with lib;
 let
@@ -46,7 +49,6 @@ in
     };
   config =
     let
-      smosPkgs = (import ./pkgs.nix { }).smosPackages;
       working-dir = "/www/smos/end-to-end-testing/";
       end-to-end-api-server-test-services =
         with cfg.api-server;
@@ -62,7 +64,7 @@ in
                   };
                 script =
                   ''
-                    ${smosPkgs.smos-server-gen}/bin/smos-server-end-to-end-test
+                    ${smosPkgs.smosPackages.smos-server-gen}/bin/smos-server-end-to-end-test
                   '';
                 serviceConfig =
                   {

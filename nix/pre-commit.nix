@@ -1,5 +1,5 @@
+{ sources ? import ./sources.nix }:
 let
-  sources = import ./sources.nix;
   pre-commit-hooks = import sources.nix-pre-commit-hooks;
 in
 {

@@ -1,4 +1,8 @@
-{ envname }:
+{ envname
+, sources ? import ./sources.nix
+, smosPkgs ? import ./pkgs.nix { inherit sources; }
+}:
+
 { lib, pkgs, config, ... }:
 with lib;
 let
@@ -8,7 +12,6 @@ let
 
   toYamlFile = pkgs.callPackage ./to-yaml.nix { };
 
-  sources = import ./sources.nix;
   mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
 in
 {
@@ -218,7 +221,6 @@ in
     };
   config =
     let
-      smosPkgs = (import ./pkgs.nix { }).smosPackages;
       working-dir = "/www/smos/${envname}/";
       attrOrNull = name: value: optionalAttrs (!builtins.isNull value) { "${name}" = value; };
       # The docs server
@@ -242,7 +244,7 @@ in
               };
             script =
               ''
-                ${smosPkgs.smos-docs-site}/bin/smos-docs-site serve
+                ${smosPkgs.smosPackages.smos-docs-site}/bin/smos-docs-site serve
               '';
             serviceConfig =
               {
@@ -300,7 +302,7 @@ in
               ''
                 mkdir -p "${api-server-working-dir}"
                 cd ${api-server-working-dir}
-                ${smosPkgs.smos-server}/bin/smos-server \
+                ${smosPkgs.smosPackages.smos-server}/bin/smos-server \
                   serve
               '';
             serviceConfig =
@@ -404,7 +406,7 @@ in
               ''
                 mkdir -p "${web-server-working-dir}"
                 cd ${web-server-working-dir};
-                ${smosPkgs.smos-web-server}/bin/smos-web-server \
+                ${smosPkgs.smosPackages.smos-web-server}/bin/smos-web-server \
                   serve
               '';
             serviceConfig =

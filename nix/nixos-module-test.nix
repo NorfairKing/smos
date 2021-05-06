@@ -1,8 +1,10 @@
-{ pkgs ? import ./pkgs.nix { static = false; } }:
+{ pkgs ? import ./pkgs.nix { static = false; }
+, sources ? import ./sources.nix
+}:
 let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
-  smos-production = import ./nixos-module.nix { envname = "production"; };
+  smos-production = import ./nixos-module.nix { inherit sources; smosPkgs = pkgs; envname = "production"; };
   home-manager = import (
     builtins.fetchTarball
       {
@@ -100,7 +102,7 @@ let
   makeTestUserHome = username: userConfig: { pkgs, ... }:
     userConfig // {
       imports = [
-        ./home-manager-module.nix
+        (import ./home-manager-module.nix { smosPkgs = pkgs; inherit sources; })
       ];
       home.stateVersion = "20.09";
     };

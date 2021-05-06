@@ -1,3 +1,6 @@
+{ sources ? import ./sources.nix
+, smosPkgs ? import ./pkgs.nix { inherit sources; }
+}:
 { lib, pkgs, config, ... }:
 
 with lib;
@@ -192,7 +195,6 @@ in
     };
   config =
     let
-      smosPkgs = (import ./pkgs.nix { }).smosPackages;
       backupSmosName = "backup-smos";
       backupSmosService =
         {
@@ -254,7 +256,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "sync-smos-service-ExecStart"
                   ''
-                    exec ${smosPkgs.smos-sync-client}/bin/smos-sync-client sync
+                    exec ${smosPkgs.smosPackages.smos-sync-client}/bin/smos-sync-client sync
                   ''}";
               Type = "oneshot";
             };
@@ -296,7 +298,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "calendar-smos-service-ExecStart"
                   ''
-                    exec ${smosPkgs.smos-calendar-import}/bin/smos-calendar-import
+                    exec ${smosPkgs.smosPackages.smos-calendar-import}/bin/smos-calendar-import
                   ''}";
               Type = "oneshot";
             };
@@ -337,8 +339,8 @@ in
                 "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
                   ''
                     set -e
-                    ${smosPkgs.smos-scheduler}/bin/smos-scheduler check
-                    exec ${smosPkgs.smos-scheduler}/bin/smos-scheduler schedule
+                    ${smosPkgs.smosPackages.smos-scheduler}/bin/smos-scheduler check
+                    exec ${smosPkgs.smosPackages.smos-scheduler}/bin/smos-scheduler schedule
                   ''}";
               Type = "oneshot";
             };
@@ -375,7 +377,7 @@ in
                   ''
                     set -e
                     export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
-                    exec ${smosPkgs.smos-notify}/bin/smos-notify
+                    exec ${smosPkgs.smosPackages.smos-notify}/bin/smos-notify
                   ''}";
               Type = "oneshot";
             };
@@ -449,16 +451,16 @@ in
         );
       packages =
         [
-          smosPkgs.smos
-          smosPkgs.smos-archive
-          smosPkgs.smos-calendar-import
-          smosPkgs.smos-convert-org
-          smosPkgs.smos-query
-          smosPkgs.smos-scheduler
-          smosPkgs.smos-single
-          smosPkgs.smos-sync-client
-          smosPkgs.smos-github
-        ] ++ optionals (cfg.notify.enable or false) [ smosPkgs.smos-notify pkgs.libnotify ];
+          smosPkgs.smosPackages.smos
+          smosPkgs.smosPackages.smos-archive
+          smosPkgs.smosPackages.smos-calendar-import
+          smosPkgs.smosPackages.smos-convert-org
+          smosPkgs.smosPackages.smos-query
+          smosPkgs.smosPackages.smos-scheduler
+          smosPkgs.smosPackages.smos-single
+          smosPkgs.smosPackages.smos-sync-client
+          smosPkgs.smosPackages.smos-github
+        ] ++ optionals (cfg.notify.enable or false) [ smosPkgs.smosPackages.smos-notify pkgs.libnotify ];
 
 
     in
