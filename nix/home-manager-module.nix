@@ -1,6 +1,3 @@
-{ sources ? import ./sources.nix
-, smosPkgs ? import ./pkgs.nix { inherit sources; }
-}:
 { lib, pkgs, config, ... }:
 
 with lib;
@@ -18,6 +15,11 @@ in
       programs.smos =
         {
           enable = mkEnableOption "Smos cli and syncing";
+          smosPackages =
+            mkOption {
+              description = "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
+              default = (import ./pkgs.nix { }).smosPackages;
+            };
           config =
             mkOption {
               description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
@@ -256,7 +258,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "sync-smos-service-ExecStart"
                   ''
-                    exec ${smosPkgs.smosPackages.smos-sync-client}/bin/smos-sync-client sync
+                    exec ${cfg.smosPackages.smos-sync-client}/bin/smos-sync-client sync
                   ''}";
               Type = "oneshot";
             };
@@ -298,7 +300,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "calendar-smos-service-ExecStart"
                   ''
-                    exec ${smosPkgs.smosPackages.smos-calendar-import}/bin/smos-calendar-import
+                    exec ${cfg.smosPackages.smos-calendar-import}/bin/smos-calendar-import
                   ''}";
               Type = "oneshot";
             };
@@ -339,8 +341,8 @@ in
                 "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
                   ''
                     set -e
-                    ${smosPkgs.smosPackages.smos-scheduler}/bin/smos-scheduler check
-                    exec ${smosPkgs.smosPackages.smos-scheduler}/bin/smos-scheduler schedule
+                    ${cfg.smosPackages.smos-scheduler}/bin/smos-scheduler check
+                    exec ${cfg.smosPackages.smos-scheduler}/bin/smos-scheduler schedule
                   ''}";
               Type = "oneshot";
             };
@@ -377,7 +379,7 @@ in
                   ''
                     set -e
                     export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
-                    exec ${smosPkgs.smosPackages.smos-notify}/bin/smos-notify
+                    exec ${cfg.smosPackages.smos-notify}/bin/smos-notify
                   ''}";
               Type = "oneshot";
             };
@@ -449,18 +451,18 @@ in
             "${notifySmosName}" = notifySmosTimer;
           }
         );
-      packages =
+      packages = with cfg.smosPackages;
         [
-          smosPkgs.smosPackages.smos
-          smosPkgs.smosPackages.smos-archive
-          smosPkgs.smosPackages.smos-calendar-import
-          smosPkgs.smosPackages.smos-convert-org
-          smosPkgs.smosPackages.smos-query
-          smosPkgs.smosPackages.smos-scheduler
-          smosPkgs.smosPackages.smos-single
-          smosPkgs.smosPackages.smos-sync-client
-          smosPkgs.smosPackages.smos-github
-        ] ++ optionals (cfg.notify.enable or false) [ smosPkgs.smosPackages.smos-notify pkgs.libnotify ];
+          smos
+          smos-archive
+          smos-calendar-import
+          smos-convert-org
+          smos-query
+          smos-scheduler
+          smos-single
+          smos-sync-client
+          smos-github
+        ] ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ];
 
 
     in
