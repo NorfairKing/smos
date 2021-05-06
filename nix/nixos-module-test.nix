@@ -19,22 +19,15 @@ let
 
   testUsers = {
     "nothing_enabled" = {
-      programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
-      };
+      programs.smos = { };
     };
     "backup_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         backup.enable = true;
       };
     };
     "sync_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         sync = {
           enable = true;
           server-url = "server:${builtins.toString api-port}";
@@ -45,15 +38,11 @@ let
     };
     "scheduler_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         scheduler.enable = true;
       };
     };
     "calendar_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         calendar = {
           enable = true;
           sources = [
@@ -68,15 +57,11 @@ let
     };
     "notify_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         notify.enable = true;
       };
     };
     "everything_enabled" = {
       programs.smos = {
-        enable = true;
-        smosPackages = pkgs.smosPackages;
         backup.enable = true;
         sync = {
           enable = true;
@@ -106,12 +91,16 @@ let
   makeTestUser = _: _: {
     isNormalUser = true;
   };
-  makeTestUserHome = username: userConfig: { pkgs, ... }:
-    userConfig // {
+  makeTestUserHome = username: userConfig: { pkgs, lib, ... }:
+    lib.recursiveUpdate userConfig {
       imports = [
         ./home-manager-module.nix
       ];
       home.stateVersion = "20.09";
+      programs.smos = {
+        enable = true;
+        smosPackages = pkgs.smosPackages;
+      };
     };
 
   # The strange formatting is because of the stupid linting that nixos tests do
