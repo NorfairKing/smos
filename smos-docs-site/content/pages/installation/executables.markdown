@@ -1,7 +1,12 @@
 ---
-title: Installation with Nix
-description: Documentation about building and installing Smos and the related tools using Nix
+title: Downloading executables
+description: Documentation about using smos without any building via the statically-linked executables
 ---
+
+### Statically linked executables
+
+Each release contains a `release.zip` archive with statically linked executables.
+You can download it from [the "Assets" section on github](https://github.com/NorfairKing/smos/releases/latest).
 
 ### Building with Nix
 
