@@ -202,11 +202,20 @@ drawLocalTimePrettyRelative lt = do
 drawTime :: Time -> Widget n
 drawTime = txt . renderTime
 
-drawFilePath :: Path b File -> Widget n
-drawFilePath fp =
+drawFilePathInReport :: Path b File -> Widget n
+drawFilePathInReport = drawFilePath
+
+drawFilePathInBrowser :: Path b File -> Widget n
+drawFilePathInBrowser fp =
   case fileExtension fp of
     Just ".smos" -> withAttr fileAttr . str . FP.dropExtension . toFilePath $ fp
     _ -> withAttr nonSmosFileAttr . str . toFilePath $ fp
+
+drawFilePath :: Path b File -> Widget n
+drawFilePath fp =
+  case fileExtension fp of
+    Just ".smos" -> str . FP.dropExtension . toFilePath $ fp
+    _ -> str . toFilePath $ fp
 
 drawDirPath :: Path b Dir -> Widget n
 drawDirPath = withAttr dirAttr . str . toFilePath

@@ -54,7 +54,7 @@ drawNextActionEntryCursor s EntryReportEntryCursor {..} =
   pure $
     let sel = withVisibleSelected s . withSelPointer s
         (ts, _) = entryReportEntryCursorVal
-     in [ drawFilePath entryReportEntryCursorFilePath,
+     in [ drawFilePathInReport entryReportEntryCursorFilePath,
           drawTodoState ts,
           sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor
         ]
@@ -63,8 +63,8 @@ drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
   ercw <-
     drawEntryReportCursorWithHeader
-      [ withAttr fileAttr $ str "file",
-        withAttr headerAttr $ str "  header",
+      [ str "file",
+        withAttr headerAttr $ str "header",
         withAttr (todoStateSpecificAttr "WAITING") $ str "waiting",
         str "threshold"
       ]
@@ -83,7 +83,7 @@ drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
 
   let sel = withVisibleSelected s . withSelPointer s
   pure
-    [ drawFilePath entryReportEntryCursorFilePath,
+    [ drawFilePathInReport entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
       daysSinceWidgetWithThreshold threshold now ts,
       maybe (str " ") drawTime mThreshold
@@ -110,14 +110,25 @@ drawEntryReportCursorWithHeader ::
 drawEntryReportCursorWithHeader h go = drawEntryReportCursor $ \s mnec ->
   case mnec of
     Nothing -> pure $ txtWrap "Empty report"
-    Just wecs -> verticalNonEmptyCursorTableWithHeaderM (go NotSelected) (go s) (go NotSelected) h wecs
+    Just wecs ->
+      verticalNonEmptyCursorTableWithHeaderM
+        (go NotSelected)
+        (go s)
+        (go NotSelected)
+        (map (withDefAttr projectionHeaderAttr) h)
+        wecs
 
 drawEntryReportCursorSimple ::
   (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
 drawEntryReportCursorSimple go = drawEntryReportCursor $ \s mnec ->
   case mnec of
     Nothing -> pure $ txtWrap "Empty report"
-    Just wecs -> verticalNonEmptyCursorTableM (go NotSelected) (go s) (go NotSelected) wecs
+    Just wecs ->
+      verticalNonEmptyCursorTableM
+        (go NotSelected)
+        (go s)
+        (go NotSelected)
+        wecs
 
 drawEntryReportCursor :: (Select -> Maybe (NonEmptyCursor (EntryReportEntryCursor a)) -> Drawer) -> Select -> EntryReportCursor a -> Drawer
 drawEntryReportCursor func s erc@EntryReportCursor {..} = do
@@ -282,7 +293,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
   threshold <- asks drawEnvStuckThreshold
   let sel = withVisibleSelected s . withSelPointer s
   pure
-    [ str $ fromRelFile stuckReportEntryFilePath,
+    [ drawFilePathInReport stuckReportEntryFilePath,
       maybe (str " ") drawTodoState stuckReportEntryState,
       sel $ drawHeader stuckReportEntryHeader,
       maybe
@@ -413,7 +424,7 @@ drawProjectionHeaderNE = NE.map drawProjectionHeader
 drawProjectionHeader :: Projection -> Widget n
 drawProjectionHeader =
   withDefAttr projectionHeaderAttr . \case
-    OntoFile -> withAttr fileAttr $ str "file"
+    OntoFile -> str "file"
     OntoHeader -> withAttr headerAttr $ str "header"
     OntoProperty pn -> drawPropertyName pn
     OntoTag t -> drawTag t
@@ -426,7 +437,7 @@ drawProjecteeNE s = traverse (drawProjectee s)
 
 drawProjectee :: Select -> Projectee -> Drawer
 drawProjectee s = \case
-  FileProjection rf -> pure $ drawFilePath rf
+  FileProjection rf -> pure $ drawFilePathInReport rf
   HeaderProjection h -> pure $ withSelPointer s $ drawHeader h
   StateProjection ms -> pure $ maybe (str " ") drawTodoState ms
   TagProjection mt -> pure $ maybe (str " ") drawTag mt
