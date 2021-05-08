@@ -252,7 +252,7 @@ backToWaitingReportConfiguration WaitingReportConfig {..} =
     }
 
 data StuckReportConfiguration = StuckReportConfiguration
-  { stuckReportConfThreshold :: !(Maybe Word)
+  { stuckReportConfThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq, Generic)
 

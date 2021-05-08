@@ -15,6 +15,7 @@ import Data.GenValidity.Path ()
 import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Text as T
+import Debug.Trace
 import Path
 import Smos.Data
 import Smos.Data.Gen ()
@@ -112,11 +113,21 @@ instance GenValid (Filter Entry) where
   shrinkValid = shrinkValidFilter
 
 instance GenValid (Filter a) => GenValid (Filter (Set a)) where
-  genValid = withTopLevelBranches $ oneof [FilterAny <$> genValid, FilterAll <$> genValid]
+  genValid =
+    withTopLevelBranches $
+      oneof
+        [ FilterAny <$> genValid,
+          FilterAll <$> genValid
+        ]
   shrinkValid = shrinkValidFilter
 
 instance (GenValid (Filter a), GenValid (Filter b)) => GenValid (Filter (a, b)) where
-  genValid = withTopLevelBranches $ oneof [FilterFst <$> genValid, FilterSnd <$> genValid]
+  genValid =
+    withTopLevelBranches $
+      oneof
+        [ FilterFst <$> genValid,
+          FilterSnd <$> genValid
+        ]
   shrinkValid = shrinkValidFilter
 
 instance
@@ -138,19 +149,22 @@ instance GenValid (Filter a) => GenValid (Filter (Maybe a)) where
 instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
   genValid =
     withTopLevelBranches $
-      sized $
-        \n ->
-          let withoutRecursion = oneof [FilterWithinCursor <$> genValid, FilterLevel <$> genValid]
-           in case n of
-                0 -> withoutRecursion
-                _ ->
-                  oneof
-                    [ withoutRecursion,
-                      FilterParent <$> genValid,
-                      FilterAncestor <$> genValid,
-                      FilterChild <$> genValid,
-                      FilterLegacy <$> genValid
-                    ]
+      sized $ \n ->
+        let withoutRecursion =
+              oneof
+                [ FilterWithinCursor <$> genValid,
+                  FilterLevel <$> genValid
+                ]
+         in case n of
+              0 -> withoutRecursion
+              _ ->
+                oneof
+                  [ withoutRecursion,
+                    scale pred $ FilterParent <$> genValid,
+                    scale pred $ FilterAncestor <$> genValid,
+                    scale pred $ FilterChild <$> genValid,
+                    scale pred $ FilterLegacy <$> genValid
+                  ]
   shrinkValid = shrinkValidFilter
 
 withEqAndOrToo ::
@@ -165,26 +179,26 @@ subEqOrd ::
 subEqOrd = oneof [eqAndOrd, sub]
 
 eqAndOrd :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
-eqAndOrd = (FilterOrd <$> genValid <*> genValid) `suchThat` isValid
+eqAndOrd =
+  sized $ \size -> do
+    (a, b) <- genSplit size
+    (FilterOrd <$> resize a genValid <*> resize b genValid) `suchThat` isValid
 
 sub :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a) => Gen (Filter a)
 sub = (FilterSub <$> genValid) `suchThat` isValid
 
 withTopLevelBranches :: Gen (Filter a) -> Gen (Filter a)
 withTopLevelBranches gen =
-  sized $ \n ->
+  sized $ \n -> do
+    let genNot = FilterNot <$> scale pred (withTopLevelBranches gen)
+        genBin f = scale pred $
+          sized $ \size -> do
+            (a, b) <- genSplit size
+            f <$> resize a (withTopLevelBranches gen) <*> resize b (withTopLevelBranches gen)
+    traceShowM n
     case n of
       0 -> gen
-      _ ->
-        let bin f = do
-              (a, b) <- genSplit n
-              f <$> resize a (withTopLevelBranches gen) <*> resize b (withTopLevelBranches gen)
-         in oneof
-              [ gen,
-                FilterNot <$> scale (\x -> x - 1) (withTopLevelBranches gen),
-                bin FilterAnd,
-                bin FilterOr
-              ]
+      _ -> oneof [gen, genNot, genBin FilterAnd, genBin FilterOr]
 
 shrinkValidFilter :: Filter a -> [Filter a]
 shrinkValidFilter = go

@@ -298,7 +298,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
       sel $ drawHeader stuckReportEntryHeader,
       maybe
         (str " ")
-        (\ts -> if ts > now then str "future" else daysSinceWidget threshold now ts)
+        (\ts -> if ts > now then str "future" else daysSinceWidgetWithThreshold threshold now ts)
         stuckReportEntryLatestChange
     ]
 

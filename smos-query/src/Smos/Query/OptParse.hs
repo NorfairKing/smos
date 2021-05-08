@@ -341,11 +341,16 @@ parseWorkWaitingThresholdFlag =
           ]
       )
 
-parseWorkStuckThresholdFlag :: Parser (Maybe Word)
+parseWorkStuckThresholdFlag :: Parser (Maybe Time)
 parseWorkStuckThresholdFlag =
-  option
-    (Just <$> auto)
-    (mconcat [long "stuck-threshold", value Nothing, help "The threshold at which to color stuck projects red"])
+  optional $
+    option
+      (eitherReader $ parseTime . T.pack)
+      ( mconcat
+          [ long "stuck-threshold",
+            help "The threshold at which to color stuck projects red"
+          ]
+      )
 
 parseCommandWaiting :: ParserInfo Command
 parseCommandWaiting = info parser modifier
@@ -438,11 +443,16 @@ parseCommandStuck = info parser modifier
     modifier = fullDesc <> progDesc "Print the stuck projects overview"
     parser = CommandStuck <$> (StuckFlags <$> parseProjectFilterArgs <*> parseStuckThresholdFlag)
 
-parseStuckThresholdFlag :: Parser (Maybe Word)
+parseStuckThresholdFlag :: Parser (Maybe Time)
 parseStuckThresholdFlag =
-  option
-    (Just <$> auto)
-    (mconcat [long "threshold", value Nothing, help "The threshold at which to color stuck projects red"])
+  optional $
+    option
+      (eitherReader $ parseTime . T.pack)
+      ( mconcat
+          [ long "threshold",
+            help "The threshold at which to color stuck projects red"
+          ]
+      )
 
 parseCommandLog :: ParserInfo Command
 parseCommandLog = info parser modifier

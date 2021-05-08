@@ -13,4 +13,7 @@
 * `smos`: Fixed that the file browser filter was shown in an empty file browser as well.
 * `smos-query`: Added a header to each of the columns in the waiting report.
 * `smos` and `smos-query`: Made the filepaths not as prominent, visually.
+* `smos` and `smos-query`: Made report formatting more consistent
 * `smos`: No longer shows the `.smos` extension for every stuck project in the stuck projects report.
+* `smos` and `smos-query`: Allow thresholds for the waiting, stuck and work reports to be configured as more general time strings.
+* `smos` and `smos-query`: Added the `waiting_threshold` to allow for a custom per-entry waiting threshold.

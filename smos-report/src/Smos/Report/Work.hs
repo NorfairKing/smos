@@ -102,7 +102,7 @@ data WorkReportContext = WorkReportContext
     workReportContextChecks :: !(Set EntryFilterRel), -- Extra checks to perform
     workReportContextSorter :: !(Maybe Sorter), -- How to sort the next action entries, Nothing means no sorting
     workReportContextWaitingThreshold :: !Time, -- When to consider waiting entries 'overdue'
-    workReportContextStuckThreshold :: !Word -- When to consider stuck projects 'overdue' (days)
+    workReportContextStuckThreshold :: !Time -- When to consider stuck projects 'overdue' (days)
   }
   deriving (Show, Generic)
 
@@ -120,7 +120,7 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
         se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp sf
         latestChange <- stuckReportEntryLatestChange se
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
-        guard (diff >= fromIntegral workReportContextStuckThreshold * nominalDay)
+        guard (diff >= timeNominalDiffTime workReportContextStuckThreshold * nominalDay)
         pure se
    in iwr
         { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry

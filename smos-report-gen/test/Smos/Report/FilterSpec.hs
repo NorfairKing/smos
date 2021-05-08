@@ -125,8 +125,9 @@ spec = do
     filterArgumentSpec @TimestampName
     filterArgumentSpec @Timestamp
     filterArgumentSpec @(Path Rel File)
-    eqSpecOnValid @(Filter Time)
+    genValidSpec @Time
     genValidSpec @(Filter Time)
+    eqSpecOnValid @(Filter Time)
     eqSpecOnValid @(Filter Tag)
     genValidSpec @(Filter Tag)
     eqSpecOnValid @(Filter Header)

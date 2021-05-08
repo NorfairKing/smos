@@ -71,7 +71,7 @@ spec = do
       forAllValid $ \i -> parseJust timeP (pack $ show i ++ "weeks") (Weeks i)
   describe "renderTime" $ do
     it "produces valid texts" $ producesValidsOnValids renderTime
-    it "renders bys that parse to the same" $ forAllValid $ \s -> parseJust timeP (renderTime s) s
+    it "renders times that parse to the same" $ forAllValid $ \s -> parseJust timeP (renderTime s) s
 
 parsesValidSpec :: (Show a, Validity a) => P a -> Spec
 parsesValidSpec p = it "only parses valid values" $ forAllValid $ parsesValid p

@@ -6,6 +6,7 @@ import Conduit
 import qualified Data.Conduit.List as C
 import Smos.Query.Commands.Import
 import Smos.Report.Stuck
+import Smos.Report.Time
 
 smosQueryStuck :: StuckSettings -> Q ()
 smosQueryStuck StuckSettings {..} = do
@@ -20,7 +21,7 @@ smosQueryStuck StuckSettings {..} = do
   colourSettings <- asks envColourSettings
   outputChunks $ renderStuckReport colourSettings stuckSetThreshold (zonedTimeToUTC now) stuckReport
 
-renderStuckReport :: ColourSettings -> Word -> UTCTime -> StuckReport -> [Chunk]
+renderStuckReport :: ColourSettings -> Time -> UTCTime -> StuckReport -> [Chunk]
 renderStuckReport colourSettings threshold now =
   formatAsBicolourTable colourSettings
     . map (formatStuckReportEntry threshold now)

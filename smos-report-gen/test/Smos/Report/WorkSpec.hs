@@ -82,7 +82,7 @@ spec = do
                             workReportContextChecks = S.empty,
                             workReportContextSorter = Nothing,
                             workReportContextWaitingThreshold = Days 7,
-                            workReportContextStuckThreshold = 21
+                            workReportContextStuckThreshold = Weeks 3
                           }
                   wr <- produceWorkReport HideArchive DontPrint dc ctx
                   case workReportResultEntries wr of
@@ -123,7 +123,7 @@ spec = do
                               workReportContextChecks = S.empty,
                               workReportContextSorter = Nothing,
                               workReportContextWaitingThreshold = Days 7,
-                              workReportContextStuckThreshold = 21
+                              workReportContextStuckThreshold = Weeks 3
                             }
                     wr <- produceWorkReport HideArchive DontPrint dc ctx
                     case workReportResultEntries wr of
@@ -165,7 +165,7 @@ spec = do
                               workReportContextChecks = S.singleton checkFilter,
                               workReportContextSorter = Nothing,
                               workReportContextWaitingThreshold = Days 7,
-                              workReportContextStuckThreshold = 21
+                              workReportContextStuckThreshold = Weeks 3
                             }
                     wr <- produceWorkReport HideArchive DontPrint dc ctx
                     case M.toList $ workReportCheckViolations wr of

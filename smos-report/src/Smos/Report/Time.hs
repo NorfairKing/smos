@@ -13,6 +13,7 @@ import Data.Time (NominalDiffTime)
 import Data.Validity
 import Data.Void
 import GHC.Generics (Generic)
+import Numeric.Natural
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
@@ -51,10 +52,10 @@ instance ToJSON Time where
 
 type P = Parsec Void Text
 
-timeSeconds :: Time -> Word
+timeSeconds :: Time -> Natural
 timeSeconds t =
   case t of
-    Seconds i -> i
+    Seconds i -> fromIntegral i
     Minutes i -> timeSeconds $ Seconds (60 * i)
     Hours i -> timeSeconds $ Minutes (60 * i)
     Days i -> timeSeconds $ Hours (24 * i)
@@ -112,3 +113,16 @@ renderTimeString t =
         Hours i -> go "hour" "hours" i
         Days i -> go "day" "days" i
         Weeks i -> go "week" "weeks" i
+
+renderTimeShort :: Time -> Text
+renderTimeShort = T.pack . renderTimeStringShort
+
+renderTimeStringShort :: Time -> String
+renderTimeStringShort t =
+  let go c i = show i <> [c]
+   in case t of
+        Seconds i -> go 's' i
+        Minutes i -> go 'm' i
+        Hours i -> go 'h' i
+        Days i -> go 'd' i
+        Weeks i -> go 'w' i

@@ -23,7 +23,7 @@ import Text.Time.Pretty
 
 data DrawEnv = DrawEnv
   { drawEnvWaitingThreshold :: !Time,
-    drawEnvStuckThreshold :: !Word,
+    drawEnvStuckThreshold :: !Time,
     drawEnvWorkDrawEnv :: !DrawWorkEnv,
     drawEnvNow :: !ZonedTime
   }

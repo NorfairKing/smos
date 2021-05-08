@@ -142,7 +142,7 @@ defaultWaitingThreshold :: Time
 defaultWaitingThreshold = Days 7
 
 data StuckReportConfig = StuckReportConfig
-  { stuckReportConfigThreshold :: Word
+  { stuckReportConfigThreshold :: Time
   }
   deriving (Show, Eq, Generic)
 
@@ -152,8 +152,8 @@ defaultStuckReportConfig =
     { stuckReportConfigThreshold = defaultStuckThreshold
     }
 
-defaultStuckThreshold :: Word
-defaultStuckThreshold = 21
+defaultStuckThreshold :: Time
+defaultStuckThreshold = Weeks 3
 
 data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)

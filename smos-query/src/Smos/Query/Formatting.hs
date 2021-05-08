@@ -91,14 +91,14 @@ formatWaitingEntry threshold now WaitingEntry {..} =
     maybe (chunk "") timeChunk waitingEntryThreshold
   ]
 
-formatStuckReportEntry :: Word -> UTCTime -> StuckReportEntry -> [Chunk]
+formatStuckReportEntry :: Time -> UTCTime -> StuckReportEntry -> [Chunk]
 formatStuckReportEntry threshold now StuckReportEntry {..} =
   [ pathChunk stuckReportEntryFilePath,
     mTodoStateChunk stuckReportEntryState,
     headerChunk stuckReportEntryHeader,
     maybe
       (chunk "")
-      ( \ts -> if ts > now then "future" else showDaysSince threshold now ts
+      ( \ts -> if ts > now then "future" else showDaysSinceWithThreshold threshold now ts
       )
       stuckReportEntryLatestChange
   ]

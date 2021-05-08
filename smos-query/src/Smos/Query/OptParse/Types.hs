@@ -81,7 +81,7 @@ data WorkFlags = WorkFlags
     workFlagSorter :: Maybe Sorter,
     workFlagHideArchive :: Maybe HideArchive,
     workFlagWaitingThreshold :: Maybe Time,
-    workFlagStuckThreshold :: Maybe Word
+    workFlagStuckThreshold :: Maybe Time
   }
   deriving (Show, Eq)
 
@@ -130,7 +130,7 @@ data ProjectsFlags = ProjectsFlags
 
 data StuckFlags = StuckFlags
   { stuckFlagFilter :: Maybe ProjectFilter,
-    stuckFlagThreshold :: Maybe Word
+    stuckFlagThreshold :: Maybe Time
   }
   deriving (Show, Eq)
 
@@ -404,7 +404,7 @@ data WorkSettings = WorkSettings
     workSetSorter :: !(Maybe Sorter),
     workSetHideArchive :: !HideArchive,
     workSetWaitingThreshold :: !Time,
-    workSetStuckThreshold :: !Word
+    workSetStuckThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 
@@ -448,7 +448,7 @@ data ProjectsSettings = ProjectsSettings
 
 data StuckSettings = StuckSettings
   { stuckSetFilter :: !(Maybe ProjectFilter),
-    stuckSetThreshold :: !Word
+    stuckSetThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 

@@ -588,7 +588,7 @@ instance FilterArgument Tag where
   parseArgument = parseTag
 
 instance FilterArgument Time where
-  renderArgument = renderTime
+  renderArgument = renderTimeShort
   parseArgument = parseTime
 
 instance Validity (Filter a) where
