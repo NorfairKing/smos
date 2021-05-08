@@ -46,7 +46,8 @@ allPropertiesPlainActions =
           "goal",
           "lead",
           "timewindow",
-          "url"
+          "url",
+          "waiting_threshold"
         ]
     ]
 

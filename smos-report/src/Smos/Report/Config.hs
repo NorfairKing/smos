@@ -58,6 +58,7 @@ import Smos.Data
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
+import Smos.Report.Time
 import YamlParse.Applicative
 
 data SmosReportConfig = SmosReportConfig
@@ -127,7 +128,7 @@ defaultWorkBaseFilter =
           FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 data WaitingReportConfig = WaitingReportConfig
-  { waitingReportConfigThreshold :: Word
+  { waitingReportConfigThreshold :: Time
   }
   deriving (Show, Eq, Generic)
 
@@ -137,8 +138,8 @@ defaultWaitingReportConfig =
     { waitingReportConfigThreshold = defaultWaitingThreshold
     }
 
-defaultWaitingThreshold :: Word
-defaultWaitingThreshold = 7
+defaultWaitingThreshold :: Time
+defaultWaitingThreshold = Days 7
 
 data StuckReportConfig = StuckReportConfig
   { stuckReportConfigThreshold :: Word

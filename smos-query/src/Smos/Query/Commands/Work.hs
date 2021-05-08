@@ -10,6 +10,7 @@ import Conduit
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Smos.Query.Commands.Import
+import Smos.Report.Time
 import Smos.Report.Work
 
 smosQueryWork :: WorkSettings -> Q ()
@@ -51,7 +52,7 @@ smosQueryWork WorkSettings {..} = do
       workSetProjection
       wr
 
-renderWorkReport :: ColourSettings -> ZonedTime -> Map ContextName EntryFilterRel -> Word -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
+renderWorkReport :: ColourSettings -> ZonedTime -> Map ContextName EntryFilterRel -> Time -> Word -> NonEmpty Projection -> WorkReport -> [Chunk]
 renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
   mconcat $
     concat $

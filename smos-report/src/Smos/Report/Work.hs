@@ -47,7 +47,7 @@ data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportAgendaEntries :: ![(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)],
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
-    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Word)],
+    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)],
     intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
     intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
@@ -101,7 +101,7 @@ data WorkReportContext = WorkReportContext
     workReportContextContexts :: !(Map ContextName EntryFilterRel), -- Map of contexts, for checking whether any entry has no context
     workReportContextChecks :: !(Set EntryFilterRel), -- Extra checks to perform
     workReportContextSorter :: !(Maybe Sorter), -- How to sort the next action entries, Nothing means no sorting
-    workReportContextWaitingThreshold :: !Word, -- When to consider waiting entries 'overdue' (days)
+    workReportContextWaitingThreshold :: !Time, -- When to consider waiting entries 'overdue'
     workReportContextStuckThreshold :: !Word -- When to consider stuck projects 'overdue' (days)
   }
   deriving (Show, Generic)
@@ -185,12 +185,12 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
       nextBeginEntry = headMay beginEntries
-      mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Word)
+      mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)
       mWaitingEntry = do
         tup@(_, _, ts, mThreshold) <- makeWaitingQuadruple rp fc
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) ts
         let threshold = fromMaybe workReportContextWaitingThreshold mThreshold
-        guard (diff >= fromIntegral threshold * nominalDay)
+        guard (diff >= timeNominalDiffTime threshold)
         pure tup
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,

@@ -19,6 +19,7 @@ import Smos.Report.Filter.Gen ()
 import Smos.Report.InterestingStore
 import Smos.Report.ShouldPrint
 import Smos.Report.TestUtils
+import Smos.Report.Time
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()
 import Test.Syd
@@ -80,7 +81,7 @@ spec = do
                             workReportContextContexts = M.empty,
                             workReportContextChecks = S.empty,
                             workReportContextSorter = Nothing,
-                            workReportContextWaitingThreshold = 7,
+                            workReportContextWaitingThreshold = Days 7,
                             workReportContextStuckThreshold = 21
                           }
                   wr <- produceWorkReport HideArchive DontPrint dc ctx
@@ -121,7 +122,7 @@ spec = do
                               workReportContextContexts = M.empty,
                               workReportContextChecks = S.empty,
                               workReportContextSorter = Nothing,
-                              workReportContextWaitingThreshold = 7,
+                              workReportContextWaitingThreshold = Days 7,
                               workReportContextStuckThreshold = 21
                             }
                     wr <- produceWorkReport HideArchive DontPrint dc ctx
@@ -163,7 +164,7 @@ spec = do
                               workReportContextContexts = M.empty,
                               workReportContextChecks = S.singleton checkFilter,
                               workReportContextSorter = Nothing,
-                              workReportContextWaitingThreshold = 7,
+                              workReportContextWaitingThreshold = Days 7,
                               workReportContextStuckThreshold = 21
                             }
                     wr <- produceWorkReport HideArchive DontPrint dc ctx

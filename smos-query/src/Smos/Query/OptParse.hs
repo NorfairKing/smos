@@ -330,11 +330,16 @@ parseCommandWork = info parser modifier
                 <*> parseWorkStuckThresholdFlag
             )
 
-parseWorkWaitingThresholdFlag :: Parser (Maybe Word)
+parseWorkWaitingThresholdFlag :: Parser (Maybe Time)
 parseWorkWaitingThresholdFlag =
-  option
-    (Just <$> auto)
-    (mconcat [long "waiting-threshold", value Nothing, help "The threshold at which to color waiting entries red"])
+  optional $
+    option
+      (eitherReader $ parseTime . T.pack)
+      ( mconcat
+          [ long "waiting-threshold",
+            help "The threshold at which to color waiting entries red"
+          ]
+      )
 
 parseWorkStuckThresholdFlag :: Parser (Maybe Word)
 parseWorkStuckThresholdFlag =
@@ -348,13 +353,22 @@ parseCommandWaiting = info parser modifier
     modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
     parser =
       CommandWaiting
-        <$> (WaitingFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag <*> parseWaitingThresholdFlag)
+        <$> ( WaitingFlags
+                <$> parseFilterArgsRel
+                <*> parseHideArchiveFlag
+                <*> parseWaitingThresholdFlag
+            )
 
-parseWaitingThresholdFlag :: Parser (Maybe Word)
+parseWaitingThresholdFlag :: Parser (Maybe Time)
 parseWaitingThresholdFlag =
-  option
-    (Just <$> auto)
-    (mconcat [long "threshold", value Nothing, help "The threshold at which to color waiting entries red"])
+  optional $
+    option
+      (eitherReader $ parseTime . T.pack)
+      ( mconcat
+          [ long "threshold",
+            help "The threshold at which to color waiting entries red"
+          ]
+      )
 
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier

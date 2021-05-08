@@ -26,7 +26,7 @@ spec = do
   describe "waitingReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids waitingReportCursorDelete
   -- Does not hold because of the validity constraint
   -- describe "waitingReportCursorEntryReportCursorL" $ lensSpecOnValid waitingReportCursorEntryReportCursorL
-  describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeWaitingEntryCursor
+  describe "makeWaitingEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor
   describe "makeWaitingEntryCursor'" $ it "produces valid cursors" $ producesValidsOnValids2 makeWaitingEntryCursor'
   modifyMaxSuccess (`div` 10) $
     describe "produceWaitingReportCursor" $

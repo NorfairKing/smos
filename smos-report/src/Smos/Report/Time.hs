@@ -9,12 +9,14 @@ import Data.Aeson
 import Data.Function
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time (NominalDiffTime)
 import Data.Validity
 import Data.Void
 import GHC.Generics (Generic)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
+import YamlParse.Applicative
 
 data Time
   = Seconds Word
@@ -35,11 +37,10 @@ instance Ord Time where
   compare = compare `on` timeSeconds
 
 instance FromJSON Time where
-  parseJSON v =
-    flip (withText "Time") v $ \t ->
-      case parseTime t of
-        Left err -> fail $ "could not parse time: " <> err
-        Right f -> pure f
+  parseJSON = viaYamlSchema
+
+instance YamlSchema Time where
+  yamlSchema = eitherParser parseTime yamlSchema
 
 instance ToJSON Time where
   toJSON = toJSON . renderTime
@@ -54,6 +55,9 @@ timeSeconds t =
     Hours i -> timeSeconds $ Minutes (60 * i)
     Days i -> timeSeconds $ Hours (24 * i)
     Weeks i -> timeSeconds $ Days (7 * i)
+
+timeNominalDiffTime :: Time -> NominalDiffTime
+timeNominalDiffTime = realToFrac . timeSeconds
 
 time :: Text -> Maybe Time
 time = parseMaybe timeP

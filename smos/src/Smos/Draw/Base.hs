@@ -14,6 +14,7 @@ import Data.Time
 import Path
 import Smos.Data
 import Smos.Report.Projection
+import Smos.Report.Time
 import Smos.Style
 import Smos.Types
 import qualified System.FilePath as FP
@@ -21,7 +22,7 @@ import Text.Printf
 import Text.Time.Pretty
 
 data DrawEnv = DrawEnv
-  { drawEnvWaitingThreshold :: !Word,
+  { drawEnvWaitingThreshold :: !Time,
     drawEnvStuckThreshold :: !Word,
     drawEnvWorkDrawEnv :: !DrawWorkEnv,
     drawEnvNow :: !ZonedTime

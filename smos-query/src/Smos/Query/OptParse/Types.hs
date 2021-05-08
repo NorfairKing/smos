@@ -80,7 +80,7 @@ data WorkFlags = WorkFlags
     workFlagProjection :: Maybe (NonEmpty Projection),
     workFlagSorter :: Maybe Sorter,
     workFlagHideArchive :: Maybe HideArchive,
-    workFlagWaitingThreshold :: Maybe Word,
+    workFlagWaitingThreshold :: Maybe Time,
     workFlagStuckThreshold :: Maybe Word
   }
   deriving (Show, Eq)
@@ -88,7 +88,7 @@ data WorkFlags = WorkFlags
 data WaitingFlags = WaitingFlags
   { waitingFlagFilter :: Maybe EntryFilterRel,
     waitingFlagHideArchive :: Maybe HideArchive,
-    waitingFlagThreshold :: Maybe Word
+    waitingFlagThreshold :: Maybe Time
   }
   deriving (Show, Eq)
 
@@ -403,7 +403,7 @@ data WorkSettings = WorkSettings
     workSetProjection :: !(NonEmpty Projection),
     workSetSorter :: !(Maybe Sorter),
     workSetHideArchive :: !HideArchive,
-    workSetWaitingThreshold :: !Word,
+    workSetWaitingThreshold :: !Time,
     workSetStuckThreshold :: !Word
   }
   deriving (Show, Eq, Generic)
@@ -411,7 +411,7 @@ data WorkSettings = WorkSettings
 data WaitingSettings = WaitingSettings
   { waitingSetFilter :: !(Maybe EntryFilterRel),
     waitingSetHideArchive :: !HideArchive,
-    waitingSetThreshold :: !Word
+    waitingSetThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 

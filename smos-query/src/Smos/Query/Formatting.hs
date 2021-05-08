@@ -20,6 +20,7 @@ import Smos.Report.Entry
 import Smos.Report.Formatting
 import Smos.Report.Projection
 import Smos.Report.Stuck
+import Smos.Report.Time
 import Smos.Report.Waiting
 import Text.Colour
 import Text.Colour.Layout
@@ -36,6 +37,9 @@ formatAsBicolourTable cc =
             }
       )
     . table
+
+showDaysSinceWithThreshold :: Time -> UTCTime -> UTCTime -> Chunk
+showDaysSinceWithThreshold threshold = showDaysSince (floor $ timeNominalDiffTime threshold / nominalDay)
 
 showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
 showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
@@ -78,11 +82,11 @@ formatAgendaEntry now AgendaEntry {..} =
         func $ pathChunk agendaEntryFilePath
       ]
 
-formatWaitingEntry :: Word -> UTCTime -> WaitingEntry -> [Chunk]
+formatWaitingEntry :: Time -> UTCTime -> WaitingEntry -> [Chunk]
 formatWaitingEntry threshold now WaitingEntry {..} =
   [ pathChunk waitingEntryFilePath,
     headerChunk waitingEntryHeader,
-    showDaysSince threshold now waitingEntryTimestamp
+    showDaysSinceWithThreshold threshold now waitingEntryTimestamp
   ]
 
 formatStuckReportEntry :: Word -> UTCTime -> StuckReportEntry -> [Chunk]

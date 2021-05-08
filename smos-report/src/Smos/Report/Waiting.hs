@@ -11,7 +11,6 @@ import Data.Aeson
 import qualified Data.Conduit.Combinators as C
 import Data.List
 import qualified Data.Map as M
-import qualified Data.Text as T
 import Data.Time
 import Data.Validity
 import Data.Validity.Time ()
@@ -23,7 +22,7 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
-import Text.Read
+import Smos.Report.Time as Report
 import YamlParse.Applicative
 
 newtype WaitingReport = WaitingReport
@@ -67,7 +66,7 @@ finishWaitingReport = WaitingReport . sortWaitingEntries
 data WaitingEntry = WaitingEntry
   { waitingEntryHeader :: Header,
     waitingEntryTimestamp :: UTCTime,
-    waitingEntryThreshold :: Maybe Word,
+    waitingEntryThreshold :: Maybe Time,
     waitingEntryFilePath :: Path Rel File
   }
   deriving (Show, Eq, Generic)
@@ -101,22 +100,22 @@ sortWaitingEntries = sortOn waitingEntryTimestamp
 makeWaitingEntry :: Path Rel File -> ForestCursor Entry -> Maybe WaitingEntry
 makeWaitingEntry rf fc = waitingQuadrupleToWaitingEntry <$> makeWaitingQuadruple rf fc
 
-waitingQuadrupleToWaitingEntry :: (Path Rel File, ForestCursor Entry, UTCTime, Maybe Word) -> WaitingEntry
-waitingQuadrupleToWaitingEntry (rf, fc, time, mThreshold) =
+waitingQuadrupleToWaitingEntry :: (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time) -> WaitingEntry
+waitingQuadrupleToWaitingEntry (rf, fc, ts, mThreshold) =
   let e = forestCursorCurrent fc
    in WaitingEntry
         { waitingEntryHeader = entryHeader e,
-          waitingEntryTimestamp = time,
+          waitingEntryTimestamp = ts,
           waitingEntryThreshold = mThreshold,
           waitingEntryFilePath = rf
         }
 
-makeWaitingQuadruple :: Path Rel File -> ForestCursor Entry -> Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Word)
+makeWaitingQuadruple :: Path Rel File -> ForestCursor Entry -> Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)
 makeWaitingQuadruple rf fc = do
   let e = forestCursorCurrent fc
-  time <- parseWaitingStateTimestamp e
-  let mThreshold = M.lookup "waiting_threshold" (entryProperties e) >>= (readMaybe . T.unpack . propertyValueText)
-  pure (rf, fc, time, mThreshold)
+  ts <- parseWaitingStateTimestamp e
+  let mThreshold = M.lookup "waiting_threshold" (entryProperties e) >>= (either (const Nothing) Just . Report.parseTime . propertyValueText)
+  pure (rf, fc, ts, mThreshold)
 
 parseWaitingStateTimestamp :: Entry -> Maybe UTCTime
 parseWaitingStateTimestamp =

@@ -31,6 +31,7 @@ import Smos.Report.Filter
 import Smos.Report.Formatting
 import Smos.Report.Projection
 import Smos.Report.Stuck
+import Smos.Report.Time
 import Smos.Style
 import Smos.Types
 import Text.Printf
@@ -63,18 +64,23 @@ drawWaitingReportCursor s WaitingReportCursor {..} = do
   ercw <- drawEntryReportCursorSimple drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
   pure $ withHeading (str "Waiting Report") $ padAll 1 ercw
 
-drawWaitingEntryCursor :: Select -> EntryReportEntryCursor (UTCTime, Maybe Word) -> Drawer' [Widget ResourceName]
+drawWaitingEntryCursor :: Select -> EntryReportEntryCursor (UTCTime, Maybe Time) -> Drawer' [Widget ResourceName]
 drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
   now <- asks $ zonedTimeToUTC . drawEnvNow
-  let (time, mThreshold) = entryReportEntryCursorVal
+
+  let (ts, mThreshold) = entryReportEntryCursorVal
   defaultThreshold <- asks drawEnvWaitingThreshold
   let threshold = fromMaybe defaultThreshold mThreshold
+
   let sel = withVisibleSelected s . withSelPointer s
   pure
     [ str $ fromRelFile entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
-      daysSinceWidget threshold now time
+      daysSinceWidgetWithThreshold threshold now ts
     ]
+
+daysSinceWidgetWithThreshold :: Time -> UTCTime -> UTCTime -> Widget n
+daysSinceWidgetWithThreshold threshold = daysSinceWidget (floor $ timeNominalDiffTime threshold / nominalDay)
 
 daysSinceWidget :: Word -> UTCTime -> UTCTime -> Widget n
 daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"

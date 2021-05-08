@@ -10,6 +10,7 @@ import Smos.Cursor.Report.Entry.Gen
 import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Data.Gen ()
+import Smos.Report.Time.Gen ()
 import Smos.Report.Waiting
 import Test.QuickCheck
 

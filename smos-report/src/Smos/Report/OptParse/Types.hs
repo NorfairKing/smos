@@ -18,6 +18,7 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
+import Smos.Report.Time
 import YamlParse.Applicative as YamlParse
 
 data Flags = Flags
@@ -220,7 +221,7 @@ backToDirectoryConfiguration DirectoryConfig {..} =
     }
 
 data WaitingReportConfiguration = WaitingReportConfiguration
-  { waitingReportConfThreshold :: !(Maybe Word)
+  { waitingReportConfThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq, Generic)
 
