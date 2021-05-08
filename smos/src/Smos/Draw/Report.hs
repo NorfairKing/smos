@@ -63,15 +63,17 @@ drawWaitingReportCursor s WaitingReportCursor {..} = do
   ercw <- drawEntryReportCursorSimple drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
   pure $ withHeading (str "Waiting Report") $ padAll 1 ercw
 
-drawWaitingEntryCursor :: Select -> EntryReportEntryCursor UTCTime -> Drawer' [Widget ResourceName]
+drawWaitingEntryCursor :: Select -> EntryReportEntryCursor (UTCTime, Maybe Word) -> Drawer' [Widget ResourceName]
 drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
   now <- asks $ zonedTimeToUTC . drawEnvNow
-  threshold <- asks drawEnvWaitingThreshold
+  let (time, mThreshold) = entryReportEntryCursorVal
+  defaultThreshold <- asks drawEnvWaitingThreshold
+  let threshold = fromMaybe defaultThreshold mThreshold
   let sel = withVisibleSelected s . withSelPointer s
   pure
     [ str $ fromRelFile entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
-      daysSinceWidget threshold now entryReportEntryCursorVal
+      daysSinceWidget threshold now time
     ]
 
 daysSinceWidget :: Word -> UTCTime -> UTCTime -> Widget n

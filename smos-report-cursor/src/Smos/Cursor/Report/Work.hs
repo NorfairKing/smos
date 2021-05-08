@@ -91,7 +91,7 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
             (\(erf, tups) -> (erf, makeEntryReportCursor $ flip map tups $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()))
           <$> NE.nonEmpty (M.toList intermediateWorkReportCheckViolations)
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
-      workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct) -> makeEntryReportEntryCursor rf fc utct
+      workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct, mt) -> makeEntryReportEntryCursor rf fc (utct, mt)
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
       mAutoFilter :: Maybe EntryFilterRel
       mAutoFilter = createAutoFilter workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)

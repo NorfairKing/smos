@@ -47,7 +47,7 @@ data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportAgendaEntries :: ![(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)],
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
-    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime)],
+    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Word)],
     intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
     intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
@@ -185,12 +185,13 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
       nextBeginEntry = headMay beginEntries
-      mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime)
+      mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Word)
       mWaitingEntry = do
-        trip@(_, _, ts) <- makeWaitingTriple rp fc
+        tup@(_, _, ts, mThreshold) <- makeWaitingQuadruple rp fc
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) ts
-        guard (diff >= fromIntegral workReportContextWaitingThreshold * nominalDay)
-        pure trip
+        let threshold = fromMaybe workReportContextWaitingThreshold mThreshold
+        guard (diff >= fromIntegral threshold * nominalDay)
+        pure tup
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match matchesSelectedContext,
           intermediateWorkReportAgendaEntries = agendaQuadruples,
@@ -246,7 +247,7 @@ finishWorkReport now mpn mt ms wr =
         { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
-          workReportOverdueWaiting = sortWaitingEntries $ map waitingTripleToWaitingEntry $ intermediateWorkReportOverdueWaiting wr,
+          workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ intermediateWorkReportOverdueStuck wr,
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr

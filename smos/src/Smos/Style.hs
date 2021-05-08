@@ -74,6 +74,7 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "goal", fg orange),
           (propertyNameSpecificAttr "timewindow", fg magenta),
           (propertyNameSpecificAttr "url", fg green),
+          (propertyNameSpecificAttr "waiting_threshold", fg blue),
           (projectionHeaderAttr, defAttr `withStyle` underline),
           (waitingReportLongWait, fg red),
           (waitingReportMidWait, fg yellow),

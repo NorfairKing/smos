@@ -119,6 +119,7 @@ defaultFileKeyMap =
             exactString "pt" $ propertiesEditProperty "timewindow",
             exactString "pg" $ propertiesEditProperty "goal",
             exactString "pu" $ propertiesEditProperty "url",
+            exactString "pw" $ propertiesEditProperty "waiting_threshold",
             -- Clocking
             exactString "ci" forestClockOutEverywhereInAllFilesAndClockInHere,
             exactString "co" forestClockOutEverywhereInAllFiles,

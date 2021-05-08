@@ -28,7 +28,7 @@ produceWaitingReportCursor mf ha sp dc =
     <$> produceEntryReportCursor makeWaitingEntryCursor' sortWaitingReport mf ha sp dc
 
 data WaitingReportCursor = WaitingReportCursor
-  { waitingReportCursorEntryReportCursor :: EntryReportCursor UTCTime -- The time at which the entry became WAITING
+  { waitingReportCursorEntryReportCursor :: EntryReportCursor (UTCTime, Maybe Word) -- The time at which the entry became WAITING and the threshold
   }
   deriving (Show, Eq, Generic)
 
@@ -45,7 +45,7 @@ instance Validity WaitingReportCursor where
 
 instance NFData WaitingReportCursor
 
-waitingReportCursorEntryReportCursorL :: Lens' WaitingReportCursor (EntryReportCursor UTCTime)
+waitingReportCursorEntryReportCursorL :: Lens' WaitingReportCursor (EntryReportCursor (UTCTime, Maybe Word))
 waitingReportCursorEntryReportCursorL = lens waitingReportCursorEntryReportCursor $ \wrc ne -> wrc {waitingReportCursorEntryReportCursor = ne}
 
 emptyWaitingReportCursor :: WaitingReportCursor
@@ -54,10 +54,10 @@ emptyWaitingReportCursor =
     { waitingReportCursorEntryReportCursor = emptyEntryReportCursor
     }
 
-finaliseWaitingReportCursor :: [EntryReportEntryCursor UTCTime] -> WaitingReportCursor
+finaliseWaitingReportCursor :: [EntryReportEntryCursor (UTCTime, Maybe Word)] -> WaitingReportCursor
 finaliseWaitingReportCursor = WaitingReportCursor . makeEntryReportCursor . sortWaitingReport
 
-sortWaitingReport :: [EntryReportEntryCursor UTCTime] -> [EntryReportEntryCursor UTCTime]
+sortWaitingReport :: [EntryReportEntryCursor (UTCTime, Maybe Word)] -> [EntryReportEntryCursor (UTCTime, Maybe Word)]
 sortWaitingReport = sortOn entryReportEntryCursorVal
 
 waitingReportCursorBuildSmosFileCursor :: Path Abs Dir -> WaitingReportCursor -> Maybe (Path Abs File, SmosFileCursor)
@@ -93,8 +93,10 @@ waitingReportCursorRemove = waitingReportCursorEntryReportCursorL entryReportCur
 waitingReportCursorDelete :: WaitingReportCursor -> Maybe WaitingReportCursor
 waitingReportCursorDelete = waitingReportCursorEntryReportCursorL entryReportCursorDelete
 
-makeWaitingEntryCursor' :: Path Rel File -> ForestCursor Entry Entry -> [UTCTime]
-makeWaitingEntryCursor' _ = maybeToList . makeWaitingEntryCursor
+makeWaitingEntryCursor' :: Path Rel File -> ForestCursor Entry Entry -> [(UTCTime, Maybe Word)]
+makeWaitingEntryCursor' rp = maybeToList . makeWaitingEntryCursor rp
 
-makeWaitingEntryCursor :: ForestCursor Entry Entry -> Maybe UTCTime
-makeWaitingEntryCursor fc = parseWaitingStateTimestamp $ forestCursorCurrent fc
+makeWaitingEntryCursor :: Path Rel File -> ForestCursor Entry Entry -> Maybe (UTCTime, Maybe Word)
+makeWaitingEntryCursor rp fc = do
+  (_, _, t, mw) <- makeWaitingQuadruple rp fc
+  pure (t, mw)
