@@ -16,7 +16,7 @@ import GHC.Generics (Generic)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
-import YamlParse.Applicative
+import YamlParse.Applicative as YamlParse
 
 data Time
   = Seconds Word
@@ -40,7 +40,11 @@ instance FromJSON Time where
   parseJSON = viaYamlSchema
 
 instance YamlSchema Time where
-  yamlSchema = eitherParser parseTime yamlSchema
+  yamlSchema =
+    alternatives
+      [ eitherParser parseTime yamlSchema YamlParse.<?> "Time string: 2s, 3m, 4h, 5d, 6w, ...",
+        (Days <$> yamlSchema) YamlParse.<?> "Interpreted as a number of days"
+      ]
 
 instance ToJSON Time where
   toJSON = toJSON . renderTime
