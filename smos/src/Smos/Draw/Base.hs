@@ -199,6 +199,9 @@ drawLocalTimePrettyRelative lt = do
   pure $
     str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
 
+drawTime :: Time -> Widget n
+drawTime = txt . renderTime
+
 drawFilePath :: Path b File -> Widget n
 drawFilePath fp =
   case fileExtension fp of

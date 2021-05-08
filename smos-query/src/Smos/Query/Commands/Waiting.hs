@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Query.Commands.Waiting
@@ -22,5 +23,7 @@ smosQueryWaiting WaitingSettings {..} = do
   outputChunks $ renderWaitingReport colourSettings waitingSetThreshold now report
 
 renderWaitingReport :: ColourSettings -> Time -> UTCTime -> WaitingReport -> [Chunk]
-renderWaitingReport colourSettings threshold now =
-  formatAsBicolourTable colourSettings . map (formatWaitingEntry threshold now) . waitingReportEntries
+renderWaitingReport colourSettings threshold now WaitingReport {..} =
+  formatAsBicolourTable colourSettings $
+    map underline [chunk "file", chunk "header", chunk "waiting", chunk "threshold"] :
+    map (formatWaitingEntry threshold now) waitingReportEntries

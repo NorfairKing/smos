@@ -11,3 +11,4 @@
   This information is only used for logging.
 * `smos-web-server`: Now requires a `WEB_URL` to be configured and sends it over in the `Referer` header of every request to the API.
 * `smos`: Fixed that the file browser filter was shown in an empty file browser as well.
+* `smos-query`: Added a header to each of the columns in the waiting report.

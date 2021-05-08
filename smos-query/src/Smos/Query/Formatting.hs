@@ -10,6 +10,7 @@ module Smos.Query.Formatting
 where
 
 import Data.Foldable
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Path
@@ -86,7 +87,8 @@ formatWaitingEntry :: Time -> UTCTime -> WaitingEntry -> [Chunk]
 formatWaitingEntry threshold now WaitingEntry {..} =
   [ pathChunk waitingEntryFilePath,
     headerChunk waitingEntryHeader,
-    showDaysSinceWithThreshold threshold now waitingEntryTimestamp
+    showDaysSinceWithThreshold (fromMaybe threshold waitingEntryThreshold) now waitingEntryTimestamp,
+    maybe (chunk "") timeChunk waitingEntryThreshold
   ]
 
 formatStuckReportEntry :: Word -> UTCTime -> StuckReportEntry -> [Chunk]
@@ -191,6 +193,9 @@ propertyNameColor pn =
 
 tagChunk :: Tag -> Chunk
 tagChunk = fore cyan . chunk . tagText
+
+timeChunk :: Time -> Chunk
+timeChunk = chunk . renderTime
 
 intChunk :: Int -> Chunk
 intChunk = chunk . T.pack . show

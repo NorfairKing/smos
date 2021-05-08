@@ -61,7 +61,16 @@ drawNextActionEntryCursor s EntryReportEntryCursor {..} =
 
 drawWaitingReportCursor :: Select -> WaitingReportCursor -> Drawer
 drawWaitingReportCursor s WaitingReportCursor {..} = do
-  ercw <- drawEntryReportCursorSimple drawWaitingEntryCursor s waitingReportCursorEntryReportCursor
+  ercw <-
+    drawEntryReportCursorWithHeader
+      [ withAttr fileAttr $ str "file",
+        withAttr headerAttr $ str "  header",
+        withAttr (todoStateSpecificAttr "WAITING") $ str "waiting",
+        str "threshold"
+      ]
+      drawWaitingEntryCursor
+      s
+      waitingReportCursorEntryReportCursor
   pure $ withHeading (str "Waiting Report") $ padAll 1 ercw
 
 drawWaitingEntryCursor :: Select -> EntryReportEntryCursor (UTCTime, Maybe Time) -> Drawer' [Widget ResourceName]
@@ -74,9 +83,10 @@ drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
 
   let sel = withVisibleSelected s . withSelPointer s
   pure
-    [ str $ fromRelFile entryReportEntryCursorFilePath,
+    [ drawFilePath entryReportEntryCursorFilePath,
       sel $ drawHeader $ entryHeader $ forestCursorCurrent entryReportEntryCursorForestCursor,
-      daysSinceWidgetWithThreshold threshold now ts
+      daysSinceWidgetWithThreshold threshold now ts,
+      maybe (str " ") drawTime mThreshold
     ]
 
 daysSinceWidgetWithThreshold :: Time -> UTCTime -> UTCTime -> Widget n
@@ -94,6 +104,13 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | i >= th3 = waitingReportShortWait
       | otherwise = waitingReportNoWait
     i = daysSince now t
+
+drawEntryReportCursorWithHeader ::
+  [Widget ResourceName] -> (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
+drawEntryReportCursorWithHeader h go = drawEntryReportCursor $ \s mnec ->
+  case mnec of
+    Nothing -> pure $ txtWrap "Empty report"
+    Just wecs -> verticalNonEmptyCursorTableWithHeaderM (go NotSelected) (go s) (go NotSelected) h wecs
 
 drawEntryReportCursorSimple ::
   (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
