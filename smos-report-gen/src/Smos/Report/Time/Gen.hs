@@ -7,7 +7,6 @@
 module Smos.Report.Time.Gen where
 
 import Data.GenValidity
-import Debug.Trace
 import Smos.Data.Gen ()
 import Smos.Report.Time
 
