@@ -25,5 +25,5 @@ smosQueryWaiting WaitingSettings {..} = do
 renderWaitingReport :: ColourSettings -> Time -> UTCTime -> WaitingReport -> [Chunk]
 renderWaitingReport colourSettings threshold now WaitingReport {..} =
   formatAsBicolourTable colourSettings $
-    map underline [chunk "file", chunk "header", chunk "waiting", chunk "threshold"] :
+    map underline [chunk "file", headerChunk "header", fore blue $ chunk "waiting", chunk "threshold"] :
     map (formatWaitingEntry threshold now) waitingReportEntries

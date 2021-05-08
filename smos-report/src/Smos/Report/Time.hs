@@ -105,10 +105,10 @@ renderTime = T.pack . renderTimeString
 
 renderTimeString :: Time -> String
 renderTimeString t =
-  let go c i = show i <> [c]
+  let go singular plural i = if i == 1 then unwords ["1", singular] else unwords [show i, plural]
    in case t of
-        Seconds i -> go 's' i
-        Minutes i -> go 'm' i
-        Hours i -> go 'h' i
-        Days i -> go 'd' i
-        Weeks i -> go 'w' i
+        Seconds i -> go "second" "seconds" i
+        Minutes i -> go "minute" "minutes" i
+        Hours i -> go "hour" "hours" i
+        Days i -> go "day" "days" i
+        Weeks i -> go "week" "weeks" i
