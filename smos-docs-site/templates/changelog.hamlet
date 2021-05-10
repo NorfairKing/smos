@@ -20,7 +20,7 @@
     Older Releases
 
   <ul>
-    $forall day <- M.keys releases
+    $forall day <- sortOn Down $ M.keys releases
       <li>
         <a href=@{ChangelogReleaseR day}>
           #{formatTime defaultTimeLocale "%F" day}

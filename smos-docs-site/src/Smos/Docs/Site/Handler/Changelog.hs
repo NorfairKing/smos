@@ -12,7 +12,9 @@ module Smos.Docs.Site.Handler.Changelog
   )
 where
 
+import Data.List
 import qualified Data.Map as M
+import Data.Ord
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
