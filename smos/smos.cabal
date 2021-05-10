@@ -115,7 +115,8 @@ library
       src/
   ghc-options: -Wall
   build-depends:
-      aeson
+      Clipboard
+    , aeson
     , async
     , base
     , brick

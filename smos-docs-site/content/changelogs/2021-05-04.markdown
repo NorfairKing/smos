@@ -30,7 +30,7 @@
   This prevents a `SQLITE_BUSY` infinite retry problem. See [Issue 202](https://github.com/NorfairKing/smos/issues/202) and [PR 203](https://github.com/NorfairKing/smos/pull/203).
   Thank you [@jhbertra](https://github.com/jhbertra)!
 - `smos-query`: Fixed that `smos-query` was not taking into account certain configurations for the `work`, `waiting` and `stuck` reports.
-  This fixes [Issue 201](https://github.com/NorfairKing/smos/issues/201)
+  This fixes [Issue 201](https://github.com/NorfairKing/smos/issues/201).
   Thank you [@vidocco](https://github.com/vidocco)!
 
 ##### Removed

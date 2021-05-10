@@ -1,6 +1,11 @@
 ##### Added
 
 * `smos-server`: Now supports logging, and some logging has already been added as well.
+* `smos`:
+  The `convCopyContentsToClipboard` action to copy the selected entry's contents to the system clipboard.
+  This fixes [issue 205](https://github.com/NorfairKing/smos/issues/205).
+  Thank you [@distefam](https://github.com/distefam)!
+   
 
 ##### Changed
 

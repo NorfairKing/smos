@@ -10,6 +10,7 @@ module Smos.Actions.Convenience
     convNewEntryAndClockIn,
     convArchiveFile,
     convOpenUrl,
+    convCopyContentsToClipboard,
   )
 where
 
@@ -31,6 +32,7 @@ import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.Config
 import Smos.Types
+import System.Clipboard
 import System.Process
 
 allConveniencePlainActions :: [Action]
@@ -40,7 +42,8 @@ allConveniencePlainActions =
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
     convArchiveFile,
-    convOpenUrl
+    convOpenUrl,
+    convCopyContentsToClipboard
   ]
 
 convDoneAndWaitForResponse :: Action
@@ -171,4 +174,17 @@ convOpenUrl =
             pure ()
         pure ec,
       actionDescription = "Open the url in the 'url' property of the currently selected entry"
+    }
+
+convCopyContentsToClipboard :: Action
+convCopyContentsToClipboard =
+  Action
+    { actionName = "convCopyContentsToClipboard",
+      actionFunc = modifyEntryCursorS $ \ec -> do
+        let e = rebuildEntryCursor ec
+        let mc = entryContents e
+        forM_ mc $ \c ->
+          liftIO $ setClipboardString $ T.unpack $ contentsText c
+        pure ec,
+      actionDescription = "Copy the contents of the selected entry to the system clipboard"
     }

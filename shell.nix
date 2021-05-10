@@ -8,13 +8,17 @@ pkgs.haskell.lib.buildStackProject {
   buildInputs = with pkgs; [
     asciinema
     autoconf
+    bzip2
+    git
     haskellPackages.autoexporter
     killall
     niv
     sass
+    x11
+    xorg.libXScrnSaver
+    xorg.libXrandr
+    xorg.libXrender
     zlib
-    bzip2
-    git
   ] ++ pre-commit.tools;
   shellHook = ''
     ${pre-commit.run.shellHook}
