@@ -209,10 +209,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "safe-coloured-text",
-        "rev": "d1fa5c8f9a533f52df75356a45216d2ff48a016e",
-        "sha256": "1gkwqyk2zclxkdij9qc6qx53cismjy0jjc10dqi52wg6s6xvywkh",
+        "rev": "d840dd7b0f13f4d0fd693c1dd93be33f9ee94605",
+        "sha256": "06ca0fzlly630dhlc2cv76b0ax0xjyr4ilw4nz2bb5f8acclq8q0",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/d1fa5c8f9a533f52df75356a45216d2ff48a016e.tar.gz",
+        "url": "https://github.com/NorfairKing/safe-coloured-text/archive/d840dd7b0f13f4d0fd693c1dd93be33f9ee94605.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "seocheck": {

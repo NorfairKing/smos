@@ -133,7 +133,7 @@ extra-deps:
   - yamlparse-applicative
 
 - github: NorfairKing/safe-coloured-text
-  commit: d1fa5c8f9a533f52df75356a45216d2ff48a016e
+  commit: d840dd7b0f13f4d0fd693c1dd93be33f9ee94605
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
