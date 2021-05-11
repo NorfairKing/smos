@@ -171,16 +171,21 @@ convOpenUrl =
         let murl = do
               urlPv <- M.lookup "url" $ entryProperties e
               pure $ propertyValueText urlPv
-        forM_ murl $ \url ->
-          runSmosAsync $ do
-            let cp =
-                  (proc "xdg-open" [T.unpack url])
-                    { std_in = CreatePipe,
-                      std_out = CreatePipe,
-                      std_err = CreatePipe
-                    }
-            _ <- createProcess cp
-            pure ()
+
+        forM_ murl $ \url -> do
+          mXdgOpenExecutable <- findExecutable [relfile|xdg-open|]
+          case mXdgOpenExecutable of
+            Nothing -> addErrorMessage "No xdg-open executable found."
+            Just xdgOpenExecutable -> do
+              runSmosAsync $ do
+                let cp =
+                      (proc (fromAbsFile xdgOpenExecutable) [T.unpack url])
+                        { std_in = CreatePipe,
+                          std_out = CreatePipe,
+                          std_err = CreatePipe
+                        }
+                _ <- createProcess cp
+                pure ()
         pure ec,
       actionDescription = "Open the url in the 'url' property of the currently selected entry"
     }
