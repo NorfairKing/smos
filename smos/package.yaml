@@ -19,7 +19,6 @@ library:
   - base
   - brick
   - bytestring
-  - Clipboard
   - conduit
   - containers
   - cursor

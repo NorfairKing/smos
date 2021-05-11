@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Smos.Actions.Convenience
@@ -16,12 +17,15 @@ where
 
 import Control.Category ((>>>))
 import Control.Monad.Catch
+import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Lens.Micro
 import Path
+import Path.IO
 import Smos.Actions.Browser
 import Smos.Actions.Entry
 import Smos.Actions.File
@@ -32,7 +36,7 @@ import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.Config
 import Smos.Types
-import System.Clipboard
+import System.Exit
 import System.Process
 
 allConveniencePlainActions :: [Action]
@@ -169,7 +173,12 @@ convOpenUrl =
               pure $ propertyValueText urlPv
         forM_ murl $ \url ->
           runSmosAsync $ do
-            let cp = (proc "xdg-open" [T.unpack url]) {std_in = CreatePipe, std_out = CreatePipe, std_err = CreatePipe}
+            let cp =
+                  (proc "xdg-open" [T.unpack url])
+                    { std_in = CreatePipe,
+                      std_out = CreatePipe,
+                      std_err = CreatePipe
+                    }
             _ <- createProcess cp
             pure ()
         pure ec,
@@ -182,9 +191,19 @@ convCopyContentsToClipboard =
     { actionName = "convCopyContentsToClipboard",
       actionFunc = modifyEntryCursorS $ \ec -> do
         let e = rebuildEntryCursor ec
-        let mc = entryContents e
-        forM_ mc $ \c ->
-          liftIO $ setClipboardString $ T.unpack $ contentsText c
+        forM_ (entryContents e) $ \cts -> do
+          mXclipExecutable <- findExecutable [relfile|xclip|]
+          case mXclipExecutable of
+            Nothing -> addErrorMessage "No xclip executable found."
+            Just xclipExecutable -> do
+              exitCode <- liftIO $
+                withSystemTempDir "smos-clipboard" $ \tdir -> do
+                  tfile <- resolveFile tdir "contents-file"
+                  SB.writeFile (fromAbsFile tfile) (TE.encodeUtf8 (contentsText cts))
+                  rawSystem (fromAbsFile xclipExecutable) ["-in", "-selection", "clipboard", fromAbsFile tfile]
+              case exitCode of
+                ExitFailure c -> addErrorMessage $ T.pack $ unwords ["xclip failed with exit code:", show c]
+                ExitSuccess -> pure ()
         pure ec,
       actionDescription = "Copy the contents of the selected entry to the system clipboard"
     }
