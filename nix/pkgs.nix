@@ -34,7 +34,10 @@ let
           (import (sources.yesod-static-remote + "/nix/overlay.nix"))
           (import (sources.autorecorder + "/nix/overlay.nix"))
           niv-overlay
-          (import ./overlay.nix { inherit sources; })
+          (import ./overlay.nix {
+            inherit sources;
+            buildTools = pkgsv { };
+          })
         ];
         config.allowUnfree = true;
       }

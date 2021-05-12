@@ -1,4 +1,6 @@
-{ sources ? import ./sources.nix }:
+{ sources ? import ./sources.nix
+, buildTools ? import sources.nixpkgs { }
+}:
 final: previous:
 
 with final.lib;
@@ -131,7 +133,6 @@ in
       stylesheet = final.stdenv.mkDerivation {
         name = "site-stylesheet.css";
         src = final.gitignoreSource ../smos-web-style/style/mybulma.scss;
-        buildInputs = [ final.sass ];
         buildCommand = ''
           # Dependency submodules are fetched manually here
           # so that we don't have to fetch the submodules of smos
@@ -142,7 +143,7 @@ in
           # The file we want to compile
           # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
           cp $src mybulma.scss
-          scss \
+          ${buildTools.sass}/bin/scss \
             --sourcemap=none \
             mybulma.scss:index.css --style compressed
           cp index.css $out
@@ -255,17 +256,12 @@ in
       "smos-shell" = smosPkg "smos-shell";
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
-    } // optionalAttrs (!static) {
-      # I couldn't get the stylesheet to build when building statically 
       inherit smos-web-style;
+      inherit smos-web-server;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
-    } // optionalAttrs (!static && !isMacos) {
-      # I couldn't get the stylesheet to build when building statically 
-      # and I couldn't get the casts to build when building on macos
       inherit smos-docs-site;
-      inherit smos-web-server;
     };
 
   smosRelease =
