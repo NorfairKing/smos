@@ -5,7 +5,7 @@ let
   pkgsv = import sources.nixpkgs;
   niv-overlay = final: previous:
     {
-      niv = (import sources.niv { pkgs = final; }).niv;
+      niv = (import sources.niv { }).niv;
     };
   gitignore-src-overlay = final: previous:
     {

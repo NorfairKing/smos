@@ -26,4 +26,5 @@ then
     --head "$branchname" \
     --title "Automatic niv-update - $today" \
     --body ""
+  gh pr merge "$branchname" --auto --squash
 fi
