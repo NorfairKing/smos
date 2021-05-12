@@ -1,10 +1,11 @@
 { pkgs ? import ./pkgs.nix { static = false; }
+, smosPackages ? pkgs.smosPackages
 , sources ? import ./sources.nix
 }:
 let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
-  smos-production = import ./nixos-module.nix { inherit sources; smosPkgs = pkgs; envname = "production"; };
+  smos-production = import ./nixos-module.nix { inherit sources; inherit smosPackages; envname = "production"; };
   home-manager = import (
     builtins.fetchTarball
       {
@@ -99,7 +100,7 @@ let
       home.stateVersion = "20.09";
       programs.smos = {
         enable = true;
-        smosPackages = pkgs.smosPackages;
+        inherit smosPackages;
       };
     };
 

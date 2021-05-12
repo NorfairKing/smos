@@ -1,6 +1,6 @@
 { envname
 , sources ? import ./sources.nix
-, smosPkgs ? import ./pkgs.nix { inherit sources; }
+, smosPackages ? (import ./pkgs.nix { inherit sources; }).smosPackages
 }:
 { lib, pkgs, config, ... }:
 with lib;
@@ -64,7 +64,7 @@ in
                   };
                 script =
                   ''
-                    ${smosPkgs.smosPackages.smos-server-gen}/bin/smos-server-end-to-end-test
+                    ${smosPackages.smos-server-gen}/bin/smos-server-end-to-end-test
                   '';
                 serviceConfig =
                   {

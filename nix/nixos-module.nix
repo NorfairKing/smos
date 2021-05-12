@@ -1,6 +1,6 @@
 { envname
 , sources ? import ./sources.nix
-, smosPkgs ? import ./pkgs.nix { inherit sources; }
+, smosPackages ? (import ./pkgs.nix { inherit sources; }).smosPackages
 }:
 
 { lib, pkgs, config, ... }:
@@ -244,7 +244,7 @@ in
               };
             script =
               ''
-                ${smosPkgs.smosPackages.smos-docs-site}/bin/smos-docs-site serve
+                ${smosPackages.smos-docs-site}/bin/smos-docs-site serve
               '';
             serviceConfig =
               {
@@ -302,7 +302,7 @@ in
               ''
                 mkdir -p "${api-server-working-dir}"
                 cd ${api-server-working-dir}
-                ${smosPkgs.smosPackages.smos-server}/bin/smos-server \
+                ${smosPackages.smos-server}/bin/smos-server \
                   serve
               '';
             serviceConfig =
@@ -406,7 +406,7 @@ in
               ''
                 mkdir -p "${web-server-working-dir}"
                 cd ${web-server-working-dir};
-                ${smosPkgs.smosPackages.smos-web-server}/bin/smos-web-server \
+                ${smosPackages.smos-web-server}/bin/smos-web-server \
                   serve
               '';
             serviceConfig =
