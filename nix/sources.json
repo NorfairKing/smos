@@ -5,10 +5,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "autorecorder",
-        "rev": "8d0b771324c2cf79448fea30725d7b5899eeb557",
-        "sha256": "10psqqdwgp8dn27v0m1cldf2k7shmwx82cg8nd0j5ik1a88ifv3j",
+        "rev": "32c59952276d14775731883f90939e759928d4a8",
+        "sha256": "0n8b5bfm67g5jf75gx2vd61ypmdmhaxwmkbh7gihhrgm0kwl0ab3",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/autorecorder/archive/8d0b771324c2cf79448fea30725d7b5899eeb557.tar.gz",
+        "url": "https://github.com/NorfairKing/autorecorder/archive/32c59952276d14775731883f90939e759928d4a8.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "bulma": {
