@@ -13,18 +13,18 @@ in
     inherit sources;
     pkgs = pkgsNormal;
   };
-  # "nixos-module-test-static" = import ./nix/nixos-module-test.nix {
-  #   inherit sources;
-  #   pkgs = pkgsNormal;
-  #   smosPackages = pkgsStatic.smosPackages;
-  # };
+  "nixos-module-test-static" = import ./nix/nixos-module-test.nix {
+    inherit sources;
+    pkgs = pkgsNormal;
+    smosPackages = pkgsStatic.smosPackages;
+  };
   "nixos-end-to-end-test" = import ./nix/nixos-end-to-end-test-test.nix {
     inherit sources;
     pkgs = pkgsNormal;
   };
-  # "nixos-end-to-end-test-static" = import ./nix/nixos-end-to-end-test-test.nix {
-  #   inherit sources;
-  #   pkgs = pkgsNormal;
-  #   smosPackages = pkgsStatic.smosPackages;
-  # };
+  "nixos-end-to-end-test-static" = import ./nix/nixos-end-to-end-test-test.nix {
+    inherit sources;
+    pkgs = pkgsNormal;
+    smosPackages = pkgsStatic.smosPackages;
+  };
 }
