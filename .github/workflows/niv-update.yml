@@ -14,4 +14,4 @@ jobs:
       - uses: cachix/cachix-action@v8
         with:
           name: smos
-      - runs: ./scripts/niv-update-pr.sh
+      - run: ./scripts/niv-update-pr.sh
