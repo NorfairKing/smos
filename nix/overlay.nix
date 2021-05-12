@@ -86,7 +86,7 @@ in
                 )
               )
             )
-            (final.haskellPackages.autoexporter)
+            (buildTools.haskellPackages.autoexporter)
         );
       smosPkgWithComp =
         exeName: name:
@@ -101,13 +101,13 @@ in
           name = "${exeName}-linkchecked";
           buildCommand = ''
             mkdir -p $out
-            ${final.xorg.lndir}/bin/lndir -silent ${pkg} $out
+            ${buildTools.xorg.lndir}/bin/lndir -silent ${pkg} $out
 
             $out/bin/${exeName} serve &
             sleep 1
             ${linkcheck}/bin/linkcheck http://localhost:8000
             ${seocheck}/bin/seocheck http://localhost:8000
-            ${final.killall}/bin/killall ${exeName}
+            ${buildTools.killall}/bin/killall ${exeName}
           '';
         };
       withStaticResources = pkg: resources: overrideCabal pkg (
