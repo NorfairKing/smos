@@ -393,8 +393,11 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
   pure $
     withHeading (str "Work Report") $
       padAll 1 $
-        viewport ResourceViewport Vertical $
-          vBox $ intersperse (str " ") sections
+        vBox
+          [ viewport ResourceViewport Vertical $
+              vBox $ intersperse (str " ") sections,
+            drawEntryReportCursorFilter s workReportCursorResultEntries
+          ]
 
 drawNextMeetingEntryCursor :: Select -> EntryReportEntryCursor (TimestampName, Timestamp) -> Drawer
 drawNextMeetingEntryCursor s EntryReportEntryCursor {..} = do

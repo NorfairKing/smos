@@ -22,3 +22,6 @@
 * `smos`: No longer shows the `.smos` extension for every stuck project in the stuck projects report.
 * `smos` and `smos-query`: Allow thresholds for the waiting, stuck and work reports to be configured as more general time strings.
 * `smos` and `smos-query`: Added the `waiting_threshold` to allow for a custom per-entry waiting threshold.
+* `smos`: Fixed that the filter bar wasn't shown in the interactive work report.
+  This fixes [issue 206](https://github.com/NorfairKing/smos/issues/206).
+  Thank you [@vidocco](https://github.com/vidocco)!
