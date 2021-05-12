@@ -1,7 +1,13 @@
 #! /usr/bin/env nix-shell
 #! nix-shell ./niv-update-pr.nix -i bash --keep GITHUB_TOKEN
 
-niv update
+niv update autorecorder
+niv update bulma
+niv update bulma-carousel
+niv update gitignore.nix
+niv update niv
+niv update nix-pre-commit-hooks
+niv update nixpkgs
 git submodule update --init --recursive
 
 if ! git diff-index --quiet HEAD
