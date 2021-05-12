@@ -9,11 +9,9 @@ jobs:
     name: 'Create PRs for niv-managed dependencies'
     runs-on: ubuntu-latest
     steps:
-      - name: niv-updater-action
-        uses: knl/niv-updater-action@v9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v12
+      - uses: cachix/cachix-action@v8
         with:
-          pull_request_base: 'development'
-          sources_file: 'nix/sources.json'
-          branch_prefix: 'niv-update/'
+          name: smos
+      - run: ./scripts/niv-update-pr.sh
