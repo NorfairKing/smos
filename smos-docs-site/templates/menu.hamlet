@@ -202,6 +202,9 @@
 
   <ul .menu-list>
     <li>
+      <a href=@{PageR ["development", "contributing"]}>
+        Contributing
+    <li>
       <a href=@{CurrentVersionsR}>
         Current Versions
     <li>
