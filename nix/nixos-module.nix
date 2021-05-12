@@ -20,8 +20,9 @@ in
       enable = mkEnableOption "Smos Service";
       docs-site =
         mkOption {
+          default = null;
           type =
-            types.submodule {
+            types.nullOr (types.submodule {
               options =
                 {
                   enable = mkEnableOption "Smos Docs Site";
@@ -71,13 +72,19 @@ in
                       default = null;
                       description = "The Google search console verification code";
                     };
+                  pkg =
+                    mkOption {
+                      default = smosPackages.smos-docs-site;
+                      description = "The docs site package";
+                    };
                 };
-            };
+            });
         };
       api-server =
         mkOption {
+          default = null;
           type =
-            types.submodule {
+            types.nullOr (types.submodule {
               options =
                 {
                   enable = mkEnableOption "Smos API Server";
@@ -145,14 +152,19 @@ in
                     };
                   auto-backup = mkLooperOption "auto-backup";
                   backup-garbage-collector = mkLooperOption "backup-garbage-collector";
+                  pkg =
+                    mkOption {
+                      default = smosPackages.smos-server;
+                      description = "The docs server package";
+                    };
                 };
-            };
-          default = null;
+            });
         };
       web-server =
         mkOption {
+          default = null;
           type =
-            types.submodule {
+            types.nullOr (types.submodule {
               options =
                 {
                   enable = mkEnableOption "Smos Web Server";
@@ -215,8 +227,13 @@ in
                       default = null;
                       description = "The Google search console verification code";
                     };
+                  pkg =
+                    mkOption {
+                      default = smosPackages.smos-web-server;
+                      description = "The web server package";
+                    };
                 };
-            };
+            });
         };
     };
   config =
@@ -233,37 +250,37 @@ in
         (attrOrNull "google-search-console-verification" google-search-console-verification)
       ];
       docs-site-service =
-        with cfg.docs-site;
-        optionalAttrs enable {
-          "smos-docs-site-${envname}" = {
-            description = "Smos docs site ${envname} Service";
-            wantedBy = [ "multi-user.target" ];
-            environment =
-              {
-                "SMOS_DOCS_SITE_CONFIG_FILE" = "${toYamlFile "smos-docs-site-config" docs-site-config}";
-              };
-            script =
-              ''
-                ${smosPackages.smos-docs-site}/bin/smos-docs-site serve
-              '';
-            serviceConfig =
-              {
-                Restart = "always";
-                RestartSec = 1;
-                Nice = 15;
-              };
-            unitConfig =
-              {
-                StartLimitIntervalSec = 0;
-                # ensure Restart=always is always honoured
-              };
-          };
+        optionalAttrs (cfg.docs-site.enable or false) {
+          "smos-docs-site-${envname}" =
+            with cfg.docs-site;
+            {
+              description = "Smos docs site ${envname} Service";
+              wantedBy = [ "multi-user.target" ];
+              environment =
+                {
+                  "SMOS_DOCS_SITE_CONFIG_FILE" = "${toYamlFile "smos-docs-site-config" docs-site-config}";
+                };
+              script =
+                ''
+                  ${pkg}/bin/smos-docs-site serve
+                '';
+              serviceConfig =
+                {
+                  Restart = "always";
+                  RestartSec = 1;
+                  Nice = 15;
+                };
+              unitConfig =
+                {
+                  StartLimitIntervalSec = 0;
+                  # ensure Restart=always is always honoured
+                };
+            };
         };
       docs-site-host =
-        with cfg.docs-site;
-
-        optionalAttrs (enable && hosts != [ ]) {
+        optionalAttrs ((cfg.docs-site.enable or false) && hosts != [ ]) {
           "${head hosts}" =
+            with cfg.docs-site;
             {
               enableACME = true;
               forceSSL = true;
@@ -288,41 +305,41 @@ in
       ];
       # The api server
       api-server-service =
-        with cfg.api-server;
-        optionalAttrs enable {
-          "smos-api-server-${envname}" = {
-            description = "Smos API Server ${envname} Service";
-            wantedBy = [ "multi-user.target" ];
-            environment =
-              {
-                "SMOS_SERVER_CONFIG_FILE" = "${toYamlFile "smos-server-config" api-server-config}";
-                "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
-              };
-            script =
-              ''
-                mkdir -p "${api-server-working-dir}"
-                cd ${api-server-working-dir}
-                ${smosPackages.smos-server}/bin/smos-server \
-                  serve
-              '';
-            serviceConfig =
-              {
-                Restart = "always";
-                RestartSec = 1;
-                Nice = 15;
-              };
-            unitConfig =
-              {
-                StartLimitIntervalSec = 0;
-                # ensure Restart=always is always honoured
-              };
-          };
+        optionalAttrs (cfg.api-server.enable or false) {
+          "smos-api-server-${envname}" =
+            with cfg.api-server;
+            {
+              description = "Smos API Server ${envname} Service";
+              wantedBy = [ "multi-user.target" ];
+              environment =
+                {
+                  "SMOS_SERVER_CONFIG_FILE" = "${toYamlFile "smos-server-config" api-server-config}";
+                  "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
+                };
+              script =
+                ''
+                  mkdir -p "${api-server-working-dir}"
+                  cd ${api-server-working-dir}
+                  ${pkg}/bin/smos-server \
+                    serve
+                '';
+              serviceConfig =
+                {
+                  Restart = "always";
+                  RestartSec = 1;
+                  Nice = 15;
+                };
+              unitConfig =
+                {
+                  StartLimitIntervalSec = 0;
+                  # ensure Restart=always is always honoured
+                };
+            };
         };
       api-server-host =
-        with cfg.api-server;
-
-        optionalAttrs (enable && hosts != [ ]) {
+        optionalAttrs ((cfg.api-server.enable or false) && hosts != [ ]) {
           "${head hosts}" =
+            with cfg.api-server;
             {
               enableACME = true;
               forceSSL = true;
@@ -392,41 +409,41 @@ in
         (attrOrNull "data-dir" web-server-data-dir)
       ];
       web-server-service =
-        with cfg.web-server;
-        optionalAttrs enable {
-          "smos-web-server-${envname}" = {
-            description = "Smos web server ${envname} Service";
-            wantedBy = [ "multi-user.target" ];
-            environment =
-              {
-                "SMOS_WEB_SERVER_CONFIG_FILE" = "${toYamlFile "smos-web-server-config" web-server-config}";
-                "TERM" = "xterm-256color";
-              };
-            script =
-              ''
-                mkdir -p "${web-server-working-dir}"
-                cd ${web-server-working-dir};
-                ${smosPackages.smos-web-server}/bin/smos-web-server \
-                  serve
-              '';
-            serviceConfig =
-              {
-                Restart = "always";
-                RestartSec = 1;
-                Nice = 15;
-              };
-            unitConfig =
-              {
-                StartLimitIntervalSec = 0;
-                # ensure Restart=always is always honoured
-              };
-          };
+        optionalAttrs (cfg.web-server.enable or false) {
+          "smos-web-server-${envname}" =
+            with cfg.web-server;
+            {
+              description = "Smos web server ${envname} Service";
+              wantedBy = [ "multi-user.target" ];
+              environment =
+                {
+                  "SMOS_WEB_SERVER_CONFIG_FILE" = "${toYamlFile "smos-web-server-config" web-server-config}";
+                  "TERM" = "xterm-256color";
+                };
+              script =
+                ''
+                  mkdir -p "${web-server-working-dir}"
+                  cd ${web-server-working-dir};
+                  ${pkg}/bin/smos-web-server \
+                    serve
+                '';
+              serviceConfig =
+                {
+                  Restart = "always";
+                  RestartSec = 1;
+                  Nice = 15;
+                };
+              unitConfig =
+                {
+                  StartLimitIntervalSec = 0;
+                  # ensure Restart=always is always honoured
+                };
+            };
         };
       web-server-host =
-        with cfg.web-server;
-
-        optionalAttrs enable {
+        optionalAttrs (cfg.web-server.enable or false) {
           "${head hosts}" =
+            with cfg.web-server;
             {
               enableACME = true;
               forceSSL = true;
@@ -443,7 +460,7 @@ in
             };
         };
     in
-    mkIf cfg.enable {
+    mkIf (cfg.enable or false) {
       systemd.services =
         mergeListRecursively [
           docs-site-service
@@ -456,9 +473,9 @@ in
           local-backup-timer
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
-        (optional cfg.docs-site.enable cfg.docs-site.port)
-        (optional cfg.api-server.enable cfg.api-server.port)
-        (optional cfg.web-server.enable cfg.web-server.port)
+        (optional (cfg.docs-site.enable or false) cfg.docs-site.port)
+        (optional (cfg.api-server.enable or false) cfg.api-server.port)
+        (optional (cfg.web-server.enable or false) cfg.web-server.port)
       ];
       services.nginx.virtualHosts =
         mergeListRecursively [
