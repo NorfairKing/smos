@@ -79,6 +79,8 @@ tests:
     - sydtest
     - sydtest-servant
     - text
+    - time
+    - typed-uuid
     - zip
     - zstd
 
