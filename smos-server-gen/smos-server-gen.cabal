@@ -120,6 +120,7 @@ test-suite smos-server-test
       Smos.Server.Handler.PostSyncSpec
       Smos.Server.Handler.PutRestoreBackupSpec
       Smos.Server.Handler.PutSmosFileSpec
+      Smos.Server.Looper.BackupGarbageCollectorSpec
       Paths_smos_server_gen
   hs-source-dirs:
       test/
@@ -138,6 +139,7 @@ test-suite smos-server-test
     , mergeful
     , path
     , path-io
+    , persistent
     , persistent-sqlite
     , resource-pool
     , servant

@@ -63,6 +63,7 @@ tests:
     - mergeful
     - path
     - path-io
+    - persistent
     - persistent-sqlite
     - resource-pool
     - servant

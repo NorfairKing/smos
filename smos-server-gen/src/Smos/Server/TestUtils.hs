@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.TestUtils where
 
 import Control.DeepSeq
-import Data.Pool
 import Database.Persist.Sqlite as DB
 import qualified Network.HTTP.Client as Http
 import Servant.Auth.Client as Auth
@@ -12,6 +12,7 @@ import Servant.Auth.Server as Auth
 import Smos.API.Gen ()
 import Smos.Client
 import Smos.Server.Handler.Import as Server
+import Smos.Server.Looper
 import Smos.Server.Serve as Server
 import Test.Syd
 import Test.Syd.Persistent.Sqlite
@@ -19,9 +20,12 @@ import Test.Syd.Wai
 import UnliftIO
 
 data ServerTestEnv = ServerTestEnv
-  { serverTestEnvPool :: Pool SqlBackend,
-    serverTestEnvClient :: ClientEnv
+  { serverTestEnvClientEnv :: !ClientEnv,
+    serverTestEnvServerEnv :: !ServerEnv
   }
+
+runServerTestEnvM :: ServerTestEnv -> ServerTestEnvM a -> IO a
+runServerTestEnvM = flip runReaderT
 
 type ServerTestEnvM a = ReaderT ServerTestEnv IO a
 
@@ -31,27 +35,43 @@ serverEnvSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' ser
 serverTestEnvSetupFunc :: Http.Manager -> SetupFunc () ServerTestEnv
 serverTestEnvSetupFunc man = do
   pool <- serverConnectionPoolSetupFunc
-  cenv <- unwrapSetupFunc (serverSetupFunc' man) pool
-  pure $ ServerTestEnv {serverTestEnvPool = pool, serverTestEnvClient = cenv}
+  senv <- unwrapSetupFunc serverEnvSetupFunc pool
+  cenv <- unwrapSetupFunc (clientEnvSetupFunc man) senv
+  pure $
+    ServerTestEnv
+      { serverTestEnvServerEnv = senv,
+        serverTestEnvClientEnv = cenv
+      }
 
 serverEnvDB :: SqlPersistT IO a -> ServerTestEnvM a
 serverEnvDB func = do
-  pool <- asks serverTestEnvPool
+  pool <- asks $ serverEnvConnection . serverTestEnvServerEnv
   liftIO $ DB.runSqlPool func pool
+
+serverEnvLooper :: Looper a -> ServerTestEnvM a
+serverEnvLooper func = do
+  ServerEnv {..} <- asks serverTestEnvServerEnv
+  let env =
+        LooperEnv
+          { looperEnvConnection = serverEnvConnection,
+            looperEnvCompressionLevel = serverEnvCompressionLevel,
+            looperEnvMaxBackupsPerUser = serverEnvMaxBackupsPerUser
+          }
+  liftIO $ runLoggingT (runReaderT func env) serverEnvLogFunc
 
 serverEnvClient :: NFData a => ClientM a -> ServerTestEnvM (Either ClientError a)
 serverEnvClient func = do
-  cenv <- asks serverTestEnvClient
+  cenv <- asks serverTestEnvClientEnv
   liftIO $ runClient cenv func
 
 serverEnvClientOrErr :: NFData a => ClientM a -> ServerTestEnvM a
 serverEnvClientOrErr func = do
-  cenv <- asks serverTestEnvClient
+  cenv <- asks serverTestEnvClientEnv
   liftIO $ testClient cenv func
 
 withServerEnvNewUser :: (Token -> ServerTestEnvM ()) -> ServerTestEnvM ()
 withServerEnvNewUser func = do
-  cenv <- asks serverTestEnvClient
+  cenv <- asks serverTestEnvClientEnv
   withNewUser cenv func
 
 serverDBSpec :: SpecWith ConnectionPool -> Spec
@@ -69,33 +89,38 @@ serverSetupFunc :: Http.Manager -> SetupFunc () ClientEnv
 serverSetupFunc man = serverConnectionPoolSetupFunc `connectSetupFunc` serverSetupFunc' man
 
 serverSetupFunc' :: Http.Manager -> SetupFunc ConnectionPool ClientEnv
-serverSetupFunc' man = wrapSetupFunc $ \pool -> do
-  application <- liftIO $ do
-    uuid <- nextRandomUUID
-    jwtKey <- Auth.generateKey
-    -- We turn logging off while tests pass, but for debugging the logs will
-    -- probably be useful.  So while debugging you may want to uncomment the
-    -- next line and comment out the one after that.
-    --
-    -- logFunc <- runStderrLoggingT askLoggerIO
-    logFunc <- runNoLoggingT askLoggerIO
-    let env =
-          ServerEnv
-            { serverEnvServerUUID = uuid,
-              serverEnvConnection = pool,
-              serverEnvCookieSettings = defaultCookieSettings,
-              serverEnvJWTSettings = defaultJWTSettings jwtKey,
-              serverEnvPasswordDifficulty = 4, -- The lowest (fastest)
-              serverEnvCompressionLevel = 1, -- The lowest (fastest)
-              serverEnvLogFunc = logFunc,
-              serverEnvMaxBackupsPerUser = Nothing,
-              serverEnvMaxBackupSizePerUser = Nothing,
-              serverEnvAdmin = Nothing
-            }
-    pure $ Server.makeSyncApp env
+serverSetupFunc' man = serverEnvSetupFunc `connectSetupFunc` clientEnvSetupFunc man
+
+clientEnvSetupFunc :: Http.Manager -> SetupFunc ServerEnv ClientEnv
+clientEnvSetupFunc man = wrapSetupFunc $ \env -> do
+  let application = Server.makeSyncApp env
   p <- unwrapSetupFunc applicationSetupFunc application
   -- The fromIntegral is safe because it's PortNumber -> Int
   pure $ mkClientEnv man (BaseUrl Http "127.0.0.1" (fromIntegral p) "")
+
+serverEnvSetupFunc :: SetupFunc ConnectionPool ServerEnv
+serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
+  uuid <- nextRandomUUID
+  jwtKey <- Auth.generateKey
+  -- We turn logging off while tests pass, but for debugging the logs will
+  -- probably be useful.  So while debugging you may want to uncomment the
+  -- next line and comment out the one after that.
+  --
+  -- logFunc <- runStderrLoggingT askLoggerIO
+  logFunc <- runNoLoggingT askLoggerIO
+  pure $
+    ServerEnv
+      { serverEnvServerUUID = uuid,
+        serverEnvConnection = pool,
+        serverEnvCookieSettings = defaultCookieSettings,
+        serverEnvJWTSettings = defaultJWTSettings jwtKey,
+        serverEnvPasswordDifficulty = 4, -- The lowest (fastest)
+        serverEnvCompressionLevel = 1, -- The lowest (fastest)
+        serverEnvLogFunc = logFunc,
+        serverEnvMaxBackupsPerUser = Nothing,
+        serverEnvMaxBackupSizePerUser = Nothing,
+        serverEnvAdmin = Nothing
+      }
 
 registerLogin :: Register -> Login
 registerLogin register =
