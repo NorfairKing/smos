@@ -257,10 +257,10 @@ in
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       inherit smos-web-style;
-      inherit smos-web-server;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+      inherit smos-web-server;
       inherit smos-docs-site;
     };
 
