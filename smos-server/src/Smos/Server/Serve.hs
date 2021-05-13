@@ -32,6 +32,7 @@ import Smos.Server.Handler
 import Smos.Server.Looper
 import Smos.Server.OptParse
 import System.Exit
+import Text.Printf
 import UnliftIO hiding (Handler)
 
 serveSmosServer :: ServeSettings -> IO ()
@@ -86,8 +87,10 @@ runSmosServer ServeSettings {..} = do
                         }
                     looperRunner LooperDef {..} = do
                       logInfoNS looperDefName "Starting"
+                      begin <- liftIO getCurrentTime
                       looperDefFunc
-                      logInfoNS looperDefName "Done"
+                      end <- liftIO getCurrentTime
+                      logInfoNS looperDefName $ T.pack (printf "Done, took %.2f seconds" (realToFrac (diffUTCTime end begin) :: Double))
                 flip runReaderT looperEnv $
                   runLoopersIgnoreOverrun
                     looperRunner

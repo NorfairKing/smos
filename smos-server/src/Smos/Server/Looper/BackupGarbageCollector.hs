@@ -26,7 +26,7 @@ backupGarbageCollectorForUser maxBackups uid = do
         [ Desc BackupTime, -- Delete oldest backups first
           OffsetBy (fromIntegral maxBackups)
         ]
-  logDebugNS "backup-garbage-collector" $ "About to delete " <> T.pack (show (length backupIds)) <> " for user " <> T.pack (show (fromSqlKey uid))
+  logDebugNS "backup-garbage-collector" $ "About to delete " <> T.pack (show (length backupIds)) <> " backups for user " <> T.pack (show (fromSqlKey uid))
 
   forM_ backupIds $ \backupId -> do
     logInfoNS "backup-garbage-collector" $ "Deleting backup " <> T.pack (show (fromSqlKey backupId)) <> " for user " <> T.pack (show (fromSqlKey uid))
