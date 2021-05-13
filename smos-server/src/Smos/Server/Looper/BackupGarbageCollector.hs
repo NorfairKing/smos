@@ -2,6 +2,8 @@
 
 module Smos.Server.Looper.BackupGarbageCollector where
 
+import Conduit
+import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Smos.Server.Backup
 import Smos.Server.Looper.Import
@@ -10,9 +12,9 @@ runBackupGarbageCollectorLooper :: Looper ()
 runBackupGarbageCollectorLooper = do
   mMaxBackups <- asks looperEnvMaxBackupsPerUser
   forM_ mMaxBackups $ \maxBackups -> do
-    -- TODO do this in a conduit so we don't load all users
-    userIds <- looperDB $ selectKeysList [] [Asc UserId]
-    mapM_ (backupGarbageCollectorForUser maxBackups) userIds
+    acqUserIdSource <- looperDB $ selectKeysRes [] [Asc UserId]
+    withAcquire acqUserIdSource $ \source ->
+      runConduit $ source .| C.mapM_ (backupGarbageCollectorForUser maxBackups)
 
 backupGarbageCollectorForUser :: Word -> UserId -> Looper ()
 backupGarbageCollectorForUser maxBackups uid = do
