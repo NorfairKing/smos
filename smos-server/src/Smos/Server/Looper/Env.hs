@@ -4,6 +4,7 @@ module Smos.Server.Looper.Env where
 
 import Control.Monad.Logger
 import Control.Monad.Reader
+import Data.Time
 import Database.Persist.Sql as DB
 import GHC.Generics (Generic)
 
@@ -12,7 +13,8 @@ type Looper = ReaderT LooperEnv (LoggingT IO)
 data LooperEnv = LooperEnv
   { looperEnvConnection :: !ConnectionPool,
     looperEnvCompressionLevel :: !Int,
-    looperEnvMaxBackupsPerUser :: !(Maybe Word)
+    looperEnvMaxBackupsPerUser :: !(Maybe Word),
+    looperEnvBackupInterval :: !NominalDiffTime
   }
   deriving (Generic)
 

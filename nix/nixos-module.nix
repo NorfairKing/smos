@@ -133,6 +133,13 @@ in
                       example = 1024 * 1024;
                       description = "The maximum number of bytes that backups can take up per user";
                     };
+                  backup-interval =
+                    mkOption {
+                      type = types.nullOr types.int;
+                      default = null;
+                      example = 3600;
+                      description = "The interval between automatic backups (seconds)";
+                    };
                   local-backup =
                     mkOption {
                       type = types.nullOr (
@@ -301,6 +308,7 @@ in
         (attrOrNull "admin" admin)
         (attrOrNull "max-backups-per-user" max-backups-per-user)
         (attrOrNull "max-backup-size-per-user" max-backup-size-per-user)
+        (attrOrNull "backup-interval" backup-interval)
         (attrOrNull "auto-backup" auto-backup)
         (attrOrNull "backup-garbage-collector" backup-garbage-collector)
         (attrOrNull "file-migrator" file-migrator)

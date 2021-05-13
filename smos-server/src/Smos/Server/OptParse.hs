@@ -12,6 +12,7 @@ import Control.Monad.Logger
 import Data.Maybe
 import Data.SemVer as Version (toString)
 import qualified Data.Text as T
+import Data.Time
 import Data.Version
 import qualified Env
 import Looper
@@ -55,6 +56,7 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
               Just fp -> resolveFile' fp
           let serveSetMaxBackupsPerUser = serveFlagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
           let serveSetMaxBackupSizePerUser = serveFlagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
+          let serveSetBackupInterval = fromMaybe nominalDay $ serveFlagBackupInterval <|> envBackupInterval <|> (mc >>= confBackupInterval)
           let serveSetAutoBackupLooperSettings =
                 deriveLooperSettings
                   0
@@ -95,6 +97,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUPS_PER_USER" (mE <> Env.help "The maximum number of backups per user")
       <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
+      <*> Env.var (fmap (Just . (fromIntegral :: Int -> NominalDiffTime)) . Env.auto) "BACKUP_INTERVAL" (mE <> Env.help "The interval between automatic backups (seconds)")
       <*> looperEnvironmentParser "AUTO_BACKUP"
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "FILE_MIGRATOR"
@@ -221,6 +224,16 @@ parseServeFlags =
               [ long "max-backup-size-per-user",
                 metavar "BYTES",
                 help "The maximum number of bytes that backups can take up per user"
+              ]
+          )
+      )
+    <*> optional
+      ( option
+          ((fromIntegral :: Int -> NominalDiffTime) <$> auto)
+          ( mconcat
+              [ long "backup-interval",
+                metavar "SECONDS",
+                help "The interval between automatic backups"
               ]
           )
       )

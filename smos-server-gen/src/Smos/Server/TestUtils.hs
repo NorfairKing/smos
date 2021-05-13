@@ -55,7 +55,8 @@ serverEnvLooper func = do
         LooperEnv
           { looperEnvConnection = serverEnvConnection,
             looperEnvCompressionLevel = serverEnvCompressionLevel,
-            looperEnvMaxBackupsPerUser = serverEnvMaxBackupsPerUser
+            looperEnvMaxBackupsPerUser = serverEnvMaxBackupsPerUser,
+            looperEnvBackupInterval = nominalDay
           }
   liftIO $ runLoggingT (runReaderT func env) serverEnvLogFunc
 

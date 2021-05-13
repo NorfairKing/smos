@@ -83,7 +83,8 @@ runSmosServer ServeSettings {..} = do
                       LooperEnv
                         { looperEnvConnection = pool,
                           looperEnvCompressionLevel = compressionLevel,
-                          looperEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser
+                          looperEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
+                          looperEnvBackupInterval = serveSetBackupInterval
                         }
                     looperRunner LooperDef {..} = do
                       logInfoNS looperDefName "Starting"

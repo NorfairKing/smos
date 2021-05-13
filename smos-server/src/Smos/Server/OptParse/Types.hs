@@ -4,6 +4,7 @@
 module Smos.Server.OptParse.Types where
 
 import Control.Monad.Logger
+import Data.Time
 import Data.Word
 import Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -32,6 +33,7 @@ data ServeFlags = ServeFlags
     serveFlagPort :: !(Maybe Int),
     serveFlagMaxBackupsPerUser :: !(Maybe Word),
     serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
+    serveFlagBackupInterval :: !(Maybe NominalDiffTime),
     serveFlagAutoBackupLooperFlags :: !LooperFlags,
     serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags,
     serveFlagFileMigrationLooperFlags :: !LooperFlags,
@@ -53,6 +55,7 @@ data Environment = Environment
     envPort :: !(Maybe Int),
     envMaxBackupsPerUser :: !(Maybe Word),
     envMaxBackupSizePerUser :: !(Maybe Word64),
+    envBackupInterval :: !(Maybe NominalDiffTime),
     envAutoBackupLooperEnv :: !LooperEnvironment,
     envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
     envFileMigrationLooperEnv :: !LooperEnvironment,
@@ -68,6 +71,7 @@ data Configuration = Configuration
     confPort :: !(Maybe Int),
     confMaxBackupsPerUser :: !(Maybe Word),
     confMaxBackupSizePerUser :: !(Maybe Word64),
+    confBackupInterval :: !(Maybe NominalDiffTime),
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
     confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
     confFileMigrationLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -91,6 +95,7 @@ configurationObjectParser =
     <*> optionalField "port" "The port on which to serve api requests"
     <*> optionalField "max-backups-per-user" "The maximum number of backups per user"
     <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
+    <*> optionalFieldWith "backup-interval" "The interval between automatic backups (seconds)" ((fromIntegral :: Int -> NominalDiffTime) <$> yamlSchema)
     <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
     <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
     <*> optionalField "file-migrator" "The configuration for the automatic file format migrator looper"
@@ -108,6 +113,7 @@ data ServeSettings = ServeSettings
     serveSetPort :: !Int,
     serveSetMaxBackupsPerUser :: !(Maybe Word),
     serveSetMaxBackupSizePerUser :: !(Maybe Word64),
+    serveSetBackupInterval :: NominalDiffTime,
     serveSetAutoBackupLooperSettings :: !LooperSettings,
     serveSetBackupGarbageCollectionLooperSettings :: !LooperSettings,
     serveSetFileMigrationLooperSettings :: !LooperSettings,

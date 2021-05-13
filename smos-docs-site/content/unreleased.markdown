@@ -25,3 +25,4 @@
 * `smos`: Fixed that the filter bar wasn't shown in the interactive work report.
   This fixes [issue 206](https://github.com/NorfairKing/smos/issues/206).
   Thank you [@vidocco](https://github.com/vidocco)!
+- `smos-server`: Made the backup interval configurable
