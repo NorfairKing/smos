@@ -152,6 +152,7 @@ in
                     };
                   auto-backup = mkLooperOption "auto-backup";
                   backup-garbage-collector = mkLooperOption "backup-garbage-collector";
+                  file-migrator = mkLooperOption "file-migrator";
                   pkg =
                     mkOption {
                       default = smosPackages.smos-server;
@@ -302,6 +303,7 @@ in
         (attrOrNull "max-backup-size-per-user" max-backup-size-per-user)
         (attrOrNull "auto-backup" auto-backup)
         (attrOrNull "backup-garbage-collector" backup-garbage-collector)
+        (attrOrNull "file-migrator" file-migrator)
       ];
       # The api server
       api-server-service =
