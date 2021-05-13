@@ -279,8 +279,8 @@ in
             };
         };
       docs-site-host =
-        optionalAttrs ((cfg.docs-site.enable or false) && hosts != [ ]) {
-          "${head hosts}" =
+        optionalAttrs ((cfg.docs-site.enable or false) && (cfg.docs-site.hosts or [ ]) != [ ]) {
+          "${head cfg.docs-site.hosts}" =
             with cfg.docs-site;
             {
               enableACME = true;
@@ -339,8 +339,8 @@ in
             };
         };
       api-server-host =
-        optionalAttrs ((cfg.api-server.enable or false) && hosts != [ ]) {
-          "${head hosts}" =
+        optionalAttrs ((cfg.api-server.enable or false) && (cfg.api-server.hosts or [ ]) != [ ]) {
+          "${head cfg.api-server.hosts}" =
             with cfg.api-server;
             {
               enableACME = true;
@@ -443,8 +443,8 @@ in
             };
         };
       web-server-host =
-        optionalAttrs (cfg.web-server.enable or false) {
-          "${head hosts}" =
+        optionalAttrs ((cfg.web-server.enable or false) && (cfg.web-server.hosts or [ ]) != [ ]) {
+          "${head cfg.web-server.hosts}" =
             with cfg.web-server;
             {
               enableACME = true;
