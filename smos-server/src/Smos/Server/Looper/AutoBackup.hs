@@ -3,15 +3,17 @@
 
 module Smos.Server.Looper.AutoBackup where
 
+import Conduit
+import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
 import Smos.Server.Backup
 import Smos.Server.Looper.Import
 
 runAutoBackupLooper :: Looper ()
 runAutoBackupLooper = do
-  -- TODO do this in a conduit so we don't load all users
-  userIds <- looperDB $ selectKeysList [] [Asc UserId]
-  mapM_ autoBackupForUser userIds
+  acqUserIdSource <- looperDB $ selectKeysRes [] [Asc UserId]
+  withAcquire acqUserIdSource $ \source ->
+    runConduit $ source .| C.mapM_ autoBackupForUser
 
 autoBackupForUser :: UserId -> Looper ()
 autoBackupForUser uid = do
