@@ -165,6 +165,31 @@ in
                       default = smosPackages.smos-server;
                       description = "The docs server package";
                     };
+                  monetisation =
+                    mkOption {
+                      type = types.nullOr (
+                        types.submodule {
+                          options = {
+                            stripe-secret-key = mkOption {
+                              type = types.str;
+                              example = "sk_test_XXXXXXXXXXXXXXXXXXXXXXX";
+                              description = "The stripe api secret key";
+                            };
+                            stripe-publishable-key = mkOption {
+                              type = types.str;
+                              example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
+                              description = "The stripe api publishable key";
+                            };
+                            stripe-plan = mkOption {
+                              type = types.str;
+                              example = "plan_XXXXXXXXXXXXXXXXXXXXXXXX";
+                              description = "The stripe plan";
+                            };
+                          };
+                        }
+                      );
+                      default = null;
+                    };
                 };
             });
         };
@@ -312,6 +337,7 @@ in
         (attrOrNull "auto-backup" auto-backup)
         (attrOrNull "backup-garbage-collector" backup-garbage-collector)
         (attrOrNull "file-migrator" file-migrator)
+        (attrOrNull "monetisation" monetisation)
       ];
       # The api server
       api-server-service =
