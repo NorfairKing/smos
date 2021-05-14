@@ -71,7 +71,8 @@ runSmosServer ServeSettings {..} = do
                             serverEnvCompressionLevel = compressionLevel,
                             serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
                             serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
-                            serverEnvAdmin = serveSetAdmin
+                            serverEnvAdmin = serveSetAdmin,
+                            serverEnvMonetisationSettings = serveSetMonetisationSettings
                           }
                   let middles =
                         if development

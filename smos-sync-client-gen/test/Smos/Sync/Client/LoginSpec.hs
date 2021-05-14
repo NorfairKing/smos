@@ -42,7 +42,8 @@ spec = managerSpec $
                             serverEnvLogFunc = \_ _ _ _ -> pure (),
                             serverEnvMaxBackupsPerUser = Nothing,
                             serverEnvMaxBackupSizePerUser = Nothing,
-                            serverEnvAdmin = Nothing
+                            serverEnvAdmin = Nothing,
+                            serverEnvMonetisationSettings = Nothing
                           }
                   let application = Server.makeSyncApp env
                   p <- unwrapSetupFunc applicationSetupFunc application

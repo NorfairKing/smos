@@ -120,7 +120,8 @@ serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
         serverEnvLogFunc = logFunc,
         serverEnvMaxBackupsPerUser = Nothing,
         serverEnvMaxBackupSizePerUser = Nothing,
-        serverEnvAdmin = Nothing
+        serverEnvAdmin = Nothing,
+        serverEnvMonetisationSettings = Nothing
       }
 
 registerLogin :: Register -> Login

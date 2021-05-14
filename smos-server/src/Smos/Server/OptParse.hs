@@ -79,8 +79,20 @@ combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
                   envFileMigrationLooperEnv
                   (mc >>= confFileMigrationLooperConfiguration)
           let serveSetAdmin = serveFlagAdmin <|> envAdmin <|> (mc >>= confAdmin)
+          let serveSetMonetisationSettings =
+                combineToMonetisationSettings
+                  serveFlagMonetisationFlags
+                  envMonetisationEnv
+                  (mc >>= confMonetisationConf)
           pure $ DispatchServe ServeSettings {..}
     getSettings = pure Settings
+
+combineToMonetisationSettings :: MonetisationFlags -> MonetisationEnvironment -> Maybe MonetisationConfiguration -> Maybe MonetisationSettings
+combineToMonetisationSettings MonetisationFlags {..} MonetisationEnvironment {..} mc =
+  MonetisationSettings
+    <$> (monetisationFlagStripeSecretKey <|> monetisationEnvStripeSecretKey <|> (mc >>= monetisationConfStripeSecretKey))
+    <*> (monetisationFlagStripePublishableKey <|> monetisationEnvStripePublishableKey <|> (mc >>= monetisationConfStripePublishableKey))
+    <*> (monetisationFlagStripePlan <|> monetisationEnvStripePlan <|> (mc >>= monetisationConfStripePlan))
 
 getEnvironment :: IO Environment
 getEnvironment = Env.parse (Env.header "Enviromnent") environmentParser
@@ -102,6 +114,17 @@ environmentParser =
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "FILE_MIGRATOR"
       <*> Env.var (fmap Just . (left Env.UnreadError . parseUsernameWithError . T.pack)) "ADMIN" (mE <> Env.help "The user that will have admin rights")
+      <*> monetisationEnvironmentParser
+  where
+    mE = Env.def Nothing <> Env.keep
+
+monetisationEnvironmentParser :: Env.Parser Env.Error MonetisationEnvironment
+monetisationEnvironmentParser =
+  Env.prefixed "STRIPE_" $
+    MonetisationEnvironment
+      <$> Env.var (fmap Just . Env.str) "SECRET_KEY" (mE <> Env.help "The stripe api secret key")
+      <*> Env.var (fmap Just . Env.str) "PUBLISHABLE_KEY" (mE <> Env.help "The stripe api publishable key")
+      <*> Env.var (fmap Just . Env.str) "PLAN" (mE <> Env.help "The stripe plan id")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -247,6 +270,38 @@ parseServeFlags =
               [ long "admin",
                 metavar "USERNAME",
                 help "The user that will have admin rights"
+              ]
+          )
+      )
+    <*> parseMonetisationFlags
+
+parseMonetisationFlags :: Parser MonetisationFlags
+parseMonetisationFlags =
+  MonetisationFlags
+    <$> optional
+      ( strOption
+          ( mconcat
+              [ long "stripe-secret-key",
+                metavar "SECRET_KEY",
+                help "The stripe api secret key"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "stripe-publishable-key",
+                metavar "PUBLISHABLE_KEY",
+                help "The stripe api publishable key"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "stripe-plan",
+                metavar "PLAN_ID",
+                help "The stripe plan id"
               ]
           )
       )

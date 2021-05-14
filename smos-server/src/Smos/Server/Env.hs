@@ -19,6 +19,7 @@ import Servant
 import Servant.Auth.Server
 import Smos.API
 import Smos.Server.DB
+import Smos.Server.OptParse.Types
 
 type ServerHandler = ReaderT ServerEnv (LoggingT Handler)
 
@@ -32,7 +33,8 @@ data ServerEnv = ServerEnv
     serverEnvLogFunc :: !(Loc -> LogSource -> LogLevel -> LogStr -> IO ()),
     serverEnvMaxBackupsPerUser :: !(Maybe Word),
     serverEnvMaxBackupSizePerUser :: !(Maybe Word64),
-    serverEnvAdmin :: !(Maybe Username)
+    serverEnvAdmin :: !(Maybe Username),
+    serverEnvMonetisationSettings :: !(Maybe MonetisationSettings)
   }
   deriving (Generic)
 
