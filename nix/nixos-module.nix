@@ -185,6 +185,12 @@ in
                               example = "plan_XXXXXXXXXXXXXXXXXXXXXXXX";
                               description = "The stripe plan";
                             };
+                            freeloaders = mkOption {
+                              type = types.listOf types.str;
+                              example = [ "friend" ];
+                              default = [ ];
+                              description = "The usernames of users that will not have to pay";
+                            };
                           };
                         }
                       );

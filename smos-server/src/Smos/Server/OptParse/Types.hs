@@ -4,6 +4,8 @@
 module Smos.Server.OptParse.Types where
 
 import Control.Monad.Logger
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time
 import Data.Word
 import Data.Yaml as Yaml
@@ -45,7 +47,8 @@ data ServeFlags = ServeFlags
 data MonetisationFlags = MonetisationFlags
   { monetisationFlagStripeSecretKey :: !(Maybe String),
     monetisationFlagStripePublishableKey :: !(Maybe String),
-    monetisationFlagStripePlan :: !(Maybe String)
+    monetisationFlagStripePlan :: !(Maybe String),
+    monetisationFlagFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -75,7 +78,8 @@ data Environment = Environment
 data MonetisationEnvironment = MonetisationEnvironment
   { monetisationEnvStripeSecretKey :: !(Maybe String),
     monetisationEnvStripePublishableKey :: !(Maybe String),
-    monetisationEnvStripePlan :: !(Maybe String)
+    monetisationEnvStripePlan :: !(Maybe String),
+    monetisationEnvFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -124,7 +128,8 @@ configurationObjectParser =
 data MonetisationConfiguration = MonetisationConfiguration
   { monetisationConfStripeSecretKey :: !(Maybe String),
     monetisationConfStripePublishableKey :: !(Maybe String),
-    monetisationConfStripePlan :: !(Maybe String)
+    monetisationConfStripePlan :: !(Maybe String),
+    monetisationConfFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -140,6 +145,7 @@ instance YamlSchema MonetisationConfiguration where
         <*> optionalField
           "stripe-plan"
           "The stripe identifier of the stripe plan used to checkout a subscription"
+        <*> optionalFieldWithDefault "freeloaders" S.empty "The usernames of users that will not have to pay"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -165,7 +171,8 @@ data ServeSettings = ServeSettings
 data MonetisationSettings = MonetisationSettings
   { monetisationSetStripeSecretKey :: !String,
     monetisationSetStripePublishableKey :: !String,
-    monetisationSetStripePlan :: !String
+    monetisationSetStripePlan :: !String,
+    monetisationSetFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 

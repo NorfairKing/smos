@@ -11,6 +11,7 @@ import Control.Arrow
 import Control.Monad.Logger
 import Data.Maybe
 import Data.SemVer as Version (toString)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Time
 import Data.Version
@@ -93,6 +94,7 @@ combineToMonetisationSettings MonetisationFlags {..} MonetisationEnvironment {..
     <$> (monetisationFlagStripeSecretKey <|> monetisationEnvStripeSecretKey <|> (mc >>= monetisationConfStripeSecretKey))
     <*> (monetisationFlagStripePublishableKey <|> monetisationEnvStripePublishableKey <|> (mc >>= monetisationConfStripePublishableKey))
     <*> (monetisationFlagStripePlan <|> monetisationEnvStripePlan <|> (mc >>= monetisationConfStripePlan))
+    <*> pure (S.unions [monetisationFlagFreeloaders, monetisationEnvFreeloaders, maybe S.empty monetisationConfFreeloaders mc])
 
 getEnvironment :: IO Environment
 getEnvironment = Env.parse (Env.header "Enviromnent") environmentParser
@@ -120,11 +122,19 @@ environmentParser =
 
 monetisationEnvironmentParser :: Env.Parser Env.Error MonetisationEnvironment
 monetisationEnvironmentParser =
-  Env.prefixed "STRIPE_" $
-    MonetisationEnvironment
-      <$> Env.var (fmap Just . Env.str) "SECRET_KEY" (mE <> Env.help "The stripe api secret key")
-      <*> Env.var (fmap Just . Env.str) "PUBLISHABLE_KEY" (mE <> Env.help "The stripe api publishable key")
-      <*> Env.var (fmap Just . Env.str) "PLAN" (mE <> Env.help "The stripe plan id")
+  MonetisationEnvironment
+    <$> Env.var (fmap Just . Env.str) "STRIPE_SECRET_KEY" (mE <> Env.help "The stripe api secret key")
+    <*> Env.var (fmap Just . Env.str) "STRIPE_PUBLISHABLE_KEY" (mE <> Env.help "The stripe api publishable key")
+    <*> Env.var (fmap Just . Env.str) "STRIPE_PLAN" (mE <> Env.help "The stripe plan id")
+    <*> Env.var
+      ( left Env.UnreadError
+          . fmap S.fromList
+          . mapM (parseUsernameWithError . T.strip)
+          . T.splitOn ","
+          . T.pack
+      )
+      "FREELOADERS"
+      (Env.def S.empty <> Env.keep <> Env.help "The usernames of users that will not have to pay, comma separated")
   where
     mE = Env.def Nothing <> Env.keep
 
@@ -305,6 +315,18 @@ parseMonetisationFlags =
               ]
           )
       )
+    <*> ( S.fromList
+            <$> many
+              ( option
+                  (eitherReader $ parseUsernameWithError . T.pack)
+                  ( mconcat
+                      [ long "freeloader",
+                        metavar "USERNAME",
+                        help "The username of a user that will not have to pay"
+                      ]
+                  )
+              )
+        )
 
 parseFlags :: Parser Flags
 parseFlags =
