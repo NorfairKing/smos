@@ -120,7 +120,7 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
         se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp sf
         latestChange <- stuckReportEntryLatestChange se
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
-        guard (diff >= timeNominalDiffTime workReportContextStuckThreshold * nominalDay)
+        guard (diff >= timeNominalDiffTime workReportContextStuckThreshold)
         pure se
    in iwr
         { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry
