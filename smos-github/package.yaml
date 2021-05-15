@@ -10,6 +10,7 @@ homepage: https://github.com/NorfairKing/smos
 library:
   source-dirs: src/
   ghc-options: -Wall
+  build-tools: autoexporter
   dependencies:
     - aeson
     - async

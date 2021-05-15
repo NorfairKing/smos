@@ -18,6 +18,8 @@ build-type:     Simple
 library
   exposed-modules:
       Smos.GitHub
+      Smos.GitHub.Command
+      Smos.GitHub.Command.List
       Smos.GitHub.OptParse
       Smos.GitHub.OptParse.Types
   other-modules:
@@ -25,6 +27,8 @@ library
   hs-source-dirs:
       src/
   ghc-options: -Wall
+  build-tool-depends:
+      autoexporter:autoexporter
   build-depends:
       aeson
     , async
