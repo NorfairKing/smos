@@ -30,9 +30,12 @@ packages:
 - smos-notify
 - smos-github
 
+- stripe-api/stripe-client
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
+  stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
@@ -214,6 +217,11 @@ extra-deps:
 - github-0.26@sha256:a9d4046325c3eb28cdc7bef2c3f5bb213328caeae0b7dce6f51de655f0bffaa1,7162
 - binary-instances-1.0.1@sha256:56bb2da1268415901d6ea3f46535b88b89459d7926fbfcca027e25e069ea6f2b,2647
 - time-compat-1.9.5@sha256:f343bc5339a217ecef497e3a730017e15f5c396713fe1d653b8a9e7b1f666988,4932
+
+- github: Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator
+  commit: 704f0d4f13698ed3fb5e54b5b6a039572a324a20
+  subdirs:
+    - openapi3-code-generator
 
 flags:
   zip:
