@@ -57,15 +57,17 @@ keyHelpCursorsTable khs =
 
 keyHelpCursorRow :: KeyHelpCursor -> Widget
 keyHelpCursorRow KeyHelpCursor {..} =
-  [whamlet|
+  let actionName = actionNameText keyHelpCursorName
+   in [whamlet|
     <tr>
       <td>
         $forall kc <- keyHelpCursorKeyBinding
           <code>
             #{renderKeyCombination kc}
       <td>
-        <code>
-          #{actionNameText keyHelpCursorName}
+        <a name=#{actionName} href="##{actionName}">
+          <code>
+            #{actionName}
       <td>
         #{keyHelpCursorDescription}
 

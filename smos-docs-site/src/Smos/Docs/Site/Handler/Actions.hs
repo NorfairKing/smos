@@ -41,11 +41,13 @@ actionTable aas =
 
 actionRow :: AnyAction -> Widget
 actionRow aa =
-  [whamlet|
+  let actionName = actionNameText $ anyActionName aa
+   in [whamlet|
     <tr>
       <td>
-        <code>
-          #{actionNameText $ anyActionName aa}
+        <a name=#{actionName} href="##{actionName}">
+          <code>
+            #{actionName}
       <td>
         #{anyActionDescription aa}
   |]
