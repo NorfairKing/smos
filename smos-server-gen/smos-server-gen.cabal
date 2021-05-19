@@ -80,6 +80,7 @@ executable smos-server-end-to-end-test
   main-is: Main.hs
   other-modules:
       Smos.Server.E2E.LoginSpec
+      Smos.Server.E2E.MonetisationSpec
       Smos.Server.E2E.TestUtils
       Smos.Server.E2E.VersionSpec
       Paths_smos_server_gen
@@ -113,6 +114,7 @@ test-suite smos-server-test
       Smos.Server.Handler.GetBackupSpec
       Smos.Server.Handler.GetListBackupsSpec
       Smos.Server.Handler.GetListSmosFilesSpec
+      Smos.Server.Handler.GetMonetisationSpec
       Smos.Server.Handler.GetNextActionReportSpec
       Smos.Server.Handler.GetPermissionsSpec
       Smos.Server.Handler.GetSubscriptionSpec

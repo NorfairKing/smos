@@ -57,6 +57,9 @@ smosUnprotectedClient = fromServant $ unprotectedRoutes smosClient
 clientGetApiVersion :: ClientM Version
 clientGetApiVersion = getApiVersion smosUnprotectedClient
 
+clientGetMonetisation :: ClientM (Maybe Monetisation)
+clientGetMonetisation = getMonetisation smosUnprotectedClient
+
 clientPostRegister :: Register -> ClientM NoContent
 clientPostRegister = postRegister smosUnprotectedClient
 

@@ -17,7 +17,8 @@ import Smos.Web.Server.Handler.Import
 import qualified Yesod
 
 getAccountR :: Handler Html
-getAccountR = withLogin $ \t -> do
+getAccountR = withLogin' $ \un t -> do
+  mMonetisation <- runClientOrErr clientGetMonetisation
   UserSubscription {..} <- runClientOrErr $ clientGetUserSubscription t
   now <- liftIO getCurrentTime
   withNavBar $ do

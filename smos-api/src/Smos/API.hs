@@ -75,6 +75,7 @@ type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
 data UnprotectedRoutes route = UnprotectedRoutes
   { getApiVersion :: !(route :- GetAPIVersion),
+    getMonetisation :: !(route :- GetMonetisation),
     postRegister :: !(route :- PostRegister),
     postLogin :: !(route :- PostLogin)
   }
@@ -125,6 +126,21 @@ data ProtectedRoutes route = ProtectedRoutes
   deriving (Generic)
 
 type GetAPIVersion = "api-version" :> Get '[JSON] Version
+
+type GetMonetisation = "monetisation" :> Get '[JSON] (Maybe Monetisation)
+
+data Monetisation = Monetisation
+  deriving (Show, Eq, Generic)
+
+instance Validity Monetisation
+
+instance NFData Monetisation
+
+instance FromJSON Monetisation where
+  parseJSON = withObject "Monetisation" $ \_ -> pure Monetisation
+
+instance ToJSON Monetisation where
+  toJSON Monetisation = object []
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 

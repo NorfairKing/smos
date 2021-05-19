@@ -33,6 +33,7 @@ library
       Smos.Server.Handler.GetBackup
       Smos.Server.Handler.GetListBackups
       Smos.Server.Handler.GetListSmosFiles
+      Smos.Server.Handler.GetMonetisation
       Smos.Server.Handler.GetNextActionReport
       Smos.Server.Handler.GetSmosFile
       Smos.Server.Handler.GetUserPermissions
