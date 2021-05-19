@@ -146,6 +146,7 @@ test-suite smos-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Smos.Web.Server.Handler.AccountSpec
       Smos.Web.Server.Handler.AuthSpec
       Smos.Web.Server.Handler.BackupSpec
       Smos.Web.Server.Handler.HomeSpec

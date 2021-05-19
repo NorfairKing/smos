@@ -52,7 +52,7 @@
               Sign up
 
 
-$forall (_, msgHtml) <- msgs
-  <div .notification>
+$forall (clazz, msgHtml) <- msgs
+  <div .notification class=#{clazz}>
     #{msgHtml}
 

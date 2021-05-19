@@ -1,6 +1,6 @@
 <section .section>
   <div .container>
-    <div .box>
+    <div .box .content>
       <h3 .title .is-3>
         Account
 
@@ -15,4 +15,16 @@
             (#{prettyTimeAuto now end})
           $nothing
             Not subscribed
+
+      <p>
+        <form
+           method=post
+           action=@{AccountDeleteR}>
+          ^{token}
+          <button
+            .button .is-danger
+            type=submit
+            onclick="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+            Delete account
+
 

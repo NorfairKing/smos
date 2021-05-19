@@ -7,7 +7,6 @@ import Control.Monad
 import Data.SemVer
 import Servant.Client
 import Smos.Client
-import Smos.Data
 import Test.Syd
 
 spec :: Version -> TestDef '[ClientEnv] ()

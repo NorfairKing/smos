@@ -6,15 +6,12 @@
 
 module Smos.Web.Server.Handler.Account
   ( getAccountR,
+    postAccountDeleteR,
   )
 where
 
 import Control.Monad.Except
-import qualified Data.ByteString.Lazy as LB
-import qualified Network.HTTP.Types as Http
-import Servant.Types.SourceT as Source
 import Smos.Web.Server.Handler.Import
-import qualified Yesod
 
 getAccountR :: Handler Html
 getAccountR = withLogin' $ \un t -> do
@@ -24,3 +21,9 @@ getAccountR = withLogin' $ \un t -> do
   withNavBar $ do
     token <- genToken
     $(widgetFile "account")
+
+postAccountDeleteR :: Handler Html
+postAccountDeleteR = withLogin $ \t -> do
+  NoContent <- runClientOrErr $ clientDeleteUser t
+  addMessage "is-success" "Account succesfully deleted."
+  redirect HomeR

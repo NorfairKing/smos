@@ -19,6 +19,7 @@
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
 /account AccountR GET
+/account/delete AccountDeleteR POST
 
 /admin AdminPanelR GET
 

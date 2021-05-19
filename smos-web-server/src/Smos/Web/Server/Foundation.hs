@@ -217,7 +217,7 @@ loginWeb form = do
       handleStandardServantErrs err $ \resp ->
         if responseStatusCode resp == Http.unauthorized401
           then do
-            addMessage "error" "Unable to login"
+            addMessage ".is-danger" "Unable to login"
             redirect $ AuthR LoginR
           else error $ show resp
     Right (Left _) -> undefined

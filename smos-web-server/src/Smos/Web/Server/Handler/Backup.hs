@@ -34,7 +34,7 @@ postBackupR = withLogin $ \t -> do
     Left err -> handleStandardServantErrs err $ \resp ->
       if Http.statusCode (responseStatusCode resp) == 403
         then do
-          addMessage "Maximum number of backups reached." "Maximum number of backups reached."
+          addMessage ".is-danger" "Maximum number of backups reached."
           getBackupsR
         else redirect BackupsR
     Right _ -> redirect BackupsR
