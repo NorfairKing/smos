@@ -73,6 +73,7 @@ library
     , sydtest-persistent-sqlite
     , sydtest-servant
     , sydtest-wai
+    , text
     , unliftio
   default-language: Haskell2010
 
@@ -124,6 +125,7 @@ test-suite smos-server-test
       Smos.Server.Handler.PostSyncSpec
       Smos.Server.Handler.PutRestoreBackupSpec
       Smos.Server.Handler.PutSmosFileSpec
+      Smos.Server.Handler.PutUserSubscriptionSpec
       Smos.Server.Looper.AutoBackupSpec
       Smos.Server.Looper.BackupGarbageCollectorSpec
       Paths_smos_server_gen

@@ -31,6 +31,7 @@ import Data.List (find)
 import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Time
 import GHC.Generics
 import Lens.Micro
 import qualified Network.HTTP.Types as HTTP
@@ -210,6 +211,9 @@ smosAdminClient = fromServant $ adminRoutes smosClient
 
 clientGetUsers :: Token -> ClientM [UserInfo]
 clientGetUsers = getUsers smosAdminClient
+
+clientPutUserSubscription :: Token -> Username -> UTCTime -> ClientM NoContent
+clientPutUserSubscription = putUserSubscription smosAdminClient
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession

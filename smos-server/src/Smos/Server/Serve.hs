@@ -178,7 +178,8 @@ serverReportRoutes =
 syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
 syncServerAdminRoutes =
   AdminRoutes
-    { getUsers = withAuthResult serveGetUsers
+    { getUsers = withAuthResult serveGetUsers,
+      putUserSubscription = withAuthResult servePutUserSubscription
     }
 
 readServerUUID :: Path Abs File -> IO ServerUUID

@@ -5,11 +5,9 @@ module Smos.Server.Handler.GetMonetisationSpec
   )
 where
 
-import Smos.API as API
 import Smos.Client
 import Smos.Server.TestUtils
 import Test.Syd
-import Test.Syd.Validity
 
 spec :: Spec
 spec =

@@ -218,7 +218,7 @@ instance FromJSON UserSubscription where
 instance ToJSON UserSubscription where
   toJSON UserSubscription {..} =
     object
-      [ "admin" .= userSubscriptionEnd
+      [ "subscribed" .= userSubscriptionEnd
       ]
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
@@ -374,7 +374,8 @@ newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
   deriving (Show, Eq, Ord, Generic)
 
 data AdminRoutes route = AdminRoutes
-  { getUsers :: !(route :- ProtectAdmin :> GetUsers)
+  { getUsers :: !(route :- ProtectAdmin :> GetUsers),
+    putUserSubscription :: !(route :- ProtectAdmin :> PutUserSubscription)
   }
   deriving (Generic)
 
@@ -414,3 +415,5 @@ instance FromJSON UserInfo where
       <*> o .:? "last-login"
       <*> o .:? "last-use"
       <*> o .:? "subscribed"
+
+type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> PutNoContent '[JSON] NoContent
