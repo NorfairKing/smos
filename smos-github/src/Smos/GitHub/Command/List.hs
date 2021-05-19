@@ -70,7 +70,7 @@ parseEntryGitHubUrl e = do
   let mkN = N . T.pack
   case segments of
     (owner : repo : "pull" : num : _) -> PullRequestUrl (mkN owner) (mkN repo) <$> (IssueNumber <$> readMaybe num)
-    (owner : repo : "issue" : num : _) -> IssueUrl (mkN owner) (mkN repo) <$> (IssueNumber <$> readMaybe num)
+    (owner : repo : "issues" : num : _) -> IssueUrl (mkN owner) (mkN repo) <$> (IssueNumber <$> readMaybe num)
     _ -> Nothing
 
 data GitHubUrl
