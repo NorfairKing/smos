@@ -14,7 +14,7 @@ $maybe unreleased <- mUnreleased
 
 
 <div .mt-6>
-  $forall (day, release) <- M.toList releases
+  $forall (day, release) <- M.toDescList releases
     <h3 .title .is-5>
       <a href=@{ChangelogReleaseR day}>
         #{formatTime defaultTimeLocale "%F" day}
