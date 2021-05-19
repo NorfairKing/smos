@@ -66,8 +66,9 @@ clientPostLogin = postLogin smosUnprotectedClient
 oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []
 
+-- | Update this to a newer version than the current to build in forward-compatibility
 newestSupportedAPIVersion :: Version
-newestSupportedAPIVersion = version 0 1 0 [] []
+newestSupportedAPIVersion = apiVersion
 
 clientVersionCheck :: ClientM (Version, VersionCheck)
 clientVersionCheck = do
