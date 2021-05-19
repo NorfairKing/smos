@@ -18,6 +18,8 @@
 /backup/#{BackupUUID}/delete BackupDeleteR POST
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
+/account AccountR GET
+
 /admin AdminPanelR GET
 
 -- Subsites

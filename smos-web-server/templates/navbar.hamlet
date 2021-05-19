@@ -22,6 +22,9 @@
         <a .navbar-item href=@{BackupsR}>
           Backups
 
+        <a .navbar-item href=@{AccountR}>
+          Account
+
       $maybe docsUrl <- mDocsUrl
         <a .navbar-item href="#{showBaseUrl docsUrl}">
           Documentation

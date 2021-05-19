@@ -1,0 +1,14 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Account
+
+      <p>
+        $maybe end <- userSubscriptionEnd
+          Subscribed until
+          #{formatTime defaultTimeLocale "%F" end}
+          (#{prettyTimeAuto now end})
+        $nothing
+          Not subscribed
+

@@ -16,6 +16,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     routes.txt
+    templates/account.hamlet
     templates/admin/panel.hamlet
     templates/auth/login.hamlet
     templates/auth/register.hamlet
@@ -56,6 +57,7 @@ library
       Smos.Web.Server.Constants
       Smos.Web.Server.Foundation
       Smos.Web.Server.Handler
+      Smos.Web.Server.Handler.Account
       Smos.Web.Server.Handler.Admin
       Smos.Web.Server.Handler.Backup
       Smos.Web.Server.Handler.Home
