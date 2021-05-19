@@ -36,6 +36,7 @@ library
       Smos.Server.Handler.GetNextActionReport
       Smos.Server.Handler.GetSmosFile
       Smos.Server.Handler.GetUserPermissions
+      Smos.Server.Handler.GetUserSubscription
       Smos.Server.Handler.Import
       Smos.Server.Handler.PostBackup
       Smos.Server.Handler.PostLogin

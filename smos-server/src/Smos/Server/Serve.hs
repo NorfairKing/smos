@@ -153,6 +153,7 @@ syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { getUserPermissions = withAuthResult serveGetUserPermissions,
+      getUserSubscription = withAuthResult serveGetUserSubscription,
       deleteUser = withAuthResult serveDeleteUser,
       postSync = withAuthResult servePostSync,
       getListBackups = withAuthResult serveGetListBackups,

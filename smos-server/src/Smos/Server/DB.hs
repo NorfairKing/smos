@@ -49,6 +49,16 @@ User
     deriving Generic
 
 
+Subscription
+    user UserId
+    end UTCTime
+
+    UniqueSubscriptionUser user
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
 ServerFile
     user UserId
     path (Path Rel File)

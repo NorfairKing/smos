@@ -109,6 +109,7 @@ type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
   { getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
+    getUserSubscription :: !(route :- ProtectAPI :> GetUserSubscription),
     deleteUser :: !(route :- ProtectAPI :> DeleteUser),
     postSync :: !(route :- ProtectAPI :> PostSync),
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
@@ -180,6 +181,28 @@ instance ToJSON UserPermissions where
   toJSON UserPermissions {..} =
     object
       [ "admin" .= userPermissionsIsAdmin
+      ]
+
+type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] UserSubscription
+
+data UserSubscription = UserSubscription
+  { userSubscriptionEnd :: Maybe UTCTime
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity UserSubscription
+
+instance NFData UserSubscription
+
+instance FromJSON UserSubscription where
+  parseJSON = withObject "UserSubscription" $ \o ->
+    UserSubscription
+      <$> o .:? "subscribed"
+
+instance ToJSON UserSubscription where
+  toJSON UserSubscription {..} =
+    object
+      [ "admin" .= userSubscriptionEnd
       ]
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
@@ -346,7 +369,8 @@ data UserInfo = UserInfo
     userInfoAdmin :: !Bool,
     userInfoCreated :: !UTCTime,
     userInfoLastLogin :: !(Maybe UTCTime),
-    userInfoLastUse :: !(Maybe UTCTime)
+    userInfoLastUse :: !(Maybe UTCTime),
+    userInfoSubscribed :: !(Maybe UTCTime)
   }
   deriving (Show, Eq, Generic)
 
@@ -361,7 +385,8 @@ instance ToJSON UserInfo where
         "admin" .= userInfoAdmin,
         "created" .= userInfoCreated,
         "last-login" .= userInfoLastLogin,
-        "last-use" .= userInfoLastUse
+        "last-use" .= userInfoLastUse,
+        "subscribed" .= userInfoSubscribed
       ]
 
 instance FromJSON UserInfo where
@@ -372,3 +397,4 @@ instance FromJSON UserInfo where
       <*> o .: "created"
       <*> o .:? "last-login"
       <*> o .:? "last-use"
+      <*> o .:? "subscribed"

@@ -17,6 +17,8 @@
               Last Login
             <th style="width: 20%;">
               Last Use
+            <th style="width: 20%;">
+              Subscribed
         <tfoot>
           $forall user <- users
             <tr>
@@ -35,3 +37,7 @@
                 $maybe lastUse <- userInfoLastUse user
                   #{formatTime defaultTimeLocale "%F" lastUse}
                   (#{prettyTimeAuto now lastUse})
+              <td>
+                $maybe end <- userInfoSubscribed user
+                  #{formatTime defaultTimeLocale "%F" end}
+                  (#{prettyTimeAuto now end})
