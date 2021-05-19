@@ -375,11 +375,14 @@ newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
 
 data AdminRoutes route = AdminRoutes
   { getUsers :: !(route :- ProtectAdmin :> GetUsers),
+    getUser :: !(route :- ProtectAdmin :> GetUser),
     putUserSubscription :: !(route :- ProtectAdmin :> PutUserSubscription)
   }
   deriving (Generic)
 
 type GetUsers = "users" :> Get '[JSON] [UserInfo]
+
+type GetUser = "users" :> Capture "username" Username :> Get '[JSON] UserInfo
 
 data UserInfo = UserInfo
   { userInfoUsername :: !Username,

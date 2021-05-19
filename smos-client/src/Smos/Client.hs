@@ -212,6 +212,9 @@ smosAdminClient = fromServant $ adminRoutes smosClient
 clientGetUsers :: Token -> ClientM [UserInfo]
 clientGetUsers = getUsers smosAdminClient
 
+clientGetUser :: Token -> Username -> ClientM UserInfo
+clientGetUser = getUser smosAdminClient
+
 clientPutUserSubscription :: Token -> Username -> UTCTime -> ClientM NoContent
 clientPutUserSubscription = putUserSubscription smosAdminClient
 

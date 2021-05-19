@@ -25,6 +25,7 @@ library
       Smos.Server.Env
       Smos.Server.Handler
       Smos.Server.Handler.Admin
+      Smos.Server.Handler.Admin.GetUser
       Smos.Server.Handler.Admin.GetUsers
       Smos.Server.Handler.Admin.PutUserSubscription
       Smos.Server.Handler.DeleteBackup

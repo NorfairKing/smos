@@ -1,0 +1,42 @@
+<section .section>
+  <div .container>
+    <div .box .content>
+      <h3 .title .is-3>
+        Account: #{usernameText $ userInfoUsername user}
+
+      <p>
+        Admin: #{userInfoAdmin user}
+
+      <p>
+        Created:
+
+        #{formatTime defaultTimeLocale "%F" $ userInfoCreated user}
+        (#{prettyTimeAuto now $ userInfoCreated user})
+
+      <p>
+        Last login: 
+
+        $maybe lastLogin <- userInfoLastLogin user
+          #{formatTime defaultTimeLocale "%F" lastLogin}
+          (#{prettyTimeAuto now lastLogin})
+        $nothing
+          Never
+
+      <p>
+        Last use: 
+
+        $maybe lastUse <- userInfoLastUse user
+          #{formatTime defaultTimeLocale "%F" lastUse}
+          (#{prettyTimeAuto now lastUse})
+        $nothing
+          Never
+
+      <p>
+        Subscribed: 
+
+        $maybe end <- userInfoSubscribed user
+          #{formatTime defaultTimeLocale "%F" end}
+          (#{prettyTimeAuto now end})
+        $nothing
+          No
+

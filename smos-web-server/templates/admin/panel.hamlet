@@ -23,7 +23,8 @@
           $forall user <- users
             <tr>
               <td>
-                #{usernameText $ userInfoUsername user}
+                <a href=@{AdminUserR $ userInfoUsername user}>
+                  #{usernameText $ userInfoUsername user}
               <td>
                 #{userInfoAdmin user}
               <td>

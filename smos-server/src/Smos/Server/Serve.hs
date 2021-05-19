@@ -179,6 +179,7 @@ syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
 syncServerAdminRoutes =
   AdminRoutes
     { getUsers = withAuthResult serveGetUsers,
+      getUser = withAuthResult serveGetUser,
       putUserSubscription = withAuthResult servePutUserSubscription
     }
 

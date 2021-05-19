@@ -34,7 +34,7 @@ import YamlParse.Applicative
 newtype Username = Username
   { usernameText :: Text
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Read, Eq, Ord, Generic)
 
 instance Validity Username where
   validate (Username t) =

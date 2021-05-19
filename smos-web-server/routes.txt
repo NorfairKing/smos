@@ -22,6 +22,7 @@
 /account/delete AccountDeleteR POST
 
 /admin AdminPanelR GET
+/admin/#{Username} AdminUserR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

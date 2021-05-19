@@ -18,6 +18,7 @@ extra-source-files:
     routes.txt
     templates/account.hamlet
     templates/admin/panel.hamlet
+    templates/admin/user.hamlet
     templates/auth/login.hamlet
     templates/auth/register.hamlet
     templates/backups.hamlet
