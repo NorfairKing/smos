@@ -14,7 +14,7 @@ spec :: Spec
 spec =
   describe "GetPermissions" $
     serverSpec $
-      it "puts a smos file that can be fetched with GetSmosFile" $ \cenv ->
+      it "gets that a new user is not an admin" $ \cenv ->
         withNewUser cenv $ \t -> do
           UserPermissions {..} <- testClient cenv $ clientGetUserPermissions t
           userPermissionsIsAdmin `shouldBe` False
