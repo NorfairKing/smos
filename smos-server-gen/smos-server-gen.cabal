@@ -114,6 +114,7 @@ test-suite smos-server-test
       Smos.Server.Handler.GetListBackupsSpec
       Smos.Server.Handler.GetListSmosFilesSpec
       Smos.Server.Handler.GetNextActionReportSpec
+      Smos.Server.Handler.GetPermissionsSpec
       Smos.Server.Handler.PostBackupSpec
       Smos.Server.Handler.PostLoginSpec
       Smos.Server.Handler.PostRegisterSpec
