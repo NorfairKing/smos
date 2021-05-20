@@ -62,6 +62,7 @@ library:
   - yesod
   - yesod-auth
   - yesod-autoreload
+  - yesod-form
   - yesod-static
   - yesod-static-remote
   - yesod-websockets

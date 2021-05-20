@@ -23,6 +23,7 @@
 
 /admin AdminPanelR GET
 /admin/#{Username} AdminUserR GET
+/admin/#{Username}/set-subscription AdminUserSetSubscriptionR POST
 
 -- Subsites
 /auth AuthR Auth getAuth

@@ -35,8 +35,24 @@
         Subscribed: 
 
         $maybe end <- userInfoSubscribed user
-          #{formatTime defaultTimeLocale "%F" end}
-          (#{prettyTimeAuto now end})
+          until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
         $nothing
           No
 
+      <h4 .title .is-4>
+        Override Subscription
+
+      <form .form
+        method=post
+        action=@{AdminUserSetSubscriptionR username}>
+        ^{token}
+        <div .field>
+          <label .label>
+            End date
+          <div .control>
+            <input type="date" name="end-date">
+        <div .field>
+          <div .control>
+          <button .button .is-danger
+            type=submit>
+            Override
