@@ -28,6 +28,7 @@ import Smos.Report.Archive as X
 import Smos.Server.Constants as X
 import Smos.Server.DB as X
 import Smos.Server.Env as X
+import Smos.Server.OptParse.Types as X
 import Text.Show.Pretty as X
 
 withUserId :: AuthNCookie -> (UserId -> ServerHandler a) -> ServerHandler a

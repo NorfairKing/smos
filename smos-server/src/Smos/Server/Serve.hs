@@ -30,7 +30,6 @@ import Smos.API
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
-import Smos.Server.OptParse
 import System.Exit
 import Text.Printf
 import UnliftIO hiding (Handler)
