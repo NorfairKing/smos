@@ -32,11 +32,14 @@ postBackupR = withLogin $ \t -> do
   errOrBackup <- runClientSafe $ clientPostBackup t
   case errOrBackup of
     Left err -> handleStandardServantErrs err $ \resp ->
-      if Http.statusCode (responseStatusCode resp) == 403
-        then do
+      case Http.statusCode (responseStatusCode resp) of
+        403 -> do
           addMessage ".is-danger" "Maximum number of backups reached."
-          getBackupsR
-        else redirect BackupsR
+          redirect BackupsR
+        402 -> do
+          addMessage ".is-danger" "Backup creation is a subscription feature. Subscribe to make backups."
+          redirect BackupsR
+        _ -> redirect BackupsR
     Right _ -> redirect BackupsR
 
 getBackupDownloadR :: BackupUUID -> Handler TypedContent

@@ -9,6 +9,7 @@ where
 
 import Data.Foldable
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Smos.Server.Backup
 import Smos.Server.Handler.Import
 import Smos.Server.Subscription
@@ -17,7 +18,9 @@ servePostBackup :: AuthNCookie -> ServerHandler BackupUUID
 servePostBackup ac = withUserId ac $ \uid -> do
   -- Don't allow making manual backups for free users
   subscriptionStatus <- getSubscriptionStatusForUser (authNCookieUsername ac)
-  when (subscriptionStatus == NotSubscribed) $ throwError $ err402 {errBody = "Subscribe to be able to make backups."}
+  when (subscriptionStatus == NotSubscribed) $ do
+    logDebugN $ "User is not subscribed, dissallowing manual backup: " <> T.pack (show (usernameText (authNCookieUsername ac)))
+    throwError $ err402 {errBody = "Subscribe to be able to make backups."}
 
   maxBackups <- asks serverEnvMaxBackupsPerUser
   numberOfBackupsThatWeAlreadyHave <- runDB $ count [BackupUser ==. uid]
