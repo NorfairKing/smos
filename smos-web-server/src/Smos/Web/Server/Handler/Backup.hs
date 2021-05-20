@@ -34,10 +34,10 @@ postBackupR = withLogin $ \t -> do
     Left err -> handleStandardServantErrs err $ \resp ->
       case Http.statusCode (responseStatusCode resp) of
         403 -> do
-          addMessage ".is-danger" "Maximum number of backups reached."
+          addMessage "is-danger" "Maximum number of backups reached."
           redirect BackupsR
         402 -> do
-          addMessage ".is-danger" "Backup creation is a subscription feature. Subscribe to make backups."
+          addMessage "is-danger" "Backup creation is a subscription feature. Subscribe to make backups."
           redirect BackupsR
         _ -> redirect BackupsR
     Right _ -> redirect BackupsR
