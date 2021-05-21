@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -6,16 +5,11 @@ module Smos.Server.Subscription where
 
 import Control.Monad.Reader
 import qualified Data.Set as S
-import Data.Time
-import GHC.Generics (Generic)
 import Servant
 import Smos.API
 import Smos.Server.DB
 import Smos.Server.Env
 import Smos.Server.OptParse.Types
-
-data SubscriptionStatus = NoSubscriptionNecessary | SubscribedUntil UTCTime | NotSubscribed
-  deriving (Show, Eq, Generic)
 
 getSubscriptionStatusForUser :: Username -> ServerHandler SubscriptionStatus
 getSubscriptionStatusForUser username = do

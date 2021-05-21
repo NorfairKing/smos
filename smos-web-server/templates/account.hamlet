@@ -9,12 +9,15 @@
 
       $maybe _ <- mMonetisation
         <p>
-          $maybe end <- userSubscriptionEnd
-            Subscribed until
-            #{formatTime defaultTimeLocale "%F" end}
-            (#{prettyTimeAuto now end})
-          $nothing
-            Not subscribed
+          $case status
+            $of SubscribedUntil end
+              Subscribed until
+              #{formatTime defaultTimeLocale "%F" end}
+              (#{prettyTimeAuto now end})
+            $of NoSubscriptionNecessary
+              No subscription necessary
+            $of NotSubscribed
+              Not subscribed
 
       <p>
         <form

@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.GetSubscriptionSpec
   ( spec,
   )
@@ -16,5 +14,5 @@ spec =
     serverSpec $
       it "gets that the user is not subscribed for a new user" $ \cenv ->
         withNewUser cenv $ \t -> do
-          UserSubscription {..} <- testClient cenv $ clientGetUserSubscription t
-          userSubscriptionEnd `shouldBe` Nothing
+          status <- testClient cenv $ clientGetUserSubscription t
+          status `shouldBe` NoSubscriptionNecessary

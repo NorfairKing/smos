@@ -4,11 +4,7 @@ module Smos.Server.Handler.GetUserSubscription
 where
 
 import Smos.Server.Handler.Import
+import Smos.Server.Subscription
 
-serveGetUserSubscription :: AuthNCookie -> ServerHandler UserSubscription
-serveGetUserSubscription ac = withUserId ac $ \uid -> do
-  mSubscription <- runDB $ getBy $ UniqueSubscriptionUser uid
-  pure
-    UserSubscription
-      { userSubscriptionEnd = subscriptionEnd . entityVal <$> mSubscription
-      }
+serveGetUserSubscription :: AuthNCookie -> ServerHandler SubscriptionStatus
+serveGetUserSubscription ac = withUserId ac $ \_ -> getSubscriptionStatusForUser (authNCookieUsername ac)

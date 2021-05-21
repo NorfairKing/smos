@@ -20,5 +20,5 @@ spec =
           withAdminUser cenv $ \adminT ->
             withNewUserAndData cenv $ \Register {..} t -> do
               NoContent <- testClient cenv $ clientPutUserSubscription adminT registerUsername utct
-              UserSubscription {..} <- testClient cenv $ clientGetUserSubscription t
-              userSubscriptionEnd `shouldBe` Just utct
+              status <- testClient cenv $ clientGetUserSubscription t
+              status `shouldBe` NoSubscriptionNecessary -- TODO run this test for a monetised server

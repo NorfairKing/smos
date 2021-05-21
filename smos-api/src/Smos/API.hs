@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -199,27 +200,31 @@ instance ToJSON UserPermissions where
       [ "admin" .= userPermissionsIsAdmin
       ]
 
-type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] UserSubscription
+type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] SubscriptionStatus
 
-data UserSubscription = UserSubscription
-  { userSubscriptionEnd :: Maybe UTCTime
-  }
+data SubscriptionStatus = NoSubscriptionNecessary | SubscribedUntil UTCTime | NotSubscribed
   deriving (Show, Eq, Generic)
 
-instance Validity UserSubscription
+instance Validity SubscriptionStatus
 
-instance NFData UserSubscription
+instance NFData SubscriptionStatus
 
-instance FromJSON UserSubscription where
-  parseJSON = withObject "UserSubscription" $ \o ->
-    UserSubscription
-      <$> o .:? "subscribed"
+instance FromJSON SubscriptionStatus where
+  parseJSON = withObject "UserSubscription" $ \o -> do
+    t <- o .: "status"
+    case (t :: Text) of
+      "not-subscribed" -> pure NotSubscribed
+      "subscribed" -> SubscribedUntil <$> o .: "until"
+      "no-subscription-necessary" -> pure NoSubscriptionNecessary
+      _ -> fail "Unknown SubscriptionStatus"
 
-instance ToJSON UserSubscription where
-  toJSON UserSubscription {..} =
-    object
-      [ "subscribed" .= userSubscriptionEnd
-      ]
+instance ToJSON SubscriptionStatus where
+  toJSON =
+    let o t vs = object $ ("status" .= (t :: Text)) : vs
+     in \case
+          NotSubscribed -> o "not-subscribed" []
+          SubscribedUntil ut -> o "subscribed" ["until" .= ut]
+          NoSubscriptionNecessary -> o "no-subscription-necessary" []
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
 

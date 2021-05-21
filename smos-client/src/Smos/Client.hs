@@ -164,7 +164,7 @@ smosProtectedClient = fromServant $ protectedRoutes smosClient
 clientGetUserPermissions :: Token -> ClientM UserPermissions
 clientGetUserPermissions = getUserPermissions smosProtectedClient
 
-clientGetUserSubscription :: Token -> ClientM UserSubscription
+clientGetUserSubscription :: Token -> ClientM SubscriptionStatus
 clientGetUserSubscription = getUserSubscription smosProtectedClient
 
 clientDeleteUser :: Token -> ClientM NoContent

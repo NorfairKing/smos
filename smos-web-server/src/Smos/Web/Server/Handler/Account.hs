@@ -16,7 +16,7 @@ import Smos.Web.Server.Handler.Import
 getAccountR :: Handler Html
 getAccountR = withLogin' $ \un t -> do
   mMonetisation <- runClientOrErr clientGetMonetisation
-  UserSubscription {..} <- runClientOrErr $ clientGetUserSubscription t
+  status <- runClientOrErr $ clientGetUserSubscription t
   now <- liftIO getCurrentTime
   withNavBar $ do
     token <- genToken
