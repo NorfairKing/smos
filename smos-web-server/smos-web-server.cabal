@@ -34,6 +34,8 @@ extra-source-files:
     templates/playground.lucius
     templates/reports.hamlet
     templates/reports.lucius
+    templates/stripe-form.hamlet
+    templates/stripe-form.julius
     templates/terminal.hamlet
     templates/terminal.julius
     templates/tui.hamlet
@@ -61,6 +63,7 @@ library
       Smos.Web.Server.Handler.Account
       Smos.Web.Server.Handler.Admin
       Smos.Web.Server.Handler.Backup
+      Smos.Web.Server.Handler.Checkout
       Smos.Web.Server.Handler.Home
       Smos.Web.Server.Handler.Import
       Smos.Web.Server.Handler.Playground

@@ -78,7 +78,8 @@ data UnprotectedRoutes route = UnprotectedRoutes
   { getApiVersion :: !(route :- GetAPIVersion),
     getMonetisation :: !(route :- GetMonetisation),
     postRegister :: !(route :- PostRegister),
-    postLogin :: !(route :- PostLogin)
+    postLogin :: !(route :- PostLogin),
+    postStripeHook :: !(route :- PostStripeHook)
   }
   deriving (Generic)
 
@@ -131,6 +132,9 @@ type GetAPIVersion = "api-version" :> Get '[JSON] Version
 type GetMonetisation = "monetisation" :> Get '[JSON] (Maybe Monetisation)
 
 data Monetisation = Monetisation
+  { monetisationStripePublishableKey :: !Text,
+    monetisationStripePlan :: !Text
+  }
   deriving (Show, Eq, Generic)
 
 instance Validity Monetisation
@@ -138,10 +142,16 @@ instance Validity Monetisation
 instance NFData Monetisation
 
 instance FromJSON Monetisation where
-  parseJSON = withObject "Monetisation" $ \_ -> pure Monetisation
+  parseJSON = withObject "Monetisation" $ \o ->
+    Monetisation
+      <$> o .: "publishable-key" <*> o .: "plan"
 
 instance ToJSON Monetisation where
-  toJSON Monetisation = object []
+  toJSON Monetisation {..} =
+    object
+      [ "publishable-key" .= monetisationStripePublishableKey,
+        "plan" .= monetisationStripePlan
+      ]
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
@@ -177,6 +187,8 @@ instance NFData Login
 instance ToJSON Login
 
 instance FromJSON Login
+
+type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> PostNoContent '[JSON] NoContent
 
 type GetUserPermissions = "user" :> "permissions" :> Get '[JSON] UserPermissions
 

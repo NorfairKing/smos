@@ -6,6 +6,7 @@ module Smos.Server.OptParse.Types where
 import Control.Monad.Logger
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.Text (Text)
 import Data.Time
 import Data.Word
 import Data.Yaml as Yaml
@@ -45,9 +46,9 @@ data ServeFlags = ServeFlags
   deriving (Show, Eq, Generic)
 
 data MonetisationFlags = MonetisationFlags
-  { monetisationFlagStripeSecretKey :: !(Maybe String),
-    monetisationFlagStripePublishableKey :: !(Maybe String),
-    monetisationFlagStripePlan :: !(Maybe String),
+  { monetisationFlagStripeSecretKey :: !(Maybe Text),
+    monetisationFlagStripePublishableKey :: !(Maybe Text),
+    monetisationFlagStripePlan :: !(Maybe Text),
     monetisationFlagFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -76,9 +77,9 @@ data Environment = Environment
   deriving (Show, Eq, Generic)
 
 data MonetisationEnvironment = MonetisationEnvironment
-  { monetisationEnvStripeSecretKey :: !(Maybe String),
-    monetisationEnvStripePublishableKey :: !(Maybe String),
-    monetisationEnvStripePlan :: !(Maybe String),
+  { monetisationEnvStripeSecretKey :: !(Maybe Text),
+    monetisationEnvStripePublishableKey :: !(Maybe Text),
+    monetisationEnvStripePlan :: !(Maybe Text),
     monetisationEnvFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -126,9 +127,9 @@ configurationObjectParser =
       "Monetisation configuration. If this is not configured then the server is run entirely for free."
 
 data MonetisationConfiguration = MonetisationConfiguration
-  { monetisationConfStripeSecretKey :: !(Maybe String),
-    monetisationConfStripePublishableKey :: !(Maybe String),
-    monetisationConfStripePlan :: !(Maybe String),
+  { monetisationConfStripeSecretKey :: !(Maybe Text),
+    monetisationConfStripePublishableKey :: !(Maybe Text),
+    monetisationConfStripePlan :: !(Maybe Text),
     monetisationConfFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -169,9 +170,9 @@ data ServeSettings = ServeSettings
   deriving (Show, Eq, Generic)
 
 data MonetisationSettings = MonetisationSettings
-  { monetisationSetStripeSecretKey :: !String,
-    monetisationSetStripePublishableKey :: !String,
-    monetisationSetStripePlan :: !String,
+  { monetisationSetStripeSecretKey :: !Text,
+    monetisationSetStripePublishableKey :: !Text,
+    monetisationSetStripePlan :: !Text,
     monetisationSetFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)

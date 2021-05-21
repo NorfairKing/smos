@@ -44,6 +44,7 @@ library
       Smos.Server.Handler.PostBackup
       Smos.Server.Handler.PostLogin
       Smos.Server.Handler.PostRegister
+      Smos.Server.Handler.PostStripeHook
       Smos.Server.Handler.PostSync
       Smos.Server.Handler.PutRestoreBackup
       Smos.Server.Handler.PutSmosFile
@@ -94,6 +95,7 @@ library
     , smos-api
     , smos-data
     , smos-report
+    , stripe-client
     , template-haskell
     , text
     , time

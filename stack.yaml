@@ -204,7 +204,7 @@ extra-deps:
 - github: NorfairKing/yesod-static-remote
   commit: f91fdbc2ac74cf8d005f536cfbbf9b4385cbbba6
 - github: NorfairKing/yesod-autoreload
-  commit: 2adfb0397ca82a81ee26e0e491fe8b2759d76615
+  commit: 27d83b79893bb535c1a339db29a57c2ef0772305
 
 - github: NorfairKing/haskeline
   commit: 7c6491c55741608255c2681702381ce488692d15

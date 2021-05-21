@@ -146,7 +146,8 @@ syncServerUnprotectedRoutes =
     { getApiVersion = serveGetApiVersion,
       getMonetisation = serveGetMonetisation,
       postRegister = servePostRegister,
-      postLogin = servePostLogin
+      postLogin = servePostLogin,
+      postStripeHook = servePostStripeHook
     }
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)

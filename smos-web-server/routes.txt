@@ -25,6 +25,9 @@
 /admin/#{Username} AdminUserR GET
 /admin/#{Username}/set-subscription AdminUserSetSubscriptionR POST
 
+/checkout/stripe/success                  CheckoutSuccessR     GET
+/checkout/stripe/canceled                 CheckoutCanceledR    GET
+
 -- Subsites
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
