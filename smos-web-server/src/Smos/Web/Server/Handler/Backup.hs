@@ -22,7 +22,8 @@ import qualified Yesod
 getBackupsR :: Handler Html
 getBackupsR = withLogin $ \t -> do
   now <- liftIO getCurrentTime
-  mMonetisation <- runClientOrErr clientGetMonetisation
+  status <- runClientOrErr $ clientGetUserSubscription t
+  let showBackupPage = status /= NotSubscribed
   backups <- runClientOrErr $ clientGetListBackups t
   withNavBar $ do
     token <- genToken

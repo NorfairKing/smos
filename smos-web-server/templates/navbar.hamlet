@@ -52,7 +52,9 @@
               Sign up
 
 
-$forall (clazz, msgHtml) <- msgs
-  <div .notification class=#{clazz}>
-    #{msgHtml}
+$if not (null msgs)
+  <section .section>
+    $forall (clazz, msgHtml) <- msgs
+      <div .notification class=#{clazz}>
+        #{msgHtml}
 
