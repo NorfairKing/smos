@@ -34,60 +34,58 @@ in
     genAttrs castNames castDerivation;
   smosPackages = with final.haskell.lib;
     let
-      smosPkg =
-        name:
+      ownPkg = name: src:
         doBenchmark (
           addBuildDepend
             (
-              buildStrictly (
-                disableLibraryProfiling (
-                  overrideCabal (final.haskellPackages.callCabal2nixWithOptions name (final.gitignoreSource (../. + "/${name}")) "--no-hpack" { }) (
-                    old: {
-                      # Turn off test suites on macos because they generate random
-                      # filepaths and that fails for some reason that I cannot investigate
-                      # because I don't own any apple products.
-                      doCheck = !isMacos;
-                      buildFlags = (old.buildFlags or [ ]) ++ [
-                        "--ghc-options=-Wincomplete-uni-patterns"
-                        "--ghc-options=-Wincomplete-record-updates"
-                        "--ghc-options=-Wpartial-fields"
-                        "--ghc-options=-Widentities"
-                        "--ghc-options=-Wredundant-constraints"
-                        "--ghc-options=-Wcpp-undef"
-                        "--ghc-options=-Wcompat"
-                      ];
-                      # Whatever is necessary for a static build.
-                      configureFlags = (old.configureFlags or [ ]) ++ optionals static [
-                        "--enable-executable-static"
-                        "--disable-executable-dynamic"
-                        "--ghc-option=-optl=-static"
-                        "--ghc-option=-static"
-                        "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-                        "--extra-lib-dirs=${final.zlib.static}/lib"
-                        "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                        "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-                        "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                      ];
-                      # Assert that the executables are indeed static
-                      postInstall = (old.postBuild or "") + optionalString static ''
-                        for exe in $out/bin/*
-                        do
-                          if ldd $exe
-                          then
-                            echo "Not a static executable"
-                            exit 1
-                          else
-                            echo "Static executable: $exe"
-                          fi
-                        done
-                      '';
-                    }
-                  )
+              disableLibraryProfiling (
+                overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
+                  old: {
+                    # Turn off test suites on macos because they generate random
+                    # filepaths and that fails for some reason that I cannot investigate
+                    # because I don't own any apple products.
+                    doCheck = !isMacos;
+                    buildFlags = (old.buildFlags or [ ]) ++ [
+                      "--ghc-options=-Wincomplete-uni-patterns"
+                      "--ghc-options=-Wincomplete-record-updates"
+                      "--ghc-options=-Wpartial-fields"
+                      "--ghc-options=-Widentities"
+                      "--ghc-options=-Wredundant-constraints"
+                      "--ghc-options=-Wcpp-undef"
+                      "--ghc-options=-Wcompat"
+                    ];
+                    # Whatever is necessary for a static build.
+                    configureFlags = (old.configureFlags or [ ]) ++ optionals static [
+                      "--enable-executable-static"
+                      "--disable-executable-dynamic"
+                      "--ghc-option=-optl=-static"
+                      "--ghc-option=-static"
+                      "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
+                      "--extra-lib-dirs=${final.zlib.static}/lib"
+                      "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                      "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
+                      "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                    ];
+                    # Assert that the executables are indeed static
+                    postInstall = (old.postBuild or "") + optionalString static ''
+                      for exe in $out/bin/*
+                      do
+                        if ldd $exe
+                        then
+                          echo "Not a static executable"
+                          exit 1
+                        else
+                          echo "Static executable: $exe"
+                        fi
+                      done
+                    '';
+                  }
                 )
               )
             )
             (buildTools.haskellPackages.autoexporter)
         );
+      smosPkg = name: buildStrictly (ownPkg name (final.gitignoreSource (../. + "/${name}")));
       smosPkgWithComp =
         exeName: name:
         generateOptparseApplicativeCompletion exeName (smosPkg name);
@@ -230,6 +228,30 @@ in
           '';
         }
       );
+      generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = buildTools; };
+      generatedStripe = generateOpenAPIClient {
+        name = "stripe-client";
+        src = sources.stripe-spec + "/openapi/spec3.yaml";
+        moduleName = "StripeClient";
+        extraFlags = [
+          "--property-type-suffix=\"'\""
+          "--convert-to-camel-case"
+        ];
+        schemas = [
+          "event"
+          "checkout.session"
+          "notification_event_data"
+          "invoice"
+          "subscription"
+          "customer"
+        ];
+        operations = [
+          "GetEvents"
+          "PostCustomers"
+          "PostCheckoutSessions"
+        ];
+      };
+      stripe-client = ownPkg "stripe-client" generatedStripe.code;
     in
     {
       inherit smos;
@@ -257,6 +279,7 @@ in
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       inherit smos-web-style;
+      inherit stripe-client;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
