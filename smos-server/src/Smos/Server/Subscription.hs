@@ -5,6 +5,7 @@ module Smos.Server.Subscription where
 
 import Control.Monad.Reader
 import qualified Data.Set as S
+import Data.Time
 import Servant
 import Smos.API
 import Smos.Server.DB
@@ -29,6 +30,11 @@ getSubscriptionStatusForUser username = do
                 Nothing -> throwError $ err404 {errBody = "User not found."}
                 Just (Entity uid _) -> do
                   mSubscription <- runDB $ getBy $ UniqueSubscriptionUser uid
-                  pure $ case mSubscription of
-                    Nothing -> NotSubscribed
-                    Just (Entity _ Subscription {..}) -> SubscribedUntil subscriptionEnd
+                  case mSubscription of
+                    Nothing -> pure NotSubscribed
+                    Just (Entity _ Subscription {..}) -> do
+                      now <- liftIO getCurrentTime
+                      pure $
+                        if subscriptionEnd >= now
+                          then SubscribedUntil subscriptionEnd
+                          else NotSubscribed

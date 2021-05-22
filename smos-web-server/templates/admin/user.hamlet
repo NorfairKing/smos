@@ -32,13 +32,8 @@
           Never
 
       <p>
-
         $maybe end <- userInfoSubscribed user
-          $if end >= now
-            Is subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
-          $else
-            Was subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
-            
+          Subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
         $nothing
           Not subscribed
 
