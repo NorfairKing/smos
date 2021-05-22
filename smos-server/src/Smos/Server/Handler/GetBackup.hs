@@ -12,12 +12,13 @@ import Data.ByteString (ByteString)
 import qualified Data.Conduit.Combinators as C
 import Servant.Types.SourceT as Source
 import Smos.Server.Handler.Import
+import Smos.Server.Subscription
 import System.FilePath.Posix as Posix
 import System.FilePath.Windows as Windows
 import UnliftIO
 
 serveGetBackup :: AuthNCookie -> BackupUUID -> ServerHandler (SourceIO ByteString)
-serveGetBackup ac uuid = withUserId ac $ \uid -> do
+serveGetBackup ac uuid = withUserId ac $ \uid -> withSubscription ac $ do
   mBackup <- runDB $ getBy $ UniqueBackupUUID uid uuid
   case mBackup of
     Nothing -> throwError err404

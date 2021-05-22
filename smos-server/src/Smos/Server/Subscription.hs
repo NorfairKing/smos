@@ -12,6 +12,13 @@ import Smos.Server.DB
 import Smos.Server.Env
 import Smos.Server.OptParse.Types
 
+withSubscription :: AuthNCookie -> ServerHandler a -> ServerHandler a
+withSubscription ac func = do
+  subscriptionStatus <- getSubscriptionStatusForUser (authNCookieUsername ac)
+  if subscriptionStatus == NotSubscribed
+    then throwError $ err402 {errBody = "Subscribe to be able to access this feature."}
+    else func
+
 getSubscriptionStatusForUser :: Username -> ServerHandler SubscriptionStatus
 getSubscriptionStatusForUser username = do
   mMonetisation <- asks serverEnvMonetisationSettings
