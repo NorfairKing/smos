@@ -21,6 +21,7 @@ where
 
 import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
+import Data.Text (Text)
 import Data.Time
 import Data.Word
 import Database.Persist
@@ -49,6 +50,17 @@ User
     deriving Generic
 
 
+StripeCustomer
+    user UserId
+    customer Text -- Stripe customer id
+
+    UniqueStripeCustomer user customer
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
 Subscription
     user UserId
     end UTCTime
@@ -58,6 +70,7 @@ Subscription
     deriving Show
     deriving Eq
     deriving Generic
+
 
 ServerFile
     user UserId
