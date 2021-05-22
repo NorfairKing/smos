@@ -1,3 +1,4 @@
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -8,6 +9,7 @@ module Smos.Web.Server.Handler.Checkout
   )
 where
 
+import Control.Concurrent
 import Control.Monad.Logger
 import Smos.Web.Server.Handler.Import
 import Text.Julius
@@ -33,7 +35,13 @@ getCheckoutR = do
     withNavBar $(widgetFile "checkout")
 
 getCheckoutSuccessR :: Handler Html
-getCheckoutSuccessR = redirect AccountR
+getCheckoutSuccessR = do
+  -- Wait a while to allow time for us to deal with the stripe events.
+  liftIO $ threadDelay 3_000_000
+  redirect AccountR
 
 getCheckoutCanceledR :: Handler Html
-getCheckoutCanceledR = redirect AccountR
+getCheckoutCanceledR = do
+  -- Wait a while to allow time for us to deal with the stripe events.
+  liftIO $ threadDelay 3_000_000
+  redirect AccountR

@@ -26,4 +26,4 @@ postAccountDeleteR :: Handler Html
 postAccountDeleteR = withLogin $ \t -> do
   NoContent <- runClientOrErr $ clientDeleteUser t
   addMessage "is-success" "Account succesfully deleted."
-  redirect HomeR
+  clearCreds True
