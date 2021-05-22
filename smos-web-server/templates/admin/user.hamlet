@@ -32,12 +32,15 @@
           Never
 
       <p>
-        Subscribed: 
 
         $maybe end <- userInfoSubscribed user
-          until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
+          $if end >= now
+            Is subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
+          $else
+            Was subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
+            
         $nothing
-          No
+          Not subscribed
 
       <h4 .title .is-4>
         Override Subscription
@@ -50,7 +53,7 @@
           <label .label>
             End date
           <div .control>
-            <input type="date" name="end-date">
+            <input required type="date" name="end-date">
         <div .field>
           <div .control>
           <button .button .is-danger

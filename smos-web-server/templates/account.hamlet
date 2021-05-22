@@ -15,7 +15,10 @@
         $case status
           $of SubscribedUntil end
             <p>
-              Subscribed until
+              $if end >= now
+                Your subscription ends on 
+              $else
+                Your subscription ended on 
               #{formatTime defaultTimeLocale "%F" end}
               (#{prettyTimeAuto now end})
 
