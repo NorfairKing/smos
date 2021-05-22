@@ -12,9 +12,8 @@ openapi3-code-generator-exe "$specRepo/openapi/spec3.yaml" \
   \
   --omit-additional-operation-functions \
   --operation-to-generate "GetEvents" \
-  --operation-to-generate "GetCustomers" \
+  --operation-to-generate "PostCustomers" \
   --operation-to-generate "PostCheckoutSessions" \
-  --operation-to-generate "GetInvoices" \
   --white-listed-schema event \
   --white-listed-schema checkout.session \
   --white-listed-schema notification_event_data \

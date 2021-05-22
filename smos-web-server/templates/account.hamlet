@@ -7,7 +7,7 @@
       <p>
         Username: #{usernameText un}
 
-    $maybe m <- mMonetisation
+    $maybe _ <- mMonetisation
       <div .box .content>
         <h4 .title .is-4>
           Subscription

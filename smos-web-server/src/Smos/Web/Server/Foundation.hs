@@ -279,6 +279,12 @@ recordLoginToken un token isAdmin = do
   liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, isAdmin)
   writeTokens
 
+deleteLoginToken :: Username -> Handler ()
+deleteLoginToken un = do
+  tokenMapVar <- getsYesod appLoginTokens
+  liftIO $ atomically $ modifyTVar tokenMapVar $ M.delete un
+  writeTokens
+
 -- These three are used so you don't have to log in again every time you restart the server during development
 developmentTokenFile :: FilePath
 developmentTokenFile = "smos-web-server-tokens.json"

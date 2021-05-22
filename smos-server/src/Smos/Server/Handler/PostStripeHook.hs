@@ -47,24 +47,14 @@ fullCheckoutSessionCompleted checkout = do
     Just (Checkout'sessionCustomer'DeletedCustomer _) -> throwError err400 {errBody = "Customer in checkout was a deleted customer."}
 
   let sessionId = checkout'sessionId checkout
-  -- We'll trust the checkout over our database
-  let tryViaDBWith err = do
-        mCheckout <- runDB $ selectFirst [StripeCheckoutSession ==. sessionId] [Desc StripeCheckoutId]
-        case mCheckout of
-          Nothing ->
-            throwError
-              err400
-                { errBody = LB.fromStrict $ TE.encodeUtf8 $ T.unlines [err, "AND", "Unknown checkout was completed: " <> sessionId]
-                }
-          Just (Entity _ sc) -> pure $ stripeCheckoutUser sc
   uid <- case checkout'sessionClientReferenceId checkout of
-    Nothing -> tryViaDBWith "Checkout did not contain a client reference id"
+    Nothing -> throwError $ err404 {errBody = "Checkout did not contain a client reference id"}
     Just crid -> case parseUsernameWithError crid of
-      Left err -> tryViaDBWith $ "Failed to parse a username from the client reference id: " <> T.pack err
+      Left err -> throwError $ err404 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "Failed to parse a username from the client reference id: " <> T.pack err}
       Right un -> do
         mUser <- runDB $ getBy $ UniqueUsername un
         case mUser of
-          Nothing -> tryViaDBWith $ "No user found with username equal to the client reference id: " <> usernameText un
+          Nothing -> throwError $ err404 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "No user found with username equal to the client reference id: " <> usernameText un}
           Just (Entity uid _) -> pure uid
   void $
     runDB $
@@ -83,22 +73,7 @@ fullfillInvoicePaid invoice = do
     Just (InvoiceCustomer'Customer c) -> pure $ customerId c
     Just (InvoiceCustomer'DeletedCustomer _) -> throwError err400 {errBody = "Customer in checkout was a deleted customer."}
 
-  -- If the invoice was paid as part of a checkout session, we can try to add a stripe customer to the db first
-  -- case invoice'CheckoutSession invoice of
-  --   Nothing -> pure ()
-  --   Just sessionId -> do
-  --     mCheckout <- runDB $ selectFirst [StripeCheckoutSession ==. sessionId] [Desc StripeCheckoutId]
-  --     uid <- case mCheckout of
-  --       Nothing -> logWarnNS "stripe-hook" $ "Tried to add a stripe customer based on the checkout in an invoice but no matching checkout with this id was found in the database:" <> sessionId
-  --       Just (Entity _ sc) -> pure $ stripeCheckoutUser sc
-  --     void $
-  --       runDB $
-  --         upsertBy
-  --           (UniqueStripeCustomer uid customerId_)
-  --           (StripeCustomer {stripeCustomerUser = uid, stripeCustomerCustomer = customerId_})
-  --           [StripeCustomerCustomer =. customerId_]
-
-  -- Now find the stripe customer so we can figure out which user this invoice belonged to.
+  -- Try to find the corresponding stripe customer so that we can figure out the user that this subscription belongs to
   mStripeCustomer <- runDB $ selectFirst [StripeCustomerCustomer ==. customerId_] [Desc StripeCustomerId]
   uid <- case mStripeCustomer of
     Nothing -> throwError err404 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "No stripe customer with this id found in the database: " <> customerId_}
@@ -119,21 +94,6 @@ fullfillSubscription subscription = do
     SubscriptionCustomer'Text cid -> pure cid
     SubscriptionCustomer'Customer c -> pure $ customerId c
     SubscriptionCustomer'DeletedCustomer _ -> throwError err400 {errBody = "Customer in subscription was a deleted customer."}
-
-  -- If the subscription was created during a checkout session, we can try to add a stripe customer to the db first.
-  -- case subscriptionDiscount'CheckoutSession subscription of
-  --   Nothing -> pure ()
-  --   Just sessionId -> do
-  --     mCheckout <- runDB $ selectFirst [StripeCheckoutSession ==. sessionId] [Desc StripeCheckoutId]
-  --     uid <- case mCheckout of
-  --       Nothing -> logWarnNS "stripe-hook" $ "Tried to add a stripe customer based on the checkout in a subscription but no matching checkout with this id was found in the database:" <> sessionId
-  --       Just (Entity _ sc) -> pure $ stripeCheckoutUser sc
-  --     void $
-  --       runDB $
-  --         upsertBy
-  --           (UniqueStripeCustomer uid customerId_)
-  --           (StripeCustomer {stripeCustomerUser = uid, stripeCustomerCustomer = customerId_})
-  --           [StripeCustomerCustomer =. customerId_]
 
   -- Try to find the corresponding stripe customer so that we can figure out the user that this subscription belongs to
   mStripeCustomer <- runDB $ selectFirst [StripeCustomerCustomer ==. customerId_] [Desc StripeCustomerId]

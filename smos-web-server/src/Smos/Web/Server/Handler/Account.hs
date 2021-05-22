@@ -22,8 +22,9 @@ getAccountR = withLogin' $ \un t -> do
     token <- genToken
     $(widgetFile "account")
 
-postAccountDeleteR :: Handler Html
-postAccountDeleteR = withLogin $ \t -> do
+postAccountDeleteR :: Handler ()
+postAccountDeleteR = withLogin' $ \un t -> do
   NoContent <- runClientOrErr $ clientDeleteUser t
   addMessage "is-success" "Account succesfully deleted."
+  deleteLoginToken un
   clearCreds True
