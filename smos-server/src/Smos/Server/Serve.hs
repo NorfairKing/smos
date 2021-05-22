@@ -155,6 +155,7 @@ syncServerProtectedRoutes =
   ProtectedRoutes
     { getUserPermissions = withAuthResult serveGetUserPermissions,
       getUserSubscription = withAuthResult serveGetUserSubscription,
+      postInitiateStripeCheckoutSession = withAuthResult servePostInitiateStripeCheckoutSession,
       deleteUser = withAuthResult serveDeleteUser,
       postSync = withAuthResult servePostSync,
       getListBackups = withAuthResult serveGetListBackups,

@@ -19,6 +19,7 @@ openapi3-code-generator-exe "$specRepo/openapi/spec3.yaml" \
   --white-listed-schema checkout.session \
   --white-listed-schema notification_event_data \
   --white-listed-schema invoice \
+  --white-listed-schema subscription \
   --white-listed-schema customer
 
 tree $outputDir/src/StripeClient/

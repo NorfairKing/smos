@@ -12,15 +12,11 @@ where
 
 import Control.Monad.Except
 import Smos.Web.Server.Handler.Import
-import Text.Julius
 
 getAccountR :: Handler Html
 getAccountR = withLogin' $ \un t -> do
   mMonetisation <- runClientOrErr clientGetMonetisation
   status <- runClientOrErr $ clientGetUserSubscription t
-  let stripeForm Monetisation {..} =
-        let clientReferenceId = usernameText un
-         in $(widgetFile "stripe-form")
   now <- liftIO getCurrentTime
   withNavBar $ do
     token <- genToken

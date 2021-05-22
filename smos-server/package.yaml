@@ -23,6 +23,7 @@ library:
   - dirforest
   - envparse
   - filepath
+  - http-client
   - jose
   - looper
   - mergeful

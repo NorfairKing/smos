@@ -113,6 +113,7 @@ type SmosProtectedAPI = ToServantApi ProtectedRoutes
 data ProtectedRoutes route = ProtectedRoutes
   { getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
     getUserSubscription :: !(route :- ProtectAPI :> GetUserSubscription),
+    postInitiateStripeCheckoutSession :: !(route :- ProtectAPI :> PostInitiateStripeCheckoutSession),
     deleteUser :: !(route :- ProtectAPI :> DeleteUser),
     postSync :: !(route :- ProtectAPI :> PostSync),
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
@@ -133,7 +134,7 @@ type GetMonetisation = "monetisation" :> Get '[JSON] (Maybe Monetisation)
 
 data Monetisation = Monetisation
   { monetisationStripePublishableKey :: !Text,
-    monetisationStripePlan :: !Text
+    monetisationStripePrice :: !Text
   }
   deriving (Show, Eq, Generic)
 
@@ -144,13 +145,14 @@ instance NFData Monetisation
 instance FromJSON Monetisation where
   parseJSON = withObject "Monetisation" $ \o ->
     Monetisation
-      <$> o .: "publishable-key" <*> o .: "plan"
+      <$> o .: "publishable-key"
+      <*> o .: "price"
 
 instance ToJSON Monetisation where
   toJSON Monetisation {..} =
     object
       [ "publishable-key" .= monetisationStripePublishableKey,
-        "plan" .= monetisationStripePlan
+        "price" .= monetisationStripePrice
       ]
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
@@ -237,6 +239,52 @@ instance ToJSON SubscriptionStatus where
           NotSubscribed -> o "not-subscribed" []
           SubscribedUntil ut -> o "subscribed" ["until" .= ut]
           NoSubscriptionNecessary -> o "no-subscription-necessary" []
+
+type PostInitiateStripeCheckoutSession = "checkout" :> "stripe" :> "session" :> ReqBody '[JSON] InitiateStripeCheckoutSession :> Post '[JSON] InitiatedCheckoutSession
+
+data InitiateStripeCheckoutSession = InitiateStripeCheckoutSession
+  { initiateStripeCheckoutSessionSuccessUrl :: Text,
+    initiateStripeCheckoutSessionCanceledUrl :: Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity InitiateStripeCheckoutSession
+
+instance NFData InitiateStripeCheckoutSession
+
+instance FromJSON InitiateStripeCheckoutSession where
+  parseJSON = withObject "InitiateStripeCheckoutSession" $ \o ->
+    InitiateStripeCheckoutSession
+      <$> o .: "success"
+      <*> o .: "canceled"
+
+instance ToJSON InitiateStripeCheckoutSession where
+  toJSON InitiateStripeCheckoutSession {..} =
+    object
+      [ "success" .= initiateStripeCheckoutSessionSuccessUrl,
+        "canceled" .= initiateStripeCheckoutSessionCanceledUrl
+      ]
+
+data InitiatedCheckoutSession = InitiatedCheckoutSession
+  { initiatedCheckoutSessionId :: Text,
+    initiatedCheckoutSessionCustomerId :: Maybe Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity InitiatedCheckoutSession
+
+instance NFData InitiatedCheckoutSession
+
+instance FromJSON InitiatedCheckoutSession where
+  parseJSON = withObject "InitiatedCheckoutSession" $ \o ->
+    InitiatedCheckoutSession <$> o .: "session" <*> o .:? "customer"
+
+instance ToJSON InitiatedCheckoutSession where
+  toJSON InitiatedCheckoutSession {..} =
+    object
+      [ "session" .= initiatedCheckoutSessionId,
+        "customer" .= initiatedCheckoutSessionCustomerId
+      ]
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
 

@@ -12,8 +12,8 @@ serveGetMonetisation = do
   mm <- asks serverEnvMonetisationSettings
   forM mm $ \MonetisationSettings {..} ->
     pure
-      -- We don't send over the secret key on purpose.
+      -- We don't send over the secret key, on purpose.
       Monetisation
         { monetisationStripePublishableKey = monetisationSetStripePublishableKey,
-          monetisationStripePlan = monetisationSetStripePlan
+          monetisationStripePrice = monetisationSetStripePrice
         }

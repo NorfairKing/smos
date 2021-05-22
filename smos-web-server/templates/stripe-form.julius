@@ -1,20 +1,11 @@
 var stripe = Stripe('#{rawJS monetisationStripePublishableKey}');
 
-var checkoutButton = document.getElementById('checkout-button-#{rawJS monetisationStripePlan}');
+var checkoutButton = document.getElementById('checkout-button-#{rawJS monetisationStripePrice}');
 checkoutButton.addEventListener('click', function () {
   // When the customer clicks on the button, redirect
   // them to Checkout.
   stripe.redirectToCheckout({
-    items: [{plan: '#{rawJS monetisationStripePlan}', quantity: 1}],
-
-    // Do not rely on the redirect to the successUrl for fulfilling
-    // purchases, customers may not always reach the success_url after
-    // a successful payment.
-    // Instead use one of the strategies described in
-    // https://stripe.com/docs/payments/checkout/fulfillment
-    clientReferenceId: '#{rawJS clientReferenceId}',
-    successUrl: '@{CheckoutSuccessR}',
-    cancelUrl: '@{CheckoutCanceledR}',
+    sessionId: '#{rawJS initiatedCheckoutSessionId}',
   })
   .then(function (result) {
     if (result.error) {

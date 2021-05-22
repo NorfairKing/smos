@@ -93,7 +93,7 @@ combineToMonetisationSettings MonetisationFlags {..} MonetisationEnvironment {..
   MonetisationSettings
     <$> (monetisationFlagStripeSecretKey <|> monetisationEnvStripeSecretKey <|> (mc >>= monetisationConfStripeSecretKey))
     <*> (monetisationFlagStripePublishableKey <|> monetisationEnvStripePublishableKey <|> (mc >>= monetisationConfStripePublishableKey))
-    <*> (monetisationFlagStripePlan <|> monetisationEnvStripePlan <|> (mc >>= monetisationConfStripePlan))
+    <*> (monetisationFlagStripePrice <|> monetisationEnvStripePrice <|> (mc >>= monetisationConfStripePrice))
     <*> pure (S.unions [monetisationFlagFreeloaders, monetisationEnvFreeloaders, maybe S.empty monetisationConfFreeloaders mc])
 
 getEnvironment :: IO Environment
@@ -125,7 +125,7 @@ monetisationEnvironmentParser =
   MonetisationEnvironment
     <$> Env.var (fmap Just . Env.str) "STRIPE_SECRET_KEY" (mE <> Env.help "The stripe api secret key")
     <*> Env.var (fmap Just . Env.str) "STRIPE_PUBLISHABLE_KEY" (mE <> Env.help "The stripe api publishable key")
-    <*> Env.var (fmap Just . Env.str) "STRIPE_PLAN" (mE <> Env.help "The stripe plan id")
+    <*> Env.var (fmap Just . Env.str) "STRIPE_PRICE" (mE <> Env.help "The stripe price id")
     <*> Env.var
       ( left Env.UnreadError
           . fmap S.fromList
@@ -309,9 +309,9 @@ parseMonetisationFlags =
     <*> optional
       ( strOption
           ( mconcat
-              [ long "stripe-plan",
-                metavar "PLAN_ID",
-                help "The stripe plan id"
+              [ long "stripe-price",
+                metavar "PRICE_ID",
+                help "The stripe price id"
               ]
           )
       )

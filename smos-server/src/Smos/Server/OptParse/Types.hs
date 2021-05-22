@@ -48,7 +48,7 @@ data ServeFlags = ServeFlags
 data MonetisationFlags = MonetisationFlags
   { monetisationFlagStripeSecretKey :: !(Maybe Text),
     monetisationFlagStripePublishableKey :: !(Maybe Text),
-    monetisationFlagStripePlan :: !(Maybe Text),
+    monetisationFlagStripePrice :: !(Maybe Text),
     monetisationFlagFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -79,7 +79,7 @@ data Environment = Environment
 data MonetisationEnvironment = MonetisationEnvironment
   { monetisationEnvStripeSecretKey :: !(Maybe Text),
     monetisationEnvStripePublishableKey :: !(Maybe Text),
-    monetisationEnvStripePlan :: !(Maybe Text),
+    monetisationEnvStripePrice :: !(Maybe Text),
     monetisationEnvFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -129,7 +129,7 @@ configurationObjectParser =
 data MonetisationConfiguration = MonetisationConfiguration
   { monetisationConfStripeSecretKey :: !(Maybe Text),
     monetisationConfStripePublishableKey :: !(Maybe Text),
-    monetisationConfStripePlan :: !(Maybe Text),
+    monetisationConfStripePrice :: !(Maybe Text),
     monetisationConfFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
@@ -172,7 +172,7 @@ data ServeSettings = ServeSettings
 data MonetisationSettings = MonetisationSettings
   { monetisationSetStripeSecretKey :: !Text,
     monetisationSetStripePublishableKey :: !Text,
-    monetisationSetStripePlan :: !Text,
+    monetisationSetStripePrice :: !Text,
     monetisationSetFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)

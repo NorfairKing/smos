@@ -50,6 +50,7 @@ library:
   - smos-sync-client
   - smos-web-style
   - stm
+  - stripe-client
   - template-haskell
   - text
   - time

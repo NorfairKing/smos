@@ -167,6 +167,9 @@ clientGetUserPermissions = getUserPermissions smosProtectedClient
 clientGetUserSubscription :: Token -> ClientM SubscriptionStatus
 clientGetUserSubscription = getUserSubscription smosProtectedClient
 
+clientPostInitiateStripeCheckoutSession :: Token -> InitiateStripeCheckoutSession -> ClientM InitiatedCheckoutSession
+clientPostInitiateStripeCheckoutSession = postInitiateStripeCheckoutSession smosProtectedClient
+
 clientDeleteUser :: Token -> ClientM NoContent
 clientDeleteUser = deleteUser smosProtectedClient
 

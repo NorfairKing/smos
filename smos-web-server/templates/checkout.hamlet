@@ -1,0 +1,22 @@
+<section .section>
+  <div .container>
+    <div .box .content>
+      <h3 .title .is-3>
+        Subscribe
+
+      $case status
+        $of SubscribedUntil end
+          <p>
+            Already subscribed until
+            #{formatTime defaultTimeLocale "%F" end}
+            (#{prettyTimeAuto now end})
+
+        $of NoSubscriptionNecessary
+          No subscription necessary
+
+        $of NotSubscribed
+          <p>
+            Not subscribed
+
+          $maybe m <- mMonetisation
+            ^{stripeForm m}

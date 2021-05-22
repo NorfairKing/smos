@@ -26,7 +26,8 @@
             <p>
               Not subscribed
 
-            ^{stripeForm m}
+            <a .button href=@{CheckoutR}>
+              Subscribe now
 
     <div .box .content>
       <h4 .title .is-4>
