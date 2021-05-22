@@ -5,7 +5,6 @@
 module Smos.Server.TestUtils where
 
 import Control.DeepSeq
-import Data.Text (Text)
 import Database.Persist.Sqlite as DB
 import qualified Network.HTTP.Client as Http
 import Servant.Auth.Client as Auth

@@ -14,7 +14,7 @@ import Smos.Server.Serve as Server
 import Smos.Sync.Client.Command.Login
 import Smos.Sync.Client.Command.Register
 import Smos.Sync.Client.Command.Sync
-import Smos.Sync.Client.OptParse
+import Smos.Sync.Client.OptParse as Client
 import Test.Syd
 import Test.Syd.Persistent.Sqlite (withConnectionPool)
 import Test.Syd.Validity
@@ -59,7 +59,7 @@ spec = managerSpec $
               backupDir <- resolveDir tdir "conflict-backups"
 
               let setsFromCenv cenv = do
-                    Settings
+                    Client.Settings
                       { setServerUrl = baseUrl cenv,
                         setLogLevel = LevelError,
                         setUsername = Just username,
