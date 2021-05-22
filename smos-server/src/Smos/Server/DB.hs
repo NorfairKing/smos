@@ -50,6 +50,18 @@ User
     deriving Generic
 
 
+StripeCheckout
+    user UserId
+    session Text
+    created UTCTime
+
+    UniqueStripeCheckout user session
+
+    deriving Show
+    deriving Eq
+    deriving Generic
+
+
 StripeCustomer
     user UserId
     customer Text -- Stripe customer id

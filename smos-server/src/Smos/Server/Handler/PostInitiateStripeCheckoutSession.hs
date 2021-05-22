@@ -49,7 +49,16 @@ servePostInitiateStripeCheckoutSession ac iscs = do
         case responseBody resp of
           PostCheckoutSessionsResponseError err -> throwError err500 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "Something went wrong while parsing stripe's response:" <> T.pack err}
           PostCheckoutSessionsResponseDefault err -> throwError err500 {errBody = "Error while calling stripe:\n" <> JSON.encodePretty err}
-          PostCheckoutSessionsResponse200 session ->
+          PostCheckoutSessionsResponse200 session -> do
+            let sessionId = checkout'sessionId session
+            now <- liftIO getCurrentTime
+            void $
+              runDB $
+                upsertBy
+                  (UniqueStripeCheckout uid sessionId)
+                  (StripeCheckout {stripeCheckoutUser = uid, stripeCheckoutSession = sessionId, stripeCheckoutCreated = now})
+                  [StripeCheckoutSession =. sessionId, StripeCheckoutCreated =. now]
+
             pure $
               InitiatedCheckoutSession
                 { initiatedCheckoutSessionId = checkout'sessionId session,
