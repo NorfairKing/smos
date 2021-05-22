@@ -191,6 +191,18 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/f34eb300b68ea66ef8a2dbc5eec3c86a8270e414.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "openapi-code-generator": {
+        "branch": "master",
+        "description": "Generate Haskell client code from an OpenAPI 3 specification",
+        "homepage": "",
+        "owner": "Haskell-OpenAPI-Code-Generator",
+        "repo": "Haskell-OpenAPI-Client-Code-Generator",
+        "rev": "46a937a19c5dd2d5e3b8afaea063a1e17cfc9ff2",
+        "sha256": "1xi3m89d9wn5yhsfgricznrl6p0gi9j38zdnv2dyhd6z7vcq0jbi",
+        "type": "tarball",
+        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/46a937a19c5dd2d5e3b8afaea063a1e17cfc9ff2.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "pretty-relative-time": {
         "branch": "master",
         "description": null,
@@ -225,6 +237,18 @@
         "sha256": "127j7dfjl81ydvsdkyfkrisikg2f4ixavqfvbsxbwjr8fdi4iy3p",
         "type": "tarball",
         "url": "https://github.com/NorfairKing/seocheck/archive/bcd7e1b00393230b9f28c723a1f7cf291ae89f8a.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "stripe-spec": {
+        "branch": "master",
+        "description": "An OpenAPI specification for the Stripe API.        ",
+        "homepage": null,
+        "owner": "stripe",
+        "repo": "openapi",
+        "rev": "0ecbb8cb93e7f7064f55f94971698e0df27fbf56",
+        "sha256": "0k02l3snydixa5yn4kbvckp87rafkkcj7621xlng2k45xhgp27b2",
+        "type": "tarball",
+        "url": "https://github.com/stripe/openapi/archive/0ecbb8cb93e7f7064f55f94971698e0df27fbf56.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {
@@ -293,10 +317,10 @@
         "homepage": "https://cs-syd.eu/posts/2021-02-27-watching-changes-in-yesod",
         "owner": "NorfairKing",
         "repo": "yesod-autoreload",
-        "rev": "2adfb0397ca82a81ee26e0e491fe8b2759d76615",
-        "sha256": "0b0fh4xqx2xc0g1lap2acrwm25zfkcf7b6h794wnfw1mwgb7grbn",
+        "rev": "27d83b79893bb535c1a339db29a57c2ef0772305",
+        "sha256": "12wmra6ggpmqksajvsdqgm99m8hhhk67y8s1v49bzi0jisr12l2x",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/yesod-autoreload/archive/2adfb0397ca82a81ee26e0e491fe8b2759d76615.tar.gz",
+        "url": "https://github.com/NorfairKing/yesod-autoreload/archive/27d83b79893bb535c1a339db29a57c2ef0772305.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-static-remote": {

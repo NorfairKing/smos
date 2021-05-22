@@ -17,11 +17,14 @@
               Last Login
             <th style="width: 20%;">
               Last Use
+            <th style="width: 20%;">
+              Subscribed
         <tfoot>
           $forall user <- users
             <tr>
               <td>
-                #{usernameText $ userInfoUsername user}
+                <a href=@{AdminUserR $ userInfoUsername user}>
+                  #{usernameText $ userInfoUsername user}
               <td>
                 #{userInfoAdmin user}
               <td>
@@ -35,3 +38,7 @@
                 $maybe lastUse <- userInfoLastUse user
                   #{formatTime defaultTimeLocale "%F" lastUse}
                   (#{prettyTimeAuto now lastUse})
+              <td>
+                $maybe end <- userInfoSubscribed user
+                  #{formatTime defaultTimeLocale "%F" end}
+                  (#{prettyTimeAuto now end})

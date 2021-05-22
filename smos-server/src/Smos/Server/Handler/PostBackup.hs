@@ -11,9 +11,10 @@ import Data.Foldable
 import qualified Data.Map as M
 import Smos.Server.Backup
 import Smos.Server.Handler.Import
+import Smos.Server.Subscription
 
 servePostBackup :: AuthNCookie -> ServerHandler BackupUUID
-servePostBackup ac = withUserId ac $ \uid -> do
+servePostBackup ac = withUserId ac $ \uid -> withSubscription ac $ do
   maxBackups <- asks serverEnvMaxBackupsPerUser
   numberOfBackupsThatWeAlreadyHave <- runDB $ count [BackupUser ==. uid]
   -- Don't let the backup happen if we already have the maximum number of backups for this user.

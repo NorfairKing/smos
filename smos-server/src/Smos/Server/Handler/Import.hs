@@ -15,6 +15,7 @@ import Control.Monad.Except as X
 import Control.Monad.Logger as X
 import Control.Monad.Reader as X
 import qualified Data.Conduit.Combinators as C
+import Data.Text as X (Text)
 import qualified Data.Text as T
 import Data.Time as X
 import Data.UUID.Typed as X
@@ -28,6 +29,7 @@ import Smos.Report.Archive as X
 import Smos.Server.Constants as X
 import Smos.Server.DB as X
 import Smos.Server.Env as X
+import Smos.Server.OptParse.Types as X
 import Text.Show.Pretty as X
 
 withUserId :: AuthNCookie -> (UserId -> ServerHandler a) -> ServerHandler a

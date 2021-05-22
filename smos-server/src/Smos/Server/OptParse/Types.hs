@@ -4,6 +4,9 @@
 module Smos.Server.OptParse.Types where
 
 import Control.Monad.Logger
+import Data.Set (Set)
+import qualified Data.Set as S
+import Data.Text (Text)
 import Data.Time
 import Data.Word
 import Data.Yaml as Yaml
@@ -37,9 +40,18 @@ data ServeFlags = ServeFlags
     serveFlagAutoBackupLooperFlags :: !LooperFlags,
     serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags,
     serveFlagFileMigrationLooperFlags :: !LooperFlags,
-    serveFlagAdmin :: !(Maybe Username)
+    serveFlagAdmin :: !(Maybe Username),
+    serveFlagMonetisationFlags :: !MonetisationFlags
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+
+data MonetisationFlags = MonetisationFlags
+  { monetisationFlagStripeSecretKey :: !(Maybe Text),
+    monetisationFlagStripePublishableKey :: !(Maybe Text),
+    monetisationFlagStripePrice :: !(Maybe Text),
+    monetisationFlagFreeloaders :: !(Set Username)
+  }
+  deriving (Show, Eq, Generic)
 
 data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath)
@@ -59,7 +71,16 @@ data Environment = Environment
     envAutoBackupLooperEnv :: !LooperEnvironment,
     envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
     envFileMigrationLooperEnv :: !LooperEnvironment,
-    envAdmin :: !(Maybe Username)
+    envAdmin :: !(Maybe Username),
+    envMonetisationEnv :: !MonetisationEnvironment
+  }
+  deriving (Show, Eq, Generic)
+
+data MonetisationEnvironment = MonetisationEnvironment
+  { monetisationEnvStripeSecretKey :: !(Maybe Text),
+    monetisationEnvStripePublishableKey :: !(Maybe Text),
+    monetisationEnvStripePrice :: !(Maybe Text),
+    monetisationEnvFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 
@@ -75,7 +96,8 @@ data Configuration = Configuration
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
     confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
     confFileMigrationLooperConfiguration :: !(Maybe LooperConfiguration),
-    confAdmin :: !(Maybe Username)
+    confAdmin :: !(Maybe Username),
+    confMonetisationConf :: !(Maybe MonetisationConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -100,6 +122,31 @@ configurationObjectParser =
     <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
     <*> optionalField "file-migrator" "The configuration for the automatic file format migrator looper"
     <*> optionalField "admin" "The username of the user who will have admin rights"
+    <*> optionalField
+      "monetisation"
+      "Monetisation configuration. If this is not configured then the server is run entirely for free."
+
+data MonetisationConfiguration = MonetisationConfiguration
+  { monetisationConfStripeSecretKey :: !(Maybe Text),
+    monetisationConfStripePublishableKey :: !(Maybe Text),
+    monetisationConfStripePrice :: !(Maybe Text),
+    monetisationConfFreeloaders :: !(Set Username)
+  }
+  deriving (Show, Eq, Generic)
+
+instance FromJSON MonetisationConfiguration where
+  parseJSON = viaYamlSchema
+
+instance YamlSchema MonetisationConfiguration where
+  yamlSchema =
+    objectParser "MonetisationConfiguration" $
+      MonetisationConfiguration
+        <$> optionalField "stripe-secret-key" "The secret key for calling the stripe api"
+        <*> optionalField "stripe-publishable-key" "The publishable key for calling the stripe api"
+        <*> optionalField
+          "stripe-plan"
+          "The stripe identifier of the stripe plan used to checkout a subscription"
+        <*> optionalFieldWithDefault "freeloaders" S.empty "The usernames of users that will not have to pay"
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -117,7 +164,16 @@ data ServeSettings = ServeSettings
     serveSetAutoBackupLooperSettings :: !LooperSettings,
     serveSetBackupGarbageCollectionLooperSettings :: !LooperSettings,
     serveSetFileMigrationLooperSettings :: !LooperSettings,
-    serveSetAdmin :: !(Maybe Username)
+    serveSetAdmin :: !(Maybe Username),
+    serveSetMonetisationSettings :: !(Maybe MonetisationSettings)
+  }
+  deriving (Show, Eq, Generic)
+
+data MonetisationSettings = MonetisationSettings
+  { monetisationSetStripeSecretKey :: !Text,
+    monetisationSetStripePublishableKey :: !Text,
+    monetisationSetStripePrice :: !Text,
+    monetisationSetFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
 

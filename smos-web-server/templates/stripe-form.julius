@@ -1,0 +1,18 @@
+var stripe = Stripe('#{rawJS monetisationStripePublishableKey}');
+
+var checkoutButton = document.getElementById('checkout-button-#{rawJS monetisationStripePrice}');
+checkoutButton.addEventListener('click', function () {
+  // When the customer clicks on the button, redirect
+  // them to Checkout.
+  stripe.redirectToCheckout({
+    sessionId: '#{rawJS initiatedCheckoutSessionId}',
+  })
+  .then(function (result) {
+    if (result.error) {
+      // If `redirectToCheckout` fails due to a browser or network
+      // error, display the localized error message to your customer.
+      var displayError = document.getElementById('error-message');
+      displayError.textContent = result.error.message;
+    }
+  });
+});

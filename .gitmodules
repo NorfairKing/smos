@@ -4,3 +4,6 @@
 [submodule "smos-web-style/style/bulma-carousel"]
 	path = smos-web-style/style/bulma-carousel
 	url = git@github.com:Wikiki/bulma-carousel.git
+[submodule "stripe-api/stripe-spec"]
+	path = stripe-api/stripe-spec
+	url = org-856813@github.com:stripe/openapi.git

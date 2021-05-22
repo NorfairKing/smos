@@ -43,6 +43,7 @@ library
     , smos-data
     , smos-report
     , text
+    , time
   default-language: Haskell2010
 
 test-suite smos-client-test

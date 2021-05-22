@@ -18,7 +18,16 @@
 /backup/#{BackupUUID}/delete BackupDeleteR POST
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
+/account AccountR GET
+/account/delete AccountDeleteR POST
+
 /admin AdminPanelR GET
+/admin/#{Username} AdminUserR GET
+/admin/#{Username}/set-subscription AdminUserSetSubscriptionR POST
+
+/checkout/stripe                          CheckoutR GET
+/checkout/stripe/success                  CheckoutSuccessR GET
+/checkout/stripe/canceled                 CheckoutCanceledR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

@@ -14,24 +14,27 @@ module Smos.API.Username
   )
 where
 
+import Control.Arrow
 import Control.DeepSeq
 import Control.Monad.Fail as Fail
 import Data.Aeson as JSON
 import Data.Aeson.Types as JSON (toJSONKeyText)
 import qualified Data.Char as Char
 import Data.Hashable
+import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import Database.Persist.Sql
 import GHC.Generics (Generic)
+import Web.HttpApiData
 import Web.PathPieces
 import YamlParse.Applicative
 
 newtype Username = Username
   { usernameText :: Text
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Read, Eq, Ord, Generic)
 
 instance Validity Username where
   validate (Username t) =
@@ -40,6 +43,9 @@ instance Validity Username where
         check (T.length t >= 3) "The username is at least three characters long.",
         decorateList (map UsernameChar $ T.unpack t) validate
       ]
+
+instance IsString Username where
+  fromString = Username . fromString
 
 instance NFData Username
 
@@ -68,6 +74,14 @@ instance YamlSchema Username where
 instance PathPiece Username where
   fromPathPiece = parseUsername
   toPathPiece = usernameText
+
+instance ToHttpApiData Username where
+  toUrlPiece = usernameText
+  toQueryParam = usernameText
+
+instance FromHttpApiData Username where
+  parseUrlPiece = left T.pack . parseUsernameWithError
+  parseQueryParam = left T.pack . parseUsernameWithError
 
 usernameString :: Username -> String
 usernameString = T.unpack . usernameText

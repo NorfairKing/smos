@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -54,7 +55,7 @@ import Smos.Report.Agenda
 import Smos.Report.Next
 
 apiVersion :: Version
-apiVersion = version 0 1 0 [] []
+apiVersion = version 0 2 0 [] []
 
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
@@ -75,8 +76,10 @@ type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
 
 data UnprotectedRoutes route = UnprotectedRoutes
   { getApiVersion :: !(route :- GetAPIVersion),
+    getMonetisation :: !(route :- GetMonetisation),
     postRegister :: !(route :- PostRegister),
-    postLogin :: !(route :- PostLogin)
+    postLogin :: !(route :- PostLogin),
+    postStripeHook :: !(route :- PostStripeHook)
   }
   deriving (Generic)
 
@@ -109,6 +112,8 @@ type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
   { getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
+    getUserSubscription :: !(route :- ProtectAPI :> GetUserSubscription),
+    postInitiateStripeCheckoutSession :: !(route :- ProtectAPI :> PostInitiateStripeCheckoutSession),
     deleteUser :: !(route :- ProtectAPI :> DeleteUser),
     postSync :: !(route :- ProtectAPI :> PostSync),
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
@@ -124,6 +129,31 @@ data ProtectedRoutes route = ProtectedRoutes
   deriving (Generic)
 
 type GetAPIVersion = "api-version" :> Get '[JSON] Version
+
+type GetMonetisation = "monetisation" :> Get '[JSON] (Maybe Monetisation)
+
+data Monetisation = Monetisation
+  { monetisationStripePublishableKey :: !Text,
+    monetisationStripePrice :: !Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity Monetisation
+
+instance NFData Monetisation
+
+instance FromJSON Monetisation where
+  parseJSON = withObject "Monetisation" $ \o ->
+    Monetisation
+      <$> o .: "publishable-key"
+      <*> o .: "price"
+
+instance ToJSON Monetisation where
+  toJSON Monetisation {..} =
+    object
+      [ "publishable-key" .= monetisationStripePublishableKey,
+        "price" .= monetisationStripePrice
+      ]
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
@@ -160,6 +190,8 @@ instance ToJSON Login
 
 instance FromJSON Login
 
+type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> PostNoContent '[JSON] NoContent
+
 type GetUserPermissions = "user" :> "permissions" :> Get '[JSON] UserPermissions
 
 data UserPermissions = UserPermissions
@@ -180,6 +212,78 @@ instance ToJSON UserPermissions where
   toJSON UserPermissions {..} =
     object
       [ "admin" .= userPermissionsIsAdmin
+      ]
+
+type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] SubscriptionStatus
+
+data SubscriptionStatus = NoSubscriptionNecessary | SubscribedUntil UTCTime | NotSubscribed
+  deriving (Show, Eq, Generic)
+
+instance Validity SubscriptionStatus
+
+instance NFData SubscriptionStatus
+
+instance FromJSON SubscriptionStatus where
+  parseJSON = withObject "UserSubscription" $ \o -> do
+    t <- o .: "status"
+    case (t :: Text) of
+      "not-subscribed" -> pure NotSubscribed
+      "subscribed" -> SubscribedUntil <$> o .: "until"
+      "no-subscription-necessary" -> pure NoSubscriptionNecessary
+      _ -> fail "Unknown SubscriptionStatus"
+
+instance ToJSON SubscriptionStatus where
+  toJSON =
+    let o t vs = object $ ("status" .= (t :: Text)) : vs
+     in \case
+          NotSubscribed -> o "not-subscribed" []
+          SubscribedUntil ut -> o "subscribed" ["until" .= ut]
+          NoSubscriptionNecessary -> o "no-subscription-necessary" []
+
+type PostInitiateStripeCheckoutSession = "checkout" :> "stripe" :> "session" :> ReqBody '[JSON] InitiateStripeCheckoutSession :> Post '[JSON] InitiatedCheckoutSession
+
+data InitiateStripeCheckoutSession = InitiateStripeCheckoutSession
+  { initiateStripeCheckoutSessionSuccessUrl :: Text,
+    initiateStripeCheckoutSessionCanceledUrl :: Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity InitiateStripeCheckoutSession
+
+instance NFData InitiateStripeCheckoutSession
+
+instance FromJSON InitiateStripeCheckoutSession where
+  parseJSON = withObject "InitiateStripeCheckoutSession" $ \o ->
+    InitiateStripeCheckoutSession
+      <$> o .: "success"
+      <*> o .: "canceled"
+
+instance ToJSON InitiateStripeCheckoutSession where
+  toJSON InitiateStripeCheckoutSession {..} =
+    object
+      [ "success" .= initiateStripeCheckoutSessionSuccessUrl,
+        "canceled" .= initiateStripeCheckoutSessionCanceledUrl
+      ]
+
+data InitiatedCheckoutSession = InitiatedCheckoutSession
+  { initiatedCheckoutSessionId :: Text,
+    initiatedCheckoutSessionCustomerId :: Maybe Text
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity InitiatedCheckoutSession
+
+instance NFData InitiatedCheckoutSession
+
+instance FromJSON InitiatedCheckoutSession where
+  parseJSON = withObject "InitiatedCheckoutSession" $ \o ->
+    InitiatedCheckoutSession <$> o .: "session" <*> o .:? "customer"
+
+instance ToJSON InitiatedCheckoutSession where
+  toJSON InitiatedCheckoutSession {..} =
+    object
+      [ "session" .= initiatedCheckoutSessionId,
+        "customer" .= initiatedCheckoutSessionCustomerId
       ]
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
@@ -335,18 +439,23 @@ newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
   deriving (Show, Eq, Ord, Generic)
 
 data AdminRoutes route = AdminRoutes
-  { getUsers :: !(route :- ProtectAdmin :> GetUsers)
+  { getUsers :: !(route :- ProtectAdmin :> GetUsers),
+    getUser :: !(route :- ProtectAdmin :> GetUser),
+    putUserSubscription :: !(route :- ProtectAdmin :> PutUserSubscription)
   }
   deriving (Generic)
 
 type GetUsers = "users" :> Get '[JSON] [UserInfo]
+
+type GetUser = "users" :> Capture "username" Username :> Get '[JSON] UserInfo
 
 data UserInfo = UserInfo
   { userInfoUsername :: !Username,
     userInfoAdmin :: !Bool,
     userInfoCreated :: !UTCTime,
     userInfoLastLogin :: !(Maybe UTCTime),
-    userInfoLastUse :: !(Maybe UTCTime)
+    userInfoLastUse :: !(Maybe UTCTime),
+    userInfoSubscribed :: !(Maybe UTCTime)
   }
   deriving (Show, Eq, Generic)
 
@@ -361,7 +470,8 @@ instance ToJSON UserInfo where
         "admin" .= userInfoAdmin,
         "created" .= userInfoCreated,
         "last-login" .= userInfoLastLogin,
-        "last-use" .= userInfoLastUse
+        "last-use" .= userInfoLastUse,
+        "subscribed" .= userInfoSubscribed
       ]
 
 instance FromJSON UserInfo where
@@ -372,3 +482,6 @@ instance FromJSON UserInfo where
       <*> o .: "created"
       <*> o .:? "last-login"
       <*> o .:? "last-use"
+      <*> o .:? "subscribed"
+
+type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> PutNoContent '[JSON] NoContent

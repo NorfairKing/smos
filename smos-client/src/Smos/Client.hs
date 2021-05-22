@@ -31,6 +31,7 @@ import Data.List (find)
 import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Time
 import GHC.Generics
 import Lens.Micro
 import qualified Network.HTTP.Types as HTTP
@@ -57,6 +58,9 @@ smosUnprotectedClient = fromServant $ unprotectedRoutes smosClient
 clientGetApiVersion :: ClientM Version
 clientGetApiVersion = getApiVersion smosUnprotectedClient
 
+clientGetMonetisation :: ClientM (Maybe Monetisation)
+clientGetMonetisation = getMonetisation smosUnprotectedClient
+
 clientPostRegister :: Register -> ClientM NoContent
 clientPostRegister = postRegister smosUnprotectedClient
 
@@ -66,8 +70,9 @@ clientPostLogin = postLogin smosUnprotectedClient
 oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []
 
+-- | Update this to a newer version than the current to build in forward-compatibility
 newestSupportedAPIVersion :: Version
-newestSupportedAPIVersion = version 0 1 0 [] []
+newestSupportedAPIVersion = apiVersion
 
 clientVersionCheck :: ClientM (Version, VersionCheck)
 clientVersionCheck = do
@@ -159,6 +164,12 @@ smosProtectedClient = fromServant $ protectedRoutes smosClient
 clientGetUserPermissions :: Token -> ClientM UserPermissions
 clientGetUserPermissions = getUserPermissions smosProtectedClient
 
+clientGetUserSubscription :: Token -> ClientM SubscriptionStatus
+clientGetUserSubscription = getUserSubscription smosProtectedClient
+
+clientPostInitiateStripeCheckoutSession :: Token -> InitiateStripeCheckoutSession -> ClientM InitiatedCheckoutSession
+clientPostInitiateStripeCheckoutSession = postInitiateStripeCheckoutSession smosProtectedClient
+
 clientDeleteUser :: Token -> ClientM NoContent
 clientDeleteUser = deleteUser smosProtectedClient
 
@@ -203,6 +214,12 @@ smosAdminClient = fromServant $ adminRoutes smosClient
 
 clientGetUsers :: Token -> ClientM [UserInfo]
 clientGetUsers = getUsers smosAdminClient
+
+clientGetUser :: Token -> Username -> ClientM UserInfo
+clientGetUser = getUser smosAdminClient
+
+clientPutUserSubscription :: Token -> Username -> UTCTime -> ClientM NoContent
+clientPutUserSubscription = putUserSubscription smosAdminClient
 
 clientLogin :: Login -> ClientM (Either HeaderProblem Token)
 clientLogin = fmap (fmap sessionToToken) . clientLoginSession

@@ -5,7 +5,8 @@
   The `convCopyContentsToClipboard` action to copy the selected entry's contents to the system clipboard.
   This fixes [issue 205](https://github.com/NorfairKing/smos/issues/205).
   Thank you [@distefam](https://github.com/distefam)!
-   
+* `smos-web-server`:
+  An account overview page, including a button to delete your account.
 
 ##### Changed
 

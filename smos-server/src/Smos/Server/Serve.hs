@@ -30,7 +30,6 @@ import Smos.API
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
-import Smos.Server.OptParse
 import System.Exit
 import Text.Printf
 import UnliftIO hiding (Handler)
@@ -71,7 +70,8 @@ runSmosServer ServeSettings {..} = do
                             serverEnvCompressionLevel = compressionLevel,
                             serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
                             serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
-                            serverEnvAdmin = serveSetAdmin
+                            serverEnvAdmin = serveSetAdmin,
+                            serverEnvMonetisationSettings = serveSetMonetisationSettings
                           }
                   let middles =
                         if development
@@ -144,14 +144,18 @@ syncServerUnprotectedRoutes :: UnprotectedRoutes (AsServerT ServerHandler)
 syncServerUnprotectedRoutes =
   UnprotectedRoutes
     { getApiVersion = serveGetApiVersion,
+      getMonetisation = serveGetMonetisation,
       postRegister = servePostRegister,
-      postLogin = servePostLogin
+      postLogin = servePostLogin,
+      postStripeHook = servePostStripeHook
     }
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)
 syncServerProtectedRoutes =
   ProtectedRoutes
     { getUserPermissions = withAuthResult serveGetUserPermissions,
+      getUserSubscription = withAuthResult serveGetUserSubscription,
+      postInitiateStripeCheckoutSession = withAuthResult servePostInitiateStripeCheckoutSession,
       deleteUser = withAuthResult serveDeleteUser,
       postSync = withAuthResult servePostSync,
       getListBackups = withAuthResult serveGetListBackups,
@@ -175,7 +179,9 @@ serverReportRoutes =
 syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
 syncServerAdminRoutes =
   AdminRoutes
-    { getUsers = withAuthResult serveGetUsers
+    { getUsers = withAuthResult serveGetUsers,
+      getUser = withAuthResult serveGetUser,
+      putUserSubscription = withAuthResult servePutUserSubscription
     }
 
 readServerUUID :: Path Abs File -> IO ServerUUID

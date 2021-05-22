@@ -22,6 +22,8 @@ import qualified Yesod
 getBackupsR :: Handler Html
 getBackupsR = withLogin $ \t -> do
   now <- liftIO getCurrentTime
+  status <- runClientOrErr $ clientGetUserSubscription t
+  let showBackupPage = status /= NotSubscribed
   backups <- runClientOrErr $ clientGetListBackups t
   withNavBar $ do
     token <- genToken
@@ -32,11 +34,14 @@ postBackupR = withLogin $ \t -> do
   errOrBackup <- runClientSafe $ clientPostBackup t
   case errOrBackup of
     Left err -> handleStandardServantErrs err $ \resp ->
-      if Http.statusCode (responseStatusCode resp) == 403
-        then do
-          addMessage "Maximum number of backups reached." "Maximum number of backups reached."
-          getBackupsR
-        else redirect BackupsR
+      case Http.statusCode (responseStatusCode resp) of
+        403 -> do
+          addMessage "is-danger" "Maximum number of backups reached."
+          redirect BackupsR
+        402 -> do
+          addMessage "is-danger" "Backup creation is a subscription feature. Subscribe to make backups."
+          redirect BackupsR
+        _ -> redirect BackupsR
     Right _ -> redirect BackupsR
 
 getBackupDownloadR :: BackupUUID -> Handler TypedContent

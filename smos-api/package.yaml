@@ -21,6 +21,7 @@ library:
   - deepseq
   - dirforest
   - hashable
+  - http-api-data
   - memory
   - mergeful
   - mergeful-persistent

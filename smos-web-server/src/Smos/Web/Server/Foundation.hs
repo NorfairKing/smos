@@ -217,7 +217,7 @@ loginWeb form = do
       handleStandardServantErrs err $ \resp ->
         if responseStatusCode resp == Http.unauthorized401
           then do
-            addMessage "error" "Unable to login"
+            addMessage "is-danger" "Unable to login"
             redirect $ AuthR LoginR
           else error $ show resp
     Right (Left _) -> undefined
@@ -277,6 +277,12 @@ recordLoginToken :: Username -> Token -> Bool -> Handler ()
 recordLoginToken un token isAdmin = do
   tokenMapVar <- getsYesod appLoginTokens
   liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, isAdmin)
+  writeTokens
+
+deleteLoginToken :: Username -> Handler ()
+deleteLoginToken un = do
+  tokenMapVar <- getsYesod appLoginTokens
+  liftIO $ atomically $ modifyTVar tokenMapVar $ M.delete un
   writeTokens
 
 -- These three are used so you don't have to log in again every time you restart the server during development

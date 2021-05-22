@@ -120,8 +120,18 @@ serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
         serverEnvLogFunc = logFunc,
         serverEnvMaxBackupsPerUser = Nothing,
         serverEnvMaxBackupSizePerUser = Nothing,
-        serverEnvAdmin = Nothing
+        serverEnvAdmin = Just testAdminUsername,
+        serverEnvMonetisationSettings = Nothing
       }
+
+testAdminUsername :: Username
+testAdminUsername = "admin"
+
+testAdminPassword :: Text
+testAdminPassword = "dummy"
+
+testAdminRegister :: Register
+testAdminRegister = Register {registerUsername = testAdminUsername, registerPassword = testAdminPassword}
 
 registerLogin :: Register -> Login
 registerLogin register =
@@ -133,6 +143,10 @@ testLogin cenv lf = do
   case errOrRes of
     Left err -> expectationFailure $ "Failed to login: " <> show err
     Right t -> pure t
+
+withAdminUser :: MonadIO m => ClientEnv -> (Token -> m ()) -> m ()
+withAdminUser cenv func =
+  withNewGivenUser cenv testAdminRegister func
 
 withNewUser :: MonadUnliftIO m => ClientEnv -> (Token -> m ()) -> m ()
 withNewUser cenv func = withNewUserAndData cenv $ const func

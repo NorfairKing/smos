@@ -16,10 +16,13 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     routes.txt
+    templates/account.hamlet
     templates/admin/panel.hamlet
+    templates/admin/user.hamlet
     templates/auth/login.hamlet
     templates/auth/register.hamlet
     templates/backups.hamlet
+    templates/checkout.hamlet
     templates/default-body.hamlet
     templates/default-page.hamlet
     templates/footer.hamlet
@@ -32,6 +35,8 @@ extra-source-files:
     templates/playground.lucius
     templates/reports.hamlet
     templates/reports.lucius
+    templates/stripe-form.hamlet
+    templates/stripe-form.julius
     templates/terminal.hamlet
     templates/terminal.julius
     templates/tui.hamlet
@@ -56,8 +61,10 @@ library
       Smos.Web.Server.Constants
       Smos.Web.Server.Foundation
       Smos.Web.Server.Handler
+      Smos.Web.Server.Handler.Account
       Smos.Web.Server.Handler.Admin
       Smos.Web.Server.Handler.Backup
+      Smos.Web.Server.Handler.Checkout
       Smos.Web.Server.Handler.Home
       Smos.Web.Server.Handler.Import
       Smos.Web.Server.Handler.Playground
@@ -111,6 +118,7 @@ library
     , smos-sync-client
     , smos-web-style
     , stm
+    , stripe-client
     , template-haskell
     , text
     , time
@@ -123,6 +131,7 @@ library
     , yesod
     , yesod-auth
     , yesod-autoreload
+    , yesod-form
     , yesod-static
     , yesod-static-remote
     , yesod-websockets
@@ -144,6 +153,7 @@ test-suite smos-web-server-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Smos.Web.Server.Handler.AccountSpec
       Smos.Web.Server.Handler.AuthSpec
       Smos.Web.Server.Handler.BackupSpec
       Smos.Web.Server.Handler.HomeSpec

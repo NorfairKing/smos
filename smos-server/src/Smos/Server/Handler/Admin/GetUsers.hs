@@ -11,12 +11,14 @@ serveGetUsers :: AuthNCookie -> ServerHandler [UserInfo]
 serveGetUsers ac = asAdmin (authNCookieUsername ac) $ do
   userEntities <- runDB $ selectList [] [Desc UserCreated]
   mServerAdmin <- asks serverEnvAdmin
-  pure $
-    flip map userEntities $ \(Entity _ User {..}) ->
+  forM userEntities $ \(Entity uid User {..}) -> do
+    mSubscribed <- runDB $ getBy $ UniqueSubscriptionUser uid
+    pure $
       UserInfo
         { userInfoUsername = userName,
           userInfoAdmin = mServerAdmin == Just userName,
           userInfoCreated = userCreated,
           userInfoLastLogin = userLastLogin,
-          userInfoLastUse = userLastUse
+          userInfoLastUse = userLastUse,
+          userInfoSubscribed = subscriptionEnd . entityVal <$> mSubscribed
         }
