@@ -137,6 +137,7 @@ in
           # when importing smos from derivation.
           ln -s ${sources.bulma} bulma
           ln -s ${sources.bulma-carousel} bulma-carousel
+          ln -s ${sources.bulma-pricingtable} bulma-pricingtable
     
           # The file we want to compile
           # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
@@ -243,10 +244,12 @@ in
           "notification_event_data"
           "invoice"
           "subscription"
+          "price"
           "customer"
         ];
         operations = [
           "GetEvents"
+          "GetPricesPrice"
           "PostCustomers"
           "PostCheckoutSessions"
         ];

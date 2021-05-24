@@ -35,6 +35,18 @@
         "url": "https://github.com/Wikiki/bulma-carousel/archive/3de42c029917536d2f4867fd469f8187c56bcd41.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "bulma-pricingtable": {
+        "branch": "master",
+        "description": "Display a pricing table with Bulma",
+        "homepage": null,
+        "owner": "Wikiki",
+        "repo": "bulma-pricingtable",
+        "rev": "aea1e79224b2c2116f9bbcd8ff4899e5d0e26d09",
+        "sha256": "1l3xbmp7w4722gb4pajdbh3mjks3xib32vsxas76kxgd2zl2jpvd",
+        "type": "tarball",
+        "url": "https://github.com/Wikiki/bulma-pricingtable/archive/aea1e79224b2c2116f9bbcd8ff4899e5d0e26d09.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "cursor": {
         "branch": "master",
         "description": "Cursor data and manipulation",

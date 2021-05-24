@@ -3,6 +3,7 @@ module Smos.Sync.Client.LoginSpec
   )
 where
 
+import Control.Concurrent
 import Control.Monad.Logger
 import Crypto.JOSE as JOSE
 import Path.IO
@@ -31,6 +32,7 @@ spec = managerSpec $
 
             let serverSetupFuncWithJWTKey :: JOSE.JWK -> SetupFunc () ClientEnv
                 serverSetupFuncWithJWTKey key = do
+                  priceVar <- liftIO newEmptyMVar
                   let env =
                         ServerEnv
                           { serverEnvServerUUID = uuid,
@@ -43,6 +45,7 @@ spec = managerSpec $
                             serverEnvMaxBackupsPerUser = Nothing,
                             serverEnvMaxBackupSizePerUser = Nothing,
                             serverEnvAdmin = Nothing,
+                            serverEnvPriceCache = priceVar,
                             serverEnvMonetisationSettings = Nothing
                           }
                   let application = Server.makeSyncApp env
