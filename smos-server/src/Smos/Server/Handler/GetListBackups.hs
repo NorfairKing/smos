@@ -10,7 +10,7 @@ import Smos.Server.Handler.Import
 serveGetListBackups :: AuthNCookie -> ServerHandler [BackupInfo]
 serveGetListBackups ac = withUserId ac $ \uid ->
   runDB $ do
-    backupEntities <- selectList [BackupUser ==. uid] [Asc BackupTime]
+    backupEntities <- selectList [BackupUser ==. uid] [Desc BackupTime]
     pure $
       flip map backupEntities $ \(Entity _ Backup {..}) ->
         BackupInfo
