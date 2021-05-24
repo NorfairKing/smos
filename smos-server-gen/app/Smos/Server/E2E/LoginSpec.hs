@@ -48,8 +48,11 @@ spec serverVersion =
         describe "GetUserSubscription" $
           itWithOuter "can get the test user's permissions" $ \cenv -> do
             withTestLogin cenv $ \t -> do
+              mMonetisation <- runClientOrDie cenv clientGetMonetisation
               status <- runClientOrDie cenv $ clientGetUserSubscription t
-              status `shouldBe` NoSubscriptionNecessary
+              case mMonetisation of
+                Nothing -> status `shouldBe` NoSubscriptionNecessary
+                Just _ -> status `shouldBe` NotSubscribed
       describe "DeleteUser" $ do
         itWithOuter "can delete the test user" $ \cenv -> do
           withTestLogin cenv $ \t -> do
