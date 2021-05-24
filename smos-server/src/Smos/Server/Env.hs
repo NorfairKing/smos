@@ -4,6 +4,7 @@
 
 module Smos.Server.Env where
 
+import Control.Concurrent
 import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Map as M
@@ -20,6 +21,7 @@ import Servant.Auth.Server
 import Smos.API
 import Smos.Server.DB
 import Smos.Server.OptParse.Types
+import StripeClient as Stripe
 
 type ServerHandler = ReaderT ServerEnv (LoggingT Handler)
 
@@ -34,6 +36,7 @@ data ServerEnv = ServerEnv
     serverEnvMaxBackupsPerUser :: !(Maybe Word),
     serverEnvMaxBackupSizePerUser :: !(Maybe Word64),
     serverEnvAdmin :: !(Maybe Username),
+    serverEnvPriceCache :: !(MVar Stripe.Price), -- Indefinite cache, so an MVar works.
     serverEnvMonetisationSettings :: !(Maybe MonetisationSettings)
   }
   deriving (Generic)

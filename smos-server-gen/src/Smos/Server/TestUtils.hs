@@ -109,6 +109,7 @@ serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
   --
   -- logFunc <- runStderrLoggingT askLoggerIO
   logFunc <- runNoLoggingT askLoggerIO
+  priceVar <- newEmptyMVar
   pure $
     ServerEnv
       { serverEnvServerUUID = uuid,
@@ -121,6 +122,7 @@ serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
         serverEnvMaxBackupsPerUser = Nothing,
         serverEnvMaxBackupSizePerUser = Nothing,
         serverEnvAdmin = Just testAdminUsername,
+        serverEnvPriceCache = priceVar,
         serverEnvMonetisationSettings = Nothing
       }
 

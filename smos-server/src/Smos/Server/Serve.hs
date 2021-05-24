@@ -56,6 +56,7 @@ runSmosServer ServeSettings {..} = do
                 liftIO $ do
                   uuid <- readServerUUID serveSetUUIDFile
                   jwtKey <- loadSigningKey serveSetSigningKeyFile
+                  priceVar <- newEmptyMVar
                   let env =
                         ServerEnv
                           { serverEnvServerUUID = uuid,
@@ -71,6 +72,7 @@ runSmosServer ServeSettings {..} = do
                             serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
                             serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
                             serverEnvAdmin = serveSetAdmin,
+                            serverEnvPriceCache = priceVar,
                             serverEnvMonetisationSettings = serveSetMonetisationSettings
                           }
                   let middles =

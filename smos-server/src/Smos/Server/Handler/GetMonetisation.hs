@@ -6,6 +6,7 @@ module Smos.Server.Handler.GetMonetisation
   )
 where
 
+import Control.Concurrent
 import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Text as T
@@ -31,7 +32,25 @@ serveGetMonetisation = do
         }
 
 getStripePrice :: MonetisationSettings -> ServerHandler Price
-getStripePrice MonetisationSettings {..} = do
+getStripePrice ms = do
+  priceVar <- asks serverEnvPriceCache
+  mPrice <- liftIO $ tryReadMVar priceVar
+  case mPrice of
+    -- Already cached, just return it
+    Just price -> do
+      logDebugN "Stripe price was already cached."
+      pure price
+    -- Not cached yet
+    Nothing -> do
+      logDebugN "Stripe price was not in cache yet, getting it from Stripe now."
+      -- Get it from stripe
+      price <- getStripePriceFromStripe ms
+      -- Put in the cache for later
+      liftIO $ putMVar priceVar price
+      pure price
+
+getStripePriceFromStripe :: MonetisationSettings -> ServerHandler Price
+getStripePriceFromStripe MonetisationSettings {..} = do
   let config =
         Stripe.defaultConfiguration
           { configSecurityScheme = bearerAuthenticationSecurityScheme monetisationSetStripeSecretKey
