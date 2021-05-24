@@ -6,6 +6,7 @@ import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.HashMap.Strict as HM
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -31,31 +32,36 @@ servePostStripeHook value = do
         "customer.subscription.created" -> fullfillWith fullfillSubscription
         "customer.subscription.updated" -> fullfillWith fullfillSubscription
         "customer.subscription.deleted" -> fullfillWith fullfillSubscription
-        t -> do logInfoNS "stripe-hook" $ "Not handling event of type: " <> T.pack (show t)
+        t -> logInfoNS "stripe-hook" $ "Not handling event of type: " <> T.pack (show t)
   pure NoContent
 
 -- | Update the subscription date when the subscription has been updated
 fullfillSubscription :: Stripe.Subscription -> ServerHandler ()
 fullfillSubscription subscription = do
-  logInfoNS "stripe-hook" $ T.pack $ unlines ["fulfilling subscription:", ppShow subscription]
-  customerId_ <- case subscriptionCustomer subscription of
-    SubscriptionCustomer'Text cid -> pure cid
-    SubscriptionCustomer'Customer c -> pure $ customerId c
-    SubscriptionCustomer'DeletedCustomer _ -> throwError err400 {errBody = "Customer in subscription was a deleted customer."}
+  -- We don't want to do anything with subscriptions for other products.
+  case HM.lookup "product" $ subscriptionMetadata subscription of
+    Nothing -> logInfoNS "stripe-hook" "Not fulfilling subscription without product."
+    Just "smos" -> do
+      logInfoNS "stripe-hook" $ T.pack $ unlines ["fulfilling subscription:", ppShow subscription]
+      customerId_ <- case subscriptionCustomer subscription of
+        SubscriptionCustomer'Text cid -> pure cid
+        SubscriptionCustomer'Customer c -> pure $ customerId c
+        SubscriptionCustomer'DeletedCustomer _ -> throwError err400 {errBody = "Customer in subscription was a deleted customer."}
 
-  -- Try to find the corresponding stripe customer so that we can figure out the user that this subscription belongs to
-  mStripeCustomer <- runDB $ selectFirst [StripeCustomerCustomer ==. customerId_] [Desc StripeCustomerId]
-  uid <- case mStripeCustomer of
-    Nothing -> throwError err404 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "No stripe customer with this id found in the database: " <> customerId_}
-    Just (Entity _ sc) -> pure $ stripeCustomerUser sc
+      -- Try to find the corresponding stripe customer so that we can figure out the user that this subscription belongs to
+      mStripeCustomer <- runDB $ selectFirst [StripeCustomerCustomer ==. customerId_] [Desc StripeCustomerId]
+      uid <- case mStripeCustomer of
+        Nothing -> throwError err404 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "No stripe customer with this id found in the database: " <> customerId_}
+        Just (Entity _ sc) -> pure $ stripeCustomerUser sc
 
-  -- If the subscription has ended, use that date instead.
-  let endtime = fromMaybe (subscriptionCurrentPeriodEnd subscription) (subscriptionEndedAt subscription)
-  let end = posixSecondsToUTCTime $ fromIntegral endtime
-  void $
-    runDB $
-      upsertBy
-        (UniqueSubscriptionUser uid)
-        (Smos.Subscription {subscriptionUser = uid, subscriptionEnd = end})
-        [ SubscriptionEnd =. end
-        ]
+      -- If the subscription has ended, use that date instead.
+      let endtime = fromMaybe (subscriptionCurrentPeriodEnd subscription) (subscriptionEndedAt subscription)
+      let end = posixSecondsToUTCTime $ fromIntegral endtime
+      void $
+        runDB $
+          upsertBy
+            (UniqueSubscriptionUser uid)
+            (Smos.Subscription {subscriptionUser = uid, subscriptionEnd = end})
+            [ SubscriptionEnd =. end
+            ]
+    Just otherProduct -> logInfoNS "stripe-hook" $ "Not fulfilling subscription for other product: " <> TE.decodeUtf8 (LB.toStrict (JSON.encodePretty otherProduct))

@@ -6,11 +6,15 @@ module Smos.Server.Handler.PostInitiateStripeCheckoutSession
   )
 where
 
+import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.HashMap.Strict as HM
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Data.Version
 import Network.HTTP.Client as HTTP
+import Paths_smos_server
 import Smos.Server.Handler.Import
 import StripeClient as Stripe
 
@@ -28,11 +32,21 @@ servePostInitiateStripeCheckoutSession ac iscs = do
       withUserId ac $ \uid -> do
         -- Get or create the stripe customer
         mStripeCustomer <- runDB $ selectFirst [StripeCustomerUser ==. uid] [Desc StripeCustomerId]
+        let metadata =
+              HM.fromList
+                [ ("product", "smos"),
+                  ("smos-server-version", toJSON $ showVersion version)
+                ]
         Entity _ stripeCustomer <- case mStripeCustomer of
           Just sce -> pure sce
           Nothing -> do
-            -- TODO add in the email address too
-            let postCustomersRequest = mkPostCustomersRequestBody {postCustomersRequestBodyDescription = Just $ usernameText username}
+            let postCustomersRequest =
+                  mkPostCustomersRequestBody
+                    { postCustomersRequestBodyDescription = Just $ usernameText username,
+                      postCustomersRequestBodyMetadata =
+                        Just $
+                          PostCustomersRequestBodyMetadata'Object metadata
+                    }
             resp <- liftIO $ runWithConfiguration config $ postCustomers $ Just postCustomersRequest
             case responseBody resp of
               PostCustomersResponseError err -> throwError err500 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "Something went wrong while parsing stripe's response:\n" <> T.pack err}
@@ -60,7 +74,13 @@ servePostInitiateStripeCheckoutSession ac iscs = do
                 { postCheckoutSessionsRequestBodyCustomer = Just $ stripeCustomerCustomer stripeCustomer,
                   postCheckoutSessionsRequestBodyClientReferenceId = Just $ usernameText username,
                   postCheckoutSessionsRequestBodyLineItems = Just lineItems,
-                  postCheckoutSessionsRequestBodyMode = Just PostCheckoutSessionsRequestBodyMode'EnumSubscription
+                  postCheckoutSessionsRequestBodyMode = Just PostCheckoutSessionsRequestBodyMode'EnumSubscription,
+                  postCheckoutSessionsRequestBodyMetadata = Just metadata,
+                  postCheckoutSessionsRequestBodySubscriptionData =
+                    Just $
+                      mkPostCheckoutSessionsRequestBodySubscriptionData'
+                        { postCheckoutSessionsRequestBodySubscriptionData'Metadata = Just metadata
+                        }
                 }
 
         -- Actually perform the request
