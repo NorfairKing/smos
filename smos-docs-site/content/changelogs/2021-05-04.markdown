@@ -1,13 +1,13 @@
-- <a name="smos-shell-smos-shell-0.1.0">[smos-shell smos-shell-0.1.0](#smos-shell-smos-shell-0.1.0)
-- <a name="smos-report-gen-smos-report-gen-0.1.3">[smos-report-gen smos-report-gen-0.1.3](#smos-report-gen-smos-report-gen-0.1.3)
-- <a name="smos-github-smos-github-0.2.0">[smos-github smos-github-0.2.0](#smos-github-smos-github-0.2.0)
-- <a name="smos-client-smos-client-0.4.0">[smos-client smos-client-0.4.0](#smos-client-smos-client-0.4.0)
-- <a name="smos-sync-client-smos-sync-client-0.2.0">[smos-sync-client smos-sync-client-0.2.0](#smos-sync-client-smos-sync-client-0.2.0)
-- <a name="smos-report-smos-report-0.3.2">[smos-report smos-report-0.3.2](#smos-report-smos-report-0.3.2)
-- <a name="smos-api-smos-api-0.2.2">[smos-api smos-api-0.2.2](#smos-api-smos-api-0.2.2)
-- <a name="smos-query-smos-query-0.4.0">[smos-query smos-query-0.4.0](#smos-query-smos-query-0.4.0)
-- <a name="smos-web-server-smos-web-server-0.4.0">[smos-web-server smos-web-server-0.4.0](#smos-web-server-smos-web-server-0.4.0)
-- <a name="smos-server-smos-server-0.3.0">[smos-server smos-server-0.3.0](#smos-server-smos-server-0.3.0)
+- <a name="shell-smos-shell-0.1.0">[smos-shell-0.1.0](#smos-shell-0.1.0)
+- <a name="smos-report-gen-0.1.3">[smos-report-gen-0.1.3](#smos-report-gen-0.1.3)
+- <a name="smos-github-0.2.0">[smos-github-0.2.0](#smos-github-0.2.0)
+- <a name="smos-client-0.4.0">[smos-client-0.4.0](#smos-client-0.4.0)
+- <a name="smos-sync-client-0.2.0">[smos-sync-client-0.2.0](#smos-sync-client-0.2.0)
+- <a name="smos-report-0.3.2">[smos-report-0.3.2](#smos-report-0.3.2)
+- <a name="smos-api-0.2.2">[smos-api-0.2.2](#smos-api-0.2.2)
+- <a name="smos-query-0.4.0">[smos-query-0.4.0](#smos-query-0.4.0)
+- <a name="smos-web-server-0.4.0">[smos-web-server-0.4.0](smos-web-server-0.4.0)
+- <a name="smos-server-0.3.0">[smos-server-0.3.0](#smos-server-0.3.0)
 
 ##### Added
 

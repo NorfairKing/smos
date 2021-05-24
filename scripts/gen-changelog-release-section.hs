@@ -29,7 +29,7 @@ main = do
   let allTags = T.lines $ TE.decodeUtf8 $ LB.toStrict tagsContents :: [Text]
   let versions = flip mapMaybe packageYamls $ \PackageYaml {..} ->
         let tagName = concat [packageYamlName, "-", showVersion packageYamlVersion]
-         in if T.pack tagName `elem` allTags then Nothing else Just (packageYamlName, tagName)
+         in if T.pack tagName `elem` allTags then Nothing else Just (packageYamlName, showVersion packageYamlVersion)
   today <- utctDay <$> getCurrentTime
   let versionListItem (name, version) =
         concat
@@ -48,7 +48,7 @@ main = do
             ")"
           ]
   let section =
-        unlines $ map versionListItem versions
+        unlines $ sort $ map versionListItem versions
   putStrLn section
 
 data PackageYaml = PackageYaml {packageYamlName :: String, packageYamlVersion :: Version}

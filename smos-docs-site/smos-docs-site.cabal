@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-docs-site
-version:        0.1.0
+version:        0.0.0
 homepage:       https://github.com/NorfairKing/smos#readme
 bug-reports:    https://github.com/NorfairKing/smos/issues
 author:         Tom Sydney Kerckhove
@@ -84,6 +84,7 @@ extra-source-files:
     content/changelogs/2021-04-09.markdown
     content/changelogs/2021-04-30.markdown
     content/changelogs/2021-05-04.markdown
+    content/changelogs/2021-05-24.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet

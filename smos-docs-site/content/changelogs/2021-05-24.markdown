@@ -1,0 +1,45 @@
+- <a name="smos-0.2.1">[smos 0.2.1](#smos-0.2.1)
+- <a name="smos-api-0.3.0">[smos-api 0.3.0](#smos-api-0.3.0)
+- <a name="smos-api-gen-0.2.1">[smos-api-gen 0.2.1](#smos-api-gen-0.2.1)
+- <a name="smos-calendar-import-0.3.0">[smos-calendar-import 0.3.0](#smos-calendar-import-0.3.0)
+- <a name="smos-client-0.5.0">[smos-client 0.5.0](#smos-client-0.5.0)
+- <a name="smos-docs-site-0.0.0">[smos-docs-site 0.0.0](#smos-docs-site-0.0.0)
+- <a name="smos-github-0.3.0">[smos-github 0.3.0](#smos-github-0.3.0)
+- <a name="smos-query-0.5.0">[smos-query 0.5.0](#smos-query-0.5.0)
+- <a name="smos-report-0.4.0">[smos-report 0.4.0](#smos-report-0.4.0)
+- <a name="smos-report-cursor-0.2.0">[smos-report-cursor 0.2.0](#smos-report-cursor-0.2.0)
+- <a name="smos-report-gen-0.2.0">[smos-report-gen 0.2.0](#smos-report-gen-0.2.0)
+- <a name="smos-server-gen-0.3.0">[smos-server-gen 0.3.0](#smos-server-gen-0.3.0)
+- <a name="smos-sync-client-0.3.0">[smos-sync-client 0.3.0](#smos-sync-client-0.3.0)
+- <a name="smos-web-server-0.5.0">[smos-web-server 0.5.0](#smos-web-server-0.5.0)
+
+##### Added
+
+* `smos-server`: Now supports logging, and some logging has already been added as well.
+* `smos`:
+  The `convCopyContentsToClipboard` action to copy the selected entry's contents to the system clipboard.
+  This fixes [issue 205](https://github.com/NorfairKing/smos/issues/205).
+  Thank you [@distefam](https://github.com/distefam)!
+* `smos-web-server`:
+  An account overview page, including a button to delete your account.
+
+##### Changed
+
+* `smos-calendar-import`: The rendered smos entries now all contain the description of the event as contents, instead of only the top-level event.
+* `smos-notify`: You can now put the magic string `SMOS_NO_NOTIFY` into event descriptions to have `smos-notify` ignore the event entirely.
+* `smos-sync-client`:
+  Now sends the username of the user and the hostname of the device that makes the requests in the `Referer` header of every request.
+  This information is only used for logging.
+* `smos-web-server`: Now requires a `WEB_URL` to be configured and sends it over in the `Referer` header of every request to the API.
+* `smos`: Fixed that the file browser filter was shown in an empty file browser as well.
+* `smos-query`: Added a header to each of the columns in the waiting report.
+* `smos` and `smos-query`: Made the filepaths not as prominent, visually.
+* `smos` and `smos-query`: Made report formatting more consistent
+* `smos`: No longer shows the `.smos` extension for every stuck project in the stuck projects report.
+* `smos` and `smos-query`: Allow thresholds for the waiting, stuck and work reports to be configured as more general time strings.
+* `smos` and `smos-query`: Added the `waiting_threshold` to allow for a custom per-entry waiting threshold.
+* `smos`: Fixed that the filter bar wasn't shown in the interactive work report.
+  This fixes [issue 206](https://github.com/NorfairKing/smos/issues/206).
+  Thank you [@vidocco](https://github.com/vidocco)!
+* `smos-server`: Made the backup interval configurable
+* `smos-github`: Fixed that only pull requests would be listed but not issues.
