@@ -11,6 +11,7 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Add new release section in the changelog.
 1. Run `scripts/gen-changelog-release-section.hs` to add all the version numbers to the changelog.
 1. Make sure that CI passes.
+1. Make a release candidate commit.
 1. Merge `development` into `testing`.
 1. Deploy to `testing` and wait for the end-to-end tests to pass.
    If the end-to-end tests don't pass, that means we broke either forward or backward compatibility.
