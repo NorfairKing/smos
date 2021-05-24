@@ -6,7 +6,7 @@
 	url = git@github.com:Wikiki/bulma-carousel.git
 [submodule "stripe-api/stripe-spec"]
 	path = stripe-api/stripe-spec
-	url = org-856813@github.com:stripe/openapi.git
+	url = git@github.com:stripe/openapi.git
 [submodule "smos-web-style/style/bulma-pricingtable"]
 	path = smos-web-style/style/bulma-pricingtable
 	url = git@github.com:Wikiki/bulma-pricingtable.git
