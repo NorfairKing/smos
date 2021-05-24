@@ -143,9 +143,7 @@ instance YamlSchema MonetisationConfiguration where
       MonetisationConfiguration
         <$> optionalField "stripe-secret-key" "The secret key for calling the stripe api"
         <*> optionalField "stripe-publishable-key" "The publishable key for calling the stripe api"
-        <*> optionalField
-          "stripe-plan"
-          "The stripe identifier of the stripe plan used to checkout a subscription"
+        <*> optionalField "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription"
         <*> optionalFieldWithDefault "freeloaders" S.empty "The usernames of users that will not have to pay"
 
 newtype Dispatch

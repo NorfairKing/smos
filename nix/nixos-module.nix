@@ -180,10 +180,10 @@ in
                               example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
                               description = "The stripe api publishable key";
                             };
-                            stripe-plan = mkOption {
+                            stripe-price = mkOption {
                               type = types.str;
-                              example = "plan_XXXXXXXXXXXXXXXXXXXXXXXX";
-                              description = "The stripe plan";
+                              example = "price_XXXXXXXXXXXXXXXXXXXXXXXX";
+                              description = "The stripe price";
                             };
                             freeloaders = mkOption {
                               type = types.listOf types.str;
