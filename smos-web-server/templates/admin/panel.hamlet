@@ -39,6 +39,11 @@
                   #{formatTime defaultTimeLocale "%F" lastUse}
                   (#{prettyTimeAuto now lastUse})
               <td>
-                $maybe end <- userInfoSubscribed user
-                  #{formatTime defaultTimeLocale "%F" end}
-                  (#{prettyTimeAuto now end})
+                $case userInfoSubscribed user
+                  $of SubscribedUntil end
+                    #{formatTime defaultTimeLocale "%F" end}
+                    (#{prettyTimeAuto now end})
+                  $of NotSubscribed
+                    
+                  $of NoSubscriptionNecessary
+                    Free

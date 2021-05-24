@@ -7,6 +7,7 @@ module Smos.Server.Handler.Admin.GetUser
 where
 
 import Smos.Server.Handler.Import
+import Smos.Server.Subscription
 
 serveGetUser :: AuthNCookie -> Username -> ServerHandler UserInfo
 serveGetUser ac username = asAdmin (authNCookieUsername ac) $ do
@@ -15,7 +16,7 @@ serveGetUser ac username = asAdmin (authNCookieUsername ac) $ do
     Nothing -> throwError $ err404 {errBody = "User not found."}
     Just (Entity uid User {..}) -> do
       mServerAdmin <- asks serverEnvAdmin
-      mSubscribed <- runDB $ getBy $ UniqueSubscriptionUser uid
+      subscriptionStatus <- getSubscriptionStatusForUser userName
       pure $
         UserInfo
           { userInfoUsername = userName,
@@ -23,5 +24,5 @@ serveGetUser ac username = asAdmin (authNCookieUsername ac) $ do
             userInfoCreated = userCreated,
             userInfoLastLogin = userLastLogin,
             userInfoLastUse = userLastUse,
-            userInfoSubscribed = subscriptionEnd . entityVal <$> mSubscribed
+            userInfoSubscribed = subscriptionStatus
           }

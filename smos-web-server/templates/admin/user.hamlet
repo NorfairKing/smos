@@ -32,10 +32,13 @@
           Never
 
       <p>
-        $maybe end <- userInfoSubscribed user
-          Subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
-        $nothing
-          Not subscribed
+        $case userInfoSubscribed user
+          $of SubscribedUntil end
+            Subscribed until #{formatTime defaultTimeLocale "%F" end} (#{prettyTimeAuto now end})
+          $of NoSubscriptionNecessary
+            No subscription necessary
+          $of NotSubscribed
+            Not subscribed
 
       <h4 .title .is-4>
         Override Subscription

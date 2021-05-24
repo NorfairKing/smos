@@ -455,7 +455,7 @@ data UserInfo = UserInfo
     userInfoCreated :: !UTCTime,
     userInfoLastLogin :: !(Maybe UTCTime),
     userInfoLastUse :: !(Maybe UTCTime),
-    userInfoSubscribed :: !(Maybe UTCTime)
+    userInfoSubscribed :: !SubscriptionStatus
   }
   deriving (Show, Eq, Generic)
 
@@ -482,6 +482,6 @@ instance FromJSON UserInfo where
       <*> o .: "created"
       <*> o .:? "last-login"
       <*> o .:? "last-use"
-      <*> o .:? "subscribed"
+      <*> o .:? "subscribed" .!= NotSubscribed
 
 type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> PutNoContent '[JSON] NoContent
