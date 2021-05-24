@@ -194,6 +194,8 @@
             to satisfy even the most meticulous power users.
 
 
+    $maybe m <- mMonetisation
+      #{show m}
 
     $maybe docsUrl <- mDocsUrl
       <section .section>

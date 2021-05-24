@@ -12,8 +12,7 @@ serveGetUsers :: AuthNCookie -> ServerHandler [UserInfo]
 serveGetUsers ac = asAdmin (authNCookieUsername ac) $ do
   userEntities <- runDB $ selectList [] [Desc UserLastUse, Desc UserLastLogin, Desc UserCreated]
   mServerAdmin <- asks serverEnvAdmin
-  forM userEntities $ \(Entity uid User {..}) -> do
-    mSubscribed <- runDB $ getBy $ UniqueSubscriptionUser uid
+  forM userEntities $ \(Entity _ User {..}) -> do
     subscriptionStatus <- getSubscriptionStatusForUser userName
     pure $
       UserInfo

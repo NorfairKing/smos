@@ -4,7 +4,7 @@
 <!-- Create a button that your customers click to complete their purchase. Customize the styling to suit your branding. -->
 <button
   style="background-color:#006E7D;color:#FFF;padding:8px 12px;border:0;border-radius:4px;font-size:1em"
-  id="checkout-button-#{monetisationStripePrice}"
+  id="checkout-button"
   role="link"
 >
   Get Started

@@ -8,6 +8,7 @@ import Smos.Web.Server.Handler.Import
 getHomeR :: Handler Html
 getHomeR = do
   mDocsUrl <- getsYesod appDocsBaseUrl
+  mMonetisation <- runClientOrErr clientGetMonetisation
   withNavBar $ do
     addScript $ StaticR bulma_carousel_js
     addScript $ StaticR asciinema_player_js

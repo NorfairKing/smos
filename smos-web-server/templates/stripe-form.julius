@@ -1,6 +1,6 @@
 var stripe = Stripe('#{rawJS monetisationStripePublishableKey}');
 
-var checkoutButton = document.getElementById('checkout-button-#{rawJS monetisationStripePrice}');
+var checkoutButton = document.getElementById('checkout-button');
 checkoutButton.addEventListener('click', function () {
   // When the customer clicks on the button, redirect
   // them to Checkout.

@@ -134,7 +134,8 @@ type GetMonetisation = "monetisation" :> Get '[JSON] (Maybe Monetisation)
 
 data Monetisation = Monetisation
   { monetisationStripePublishableKey :: !Text,
-    monetisationStripePrice :: !Text
+    monetisationStripePriceCurrency :: !Text,
+    monetisationStripePricePerYear :: !Int
   }
   deriving (Show, Eq, Generic)
 
@@ -146,13 +147,15 @@ instance FromJSON Monetisation where
   parseJSON = withObject "Monetisation" $ \o ->
     Monetisation
       <$> o .: "publishable-key"
-      <*> o .: "price"
+      <*> o .: "currency"
+      <*> o .: "price-per-year"
 
 instance ToJSON Monetisation where
   toJSON Monetisation {..} =
     object
       [ "publishable-key" .= monetisationStripePublishableKey,
-        "price" .= monetisationStripePrice
+        "currency" .= monetisationStripePriceCurrency,
+        "price-per-year" .= monetisationStripePricePerYear
       ]
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent

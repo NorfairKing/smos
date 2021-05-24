@@ -14,7 +14,7 @@ serveGetUser ac username = asAdmin (authNCookieUsername ac) $ do
   mUser <- runDB $ getBy $ UniqueUsername username
   case mUser of
     Nothing -> throwError $ err404 {errBody = "User not found."}
-    Just (Entity uid User {..}) -> do
+    Just (Entity _ User {..}) -> do
       mServerAdmin <- asks serverEnvAdmin
       subscriptionStatus <- getSubscriptionStatusForUser userName
       pure $

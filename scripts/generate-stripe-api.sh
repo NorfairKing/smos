@@ -12,6 +12,7 @@ openapi3-code-generator-exe "$specRepo/openapi/spec3.yaml" \
   \
   --omit-additional-operation-functions \
   --operation-to-generate "GetEvents" \
+  --operation-to-generate "GetPricesPrice" \
   --operation-to-generate "PostCustomers" \
   --operation-to-generate "PostCheckoutSessions" \
   --white-listed-schema event \
@@ -19,6 +20,7 @@ openapi3-code-generator-exe "$specRepo/openapi/spec3.yaml" \
   --white-listed-schema notification_event_data \
   --white-listed-schema invoice \
   --white-listed-schema subscription \
+  --white-listed-schema price \
   --white-listed-schema customer
 
 tree $outputDir/src/StripeClient/
