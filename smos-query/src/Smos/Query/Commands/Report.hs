@@ -27,7 +27,8 @@ smosQueryReport ReportSettings {..} =
               { entrySetFilter = perparedReportFilter,
                 entrySetProjection = fromMaybe defaultProjection perparedReportProjection,
                 entrySetSorter = preparedReportSorter,
-                entrySetHideArchive = fromMaybe HideArchive preparedReportHideArchive
+                entrySetHideArchive = fromMaybe HideArchive preparedReportHideArchive,
+                entrySetOutputFormat = reportSetOutputFormat
               }
 
 availableReportsReport :: Map Text PreparedReport -> Text

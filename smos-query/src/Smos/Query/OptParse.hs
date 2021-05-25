@@ -74,7 +74,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
               { entrySetFilter = entryFlagFilter,
                 entrySetProjection = fromMaybe defaultProjection entryFlagProjection,
                 entrySetSorter = entryFlagSorter,
-                entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
+                entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive,
+                entrySetOutputFormat = fromMaybe OutputPretty entryFlagOutputFormat
               }
       CommandReport ReportFlags {..} -> do
         let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
@@ -83,7 +84,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           DispatchReport
             ReportSettings
               { reportSetReportName = reportFlagReportName,
-                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
+                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports,
+                reportSetOutputFormat = fromMaybe OutputPretty reportFlagOutputFormat
               }
       CommandWaiting WaitingFlags {..} -> do
         let mwc :: (WaitingReportConfig -> a) -> a
@@ -297,8 +299,12 @@ parseCommandEntry = info parser modifier
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
       CommandEntry
-        <$> ( EntryFlags <$> parseFilterArgsRel <*> parseProjectionArgs <*> parseSorterArgs
+        <$> ( EntryFlags
+                <$> parseFilterArgsRel
+                <*> parseProjectionArgs
+                <*> parseSorterArgs
                 <*> parseHideArchiveFlag
+                <*> parseOutputFormat
             )
 
 parseCommandReport :: ParserInfo Command
@@ -311,6 +317,7 @@ parseCommandReport = info parser modifier
                 <$> argument
                   (Just <$> str)
                   (mconcat [value Nothing, metavar "REPORT", help "The preconfigured report to run"])
+                <*> parseOutputFormat
             )
 
 parseCommandWork :: ParserInfo Command
@@ -387,7 +394,11 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock
-        <$> ( ClockFlags <$> parseFilterArgsRel <*> parsePeriod <*> parseTimeBlock <*> parseOutputFormat
+        <$> ( ClockFlags
+                <$> parseFilterArgsRel
+                <*> parsePeriod
+                <*> parseTimeBlock
+                <*> parseOutputFormat
                 <*> parseClockFormatFlags
                 <*> parseClockReportStyle
                 <*> parseHideArchiveFlag

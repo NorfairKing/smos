@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Projection where
@@ -6,7 +7,7 @@ module Smos.Report.Projection where
 import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
-import Data.Aeson
+import Data.Aeson as JSON
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -15,6 +16,7 @@ import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Path ()
 import Data.Void
+import Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
@@ -54,6 +56,24 @@ data Projectee
   deriving (Show, Eq, Generic)
 
 instance Validity Projectee
+
+instance ToJSON Projectee where
+  toJSON = \case
+    FileProjection p -> toJSON p
+    HeaderProjection h -> toJSON h
+    StateProjection mts -> toJSON mts
+    TagProjection mt -> toJSON mt
+    PropertyProjection _ mpv -> toJSON mpv
+    TimestampProjection _ mt -> toJSON mt
+
+instance ToYaml Projectee where
+  toYaml = \case
+    FileProjection p -> toYaml p
+    HeaderProjection h -> toYaml h
+    StateProjection mts -> toYaml mts
+    TagProjection mt -> toYaml mt
+    PropertyProjection _ mpv -> toYaml mpv
+    TimestampProjection _ mt -> toYaml mt
 
 instance Semigroup Projectee where
   p1 <> p2 =
