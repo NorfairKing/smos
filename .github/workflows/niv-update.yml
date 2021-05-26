@@ -15,3 +15,5 @@ jobs:
         with:
           name: smos
       - run: ./scripts/niv-update-pr.sh
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

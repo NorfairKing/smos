@@ -1,7 +1,6 @@
 #! /usr/bin/env nix-shell
 #! nix-shell ./niv-update-pr.nix -i bash --keep GITHUB_TOKEN
 
-echo $GITHUB_TOKEN
 set -x
 
 niv update autorecorder
