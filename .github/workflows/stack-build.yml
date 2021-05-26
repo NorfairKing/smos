@@ -5,6 +5,8 @@ on:
     branches:
       - development
       - master
+  workflow_dispatch:
+
 jobs:
   stack-build:
     name: ${{ matrix.os }} / Stack ${{ matrix.stack }} / GHC ${{ matrix.ghc }}
