@@ -185,10 +185,10 @@
         "homepage": "",
         "owner": "hercules-ci",
         "repo": "nix-pre-commit-hooks",
-        "rev": "09fb9e425111878b58223852e87ed85e8a189e0d",
-        "sha256": "0adfbgknb9xpgzmiwi4z5pnnw4n5gzjm2gxzria1vabyvqzxbn6s",
+        "rev": "2e7fac06108b4fc81f5ff9ed9a02bc4f6ede7001",
+        "sha256": "17xlb7cb1n6cyw8my6ks4iacrz49a6wfqrdj2gvjc52qc91wxvj7",
         "type": "tarball",
-        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/09fb9e425111878b58223852e87ed85e8a189e0d.tar.gz",
+        "url": "https://github.com/hercules-ci/nix-pre-commit-hooks/archive/2e7fac06108b4fc81f5ff9ed9a02bc4f6ede7001.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -197,10 +197,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f34eb300b68ea66ef8a2dbc5eec3c86a8270e414",
-        "sha256": "1i6d8jksw5i3jvsbjfjh5xag02sb63ch4bwzshgxrvwf7k5dan3g",
+        "rev": "b8f96258307d2f38df2c3674ea89eb10b7d6c4c5",
+        "sha256": "1k594qf4hppw5hb5mbr8v02ccdj94hwbgbkyaqaixdsz3sl7zs9p",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/f34eb300b68ea66ef8a2dbc5eec3c86a8270e414.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/b8f96258307d2f38df2c3674ea89eb10b7d6c4c5.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "openapi-code-generator": {
