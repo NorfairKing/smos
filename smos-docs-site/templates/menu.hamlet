@@ -202,9 +202,6 @@
 
   <ul .menu-list>
     <li>
-      <a href=@{PageR ["development", "contributing"]}>
-        Contributing
-    <li>
       <a href=@{CurrentVersionsR}>
         Current Versions
     <li>
@@ -216,6 +213,13 @@
     <li>
       <a href=@{PageR ["development","release-checklist"]}>
         Release checklist
+    <li>
+      <a href=@{PageR ["development", "contributing"]}>
+        Contributing
+      <ul>
+        <li>
+          <a href=@{PageR ["development", "contributing", "smos-docs-site"]}>
+            Documentation Site
 
   <p .menu-label>
     Support
