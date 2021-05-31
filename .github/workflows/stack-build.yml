@@ -48,7 +48,7 @@ jobs:
 
       - name: Build autoexporter
         run: |
-          stack install --system-ghc autoexporter --stack-yaml setup-stack.yaml
+          stack install --system-ghc autoexporter
 
       - name: Build dependencies
         run: |

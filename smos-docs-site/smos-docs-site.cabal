@@ -29,6 +29,7 @@ extra-source-files:
     content/pages/customisation-haskell.markdown
     content/pages/development/branch-strategy.markdown
     content/pages/development/contributing.markdown
+    content/pages/development/contributing/smos-docs-site.markdown
     content/pages/development/end-to-end-tests.markdown
     content/pages/development/release-checklist.markdown
     content/pages/directories.markdown
