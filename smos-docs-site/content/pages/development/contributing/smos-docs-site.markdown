@@ -14,12 +14,13 @@ nix-shell $ ./scripts/devel.sh
 ## Contributing casts
 
 Contributing an screencast to the documentation site involves writing an `autorecorder` cast specification.
+This ensures that the casts are always showing the current version of the tools that they show off.
 
 1. Install `autorecorder` [from source](https://github.com/NorfairKing/autorecorder)
 2. Locate the cast spec files in `smos-docs-site/content/casts`.
 3. Copy the example cast: `example.yaml` to create your new `mycast.yaml` specification.
 4. Make the changes that you want.
-5. Try out your cast using `autorecorder record mycast.yaml mycast.cast.
+5. Try out your cast using `autorecorder record mycast.yaml mycast.cast`.
 6. Use your cast in the documentation site by embedding it like this:
 
    ``` html
