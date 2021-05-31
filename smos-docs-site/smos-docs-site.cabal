@@ -20,6 +20,24 @@ extra-source-files:
     content/assets/smos-cheat-sheet.jpeg
     content/assets/smos-cheat-sheet.pdf
     content/assets/smos.png
+    content/casts/agenda.yaml
+    content/casts/archive.yaml
+    content/casts/basics.yaml
+    content/casts/browser.yaml
+    content/casts/calendar-import.yaml
+    content/casts/example.yaml
+    content/casts/next.yaml
+    content/casts/waiting.yaml
+    content/casts/work.yaml
+    content/changelogs/2020-09-25.markdown
+    content/changelogs/2020-11-04.markdown
+    content/changelogs/2020-12-16.markdown
+    content/changelogs/2021-02-01.markdown
+    content/changelogs/2021-03-13.markdown
+    content/changelogs/2021-04-09.markdown
+    content/changelogs/2021-04-30.markdown
+    content/changelogs/2021-05-04.markdown
+    content/changelogs/2021-05-24.markdown
     content/pages/blogposts.markdown
     content/pages/building-installation.markdown
     content/pages/cheat-sheet.markdown
@@ -80,15 +98,6 @@ extra-source-files:
     content/pages/smos.markdown
     content/pages/support.markdown
     content/pages/synchronisation.markdown
-    content/changelogs/2020-09-25.markdown
-    content/changelogs/2020-11-04.markdown
-    content/changelogs/2020-12-16.markdown
-    content/changelogs/2021-02-01.markdown
-    content/changelogs/2021-03-13.markdown
-    content/changelogs/2021-04-09.markdown
-    content/changelogs/2021-04-30.markdown
-    content/changelogs/2021-05-04.markdown
-    content/changelogs/2021-05-24.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet

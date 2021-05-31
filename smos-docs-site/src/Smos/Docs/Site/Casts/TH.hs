@@ -37,7 +37,12 @@ ensureCasts specFiles = do
     outputFile <- replaceExtension ".cast" specFile
     alreadyExists <- doesFileExist outputFile
     if alreadyExists
-      then putStrLn $ unwords ["Not casting because the cast already exists:", fromAbsFile outputFile]
+      then
+        putStrLn $
+          unwords
+            [ "Not casting because the cast already exists:",
+              fromAbsFile outputFile
+            ]
       else do
         case mAutorecorderExecutable of
           Nothing -> die "The autorecorder executable is not found. You can install it from https://github.com/NorfairKing/autorecorder ."
