@@ -14,8 +14,6 @@ copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
 
 source-repository head
   type: git

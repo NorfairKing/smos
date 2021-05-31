@@ -1,1 +1,0 @@
-# smos-cursor

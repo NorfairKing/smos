@@ -218,6 +218,9 @@
         Contributing
       <ul>
         <li>
+          <a href=@{PageR ["development", "contributing", "package-overview"]}>
+            Package Overview
+        <li>
           <a href=@{PageR ["development", "contributing", "smos-docs-site"]}>
             Documentation Site
 
