@@ -6,6 +6,7 @@ description: How to contribute to the Smos Documentation Site
 ## Setting up a feedback loop
 
 ```
+$ cd smos-docs-site
 $ nix-shell ../shell.nix
 nix-shell $ ./scripts/devel.sh
 ```

@@ -31,6 +31,8 @@ extra-source-files:
     content/pages/development/contributing.markdown
     content/pages/development/contributing/package-overview.markdown
     content/pages/development/contributing/smos-docs-site.markdown
+    content/pages/development/contributing/smos-server.markdown
+    content/pages/development/contributing/smos-web-server.markdown
     content/pages/development/end-to-end-tests.markdown
     content/pages/development/release-checklist.markdown
     content/pages/directories.markdown
