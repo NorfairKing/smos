@@ -30,7 +30,7 @@ spec = managerSpec $
           withConnectionPool serverAutoMigration $ \pool -> do
             uuid <- nextRandomUUID
 
-            let serverSetupFuncWithJWTKey :: JOSE.JWK -> SetupFunc () ClientEnv
+            let serverSetupFuncWithJWTKey :: JOSE.JWK -> SetupFunc ClientEnv
                 serverSetupFuncWithJWTKey key = do
                   priceVar <- liftIO newEmptyMVar
                   let env =
@@ -49,10 +49,10 @@ spec = managerSpec $
                             serverEnvMonetisationSettings = Nothing
                           }
                   let application = Server.makeSyncApp env
-                  p <- unwrapSetupFunc applicationSetupFunc application
+                  p <- applicationSetupFunc application
                   -- The fromIntegral is safe because it's PortNumber -> Int
                   pure $ mkClientEnv man (BaseUrl Http "127.0.0.1" (fromIntegral p) "")
-            let withServerWithKey key func = unSetupFunc (serverSetupFuncWithJWTKey key) func ()
+            let withServerWithKey key func = unSetupFunc (serverSetupFuncWithJWTKey key) func
 
             withSystemTempDir "smos-sync-client-test-login" $ \tdir -> do
               sessionFile <- resolveFile tdir "session.dat"

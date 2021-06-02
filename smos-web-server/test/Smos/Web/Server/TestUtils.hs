@@ -11,7 +11,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as Http
 import Network.HTTP.Types
-import Path.IO
 import Servant.Client
 import Smos.Client
 import Smos.Data.Gen ()
@@ -22,6 +21,7 @@ import Smos.Web.Server.Static
 import Smos.Web.Style
 import Test.QuickCheck
 import Test.Syd
+import Test.Syd.Path
 import Test.Syd.Validity
 import Test.Syd.Yesod
 import Yesod.Auth
@@ -32,12 +32,12 @@ smosWebServerSpec = API.serverSpec . webServerSpec
 webServerSpec :: YesodSpec App -> API.ServerSpec
 webServerSpec = setupAroundWith' webServerSetupFunc
 
-webServerSetupFunc :: Http.Manager -> SetupFunc ClientEnv (YesodClient App)
-webServerSetupFunc man = connectSetupFunc webServerSetupFunc' (yesodClientSetupFunc man)
+webServerSetupFunc :: Http.Manager -> ClientEnv -> SetupFunc (YesodClient App)
+webServerSetupFunc man cenv = webServerSetupFunc' cenv >>= yesodClientSetupFunc man
 
-webServerSetupFunc' :: SetupFunc ClientEnv App
-webServerSetupFunc' = wrapSetupFunc $ \(ClientEnv man burl _) -> do
-  tdir <- makeSimpleSetupFunc $ withSystemTempDir "smos-web-server-test-data-dir"
+webServerSetupFunc' :: ClientEnv -> SetupFunc App
+webServerSetupFunc' (ClientEnv man burl _) = do
+  tdir <- tempDirSetupFunc "smos-web-server-test-data-dir"
   loginVar <- liftIO $ newTVarIO M.empty
   pure
     App

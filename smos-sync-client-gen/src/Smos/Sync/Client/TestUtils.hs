@@ -36,7 +36,7 @@ import Test.Syd.Validity
 clientDBSpec :: SpecWith ConnectionPool -> Spec
 clientDBSpec = modifyMaxSuccess (`div` 10) . setupAround clientConnectionPoolSetupFunc
 
-clientConnectionPoolSetupFunc :: SetupFunc () ConnectionPool
+clientConnectionPoolSetupFunc :: SetupFunc ConnectionPool
 clientConnectionPoolSetupFunc = connectionPoolSetupFunc migrateAll
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
