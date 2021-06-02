@@ -1,6 +1,7 @@
 { envname
 , sources ? import ./sources.nix
-, smosPackages ? (import ./pkgs.nix { inherit sources; }).smosPackages
+, pkgs ? import ./pkgs.nix { inherit sources; }
+, smosPackages ? pkgs.smosPackages
 }:
 
 { lib, pkgs, config, ... }:
