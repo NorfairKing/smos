@@ -312,15 +312,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yamlparse-applicative": {
-        "branch": "master",
+        "branch": "development",
         "description": "An optparse-applicative -style explainable yaml parser",
         "homepage": "https://cs-syd.eu/posts/2020-06-28-yamlparse-applicative",
         "owner": "NorfairKing",
         "repo": "yamlparse-applicative",
-        "rev": "7a329d06ffa45595963cf98f34910887115eb471",
-        "sha256": "0mffjivg17qbyap6a4g33m9dpkf1v10l5wczwar0b21d642bz6w4",
+        "rev": "0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb",
+        "sha256": "1vaxkqjrhcc7za877nlmc6is92sr4pjja1rl0j74dlg5rhal809d",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/7a329d06ffa45595963cf98f34910887115eb471.tar.gz",
+        "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

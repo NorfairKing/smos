@@ -136,7 +136,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/yamlparse-applicative
-  commit: 7a329d06ffa45595963cf98f34910887115eb471
+  commit: 0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb
   subdirs:
   - yamlparse-applicative
 
