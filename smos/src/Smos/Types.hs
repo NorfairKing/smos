@@ -577,8 +577,8 @@ data Priority
   deriving (Show, Eq, Ord)
 
 data Precedence
-  = AnyMatcher -- Has higher priority.
-  | SpecificMatcher
+  = AnyMatcher
+  | SpecificMatcher -- Has higher priority.
   deriving (Show, Eq, Ord)
 
 data ResourceName
