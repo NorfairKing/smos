@@ -103,7 +103,7 @@ in
 
             $out/bin/${exeName} serve &
             sleep 1
-            ${linkcheck}/bin/linkcheck http://localhost:8000
+            ${linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
             ${seocheck}/bin/seocheck http://localhost:8000
             ${buildTools.killall}/bin/killall ${exeName}
           '';

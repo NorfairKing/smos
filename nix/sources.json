@@ -137,10 +137,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "linkcheck",
-        "rev": "502bfef21298b6d47dc666d9edfc473cc5fd3a16",
-        "sha256": "1b0w4xr4avcw0sp8h2v3gxdv79f98krr2fyc4rcr6g684gn5hn7y",
+        "rev": "053cdf9ebe7578f4201f51e175b1a4fe6687c345",
+        "sha256": "1wa83pnvf9ikp29kbd8544s5nkiyfzl6xrfq3m64piraj0jrs6ww",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/linkcheck/archive/502bfef21298b6d47dc666d9edfc473cc5fd3a16.tar.gz",
+        "url": "https://github.com/NorfairKing/linkcheck/archive/053cdf9ebe7578f4201f51e175b1a4fe6687c345.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "looper": {
