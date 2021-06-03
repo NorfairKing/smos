@@ -406,7 +406,7 @@ spaceP =
           _ -> False
       )
 
-type EntryFilterRel = Filter (Path Rel File, ForestCursor Entry)
+type EntryFilter = Filter (Path Rel File, ForestCursor Entry)
 
 type ProjectFilter = Filter (Path Rel File)
 
@@ -642,7 +642,7 @@ instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
   parseJSON = viaYamlSchema
 
 instance YamlSchema (Filter (Path Rel File, ForestCursor Entry)) where
-  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel) yamlSchema
+  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilter) yamlSchema
 
 instance ToJSON (Filter a) where
   toJSON = toJSON . renderFilter
@@ -754,8 +754,8 @@ prettyFilterParseError =
     ParsingError pe -> T.pack $ show pe
     TypeCheckingError te -> renderFilterTypeError te
 
-parseEntryFilterRel :: Text -> Either FilterParseError EntryFilterRel
-parseEntryFilterRel = parseTextFilter parseEntryFilterRelAst
+parseEntryFilter :: Text -> Either FilterParseError EntryFilter
+parseEntryFilter = parseTextFilter parseEntryFilterAst
 
 parseProjectFilter :: Text -> Either FilterParseError ProjectFilter
 parseProjectFilter = parseTextFilter parseProjectFilterAst
@@ -782,8 +782,8 @@ type TCE a = Either FilterTypeError a
 
 type TC a = Ast -> TCE a
 
-parseEntryFilterRelAst :: Ast -> Either FilterTypeError EntryFilterRel
-parseEntryFilterRelAst = tcTupleFilter tcFilePathFilter (tcForestCursorFilter tcEntryFilter)
+parseEntryFilterAst :: Ast -> Either FilterTypeError EntryFilter
+parseEntryFilterAst = tcTupleFilter tcFilePathFilter (tcForestCursorFilter tcEntryFilter)
 
 parseProjectFilterAst :: Ast -> Either FilterTypeError ProjectFilter
 parseProjectFilterAst = tcFilePathFilter

@@ -96,9 +96,9 @@ defaultDirectoryConfig =
     }
 
 data WorkReportConfig = WorkReportConfig
-  { workReportConfigBaseFilter :: Maybe EntryFilterRel,
-    workReportConfigChecks :: Set EntryFilterRel,
-    workReportConfigContexts :: Map ContextName EntryFilterRel,
+  { workReportConfigBaseFilter :: Maybe EntryFilter,
+    workReportConfigChecks :: Set EntryFilter,
+    workReportConfigContexts :: Map ContextName EntryFilter,
     workReportConfigTimeProperty :: Maybe PropertyName,
     workReportConfigProjection :: NonEmpty Projection,
     workReportConfigSorter :: Maybe Sorter
@@ -119,7 +119,7 @@ defaultWorkReportConfig =
 defaultProjection :: NonEmpty Projection
 defaultProjection = OntoFile :| [OntoState, OntoHeader]
 
-defaultWorkBaseFilter :: EntryFilterRel
+defaultWorkBaseFilter :: EntryFilter
 defaultWorkBaseFilter =
   FilterSnd $
     FilterWithinCursor $

@@ -512,21 +512,21 @@ parseTimeFilterArg =
       (eitherReader (parseTime . T.pack))
       (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
 
-parseFilterOptionsRel :: Parser (Maybe EntryFilterRel)
+parseFilterOptionsRel :: Parser (Maybe EntryFilter)
 parseFilterOptionsRel =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
       ( option
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
           (mconcat [short 'f', long "filter", metavar "FILTER", help "A filter to filter entries by"])
       )
 
-parseFilterArgsRel :: Parser (Maybe EntryFilterRel)
+parseFilterArgsRel :: Parser (Maybe EntryFilter)
 parseFilterArgsRel =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
       ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
       )
 

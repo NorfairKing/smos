@@ -61,7 +61,7 @@ data Command
   deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
-  { entryFlagFilter :: !(Maybe EntryFilterRel),
+  { entryFlagFilter :: !(Maybe EntryFilter),
     entryFlagProjection :: !(Maybe (NonEmpty Projection)),
     entryFlagSorter :: !(Maybe Sorter),
     entryFlagHideArchive :: !(Maybe HideArchive),
@@ -78,7 +78,7 @@ data ReportFlags = ReportFlags
 data WorkFlags = WorkFlags
   { workFlagContext :: !(Maybe ContextName),
     workFlagTime :: !(Maybe Time),
-    workFlagFilter :: !(Maybe EntryFilterRel),
+    workFlagFilter :: !(Maybe EntryFilter),
     workFlagProjection :: !(Maybe (NonEmpty Projection)),
     workFlagSorter :: !(Maybe Sorter),
     workFlagHideArchive :: !(Maybe HideArchive),
@@ -88,20 +88,20 @@ data WorkFlags = WorkFlags
   deriving (Show, Eq)
 
 data WaitingFlags = WaitingFlags
-  { waitingFlagFilter :: !(Maybe EntryFilterRel),
+  { waitingFlagFilter :: !(Maybe EntryFilter),
     waitingFlagHideArchive :: !(Maybe HideArchive),
     waitingFlagThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
 data NextFlags = NextFlags
-  { nextFlagFilter :: !(Maybe EntryFilterRel),
+  { nextFlagFilter :: !(Maybe EntryFilter),
     nextFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
-  { clockFlagFilter :: !(Maybe EntryFilterRel),
+  { clockFlagFilter :: !(Maybe EntryFilter),
     clockFlagPeriodFlags :: !(Maybe Period),
     clockFlagBlockFlags :: !(Maybe TimeBlock),
     clockFlagOutputFormat :: !(Maybe OutputFormat),
@@ -117,7 +117,7 @@ data ClockFormatFlags
   deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
-  { agendaFlagFilter :: !(Maybe EntryFilterRel),
+  { agendaFlagFilter :: !(Maybe EntryFilter),
     agendaFlagHistoricity :: !(Maybe AgendaHistoricity),
     agendaFlagBlock :: !(Maybe TimeBlock),
     agendaFlagHideArchive :: !(Maybe HideArchive),
@@ -137,7 +137,7 @@ data StuckFlags = StuckFlags
   deriving (Show, Eq)
 
 data LogFlags = LogFlags
-  { logFlagFilter :: !(Maybe EntryFilterRel),
+  { logFlagFilter :: !(Maybe EntryFilter),
     logFlagPeriodFlags :: !(Maybe Period),
     logFlagBlockFlags :: !(Maybe TimeBlock),
     logFlagHideArchive :: !(Maybe HideArchive)
@@ -150,7 +150,7 @@ newtype StatsFlags = StatsFlags
   deriving (Show, Eq, Generic)
 
 newtype TagsFlags = TagsFlags
-  { tagsFlagFilter :: Maybe EntryFilterRel
+  { tagsFlagFilter :: Maybe EntryFilter
   }
   deriving (Show, Eq, Generic)
 
@@ -381,7 +381,7 @@ data Dispatch
   deriving (Show, Eq, Generic)
 
 data EntrySettings = EntrySettings
-  { entrySetFilter :: !(Maybe EntryFilterRel),
+  { entrySetFilter :: !(Maybe EntryFilter),
     entrySetProjection :: !(NonEmpty Projection),
     entrySetSorter :: !(Maybe Sorter),
     entrySetHideArchive :: !HideArchive,
@@ -398,12 +398,12 @@ data ReportSettings = ReportSettings
 
 data WorkSettings = WorkSettings
   { workSetContext :: !(Maybe ContextName),
-    workSetContexts :: !(Map ContextName EntryFilterRel),
-    workSetChecks :: !(Set EntryFilterRel),
+    workSetContexts :: !(Map ContextName EntryFilter),
+    workSetChecks :: !(Set EntryFilter),
     workSetTime :: !(Maybe Time),
     workSetTimeProperty :: !(Maybe PropertyName),
-    workSetBaseFilter :: !(Maybe EntryFilterRel),
-    workSetFilter :: !(Maybe EntryFilterRel),
+    workSetBaseFilter :: !(Maybe EntryFilter),
+    workSetFilter :: !(Maybe EntryFilter),
     workSetProjection :: !(NonEmpty Projection),
     workSetSorter :: !(Maybe Sorter),
     workSetHideArchive :: !HideArchive,
@@ -413,20 +413,20 @@ data WorkSettings = WorkSettings
   deriving (Show, Eq, Generic)
 
 data WaitingSettings = WaitingSettings
-  { waitingSetFilter :: !(Maybe EntryFilterRel),
+  { waitingSetFilter :: !(Maybe EntryFilter),
     waitingSetHideArchive :: !HideArchive,
     waitingSetThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 
 data NextSettings = NextSettings
-  { nextSetFilter :: !(Maybe EntryFilterRel),
+  { nextSetFilter :: !(Maybe EntryFilter),
     nextSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 
 data ClockSettings = ClockSettings
-  { clockSetFilter :: !(Maybe EntryFilterRel),
+  { clockSetFilter :: !(Maybe EntryFilter),
     clockSetPeriod :: !Period,
     clockSetBlock :: !TimeBlock,
     clockSetOutputFormat :: !OutputFormat,
@@ -437,7 +437,7 @@ data ClockSettings = ClockSettings
   deriving (Show, Eq, Generic)
 
 data AgendaSettings = AgendaSettings
-  { agendaSetFilter :: !(Maybe EntryFilterRel),
+  { agendaSetFilter :: !(Maybe EntryFilter),
     agendaSetHistoricity :: !AgendaHistoricity,
     agendaSetBlock :: !TimeBlock,
     agendaSetHideArchive :: !HideArchive,
@@ -457,7 +457,7 @@ data StuckSettings = StuckSettings
   deriving (Show, Eq, Generic)
 
 data LogSettings = LogSettings
-  { logSetFilter :: !(Maybe EntryFilterRel),
+  { logSetFilter :: !(Maybe EntryFilter),
     logSetPeriod :: !Period,
     logSetBlock :: !TimeBlock,
     logSetHideArchive :: !HideArchive
@@ -470,7 +470,7 @@ data StatsSettings = StatsSettings
   deriving (Show, Eq, Generic)
 
 data TagsSettings = TagsSettings
-  { tagsSetFilter :: !(Maybe EntryFilterRel)
+  { tagsSetFilter :: !(Maybe EntryFilter)
   }
   deriving (Show, Eq, Generic)
 

@@ -52,7 +52,7 @@ smosQueryWork WorkSettings {..} = do
       workSetProjection
       wr
 
-renderWorkReport :: ColourSettings -> ZonedTime -> Map ContextName EntryFilterRel -> Time -> Time -> NonEmpty Projection -> WorkReport -> [Chunk]
+renderWorkReport :: ColourSettings -> ZonedTime -> Map ContextName EntryFilter -> Time -> Time -> NonEmpty Projection -> WorkReport -> [Chunk]
 renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} =
   mconcat $
     concat $

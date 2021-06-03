@@ -38,7 +38,7 @@ produceWorkReportCursor ha sp dc wrc =
 data WorkReportCursor = WorkReportCursor
   { workReportCursorNextBeginCursor :: !(Maybe (EntryReportEntryCursor (TimestampName, Timestamp))),
     workReportCursorEntriesWithoutContext :: !(EntryReportCursor ()),
-    workReportCursorCheckViolations :: !(Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))),
+    workReportCursorCheckViolations :: !(Maybe (MapCursor EntryFilter (EntryReportCursor ()))),
     workReportCursorDeadlinesCursor :: !TimestampsReportCursor,
     workReportCursorOverdueWaiting :: !WaitingReportCursor,
     workReportCursorOverdueStuck :: !StuckReportCursor,
@@ -93,7 +93,7 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct, mt) -> makeEntryReportEntryCursor rf fc (utct, mt)
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
-      mAutoFilter :: Maybe EntryFilterRel
+      mAutoFilter :: Maybe EntryFilter
       mAutoFilter = createAutoFilter workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
@@ -125,7 +125,7 @@ instance NFData WorkReportCursorSelection
 workReportCursorSelectionL :: Lens' WorkReportCursor WorkReportCursorSelection
 workReportCursorSelectionL = lens workReportCursorSelection $ \wrc s -> wrc {workReportCursorSelection = s}
 
-workReportCursorCheckViolationsL :: Lens' WorkReportCursor (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+workReportCursorCheckViolationsL :: Lens' WorkReportCursor (Maybe (MapCursor EntryFilter (EntryReportCursor ())))
 workReportCursorCheckViolationsL = lens workReportCursorCheckViolations $ \wrc rc -> wrc {workReportCursorCheckViolations = rc}
 
 workReportCursorEntriesWithoutContextL :: Lens' WorkReportCursor (EntryReportCursor ())
@@ -165,11 +165,11 @@ workReportResultsEmpty :: WorkReportCursor -> Bool
 workReportResultsEmpty = isNothing . entryReportCursorSelectedEntryReportEntryCursors . workReportCursorResultEntries
 
 checkViolationsNext ::
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
-  Maybe (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+  Maybe (MapCursor EntryFilter (EntryReportCursor ())) ->
+  Maybe (Maybe (MapCursor EntryFilter (EntryReportCursor ())))
 checkViolationsNext mmc = do
   mc <- mmc
-  let kvcNext :: EntryFilterRel -> EntryReportCursor () -> Maybe (EntryFilterRel, EntryReportCursor ())
+  let kvcNext :: EntryFilter -> EntryReportCursor () -> Maybe (EntryFilter, EntryReportCursor ())
       kvcNext f erc = (,) f <$> entryReportCursorNext erc
   case mapCursorElemL (keyValueCursorTraverseKeyCase kvcNext) mc of
     Just mc' -> pure $ Just mc'
@@ -178,11 +178,11 @@ checkViolationsNext mmc = do
       Just mc' -> Just (Just mc')
 
 checkViolationsPrev ::
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
-  Maybe (Maybe (MapCursor EntryFilterRel (EntryReportCursor ())))
+  Maybe (MapCursor EntryFilter (EntryReportCursor ())) ->
+  Maybe (Maybe (MapCursor EntryFilter (EntryReportCursor ())))
 checkViolationsPrev mmc = do
   mc <- mmc
-  let kvcPrev :: EntryFilterRel -> EntryReportCursor () -> Maybe (EntryFilterRel, EntryReportCursor ())
+  let kvcPrev :: EntryFilter -> EntryReportCursor () -> Maybe (EntryFilter, EntryReportCursor ())
       kvcPrev f erc = (,) f <$> entryReportCursorPrev erc
   case mapCursorElemL (keyValueCursorTraverseKeyCase kvcPrev) mc of
     Just mc' -> pure $ Just mc'
@@ -191,13 +191,13 @@ checkViolationsPrev mmc = do
       Just mc' -> Just (Just mc')
 
 checkViolationsFirst ::
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
+  Maybe (MapCursor EntryFilter (EntryReportCursor ())) ->
+  Maybe (MapCursor EntryFilter (EntryReportCursor ()))
 checkViolationsFirst = fmap $ \mc -> mapCursorSelectFirst (mapMapCursor id entryReportCursorFirst (mapCursorSelectKey mc))
 
 checkViolationsLast ::
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ())) ->
-  Maybe (MapCursor EntryFilterRel (EntryReportCursor ()))
+  Maybe (MapCursor EntryFilter (EntryReportCursor ())) ->
+  Maybe (MapCursor EntryFilter (EntryReportCursor ()))
 checkViolationsLast = fmap $ \mc -> mapCursorSelectLast (mapMapCursor id entryReportCursorLast (mapCursorSelectKey mc))
 
 workReportCursorNext :: WorkReportCursor -> Maybe WorkReportCursor

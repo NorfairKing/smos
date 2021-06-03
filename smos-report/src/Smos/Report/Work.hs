@@ -50,7 +50,7 @@ data IntermediateWorkReport = IntermediateWorkReport
     intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)],
     intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
     intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
-    intermediateWorkReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
+    intermediateWorkReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
   }
   deriving (Show, Eq, Generic)
 
@@ -93,13 +93,13 @@ instance Monoid IntermediateWorkReport where
 data WorkReportContext = WorkReportContext
   { workReportContextNow :: !ZonedTime, -- Current time, for computing whether something is overdue
     workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)), -- Projects, for deciding whether a file is a project
-    workReportContextBaseFilter :: !(Maybe EntryFilterRel), -- Base filter, for filtering out most things and selecting next action entries
-    workReportContextCurrentContext :: !(Maybe EntryFilterRel), -- Filter for the current context
+    workReportContextBaseFilter :: !(Maybe EntryFilter), -- Base filter, for filtering out most things and selecting next action entries
+    workReportContextCurrentContext :: !(Maybe EntryFilter), -- Filter for the current context
     workReportContextTimeProperty :: !(Maybe PropertyName), -- The property to filter time by, Nothing means no time filtering
     workReportContextTime :: !(Maybe Time), -- The time to filter by, Nothing means don't discriminate on time
-    workReportContextAdditionalFilter :: !(Maybe EntryFilterRel), -- Additional filter, for an extra filter argument
-    workReportContextContexts :: !(Map ContextName EntryFilterRel), -- Map of contexts, for checking whether any entry has no context
-    workReportContextChecks :: !(Set EntryFilterRel), -- Extra checks to perform
+    workReportContextAdditionalFilter :: !(Maybe EntryFilter), -- Additional filter, for an extra filter argument
+    workReportContextContexts :: !(Map ContextName EntryFilter), -- Map of contexts, for checking whether any entry has no context
+    workReportContextChecks :: !(Set EntryFilter), -- Extra checks to perform
     workReportContextSorter :: !(Maybe Sorter), -- How to sort the next action entries, Nothing means no sorting
     workReportContextWaitingThreshold :: !Time, -- When to consider waiting entries 'overdue'
     workReportContextStuckThreshold :: !Time -- When to consider stuck projects 'overdue' (days)
@@ -129,19 +129,19 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =
   let match b = [(rp, fc) | b]
-      combineFilter :: EntryFilterRel -> Maybe EntryFilterRel -> EntryFilterRel
+      combineFilter :: EntryFilter -> Maybe EntryFilter -> EntryFilter
       combineFilter f = maybe f (FilterAnd f)
-      combineMFilter :: Maybe EntryFilterRel -> Maybe EntryFilterRel -> Maybe EntryFilterRel
+      combineMFilter :: Maybe EntryFilter -> Maybe EntryFilter -> Maybe EntryFilter
       combineMFilter mf1 mf2 = case (mf1, mf2) of
         (Nothing, Nothing) -> Nothing
         (Just f1, Nothing) -> Just f1
         (Nothing, Just f2) -> Just f2
         (Just f1, Just f2) -> Just $ FilterAnd f1 f2
-      filterWithBase :: EntryFilterRel -> EntryFilterRel
+      filterWithBase :: EntryFilter -> EntryFilter
       filterWithBase f = combineFilter f workReportContextBaseFilter
-      filterMWithBase :: Maybe EntryFilterRel -> Maybe EntryFilterRel
+      filterMWithBase :: Maybe EntryFilter -> Maybe EntryFilter
       filterMWithBase mf = combineMFilter mf workReportContextBaseFilter
-      totalCurrent :: Maybe EntryFilterRel
+      totalCurrent :: Maybe EntryFilter
       totalCurrent =
         combineMFilter workReportContextCurrentContext $ do
           t <- workReportContextTime
@@ -157,7 +157,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                           FilterOrd
                             LEC
                             t
-      currentFilter :: Maybe EntryFilterRel
+      currentFilter :: Maybe EntryFilter
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
       matchesSelectedContext = maybe True (`filterPredicate` (rp, fc)) currentFilter
       matchesAnyContext =
@@ -205,7 +205,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
           intermediateWorkReportCheckViolations =
             if matchesAnyContext || matchesSelectedContext
               then
-                let go :: EntryFilterRel -> Maybe (Path Rel File, ForestCursor Entry)
+                let go :: EntryFilter -> Maybe (Path Rel File, ForestCursor Entry)
                     go f =
                       if filterPredicate (filterWithBase f) (rp, fc)
                         then Nothing
@@ -221,7 +221,7 @@ data WorkReport = WorkReport
     workReportOverdueWaiting :: ![WaitingEntry],
     workReportOverdueStuck :: ![StuckReportEntry],
     workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
-    workReportCheckViolations :: !(Map EntryFilterRel [(Path Rel File, ForestCursor Entry)])
+    workReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
   }
   deriving (Show, Eq, Generic)
 
@@ -235,7 +235,7 @@ instance Validity WorkReport where
 finishWorkReport :: ZonedTime -> Maybe PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
 finishWorkReport now mpn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
-      mAutoFilter :: Maybe EntryFilterRel
+      mAutoFilter :: Maybe EntryFilter
       mAutoFilter = createAutoFilter now mpn (fth <$> intermediateWorkReportNextBegin wr)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
@@ -253,7 +253,7 @@ finishWorkReport now mpn mt ms wr =
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }
 
-createAutoFilter :: ZonedTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilterRel
+createAutoFilter :: ZonedTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilter
 createAutoFilter now mpn mNextBegin = do
   ats <- mNextBegin
   let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ats) (zonedTimeToUTC now)

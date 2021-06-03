@@ -23,10 +23,10 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import YamlParse.Applicative
 
-produceNextActionReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> m NextActionReport
+produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> m NextActionReport
 produceNextActionReport ef ha sp dc = produceReport ha sp dc (nextActionReportConduit ef)
 
-nextActionReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
+nextActionReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
 nextActionReportConduit ef =
   NextActionReport
     <$> ( nextActionConduitHelper ef
@@ -35,12 +35,12 @@ nextActionReportConduit ef =
             .| sinkList
         )
 
-nextActionConduitHelper :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+nextActionConduitHelper :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
 nextActionConduitHelper ef =
   smosFileCursors
     .| smosFilter (maybe isNextFilter (FilterAnd isNextFilter) ef)
   where
-    isNextFilter :: EntryFilterRel
+    isNextFilter :: EntryFilter
     isNextFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 isNextAction :: Entry -> Bool

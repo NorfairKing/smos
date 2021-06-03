@@ -65,7 +65,7 @@ produceEntryReportCursor ::
   MonadIO m =>
   (Path Rel File -> ForestCursor Entry Entry -> [a]) ->
   ([EntryReportEntryCursor a] -> [EntryReportEntryCursor a]) ->
-  Maybe EntryFilterRel ->
+  Maybe EntryFilter ->
   HideArchive ->
   ShouldPrint ->
   DirectoryConfig ->
@@ -76,7 +76,7 @@ entryReportCursorConduit ::
   Monad m =>
   (Path Rel File -> ForestCursor Entry Entry -> [a]) ->
   ([EntryReportEntryCursor a] -> [EntryReportEntryCursor a]) ->
-  Maybe EntryFilterRel ->
+  Maybe EntryFilter ->
   ConduitT (Path Rel File, SmosFile) void m (EntryReportCursor a)
 entryReportCursorConduit func finalise mf =
   makeEntryReportCursor . finalise
@@ -99,7 +99,7 @@ entryReportCursorFilterBarL :: Lens' (EntryReportCursor a) TextCursor
 entryReportCursorFilterBarL =
   lens entryReportCursorFilterBar $
     \narc@EntryReportCursor {..} tc ->
-      let query = parseEntryFilterRel $ rebuildTextCursor tc
+      let query = parseEntryFilter $ rebuildTextCursor tc
        in case query of
             Left _ ->
               narc
@@ -116,7 +116,7 @@ entryReportCursorFilterBarL =
                         makeNEEntryReportEntryCursor filteredIn
                     }
 
-filterEntryReportEntryCursors :: EntryFilterRel -> [EntryReportEntryCursor a] -> [EntryReportEntryCursor a]
+filterEntryReportEntryCursors :: EntryFilter -> [EntryReportEntryCursor a] -> [EntryReportEntryCursor a]
 filterEntryReportEntryCursors ef = filter (filterPredicate ef . unwrapEntryReportEntryCursor)
 
 makeEntryReportCursor :: [EntryReportEntryCursor a] -> EntryReportCursor a
@@ -192,7 +192,7 @@ entryReportCursorDelete =
         Just Deleted -> Nothing
         Just (Updated narc) -> Just narc
 
-entryReportEntryCursorConduit :: Monad m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (EntryReportEntryCursor a) m ()
+entryReportEntryCursorConduit :: Monad m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (EntryReportEntryCursor a) m ()
 entryReportEntryCursorConduit func mf =
   smosFileCursors
     .| smosMFilter mf

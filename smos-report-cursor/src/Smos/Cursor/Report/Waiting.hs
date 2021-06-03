@@ -23,7 +23,7 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Time
 import Smos.Report.Waiting
 
-produceWaitingReportCursor :: Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO WaitingReportCursor
+produceWaitingReportCursor :: Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO WaitingReportCursor
 produceWaitingReportCursor mf ha sp dc =
   WaitingReportCursor
     <$> produceEntryReportCursor makeWaitingEntryCursor' sortWaitingReport mf ha sp dc
