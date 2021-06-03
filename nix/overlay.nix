@@ -304,6 +304,29 @@ in
     '';
   };
 
+  moduleDocs =
+    let
+      eval = import (final.path + "/nixos/lib/eval-config.nix") {
+        baseModules = [ ];
+        modules = [
+          (import ./nixos-module.nix {
+            inherit sources pkgs;
+            inherit (final) smosPackages;
+            envname = "production";
+          })
+        ];
+      };
+      options =
+        final.nixosOptionsDoc {
+          options = eval.options;
+        };
+    in
+    final.writeText "nixos-module-options" ''
+      = Smos options
+
+      ${options.optionsAsciiDoc}
+    '';
+
 
   # This can be deleted as soon as the following is in our nixpkgs:
   # https://github.com/NixOS/nixpkgs/pull/100838
