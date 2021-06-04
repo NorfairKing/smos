@@ -20,6 +20,10 @@ library:
   build-tools: autoexporter
   dependencies:
   - base >= 4.7
+  - aeson
+  - aeson-pretty
+  - bytestring
+  - pretty-show
   - cmark-gfm
   - containers
   - data-default

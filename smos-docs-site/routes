@@ -35,6 +35,8 @@
 
 /smos-github SmosGitHubR GET
 
+/nix/nixos-module NixosModuleR GET
+
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 

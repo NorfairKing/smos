@@ -39,7 +39,14 @@ let
             buildTools = pkgsv { };
           })
         ];
-        config.allowUnfree = true;
+        config = {
+          allowUnfree = true;
+
+          # Needed for the options docs, remove this when upgrading nixpkgs to 21.05, hopefully.
+          permittedInsecurePackages = [
+            "gogs-0.11.91"
+          ];
+        };
       }
     );
 in

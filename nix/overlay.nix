@@ -8,6 +8,7 @@ let
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
+  mergeListRecursively = final.callPackage ./merge-lists-recursively.nix { };
 in
 {
   smosCasts =
@@ -174,6 +175,7 @@ in
               url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
               sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
             };
+            "static/module-docs.json" = final.moduleDocs + "/share/doc/nixos/options.json";
           } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
         )
       );
@@ -307,25 +309,21 @@ in
   moduleDocs =
     let
       eval = import (final.path + "/nixos/lib/eval-config.nix") {
-        baseModules = [ ];
+        pkgs = final;
         modules = [
           (import ./nixos-module.nix {
-            inherit sources pkgs;
+            inherit sources;
+            pkgs = final;
             inherit (final) smosPackages;
             envname = "production";
           })
         ];
       };
-      options =
-        final.nixosOptionsDoc {
-          options = eval.options;
-        };
     in
-    final.writeText "nixos-module-options" ''
-      = Smos options
-
-      ${options.optionsAsciiDoc}
-    '';
+    (final.nixosOptionsDoc {
+      # options = filterRelevantOptions eval.options;
+      options = eval.options;
+    }).optionsJSON;
 
 
   # This can be deleted as soon as the following is in our nixpkgs:
