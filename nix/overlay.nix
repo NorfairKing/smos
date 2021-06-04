@@ -308,19 +308,19 @@ in
 
   moduleDocs =
     let
-      eval = import (final.path + "/nixos/lib/eval-config.nix") {
-        pkgs = final;
+      eval = import (buildTools.path + "/nixos/lib/eval-config.nix") {
+        pkgs = buildTools;
         modules = [
           (import ./nixos-module.nix {
             inherit sources;
-            pkgs = final;
+            pkgs = buildTools;
             inherit (final) smosPackages;
             envname = "production";
           })
         ];
       };
     in
-    (final.nixosOptionsDoc {
+    (buildTools.nixosOptionsDoc {
       # options = filterRelevantOptions eval.options;
       options = eval.options;
     }).optionsJSON;
