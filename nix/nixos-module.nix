@@ -22,6 +22,7 @@ in
       docs-site =
         mkOption {
           default = null;
+          description = "Smos' documentation site service";
           type =
             types.nullOr (types.submodule {
               options =
@@ -84,6 +85,7 @@ in
       api-server =
         mkOption {
           default = null;
+          description = "Smos' API server service";
           type =
             types.nullOr (types.submodule {
               options =
@@ -143,6 +145,8 @@ in
                     };
                   local-backup =
                     mkOption {
+                      default = null;
+                      description = "The local backup service for the API server database";
                       type = types.nullOr (
                         types.submodule {
                           options = {
@@ -156,7 +160,6 @@ in
                           };
                         }
                       );
-                      default = null;
                     };
                   auto-backup = mkLooperOption "auto-backup";
                   backup-garbage-collector = mkLooperOption "backup-garbage-collector";
@@ -168,6 +171,8 @@ in
                     };
                   monetisation =
                     mkOption {
+                      default = null;
+                      description = "Monetisation settings for the API server";
                       type = types.nullOr (
                         types.submodule {
                           options = {
@@ -195,7 +200,6 @@ in
                           };
                         }
                       );
-                      default = null;
                     };
                 };
             });
@@ -203,6 +207,7 @@ in
       web-server =
         mkOption {
           default = null;
+          description = "Smos' web server service";
           type =
             types.nullOr (types.submodule {
               options =

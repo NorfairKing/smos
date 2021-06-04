@@ -34,10 +34,11 @@ nixosModuleDocs =
             md <- runIO $ lookupEnv "MODULE_DOCS"
             case md of
               Nothing -> do
-                runIO $ putStrLn "WARNING: Building without nixos module docs"
+                runIO $ putStrLn "WARNING: Building without nixos module docs, set MODULE_DOCS to build them during development."
                 [||BakedIn []||]
-              Just mdf ->
+              Just mdf -> do
+                runIO $ putStrLn $ "Building with nixos module documentation at " <> mdf
                 let rf = Path mdf -- Very hacky because it's not necessarily relative
-                 in embedWith rf
+                embedWith rf
           else embedDefault
     )
