@@ -1,6 +1,16 @@
+<h1 .title .is-1>
+  #{title}
+
+<h2 .subtitle .is-4>
+  #{description}
+
+
+
 <div .content>
+  <h3>
+    Options
   $forall (name, mo) <- options
-    <h3>
+    <h4>
       <code>
         #{name}
     <p>
@@ -9,7 +19,7 @@
     <p>
       Type:
       <code>
-        #{prettyJSON $ moduleOptionType mo}
+        #{moduleOptionType mo}
 
     $maybe d <- moduleOptionDefault mo
       <p>

@@ -26,11 +26,6 @@ in
     services.smos = {
       production = {
         enable = true;
-        docs-site = {
-          enable = true;
-          hosts = [ "smos.example.com" ];
-          port = 8401;
-        };
         api-server = {
           enable = true;
           log-level = "Warn";
@@ -45,3 +40,5 @@ in
   };
 }
 ```
+
+See also the [reference documentation for this nixos module](/nix/nixos-module).

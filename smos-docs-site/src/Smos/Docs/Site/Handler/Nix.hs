@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -14,5 +15,10 @@ import Smos.Docs.Site.ModuleDocs
 getNixosModuleR :: Handler Html
 getNixosModuleR = do
   options <- loadIO nixosModuleDocs
+  let title = "Nixos Module Reference"
+  let description = "Generated reference documentation about the nixos module for smos server deployments."
   let prettyJSON = TE.decodeUtf8 . LB.toStrict . encodePretty
-  defaultLayout $(widgetFile "nixos-module")
+  defaultLayout $ do
+    setTitle title
+    setDescription description
+    $(widgetFile "nixos-module")

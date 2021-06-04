@@ -197,6 +197,10 @@
           <a href=@{PageR ["smos-web-server", "nixos"]}>
             Running on NixOs
 
+    <li>
+      <a href=@{NixosModuleR}>
+        Nixos Module Reference
+
   <p .menu-label>
     Developer Documentation
 

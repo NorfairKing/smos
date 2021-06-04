@@ -22,7 +22,7 @@ data ModuleOption = ModuleOption
   { moduleOptionExample :: Maybe JSON.Value,
     moduleOptionDefault :: Maybe JSON.Value,
     moduleOptionLoc :: [Text],
-    moduleOptionType :: JSON.Value,
+    moduleOptionType :: Text,
     moduleOptionReadOnly :: Bool,
     moduleOptionDescription :: Text
   }

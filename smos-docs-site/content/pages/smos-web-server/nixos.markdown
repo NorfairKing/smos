@@ -26,21 +26,6 @@ in
     services.smos = {
       production = {
         enable = true;
-        docs-site = {
-          enable = true;
-          hosts = [ "docs.smos.example.com" ];
-          port = 8401;
-          web-url = "https://${builtins.head config.services.smos.production.web-server.hosts}";
-        };
-        api-server = {
-          enable = true;
-          log-level = "Warn";
-          hosts = [ "api.smos.example.com" ];
-          port = 8402;
-          local-backup = {
-            enable = true;
-          };
-        };
         web-server = {
           enable = true;
           log-level = "Warn";
@@ -55,3 +40,6 @@ in
 }
 
 ```
+
+See also the [reference documentation for this nixos module](/nix/nixos-module).
+
