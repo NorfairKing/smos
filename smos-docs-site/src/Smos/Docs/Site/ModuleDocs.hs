@@ -20,14 +20,12 @@ import Smos.Docs.Site.Constants
 import Smos.Docs.Site.ModuleDocs.TH
 import System.Environment
 
-nixosModuleDocs :: Load (Map Text JSON.Value)
+nixosModuleDocs :: Load [(Text, ModuleOption)]
 nixosModuleDocs =
-  M.fromList
-    <$> $$( do
-              md <- runIO $ lookupEnv "MODULE_DOCS"
-              runIO $ print md
-              let rd = case md of
-                    Nothing -> [reldir|static/module-docs.json|]
-                    Just mdf -> Path mdf -- Very hacky
-              embedReadTextFileWith moduleDocFunc [||moduleDocFunc||] mode rd
-          )
+  $$( do
+        md <- runIO $ lookupEnv "MODULE_DOCS"
+        let rd = case md of
+              Nothing -> [relfile|static/module-docs.json|]
+              Just mdf -> Path mdf -- Very hacky
+        embedReadTextFileWith moduleDocFunc [||moduleDocFunc||] mode rd
+    )

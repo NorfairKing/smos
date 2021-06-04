@@ -1,2 +1,29 @@
-<pre>
-  #{ppShow m}
+<div .content>
+  $forall (name, mo) <- options
+    <h3>
+      <code>
+        #{name}
+    <p>
+      #{moduleOptionDescription mo}
+
+    <p>
+      Type:
+      <code>
+        #{prettyJSON $ moduleOptionType mo}
+
+    $maybe d <- moduleOptionDefault mo
+      <p>
+        Default:
+        <code>
+          #{prettyJSON d}
+
+    $maybe e <- moduleOptionExample mo
+      <p>
+        Example:
+        <code>
+          #{prettyJSON e}
+
+    $if moduleOptionReadOnly mo
+      <p>
+        Read only
+
