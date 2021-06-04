@@ -12,4 +12,5 @@ smosScheduler = getInstructions >>= scheduler
 scheduler :: Instructions -> IO ()
 scheduler (Instructions d s) = case d of
   DispatchCheck -> check s
+  DispatchNext -> next s
   DispatchSchedule -> schedule s

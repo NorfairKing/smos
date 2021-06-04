@@ -217,8 +217,15 @@ getColourSettings mcc =
   ColourSettings
     { colourSettingBackground =
         fromMaybe
-          (UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
+          (colourSettingBackground defaultColourSettings)
           (mcc >>= colourConfigurationBackground)
+    }
+
+defaultColourSettings :: ColourSettings
+defaultColourSettings =
+  ColourSettings
+    { colourSettingBackground =
+        UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))
     }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)

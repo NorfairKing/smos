@@ -36,7 +36,7 @@ instance FromJSON Configuration where
 instance YamlSchema Configuration where
   yamlSchema =
     Configuration <$> yamlSchema
-      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The github tool configuration")
+      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The colour configuration")
       <*> objectParser "Configuration" (optionalField "github" "The github tool configuration")
 
 data GitHubConfiguration = GitHubConfiguration
