@@ -99,7 +99,7 @@ timestampsRemove =
   Action
     { actionName = "timestampsRemove",
       actionFunc = do
-        modifyTimestampsCursorM timestampsCursorRemoveChar
+        modifyTimestampsCursorMD timestampsCursorRemoveChar
         unrecordFileCursorHistory,
       actionDescription = "Remove one character in the current timestamps cursor"
     }
@@ -109,7 +109,7 @@ timestampsDelete =
   Action
     { actionName = "timestampsDelete",
       actionFunc = do
-        modifyTimestampsCursorM timestampsCursorDeleteChar
+        modifyTimestampsCursorMD timestampsCursorDeleteChar
         unrecordFileCursorHistory,
       actionDescription = "Delete one character  in the current timestamps cursor"
     }
