@@ -11,3 +11,5 @@
 
 - `smos`:
   Timestamps can now be deleted using the `timestampsDelete` and `timestampsRemove` actions.
+- `smos-notify`:
+  `smos-notify` will no longer send a notification about timestamps that don't have a time component.
