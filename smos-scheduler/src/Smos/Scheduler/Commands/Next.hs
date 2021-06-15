@@ -21,13 +21,13 @@ import Text.Time.Pretty
 next :: Settings -> IO ()
 next Settings {..} = do
   mState <- readStateFile setStateFile
-  now <- getCurrentTime
+  now <- getZonedTime
   let nextRows = flip map (scheduleItems setSchedule) $ \si ->
         let mLastRun = mState >>= \s -> M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
          in NextRow
               { nextRowDescription = scheduleItemDescription si,
                 nextRowLastRun = mLastRun,
-                nextRowNextRun = nextMatch (scheduleItemCronSchedule si) (fromMaybe now mLastRun)
+                nextRowNextRun = nextMatch (scheduleItemCronSchedule si) (fromMaybe (zonedTimeToUTC now) mLastRun)
               }
 
   let headerRow = map underline ["Schedule item", "Last activation", "", "Next activation", ""]
@@ -40,11 +40,12 @@ data NextRow = NextRow
   }
   deriving (Show, Eq)
 
-renderNextRow :: UTCTime -> NextRow -> [Chunk]
+renderNextRow :: ZonedTime -> NextRow -> [Chunk]
 renderNextRow now NextRow {..} =
-  [ chunk $ fromMaybe "" nextRowDescription,
-    maybe (chunk "") (chunk . T.pack . formatTime defaultTimeLocale "%F %H:%M") nextRowLastRun,
-    maybe (chunk "") (chunk . T.pack . prettyTimeAuto now) nextRowLastRun,
-    maybe (chunk "") (chunk . T.pack . formatTime defaultTimeLocale "%F %H:%M") nextRowNextRun,
-    maybe (chunk "") (chunk . T.pack . prettyTimeAuto now) nextRowNextRun
-  ]
+  let tz = zonedTimeZone now
+   in [ chunk $ fromMaybe "" nextRowDescription,
+        maybe (chunk "") (chunk . T.pack . formatTime defaultTimeLocale "%F %H:%M" . utcToLocalTime tz) nextRowLastRun,
+        maybe (chunk "") (chunk . T.pack . prettyTimeAuto (zonedTimeToUTC now)) nextRowLastRun,
+        maybe (chunk "") (chunk . T.pack . formatTime defaultTimeLocale "%F %H:%M" . utcToLocalTime tz) nextRowNextRun,
+        maybe (chunk "") (chunk . T.pack . prettyTimeAuto (zonedTimeToUTC now)) nextRowNextRun
+      ]

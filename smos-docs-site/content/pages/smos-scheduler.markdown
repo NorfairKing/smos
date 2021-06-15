@@ -34,6 +34,7 @@ Run `smos-scheduler next` to see when your items will next be activated.
 Then run `smos-scheduler schedule` periodically.
 Once per hour or once per day should be enough but make sure to automate it.
 
+Note that schedules are expressed in UTC time, so using `"0 12 * * 7"` means `"At 12:00 on Sunday."` _in UTC time_.
 
 ## Templating language
 
