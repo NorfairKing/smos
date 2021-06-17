@@ -124,6 +124,7 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
+    postMigrateFiles :: !(route :- ProtectAPI :> PostMigrateFiles),
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
   deriving (Generic)
@@ -420,6 +421,8 @@ type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> PutNoContent '[JSON] NoContent
+
+type PostMigrateFiles = "file-migrator" :> PutNoContent '[JSON] NoContent
 
 type ReportsAPI = ToServantApi ReportRoutes
 

@@ -98,8 +98,7 @@ runSmosServer ServeSettings {..} = do
                   runLoopersIgnoreOverrun
                     looperRunner
                     [ mkLooperDef "auto-backup" serveSetAutoBackupLooperSettings runAutoBackupLooper,
-                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper,
-                      mkLooperDef "file-migrator" serveSetFileMigrationLooperSettings runFileMigrationLooper
+                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                     ]
           concurrently_ runTheServer runTheLoopers
 
@@ -168,7 +167,8 @@ syncServerProtectedRoutes =
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
-      reportRoutes = toServant serverReportRoutes
+      reportRoutes = toServant serverReportRoutes,
+      postMigrateFiles = withAuthResult servePostMigrateFiles
     }
 
 serverReportRoutes :: ReportRoutes (AsServerT ServerHandler)

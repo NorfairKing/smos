@@ -23,6 +23,7 @@ library
       Smos.Server.DB
       Smos.Server.DB.Compressed
       Smos.Server.Env
+      Smos.Server.FileMigration
       Smos.Server.Handler
       Smos.Server.Handler.Admin
       Smos.Server.Handler.Admin.GetUser
@@ -44,6 +45,7 @@ library
       Smos.Server.Handler.PostBackup
       Smos.Server.Handler.PostInitiateStripeCheckoutSession
       Smos.Server.Handler.PostLogin
+      Smos.Server.Handler.PostMigrateFiles
       Smos.Server.Handler.PostRegister
       Smos.Server.Handler.PostStripeHook
       Smos.Server.Handler.PostSync
@@ -53,7 +55,6 @@ library
       Smos.Server.Looper.AutoBackup
       Smos.Server.Looper.BackupGarbageCollector
       Smos.Server.Looper.Env
-      Smos.Server.Looper.FileMigrator
       Smos.Server.Looper.Import
       Smos.Server.OptParse
       Smos.Server.OptParse.Types

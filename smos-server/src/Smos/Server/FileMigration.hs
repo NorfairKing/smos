@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Server.Looper.FileMigrator where
+module Smos.Server.FileMigration where
 
 import Conduit
 import Control.Monad.Logger
@@ -12,17 +12,16 @@ import Database.Persist.Sql
 import Path
 import Smos.Data
 import Smos.Server.DB
-import Smos.Server.Looper.Import
 
-runFileMigrationLooper :: Looper ()
-runFileMigrationLooper = do
+runFileMigrationForUser :: (MonadUnliftIO m, MonadLogger m) => UserId -> SqlPersistT m ()
+runFileMigrationForUser uid = do
   logInfoNS "file-migration" "Starting server file format migration"
-  acqFileSource <- looperDB $ selectSourceRes [] [Asc ServerFileId]
+  acqFileSource <- selectSourceRes [ServerFileUser ==. uid] [Asc ServerFileId]
   withAcquire acqFileSource $ \source ->
-    runConduit $ source .| C.mapM_ (looperDB . refreshServerFile)
+    runConduit $ source .| C.mapM_ refreshServerFile
   logInfoNS "file-migration" "Server file format migration done"
 
-refreshServerFile :: Entity ServerFile -> SqlPersistT (LoggingT IO) ()
+refreshServerFile :: (MonadIO m, MonadLogger m) => Entity ServerFile -> SqlPersistT m ()
 refreshServerFile (Entity sfid ServerFile {..}) =
   case fileExtension serverFilePath of
     Just ".smos" ->
