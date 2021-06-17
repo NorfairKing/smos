@@ -287,12 +287,12 @@ in
       attrOrNull = name: value: optionalAttrs (!builtins.isNull value) { "${name}" = value; };
       # The docs server
       docs-site-config = with cfg.docs-site; mergeListRecursively [
-        cfg.docs-site.config
         (attrOrNull "port" port)
         (attrOrNull "api-url" api-url)
         (attrOrNull "web-url" (if builtins.isNull web-url then head hosts else web-url))
         (attrOrNull "google-analytics-tracking" google-analytics-tracking)
         (attrOrNull "google-search-console-verification" google-search-console-verification)
+        cfg.docs-site.config
       ];
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
@@ -338,7 +338,6 @@ in
       api-server-working-dir = working-dir + "api-server/";
       api-server-database-file = api-server-working-dir + "smos-server-database.sqlite3";
       api-server-config = with cfg.api-server; mergeListRecursively [
-        cfg.api-server.config
         (attrOrNull "log-level" log-level)
         (attrOrNull "port" port)
         (attrOrNull "database-file" api-server-database-file)
@@ -350,6 +349,7 @@ in
         (attrOrNull "backup-garbage-collector" backup-garbage-collector)
         (attrOrNull "file-migrator" file-migrator)
         (attrOrNull "monetisation" monetisation)
+        cfg.api-server.config
       ];
       # The api server
       api-server-service =
@@ -446,7 +446,6 @@ in
       web-server-working-dir = working-dir + "web-server/";
       web-server-data-dir = web-server-working-dir + "web-server/";
       web-server-config = with cfg.web-server; mergeListRecursively [
-        cfg.web-server.config
         (attrOrNull "docs-url" docs-url)
         (attrOrNull "api-url" api-url)
         (attrOrNull "web-url" web-url)
@@ -455,6 +454,7 @@ in
         (attrOrNull "google-analytics-tracking" google-analytics-tracking)
         (attrOrNull "google-search-console-verification" google-search-console-verification)
         (attrOrNull "data-dir" web-server-data-dir)
+        cfg.web-server.config
       ];
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {

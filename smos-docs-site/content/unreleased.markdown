@@ -13,8 +13,10 @@
   Timestamps can now be deleted using the `timestampsDelete` and `timestampsRemove` actions.
 - `smos-notify`:
   `smos-notify` will no longer send a notification about timestamps that don't have a time component.
-- `smos-scheduler`
+- `smos-scheduler`:
   The `next` command will now print times in local time instead of UCT time. Relative times were already correct.
+- `nixos-module.nix`:
+  The `config` attribute will now override other attributes.
 
 ### Deleted
 
