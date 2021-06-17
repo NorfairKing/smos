@@ -26,19 +26,14 @@ import System.FilePath
 nixosModuleDocs :: Load [(Text, ModuleOption)]
 nixosModuleDocs =
   $$( do
-        let defaultFile = [relfile|static/module-docs.json|]
         let embedWith = embedReadTextFileWith moduleDocFunc [||moduleDocFunc||] mode
-        let embedDefault = embedWith defaultFile
-        if development
-          then do
-            md <- runIO $ lookupEnv "MODULE_DOCS"
-            case md of
-              Nothing -> do
-                runIO $ putStrLn "WARNING: Building without nixos module docs, set MODULE_DOCS to build them during development."
-                [||BakedIn []||]
-              Just mdf -> do
-                runIO $ putStrLn $ "Building with nixos module documentation at " <> mdf
-                let rf = Path mdf -- Very hacky because it's not necessarily relative
-                embedWith rf
-          else embedDefault
+        md <- runIO $ lookupEnv "MODULE_DOCS"
+        case md of
+          Nothing -> do
+            runIO $ putStrLn "WARNING: Building without nixos module docs, set MODULE_DOCS to build them during development."
+            [||BakedIn []||]
+          Just mdf -> do
+            runIO $ putStrLn $ "Building with nixos module documentation at " <> mdf
+            let rf = Path mdf -- Very hacky because it's not necessarily relative
+            embedWith rf
     )
