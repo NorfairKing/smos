@@ -15,3 +15,7 @@
   `smos-notify` will no longer send a notification about timestamps that don't have a time component.
 - `smos-scheduler`
   The `next` command will now print times in local time instead of UCT time. Relative times were already correct.
+
+### Deleted
+
+- `smos-server`: Removed the backup file migration looper. It went against the idea of backups.
