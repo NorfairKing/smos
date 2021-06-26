@@ -17,9 +17,9 @@ When a given commit on the `development` branch is supposedly ready for release,
    If the end-to-end tests don't pass, that means we broke either forward or backward compatibility.
    In that case we revert testing to the previous release commit and start over with the release checklist.
 1. Merge `testing` into `staging`.
-1. Deploy to staging
+1. Deploy to staging.
 1. Wait for end-to-end tests to pass again.
-1. Merge `staging` into `release`
+1. Merge `staging` into `release`.
 1. Run the release script to create the appropriate tags
 1. Make a GitHub release with the contents of the changelog.
 1. Upload the release-zip with static binaries to the artefacts of the GitHub release
