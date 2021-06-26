@@ -167,8 +167,7 @@ syncServerProtectedRoutes =
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
-      reportRoutes = toServant serverReportRoutes,
-      postMigrateFiles = withAuthResult servePostMigrateFiles
+      reportRoutes = toServant serverReportRoutes
     }
 
 serverReportRoutes :: ReportRoutes (AsServerT ServerHandler)
@@ -181,7 +180,8 @@ serverReportRoutes =
 syncServerAdminRoutes :: AdminRoutes (AsServerT ServerHandler)
 syncServerAdminRoutes =
   AdminRoutes
-    { getUsers = withAuthResult serveGetUsers,
+    { postMigrateFiles = withAuthResult servePostMigrateFiles,
+      getUsers = withAuthResult serveGetUsers,
       getUser = withAuthResult serveGetUser,
       putUserSubscription = withAuthResult servePutUserSubscription
     }

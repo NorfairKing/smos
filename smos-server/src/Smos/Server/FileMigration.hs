@@ -15,14 +15,15 @@ import Smos.Server.DB
 
 runFileMigrationForUser :: (MonadUnliftIO m, MonadLogger m) => UserId -> SqlPersistT m ()
 runFileMigrationForUser uid = do
-  logInfoNS "file-migration" "Starting server file format migration"
+  logInfoNS "file-migration" $ "Starting server file format migration for user: " <> T.pack (show (fromSqlKey uid))
   acqFileSource <- selectSourceRes [ServerFileUser ==. uid] [Asc ServerFileId]
   withAcquire acqFileSource $ \source ->
     runConduit $ source .| C.mapM_ refreshServerFile
-  logInfoNS "file-migration" "Server file format migration done"
+  logInfoNS "file-migration" $ "Server file format migration done for user: " <> T.pack (show (fromSqlKey uid))
 
 refreshServerFile :: (MonadIO m, MonadLogger m) => Entity ServerFile -> SqlPersistT m ()
-refreshServerFile (Entity sfid ServerFile {..}) =
+refreshServerFile (Entity sfid ServerFile {..}) = do
+  logInfoNS "file-migration" $ "Starting file migration for file: " <> T.pack (show serverFilePath)
   case fileExtension serverFilePath of
     Just ".smos" ->
       case parseSmosFile serverFileContents of

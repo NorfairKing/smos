@@ -124,7 +124,6 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
-    postMigrateFiles :: !(route :- ProtectAPI :> PostMigrateFiles),
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
   deriving (Generic)
@@ -422,8 +421,6 @@ type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel Fi
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> PutNoContent '[JSON] NoContent
 
-type PostMigrateFiles = "file-migrator" :> PutNoContent '[JSON] NoContent
-
 type ReportsAPI = ToServantApi ReportRoutes
 
 data ReportRoutes route = ReportRoutes
@@ -445,11 +442,14 @@ newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
   deriving (Show, Eq, Ord, Generic)
 
 data AdminRoutes route = AdminRoutes
-  { getUsers :: !(route :- ProtectAdmin :> GetUsers),
+  { postMigrateFiles :: !(route :- ProtectAPI :> PostMigrateFiles),
+    getUsers :: !(route :- ProtectAdmin :> GetUsers),
     getUser :: !(route :- ProtectAdmin :> GetUser),
     putUserSubscription :: !(route :- ProtectAdmin :> PutUserSubscription)
   }
   deriving (Generic)
+
+type PostMigrateFiles = "migrator-files" :> PostNoContent '[JSON] NoContent
 
 type GetUsers = "users" :> Get '[JSON] [UserInfo]
 

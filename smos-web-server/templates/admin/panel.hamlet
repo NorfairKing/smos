@@ -2,6 +2,23 @@
   <div .container>
     <div .box>
       <h3 .title .is-3>
+        Control Panel
+
+      <p>
+        <form .form
+           method=post
+           action=@{AdminMigrateFilesR}>
+          ^{token}
+          <div .field>
+            <div .control>
+              <button
+                .button .is-danger
+                type=submit
+                onclick="return confirm('Are you sure you want to migrate users' files? This cannot be undone.');">
+                Migrate files
+
+    <div .box>
+      <h3 .title .is-3>
         Users
 
       <table .table .is-fullwidth .is-striped .is-hoverable>

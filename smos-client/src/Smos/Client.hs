@@ -212,6 +212,9 @@ clientGetAgendaReport = getAgendaReport smosReportsClient
 smosAdminClient :: AdminRoutes (AsClientT ClientM)
 smosAdminClient = fromServant $ adminRoutes smosClient
 
+clientPostMigrateFiles :: Token -> ClientM NoContent
+clientPostMigrateFiles = postMigrateFiles smosAdminClient
+
 clientGetUsers :: Token -> ClientM [UserInfo]
 clientGetUsers = getUsers smosAdminClient
 

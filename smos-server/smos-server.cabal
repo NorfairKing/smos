@@ -28,6 +28,7 @@ library
       Smos.Server.Handler.Admin
       Smos.Server.Handler.Admin.GetUser
       Smos.Server.Handler.Admin.GetUsers
+      Smos.Server.Handler.Admin.PostMigrateFiles
       Smos.Server.Handler.Admin.PutUserSubscription
       Smos.Server.Handler.DeleteBackup
       Smos.Server.Handler.DeleteUser
@@ -45,7 +46,6 @@ library
       Smos.Server.Handler.PostBackup
       Smos.Server.Handler.PostInitiateStripeCheckoutSession
       Smos.Server.Handler.PostLogin
-      Smos.Server.Handler.PostMigrateFiles
       Smos.Server.Handler.PostRegister
       Smos.Server.Handler.PostStripeHook
       Smos.Server.Handler.PostSync

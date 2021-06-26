@@ -17,6 +17,8 @@
   The `next` command will now print times in local time instead of UCT time. Relative times were already correct.
 - `nixos-module.nix`:
   The `config` attribute will now override other attributes.
+- `smos-server`:
+  The server no longer migrates files periodically, but rather gives the administrator a button to do that instead.
 
 ### Deleted
 
