@@ -283,9 +283,9 @@ backToStuckReportConfiguration StuckReportConfig {..} =
     }
 
 data WorkReportConfiguration = WorkReportConfiguration
-  { workReportConfBaseFilter :: !(Maybe EntryFilterRel),
-    workReportConfChecks :: !(Maybe (Set EntryFilterRel)),
-    workReportConfContexts :: !(Maybe (Map ContextName EntryFilterRel)),
+  { workReportConfBaseFilter :: !(Maybe EntryFilter),
+    workReportConfChecks :: !(Maybe (Set EntryFilter)),
+    workReportConfContexts :: !(Maybe (Map ContextName EntryFilter)),
     workReportConfTimeFilterProperty :: Maybe PropertyName,
     workReportConfProjection :: Maybe (NonEmpty Projection),
     workReportConfSorter :: Maybe Sorter

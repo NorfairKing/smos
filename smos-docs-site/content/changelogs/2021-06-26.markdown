@@ -1,0 +1,35 @@
+- <a name="smos-0.3.0">[smos 0.3.0](#smos-0.3.0)
+- <a name="smos-api-0.3.1">[smos-api 0.3.1](#smos-api-0.3.1)
+- <a name="smos-cursor-0.3.0">[smos-cursor 0.3.0](#smos-cursor-0.3.0)
+- <a name="smos-query-0.6.0">[smos-query 0.6.0](#smos-query-0.6.0)
+- <a name="smos-report-0.5.0">[smos-report 0.5.0](#smos-report-0.5.0)
+- <a name="smos-scheduler-0.2.0">[smos-scheduler 0.2.0](#smos-scheduler-0.2.0)
+- <a name="smos-server-0.4.0">[smos-server 0.4.0](#smos-server-0.4.0)
+- <a name="smos-sync-client-gen-0.2.0">[smos-sync-client-gen 0.2.0](#smos-sync-client-gen-0.2.0)
+- <a name="smos-web-server-0.6.0">[smos-web-server 0.6.0](#smos-web-server-0.6.0)
+
+### Added
+
+- `smos-query`:
+  The `entry` and `report` reports now support multiple output formats: `json`, `pretty-json`, and `yaml`.
+  This should allow for simpler integrations.
+
+- `smos-scheduler`:
+  The `next` command to see when items will be activated next.
+
+### Changed
+
+- `smos`:
+  Timestamps can now be deleted using the `timestampsDelete` and `timestampsRemove` actions.
+- `smos-notify`:
+  `smos-notify` will no longer send a notification about timestamps that don't have a time component.
+- `smos-scheduler`:
+  The `next` command will now print times in local time instead of UCT time. Relative times were already correct.
+- `nixos-module.nix`:
+  The `config` attribute will now override other attributes.
+- `smos-server`:
+  The server no longer migrates files periodically, but rather gives the administrator a button to do that instead.
+
+### Deleted
+
+- `smos-server`: Removed the backup file migration looper. It went against the idea of backups.

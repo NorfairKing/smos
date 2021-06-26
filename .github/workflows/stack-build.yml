@@ -5,6 +5,8 @@ on:
     branches:
       - development
       - master
+  workflow_dispatch:
+
 jobs:
   stack-build:
     name: ${{ matrix.os }} / Stack ${{ matrix.stack }} / GHC ${{ matrix.ghc }}
@@ -46,7 +48,7 @@ jobs:
 
       - name: Build autoexporter
         run: |
-          stack install --system-ghc autoexporter --stack-yaml setup-stack.yaml
+          stack install --system-ghc autoexporter
 
       - name: Build dependencies
         run: |

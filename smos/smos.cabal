@@ -5,12 +5,12 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos
-version:        0.2.1
+version:        0.3.0
 category:       Smos
 homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2018-2020 Tom Sydney Kerckhove
+copyright:      Copyright: (c) 2018-2021 Tom Sydney Kerckhove
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -63,6 +63,7 @@ extra-source-files:
     test_resources/scenario/tags/one.yaml
     test_resources/scenario/tags/preset.yaml
     test_resources/scenario/tags/two.yaml
+    test_resources/scenario/timestamps-deletion.yaml
     test_resources/scenario/todo-redo.yaml
     test_resources/scenario/todo-single.yaml
     test_resources/scenario/todo-undo.yaml

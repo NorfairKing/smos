@@ -22,8 +22,9 @@
 /account/delete AccountDeleteR POST
 
 /admin AdminPanelR GET
-/admin/#{Username} AdminUserR GET
-/admin/#{Username}/set-subscription AdminUserSetSubscriptionR POST
+/admin/migrate-files  AdminMigrateFilesR POST
+/admin/user/#{Username} AdminUserR GET
+/admin/user/#{Username}/set-subscription AdminUserSetSubscriptionR POST
 
 /checkout/stripe                          CheckoutR GET
 /checkout/stripe/success                  CheckoutSuccessR GET

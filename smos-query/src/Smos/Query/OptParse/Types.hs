@@ -61,84 +61,86 @@ data Command
   deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
-  { entryFlagFilter :: Maybe EntryFilterRel,
-    entryFlagProjection :: Maybe (NonEmpty Projection),
-    entryFlagSorter :: Maybe Sorter,
-    entryFlagHideArchive :: Maybe HideArchive
+  { entryFlagFilter :: !(Maybe EntryFilter),
+    entryFlagProjection :: !(Maybe (NonEmpty Projection)),
+    entryFlagSorter :: !(Maybe Sorter),
+    entryFlagHideArchive :: !(Maybe HideArchive),
+    entryFlagOutputFormat :: !(Maybe OutputFormat)
   }
   deriving (Show, Eq)
 
 data ReportFlags = ReportFlags
-  { reportFlagReportName :: Maybe Text
+  { reportFlagReportName :: !(Maybe Text),
+    reportFlagOutputFormat :: !(Maybe OutputFormat)
   }
   deriving (Show, Eq)
 
 data WorkFlags = WorkFlags
-  { workFlagContext :: Maybe ContextName,
-    workFlagTime :: Maybe Time,
-    workFlagFilter :: Maybe EntryFilterRel,
-    workFlagProjection :: Maybe (NonEmpty Projection),
-    workFlagSorter :: Maybe Sorter,
-    workFlagHideArchive :: Maybe HideArchive,
-    workFlagWaitingThreshold :: Maybe Time,
-    workFlagStuckThreshold :: Maybe Time
+  { workFlagContext :: !(Maybe ContextName),
+    workFlagTime :: !(Maybe Time),
+    workFlagFilter :: !(Maybe EntryFilter),
+    workFlagProjection :: !(Maybe (NonEmpty Projection)),
+    workFlagSorter :: !(Maybe Sorter),
+    workFlagHideArchive :: !(Maybe HideArchive),
+    workFlagWaitingThreshold :: !(Maybe Time),
+    workFlagStuckThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
 data WaitingFlags = WaitingFlags
-  { waitingFlagFilter :: Maybe EntryFilterRel,
-    waitingFlagHideArchive :: Maybe HideArchive,
-    waitingFlagThreshold :: Maybe Time
+  { waitingFlagFilter :: !(Maybe EntryFilter),
+    waitingFlagHideArchive :: !(Maybe HideArchive),
+    waitingFlagThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
 data NextFlags = NextFlags
-  { nextFlagFilter :: Maybe EntryFilterRel,
-    nextFlagHideArchive :: Maybe HideArchive
+  { nextFlagFilter :: !(Maybe EntryFilter),
+    nextFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
-  { clockFlagFilter :: Maybe EntryFilterRel,
-    clockFlagPeriodFlags :: Maybe Period,
-    clockFlagBlockFlags :: Maybe TimeBlock,
-    clockFlagOutputFormat :: Maybe OutputFormat,
-    clockFlagClockFormat :: Maybe ClockFormatFlags,
-    clockFlagReportStyle :: Maybe ClockReportStyle,
-    clockFlagHideArchive :: Maybe HideArchive
+  { clockFlagFilter :: !(Maybe EntryFilter),
+    clockFlagPeriodFlags :: !(Maybe Period),
+    clockFlagBlockFlags :: !(Maybe TimeBlock),
+    clockFlagOutputFormat :: !(Maybe OutputFormat),
+    clockFlagClockFormat :: !(Maybe ClockFormatFlags),
+    clockFlagReportStyle :: !(Maybe ClockReportStyle),
+    clockFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq)
 
 data ClockFormatFlags
-  = ClockFormatTemporalFlag (Maybe TemporalClockResolution)
-  | ClockFormatDecimalFlag (Maybe DecimalClockResolution)
+  = ClockFormatTemporalFlag !(Maybe TemporalClockResolution)
+  | ClockFormatDecimalFlag !(Maybe DecimalClockResolution)
   deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
-  { agendaFlagFilter :: Maybe EntryFilterRel,
-    agendaFlagHistoricity :: Maybe AgendaHistoricity,
-    agendaFlagBlock :: Maybe TimeBlock,
-    agendaFlagHideArchive :: Maybe HideArchive,
-    agendaFlagPeriod :: Maybe Period
+  { agendaFlagFilter :: !(Maybe EntryFilter),
+    agendaFlagHistoricity :: !(Maybe AgendaHistoricity),
+    agendaFlagBlock :: !(Maybe TimeBlock),
+    agendaFlagHideArchive :: !(Maybe HideArchive),
+    agendaFlagPeriod :: !(Maybe Period)
   }
   deriving (Show, Eq)
 
 data ProjectsFlags = ProjectsFlags
-  { projectsFlagFilter :: Maybe ProjectFilter
+  { projectsFlagFilter :: !(Maybe ProjectFilter)
   }
   deriving (Show, Eq)
 
 data StuckFlags = StuckFlags
-  { stuckFlagFilter :: Maybe ProjectFilter,
-    stuckFlagThreshold :: Maybe Time
+  { stuckFlagFilter :: !(Maybe ProjectFilter),
+    stuckFlagThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
 data LogFlags = LogFlags
-  { logFlagFilter :: Maybe EntryFilterRel,
-    logFlagPeriodFlags :: Maybe Period,
-    logFlagBlockFlags :: Maybe TimeBlock,
-    logFlagHideArchive :: Maybe HideArchive
+  { logFlagFilter :: !(Maybe EntryFilter),
+    logFlagPeriodFlags :: !(Maybe Period),
+    logFlagBlockFlags :: !(Maybe TimeBlock),
+    logFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq, Generic)
 
@@ -148,7 +150,7 @@ newtype StatsFlags = StatsFlags
   deriving (Show, Eq, Generic)
 
 newtype TagsFlags = TagsFlags
-  { tagsFlagFilter :: Maybe EntryFilterRel
+  { tagsFlagFilter :: Maybe EntryFilter
   }
   deriving (Show, Eq, Generic)
 
@@ -165,8 +167,8 @@ emptyEnvironment =
     }
 
 data Environment = Environment
-  { envReportEnvironment :: Report.Environment,
-    envHideArchive :: Maybe HideArchive
+  { envReportEnvironment :: !Report.Environment,
+    envHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq, Generic)
 
@@ -180,10 +182,10 @@ defaultConfiguration =
     }
 
 data Configuration = Configuration
-  { confReportConf :: Report.Configuration,
-    confHideArchive :: Maybe HideArchive,
-    confPreparedReportConfiguration :: Maybe PreparedReportConfiguration,
-    confColourConfiguration :: Maybe ColourConfiguration
+  { confReportConf :: !Report.Configuration,
+    confHideArchive :: !(Maybe HideArchive),
+    confPreparedReportConfiguration :: !(Maybe PreparedReportConfiguration),
+    confColourConfiguration :: !(Maybe ColourConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -219,7 +221,7 @@ colourConfigurationKey :: Text
 colourConfigurationKey = "colour"
 
 data PreparedReportConfiguration = PreparedReportConfiguration
-  { preparedReportConfAvailableReports :: Maybe (Map Text PreparedReport)
+  { preparedReportConfAvailableReports :: !(Maybe (Map Text PreparedReport))
   }
   deriving (Show, Eq, Generic)
 
@@ -239,7 +241,7 @@ data ColourConfiguration = ColourConfiguration
     --
     -- The first maybe is for whether this is defined in the configuration file.
     -- The second maybe is for whether any background colour should be used.
-    colourConfigurationBackground :: Maybe TableBackgroundConfiguration
+    colourConfigurationBackground :: !(Maybe TableBackgroundConfiguration)
   }
   deriving (Show, Eq, Generic)
 
@@ -261,7 +263,7 @@ instance YamlSchema ColourConfiguration where
         <$> optionalField "background" "The table background colours"
 
 data TableBackgroundConfiguration
-  = UseTableBackground TableBackground
+  = UseTableBackground !TableBackground
   | NoTableBackground
   deriving (Show, Eq, Generic)
 
@@ -379,27 +381,29 @@ data Dispatch
   deriving (Show, Eq, Generic)
 
 data EntrySettings = EntrySettings
-  { entrySetFilter :: Maybe EntryFilterRel,
-    entrySetProjection :: NonEmpty Projection,
-    entrySetSorter :: Maybe Sorter,
-    entrySetHideArchive :: HideArchive
+  { entrySetFilter :: !(Maybe EntryFilter),
+    entrySetProjection :: !(NonEmpty Projection),
+    entrySetSorter :: !(Maybe Sorter),
+    entrySetHideArchive :: !HideArchive,
+    entrySetOutputFormat :: !OutputFormat
   }
   deriving (Show, Eq, Generic)
 
 data ReportSettings = ReportSettings
-  { reportSetReportName :: Maybe Text,
-    reportSetAvailableReports :: Map Text PreparedReport
+  { reportSetReportName :: !(Maybe Text),
+    reportSetAvailableReports :: !(Map Text PreparedReport),
+    reportSetOutputFormat :: !OutputFormat
   }
   deriving (Show, Eq, Generic)
 
 data WorkSettings = WorkSettings
   { workSetContext :: !(Maybe ContextName),
-    workSetContexts :: !(Map ContextName EntryFilterRel),
-    workSetChecks :: !(Set EntryFilterRel),
+    workSetContexts :: !(Map ContextName EntryFilter),
+    workSetChecks :: !(Set EntryFilter),
     workSetTime :: !(Maybe Time),
     workSetTimeProperty :: !(Maybe PropertyName),
-    workSetBaseFilter :: !(Maybe EntryFilterRel),
-    workSetFilter :: !(Maybe EntryFilterRel),
+    workSetBaseFilter :: !(Maybe EntryFilter),
+    workSetFilter :: !(Maybe EntryFilter),
     workSetProjection :: !(NonEmpty Projection),
     workSetSorter :: !(Maybe Sorter),
     workSetHideArchive :: !HideArchive,
@@ -409,40 +413,40 @@ data WorkSettings = WorkSettings
   deriving (Show, Eq, Generic)
 
 data WaitingSettings = WaitingSettings
-  { waitingSetFilter :: !(Maybe EntryFilterRel),
+  { waitingSetFilter :: !(Maybe EntryFilter),
     waitingSetHideArchive :: !HideArchive,
     waitingSetThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 
 data NextSettings = NextSettings
-  { nextSetFilter :: Maybe EntryFilterRel,
-    nextSetHideArchive :: HideArchive
+  { nextSetFilter :: !(Maybe EntryFilter),
+    nextSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 
 data ClockSettings = ClockSettings
-  { clockSetFilter :: Maybe EntryFilterRel,
-    clockSetPeriod :: Period,
-    clockSetBlock :: TimeBlock,
-    clockSetOutputFormat :: OutputFormat,
-    clockSetClockFormat :: ClockFormat,
-    clockSetReportStyle :: ClockReportStyle,
-    clockSetHideArchive :: HideArchive
+  { clockSetFilter :: !(Maybe EntryFilter),
+    clockSetPeriod :: !Period,
+    clockSetBlock :: !TimeBlock,
+    clockSetOutputFormat :: !OutputFormat,
+    clockSetClockFormat :: !ClockFormat,
+    clockSetReportStyle :: !ClockReportStyle,
+    clockSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 
 data AgendaSettings = AgendaSettings
-  { agendaSetFilter :: Maybe EntryFilterRel,
-    agendaSetHistoricity :: AgendaHistoricity,
-    agendaSetBlock :: TimeBlock,
-    agendaSetHideArchive :: HideArchive,
-    agendaSetPeriod :: Period
+  { agendaSetFilter :: !(Maybe EntryFilter),
+    agendaSetHistoricity :: !AgendaHistoricity,
+    agendaSetBlock :: !TimeBlock,
+    agendaSetHideArchive :: !HideArchive,
+    agendaSetPeriod :: !Period
   }
   deriving (Show, Eq, Generic)
 
 data ProjectsSettings = ProjectsSettings
-  { projectsSetFilter :: Maybe ProjectFilter
+  { projectsSetFilter :: !(Maybe ProjectFilter)
   }
   deriving (Show, Eq, Generic)
 
@@ -453,20 +457,20 @@ data StuckSettings = StuckSettings
   deriving (Show, Eq, Generic)
 
 data LogSettings = LogSettings
-  { logSetFilter :: Maybe EntryFilterRel,
-    logSetPeriod :: Period,
-    logSetBlock :: TimeBlock,
-    logSetHideArchive :: HideArchive
+  { logSetFilter :: !(Maybe EntryFilter),
+    logSetPeriod :: !Period,
+    logSetBlock :: !TimeBlock,
+    logSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 
-newtype StatsSettings = StatsSettings
-  { statsSetPeriod :: Period
+data StatsSettings = StatsSettings
+  { statsSetPeriod :: !Period
   }
   deriving (Show, Eq, Generic)
 
-newtype TagsSettings = TagsSettings
-  { tagsSetFilter :: Maybe EntryFilterRel
+data TagsSettings = TagsSettings
+  { tagsSetFilter :: !(Maybe EntryFilter)
   }
   deriving (Show, Eq, Generic)
 
@@ -484,6 +488,6 @@ data Settings = Settings
   deriving (Show, Eq, Generic)
 
 data ColourSettings = ColourSettings
-  { colourSettingBackground :: TableBackgroundConfiguration
+  { colourSettingBackground :: !TableBackgroundConfiguration
   }
   deriving (Show, Eq, Generic)

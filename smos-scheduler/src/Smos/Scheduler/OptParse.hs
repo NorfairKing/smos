@@ -17,6 +17,7 @@ import Path
 import Path.IO
 import Paths_smos_scheduler
 import Smos.Data
+import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types
@@ -33,6 +34,7 @@ combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration 
 combineToInstructions cmd Flags {..} Environment {..} mc = do
   let d = case cmd of
         CommandCheck -> DispatchCheck
+        CommandNext -> DispatchNext
         CommandSchedule -> DispatchSchedule
   setDirectorySettings <-
     Report.combineToDirectoryConfig
@@ -45,6 +47,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       Nothing -> defaultStateFile
       Just fp -> resolveFile' fp
   let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
+  let setColourSettings = getColourSettings (mc >>= confColourConfiguration)
   pure (Instructions d Settings {..})
   where
     cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
@@ -110,6 +113,7 @@ parseCommand =
   hsubparser $
     mconcat
       [ command "check" parseCommandCheck,
+        command "next" parseCommandNext,
         command "schedule" parseCommandSchedule
       ]
 
@@ -124,6 +128,12 @@ parseCommandSchedule = info parser modifier
   where
     modifier = fullDesc <> progDesc "Run the schedules"
     parser = pure CommandSchedule
+
+parseCommandNext :: ParserInfo Command
+parseCommandNext = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "List the next times that scheduled will be activated"
+    parser = pure CommandNext
 
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =

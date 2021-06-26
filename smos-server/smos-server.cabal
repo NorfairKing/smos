@@ -5,12 +5,12 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-server
-version:        0.3.0
+version:        0.4.0
 category:       Smos
 homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2019-2020 Tom Sydney Kerckhove
+copyright:      Copyright: (c) 2019-2021 Tom Sydney Kerckhove
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -23,10 +23,12 @@ library
       Smos.Server.DB
       Smos.Server.DB.Compressed
       Smos.Server.Env
+      Smos.Server.FileMigration
       Smos.Server.Handler
       Smos.Server.Handler.Admin
       Smos.Server.Handler.Admin.GetUser
       Smos.Server.Handler.Admin.GetUsers
+      Smos.Server.Handler.Admin.PostMigrateFiles
       Smos.Server.Handler.Admin.PutUserSubscription
       Smos.Server.Handler.DeleteBackup
       Smos.Server.Handler.DeleteUser
@@ -53,7 +55,6 @@ library
       Smos.Server.Looper.AutoBackup
       Smos.Server.Looper.BackupGarbageCollector
       Smos.Server.Looper.Env
-      Smos.Server.Looper.FileMigrator
       Smos.Server.Looper.Import
       Smos.Server.OptParse
       Smos.Server.OptParse.Types

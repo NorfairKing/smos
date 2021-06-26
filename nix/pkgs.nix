@@ -12,6 +12,13 @@ let
       inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource;
     };
   pkgFunc = pkgs: if static then pkgs.pkgsCross.musl64 else pkgs;
+  commonConfig = {
+
+    # Needed for the options docs, remove this when upgrading nixpkgs to 21.05, hopefully.
+    permittedInsecurePackages = [
+      "gogs-0.11.91"
+    ];
+  };
   smosPkgs = pkgFunc
     (
       pkgsv {
@@ -36,10 +43,12 @@ let
           niv-overlay
           (import ./overlay.nix {
             inherit sources;
-            buildTools = pkgsv { };
+            buildTools = pkgsv { config = commonConfig; };
           })
         ];
-        config.allowUnfree = true;
+        config = commonConfig // {
+          allowUnfree = true;
+        };
       }
     );
 in

@@ -123,11 +123,19 @@ timestampsCursorAppendChar c tsc =
     then timestampsCursorCurrentTextCursorL (textCursorAppend c) tsc
     else Nothing
 
-timestampsCursorRemoveChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorRemoveChar = timestampsCursorCurrentTextCursorL (dullMDelete . textCursorRemove)
+timestampsCursorRemoveChar :: TimestampsCursor -> Maybe (DeleteOrUpdate TimestampsCursor)
+timestampsCursorRemoveChar tsc = do
+  dou <- focusPossibleDeleteOrUpdate timestampsCursorCurrentTextCursorL textCursorRemove tsc
+  pure $ case dou of
+    Deleted -> tsc & timestampsCursorMapCursorL (mapCursorRemoveElem makeTimestampNameCursor)
+    Updated tsc' -> Updated tsc'
 
-timestampsCursorDeleteChar :: TimestampsCursor -> Maybe TimestampsCursor
-timestampsCursorDeleteChar = timestampsCursorCurrentTextCursorL (dullMDelete . textCursorDelete)
+timestampsCursorDeleteChar :: TimestampsCursor -> Maybe (DeleteOrUpdate TimestampsCursor)
+timestampsCursorDeleteChar tsc = do
+  dou <- focusPossibleDeleteOrUpdate timestampsCursorCurrentTextCursorL textCursorDelete tsc
+  pure $ case dou of
+    Deleted -> tsc & timestampsCursorMapCursorL (mapCursorRemoveElem makeTimestampNameCursor)
+    Updated tsc' -> Updated tsc'
 
 timestampsCursorSelectNextChar :: TimestampsCursor -> Maybe TimestampsCursor
 timestampsCursorSelectNextChar = timestampsCursorCurrentTextCursorL textCursorSelectNext

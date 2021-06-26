@@ -149,7 +149,7 @@ spec = do
                     { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
                     }
                 checkFilterString = "property:timewindow"
-             in case parseEntryFilterRel checkFilterString of
+             in case parseEntryFilter checkFilterString of
                   Left err -> expectationFailure $ show err
                   Right checkFilter -> withDirectoryConfig is $ \dc -> do
                     let ctx =

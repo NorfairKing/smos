@@ -137,10 +137,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "linkcheck",
-        "rev": "502bfef21298b6d47dc666d9edfc473cc5fd3a16",
-        "sha256": "1b0w4xr4avcw0sp8h2v3gxdv79f98krr2fyc4rcr6g684gn5hn7y",
+        "rev": "053cdf9ebe7578f4201f51e175b1a4fe6687c345",
+        "sha256": "1wa83pnvf9ikp29kbd8544s5nkiyfzl6xrfq3m64piraj0jrs6ww",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/linkcheck/archive/502bfef21298b6d47dc666d9edfc473cc5fd3a16.tar.gz",
+        "url": "https://github.com/NorfairKing/linkcheck/archive/053cdf9ebe7578f4201f51e175b1a4fe6687c345.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "looper": {
@@ -149,10 +149,10 @@
         "homepage": "http://hackage.haskell.org/package/looper",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "8946c243a718bd44089f50d4c0fb624fd1f7db2a",
-        "sha256": "0jgc7hr5r2h3q2lah9fy0j8g1xcggmy6m5s4gj0wv7i3cfrj4v68",
+        "rev": "8f9f944e8cf3cd8883a5600c115461ecea285c62",
+        "sha256": "1nc6iiwxp0gbxv4cwgv3jqmv0v59w8y462ax7g55gx7m8l8zg2a9",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/looper/archive/8946c243a718bd44089f50d4c0fb624fd1f7db2a.tar.gz",
+        "url": "https://github.com/NorfairKing/looper/archive/8f9f944e8cf3cd8883a5600c115461ecea285c62.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "mergeful": {
@@ -264,15 +264,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {
-        "branch": "master",
+        "branch": "development",
         "description": "A modern testing framework for Haskell with good defaults and advanced testing features.",
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "aafd8e0c2e97143af950e2f9742c5e1bd167c77b",
-        "sha256": "0i0il3j32zqj56byngg6jrlnbkmgmq6piw7k4di7j040j5knp2jh",
+        "rev": "caeb25405f15098bb657a75b5f6801229525657d",
+        "sha256": "1bzbv0c87f35vv3md2mpp3v7jby8nwi74c93235a6n3i06zs5gfn",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/aafd8e0c2e97143af950e2f9742c5e1bd167c77b.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/caeb25405f15098bb657a75b5f6801229525657d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "template-haskell-reload": {
@@ -312,15 +312,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yamlparse-applicative": {
-        "branch": "master",
+        "branch": "development",
         "description": "An optparse-applicative -style explainable yaml parser",
         "homepage": "https://cs-syd.eu/posts/2020-06-28-yamlparse-applicative",
         "owner": "NorfairKing",
         "repo": "yamlparse-applicative",
-        "rev": "7a329d06ffa45595963cf98f34910887115eb471",
-        "sha256": "0mffjivg17qbyap6a4g33m9dpkf1v10l5wczwar0b21d642bz6w4",
+        "rev": "0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb",
+        "sha256": "1vaxkqjrhcc7za877nlmc6is92sr4pjja1rl0j74dlg5rhal809d",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/7a329d06ffa45595963cf98f34910887115eb471.tar.gz",
+        "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

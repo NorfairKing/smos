@@ -5,6 +5,7 @@ on:
     branches:
       - development
       - master
+  workflow_dispatch:
 
 jobs:
   hooks:

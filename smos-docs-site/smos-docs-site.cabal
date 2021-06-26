@@ -20,6 +20,25 @@ extra-source-files:
     content/assets/smos-cheat-sheet.jpeg
     content/assets/smos-cheat-sheet.pdf
     content/assets/smos.png
+    content/casts/agenda.yaml
+    content/casts/archive.yaml
+    content/casts/basics.yaml
+    content/casts/browser.yaml
+    content/casts/calendar-import.yaml
+    content/casts/example.yaml
+    content/casts/next.yaml
+    content/casts/waiting.yaml
+    content/casts/work.yaml
+    content/changelogs/2020-09-25.markdown
+    content/changelogs/2020-11-04.markdown
+    content/changelogs/2020-12-16.markdown
+    content/changelogs/2021-02-01.markdown
+    content/changelogs/2021-03-13.markdown
+    content/changelogs/2021-04-09.markdown
+    content/changelogs/2021-04-30.markdown
+    content/changelogs/2021-05-04.markdown
+    content/changelogs/2021-05-24.markdown
+    content/changelogs/2021-06-26.markdown
     content/pages/blogposts.markdown
     content/pages/building-installation.markdown
     content/pages/cheat-sheet.markdown
@@ -29,6 +48,10 @@ extra-source-files:
     content/pages/customisation-haskell.markdown
     content/pages/development/branch-strategy.markdown
     content/pages/development/contributing.markdown
+    content/pages/development/contributing/package-overview.markdown
+    content/pages/development/contributing/smos-docs-site.markdown
+    content/pages/development/contributing/smos-server.markdown
+    content/pages/development/contributing/smos-web-server.markdown
     content/pages/development/end-to-end-tests.markdown
     content/pages/development/release-checklist.markdown
     content/pages/directories.markdown
@@ -76,15 +99,6 @@ extra-source-files:
     content/pages/smos.markdown
     content/pages/support.markdown
     content/pages/synchronisation.markdown
-    content/changelogs/2020-09-25.markdown
-    content/changelogs/2020-11-04.markdown
-    content/changelogs/2020-12-16.markdown
-    content/changelogs/2021-02-01.markdown
-    content/changelogs/2021-03-13.markdown
-    content/changelogs/2021-04-09.markdown
-    content/changelogs/2021-04-30.markdown
-    content/changelogs/2021-05-04.markdown
-    content/changelogs/2021-05-24.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet
@@ -97,6 +111,7 @@ extra-source-files:
     templates/default-page.hamlet
     templates/home.hamlet
     templates/menu.hamlet
+    templates/nixos-module.hamlet
     templates/page.hamlet
     templates/smos-actions.hamlet
     templates/smos-asciinema/spec.hamlet
@@ -125,6 +140,7 @@ library
       Smos.Docs.Site.Handler.CurrentVersions
       Smos.Docs.Site.Handler.Import
       Smos.Docs.Site.Handler.Keybindings
+      Smos.Docs.Site.Handler.Nix
       Smos.Docs.Site.Handler.Page
       Smos.Docs.Site.Handler.Reload
       Smos.Docs.Site.Handler.Sitemap
@@ -139,6 +155,8 @@ library
       Smos.Docs.Site.Handler.SmosSingle
       Smos.Docs.Site.Handler.SmosSyncClient
       Smos.Docs.Site.Handler.SmosWebServer
+      Smos.Docs.Site.ModuleDocs
+      Smos.Docs.Site.ModuleDocs.TH
       Smos.Docs.Site.OptParse
       Smos.Docs.Site.OptParse.Types
       Smos.Docs.Site.Static
@@ -151,7 +169,10 @@ library
   build-tool-depends:
       autoexporter:autoexporter
   build-depends:
-      base >=4.7
+      aeson
+    , aeson-pretty
+    , base >=4.7
+    , bytestring
     , cmark-gfm
     , containers
     , data-default
@@ -161,6 +182,7 @@ library
     , optparse-applicative
     , path
     , path-io
+    , pretty-show
     , raw-strings-qq
     , semver
     , shakespeare

@@ -1,11 +1,16 @@
-{ pkgs ? import ./pkgs.nix { static = false; }
+{ sources ? import ./sources.nix
+, pkgs ? import ./pkgs.nix { inherit sources; static = false; }
 , smosPackages ? pkgs.smosPackages
-, sources ? import ./sources.nix
 }:
 let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
-  smos-production = import ./nixos-module.nix { inherit sources; inherit smosPackages; envname = "production"; };
+  smos-production = import ./nixos-module.nix {
+    inherit sources;
+    inherit pkgs;
+    inherit smosPackages;
+    envname = "production";
+  };
   home-manager = import (
     builtins.fetchTarball
       {
@@ -31,7 +36,7 @@ let
       programs.smos = {
         sync = {
           enable = true;
-          server-url = "server:${builtins.toString api-port}";
+          server-url = "apiserver:${builtins.toString api-port}";
           username = "sync_enabled";
           password = "testpassword";
         };
@@ -66,7 +71,7 @@ let
         backup.enable = true;
         sync = {
           enable = true;
-          server-url = "server:${builtins.toString api-port}";
+          server-url = "apiserver:${builtins.toString api-port}";
           username = "everything_enabled";
           password = "testpassword";
         };
@@ -157,18 +162,12 @@ pkgs.nixosTest (
   { lib, pkgs, ... }: {
     name = "smos-module-test";
     nodes = {
-      server = {
+      apiserver = {
         imports = [
           smos-production
         ];
         services.smos.production = {
           enable = true;
-          docs-site = {
-            enable = true;
-            port = docs-port;
-            api-url = "server:${builtins.toString api-port}";
-            web-url = "server:${builtins.toString web-port}";
-          };
           api-server = {
             enable = true;
             port = api-port;
@@ -182,12 +181,34 @@ pkgs.nixosTest (
               enable = false;
             };
           };
+        };
+      };
+      webserver = {
+        imports = [
+          smos-production
+        ];
+        services.smos.production = {
+          enable = true;
           web-server = {
             enable = true;
             port = web-port;
-            docs-url = "server:${builtins.toString docs-port}";
-            api-url = "server:${builtins.toString api-port}";
-            web-url = "server:${builtins.toString web-port}";
+            docs-url = "docsserver:${builtins.toString docs-port}";
+            api-url = "apiserver:${builtins.toString api-port}";
+            web-url = "webserver:${builtins.toString web-port}";
+          };
+        };
+      };
+      docsserver = {
+        imports = [
+          smos-production
+        ];
+        services.smos.production = {
+          enable = true;
+          docs-site = {
+            enable = true;
+            port = docs-port;
+            api-url = "apiserver:${builtins.toString api-port}";
+            web-url = "webserver:${builtins.toString web-port}";
           };
         };
       };
@@ -205,17 +226,21 @@ pkgs.nixosTest (
     testScript = ''
       from shlex import quote
 
-      server.start()
+      apiserver.start()
+      webserver.start()
+      docsserver.start()
       client.start()
-      server.wait_for_unit("multi-user.target")
+      apiserver.wait_for_unit("multi-user.target")
+      webserver.wait_for_unit("multi-user.target")
+      docsserver.wait_for_unit("multi-user.target")
       client.wait_for_unit("multi-user.target")
 
-      server.wait_for_open_port(${builtins.toString docs-port})
-      client.succeed("curl server:${builtins.toString docs-port}")
-      server.wait_for_open_port(${builtins.toString api-port})
-      client.succeed("curl server:${builtins.toString api-port}")
-      server.wait_for_open_port(${builtins.toString web-port})
-      client.succeed("curl server:${builtins.toString web-port}")
+      apiserver.wait_for_open_port(${builtins.toString api-port})
+      client.succeed("curl apiserver:${builtins.toString api-port}")
+      webserver.wait_for_open_port(${builtins.toString web-port})
+      client.succeed("curl webserver:${builtins.toString web-port}")
+      docsserver.wait_for_open_port(${builtins.toString docs-port})
+      client.succeed("curl docsserver:${builtins.toString docs-port}")
 
       # Wait for all test users
       ${lib.concatStringsSep "\n" (builtins.map (username: "client.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}

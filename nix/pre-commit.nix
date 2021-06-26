@@ -12,10 +12,11 @@ in
       ormolu.enable = true;
     };
   };
-  tools = [
-    pre-commit-hooks.hlint
-    pre-commit-hooks.hpack
-    pre-commit-hooks.nixpkgs-fmt
-    pre-commit-hooks.ormolu
+  tools = with pre-commit-hooks; [
+    pre-commit
+    hlint
+    hpack
+    nixpkgs-fmt
+    ormolu
   ];
 }

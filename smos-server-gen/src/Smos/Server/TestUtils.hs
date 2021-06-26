@@ -30,13 +30,13 @@ runServerTestEnvM = flip runReaderT
 type ServerTestEnvM a = ReaderT ServerTestEnv IO a
 
 serverEnvSpec :: TestDef '[Http.Manager] ServerTestEnv -> Spec
-serverEnvSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' serverTestEnvSetupFunc
+serverEnvSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' (\man () -> serverTestEnvSetupFunc man)
 
-serverTestEnvSetupFunc :: Http.Manager -> SetupFunc () ServerTestEnv
+serverTestEnvSetupFunc :: Http.Manager -> SetupFunc ServerTestEnv
 serverTestEnvSetupFunc man = do
   pool <- serverConnectionPoolSetupFunc
-  senv <- unwrapSetupFunc serverEnvSetupFunc pool
-  cenv <- unwrapSetupFunc (clientEnvSetupFunc man) senv
+  senv <- serverEnvSetupFunc pool
+  cenv <- clientEnvSetupFunc man senv
   pure $
     ServerTestEnv
       { serverTestEnvServerEnv = senv,
@@ -78,29 +78,29 @@ withServerEnvNewUser func = do
 serverDBSpec :: SpecWith ConnectionPool -> Spec
 serverDBSpec = modifyMaxSuccess (`div` 10) . setupAround serverConnectionPoolSetupFunc
 
-serverConnectionPoolSetupFunc :: SetupFunc () ConnectionPool
+serverConnectionPoolSetupFunc :: SetupFunc ConnectionPool
 serverConnectionPoolSetupFunc = connectionPoolSetupFunc serverAutoMigration
 
 type ServerSpec = TestDef '[Http.Manager] ClientEnv
 
 serverSpec :: ServerSpec -> Spec
-serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' serverSetupFunc
+serverSpec = modifyMaxSuccess (`div` 20) . managerSpec . setupAroundWith' (\man () -> serverSetupFunc man)
 
-serverSetupFunc :: Http.Manager -> SetupFunc () ClientEnv
-serverSetupFunc man = serverConnectionPoolSetupFunc `connectSetupFunc` serverSetupFunc' man
+serverSetupFunc :: Http.Manager -> SetupFunc ClientEnv
+serverSetupFunc man = serverConnectionPoolSetupFunc >>= serverSetupFunc' man
 
-serverSetupFunc' :: Http.Manager -> SetupFunc ConnectionPool ClientEnv
-serverSetupFunc' man = serverEnvSetupFunc `connectSetupFunc` clientEnvSetupFunc man
+serverSetupFunc' :: Http.Manager -> ConnectionPool -> SetupFunc ClientEnv
+serverSetupFunc' man pool = serverEnvSetupFunc pool >>= clientEnvSetupFunc man
 
-clientEnvSetupFunc :: Http.Manager -> SetupFunc ServerEnv ClientEnv
-clientEnvSetupFunc man = wrapSetupFunc $ \env -> do
+clientEnvSetupFunc :: Http.Manager -> ServerEnv -> SetupFunc ClientEnv
+clientEnvSetupFunc man env = do
   let application = Server.makeSyncApp env
-  p <- unwrapSetupFunc applicationSetupFunc application
+  p <- applicationSetupFunc application
   -- The fromIntegral is safe because it's PortNumber -> Int
   pure $ mkClientEnv man (BaseUrl Http "127.0.0.1" (fromIntegral p) "")
 
-serverEnvSetupFunc :: SetupFunc ConnectionPool ServerEnv
-serverEnvSetupFunc = wrapSetupFunc $ \pool -> liftIO $ do
+serverEnvSetupFunc :: ConnectionPool -> SetupFunc ServerEnv
+serverEnvSetupFunc pool = liftIO $ do
   uuid <- nextRandomUUID
   jwtKey <- Auth.generateKey
   -- We turn logging off while tests pass, but for debugging the logs will

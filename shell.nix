@@ -10,6 +10,7 @@ pkgs.haskell.lib.buildStackProject {
     autoconf
     bzip2
     git
+    haskellPackages.autorecorder
     haskellPackages.autoexporter
     killall
     niv

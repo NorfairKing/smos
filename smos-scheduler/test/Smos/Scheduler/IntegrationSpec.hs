@@ -7,6 +7,7 @@ where
 
 import Path
 import Path.IO
+import Smos.Query.OptParse (defaultColourSettings)
 import Smos.Report.Config
 import Smos.Report.TestUtils
 import Smos.Scheduler.Commands
@@ -41,7 +42,8 @@ spec = modifyMaxSuccess (`div` 10) $ do
                                 scheduleItemDestination = DestinationPathTemplate destinationPath,
                                 scheduleItemCronSchedule = everyMinute -- Should definitely get activated
                               }
-                          ]
+                          ],
+                      setColourSettings = defaultColourSettings
                     }
             check sets -- The first check
             schedule sets -- The first run

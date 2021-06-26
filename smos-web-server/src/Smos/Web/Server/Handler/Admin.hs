@@ -4,6 +4,7 @@
 
 module Smos.Web.Server.Handler.Admin
   ( getAdminPanelR,
+    postAdminMigrateFilesR,
     getAdminUserR,
     postAdminUserSetSubscriptionR,
   )
@@ -15,7 +16,13 @@ getAdminPanelR :: Handler Html
 getAdminPanelR = withAdminLogin $ \t -> do
   users <- runClientOrErr $ clientGetUsers t
   now <- liftIO getCurrentTime
+  token <- genToken
   withNavBar $(widgetFile "admin/panel")
+
+postAdminMigrateFilesR :: Handler Html
+postAdminMigrateFilesR = withAdminLogin $ \t -> do
+  NoContent <- runClientOrErr $ clientPostMigrateFiles t
+  redirect AdminPanelR
 
 getAdminUserR :: Username -> Handler Html
 getAdminUserR username = withAdminLogin $ \t -> do

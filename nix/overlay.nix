@@ -8,6 +8,7 @@ let
   static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
+  mergeListRecursively = final.callPackage ./merge-lists-recursively.nix { };
 in
 {
   smosCasts =
@@ -35,55 +36,52 @@ in
   smosPackages = with final.haskell.lib;
     let
       ownPkg = name: src:
-        doBenchmark (
-          addBuildDepend
-            (
-              disableLibraryProfiling (
-                overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
-                  old: {
-                    # Turn off test suites on macos because they generate random
-                    # filepaths and that fails for some reason that I cannot investigate
-                    # because I don't own any apple products.
-                    doCheck = !isMacos;
-                    buildFlags = (old.buildFlags or [ ]) ++ [
-                      "--ghc-options=-Wincomplete-uni-patterns"
-                      "--ghc-options=-Wincomplete-record-updates"
-                      "--ghc-options=-Wpartial-fields"
-                      "--ghc-options=-Widentities"
-                      "--ghc-options=-Wredundant-constraints"
-                      "--ghc-options=-Wcpp-undef"
-                      "--ghc-options=-Wcompat"
-                    ];
-                    # Whatever is necessary for a static build.
-                    configureFlags = (old.configureFlags or [ ]) ++ optionals static [
-                      "--enable-executable-static"
-                      "--disable-executable-dynamic"
-                      "--ghc-option=-optl=-static"
-                      "--ghc-option=-static"
-                      "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-                      "--extra-lib-dirs=${final.zlib.static}/lib"
-                      "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                      "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-                      "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                    ];
-                    # Assert that the executables are indeed static
-                    postInstall = (old.postBuild or "") + optionalString static ''
-                      for exe in $out/bin/*
-                      do
-                        if ldd $exe
-                        then
-                          echo "Not a static executable"
-                          exit 1
-                        else
-                          echo "Static executable: $exe"
-                        fi
-                      done
-                    '';
-                  }
-                )
-              )
-            )
-            (buildTools.haskellPackages.autoexporter)
+        overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
+          old: {
+            buildDepends = (old.buildDepends or [ ]) ++ [
+              buildTools.haskellPackages.autoexporter
+            ];
+            doBenchmark = true;
+            enableLibraryProfiling = false;
+            # Turn off test suites on macos because they generate random
+            # filepaths and that fails for some reason that I cannot investigate
+            # because I don't own any apple products.
+            doCheck = !isMacos;
+            buildFlags = (old.buildFlags or [ ]) ++ [
+              "--ghc-options=-Wincomplete-uni-patterns"
+              "--ghc-options=-Wincomplete-record-updates"
+              "--ghc-options=-Wpartial-fields"
+              "--ghc-options=-Widentities"
+              "--ghc-options=-Wredundant-constraints"
+              "--ghc-options=-Wcpp-undef"
+              "--ghc-options=-Wcompat"
+            ];
+            # Whatever is necessary for a static build.
+            configureFlags = (old.configureFlags or [ ]) ++ optionals static [
+              "--enable-executable-static"
+              "--disable-executable-dynamic"
+              "--ghc-option=-optl=-static"
+              "--ghc-option=-static"
+              "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
+              "--extra-lib-dirs=${final.zlib.static}/lib"
+              "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+              "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
+              "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+            ];
+            # Assert that the executables are indeed static
+            postInstall = (old.postBuild or "") + optionalString static ''
+              for exe in $out/bin/*
+              do
+                if ldd $exe
+                then
+                  echo "Not a static executable"
+                  exit 1
+                else
+                  echo "Static executable: $exe"
+                fi
+              done
+            '';
+          }
         );
       smosPkg = name: buildStrictly (ownPkg name (final.gitignoreSource (../. + "/${name}")));
       smosPkgWithComp =
@@ -103,7 +101,7 @@ in
 
             $out/bin/${exeName} serve &
             sleep 1
-            ${linkcheck}/bin/linkcheck http://localhost:8000
+            ${linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
             ${seocheck}/bin/seocheck http://localhost:8000
             ${buildTools.killall}/bin/killall ${exeName}
           '';
@@ -154,9 +152,14 @@ in
           export STYLE_FILE=${stylesheet}
         '';
       });
-
+      docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
+        preConfigure = ''
+          ${old.preConfigure or ""}
+          export MODULE_DOCS="${final.moduleDocs}/share/doc/nixos/options.json"
+        '';
+      });
       smos-docs-site = withLinksChecked "smos-docs-site" (
-        withStaticResources (smosPkgWithOwnComp "smos-docs-site") (
+        withStaticResources docs-site-pkg (
           {
             "static/font-awesome.css" = builtins.fetchurl {
               url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
@@ -303,6 +306,25 @@ in
       ${final.pkgs.zip}/bin/zip -r $out bin share/{zsh,bash-completion,mime,fish,applications}
     '';
   };
+
+  moduleDocs =
+    let
+      eval = import (buildTools.path + "/nixos/lib/eval-config.nix") {
+        pkgs = buildTools;
+        modules = [
+          (import ./nixos-module.nix {
+            inherit sources;
+            pkgs = buildTools;
+            inherit (final) smosPackages;
+            envname = "production";
+          })
+        ];
+      };
+    in
+    (buildTools.nixosOptionsDoc {
+      # options = filterRelevantOptions eval.options;
+      options = eval.options;
+    }).optionsJSON;
 
 
   # This can be deleted as soon as the following is in our nixpkgs:

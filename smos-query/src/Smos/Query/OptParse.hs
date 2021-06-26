@@ -74,7 +74,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
               { entrySetFilter = entryFlagFilter,
                 entrySetProjection = fromMaybe defaultProjection entryFlagProjection,
                 entrySetSorter = entryFlagSorter,
-                entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive
+                entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive,
+                entrySetOutputFormat = fromMaybe OutputPretty entryFlagOutputFormat
               }
       CommandReport ReportFlags {..} -> do
         let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
@@ -83,7 +84,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           DispatchReport
             ReportSettings
               { reportSetReportName = reportFlagReportName,
-                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports
+                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports,
+                reportSetOutputFormat = fromMaybe OutputPretty reportFlagOutputFormat
               }
       CommandWaiting WaitingFlags {..} -> do
         let mwc :: (WaitingReportConfig -> a) -> a
@@ -215,8 +217,15 @@ getColourSettings mcc =
   ColourSettings
     { colourSettingBackground =
         fromMaybe
-          (UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235))))
+          (colourSettingBackground defaultColourSettings)
           (mcc >>= colourConfigurationBackground)
+    }
+
+defaultColourSettings :: ColourSettings
+defaultColourSettings =
+  ColourSettings
+    { colourSettingBackground =
+        UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))
     }
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
@@ -297,8 +306,12 @@ parseCommandEntry = info parser modifier
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
       CommandEntry
-        <$> ( EntryFlags <$> parseFilterArgsRel <*> parseProjectionArgs <*> parseSorterArgs
+        <$> ( EntryFlags
+                <$> parseFilterArgsRel
+                <*> parseProjectionArgs
+                <*> parseSorterArgs
                 <*> parseHideArchiveFlag
+                <*> parseOutputFormat
             )
 
 parseCommandReport :: ParserInfo Command
@@ -311,6 +324,7 @@ parseCommandReport = info parser modifier
                 <$> argument
                   (Just <$> str)
                   (mconcat [value Nothing, metavar "REPORT", help "The preconfigured report to run"])
+                <*> parseOutputFormat
             )
 
 parseCommandWork :: ParserInfo Command
@@ -387,7 +401,11 @@ parseCommandClock = info parser modifier
     modifier = fullDesc <> progDesc "Print the clock table"
     parser =
       CommandClock
-        <$> ( ClockFlags <$> parseFilterArgsRel <*> parsePeriod <*> parseTimeBlock <*> parseOutputFormat
+        <$> ( ClockFlags
+                <$> parseFilterArgsRel
+                <*> parsePeriod
+                <*> parseTimeBlock
+                <*> parseOutputFormat
                 <*> parseClockFormatFlags
                 <*> parseClockReportStyle
                 <*> parseHideArchiveFlag
@@ -501,21 +519,21 @@ parseTimeFilterArg =
       (eitherReader (parseTime . T.pack))
       (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
 
-parseFilterOptionsRel :: Parser (Maybe EntryFilterRel)
+parseFilterOptionsRel :: Parser (Maybe EntryFilter)
 parseFilterOptionsRel =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
       ( option
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
           (mconcat [short 'f', long "filter", metavar "FILTER", help "A filter to filter entries by"])
       )
 
-parseFilterArgsRel :: Parser (Maybe EntryFilterRel)
+parseFilterArgsRel :: Parser (Maybe EntryFilter)
 parseFilterArgsRel =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
       ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilterRel . T.pack))
+          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
       )
 

@@ -23,6 +23,7 @@ import Data.Word
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
+import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
@@ -31,7 +32,10 @@ import YamlParse.Applicative
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
-data Command = CommandCheck | CommandSchedule
+data Command
+  = CommandCheck
+  | CommandNext
+  | CommandSchedule
   deriving (Show, Eq)
 
 data Flags = Flags
@@ -42,6 +46,7 @@ data Flags = Flags
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+    confColourConfiguration :: !(Maybe ColourConfiguration),
     confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
   }
   deriving (Show, Eq)
@@ -50,7 +55,10 @@ instance FromJSON Configuration where
   parseJSON = viaYamlSchema
 
 instance YamlSchema Configuration where
-  yamlSchema = Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
+  yamlSchema =
+    Configuration <$> yamlSchema
+      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The colour configuration")
+      <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
 
 data SchedulerConfiguration = SchedulerConfiguration
   { schedulerConfStateFile :: !(Maybe FilePath),
@@ -128,13 +136,17 @@ data Environment = Environment
 data Instructions = Instructions Dispatch Settings
   deriving (Show, Eq)
 
-data Dispatch = DispatchCheck | DispatchSchedule
+data Dispatch
+  = DispatchCheck
+  | DispatchNext
+  | DispatchSchedule
   deriving (Show, Eq)
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
     setStateFile :: !(Path Abs File),
-    setSchedule :: !Schedule
+    setSchedule :: !Schedule,
+    setColourSettings :: !ColourSettings
   }
   deriving (Show, Eq)
 

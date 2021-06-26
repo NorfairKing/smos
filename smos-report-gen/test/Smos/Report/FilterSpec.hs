@@ -136,9 +136,9 @@ spec = do
     genValidSpec @(Filter TodoState)
     eqSpecOnValid @(Filter PropertyValue)
     genValidSpec @(Filter PropertyValue)
-    eqSpecOnValid @EntryFilterRel
-    genValidSpec @EntryFilterRel
-    jsonSpecOnValid @EntryFilterRel
+    eqSpecOnValid @EntryFilter
+    genValidSpec @EntryFilter
+    jsonSpecOnValid @EntryFilter
     describe "tcWithTopLevelBranches" $ do
       tcSpec
         (tcWithTopLevelBranches tcSub)
@@ -383,7 +383,7 @@ spec = do
         forAllValid $
           \f ->
             let t = renderFilterAst f
-             in case parseEntryFilterRelAst t of
+             in case parseEntryFilterAst t of
                   Left err ->
                     expectationFailure $
                       unlines
@@ -413,7 +413,7 @@ spec = do
         forAllValid $
           \f ->
             let t = renderFilter f
-             in case parseEntryFilterRel t of
+             in case parseEntryFilter t of
                   Left err ->
                     expectationFailure $
                       unlines
@@ -441,10 +441,10 @@ spec = do
   describe "filterPredicate" $
     it "produces valid results" $
       producesValidsOnValids2 (filterPredicate @(Path Rel File, ForestCursor Entry))
-  describe "parseEntryFilterRel" $ do
+  describe "parseEntryFilter" $ do
     let pe input expected =
           it (unwords ["succesfully parses", show input, "into", show expected]) $
-            parseEntryFilterRel input `shouldBe` Right expected
+            parseEntryFilter input `shouldBe` Right expected
         pee input expected = pe input (FilterSnd $ FilterWithinCursor expected)
     pe "fst:file:side" (FilterFst $ FilterFile [relfile|side|])
     pe "file:side" (FilterFst $ FilterFile [relfile|side|])

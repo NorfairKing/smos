@@ -5,12 +5,12 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-scheduler
-version:        0.1.3
+version:        0.2.0
 category:       Smos
 homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2019-2020 Tom Sydney Kerckhove
+copyright:      Copyright: (c) 2019-2021 Tom Sydney Kerckhove
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -22,6 +22,7 @@ library
       Smos.Scheduler
       Smos.Scheduler.Commands
       Smos.Scheduler.Commands.Check
+      Smos.Scheduler.Commands.Next
       Smos.Scheduler.Commands.Schedule
       Smos.Scheduler.OptParse
       Smos.Scheduler.OptParse.Types
@@ -49,7 +50,13 @@ library
     , optparse-applicative
     , path
     , path-io
+    , pretty-relative-time
+    , pretty-show
+    , safe-coloured-text
+    , safe-coloured-text-layout
+    , safe-coloured-text-terminfo
     , smos-data
+    , smos-query
     , smos-report
     , text
     , time
@@ -104,6 +111,7 @@ test-suite smos-scheduler-test
     , path-io
     , smos-data
     , smos-data-gen
+    , smos-query
     , smos-report
     , smos-report-gen
     , smos-scheduler

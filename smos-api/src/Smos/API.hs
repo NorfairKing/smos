@@ -55,7 +55,7 @@ import Smos.Report.Agenda
 import Smos.Report.Next
 
 apiVersion :: Version
-apiVersion = version 0 2 0 [] []
+apiVersion = version 0 2 1 [] []
 
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
@@ -442,11 +442,14 @@ newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
   deriving (Show, Eq, Ord, Generic)
 
 data AdminRoutes route = AdminRoutes
-  { getUsers :: !(route :- ProtectAdmin :> GetUsers),
+  { postMigrateFiles :: !(route :- ProtectAPI :> PostMigrateFiles),
+    getUsers :: !(route :- ProtectAdmin :> GetUsers),
     getUser :: !(route :- ProtectAdmin :> GetUser),
     putUserSubscription :: !(route :- ProtectAdmin :> PutUserSubscription)
   }
   deriving (Generic)
+
+type PostMigrateFiles = "migrator-files" :> PostNoContent '[JSON] NoContent
 
 type GetUsers = "users" :> Get '[JSON] [UserInfo]
 

@@ -141,7 +141,10 @@ parseNotificationEvent now rf e = do
   (tsn, ts) <- M.toList (entryTimestamps e)
   guard $ tsn `elem` ["SCHEDULED", "BEGIN", "DEADLINE"]
   let nowUTC = zonedTimeToUTC now
-  let tsUTC = localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ts
+  lt <- case ts of
+    TimestampDay _ -> [] -- Don't notify about day-based timestamps
+    TimestampLocalTime lt -> [lt]
+  let tsUTC = localTimeToUTC (zonedTimeZone now) lt
   let d = diffUTCTime tsUTC nowUTC
   let minutesAhead = 5
       timestampIsSoon = d >= 0 && d <= minutesAhead * 60

@@ -41,10 +41,10 @@ instance FromJSON WaitingReport
 
 instance ToJSON WaitingReport
 
-produceWaitingReport :: MonadIO m => Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> m WaitingReport
+produceWaitingReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> m WaitingReport
 produceWaitingReport ef ha sp dc = produceReport ha sp dc (waitingReportConduit ef)
 
-waitingReportConduit :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m WaitingReport
+waitingReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m WaitingReport
 waitingReportConduit ef =
   finishWaitingReport
     <$> ( waitingReportConduitHelper ef
@@ -52,12 +52,12 @@ waitingReportConduit ef =
             .| sinkList
         )
 
-waitingReportConduitHelper :: Monad m => Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+waitingReportConduitHelper :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
 waitingReportConduitHelper ef =
   smosFileCursors
     .| smosFilter (maybe isWaitingFilter (FilterAnd isWaitingFilter) ef)
   where
-    isWaitingFilter :: EntryFilterRel
+    isWaitingFilter :: EntryFilter
     isWaitingFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub waitingState
 
 finishWaitingReport :: [WaitingEntry] -> WaitingReport

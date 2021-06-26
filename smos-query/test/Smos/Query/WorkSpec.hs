@@ -23,7 +23,7 @@ spec = sequential $
         forAllValid $ \is -> do
           let onlineFilterString = "(tag:online or not:tag:offline)"
           let offlineFilterString = "(not:tag:online or tag:offline)"
-          case (,) <$> parseEntryFilterRel onlineFilterString <*> parseEntryFilterRel offlineFilterString of
+          case (,) <$> parseEntryFilter onlineFilterString <*> parseEntryFilter offlineFilterString of
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right (onlineFilter, offlineFilter) -> do
               let wc =
@@ -41,7 +41,7 @@ spec = sequential $
       it "'just works' for any InterestingStore and a check but no contexts" $
         forAllValid $ \is -> do
           let checkString = "property:timewindow"
-          case parseEntryFilterRel checkString of
+          case parseEntryFilter checkString of
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right checkFilter -> do
               let wc =

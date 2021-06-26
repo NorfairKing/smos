@@ -24,10 +24,10 @@ import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.ShouldPrint
 
-produceTimestampsReportCursor :: ZonedTime -> Period -> Maybe EntryFilterRel -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO TimestampsReportCursor
+produceTimestampsReportCursor :: ZonedTime -> Period -> Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO TimestampsReportCursor
 produceTimestampsReportCursor now period mf ha sp dc = TimestampsReportCursor <$> produceEntryReportCursor (makeTimestampsEntryCursorAndFilterByPeriod now period) sortTimestampEntryCursors mf ha sp dc
 
-timestampsReportCursorConduit :: Monad m => ZonedTime -> Period -> Maybe EntryFilterRel -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
+timestampsReportCursorConduit :: Monad m => ZonedTime -> Period -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
 timestampsReportCursorConduit now period mf =
   TimestampsReportCursor <$> entryReportCursorConduit (makeTimestampsEntryCursorAndFilterByPeriod now period) sortTimestampEntryCursors mf
 
