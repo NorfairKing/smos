@@ -36,55 +36,52 @@ in
   smosPackages = with final.haskell.lib;
     let
       ownPkg = name: src:
-        doBenchmark (
-          addBuildDepend
-            (
-              disableLibraryProfiling (
-                overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
-                  old: {
-                    # Turn off test suites on macos because they generate random
-                    # filepaths and that fails for some reason that I cannot investigate
-                    # because I don't own any apple products.
-                    doCheck = !isMacos;
-                    buildFlags = (old.buildFlags or [ ]) ++ [
-                      "--ghc-options=-Wincomplete-uni-patterns"
-                      "--ghc-options=-Wincomplete-record-updates"
-                      "--ghc-options=-Wpartial-fields"
-                      "--ghc-options=-Widentities"
-                      "--ghc-options=-Wredundant-constraints"
-                      "--ghc-options=-Wcpp-undef"
-                      "--ghc-options=-Wcompat"
-                    ];
-                    # Whatever is necessary for a static build.
-                    configureFlags = (old.configureFlags or [ ]) ++ optionals static [
-                      "--enable-executable-static"
-                      "--disable-executable-dynamic"
-                      "--ghc-option=-optl=-static"
-                      "--ghc-option=-static"
-                      "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-                      "--extra-lib-dirs=${final.zlib.static}/lib"
-                      "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                      "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-                      "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                    ];
-                    # Assert that the executables are indeed static
-                    postInstall = (old.postBuild or "") + optionalString static ''
-                      for exe in $out/bin/*
-                      do
-                        if ldd $exe
-                        then
-                          echo "Not a static executable"
-                          exit 1
-                        else
-                          echo "Static executable: $exe"
-                        fi
-                      done
-                    '';
-                  }
-                )
-              )
-            )
-            (buildTools.haskellPackages.autoexporter)
+        overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
+          old: {
+            buildDepends = (old.buildDepends or [ ]) ++ [
+              buildTools.haskellPackages.autoexporter
+            ];
+            doBenchmark = true;
+            enableLibraryProfiling = false;
+            # Turn off test suites on macos because they generate random
+            # filepaths and that fails for some reason that I cannot investigate
+            # because I don't own any apple products.
+            doCheck = !isMacos;
+            buildFlags = (old.buildFlags or [ ]) ++ [
+              "--ghc-options=-Wincomplete-uni-patterns"
+              "--ghc-options=-Wincomplete-record-updates"
+              "--ghc-options=-Wpartial-fields"
+              "--ghc-options=-Widentities"
+              "--ghc-options=-Wredundant-constraints"
+              "--ghc-options=-Wcpp-undef"
+              "--ghc-options=-Wcompat"
+            ];
+            # Whatever is necessary for a static build.
+            configureFlags = (old.configureFlags or [ ]) ++ optionals static [
+              "--enable-executable-static"
+              "--disable-executable-dynamic"
+              "--ghc-option=-optl=-static"
+              "--ghc-option=-static"
+              "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
+              "--extra-lib-dirs=${final.zlib.static}/lib"
+              "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+              "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
+              "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+            ];
+            # Assert that the executables are indeed static
+            postInstall = (old.postBuild or "") + optionalString static ''
+              for exe in $out/bin/*
+              do
+                if ldd $exe
+                then
+                  echo "Not a static executable"
+                  exit 1
+                else
+                  echo "Static executable: $exe"
+                fi
+              done
+            '';
+          }
         );
       smosPkg = name: buildStrictly (ownPkg name (final.gitignoreSource (../. + "/${name}")));
       smosPkgWithComp =
@@ -155,9 +152,14 @@ in
           export STYLE_FILE=${stylesheet}
         '';
       });
-
+      docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
+        preConfigure = ''
+          ${old.preConfigure or ""}
+          export MODULE_DOCS="${final.moduleDocs}/share/doc/nixos/options.json"
+        '';
+      });
       smos-docs-site = withLinksChecked "smos-docs-site" (
-        withStaticResources (smosPkgWithOwnComp "smos-docs-site") (
+        withStaticResources docs-site-pkg (
           {
             "static/font-awesome.css" = builtins.fetchurl {
               url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
@@ -175,7 +177,6 @@ in
               url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
               sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
             };
-            "static/module-docs.json" = final.moduleDocs + "/share/doc/nixos/options.json";
           } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
         )
       );

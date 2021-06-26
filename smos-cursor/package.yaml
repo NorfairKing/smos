@@ -1,9 +1,9 @@
 name: smos-cursor
-version: 0.2.1
+version: 0.3.0
 github: "NorfairKing/smos"
 author: "Tom Sydney Kerckhove"
 maintainer: "syd@cs-syd.eu"
-copyright: "Copyright: (c) 2018-2020 Tom Sydney Kerckhove"
+copyright: "Copyright: (c) 2018-2021 Tom Sydney Kerckhove"
 
 library:
   source-dirs: src
