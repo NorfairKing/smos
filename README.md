@@ -13,3 +13,9 @@ Smos is free and open-source software.
 Building it takes time, energy and money.
 Please consider supporting the project at https://docs.smos.online/support
 
+## Configuration
+
+For a sample configuration, see `config.yaml`.
+
+
+

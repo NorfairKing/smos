@@ -1,0 +1,26 @@
+workflow-dir: "/home/<user>/workflow"
+archive-dir: "/home/<user>/workflow/archive"
+projects-dir: "/home/<user>/workflow/projects"
+scheduler:
+  schedule:
+    - description: "Weekly action list"
+      template: weekly-actions.smos.template
+      destination: projects/weekly-actions.smos
+      schedule: "0 1 * * 6" # Cron schedule: "At 3am (UTC-time) on Saturday"
+    - description: "Morning routine"
+      template: daily.smos.template
+      destination: projects/daily.smos
+      schedule: "0 1 * * 0-6" # Cron schedule: "At 3am (UTC-time) on any day but Sunday"
+    - description: "Weekly review"
+      template: reviews/weekly-review.smos.template
+      destination: projects/weekly-review.smos
+      schedule: "0 * * * 6" # Cron schedule: "Saturday every hour, until the
+      # file is created (then the scheduler fails)."
+calendar:
+  sources:
+    - name: "Personal gmail"
+      source: "<secret address in iCal format, see gmail docs>"
+      destination: calendar.smos
+    - name: "<my name> @<company where I work>"
+      source: "<secret address in iCal format, see gmail docs>"
+      destination: calendar-<company where I work>.smos
