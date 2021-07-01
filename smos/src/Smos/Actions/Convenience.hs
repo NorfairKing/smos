@@ -86,7 +86,8 @@ convRepinged =
                           { stateHistoryEntryNewState = entryState e,
                             stateHistoryEntryTimestamp = now
                           }
-                      ]
+                      ],
+                  entryLogbook = emptyLogbook
                 }
             f6 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
             f7 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
@@ -112,7 +113,8 @@ convRespondedButStillWaiting =
                           { stateHistoryEntryNewState = entryState e,
                             stateHistoryEntryTimestamp = now
                           }
-                      ]
+                      ],
+                  entryLogbook = emptyLogbook
                 }
             f3 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
             f4 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
