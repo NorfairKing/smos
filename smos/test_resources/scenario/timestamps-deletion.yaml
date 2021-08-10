@@ -2,9 +2,27 @@ before:
 - example1
 commands:
 - timestampsSelect_SCHEDULED
+- timestampsInsert 2
+- timestampsInsert 0
+- timestampsInsert 2
 - timestampsInsert 1
+- timestampsInsert -
+- timestampsInsert 0
+- timestampsInsert 8
+- timestampsInsert -
+- timestampsInsert 1
+- timestampsInsert 0
 - entrySelectWhole
 - timestampsSelect_DEADLINE
+- timestampsInsert 2
+- timestampsInsert 0
+- timestampsInsert 2
+- timestampsInsert 1
+- timestampsInsert -
+- timestampsInsert 0
+- timestampsInsert 8
+- timestampsInsert -
+- timestampsInsert 1
 - timestampsInsert 1
 - entrySelectWhole
 - timestampsSelect_SCHEDULED
@@ -22,4 +40,4 @@ commands:
 after:
 - header: example1
   timestamps:
-    DEADLINE: 2021-07-01
+    DEADLINE: 2021-08-11
