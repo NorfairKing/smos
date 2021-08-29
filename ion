@@ -1,0 +1,112 @@
+[1mdiff --git a/smos-api-gen/test_resources/api-version/output.json b/smos-api-gen/test_resources/api-version/output.json[m
+[1mindex f89ace05..dc19bc2b 100644[m
+[1m--- a/smos-api-gen/test_resources/api-version/output.json[m
+[1m+++ b/smos-api-gen/test_resources/api-version/output.json[m
+[36m@@ -1 +1 @@[m
+[31m-"0.2.0"[m
+\ No newline at end of file[m
+[32m+[m[32m"0.2.1"[m
+\ No newline at end of file[m
+[1mdiff --git a/smos-docs-site/content/changelogs/2021-06-26.markdown b/smos-docs-site/content/changelogs/2021-06-26.markdown[m
+[1mindex 6a7daceb..97adf663 100644[m
+[1m--- a/smos-docs-site/content/changelogs/2021-06-26.markdown[m
+[1m+++ b/smos-docs-site/content/changelogs/2021-06-26.markdown[m
+[36m@@ -23,8 +23,6 @@[m
+   Timestamps can now be deleted using the `timestampsDelete` and `timestampsRemove` actions.[m
+ - `smos-notify`:[m
+   `smos-notify` will no longer send a notification about timestamps that don't have a time component.[m
+[31m-- `smos-scheduler`:[m
+[31m-  The `next` command will now print times in local time instead of UCT time. Relative times were already correct.[m
+ - `nixos-module.nix`:[m
+   The `config` attribute will now override other attributes.[m
+ - `smos-server`:[m
+[1mdiff --git a/smos-docs-site/content/pages/installation/stack.markdown b/smos-docs-site/content/pages/installation/stack.markdown[m
+[1mindex 1143eba5..e582484b 100644[m
+[1m--- a/smos-docs-site/content/pages/installation/stack.markdown[m
+[1m+++ b/smos-docs-site/content/pages/installation/stack.markdown[m
+[36m@@ -47,8 +47,7 @@[m [mstack install[m
+ [m
+ ```[m
+ /home/user/src/smos/stripe-api/stripe-client/: getDirectoryContents:openDirStream: does not exist (No such file or directory)[m
+[31m-```'s api.[m
+[31m-This generated code is not committed to the repository.[m
+[32m+[m[32m```[m
+ [m
+ If you see the above error, you probably skipped the "Generate the stripe client" steps above.[m
+ This happens because we generate the stripe client based on the openapi3 spec for Stripe's api.[m
+[1mdiff --git a/smos-docs-site/content/unreleased.markdown b/smos-docs-site/content/unreleased.markdown[m
+[1mindex 8d1c8b69..80bc2f50 100644[m
+[1m--- a/smos-docs-site/content/unreleased.markdown[m
+[1m+++ b/smos-docs-site/content/unreleased.markdown[m
+[36m@@ -1 +1,8 @@[m
+[31m- [m
+[32m+[m
+[32m+[m
+[32m+[m[32m### Changed[m
+[32m+[m
+[32m+[m[32m- `smos`: Fixed that the `convRepinged` and `convRespondedButStillWaiting` convenience functions that duplicate an entry would also duplicate their logbook.[m
+[32m+[m[32m- Fixed that tests would fail after 2021-07-01.[m
+[41m+[m
+[41m+[m
+[1mdiff --git a/smos/src/Smos/Actions/Convenience.hs b/smos/src/Smos/Actions/Convenience.hs[m
+[1mindex 19f42b7b..a8f64389 100644[m
+[1m--- a/smos/src/Smos/Actions/Convenience.hs[m
+[1m+++ b/smos/src/Smos/Actions/Convenience.hs[m
+[36m@@ -86,7 +86,8 @@[m [mconvRepinged =[m
+                           { stateHistoryEntryNewState = entryState e,[m
+                             stateHistoryEntryTimestamp = now[m
+                           }[m
+[31m-                      ][m
+[32m+[m[32m                      ],[m
+[32m+[m[32m                  entryLogbook = emptyLogbook[m
+                 }[m
+             f6 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'[m
+             f7 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole[m
+[36m@@ -112,7 +113,8 @@[m [mconvRespondedButStillWaiting =[m
+                           { stateHistoryEntryNewState = entryState e,[m
+                             stateHistoryEntryTimestamp = now[m
+                           }[m
+[31m-                      ][m
+[32m+[m[32m                      ],[m
+[32m+[m[32m                  entryLogbook = emptyLogbook[m
+                 }[m
+             f3 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'[m
+             f4 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole[m
+[1mdiff --git a/smos/test_resources/scenario/timestamps-deletion.yaml b/smos/test_resources/scenario/timestamps-deletion.yaml[m
+[1mindex e4fb5daa..a23cf318 100644[m
+[1m--- a/smos/test_resources/scenario/timestamps-deletion.yaml[m
+[1m+++ b/smos/test_resources/scenario/timestamps-deletion.yaml[m
+[36m@@ -2,9 +2,27 @@[m [mbefore:[m
+ - example1[m
+ commands:[m
+ - timestampsSelect_SCHEDULED[m
+[32m+[m[32m- timestampsInsert 2[m
+[32m+[m[32m- timestampsInsert 0[m
+[32m+[m[32m- timestampsInsert 2[m
+ - timestampsInsert 1[m
+[32m+[m[32m- timestampsInsert -[m
+[32m+[m[32m- timestampsInsert 0[m
+[32m+[m[32m- timestampsInsert 8[m
+[32m+[m[32m- timestampsInsert -[m
+[32m+[m[32m- timestampsInsert 1[m
+[32m+[m[32m- timestampsInsert 0[m
+ - entrySelectWhole[m
+ - timestampsSelect_DEADLINE[m
+[32m+[m[32m- timestampsInsert 2[m
+[32m+[m[32m- timestampsInsert 0[m
+[32m+[m[32m- timestampsInsert 2[m
+[32m+[m[32m- timestampsInsert 1[m
+[32m+[m[32m- timestampsInsert -[m
+[32m+[m[32m- timestampsInsert 0[m
+[32m+[m[32m- timestampsInsert 8[m
+[32m+[m[32m- timestampsInsert -[m
+[32m+[m[32m- timestampsInsert 1[m
+ - timestampsInsert 1[m
+ - entrySelectWhole[m
+ - timestampsSelect_SCHEDULED[m
+[36m@@ -22,4 +40,4 @@[m [mcommands:[m
+ after:[m
+ - header: example1[m
+   timestamps:[m
+[31m-    DEADLINE: 2021-07-01[m
+[32m+[m[32m    DEADLINE: 2021-08-11[m
