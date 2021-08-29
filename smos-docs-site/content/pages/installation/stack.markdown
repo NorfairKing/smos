@@ -47,8 +47,7 @@ stack install
 
 ```
 /home/user/src/smos/stripe-api/stripe-client/: getDirectoryContents:openDirStream: does not exist (No such file or directory)
-```'s api.
-This generated code is not committed to the repository.
+```
 
 If you see the above error, you probably skipped the "Generate the stripe client" steps above.
 This happens because we generate the stripe client based on the openapi3 spec for Stripe's api.
