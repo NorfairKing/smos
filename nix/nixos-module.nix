@@ -238,6 +238,13 @@ in
                       example = "https://smos.online";
                       description = "The url that this web server is served from.";
                     };
+                  data-dir =
+                    mkOption {
+                      type = types.nullOr types.str;
+                      default = null;
+                      example = "/www/smos/production/web-server/web-server/";
+                      description = "The directory to store workflows during editing";
+                    };
                   log-level =
                     mkOption {
                       type = types.str;
