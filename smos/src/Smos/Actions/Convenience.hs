@@ -7,6 +7,7 @@ module Smos.Actions.Convenience
   ( allConveniencePlainActions,
     convDoneAndWaitForResponse,
     convRepinged,
+    convResponded,
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
     convArchiveFile,
@@ -15,7 +16,6 @@ module Smos.Actions.Convenience
   )
 where
 
-import Control.Category ((>>>))
 import Control.Monad.Catch
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
@@ -43,6 +43,7 @@ allConveniencePlainActions :: [Action]
 allConveniencePlainActions =
   [ convDoneAndWaitForResponse,
     convRepinged,
+    convResponded,
     convRespondedButStillWaiting,
     convNewEntryAndClockIn,
     convArchiveFile,
@@ -56,12 +57,15 @@ convDoneAndWaitForResponse =
     { actionName = "convDoneAndWaitForResponse",
       actionFunc = modifyFileCursorS $ \sfc -> do
         now <- liftIO getCurrentTime
-        let f1 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE"
-            f2 = smosFileCursorInsertEntryAfterAndSelectHeader
-            f3 = smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "for a response from " hc)
-            f4 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "WAITING"
-            f5 = smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtEnd
-        pure $ (f1 >>> f2 >>> f3 >>> f4 >>> f5) sfc,
+        let steps :: [SmosFileCursor -> SmosFileCursor]
+            steps =
+              [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "for a response from " hc),
+                smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "WAITING",
+                smosFileCursorSelectedEntryL %~ entryCursorSelectHeaderAtEnd
+              ]
+        pure $ applySteps steps sfc,
       actionDescription =
         "Mark the current task as 'Done', add a new entry called 'Waiting for a response from ' WAITINg entry with the header selected at the end."
     }
@@ -73,27 +77,49 @@ convRepinged =
       actionFunc = modifyFileCursorS $ \sfc -> do
         let e = rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
         now <- liftIO getCurrentTime
-        let f1 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE"
-            f2 = smosFileCursorInsertEntryAfterAndSelectHeader
-            f3 = smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Ping again" hc)
-            f4 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE"
-            f5 = smosFileCursorInsertEntryAfterAndSelectHeader
-            e' =
-              e
-                { entryStateHistory =
-                    StateHistory
-                      [ StateHistoryEntry
-                          { stateHistoryEntryNewState = entryState e,
-                            stateHistoryEntryTimestamp = now
-                          }
-                      ],
-                  entryLogbook = emptyLogbook
-                }
-            f6 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
-            f7 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
-        pure $ (f1 >>> f2 >>> f3 >>> f4 >>> f5 >>> f6 >>> f7) sfc,
+        let steps :: [SmosFileCursor -> SmosFileCursor]
+            steps =
+              [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Ping again" hc),
+                smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                let e' =
+                      e
+                        { entryStateHistory =
+                            StateHistory
+                              [ StateHistoryEntry
+                                  { stateHistoryEntryNewState = entryState e,
+                                    stateHistoryEntryTimestamp = now
+                                  }
+                              ],
+                          entryLogbook = emptyLogbook
+                        }
+                 in smosFileCursorSelectedEntryL .~ makeEntryCursor e',
+                smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
+              ]
+        pure $ applySteps steps sfc,
       actionDescription =
         "Mark the current task as 'done', add a new entry called 'Ping again' and add a new WAITING entry below that, that duplicates the original entry."
+    }
+
+convResponded :: Action
+convResponded =
+  Action
+    { actionName = "convResponded",
+      actionFunc = modifyFileCursorS $ \sfc -> do
+        now <- liftIO getCurrentTime
+        let steps :: [SmosFileCursor -> SmosFileCursor]
+            steps =
+              [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Respond" hc),
+                smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
+              ]
+        pure $ applySteps steps sfc,
+      actionDescription =
+        "Mark the current task as 'done' and add a done entry with 'Responded' below the original entry."
     }
 
 convRespondedButStillWaiting :: Action
@@ -103,24 +129,30 @@ convRespondedButStillWaiting =
       actionFunc = modifyFileCursorS $ \sfc -> do
         let e = rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
         now <- liftIO getCurrentTime
-        let f1 = smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE"
-            f2 = smosFileCursorInsertEntryAfterAndSelectHeader
-            e' =
-              e
-                { entryStateHistory =
-                    StateHistory
-                      [ StateHistoryEntry
-                          { stateHistoryEntryNewState = entryState e,
-                            stateHistoryEntryTimestamp = now
-                          }
-                      ],
-                  entryLogbook = emptyLogbook
-                }
-            f3 = smosFileCursorSelectedEntryL .~ makeEntryCursor e'
-            f4 = smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
-        pure $ (f1 >>> f2 >>> f3 >>> f4) sfc,
+        let steps :: [SmosFileCursor -> SmosFileCursor]
+            steps =
+              [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Respond" hc),
+                smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                let e' =
+                      e
+                        { entryStateHistory =
+                            StateHistory
+                              [ StateHistoryEntry
+                                  { stateHistoryEntryNewState = entryState e,
+                                    stateHistoryEntryTimestamp = now
+                                  }
+                              ],
+                          entryLogbook = emptyLogbook
+                        }
+                 in smosFileCursorSelectedEntryL .~ makeEntryCursor e',
+                smosFileCursorSelectedEntryL %~ entryCursorSelectWhole
+              ]
+        pure $ applySteps steps sfc,
       actionDescription =
-        "Mark the current task as 'done' and add a new entry below that duplicates the original entry."
+        "Mark the current task as 'done', add a done entry with 'Responded' below the orginal entry, and add a new entry below that duplicates the original entry."
     }
 
 convNewEntryAndClockIn :: Action
@@ -214,3 +246,8 @@ convCopyContentsToClipboard =
         pure ec,
       actionDescription = "Copy the contents of the selected entry to the system clipboard"
     }
+
+applySteps :: [a -> a] -> (a -> a)
+applySteps = \case
+  [] -> id
+  (f : fs) -> \a -> applySteps fs (f a)

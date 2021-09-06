@@ -32,7 +32,7 @@ spec =
       it "updates the server time" $ \senv ->
         forAllValid $ \path ->
           forAllValid $ \sf1 ->
-            forAllValid $ \sf2 -> withTestEnv senv $
+            forAllValid $ \sf2 -> runServerTestEnvM senv $
               withServerEnvNewUser $ \t -> do
                 NoContent <- serverEnvClientOrErr $ clientPutSmosFile t path sf1
                 NoContent <- serverEnvClientOrErr $ clientPutSmosFile t path sf2

@@ -150,11 +150,12 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: caeb25405f15098bb657a75b5f6801229525657d
+  commit: a230bf791b0bced918092bbc9c3b54608b2a3a48
   subdirs:
     - sydtest
     - sydtest-aeson
     - sydtest-discover
+    - sydtest-persistent
     - sydtest-persistent-sqlite
     - sydtest-servant
     - sydtest-wai

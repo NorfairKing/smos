@@ -1,0 +1,22 @@
+before:
+- header: hello
+  state-history:
+  - state: WAITING
+    time: 2020-05-27 09:09:55.981061060000
+commands:
+- convRespondedButStillWaiting
+after:
+- header: hello
+  state-history:
+  - state: DONE
+    time: 2020-05-27 09:09:55.981061060000
+  - state: WAITING
+    time: 2020-05-27 09:09:55.981061060000
+- header: Respond
+  state-history:
+  - state: DONE
+    time: 2020-05-27 09:09:55.981061060000
+- header: hello
+  state-history:
+  - state: WAITING
+    time: 2020-05-27 09:09:55.981061060000

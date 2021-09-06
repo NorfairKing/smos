@@ -28,8 +28,6 @@ pkgs.haskell.lib.buildStackProject {
 
     function nix-build_ {
       nix-build \
-        --option extra-substituters https://iohk.cachix.org \
-        --option trusted-public-keys iohk.cachix.org-1:DpRUyj7h7V830dp/i6Nti+NEO2/nhblbov/8MW7Rqoo= \
         --option extra-substituters https://validity.cachix.org \
         --option trusted-public-keys validity.cachix.org-1:CqZp6vt9ir3yB5f8GAtfkJxPZG8hKC5fhIdaQsf7eZE= \
         --option extra-substituters https://dirforest.cachix.org \
