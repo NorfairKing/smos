@@ -56,6 +56,7 @@ in
               "--ghc-options=-Wcpp-undef"
               "--ghc-options=-Wcompat"
               "--ghc-options=-Wno-compat-unqualified-imports"
+              "--ghc-options=-Wno-unused-record-wildcards"
             ];
             # Whatever is necessary for a static build.
             configureFlags = (old.configureFlags or [ ]) ++ optionals static [
@@ -274,13 +275,6 @@ in
       "smos-single" = smosPkgWithOwnComp "smos-single";
       "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
       "smos-archive" = smosPkgWithOwnComp "smos-archive";
-      "smos-api" = smosPkg "smos-api";
-      "smos-api-gen" = smosPkg "smos-api-gen";
-      "smos-server" = smosPkgWithOwnComp "smos-server";
-      "smos-server-gen" = smosPkg "smos-server-gen";
-      "smos-client" = smosPkg "smos-client";
-      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-shell" = smosPkg "smos-shell";
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
@@ -291,6 +285,14 @@ in
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
       # smos-calendar-import is broken for me at the moment
       "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
+      # some more packages that are broken, probably the nixpkgs upgrade
+      "smos-api" = smosPkg "smos-api";
+      "smos-api-gen" = smosPkg "smos-api-gen";
+      "smos-server" = smosPkgWithOwnComp "smos-server";
+      "smos-server-gen" = smosPkg "smos-server-gen";
+      "smos-client" = smosPkg "smos-client";
+      "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
+      "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       inherit smos-web-server;
       inherit smos-docs-site;
     };
@@ -381,6 +383,7 @@ in
                   servantAuthPkg;
               in
               servantAuthPackages // {
+                mergeful-persistent = overrideCabal super.mergeful-persistent { doCheck = false; };
                 zip =
                     (
                     let super_zip =
