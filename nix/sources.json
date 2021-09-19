@@ -192,28 +192,20 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "branch": "nixos-20.09",
+        "branch": "release-21.05",
         "description": "Nix Packages collection",
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f34eb300b68ea66ef8a2dbc5eec3c86a8270e414",
-        "sha256": "1i6d8jksw5i3jvsbjfjh5xag02sb63ch4bwzshgxrvwf7k5dan3g",
+        "rev": "d7789bdd9f2cc4d8b26ae4f47902fae5a650cac1",
+        "sha256": "19bxphnyrk73jmz0l2r43qc8dv66l44p2qv56aapb3b3fr4f1hfd",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/f34eb300b68ea66ef8a2dbc5eec3c86a8270e414.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/d7789bdd9f2cc4d8b26ae4f47902fae5a650cac1.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "openapi-code-generator": {
-        "branch": "master",
-        "description": "Generate Haskell client code from an OpenAPI 3 specification",
-        "homepage": "",
-        "owner": "Haskell-OpenAPI-Code-Generator",
-        "repo": "Haskell-OpenAPI-Client-Code-Generator",
-        "rev": "46a937a19c5dd2d5e3b8afaea063a1e17cfc9ff2",
-        "sha256": "1xi3m89d9wn5yhsfgricznrl6p0gi9j38zdnv2dyhd6z7vcq0jbi",
-        "type": "tarball",
-        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/46a937a19c5dd2d5e3b8afaea063a1e17cfc9ff2.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+        "path": "/Users/jeromebaum/scratch/smos/../Haskell-OpenAPI-Client-Code-Generator",
+        "type": "local"
     },
     "pretty-relative-time": {
         "branch": "master",

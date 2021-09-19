@@ -55,6 +55,7 @@ in
               "--ghc-options=-Wredundant-constraints"
               "--ghc-options=-Wcpp-undef"
               "--ghc-options=-Wcompat"
+              "--ghc-options=-Wno-compat-unqualified-imports"
             ];
             # Whatever is necessary for a static build.
             configureFlags = (old.configureFlags or [ ]) ++ optionals static [
@@ -273,7 +274,6 @@ in
       "smos-single" = smosPkgWithOwnComp "smos-single";
       "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
       "smos-archive" = smosPkgWithOwnComp "smos-archive";
-      "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
       "smos-api" = smosPkg "smos-api";
       "smos-api-gen" = smosPkg "smos-api-gen";
       "smos-server" = smosPkgWithOwnComp "smos-server";
@@ -289,6 +289,8 @@ in
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
+      # smos-calendar-import is broken for me at the moment
+      "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
       inherit smos-web-server;
       inherit smos-docs-site;
     };
@@ -368,7 +370,7 @@ in
                   url = "https://github.com/haskell-servant/servant-auth";
                   rev = "296de3cb69135f83f0f01169fc10f8b3a2539405";
                 };
-                servantAuthPkg = name: self.callCabal2nix name (servantAuthRepo + "/${name}") { };
+                servantAuthPkg = name: dontCheck (self.callCabal2nix name (servantAuthRepo + "/${name}") { });
                 servantAuthPackages = genAttrs [
                   "servant-auth"
                   "servant-auth-client"
@@ -379,7 +381,17 @@ in
                   servantAuthPkg;
               in
               servantAuthPackages // {
-                zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
+                zip =
+                    (
+                    let super_zip =
+                    self.callHackageDirect {
+                      pkg = "zip";
+                      ver = "1.7.1";
+                      sha256 = "sha256:162ghfi8nvpvi6q8jav9zc5wjvxmf58kglbygr01pm75lyq59w8l";
+                    } {};
+                    in
+                    dontCheck (enableCabalFlag super_zip "disable-bzip2")
+                    );
                 password = passwordPkg "password";
                 password-types = passwordPkg "password-types";
                 password-instances = passwordPkg "password-instances";
@@ -391,16 +403,22 @@ in
                     }
                   )
                   { };
-                vty = dontCheck (
-                  self.callCabal2nix "vty"
-                    (
-                      builtins.fetchGit {
-                        url = "https://github.com/jtdaugherty/vty";
-                        rev = "6a9c90da0e093cec1d4903924eb0f6a33be489cb";
-                      }
-                    )
-                    { }
-                );
+                # vty = dontCheck (
+                #   self.callCabal2nix "vty"
+                #     (
+                #       builtins.fetchGit {
+                #         url = "https://github.com/jtdaugherty/vty";
+                #         rev = "6a9c90da0e093cec1d4903924eb0f6a33be489cb";
+                #       }
+                #     )
+                #     { }
+                # );
+                # vty = self.callHackageDirect {
+                #   pkg = "vty";
+                #   ver = "5.33";
+                #   sha256 = "sha256:1x9bprikrgj386cwrhgx563j9plw9ap7akg7iqvlnhsfgrvypr0k";
+                # } {};
+                # vty = self.callHackage "vty" "5.33" {};
                 ormode-parse = self.callCabal2nix "orgmode-parse"
                   (
                     builtins.fetchGit {
@@ -426,7 +444,11 @@ in
                   )
                   { };
                 yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
-                terminfo = self.callHackage "terminfo" "0.4.1.4" { };
+                terminfo = self.callHackageDirect {
+                  pkg = "terminfo";
+                  ver = "0.4.1.5";
+                  sha256 = "sha256:18a0aksk3x9akxz1jf0g2k9nx4i4ij5bdzq1qn0qj56i86qg4chr";
+                } {};
                 envparse = self.callHackage "envparse" "0.4.1" { };
                 persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
                 # These are turned off for the same reason as the local packages tests
