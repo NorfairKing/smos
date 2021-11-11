@@ -13,6 +13,8 @@ library:
   dependencies:
   - aeson
   - aeson-pretty
+  - autodocodec
+  - autodocodec-yaml
   - base
   - bytestring
   - containers
@@ -30,4 +32,3 @@ library:
   - validity-text
   - validity-time
   - yaml
-  - yamlparse-applicative

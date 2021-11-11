@@ -48,6 +48,7 @@ test-suite smos-data-test
       Smos.Data.EncodingSpec
       Smos.Data.FormatSpec
       Smos.Data.GoldenSpec
+      Smos.Data.SchemaSpec
       Smos.Data.TypesSpec
       Smos.DataSpec
       Paths_smos_data_gen
@@ -59,6 +60,8 @@ test-suite smos-data-test
   build-depends:
       QuickCheck
     , aeson
+    , autodocodec
+    , autodocodec-yaml
     , base >=4.9 && <=5
     , bytestring
     , containers

@@ -70,6 +70,7 @@ library
   build-depends:
       aeson
     , aeson-pretty
+    , autodocodec
     , base
     , bytestring
     , conduit
@@ -109,7 +110,6 @@ library
     , wai-extra
     , warp
     , yaml
-    , yamlparse-applicative
     , zip
     , zstd
   default-language: Haskell2010

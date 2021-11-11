@@ -43,6 +43,7 @@ library
   build-depends:
       aeson
     , aeson-pretty
+    , autodocodec
     , base
     , bytestring
     , containers
@@ -82,7 +83,6 @@ library
     , validity-path
     , validity-uuid
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010
 
 executable smos-sync-client

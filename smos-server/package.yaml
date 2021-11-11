@@ -55,7 +55,7 @@ library:
   - wai-extra
   - warp
   - yaml
-  - yamlparse-applicative
+  - autodocodec
   - zip
   - zstd
 

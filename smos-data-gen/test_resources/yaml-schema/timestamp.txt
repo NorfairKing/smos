@@ -1,0 +1,5 @@
+[ # %F
+  [33m<string>[m
+, # %F %T%Q
+  [33m<string>[m
+]

@@ -120,6 +120,7 @@ library
   build-depends:
       aeson
     , async
+    , autodocodec
     , base
     , brick
     , bytestring
@@ -164,7 +165,6 @@ library
     , validity-unordered-containers
     , vty
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010
 
 executable smos
@@ -208,6 +208,7 @@ test-suite smos-test
       QuickCheck
     , aeson
     , async
+    , autodocodec
     , base
     , brick
     , bytestring
@@ -246,5 +247,4 @@ test-suite smos-test
     , validity
     , vty
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010

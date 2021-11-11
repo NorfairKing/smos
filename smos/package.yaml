@@ -60,7 +60,7 @@ library:
   - validity-unordered-containers
   - vty
   - yaml
-  - yamlparse-applicative
+  - autodocodec
 
 executables:
   smos:
@@ -128,4 +128,4 @@ tests:
     - validity
     - vty
     - yaml
-    - yamlparse-applicative
+    - autodocodec

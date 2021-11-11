@@ -35,4 +35,4 @@ library:
   - validity-path
   - validity-time
   - yaml
-  - yamlparse-applicative
+  - autodocodec

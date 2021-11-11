@@ -27,7 +27,7 @@ library:
     - smos-report
     - time
     - validity
-    - yamlparse-applicative
+    - autodocodec
 
 executables:
   smos-archive:

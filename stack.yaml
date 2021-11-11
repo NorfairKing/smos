@@ -1,5 +1,8 @@
 resolver: lts-16.12
 packages:
+- /home/syd/src/autodocodec/autodocodec
+- /home/syd/src/autodocodec/autodocodec-yaml
+- /home/syd/src/autodocodec/autodocodec-schema
 
 - smos
 - smos-data
@@ -135,10 +138,18 @@ extra-deps:
     - cursor
     - cursor-gen
 
+      # - github: NorfairKing/autodocodec
+      #   commit: 46be3a83290d803c18779292903908d77e4af612
+      #   subdirs:
+      #     - autodocodec
+      #     - autodocodec-yaml
+      #     - autodocodec-schema
+
 - github: NorfairKing/yamlparse-applicative
   commit: 0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb
   subdirs:
   - yamlparse-applicative
+ 
 
 - github: NorfairKing/safe-coloured-text
   commit: d840dd7b0f13f4d0fd693c1dd93be33f9ee94605

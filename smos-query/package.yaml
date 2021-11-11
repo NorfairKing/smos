@@ -36,7 +36,7 @@ library:
   - validity
   - validity-path
   - yaml
-  - yamlparse-applicative
+  - autodocodec
 
 executables:
   smos-query:

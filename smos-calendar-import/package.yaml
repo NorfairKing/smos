@@ -40,7 +40,7 @@ library:
     - validity-text
     - validity-time
     - yaml
-    - yamlparse-applicative
+    - autodocodec
 
 executables:
   smos-calendar-import:
@@ -83,4 +83,4 @@ tests:
     - text
     - time
     - yaml
-    - yamlparse-applicative
+    - autodocodec

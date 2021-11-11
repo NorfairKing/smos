@@ -42,7 +42,7 @@ library:
     - validity
     - validity-text
     - yaml
-    - yamlparse-applicative
+    - autodocodec
 
 executables:
   smos-scheduler:
@@ -89,4 +89,4 @@ tests:
     - text
     - time
     - yaml
-    - yamlparse-applicative
+    - autodocodec

@@ -52,6 +52,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
+    , autodocodec
     , base
     , conduit
     , containers
@@ -72,5 +73,4 @@ library
     , validity-path
     , validity-time
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010

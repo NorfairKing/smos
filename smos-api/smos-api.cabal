@@ -28,6 +28,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
+    , autodocodec
     , base
     , base64-bytestring
     , bytestring
@@ -59,5 +60,4 @@ library
     , validity-path
     , validity-text
     , validity-uuid
-    , yamlparse-applicative
   default-language: Haskell2010

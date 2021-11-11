@@ -107,10 +107,6 @@ spec = do
   ordSpecOnValid @Entry
   genValidSpec @Entry
   jsonSpecOnValid @Entry
-  genValidSpec @(ForYaml (Tree Entry))
-  jsonSpecOnValid @(ForYaml (Tree Entry))
-  genValidSpec @(ForYaml (Forest Entry))
-  jsonSpecOnValid @(ForYaml (Forest Entry))
   genValidSpec @SmosFile
   ordSpecOnValid @SmosFile
   jsonSpecOnValid @SmosFile

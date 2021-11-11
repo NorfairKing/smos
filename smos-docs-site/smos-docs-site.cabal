@@ -172,6 +172,7 @@ library
   build-depends:
       aeson
     , aeson-pretty
+    , autodocodec
     , base >=4.7
     , bytestring
     , cmark-gfm
@@ -211,7 +212,6 @@ library
     , wai-extra
     , warp
     , yaml
-    , yamlparse-applicative
     , yesod
     , yesod-autoreload
     , yesod-sitemap

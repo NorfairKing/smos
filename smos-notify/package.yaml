@@ -37,7 +37,7 @@ library:
     - smos-report
     - text
     - time
-    - yamlparse-applicative
+    - autodocodec
 
 executables:
   smos-notify:

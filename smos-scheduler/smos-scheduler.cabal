@@ -38,6 +38,7 @@ library
       autoexporter:autoexporter
   build-depends:
       aeson
+    , autodocodec
     , base
     , bytestring
     , containers
@@ -63,7 +64,6 @@ library
     , validity
     , validity-text
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010
 
 executable smos-scheduler
@@ -97,6 +97,7 @@ test-suite smos-scheduler-test
       sydtest-discover:sydtest-discover
   build-depends:
       QuickCheck
+    , autodocodec
     , base
     , cron
     , genvalidity
@@ -119,5 +120,4 @@ test-suite smos-scheduler-test
     , text
     , time
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010

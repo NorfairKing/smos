@@ -48,6 +48,7 @@ library
   build-depends:
       aeson
     , aeson-pretty
+    , autodocodec
     , base
     , bytestring
     , conduit
@@ -68,7 +69,6 @@ library
     , validity
     , validity-path
     , yaml
-    , yamlparse-applicative
   default-language: Haskell2010
 
 executable smos-query

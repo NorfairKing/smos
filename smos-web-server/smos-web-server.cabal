@@ -88,6 +88,7 @@ library
       autoexporter:autoexporter
   build-depends:
       aeson
+    , autodocodec
     , base
     , base16-bytestring
     , bytestring
@@ -127,7 +128,6 @@ library
     , wai-extra
     , warp
     , yaml
-    , yamlparse-applicative
     , yesod
     , yesod-auth
     , yesod-autoreload

@@ -42,6 +42,8 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
+    - autodocodec
+    - autodocodec-yaml
     - bytestring
     - containers
     - filepath

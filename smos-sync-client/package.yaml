@@ -55,7 +55,7 @@ library:
   - validity-path
   - validity-uuid
   - yaml
-  - yamlparse-applicative
+  - autodocodec
 
 executables:
   smos-sync-client:

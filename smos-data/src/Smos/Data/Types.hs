@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -74,31 +75,36 @@ module Smos.Data.Types
     timestampText,
     timestampPrettyString,
     timestampPrettyText,
-    daySchema,
+    dayCodec,
     timestampDayFormat,
-    localTimeSchema,
+    localTimeCodec,
     timestampLocalTimeFormat,
     timestampLocalTimePrettyFormat,
     parseTimestampString,
     parseTimestampText,
     timestampDay,
     timestampLocalTime,
-    -- Utils
-    ForYaml (..),
-    utcFormat,
-    utcSchema,
+    utctimeFormat,
+    utctimeCodec,
     getLocalTime,
   )
 where
 
+import Autodocodec
+import Autodocodec.Yaml
 import Control.Applicative
 import Control.Arrow
 import Control.DeepSeq
-import Data.Aeson as JSON hiding ((<?>))
+import Control.Monad
+import Data.Aeson (FromJSON (..), FromJSONKey (..), ToJSON (..), ToJSONKey (..))
+import qualified Data.Aeson as JSON
+import Data.Aeson.Types (toJSONKeyText)
 import Data.Char as Char
 import Data.Function
 import Data.Functor.Classes (Ord1 (..))
 import Data.List
+import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -120,7 +126,6 @@ import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Path
-import YamlParse.Applicative
 
 oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
@@ -134,51 +139,41 @@ newestParsableDataVersion = version 1 0 0 [] []
 instance Validity Version where
   validate = trivialValidation
 
-instance FromJSON Version where
-  parseJSON = withText "Version" $ \t ->
-    case Version.fromText t of
-      Left err -> fail err
-      Right v -> pure v
-
 instance ToJSON Version where
-  toJSON = toJSON . Version.toText
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
+
+instance FromJSON Version where
+  parseJSON = parseJSONViaCodec
 
 instance ToYaml Version where
-  toYaml = toYaml . Version.toText
+  toYaml = toYamlViaCodec
+
+instance HasCodec Version where
+  codec = bimapCodec Version.fromText Version.toText codec
 
 -- | A versioned value
 data Versioned a = Versioned
   { versionedVersion :: !Version,
     versionedValue :: !a
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec (Versioned a))
 
 instance Validity a => Validity (Versioned a)
 
-instance FromJSON a => FromJSON (Versioned a) where
-  parseJSON = withObject "Versioned" $ \o ->
-    Versioned
-      <$> o .: "version"
-      <*> o .: "value"
-
-instance ToJSON a => ToJSON (Versioned a) where
-  toJSON Versioned {..} =
-    object
-      [ "version" .= versionedVersion,
-        "value" .= versionedValue
-      ]
-
-instance ToYaml a => ToYaml (Versioned a) where
-  toYaml Versioned {..} =
-    Yaml.mapping
-      [ ("version", toYaml versionedVersion),
-        ("value", toYaml versionedValue)
-      ]
+instance HasCodec a => HasCodec (Versioned a) where
+  codec =
+    object "Versioned" $
+      Versioned
+        <$> requiredField "version" "version" .= versionedVersion
+        <*> requiredField "value" "versioned value" .= versionedValue
 
 newtype SmosFile = SmosFile
   { smosFileForest :: Forest Entry
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON, ToYaml) via (Autodocodec SmosFile)
 
 instance Ord SmosFile where
   compare = liftCompare (liftCompare compare) `on` smosFileForest
@@ -187,86 +182,71 @@ instance Validity SmosFile
 
 instance NFData SmosFile
 
-instance ToJSON SmosFile where
-  toJSON SmosFile {..} = toJSON (ForYaml smosFileForest)
+instance HasCodec SmosFile where
+  codec = dimapCodec SmosFile smosFileForest entryForestCodec
 
-instance ToYaml SmosFile where
-  toYaml SmosFile {..} = toYaml (ForYaml smosFileForest)
+entryTreeCodec :: JSONCodec (Tree Entry)
+entryTreeCodec =
+  named "Tree Entry" $
+    object "Tree Entry" $
+      Node
+        <$> requiredField "entry" "root entry" .= rootLabel
+        <*> optionalFieldWithDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
 
-instance FromJSON SmosFile where
-  parseJSON v = SmosFile . unForYaml <$> parseJSON v
+entryForestCodec :: JSONCodec (Forest Entry)
+entryForestCodec = named "Forest Entry" $ listCodec entryTreeCodec
 
-newtype ForYaml a = ForYaml
-  { unForYaml :: a
-  }
-  deriving (Show, Eq, Ord, Generic)
+-- instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
+--   parseJSON v = do
+--     els <- parseJSON v
+--     ts <- mapM (fmap unForYaml . parseJSON) els
+--     pure $ ForYaml ts
+--
+-- instance ToJSON (ForYaml (Tree a)) => ToJSON (ForYaml (Forest a)) where
+--   toJSON = toJSON . map ForYaml . unForYaml
+--
+-- instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
+--   toYaml = toYaml . map ForYaml . unForYaml
+--
+-- instance FromJSON (ForYaml (Tree Entry)) where
+--   parseJSON v =
+--     fmap ForYaml $
+--       case v of
+--         Object o -> do
+--           mv <- o .:? "entry"
+--           -- This marks that we want to be trying to parse a tree and NOT an entry.
+--           -- We force the parser to make a decision this way.
+--           case mv :: Maybe Value of
+--             Nothing -> Node <$> parseJSON v <*> pure []
+--             Just _ ->
+--               ( withObject "Tree Entry" $ \o' ->
+--                   Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml [])
+--               )
+--                 v
+--         _ -> Node <$> parseJSON v <*> pure []
+--
+-- instance ToJSON (ForYaml (Tree Entry)) where
+--   toJSON (ForYaml Node {..}) =
+--     if null subForest
+--       then toJSON rootLabel
+--       else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
+--
+-- instance ToYaml (ForYaml (Tree Entry)) where
+--   toYaml (ForYaml Node {..}) =
+--     if null subForest
+--       then toYaml rootLabel
+--       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
-instance Validity a => Validity (ForYaml a)
+utctimeFormat :: String
+utctimeFormat = "%F %H:%M:%S.%q"
 
-instance NFData a => NFData (ForYaml a)
-
-instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
-  parseJSON v = do
-    els <- parseJSON v
-    ts <- mapM (fmap unForYaml . parseJSON) els
-    pure $ ForYaml ts
-
-instance ToJSON (ForYaml (Tree a)) => ToJSON (ForYaml (Forest a)) where
-  toJSON = toJSON . map ForYaml . unForYaml
-
-instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
-  toYaml = toYaml . map ForYaml . unForYaml
-
-instance FromJSON (ForYaml (Tree Entry)) where
-  parseJSON v =
-    fmap ForYaml $
-      case v of
-        Object o -> do
-          mv <- o .:? "entry"
-          -- This marks that we want to be trying to parse a tree and NOT an entry.
-          -- We force the parser to make a decision this way.
-          case mv :: Maybe Value of
-            Nothing -> Node <$> parseJSON v <*> pure []
-            Just _ ->
-              ( withObject "Tree Entry" $ \o' ->
-                  Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml [])
-              )
-                v
-        _ -> Node <$> parseJSON v <*> pure []
-
-instance ToJSON (ForYaml (Tree Entry)) where
-  toJSON (ForYaml Node {..}) =
-    if null subForest
-      then toJSON rootLabel
-      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
-
-instance ToYaml (ForYaml (Tree Entry)) where
-  toYaml (ForYaml Node {..}) =
-    if null subForest
-      then toYaml rootLabel
-      else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
-
-instance ToJSON (ForYaml UTCTime) where
-  toJSON (ForYaml u) = toJSON $ formatTime defaultTimeLocale utcFormat u
-
-instance ToYaml (ForYaml UTCTime) where
-  toYaml (ForYaml u) = Yaml.string $ T.pack $ formatTime defaultTimeLocale utcFormat u
-
-instance FromJSON (ForYaml UTCTime) where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema (ForYaml UTCTime) where
-  yamlSchema =
-    alternatives
-      [ ForYaml <$> maybeParser (parseTimeM True defaultTimeLocale utcFormat) yamlSchema <?> T.pack utcFormat,
-        ForYaml <$> extraParser parseJSON ParseAny <?> "Whatever the 'time' library wants to parse. (fallback)" -- Fall back on FromJSON
-      ]
-
-utcFormat :: String
-utcFormat = "%F %H:%M:%S.%q"
-
-utcSchema :: YamlParser UTCTime
-utcSchema = maybeParser (parseTimeM True defaultTimeLocale utcFormat) yamlSchema <?> T.pack utcFormat
+utctimeCodec :: JSONCodec UTCTime
+utctimeCodec =
+  bimapCodec
+    (parseTimeEither defaultTimeLocale utctimeFormat)
+    (formatTime defaultTimeLocale utctimeFormat)
+    codec
+    <?> T.pack utctimeFormat
 
 data Entry = Entry
   { entryHeader :: Header,
@@ -277,75 +257,89 @@ data Entry = Entry
     entryTags :: Set Tag, -- '@home', 'toast', etc.
     entryLogbook :: Logbook
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (ToJSON, FromJSON, ToYaml) via (Autodocodec Entry)
 
 instance Validity Entry
 
 instance NFData Entry
 
-instance ToJSON Entry where
-  toJSON Entry {..} =
-    if and
-      [ isNothing entryContents,
-        M.null entryTimestamps,
-        M.null entryProperties,
-        null $ unStateHistory entryStateHistory,
-        null entryTags,
-        entryLogbook == emptyLogbook
-      ]
-      then toJSON entryHeader
-      else
-        object $
-          ["header" .= entryHeader]
-            ++ ["contents" .= entryContents | isJust entryContents]
-            ++ ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps]
-            ++ ["properties" .= entryProperties | not $ M.null entryProperties]
-            ++ ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory]
-            ++ ["tags" .= entryTags | not $ null entryTags]
-            ++ ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
+instance HasCodec Entry where
+  codec =
+    -- TODO make golden test
+    object "Entry" $
+      Entry
+        <$> requiredField "header" "header" .= entryHeader
+        <*> requiredField "contents" "contents" .= entryContents
+        <*> requiredField "timestamps" "timestamps" .= entryTimestamps
+        <*> requiredField "properties" "properties" .= entryProperties
+        <*> requiredField "state-history" "state history" .= entryStateHistory
+        <*> requiredField "tags" "tags" .= entryTags
+        <*> requiredField "logbook" "logbook" .= entryLogbook
 
-instance ToYaml Entry where
-  toYaml Entry {..} =
-    if and
-      [ isNothing entryContents,
-        M.null entryTimestamps,
-        M.null entryProperties,
-        null $ unStateHistory entryStateHistory,
-        null entryTags,
-        entryLogbook == emptyLogbook
-      ]
-      then toYaml entryHeader
-      else
-        Yaml.mapping $
-          [("header", toYaml entryHeader)]
-            ++ [("contents", toYaml entryContents) | isJust entryContents]
-            ++ [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
-                 | not $ M.null entryTimestamps
-               ]
-            ++ [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
-                 | not $ M.null entryProperties
-               ]
-            ++ [ ("state-history", toYaml entryStateHistory)
-                 | not $ null $ unStateHistory entryStateHistory
-               ]
-            ++ [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags]
-            ++ [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
-
-instance FromJSON Entry where
-  parseJSON v =
-    ( do
-        h <- parseJSON v
-        pure $ newEntry h
-    )
-      <|> ( withObject "Entry" $ \o ->
-              Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
-                <*> o .:? "timestamps" .!= M.empty
-                <*> o .:? "properties" .!= M.empty
-                <*> o .:? "state-history" .!= StateHistory []
-                <*> o .:? "tags" .!= S.empty
-                <*> o .:? "logbook" .!= emptyLogbook
-          )
-        v
+-- instance ToJSON Entry where
+--   toJSON Entry {..} =
+--     if and
+--       [ isNothing entryContents,
+--         M.null entryTimestamps,
+--         M.null entryProperties,
+--         null $ unStateHistory entryStateHistory,
+--         null entryTags,
+--         entryLogbook == emptyLogbook
+--       ]
+--       then toJSON entryHeader
+--       else
+--         object $
+--           ["header" .= entryHeader]
+--             ++ ["contents" .= entryContents | isJust entryContents]
+--             ++ ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps]
+--             ++ ["properties" .= entryProperties | not $ M.null entryProperties]
+--             ++ ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory]
+--             ++ ["tags" .= entryTags | not $ null entryTags]
+--             ++ ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
+--
+-- instance ToYaml Entry where
+--   toYaml Entry {..} =
+--     if and
+--       [ isNothing entryContents,
+--         M.null entryTimestamps,
+--         M.null entryProperties,
+--         null $ unStateHistory entryStateHistory,
+--         null entryTags,
+--         entryLogbook == emptyLogbook
+--       ]
+--       then toYaml entryHeader
+--       else
+--         Yaml.mapping $
+--           [("header", toYaml entryHeader)]
+--             ++ [("contents", toYaml entryContents) | isJust entryContents]
+--             ++ [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
+--                  | not $ M.null entryTimestamps
+--                ]
+--             ++ [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
+--                  | not $ M.null entryProperties
+--                ]
+--             ++ [ ("state-history", toYaml entryStateHistory)
+--                  | not $ null $ unStateHistory entryStateHistory
+--                ]
+--             ++ [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags]
+--             ++ [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
+--
+-- instance FromJSON Entry where
+--   parseJSON v =
+--     ( do
+--         h <- parseJSON v
+--         pure $ newEntry h
+--     )
+--       <|> ( withObject "Entry" $ \o ->
+--               Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
+--                 <*> o .:? "timestamps" .!= M.empty
+--                 <*> o .:? "properties" .!= M.empty
+--                 <*> o .:? "state-history" .!= StateHistory []
+--                 <*> o .:? "tags" .!= S.empty
+--                 <*> o .:? "logbook" .!= emptyLogbook
+--           )
+--         v
 
 newEntry :: Header -> Entry
 newEntry h =
@@ -365,18 +359,17 @@ emptyEntry = newEntry emptyHeader
 newtype Header = Header
   { headerText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Header)
 
 instance Validity Header where
   validate (Header t) = mconcat [delve "headerText" t, decorateList (T.unpack t) validateHeaderChar]
 
 instance NFData Header
 
-instance FromJSON Header where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Header where
-  yamlSchema = maybeParser header yamlSchema
+instance HasCodec Header where
+  codec = bimapCodec parseHeader headerText codec
 
 emptyHeader :: Header
 emptyHeader = Header ""
@@ -400,7 +393,9 @@ validateHeaderChar c =
 newtype Contents = Contents
   { contentsText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
+  deriving (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Contents)
 
 instance Validity Contents where
   validate (Contents t) =
@@ -408,11 +403,8 @@ instance Validity Contents where
 
 instance NFData Contents
 
-instance FromJSON Contents where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Contents where
-  yamlSchema = maybeParser contents yamlSchema
+instance HasCodec Contents where
+  codec = bimapCodec parseContents contentsText codec
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -436,7 +428,9 @@ validateContentsChar c =
 newtype PropertyName = PropertyName
   { propertyNameText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
+  deriving (Show, Eq, Ord, Generic)
+  deriving newtype (IsString, ToJSONKey)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec PropertyName)
 
 instance Validity PropertyName where
   validate (PropertyName t) =
@@ -444,17 +438,11 @@ instance Validity PropertyName where
 
 instance NFData PropertyName
 
-instance FromJSON PropertyName where
-  parseJSON = withText "PropertyName" parseJSONPropertyName
-
 instance FromJSONKey PropertyName where
-  fromJSONKey = FromJSONKeyTextParser parseJSONPropertyName
+  fromJSONKey = JSON.FromJSONKeyTextParser parseJSONPropertyName
 
-instance YamlSchema PropertyName where
-  yamlSchema = extraParser parseJSONPropertyName yamlSchema
-
-instance YamlKeySchema PropertyName where
-  yamlKeySchema = extraParser parseJSONPropertyName yamlKeySchema
+instance HasCodec PropertyName where
+  codec = bimapCodec parsePropertyName propertyNameText codec
 
 parseJSONPropertyName :: MonadFail m => Text -> m PropertyName
 parseJSONPropertyName t =
@@ -480,7 +468,9 @@ validatePropertyNameChar = validateTagChar
 newtype PropertyValue = PropertyValue
   { propertyValueText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
+  deriving (Show, Eq, Ord, Generic)
+  deriving newtype (IsString, ToJSONKey)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec PropertyValue)
 
 instance Validity PropertyValue where
   validate (PropertyValue t) =
@@ -492,23 +482,8 @@ instance Validity PropertyValue where
 
 instance NFData PropertyValue
 
-instance FromJSON PropertyValue where
-  parseJSON = withText "PropertyValue" parseJSONPropertyValue
-
-instance FromJSONKey PropertyValue where
-  fromJSONKey = FromJSONKeyTextParser parseJSONPropertyValue
-
-instance YamlSchema PropertyValue where
-  yamlSchema = extraParser parseJSONPropertyValue yamlSchema
-
-instance YamlKeySchema PropertyValue where
-  yamlKeySchema = extraParser parseJSONPropertyValue yamlKeySchema
-
-parseJSONPropertyValue :: MonadFail m => Text -> m PropertyValue
-parseJSONPropertyValue t =
-  case propertyValue t of
-    Nothing -> fail $ "Invalid property value: " <> T.unpack t
-    Just h -> pure h
+instance HasCodec PropertyValue where
+  codec = bimapCodec parsePropertyValue propertyValueText codec
 
 emptyPropertyValue :: PropertyValue
 emptyPropertyValue = PropertyValue ""
@@ -525,7 +500,9 @@ validPropertyValueChar = validHeaderChar
 newtype TimestampName = TimestampName
   { timestampNameText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToJSONKey, ToYaml)
+  deriving (Show, Eq, Ord, Generic)
+  deriving newtype (IsString, ToJSONKey)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec TimestampName)
 
 instance Validity TimestampName where
   validate (TimestampName t) =
@@ -533,17 +510,11 @@ instance Validity TimestampName where
 
 instance NFData TimestampName
 
-instance FromJSON TimestampName where
-  parseJSON = withText "TimestampName" parseJSONTimestampName
-
 instance FromJSONKey TimestampName where
-  fromJSONKey = FromJSONKeyTextParser parseJSONTimestampName
+  fromJSONKey = JSON.FromJSONKeyTextParser parseJSONTimestampName
 
-instance YamlSchema TimestampName where
-  yamlSchema = extraParser parseJSONTimestampName yamlSchema
-
-instance YamlKeySchema TimestampName where
-  yamlKeySchema = extraParser parseJSONTimestampName yamlKeySchema
+instance HasCodec TimestampName where
+  codec = bimapCodec parseTimestampName timestampNameText codec
 
 parseJSONTimestampName :: MonadFail m => Text -> m TimestampName
 parseJSONTimestampName t =
@@ -570,35 +541,40 @@ data Timestamp
   = TimestampDay Day
   | TimestampLocalTime LocalTime
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Timestamp)
 
 instance Validity Timestamp
 
 instance NFData Timestamp
 
-instance ToJSON Timestamp where
-  toJSON = toJSON . timestampText
+instance HasCodec Timestamp where
+  codec = dimapCodec f g $ eitherCodec dayCodec localTimeCodec
+    where
+      f = \case
+        Left d -> TimestampDay d
+        Right lt -> TimestampLocalTime lt
+      g = \case
+        TimestampDay d -> Left d
+        TimestampLocalTime lt -> Right lt
 
-instance ToYaml Timestamp where
-  toYaml = toYaml . timestampText
-
-instance FromJSON Timestamp where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Timestamp where
-  yamlSchema =
-    alternatives
-      [ TimestampDay <$> daySchema,
-        TimestampLocalTime <$> localTimeSchema
-      ]
-
-daySchema :: YamlParser Day
-daySchema = maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat
+dayCodec :: JSONCodec Day
+dayCodec =
+  bimapCodec
+    (parseTimeEither defaultTimeLocale timestampDayFormat)
+    (formatTime defaultTimeLocale timestampDayFormat)
+    codec
+    <?> T.pack timestampDayFormat
 
 timestampDayFormat :: String
 timestampDayFormat = "%F"
 
-localTimeSchema :: YamlParser LocalTime
-localTimeSchema = maybeParser (parseTimeM True defaultTimeLocale timestampLocalTimeFormat) yamlSchema <?> T.pack timestampLocalTimeFormat
+localTimeCodec :: JSONCodec LocalTime
+localTimeCodec =
+  bimapCodec
+    (parseTimeEither defaultTimeLocale timestampLocalTimeFormat)
+    (formatTime defaultTimeLocale timestampLocalTimeFormat)
+    codec
+    <?> T.pack timestampLocalTimeFormat
 
 timestampLocalTimeFormat :: String
 timestampLocalTimeFormat = "%F %T%Q"
@@ -647,7 +623,9 @@ timestampLocalTime ts =
 newtype TodoState = TodoState
   { todoStateText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec TodoState)
 
 instance Validity TodoState where
   validate (TodoState t) =
@@ -655,11 +633,8 @@ instance Validity TodoState where
 
 instance NFData TodoState
 
-instance FromJSON TodoState where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema TodoState where
-  yamlSchema = eitherParser parseTodoState yamlSchema
+instance HasCodec TodoState where
+  codec = bimapCodec parseTodoState todoStateText codec
 
 todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
@@ -676,7 +651,8 @@ validateTodoStateChar = validateHeaderChar
 newtype StateHistory = StateHistory
   { unStateHistory :: [StateHistoryEntry]
   }
-  deriving (Show, Eq, Ord, Generic, ToJSON, ToYaml)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistory)
 
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
@@ -685,11 +661,8 @@ instance Validity StateHistory where
 
 instance NFData StateHistory
 
-instance FromJSON StateHistory where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema StateHistory where
-  yamlSchema = StateHistory <$> yamlSchema <?> "In reverse chronological order"
+instance HasCodec StateHistory where
+  codec = dimapCodec StateHistory unStateHistory codec <?> "In reverse chronological order"
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -701,7 +674,8 @@ data StateHistoryEntry = StateHistoryEntry
   { stateHistoryEntryNewState :: Maybe TodoState,
     stateHistoryEntryTimestamp :: UTCTime
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistoryEntry)
 
 instance Validity StateHistoryEntry
 
@@ -711,48 +685,39 @@ instance Ord StateHistoryEntry where
   compare =
     mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
 
-instance ToJSON StateHistoryEntry where
-  toJSON StateHistoryEntry {..} =
-    object ["state" .= stateHistoryEntryNewState, "time" .= ForYaml stateHistoryEntryTimestamp]
-
-instance ToYaml StateHistoryEntry where
-  toYaml StateHistoryEntry {..} =
-    Yaml.mapping
-      [ ("state", toYaml stateHistoryEntryNewState),
-        ("time", toYaml (ForYaml stateHistoryEntryTimestamp))
-      ]
-
-instance FromJSON StateHistoryEntry where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema StateHistoryEntry where
-  yamlSchema =
-    objectParser "StateHistoryEntry" $
+instance HasCodec StateHistoryEntry where
+  codec =
+    object "StateHistoryEntry" $
       StateHistoryEntry
-        <$> ( requiredField "state" "The new state"
-                <|> requiredField "new-state" "legacy key"
-            )
-        <*> ( unForYaml
-                <$> ( requiredField "time" "The time at which the change happened"
-                        <|> requiredField "timestamp" "legacy key"
-                    )
-            )
+        <$> requiredField "state" "new state" .= stateHistoryEntryNewState
+        <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+
+-- TODO backward compatibility?
+--     objectParser "StateHistoryEntry" $
+--       StateHistoryEntry
+--         <$> ( requiredField "state" "The new state"
+--                 <|> requiredField "new-state" "legacy key"
+--             )
+--         <*> ( unForYaml
+--                 <$> ( requiredField "time" "The time at which the change happened"
+--                         <|> requiredField "timestamp" "legacy key"
+--                     )
+--             )
 
 newtype Tag = Tag
   { tagText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, IsString, ToJSON, ToYaml)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Tag)
 
 instance Validity Tag where
   validate (Tag t) = mconcat [delve "tagText" t, decorateList (T.unpack t) validateTagChar]
 
 instance NFData Tag
 
-instance FromJSON Tag where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Tag where
-  yamlSchema = eitherParser parseTag yamlSchema
+instance HasCodec Tag where
+  codec = bimapCodec parseTag tagText codec
 
 emptyTag :: Tag
 emptyTag = Tag ""
@@ -777,7 +742,8 @@ validateTagChar c =
 data Logbook
   = LogOpen UTCTime [LogbookEntry]
   | LogClosed [LogbookEntry]
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Logbook)
 
 instance Validity Logbook where
   validate lo@(LogOpen utct lbes) =
@@ -810,33 +776,61 @@ conseqs (a : b : as) = (a, b) : conseqs (b : as)
 
 instance NFData Logbook
 
-instance ToJSON Logbook where
-  toJSON = toJSON . go
+instance HasCodec Logbook where
+  codec =
+    bimapCodec prettyValidate id $
+      bimapCodec f g (listCodec tupCodec)
+        <??> [ "Logbook entries, in reverse chronological order.",
+               "Only the first element of this list has an optional 'end'."
+             ]
     where
-      go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
-      go (LogClosed rest) = map toJSON rest
+      tupCodec :: JSONCodec (UTCTime, Maybe UTCTime)
+      tupCodec =
+        object "LogbookEntry" $
+          (,)
+            <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= fst
+            <*> optionalFieldWith "end" utctimeCodec "end of the logbook entry" .= snd
+      f es = case NE.nonEmpty es of
+        Nothing -> Right $ LogClosed []
+        Just ((start, mEnd) :| rest) -> do
+          let firstFunc = case mEnd of
+                Nothing -> LogOpen start
+                Just end -> LogClosed . ((LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}) :)
+          es <- forM rest $ \(start, mEnd) -> case mEnd of
+            Nothing -> Left "Missing 'end' in logbook."
+            Just end -> Right $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+          pure $ firstFunc es
+      g = \case
+        LogOpen start es -> (start, Nothing) : map (\LogbookEntry {..} -> (logbookEntryStart, Just logbookEntryEnd)) es
+        LogClosed es -> map (\LogbookEntry {..} -> (logbookEntryStart, Just logbookEntryEnd)) es
 
-instance ToYaml Logbook where
-  toYaml = toYaml . go
-    where
-      go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
-      go (LogClosed rest) = map toYaml rest
-
-instance FromJSON Logbook where
-  parseJSON v = parseJSONValid $ do
-    els <- parseJSON v
-    case els of
-      [] -> pure $ LogClosed []
-      (e : es) -> do
-        (start, mend) <-
-          withObject
-            "First logbook entry"
-            (\o -> (,) <$> (unForYaml <$> o .: "start") <*> (fmap unForYaml <$> o .:? "end"))
-            e
-        rest <- mapM parseJSON es
-        pure $ case mend of
-          Nothing -> LogOpen start rest
-          Just end -> LogClosed $ LogbookEntry start end : rest
+-- instance ToJSON Logbook where
+--   toJSON = toJSON . go
+--     where
+--       go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
+--       go (LogClosed rest) = map toJSON rest
+--
+-- instance ToYaml Logbook where
+--   toYaml = toYaml . go
+--     where
+--       go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
+--       go (LogClosed rest) = map toYaml rest
+--
+-- instance FromJSON Logbook where
+--   parseJSON v = parseJSONValid $ do
+--     els <- parseJSON v
+--     case els of
+--       [] -> pure $ LogClosed []
+--       (e : es) -> do
+--         (start, mend) <-
+--           withObject
+--             "First logbook entry"
+--             (\o -> (,) <$> (unForYaml <$> o .: "start") <*> (fmap unForYaml <$> o .:? "end"))
+--             e
+--         rest <- mapM parseJSON es
+--         pure $ case mend of
+--           Nothing -> LogOpen start rest
+--           Just end -> LogClosed $ LogbookEntry start end : rest
 
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []
@@ -860,7 +854,8 @@ data LogbookEntry = LogbookEntry
   { logbookEntryStart :: UTCTime,
     logbookEntryEnd :: UTCTime
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec LogbookEntry)
 
 instance Validity LogbookEntry where
   validate lbe@LogbookEntry {..} =
@@ -871,37 +866,21 @@ instance Validity LogbookEntry where
 
 instance NFData LogbookEntry
 
-instance ToJSON LogbookEntry where
-  toJSON LogbookEntry {..} =
-    object ["start" .= ForYaml logbookEntryStart, "end" .= ForYaml logbookEntryEnd]
-
-instance ToYaml LogbookEntry where
-  toYaml LogbookEntry {..} =
-    Yaml.mapping
-      [("start", toYaml (ForYaml logbookEntryStart)), ("end", toYaml (ForYaml logbookEntryEnd))]
-
-instance FromJSON LogbookEntry where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema LogbookEntry where
-  yamlSchema =
-    eitherParser prettyValidate $
-      objectParser "LogbookEntry" $
+instance HasCodec LogbookEntry where
+  codec =
+    bimapCodec prettyValidate id $
+      object "LogbookEntry" $
         LogbookEntry
-          <$> (unForYaml <$> requiredField "start" "The start of the logbook entry")
-          <*> (unForYaml <$> requiredField "end" "The end of the logbook entry.")
+          <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= logbookEntryStart
+          <*> requiredFieldWith "end" utctimeCodec "end of the logbook entry" .= logbookEntryEnd
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-instance ToYaml NominalDiffTime where
-  toYaml = Yaml.scientific . realToFrac
-
-instance ToYaml (Path r d) where
-  toYaml = Yaml.string . T.pack . toFilePath
-
-instance (ToYaml a) => ToYaml (Map Text a) where
-  toYaml = Yaml.mapping . map (second toYaml) . M.toList
-
 getLocalTime :: IO LocalTime
 getLocalTime = (\zt -> utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)) <$> getZonedTime
+
+parseTimeEither :: ParseTime a => TimeLocale -> String -> String -> Either String a
+parseTimeEither locale format string = case parseTimeM True locale format string of
+  Nothing -> Left $ "Failed to parse time value: " <> string <> " via " <> format
+  Just r -> Right r

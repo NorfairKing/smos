@@ -59,7 +59,7 @@ library:
   - wai-extra
   - warp
   - yaml
-  - yamlparse-applicative
+  - autodocodec
   - yesod
   - yesod-auth
   - yesod-autoreload

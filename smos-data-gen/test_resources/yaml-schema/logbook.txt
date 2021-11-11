@@ -1,0 +1,11 @@
+# Logbook entries, in reverse chronological order.
+# Only the first element of this list has an optional 'end'.
+- # LogbookEntry
+  [37mstart[m: # [31mrequired[m
+    # start of the logbook entry
+    # %F %H:%M:%S.%q
+    [33m<string>[m
+  [37mend[m: # [34moptional[m
+    # end of the logbook entry
+    # %F %H:%M:%S.%q
+    [33m<string>[m

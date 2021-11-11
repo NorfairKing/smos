@@ -30,12 +30,6 @@ instance GenValid SmosFile where
     f <- shrinkValid (smosFileForest sf)
     pure $ sf {smosFileForest = f}
 
-instance GenUnchecked a => GenUnchecked (ForYaml a)
-
-instance GenValid a => GenValid (ForYaml a) where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
 instance GenValid Entry where
   genValid =
     sized $ \size -> do
