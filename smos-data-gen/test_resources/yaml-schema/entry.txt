@@ -55,4 +55,3 @@
         # %F %H:%M:%S.%q
         [33m<string>[m
 ]
-[36mref: Entry[m

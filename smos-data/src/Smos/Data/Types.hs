@@ -188,7 +188,7 @@ entryTreeCodec =
         object "Tree Entry" $
           Node
             <$> requiredField "entry" "root entry" .= rootLabel
-            <*> optionalFieldWithDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
+            <*> optionalFieldWithOmittedDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
   where
     f = \case
       Left e -> Node e []
@@ -236,11 +236,11 @@ instance HasCodec Entry where
             Entry
               <$> requiredField "header" "header" .= entryHeader
               <*> optionalField "contents" "contents" .= entryContents
-              <*> optionalFieldWithDefault "timestamps" M.empty "timestamps" .= entryTimestamps
-              <*> optionalFieldWithDefault "properties" M.empty "properties" .= entryProperties
-              <*> optionalFieldWithDefault "state-history" emptyStateHistory "state history" .= entryStateHistory
-              <*> optionalFieldWithDefault "tags" S.empty "tags" .= entryTags
-              <*> optionalFieldWithDefault "logbook" emptyLogbook "logbook" .= entryLogbook
+              <*> optionalFieldWithOmittedDefault "timestamps" M.empty "timestamps" .= entryTimestamps
+              <*> optionalFieldWithOmittedDefault "properties" M.empty "properties" .= entryProperties
+              <*> optionalFieldWithOmittedDefault "state-history" emptyStateHistory "state history" .= entryStateHistory
+              <*> optionalFieldWithOmittedDefault "tags" S.empty "tags" .= entryTags
+              <*> optionalFieldWithOmittedDefault "logbook" emptyLogbook "logbook" .= entryLogbook
     where
       f = \case
         Left h -> newEntry h

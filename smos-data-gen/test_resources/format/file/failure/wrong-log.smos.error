@@ -1,4 +1,4 @@
 Failed to parse smos data as json:
 Error in $: Failed reading: takeWhile1 at 'header:'''
 and also as yaml:
-AesonException "Error in $.logbook.start: could not parse date: digit: Failed reading: satisfy"
+AesonException "Error in $[0]: key \"entry\" not found"

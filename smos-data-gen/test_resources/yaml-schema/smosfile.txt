@@ -58,7 +58,6 @@
             # %F %H:%M:%S.%q
             [33m<string>[m
     ]
-    [36mref: Entry[m
   , # Tree Entry
     [37mentry[m: # [31mrequired[m
       # root entry
@@ -68,5 +67,3 @@
       # sub forest
       [36mref: Forest Entry[m
   ]
-  [36mref: Tree Entry[m
-[36mref: Forest Entry[m
