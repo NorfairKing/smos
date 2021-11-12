@@ -10,7 +10,6 @@ module Smos.Report.ComparisonSpec
 where
 
 import Cursor.Forest.Gen ()
-import Data.Maybe
 import Smos.Report.Comparison
 import Smos.Report.Comparison.Gen ()
 import Test.Syd
@@ -27,4 +26,4 @@ spec = do
   describe "renderComparison" $ do
     it "produces valid comparisons" $ producesValidsOnValids renderComparison
     it "is the inverse of parseComparison" $
-      inverseFunctionsOnValid renderComparison (fromJust . parseComparison)
+      inverseFunctionsOnValid renderComparison (either (error "should have worked") id . parseComparison)

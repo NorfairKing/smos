@@ -11,6 +11,7 @@ module Smos.Report.OptParse
 where
 
 import Autodocodec
+import Autodocodec.Yaml
 import Control.Arrow
 import Control.Monad
 import Data.Aeson (FromJSON)
@@ -228,5 +229,5 @@ parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFil
 getConfiguration :: HasCodec a => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
 getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
   case flagWithConfigFile <|> envWithConfigFile of
-    Just sf -> resolveFile' sf >>= readConfigFile
-    Nothing -> defaultConfigFiles >>= readFirstConfigFile
+    Just sf -> resolveFile' sf >>= readYamlConfigFile
+    Nothing -> defaultConfigFiles >>= readFirstYamlConfigFile

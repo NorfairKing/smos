@@ -16,7 +16,7 @@ import Control.DeepSeq
 import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
-import Data.Aeson
+import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.Char as Char
 import Data.Function
 import Data.List
@@ -640,6 +640,13 @@ deriving instance Ord (Filter a)
 
 instance HasCodec (Filter (Path Rel File, ForestCursor Entry)) where
   codec = bimapCodec (left (T.unpack . prettyFilterParseError) . parseEntryFilter) renderFilter codec
+
+instance ToJSON (Filter (Path Rel File, ForestCursor Entry)) where
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
+
+instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
+  parseJSON = parseJSONViaCodec
 
 foldFilterAnd :: NonEmpty (Filter a) -> Filter a
 foldFilterAnd = foldl1 FilterAnd

@@ -81,7 +81,8 @@ data Configuration = Configuration
     confStuckReportConf :: !(Maybe StuckReportConfiguration),
     confWorkReportConf :: !(Maybe WorkReportConfiguration)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec Configuration)
 
 instance Validity Configuration
 
@@ -127,7 +128,8 @@ data DirectoryConfiguration = DirectoryConfiguration
     directoryConfProjectsDir :: !(Maybe Text),
     directoryConfArchivedProjectsDir :: !(Maybe Text)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec DirectoryConfiguration)
 
 instance Validity DirectoryConfiguration
 
@@ -194,7 +196,8 @@ backToDirectoryConfiguration DirectoryConfig {..} =
 data WaitingReportConfiguration = WaitingReportConfiguration
   { waitingReportConfThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec WaitingReportConfiguration)
 
 instance Validity WaitingReportConfiguration
 
@@ -216,7 +219,8 @@ backToWaitingReportConfiguration WaitingReportConfig {..} =
 data StuckReportConfiguration = StuckReportConfiguration
   { stuckReportConfThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec StuckReportConfiguration)
 
 instance Validity StuckReportConfiguration
 

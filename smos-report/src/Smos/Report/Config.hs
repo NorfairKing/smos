@@ -43,7 +43,6 @@ module Smos.Report.Config
   )
 where
 
-import Autodocodec
 import Data.Aeson
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)

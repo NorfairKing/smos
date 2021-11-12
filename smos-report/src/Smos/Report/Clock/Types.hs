@@ -6,8 +6,6 @@
 module Smos.Report.Clock.Types where
 
 import Autodocodec
-import Autodocodec.Yaml
-import Control.Applicative
 import Data.Aeson (FromJSON, ToJSON)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
