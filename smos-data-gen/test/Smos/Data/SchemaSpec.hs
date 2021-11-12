@@ -10,16 +10,10 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml.Document
-import Control.Monad
-import Data.Aeson as JSON
 import Data.Data
-import Data.Time
 import Smos.Data.Gen ()
 import Smos.Data.Types
-import Test.QuickCheck
 import Test.Syd
-import Test.Syd.Validity
-import Test.Syd.Validity.Aeson
 import Test.Syd.Validity.Utils
 
 spec :: Spec
@@ -39,7 +33,7 @@ spec = do
   yamlSchemaSpec @Entry "entry"
   yamlSchemaSpec @SmosFile "smosfile"
 
-yamlSchemaSpec :: forall a. (Show a, Eq a, Typeable a, GenValid a, HasCodec a) => FilePath -> Spec
+yamlSchemaSpec :: forall a. (Typeable a, HasCodec a) => FilePath -> Spec
 yamlSchemaSpec filePath = do
   it ("outputs the same schema as before for " <> nameOf @a) $
     pureGoldenByteStringFile ("test_resources/yaml-schema/" <> filePath <> ".txt") (renderColouredSchemaViaCodec @a)

@@ -93,12 +93,10 @@ where
 import Autodocodec
 import Autodocodec.Yaml
 import Control.Applicative
-import Control.Arrow
 import Control.DeepSeq
 import Control.Monad
 import Data.Aeson (FromJSON (..), FromJSONKey (..), ToJSON (..), ToJSONKey (..))
 import qualified Data.Aeson as JSON
-import Data.Aeson.Types (toJSONKeyText)
 import Data.Char as Char
 import Data.Function
 import Data.Functor.Classes (Ord1 (..))
@@ -118,14 +116,11 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Data.Validity
-import Data.Validity.Aeson
 import Data.Validity.Containers ()
 import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Data.Yaml.Builder (ToYaml (..))
-import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
-import Path
 
 oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
@@ -188,54 +183,22 @@ instance HasCodec SmosFile where
 entryTreeCodec :: JSONCodec (Tree Entry)
 entryTreeCodec =
   named "Tree Entry" $
-    object "Tree Entry" $
-      Node
-        <$> requiredField "entry" "root entry" .= rootLabel
-        <*> optionalFieldWithDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
+    dimapCodec f g $
+      eitherCodec (codec <?> "Leaf entry") $
+        object "Tree Entry" $
+          Node
+            <$> requiredField "entry" "root entry" .= rootLabel
+            <*> optionalFieldWithDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
+  where
+    f = \case
+      Left e -> Node e []
+      Right tree -> tree
+    g tree@(Node e subforest) = case subforest of
+      [] -> Left e
+      _ -> Right tree
 
 entryForestCodec :: JSONCodec (Forest Entry)
 entryForestCodec = named "Forest Entry" $ listCodec entryTreeCodec
-
--- instance FromJSON (ForYaml (Tree a)) => FromJSON (ForYaml (Forest a)) where
---   parseJSON v = do
---     els <- parseJSON v
---     ts <- mapM (fmap unForYaml . parseJSON) els
---     pure $ ForYaml ts
---
--- instance ToJSON (ForYaml (Tree a)) => ToJSON (ForYaml (Forest a)) where
---   toJSON = toJSON . map ForYaml . unForYaml
---
--- instance ToYaml (ForYaml (Tree a)) => ToYaml (ForYaml (Forest a)) where
---   toYaml = toYaml . map ForYaml . unForYaml
---
--- instance FromJSON (ForYaml (Tree Entry)) where
---   parseJSON v =
---     fmap ForYaml $
---       case v of
---         Object o -> do
---           mv <- o .:? "entry"
---           -- This marks that we want to be trying to parse a tree and NOT an entry.
---           -- We force the parser to make a decision this way.
---           case mv :: Maybe Value of
---             Nothing -> Node <$> parseJSON v <*> pure []
---             Just _ ->
---               ( withObject "Tree Entry" $ \o' ->
---                   Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml [])
---               )
---                 v
---         _ -> Node <$> parseJSON v <*> pure []
---
--- instance ToJSON (ForYaml (Tree Entry)) where
---   toJSON (ForYaml Node {..}) =
---     if null subForest
---       then toJSON rootLabel
---       else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
---
--- instance ToYaml (ForYaml (Tree Entry)) where
---   toYaml (ForYaml Node {..}) =
---     if null subForest
---       then toYaml rootLabel
---       else Yaml.mapping [("entry", toYaml rootLabel), ("forest", toYaml (ForYaml subForest))]
 
 utctimeFormat :: String
 utctimeFormat = "%F %H:%M:%S.%q"
@@ -266,80 +229,33 @@ instance NFData Entry
 
 instance HasCodec Entry where
   codec =
-    -- TODO make golden test
-    object "Entry" $
-      Entry
-        <$> requiredField "header" "header" .= entryHeader
-        <*> requiredField "contents" "contents" .= entryContents
-        <*> requiredField "timestamps" "timestamps" .= entryTimestamps
-        <*> requiredField "properties" "properties" .= entryProperties
-        <*> requiredField "state-history" "state history" .= entryStateHistory
-        <*> requiredField "tags" "tags" .= entryTags
-        <*> requiredField "logbook" "logbook" .= entryLogbook
-
--- instance ToJSON Entry where
---   toJSON Entry {..} =
---     if and
---       [ isNothing entryContents,
---         M.null entryTimestamps,
---         M.null entryProperties,
---         null $ unStateHistory entryStateHistory,
---         null entryTags,
---         entryLogbook == emptyLogbook
---       ]
---       then toJSON entryHeader
---       else
---         object $
---           ["header" .= entryHeader]
---             ++ ["contents" .= entryContents | isJust entryContents]
---             ++ ["timestamps" .= entryTimestamps | not $ M.null entryTimestamps]
---             ++ ["properties" .= entryProperties | not $ M.null entryProperties]
---             ++ ["state-history" .= entryStateHistory | not $ null $ unStateHistory entryStateHistory]
---             ++ ["tags" .= entryTags | not $ null entryTags]
---             ++ ["logbook" .= entryLogbook | entryLogbook /= emptyLogbook]
---
--- instance ToYaml Entry where
---   toYaml Entry {..} =
---     if and
---       [ isNothing entryContents,
---         M.null entryTimestamps,
---         M.null entryProperties,
---         null $ unStateHistory entryStateHistory,
---         null entryTags,
---         entryLogbook == emptyLogbook
---       ]
---       then toYaml entryHeader
---       else
---         Yaml.mapping $
---           [("header", toYaml entryHeader)]
---             ++ [("contents", toYaml entryContents) | isJust entryContents]
---             ++ [ ("timestamps", toYaml $ M.mapKeys timestampNameText entryTimestamps)
---                  | not $ M.null entryTimestamps
---                ]
---             ++ [ ("properties", toYaml $ M.mapKeys propertyNameText entryProperties)
---                  | not $ M.null entryProperties
---                ]
---             ++ [ ("state-history", toYaml entryStateHistory)
---                  | not $ null $ unStateHistory entryStateHistory
---                ]
---             ++ [("tags", toYaml (S.toList entryTags)) | not $ S.null entryTags]
---             ++ [("logbook", toYaml entryLogbook) | entryLogbook /= emptyLogbook]
---
--- instance FromJSON Entry where
---   parseJSON v =
---     ( do
---         h <- parseJSON v
---         pure $ newEntry h
---     )
---       <|> ( withObject "Entry" $ \o ->
---               Entry <$> o .:? "header" .!= emptyHeader <*> o .:? "contents"
---                 <*> o .:? "timestamps" .!= M.empty
---                 <*> o .:? "properties" .!= M.empty
---                 <*> o .:? "state-history" .!= StateHistory []
---                 <*> o .:? "tags" .!= S.empty
---                 <*> o .:? "logbook" .!= emptyLogbook
---           )
---         v
+    named "Entry" $
+      dimapCodec f g $
+        eitherCodec (codec <?> "only a header") $
+          object "Entry" $
+            Entry
+              <$> requiredField "header" "header" .= entryHeader
+              <*> optionalField "contents" "contents" .= entryContents
+              <*> optionalFieldWithDefault "timestamps" M.empty "timestamps" .= entryTimestamps
+              <*> optionalFieldWithDefault "properties" M.empty "properties" .= entryProperties
+              <*> optionalFieldWithDefault "state-history" emptyStateHistory "state history" .= entryStateHistory
+              <*> optionalFieldWithDefault "tags" S.empty "tags" .= entryTags
+              <*> optionalFieldWithDefault "logbook" emptyLogbook "logbook" .= entryLogbook
+    where
+      f = \case
+        Left h -> newEntry h
+        Right e -> e
+      g e@Entry {..} =
+        if and
+          [ isNothing entryContents,
+            M.null entryTimestamps,
+            M.null entryProperties,
+            nullStateHistory entryStateHistory,
+            null entryTags,
+            entryLogbook == emptyLogbook
+          ]
+          then Left entryHeader
+          else Right e
 
 newEntry :: Header -> Entry
 newEntry h =
@@ -796,41 +712,13 @@ instance HasCodec Logbook where
           let firstFunc = case mEnd of
                 Nothing -> LogOpen start
                 Just end -> LogClosed . ((LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}) :)
-          es <- forM rest $ \(start, mEnd) -> case mEnd of
+          es_ <- forM rest $ \(start_, mEnd_) -> case mEnd_ of
             Nothing -> Left "Missing 'end' in logbook."
-            Just end -> Right $ LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
-          pure $ firstFunc es
+            Just end -> Right $ LogbookEntry {logbookEntryStart = start_, logbookEntryEnd = end}
+          pure $ firstFunc es_
       g = \case
         LogOpen start es -> (start, Nothing) : map (\LogbookEntry {..} -> (logbookEntryStart, Just logbookEntryEnd)) es
         LogClosed es -> map (\LogbookEntry {..} -> (logbookEntryStart, Just logbookEntryEnd)) es
-
--- instance ToJSON Logbook where
---   toJSON = toJSON . go
---     where
---       go (LogOpen start rest) = object ["start" .= ForYaml start] : map toJSON rest
---       go (LogClosed rest) = map toJSON rest
---
--- instance ToYaml Logbook where
---   toYaml = toYaml . go
---     where
---       go (LogOpen start rest) = Yaml.mapping [("start", toYaml (ForYaml start))] : map toYaml rest
---       go (LogClosed rest) = map toYaml rest
---
--- instance FromJSON Logbook where
---   parseJSON v = parseJSONValid $ do
---     els <- parseJSON v
---     case els of
---       [] -> pure $ LogClosed []
---       (e : es) -> do
---         (start, mend) <-
---           withObject
---             "First logbook entry"
---             (\o -> (,) <$> (unForYaml <$> o .: "start") <*> (fmap unForYaml <$> o .:? "end"))
---             e
---         rest <- mapM parseJSON es
---         pure $ case mend of
---           Nothing -> LogOpen start rest
---           Just end -> LogClosed $ LogbookEntry start end : rest
 
 emptyLogbook :: Logbook
 emptyLogbook = LogClosed []

@@ -1,61 +1,72 @@
 [36mdef: Forest Entry[m
 - [36mdef: Tree Entry[m
-  # Tree Entry
-  [37mentry[m: # [31mrequired[m
-    # root entry
-    # Entry
-    [37mheader[m: # [31mrequired[m
-      # header
+  [ # Leaf entry
+    [36mdef: Entry[m
+    [ # only a header
       [33m<string>[m
-    [37mcontents[m: # [31mrequired[m
-      # contents
-      [ [33mnull[m
-      , [33m<string>[m
-      ]
-    [37mtimestamps[m: # [31mrequired[m
-      # timestamps
-      [37m<key>[m: 
-        [ # %F
-          [33m<string>[m
-        , # %F %T%Q
-          [33m<string>[m
-        ]
-    [37mproperties[m: # [31mrequired[m
-      # properties
-      [37m<key>[m: 
+    , # Entry
+      [37mheader[m: # [31mrequired[m
+        # header
         [33m<string>[m
-    [37mstate-history[m: # [31mrequired[m
-      # state history
-      # In reverse chronological order
-      - # StateHistoryEntry
-        [37mstate[m: # [31mrequired[m
-          # new state
-          [ [33mnull[m
-          , [33m<string>[m
+      [37mcontents[m: # [34moptional[m
+        # contents
+        [33m<string>[m
+      [37mtimestamps[m: # [34moptional[m
+        # default: [35m{}[m
+        # timestamps
+        [37m<key>[m: 
+          [ # %F
+            [33m<string>[m
+          , # %F %T%Q
+            [33m<string>[m
           ]
-        [37mtime[m: # [31mrequired[m
-          # time at which the state change happened
-          # %F %H:%M:%S.%q
+      [37mproperties[m: # [34moptional[m
+        # default: [35m{}[m
+        # properties
+        [37m<key>[m: 
           [33m<string>[m
-    [37mtags[m: # [31mrequired[m
-      # tags
-      - [33m<string>[m
-    [37mlogbook[m: # [31mrequired[m
-      # logbook
-      # Logbook entries, in reverse chronological order.
-      # Only the first element of this list has an optional 'end'.
-      - # LogbookEntry
-        [37mstart[m: # [31mrequired[m
-          # start of the logbook entry
-          # %F %H:%M:%S.%q
-          [33m<string>[m
-        [37mend[m: # [34moptional[m
-          # end of the logbook entry
-          # %F %H:%M:%S.%q
-          [33m<string>[m
-  [37mforest[m: # [34moptional[m
-    # default: [35m[][m
-    # sub forest
-    [36mref: Forest Entry[m
+      [37mstate-history[m: # [34moptional[m
+        # default: [35m[][m
+        # state history
+        # In reverse chronological order
+        - # StateHistoryEntry
+          [37mstate[m: # [31mrequired[m
+            # new state
+            [ [33mnull[m
+            , [33m<string>[m
+            ]
+          [37mtime[m: # [31mrequired[m
+            # time at which the state change happened
+            # %F %H:%M:%S.%q
+            [33m<string>[m
+      [37mtags[m: # [34moptional[m
+        # default: [35m[][m
+        # tags
+        - [33m<string>[m
+      [37mlogbook[m: # [34moptional[m
+        # default: [35m[][m
+        # logbook
+        # Logbook entries, in reverse chronological order.
+        # Only the first element of this list has an optional 'end'.
+        - # LogbookEntry
+          [37mstart[m: # [31mrequired[m
+            # start of the logbook entry
+            # %F %H:%M:%S.%q
+            [33m<string>[m
+          [37mend[m: # [34moptional[m
+            # end of the logbook entry
+            # %F %H:%M:%S.%q
+            [33m<string>[m
+    ]
+    [36mref: Entry[m
+  , # Tree Entry
+    [37mentry[m: # [31mrequired[m
+      # root entry
+      [36mref: Entry[m
+    [37mforest[m: # [34moptional[m
+      # default: [35m[][m
+      # sub forest
+      [36mref: Forest Entry[m
+  ]
   [36mref: Tree Entry[m
 [36mref: Forest Entry[m
