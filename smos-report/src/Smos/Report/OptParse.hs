@@ -10,6 +10,7 @@ module Smos.Report.OptParse
   )
 where
 
+import Autodocodec
 import Control.Arrow
 import Control.Monad
 import Data.Aeson (FromJSON)
@@ -23,7 +24,6 @@ import Path
 import Path.IO
 import Smos.Report.Config
 import Smos.Report.OptParse.Types
-import YamlParse.Applicative hiding (Parser)
 
 combineToConfig ::
   SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
@@ -225,7 +225,7 @@ parseYamlConfig configFile =
 parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
 parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
 
-getConfiguration :: (FromJSON a, YamlSchema a) => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
+getConfiguration :: HasCodec a => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
 getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
   case flagWithConfigFile <|> envWithConfigFile of
     Just sf -> resolveFile' sf >>= readConfigFile

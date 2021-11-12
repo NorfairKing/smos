@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Report where
 
-import Data.Aeson
+import Autodocodec
+import Data.Aeson (FromJSON, ToJSON)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
 import Data.Validity
@@ -13,7 +14,6 @@ import Smos.Report.Archive
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
-import YamlParse.Applicative
 
 data PreparedReport = PreparedReport
   { preparedReportDescription :: Maybe Text,
@@ -22,28 +22,17 @@ data PreparedReport = PreparedReport
     preparedReportSorter :: Maybe Sorter,
     preparedReportHideArchive :: Maybe HideArchive
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec PreparedReport)
 
 instance Validity PreparedReport
 
-instance ToJSON PreparedReport where
-  toJSON PreparedReport {..} =
-    object
-      [ "description" .= preparedReportDescription,
-        "filter" .= perparedReportFilter,
-        "columns" .= perparedReportProjection,
-        "sorter" .= preparedReportSorter,
-        "hide-archive" .= preparedReportHideArchive
-      ]
-
-instance FromJSON PreparedReport where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema PreparedReport where
-  yamlSchema =
-    objectParser "PreparedReport" $
-      PreparedReport <$> optionalField "description" "A description of the report"
-        <*> optionalField "filter" "The entry filter to get the results in the report"
-        <*> optionalField "columns" "The columns of the report"
-        <*> optionalField "sorter" "The sorter to sort the rows of the report by"
-        <*> optionalField "hide-archive" "Whether to consider the archive for the report"
+instance HasCodec PreparedReport where
+  codec =
+    object "PreparedReport" $
+      PreparedReport
+        <$> optionalField "description" "A description of the report" .= preparedReportDescription
+        <*> optionalField "filter" "The entry filter to get the results in the report" .= perparedReportFilter
+        <*> optionalField "columns" "The columns of the report" .= perparedReportProjection
+        <*> optionalField "sorter" "The sorter to sort the rows of the report by" .= preparedReportSorter
+        <*> optionalField "hide-archive" "Whether to consider the archive for the report" .= preparedReportHideArchive

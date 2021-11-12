@@ -1,9 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Projection where
 
+import Autodocodec
+import Control.Arrow (left)
 import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -23,7 +26,6 @@ import Path
 import Smos.Data
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import YamlParse.Applicative
 
 data Projection
   = OntoFile
@@ -33,18 +35,13 @@ data Projection
   | OntoProperty !PropertyName
   | OntoTimestamp !TimestampName
   | OntoAncestor !Projection
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec Projection)
 
 instance Validity Projection
 
-instance FromJSON Projection where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Projection where
-  yamlSchema = maybeParser parseProjection yamlSchema
-
-instance ToJSON Projection where
-  toJSON = toJSON . renderProjection
+instance HasCodec Projection where
+  codec = bimapCodec parseProjection renderProjection codec
 
 data Projectee
   = FileProjection !(Path Rel File)
@@ -111,8 +108,8 @@ performProjection p rp fc =
 
 type P = Parsec Void Text
 
-parseProjection :: Text -> Maybe Projection
-parseProjection = parseMaybe projectionP
+parseProjection :: Text -> Either String Projection
+parseProjection = left errorBundlePretty . parse projectionP ""
 
 projectionP :: P Projection
 projectionP =

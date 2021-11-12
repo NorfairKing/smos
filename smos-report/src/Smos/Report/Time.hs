@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Time where
 
+import Autodocodec
 import Control.Arrow
 import Control.DeepSeq
 import Data.Aeson
@@ -17,7 +20,6 @@ import Numeric.Natural
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
-import YamlParse.Applicative as YamlParse
 
 data Time
   = Seconds Word
@@ -25,7 +27,8 @@ data Time
   | Hours Word
   | Days Word
   | Weeks Word
-  deriving (Show, Generic)
+  deriving stock (Show, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec Time)
 
 instance Validity Time
 
@@ -37,18 +40,17 @@ instance Eq Time where
 instance Ord Time where
   compare = compare `on` timeSeconds
 
-instance FromJSON Time where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Time where
-  yamlSchema =
-    alternatives
-      [ eitherParser parseTime yamlSchema YamlParse.<?> "Time string: 2s, 3m, 4h, 5d, 6w, ...",
-        (Days <$> yamlSchema) YamlParse.<?> "Interpreted as a number of days"
-      ]
-
-instance ToJSON Time where
-  toJSON = toJSON . renderTime
+instance HasCodec Time where
+  codec =
+    dimapCodec f g $
+      eitherCodec
+        (bimapCodec parseTime renderTime codec Autodocodec.<?> "Time string: 2s, 3m, 4h, 5d, 6w, ...")
+        (codec Autodocodec.<?> "Interpreted as a number of days")
+    where
+      f = \case
+        Left t -> t
+        Right w -> Days w
+      g = Left
 
 type P = Parsec Void Text
 

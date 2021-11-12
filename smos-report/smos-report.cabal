@@ -53,6 +53,7 @@ library
   build-depends:
       aeson
     , autodocodec
+    , autodocodec-yaml
     , base
     , conduit
     , containers

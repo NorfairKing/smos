@@ -1,14 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.Next where
 
+import Autodocodec
 import Conduit
 import Control.DeepSeq
 import Cursor.Simple.Forest
-import Data.Aeson
+import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.Conduit.Combinators as C
 import Data.Maybe
 import Data.Validity
@@ -21,7 +22,6 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
-import YamlParse.Applicative
 
 produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> m NextActionReport
 produceNextActionReport ef ha sp dc = produceReport ha sp dc (nextActionReportConduit ef)
@@ -63,47 +63,33 @@ makeNextActionEntry rf e =
 newtype NextActionReport = NextActionReport
   { nextActionReportEntries :: [NextActionEntry]
   }
-  deriving (Show, Eq, Generic, Semigroup, Monoid)
+  deriving stock (Show, Eq, Generic)
+  deriving newtype (Semigroup, Monoid)
+  deriving (FromJSON, ToJSON) via (Autodocodec NextActionReport)
 
 instance Validity NextActionReport
 
 instance NFData NextActionReport
 
-instance FromJSON NextActionReport where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema NextActionReport where
-  yamlSchema = NextActionReport <$> yamlSchema
-
-instance ToJSON NextActionReport where
-  toJSON = toJSON . nextActionReportEntries
+instance HasCodec NextActionReport where
+  codec = dimapCodec NextActionReport nextActionReportEntries codec
 
 data NextActionEntry = NextActionEntry
   { nextActionEntryTodoState :: !(Maybe TodoState),
     nextActionEntryHeader :: !Header,
     nextActionEntryFilePath :: !(Path Rel File) -- The path within the workflow directory
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec NextActionEntry)
 
 instance Validity NextActionEntry
 
 instance NFData NextActionEntry
 
-instance FromJSON NextActionEntry where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema NextActionEntry where
-  yamlSchema =
-    objectParser "NextActionEntry" $
+instance HasCodec NextActionEntry where
+  codec =
+    object "NextActionEntry" $
       NextActionEntry
-        <$> requiredField "state" "The TODO state of the entry"
-        <*> requiredField "header" "The header of the entry"
-        <*> requiredField "path" "The path of the file in which this entry was found"
-
-instance ToJSON NextActionEntry where
-  toJSON NextActionEntry {..} =
-    object
-      [ "state" .= nextActionEntryTodoState,
-        "header" .= nextActionEntryHeader,
-        "path" .= nextActionEntryFilePath
-      ]
+        <$> requiredField "state" "The TODO state of the entry" .= nextActionEntryTodoState
+        <*> requiredField "header" "The header of the entry" .= nextActionEntryHeader
+        <*> requiredField "path" "The path of the file in which this entry was found" .= nextActionEntryFilePath

@@ -10,6 +10,7 @@
 
 module Smos.Report.Filter where
 
+import Autodocodec
 import Control.Arrow
 import Control.DeepSeq
 import Control.Monad
@@ -40,7 +41,6 @@ import Text.Parsec.Pos
 import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec.Char
 import Text.Read (readMaybe)
-import YamlParse.Applicative
 
 data Paren
   = OpenParen
@@ -553,7 +553,7 @@ instance FilterArgument Word where
 
 instance FilterArgument Comparison where
   renderArgument = renderComparison
-  parseArgument = maybe (Left "Invalid comparison") Right . parseComparison
+  parseArgument = parseComparison
 
 instance FilterArgument (Path Rel File) where
   renderArgument = T.pack . fromRelFile
@@ -638,14 +638,8 @@ deriving instance Eq (Filter a)
 
 deriving instance Ord (Filter a)
 
-instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema (Filter (Path Rel File, ForestCursor Entry)) where
-  yamlSchema = eitherParser (left (T.unpack . prettyFilterParseError) . parseEntryFilter) yamlSchema
-
-instance ToJSON (Filter a) where
-  toJSON = toJSON . renderFilter
+instance HasCodec (Filter (Path Rel File, ForestCursor Entry)) where
+  codec = bimapCodec (left (T.unpack . prettyFilterParseError) . parseEntryFilter) renderFilter codec
 
 foldFilterAnd :: NonEmpty (Filter a) -> Filter a
 foldFilterAnd = foldl1 FilterAnd

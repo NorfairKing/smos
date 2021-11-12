@@ -1,16 +1,18 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.OptParse.Types where
 
+import Autodocodec
+import Data.Aeson (FromJSON, ToJSON)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
@@ -19,7 +21,6 @@ import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
-import YamlParse.Applicative as YamlParse
 
 data Flags = Flags
   { flagDirectoryFlags :: DirectoryFlags
@@ -84,20 +85,14 @@ data Configuration = Configuration
 
 instance Validity Configuration
 
-instance ToJSON Configuration where
-  toJSON = object . configurationToObject
-
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
       Configuration
-        <$> directoryConfigurationObjectParser
-        <*> optionalField "waiting" "The waiting report configuration"
-        <*> optionalField "stuck" "The stuck projects report configuration"
-        <*> optionalField "work" "The work report configuration"
+        <$> directoryConfigurationObjectCodec .= confDirectoryConf
+        <*> optionalField "waiting" "The waiting report configuration" .= confWaitingReportConf
+        <*> optionalField "stuck" "The stuck projects report configuration" .= confStuckReportConf
+        <*> optionalField "work" "The work report configuration" .= confWorkReportConf
 
 defaultConfiguration :: Configuration
 defaultConfiguration =
@@ -107,14 +102,6 @@ defaultConfiguration =
       confStuckReportConf = Nothing,
       confWaitingReportConf = Nothing
     }
-
-configurationToObject :: Configuration -> [(Text, Value)]
-configurationToObject Configuration {..} =
-  directoryConfigurationToObject confDirectoryConf
-    ++ [ "waiting" .= confWaitingReportConf,
-         "stuck" .= confStuckReportConf,
-         "work" .= confWorkReportConf
-       ]
 
 backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
@@ -144,32 +131,16 @@ data DirectoryConfiguration = DirectoryConfiguration
 
 instance Validity DirectoryConfiguration
 
-instance ToJSON DirectoryConfiguration where
-  toJSON =
-    object . directoryConfigurationToObject
+instance HasCodec DirectoryConfiguration where
+  codec = object "DirectoryConfiguration" directoryConfigurationObjectCodec
 
-directoryConfigurationToObject :: DirectoryConfiguration -> [(Text, Yaml.Value)]
-directoryConfigurationToObject DirectoryConfiguration {..} =
-  [ "workflow-dir" .= directoryConfWorkflowDir,
-    "archive-dir" .= directoryConfArchiveDir,
-    "projects-dir" .= directoryConfProjectsDir,
-    "archived-projects-dir" .= directoryConfArchivedProjectsDir
-  ]
-
-instance FromJSON DirectoryConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema DirectoryConfiguration where
-  yamlSchema =
-    objectParser "DirectoryConfiguration" directoryConfigurationObjectParser
-
-directoryConfigurationObjectParser :: YamlParse.ObjectParser DirectoryConfiguration
-directoryConfigurationObjectParser =
+directoryConfigurationObjectCodec :: ObjectCodec DirectoryConfiguration DirectoryConfiguration
+directoryConfigurationObjectCodec =
   DirectoryConfiguration
-    <$> optionalField "workflow-dir" "The workflow directory"
-    <*> optionalField "archive-dir" "The archive directory"
-    <*> optionalField "projects-dir" "The projects directory"
-    <*> optionalField "archived-projects-dir" "The archived projects directory"
+    <$> optionalField "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
+    <*> optionalField "archive-dir" "The archive directory" .= directoryConfArchiveDir
+    <*> optionalField "projects-dir" "The projects directory" .= directoryConfProjectsDir
+    <*> optionalField "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
 
 defaultDirectoryConfiguration :: DirectoryConfiguration
 defaultDirectoryConfiguration =
@@ -227,20 +198,11 @@ data WaitingReportConfiguration = WaitingReportConfiguration
 
 instance Validity WaitingReportConfiguration
 
-instance ToJSON WaitingReportConfiguration where
-  toJSON WaitingReportConfiguration {..} =
-    object
-      [ "threshold" .= waitingReportConfThreshold
-      ]
-
-instance FromJSON WaitingReportConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema WaitingReportConfiguration where
-  yamlSchema =
-    objectParser "WaitingReportConfiguration" $
+instance HasCodec WaitingReportConfiguration where
+  codec =
+    object "WaitingReportConfiguration" $
       WaitingReportConfiguration
-        <$> optionalField "threshold" "waiting report threshold to consider waiting entries 'overdue'"
+        <$> optionalField "threshold" "waiting report threshold to consider waiting entries 'overdue'" .= waitingReportConfThreshold
 
 backToWaitingReportConfiguration :: WaitingReportConfig -> WaitingReportConfiguration
 backToWaitingReportConfiguration WaitingReportConfig {..} =
@@ -258,20 +220,11 @@ data StuckReportConfiguration = StuckReportConfiguration
 
 instance Validity StuckReportConfiguration
 
-instance ToJSON StuckReportConfiguration where
-  toJSON StuckReportConfiguration {..} =
-    object
-      [ "threshold" .= stuckReportConfThreshold
-      ]
-
-instance FromJSON StuckReportConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema StuckReportConfiguration where
-  yamlSchema =
-    objectParser "StuckReportConfiguration" $
+instance HasCodec StuckReportConfiguration where
+  codec =
+    object "StuckReportConfiguration" $
       StuckReportConfiguration
-        <$> optionalField "threshold" "stuck report threshold to consider stuck projects 'overdue'"
+        <$> optionalField "threshold" "stuck report threshold to consider stuck projects 'overdue'" .= stuckReportConfThreshold
 
 backToStuckReportConfiguration :: StuckReportConfig -> StuckReportConfiguration
 backToStuckReportConfiguration StuckReportConfig {..} =
@@ -290,34 +243,21 @@ data WorkReportConfiguration = WorkReportConfiguration
     workReportConfProjection :: Maybe (NonEmpty Projection),
     workReportConfSorter :: Maybe Sorter
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec WorkReportConfiguration)
 
 instance Validity WorkReportConfiguration
 
-instance ToJSON WorkReportConfiguration where
-  toJSON WorkReportConfiguration {..} =
-    object
-      [ "base-filter" .= workReportConfBaseFilter,
-        "checks" .= workReportConfChecks,
-        "contexts" .= workReportConfContexts,
-        "time-filter" .= workReportConfTimeFilterProperty,
-        "columns" .= workReportConfProjection,
-        "sorter" .= workReportConfSorter
-      ]
-
-instance FromJSON WorkReportConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema WorkReportConfiguration where
-  yamlSchema =
-    objectParser "WorkReportConfiguration" $
+instance HasCodec WorkReportConfiguration where
+  codec =
+    object "WorkReportConfiguration" $
       WorkReportConfiguration
-        <$> optionalField "base-filter" "The base work filter"
-        <*> optionalField "checks" "Checks for the work report"
-        <*> optionalField "contexts" "Contexts for the work report"
-        <*> optionalField "time-filter" "The property to use to filter by time"
-        <*> optionalField "columns" "The columns in the report"
-        <*> optionalField "sorter" "The sorter to use to sort the rows"
+        <$> optionalField "base-filter" "The base work filter" .= workReportConfBaseFilter
+        <*> optionalField "checks" "Checks for the work report" .= workReportConfChecks
+        <*> optionalField "contexts" "Contexts for the work report" .= workReportConfContexts
+        <*> optionalField "time-filter" "The property to use to filter by time" .= workReportConfTimeFilterProperty
+        <*> optionalField "columns" "The columns in the report" .= workReportConfProjection
+        <*> optionalField "sorter" "The sorter to use to sort the rows" .= workReportConfSorter
 
 defaultWorkReportConfiguration :: WorkReportConfiguration
 defaultWorkReportConfiguration =

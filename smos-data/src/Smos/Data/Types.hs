@@ -16,6 +16,8 @@ module Smos.Data.Types
     SmosFile (..),
     Forest,
     Tree (..),
+    entryForestCodec,
+    entryTreeCodec,
     Entry (..),
     newEntry,
     emptyEntry,
@@ -93,6 +95,7 @@ where
 import Autodocodec
 import Autodocodec.Yaml
 import Control.Applicative
+import Control.Arrow (left)
 import Control.DeepSeq
 import Control.Monad
 import Data.Aeson (FromJSON (..), FromJSONKey (..), ToJSON (..), ToJSONKey (..))
@@ -121,6 +124,7 @@ import Data.Validity.Text ()
 import Data.Validity.Time ()
 import Data.Yaml.Builder (ToYaml (..))
 import GHC.Generics (Generic)
+import Path
 
 oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
@@ -178,17 +182,17 @@ instance Validity SmosFile
 instance NFData SmosFile
 
 instance HasCodec SmosFile where
-  codec = dimapCodec SmosFile smosFileForest entryForestCodec
+  codec = dimapCodec SmosFile smosFileForest $ entryForestCodec "Entry" codec
 
-entryTreeCodec :: JSONCodec (Tree Entry)
-entryTreeCodec =
-  named "Tree Entry" $
+entryTreeCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Tree a)
+entryTreeCodec n c =
+  named ("Tree " <> n) $
     dimapCodec f g $
-      eitherCodec (codec <?> "Leaf entry") $
+      eitherCodec (c <?> "Leaf entry") $
         object "Tree Entry" $
           Node
-            <$> requiredField "entry" "root entry" .= rootLabel
-            <*> optionalFieldWithOmittedDefaultWith "forest" entryForestCodec [] "sub forest" .= subForest
+            <$> requiredFieldWith "entry" c "root" .= rootLabel
+            <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec n c) [] "subforest" .= subForest
   where
     f = \case
       Left e -> Node e []
@@ -197,8 +201,8 @@ entryTreeCodec =
       [] -> Left e
       _ -> Right tree
 
-entryForestCodec :: JSONCodec (Forest Entry)
-entryForestCodec = named "Forest Entry" $ listCodec entryTreeCodec
+entryForestCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Forest a)
+entryForestCodec n c = named ("Forest " <> n) $ listCodec $ entryTreeCodec n c
 
 utctimeFormat :: String
 utctimeFormat = "%F %H:%M:%S.%q"
@@ -772,3 +776,9 @@ parseTimeEither :: ParseTime a => TimeLocale -> String -> String -> Either Strin
 parseTimeEither locale format string = case parseTimeM True locale format string of
   Nothing -> Left $ "Failed to parse time value: " <> string <> " via " <> format
   Just r -> Right r
+
+instance HasCodec (Path Rel File) where
+  codec = bimapCodec (left show . parseRelFile) fromRelFile codec
+
+instance ToYaml (Path Rel File) where
+  toYaml = toYamlViaCodec

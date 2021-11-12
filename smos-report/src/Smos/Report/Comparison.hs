@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Comparison
@@ -10,11 +10,12 @@ module Smos.Report.Comparison
   )
 where
 
+import Autodocodec
 import Data.Aeson
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics (Generic)
-import YamlParse.Applicative
 
 data Comparison
   = LTC
@@ -22,18 +23,13 @@ data Comparison
   | EQC
   | GEC
   | GTC
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Comparison)
 
 instance Validity Comparison
 
-instance ToJSON Comparison where
-  toJSON = toJSON . renderComparison
-
-instance FromJSON Comparison where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Comparison where
-  yamlSchema = maybeParser parseComparison yamlSchema
+instance HasCodec Comparison where
+  codec = bimapCodec parseComparison renderComparison codec
 
 comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
 comparisonFunc c =
@@ -44,15 +40,15 @@ comparisonFunc c =
     GEC -> (>=)
     GTC -> (<)
 
-parseComparison :: Text -> Maybe Comparison
-parseComparison =
-  \case
-    "lt" -> Just LTC
-    "le" -> Just LEC
-    "eq" -> Just EQC
-    "ge" -> Just GEC
-    "gt" -> Just GTC
-    _ -> Nothing
+parseComparison :: Text -> Either String Comparison
+parseComparison c =
+  case c of
+    "lt" -> Right LTC
+    "le" -> Right LEC
+    "eq" -> Right EQC
+    "ge" -> Right GEC
+    "gt" -> Right GTC
+    _ -> Left $ "Unknown comparison: " <> T.unpack c
 
 renderComparison :: Comparison -> Text
 renderComparison c =

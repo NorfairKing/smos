@@ -1,9 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Sorter where
 
+import Autodocodec
+import Control.Arrow (left)
 import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
@@ -21,7 +24,6 @@ import Smos.Data
 import Smos.Report.Time hiding (P)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import YamlParse.Applicative
 
 data Sorter
   = ByFile
@@ -30,18 +32,13 @@ data Sorter
   | ByPropertyTime PropertyName
   | Reverse Sorter
   | AndThen Sorter Sorter
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec Sorter)
 
 instance Validity Sorter
 
-instance FromJSON Sorter where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Sorter where
-  yamlSchema = maybeParser parseSorter yamlSchema
-
-instance ToJSON Sorter where
-  toJSON = toJSON . renderSorter
+instance HasCodec Sorter where
+  codec = bimapCodec parseSorter renderSorter codec
 
 sorterSortCursorList ::
   Ord a =>
@@ -75,8 +72,8 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
             $ go s' ea eb
         AndThen s1 s2 -> go s1 ea eb <> go s2 ea eb
 
-parseSorter :: Text -> Maybe Sorter
-parseSorter = parseMaybe sorterP
+parseSorter :: Text -> Either String Sorter
+parseSorter = left errorBundlePretty . parse sorterP ""
 
 type P = Parsec Void Text
 

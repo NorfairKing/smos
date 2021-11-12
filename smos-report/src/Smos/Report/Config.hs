@@ -43,6 +43,7 @@ module Smos.Report.Config
   )
 where
 
+import Autodocodec
 import Data.Aeson
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
@@ -59,7 +60,6 @@ import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
-import YamlParse.Applicative
 
 data SmosReportConfig = SmosReportConfig
   { smosReportConfigDirectoryConfig :: !DirectoryConfig,
@@ -254,6 +254,3 @@ newtype ContextName = ContextName
   deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
 
 instance Validity ContextName
-
-instance YamlKeySchema ContextName where
-  yamlKeySchema = ContextName <$> yamlKeySchema

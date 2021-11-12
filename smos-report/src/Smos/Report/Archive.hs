@@ -1,25 +1,31 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Smos.Report.Archive where
 
+import Autodocodec
 import Data.Aeson
 import Data.Validity
 import GHC.Generics (Generic)
-import YamlParse.Applicative
 
 data HideArchive
   = HideArchive
   | Don'tHideArchive
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec HideArchive)
 
 instance Validity HideArchive
 
-instance FromJSON HideArchive where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema HideArchive where
-  yamlSchema = (\b -> if b then HideArchive else Don'tHideArchive) <$> yamlSchema
-
-instance ToJSON HideArchive where
-  toJSON HideArchive = Bool True
-  toJSON Don'tHideArchive = Bool False
+instance HasCodec HideArchive where
+  codec =
+    dimapCodec
+      ( \case
+          True -> HideArchive
+          False -> Don'tHideArchive
+      )
+      ( \case
+          HideArchive -> True
+          Don'tHideArchive -> False
+      )
+      codec
