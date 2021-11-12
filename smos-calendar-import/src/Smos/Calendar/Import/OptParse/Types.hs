@@ -2,23 +2,16 @@
 
 module Smos.Calendar.Import.OptParse.Types where
 
-import Data.Aeson hiding ((<?>))
+import Autodocodec
 import Data.List.NonEmpty (NonEmpty (..))
 import Network.URI (URI)
 import Path
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
-import YamlParse.Applicative
 
 data Flags = Flags
   { flagDirectoryFlags :: !Report.DirectoryFlags,
     flagDebug :: Maybe Bool
-  }
-  deriving (Show, Eq)
-
-data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
-    confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
   }
   deriving (Show, Eq)
 
@@ -28,15 +21,18 @@ data Environment = Environment
   }
   deriving (Show, Eq)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
+data Configuration = Configuration
+  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+    confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
+  }
+  deriving (Show, Eq)
 
-instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectParser
-        <*> optionalField "calendar" "Calendar configuration"
+        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <*> optionalField "calendar" "Calendar configuration" .= confCalendarImportConfiguration
 
 data CalendarImportConfiguration = CalendarImportConfiguration
   { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
@@ -44,15 +40,12 @@ data CalendarImportConfiguration = CalendarImportConfiguration
   }
   deriving (Show, Eq)
 
-instance FromJSON CalendarImportConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema CalendarImportConfiguration where
-  yamlSchema =
-    objectParser "CalendarImportConfiguration" $
+instance HasCodec CalendarImportConfiguration where
+  codec =
+    object "CalendarImportConfiguration" $
       CalendarImportConfiguration
-        <$> optionalField "sources" "The sources to import from"
-        <*> optionalField "debug" "Show the internal structure of every event in its entry's contents."
+        <$> optionalField "sources" "The sources to import from" .= calendarImportConfSources
+        <*> optionalField "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
 
 data SourceConfiguration = SourceConfiguration
   { sourceConfName :: !(Maybe String),
@@ -61,18 +54,22 @@ data SourceConfiguration = SourceConfiguration
   }
   deriving (Show, Eq)
 
-instance YamlSchema SourceConfiguration where
-  yamlSchema =
-    objectParser "SourceConfiguration" $
+instance HasCodec SourceConfiguration where
+  codec =
+    object "SourceConfiguration" $
       SourceConfiguration
-        <$> optionalField "name" "The name of the source"
-        <*> ( requiredField "source" "the url to fetch or file to import"
-                <??> [ "If you are using Google, you want to get the URL that has these labels:",
-                       "\"Use this address to access this calendar from other applications without making it public.\"",
-                       "\"Warning: Only share this address with those you trust to see all event details for this calendar.\""
-                     ]
-            )
-        <*> requiredField "destination" "The destination path within the workflow directory"
+        <$> optionalField "name" "The name of the source" .= sourceConfName
+        <*> requiredFieldWith
+          "source"
+          ( codec
+              <??> [ "If you are using Google, you want to get the URL that has these labels:",
+                     "\"Use this address to access this calendar from other applications without making it public.\"",
+                     "\"Warning: Only share this address with those you trust to see all event details for this calendar.\""
+                   ]
+          )
+          "the url to fetch or file to import"
+          .= sourceConfOrigin
+        <*> requiredField "destination" "The destination path within the workflow directory" .= sourceConfDestinationFile
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,

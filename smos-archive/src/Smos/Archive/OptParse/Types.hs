@@ -1,9 +1,9 @@
 module Smos.Archive.OptParse.Types where
 
+import Autodocodec
 import Path
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
-import YamlParse.Applicative
 
 data Flags = Flags
   { flagFile :: FilePath,
@@ -16,8 +16,8 @@ data Configuration = Configuration
   }
   deriving (Show, Eq)
 
-instance YamlSchema Configuration where
-  yamlSchema = Configuration <$> yamlSchema
+instance HasCodec Configuration where
+  codec = dimapCodec Configuration confDirectoryConfiguration codec
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment

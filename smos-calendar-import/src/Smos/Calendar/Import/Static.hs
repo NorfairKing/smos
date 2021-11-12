@@ -4,6 +4,7 @@
 
 module Smos.Calendar.Import.Static where
 
+import Autodocodec
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Maybe
@@ -11,7 +12,6 @@ import Data.Text (Text)
 import Data.Validity
 import Data.Validity.Text (validateTextSingleLine)
 import GHC.Generics (Generic)
-import YamlParse.Applicative
 
 data Static = Static
   { staticSummary :: !(Maybe Text),

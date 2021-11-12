@@ -1,18 +1,19 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Calendar.Import.UnresolvedTimestamp where
 
-import Data.Aeson
+import Autodocodec
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 import Data.String
 import Data.Text (Text)
 import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Data
-import YamlParse.Applicative
 
 data CalRDate
   = CalRTimestamp CalTimestamp
@@ -21,98 +22,73 @@ data CalRDate
 
 instance Validity CalRDate
 
-instance YamlSchema CalRDate where
-  yamlSchema =
-    alternatives
-      [ CalRTimestamp <$> yamlSchema,
-        CalRPeriod <$> yamlSchema
-      ]
-
-instance ToJSON CalRDate where
-  toJSON = \case
-    CalRTimestamp cts -> toJSON cts
-    CalRPeriod cp -> toJSON cp
-
-instance FromJSON CalRDate where
-  parseJSON = viaYamlSchema
+instance HasCodec CalRDate where
+  codec = dimapCodec f g $ eitherCodec codec codec
+    where
+      f = \case
+        Left cts -> CalRTimestamp cts
+        Right cp -> CalRPeriod cp
+      g = \case
+        CalRTimestamp cts -> Left cts
+        CalRPeriod cp -> Right cp
 
 data CalPeriod
   = CalPeriodFromTo CalDateTime CalDateTime
   | CalPeriodDuration CalDateTime Int -- Seconds
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec CalPeriod)
 
 instance Validity CalPeriod
 
-instance YamlSchema CalPeriod where
-  yamlSchema =
+instance HasCodec CalPeriod where
+  codec =
     alternatives
       [ objectParser "period" $ CalPeriodFromTo <$> requiredField' "from" <*> requiredField' "to",
         objectParser "duration" $ CalPeriodDuration <$> requiredField' "from" <*> requiredField' "duration"
       ]
 
-instance ToJSON CalPeriod where
-  toJSON = \case
-    CalPeriodFromTo from to -> object ["from" .= from, "to" .= to]
-    CalPeriodDuration from dur -> object ["from" .= from, "duration" .= dur]
-
-instance FromJSON CalPeriod where
-  parseJSON = viaYamlSchema
-
 data CalEndDuration
   = CalTimestamp CalTimestamp
   | CalDuration Int -- Seconds
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec CalEndDuration)
 
 instance Validity CalEndDuration
 
-instance YamlSchema CalEndDuration where
-  yamlSchema =
+instance HasCodec CalEndDuration where
+  codec =
     alternatives
-      [ CalTimestamp <$> yamlSchema,
-        CalDuration <$> yamlSchema
+      [ CalTimestamp <$> codec,
+        CalDuration <$> codec
       ]
-
-instance FromJSON CalEndDuration where
-  parseJSON = viaYamlSchema
-
-instance ToJSON CalEndDuration where
-  toJSON = \case
-    CalTimestamp cts -> toJSON cts
-    CalDuration ndt -> toJSON ndt
 
 data CalTimestamp
   = CalDate Day
   | CalDateTime CalDateTime
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec CalTimestamp)
 
 instance Validity CalTimestamp
 
-instance YamlSchema CalTimestamp where
-  yamlSchema =
+instance HasCodec CalTimestamp where
+  codec =
     alternatives
       [ CalDate <$> daySchema,
-        CalDateTime <$> yamlSchema
+        CalDateTime <$> codec
       ]
-
-instance FromJSON CalTimestamp where
-  parseJSON = viaYamlSchema
-
-instance ToJSON CalTimestamp where
-  toJSON = \case
-    CalDate d -> toJSON d
-    CalDateTime dt -> toJSON dt
 
 -- https://tools.ietf.org/html/rfc5545#section-3.3.5
 data CalDateTime
   = Floating LocalTime
   | UTC UTCTime
   | Zoned LocalTime TimeZoneId
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec CalDateTime)
 
 instance Validity CalDateTime
 
-instance YamlSchema CalDateTime where
-  yamlSchema =
+instance HasCodec CalDateTime where
+  codec =
     alternatives
       [ objectParser "CalDateTime" $
           alternatives
@@ -123,26 +99,11 @@ instance YamlSchema CalDateTime where
         Floating <$> localTimeSchema
       ]
 
-instance FromJSON CalDateTime where
-  parseJSON = viaYamlSchema
-
-instance ToJSON CalDateTime where
-  toJSON = \case
-    Floating lt -> toJSON $ formatTime defaultTimeLocale timestampLocalTimeFormat lt
-    UTC utct -> object ["utc" .= formatTime defaultTimeLocale timestampLocalTimeFormat utct]
-    Zoned lt tzid ->
-      object
-        [ "local" .= formatTime defaultTimeLocale timestampLocalTimeFormat lt,
-          "zone" .= tzid
-        ]
-
 newtype TimeZoneId = TimeZoneId Text -- Unique id of the timezone
-  deriving (Show, Eq, Ord, Generic, FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
 
 instance Validity TimeZoneId
 
-instance YamlKeySchema TimeZoneId where
-  yamlKeySchema = TimeZoneId <$> yamlKeySchema
-
-instance YamlSchema TimeZoneId where
-  yamlSchema = TimeZoneId <$> yamlSchema
+instance HasCodec TimeZoneId where
+  codec = TimeZoneId <$> codec

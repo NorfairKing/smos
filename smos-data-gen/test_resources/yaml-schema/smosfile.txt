@@ -60,10 +60,10 @@
     ]
   , # Tree Entry
     [37mentry[m: # [31mrequired[m
-      # root entry
+      # root
       [36mref: Entry[m
     [37mforest[m: # [34moptional[m
       # default: [35m[][m
-      # sub forest
+      # subforest
       [36mref: Forest Entry[m
   ]
