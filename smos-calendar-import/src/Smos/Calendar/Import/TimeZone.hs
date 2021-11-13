@@ -1,11 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.TimeZone where
 
-import Data.Aeson
+import Autodocodec
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
@@ -14,27 +17,21 @@ import GHC.Generics
 import Smos.Calendar.Import.RecurrenceRule
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
-import YamlParse.Applicative
 
 newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
   deriving (Show, Eq, Ord, Generic)
 
 instance Validity TimeZoneHistory
 
-instance YamlSchema TimeZoneHistory where
-  yamlSchema =
-    TimeZoneHistory
-      <$> alternatives
-        [ yamlSchema,
-          (: []) <$> yamlSchema
-        ]
-
-instance FromJSON TimeZoneHistory where
-  parseJSON = viaYamlSchema
-
-instance ToJSON TimeZoneHistory where
-  toJSON (TimeZoneHistory [x]) = toJSON x
-  toJSON (TimeZoneHistory l) = toJSON l
+instance HasCodec TimeZoneHistory where
+  codec = dimapCodec f g $ eitherCodec codec codec
+    where
+      f = \case
+        Left l -> TimeZoneHistory l
+        Right e -> TimeZoneHistory [e]
+      g = \case
+        TimeZoneHistory [e] -> Right e
+        TimeZoneHistory l -> Left l
 
 data TimeZoneHistoryRule = TimeZoneHistoryRule
   { timeZoneHistoryRuleStart :: !LocalTime, -- In the timezone at the time
@@ -47,37 +44,20 @@ data TimeZoneHistoryRule = TimeZoneHistoryRule
 
 instance Validity TimeZoneHistoryRule
 
-instance YamlSchema TimeZoneHistoryRule where
-  yamlSchema =
-    objectParser "TimeZoneHistoryRule" $
+instance HasCodec TimeZoneHistoryRule where
+  codec =
+    object "TimeZoneHistoryRule" $
       TimeZoneHistoryRule
-        <$> requiredFieldWith' "start" localTimeSchema
-        <*> requiredField' "from"
-        <*> requiredField' "to"
-        <*> optionalFieldWithDefault' "rules" S.empty
-        <*> optionalFieldWithDefault' "rdates" S.empty
+        <$> requiredFieldWith' "start" localTimeCodec .= timeZoneHistoryRuleStart
+        <*> requiredField' "from" .= timeZoneHistoryRuleOffsetFrom
+        <*> requiredField' "to" .= timeZoneHistoryRuleOffsetTo
+        <*> optionalFieldWithOmittedDefault' "rules" S.empty .= timeZoneHistoryRuleRRules
+        <*> optionalFieldWithOmittedDefault' "rdates" S.empty .= timeZoneHistoryRuleRDates
 
-instance FromJSON TimeZoneHistoryRule where
-  parseJSON = viaYamlSchema
-
-instance ToJSON TimeZoneHistoryRule where
-  toJSON TimeZoneHistoryRule {..} =
-    object $
-      concat
-        [ [ "start" .= formatTime defaultTimeLocale timestampLocalTimeFormat timeZoneHistoryRuleStart,
-            "from" .= timeZoneHistoryRuleOffsetFrom,
-            "to" .= timeZoneHistoryRuleOffsetTo
-          ],
-          [ "rules" .= timeZoneHistoryRuleRRules | not (S.null timeZoneHistoryRuleRRules)
-          ],
-          [ "rdates" .= timeZoneHistoryRuleRDates | not (S.null timeZoneHistoryRuleRDates)
-          ]
-        ]
-
-newtype UTCOffset = UTCOffset Int -- Minutes from UTCTime
+newtype UTCOffset = UTCOffset {unUTCOffset :: Int} -- Minutes from UTCTime
   deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
 
 instance Validity UTCOffset
 
-instance YamlSchema UTCOffset where
-  yamlSchema = UTCOffset <$> yamlSchema
+instance HasCodec UTCOffset where
+  codec = dimapCodec UTCOffset unUTCOffset codec

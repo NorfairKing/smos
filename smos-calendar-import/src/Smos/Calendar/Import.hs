@@ -1,16 +1,18 @@
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import where
 
+import Autodocodec
 import Control.Monad
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Default
 import qualified Data.List.NonEmpty as NE
-import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
-import Data.Yaml as Yaml
+import qualified Data.Yaml as Yaml
 import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
@@ -24,7 +26,6 @@ import Smos.Report.Config
 import System.Exit
 import Text.ICalendar.Parser
 import Text.ICalendar.Types as ICal
-import YamlParse.Applicative
 
 -- Given a list of sources (basically ics files) we want to produce a single smos file (like calendar.smos) that contains all the events.
 -- For each event we want an entry with the description in the header.
@@ -104,34 +105,24 @@ data ProcessConf = ProcessConf
     processConfTimeZone :: TimeZone,
     processConfName :: Maybe String
   }
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
+  deriving (FromJSON, ToJSON) via (Autodocodec ProcessConf)
 
-instance ToJSON ProcessConf where
-  toJSON ProcessConf {..} =
-    object $
-      concat
-        [ ["debug" .= processConfDebug | not processConfDebug],
-          ["timezone" .= formatTime defaultTimeLocale timeZoneFormat processConfTimeZone | processConfTimeZone /= utc],
-          ["name" .= processConfName | isJust processConfName],
-          [ "start" .= formatTime defaultTimeLocale timestampDayFormat processConfStart,
-            "limit" .= formatTime defaultTimeLocale timestampDayFormat processConfLimit
-          ]
-        ]
-
-instance FromJSON ProcessConf where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema ProcessConf where
-  yamlSchema =
-    let dayField = maybeParser (parseTimeM True defaultTimeLocale timestampDayFormat) yamlSchema <?> T.pack timestampDayFormat
-        timeZoneField = maybeParser (parseTimeM True defaultTimeLocale timeZoneFormat) yamlSchema <?> T.pack timeZoneFormat
-     in objectParser "ProcessConf" $
+instance HasCodec ProcessConf where
+  codec =
+    let timeZoneCodec =
+          bimapCodec
+            (parseTimeEither defaultTimeLocale timeZoneFormat)
+            (formatTime defaultTimeLocale timeZoneFormat)
+            codec
+            <?> T.pack timeZoneFormat
+     in object "ProcessConf" $
           ProcessConf
-            <$> optionalFieldWithDefault "debug" False "debug mode"
-            <*> requiredFieldWith "start" "start day" dayField
-            <*> requiredFieldWith "limit" "recurrence limit" dayField
-            <*> optionalFieldWithDefaultWith "timezone" utc "time zone" timeZoneField
-            <*> optionalField "name" "calendar name"
+            <$> optionalFieldWithDefault "debug" False "debug mode" .= processConfDebug
+            <*> requiredFieldWith "start" dayCodec "start day" .= processConfStart
+            <*> requiredFieldWith "limit" dayCodec "recurrence limit" .= processConfLimit
+            <*> optionalFieldWithDefaultWith "timezone" timeZoneCodec utc "time zone" .= processConfTimeZone
+            <*> optionalField "name" "calendar name" .= processConfName
 
 timeZoneFormat :: String
 timeZoneFormat = "%z"

@@ -1,13 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.UnresolvedEvent where
 
-import Data.Aeson
+import Autodocodec
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Validity
@@ -15,40 +17,36 @@ import GHC.Generics
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
-import YamlParse.Applicative
 
 data UnresolvedEvents = UnresolvedEvents
   { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
     unresolvedEventsTimeZones :: !(Map TimeZoneId TimeZoneHistory)
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
 
 instance Validity UnresolvedEvents
 
 -- TODO validity constraints on timezone ids
 
-instance YamlSchema UnresolvedEvents where
-  yamlSchema =
-    alternatives
-      [ objectParser "UnresolvedEvents" $
-          UnresolvedEvents
-            <$> requiredField' "events"
-            <*> optionalFieldWithDefault' "zones" M.empty,
-        UnresolvedEvents <$> yamlSchema <*> pure M.empty
-      ]
-
-instance FromJSON UnresolvedEvents where
-  parseJSON = viaYamlSchema
-
-instance ToJSON UnresolvedEvents where
-  toJSON UnresolvedEvents {..} =
-    if M.null unresolvedEventsTimeZones
-      then toJSON unresolvedEventGroups
-      else
-        object
-          [ "events" .= unresolvedEventGroups,
-            "zones" .= unresolvedEventsTimeZones
-          ]
+instance HasCodec UnresolvedEvents where
+  codec =
+    dimapCodec f g $
+      eitherCodec
+        ( object "UnresolvedEvents" $
+            UnresolvedEvents
+              <$> requiredField' "events" .= unresolvedEventGroups
+              <*> optionalFieldWithOmittedDefault' "zones" M.empty .= unresolvedEventsTimeZones
+        )
+        codec
+    where
+      f = \case
+        Left ues -> ues
+        Right gs -> UnresolvedEvents gs M.empty
+      g ues =
+        if null (unresolvedEventsTimeZones ues)
+          then Right (unresolvedEventGroups ues)
+          else Left ues
 
 data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,
@@ -58,27 +56,24 @@ data UnresolvedEventGroup = UnresolvedEventGroup
 
 instance Validity UnresolvedEventGroup
 
-instance YamlSchema UnresolvedEventGroup where
-  yamlSchema =
-    alternatives
-      [ objectParser "UnresolvedEventGroup" $
-          UnresolvedEventGroup
-            <$> staticObjectParser
-            <*> optionalFieldWithDefault' "events" S.empty,
-        UnresolvedEventGroup emptyStatic <$> yamlSchema
-      ]
-
-instance FromJSON UnresolvedEventGroup where
-  parseJSON = viaYamlSchema
-
-instance ToJSON UnresolvedEventGroup where
-  toJSON UnresolvedEventGroup {..} = case staticToObject unresolvedEventGroupStatic of
-    [] -> toJSON unresolvedEvents
-    ps ->
-      object $
-        ps
-          ++ [ "events" .= unresolvedEvents
-             ]
+instance HasCodec UnresolvedEventGroup where
+  codec =
+    dimapCodec f g $
+      eitherCodec
+        ( object "UnresolvedEventGroup" $
+            UnresolvedEventGroup
+              <$> staticObjectCodec .= unresolvedEventGroupStatic
+              <*> optionalFieldWithOmittedDefault' "events" S.empty .= unresolvedEvents
+        )
+        codec
+    where
+      f = \case
+        Left ueg -> ueg
+        Right s -> UnresolvedEventGroup emptyStatic s
+      g ueg =
+        if unresolvedEventGroupStatic ueg == emptyStatic
+          then Right (unresolvedEvents ueg)
+          else Left ueg
 
 data UnresolvedEvent = UnresolvedEvent
   { unresolvedEventStart :: !(Maybe CalTimestamp),
@@ -88,20 +83,9 @@ data UnresolvedEvent = UnresolvedEvent
 
 instance Validity UnresolvedEvent
 
-instance YamlSchema UnresolvedEvent where
-  yamlSchema =
-    objectParser "UnresolvedEvent" $
+instance HasCodec UnresolvedEvent where
+  codec =
+    object "UnresolvedEvent" $
       UnresolvedEvent
-        <$> optionalField' "start"
-        <*> optionalField' "end"
-
-instance FromJSON UnresolvedEvent where
-  parseJSON = viaYamlSchema
-
-instance ToJSON UnresolvedEvent where
-  toJSON UnresolvedEvent {..} =
-    object $
-      concat
-        [ ["start" .= s | s <- maybeToList unresolvedEventStart],
-          ["end" .= e | e <- maybeToList unresolvedEventEnd]
-        ]
+        <$> optionalField' "start" .= unresolvedEventStart
+        <*> optionalField' "end" .= unresolvedEventEnd

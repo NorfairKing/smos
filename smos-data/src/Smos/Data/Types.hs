@@ -89,6 +89,7 @@ module Smos.Data.Types
     utctimeFormat,
     utctimeCodec,
     getLocalTime,
+    parseTimeEither,
   )
 where
 

@@ -28,6 +28,8 @@ deriving instance Ord DayOfWeek -- Silly that this doesn't exist. We need to be 
 
 deriving instance Generic DayOfWeek
 
+deriving instance Bounded DayOfWeek -- Silly that this doesn't exist.
+
 -- | A recurrence rule
 --
 -- = Definition
@@ -431,10 +433,10 @@ untilCountObjectCodec :: ObjectCodec UntilCount UntilCount
 untilCountObjectCodec =
   dimapCodec f g $
     eitherCodec
-      (object "Until" $ requiredFieldWith' "until" localTimeCodec)
+      (requiredFieldWith' "until" localTimeCodec)
       ( eitherCodec
-          (object "Count" $ requiredField' "count")
-          (object "Indefinitely" $ pure ())
+          (requiredField' "count")
+          (pure ())
       )
   where
     f = \case
@@ -526,11 +528,17 @@ instance Validity ByDay where
 
 instance HasCodec ByDay where
   codec =
-    object "ByDay" $
-      alternatives
-        [ Specific <$> requiredField' "pos" <*> requiredField' "day",
-          Every <$> requiredField' "day"
-        ]
+    dimapCodec f g $
+      eitherCodec
+        (object "Every" $ requiredField' "day")
+        (object "Specific" $ (,) <$> requiredField' "pos" .= fst <*> requiredField' "day" .= snd)
+    where
+      f = \case
+        Left dow -> Every dow
+        Right (i, dow) -> Specific i dow
+      g = \case
+        Every dow -> Left dow
+        Specific i dow -> Right (i, dow)
 
 -- | A day within a month
 --
