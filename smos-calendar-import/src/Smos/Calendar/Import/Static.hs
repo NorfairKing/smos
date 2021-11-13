@@ -1,13 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Static where
 
 import Autodocodec
-import Data.Aeson
-import Data.Aeson.Types
-import Data.Maybe
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import Data.Validity
 import Data.Validity.Text (validateTextSingleLine)
@@ -17,7 +16,8 @@ data Static = Static
   { staticSummary :: !(Maybe Text),
     staticDescription :: !(Maybe Text)
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Static)
 
 instance Validity Static where
   validate e@Static {..} =
@@ -26,27 +26,15 @@ instance Validity Static where
         decorate "The title is a single line if it exists" $ maybe valid validateTextSingleLine staticSummary
       ]
 
-instance YamlSchema Static where
-  yamlSchema = objectParser "Static" staticObjectParser
+instance HasCodec Static where
+  codec = object "Static" staticObjectCodec
 
-staticObjectParser :: ObjectParser Static
-staticObjectParser =
-  Static
-    <$> optionalField' "summary"
-    <*> optionalField' "description"
-
-instance FromJSON Static where
-  parseJSON = viaYamlSchema
-
-instance ToJSON Static where
-  toJSON s = object $ staticToObject s
-
-staticToObject :: Static -> [Pair]
-staticToObject Static {..} =
-  concat
-    [ ["summary" .= s | s <- maybeToList staticSummary],
-      ["description" .= d | d <- maybeToList staticDescription]
-    ]
+staticObjectCodec :: ObjectCodec Static Static
+staticObjectCodec =
+  bimapCodec prettyValidate id $
+    Static
+      <$> optionalField' "summary" .= staticSummary
+      <*> optionalField' "description" .= staticDescription
 
 emptyStatic :: Static
 emptyStatic = Static {staticSummary = Nothing, staticDescription = Nothing}

@@ -42,10 +42,25 @@ instance Validity CalPeriod
 
 instance HasCodec CalPeriod where
   codec =
-    alternatives
-      [ objectParser "period" $ CalPeriodFromTo <$> requiredField' "from" <*> requiredField' "to",
-        objectParser "duration" $ CalPeriodDuration <$> requiredField' "from" <*> requiredField' "duration"
-      ]
+    dimapCodec f g $
+      eitherCodec
+        ( object "period" $
+            (,)
+              <$> requiredField' "from" .= fst
+              <*> requiredField' "to" .= snd
+        )
+        ( object "duration" $
+            (,)
+              <$> requiredField' "from" .= fst
+              <*> requiredField' "duration" .= snd
+        )
+    where
+      f = \case
+        Left (from, to) -> CalPeriodFromTo from to
+        Right (from, duration) -> CalPeriodDuration from duration
+      g = \case
+        CalPeriodFromTo from to -> Left (from, to)
+        CalPeriodDuration from duration -> Right (from, duration)
 
 data CalEndDuration
   = CalTimestamp CalTimestamp
@@ -56,11 +71,14 @@ data CalEndDuration
 instance Validity CalEndDuration
 
 instance HasCodec CalEndDuration where
-  codec =
-    alternatives
-      [ CalTimestamp <$> codec,
-        CalDuration <$> codec
-      ]
+  codec = dimapCodec f g $ eitherCodec codec codec
+    where
+      f = \case
+        Left cts -> CalTimestamp cts
+        Right i -> CalDuration i
+      g = \case
+        CalTimestamp cts -> Left cts
+        CalDuration i -> Right i
 
 data CalTimestamp
   = CalDate Day
@@ -71,11 +89,14 @@ data CalTimestamp
 instance Validity CalTimestamp
 
 instance HasCodec CalTimestamp where
-  codec =
-    alternatives
-      [ CalDate <$> daySchema,
-        CalDateTime <$> codec
-      ]
+  codec = dimapCodec f g $ eitherCodec codec codec
+    where
+      f = \case
+        Left d -> CalDate d
+        Right dt -> CalDateTime dt
+      g = \case
+        CalDate d -> Left d
+        CalDateTime dt -> Right dt
 
 -- https://tools.ietf.org/html/rfc5545#section-3.3.5
 data CalDateTime
@@ -88,22 +109,55 @@ data CalDateTime
 instance Validity CalDateTime
 
 instance HasCodec CalDateTime where
-  codec =
-    alternatives
-      [ objectParser "CalDateTime" $
-          alternatives
-            [ Floating <$> requiredFieldWith' "floating" localTimeSchema,
-              UTC <$> requiredFieldWith' "utc" (localTimeToUTC utc <$> localTimeSchema),
-              Zoned <$> requiredFieldWith' "local" localTimeSchema <*> requiredField' "zone"
-            ],
-        Floating <$> localTimeSchema
-      ]
+  codec = dimapCodec f1 g1 $ eitherCodec codec viaObjectCodec
+    where
+      f1 = \case
+        Left lt -> Floating lt
+        Right ctd -> ctd
+      g1 = \case
+        Floating f -> Left f
+        cdt -> Right cdt
+      viaObjectCodec =
+        dimapCodec
+          f2
+          g2
+          ( eitherCodec
+              (object "Floating" $ requiredFieldWith' "floating" localTimeCodec)
+              ( eitherCodec
+                  (object "UTC" $ requiredFieldWith' "utc" utcViaLocalTimeCodec)
+                  ( object "Zoned" $
+                      (,)
+                        <$> requiredFieldWith' "local" localTimeCodec .= fst
+                        <*> requiredField' "zone" .= snd
+                  )
+              )
+          )
+      utcViaLocalTimeCodec :: JSONCodec UTCTime
+      utcViaLocalTimeCodec = dimapCodec (localTimeToUTC utc) (utcToLocalTime utc) localTimeCodec
+      f2 = \case
+        Left lt -> Floating lt
+        Right (Left u) -> UTC u
+        Right (Right (lt, tzid)) -> Zoned lt tzid
+      g2 = \case
+        Floating lt -> Left lt
+        UTC u -> Right (Left u)
+        Zoned lt tzid -> Right (Right (lt, tzid))
 
-newtype TimeZoneId = TimeZoneId Text -- Unique id of the timezone
+-- alternatives
+--   [ object "CalDateTime" $
+--       alternatives
+--         [ Floating <$> requiredFieldWith' "floating" localTimeSchema,
+--           UTC <$> requiredFieldWith' "utc" (localTimeToUTC utc <$> localTimeSchema),
+--           Zoned <$> requiredFieldWith' "local" localTimeSchema <*> requiredField' "zone"
+--         ],
+--     Floating <$> localTimeSchema
+--   ]
+
+newtype TimeZoneId = TimeZoneId {unTimeZoneId :: Text} -- Unique id of the timezone
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (FromJSON, FromJSONKey, ToJSON, ToJSONKey, IsString)
 
 instance Validity TimeZoneId
 
 instance HasCodec TimeZoneId where
-  codec = TimeZoneId <$> codec
+  codec = dimapCodec TimeZoneId unTimeZoneId codec

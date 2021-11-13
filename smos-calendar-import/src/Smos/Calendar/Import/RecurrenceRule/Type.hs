@@ -339,7 +339,7 @@ instance HasCodec RRule where
       RRule
         <$> requiredField' "frequency" .= rRuleFrequency
         <*> optionalFieldWithDefault' "interval" (Interval 1) .= rRuleInterval
-        <*> untilCountObjectCodec
+        <*> untilCountObjectCodec .= rRuleUntilCount
         <*> optionalFieldWithOmittedDefault' "second" S.empty .= rRuleBySecond
         <*> optionalFieldWithOmittedDefault' "minute" S.empty .= rRuleByMinute
         <*> optionalFieldWithOmittedDefault' "hour" S.empty .= rRuleByHour
@@ -395,7 +395,7 @@ instance Validity Interval where
   validate i@(Interval w) = mconcat [genericValidate i, declare "The interval is not zero" $ w /= 0]
 
 instance HasCodec Interval where
-  codec = Interval <$> codec
+  codec = dimapCodec Interval unInterval codec
 
 data UntilCount
   = -- | The UNTIL rule part defines a DATE or DATE-TIME value that bounds the recurrence rule in an inclusive manner.
@@ -419,38 +419,38 @@ data UntilCount
     Count Word
   | -- | If [the UNTIL rule part is] not present, and the COUNT rule part is also not present, the "RRULE" is considered to repeat forever.
     Indefinitely
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UntilCount)
 
 instance Validity UntilCount
 
 instance HasCodec UntilCount where
-  codec = objectParser "UntilCount" untilCountObjectParser
+  codec = object "UntilCount" untilCountObjectCodec
 
-untilCountObjectParser :: ObjectParser UntilCount
-untilCountObjectParser =
-  alternatives
-    [ Until <$> requiredFieldWith' "until" localTimeSchema,
-      Count <$> requiredField' "count",
-      pure Indefinitely
-    ]
-
-instance FromJSON UntilCount where
-  parseJSON = viaHasCodec
-
-instance ToJSON UntilCount where
-  toJSON = object . untilCountObject
-
-untilCountObject :: UntilCount -> [Pair]
-untilCountObject = \case
-  Until lt -> ["until" .= formatTime defaultTimeLocale timestampLocalTimeFormat lt]
-  Count c -> ["count" .= c]
-  Indefinitely -> []
+untilCountObjectCodec :: ObjectCodec UntilCount UntilCount
+untilCountObjectCodec =
+  dimapCodec f g $
+    eitherCodec
+      (object "Until" $ requiredFieldWith' "until" localTimeCodec)
+      ( eitherCodec
+          (object "Count" $ requiredField' "count")
+          (object "Indefinitely" $ pure ())
+      )
+  where
+    f = \case
+      Left lt -> Until lt
+      Right (Left w) -> Count w
+      Right (Right ()) -> Indefinitely
+    g = \case
+      Until lt -> Left lt
+      Count w -> Right (Left w)
+      Indefinitely -> Right (Right ())
 
 -- | A second within a minute
 --
 -- Valid values are 0 to 60.
 newtype BySecond = Second {unSecond :: Word}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity BySecond where
   validate s@(Second w) =
@@ -460,16 +460,13 @@ instance Validity BySecond where
       ]
 
 instance HasCodec BySecond where
-  codec = Second <$> codec
-
-instance FromJSON BySecond where
-  parseJSON = viaHasCodec
+  codec = dimapCodec Second unSecond codec
 
 -- | A minute within an hour
 --
 -- Valid values are 0 to 59.
 newtype ByMinute = Minute {unMinute :: Word}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity ByMinute where
   validate s@(Minute w) =
@@ -479,16 +476,13 @@ instance Validity ByMinute where
       ]
 
 instance HasCodec ByMinute where
-  codec = Minute <$> codec
-
-instance FromJSON ByMinute where
-  parseJSON = viaHasCodec
+  codec = dimapCodec Minute unMinute codec
 
 -- | An hour within a day
 --
 -- Valid values are 0 to 23.
 newtype ByHour = Hour {unHour :: Word}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
 
 instance Validity ByHour where
   validate s@(Hour w) =
@@ -498,10 +492,7 @@ instance Validity ByHour where
       ]
 
 instance HasCodec ByHour where
-  codec = Hour <$> codec
-
-instance FromJSON ByHour where
-  parseJSON = viaHasCodec
+  codec = dimapCodec Hour unHour codec
 
 -- | The BYDAY rule part specifies a COMMA-separated list of days of the week;
 --
@@ -535,19 +526,11 @@ instance Validity ByDay where
 
 instance HasCodec ByDay where
   codec =
-    objectParser "ByDay" $
+    object "ByDay" $
       alternatives
         [ Specific <$> requiredField' "pos" <*> requiredField' "day",
           Every <$> requiredField' "day"
         ]
-
-instance FromJSON ByDay where
-  parseJSON = viaHasCodec
-
-instance ToJSON ByDay where
-  toJSON = \case
-    Every d -> object ["day" .= d]
-    Specific p d -> object ["pos" .= p, "day" .= d]
 
 -- | A day within a month
 --
@@ -564,10 +547,7 @@ instance Validity ByMonthDay where
       ]
 
 instance HasCodec ByMonthDay where
-  codec = MonthDay <$> codec
-
-instance FromJSON ByMonthDay where
-  parseJSON = viaHasCodec
+  codec = dimapCodec MonthDay unMonthDay codec
 
 -- | A day within a year
 --
@@ -585,10 +565,7 @@ instance Validity ByYearDay where
       ]
 
 instance HasCodec ByYearDay where
-  codec = YearDay <$> codec
-
-instance FromJSON ByYearDay where
-  parseJSON = viaHasCodec
+  codec = dimapCodec YearDay unYearDay codec
 
 -- | A week within a year
 --
@@ -615,10 +592,7 @@ instance Validity ByWeekNo where
       ]
 
 instance HasCodec ByWeekNo where
-  codec = WeekNo <$> codec
-
-instance FromJSON ByWeekNo where
-  parseJSON = viaHasCodec
+  codec = dimapCodec WeekNo unWeekNo codec
 
 -- | A month within a year
 --
@@ -656,10 +630,7 @@ instance Validity BySetPos where
       ]
 
 instance HasCodec BySetPos where
-  codec = SetPos <$> codec
-
-instance FromJSON BySetPos where
-  parseJSON = viaHasCodec
+  codec = dimapCodec SetPos unSetPos codec
 
 -- A month within a year
 --
@@ -683,38 +654,10 @@ instance Validity Month where
   validate = trivialValidation
 
 instance HasCodec Month where
-  codec =
-    alternatives
-      [ literalValue January,
-        literalValue February,
-        literalValue March,
-        literalValue April,
-        literalValue May,
-        literalValue June,
-        literalValue July,
-        literalValue August,
-        literalValue September,
-        literalValue October,
-        literalValue November,
-        literalValue December
-      ]
+  codec = shownBoundedEnumCodec
 
-instance FromJSON Month where
-  parseJSON = viaHasCodec
-
-instance ToJSON Month
-
-instance HasCodec DayOfWeek where -- Until we have it in yamlparse-applicative
-  codec =
-    alternatives
-      [ literalValue Monday,
-        literalValue Tuesday,
-        literalValue Wednesday,
-        literalValue Thursday,
-        literalValue Friday,
-        literalValue Saturday,
-        literalValue Sunday
-      ]
+instance HasCodec DayOfWeek where
+  codec = shownBoundedEnumCodec
 
 monthToMonthNo :: Month -> Int
 monthToMonthNo = \case
