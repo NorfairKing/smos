@@ -52,7 +52,8 @@ data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,
     unresolvedEvents :: !(Set UnresolvedEvent)
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEventGroup)
 
 instance Validity UnresolvedEventGroup
 
@@ -79,7 +80,8 @@ data UnresolvedEvent = UnresolvedEvent
   { unresolvedEventStart :: !(Maybe CalTimestamp),
     unresolvedEventEnd :: !(Maybe CalEndDuration)
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvent)
 
 instance Validity UnresolvedEvent
 

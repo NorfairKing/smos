@@ -5,6 +5,8 @@ module Smos.Calendar.Import.GoldenSpec
   )
 where
 
+import Autodocodec
+import Autodocodec.Yaml
 import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -25,7 +27,6 @@ import System.Exit
 import Test.Syd
 import Text.ICalendar.Parser
 import Text.ICalendar.Types
-import YamlParse.Applicative
 
 spec :: Spec
 spec = do
@@ -52,7 +53,7 @@ mkGoldenTest :: Path Abs File -> VCalendar -> Spec
 mkGoldenTest cp cals = do
   ProcessConf {..} <- runIO $ do
     confP <- replaceExtension ".config" cp
-    mpc <- readConfigFile confP
+    mpc <- readYamlConfigFile confP
     case mpc of
       Nothing ->
         die $
@@ -120,9 +121,9 @@ readGoldenSmosFile sfp actual = do
       Left err -> die $ unlines ["Failed to parse smos file: ", fromAbsFile sfp, err]
       Right smosFile -> pure smosFile
 
-readGoldenYaml :: (FromJSON a, ToJSON a, YamlSchema a) => Path Abs File -> a -> IO a
+readGoldenYaml :: (HasCodec a) => Path Abs File -> a -> IO a
 readGoldenYaml p actual = do
-  mF <- readConfigFile p
+  mF <- readYamlConfigFile p
   case mF of
     Nothing ->
       die $
@@ -130,6 +131,6 @@ readGoldenYaml p actual = do
           [ unwords ["not found:"],
             fromAbsFile p,
             "suggested:",
-            T.unpack (TE.decodeUtf8 (Yaml.encode actual))
+            T.unpack (TE.decodeUtf8 (Yaml.encode (Autodocodec actual)))
           ]
     Just r -> pure r

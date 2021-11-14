@@ -19,11 +19,12 @@ data CalRDate
   = CalRTimestamp CalTimestamp
   | CalRPeriod CalPeriod
   deriving (Show, Eq, Ord, Generic)
+  deriving (ToJSON, FromJSON) via (Autodocodec CalRDate)
 
 instance Validity CalRDate
 
 instance HasCodec CalRDate where
-  codec = dimapCodec f g $ eitherCodec codec codec
+  codec = named "CalRDate" $ dimapCodec f g $ eitherCodec codec codec
     where
       f = \case
         Left cts -> CalRTimestamp cts
@@ -42,18 +43,19 @@ instance Validity CalPeriod
 
 instance HasCodec CalPeriod where
   codec =
-    dimapCodec f g $
-      eitherCodec
-        ( object "period" $
-            (,)
-              <$> requiredField' "from" .= fst
-              <*> requiredField' "to" .= snd
-        )
-        ( object "duration" $
-            (,)
-              <$> requiredField' "from" .= fst
-              <*> requiredField' "duration" .= snd
-        )
+    named "CalPeriod" $
+      dimapCodec f g $
+        eitherCodec
+          ( object "period" $
+              (,)
+                <$> requiredField' "from" .= fst
+                <*> requiredField' "to" .= snd
+          )
+          ( object "duration" $
+              (,)
+                <$> requiredField' "from" .= fst
+                <*> requiredField' "duration" .= snd
+          )
     where
       f = \case
         Left (from, to) -> CalPeriodFromTo from to
@@ -109,7 +111,7 @@ data CalDateTime
 instance Validity CalDateTime
 
 instance HasCodec CalDateTime where
-  codec = dimapCodec f1 g1 $ eitherCodec codec viaObjectCodec
+  codec = named "CalDateTime" $ dimapCodec f1 g1 $ eitherCodec codec viaObjectCodec
     where
       f1 = \case
         Left lt -> Floating lt
@@ -142,16 +144,6 @@ instance HasCodec CalDateTime where
         Floating lt -> Left lt
         UTC u -> Right (Left u)
         Zoned lt tzid -> Right (Right (lt, tzid))
-
--- alternatives
---   [ object "CalDateTime" $
---       alternatives
---         [ Floating <$> requiredFieldWith' "floating" localTimeSchema,
---           UTC <$> requiredFieldWith' "utc" (localTimeToUTC utc <$> localTimeSchema),
---           Zoned <$> requiredFieldWith' "local" localTimeSchema <*> requiredField' "zone"
---         ],
---     Floating <$> localTimeSchema
---   ]
 
 newtype TimeZoneId = TimeZoneId {unTimeZoneId :: Text} -- Unique id of the timezone
   deriving stock (Show, Eq, Ord, Generic)

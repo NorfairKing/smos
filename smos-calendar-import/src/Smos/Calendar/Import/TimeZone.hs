@@ -19,7 +19,8 @@ import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
 newtype TimeZoneHistory = TimeZoneHistory {timeZoneHistoryRules :: [TimeZoneHistoryRule]}
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec TimeZoneHistory)
 
 instance Validity TimeZoneHistory
 
@@ -40,22 +41,25 @@ data TimeZoneHistoryRule = TimeZoneHistoryRule
     timeZoneHistoryRuleRRules :: !(Set RRule),
     timeZoneHistoryRuleRDates :: !(Set CalRDate)
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec TimeZoneHistoryRule)
 
 instance Validity TimeZoneHistoryRule
 
 instance HasCodec TimeZoneHistoryRule where
   codec =
-    object "TimeZoneHistoryRule" $
-      TimeZoneHistoryRule
-        <$> requiredFieldWith' "start" localTimeCodec .= timeZoneHistoryRuleStart
-        <*> requiredField' "from" .= timeZoneHistoryRuleOffsetFrom
-        <*> requiredField' "to" .= timeZoneHistoryRuleOffsetTo
-        <*> optionalFieldWithOmittedDefault' "rules" S.empty .= timeZoneHistoryRuleRRules
-        <*> optionalFieldWithOmittedDefault' "rdates" S.empty .= timeZoneHistoryRuleRDates
+    named "TimeZoneHistoryRule" $
+      object "TimeZoneHistoryRule" $
+        TimeZoneHistoryRule
+          <$> requiredFieldWith' "start" localTimeCodec .= timeZoneHistoryRuleStart
+          <*> requiredField' "from" .= timeZoneHistoryRuleOffsetFrom
+          <*> requiredField' "to" .= timeZoneHistoryRuleOffsetTo
+          <*> optionalFieldWithOmittedDefault' "rules" S.empty .= timeZoneHistoryRuleRRules
+          <*> optionalFieldWithOmittedDefault' "rdates" S.empty .= timeZoneHistoryRuleRDates
 
 newtype UTCOffset = UTCOffset {unUTCOffset :: Int} -- Minutes from UTCTime
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UTCOffset)
 
 instance Validity UTCOffset
 

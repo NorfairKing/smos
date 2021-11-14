@@ -240,6 +240,7 @@ test-suite smos-calendar-import-test
   build-depends:
       QuickCheck
     , autodocodec
+    , autodocodec-yaml
     , base
     , bytestring
     , containers

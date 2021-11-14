@@ -65,17 +65,19 @@ data RecurringEvent = RecurringEvent
     recurringEventRecurrence :: !Recurrence
   }
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvent)
 
 instance Validity RecurringEvent
 
 instance HasCodec RecurringEvent where
   codec =
-    object "RecurringEvent" $
-      RecurringEvent
-        <$> staticObjectCodec .= recurringEventStatic
-        <*> optionalField' "start" .= recurringEventStart
-        <*> optionalField' "end" .= recurringEventEnd
-        <*> recurrenceObjectCodec .= recurringEventRecurrence
+    named "RecurringEvent" $
+      object "RecurringEvent" $
+        RecurringEvent
+          <$> staticObjectCodec .= recurringEventStatic
+          <*> optionalField' "start" .= recurringEventStart
+          <*> optionalField' "end" .= recurringEventEnd
+          <*> recurrenceObjectCodec .= recurringEventRecurrence
 
 data Recurrence = Recurrence
   { -- | We use a set here instead of a Maybe because the spec says:
@@ -94,6 +96,7 @@ data Recurrence = Recurrence
     recurrenceRDates :: !(Set CalRDate)
   }
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
 
 instance Validity Recurrence
 

@@ -3,7 +3,6 @@ packages:
 - /home/syd/src/autodocodec/autodocodec
 - /home/syd/src/autodocodec/autodocodec-yaml
 - /home/syd/src/autodocodec/autodocodec-schema
-- /home/syd/src/autodocodec/autodocodec-api-usage
 
 - smos
 - smos-data

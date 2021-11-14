@@ -12,6 +12,7 @@ module Smos.Calendar.Import.RecurrenceRule.Type where
 
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
@@ -337,21 +338,22 @@ instance Validity RRule where
 
 instance HasCodec RRule where
   codec =
-    object "RRule" $
-      RRule
-        <$> requiredField' "frequency" .= rRuleFrequency
-        <*> optionalFieldWithDefault' "interval" (Interval 1) .= rRuleInterval
-        <*> untilCountObjectCodec .= rRuleUntilCount
-        <*> optionalFieldWithOmittedDefault' "second" S.empty .= rRuleBySecond
-        <*> optionalFieldWithOmittedDefault' "minute" S.empty .= rRuleByMinute
-        <*> optionalFieldWithOmittedDefault' "hour" S.empty .= rRuleByHour
-        <*> optionalFieldWithOmittedDefault' "day" S.empty .= rRuleByDay
-        <*> optionalFieldWithOmittedDefault' "monthday" S.empty .= rRuleByMonthDay
-        <*> optionalFieldWithOmittedDefault' "yearday" S.empty .= rRuleByYearDay
-        <*> optionalFieldWithOmittedDefault' "weekno" S.empty .= rRuleByWeekNo
-        <*> optionalFieldWithOmittedDefault' "month" S.empty .= rRuleByMonth
-        <*> optionalFieldWithOmittedDefault' "week-start" Monday .= rRuleWeekStart
-        <*> optionalFieldWithOmittedDefault' "setpos" S.empty .= rRuleBySetPos
+    named "RRule" $
+      object "RRule" $
+        RRule
+          <$> requiredField' "frequency" .= rRuleFrequency
+          <*> optionalFieldWithDefault' "interval" (Interval 1) .= rRuleInterval
+          <*> untilCountObjectCodec .= rRuleUntilCount
+          <*> optionalFieldWithOmittedDefault' "second" S.empty .= rRuleBySecond
+          <*> optionalFieldWithOmittedDefault' "minute" S.empty .= rRuleByMinute
+          <*> optionalFieldWithOmittedDefault' "hour" S.empty .= rRuleByHour
+          <*> optionalFieldWithOmittedDefault' "day" S.empty .= rRuleByDay
+          <*> optionalFieldWithOmittedDefault' "monthday" S.empty .= rRuleByMonthDay
+          <*> optionalFieldWithOmittedDefault' "yearday" S.empty .= rRuleByYearDay
+          <*> optionalFieldWithOmittedDefault' "weekno" S.empty .= rRuleByWeekNo
+          <*> optionalFieldWithOmittedDefault' "month" S.empty .= rRuleByMonth
+          <*> optionalFieldWithOmittedDefault' "week-start" Monday .= rRuleWeekStart
+          <*> optionalFieldWithOmittedDefault' "setpos" S.empty .= rRuleBySetPos
 
 -- | Frequency
 --
@@ -374,6 +376,7 @@ data Frequency
   | Monthly
   | Yearly
   deriving stock (Show, Eq, Ord, Generic, Enum, Bounded)
+  deriving (FromJSON, ToJSON) via (Autodocodec Frequency)
 
 instance Validity Frequency
 
@@ -391,7 +394,7 @@ instance HasCodec Frequency where
 -- Note: We did not chose 'Maybe Word' because that would have two ways to represent the default value.
 newtype Interval = Interval {unInterval :: Word}
   deriving stock (Show, Eq, Ord, Generic)
-  deriving newtype (FromJSON, ToJSON)
+  deriving (FromJSON, ToJSON) via (Autodocodec Interval)
 
 instance Validity Interval where
   validate i@(Interval w) = mconcat [genericValidate i, declare "The interval is not zero" $ w /= 0]
@@ -453,6 +456,7 @@ untilCountObjectCodec =
 -- Valid values are 0 to 60.
 newtype BySecond = Second {unSecond :: Word}
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec BySecond)
 
 instance Validity BySecond where
   validate s@(Second w) =
@@ -469,6 +473,7 @@ instance HasCodec BySecond where
 -- Valid values are 0 to 59.
 newtype ByMinute = Minute {unMinute :: Word}
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByMinute)
 
 instance Validity ByMinute where
   validate s@(Minute w) =
@@ -485,6 +490,7 @@ instance HasCodec ByMinute where
 -- Valid values are 0 to 23.
 newtype ByHour = Hour {unHour :: Word}
   deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByHour)
 
 instance Validity ByHour where
   validate s@(Hour w) =
@@ -515,7 +521,8 @@ instance HasCodec ByHour where
 data ByDay
   = Every DayOfWeek
   | Specific Int DayOfWeek
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByDay)
 
 instance Validity ByDay where
   validate bd =
@@ -528,10 +535,11 @@ instance Validity ByDay where
 
 instance HasCodec ByDay where
   codec =
-    dimapCodec f g $
-      eitherCodec
-        (object "Every" $ requiredField' "day")
-        (object "Specific" $ (,) <$> requiredField' "pos" .= fst <*> requiredField' "day" .= snd)
+    bimapCodec prettyValidate id $
+      dimapCodec f g $
+        eitherCodec
+          (object "Every" $ requiredField' "day")
+          (object "Specific" $ (,) <$> requiredField' "pos" .= fst <*> requiredField' "day" .= snd)
     where
       f = \case
         Left dow -> Every dow
@@ -545,7 +553,8 @@ instance HasCodec ByDay where
 -- Valid values are 1 to 31 or -31 to -1.  For example, -10 represents the
 -- tenth to the last day of the month.
 newtype ByMonthDay = MonthDay {unMonthDay :: Int}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByMonthDay)
 
 instance Validity ByMonthDay where
   validate md@(MonthDay i) =
@@ -555,7 +564,7 @@ instance Validity ByMonthDay where
       ]
 
 instance HasCodec ByMonthDay where
-  codec = dimapCodec MonthDay unMonthDay codec
+  codec = bimapCodec prettyValidate id $ dimapCodec MonthDay unMonthDay codec
 
 -- | A day within a year
 --
@@ -563,7 +572,8 @@ instance HasCodec ByMonthDay where
 -- last day of the year (December 31st) and -306 represents the 306th to the
 -- last day of the year (March 1st).
 newtype ByYearDay = YearDay {unYearDay :: Int}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByYearDay)
 
 instance Validity ByYearDay where
   validate md@(YearDay i) =
@@ -573,7 +583,7 @@ instance Validity ByYearDay where
       ]
 
 instance HasCodec ByYearDay where
-  codec = dimapCodec YearDay unYearDay codec
+  codec = bimapCodec prettyValidate id $ dimapCodec YearDay unYearDay codec
 
 -- | A week within a year
 --
@@ -590,7 +600,8 @@ instance HasCodec ByYearDay where
 -- Note: Assuming a Monday week start, week 53 can only occur when Thursday is
 -- January 1 or if it is a leap year and Wednesday is January 1.
 newtype ByWeekNo = WeekNo {unWeekNo :: Int}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ByWeekNo)
 
 instance Validity ByWeekNo where
   validate bwn@(WeekNo i) =
@@ -600,7 +611,7 @@ instance Validity ByWeekNo where
       ]
 
 instance HasCodec ByWeekNo where
-  codec = dimapCodec WeekNo unWeekNo codec
+  codec = bimapCodec prettyValidate id $ dimapCodec WeekNo unWeekNo codec
 
 -- | A month within a year
 --
@@ -628,7 +639,8 @@ type ByMonth = Month
 -- specific occurrence within the set of occurrences specified by the
 -- rule.
 newtype BySetPos = SetPos {unSetPos :: Int}
-  deriving (Show, Eq, Ord, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec BySetPos)
 
 instance Validity BySetPos where
   validate sp@(SetPos w) =
@@ -638,7 +650,9 @@ instance Validity BySetPos where
       ]
 
 instance HasCodec BySetPos where
-  codec = dimapCodec SetPos unSetPos codec
+  codec =
+    bimapCodec prettyValidate id $
+      dimapCodec SetPos unSetPos codec
 
 -- A month within a year
 --
@@ -657,15 +671,26 @@ data Month
   | November
   | December
   deriving (Show, Eq, Ord, Enum, Bounded, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Month)
 
 instance Validity Month where
   validate = trivialValidation
 
 instance HasCodec Month where
-  codec = shownBoundedEnumCodec
+  codec = named "Month" shownBoundedEnumCodec
 
 instance HasCodec DayOfWeek where
-  codec = shownBoundedEnumCodec
+  codec =
+    named "DayOfWeek" $
+      stringConstCodec $
+        (Monday, "monday")
+          :| [ (Tuesday, "tuesday"),
+               (Wednesday, "wednesday"),
+               (Thursday, "thursday"),
+               (Friday, "friday"),
+               (Saturday, "saturday"),
+               (Sunday, "sunday")
+             ]
 
 monthToMonthNo :: Month -> Int
 monthToMonthNo = \case

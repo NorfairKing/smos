@@ -61,6 +61,8 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - autodocodec
+    - autodocodec-yaml
     - bytestring
     - containers
     - data-default
@@ -70,7 +72,6 @@ tests:
     - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
-    - sydtest
     - iCalendar
     - mtl
     - path
@@ -80,7 +81,7 @@ tests:
     - smos-calendar-import
     - smos-data
     - smos-data-gen
+    - sydtest
     - text
     - time
     - yaml
-    - autodocodec
