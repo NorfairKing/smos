@@ -2,7 +2,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.RecurringEvent where
 
@@ -75,8 +74,8 @@ instance HasCodec RecurringEvent where
       object "RecurringEvent" $
         RecurringEvent
           <$> staticObjectCodec .= recurringEventStatic
-          <*> optionalField' "start" .= recurringEventStart
-          <*> optionalField' "end" .= recurringEventEnd
+          <*> optionalFieldOrNull' "start" .= recurringEventStart
+          <*> optionalFieldOrNull' "end" .= recurringEventEnd
           <*> recurrenceObjectCodec .= recurringEventRecurrence
 
 data Recurrence = Recurrence
@@ -114,6 +113,6 @@ emptyRecurrence =
 recurrenceObjectCodec :: ObjectCodec Recurrence Recurrence
 recurrenceObjectCodec =
   Recurrence
-    <$> optionalFieldWithOmittedDefault' "rrule" S.empty .= recurrenceRules
-    <*> optionalFieldWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
-    <*> optionalFieldWithOmittedDefault' "rdates" S.empty .= recurrenceRDates
+    <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules
+    <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
+    <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= recurrenceRDates

@@ -224,6 +224,7 @@ test-suite smos-calendar-import-test
       Smos.Calendar.Import.RecurringEventSpec
       Smos.Calendar.Import.RenderSpec
       Smos.Calendar.Import.Static.Gen
+      Smos.Calendar.Import.StaticSpec
       Smos.Calendar.Import.TimeZone.Gen
       Smos.Calendar.Import.TimeZoneSpec
       Smos.Calendar.Import.UnresolvedEvent.Gen

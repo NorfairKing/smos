@@ -1,7 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -538,15 +537,15 @@ instance HasCodec ByDay where
     bimapCodec prettyValidate id $
       dimapCodec f g $
         eitherCodec
-          (object "Every" $ requiredField' "day")
           (object "Specific" $ (,) <$> requiredField' "pos" .= fst <*> requiredField' "day" .= snd)
+          (object "Every" $ requiredField' "day")
     where
       f = \case
-        Left dow -> Every dow
-        Right (i, dow) -> Specific i dow
+        Right dow -> Every dow
+        Left (i, dow) -> Specific i dow
       g = \case
-        Every dow -> Left dow
-        Specific i dow -> Right (i, dow)
+        Every dow -> Right dow
+        Specific i dow -> Left (i, dow)
 
 -- | A day within a month
 --

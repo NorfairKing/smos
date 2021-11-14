@@ -42,7 +42,7 @@ instance HasCodec Events where
         Left e -> e
         Right es -> Events emptyStatic es
       g es =
-        if null (events es)
+        if eventsStatic es == emptyStatic
           then Right (events es)
           else Left es
 
