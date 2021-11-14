@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -14,11 +16,11 @@ module Smos.API.Username
   )
 where
 
+import Autodocodec
 import Control.Arrow
 import Control.DeepSeq
 import Control.Monad.Fail as Fail
-import Data.Aeson as JSON
-import Data.Aeson.Types as JSON (toJSONKeyText)
+import Data.Aeson (FromJSON, FromJSONKey (..), FromJSONKeyFunction (FromJSONKeyTextParser), ToJSON, ToJSONKey)
 import qualified Data.Char as Char
 import Data.Hashable
 import Data.String
@@ -29,12 +31,13 @@ import Database.Persist.Sql
 import GHC.Generics (Generic)
 import Web.HttpApiData
 import Web.PathPieces
-import YamlParse.Applicative
 
 newtype Username = Username
   { usernameText :: Text
   }
-  deriving (Show, Read, Eq, Ord, Generic)
+  deriving stock (Show, Read, Eq, Ord, Generic)
+  deriving newtype (IsString, NFData, Hashable, ToJSONKey)
+  deriving (FromJSON, ToJSON) via (Autodocodec Username)
 
 instance Validity Username where
   validate (Username t) =
@@ -43,13 +46,6 @@ instance Validity Username where
         check (T.length t >= 3) "The username is at least three characters long.",
         decorateList (map UsernameChar $ T.unpack t) validate
       ]
-
-instance IsString Username where
-  fromString = Username . fromString
-
-instance NFData Username
-
-instance Hashable Username
 
 instance PersistField Username where
   toPersistValue (Username t) = PersistText t
@@ -65,11 +61,8 @@ instance PersistFieldSql Username where
 instance FromJSONKey Username where
   fromJSONKey = FromJSONKeyTextParser parseUsername
 
-instance FromJSON Username where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Username where
-  yamlSchema = Username <$> yamlSchema
+instance HasCodec Username where
+  codec = bimapCodec prettyValidate id $ dimapCodec Username usernameText codec
 
 instance PathPiece Username where
   fromPathPiece = parseUsername
@@ -94,12 +87,6 @@ parseUsername t =
 
 parseUsernameWithError :: Text -> Either String Username
 parseUsernameWithError t = prettyValidate $ Username t
-
-instance ToJSON Username where
-  toJSON = toJSON . usernameText
-
-instance ToJSONKey Username where
-  toJSONKey = toJSONKeyText usernameText
 
 newtype UsernameChar = UsernameChar
   { unUsernameChar :: Char

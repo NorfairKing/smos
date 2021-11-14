@@ -5,13 +5,13 @@ module Smos.API.Password
   )
 where
 
+import Autodocodec
 import Data.Password.Bcrypt
 import Data.Password.Instances ()
 import Data.Validity
-import YamlParse.Applicative
 
 instance Validity Password where
   validate = trivialValidation
 
-instance YamlSchema Password where
-  yamlSchema = mkPassword <$> yamlSchema
+instance HasCodec Password where
+  codec = dimapCodec mkPassword unsafeShowPassword codec
