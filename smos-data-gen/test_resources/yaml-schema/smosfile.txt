@@ -29,16 +29,35 @@
         # default: [35m[][m
         # state history
         # In reverse chronological order
-        - # StateHistoryEntry
-          [37mstate[m: # [31mrequired[m
-            # new state
-            [ [33mnull[m
-            , [33m<string>[m
-            ]
-          [37mtime[m: # [31mrequired[m
-            # time at which the state change happened
-            # %F %H:%M:%S.%q
-            [33m<string>[m
+        - [ # StateHistoryEntry
+            [37mstate[m: # [31mrequired[m
+              # new state
+              [ [33mnull[m
+              , [33m<string>[m
+              ]
+            [37mtime[m: # [31mrequired[m
+              # time at which the state change happened
+              [ # %F %H:%M:%S.%q
+                [33m<string>[m
+              , # Whatever aeson parses, as a fallback
+                # LocalTime
+                [33m<any>[m
+              ]
+          , # StateHistoryEntry (legacy)
+            [37mnew-state[m: # [31mrequired[m
+              # new state
+              [ [33mnull[m
+              , [33m<string>[m
+              ]
+            [37mtimestamp[m: # [31mrequired[m
+              # time at which the state change happened
+              [ # %F %H:%M:%S.%q
+                [33m<string>[m
+              , # Whatever aeson parses, as a fallback
+                # LocalTime
+                [33m<any>[m
+              ]
+          ]
       [37mtags[m: # [34moptional[m
         # default: [35m[][m
         # tags
@@ -51,12 +70,20 @@
         - # LogbookEntry
           [37mstart[m: # [31mrequired[m
             # start of the logbook entry
-            # %F %H:%M:%S.%q
-            [33m<string>[m
+            [ # %F %H:%M:%S.%q
+              [33m<string>[m
+            , # Whatever aeson parses, as a fallback
+              # LocalTime
+              [33m<any>[m
+            ]
           [37mend[m: # [34moptional[m
             # end of the logbook entry
-            # %F %H:%M:%S.%q
-            [33m<string>[m
+            [ # %F %H:%M:%S.%q
+              [33m<string>[m
+            , # Whatever aeson parses, as a fallback
+              # LocalTime
+              [33m<any>[m
+            ]
     ]
   , # Tree Entry
     [37mentry[m: # [31mrequired[m

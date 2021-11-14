@@ -1,9 +1,17 @@
 # LogbookEntry
 [37mstart[m: # [31mrequired[m
   # start of the logbook entry
-  # %F %H:%M:%S.%q
-  [33m<string>[m
+  [ # %F %H:%M:%S.%q
+    [33m<string>[m
+  , # Whatever aeson parses, as a fallback
+    # LocalTime
+    [33m<any>[m
+  ]
 [37mend[m: # [31mrequired[m
   # end of the logbook entry
-  # %F %H:%M:%S.%q
-  [33m<string>[m
+  [ # %F %H:%M:%S.%q
+    [33m<string>[m
+  , # Whatever aeson parses, as a fallback
+    # LocalTime
+    [33m<any>[m
+  ]

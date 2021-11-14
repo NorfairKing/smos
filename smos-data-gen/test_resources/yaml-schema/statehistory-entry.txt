@@ -1,10 +1,29 @@
-# StateHistoryEntry
-[37mstate[m: # [31mrequired[m
-  # new state
-  [ [33mnull[m
-  , [33m<string>[m
-  ]
-[37mtime[m: # [31mrequired[m
-  # time at which the state change happened
-  # %F %H:%M:%S.%q
-  [33m<string>[m
+[ # StateHistoryEntry
+  [37mstate[m: # [31mrequired[m
+    # new state
+    [ [33mnull[m
+    , [33m<string>[m
+    ]
+  [37mtime[m: # [31mrequired[m
+    # time at which the state change happened
+    [ # %F %H:%M:%S.%q
+      [33m<string>[m
+    , # Whatever aeson parses, as a fallback
+      # LocalTime
+      [33m<any>[m
+    ]
+, # StateHistoryEntry (legacy)
+  [37mnew-state[m: # [31mrequired[m
+    # new state
+    [ [33mnull[m
+    , [33m<string>[m
+    ]
+  [37mtimestamp[m: # [31mrequired[m
+    # time at which the state change happened
+    [ # %F %H:%M:%S.%q
+      [33m<string>[m
+    , # Whatever aeson parses, as a fallback
+      # LocalTime
+      [33m<any>[m
+    ]
+]

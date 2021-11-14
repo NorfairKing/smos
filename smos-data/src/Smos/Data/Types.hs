@@ -210,11 +210,15 @@ utctimeFormat = "%F %H:%M:%S.%q"
 
 utctimeCodec :: JSONCodec UTCTime
 utctimeCodec =
-  bimapCodec
-    (parseTimeEither defaultTimeLocale utctimeFormat)
-    (formatTime defaultTimeLocale utctimeFormat)
-    codec
-    <?> T.pack utctimeFormat
+  parseAlternatives
+    ( bimapCodec
+        (parseTimeEither defaultTimeLocale utctimeFormat)
+        (formatTime defaultTimeLocale utctimeFormat)
+        codec
+        <?> T.pack utctimeFormat
+    )
+    [ codec <?> "Whatever aeson parses, as a fallback"
+    ]
 
 data Entry = Entry
   { entryHeader :: Header,
@@ -608,22 +612,17 @@ instance Ord StateHistoryEntry where
 
 instance HasCodec StateHistoryEntry where
   codec =
-    object "StateHistoryEntry" $
-      StateHistoryEntry
-        <$> requiredField "state" "new state" .= stateHistoryEntryNewState
-        <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
-
--- TODO backward compatibility?
---     objectParser "StateHistoryEntry" $
---       StateHistoryEntry
---         <$> ( requiredField "state" "The new state"
---                 <|> requiredField "new-state" "legacy key"
---             )
---         <*> ( unForYaml
---                 <$> ( requiredField "time" "The time at which the change happened"
---                         <|> requiredField "timestamp" "legacy key"
---                     )
---             )
+    parseAlternatives
+      ( object "StateHistoryEntry" $
+          StateHistoryEntry
+            <$> requiredField "state" "new state" .= stateHistoryEntryNewState
+            <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+      )
+      [ object "StateHistoryEntry (legacy)" $
+          StateHistoryEntry
+            <$> requiredField "new-state" "new state" .= stateHistoryEntryNewState
+            <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+      ]
 
 newtype Tag = Tag
   { tagText :: Text
