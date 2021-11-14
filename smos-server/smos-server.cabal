@@ -71,6 +71,7 @@ library
       aeson
     , aeson-pretty
     , autodocodec
+    , autodocodec-yaml
     , base
     , bytestring
     , conduit

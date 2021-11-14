@@ -1,21 +1,22 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Server.OptParse.Types where
 
+import Autodocodec
 import Control.Monad.Logger
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
 import Data.Word
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Looper
 import Path
 import Smos.API
 import Text.Read
-import YamlParse.Applicative
 
 data Arguments
   = Arguments Command Flags
@@ -99,32 +100,76 @@ data Configuration = Configuration
     confAdmin :: !(Maybe Username),
     confMonetisationConf :: !(Maybe MonetisationConfiguration)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
+instance HasCodec Configuration where
+  codec = object "Configuration" configurationObjectCodec
 
-instance YamlSchema Configuration where
-  yamlSchema = objectParser "Configuration" configurationObjectParser
-
-configurationObjectParser :: ObjectParser Configuration
-configurationObjectParser =
+configurationObjectCodec :: ObjectCodec Configuration Configuration
+configurationObjectCodec =
   Configuration
-    <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
-    <*> optionalField "uuid-file" "The file in which to store the server uuid"
-    <*> optionalField "database-file" "The file in which to store the database"
-    <*> optionalField "signing-key-file" "The file in which to store signing key for JWT tokens"
-    <*> optionalField "port" "The port on which to serve api requests"
-    <*> optionalField "max-backups-per-user" "The maximum number of backups per user"
-    <*> optionalField "max-backup-size-per-user" "The maximum number of bytes that backups can take up per user"
-    <*> optionalFieldWith "backup-interval" "The interval between automatic backups (seconds)" ((fromIntegral :: Int -> NominalDiffTime) <$> yamlSchema)
-    <*> optionalField "auto-backup" "The configuration for the automatic backup looper"
-    <*> optionalField "backup-garbage-collector" "The configuration for the automatic backup garbage collection looper"
-    <*> optionalField "file-migrator" "The configuration for the automatic file format migrator looper"
-    <*> optionalField "admin" "The username of the user who will have admin rights"
+    <$> optionalFieldWith
+      "log-level"
+      (bimapCodec parseLogLevel renderLogLevel codec)
+      "The minimal severity for log messages"
+      .= confLogLevel
+    <*> optionalField
+      "uuid-file"
+      "The file in which to store the server uuid"
+      .= confUUIDFile
+    <*> optionalField
+      "database-file"
+      "The file in which to store the database"
+      .= confDatabaseFile
+    <*> optionalField
+      "signing-key-file"
+      "The file in which to store signing key for JWT tokens"
+      .= confSigningKeyFile
+    <*> optionalField
+      "port"
+      "The port on which to serve api requests"
+      .= confPort
+    <*> optionalField
+      "max-backups-per-user"
+      "The maximum number of backups per user"
+      .= confMaxBackupsPerUser
+    <*> optionalField
+      "max-backup-size-per-user"
+      "The maximum number of bytes that backups can take up per user"
+      .= confMaxBackupSizePerUser
+    <*> optionalFieldWith
+      "backup-interval"
+      (dimapCodec (fromIntegral :: Int -> NominalDiffTime) round codec)
+      "The interval between automatic backups (seconds)"
+      .= confBackupInterval
+    <*> optionalField
+      "auto-backup"
+      "The configuration for the automatic backup looper"
+      .= confAutoBackupLooperConfiguration
+    <*> optionalField
+      "backup-garbage-collector"
+      "The configuration for the automatic backup garbage collection looper"
+      .= confBackupGarbageCollectionLooperConfiguration
+    <*> optionalField
+      "file-migrator"
+      "The configuration for the automatic file format migrator looper"
+      .= confFileMigrationLooperConfiguration
+    <*> optionalField
+      "admin"
+      "The username of the user who will have admin rights"
+      .= confAdmin
     <*> optionalField
       "monetisation"
       "Monetisation configuration. If this is not configured then the server is run entirely for free."
+      .= confMonetisationConf
+
+instance HasCodec LooperConfiguration where
+  codec =
+    object "LooperConfiguration" $
+      LooperConfiguration
+        <$> optionalField "enable" "Enable this looper" .= looperConfEnabled
+        <*> optionalField "phase" "The amount of time to wait before starting the looper the first time, in seconds" .= looperConfPhase
+        <*> optionalField "period" "The amount of time to wait between runs of the looper, in seconds" .= looperConfPeriod
 
 data MonetisationConfiguration = MonetisationConfiguration
   { monetisationConfStripeSecretKey :: !(Maybe Text),
@@ -134,17 +179,14 @@ data MonetisationConfiguration = MonetisationConfiguration
   }
   deriving (Show, Eq, Generic)
 
-instance FromJSON MonetisationConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema MonetisationConfiguration where
-  yamlSchema =
-    objectParser "MonetisationConfiguration" $
+instance HasCodec MonetisationConfiguration where
+  codec =
+    object "MonetisationConfiguration" $
       MonetisationConfiguration
-        <$> optionalField "stripe-secret-key" "The secret key for calling the stripe api"
-        <*> optionalField "stripe-publishable-key" "The publishable key for calling the stripe api"
-        <*> optionalField "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription"
-        <*> optionalFieldWithDefault "freeloaders" S.empty "The usernames of users that will not have to pay"
+        <$> optionalField "stripe-secret-key" "The secret key for calling the stripe api" .= monetisationConfStripeSecretKey
+        <*> optionalField "stripe-publishable-key" "The publishable key for calling the stripe api" .= monetisationConfStripePublishableKey
+        <*> optionalField "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription" .= monetisationConfStripePrice
+        <*> optionalFieldWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay" .= monetisationConfFreeloaders
 
 newtype Dispatch
   = DispatchServe ServeSettings
@@ -179,8 +221,10 @@ data Settings
   = Settings
   deriving (Show, Eq, Generic)
 
-parseLogLevel :: String -> Maybe LogLevel
-parseLogLevel s = readMaybe $ "Level" <> s
+parseLogLevel :: String -> Either String LogLevel
+parseLogLevel s = case readMaybe $ "Level" <> s of
+  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
+  Just ll -> Right ll
 
 renderLogLevel :: LogLevel -> String
 renderLogLevel = drop 5 . show

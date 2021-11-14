@@ -7,6 +7,7 @@ module Smos.Server.OptParse
   )
 where
 
+import Autodocodec.Yaml
 import Control.Arrow
 import Control.Monad.Logger
 import Data.Maybe
@@ -24,7 +25,6 @@ import Paths_smos_server
 import Smos.API
 import Smos.Server.OptParse.Types
 import qualified System.Environment as System
-import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -104,7 +104,7 @@ environmentParser =
   Env.prefixed "SMOS_SERVER_" $
     Environment
       <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
-      <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+      <*> Env.var (fmap Just . (left Env.UnreadError . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
       <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The file to store the server uuid in")
       <*> Env.var (fmap Just . Env.str) "DATABASE_FILE" (mE <> Env.help "The file to store the server database in")
       <*> Env.var (fmap Just . Env.str) "SIGNING_KEY_FILE" (mE <> Env.help "The file to store the JWT signing key in")
@@ -142,7 +142,7 @@ getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
   case flagConfigFile <|> envConfigFile of
     Nothing -> pure Nothing
-    Just cf -> resolveFile' cf >>= readConfigFile
+    Just cf -> resolveFile' cf >>= readYamlConfigFile
 
 getArguments :: IO Arguments
 getArguments = do
@@ -192,7 +192,7 @@ parseServeFlags =
   ServeFlags
     <$> optional
       ( option
-          (maybeReader parseLogLevel)
+          (eitherReader parseLogLevel)
           ( mconcat
               [ long "log-level",
                 help $
