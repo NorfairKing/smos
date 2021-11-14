@@ -175,7 +175,7 @@ parseSmosData bs =
         (_, Right pjv) -> pure pjv
 
 parseSmosDataYaml :: FromJSON a => ByteString -> Either String a
-parseSmosDataYaml = left show . Yaml.decodeEither'
+parseSmosDataYaml = left Yaml.prettyPrintParseException . Yaml.decodeEither'
 
 parseSmosDataJSON :: FromJSON a => ByteString -> Either String a
 parseSmosDataJSON = JSON.eitherDecode . LB.fromStrict

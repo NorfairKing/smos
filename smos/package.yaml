@@ -16,6 +16,7 @@ library:
   dependencies:
   - aeson
   - async
+  - autodocodec
   - base
   - brick
   - bytestring
@@ -60,7 +61,6 @@ library:
   - validity-unordered-containers
   - vty
   - yaml
-  - autodocodec
 
 executables:
   smos:

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -14,6 +15,7 @@ module Smos.Types
   )
 where
 
+import Autodocodec
 import Brick.Types as B hiding (Next)
 import Control.Concurrent.Async
 import Control.Monad.Reader
@@ -45,7 +47,6 @@ import Smos.Keys
 import Smos.Monad
 import Smos.Report.Config
 import UnliftIO.Resource
-import YamlParse.Applicative
 
 data SmosConfig = SmosConfig
   { configKeyMap :: !KeyMap,
@@ -489,12 +490,14 @@ keyMappingAction = \case
 newtype ActionName = ActionName
   { actionNameText :: Text
   }
-  deriving (Show, Read, Eq, Ord, Generic, IsString, Semigroup, Monoid, FromJSON, ToJSON)
+  deriving stock (Show, Read, Eq, Ord, Generic)
+  deriving newtype (IsString, Semigroup, Monoid)
+  deriving (FromJSON, ToJSON) via (Autodocodec ActionName)
 
 instance Validity ActionName
 
-instance YamlSchema ActionName where
-  yamlSchema = ActionName <$> yamlSchema
+instance HasCodec ActionName where
+  codec = dimapCodec ActionName actionNameText codec
 
 data Action = Action
   { actionName :: ActionName,

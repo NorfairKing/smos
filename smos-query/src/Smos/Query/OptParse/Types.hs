@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Query.OptParse.Types
@@ -187,27 +186,16 @@ data Configuration = Configuration
     confPreparedReportConfiguration :: !(Maybe PreparedReportConfiguration),
     confColourConfiguration :: !(Maybe ColourConfiguration)
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
 
 instance Validity Configuration
 
-instance ToJSON Configuration where
-  toJSON Configuration {..} =
-    object $
-      Report.configurationToObject confReportConf
-        ++ [ "hide-archive" .= confHideArchive,
-             preparedReportConfigurationKey .= confPreparedReportConfiguration,
-             colourConfigurationKey .= confColourConfiguration
-           ]
-
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
+instance HasCodec Configuration where
+  codec =
     (\reportConf (a, b, c) -> Configuration reportConf a b c)
-      <$> yamlSchema
-      <*> objectParser
+      <$> codec
+      <*> object
         "Configuration"
         ( (,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
             <*> optionalField preparedReportConfigurationKey "Prepared report config"
@@ -223,18 +211,13 @@ colourConfigurationKey = "colour"
 data PreparedReportConfiguration = PreparedReportConfiguration
   { preparedReportConfAvailableReports :: !(Maybe (Map Text PreparedReport))
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec PreparedReportConfiguration)
 
 instance Validity PreparedReportConfiguration
 
-instance ToJSON PreparedReportConfiguration where
-  toJSON PreparedReportConfiguration {..} = object ["reports" .= preparedReportConfAvailableReports]
-
-instance FromJSON PreparedReportConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema PreparedReportConfiguration where
-  yamlSchema = objectParser "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
+instance HasCodec PreparedReportConfiguration where
+  codec = object "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
 
 data ColourConfiguration = ColourConfiguration
   { -- | How to background-colour tables
@@ -244,21 +227,13 @@ data ColourConfiguration = ColourConfiguration
     colourConfigurationBackground :: !(Maybe TableBackgroundConfiguration)
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ColourConfiguration)
 
 instance Validity ColourConfiguration
 
-instance ToJSON ColourConfiguration where
-  toJSON ColourConfiguration {..} =
-    object
-      [ "background" .= colourConfigurationBackground
-      ]
-
-instance FromJSON ColourConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema ColourConfiguration where
-  yamlSchema =
-    objectParser "ColourConfiguration" $
+instance HasCodec ColourConfiguration where
+  codec =
+    object "ColourConfiguration" $
       ColourConfiguration
         <$> optionalField "background" "The table background colours"
 
@@ -266,22 +241,15 @@ data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
   | NoTableBackground
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec TableBackgroundConfiguration)
 
 instance Validity TableBackgroundConfiguration
 
-instance ToJSON TableBackgroundConfiguration where
-  toJSON = \case
-    NoTableBackground -> Null
-    UseTableBackground tb -> toJSON tb
-
-instance FromJSON TableBackgroundConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema TableBackgroundConfiguration where
-  yamlSchema =
+instance HasCodec TableBackgroundConfiguration where
+  codec =
     alternatives
       [ NoTableBackground <$ ParseNull,
-        UseTableBackground <$> yamlSchema
+        UseTableBackground <$> codec
       ]
 
 instance ToJSON TableBackground where
@@ -290,44 +258,20 @@ instance ToJSON TableBackground where
     Bicolour e o -> object ["even" .= e, "odd" .= o]
 
 instance FromJSON TableBackground where
-  parseJSON = viaYamlSchema
+  parseJSON = viaHasCodec
 
-instance YamlSchema TableBackground where
-  yamlSchema =
+instance HasCodec TableBackground where
+  codec =
     alternatives
-      [ SingleColour <$> yamlSchema <?> "A single background colour",
-        objectParser "Bicolour" $
+      [ SingleColour <$> codec <?> "A single background colour",
+        object "Bicolour" $
           Bicolour
             <$> optionalField "even" "background for even-numbered table-rows (0-indexed)"
             <*> optionalField "odd" "background for odd-numbered table-rows"
       ]
 
-instance ToJSON Colour where
-  toJSON = \case
-    Colour8 intensity colour8 ->
-      toJSON $
-        mconcat
-          [ case intensity of
-              Dull -> ("" :: Text)
-              Bright -> "bright ",
-            case colour8 of
-              Black -> "black"
-              Red -> "red"
-              Green -> "green"
-              Yellow -> "yellow"
-              Blue -> "blue"
-              Magenta -> "magenta"
-              Cyan -> "cyan"
-              White -> "white"
-          ]
-    Colour8Bit w8 -> toJSON w8
-    Colour24Bit r g b -> object ["red" .= r, "green" .= g, "blue" .= b]
-
-instance FromJSON Colour where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Colour where
-  yamlSchema =
+instance HasCodec Colour where
+  codec =
     alternatives
       [ eitherParser
           ( \t -> do
@@ -352,13 +296,13 @@ instance YamlSchema Colour where
                   Colour8 intensity <$> colourCase colourStr
                 _ -> Left "Specify a terminal colour as two words, e. g. 'dull red' or 'bright blue'."
           )
-          yamlSchema,
-        Colour8Bit <$> yamlSchema
+          codec,
+        Colour8Bit <$> codec
           <??> [ "Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.",
                  "See this overview on wikipedia for more information:",
                  "https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit"
                ],
-        objectParser "Colour24Bit" $
+        object "Colour24Bit" $
           Colour24Bit
             <$> requiredField "red" "The red component, [0..255]"
             <*> requiredField "green" "The green component, [0..255]"

@@ -434,21 +434,18 @@ instance HasCodec UntilCount where
 untilCountObjectCodec :: ObjectCodec UntilCount UntilCount
 untilCountObjectCodec =
   dimapCodec f g $
-    eitherCodec
-      (requiredFieldWith' "until" localTimeCodec)
-      ( eitherCodec
-          (requiredField' "count")
-          (pure ())
-      )
+    (,)
+      <$> optionalFieldWith' "until" localTimeCodec .= fst
+      <*> optionalField' "count" .= snd
   where
     f = \case
-      Left lt -> Until lt
-      Right (Left w) -> Count w
-      Right (Right ()) -> Indefinitely
+      (Just lt, _) -> Until lt
+      (Nothing, Just w) -> Count w
+      (Nothing, Nothing) -> Indefinitely
     g = \case
-      Until lt -> Left lt
-      Count w -> Right (Left w)
-      Indefinitely -> Right (Right ())
+      Until u -> (Just u, Nothing)
+      Count w -> (Nothing, Just w)
+      Indefinitely -> (Nothing, Nothing)
 
 -- | A second within a minute
 --

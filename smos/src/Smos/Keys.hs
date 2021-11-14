@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -20,6 +21,7 @@ module Smos.Keys
   )
 where
 
+import Autodocodec
 import Data.Aeson as JSON
 import Data.Containers.ListUtils
 import Data.Either
@@ -31,7 +33,6 @@ import Import
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer
-import YamlParse.Applicative
 
 instance Validity Key where
   validate k =
@@ -43,45 +44,42 @@ instance Validity Key where
           _ -> valid
       ]
 
-instance ToJSON Key where
-  toJSON kp = toJSON $ renderKey kp
+instance HasCodec Key where
+  codec = bimapCodec (left errorBundlePretty . parse (keyP <* eof) "yaml text") renderKey codec
 
 instance FromJSON Key where
-  parseJSON = viaYamlSchema
+  parseJSON = parseJSONViaCodec
 
-instance YamlSchema Key where
-  yamlSchema = eitherParser (left errorBundlePretty . parse (keyP <* eof) "yaml text") yamlSchema
+instance ToJSON Key where
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
 
 instance Validity Modifier where
   validate = trivialValidation
 
-instance ToJSON Modifier where
-  toJSON kp = toJSON $ renderModifier kp
+instance HasCodec Modifier where
+  codec = bimapCodec (left errorBundlePretty . parse (modifierP <* eof) "yaml text") renderModifier codec
 
 instance FromJSON Modifier where
-  parseJSON = viaYamlSchema
+  parseJSON = parseJSONViaCodec
 
-instance YamlSchema Modifier where
-  yamlSchema = eitherParser (left errorBundlePretty . parse (modifierP <* eof) "yaml text") yamlSchema
+instance ToJSON Modifier where
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
 
 data KeyPress = KeyPress
   { keyPressKey :: !Key,
     keyPressMods :: ![Modifier]
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec KeyPress)
 
 instance Validity KeyPress where
   validate kp@(KeyPress _ mods) =
     mconcat [genericValidate kp, declare "Each of the mods appears at most once" $ nubOrd mods == mods]
 
-instance ToJSON KeyPress where
-  toJSON kp = toJSON $ renderKeyPress kp
-
-instance FromJSON KeyPress where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema KeyPress where
-  yamlSchema = eitherParser (left errorBundlePretty . parse (keyPressP <* eof) "yaml text") yamlSchema
+instance HasCodec KeyPress where
+  codec = bimapCodec (left errorBundlePretty . parse (keyPressP <* eof) "yaml text") renderKeyPress codec
 
 type P = Parsec Void Text
 
@@ -177,18 +175,13 @@ data MatcherConfig
   | MatchConfAnyChar
   | MatchConfCatchAll -- Rename to 'Any'
   | MatchConfCombination !KeyPress !MatcherConfig
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec MatcherConfig)
 
 instance Validity MatcherConfig
 
-instance ToJSON MatcherConfig where
-  toJSON kp = toJSON $ renderMatcherConfig kp
-
-instance FromJSON MatcherConfig where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema MatcherConfig where
-  yamlSchema = eitherParser (left errorBundlePretty . parse (matcherConfigP <* eof) "yaml text") yamlSchema
+instance HasCodec MatcherConfig where
+  codec = bimapCodec (left errorBundlePretty . parse (matcherConfigP <* eof) "yaml text") renderMatcherConfig codec
 
 renderMatcherConfig :: MatcherConfig -> Text
 renderMatcherConfig mc =

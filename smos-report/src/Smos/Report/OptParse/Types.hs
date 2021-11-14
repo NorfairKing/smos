@@ -87,13 +87,15 @@ data Configuration = Configuration
 instance Validity Configuration
 
 instance HasCodec Configuration where
-  codec =
-    object "Configuration" $
-      Configuration
-        <$> directoryConfigurationObjectCodec .= confDirectoryConf
-        <*> optionalField "waiting" "The waiting report configuration" .= confWaitingReportConf
-        <*> optionalField "stuck" "The stuck projects report configuration" .= confStuckReportConf
-        <*> optionalField "work" "The work report configuration" .= confWorkReportConf
+  codec = object "Configuration" configurationObjectCodec
+
+configurationObjectCodec :: ObjectCodec Configuration Configuration
+configurationObjectCodec =
+  Configuration
+    <$> directoryConfigurationObjectCodec .= confDirectoryConf
+    <*> optionalField "waiting" "The waiting report configuration" .= confWaitingReportConf
+    <*> optionalField "stuck" "The stuck projects report configuration" .= confStuckReportConf
+    <*> optionalField "work" "The work report configuration" .= confWorkReportConf
 
 defaultConfiguration :: Configuration
 defaultConfiguration =

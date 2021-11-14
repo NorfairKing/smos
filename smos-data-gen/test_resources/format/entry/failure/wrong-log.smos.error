@@ -1,4 +1,7 @@
 Failed to parse smos data as json:
 Error in $: Failed reading: not a valid json value at 'header:'logbookwithstar''
 and also as yaml:
-AesonException "Error in $.logbook[0].start: Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %H:%M:%S.%q"
+Aeson exception:
+Error in $.logbook[0].start: 
+  Previous branch failure: Error in $: parsing Text failed, expected String, but encountered Object
+Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %H:%M:%S.%q
