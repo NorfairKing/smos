@@ -19,14 +19,13 @@ import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse as Query
 import Smos.Report.OptParse.Types as Report
-import YamlParse.Applicative as YamlParse
 
 getSmosQueryR :: Handler Html
 getSmosQueryR = do
   DocPage {..} <- lookupPage "smos-query"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Query.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Query.Configuration
+      confHelpText = yamlDesc @Query.Configuration
   defaultLayout $ do
     setSmosTitle "smos-query"
     setDescription "Documentation for the Smos Query Tool"
@@ -56,6 +55,3 @@ getHelpPageOf args =
           let (ph, _, cols) = execFailure fr "smos-query"
            in renderHelp cols ph
         _ -> error "Something went wrong while calling the option parser."
-
-confDocsWithKey :: forall o. YamlSchema o => Text -> Text
-confDocsWithKey key = prettyParserDoc $ objectParser "Configuration" $ optionalFieldWith' key (yamlSchema @o)

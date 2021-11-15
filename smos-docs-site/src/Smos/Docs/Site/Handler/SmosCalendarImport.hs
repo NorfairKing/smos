@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Calendar.Import.OptParse as CalendarImport
 import Smos.Docs.Site.Handler.Import
-import YamlParse.Applicative
 
 getSmosCalendarImportR :: Handler Html
 getSmosCalendarImportR = do
   DocPage {..} <- lookupPage "smos-calendar-import"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc CalendarImport.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @CalendarImport.Configuration
+      confHelpText = yamlDesc @CalendarImport.Configuration
   defaultLayout $ do
     setSmosTitle "smos-calendar-import"
     setDescription "Documentation for the Smos Calendar Import tool"

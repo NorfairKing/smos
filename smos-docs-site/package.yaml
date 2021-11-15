@@ -19,11 +19,12 @@ library:
   source-dirs: src
   build-tools: autoexporter
   dependencies:
-  - base >= 4.7
   - aeson
   - aeson-pretty
+  - autodocodec
+  - autodocodec-yaml
+  - base >= 4.7
   - bytestring
-  - pretty-show
   - cmark-gfm
   - containers
   - data-default
@@ -33,6 +34,7 @@ library:
   - optparse-applicative
   - path
   - path-io
+  - pretty-show
   - raw-strings-qq
   - semver
   - shakespeare
@@ -60,7 +62,6 @@ library:
   - wai-extra
   - warp
   - yaml
-  - autodocodec
   - yesod
   - yesod-autoreload
   - yesod-sitemap

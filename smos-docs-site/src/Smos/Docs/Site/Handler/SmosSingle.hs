@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Single.OptParse as Single
-import YamlParse.Applicative
 
 getSmosSingleR :: Handler Html
 getSmosSingleR = do
   DocPage {..} <- lookupPage "smos-single"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Single.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Single.Configuration
+      confHelpText = yamlDesc @Single.Configuration
   defaultLayout $ do
     setSmosTitle "smos-single"
     setDescription "Documentation for the Smos Single tool"

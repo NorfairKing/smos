@@ -16,14 +16,13 @@ import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Scheduler.OptParse as Scheduler
 import Text.RawString.QQ
-import YamlParse.Applicative
 
 getSmosSchedulerR :: Handler Html
 getSmosSchedulerR = do
   DocPage {..} <- lookupPage "smos-scheduler"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Scheduler.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Scheduler.Configuration
+      confHelpText = yamlDesc @Scheduler.Configuration
   defaultLayout $ do
     setSmosTitle "smos-scheduler"
     setDescription "Documentation for the Smos Scheduler tool"
@@ -31,7 +30,7 @@ getSmosSchedulerR = do
 
 getSmosSchedulerTemplateR :: Handler Html
 getSmosSchedulerTemplateR = do
-  let confHelpText = prettySchemaDoc @Scheduler.EntryTemplate
+  let confHelpText = yamlDesc @Scheduler.EntryTemplate
   defaultLayout $ do
     setSmosTitle "smos-scheduler templates"
     setDescription "Documentation for smos-scheduler template file format"

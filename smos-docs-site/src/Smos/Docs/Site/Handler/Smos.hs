@@ -25,14 +25,13 @@ import Options.Applicative.Help
 import Smos.Data
 import Smos.Docs.Site.Handler.Import hiding (Header)
 import Smos.OptParse as TUI
-import YamlParse.Applicative
 
 getSmosR :: Handler Html
 getSmosR = do
   DocPage {..} <- lookupPage "smos"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc TUI.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @TUI.Configuration
+      confHelpText = yamlDesc @TUI.Configuration
   defaultLayout $ do
     setSmosTitle "smos"
     setDescription "Documentation for the Smos TUI"
@@ -63,9 +62,6 @@ stateHistoryDesc = yamlDesc @StateHistory
 
 tagsDesc :: Text
 tagsDesc = yamlDesc @(Set Tag)
-
-yamlDesc :: forall a. YamlSchema a => Text
-yamlDesc = prettySchema . explainParser $ yamlSchema @a
 
 example :: ToJSON a => a -> Text
 example = TE.decodeUtf8 . Yaml.encode

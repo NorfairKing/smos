@@ -3,10 +3,9 @@
 
 module Smos.Docs.Site.OptParse.Types where
 
+import Autodocodec
 import Data.Text (Text)
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
-import YamlParse.Applicative
 
 data Arguments
   = Arguments Command Flags
@@ -52,18 +51,15 @@ data Configuration = Configuration
   }
   deriving (Show, Eq, Generic)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
       Configuration
-        <$> optionalField "port" "The port on which to serve web requests"
-        <*> optionalField "api-url" "The url for the api server to rever to"
-        <*> optionalField "web-url" "The url for the web server to refer to"
-        <*> optionalField "google-analytics-tracking" "The google analytics tracking code"
-        <*> optionalField "google-search-console-verification" "The google search console verification code"
+        <$> optionalField "port" "The port on which to serve web requests" .= confPort
+        <*> optionalField "api-url" "The url for the api server to rever to" .= confAPIServerUrl
+        <*> optionalField "web-url" "The url for the web server to refer to" .= confWebServerUrl
+        <*> optionalField "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
+        <*> optionalField "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
 
 newtype Dispatch
   = DispatchServe ServeSettings

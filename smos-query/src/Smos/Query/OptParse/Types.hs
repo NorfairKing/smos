@@ -282,7 +282,9 @@ instance ToJSON TableBackground where
   toEncoding = toEncodingViaCodec
 
 instance HasCodec Colour where
-  codec = dimapCodec from to $ eitherCodec colour8Codec $ eitherCodec colour8BitCodec colour24BitCodec
+  codec =
+    named "Colour" $
+      dimapCodec from to $ eitherCodec colour8Codec $ eitherCodec colour8BitCodec colour24BitCodec
     where
       from = \case
         Left (i, tc) -> Colour8 i tc

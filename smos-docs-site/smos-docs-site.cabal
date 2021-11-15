@@ -173,6 +173,7 @@ library
       aeson
     , aeson-pretty
     , autodocodec
+    , autodocodec-yaml
     , base >=4.7
     , bytestring
     , cmark-gfm

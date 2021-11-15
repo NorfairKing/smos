@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Archive.OptParse as Archive
 import Smos.Docs.Site.Handler.Import
-import YamlParse.Applicative
 
 getSmosArchiveR :: Handler Html
 getSmosArchiveR = do
   DocPage {..} <- lookupPage "smos-archive"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Archive.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Archive.Configuration
+      confHelpText = yamlDesc @Archive.Configuration
   defaultLayout $ do
     setSmosTitle "smos-archive"
     setDescription "Documentation for the Smos Archiving tool"

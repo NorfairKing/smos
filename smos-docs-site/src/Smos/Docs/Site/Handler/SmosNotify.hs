@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Notify.OptParse as Notify
-import YamlParse.Applicative
 
 getSmosNotifyR :: Handler Html
 getSmosNotifyR = do
   DocPage {..} <- lookupPage "smos-notify"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Notify.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Notify.Configuration
+      confHelpText = yamlDesc @Notify.Configuration
   defaultLayout $ do
     setSmosTitle "smos-notify"
     setDescription "Documentation for the Smos Notification tool"

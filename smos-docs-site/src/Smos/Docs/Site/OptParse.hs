@@ -7,6 +7,7 @@ module Smos.Docs.Site.OptParse
   )
 where
 
+import Autodocodec.Yaml (readYamlConfigFile)
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Version
@@ -16,7 +17,6 @@ import Path.IO
 import Paths_smos_docs_site
 import Smos.Docs.Site.OptParse.Types
 import qualified System.Environment as System
-import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -61,7 +61,7 @@ getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
   case flagConfigFile <|> envConfigFile of
     Nothing -> pure Nothing
-    Just cf -> resolveFile' cf >>= readConfigFile
+    Just cf -> resolveFile' cf >>= readYamlConfigFile
 
 getArguments :: IO Arguments
 getArguments = do

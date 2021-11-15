@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Sync.Client.OptParse as Sync
-import YamlParse.Applicative
 
 getSmosSyncClientR :: Handler Html
 getSmosSyncClientR = do
   DocPage {..} <- lookupPage "smos-sync-client"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc Sync.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @Sync.Configuration
+      confHelpText = yamlDesc @Sync.Configuration
   defaultLayout $ do
     setTitle "smos-sync-client"
     setDescription "Documentation for the Smos Synchronisation Client"

@@ -13,14 +13,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Web.Server.OptParse as WebServer
-import YamlParse.Applicative
 
 getSmosWebServerR :: Handler Html
 getSmosWebServerR = do
   DocPage {..} <- lookupPage "smos-web-server"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc WebServer.environmentParser
-      confHelpText = prettySchemaDoc @WebServer.Configuration
+      confHelpText = yamlDesc @WebServer.Configuration
   defaultLayout $ do
     setSmosTitle "smos-web-server"
     setDescription "Documentation for the Smos Web Server"

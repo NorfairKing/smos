@@ -14,14 +14,13 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.GitHub.OptParse as GitHub
-import YamlParse.Applicative
 
 getSmosGitHubR :: Handler Html
 getSmosGitHubR = do
   DocPage {..} <- lookupPage "smos-github"
   let argsHelpText = getHelpPageOf []
       envHelpText = Env.helpDoc GitHub.prefixedEnvironmentParser
-      confHelpText = prettySchemaDoc @GitHub.Configuration
+      confHelpText = yamlDesc @GitHub.Configuration
   defaultLayout $ do
     setSmosTitle "smos-github"
     setDescription "Documentation for the Smos GitHub tool"

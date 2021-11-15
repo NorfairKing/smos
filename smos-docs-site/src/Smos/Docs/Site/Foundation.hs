@@ -1,8 +1,11 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -18,12 +21,15 @@ module Smos.Docs.Site.Foundation
   )
 where
 
+import Autodocodec
+import Autodocodec.Yaml
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Language.Haskell.TH.Load
 import Smos.Docs.Site.Assets
@@ -117,3 +123,12 @@ setSmosTitle t = setTitle $ "Smos Documentation - " <> t
 
 loadDocPages :: MonadHandler m => m (Map [Text] DocPage)
 loadDocPages = loadIO docPages
+
+yamlDesc :: forall a. HasCodec a => Text
+yamlDesc = yamlDescVia (codec @a)
+
+yamlDescVia :: forall a. JSONCodec a -> Text
+yamlDescVia c = TE.decodeUtf8 $ renderPlainSchemaVia c -- Not safe, but will blow up at build time so it's fine.
+
+confDocsWithKey :: forall o. HasCodec o => Text -> Text
+confDocsWithKey key = yamlDescVia $ Autodocodec.object "Configuration" $ optionalFieldWith' key (codec @o)
