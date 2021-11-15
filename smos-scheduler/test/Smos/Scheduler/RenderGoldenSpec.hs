@@ -6,20 +6,20 @@ module Smos.Scheduler.RenderGoldenSpec
   )
 where
 
+import Autodocodec
+import Autodocodec.Yaml
 import Control.Monad.Reader
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
-import Data.Yaml
 import Path
 import Path.IO
 import Smos.Data
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import Test.Syd
-import YamlParse.Applicative
 
 spec :: Spec
 spec = do
@@ -30,7 +30,7 @@ spec = do
       forM files $ \rf ->
         if fileExtension rf == Just ".yaml"
           then do
-            mgtc <- readConfigFile rf
+            mgtc <- readYamlConfigFile rf
             pure $ (,) rf <$> mgtc
           else pure Nothing
   mapM_ (uncurry makeTestUsingCase) cases
@@ -41,16 +41,16 @@ data GoldenTestCase = GoldenTestCase
     goldenTestResult :: SmosFile
   }
 
-instance YamlSchema GoldenTestCase where
-  yamlSchema =
-    objectParser "GoldenTestCase" $
+instance HasCodec GoldenTestCase where
+  codec =
+    object "GoldenTestCase" $
       GoldenTestCase
-        <$> requiredFieldWith' "template" (extraParser parseJSON yamlSchema)
-        <*> requiredFieldWith "time" "%F %T" (maybeParser (parseTimeM False defaultTimeLocale "%F %T") yamlSchema)
-        <*> requiredFieldWith' "result" (extraParser parseJSON yamlSchema)
-
-instance FromJSON GoldenTestCase where
-  parseJSON = viaYamlSchema
+        <$> requiredField' "template" .= goldenTestTemplate
+        <*> requiredFieldWith' "time" timeCodec .= goldenTestNow
+        <*> requiredField' "result" .= goldenTestResult
+    where
+      timeFormat = "%F %T"
+      timeCodec = bimapCodec (parseTimeEither defaultTimeLocale timeFormat) (formatTime defaultTimeLocale timeFormat) codec
 
 makeTestUsingCase :: Path Abs File -> GoldenTestCase -> Spec
 makeTestUsingCase af GoldenTestCase {..} =

@@ -99,6 +99,7 @@ test-suite smos-scheduler-test
   build-depends:
       QuickCheck
     , autodocodec
+    , autodocodec-yaml
     , base
     , cron
     , genvalidity

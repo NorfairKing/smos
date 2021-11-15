@@ -50,6 +50,7 @@ data Configuration = Configuration
     confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
   }
   deriving (Show, Eq)
+  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
 
 instance HasCodec Configuration where
   codec =
@@ -64,6 +65,7 @@ data SchedulerConfiguration = SchedulerConfiguration
     schedulerConfSchedule :: !(Maybe Schedule)
   }
   deriving (Show, Eq)
+  deriving (FromJSON, ToJSON) via (Autodocodec SchedulerConfiguration)
 
 instance HasCodec SchedulerConfiguration where
   codec =
@@ -87,6 +89,7 @@ data ScheduleItem = ScheduleItem
     scheduleItemCronSchedule :: !CronSchedule
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleItem)
 
 instance Validity ScheduleItem
 
@@ -168,6 +171,7 @@ newtype ScheduleTemplate = ScheduleTemplate
   { scheduleTemplateForest :: Forest EntryTemplate
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleTemplate)
 
 instance Validity ScheduleTemplate
 
@@ -183,6 +187,7 @@ data EntryTemplate = EntryTemplate
     entryTemplateTags :: Set Tag
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec EntryTemplate)
 
 instance Validity EntryTemplate
 
@@ -225,6 +230,7 @@ newtype TimestampTemplate = TimestampTemplate
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
+  deriving (FromJSON, ToJSON) via (Autodocodec TimestampTemplate)
 
 instance Validity TimestampTemplate
 
@@ -236,6 +242,7 @@ newtype UTCTimeTemplate = UTCTimeTemplate
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
+  deriving (FromJSON, ToJSON) via (Autodocodec UTCTimeTemplate)
 
 instance Validity UTCTimeTemplate
 

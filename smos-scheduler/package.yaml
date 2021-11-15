@@ -69,6 +69,8 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
+    - autodocodec
+    - autodocodec-yaml
     - cron
     - genvalidity
     - genvalidity-containers
@@ -90,4 +92,3 @@ tests:
     - text
     - time
     - yaml
-    - autodocodec
