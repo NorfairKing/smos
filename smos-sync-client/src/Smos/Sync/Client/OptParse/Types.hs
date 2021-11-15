@@ -1,18 +1,18 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Sync.Client.OptParse.Types where
 
+import Autodocodec
 import Control.Monad.Logger
 import Data.Validity
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Servant.Client (BaseUrl)
 import Smos.API
 import qualified Smos.Report.OptParse.Types as Report
 import Text.Read
-import YamlParse.Applicative
 
 data Arguments
   = Arguments Command (Report.FlagsWithConfigFile Flags)
@@ -77,12 +77,12 @@ data Configuration = Configuration
   }
   deriving (Show, Generic)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    Configuration <$> yamlSchema <*> objectParser "Configuration" (optionalField "sync" "Synchronisation configuration")
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
+      Configuration
+        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConf
+        <*> optionalField "sync" "Synchronisation configuration" .= confSyncConf
 
 data SyncConfiguration = SyncConfiguration
   { syncConfLogLevel :: Maybe LogLevel,
@@ -100,25 +100,59 @@ data SyncConfiguration = SyncConfiguration
   }
   deriving (Show, Generic)
 
-instance FromJSON SyncConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema SyncConfiguration where
-  yamlSchema =
-    objectParser "SyncConfiguration" $
+instance HasCodec SyncConfiguration where
+  codec =
+    object "SyncConfiguration" $
       SyncConfiguration
-        <$> optionalFieldWith "log-level" "The minimal severity for log messages" (maybeParser parseLogLevel yamlSchema)
-        <*> optionalField "server-url" "The url of the sync server. Example: api.smos.online"
-        <*> optionalField "data-dir" "The directory to store state metadata in (not the contents to be synced)"
-        <*> optionalField "cache-dir" "The directory to cache state data in"
-        <*> optionalField "contents-dir" "The directory of the files to synchronise. By default this will be the workflow directory."
-        <*> optionalField "uuid-file" "The file in which to store the server uuid"
-        <*> optionalField "metadata-db" "The file to store the metadata database in"
-        <*> optionalField "ignore-files" "Which files to ignore"
-        <*> optionalField "username" "The username to log into the sync server"
-        <*> optionalField "password" "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
-        <*> optionalField "session-path" "The file in which to store the login session cookie"
-        <*> optionalField "backup-dir" "The directory to store backups in when a sync conflict happens"
+        <$> optionalFieldWith
+          "log-level"
+          (bimapCodec parseLogLevel renderLogLevel codec)
+          "The minimal severity for log messages"
+          .= syncConfLogLevel
+        <*> optionalField
+          "server-url"
+          "The url of the sync server. Example: api.smos.online"
+          .= syncConfServerUrl
+        <*> optionalField
+          "data-dir"
+          "The directory to store state metadata in (not the contents to be synced)"
+          .= syncConfDataDir
+        <*> optionalField
+          "cache-dir"
+          "The directory to cache state data in"
+          .= syncConfCacheDir
+        <*> optionalField
+          "contents-dir"
+          "The directory of the files to synchronise. By default this will be the workflow directory."
+          .= syncConfContentsDir
+        <*> optionalField
+          "uuid-file"
+          "The file in which to store the server uuid"
+          .= syncConfUUIDFile
+        <*> optionalField
+          "metadata-db"
+          "The file to store the metadata database in"
+          .= syncConfMetadataDB
+        <*> optionalField
+          "ignore-files"
+          "Which files to ignore"
+          .= syncConfIgnoreFiles
+        <*> optionalField
+          "username"
+          "The username to log into the sync server"
+          .= syncConfUsername
+        <*> optionalField
+          "password"
+          "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
+          .= syncConfPassword
+        <*> optionalField
+          "session-path"
+          "The file in which to store the login session cookie"
+          .= syncConfSessionPath
+        <*> optionalField
+          "backup-dir"
+          "The directory to store backups in when a sync conflict happens"
+          .= syncConfBackupDir
 
 data Dispatch
   = DispatchRegister RegisterSettings
@@ -150,18 +184,20 @@ data IgnoreFiles
 
 instance Validity IgnoreFiles
 
-instance FromJSON IgnoreFiles where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema IgnoreFiles where
-  yamlSchema =
-    alternatives
-      [ IgnoreNothing <$ literalString "nothing" <?> "Don't ignore any files",
-        IgnoreNothing <$ literalString "hidden" <?> "Ignore hidden files"
+instance HasCodec IgnoreFiles where
+  codec =
+    stringConstCodec
+      [ (IgnoreNothing, "nothing"),
+        (IgnoreHiddenFiles, "hidden")
       ]
+      <??> [ "nothing: Don't ignore any files",
+             "hidden: Ignore hidden files"
+           ]
 
-parseLogLevel :: String -> Maybe LogLevel
-parseLogLevel s = readMaybe $ "Level" <> s
+parseLogLevel :: String -> Either String LogLevel
+parseLogLevel s = case readMaybe $ "Level" <> s of
+  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
+  Just ll -> Right ll
 
 renderLogLevel :: LogLevel -> String
 renderLogLevel = drop 5 . show

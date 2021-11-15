@@ -8,6 +8,7 @@ module Smos.Sync.Client.OptParse
   )
 where
 
+import Control.Arrow (left)
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
@@ -141,9 +142,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
       <*> Env.var (fmap Just . Env.str) "BACKUP_DIR" (mE <> Env.help "The directory to store backups in when a sync conflict happens")
   where
-    logLevelReader s = case parseLogLevel s of
-      Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
-      Just ll -> pure ll
+    logLevelReader = left Env.UnreadError . parseLogLevel
     ignoreFilesReader s =
       case s of
         "nothing" -> pure IgnoreNothing
@@ -252,7 +251,7 @@ parseFlags :: Parser Flags
 parseFlags =
   Flags <$> Report.parseDirectoryFlags
     <*> option
-      (Just <$> maybeReader parseLogLevel)
+      (Just <$> eitherReader parseLogLevel)
       ( mconcat
           [ long "log-level",
             help $

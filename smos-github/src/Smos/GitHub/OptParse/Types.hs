@@ -4,12 +4,11 @@
 
 module Smos.GitHub.OptParse.Types where
 
-import Data.Aeson
+import Autodocodec
 import Data.Text (Text)
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
-import YamlParse.Applicative
 
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
@@ -30,28 +29,24 @@ data Configuration = Configuration
   }
   deriving (Show, Eq)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    Configuration <$> yamlSchema
-      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The colour configuration")
-      <*> objectParser "Configuration" (optionalField "github" "The github tool configuration")
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
+      Configuration
+        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <*> optionalField colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> optionalField "github" "The github tool configuration" .= confGitHubConfiguration
 
 data GitHubConfiguration = GitHubConfiguration
   { githubConfOAuthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)
 
-instance FromJSON GitHubConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema GitHubConfiguration where
-  yamlSchema =
-    objectParser "GithubConfiguration" $
+instance HasCodec GitHubConfiguration where
+  codec =
+    object "GithubConfiguration" $
       GitHubConfiguration
-        <$> optionalField "oauth-token" "Oauth token for accessing the github API"
+        <$> optionalField "oauth-token" "Oauth token for accessing the github API" .= githubConfOAuthToken
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,

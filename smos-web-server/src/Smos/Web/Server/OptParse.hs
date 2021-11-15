@@ -7,6 +7,8 @@ module Smos.Web.Server.OptParse
   )
 where
 
+import Autodocodec.Yaml
+import Control.Arrow (left)
 import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
@@ -21,7 +23,6 @@ import Smos.Client
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
-import YamlParse.Applicative (readConfigFile)
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -63,7 +64,7 @@ environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
   Environment
     <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "The config file")
-    <*> Env.var (fmap Just . (maybe (Left $ Env.UnreadError "Unknown log level") Right . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+    <*> Env.var (fmap Just . left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
     <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
     <*> Env.var (fmap Just . Env.str) "DOCS_URL" (mE <> Env.help "The url to the docs site to refer to")
     <*> Env.var (fmap Just . Env.str) "API_URL" (mE <> Env.help "The url for the api to use")
@@ -78,7 +79,7 @@ getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =
   case flagConfigFile <|> envConfigFile of
     Nothing -> pure Nothing
-    Just cf -> resolveFile' cf >>= readConfigFile
+    Just cf -> resolveFile' cf >>= readYamlConfigFile
 
 getArguments :: IO Arguments
 getArguments = do
@@ -125,7 +126,7 @@ parseCommandServe = info parser modifier
       CommandServe
         <$> ( ServeFlags
                 <$> option
-                  (Just <$> maybeReader parseLogLevel)
+                  (Just <$> eitherReader parseLogLevel)
                   ( mconcat
                       [ long "web-log-level",
                         help $

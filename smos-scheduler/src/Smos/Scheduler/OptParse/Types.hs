@@ -1,14 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Scheduler.OptParse.Types where
 
-import Control.Applicative
-import Data.Aeson hiding ((<?>))
+import Autodocodec
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -27,7 +28,6 @@ import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colo
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
-import YamlParse.Applicative
 
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
@@ -51,14 +51,13 @@ data Configuration = Configuration
   }
   deriving (Show, Eq)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    Configuration <$> yamlSchema
-      <*> objectParser "ColourConfiguration" (optionalField colourConfigurationKey "The colour configuration")
-      <*> objectParser "Configuration" (optionalField "scheduler" "The scheduler configuration")
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
+      Configuration
+        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <*> optionalField colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> optionalField "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration
   { schedulerConfStateFile :: !(Maybe FilePath),
@@ -66,23 +65,20 @@ data SchedulerConfiguration = SchedulerConfiguration
   }
   deriving (Show, Eq)
 
-instance FromJSON SchedulerConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema SchedulerConfiguration where
-  yamlSchema =
-    objectParser "SchedulerConfiguration" $
+instance HasCodec SchedulerConfiguration where
+  codec =
+    object "SchedulerConfiguration" $
       SchedulerConfiguration
-        <$> optionalField "state-file" "The file to store the scheduler state in"
-        <*> optionalField "schedule" "The scheduler schedule"
+        <$> optionalField "state-file" "The file to store the scheduler state in" .= schedulerConfStateFile
+        <*> optionalField "schedule" "The scheduler schedule" .= schedulerConfSchedule
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
   }
-  deriving (Show, Eq, Generic, FromJSON)
+  deriving (Show, Eq, Generic)
 
-instance YamlSchema Schedule where
-  yamlSchema = Schedule <$> yamlSchema
+instance HasCodec Schedule where
+  codec = dimapCodec Schedule scheduleItems codec
 
 data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
@@ -102,17 +98,14 @@ instance Hashable ScheduleItem where
       `hashWithSalt` d
       `hashWithSalt` serializeCronSchedule cs
 
-instance FromJSON ScheduleItem where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema ScheduleItem where
-  yamlSchema =
-    objectParser "ScheduleItem" $
+instance HasCodec ScheduleItem where
+  codec =
+    object "ScheduleItem" $
       ScheduleItem
-        <$> optionalField "description" "A description of this item"
-        <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)"
-        <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)"
-        <*> requiredFieldWith "schedule" "The schedule on which to do the copying" (eitherParser parseCronSchedule yamlSchema)
+        <$> optionalField "description" "A description of this item" .= scheduleItemDescription
+        <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
+        <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
+        <*> requiredFieldWith "schedule" (bimapCodec parseCronSchedule serializeCronSchedule codec) "The schedule on which to do the copying" .= scheduleItemCronSchedule
 
 instance Validity CronSchedule where
   validate = trivialValidation
@@ -124,8 +117,8 @@ instance Validity DestinationPathTemplate
 
 instance Hashable DestinationPathTemplate
 
-instance YamlSchema DestinationPathTemplate where
-  yamlSchema = DestinationPathTemplate <$> yamlSchema
+instance HasCodec DestinationPathTemplate where
+  codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
@@ -155,15 +148,18 @@ data ScheduleState = ScheduleState
     scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleState)
 
-instance ToJSON ScheduleState where
-  toJSON ScheduleState {..} = object ["last-run" .= scheduleStateLastRun, "item-last-runs" .= scheduleStateLastRuns]
+instance HasCodec ScheduleState where
+  codec =
+    object "ScheduleState" $
+      ScheduleState
+        <$> requiredField "last-run" "when smos-scheduler was last run" .= scheduleStateLastRun
+        <*> optionalFieldWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
 
-instance FromJSON ScheduleState where
-  parseJSON = withObject "ScheduleState" $ \o -> ScheduleState <$> o .: "last-run" <*> o .: "item-last-runs"
-
-newtype ScheduleItemHash = ScheduleItemHash Word64
-  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey)
+newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (FromJSONKey, ToJSONKey)
 
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
@@ -175,34 +171,8 @@ newtype ScheduleTemplate = ScheduleTemplate
 
 instance Validity ScheduleTemplate
 
-instance ToJSON ScheduleTemplate where
-  toJSON = toJSON . ForYaml . scheduleTemplateForest
-
-instance FromJSON ScheduleTemplate where
-  parseJSON v = ScheduleTemplate . unForYaml <$> parseJSON v
-
-instance ToJSON (ForYaml (Tree EntryTemplate)) where
-  toJSON (ForYaml Node {..}) =
-    if null subForest
-      then toJSON rootLabel
-      else object ["entry" .= rootLabel, "forest" .= ForYaml subForest]
-
-instance FromJSON (ForYaml (Tree EntryTemplate)) where
-  parseJSON v =
-    fmap ForYaml $
-      case v of
-        Object o -> do
-          mv <- o .:? "entry"
-          -- This marks that we want to be trying to parse a tree and NOT an entry.
-          -- We force the parser to make a decision this way.
-          case mv :: Maybe Value of
-            Nothing -> Node <$> parseJSON v <*> pure []
-            Just _ ->
-              ( withObject "Tree Entry" $ \o' ->
-                  Node <$> o .: "entry" <*> (unForYaml <$> o' .:? "forest" .!= ForYaml [])
-              )
-                v
-        _ -> Node <$> parseJSON v <*> pure []
+instance HasCodec ScheduleTemplate where
+  codec = dimapCodec ScheduleTemplate scheduleTemplateForest $ entryForestCodec "EntryTemplate" codec
 
 data EntryTemplate = EntryTemplate
   { entryTemplateHeader :: Header,
@@ -227,72 +197,47 @@ newEntryTemplate h =
       entryTemplateTags = S.empty
     }
 
-instance ToJSON EntryTemplate where
-  toJSON EntryTemplate {..} =
-    object $
-      [ "header" .= entryTemplateHeader,
-        "contents" .= entryTemplateContents,
-        "timestamps" .= entryTemplateTimestamps,
-        "properties" .= entryTemplateProperties,
-        "tags" .= entryTemplateTags
-      ]
-        <> stateToJson
+instance HasCodec EntryTemplate where
+  codec =
+    dimapCodec f g $
+      eitherCodec
+        (codec <?> "A header-only entry template")
+        ( object "EntryTemplate" $
+            EntryTemplate
+              <$> optionalFieldWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
+              <*> optionalField' "contents" .= entryTemplateContents
+              <*> optionalFieldWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
+              <*> optionalFieldWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
+              <*> optionalFieldWithOmittedDefault' "state" Nothing .= entryTemplateState
+              <*> optionalFieldWithOmittedDefault' "tags" S.empty .= entryTemplateTags
+        )
     where
-      stateToJson =
-        case entryTemplateState of
-          Nothing ->
-            []
-          Just v ->
-            [ "state" .= v
-            ]
-
-instance FromJSON EntryTemplate where
-  parseJSON v =
-    ( do
-        h <- parseJSON v
-        pure $ newEntryTemplate h
-    )
-      <|> ( withObject "EntryTemplate" $ \o ->
-              EntryTemplate
-                <$> o .:? "header" .!= emptyHeader
-                <*> o .:? "contents"
-                <*> o .:? "timestamps" .!= M.empty
-                <*> o .:? "properties" .!= M.empty
-                <*> o .:! "state"
-                <*> o .:? "tags" .!= S.empty
-          )
-        v
-
-instance YamlSchema EntryTemplate where
-  yamlSchema =
-    alternatives
-      [ newEntryTemplate <$> (yamlSchema <?> "A header-only entry template"),
-        objectParser "EntryTemplate" $
-          EntryTemplate
-            <$> optionalFieldWithDefault' "header" emptyHeader
-            <*> optionalField' "contents"
-            <*> optionalFieldWithDefault' "timestamps" M.empty
-            <*> optionalFieldWithDefault' "properties" M.empty
-            <*> optionalFieldWithDefault' "state" Nothing
-            <*> optionalFieldWithDefault' "tags" S.empty
-      ]
+      f = \case
+        Left h -> newEntryTemplate h
+        Right et -> et
+      g et =
+        if et == newEntryTemplate (entryTemplateHeader et)
+          then Left (entryTemplateHeader et)
+          else Right et
 
 newtype TimestampTemplate = TimestampTemplate
   { timestampTemplateText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
 
 instance Validity TimestampTemplate
 
-instance YamlSchema TimestampTemplate where
-  yamlSchema = TimestampTemplate <$> yamlSchema
+instance HasCodec TimestampTemplate where
+  codec = dimapCodec TimestampTemplate timestampTemplateText codec
 
 newtype UTCTimeTemplate = UTCTimeTemplate
   { utcTimeTemplateText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, FromJSON, ToJSON, IsString)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving newtype (IsString)
 
 instance Validity UTCTimeTemplate
 
-instance YamlSchema UTCTimeTemplate where
-  yamlSchema = UTCTimeTemplate <$> yamlSchema
+instance HasCodec UTCTimeTemplate where
+  codec = dimapCodec UTCTimeTemplate utcTimeTemplateText codec

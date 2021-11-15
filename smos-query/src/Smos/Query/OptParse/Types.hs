@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -11,12 +12,13 @@ module Smos.Query.OptParse.Types
   )
 where
 
+import Autodocodec
+import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
 import Data.Validity
-import Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Smos.Data
 import Smos.Report.Agenda.Types
@@ -35,7 +37,6 @@ import Smos.Report.TimeBlock
 import Text.Colour
 import Text.Colour.Code
 import Text.Colour.Layout
-import YamlParse.Applicative
 
 data Arguments
   = Arguments Command (Report.FlagsWithConfigFile Flags)
@@ -193,14 +194,12 @@ instance Validity Configuration
 
 instance HasCodec Configuration where
   codec =
-    (\reportConf (a, b, c) -> Configuration reportConf a b c)
-      <$> codec
-      <*> object
-        "Configuration"
-        ( (,,) <$> optionalField "hide-archive" "Whether or not to consider the archive, by default"
-            <*> optionalField preparedReportConfigurationKey "Prepared report config"
-            <*> optionalField colourConfigurationKey "Colour config"
-        )
+    object "Configuration" $
+      Configuration
+        <$> Report.configurationObjectCodec .= confReportConf
+        <*> optionalField "hide-archive" "Whether or not to consider the archive, by default" .= confHideArchive
+        <*> optionalField preparedReportConfigurationKey "Prepared report config" .= confPreparedReportConfiguration
+        <*> optionalField colourConfigurationKey "Colour config" .= confColourConfiguration
 
 preparedReportConfigurationKey :: Text
 preparedReportConfigurationKey = "report"
@@ -217,7 +216,9 @@ data PreparedReportConfiguration = PreparedReportConfiguration
 instance Validity PreparedReportConfiguration
 
 instance HasCodec PreparedReportConfiguration where
-  codec = object "PreparedReportConfiguration" $ PreparedReportConfiguration <$> optionalField "reports" "Custom reports"
+  codec =
+    object "PreparedReportConfiguration" $
+      PreparedReportConfiguration <$> optionalField "reports" "Custom reports" .= preparedReportConfAvailableReports
 
 data ColourConfiguration = ColourConfiguration
   { -- | How to background-colour tables
@@ -235,7 +236,7 @@ instance HasCodec ColourConfiguration where
   codec =
     object "ColourConfiguration" $
       ColourConfiguration
-        <$> optionalField "background" "The table background colours"
+        <$> optionalField "background" "The table background colours" .= colourConfigurationBackground
 
 data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
@@ -246,34 +247,53 @@ data TableBackgroundConfiguration
 instance Validity TableBackgroundConfiguration
 
 instance HasCodec TableBackgroundConfiguration where
-  codec =
-    alternatives
-      [ NoTableBackground <$ ParseNull,
-        UseTableBackground <$> codec
-      ]
-
-instance ToJSON TableBackground where
-  toJSON = \case
-    SingleColour c -> toJSON c
-    Bicolour e o -> object ["even" .= e, "odd" .= o]
-
-instance FromJSON TableBackground where
-  parseJSON = viaHasCodec
+  codec = dimapCodec f g $ eitherCodec nullCodec codec
+    where
+      f = \case
+        Left () -> NoTableBackground
+        Right tb -> UseTableBackground tb
+      g = \case
+        NoTableBackground -> Left ()
+        UseTableBackground tb -> Right tb
 
 instance HasCodec TableBackground where
   codec =
-    alternatives
-      [ SingleColour <$> codec <?> "A single background colour",
-        object "Bicolour" $
-          Bicolour
-            <$> optionalField "even" "background for even-numbered table-rows (0-indexed)"
-            <*> optionalField "odd" "background for odd-numbered table-rows"
-      ]
+    dimapCodec f g $
+      eitherCodec
+        (codec <?> "A single background colour")
+        ( object "Bicolour" $
+            (,)
+              <$> optionalField "even" "background for even-numbered table-rows (0-indexed)" .= fst
+              <*> optionalField "odd" "background for odd-numbered table-rows" .= snd
+        )
+    where
+      f = \case
+        Left c -> SingleColour c
+        Right (e, o) -> Bicolour e o
+      g = \case
+        SingleColour c -> Left c
+        Bicolour e o -> Right (e, o)
+
+instance FromJSON TableBackground where
+  parseJSON = parseJSONViaCodec
+
+instance ToJSON TableBackground where
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
 
 instance HasCodec Colour where
-  codec =
-    alternatives
-      [ eitherParser
+  codec = dimapCodec from to $ eitherCodec colour8Codec $ eitherCodec colour8BitCodec colour24BitCodec
+    where
+      from = \case
+        Left (i, tc) -> Colour8 i tc
+        Right (Left w) -> Colour8Bit w
+        Right (Right (r, g, b)) -> Colour24Bit r g b
+      to = \case
+        Colour8 i tc -> Left (i, tc)
+        Colour8Bit w -> Right (Left w)
+        Colour24Bit r g b -> Right (Right (r, g, b))
+      colour8Codec =
+        bimapCodec
           ( \t -> do
               let colourCase :: String -> Either String TerminalColour
                   colourCase = \case
@@ -287,27 +307,54 @@ instance HasCodec Colour where
                     "white" -> Right White
                     s -> Left $ "Unknown colour: " <> s
               case words t of
-                [colourStr] -> Colour8 Dull <$> colourCase colourStr
+                [colourStr] -> (,) Dull <$> colourCase colourStr
                 [intensityStr, colourStr] -> do
                   intensity <- case intensityStr of
                     "bright" -> Right Bright
                     "dull" -> Right Dull
                     _ -> Left $ "Unknown colour intensity: " <> intensityStr
-                  Colour8 intensity <$> colourCase colourStr
+                  (,) intensity <$> colourCase colourStr
                 _ -> Left "Specify a terminal colour as two words, e. g. 'dull red' or 'bright blue'."
           )
-          codec,
-        Colour8Bit <$> codec
+          ( \(intensity, colour8) ->
+              mconcat
+                [ case intensity of
+                    Dull -> ""
+                    Bright -> "bright ",
+                  case colour8 of
+                    Black -> "black"
+                    Red -> "red"
+                    Green -> "green"
+                    Yellow -> "yellow"
+                    Blue -> "blue"
+                    Magenta -> "magenta"
+                    Cyan -> "cyan"
+                    White -> "white"
+                ]
+          )
+          codec
+      colour8BitCodec =
+        codec
           <??> [ "Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.",
                  "See this overview on wikipedia for more information:",
                  "https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit"
-               ],
+               ]
+      colour24BitCodec =
         object "Colour24Bit" $
-          Colour24Bit
-            <$> requiredField "red" "The red component, [0..255]"
-            <*> requiredField "green" "The green component, [0..255]"
-            <*> requiredField "blue" "The blue component, [0..255]"
-      ]
+          let r (x, _, _) = x
+              g (_, x, _) = x
+              b (_, _, x) = x
+           in (,,)
+                <$> requiredField "red" "The red component, [0..255]" .= r
+                <*> requiredField "green" "The green component, [0..255]" .= g
+                <*> requiredField "blue" "The blue component, [0..255]" .= b
+
+instance FromJSON Colour where
+  parseJSON = parseJSONViaCodec
+
+instance ToJSON Colour where
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
 
 data Dispatch
   = DispatchEntry !EntrySettings

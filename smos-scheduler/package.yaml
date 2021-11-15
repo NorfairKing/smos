@@ -18,6 +18,8 @@ library:
   build-tools: autoexporter
   dependencies:
     - aeson
+    - autodocodec
+    - autodocodec-yaml
     - bytestring
     - containers
     - cron
@@ -42,7 +44,6 @@ library:
     - validity
     - validity-text
     - yaml
-    - autodocodec
 
 executables:
   smos-scheduler:

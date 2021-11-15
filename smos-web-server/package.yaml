@@ -21,6 +21,8 @@ library:
   build-tools: autoexporter
   dependencies:
   - aeson
+  - autodocodec
+  - autodocodec-yaml
   - base16-bytestring
   - bytestring
   - conduit
@@ -59,7 +61,6 @@ library:
   - wai-extra
   - warp
   - yaml
-  - autodocodec
   - yesod
   - yesod-auth
   - yesod-autoreload

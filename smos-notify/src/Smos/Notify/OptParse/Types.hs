@@ -2,13 +2,12 @@
 
 module Smos.Notify.OptParse.Types where
 
+import Autodocodec
 import Control.Monad.Logger
-import Data.Aeson
 import Path
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import Text.Read
-import YamlParse.Applicative
 
 data Flags = Flags
   { flagDirectoryFlags :: !Report.DirectoryFlags,
@@ -30,15 +29,12 @@ data Configuration = Configuration
   }
   deriving (Show, Eq)
 
-instance FromJSON Configuration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema Configuration where
-  yamlSchema =
-    objectParser "Configuration" $
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectParser
-        <*> optionalField "notify" "Notification Configuration"
+        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <*> optionalField "notify" "Notification Configuration" .= confNotifyConfiguration
 
 data NotifyConfiguration = NotifyConfiguration
   { notifyConfDatabase :: !(Maybe FilePath),
@@ -46,15 +42,12 @@ data NotifyConfiguration = NotifyConfiguration
   }
   deriving (Show, Eq)
 
-instance FromJSON NotifyConfiguration where
-  parseJSON = viaYamlSchema
-
-instance YamlSchema NotifyConfiguration where
-  yamlSchema =
-    objectParser "NotifyConfiguration" $
+instance HasCodec NotifyConfiguration where
+  codec =
+    object "NotifyConfiguration" $
       NotifyConfiguration
-        <$> optionalField "database" "Database to store sent notifications in"
-        <*> optionalFieldWith "log-level" "Log level" (maybeParser parseLogLevel yamlSchema)
+        <$> optionalField "database" "Database to store sent notifications in" .= notifyConfDatabase
+        <*> optionalFieldWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
@@ -63,8 +56,10 @@ data Settings = Settings
   }
   deriving (Show, Eq)
 
-parseLogLevel :: String -> Maybe LogLevel
-parseLogLevel s = readMaybe $ "Level" <> s
+parseLogLevel :: String -> Either String LogLevel
+parseLogLevel s = case readMaybe $ "Level" <> s of
+  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
+  Just ll -> Right ll
 
 renderLogLevel :: LogLevel -> String
 renderLogLevel = drop 5 . show

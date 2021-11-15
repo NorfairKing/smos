@@ -2,6 +2,7 @@
 
 module Smos.Scheduler.Utils where
 
+import Autodocodec.Yaml
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Reader
@@ -38,7 +39,7 @@ renderDestinationPathTemplate ctx (DestinationPathTemplate rf) = case runReaderT
   Success r -> Right r
 
 readScheduleTemplate :: Path Abs File -> IO (Maybe (Either String ScheduleTemplate))
-readScheduleTemplate from = readYamlFile from
+readScheduleTemplate from = readYamlConfigFile from
 
 readYamlFile :: FromJSON a => Path Abs File -> IO (Maybe (Either String a))
 readYamlFile f = do

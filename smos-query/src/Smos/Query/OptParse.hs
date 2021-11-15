@@ -551,7 +551,7 @@ parseProjectionArgs =
   NE.nonEmpty . catMaybes
     <$> many
       ( option
-          (Just <$> maybeReader (parseProjection . T.pack))
+          (Just <$> eitherReader (parseProjection . T.pack))
           ( mconcat
               [ long "add-column",
                 long "project",
@@ -566,7 +566,7 @@ parseSorterArgs =
   fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes
     <$> many
       ( option
-          (Just <$> maybeReader (parseSorter . T.pack))
+          (Just <$> eitherReader (parseSorter . T.pack))
           (mconcat [long "sort", metavar "SORTER", help "A sorter to sort entries by"])
       )
 

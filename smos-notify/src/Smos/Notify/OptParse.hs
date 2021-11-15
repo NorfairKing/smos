@@ -8,6 +8,7 @@ module Smos.Notify.OptParse
   )
 where
 
+import Control.Arrow (left)
 import Control.Monad.Logger
 import Data.Maybe
 import Data.Version
@@ -101,7 +102,7 @@ parseFlags =
       )
     <*> optional
       ( option
-          (maybeReader parseLogLevel)
+          (eitherReader parseLogLevel)
           ( mconcat
               [ long "log-level",
                 help $
@@ -128,7 +129,4 @@ environmentParser =
       <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "log level")
   where
     mE = Env.def Nothing <> Env.keep
-
-    logLevelReader s = case parseLogLevel s of
-      Nothing -> Left $ Env.UnreadError $ "Unknown log level: " <> s
-      Just ll -> pure ll
+    logLevelReader = left Env.UnreadError . parseLogLevel
