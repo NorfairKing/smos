@@ -43,6 +43,7 @@
     properties: &lt;properties&gt;
 
 
+
   <h3> Header
 
   <p>
@@ -243,5 +244,10 @@
 
   <h4>  
     Yaml Schema
-  <p>
-    There is no yaml schema available for logbooks because they are parsed monadically.
+  <pre>
+    #{logbookDesc}
+
+  <h3>
+    Full Smos file schema reference
+  <pre>
+    #{smosFileDesc}

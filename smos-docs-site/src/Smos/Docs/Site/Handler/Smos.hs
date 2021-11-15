@@ -63,6 +63,62 @@ stateHistoryDesc = yamlDesc @StateHistory
 tagsDesc :: Text
 tagsDesc = yamlDesc @(Set Tag)
 
+exampleStateHistory :: StateHistory
+exampleStateHistory =
+  let t2 =
+        UTCTime
+          { utctDay = fromGregorian 2020 5 9,
+            utctDayTime = 50
+          }
+      t5 =
+        UTCTime
+          { utctDay = fromGregorian 2020 5 9,
+            utctDayTime = 5500
+          }
+   in StateHistory
+        { unStateHistory =
+            [ StateHistoryEntry
+                { stateHistoryEntryNewState = Just "NEXT",
+                  stateHistoryEntryTimestamp = t5
+                },
+              StateHistoryEntry
+                { stateHistoryEntryNewState = Just "TODO",
+                  stateHistoryEntryTimestamp = t2
+                }
+            ]
+        }
+
+exampleTags :: Set Tag
+exampleTags = S.fromList ["code", "online"]
+
+exampleLogbook :: Logbook
+exampleLogbook =
+  let t3 =
+        UTCTime
+          { utctDay = fromGregorian 2020 5 9,
+            utctDayTime = 500
+          }
+      t4 =
+        UTCTime
+          { utctDay = fromGregorian 2020 5 9,
+            utctDayTime = 550
+          }
+      t5 =
+        UTCTime
+          { utctDay = fromGregorian 2020 5 9,
+            utctDayTime = 5500
+          }
+   in LogOpen
+        t5
+        [ LogbookEntry
+            { logbookEntryStart = t3,
+              logbookEntryEnd = t4
+            }
+        ]
+
+logbookDesc :: Text
+logbookDesc = yamlDesc @Logbook
+
 example :: ToJSON a => a -> Text
 example = TE.decodeUtf8 . Yaml.encode
 
@@ -117,58 +173,8 @@ exampleEntry =
               ]
         }
 
-exampleStateHistory :: StateHistory
-exampleStateHistory =
-  let t2 =
-        UTCTime
-          { utctDay = fromGregorian 2020 5 9,
-            utctDayTime = 50
-          }
-      t5 =
-        UTCTime
-          { utctDay = fromGregorian 2020 5 9,
-            utctDayTime = 5500
-          }
-   in StateHistory
-        { unStateHistory =
-            [ StateHistoryEntry
-                { stateHistoryEntryNewState = Just "NEXT",
-                  stateHistoryEntryTimestamp = t5
-                },
-              StateHistoryEntry
-                { stateHistoryEntryNewState = Just "TODO",
-                  stateHistoryEntryTimestamp = t2
-                }
-            ]
-        }
-
-exampleTags :: Set Tag
-exampleTags = S.fromList ["code", "online"]
-
-exampleLogbook :: Logbook
-exampleLogbook =
-  let t3 =
-        UTCTime
-          { utctDay = fromGregorian 2020 5 9,
-            utctDayTime = 500
-          }
-      t4 =
-        UTCTime
-          { utctDay = fromGregorian 2020 5 9,
-            utctDayTime = 550
-          }
-      t5 =
-        UTCTime
-          { utctDay = fromGregorian 2020 5 9,
-            utctDayTime = 5500
-          }
-   in LogOpen
-        t5
-        [ LogbookEntry
-            { logbookEntryStart = t3,
-              logbookEntryEnd = t4
-            }
-        ]
+smosFileDesc :: Text
+smosFileDesc = yamlDesc @SmosFile
 
 getHelpPageOf :: [String] -> String
 getHelpPageOf args =

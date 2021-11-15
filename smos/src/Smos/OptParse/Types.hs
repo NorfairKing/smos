@@ -379,7 +379,7 @@ newtype KeyConfigs = KeyConfigs
   deriving (ToJSON, FromJSON) via (Autodocodec KeyConfigs)
 
 instance HasCodec KeyConfigs where
-  codec = dimapCodec KeyConfigs keyConfigs codec
+  codec = named "KeyConfigs" $ dimapCodec KeyConfigs keyConfigs codec
 
 backToKeyConfigs :: KeyMappings -> KeyConfigs
 backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
@@ -395,10 +395,11 @@ instance Validity KeyConfig
 
 instance HasCodec KeyConfig where
   codec =
-    object "KeyConfig" $
-      KeyConfig
-        <$> requiredField "key" "The key to match" .= keyConfigMatcher
-        <*> requiredField "action" "The name of the action to perform when the key is matched" .= keyConfigAction
+    named "KeyConfig" $
+      object "KeyConfig" $
+        KeyConfig
+          <$> requiredField "key" "The key to match" .= keyConfigMatcher
+          <*> requiredField "action" "The name of the action to perform when the key is matched" .= keyConfigAction
 
 backToKeyConfig :: KeyMapping -> KeyConfig
 backToKeyConfig km =
