@@ -163,14 +163,6 @@ configurationObjectCodec =
       "Monetisation configuration. If this is not configured then the server is run entirely for free."
       .= confMonetisationConf
 
-instance HasCodec LooperConfiguration where
-  codec =
-    object "LooperConfiguration" $
-      LooperConfiguration
-        <$> optionalField "enable" "Enable this looper" .= looperConfEnabled
-        <*> optionalField "phase" "The amount of time to wait before starting the looper the first time, in seconds" .= looperConfPhase
-        <*> optionalField "period" "The amount of time to wait between runs of the looper, in seconds" .= looperConfPeriod
-
 data MonetisationConfiguration = MonetisationConfiguration
   { monetisationConfStripeSecretKey :: !(Maybe Text),
     monetisationConfStripePublishableKey :: !(Maybe Text),
