@@ -189,18 +189,25 @@ entryTreeCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Tree a)
 entryTreeCodec n c =
   named ("Tree " <> n) $
     dimapCodec f g $
-      eitherCodec (c <?> "Leaf entry") $
-        object "Tree Entry" $
-          Node
-            <$> requiredFieldWith "entry" c "root" .= rootLabel
-            <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec n c) [] "subforest" .= subForest
+      eitherCodec
+        -- We must use the object codec here as the left side, because whether
+        -- the 'entry' key is in the object will determine whether we're
+        -- parsing an entry or a forest.
+        -- If we did it the other way around, then an entry tree object would
+        -- look like an entry with all default values.
+        ( object "Tree Entry" $
+            Node
+              <$> requiredFieldWith "entry" c "root" .= rootLabel
+              <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec n c) [] "subforest" .= subForest
+        )
+        (c <?> "Leaf entry")
   where
     f = \case
-      Left e -> Node e []
-      Right tree -> tree
+      Right e -> Node e []
+      Left tree -> tree
     g tree@(Node e subforest) = case subforest of
-      [] -> Left e
-      _ -> Right tree
+      [] -> Right e
+      _ -> Left tree
 
 entryForestCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Forest a)
 entryForestCodec n c = named ("Forest " <> n) $ listCodec $ entryTreeCodec n c

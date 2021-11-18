@@ -213,7 +213,7 @@ instance HasCodec EntryTemplate where
               <*> optionalField' "contents" .= entryTemplateContents
               <*> optionalFieldWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
               <*> optionalFieldWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
-              <*> optionalFieldWithOmittedDefault' "state" Nothing .= entryTemplateState
+              <*> optionalField' "state" .= entryTemplateState
               <*> optionalFieldWithOmittedDefault' "tags" S.empty .= entryTemplateTags
         )
     where
