@@ -135,17 +135,11 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: c1687a96fcd98be2e4aece275342dbb39011be19
+  commit: e5a54ccc0d09b600fdf784624e7df38b55676384
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
-
-- github: NorfairKing/yamlparse-applicative
-  commit: 0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb
-  subdirs:
-  - yamlparse-applicative
- 
 
 - github: NorfairKing/safe-coloured-text
   commit: d840dd7b0f13f4d0fd693c1dd93be33f9ee94605

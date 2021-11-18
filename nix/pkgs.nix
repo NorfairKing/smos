@@ -34,7 +34,6 @@ let
           (import (sources.cursor-brick + "/nix/overlay.nix"))
           (import (sources.dirforest + "/nix/overlay.nix"))
           (import (sources.cursor-dirforest + "/nix/overlay.nix"))
-          (import (sources.yamlparse-applicative + "/nix/overlay.nix"))
           (import (sources.autodocodec + "/nix/overlay.nix"))
           (import (sources.fuzzy-time + "/nix/overlay.nix"))
           (import (sources.cursor-fuzzy-time + "/nix/overlay.nix"))

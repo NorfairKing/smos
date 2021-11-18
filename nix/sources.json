@@ -5,10 +5,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "autodocodec",
-        "rev": "604ce108bd9bbe9b29e88955f6c981f65d89c153",
-        "sha256": "0xhq66l4a62lzvj7lvq6xb65ll2blx4yfr3f92fw31fadh2n081w",
+        "rev": "e5a54ccc0d09b600fdf784624e7df38b55676384",
+        "sha256": "166ky92kcx0skxx7aczx88af6aj6pl6fxyrsqiayzrfwzlryhzb2",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/autodocodec/archive/604ce108bd9bbe9b29e88955f6c981f65d89c153.tar.gz",
+        "url": "https://github.com/NorfairKing/autodocodec/archive/e5a54ccc0d09b600fdf784624e7df38b55676384.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "autorecorder": {
@@ -17,10 +17,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "autorecorder",
-        "rev": "32c59952276d14775731883f90939e759928d4a8",
-        "sha256": "0n8b5bfm67g5jf75gx2vd61ypmdmhaxwmkbh7gihhrgm0kwl0ab3",
+        "rev": "5f726e44fb34e61e7410d34703d21caf5506aaea",
+        "sha256": "0311qpfi81vhl13pidfs1n4r6l860zsxn7g4n4j1k5hnshyjv7pa",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/autorecorder/archive/32c59952276d14775731883f90939e759928d4a8.tar.gz",
+        "url": "https://github.com/NorfairKing/autorecorder/archive/5f726e44fb34e61e7410d34703d21caf5506aaea.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "bulma": {
@@ -321,18 +321,6 @@
         "sha256": "153028qywr85lrhf0yrjf9v7wf9bnbsn6w7lv3skppqi1k4igpvl",
         "type": "tarball",
         "url": "https://github.com/NorfairKing/validity/archive/86a824729519c154c23f0757f2ce4b9ab93b675a.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
-    "yamlparse-applicative": {
-        "branch": "development",
-        "description": "An optparse-applicative -style explainable yaml parser",
-        "homepage": "https://cs-syd.eu/posts/2020-06-28-yamlparse-applicative",
-        "owner": "NorfairKing",
-        "repo": "yamlparse-applicative",
-        "rev": "0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb",
-        "sha256": "1vaxkqjrhcc7za877nlmc6is92sr4pjja1rl0j74dlg5rhal809d",
-        "type": "tarball",
-        "url": "https://github.com/NorfairKing/yamlparse-applicative/archive/0edf8b9ebe7aa2d834f5376a39a3ccab39727cdb.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {
