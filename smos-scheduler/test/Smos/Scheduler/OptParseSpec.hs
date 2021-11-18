@@ -13,11 +13,11 @@ import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = do
-  genValidSpec @ScheduleTemplate
-  jsonSpecOnValid @ScheduleTemplate
-  genValidSpec @EntryTemplate
-  jsonSpecOnValid @EntryTemplate
-  genValidSpec @TimestampTemplate
-  jsonSpecOnValid @TimestampTemplate
   genValidSpec @UTCTimeTemplate
   jsonSpecOnValid @UTCTimeTemplate
+  genValidSpec @TimestampTemplate
+  jsonSpecOnValid @TimestampTemplate
+  genValidSpec @EntryTemplate
+  jsonSpecOnValid @EntryTemplate
+  genValidSpec @ScheduleTemplate
+  jsonSpecOnValid @ScheduleTemplate
