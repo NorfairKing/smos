@@ -110,7 +110,7 @@ emptyRecurrence =
       recurrenceRDates = S.empty
     }
 
-recurrenceObjectCodec :: ObjectCodec Recurrence Recurrence
+recurrenceObjectCodec :: JSONObjectCodec Recurrence
 recurrenceObjectCodec =
   Recurrence
     <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules

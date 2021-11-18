@@ -431,7 +431,7 @@ instance Validity UntilCount
 instance HasCodec UntilCount where
   codec = object "UntilCount" untilCountObjectCodec
 
-untilCountObjectCodec :: ObjectCodec UntilCount UntilCount
+untilCountObjectCodec :: JSONObjectCodec UntilCount
 untilCountObjectCodec =
   dimapCodec f g $
     (,)

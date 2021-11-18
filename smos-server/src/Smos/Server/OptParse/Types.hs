@@ -105,7 +105,7 @@ data Configuration = Configuration
 instance HasCodec Configuration where
   codec = object "Configuration" configurationObjectCodec
 
-configurationObjectCodec :: ObjectCodec Configuration Configuration
+configurationObjectCodec :: JSONObjectCodec Configuration
 configurationObjectCodec =
   Configuration
     <$> optionalFieldWith

@@ -1,4 +1,16 @@
 {
+    "autodocodec": {
+        "branch": "master",
+        "description": null,
+        "homepage": null,
+        "owner": "NorfairKing",
+        "repo": "autodocodec",
+        "rev": "604ce108bd9bbe9b29e88955f6c981f65d89c153",
+        "sha256": "0xhq66l4a62lzvj7lvq6xb65ll2blx4yfr3f92fw31fadh2n081w",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/autodocodec/archive/604ce108bd9bbe9b29e88955f6c981f65d89c153.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "autorecorder": {
         "branch": "master",
         "description": "An automatic declarative ASCIInema recorder",
@@ -269,10 +281,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "a230bf791b0bced918092bbc9c3b54608b2a3a48",
-        "sha256": "1lcjqsp5520v9jar83yvgcgirq25xc1vn19asw6yrj8qs9gd4r7p",
+        "rev": "e75c55b920936e344b779093b2a0318fb35d1770",
+        "sha256": "086mr29c5a3fysz8nx06a0j8g1asy63xpqpi546bydxqxny9hyvl",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/a230bf791b0bced918092bbc9c3b54608b2a3a48.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/e75c55b920936e344b779093b2a0318fb35d1770.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "template-haskell-reload": {

@@ -29,7 +29,7 @@ instance Validity Static where
 instance HasCodec Static where
   codec = object "Static" staticObjectCodec
 
-staticObjectCodec :: ObjectCodec Static Static
+staticObjectCodec :: JSONObjectCodec Static
 staticObjectCodec =
   bimapCodec prettyValidate id $
     Static

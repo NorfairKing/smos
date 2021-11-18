@@ -9,7 +9,7 @@ module Smos.Data.SchemaSpec
 where
 
 import Autodocodec
-import Autodocodec.Yaml.Document
+import Autodocodec.Yaml.Schema
 import Data.Data
 import Smos.Data.Gen ()
 import Smos.Data.Types

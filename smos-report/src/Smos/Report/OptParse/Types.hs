@@ -89,7 +89,7 @@ instance Validity Configuration
 instance HasCodec Configuration where
   codec = object "Configuration" configurationObjectCodec
 
-configurationObjectCodec :: ObjectCodec Configuration Configuration
+configurationObjectCodec :: JSONObjectCodec Configuration
 configurationObjectCodec =
   Configuration
     <$> directoryConfigurationObjectCodec .= confDirectoryConf
@@ -138,7 +138,7 @@ instance Validity DirectoryConfiguration
 instance HasCodec DirectoryConfiguration where
   codec = object "DirectoryConfiguration" directoryConfigurationObjectCodec
 
-directoryConfigurationObjectCodec :: ObjectCodec DirectoryConfiguration DirectoryConfiguration
+directoryConfigurationObjectCodec :: JSONObjectCodec DirectoryConfiguration
 directoryConfigurationObjectCodec =
   DirectoryConfiguration
     <$> optionalField "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
