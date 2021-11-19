@@ -82,7 +82,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.directoryConfigurationObjectCodec .= confDirectoryConf
-        <*> optionalField "sync" "Synchronisation configuration" .= confSyncConf
+        <*> optionalFieldOrNull "sync" "Synchronisation configuration" .= confSyncConf
 
 data SyncConfiguration = SyncConfiguration
   { syncConfLogLevel :: Maybe LogLevel,
@@ -104,52 +104,52 @@ instance HasCodec SyncConfiguration where
   codec =
     object "SyncConfiguration" $
       SyncConfiguration
-        <$> optionalFieldWith
+        <$> optionalFieldOrNullWith
           "log-level"
           (bimapCodec parseLogLevel renderLogLevel codec)
           "The minimal severity for log messages"
           .= syncConfLogLevel
-        <*> optionalField
+        <*> optionalFieldOrNull
           "server-url"
           "The url of the sync server. Example: api.smos.online"
           .= syncConfServerUrl
-        <*> optionalField
+        <*> optionalFieldOrNull
           "data-dir"
           "The directory to store state metadata in (not the contents to be synced)"
           .= syncConfDataDir
-        <*> optionalField
+        <*> optionalFieldOrNull
           "cache-dir"
           "The directory to cache state data in"
           .= syncConfCacheDir
-        <*> optionalField
+        <*> optionalFieldOrNull
           "contents-dir"
           "The directory of the files to synchronise. By default this will be the workflow directory."
           .= syncConfContentsDir
-        <*> optionalField
+        <*> optionalFieldOrNull
           "uuid-file"
           "The file in which to store the server uuid"
           .= syncConfUUIDFile
-        <*> optionalField
+        <*> optionalFieldOrNull
           "metadata-db"
           "The file to store the metadata database in"
           .= syncConfMetadataDB
-        <*> optionalField
+        <*> optionalFieldOrNull
           "ignore-files"
           "Which files to ignore"
           .= syncConfIgnoreFiles
-        <*> optionalField
+        <*> optionalFieldOrNull
           "username"
           "The username to log into the sync server"
           .= syncConfUsername
-        <*> optionalField
+        <*> optionalFieldOrNull
           "password"
           "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
           .= syncConfPassword
-        <*> optionalField
+        <*> optionalFieldOrNull
           "session-path"
           "The file in which to store the login session cookie"
           .= syncConfSessionPath
-        <*> optionalField
+        <*> optionalFieldOrNull
           "backup-dir"
           "The directory to store backups in when a sync conflict happens"
           .= syncConfBackupDir

@@ -34,7 +34,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
-        <*> optionalField "notify" "Notification Configuration" .= confNotifyConfiguration
+        <*> optionalFieldOrNull "notify" "Notification Configuration" .= confNotifyConfiguration
 
 data NotifyConfiguration = NotifyConfiguration
   { notifyConfDatabase :: !(Maybe FilePath),
@@ -46,8 +46,8 @@ instance HasCodec NotifyConfiguration where
   codec =
     object "NotifyConfiguration" $
       NotifyConfiguration
-        <$> optionalField "database" "Database to store sent notifications in" .= notifyConfDatabase
-        <*> optionalFieldWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
+        <$> optionalFieldOrNull "database" "Database to store sent notifications in" .= notifyConfDatabase
+        <*> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,

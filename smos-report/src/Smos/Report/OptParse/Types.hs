@@ -93,9 +93,9 @@ configurationObjectCodec :: JSONObjectCodec Configuration
 configurationObjectCodec =
   Configuration
     <$> directoryConfigurationObjectCodec .= confDirectoryConf
-    <*> optionalField "waiting" "The waiting report configuration" .= confWaitingReportConf
-    <*> optionalField "stuck" "The stuck projects report configuration" .= confStuckReportConf
-    <*> optionalField "work" "The work report configuration" .= confWorkReportConf
+    <*> optionalFieldOrNull "waiting" "The waiting report configuration" .= confWaitingReportConf
+    <*> optionalFieldOrNull "stuck" "The stuck projects report configuration" .= confStuckReportConf
+    <*> optionalFieldOrNull "work" "The work report configuration" .= confWorkReportConf
 
 defaultConfiguration :: Configuration
 defaultConfiguration =
@@ -141,10 +141,10 @@ instance HasCodec DirectoryConfiguration where
 directoryConfigurationObjectCodec :: JSONObjectCodec DirectoryConfiguration
 directoryConfigurationObjectCodec =
   DirectoryConfiguration
-    <$> optionalField "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
-    <*> optionalField "archive-dir" "The archive directory" .= directoryConfArchiveDir
-    <*> optionalField "projects-dir" "The projects directory" .= directoryConfProjectsDir
-    <*> optionalField "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
+    <$> optionalFieldOrNull "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
+    <*> optionalFieldOrNull "archive-dir" "The archive directory" .= directoryConfArchiveDir
+    <*> optionalFieldOrNull "projects-dir" "The projects directory" .= directoryConfProjectsDir
+    <*> optionalFieldOrNull "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
 
 defaultDirectoryConfiguration :: DirectoryConfiguration
 defaultDirectoryConfiguration =
@@ -207,7 +207,7 @@ instance HasCodec WaitingReportConfiguration where
   codec =
     object "WaitingReportConfiguration" $
       WaitingReportConfiguration
-        <$> optionalField "threshold" "waiting report threshold to consider waiting entries 'overdue'" .= waitingReportConfThreshold
+        <$> optionalFieldOrNull "threshold" "waiting report threshold to consider waiting entries 'overdue'" .= waitingReportConfThreshold
 
 backToWaitingReportConfiguration :: WaitingReportConfig -> WaitingReportConfiguration
 backToWaitingReportConfiguration WaitingReportConfig {..} =
@@ -230,7 +230,7 @@ instance HasCodec StuckReportConfiguration where
   codec =
     object "StuckReportConfiguration" $
       StuckReportConfiguration
-        <$> optionalField "threshold" "stuck report threshold to consider stuck projects 'overdue'" .= stuckReportConfThreshold
+        <$> optionalFieldOrNull "threshold" "stuck report threshold to consider stuck projects 'overdue'" .= stuckReportConfThreshold
 
 backToStuckReportConfiguration :: StuckReportConfig -> StuckReportConfiguration
 backToStuckReportConfiguration StuckReportConfig {..} =
@@ -258,12 +258,12 @@ instance HasCodec WorkReportConfiguration where
   codec =
     object "WorkReportConfiguration" $
       WorkReportConfiguration
-        <$> optionalField "base-filter" "The base work filter" .= workReportConfBaseFilter
-        <*> optionalField "checks" "Checks for the work report" .= workReportConfChecks
-        <*> optionalField "contexts" "Contexts for the work report" .= workReportConfContexts
-        <*> optionalField "time-filter" "The property to use to filter by time" .= workReportConfTimeFilterProperty
-        <*> optionalField "columns" "The columns in the report" .= workReportConfProjection
-        <*> optionalField "sorter" "The sorter to use to sort the rows" .= workReportConfSorter
+        <$> optionalFieldOrNull "base-filter" "The base work filter" .= workReportConfBaseFilter
+        <*> optionalFieldOrNull "checks" "Checks for the work report" .= workReportConfChecks
+        <*> optionalFieldOrNull "contexts" "Contexts for the work report" .= workReportConfContexts
+        <*> optionalFieldOrNull "time-filter" "The property to use to filter by time" .= workReportConfTimeFilterProperty
+        <*> optionalFieldOrNull "columns" "The columns in the report" .= workReportConfProjection
+        <*> optionalFieldOrNull "sorter" "The sorter to use to sort the rows" .= workReportConfSorter
 
 defaultWorkReportConfiguration :: WorkReportConfiguration
 defaultWorkReportConfiguration =

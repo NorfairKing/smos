@@ -68,14 +68,14 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> optionalFieldWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "The minimal severity for log messages" .= confLogLevel
-        <*> optionalField "port" "The port on which to serve web requests" .= confPort
-        <*> optionalField "docs-url" "The url for the documentation site to refer to" .= confDocsUrl
-        <*> optionalField "api-url" "The url for the api to use" .= confAPIUrl
-        <*> optionalField "web-url" "The url that this web server is served from" .= confWebUrl
-        <*> optionalField "data-dir" "The directory to store workflows during editing" .= confDataDir
-        <*> optionalField "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
-        <*> optionalField "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
+        <$> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "The minimal severity for log messages" .= confLogLevel
+        <*> optionalFieldOrNull "port" "The port on which to serve web requests" .= confPort
+        <*> optionalFieldOrNull "docs-url" "The url for the documentation site to refer to" .= confDocsUrl
+        <*> optionalFieldOrNull "api-url" "The url for the api to use" .= confAPIUrl
+        <*> optionalFieldOrNull "web-url" "The url that this web server is served from" .= confWebUrl
+        <*> optionalFieldOrNull "data-dir" "The directory to store workflows during editing" .= confDataDir
+        <*> optionalFieldOrNull "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
+        <*> optionalFieldOrNull "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
 
 newtype Dispatch
   = DispatchServe ServeSettings

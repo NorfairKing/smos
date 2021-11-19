@@ -75,7 +75,7 @@ instance HasCodec ClockTableFile where
     object "ClockTableFile" $
       ClockTableFile
         <$> requiredField "file" "clock table file" .= clockTableFile
-        <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec "ClockTableHeaderEntry" codec) [] "clock table forest" .= clockTableForest
+        <*> optionalFieldOrNullWithOmittedDefaultWith "forest" (entryForestCodec "ClockTableHeaderEntry" codec) [] "clock table forest" .= clockTableForest
 
 data ClockTableHeaderEntry = ClockTableHeaderEntry
   { clockTableHeaderEntryHeader :: Header,

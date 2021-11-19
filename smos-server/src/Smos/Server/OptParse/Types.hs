@@ -108,57 +108,57 @@ instance HasCodec Configuration where
 configurationObjectCodec :: JSONObjectCodec Configuration
 configurationObjectCodec =
   Configuration
-    <$> optionalFieldWith
+    <$> optionalFieldOrNullWith
       "log-level"
       (bimapCodec parseLogLevel renderLogLevel codec)
       "The minimal severity for log messages"
       .= confLogLevel
-    <*> optionalField
+    <*> optionalFieldOrNull
       "uuid-file"
       "The file in which to store the server uuid"
       .= confUUIDFile
-    <*> optionalField
+    <*> optionalFieldOrNull
       "database-file"
       "The file in which to store the database"
       .= confDatabaseFile
-    <*> optionalField
+    <*> optionalFieldOrNull
       "signing-key-file"
       "The file in which to store signing key for JWT tokens"
       .= confSigningKeyFile
-    <*> optionalField
+    <*> optionalFieldOrNull
       "port"
       "The port on which to serve api requests"
       .= confPort
-    <*> optionalField
+    <*> optionalFieldOrNull
       "max-backups-per-user"
       "The maximum number of backups per user"
       .= confMaxBackupsPerUser
-    <*> optionalField
+    <*> optionalFieldOrNull
       "max-backup-size-per-user"
       "The maximum number of bytes that backups can take up per user"
       .= confMaxBackupSizePerUser
-    <*> optionalFieldWith
+    <*> optionalFieldOrNullWith
       "backup-interval"
       (dimapCodec (fromIntegral :: Int -> NominalDiffTime) round codec)
       "The interval between automatic backups (seconds)"
       .= confBackupInterval
-    <*> optionalField
+    <*> optionalFieldOrNull
       "auto-backup"
       "The configuration for the automatic backup looper"
       .= confAutoBackupLooperConfiguration
-    <*> optionalField
+    <*> optionalFieldOrNull
       "backup-garbage-collector"
       "The configuration for the automatic backup garbage collection looper"
       .= confBackupGarbageCollectionLooperConfiguration
-    <*> optionalField
+    <*> optionalFieldOrNull
       "file-migrator"
       "The configuration for the automatic file format migrator looper"
       .= confFileMigrationLooperConfiguration
-    <*> optionalField
+    <*> optionalFieldOrNull
       "admin"
       "The username of the user who will have admin rights"
       .= confAdmin
-    <*> optionalField
+    <*> optionalFieldOrNull
       "monetisation"
       "Monetisation configuration. If this is not configured then the server is run entirely for free."
       .= confMonetisationConf
@@ -175,10 +175,10 @@ instance HasCodec MonetisationConfiguration where
   codec =
     object "MonetisationConfiguration" $
       MonetisationConfiguration
-        <$> optionalField "stripe-secret-key" "The secret key for calling the stripe api" .= monetisationConfStripeSecretKey
-        <*> optionalField "stripe-publishable-key" "The publishable key for calling the stripe api" .= monetisationConfStripePublishableKey
-        <*> optionalField "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription" .= monetisationConfStripePrice
-        <*> optionalFieldWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay" .= monetisationConfFreeloaders
+        <$> optionalFieldOrNull "stripe-secret-key" "The secret key for calling the stripe api" .= monetisationConfStripeSecretKey
+        <*> optionalFieldOrNull "stripe-publishable-key" "The publishable key for calling the stripe api" .= monetisationConfStripePublishableKey
+        <*> optionalFieldOrNull "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription" .= monetisationConfStripePrice
+        <*> optionalFieldOrNullWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay" .= monetisationConfFreeloaders
 
 newtype Dispatch
   = DispatchServe ServeSettings

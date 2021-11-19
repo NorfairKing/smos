@@ -197,9 +197,9 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.configurationObjectCodec .= confReportConf
-        <*> optionalField "hide-archive" "Whether or not to consider the archive, by default" .= confHideArchive
-        <*> optionalField preparedReportConfigurationKey "Prepared report config" .= confPreparedReportConfiguration
-        <*> optionalField colourConfigurationKey "Colour config" .= confColourConfiguration
+        <*> optionalFieldOrNull "hide-archive" "Whether or not to consider the archive, by default" .= confHideArchive
+        <*> optionalFieldOrNull preparedReportConfigurationKey "Prepared report config" .= confPreparedReportConfiguration
+        <*> optionalFieldOrNull colourConfigurationKey "Colour config" .= confColourConfiguration
 
 preparedReportConfigurationKey :: Text
 preparedReportConfigurationKey = "report"
@@ -218,7 +218,7 @@ instance Validity PreparedReportConfiguration
 instance HasCodec PreparedReportConfiguration where
   codec =
     object "PreparedReportConfiguration" $
-      PreparedReportConfiguration <$> optionalField "reports" "Custom reports" .= preparedReportConfAvailableReports
+      PreparedReportConfiguration <$> optionalFieldOrNull "reports" "Custom reports" .= preparedReportConfAvailableReports
 
 data ColourConfiguration = ColourConfiguration
   { -- | How to background-colour tables
@@ -236,7 +236,7 @@ instance HasCodec ColourConfiguration where
   codec =
     object "ColourConfiguration" $
       ColourConfiguration
-        <$> optionalField "background" "The table background colours" .= colourConfigurationBackground
+        <$> optionalFieldOrNull "background" "The table background colours" .= colourConfigurationBackground
 
 data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
@@ -263,8 +263,8 @@ instance HasCodec TableBackground where
         (codec <?> "A single background colour")
         ( object "Bicolour" $
             (,)
-              <$> optionalField "even" "background for even-numbered table-rows (0-indexed)" .= fst
-              <*> optionalField "odd" "background for odd-numbered table-rows" .= snd
+              <$> optionalFieldOrNull "even" "background for even-numbered table-rows (0-indexed)" .= fst
+              <*> optionalFieldOrNull "odd" "background for odd-numbered table-rows" .= snd
         )
     where
       f = \case

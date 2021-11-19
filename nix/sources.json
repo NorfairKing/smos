@@ -161,10 +161,10 @@
         "homepage": "http://hackage.haskell.org/package/looper",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "8f9f944e8cf3cd8883a5600c115461ecea285c62",
-        "sha256": "1nc6iiwxp0gbxv4cwgv3jqmv0v59w8y462ax7g55gx7m8l8zg2a9",
+        "rev": "e01054970b47d9eaab8b9314a1400c231ac4a960",
+        "sha256": "1n1g6ypibfjxs5msqlph0x0wzsic9p0ff6l0nzy1h3d6zp6bwk54",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/looper/archive/8f9f944e8cf3cd8883a5600c115461ecea285c62.tar.gz",
+        "url": "https://github.com/NorfairKing/looper/archive/e01054970b47d9eaab8b9314a1400c231ac4a960.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "mergeful": {

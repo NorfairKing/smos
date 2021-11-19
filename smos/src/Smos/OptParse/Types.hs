@@ -47,8 +47,8 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.configurationObjectCodec .= confReportConf
-        <*> optionalField "keys" "Keybindings" .= confKeybindingsConf
-        <*> optionalField "explainer-mode" "Turn on explainer mode where the user can see what is happening" .= confExplainerMode
+        <*> optionalFieldOrNull "keys" "Keybindings" .= confKeybindingsConf
+        <*> optionalFieldOrNull "explainer-mode" "Turn on explainer mode where the user can see what is happening" .= confExplainerMode
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
@@ -76,12 +76,12 @@ instance HasCodec KeybindingsConfiguration where
   codec =
     object "KeybindingsConfiguration" $
       KeybindingsConfiguration
-        <$> optionalField "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys." .= confReset
-        <*> optionalField "file" "Keybindings for the file context" .= confFileKeyConfig
-        <*> optionalField "browser" "Keybindings for the file browser context" .= confBrowserKeyConfig
-        <*> optionalField "reports" "Keybindings for the reports context" .= confReportsKeyConfig
-        <*> optionalField "help" "Keybindings for the help context" .= confHelpKeyConfig
-        <*> optionalField "any" "Keybindings for any context" .= confAnyKeyConfig
+        <$> optionalFieldOrNull "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys." .= confReset
+        <*> optionalFieldOrNull "file" "Keybindings for the file context" .= confFileKeyConfig
+        <*> optionalFieldOrNull "browser" "Keybindings for the file browser context" .= confBrowserKeyConfig
+        <*> optionalFieldOrNull "reports" "Keybindings for the reports context" .= confReportsKeyConfig
+        <*> optionalFieldOrNull "help" "Keybindings for the help context" .= confHelpKeyConfig
+        <*> optionalFieldOrNull "any" "Keybindings for any context" .= confAnyKeyConfig
 
 backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
 backToKeybindingsConfiguration KeyMap {..} =
@@ -116,16 +116,16 @@ instance HasCodec FileKeyConfigs where
   codec =
     object "FileKeyConfigs" $
       FileKeyConfigs
-        <$> optionalField "empty" "Keybindings for when the file is empty" .= emptyKeyConfigs
-        <*> optionalField "entry" "Keybindings for when an entry is selected" .= entryKeyConfigs
-        <*> optionalField "header" "Keybindings for when an header is selected" .= headerKeyConfigs
-        <*> optionalField "contents" "Keybindings for when an contents is selected" .= contentsKeyConfigs
-        <*> optionalField "timestamps" "Keybindings for when a timestamps are selected" .= timestampsKeyConfigs
-        <*> optionalField "properties" "Keybindings for when a properties are selected" .= propertiesKeyConfigs
-        <*> optionalField "state-history" "Keybindings for when a state history is selected" .= stateHistoryKeyConfigs
-        <*> optionalField "tags" "Keybindings for when a tags are selected" .= tagsKeyConfigs
-        <*> optionalField "logbook" "Keybindings for when a logbook is selected" .= logbookKeyConfigs
-        <*> optionalField "any" "Keybindings that match in any file subcontext" .= anyKeyConfigs
+        <$> optionalFieldOrNull "empty" "Keybindings for when the file is empty" .= emptyKeyConfigs
+        <*> optionalFieldOrNull "entry" "Keybindings for when an entry is selected" .= entryKeyConfigs
+        <*> optionalFieldOrNull "header" "Keybindings for when an header is selected" .= headerKeyConfigs
+        <*> optionalFieldOrNull "contents" "Keybindings for when an contents is selected" .= contentsKeyConfigs
+        <*> optionalFieldOrNull "timestamps" "Keybindings for when a timestamps are selected" .= timestampsKeyConfigs
+        <*> optionalFieldOrNull "properties" "Keybindings for when a properties are selected" .= propertiesKeyConfigs
+        <*> optionalFieldOrNull "state-history" "Keybindings for when a state history is selected" .= stateHistoryKeyConfigs
+        <*> optionalFieldOrNull "tags" "Keybindings for when a tags are selected" .= tagsKeyConfigs
+        <*> optionalFieldOrNull "logbook" "Keybindings for when a logbook is selected" .= logbookKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings that match in any file subcontext" .= anyKeyConfigs
 
 backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
 backToFileKeyConfigs FileKeyMap {..} =
@@ -159,11 +159,11 @@ instance HasCodec BrowserKeyConfigs where
   codec =
     object "BrowserKeyConfigs" $
       BrowserKeyConfigs
-        <$> optionalField "existent" "Keybindings for when an existing file or directory is selected" .= browserExistentKeyConfigs
-        <*> optionalField "in-progress" "Keybindings for when an in-progress file or directory is selected" .= browserInProgressKeyConfigs
-        <*> optionalField "empty" "Keybindings for when the directory being browsed is empty" .= browserEmptyKeyConfigs
-        <*> optionalField "filter" "Keybindings for when file browser's filter bar is selected" .= browserFilterKeyConfigs
-        <*> optionalField "any" "Keybindings for any of the other file browser situations" .= browserAnyKeyConfigs
+        <$> optionalFieldOrNull "existent" "Keybindings for when an existing file or directory is selected" .= browserExistentKeyConfigs
+        <*> optionalFieldOrNull "in-progress" "Keybindings for when an in-progress file or directory is selected" .= browserInProgressKeyConfigs
+        <*> optionalFieldOrNull "empty" "Keybindings for when the directory being browsed is empty" .= browserEmptyKeyConfigs
+        <*> optionalFieldOrNull "filter" "Keybindings for when file browser's filter bar is selected" .= browserFilterKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for any of the other file browser situations" .= browserAnyKeyConfigs
 
 backToBrowserKeyConfigs :: BrowserKeyMap -> BrowserKeyConfigs
 backToBrowserKeyConfigs BrowserKeyMap {..} =
@@ -193,12 +193,12 @@ instance HasCodec ReportsKeyConfigs where
   codec =
     object "ReportsKeyConfigs" $
       ReportsKeyConfigs
-        <$> optionalField "next-action" "Keybindings for the interactive next action report" .= nextActionReportKeyConfigs
-        <*> optionalField "waiting" "Keybindings for the interactive waiting report" .= waitingReportKeyConfigs
-        <*> optionalField "timestamps" "Keybindings for the interactive timestamps report" .= timestampsReportKeyConfigs
-        <*> optionalField "stuck" "Keybindings for the interactive stuck projects report" .= stuckReportKeyConfigs
-        <*> optionalField "work" "Keybindings for the interactive work report" .= workReportKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in any report" .= anyReportKeyConfigs
+        <$> optionalFieldOrNull "next-action" "Keybindings for the interactive next action report" .= nextActionReportKeyConfigs
+        <*> optionalFieldOrNull "waiting" "Keybindings for the interactive waiting report" .= waitingReportKeyConfigs
+        <*> optionalFieldOrNull "timestamps" "Keybindings for the interactive timestamps report" .= timestampsReportKeyConfigs
+        <*> optionalFieldOrNull "stuck" "Keybindings for the interactive stuck projects report" .= stuckReportKeyConfigs
+        <*> optionalFieldOrNull "work" "Keybindings for the interactive work report" .= workReportKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in any report" .= anyReportKeyConfigs
 
 backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
 backToReportsKeyConfig ReportsKeyMap {..} =
@@ -226,9 +226,9 @@ instance HasCodec NextActionReportKeyConfigs where
   codec =
     object "NextActionReportKeyConfigs" $
       NextActionReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the next-action report" .= nextActionReportNormalKeyConfigs
-        <*> optionalField "search" "Keybindings for the search in the next-action report" .= nextActionReportSearchKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in the next-action report" .= nextActionReportAnyKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the next-action report" .= nextActionReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the next-action report" .= nextActionReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the next-action report" .= nextActionReportAnyKeyConfigs
 
 backToNextActionReportKeyConfigs :: NextActionReportKeyMap -> NextActionReportKeyConfigs
 backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
@@ -253,9 +253,9 @@ instance HasCodec WaitingReportKeyConfigs where
   codec =
     object "WaitingReportKeyConfigs" $
       WaitingReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the waiting report" .= waitingReportNormalKeyConfigs
-        <*> optionalField "search" "Keybindings for the search in the waiting report" .= waitingReportSearchKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in the waiting report" .= waitingReportAnyKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the waiting report" .= waitingReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the waiting report" .= waitingReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the waiting report" .= waitingReportAnyKeyConfigs
 
 backToWaitingReportKeyConfigs :: WaitingReportKeyMap -> WaitingReportKeyConfigs
 backToWaitingReportKeyConfigs WaitingReportKeyMap {..} =
@@ -280,9 +280,9 @@ instance HasCodec TimestampsReportKeyConfigs where
   codec =
     object "TimestampsReportKeyConfigs" $
       TimestampsReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the timestamps report" .= timestampsReportNormalKeyConfigs
-        <*> optionalField "search" "Keybindings for the search in the timestamps report" .= timestampsReportSearchKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in the timestamps report" .= timestampsReportAnyKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the timestamps report" .= timestampsReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the timestamps report" .= timestampsReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the timestamps report" .= timestampsReportAnyKeyConfigs
 
 backToTimestampsReportKeyConfigs :: TimestampsReportKeyMap -> TimestampsReportKeyConfigs
 backToTimestampsReportKeyConfigs TimestampsReportKeyMap {..} =
@@ -306,8 +306,8 @@ instance HasCodec StuckReportKeyConfigs where
   codec =
     object "StuckReportKeyConfigs" $
       StuckReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the stuck report" .= stuckReportNormalKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in the stuck report" .= stuckReportAnyKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the stuck report" .= stuckReportNormalKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the stuck report" .= stuckReportAnyKeyConfigs
 
 backToStuckReportKeyConfigs :: StuckReportKeyMap -> StuckReportKeyConfigs
 backToStuckReportKeyConfigs StuckReportKeyMap {..} =
@@ -331,9 +331,9 @@ instance HasCodec WorkReportKeyConfigs where
   codec =
     object "WorkReportKeyConfigs" $
       WorkReportKeyConfigs
-        <$> optionalField "normal" "Keybindings for interacting with the work report" .= workReportNormalKeyConfigs
-        <*> optionalField "search" "Keybindings for the search in the work report" .= workReportSearchKeyConfigs
-        <*> optionalField "any" "Keybindings for at any point in the work report" .= workReportAnyKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the work report" .= workReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the work report" .= workReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the work report" .= workReportAnyKeyConfigs
 
 backToWorkReportKeyConfigs :: WorkReportKeyMap -> WorkReportKeyConfigs
 backToWorkReportKeyConfigs WorkReportKeyMap {..} =
@@ -358,9 +358,9 @@ instance HasCodec HelpKeyConfigs where
   codec =
     object "HelpKeyConfigs" $
       HelpKeyConfigs
-        <$> optionalField "help" "Keybindings for when in the help screen" .= helpHelpKeyConfigs
-        <*> optionalField "search" "Keybindings for when the search bar is selected within the help screen" .= helpSearchKeyConfigs
-        <*> optionalField "any" "Keybindings for at any time in the help screen" .= helpAnyKeyConfigs
+        <$> optionalFieldOrNull "help" "Keybindings for when in the help screen" .= helpHelpKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for when the search bar is selected within the help screen" .= helpSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any time in the help screen" .= helpAnyKeyConfigs
 
 backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
 backToHelpKeyConfigs HelpKeyMap {..} =

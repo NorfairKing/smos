@@ -32,7 +32,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
-        <*> optionalField "calendar" "Calendar configuration" .= confCalendarImportConfiguration
+        <*> optionalFieldOrNull "calendar" "Calendar configuration" .= confCalendarImportConfiguration
 
 data CalendarImportConfiguration = CalendarImportConfiguration
   { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
@@ -44,8 +44,8 @@ instance HasCodec CalendarImportConfiguration where
   codec =
     object "CalendarImportConfiguration" $
       CalendarImportConfiguration
-        <$> optionalField "sources" "The sources to import from" .= calendarImportConfSources
-        <*> optionalField "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
+        <$> optionalFieldOrNull "sources" "The sources to import from" .= calendarImportConfSources
+        <*> optionalFieldOrNull "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
 
 data SourceConfiguration = SourceConfiguration
   { sourceConfName :: !(Maybe String),
@@ -58,7 +58,7 @@ instance HasCodec SourceConfiguration where
   codec =
     object "SourceConfiguration" $
       SourceConfiguration
-        <$> optionalField "name" "The name of the source" .= sourceConfName
+        <$> optionalFieldOrNull "name" "The name of the source" .= sourceConfName
         <*> requiredFieldWith
           "source"
           ( codec

@@ -81,7 +81,7 @@ instance HasCodec WaitingEntry where
       WaitingEntry
         <$> requiredField "header" "The entry header" .= waitingEntryHeader
         <*> requiredFieldWith "timestamp" utctimeCodec "The timestamp at which this entry became WAITING" .= waitingEntryTimestamp
-        <*> optionalField "threshold" "The threshold for 'have been waiting for too long'" .= waitingEntryThreshold
+        <*> optionalFieldOrNull "threshold" "The threshold for 'have been waiting for too long'" .= waitingEntryThreshold
         <*> requiredField "path" "The path of the file that contained this waiting entry" .= waitingEntryFilePath
 
 sortWaitingEntries :: [WaitingEntry] -> [WaitingEntry]

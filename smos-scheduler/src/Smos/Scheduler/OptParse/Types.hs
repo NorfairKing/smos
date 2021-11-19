@@ -57,8 +57,8 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
-        <*> optionalField colourConfigurationKey "The colour configuration" .= confColourConfiguration
-        <*> optionalField "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
+        <*> optionalFieldOrNull colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration
   { schedulerConfStateFile :: !(Maybe FilePath),
@@ -71,8 +71,8 @@ instance HasCodec SchedulerConfiguration where
   codec =
     object "SchedulerConfiguration" $
       SchedulerConfiguration
-        <$> optionalField "state-file" "The file to store the scheduler state in" .= schedulerConfStateFile
-        <*> optionalField "schedule" "The scheduler schedule" .= schedulerConfSchedule
+        <$> optionalFieldOrNull "state-file" "The file to store the scheduler state in" .= schedulerConfStateFile
+        <*> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
@@ -105,7 +105,7 @@ instance HasCodec ScheduleItem where
   codec =
     object "ScheduleItem" $
       ScheduleItem
-        <$> optionalField "description" "A description of this item" .= scheduleItemDescription
+        <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
         <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
         <*> requiredFieldWith "schedule" (bimapCodec parseCronSchedule serializeCronSchedule codec) "The schedule on which to do the copying" .= scheduleItemCronSchedule
@@ -158,7 +158,7 @@ instance HasCodec ScheduleState where
     object "ScheduleState" $
       ScheduleState
         <$> requiredField "last-run" "when smos-scheduler was last run" .= scheduleStateLastRun
-        <*> optionalFieldWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
+        <*> optionalFieldOrNullWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
 
 newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
   deriving stock (Show, Eq, Ord, Generic)
@@ -209,12 +209,12 @@ instance HasCodec EntryTemplate where
         (codec <?> "A header-only entry template")
         ( object "EntryTemplate" $
             EntryTemplate
-              <$> optionalFieldWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
-              <*> optionalField' "contents" .= entryTemplateContents
-              <*> optionalFieldWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
-              <*> optionalFieldWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
+              <$> optionalFieldOrNullWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
+              <*> optionalFieldOrNull' "contents" .= entryTemplateContents
+              <*> optionalFieldOrNullWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
+              <*> optionalFieldOrNullWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
               <*> optionalField' "state" .= entryTemplateState
-              <*> optionalFieldWithOmittedDefault' "tags" S.empty .= entryTemplateTags
+              <*> optionalFieldOrNullWithOmittedDefault' "tags" S.empty .= entryTemplateTags
         )
     where
       f = \case

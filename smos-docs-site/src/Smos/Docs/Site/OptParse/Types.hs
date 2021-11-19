@@ -55,11 +55,11 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> optionalField "port" "The port on which to serve web requests" .= confPort
-        <*> optionalField "api-url" "The url for the api server to rever to" .= confAPIServerUrl
-        <*> optionalField "web-url" "The url for the web server to refer to" .= confWebServerUrl
-        <*> optionalField "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
-        <*> optionalField "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
+        <$> optionalFieldOrNull "port" "The port on which to serve web requests" .= confPort
+        <*> optionalFieldOrNull "api-url" "The url for the api server to rever to" .= confAPIServerUrl
+        <*> optionalFieldOrNull "web-url" "The url for the web server to refer to" .= confWebServerUrl
+        <*> optionalFieldOrNull "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
+        <*> optionalFieldOrNull "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
 
 newtype Dispatch
   = DispatchServe ServeSettings

@@ -31,8 +31,8 @@ instance HasCodec PreparedReport where
   codec =
     object "PreparedReport" $
       PreparedReport
-        <$> optionalField "description" "A description of the report" .= preparedReportDescription
-        <*> optionalField "filter" "The entry filter to get the results in the report" .= perparedReportFilter
-        <*> optionalField "columns" "The columns of the report" .= perparedReportProjection
-        <*> optionalField "sorter" "The sorter to sort the rows of the report by" .= preparedReportSorter
-        <*> optionalField "hide-archive" "Whether to consider the archive for the report" .= preparedReportHideArchive
+        <$> optionalFieldOrNull "description" "A description of the report" .= preparedReportDescription
+        <*> optionalFieldOrNull "filter" "The entry filter to get the results in the report" .= perparedReportFilter
+        <*> optionalFieldOrNull "columns" "The columns of the report" .= perparedReportProjection
+        <*> optionalFieldOrNull "sorter" "The sorter to sort the rows of the report by" .= preparedReportSorter
+        <*> optionalFieldOrNull "hide-archive" "Whether to consider the archive for the report" .= preparedReportHideArchive

@@ -34,8 +34,8 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
-        <*> optionalField colourConfigurationKey "The colour configuration" .= confColourConfiguration
-        <*> optionalField "github" "The github tool configuration" .= confGitHubConfiguration
+        <*> optionalFieldOrNull colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> optionalFieldOrNull "github" "The github tool configuration" .= confGitHubConfiguration
 
 data GitHubConfiguration = GitHubConfiguration
   { githubConfOAuthToken :: !(Maybe Text)
@@ -46,7 +46,7 @@ instance HasCodec GitHubConfiguration where
   codec =
     object "GithubConfiguration" $
       GitHubConfiguration
-        <$> optionalField "oauth-token" "Oauth token for accessing the github API" .= githubConfOAuthToken
+        <$> optionalFieldOrNull "oauth-token" "Oauth token for accessing the github API" .= githubConfOAuthToken
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
