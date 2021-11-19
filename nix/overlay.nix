@@ -1,11 +1,9 @@
 { sources ? import ./sources.nix
-, buildTools ? import sources.nixpkgs { }
 }:
 final: previous:
 
 with final.lib;
 let
-  static = final.stdenv.hostPlatform.isMusl;
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
   mergeListRecursively = final.callPackage ./merge-lists-recursively.nix { };
@@ -39,7 +37,7 @@ in
         overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
           old: {
             buildDepends = (old.buildDepends or [ ]) ++ [
-              buildTools.haskellPackages.autoexporter
+              final.haskellPackages.autoexporter
             ];
             doBenchmark = true;
             enableLibraryProfiling = false;
@@ -56,31 +54,6 @@ in
               "--ghc-options=-Wcpp-undef"
               "--ghc-options=-Wcompat"
             ];
-            # Whatever is necessary for a static build.
-            configureFlags = (old.configureFlags or [ ]) ++ optionals static [
-              "--enable-executable-static"
-              "--disable-executable-dynamic"
-              "--ghc-option=-optl=-static"
-              "--ghc-option=-static"
-              "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-              "--extra-lib-dirs=${final.zlib.static}/lib"
-              "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-              "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
-              "--extra-lib-dirs=${final.sqlite.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-            ];
-            # Assert that the executables are indeed static
-            postInstall = (old.postBuild or "") + optionalString static ''
-              for exe in $out/bin/*
-              do
-                if ldd $exe
-                then
-                  echo "Not a static executable"
-                  exit 1
-                else
-                  echo "Static executable: $exe"
-                fi
-              done
-            '';
           }
         );
       smosPkg = name: buildStrictly (ownPkg name (final.gitignoreSource (../. + "/${name}")));
@@ -97,13 +70,13 @@ in
           name = "${exeName}-linkchecked";
           buildCommand = ''
             mkdir -p $out
-            ${buildTools.xorg.lndir}/bin/lndir -silent ${pkg} $out
+            ${final.xorg.lndir}/bin/lndir -silent ${pkg} $out
 
             $out/bin/${exeName} serve &
             sleep 1
             ${linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
             ${seocheck}/bin/seocheck http://localhost:8000
-            ${buildTools.killall}/bin/killall ${exeName}
+            ${final.killall}/bin/killall ${exeName}
           '';
         };
       withStaticResources = pkg: resources: overrideCabal pkg (
@@ -140,7 +113,7 @@ in
           # The file we want to compile
           # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
           cp $src mybulma.scss
-          ${buildTools.sass}/bin/scss \
+          ${final.sass}/bin/scss \
             --sourcemap=none \
             mybulma.scss:index.css --style compressed
           cp index.css $out
@@ -232,7 +205,7 @@ in
           '';
         }
       );
-      generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = buildTools; };
+      generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
       generatedStripe = generateOpenAPIClient {
         name = "stripe-client";
         src = sources.stripe-spec + "/openapi/spec3.yaml";
@@ -309,19 +282,19 @@ in
 
   moduleDocs =
     let
-      eval = import (buildTools.path + "/nixos/lib/eval-config.nix") {
-        pkgs = buildTools;
+      eval = import (final.path + "/nixos/lib/eval-config.nix") {
+        pkgs = final;
         modules = [
           (import ./nixos-module.nix {
             inherit sources;
-            pkgs = buildTools;
+            pkgs = final;
             inherit (final) smosPackages;
             envname = "production";
           })
         ];
       };
     in
-    (buildTools.nixosOptionsDoc {
+    (final.nixosOptionsDoc {
       # options = filterRelevantOptions eval.options;
       options = eval.options;
     }).optionsJSON;
@@ -428,7 +401,6 @@ in
                 yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
                 terminfo = self.callHackage "terminfo" "0.4.1.4" { };
                 envparse = self.callHackage "envparse" "0.4.1" { };
-                persistent-sqlite = if static then super.persistent-sqlite.override { sqlite = final.sqlite.overrideAttrs (old: { dontDisableStatic = true; }); } else super.persistent-sqlite;
                 # These are turned off for the same reason as the local packages tests
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
