@@ -12,12 +12,12 @@ jobs:
     name: Pre-commit hooks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v12
-    - uses: cachix/cachix-action@v8
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
+    - uses: cachix/cachix-action@v10
       with:
         name: smos
-        extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
+        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A pre-commit-hooks
 
@@ -25,9 +25,9 @@ jobs:
     name: Nix shell
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v12
-    - uses: cachix/cachix-action@v8
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
+    - uses: cachix/cachix-action@v10
       with:
         name: smos
     - run: nix-shell shell.nix --command "echo 'nix-entered succesfully'"
@@ -43,15 +43,15 @@ jobs:
           - ubuntu-latest
           - macos-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v12
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
     - name: free disk space
       run: |
         if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
         then
           sudo rm -rf /opt
         fi
-    - uses: cachix/cachix-action@v8
+    - uses: cachix/cachix-action@v10
       with:
         name: smos
         extraPullNames: cachix
@@ -62,14 +62,14 @@ jobs:
     name: Static Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v12
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
     - name: free disk space
       run: sudo rm -rf /opt
-    - uses: cachix/cachix-action@v8
+    - uses: cachix/cachix-action@v10
       with:
         name: smos
-        extraPullNames: cachix,iohk,validity,dirforest,cursor,cursor-dirforest,mergeful,yamlparse
+        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release-static
     - run: nix-build ci.nix -A release-zip
