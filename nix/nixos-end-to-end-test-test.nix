@@ -1,5 +1,5 @@
 { sources ? import ./sources.nix
-, pkgs ? import ./pkgs.nix { inherit sources; static = false; }
+, pkgs ? import ./pkgs.nix { inherit sources; }
 , smosPackages ? pkgs.smosPackages
 }:
 let

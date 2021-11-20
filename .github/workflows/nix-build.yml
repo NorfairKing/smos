@@ -57,19 +57,3 @@ jobs:
         extraPullNames: cachix
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release
-
-  static:
-    name: Static Build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: cachix/install-nix-action@v15
-    - name: free disk space
-      run: sudo rm -rf /opt
-    - uses: cachix/cachix-action@v10
-      with:
-        name: smos
-        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
-        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build ci.nix -A release-static
-    - run: nix-build ci.nix -A release-zip
