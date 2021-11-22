@@ -15,7 +15,7 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   describe "prepareToArchive" $ do
-    it "produces valid smos files" $ producesValidsOnValids2 prepareToArchive
+    it "produces valid smos files" $ producesValid2 prepareToArchive
   describe "destinationFile" $ do
     it "outputs the same as last time" $ do
       goldenStringFile "test_resources/destination.txt" $

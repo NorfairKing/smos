@@ -257,10 +257,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "rev": "bcd7e1b00393230b9f28c723a1f7cf291ae89f8a",
-        "sha256": "127j7dfjl81ydvsdkyfkrisikg2f4ixavqfvbsxbwjr8fdi4iy3p",
+        "rev": "499d88b40243b06cad216a492deca782738fa0b3",
+        "sha256": "0svlqvak3pcgbr50f28csf6mn8djbvvfi2av7xwfbnz1adagww7r",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/seocheck/archive/bcd7e1b00393230b9f28c723a1f7cf291ae89f8a.tar.gz",
+        "url": "https://github.com/NorfairKing/seocheck/archive/499d88b40243b06cad216a492deca782738fa0b3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "stripe-spec": {

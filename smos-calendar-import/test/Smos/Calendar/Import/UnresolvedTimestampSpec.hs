@@ -14,14 +14,14 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @CalRDate
-  jsonSpecOnValid @CalRDate
+  jsonSpec @CalRDate
   genValidSpec @CalPeriod
-  jsonSpecOnValid @CalPeriod
+  jsonSpec @CalPeriod
   genValidSpec @CalEndDuration
-  jsonSpecOnValid @CalEndDuration
+  jsonSpec @CalEndDuration
   genValidSpec @CalTimestamp
-  jsonSpecOnValid @CalTimestamp
+  jsonSpec @CalTimestamp
   genValidSpec @CalDateTime
-  jsonSpecOnValid @CalDateTime
+  jsonSpec @CalDateTime
   genValidSpec @TimeZoneId
-  jsonSpecOnValid @TimeZoneId
+  jsonSpec @TimeZoneId

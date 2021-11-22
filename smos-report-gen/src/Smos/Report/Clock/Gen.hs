@@ -9,19 +9,13 @@ import Smos.Report.Clock
 import Smos.Report.Period.Gen ()
 import Smos.Report.TimeBlock.Gen ()
 
-instance GenUnchecked DecimalClockResolution
-
 instance GenValid DecimalClockResolution where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
-instance GenUnchecked TemporalClockResolution
-
 instance GenValid TemporalClockResolution where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
-
-instance GenUnchecked ClockFormat
 
 instance GenValid ClockFormat where
   genValid = genValidStructurally

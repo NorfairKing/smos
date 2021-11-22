@@ -14,8 +14,8 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @TimeZoneHistory
-  jsonSpecOnValid @TimeZoneHistory
+  jsonSpec @TimeZoneHistory
   genValidSpec @TimeZoneHistoryRule
-  jsonSpecOnValid @TimeZoneHistoryRule
+  jsonSpec @TimeZoneHistoryRule
   genValidSpec @UTCOffset
-  jsonSpecOnValid @UTCOffset
+  jsonSpec @UTCOffset
