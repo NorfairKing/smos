@@ -63,6 +63,12 @@ extra-source-files:
     test_resources/exception.recurring
     test_resources/exception.smos
     test_resources/exception.unresolved
+    test_resources/ignored.config
+    test_resources/ignored.events
+    test_resources/ignored.ics
+    test_resources/ignored.recurring
+    test_resources/ignored.smos
+    test_resources/ignored.unresolved
     test_resources/minimal.config
     test_resources/minimal.events
     test_resources/minimal.ics

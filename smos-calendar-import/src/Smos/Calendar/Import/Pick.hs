@@ -4,11 +4,13 @@
 
 module Smos.Calendar.Import.Pick where
 
+import Control.Monad
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
@@ -60,7 +62,11 @@ pickEventFromVEvent ICal.VEvent {..} =
       recurringEventRecurrence = pickRecurrence veRRule veExDate veRDate
    in case veStatus of
         Just (ICal.CancelledEvent _) -> Nothing -- Don't pick cancelled events
-        _ -> Just (LT.toStrict $ ICal.uidValue veUID, RecurringEvent {..})
+        _ -> do
+          case staticDescription of
+            Nothing -> pure ()
+            Just d -> guard $ not $ "SMOS_NO_CALENDAR_IMPORT" `T.isInfixOf` d
+          Just (LT.toStrict $ ICal.uidValue veUID, RecurringEvent {..})
 
 pickRecurrence :: Set ICal.RRule -> Set ICal.ExDate -> Set ICal.RDate -> Recurrence
 pickRecurrence veRRule veExDate veRDate =
