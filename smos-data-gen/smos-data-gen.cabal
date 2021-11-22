@@ -94,6 +94,7 @@ benchmark smos-data-bench
     , genvalidity
     , genvalidity-containers
     , genvalidity-criterion
+    , path
     , smos-data
     , smos-data-gen
   default-language: Haskell2010

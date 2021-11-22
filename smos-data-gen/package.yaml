@@ -69,10 +69,11 @@ benchmarks:
     - -Wall
     dependencies:
     - QuickCheck
+    - containers
     - criterion
+    - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
-    - genvalidity
+    - path
     - smos-data
     - smos-data-gen
-    - containers

@@ -166,13 +166,11 @@ readDataVersionsHelpMessage =
 
 parseSmosData :: FromJSON a => ByteString -> Either String a
 parseSmosData bs =
-  let py = parseSmosDataYaml bs
-      pj = parseSmosDataJSON bs
-   in case (py, pj) of
-        (Left pye, Left pje) ->
-          Left $ unlines ["Failed to parse smos data as json:", pje, "and also as yaml:", pye]
-        (Right pyv, _) -> pure pyv
-        (_, Right pjv) -> pure pjv
+  case parseSmosDataYaml bs of
+    Right pyv -> pure pyv
+    Left pye -> case parseSmosDataJSON bs of
+      Right pjv -> pure pjv
+      Left pje -> Left $ unlines ["Failed to parse smos data as json:", pje, "and also as yaml:", pye]
 
 parseSmosDataYaml :: FromJSON a => ByteString -> Either String a
 parseSmosDataYaml = left Yaml.prettyPrintParseException . Yaml.decodeEither'
