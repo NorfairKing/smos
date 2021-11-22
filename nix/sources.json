@@ -216,15 +216,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "openapi-code-generator": {
-        "branch": "master",
+        "branch": "autodocodec",
         "description": "Generate Haskell client code from an OpenAPI 3 specification",
         "homepage": "",
         "owner": "Haskell-OpenAPI-Code-Generator",
         "repo": "Haskell-OpenAPI-Client-Code-Generator",
-        "rev": "4ecc5946cc8f2a77bf80b7e4330b0d7d1cc5af44",
-        "sha256": "16fxhwb30f0xmn3z85zbwdhbylx03zzdy91qkcbnv0bp2gmxmgh9",
+        "rev": "3e21c05f466d4c4708ef2ca661fa036f9ab5d35c",
+        "sha256": "0ybggaskn78b71260bd1gkbhz8gnfkqpd7zsq24qmwia10ihrc0y",
         "type": "tarball",
-        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/4ecc5946cc8f2a77bf80b7e4330b0d7d1cc5af44.tar.gz",
+        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/3e21c05f466d4c4708ef2ca661fa036f9ab5d35c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pretty-relative-time": {
@@ -269,10 +269,10 @@
         "homepage": null,
         "owner": "stripe",
         "repo": "openapi",
-        "rev": "b87e57092df0fda4c4accb64ad5d7db20b74d012",
-        "sha256": "0s0sp1cx2nc6m5xix3x6sf578h4rywqcwxs5iqbl5qmb14c1rggl",
+        "rev": "0ecbb8cb93e7f7064f55f94971698e0df27fbf56",
+        "sha256": "0k02l3snydixa5yn4kbvckp87rafkkcj7621xlng2k45xhgp27b2",
         "type": "tarball",
-        "url": "https://github.com/stripe/openapi/archive/b87e57092df0fda4c4accb64ad5d7db20b74d012.tar.gz",
+        "url": "https://github.com/stripe/openapi/archive/0ecbb8cb93e7f7064f55f94971698e0df27fbf56.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {

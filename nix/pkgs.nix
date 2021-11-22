@@ -2,19 +2,10 @@
 }:
 let
   pkgsv = import sources.nixpkgs;
-  niv-overlay = final: previous:
-    {
-      niv = (import sources.niv { }).niv;
-    };
-  gitignore-src-overlay = final: previous:
-    {
-      inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource;
-    };
   smosPkgs =
     (
       pkgsv {
         overlays = [
-          gitignore-src-overlay
           (import (sources.sydtest + "/nix/overlay.nix"))
           (import (sources.validity + "/nix/overlay.nix"))
           (import (sources.safe-coloured-text + "/nix/overlay.nix"))
@@ -31,7 +22,8 @@ let
           (import (sources.mergeful + "/nix/overlay.nix"))
           (import (sources.yesod-static-remote + "/nix/overlay.nix"))
           (import (sources.autorecorder + "/nix/overlay.nix"))
-          niv-overlay
+          (final: previous: { niv = (import sources.niv { }).niv; })
+          (final: previous: { inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource; })
           (import ./overlay.nix {
             inherit sources;
           })
