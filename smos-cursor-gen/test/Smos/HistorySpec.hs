@@ -18,12 +18,12 @@ import Test.Syd.Validity.Lens
 spec :: Spec
 spec = do
   genValidSpec @(History Int)
-  lensSpecOnValid (historyNonEmptyCursorL @Int)
-  lensSpecOnValid (historyPresentL @Int)
-  describe "singletonHistory" $ it "produces valid histories" $ producesValidsOnValids (startingHistory @Int)
-  describe "historyPresent" $ it "produces valid states" $ producesValidsOnValids (historyPresent @Int)
+  lensSpec (historyNonEmptyCursorL @Int)
+  lensSpec (historyPresentL @Int)
+  describe "singletonHistory" $ it "produces valid histories" $ producesValid (startingHistory @Int)
+  describe "historyPresent" $ it "produces valid states" $ producesValid (historyPresent @Int)
   describe "historyPush" $ do
-    it "produces valid undo stacks" $ producesValidsOnValids2 (historyPush @Int)
+    it "produces valid undo stacks" $ producesValid2 (historyPush @Int)
     it "the future is empty after pushing a new undo" $
       forAllValid $ \u -> forAllValid $ \us ->
         let us' = historyPush @Int u us
@@ -35,7 +35,7 @@ spec = do
         let h' = historyPush @Int i h
          in historyPresent h' `shouldBe` i
   describe "historyUndo" $ do
-    it "produces valid results" $ producesValidsOnValids (historyUndo @Int)
+    it "produces valid results" $ producesValid (historyUndo @Int)
     it "is the inverse of historyRedo for the history" $
       forAllValid $
         \us -> cover 50 (isJust $ (historyRedo >=> historyUndo) us) "non-trivial" $
@@ -46,7 +46,7 @@ spec = do
               Just us'' -> us'' `shouldBe` us
   describe "historyRedo" $ do
     it "produces valid results" $
-      producesValidsOnValids (historyRedo @Int)
+      producesValid (historyRedo @Int)
     it "is the inverse of historyUndo for the undo stack" $
       forAllValid $
         \us -> cover 50 (isJust $ (historyUndo >=> historyRedo) us) "non-trivial" $
@@ -57,7 +57,7 @@ spec = do
               Just us'' -> us'' `shouldBe` us
   describe "historyMod" $ do
     let f i = historyMod (+ (i :: Int))
-    it "produces valid results for addition" $ forAllValid $ \i -> producesValidsOnValids (f i)
+    it "produces valid results for addition" $ forAllValid $ \i -> producesValid (f i)
     it "produces a history with one longer undo stack" $
       forAllValid $ \i -> forAllValid $ \h -> do
         let h' = f i h
@@ -75,7 +75,7 @@ spec = do
             )
     it "produces valid results for subtraction with Maybe" $
       forAllValid $ \i ->
-        producesValidsOnValids (f i)
+        producesValid (f i)
     it "produces a history with one longer undo stack" $
       forAllValid $ \i -> forAllValid $ \h ->
         case f i h of
@@ -86,6 +86,6 @@ spec = do
         case f i h of
           Nothing -> pure ()
           Just h' -> historyRedoLength h' `shouldBe` 0
-  describe "historyUndoLength" $ it "produces valid words" $ producesValidsOnValids (historyUndoLength @Int)
-  describe "historyRedoLength" $ it "produces valid words" $ producesValidsOnValids (historyRedoLength @Int)
-  describe "historyForget" $ it "produces valid histories" $ producesValidsOnValids (historyForgetLatest @Int)
+  describe "historyUndoLength" $ it "produces valid words" $ producesValid (historyUndoLength @Int)
+  describe "historyRedoLength" $ it "produces valid words" $ producesValid (historyRedoLength @Int)
+  describe "historyForget" $ it "produces valid histories" $ producesValid (historyForgetLatest @Int)

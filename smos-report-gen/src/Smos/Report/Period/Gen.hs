@@ -6,7 +6,6 @@ import Data.GenValidity
 import Data.GenValidity.Time ()
 import Smos.Report.Period
 
-instance GenUnchecked Period
-
 instance GenValid Period where
-  genValid = genValidStructurally
+  genValid = genValidStructurallyWithoutExtraChecking
+  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

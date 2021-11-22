@@ -20,11 +20,11 @@ spec :: Spec
 spec = do
   genValidSpec @WorkReportCursor
   -- Does not hold because of the validity constraint
-  -- describe "workReportCursorSelectionL" $ lensSpecOnValid workReportCursorSelectionL
+  -- describe "workReportCursorSelectionL" $ lensSpec workReportCursorSelectionL
   describe "emptyWorkReportCursor" $ it "is valid" $ shouldBeValid emptyWorkReportCursor
-  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValidsOnValids2 intermediateWorkReportToWorkReportCursor
+  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValid2 intermediateWorkReportToWorkReportCursor
   describe "workReportCursorNext" $ do
-    it "produces valid cursors" $ producesValidsOnValids workReportCursorNext
+    it "produces valid cursors" $ producesValid workReportCursorNext
   -- TODO: not sure why this doesn't seem to hold.
   --  it "is the inverse of workReportCursorPrev" $
   --    forAllValid $ \wrc ->
@@ -32,7 +32,7 @@ spec = do
   --        Nothing -> pure ()
   --        Just wrc' -> workReportCursorNext wrc' `shouldBe` Just wrc
   describe "workReportCursorPrev" $ do
-    it "produces valid cursors" $ producesValidsOnValids workReportCursorPrev
+    it "produces valid cursors" $ producesValid workReportCursorPrev
   -- TODO: not sure why this doesn't seem to hold.
   --  it "is the inverse of workReportCursorNext" $
   --    forAllValid $ \wrc ->
@@ -40,7 +40,7 @@ spec = do
   --        Nothing -> pure ()
   --        Just wrc' -> workReportCursorPrev wrc' `shouldBe` Just wrc
   describe "workReportCursorFirst" $ do
-    it "produces valid cursors" $ producesValidsOnValids workReportCursorFirst
+    it "produces valid cursors" $ producesValid workReportCursorFirst
     it "is idempotent" $
       forAllValid $ \wrc ->
         workReportCursorFirst (workReportCursorFirst wrc) `shouldBe` workReportCursorFirst wrc
@@ -48,19 +48,19 @@ spec = do
       forAllValid $ \wrc ->
         workReportCursorFirst (workReportCursorLast wrc) `shouldBe` workReportCursorFirst wrc
   describe "workReportCursorLast" $ do
-    it "produces valid cursors" $ producesValidsOnValids workReportCursorLast
+    it "produces valid cursors" $ producesValid workReportCursorLast
     it "is idempotent" $
       forAllValid $ \wrc ->
         workReportCursorLast (workReportCursorLast wrc) `shouldBe` workReportCursorLast wrc
     it "is the same as first last" $
       forAllValid $ \wrc ->
         workReportCursorLast (workReportCursorFirst wrc) `shouldBe` workReportCursorLast wrc
-  describe "workReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorSelectReport
-  describe "workReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorSelectFilter
-  describe "workReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 workReportCursorInsert
-  describe "workReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 workReportCursorAppend
-  describe "workReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorRemove
-  describe "workReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids workReportCursorDelete
+  describe "workReportCursorSelectReport" $ it "produces valid cursors" $ producesValid workReportCursorSelectReport
+  describe "workReportCursorSelectFilter" $ it "produces valid cursors" $ producesValid workReportCursorSelectFilter
+  describe "workReportCursorInsert" $ it "produces valid cursors" $ producesValid2 workReportCursorInsert
+  describe "workReportCursorAppend" $ it "produces valid cursors" $ producesValid2 workReportCursorAppend
+  describe "workReportCursorRemove" $ it "produces valid cursors" $ producesValid workReportCursorRemove
+  describe "workReportCursorDelete" $ it "produces valid cursors" $ producesValid workReportCursorDelete
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReportCursor" $
       it "produces valid reports for interesting stores" $

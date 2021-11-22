@@ -33,11 +33,7 @@ instance GenValid Piece where
           )
   shrinkValid = shrinkValidStructurally
 
-instance GenUnchecked BinOp
-
 instance GenValid BinOp
-
-instance GenUnchecked Paren
 
 instance GenValid Paren
 

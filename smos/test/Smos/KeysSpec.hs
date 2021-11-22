@@ -34,7 +34,7 @@ spec = do
     it "renders the something that keyP can parse to the same thing" $
       forAllValid $
         \k -> parseJust keyP (renderKey k) k
-  jsonSpecOnValid @Key
+  jsonSpec @Key
   genValidSpec @Modifier
   describe "modifierP" $ do
     parsesValidSpec modifierP modText
@@ -58,7 +58,7 @@ spec = do
     it "renders the something that modifierP can parse to the same thing" $
       forAllValid $
         \k -> parseJust modifierP (renderModifier k) k
-  jsonSpecOnValid @Modifier
+  jsonSpec @Modifier
   genValidSpec @KeyPress
   describe "keyPressP" $ do
     parsesValidSpec keyPressP keyPressText
@@ -114,7 +114,7 @@ spec = do
     it "renders the something that keyPressP can parse to the same thing" $
       forAllValid $
         \k -> parseJust keyPressP (renderKeyPress k) k
-  jsonSpecOnValid @KeyPress
+  jsonSpec @KeyPress
   genValidSpec @MatcherConfig
   describe "matcherConfigP" $ do
     parsesValidSpec matcherConfigP matcherConfigText
@@ -202,7 +202,7 @@ spec = do
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfCatchAll
       parseJustSpec matcherConfigP "M-S-c<char>" $
         MatchConfCombination (KeyPress (KChar 'c') [MMeta, MShift]) MatchConfAnyChar
-  jsonSpecOnValid @MatcherConfig
+  jsonSpec @MatcherConfig
   describe "renderMatcherConfig" $
     it "renders the something that matcherConfigP can parse to the same thing" $
       forAllValid $

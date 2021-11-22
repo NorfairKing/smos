@@ -14,22 +14,22 @@ spec = do
   genValidSpec @(EntryReportCursor ())
   genValidSpec @EntryReportCursorSelection
   genValidSpec @(EntryReportEntryCursor ())
-  describe "entryReportCursorEntryEntryCursorsL" $ lensSpecOnValid (entryReportCursorEntryReportEntryCursorsL @())
-  describe "entryReportCursorSelectedEntryEntryCursorsL" $ lensSpecOnValid (entryReportCursorSelectedEntryReportEntryCursorsL @())
-  describe "entryReportCursorSelectionL" $ lensSpecOnValid (entryReportCursorSelectionL @())
-  describe "entryReportCursorFilterBarL" $ lensSpecOnValid (entryReportCursorFilterBarL @())
+  describe "entryReportCursorEntryEntryCursorsL" $ lensSpec (entryReportCursorEntryReportEntryCursorsL @())
+  describe "entryReportCursorSelectedEntryEntryCursorsL" $ lensSpec (entryReportCursorSelectedEntryReportEntryCursorsL @())
+  describe "entryReportCursorSelectionL" $ lensSpec (entryReportCursorSelectionL @())
+  describe "entryReportCursorFilterBarL" $ lensSpec (entryReportCursorFilterBarL @())
   describe "entryReportCursorNext" $ do
     it "produces valid cursors" $
-      producesValidsOnValids @(EntryReportCursor ())
+      producesValid @(EntryReportCursor ())
         entryReportCursorNext
     it "fails when there are no selected entries" $
       forAll ((\erc -> erc {entryReportCursorSelectedEntryReportEntryCursors = Nothing}) <$> genValid) $ \erc ->
         entryReportCursorNext @(EntryReportCursor ()) erc `shouldBe` Nothing
   describe "entryReportCursorPrev" $ do
-    it "produces valid cursors" $ producesValidsOnValids @(EntryReportCursor ()) entryReportCursorPrev
+    it "produces valid cursors" $ producesValid @(EntryReportCursor ()) entryReportCursorPrev
     it "fails when there are no selected entries" $
       forAll ((\erc -> erc {entryReportCursorSelectedEntryReportEntryCursors = Nothing}) <$> genValid) $ \erc ->
         entryReportCursorPrev @(EntryReportCursor ()) erc `shouldBe` Nothing
-  describe "entryReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids @(EntryReportCursor ()) entryReportCursorFirst
-  describe "entryReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids @(EntryReportCursor ()) entryReportCursorLast
-  describe "makeEntryEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids3 (makeEntryReportEntryCursor @())
+  describe "entryReportCursorFirst" $ it "produces valid cursors" $ producesValid @(EntryReportCursor ()) entryReportCursorFirst
+  describe "entryReportCursorLast" $ it "produces valid cursors" $ producesValid @(EntryReportCursor ()) entryReportCursorLast
+  describe "makeEntryEntryCursor" $ it "produces valid cursors" $ producesValid3 (makeEntryReportEntryCursor @())

@@ -19,7 +19,7 @@ import Text.Megaparsec
 spec :: Spec
 spec = do
   genValidSpec @Sorter
-  jsonSpecOnValid @Sorter
+  jsonSpec @Sorter
   describe "sorterOrdering" $
     it "produces valid orderings" $
       forAllValid $
@@ -38,7 +38,7 @@ spec = do
     parseJustSpec sorterP "reverse:property:effort" $ Reverse (ByProperty "effort")
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
-    it "produces valid texts" $ producesValidsOnValids renderSorter
+    it "produces valid texts" $ producesValid renderSorter
     it "renders bys that parse to the same" $
       forAllValid $
         \s -> parseJust sorterP (renderSorter s) s

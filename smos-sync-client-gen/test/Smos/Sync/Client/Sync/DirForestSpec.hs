@@ -16,4 +16,4 @@ spec = do
   genValidSpec @(DirForest Int)
   describe "makeDirForest" $
     it "produces valid DirForests" $
-      producesValidsOnValids (DF.makeDirForest @Int)
+      producesValid (DF.makeDirForest @Int)

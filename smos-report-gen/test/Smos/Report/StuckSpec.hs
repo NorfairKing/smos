@@ -18,9 +18,9 @@ spec = do
   genValidSpec @StuckReport
   describe "makeStuckReportEntry" $
     it "produces valid reports" $
-      producesValidsOnValids3 makeStuckReportEntry
+      producesValid3 makeStuckReportEntry
   describe "latestEntryInSmosFile" $ do
-    it "selects a valid entry" $ producesValidsOnValids2 latestEntryInSmosFile
+    it "selects a valid entry" $ producesValid2 latestEntryInSmosFile
     it "works for this example with an entry without state" $
       forAllValid $
         \h1 ->
@@ -72,5 +72,5 @@ spec = do
                    in latestEntryInSmosFile utc sf `shouldBe` Just e2
   describe "latestStateChange" $
     it "selects a valid entry" $
-      producesValidsOnValids latestStateChange
-  describe "makeStuckReport" $ it "produces valid reports" $ producesValidsOnValids makeStuckReport
+      producesValid latestStateChange
+  describe "makeStuckReport" $ it "produces valid reports" $ producesValid makeStuckReport

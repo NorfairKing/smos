@@ -106,10 +106,10 @@ spec = do
         it "generates valid values" $
           genGeneratesValid threeDisjunctMapsAndTheirUnions
   describe "empty" $ it "is valid" $ shouldBeValid CM.empty
-  describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.singleton
-  describe "insert" $ it "produces valid contents maps" $ producesValidsOnValids3 CM.insert
+  describe "singleton" $ it "produces valid contents maps" $ producesValid2 CM.singleton
+  describe "insert" $ it "produces valid contents maps" $ producesValid3 CM.insert
   describe "fromListIgnoringCollisions" $ do
-    it "produces valid content maps" $ producesValidsOnValids CM.fromListIgnoringCollisions
+    it "produces valid content maps" $ producesValid CM.fromListIgnoringCollisions
     it "Remembers the longest paths it can for this example" $
       forAllValid $ \bs1 -> forAllValid $ \bs2 -> do
         let p1 = [relfile|foo|]
@@ -117,5 +117,5 @@ spec = do
             list = [(p1, bs1), (p2, bs2)]
         CM.fromListIgnoringCollisions list `shouldBe` CM.singleton p2 bs2
         CM.fromListIgnoringCollisions (reverse list) `shouldBe` CM.singleton p2 bs2
-  describe "union" $ it "produces valid contents maps" $ producesValidsOnValids2 CM.union
-  describe "unions" $ it "produces valid contents maps" $ producesValidsOnValids CM.unions
+  describe "union" $ it "produces valid contents maps" $ producesValid2 CM.union
+  describe "unions" $ it "produces valid contents maps" $ producesValid CM.unions

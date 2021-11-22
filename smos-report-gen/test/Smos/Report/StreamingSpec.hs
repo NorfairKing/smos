@@ -17,7 +17,7 @@ import Test.Syd.Validity
 spec :: Spec
 spec =
   describe "forestCursors" $ do
-    it "produces valid forests" $ producesValidsOnValids (forestCursors @Entry)
+    it "produces valid forests" $ producesValid (forestCursors @Entry)
     it "produces congruent forests" $
       forAllValid $
         \f -> () <$ forestCursors @Entry f `shouldBe` () <$ f

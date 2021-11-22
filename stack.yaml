@@ -75,7 +75,7 @@ extra-deps:
 
 
 - github: NorfairKing/typed-uuid
-  commit: ec82b82a545d06094ac355bd65a03f25f86c0a48
+  commit: dc5255bd162d92806827803bd5d0e3c9eb4b4e2e
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
@@ -84,7 +84,7 @@ extra-deps:
   commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
 
 - github: NorfairKing/mergeful
-  commit: b520f251010e80748c4eea1ba7216f2594c4f760
+  commit: 5a81800ab75c08c5cf2781accf74944cfee30762
   subdirs:
     - mergeful
     - mergeful-persistent
@@ -96,46 +96,46 @@ extra-deps:
     - looper
   
 - github: NorfairKing/pretty-relative-time
-  commit: 1c0ca0e24b2a5973e5ccf4e83d24097a22bb9a4a
+  commit: a634358ff274380a12360f7814c3aea46ea35b1b
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: e364adc5ed04e59321aecc9a6158ca3c16f5c0bf
+  commit: 86830e3c14e1ec054e4423742eb34d1c49f9b8b0
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: 6ca085188fa71609bf1a72aaa3779f7d429392e0
+  commit: af42de90fd04d8506a440f439c6628c64d33b7d2
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: fa5bc20f28badff95efcb1e63e7fdec53b7bb1fe
+  commit: 69e8ae036b047fae105c1fe990e175a7572a3eba
   subdirs:
     - dirforest
     - genvalidity-dirforest
 
 - github: NorfairKing/cursor-dirforest
-  commit: 01e862938e7950b70d0c725dbe639f6a3d369e93
+  commit: 6ad5b168e26eb4e647df9f007d812aaf59338d40
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
 
 - github: NorfairKing/cursor-brick
-  commit: 95345daf6a7036601bbaaf268d2a9ed7c713312b
+  commit: 5c1d1306632403a3dc11ddeda10deee932c0b307
   subdirs:
     - cursor-brick
 
 - github: NorfairKing/cursor
-  commit: 71ec3154809e229efbf35d500ac6d1a42ae5fdc0
+  commit: ff27e78281430c298a25a7805c9c61ca1e69f4c5
   subdirs:
     - cursor
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: e5a54ccc0d09b600fdf784624e7df38b55676384
+  commit: f0cb2ead0985b4394db0627e6befd7ce23c54c22
   subdirs:
     - autodocodec
     - autodocodec-yaml
@@ -163,7 +163,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 86a824729519c154c23f0757f2ce4b9ab93b675a
+  commit: 35bc8d45b27e6c21429e4b681b16e46ccd541b3b
   subdirs:
     - genvalidity
     - genvalidity-aeson

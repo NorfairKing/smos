@@ -32,7 +32,7 @@ spec = do
   genValidSpec @WorkReport
   describe "makeIntermediateWorkReport" $
     it "produces valid intermediate work reports" $
-      producesValidsOnValids3 makeIntermediateWorkReport
+      producesValid3 makeIntermediateWorkReport
   describe "finishWorkReport" $
     it "produces valid work reports" $
       forAllValid $ \zt ->

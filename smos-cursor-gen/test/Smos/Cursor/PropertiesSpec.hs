@@ -15,25 +15,25 @@ spec = do
   describe "emptyPropertiesCursor" $ it "is a valid cursor" $ shouldBeValid emptyPropertiesCursor
   describe "makePropertiesCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makePropertiesCursor
+      producesValid makePropertiesCursor
   describe "rebuildPropertiesCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildPropertiesCursor
+    it "produces valid cursors" $ producesValid rebuildPropertiesCursor
     it "is the inverse of makePropertiesCursor" $
-      inverseFunctionsOnValid makePropertiesCursor rebuildPropertiesCursor
+      inverseFunctions makePropertiesCursor rebuildPropertiesCursor
   describe "propertiesCursorToggleSelected" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorToggleSelected
+    it "produces valid cursors" $ producesValid propertiesCursorToggleSelected
     pending "is a movement"
   describe "propertiesCursorSelectPrevChar" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectPrevChar
+    it "produces valid cursors" $ producesValid propertiesCursorSelectPrevChar
     pending "is a movement"
   describe "propertiesCursorSelectNextChar" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectNextChar
+    it "produces valid cursors" $ producesValid propertiesCursorSelectNextChar
     pending "is a movement"
   describe "propertiesCursorSelectPrevProperty" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectPrevProperty
+    it "produces valid cursors" $ producesValid propertiesCursorSelectPrevProperty
     pending "is a movement"
   describe "propertiesCursorSelectNextProperty" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorSelectNextProperty
+    it "produces valid cursors" $ producesValid propertiesCursorSelectNextProperty
     pending "is a movement"
   describe "propertiesCursorInsert" $ do
     it "produces valid cursors when inserting '\n'" $
@@ -42,7 +42,7 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ propertiesCursorInsert '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 propertiesCursorInsert
+    it "produces valid cursors" $ producesValid2 propertiesCursorInsert
   describe "propertiesCursorAppend" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -50,12 +50,12 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ propertiesCursorAppend '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 propertiesCursorAppend
+    it "produces valid cursors" $ producesValid2 propertiesCursorAppend
   describe "propertiesCursorRemove" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorRemove
+      producesValid propertiesCursorRemove
   describe "propertiesCursorDelete" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorDelete
+    it "produces valid cursors" $ producesValid propertiesCursorDelete
     it "is the inverse of propertiesCursorStartNewPropertyBefore" $
       forAllValid $
         \pc ->
@@ -64,7 +64,7 @@ spec = do
             Just Deleted -> expectationFailure "Should not have been deleted entirely."
             Just (Updated pc') -> rebuildPropertiesCursor pc' `shouldBe` rebuildPropertiesCursor pc
   describe "propertiesCursorRemoveProperty" $ do
-    it "produces valid cursors" $ producesValidsOnValids propertiesCursorRemoveProperty
+    it "produces valid cursors" $ producesValid propertiesCursorRemoveProperty
     it "is the inverse of propertiesCursorStartNewPropertyBefore" $
       forAllValid $
         \pc ->
@@ -74,22 +74,22 @@ spec = do
             Just (Updated pc') -> rebuildPropertiesCursor pc' `shouldBe` rebuildPropertiesCursor pc
   describe "propertiesCursorDeleteProperty" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorDeleteProperty
+      producesValid propertiesCursorDeleteProperty
   describe "propertiesCursorRemovePropertyAndSelectPrevious" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorRemovePropertyAndSelectPrevious
+      producesValid propertiesCursorRemovePropertyAndSelectPrevious
   describe "propertiesCursorDeletePropertyAndSelectNext" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorDeletePropertyAndSelectNext
+      producesValid propertiesCursorDeletePropertyAndSelectNext
   describe "propertiesCursorStartNewPropertyBefore" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorStartNewPropertyBefore
+      producesValid propertiesCursorStartNewPropertyBefore
   describe "propertiesCursorStartNewPropertyAfter" $
     it "produces valid cursors" $
-      producesValidsOnValids propertiesCursorStartNewPropertyAfter
+      producesValid propertiesCursorStartNewPropertyAfter
   describe "propertiesCursorAddOrSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids2 propertiesCursorAddOrSelect
+      producesValid2 propertiesCursorAddOrSelect
   describe "propertiesCursorSet" $
     it "produces valid cursors" $
-      producesValidsOnValids3 propertiesCursorSet
+      producesValid3 propertiesCursorSet

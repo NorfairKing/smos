@@ -15,19 +15,19 @@ import Test.Syd.Validity.Lens
 spec :: Spec
 spec = do
   genValidSpec @NextActionReportCursor
-  describe "nextActionReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorNext
-  describe "nextActionReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorPrev
-  describe "nextActionReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorFirst
-  describe "nextActionReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorLast
-  describe "nextActionReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorSelectReport
-  describe "nextActionReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorSelectFilter
-  describe "nextActionReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 nextActionReportCursorInsert
-  describe "nextActionReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 nextActionReportCursorAppend
-  describe "nextActionReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorRemove
-  describe "nextActionReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids nextActionReportCursorDelete
-  describe "nextActionReportCursorEntryReportCursorL" $ lensSpecOnValid nextActionReportCursorEntryReportCursorL
-  describe "makeNextActionEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeNextActionEntryCursor
-  describe "makeNextActionEntryCursor'" $ it "produces valid cursors" $ producesValidsOnValids2 makeNextActionEntryCursor'
+  describe "nextActionReportCursorNext" $ it "produces valid cursors" $ producesValid nextActionReportCursorNext
+  describe "nextActionReportCursorPrev" $ it "produces valid cursors" $ producesValid nextActionReportCursorPrev
+  describe "nextActionReportCursorFirst" $ it "produces valid cursors" $ producesValid nextActionReportCursorFirst
+  describe "nextActionReportCursorLast" $ it "produces valid cursors" $ producesValid nextActionReportCursorLast
+  describe "nextActionReportCursorSelectReport" $ it "produces valid cursors" $ producesValid nextActionReportCursorSelectReport
+  describe "nextActionReportCursorSelectFilter" $ it "produces valid cursors" $ producesValid nextActionReportCursorSelectFilter
+  describe "nextActionReportCursorInsert" $ it "produces valid cursors" $ producesValid2 nextActionReportCursorInsert
+  describe "nextActionReportCursorAppend" $ it "produces valid cursors" $ producesValid2 nextActionReportCursorAppend
+  describe "nextActionReportCursorRemove" $ it "produces valid cursors" $ producesValid nextActionReportCursorRemove
+  describe "nextActionReportCursorDelete" $ it "produces valid cursors" $ producesValid nextActionReportCursorDelete
+  describe "nextActionReportCursorEntryReportCursorL" $ lensSpec nextActionReportCursorEntryReportCursorL
+  describe "makeNextActionEntryCursor" $ it "produces valid cursors" $ producesValid makeNextActionEntryCursor
+  describe "makeNextActionEntryCursor'" $ it "produces valid cursors" $ producesValid2 makeNextActionEntryCursor'
   modifyMaxSuccess (`div` 10) $
     describe "produceNextActionReportCursor" $
       it "produces valid reports for interesting stores" $

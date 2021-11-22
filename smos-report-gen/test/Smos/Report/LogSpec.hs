@@ -8,9 +8,9 @@ import Test.Syd.Validity
 
 spec :: Spec
 spec = do
-  describe "makeLogbookLogEntries" $ it "produces valid events" $ producesValidsOnValids makeLogbookLogEntries
+  describe "makeLogbookLogEntries" $ it "produces valid events" $ producesValid makeLogbookLogEntries
   describe "makeStateHistoryLogEntries" $ do
-    it "produces valid events" $ producesValidsOnValids makeStateHistoryLogEntries
+    it "produces valid events" $ producesValid makeStateHistoryLogEntries
     it "produces a log event even if there is only one timestamp" $
       forAllValid $
         \e ->
@@ -23,4 +23,4 @@ spec = do
     it "produces a log event per state history entry" $
       forAllValid $
         \e -> length (makeStateHistoryLogEntries e) `shouldBe` length (unStateHistory (entryStateHistory e))
-  describe "makeTimestampLogEntries" $ it "produces valid events" $ producesValidsOnValids2 makeTimestampLogEntries
+  describe "makeTimestampLogEntries" $ it "produces valid events" $ producesValid2 makeTimestampLogEntries

@@ -17,12 +17,12 @@ spec :: Spec
 spec = do
   genValidSpec @TemplatePiece
   genValidSpec @Template
-  describe "normaliseTemplate" $ it "produces valid templates" $ producesValidsOnValids normaliseTemplate
-  describe "renderTimeTemplatePiece" $ it "produces valids values" $ producesValidsOnValids renderTimeTemplatePiece
-  describe "renderTimeTemplate" $ it "produces valids values" $ producesValidsOnValids renderTimeTemplate
+  describe "normaliseTemplate" $ it "produces valid templates" $ producesValid normaliseTemplate
+  describe "renderTimeTemplatePiece" $ it "produces valids values" $ producesValid renderTimeTemplatePiece
+  describe "renderTimeTemplate" $ it "produces valids values" $ producesValid renderTimeTemplate
   describe "renderTimeTemplate and parseTimeTemplate" $ it "are inverses" $ forAllValid $ \t -> parseTimeTemplate (renderTimeTemplate t) `shouldBe` Right t
   describe "parseTemplate" $ do
-    it "parses into valid values" $ producesValidsOnValids parseTimeTemplate
+    it "parses into valid values" $ producesValid parseTimeTemplate
     let s t ps =
           let r = Template ps
            in it ("succesfully parses " <> show t <> " into " <> show r) $ parseTimeTemplate t `shouldBe` Right r

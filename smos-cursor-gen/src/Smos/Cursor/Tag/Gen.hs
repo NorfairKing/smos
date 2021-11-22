@@ -8,8 +8,6 @@ import Data.GenValidity
 import Smos.Cursor.Tag
 import Smos.Data.Gen
 
-instance GenUnchecked TagCursor
-
 instance GenValid TagCursor where
   genValid = TagCursor <$> textCursorWithGen genTagChar
   shrinkValid = shrinkValidStructurally

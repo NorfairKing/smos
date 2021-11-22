@@ -14,17 +14,17 @@ spec = do
   genValidSpec @TimestampsCursor
   describe "makeTimestampsCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makeTimestampsCursor
+      producesValid makeTimestampsCursor
   describe "startTimestampsCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids2 startTimestampsCursor
+      producesValid2 startTimestampsCursor
   describe "rebuildTimestampsCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildTimestampsCursor
+    it "produces valid cursors" $ producesValid rebuildTimestampsCursor
     it "is the inverse of makeTimestampsCursor" $
-      inverseFunctionsOnValid makeTimestampsCursor rebuildTimestampsCursor
+      inverseFunctions makeTimestampsCursor rebuildTimestampsCursor
   describe "timestampsCursorToggleSelected" $
     it "produces valid cursors" $
-      producesValidsOnValids timestampsCursorToggleSelected
+      producesValid timestampsCursorToggleSelected
   describe "timestampsCursorInsertChar" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -32,7 +32,7 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ timestampsCursorInsertChar '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 timestampsCursorInsertChar
+    it "produces valid cursors" $ producesValid2 timestampsCursorInsertChar
   describe "timestampsCursorAppendChar" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -40,31 +40,31 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ timestampsCursorAppendChar '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 timestampsCursorAppendChar
+    it "produces valid cursors" $ producesValid2 timestampsCursorAppendChar
   describe "timestampsCursorRemoveChar" $
     it "produces valid cursors" $
-      producesValidsOnValids timestampsCursorRemoveChar
+      producesValid timestampsCursorRemoveChar
   describe "timestampsCursorDeleteChar" $
     it "produces valid cursors" $
-      producesValidsOnValids timestampsCursorDeleteChar
+      producesValid timestampsCursorDeleteChar
   describe "timestampsCursorSelectNextChar" $
     it "produces valid cursors" $
-      producesValidsOnValids timestampsCursorSelectNextChar
+      producesValid timestampsCursorSelectNextChar
   describe "timestampsCursorSelectPrevChar" $
     it "produces valid cursors" $
-      producesValidsOnValids timestampsCursorSelectPrevChar
+      producesValid timestampsCursorSelectPrevChar
   describe "timestampsCursorInsertEmptyAndSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids2 timestampsCursorInsertEmptyAndSelect
+      producesValid2 timestampsCursorInsertEmptyAndSelect
   describe "timestampsCursorInsertAndSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids3 timestampsCursorInsertAndSelect
+      producesValid3 timestampsCursorInsertAndSelect
   describe "timestampsCursorAppendEmptyAndSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids2 timestampsCursorAppendEmptyAndSelect
+      producesValid2 timestampsCursorAppendEmptyAndSelect
   describe "timestampsCursorAppendAndSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids3 timestampsCursorAppendAndSelect
+      producesValid3 timestampsCursorAppendAndSelect
   describe "timestampsCursorSelectOrAdd" $
     it "produces valid cursors" $
-      producesValidsOnValids3 timestampsCursorSelectOrAdd
+      producesValid3 timestampsCursorSelectOrAdd

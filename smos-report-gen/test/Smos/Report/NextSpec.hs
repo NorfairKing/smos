@@ -15,9 +15,9 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @NextActionReport
-  jsonSpecOnValid @NextActionReport
+  jsonSpec @NextActionReport
   genValidSpec @NextActionEntry
-  jsonSpecOnValid @NextActionEntry
+  jsonSpec @NextActionEntry
   modifyMaxSuccess (`div` 10) $
     describe "produceNextActionReport" $
       it "produces valid reports for interesting stores" $

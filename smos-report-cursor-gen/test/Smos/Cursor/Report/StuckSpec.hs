@@ -14,12 +14,12 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   genValidSpec @StuckReportCursor
-  describe "stuckReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids stuckReportCursorNext
-  describe "stuckReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids stuckReportCursorPrev
-  describe "stuckReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids stuckReportCursorFirst
-  describe "stuckReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids stuckReportCursorLast
+  describe "stuckReportCursorNext" $ it "produces valid cursors" $ producesValid stuckReportCursorNext
+  describe "stuckReportCursorPrev" $ it "produces valid cursors" $ producesValid stuckReportCursorPrev
+  describe "stuckReportCursorFirst" $ it "produces valid cursors" $ producesValid stuckReportCursorFirst
+  describe "stuckReportCursorLast" $ it "produces valid cursors" $ producesValid stuckReportCursorLast
   -- Does not hold because of the validity constraint
-  -- describe "stuckReportCursorNonEmptyCursorL" $ lensSpecOnValid stuckReportCursorNonEmptyCursorL
+  -- describe "stuckReportCursorNonEmptyCursorL" $ lensSpec stuckReportCursorNonEmptyCursorL
   modifyMaxSuccess (`div` 10) $
     describe "produceStuckReportCursor" $
       it "produces valid reports for interesting stores" $

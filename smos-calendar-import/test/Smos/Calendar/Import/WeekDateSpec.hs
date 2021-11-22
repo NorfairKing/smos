@@ -70,7 +70,7 @@ spec = do
             let (_, _, dow1) = toWeekDateWithStart ws1 day
                 (_, _, dow2) = toWeekDateWithStart ws2 day
              in dow1 `shouldBe` dow2
-    it "produces valid results" $ producesValidsOnValids2 toWeekDateWithStart
+    it "produces valid results" $ producesValid2 toWeekDateWithStart
   describe "fromWeekDateWithStart" $ do
     describe "examples" $ do
       it "works for 2013-12-29 in 2013 with a Monday weekstart" $
@@ -97,7 +97,7 @@ spec = do
         fromWeekDateWithStart Sunday 2014 53 Thursday `shouldBe` Just (d 2015 01 01)
       it "works for 2015-01-05 in 2015 with a Sunday weekstart" $
         fromWeekDateWithStart Sunday 2015 01 Monday `shouldBe` Just (d 2015 01 05)
-    it "produces valid results" $ forAllValid $ producesValidsOnValids3 . fromWeekDateWithStart
+    it "produces valid results" $ forAllValid $ producesValid3 . fromWeekDateWithStart
     xdescribe "This fails for very negative years for unknown reasons" $
       it "roundtrips toWeekDateWithStart for a given week start" $
         forAllValid $

@@ -79,8 +79,6 @@ instance GenValid TimestampName where
 genTimestampNameChar :: Gen Char
 genTimestampNameChar = choose (minBound, maxBound) `suchThat` validTimestampNameChar
 
-instance GenUnchecked Timestamp
-
 instance GenValid Timestamp where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
@@ -109,8 +107,6 @@ instance GenValid Tag where
 
 genTagChar :: Gen Char
 genTagChar = choose (minBound, maxBound) `suchThat` validTagChar
-
-instance GenUnchecked Logbook
 
 instance GenValid Logbook where
   genValid =
@@ -148,9 +144,6 @@ instance GenValid Logbook where
               pure $ LogOpen l lbes
           ]
 
-instance GenUnchecked LogbookEntry where
-  shrinkUnchecked _ = [] -- There's no point.
-
 instance GenValid LogbookEntry where
   genValid =
     sized $ \n -> do
@@ -159,3 +152,4 @@ instance GenValid LogbookEntry where
       ndt <- resize b $ realToFrac . abs <$> (genValid :: Gen Rational)
       let end = addUTCTime ndt start
       pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+  shrinkValid _ = [] -- There's no point.

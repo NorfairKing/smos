@@ -14,16 +14,16 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @Username
-  jsonSpecOnValid @Username
+  jsonSpec @Username
   genValidSpec @Register
-  jsonSpecOnValid @Register
+  jsonSpec @Register
   genValidSpec @SyncFile
-  jsonSpecOnValid @SyncFile
+  jsonSpec @SyncFile
   genValidSpec @SyncRequest
-  jsonSpecOnValid @SyncRequest
+  jsonSpec @SyncRequest
   genValidSpec @SyncResponse
-  jsonSpecOnValid @SyncResponse
+  jsonSpec @SyncResponse
   genValidSpec @BackupInfo
-  jsonSpecOnValid @BackupInfo
+  jsonSpec @BackupInfo
   genValidSpec @UserInfo
-  jsonSpecOnValid @UserInfo
+  jsonSpec @UserInfo

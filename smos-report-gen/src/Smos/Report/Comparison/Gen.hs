@@ -14,6 +14,4 @@ import Smos.Data.Gen ()
 import Smos.Report.Comparison
 import Smos.Report.Time.Gen ()
 
-instance GenUnchecked Comparison
-
 instance GenValid Comparison

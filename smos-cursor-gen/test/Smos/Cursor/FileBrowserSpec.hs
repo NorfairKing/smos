@@ -23,40 +23,40 @@ spec = do
   genValidSpec @FileBrowserCursor
   describe "makeFileBrowserCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids2 makeFileBrowserCursor
+      producesValid2 makeFileBrowserCursor
   describe "rebuildFileBrowserCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildFileBrowserCursor
+    it "produces valid cursors" $ producesValid rebuildFileBrowserCursor
     it "is the inverse of makeFileBrowserCursor" $
       forAllValid $
-        \base -> inverseFunctionsOnValid (makeFileBrowserCursor base) rebuildFileBrowserCursor
+        \base -> inverseFunctions (makeFileBrowserCursor base) rebuildFileBrowserCursor
   describe "fileBrowserCursorSelectNext" $
     it "produces valid cursors" $
-      producesValidsOnValids fileBrowserCursorSelectNext
+      producesValid fileBrowserCursorSelectNext
   describe "fileBrowserCursorSelectPrev" $
     it "produces valid cursors" $
-      producesValidsOnValids fileBrowserCursorSelectPrev
-  describe "fileBrowserCursorStartNew" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNew
-  describe "fileBrowserCursorStartNewBelowAtStart" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNewBelowAtStart
-  describe "fileBrowserCursorStartNewBelowAtEnd" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStartNewBelowAtEnd
-  describe "fileBrowserCursorStopNew" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorStopNew
-  describe "fileBrowserCursorInsertChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorInsertChar
-  describe "fileBrowserCursorAppendChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorAppendChar
-  describe "fileBrowserCursorRemoveChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorRemoveChar
-  describe "fileBrowserCursorDeleteChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorDeleteChar
-  describe "fileBrowserCursorSelectPrevChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectPrevChar
-  describe "fileBrowserCursorSelectNextChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectNextChar
+      producesValid fileBrowserCursorSelectPrev
+  describe "fileBrowserCursorStartNew" $ it "produces valid cursors" $ producesValid fileBrowserCursorStartNew
+  describe "fileBrowserCursorStartNewBelowAtStart" $ it "produces valid cursors" $ producesValid fileBrowserCursorStartNewBelowAtStart
+  describe "fileBrowserCursorStartNewBelowAtEnd" $ it "produces valid cursors" $ producesValid fileBrowserCursorStartNewBelowAtEnd
+  describe "fileBrowserCursorStopNew" $ it "produces valid cursors" $ producesValid fileBrowserCursorStopNew
+  describe "fileBrowserCursorInsertChar" $ it "produces valid cursors" $ producesValid2 fileBrowserCursorInsertChar
+  describe "fileBrowserCursorAppendChar" $ it "produces valid cursors" $ producesValid2 fileBrowserCursorAppendChar
+  describe "fileBrowserCursorRemoveChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorRemoveChar
+  describe "fileBrowserCursorDeleteChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorDeleteChar
+  describe "fileBrowserCursorSelectPrevChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorSelectPrevChar
+  describe "fileBrowserCursorSelectNextChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorSelectNextChar
   describe "fileBrowserCursorToggle" $
     it "produces valid cursors" $
-      producesValidsOnValids fileBrowserCursorToggle
+      producesValid fileBrowserCursorToggle
   describe "fileBrowserCursorToggleRecursively" $
     it "produces valid cursors" $
-      producesValidsOnValids fileBrowserCursorToggleRecursively
-  describe "fileBrowserCursorSelectBrowser" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectBrowser
-  describe "fileBrowserCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorSelectFilter
-  describe "fileBrowserCursorFilterInsertChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorFilterInsertChar
-  describe "fileBrowserCursorFilterAppendChar" $ it "produces valid cursors" $ producesValidsOnValids2 fileBrowserCursorFilterAppendChar
-  describe "fileBrowserCursorFilterRemoveChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorFilterRemoveChar
-  describe "fileBrowserCursorFilterDeleteChar" $ it "produces valid cursors" $ producesValidsOnValids fileBrowserCursorFilterDeleteChar
+      producesValid fileBrowserCursorToggleRecursively
+  describe "fileBrowserCursorSelectBrowser" $ it "produces valid cursors" $ producesValid fileBrowserCursorSelectBrowser
+  describe "fileBrowserCursorSelectFilter" $ it "produces valid cursors" $ producesValid fileBrowserCursorSelectFilter
+  describe "fileBrowserCursorFilterInsertChar" $ it "produces valid cursors" $ producesValid2 fileBrowserCursorFilterInsertChar
+  describe "fileBrowserCursorFilterAppendChar" $ it "produces valid cursors" $ producesValid2 fileBrowserCursorFilterAppendChar
+  describe "fileBrowserCursorFilterRemoveChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorFilterRemoveChar
+  describe "fileBrowserCursorFilterDeleteChar" $ it "produces valid cursors" $ producesValid fileBrowserCursorFilterDeleteChar
   describe "fileBrowserRmEmptyDir" $
     it "produces the same result as if I had reread the cursor" $
       withSystemTempDir "smos-cursor-test-filebrowser" $

@@ -14,8 +14,8 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @RecurringEvents
-  jsonSpecOnValid @RecurringEvents
+  jsonSpec @RecurringEvents
   genValidSpec @RecurringEvent
-  jsonSpecOnValid @RecurringEvent
+  jsonSpec @RecurringEvent
   genValidSpec @Recurrence
-  jsonSpecOnValid @Recurrence
+  jsonSpec @Recurrence

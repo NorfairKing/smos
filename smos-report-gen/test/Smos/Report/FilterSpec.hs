@@ -32,7 +32,7 @@ spec = do
   describe "Tokenisation" $ do
     genValidSpec @Part
     genValidSpec @Parts
-    describe "renderParts" $ it "produces valid texts" $ producesValidsOnValids renderParts
+    describe "renderParts" $ it "produces valid texts" $ producesValid renderParts
     describe "partP" $ do
       parseSuccessSpec partP ":" PartColumn
       parseSuccessSpec partP "file" (PartPiece (Piece "file"))
@@ -127,18 +127,18 @@ spec = do
     filterArgumentSpec @(Path Rel File)
     genValidSpec @Time
     genValidSpec @(Filter Time)
-    eqSpecOnValid @(Filter Time)
-    eqSpecOnValid @(Filter Tag)
+    eqSpec @(Filter Time)
+    eqSpec @(Filter Tag)
     genValidSpec @(Filter Tag)
-    eqSpecOnValid @(Filter Header)
+    eqSpec @(Filter Header)
     genValidSpec @(Filter Header)
-    eqSpecOnValid @(Filter TodoState)
+    eqSpec @(Filter TodoState)
     genValidSpec @(Filter TodoState)
-    eqSpecOnValid @(Filter PropertyValue)
+    eqSpec @(Filter PropertyValue)
     genValidSpec @(Filter PropertyValue)
-    eqSpecOnValid @EntryFilter
+    eqSpec @EntryFilter
     genValidSpec @EntryFilter
-    jsonSpecOnValid @EntryFilter
+    jsonSpec @EntryFilter
     describe "tcWithTopLevelBranches" $ do
       tcSpec
         (tcWithTopLevelBranches tcSub)
@@ -373,11 +373,11 @@ spec = do
         (AstUnOp (Piece "snd") (AstUnOp (Piece "sub") (AstPiece (Piece "header"))))
         (FilterSnd (FilterSub (fromJust $ header "header")))
     describe "renderFilterAst" $ do
-      it "produces valid asts for header filters" $ producesValidsOnValids (renderFilterAst @Header)
+      it "produces valid asts for header filters" $ producesValid (renderFilterAst @Header)
       it "produces valid asts for file filters" $
-        producesValidsOnValids (renderFilterAst @(Path Rel File))
+        producesValid (renderFilterAst @(Path Rel File))
       it "produces valid asts for entryFilters" $
-        producesValidsOnValids (renderFilterAst @(Path Rel File, ForestCursor Entry))
+        producesValid (renderFilterAst @(Path Rel File, ForestCursor Entry))
     describe "parseEntryFilterAst" $
       it "parses back whatever 'renderFilterAst' renders" $
         forAllValid $
@@ -407,7 +407,7 @@ spec = do
                      in context ctx $ f' `shouldBe` f
     describe "renderFilter" $
       it "produces valid text" $
-        producesValidsOnValids (renderFilter @(Path Rel File, ForestCursor Entry))
+        producesValid (renderFilter @(Path Rel File, ForestCursor Entry))
     describe "parseEntryFilter" $
       it "parses back whatever 'renderFilter' renders" $
         forAllValid $
@@ -437,10 +437,10 @@ spec = do
                      in context ctx $ f' `shouldBe` f
   describe "foldFilterAnd" $
     it "produces valid results" $
-      producesValidsOnValids (foldFilterAnd @Header)
+      producesValid (foldFilterAnd @Header)
   describe "filterPredicate" $
     it "produces valid results" $
-      producesValidsOnValids2 (filterPredicate @(Path Rel File, ForestCursor Entry))
+      producesValid2 (filterPredicate @(Path Rel File, ForestCursor Entry))
   describe "parseEntryFilter" $ do
     let pe input expected =
           it (unwords ["succesfully parses", show input, "into", show expected]) $

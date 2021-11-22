@@ -11,8 +11,8 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @Configuration
-  jsonSpecOnValid @Configuration
+  jsonSpec @Configuration
   genValidSpec @DirectoryConfiguration
-  jsonSpecOnValid @DirectoryConfiguration
+  jsonSpec @DirectoryConfiguration
   genValidSpec @WorkReportConfiguration
-  jsonSpecOnValid @WorkReportConfiguration
+  jsonSpec @WorkReportConfiguration

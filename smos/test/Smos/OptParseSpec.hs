@@ -11,27 +11,27 @@ import TestImport
 spec :: Spec
 spec = do
   genValidSpec @KeyConfig
-  jsonSpecOnValid @KeyConfig
+  jsonSpec @KeyConfig
   genValidSpec @KeyConfigs
-  jsonSpecOnValid @KeyConfigs
+  jsonSpec @KeyConfigs
   genValidSpec @FileKeyConfigs
-  jsonSpecOnValid @FileKeyConfigs
+  jsonSpec @FileKeyConfigs
   genValidSpec @BrowserKeyConfigs
-  jsonSpecOnValid @BrowserKeyConfigs
+  jsonSpec @BrowserKeyConfigs
   genValidSpec @HelpKeyConfigs
-  jsonSpecOnValid @HelpKeyConfigs
+  jsonSpec @HelpKeyConfigs
   genValidSpec @ReportsKeyConfigs
-  jsonSpecOnValid @ReportsKeyConfigs
+  jsonSpec @ReportsKeyConfigs
   genValidSpec @NextActionReportKeyConfigs
-  jsonSpecOnValid @NextActionReportKeyConfigs
+  jsonSpec @NextActionReportKeyConfigs
   genValidSpec @WaitingReportKeyConfigs
-  jsonSpecOnValid @WaitingReportKeyConfigs
+  jsonSpec @WaitingReportKeyConfigs
   genValidSpec @TimestampsReportKeyConfigs
-  jsonSpecOnValid @TimestampsReportKeyConfigs
+  jsonSpec @TimestampsReportKeyConfigs
   genValidSpec @KeybindingsConfiguration
-  jsonSpecOnValid @KeybindingsConfiguration
+  jsonSpec @KeybindingsConfiguration
   genValidSpec @Configuration
-  jsonSpecOnValid @Configuration
+  jsonSpec @Configuration
   describe "FromJSON Configuration" $
     it "parses the default configuration back into itself" $
       do

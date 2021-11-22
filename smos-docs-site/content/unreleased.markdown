@@ -8,6 +8,7 @@
 * Replaced `yamlparse-applicative` by `autodocodec`.
   This massively improved the documentation of configuration file formats, as well as the page about the smos file format.
   Now we can have finite schemas for recursive types, so we can show the entire schema.
+* Upgraded `validity` dependency to beyond `genvalidity >=1.0.0.0`.
 
 ### Removed
 

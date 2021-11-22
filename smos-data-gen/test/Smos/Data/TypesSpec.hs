@@ -23,13 +23,13 @@ import Test.Syd.Validity.Utils
 spec :: Spec
 spec = do
   genValidSpec @Header
-  jsonSpecOnValid @Header
+  jsonSpec @Header
   textLikeJSONValid @Header
   genValidSpec @Contents
-  jsonSpecOnValid @Contents
+  jsonSpec @Contents
   textLikeJSONValid @Contents
   genValidSpec @PropertyName
-  jsonSpecOnValid @PropertyName
+  jsonSpec @PropertyName
   textLikeJSONValid @PropertyName
   -- If you remove this, the tests for json for sorters, filters and projections will fail in smos-report-gen
   describe "validPropertyNameChar" $ do
@@ -39,13 +39,13 @@ spec = do
       "says that '(' is invalid"
       $ validPropertyNameChar '(' `shouldBe` False
   genValidSpec @PropertyValue
-  jsonSpecOnValid @PropertyValue
+  jsonSpec @PropertyValue
   textLikeJSONValid @PropertyValue
   genValidSpec @TimestampName
-  jsonSpecOnValid @TimestampName
+  jsonSpec @TimestampName
   textLikeJSONValid @TimestampName
   genValidSpec @Timestamp
-  jsonSpecOnValid @Timestamp
+  jsonSpec @Timestamp
   textLikeJSONValid @Timestamp
   describe "parseTimestampString" $
     it "parses whatever timestampString outputs" $
@@ -56,16 +56,16 @@ spec = do
       forAllValid $
         \ts -> parseTimestampText (timestampText ts) `shouldBe` Just ts
   genValidSpec @TodoState
-  jsonSpecOnValid @TodoState
+  jsonSpec @TodoState
   textLikeJSONValid @TodoState
-  ordSpecOnValid @StateHistory
+  ordSpec @StateHistory
   genValidSpec @StateHistory
-  jsonSpecOnValid @StateHistory
-  ordSpecOnValid @StateHistoryEntry
+  jsonSpec @StateHistory
+  ordSpec @StateHistoryEntry
   genValidSpec @StateHistoryEntry
-  jsonSpecOnValid @StateHistoryEntry
+  jsonSpec @StateHistoryEntry
   genValidSpec @Tag
-  jsonSpecOnValid @Tag
+  jsonSpec @Tag
   textLikeJSONValid @Tag
   -- If you remove this, the tests for json for sorters, filters and projections will fail in smos-report-gen
   describe "validTagChar" $ do
@@ -81,7 +81,7 @@ spec = do
               ("end" .=) <$> (toJSON <$> (genValid :: Gen UTCTime))
             ]
   genValidSpec @Logbook
-  jsonSpecOnValid @Logbook
+  jsonSpec @Logbook
   describe "emptyLogbook" $ it "is valid" $ shouldBeValid emptyLogbook
   genJSONValid @Logbook $
     let withGen lbGen =
@@ -101,15 +101,15 @@ spec = do
           pure $ object ["start" .= start, "end" .= end]
      in oneof [withGen genLogbookEntryJSON, withGen genOrderedLogbookEntryJSON]
   genValidSpec @LogbookEntry
-  jsonSpecOnValid @LogbookEntry
+  jsonSpec @LogbookEntry
   genJSONValid @LogbookEntry genLogbookEntryJSON
-  eqSpecOnValid @Entry
-  ordSpecOnValid @Entry
+  eqSpec @Entry
+  ordSpec @Entry
   genValidSpec @Entry
-  jsonSpecOnValid @Entry
+  jsonSpec @Entry
   genValidSpec @SmosFile
-  ordSpecOnValid @SmosFile
-  jsonSpecOnValid @SmosFile
+  ordSpec @SmosFile
+  jsonSpec @SmosFile
 
 textLikeJSONValid ::
   forall a.
