@@ -13,17 +13,17 @@ spec = do
   genValidSpec @StateHistoryCursor
   describe "makeStateHistoryCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makeStateHistoryCursor
+      producesValid makeStateHistoryCursor
   describe "rebuildStateHistoryCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildStateHistoryCursor
+    it "produces valid cursors" $ producesValid rebuildStateHistoryCursor
     it "is the inverse of makeStateHistoryCursor" $
-      inverseFunctionsOnValid makeStateHistoryCursor rebuildStateHistoryCursor
+      inverseFunctions makeStateHistoryCursor rebuildStateHistoryCursor
   describe "stateHistoryCursorSetTodoState" $ do
-    it "produces valid cursors" $ producesValidsOnValids3 stateHistoryCursorSetTodoState
+    it "produces valid cursors" $ producesValid3 stateHistoryCursorSetTodoState
     pending "sets the given todo state"
   describe "stateHistoryCursorToggleTodoState" $ do
-    it "produces valid cursors" $ producesValidsOnValids3 stateHistoryCursorToggleTodoState
+    it "produces valid cursors" $ producesValid3 stateHistoryCursorToggleTodoState
     pending "toggles the given todo state"
   describe "stateHistoryCursorUnsetTodoState" $ do
-    it "produces valid cursors" $ producesValidsOnValids2 stateHistoryCursorUnsetTodoState
+    it "produces valid cursors" $ producesValid2 stateHistoryCursorUnsetTodoState
     pending "unsets any todo state"

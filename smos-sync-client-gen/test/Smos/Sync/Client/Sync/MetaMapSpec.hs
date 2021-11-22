@@ -17,9 +17,9 @@ spec :: Spec
 spec = do
   genValidSpec @MetaMap
   describe "empty" $ it "is valid" $ shouldBeValid MM.empty
-  describe "singleton" $ it "produces valid contents maps" $ producesValidsOnValids2 MM.singleton
+  describe "singleton" $ it "produces valid contents maps" $ producesValid2 MM.singleton
   describe "fromListIgnoringCollisions" $ do
-    it "produces valid contents maps" $ producesValidsOnValids MM.fromListIgnoringCollisions
+    it "produces valid contents maps" $ producesValid MM.fromListIgnoringCollisions
     it "Remembers the longest paths it can for this example" $
       forAllValid $ \bs1 -> forAllValid $ \bs2 -> do
         let p1 = [relfile|foo|]

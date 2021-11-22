@@ -13,46 +13,46 @@ spec :: Spec
 spec = do
   genValidSpec @EntryCursor
   genValidSpec @EntryCursorSelection
-  describe "makeEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids makeEntryCursor
+  describe "makeEntryCursor" $ it "produces valid cursors" $ producesValid makeEntryCursor
   describe "emptyEntryCursor" $ it "is valid" $ shouldBeValid emptyEntryCursor
   describe "rebuildEntryCursor" $ do
-    it "produces valid entries" $ producesValidsOnValids rebuildEntryCursor
+    it "produces valid entries" $ producesValid rebuildEntryCursor
     it "is the inverse of makeEntryCursor" $
-      inverseFunctionsOnValid makeEntryCursor rebuildEntryCursor
-  describe "entryCursorHeaderCursorL" $ lensSpecOnValid entryCursorHeaderCursorL
-  describe "entryCursorContentsCursorL" $ lensSpecOnValid entryCursorContentsCursorL
-  describe "entryCursorStateHistoryCursorL" $ lensSpecOnValid entryCursorStateHistoryCursorL
-  describe "entryCursorTagsCursorL" $ lensSpecOnValid entryCursorTagsCursorL
-  describe "entryCursorTimestampsCursorL" $ lensSpecOnValid entryCursorTimestampsCursorL
-  describe "entryCursorLogbookCursorL" $ lensSpecOnValid entryCursorLogbookCursorL
-  describe "entryCursorSelectionL" $ lensSpecOnValid entryCursorSelectionL
+      inverseFunctions makeEntryCursor rebuildEntryCursor
+  describe "entryCursorHeaderCursorL" $ lensSpec entryCursorHeaderCursorL
+  describe "entryCursorContentsCursorL" $ lensSpec entryCursorContentsCursorL
+  describe "entryCursorStateHistoryCursorL" $ lensSpec entryCursorStateHistoryCursorL
+  describe "entryCursorTagsCursorL" $ lensSpec entryCursorTagsCursorL
+  describe "entryCursorTimestampsCursorL" $ lensSpec entryCursorTimestampsCursorL
+  describe "entryCursorLogbookCursorL" $ lensSpec entryCursorLogbookCursorL
+  describe "entryCursorSelectionL" $ lensSpec entryCursorSelectionL
   describe "entryCursorSelect" $
     it "produces valid cursors" $
-      producesValidsOnValids2 entryCursorSelect
+      producesValid2 entryCursorSelect
   describe "entryCursorSelectHeaderAtStart" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectHeaderAtStart
+      producesValid entryCursorSelectHeaderAtStart
   describe "entryCursorSelectHeaderAtEnd" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectHeaderAtEnd
+      producesValid entryCursorSelectHeaderAtEnd
   describe "entryCursorSelectContentsAtStart" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectContentsAtStart
+      producesValid entryCursorSelectContentsAtStart
   describe "entryCursorSelectContentsAtEnd" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectContentsAtEnd
+      producesValid entryCursorSelectContentsAtEnd
   describe "entryCursorSelectTimestamps" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectTimestamps
+      producesValid entryCursorSelectTimestamps
   describe "entryCursorSelectProperties" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectProperties
+      producesValid entryCursorSelectProperties
   describe "entryCursorSelectStateHistory" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectStateHistory
+      producesValid entryCursorSelectStateHistory
   describe "entryCursorSelectTags" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectTags
+      producesValid entryCursorSelectTags
   describe "entryCursorSelectLogbook" $
     it "produces valid cursors" $
-      producesValidsOnValids entryCursorSelectLogbook
+      producesValid entryCursorSelectLogbook

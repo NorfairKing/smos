@@ -12,9 +12,9 @@ import Text.Colour.Layout
 
 spec :: Spec
 spec = do
-  jsonSpecOnValid @PreparedReportConfiguration
+  jsonSpec @PreparedReportConfiguration
   genValidSpec @PreparedReportConfiguration
-  jsonSpecOnValid @Colour
+  jsonSpec @Colour
   genValidSpec @Colour
-  jsonSpecOnValid @TableBackground
+  jsonSpec @TableBackground
   genValidSpec @TableBackground

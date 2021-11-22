@@ -14,16 +14,16 @@ spec = do
   genValidSpec @(CollapseEntry Rational)
   describe "makeCollapseEntry" $
     it "produces valid collapse's" $
-      producesValidsOnValids (makeCollapseEntry @Rational)
+      producesValid (makeCollapseEntry @Rational)
   describe "rebuildCollapseEntry" $ do
-    it "produces valid values" $ producesValidsOnValids (rebuildCollapseEntry @Rational)
+    it "produces valid values" $ producesValid (rebuildCollapseEntry @Rational)
     it "is the inverse of makeCollapseEntry" $
-      inverseFunctionsOnValid (makeCollapseEntry @Rational) (rebuildCollapseEntry @Rational)
-  describe "collapseEntryValueL" $ lensSpecOnValid (collapseEntryValueL @Rational)
-  describe "collapseEntryShowContentsL" $ lensSpecOnValid (collapseEntryShowContentsL @Rational)
-  describe "collapseEntryShowHistoryL" $ lensSpecOnValid (collapseEntryShowHistoryL @Rational)
-  describe "collapseEntryShowLogbookL" $ lensSpecOnValid (collapseEntryShowLogbookL @Rational)
-  describe "collapseEntryShowTimestampsL" $ lensSpecOnValid (collapseEntryShowTimestampsL @Rational)
+      inverseFunctions (makeCollapseEntry @Rational) (rebuildCollapseEntry @Rational)
+  describe "collapseEntryValueL" $ lensSpec (collapseEntryValueL @Rational)
+  describe "collapseEntryShowContentsL" $ lensSpec (collapseEntryShowContentsL @Rational)
+  describe "collapseEntryShowHistoryL" $ lensSpec (collapseEntryShowHistoryL @Rational)
+  describe "collapseEntryShowLogbookL" $ lensSpec (collapseEntryShowLogbookL @Rational)
+  describe "collapseEntryShowTimestampsL" $ lensSpec (collapseEntryShowTimestampsL @Rational)
   describe "collapseEntrySetShowAll" $
     it "produces valid collapses" $
-      producesValidsOnValids2 (collapseEntrySetShowAll @Rational)
+      producesValid2 (collapseEntrySetShowAll @Rational)

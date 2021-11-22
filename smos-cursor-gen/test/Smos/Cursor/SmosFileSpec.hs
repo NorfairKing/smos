@@ -13,39 +13,39 @@ import Test.Syd.Validity.Lens
 spec :: Spec
 spec = modifyMaxShrinks (const 1) $ do
   genValidSpec @SmosFileCursor
-  lensSpecOnValid smosFileCursorForestCursorL
-  lensSpecOnValid smosFileCursorSelectedEntryL
+  lensSpec smosFileCursorForestCursorL
+  lensSpec smosFileCursorSelectedEntryL
   describe "makeSmosFileCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makeSmosFileCursor
+      producesValid makeSmosFileCursor
   describe "rebuildSmosFileCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildSmosFileCursor
+    it "produces valid cursors" $ producesValid rebuildSmosFileCursor
     it "is the inverse of makeFileCursor" $
-      inverseFunctionsOnValid makeSmosFileCursor rebuildSmosFileCursor
+      inverseFunctions makeSmosFileCursor rebuildSmosFileCursor
   describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
   describe "smosFileCursorToggleHideEntireEntry" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorToggleCollapseEntireEntry
+      producesValid smosFileCursorToggleCollapseEntireEntry
   describe "smosFileCursorSelectPrev" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSelectPrev
+      producesValid smosFileCursorSelectPrev
   describe "smosFileCursorSelectNext" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSelectNext
+      producesValid smosFileCursorSelectNext
   describe "smosFileCursorSelectFirst" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSelectFirst
+      producesValid smosFileCursorSelectFirst
   describe "smosFileCursorSelectLast" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSelectLast
+      producesValid smosFileCursorSelectLast
   describe "smosFileCursorToggleCollapse" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorToggleCollapse
+      producesValid smosFileCursorToggleCollapse
   describe "smosFileCursorToggleCollapseRecursively" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorToggleCollapseRecursively
+      producesValid smosFileCursorToggleCollapseRecursively
   describe "smosFileCursorInsertEntryBefore" $ do
-    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBefore
+    it "produces valid cursors" $ producesValid smosFileCursorInsertEntryBefore
     it "produces a cursor in which you can select the next" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBefore sfc
@@ -53,10 +53,10 @@ spec = modifyMaxShrinks (const 1) $ do
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBeforeAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBeforeAndSelect
+      producesValid smosFileCursorInsertEntryBeforeAndSelect
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtStart" $ do
-    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtStart
+    it "produces valid cursors" $ producesValid smosFileCursorInsertEntryBelowAtStart
     it "produces a cursor in which you can select below" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBelowAtStart sfc
@@ -64,10 +64,10 @@ spec = modifyMaxShrinks (const 1) $ do
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtStartAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBelowAtStartAndSelect
+      producesValid smosFileCursorInsertEntryBelowAtStartAndSelect
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtEnd" $ do
-    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryBelowAtEnd
+    it "produces valid cursors" $ producesValid smosFileCursorInsertEntryBelowAtEnd
     it "produces a cursor in which you can select below" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryBelowAtEnd sfc
@@ -75,10 +75,10 @@ spec = modifyMaxShrinks (const 1) $ do
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryBelowAtEndAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryBelowAtEndAndSelect
+      producesValid smosFileCursorInsertEntryBelowAtEndAndSelect
     pending "inserts an entry below the currently selected entry"
   describe "smosFileCursorInsertEntryAfter" $ do
-    it "produces valid cursors" $ producesValidsOnValids smosFileCursorInsertEntryAfter
+    it "produces valid cursors" $ producesValid smosFileCursorInsertEntryAfter
     it "produces a cursor in which you can select the next" $
       forAllValid $ \sfc ->
         let sfc' = smosFileCursorInsertEntryAfter sfc
@@ -86,34 +86,34 @@ spec = modifyMaxShrinks (const 1) $ do
     pending "inserts an entry above the currently selected entry"
   describe "smosFileCursorInsertEntryAfterAndSelect" $ do
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorInsertEntryAfterAndSelect
+      producesValid smosFileCursorInsertEntryAfterAndSelect
     pending "inserts an entry above the currently selected entry"
   describe "smosFileCursorSwapPrev" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSwapPrev
+      producesValid smosFileCursorSwapPrev
   describe "smosFileCursorSwapNext" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorSwapNext
+      producesValid smosFileCursorSwapNext
   describe "smosFileCursorPromoteElem" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorPromoteEntry
+      producesValid smosFileCursorPromoteEntry
   describe "smosFileCursorPromoteSubTree" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorPromoteSubTree
+      producesValid smosFileCursorPromoteSubTree
   describe "smosFileCursorDemoteElem" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorDemoteEntry
+      producesValid smosFileCursorDemoteEntry
   describe "smosFileCursorDemoteSubTree" $
     it "produces valid cursors" $
-      producesValidsOnValids smosFileCursorDemoteSubTree
+      producesValid smosFileCursorDemoteSubTree
   describe "smosFileCursorClockOutEverywhere" $
     it "produces valid cursors" $
-      producesValidsOnValids2 smosFileCursorClockOutEverywhere
+      producesValid2 smosFileCursorClockOutEverywhere
   describe "smosFileCursorClockOutEverywhereAndClockInHere" $
     it "produces valid cursors" $
-      producesValidsOnValids2 smosFileCursorClockOutEverywhereAndClockInHere
+      producesValid2 smosFileCursorClockOutEverywhereAndClockInHere
   describe "smosFileSubtreeSetTodoState" $ do
     it "produces valid cursors when unsetting todo states" $
       forAllValid $
-        \now -> producesValidsOnValids $ smosFileSubtreeSetTodoState now Nothing
-    it "produces valid cursors" $ producesValidsOnValids3 smosFileSubtreeSetTodoState
+        \now -> producesValid $ smosFileSubtreeSetTodoState now Nothing
+    it "produces valid cursors" $ producesValid3 smosFileSubtreeSetTodoState

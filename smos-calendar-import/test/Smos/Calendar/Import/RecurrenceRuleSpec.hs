@@ -17,33 +17,33 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @Frequency
-  jsonSpecOnValid @Frequency
+  jsonSpec @Frequency
   genValidSpec @UntilCount
-  jsonSpecOnValid @UntilCount
+  jsonSpec @UntilCount
   genValidSpec @Interval
-  jsonSpecOnValid @Interval
+  jsonSpec @Interval
   genValidSpec @BySecond
-  jsonSpecOnValid @BySecond
+  jsonSpec @BySecond
   genValidSpec @ByMinute
-  jsonSpecOnValid @ByMinute
+  jsonSpec @ByMinute
   genValidSpec @ByHour
-  jsonSpecOnValid @ByHour
+  jsonSpec @ByHour
   genValidSpec @ByDay
-  jsonSpecOnValid @ByDay
+  jsonSpec @ByDay
   genValidSpec @ByMonthDay
-  jsonSpecOnValid @ByMonthDay
+  jsonSpec @ByMonthDay
   genValidSpec @ByYearDay
-  jsonSpecOnValid @ByYearDay
+  jsonSpec @ByYearDay
   genValidSpec @ByWeekNo
-  jsonSpecOnValid @ByWeekNo
+  jsonSpec @ByWeekNo
   genValidSpec @Month
-  jsonSpecOnValid @Month
+  jsonSpec @Month
   genValidSpec @BySetPos
-  jsonSpecOnValid @BySetPos
+  jsonSpec @BySetPos
   genValidSpec @RRule
-  jsonSpecOnValid @RRule
+  jsonSpec @RRule
   describe "rruleDateTimeOccurrencesUntil" $ do
-    xit "produces valid results" $ producesValidsOnValids3 rruleDateTimeOccurrencesUntil
+    xit "produces valid results" $ producesValid3 rruleDateTimeOccurrencesUntil
     xit "produces results within the 'Count' range for 'Count' rules" $
       forAllValid $ \start ->
         forAllValid $ \limit ->

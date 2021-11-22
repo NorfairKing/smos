@@ -18,7 +18,7 @@ import Text.Megaparsec
 spec :: Spec
 spec = do
   genValidSpec @Projection
-  jsonSpecOnValid @Projection
+  jsonSpec @Projection
   genValidSpec @Projectee
   describe "performProjection" $
     it "produces valid projections" $
@@ -36,7 +36,7 @@ spec = do
     parseJustSpec projectionP "header" OntoHeader
     parseJustSpec projectionP "state" OntoState
   describe "renderProjection" $ do
-    it "produces valid texts" $ producesValidsOnValids renderProjection
+    it "produces valid texts" $ producesValid renderProjection
     it "renders bys that parse to the same" $
       forAllValid $
         \s -> parseJust projectionP (renderProjection s) s

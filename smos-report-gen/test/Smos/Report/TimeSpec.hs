@@ -17,10 +17,10 @@ import Text.Megaparsec
 
 spec :: Spec
 spec = do
-  eqSpecOnValid @Time
-  ordSpecOnValid @Time
+  eqSpec @Time
+  ordSpec @Time
   genValidSpec @Time
-  jsonSpecOnValid @Time
+  jsonSpec @Time
   describe "timeP" $ do
     parsesValidSpec timeP
     it "parses is correctly" $
@@ -70,7 +70,7 @@ spec = do
     it "parses i weeks correctly" $
       forAllValid $ \i -> parseJust timeP (pack $ show i ++ "weeks") (Weeks i)
   describe "renderTime" $ do
-    it "produces valid texts" $ producesValidsOnValids renderTime
+    it "produces valid texts" $ producesValid renderTime
     it "renders times that parse to the same" $ forAllValid $ \s -> parseJust timeP (renderTime s) s
 
 parsesValidSpec :: (Show a, Validity a) => P a -> Spec

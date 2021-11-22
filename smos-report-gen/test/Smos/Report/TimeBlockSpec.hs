@@ -11,6 +11,6 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @(Block Int Int)
-  jsonSpecOnValid @(Block Int Int)
+  jsonSpec @(Block Int Int)
   genValidSpec @TimeBlock
-  jsonSpecOnValid @TimeBlock
+  jsonSpec @TimeBlock

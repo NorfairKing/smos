@@ -15,10 +15,10 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @WaitingReport
-  jsonSpecOnValid @WaitingReport
+  jsonSpec @WaitingReport
   genValidSpec @WaitingEntry
-  jsonSpecOnValid @WaitingEntry
-  describe "finishWaitingReport" $ it "produces valid reports" $ producesValidsOnValids finishWaitingReport
+  jsonSpec @WaitingEntry
+  describe "finishWaitingReport" $ it "produces valid reports" $ producesValid finishWaitingReport
   modifyMaxSuccess (`div` 10) $
     describe "produceWaitingReport" $
       it "produces valid reports for interesting stores" $

@@ -13,15 +13,15 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   genValidSpec @TagsCursor
-  describe "makeTagsCursor" $ it "produces valid cursors" $ producesValidsOnValids makeTagsCursor
+  describe "makeTagsCursor" $ it "produces valid cursors" $ producesValid makeTagsCursor
   describe "singletonTagsCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids singletonTagsCursor
+      producesValid singletonTagsCursor
   describe "rebuildTagsCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildTagsCursor
-    it "is the inverse of makeTagsCursor" $ inverseFunctionsOnValid makeTagsCursor rebuildTagsCursor
+    it "produces valid cursors" $ producesValid rebuildTagsCursor
+    it "is the inverse of makeTagsCursor" $ inverseFunctions makeTagsCursor rebuildTagsCursor
   describe "tagsCursorSetTag" $ do
-    it "produces valid cursors" $ producesValidsOnValids2 tagsCursorSetTag
+    it "produces valid cursors" $ producesValid2 tagsCursorSetTag
     it "ensures that the tag is set afterward" $
       forAllValid $
         \t ->
@@ -30,11 +30,11 @@ spec = do
               Nothing -> expectationFailure "Setting a tag on Nothing should not have failed."
               Just tc -> tc `shouldSatisfy` (elem t . rebuildTagsCursor)
   describe "tagsCursorUnsetTag" $ do
-    it "produces valid cursors" $ producesValidsOnValids2 tagsCursorUnsetTag
+    it "produces valid cursors" $ producesValid2 tagsCursorUnsetTag
     it "is vaguely the inverse of tagsCursorSetTag" $
       forAllValid $
         \t ->
-          inverseFunctionsIfSucceedOnValid
+          inverseFunctionsIfSucceed
             (tagsCursorSetTag t . Just . makeTagsCursor)
             (fmap rebuildTagsCursor . dullMDelete . tagsCursorUnsetTag t)
     it "ensures that the tag is unset afterward" $
@@ -46,7 +46,7 @@ spec = do
               Just Deleted -> pure () -- Definitely unset then.
               Just (Updated tc') -> tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
   describe "tagsCursorToggleTag" $ do
-    it "produces valid cursors" $ producesValidsOnValids2 tagsCursorToggleTag
+    it "produces valid cursors" $ producesValid2 tagsCursorToggleTag
     it "toggles the given tag" $
       forAllValid $
         \t ->
@@ -70,7 +70,7 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ tagsCursorInsert '\55810' tsc
-    it "produces valid tags cursors" $ producesValidsOnValids2 tagsCursorInsert
+    it "produces valid tags cursors" $ producesValid2 tagsCursorInsert
   describe "tagsCursorAppend" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -78,56 +78,56 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ tagsCursorAppend '\55810' tsc
-    it "produces valid tags cursors" $ producesValidsOnValids2 tagsCursorAppend
+    it "produces valid tags cursors" $ producesValid2 tagsCursorAppend
   describe "tagsCursorInsertTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids2 tagsCursorInsertTag
+      producesValid2 tagsCursorInsertTag
   describe "tagsCursorAppendTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids2 tagsCursorAppendTag
+      producesValid2 tagsCursorAppendTag
   describe "tagsCursorInsertAndSelectTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids2 tagsCursorInsertAndSelectTag
+      producesValid2 tagsCursorInsertAndSelectTag
   describe "tagsCursorAppendAndSelectTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids2 tagsCursorAppendAndSelectTag
+      producesValid2 tagsCursorAppendAndSelectTag
   describe "tagsCursorDelete" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorDelete
+      producesValid tagsCursorDelete
   describe "tagsCursorRemove" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorRemove
+      producesValid tagsCursorRemove
   describe "tagsCursorSelectPrev" $ do
-    it "produces valid tags cursors" $ producesValidsOnValids tagsCursorSelectPrev
+    it "produces valid tags cursors" $ producesValid tagsCursorSelectPrev
     it "is the inverse of tagsCursorSelectNext" $
-      inverseFunctionsIfSucceedOnValid tagsCursorSelectNext tagsCursorSelectPrev
+      inverseFunctionsIfSucceed tagsCursorSelectNext tagsCursorSelectPrev
   describe "tagsCursorSelectNext" $ do
-    it "produces valid tags cursors" $ producesValidsOnValids tagsCursorSelectNext
+    it "produces valid tags cursors" $ producesValid tagsCursorSelectNext
     it "is the inverse of tagsCursorSelectPrev" $
-      inverseFunctionsIfSucceedOnValid tagsCursorSelectPrev tagsCursorSelectNext
+      inverseFunctionsIfSucceed tagsCursorSelectPrev tagsCursorSelectNext
   describe "tagsCursorSelectOrCreatePrev" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectOrCreatePrev
+      producesValid tagsCursorSelectOrCreatePrev
   describe "tagsCursorSelectOrCreateNext" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectOrCreateNext
+      producesValid tagsCursorSelectOrCreateNext
   describe "tagsCursorSelectPrevChar" $ do
-    it "produces valid tags cursors" $ producesValidsOnValids tagsCursorSelectPrevChar
+    it "produces valid tags cursors" $ producesValid tagsCursorSelectPrevChar
     it "is the inverse of tagsCursorSelectNextChar" $
-      inverseFunctionsIfSucceedOnValid tagsCursorSelectNextChar tagsCursorSelectPrevChar
+      inverseFunctionsIfSucceed tagsCursorSelectNextChar tagsCursorSelectPrevChar
   describe "tagsCursorSelectNextChar" $ do
-    it "produces valid tags cursors" $ producesValidsOnValids tagsCursorSelectNextChar
+    it "produces valid tags cursors" $ producesValid tagsCursorSelectNextChar
     it "is the inverse of tagsCursorSelectPrevChar" $
-      inverseFunctionsIfSucceedOnValid tagsCursorSelectPrevChar tagsCursorSelectNextChar
+      inverseFunctionsIfSucceed tagsCursorSelectPrevChar tagsCursorSelectNextChar
   describe "tagsCursorSelectPrevTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectPrevTag
+      producesValid tagsCursorSelectPrevTag
   describe "tagsCursorSelectNextTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectNextTag
+      producesValid tagsCursorSelectNextTag
   describe "tagsCursorSelectOrCreatePrevTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectOrCreatePrevTag
+      producesValid tagsCursorSelectOrCreatePrevTag
   describe "tagsCursorSelectOrCreateNextTag" $
     it "produces valid tags cursors" $
-      producesValidsOnValids tagsCursorSelectOrCreateNextTag
+      producesValid tagsCursorSelectOrCreateNextTag

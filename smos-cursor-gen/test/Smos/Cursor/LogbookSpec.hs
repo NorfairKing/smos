@@ -13,14 +13,14 @@ spec = do
   genValidSpec @LogbookCursor
   describe "makeLogbookCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makeLogbookCursor
+      producesValid makeLogbookCursor
   describe "rebuildLogbookCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildLogbookCursor
+    it "produces valid cursors" $ producesValid rebuildLogbookCursor
     it "is the inverse of makeLogbookCursor" $
-      inverseFunctionsOnValid makeLogbookCursor rebuildLogbookCursor
+      inverseFunctions makeLogbookCursor rebuildLogbookCursor
   describe "logbookCursorClockIn" $
     it "produces valid cursors" $
-      producesValidsOnValids2 logbookCursorClockIn
+      producesValid2 logbookCursorClockIn
   describe "logbookCursorClockOut" $
     it "produces valid cursors" $
-      producesValidsOnValids2 logbookCursorClockOut
+      producesValid2 logbookCursorClockOut

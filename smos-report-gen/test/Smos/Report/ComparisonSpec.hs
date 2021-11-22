@@ -19,11 +19,11 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @Comparison
-  jsonSpecOnValid @Comparison
+  jsonSpec @Comparison
   describe "parseComparison" $
     it "produces valid comparisons" $
-      producesValidsOnValids parseComparison
+      producesValid parseComparison
   describe "renderComparison" $ do
-    it "produces valid comparisons" $ producesValidsOnValids renderComparison
+    it "produces valid comparisons" $ producesValid renderComparison
     it "is the inverse of parseComparison" $
-      inverseFunctionsOnValid renderComparison (either (error "should have worked") id . parseComparison)
+      inverseFunctions renderComparison (either (error "should have worked") id . parseComparison)

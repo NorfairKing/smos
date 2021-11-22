@@ -16,20 +16,20 @@ spec :: Spec
 spec = do
   genValidSpec @TimestampsReportCursor
   genValidSpec @TimestampsEntryCursor
-  describe "timestampsReportCursorNext" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorNext
-  describe "timestampsReportCursorPrev" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorPrev
-  describe "timestampsReportCursorFirst" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorFirst
-  describe "timestampsReportCursorLast" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorLast
-  describe "timestampsReportCursorSelectReport" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorSelectReport
-  describe "timestampsReportCursorSelectFilter" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorSelectFilter
-  describe "timestampsReportCursorInsert" $ it "produces valid cursors" $ producesValidsOnValids2 timestampsReportCursorInsert
-  describe "timestampsReportCursorAppend" $ it "produces valid cursors" $ producesValidsOnValids2 timestampsReportCursorAppend
-  describe "timestampsReportCursorRemove" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorRemove
-  describe "timestampsReportCursorDelete" $ it "produces valid cursors" $ producesValidsOnValids timestampsReportCursorDelete
+  describe "timestampsReportCursorNext" $ it "produces valid cursors" $ producesValid timestampsReportCursorNext
+  describe "timestampsReportCursorPrev" $ it "produces valid cursors" $ producesValid timestampsReportCursorPrev
+  describe "timestampsReportCursorFirst" $ it "produces valid cursors" $ producesValid timestampsReportCursorFirst
+  describe "timestampsReportCursorLast" $ it "produces valid cursors" $ producesValid timestampsReportCursorLast
+  describe "timestampsReportCursorSelectReport" $ it "produces valid cursors" $ producesValid timestampsReportCursorSelectReport
+  describe "timestampsReportCursorSelectFilter" $ it "produces valid cursors" $ producesValid timestampsReportCursorSelectFilter
+  describe "timestampsReportCursorInsert" $ it "produces valid cursors" $ producesValid2 timestampsReportCursorInsert
+  describe "timestampsReportCursorAppend" $ it "produces valid cursors" $ producesValid2 timestampsReportCursorAppend
+  describe "timestampsReportCursorRemove" $ it "produces valid cursors" $ producesValid timestampsReportCursorRemove
+  describe "timestampsReportCursorDelete" $ it "produces valid cursors" $ producesValid timestampsReportCursorDelete
   -- Does not hold because of the validity constraint:
-  -- describe "timestampsReportCursorEntryReportCursorL" $ lensSpecOnValid timestampsReportCursorEntryReportCursorL
+  -- describe "timestampsReportCursorEntryReportCursorL" $ lensSpec timestampsReportCursorEntryReportCursorL
 
-  describe "makeTimestampsEntryCursor" $ it "produces valid cursors" $ producesValidsOnValids2 makeTimestampsEntryCursor
+  describe "makeTimestampsEntryCursor" $ it "produces valid cursors" $ producesValid2 makeTimestampsEntryCursor
   modifyMaxSuccess (`div` 10) $
     describe "produceTimestampsReportCursor" $
       it "produces valid reports for interesting stores" $

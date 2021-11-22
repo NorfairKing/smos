@@ -20,7 +20,7 @@ spec = do
   genValidSpec @(UndoStack Int)
   describe "emptyUndoStack" $ it "is valid" $ shouldBeValid (emptyUndoStack @Int)
   describe "undoStackPush" $ do
-    it "produces valid undo stacks" $ producesValidsOnValids2 (undoStackPush @Int)
+    it "produces valid undo stacks" $ producesValid2 (undoStackPush @Int)
     it "the redo stack is empty after pushing a new undo" $
       forAllValid $ \u -> forAllValid $ \us ->
         let us' = undoStackPush @Int u us
@@ -28,7 +28,7 @@ spec = do
               Nothing -> pure () -- Great
               Just _ -> expectationFailure "The undo stack should have been empty."
   describe "undoStackUndo" $ do
-    it "produces valid results" $ producesValidsOnValids (undoStackUndo @Int)
+    it "produces valid results" $ producesValid (undoStackUndo @Int)
     it "is the inverse of undoStackRedo for the undo stack" $
       forAllValid $
         \us -> cover 50 (isJust $ composePops undoStackRedo undoStackUndo us) "non-trivial" $
@@ -47,7 +47,7 @@ spec = do
               Just (ra, _) -> applyIntUndo ra (applyIntRedo ua is) `shouldBe` is
   describe "undoStackRedo" $ do
     it "produces valid results" $
-      producesValidsOnValids (undoStackRedo @Int)
+      producesValid (undoStackRedo @Int)
     it "is the inverse of undoStackUndo for the undo stack" $
       forAllValid $
         \us -> cover 50 (isJust $ composePops undoStackUndo undoStackRedo us) "non-trivial" $

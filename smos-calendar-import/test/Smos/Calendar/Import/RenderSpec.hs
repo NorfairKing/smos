@@ -11,4 +11,4 @@ import Test.Syd.Validity
 spec :: Spec
 spec = do
   describe "renderEvent" $ do
-    it "produces valid results" $ producesValidsOnValids3 renderEvent
+    it "produces valid results" $ producesValid3 renderEvent

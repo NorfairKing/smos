@@ -14,6 +14,6 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @Event
-  jsonSpecOnValid @Event
+  jsonSpec @Event
   genValidSpec @Events
-  jsonSpecOnValid @Events
+  jsonSpec @Events

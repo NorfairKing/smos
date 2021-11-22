@@ -14,13 +14,13 @@ spec = do
   genValidSpec @ContentsCursor
   describe "makeContentsCursor" $
     it "produces valid cursors" $
-      producesValidsOnValids makeContentsCursor
+      producesValid makeContentsCursor
   describe "rebuildContentsCursor" $ do
-    it "produces valid cursors" $ producesValidsOnValids rebuildContentsCursor
+    it "produces valid cursors" $ producesValid rebuildContentsCursor
     it "is the inverse of makeContentsCursor" $
-      inverseFunctionsOnValid makeContentsCursor rebuildContentsCursor
+      inverseFunctions makeContentsCursor rebuildContentsCursor
   describe "makeContentsCursorWithSelection" $ do
-    it "produces valid cursors" $ producesValidsOnValids3 makeContentsCursorWithSelection
+    it "produces valid cursors" $ producesValid3 makeContentsCursorWithSelection
     it "rebuilds the current cursor when given the current selection" $
       forAllValid $
         \cc ->
@@ -40,49 +40,49 @@ spec = do
                    in context ctx $ cc' `shouldBe` cc
   describe "contentsCursorSelection" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelection
+      producesValid contentsCursorSelection
   describe "contentsCursorSelectPrevLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectPrevLine
+      producesValid contentsCursorSelectPrevLine
   describe "contentsCursorSelectPrevLineOrTheStartOfThisLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectPrevLineOrTheStartOfThisLine
+      producesValid contentsCursorSelectPrevLineOrTheStartOfThisLine
   describe "contentsCursorSelectNextLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectNextLine
+      producesValid contentsCursorSelectNextLine
   describe "contentsCursorSelectNextLineOrTheEndOfThisLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectNextLineOrTheEndOfThisLine
+      producesValid contentsCursorSelectNextLineOrTheEndOfThisLine
   describe "contentsCursorSelectFirstLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectFirstLine
+      producesValid contentsCursorSelectFirstLine
   describe "contentsCursorSelectLastLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectLastLine
+      producesValid contentsCursorSelectLastLine
   describe "contentsCursorSelectPrevChar" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectPrevChar
+      producesValid contentsCursorSelectPrevChar
   describe "contentsCursorSelectNextChar" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectNextChar
+      producesValid contentsCursorSelectNextChar
   describe "contentsCursorSelectPrevWord" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectPrevWord
+      producesValid contentsCursorSelectPrevWord
   describe "contentsCursorSelectNextWord" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectNextWord
+      producesValid contentsCursorSelectNextWord
   describe "contentsCursorSelectBeginWord" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectBeginWord
+      producesValid contentsCursorSelectBeginWord
   describe "contentsCursorSelectEndWord" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectEndWord
+      producesValid contentsCursorSelectEndWord
   describe "contentsCursorIndexOnLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorIndexOnLine
+      producesValid contentsCursorIndexOnLine
   describe "contentsCursorSelectIndexOnLine" $
     it "produces valid cursors" $
-      producesValidsOnValids2 contentsCursorSelectIndexOnLine
+      producesValid2 contentsCursorSelectIndexOnLine
   describe "contentsCursorInsertChar" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -90,7 +90,7 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ contentsCursorInsertChar '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 contentsCursorInsertChar
+    it "produces valid cursors" $ producesValid2 contentsCursorInsertChar
   describe "contentsCursorAppendChar" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
@@ -98,24 +98,24 @@ spec = do
     it "produces valid cursors when inserting an unsafe character" $
       forAllValid $
         \tsc -> shouldBeValid $ contentsCursorAppendChar '\55810' tsc
-    it "produces valid cursors" $ producesValidsOnValids2 contentsCursorAppendChar
+    it "produces valid cursors" $ producesValid2 contentsCursorAppendChar
   describe "contentsCursorInsertNewline" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorInsertNewline
+      producesValid contentsCursorInsertNewline
   describe "contentsCursorAppendNewline" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorAppendNewline
+      producesValid contentsCursorAppendNewline
   describe "contentsCursorRemove" $ do
-    it "produces valid cursors" $ producesValidsOnValids contentsCursorRemove
+    it "produces valid cursors" $ producesValid contentsCursorRemove
     it "removes the contents cursor if the contents cursor was empty" $
       contentsCursorRemove emptyContentsCursor `shouldBe` Just Deleted
   describe "contentsCursorDelete" $ do
-    it "produces valid cursors" $ producesValidsOnValids contentsCursorDelete
+    it "produces valid cursors" $ producesValid contentsCursorDelete
     it "removes the contents cursor if the contents cursor was empty" $
       contentsCursorDelete emptyContentsCursor `shouldBe` Just Deleted
   describe "contentsCursorSelectStartOfLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectStartOfLine
+      producesValid contentsCursorSelectStartOfLine
   describe "contentsCursorSelectEndOfLine" $
     it "produces valid cursors" $
-      producesValidsOnValids contentsCursorSelectEndOfLine
+      producesValid contentsCursorSelectEndOfLine

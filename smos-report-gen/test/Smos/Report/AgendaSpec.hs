@@ -15,11 +15,11 @@ import Test.Syd.Validity.Aeson
 spec :: Spec
 spec = do
   genValidSpec @AgendaEntry
-  jsonSpecOnValid @AgendaEntry
+  jsonSpec @AgendaEntry
   genValidSpec @AgendaTodayReport
-  jsonSpecOnValid @AgendaTodayReport
+  jsonSpec @AgendaTodayReport
   genValidSpec @AgendaReport
-  jsonSpecOnValid @AgendaReport
+  jsonSpec @AgendaReport
   describe "makeAgendaReport" $ do
     it "produces valid reports" $
       forAllValid $ \zt ->
