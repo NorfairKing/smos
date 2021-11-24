@@ -40,7 +40,7 @@ extra-deps:
 - envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
 
 - git: https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator.git
-  commit: 46a937a19c5dd2d5e3b8afaea063a1e17cfc9ff2
+  commit: 04335cd6d0c09a48ef9f283ecb422b9ec61e9037
   subdirs:
     - openapi3-code-generator
 
