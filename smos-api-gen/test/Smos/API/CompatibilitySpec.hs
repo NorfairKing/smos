@@ -161,10 +161,10 @@ outputGoldenTest fp val =
   it "outputs the version the same way as before" $
     pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/output.json") val
 
-inputGoldenTest :: forall a. (Validity a, Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
+inputGoldenTest :: forall a. (Validity a, Show a, FromJSON a, ToJSON a) => FilePath -> a -> Spec
 inputGoldenTest fp current = do
   it "input" $
-    pureGoldenJSONValueFile ("test_resources/" ++ fp ++ "/input/v" ++ Version.toString apiVersion ++ ".json") current
+    pureGoldenJSONFile ("test_resources/" ++ fp ++ "/input/v" ++ Version.toString apiVersion ++ ".json") (toJSON current)
   scenarioDir ("test_resources/" ++ fp ++ "/input") $ \p ->
     it "can still parse the old input" $ do
       bs <- SB.readFile p

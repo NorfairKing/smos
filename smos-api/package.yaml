@@ -15,6 +15,8 @@ library:
   ghc-options: -Wall
   dependencies:
   - aeson
+  - autodocodec
+  - autodocodec
   - base64-bytestring
   - bytestring
   - cryptonite
@@ -45,4 +47,3 @@ library:
   - validity-path
   - validity-text
   - validity-uuid
-  - autodocodec

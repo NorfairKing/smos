@@ -11,6 +11,7 @@
 
 module Smos.API.SHA256 where
 
+import Autodocodec
 import Control.Arrow (left)
 import Control.DeepSeq
 import Control.Exception
@@ -104,30 +105,24 @@ instance Show SHA256 where
 
 instance PersistField SHA256 where
   toPersistValue = PersistByteString . toRaw
-  fromPersistValue (PersistByteString bs) =
-    case toStaticExact bs of
+  fromPersistValue pv = do
+    bs <- fromPersistValue pv
+    case toStaticExact (bs :: ByteString) of
       Left e -> Left $ tshow e
       Right ss -> pure $ SHA256 ss
-  fromPersistValue x = Left $ "Unexpected value: " <> tshow x
 
 instance PersistFieldSql SHA256 where
   sqlType _ = SqlBlob
 
+instance HasCodec SHA256 where
+  codec = bimapCodec (left show . fromHexText) toHexText codec
+
 instance ToJSON SHA256 where
-  toJSON = toJSON . toHexText
+  toJSON = toJSONViaCodec
+  toEncoding = toEncodingViaCodec
 
 instance FromJSON SHA256 where
-  parseJSON = withText "SHA256" $ \t ->
-    case fromHexText t of
-      Right x -> pure x
-      Left e ->
-        fail $
-          concat
-            [ "Invalid SHA256 ",
-              show t,
-              ": ",
-              show e
-            ]
+  parseJSON = parseJSONViaCodec
 
 instance Exception SHA256Exception
 

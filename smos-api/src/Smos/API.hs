@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -15,10 +15,11 @@ module Smos.API
   )
 where
 
+import Autodocodec
 import Control.Arrow
 import Control.DeepSeq
 import Control.Exception
-import Data.Aeson as JSON
+import Data.Aeson as JSON (FromJSON, ToJSON, Value)
 import Data.ByteString (ByteString)
 import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
@@ -55,7 +56,7 @@ import Smos.Report.Agenda
 import Smos.Report.Next
 
 apiVersion :: Version
-apiVersion = version 0 2 1 [] []
+apiVersion = version 0 2 2 [] []
 
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
@@ -91,18 +92,14 @@ type ProtectAPI = Auth '[JWT] AuthNCookie
 data AuthNCookie = AuthNCookie
   { authNCookieUsername :: Username
   }
-  deriving (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec AuthNCookie)
 
-instance FromJSON AuthNCookie where
-  parseJSON = withObject "AuthNCookie" $ \o ->
-    AuthNCookie
-      <$> o .: "username"
-
-instance ToJSON AuthNCookie where
-  toJSON AuthNCookie {..} =
-    object
-      [ "username" .= authNCookieUsername
-      ]
+instance HasCodec AuthNCookie where
+  codec =
+    object "AuthNCookie" $
+      AuthNCookie
+        <$> requiredField "username" "username" .= authNCookieUsername
 
 instance FromJWT AuthNCookie
 
@@ -137,26 +134,20 @@ data Monetisation = Monetisation
     monetisationStripePriceCurrency :: !Text,
     monetisationStripePricePerYear :: !Int
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Monetisation)
 
 instance Validity Monetisation
 
 instance NFData Monetisation
 
-instance FromJSON Monetisation where
-  parseJSON = withObject "Monetisation" $ \o ->
-    Monetisation
-      <$> o .: "publishable-key"
-      <*> o .: "currency"
-      <*> o .: "price-per-year"
-
-instance ToJSON Monetisation where
-  toJSON Monetisation {..} =
-    object
-      [ "publishable-key" .= monetisationStripePublishableKey,
-        "currency" .= monetisationStripePriceCurrency,
-        "price-per-year" .= monetisationStripePricePerYear
-      ]
+instance HasCodec Monetisation where
+  codec =
+    object "Monetisation" $
+      Monetisation
+        <$> requiredField "publishable-key" "Stripe publishable key" .= monetisationStripePublishableKey
+        <*> requiredField "currency" "currency of the price" .= monetisationStripePriceCurrency
+        <*> requiredField "price-per-year" "price per year, in minimal quantisations" .= monetisationStripePricePerYear
 
 type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
 
@@ -165,14 +156,24 @@ data Register = Register
     registerPassword :: Text
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Register)
 
 instance Validity Register
 
 instance NFData Register
 
-instance ToJSON Register
-
-instance FromJSON Register
+instance HasCodec Register where
+  codec =
+    object "Register" $
+      Register
+        <$> parseAlternative
+          (requiredField "username" "username")
+          (requiredField "registerUsername" "legacy key")
+          .= registerUsername
+        <*> parseAlternative
+          (requiredField "password" "password")
+          (requiredField "registerPassword" "legacy key")
+          .= registerPassword
 
 type PostLogin =
   "login"
@@ -184,14 +185,18 @@ data Login = Login
     loginPassword :: Text
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Login)
 
 instance Validity Login
 
 instance NFData Login
 
-instance ToJSON Login
-
-instance FromJSON Login
+instance HasCodec Login where
+  codec =
+    object "Login" $
+      Login
+        <$> parseAlternative (requiredField "username" "username") (requiredField "loginUsername" "legacy key") .= loginUsername
+        <*> parseAlternative (requiredField "password" "password") (requiredField "loginPassword" "legacy key") .= loginPassword
 
 type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> PostNoContent '[JSON] NoContent
 
@@ -201,47 +206,62 @@ data UserPermissions = UserPermissions
   { userPermissionsIsAdmin :: Bool
   }
   deriving (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UserPermissions)
 
 instance Validity UserPermissions
 
 instance NFData UserPermissions
 
-instance FromJSON UserPermissions where
-  parseJSON = withObject "UserPermissions" $ \o ->
-    UserPermissions
-      <$> o .:? "admin" .!= False
-
-instance ToJSON UserPermissions where
-  toJSON UserPermissions {..} =
-    object
-      [ "admin" .= userPermissionsIsAdmin
-      ]
+instance HasCodec UserPermissions where
+  codec =
+    object "UserPermissions" $
+      UserPermissions
+        <$> optionalFieldWithDefault "admin" False "whether the user is an admin" .= userPermissionsIsAdmin
 
 type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] SubscriptionStatus
 
-data SubscriptionStatus = NoSubscriptionNecessary | SubscribedUntil UTCTime | NotSubscribed
-  deriving (Show, Eq, Generic)
+data SubscriptionStatus
+  = NoSubscriptionNecessary
+  | SubscribedUntil UTCTime
+  | NotSubscribed
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec SubscriptionStatus)
 
 instance Validity SubscriptionStatus
 
 instance NFData SubscriptionStatus
 
-instance FromJSON SubscriptionStatus where
-  parseJSON = withObject "UserSubscription" $ \o -> do
-    t <- o .: "status"
-    case (t :: Text) of
-      "not-subscribed" -> pure NotSubscribed
-      "subscribed" -> SubscribedUntil <$> o .: "until"
-      "no-subscription-necessary" -> pure NoSubscriptionNecessary
-      _ -> fail "Unknown SubscriptionStatus"
+instance HasCodec SubscriptionStatus where
+  codec =
+    dimapCodec f g $
+      object "SubscriptionStatus" $
+        eitherCodec noSubscriptionNecessaryCodec $
+          eitherCodec subscribedUntilCodec notSubscribedCodec
+    where
+      f = \case
+        Left () -> NoSubscriptionNecessary
+        Right (Left u) -> SubscribedUntil u
+        Right (Right ()) -> NotSubscribed
+      g = \case
+        NoSubscriptionNecessary -> Left ()
+        SubscribedUntil u -> Right (Left u)
+        NotSubscribed -> Right (Right ())
 
-instance ToJSON SubscriptionStatus where
-  toJSON =
-    let o t vs = object $ ("status" .= (t :: Text)) : vs
-     in \case
-          NotSubscribed -> o "not-subscribed" []
-          SubscribedUntil ut -> o "subscribed" ["until" .= ut]
-          NoSubscriptionNecessary -> o "no-subscription-necessary" []
+      noSubscriptionNecessaryCodec :: JSONObjectCodec ()
+      noSubscriptionNecessaryCodec =
+        dimapCodec (const ()) (const "") $
+          requiredFieldWith "status" (literalTextCodec "no-subscription-necessary") "status: no subscription necessary"
+      subscribedUntilCodec :: JSONObjectCodec UTCTime
+      subscribedUntilCodec =
+        dimapCodec snd (\u -> ("", u)) $
+          (,)
+            <$> requiredFieldWith "status" (literalTextCodec "subscribed") "status: subscribed" .= fst
+            <*> requiredField "until" "until when the subscription is active" .= snd
+
+      notSubscribedCodec :: JSONObjectCodec ()
+      notSubscribedCodec =
+        dimapCodec (const ()) (const "") $
+          requiredFieldWith "status" (literalTextCodec "not-subscribed") "status: not subscribed"
 
 type PostInitiateStripeCheckoutSession = "checkout" :> "stripe" :> "session" :> ReqBody '[JSON] InitiateStripeCheckoutSession :> Post '[JSON] InitiatedCheckoutSession
 
@@ -249,45 +269,37 @@ data InitiateStripeCheckoutSession = InitiateStripeCheckoutSession
   { initiateStripeCheckoutSessionSuccessUrl :: Text,
     initiateStripeCheckoutSessionCanceledUrl :: Text
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec InitiateStripeCheckoutSession)
 
 instance Validity InitiateStripeCheckoutSession
 
 instance NFData InitiateStripeCheckoutSession
 
-instance FromJSON InitiateStripeCheckoutSession where
-  parseJSON = withObject "InitiateStripeCheckoutSession" $ \o ->
-    InitiateStripeCheckoutSession
-      <$> o .: "success"
-      <*> o .: "canceled"
-
-instance ToJSON InitiateStripeCheckoutSession where
-  toJSON InitiateStripeCheckoutSession {..} =
-    object
-      [ "success" .= initiateStripeCheckoutSessionSuccessUrl,
-        "canceled" .= initiateStripeCheckoutSessionCanceledUrl
-      ]
+instance HasCodec InitiateStripeCheckoutSession where
+  codec =
+    object "InitiateStripeCheckoutSession" $
+      InitiateStripeCheckoutSession
+        <$> requiredField "success" "success url" .= initiateStripeCheckoutSessionSuccessUrl
+        <*> requiredField "canceled" "canceled url" .= initiateStripeCheckoutSessionCanceledUrl
 
 data InitiatedCheckoutSession = InitiatedCheckoutSession
   { initiatedCheckoutSessionId :: Text,
     initiatedCheckoutSessionCustomerId :: Maybe Text
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec InitiatedCheckoutSession)
 
 instance Validity InitiatedCheckoutSession
 
 instance NFData InitiatedCheckoutSession
 
-instance FromJSON InitiatedCheckoutSession where
-  parseJSON = withObject "InitiatedCheckoutSession" $ \o ->
-    InitiatedCheckoutSession <$> o .: "session" <*> o .:? "customer"
-
-instance ToJSON InitiatedCheckoutSession where
-  toJSON InitiatedCheckoutSession {..} =
-    object
-      [ "session" .= initiatedCheckoutSessionId,
-        "customer" .= initiatedCheckoutSessionCustomerId
-      ]
+instance HasCodec InitiatedCheckoutSession where
+  codec =
+    object "InitiatedCheckoutSession" $
+      InitiatedCheckoutSession
+        <$> requiredField "session" "session identifier" .= initiatedCheckoutSessionId
+        <*> optionalField "customer" "customer identifier" .= initiatedCheckoutSessionCustomerId
 
 type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
 
@@ -295,31 +307,23 @@ type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncRespon
 
 data BackupInfo = BackupInfo
   { backupInfoUUID :: !BackupUUID,
-    -- | When the backup was made
     backupInfoTime :: !UTCTime,
-    -- | In bytes
     backupInfoSize :: !Word64
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec BackupInfo)
 
 instance Validity BackupInfo
 
 instance NFData BackupInfo
 
-instance FromJSON BackupInfo where
-  parseJSON = withObject "Backup" $ \o ->
-    BackupInfo
-      <$> o .: "uuid"
-      <*> o .: "time"
-      <*> o .: "size"
-
-instance ToJSON BackupInfo where
-  toJSON BackupInfo {..} =
-    object
-      [ "uuid" .= backupInfoUUID,
-        "time" .= backupInfoTime,
-        "size" .= backupInfoSize
-      ]
+instance HasCodec BackupInfo where
+  codec =
+    object "BackupInfo" $
+      BackupInfo
+        <$> requiredField "uuid" "backup identifier" .= backupInfoUUID
+        <*> requiredField "time" "backup timestamp" .= backupInfoTime
+        <*> requiredField "size" "total size, in bytes" .= backupInfoSize
 
 type BackupUUID = UUID BackupInfo
 
@@ -355,59 +359,60 @@ instance PersistFieldSql (UUID a) where
 newtype SyncFile = SyncFile
   { syncFileContents :: ByteString
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec SyncFile)
 
 instance Validity SyncFile
 
 instance NFData SyncFile
 
-instance FromJSON SyncFile where
-  parseJSON =
-    withObject "SyncFile" $ \o ->
+instance HasCodec SyncFile where
+  codec =
+    object "SyncFile" $
       SyncFile
-        <$> ( do
-                base64Contents <- SB8.pack <$> o .: "contents"
-                case Base64.decode base64Contents of
-                  Left err -> fail err
-                  Right r -> pure r
-            )
-
-instance ToJSON SyncFile where
-  toJSON SyncFile {..} =
-    object ["contents" .= SB8.unpack (Base64.encode syncFileContents)]
+        <$> requiredFieldWith
+          "contents"
+          ( bimapCodec
+              (Base64.decode . SB8.pack)
+              (SB8.unpack . Base64.encode)
+              codec
+          )
+          "file contents, base64 encoded"
+          .= syncFileContents
 
 data SyncRequest = SyncRequest
   { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec SyncRequest)
 
 instance Validity SyncRequest
 
 instance NFData SyncRequest
 
-instance FromJSON SyncRequest where
-  parseJSON = withObject "SyncRequest" $ \o -> SyncRequest <$> o .: "items"
-
-instance ToJSON SyncRequest where
-  toJSON SyncRequest {..} =
-    object ["items" .= syncRequestItems]
+instance HasCodec SyncRequest where
+  codec =
+    object "SyncRequest" $
+      SyncRequest
+        <$> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncRequest") "sync request of the smos files" .= syncRequestItems
 
 data SyncResponse = SyncResponse
   { syncResponseServerId :: ServerUUID,
     syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec SyncResponse)
 
 instance Validity SyncResponse
 
 instance NFData SyncResponse
 
-instance FromJSON SyncResponse where
-  parseJSON = withObject "SyncResponse" $ \o -> SyncResponse <$> o .: "server-id" <*> o .: "items"
-
-instance ToJSON SyncResponse where
-  toJSON SyncResponse {..} =
-    object ["server-id" .= syncResponseServerId, "items" .= syncResponseItems]
+instance HasCodec SyncResponse where
+  codec =
+    object "SyncResponse" $
+      SyncResponse
+        <$> requiredField "server-id" "identifier of the server" .= syncResponseServerId
+        <*> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncResponse") "sync response of the smos files" .= syncResponseItems
 
 instance FromHttpApiData (Path Rel File) where
   parseQueryParam t = left (T.pack . displayException :: SomeException -> Text) $ parseRelFile (T.unpack t)
@@ -463,31 +468,22 @@ data UserInfo = UserInfo
     userInfoLastUse :: !(Maybe UTCTime),
     userInfoSubscribed :: !SubscriptionStatus
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec UserInfo)
 
 instance Validity UserInfo
 
 instance NFData UserInfo
 
-instance ToJSON UserInfo where
-  toJSON UserInfo {..} =
-    object
-      [ "name" .= userInfoUsername,
-        "admin" .= userInfoAdmin,
-        "created" .= userInfoCreated,
-        "last-login" .= userInfoLastLogin,
-        "last-use" .= userInfoLastUse,
-        "subscribed" .= userInfoSubscribed
-      ]
-
-instance FromJSON UserInfo where
-  parseJSON = withObject "UserInfo" $ \o ->
-    UserInfo
-      <$> o .: "name"
-      <*> o .: "admin"
-      <*> o .: "created"
-      <*> o .:? "last-login"
-      <*> o .:? "last-use"
-      <*> o .:? "subscribed" .!= NotSubscribed
+instance HasCodec UserInfo where
+  codec =
+    object "UserInfo" $
+      UserInfo
+        <$> requiredField "name" "user name" .= userInfoUsername
+        <*> optionalFieldWithDefault "admin" False "whether the user is an admin" .= userInfoAdmin
+        <*> requiredField "created" "user creation time" .= userInfoCreated
+        <*> requiredField "last-login" "last time the user logged in" .= userInfoLastLogin
+        <*> requiredField "last-use" "last time the user used the API" .= userInfoLastUse
+        <*> requiredField "subscribed" "user subscription status" .= userInfoSubscribed
 
 type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> PutNoContent '[JSON] NoContent
