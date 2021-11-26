@@ -107,7 +107,7 @@ performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleI
 performScheduleItem wdir now ScheduleItem {..} = do
   let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
-  case renderDestinationPathTemplate ctx scheduleItemDestination of
+  case runRender ctx $ renderDestinationPathTemplate scheduleItemDestination of
     Left errs -> pure $ ScheduleItemResultPathRenderError errs
     Right destination -> do
       let to = wdir </> destination

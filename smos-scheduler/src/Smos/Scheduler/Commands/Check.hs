@@ -53,6 +53,6 @@ scheduleItemDestinationCheck :: Path Abs Dir -> DestinationPathTemplate -> IO ()
 scheduleItemDestinationCheck _ tf = do
   now <- getZonedTime
   let ctx = RenderContext {renderContextTime = now}
-  case renderDestinationPathTemplate ctx tf of
+  case runRender ctx $ renderDestinationPathTemplate tf of
     Left errs -> die $ unlines $ unwords ["Failed to render a destination file template: ", fromRelFile (destinationPathTemplatePath tf)] : map prettyRenderError (NE.toList errs)
     Right _ -> pure ()

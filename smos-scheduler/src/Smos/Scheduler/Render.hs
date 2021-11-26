@@ -116,6 +116,9 @@ renderTextTemplate t =
     Left err -> renderFail $ RenderErrorTemplateParseError t err
     Right templ -> renderTimeTemplateNow templ
 
+renderDestinationPathTemplate :: DestinationPathTemplate -> Render (Path Rel File)
+renderDestinationPathTemplate (DestinationPathTemplate rf) = renderPathTemplate rf
+
 renderPathTemplate :: Path Rel File -> Render (Path Rel File)
 renderPathTemplate rf = do
   let s = fromRelFile rf

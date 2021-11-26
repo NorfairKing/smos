@@ -35,7 +35,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
   d <- case cmd of
     CommandCheck -> pure DispatchCheck
     CommandNext -> pure DispatchNext
-    CommandSample fp -> DispatchSample <$> resolveFile' fp
+    CommandSample fp mdpt -> DispatchSample <$> resolveFile' fp <*> mapM (fmap DestinationPathTemplate . parseRelFile) mdpt
     CommandSchedule -> pure DispatchSchedule
   setDirectorySettings <-
     Report.combineToDirectoryConfig
@@ -143,6 +143,16 @@ parseCommandSample = info parser modifier
                 metavar "FILEPATH",
                 completer $ bashCompleter "file"
               ]
+          )
+        <*> optional
+          ( strOption
+              ( mconcat
+                  [ long "destination",
+                    help "destination path template. Note that the rendered template will be written here",
+                    metavar "FILEPATH_TEMPLATE",
+                    completer $ bashCompleter "file"
+                  ]
+              )
           )
 
 parseCommandSchedule :: ParserInfo Command

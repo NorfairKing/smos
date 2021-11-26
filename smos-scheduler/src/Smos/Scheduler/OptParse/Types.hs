@@ -35,7 +35,7 @@ data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
 data Command
   = CommandCheck
   | CommandNext
-  | CommandSample !FilePath
+  | CommandSample !FilePath !(Maybe FilePath)
   | CommandSchedule
   deriving (Show, Eq)
 
@@ -136,7 +136,7 @@ data Instructions = Instructions Dispatch Settings
 data Dispatch
   = DispatchCheck
   | DispatchNext
-  | DispatchSample !(Path Abs File)
+  | DispatchSample !(Path Abs File) !(Maybe DestinationPathTemplate)
   | DispatchSchedule
   deriving (Show, Eq)
 
@@ -178,7 +178,9 @@ newtype ScheduleTemplate = ScheduleTemplate
 instance Validity ScheduleTemplate
 
 instance HasCodec ScheduleTemplate where
-  codec = dimapCodec ScheduleTemplate scheduleTemplateForest $ entryForestCodec "EntryTemplate" codec
+  codec =
+    dimapCodec ScheduleTemplate scheduleTemplateForest $
+      entryForestCodec "EntryTemplate" codec
 
 data EntryTemplate = EntryTemplate
   { entryTemplateHeader :: Header,
@@ -206,18 +208,19 @@ newEntryTemplate h =
 
 instance HasCodec EntryTemplate where
   codec =
-    dimapCodec f g $
-      eitherCodec
-        (codec <?> "A header-only entry template")
-        ( object "EntryTemplate" $
-            EntryTemplate
-              <$> optionalFieldOrNullWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
-              <*> optionalFieldOrNull' "contents" .= entryTemplateContents
-              <*> optionalFieldOrNullWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
-              <*> optionalFieldOrNullWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
-              <*> optionalField' "state" .= entryTemplateState
-              <*> optionalFieldOrNullWithOmittedDefault' "tags" S.empty .= entryTemplateTags
-        )
+    named "EntryTemplate" $
+      dimapCodec f g $
+        eitherCodec
+          (codec <?> "A header-only entry template")
+          ( object "EntryTemplate" $
+              EntryTemplate
+                <$> optionalFieldOrNullWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
+                <*> optionalFieldOrNull' "contents" .= entryTemplateContents
+                <*> optionalFieldOrNullWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
+                <*> optionalFieldOrNullWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
+                <*> optionalField' "state" .= entryTemplateState
+                <*> optionalFieldOrNullWithOmittedDefault' "tags" S.empty .= entryTemplateTags
+          )
     where
       f = \case
         Left h -> newEntryTemplate h

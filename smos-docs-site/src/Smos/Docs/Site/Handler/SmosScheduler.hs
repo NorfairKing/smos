@@ -30,7 +30,7 @@ getSmosSchedulerR = do
 
 getSmosSchedulerTemplateR :: Handler Html
 getSmosSchedulerTemplateR = do
-  let confHelpText = yamlDesc @Scheduler.EntryTemplate
+  let confHelpText = yamlDesc @Scheduler.ScheduleTemplate
   defaultLayout $ do
     setSmosTitle "smos-scheduler templates"
     setDescription "Documentation for smos-scheduler template file format"

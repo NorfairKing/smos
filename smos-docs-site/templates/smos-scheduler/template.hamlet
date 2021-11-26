@@ -13,7 +13,7 @@
     #{templateExample}
 
   <h3>
-    Reference: Template entry format
+    Reference: Template format
 
   <pre>
     #{confHelpText}
