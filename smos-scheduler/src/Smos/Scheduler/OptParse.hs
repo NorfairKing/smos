@@ -32,10 +32,11 @@ getInstructions = do
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions cmd Flags {..} Environment {..} mc = do
-  let d = case cmd of
-        CommandCheck -> DispatchCheck
-        CommandNext -> DispatchNext
-        CommandSchedule -> DispatchSchedule
+  d <- case cmd of
+    CommandCheck -> pure DispatchCheck
+    CommandNext -> pure DispatchNext
+    CommandSample fp -> DispatchSample <$> resolveFile' fp
+    CommandSchedule -> pure DispatchSchedule
   setDirectorySettings <-
     Report.combineToDirectoryConfig
       Report.defaultDirectoryConfig
@@ -114,6 +115,7 @@ parseCommand =
     mconcat
       [ command "check" parseCommandCheck,
         command "next" parseCommandNext,
+        command "sample" parseCommandSample,
         command "schedule" parseCommandSchedule
       ]
 
@@ -123,29 +125,43 @@ parseCommandCheck = info parser modifier
     modifier = fullDesc <> progDesc "Check that all schedules are sensible"
     parser = pure CommandCheck
 
-parseCommandSchedule :: ParserInfo Command
-parseCommandSchedule = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Run the schedules"
-    parser = pure CommandSchedule
-
 parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
     modifier = fullDesc <> progDesc "List the next times that scheduled will be activated"
     parser = pure CommandNext
 
+parseCommandSample :: ParserInfo Command
+parseCommandSample = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Produce a sample scheduled project being filled in"
+    parser =
+      CommandSample
+        <$> strArgument
+          ( mconcat
+              [ help "template to fill in",
+                metavar "FILEPATH",
+                completer $ bashCompleter "file"
+              ]
+          )
+
+parseCommandSchedule :: ParserInfo Command
+parseCommandSchedule = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Run the schedules"
+    parser = pure CommandSchedule
+
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
   Report.parseFlagsWithConfigFile $
     Flags <$> Report.parseDirectoryFlags
-      <*> option
-        (Just <$> str)
-        ( mconcat
-            [ long "state-file",
-              help "The state file to use",
-              value Nothing,
-              metavar "FILEPATH",
-              completer $ bashCompleter "file"
-            ]
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "state-file",
+                  help "The state file to use",
+                  metavar "FILEPATH",
+                  completer $ bashCompleter "file"
+                ]
+            )
         )

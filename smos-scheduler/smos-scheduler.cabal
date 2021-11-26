@@ -23,6 +23,7 @@ library
       Smos.Scheduler.Commands
       Smos.Scheduler.Commands.Check
       Smos.Scheduler.Commands.Next
+      Smos.Scheduler.Commands.Sample
       Smos.Scheduler.Commands.Schedule
       Smos.Scheduler.OptParse
       Smos.Scheduler.OptParse.Types

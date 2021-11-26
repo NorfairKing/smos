@@ -35,6 +35,7 @@ data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
 data Command
   = CommandCheck
   | CommandNext
+  | CommandSample !FilePath
   | CommandSchedule
   deriving (Show, Eq)
 
@@ -135,6 +136,7 @@ data Instructions = Instructions Dispatch Settings
 data Dispatch
   = DispatchCheck
   | DispatchNext
+  | DispatchSample !(Path Abs File)
   | DispatchSchedule
   deriving (Show, Eq)
 

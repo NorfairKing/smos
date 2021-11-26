@@ -144,6 +144,11 @@ renderTimeTemplateNow (Template tps) = do
 
 type Render a = ReaderT RenderContext RenderValidation a
 
+runRender :: RenderContext -> Render a -> Either (NonEmpty RenderError) a
+runRender ctx func = case runReaderT func ctx of
+  Success a -> Right a
+  Failure errs -> Left errs
+
 data RenderValidation a
   = Success a
   | Failure (NonEmpty RenderError)

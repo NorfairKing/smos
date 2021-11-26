@@ -14,3 +14,4 @@ scheduler (Instructions d s) = case d of
   DispatchCheck -> check s
   DispatchNext -> next s
   DispatchSchedule -> schedule s
+  DispatchSample f -> sample s f

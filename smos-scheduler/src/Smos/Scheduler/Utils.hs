@@ -4,7 +4,6 @@ module Smos.Scheduler.Utils where
 
 import Control.Arrow
 import Control.Monad
-import Control.Monad.Reader
 import qualified Data.ByteString as SB
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Yaml as Yaml
@@ -33,9 +32,9 @@ writeStateFile :: Path Abs File -> ScheduleState -> IO ()
 writeStateFile = writeYamlFile
 
 renderDestinationPathTemplate :: RenderContext -> DestinationPathTemplate -> Either (NonEmpty RenderError) (Path Rel File)
-renderDestinationPathTemplate ctx (DestinationPathTemplate rf) = case runReaderT (renderPathTemplate rf) ctx of
-  Failure errs -> Left errs
-  Success r -> Right r
+renderDestinationPathTemplate ctx (DestinationPathTemplate rf) = case runRender ctx $ renderPathTemplate rf of
+  Left errs -> Left errs
+  Right r -> Right r
 
 readScheduleTemplate :: Path Abs File -> IO (Maybe (Either String ScheduleTemplate))
 readScheduleTemplate from = readYamlFile from

@@ -9,7 +9,6 @@ module Smos.Scheduler.Commands.Schedule
 where
 
 import Control.Monad
-import Control.Monad.Reader
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -117,10 +116,10 @@ performScheduleItem wdir now ScheduleItem {..} = do
         Nothing -> pure $ ScheduleItemResultTemplateDoesNotExist from
         Just (Left err) -> pure $ ScheduleItemResultYamlParseError from err
         Just (Right template) -> do
-          let vRendered = runReaderT (renderTemplate template) ctx
-          case vRendered of
-            Failure errs -> pure $ ScheduleItemResultFileRenderError errs
-            Success rendered -> do
+          let errOrRendered = runRender ctx $ renderTemplate template
+          case errOrRendered of
+            Left errs -> pure $ ScheduleItemResultFileRenderError errs
+            Right rendered -> do
               destinationExists <- doesFileExist to
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
