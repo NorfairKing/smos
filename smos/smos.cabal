@@ -24,6 +24,7 @@ extra-source-files:
     test_resources/scenario/conv-repinged.yaml
     test_resources/scenario/conv-responded-but-still-waiting.yaml
     test_resources/scenario/conv-responded.yaml
+    test_resources/scenario/conv-url-waiting-for-review.yaml
     test_resources/scenario/delete-contents.yaml
     test_resources/scenario/delete-forest.yaml
     test_resources/scenario/delete-node.yaml

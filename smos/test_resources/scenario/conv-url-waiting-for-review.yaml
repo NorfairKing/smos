@@ -1,0 +1,23 @@
+before:
+- entry: hello
+commands:
+- convUrlWaitingForReview
+- propertiesInsert e
+- propertiesInsert x
+- propertiesInsert a
+- propertiesInsert m
+- propertiesInsert p
+- propertiesInsert l
+- propertiesInsert e
+after:
+- header: hello
+  state-history:
+  - state: DONE
+    time: 2021-11-27 13:17:00.000000000000
+- header: 'for review here'
+  properties:
+    url: 'example'
+  state-history:
+  - state: WAITING
+    time: 2021-11-27 13:17:00.000000000000
+

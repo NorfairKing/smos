@@ -128,6 +128,7 @@ defaultFileKeyMap =
             exactString " rp" convRepinged,
             exactString " rs" convResponded,
             exactString " rw" convRespondedButStillWaiting,
+            exactString " pr" convUrlWaitingForReview,
             exactString " ce" convNewEntryAndClockIn,
             exactString " fa" convArchiveFile,
             exactString " ou" convOpenUrl,

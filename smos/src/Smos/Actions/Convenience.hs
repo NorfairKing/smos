@@ -13,6 +13,7 @@ module Smos.Actions.Convenience
     convArchiveFile,
     convOpenUrl,
     convCopyContentsToClipboard,
+    convUrlWaitingForReview,
   )
 where
 
@@ -48,7 +49,8 @@ allConveniencePlainActions =
     convNewEntryAndClockIn,
     convArchiveFile,
     convOpenUrl,
-    convCopyContentsToClipboard
+    convCopyContentsToClipboard,
+    convUrlWaitingForReview
   ]
 
 convDoneAndWaitForResponse :: Action
@@ -245,6 +247,26 @@ convCopyContentsToClipboard =
                 ExitSuccess -> pure ()
         pure ec,
       actionDescription = "Copy the contents of the selected entry to the system clipboard"
+    }
+
+convUrlWaitingForReview :: Action
+convUrlWaitingForReview =
+  Action
+    { actionName = "convUrlWaitingForReview",
+      actionFunc = modifyFileCursorS $ \sfc -> do
+        now <- liftIO getCurrentTime
+        let steps :: [SmosFileCursor -> SmosFileCursor]
+            steps =
+              [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
+                smosFileCursorInsertEntryAfterAndSelectHeader,
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "for review here" hc),
+                smosFileCursorSelectedEntryL %~ entryCursorSelectWhole,
+                smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "WAITING",
+                smosFileCursorSelectedEntryL . entryCursorPropertiesCursorL %~ (Just . propertiesCursorAddOrSelect "url"),
+                smosFileCursorSelectedEntryL %~ entryCursorSelectProperties
+              ]
+        pure $ applySteps steps sfc,
+      actionDescription = "Mark the currently selected entry as DONE, add a new one below with state WAITING for review, and select the url property."
     }
 
 applySteps :: [a -> a] -> (a -> a)

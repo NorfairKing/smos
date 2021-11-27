@@ -3,6 +3,7 @@
 * `smos`: `convResponded`, which is like `convRespondedButStillWaiting` but does not duplicate the original entry and is bounded to `<space>rs` by default.
 * `smos-calendar-import`: You can now ignore calendar events by adding `SMOS_NO_CALENDAR_IMPORT` to their description.
 * `smos-scheduler`: A `sample` command to help you produce templates in a feedback loop.
+* `smos`: `convUrlWaitingForReview`, a convenience function for waiting for review at a given url.
 
 ### Changed
 
