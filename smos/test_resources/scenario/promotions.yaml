@@ -11,9 +11,7 @@ before:
 commands:
 - forestMoveToFirst
 - forestMoveDown
-- forestToggleCollapse
 - forestMoveDown
-- forestToggleCollapse
 - forestMoveDown
 - forestPromoteSubTree
 - forestMoveDown

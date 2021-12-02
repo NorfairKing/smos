@@ -124,29 +124,91 @@ smosFileCursorSelectedEntryL = smosFileCursorSelectedCollapseEntryL . collapseEn
 smosFileCursorEntrySelectionL :: Lens' SmosFileCursor EntryCursorSelection
 smosFileCursorEntrySelectionL = smosFileCursorSelectedEntryL . entryCursorSelectionL
 
+-- Get a smos file cursor ready for startup
+--
+-- 1. Go to the current entry.
+-- 2. Uncollapse any entry with an open logbook.
+-- 3. Collapse any done entry.
 smosFileCursorReadyForStartup :: SmosFileCursor -> SmosFileCursor
-smosFileCursorReadyForStartup = collapseDone . unclockStarted . goToEnd
+smosFileCursorReadyForStartup = collapseDone . uncollapseStartedClocks . goToCurrent
   where
-    goToEnd :: SmosFileCursor -> SmosFileCursor
-    goToEnd sfc =
-      case smosFileCursorForestCursorL forestCursorOpenCurrentForest sfc of
-        Nothing -> sfc
-        Just sfc' ->
-          case smosFileCursorSelectNext sfc of
-            Nothing -> fromMaybe sfc' $ smosFileCursorSelectBelowAtEnd sfc'
-            Just sfc'' -> goToEnd sfc''
-    unclockStarted :: SmosFileCursor -> SmosFileCursor
-    unclockStarted =
+    -- Go to the current entry.
+    --
+    -- We want to go to the first, deepest, not-done entry.
+    --
+    -- So, recursively:
+    -- 1. Try to go down, if that works, recurse.
+    -- 2. If going down isn't possible, check if the current entry is Done
+    -- 2a. Not done -> Stop
+    -- 2b. Done -> Go to the next entry (not necessarily on the same level) and recurse.
+    --
+    -- This is guaranteed to finish on a finite cursor because we either stop or proceed.
+    goToCurrent :: SmosFileCursor -> SmosFileCursor
+    goToCurrent = goDown
+      where
+        goDown sfc =
+          let sfc' = fromMaybe sfc $ smosFileCursorForestCursorL forestCursorOpenCurrentForest sfc
+           in case smosFileCursorSelectBelowAtStart sfc' of
+                Just sfc'' -> goDown sfc''
+                Nothing ->
+                  if atCurrent sfc'
+                    then sfc' -- First, deepest not-done entry
+                    else goNext sfc'
+        goNext sfc =
+          case smosFileCursorSelectNextOnSameLevel $ collapseCForestIfItIsEntirelyDone sfc of
+            Just sfc' -> goDown sfc'
+            -- No next element: end of the tree.
+            Nothing -> goUp sfc
+
+        goUp sfc =
+          case smosFileCursorSelectAbove sfc of
+            Nothing -> sfc -- Back at the top
+            Just sfc' ->
+              if atCurrent sfc'
+                then sfc' -- First, deepest not-done entry
+                else goNext sfc'
+
+        atCurrent :: SmosFileCursor -> Bool
+        atCurrent sfc = not . entryIsDone . rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
+
+    -- Collapse below forest if it is done.
+    collapseCForestIfItIsEntirelyDone :: SmosFileCursor -> SmosFileCursor
+    collapseCForestIfItIsEntirelyDone =
+      smosFileCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentSubTreeL %~ collapseIfEntirelyDone
+
+    collapseIfEntirelyDone ::
+      (CollapseEntry EntryCursor, CForest (CollapseEntry Entry)) ->
+      (CollapseEntry EntryCursor, CForest (CollapseEntry Entry))
+    collapseIfEntirelyDone (e, fe) =
+      let eDone = entryIsDone (rebuildEntryCursor (collapseEntryValue e))
+       in ( e,
+            if eDone
+              then case fe of
+                EmptyCForest -> EmptyCForest
+                OpenForest f ->
+                  -- We only need to check one layer because of the invariants in this function
+                  if all (entryIsDone . collapseEntryValue . (\(CNode e' _) -> e')) f
+                    then ClosedForest $ NE.map rebuildCTree f
+                    else OpenForest f
+                ClosedForest f -> ClosedForest f
+              else fe
+          )
+
+    -- Uncollapse any entry with an open logbook.
+    uncollapseStartedClocks :: SmosFileCursor -> SmosFileCursor
+    uncollapseStartedClocks =
       smosFileCursorForestCursorL
         %~ mapForestCursor
-          (mapUnclockStarted (logbookOpen . entryLogbook . rebuildEntryCursor))
-          (mapUnclockStarted (logbookOpen . entryLogbook))
+          (mapUncollapseStartedClocks (logbookOpen . entryLogbook . rebuildEntryCursor))
+          (mapUncollapseStartedClocks (logbookOpen . entryLogbook))
       where
-        mapUnclockStarted :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
-        mapUnclockStarted func ce =
+        mapUncollapseStartedClocks :: (a -> Bool) -> CollapseEntry a -> CollapseEntry a
+        mapUncollapseStartedClocks func ce =
           if func (collapseEntryValue ce)
             then ce {collapseEntryShowLogbook = True}
             else ce
+
+    -- Collapse any done entry.
     collapseDone :: SmosFileCursor -> SmosFileCursor
     collapseDone =
       smosFileCursorForestCursorL

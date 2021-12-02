@@ -12,6 +12,10 @@
   This massively improved the documentation of configuration file formats, as well as the page about the smos file format.
   Now we can have finite schemas for recursive types, so we can show the entire schema.
 * Upgraded `validity` dependency to beyond `genvalidity >=1.0.0.0`.
+* `smos`: Smarter starter unfolding rule. 
+  Before, smos would go to the last deepest entry as a proxy for the "current" entry for a project.
+  After this change, smos goes to the first, deepest, not-done entry.
+  Any entirely-done subforests will also be collapsed on the way there.
 
 ### Removed
 

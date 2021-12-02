@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -84,7 +85,20 @@ instance GenValid Timestamp where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid TodoState where
-  genValid = TodoState <$> genTextBy genTodoStateChar
+  genValid =
+    oneof
+      [ TodoState <$> genTextBy genTodoStateChar,
+        elements
+          [ "TODO",
+            "NEXT",
+            "STARTED",
+            "READY",
+            "WAITING",
+            "DONE",
+            "CANCELLED",
+            "FAILED"
+          ]
+      ]
   shrinkValid = shrinkValidStructurally
 
 genTodoStateChar :: Gen Char

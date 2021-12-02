@@ -9,6 +9,7 @@ before:
         forest:
         - me
 commands:
+- forestMoveToFirst
 - forestMoveDown
 - forestDeleteCurrentSubTree
 after:

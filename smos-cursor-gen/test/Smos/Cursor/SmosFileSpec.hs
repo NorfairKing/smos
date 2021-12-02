@@ -11,7 +11,7 @@ import Test.Syd.Validity
 import Test.Syd.Validity.Lens
 
 spec :: Spec
-spec = modifyMaxShrinks (const 1) $ do
+spec = modifyMaxShrinks (const 0) $ do
   genValidSpec @SmosFileCursor
   lensSpec smosFileCursorForestCursorL
   lensSpec smosFileCursorSelectedEntryL
@@ -23,6 +23,10 @@ spec = modifyMaxShrinks (const 1) $ do
     it "is the inverse of makeFileCursor" $
       inverseFunctions makeSmosFileCursor rebuildSmosFileCursor
   describe "startSmosFile" $ it "is valid" $ shouldBeValid startSmosFile
+  describe "smosFileCursorReadyForStartup" $
+    it "rebuilds to the same" $
+      forAllValid $ \sfc ->
+        rebuildSmosFileCursorEntirely (smosFileCursorReadyForStartup sfc) `shouldBe` rebuildSmosFileCursorEntirely sfc
   describe "smosFileCursorToggleHideEntireEntry" $
     it "produces valid cursors" $
       producesValid smosFileCursorToggleCollapseEntireEntry
