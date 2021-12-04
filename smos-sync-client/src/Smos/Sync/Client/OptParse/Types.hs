@@ -22,9 +22,9 @@ data Instructions
   = Instructions Dispatch Settings
 
 data Command
-  = CommandRegister RegisterFlags
-  | CommandLogin LoginFlags
-  | CommandSync SyncFlags
+  = CommandRegister !RegisterFlags
+  | CommandLogin !LoginFlags
+  | CommandSync !SyncFlags
   deriving (Show)
 
 data RegisterFlags
@@ -36,44 +36,46 @@ data LoginFlags
   deriving (Show)
 
 data SyncFlags = SyncFlags
-  { syncFlagContentsDir :: Maybe FilePath,
-    syncFlagUUIDFile :: Maybe FilePath,
-    syncFlagMetadataDB :: Maybe FilePath,
-    syncFlagIgnoreFiles :: Maybe IgnoreFiles,
-    syncFlagBackupDir :: Maybe FilePath
+  { syncFlagContentsDir :: !(Maybe FilePath),
+    syncFlagUUIDFile :: !(Maybe FilePath),
+    syncFlagMetadataDB :: !(Maybe FilePath),
+    syncFlagIgnoreFiles :: !(Maybe IgnoreFiles),
+    syncFlagEmptyDirs :: !(Maybe EmptyDirs),
+    syncFlagBackupDir :: !(Maybe FilePath)
   }
   deriving (Show)
 
 data Flags = Flags
-  { flagDirectoryFlags :: Report.DirectoryFlags,
-    flagLogLevel :: Maybe LogLevel,
-    flagServerUrl :: Maybe String,
-    flagUsername :: Maybe Username,
-    flagPassword :: Maybe Password,
-    flagDataDir :: Maybe FilePath,
-    flagCacheDir :: Maybe FilePath,
-    flagSessionPath :: Maybe FilePath
+  { flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagLogLevel :: !(Maybe LogLevel),
+    flagServerUrl :: !(Maybe String),
+    flagUsername :: !(Maybe Username),
+    flagPassword :: !(Maybe Password),
+    flagDataDir :: !(Maybe FilePath),
+    flagCacheDir :: !(Maybe FilePath),
+    flagSessionPath :: !(Maybe FilePath)
   }
   deriving (Show, Generic)
 
 data Environment = Environment
-  { envDirectoryEnvironment :: Report.DirectoryEnvironment,
-    envLogLevel :: Maybe LogLevel,
-    envServerUrl :: Maybe String,
-    envContentsDir :: Maybe FilePath,
-    envUUIDFile :: Maybe FilePath,
-    envMetadataDB :: Maybe FilePath,
-    envIgnoreFiles :: Maybe IgnoreFiles,
-    envUsername :: Maybe Username,
-    envPassword :: Maybe Password,
-    envSessionPath :: Maybe FilePath,
-    envBackupDir :: Maybe FilePath
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envLogLevel :: !(Maybe LogLevel),
+    envServerUrl :: !(Maybe String),
+    envContentsDir :: !(Maybe FilePath),
+    envUUIDFile :: !(Maybe FilePath),
+    envMetadataDB :: !(Maybe FilePath),
+    envIgnoreFiles :: !(Maybe IgnoreFiles),
+    envEmptyDirs :: !(Maybe EmptyDirs),
+    envUsername :: !(Maybe Username),
+    envPassword :: !(Maybe Password),
+    envSessionPath :: !(Maybe FilePath),
+    envBackupDir :: !(Maybe FilePath)
   }
   deriving (Show, Generic)
 
 data Configuration = Configuration
-  { confDirectoryConf :: Report.DirectoryConfiguration,
-    confSyncConf :: Maybe SyncConfiguration
+  { confDirectoryConf :: !Report.DirectoryConfiguration,
+    confSyncConf :: !(Maybe SyncConfiguration)
   }
   deriving (Show, Generic)
 
@@ -85,18 +87,19 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "sync" "Synchronisation configuration" .= confSyncConf
 
 data SyncConfiguration = SyncConfiguration
-  { syncConfLogLevel :: Maybe LogLevel,
-    syncConfServerUrl :: Maybe String,
-    syncConfDataDir :: Maybe FilePath,
-    syncConfCacheDir :: Maybe FilePath,
-    syncConfContentsDir :: Maybe FilePath,
-    syncConfUUIDFile :: Maybe FilePath,
-    syncConfMetadataDB :: Maybe FilePath,
-    syncConfIgnoreFiles :: Maybe IgnoreFiles,
-    syncConfUsername :: Maybe Username,
-    syncConfPassword :: Maybe Password,
-    syncConfSessionPath :: Maybe FilePath,
-    syncConfBackupDir :: Maybe FilePath
+  { syncConfLogLevel :: !(Maybe LogLevel),
+    syncConfServerUrl :: !(Maybe String),
+    syncConfDataDir :: !(Maybe FilePath),
+    syncConfCacheDir :: !(Maybe FilePath),
+    syncConfContentsDir :: !(Maybe FilePath),
+    syncConfUUIDFile :: !(Maybe FilePath),
+    syncConfMetadataDB :: !(Maybe FilePath),
+    syncConfIgnoreFiles :: !(Maybe IgnoreFiles),
+    syncConfEmptyDirs :: !(Maybe EmptyDirs),
+    syncConfUsername :: !(Maybe Username),
+    syncConfPassword :: !(Maybe Password),
+    syncConfSessionPath :: !(Maybe FilePath),
+    syncConfBackupDir :: !(Maybe FilePath)
   }
   deriving (Show, Generic)
 
@@ -138,6 +141,10 @@ instance HasCodec SyncConfiguration where
           "Which files to ignore"
           .= syncConfIgnoreFiles
         <*> optionalFieldOrNull
+          "empty-directories"
+          "What to do with empty directories after syncing"
+          .= syncConfEmptyDirs
+        <*> optionalFieldOrNull
           "username"
           "The username to log into the sync server"
           .= syncConfUsername
@@ -155,17 +162,18 @@ instance HasCodec SyncConfiguration where
           .= syncConfBackupDir
 
 data Dispatch
-  = DispatchRegister RegisterSettings
-  | DispatchLogin LoginSettings
-  | DispatchSync SyncSettings
+  = DispatchRegister !RegisterSettings
+  | DispatchLogin !LoginSettings
+  | DispatchSync !SyncSettings
   deriving (Show, Eq, Generic)
 
 data SyncSettings = SyncSettings
-  { syncSetContentsDir :: Path Abs Dir,
-    syncSetUUIDFile :: Path Abs File,
-    syncSetMetadataDB :: Path Abs File,
-    syncSetBackupDir :: Path Abs Dir,
-    syncSetIgnoreFiles :: IgnoreFiles
+  { syncSetContentsDir :: !(Path Abs Dir),
+    syncSetUUIDFile :: !(Path Abs File),
+    syncSetMetadataDB :: !(Path Abs File),
+    syncSetBackupDir :: !(Path Abs Dir),
+    syncSetIgnoreFiles :: !IgnoreFiles,
+    syncSetEmptyDirs :: !EmptyDirs
   }
   deriving (Show, Eq, Generic)
 
@@ -192,6 +200,23 @@ instance HasCodec IgnoreFiles where
       ]
       <??> [ "nothing: Don't ignore any files",
              "hidden: Ignore hidden files"
+           ]
+
+data EmptyDirs
+  = RemoveEmptyDirs
+  | KeepEmptyDirs
+  deriving (Show, Eq, Generic)
+
+instance Validity EmptyDirs
+
+instance HasCodec EmptyDirs where
+  codec =
+    stringConstCodec
+      [ (RemoveEmptyDirs, "remove"),
+        (KeepEmptyDirs, "keep")
+      ]
+      <??> [ "remove: Remove empty directories after syncing",
+             "keep: Keep empty directories after syncing"
            ]
 
 parseLogLevel :: String -> Either String LogLevel

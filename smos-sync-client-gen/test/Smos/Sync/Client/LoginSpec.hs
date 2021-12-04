@@ -75,7 +75,8 @@ spec = managerSpec $
                         syncSetUUIDFile = uuidFile,
                         syncSetMetadataDB = metadataDBFile,
                         syncSetBackupDir = backupDir,
-                        syncSetIgnoreFiles = IgnoreHiddenFiles
+                        syncSetIgnoreFiles = IgnoreHiddenFiles,
+                        syncSetEmptyDirs = RemoveEmptyDirs
                       }
               -- Use one JWK to authenticate the first time
               jwtKey1 <- Auth.generateKey
