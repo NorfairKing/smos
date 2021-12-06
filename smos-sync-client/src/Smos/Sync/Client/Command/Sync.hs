@@ -11,6 +11,7 @@ module Smos.Sync.Client.Command.Sync
     doActualSync,
     readFileSafely,
     writeFileSafely,
+    removeEmptyDirs,
   )
 where
 
@@ -56,16 +57,27 @@ import Text.Show.Pretty
 import UnliftIO
 
 syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
-syncSmosSyncClient Settings {..} SyncSettings {..} = do
+syncSmosSyncClient Settings {..} syncSets@SyncSettings {..} = do
   ensureDir $ parent syncSetMetadataDB
   withFileLock (fromAbsFile syncSetMetadataDB <> ".lock") Exclusive $ \_ ->
     runStderrLoggingT $
-      filterLogger (\_ ll -> ll >= setLogLevel) $
+      filterLogger (\_ ll -> ll >= setLogLevel) $ do
+        logDebugData "SYNC SETTINGS" syncSets
         DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
           \pool ->
             withClientEnv setServerUrl $ \cenv -> withClientVersionCheck cenv $
-              withLogin cenv setSessionPath setUsername setPassword $ \token ->
-                doActualSync syncSetUUIDFile pool syncSetContentsDir syncSetIgnoreFiles syncSetBackupDir cenv token
+              withLogin cenv setSessionPath setUsername setPassword $ \token -> do
+                doActualSync
+                  syncSetUUIDFile
+                  pool
+                  syncSetContentsDir
+                  syncSetIgnoreFiles
+                  syncSetBackupDir
+                  cenv
+                  token
+                case syncSetEmptyDirs of
+                  KeepEmptyDirs -> pure ()
+                  RemoveEmptyDirs -> removeEmptyDirs syncSetContentsDir
 
 doActualSync :: Path Abs File -> ConnectionPool -> Path Abs Dir -> IgnoreFiles -> Path Abs Dir -> ClientEnv -> Token -> LoggingT IO ()
 doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
@@ -408,7 +420,7 @@ logInfoJsonData :: ToJSON a => Text -> a -> C ()
 logInfoJsonData name a =
   logInfoN $ T.unwords [name <> ":", TE.decodeUtf8 $ LB.toStrict $ encodePretty a]
 
-logDebugData :: Show a => Text -> a -> C ()
+logDebugData :: (Show a, MonadLogger m) => Text -> a -> m ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
 
 readServerUUID :: Path Abs File -> IO (Maybe ServerUUID)
@@ -424,7 +436,7 @@ writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
--- We will trust hashing. (TODO do we need to fix that?)
+-- We will trust hashing, that's fine because it's SHA256.
 isUnchanged :: SyncFileMeta -> ByteString -> Bool
 isUnchanged SyncFileMeta {..} contents =
   SHA256.hashBytes contents == syncFileMetaHash
@@ -444,3 +456,14 @@ backupFile contentsDir backupDir sourceFile = do
       logInfoN $ "Backing up " <> T.pack (fromAbsFile source) <> " to " <> T.pack (fromAbsFile destination)
       ensureDir $ parent destination
       copyFile source destination
+
+removeEmptyDirs :: (MonadLogger m, MonadIO m) => Path Abs Dir -> m ()
+removeEmptyDirs contentsDir = do
+  dirs <- liftIO $ maybe [] fst <$> forgivingAbsence (listDirRecur contentsDir)
+  forM_ dirs $ \dir -> do
+    (fs, ds) <- listDir dir
+    case (fs, ds) of
+      ([], []) -> do
+        removeDir dir
+        logInfoN $ T.pack $ unwords ["Removing empty directory:", show dir]
+      _ -> pure ()

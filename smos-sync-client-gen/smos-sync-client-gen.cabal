@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 
@@ -61,6 +61,7 @@ test-suite smos-sync-client-test
       Smos.Sync.Client.LoginSpec
       Smos.Sync.Client.Sync.ContentsMapSpec
       Smos.Sync.Client.Sync.DirForestSpec
+      Smos.Sync.Client.Sync.EmptyDirSpec
       Smos.Sync.Client.Sync.IntegrationSpec
       Smos.Sync.Client.Sync.MetaMapSpec
       Smos.Sync.Client.Sync.MetaSpec

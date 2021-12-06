@@ -14,6 +14,7 @@ import Data.Mergeful.Timed (Timed (..))
 import Data.Word
 import Database.Persist as DB
 import Database.Persist.Sql as DB
+import Database.Persist.Sqlite as DB
 import GHC.Generics (Generic)
 import Path
 import Servant
@@ -45,7 +46,7 @@ runDB :: DB.SqlPersistT (LoggingT IO) a -> ServerHandler a
 runDB func = do
   pool <- asks serverEnvConnection
   logFunc <- asks serverEnvLogFunc
-  liftIO $ runLoggingT (DB.runSqlPool func pool) logFunc
+  liftIO $ runLoggingT (DB.runSqlPool (DB.retryOnBusy func) pool) logFunc
 
 readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do

@@ -110,6 +110,7 @@ withSyncClient cenv reg func =
                 syncSetMetadataDB = mp,
                 syncSetUUIDFile = up,
                 syncSetIgnoreFiles = IgnoreNothing,
+                syncSetEmptyDirs = RemoveEmptyDirs,
                 syncSetBackupDir = bd
               }
       let s =

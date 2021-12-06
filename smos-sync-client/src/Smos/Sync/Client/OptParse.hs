@@ -84,13 +84,16 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
             Nothing -> Report.resolveDirWorkflowDir dc
             Just d -> resolveDir' d
-        syncSetUUIDFile <-
-          case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
-            Nothing -> resolveFile dataDir "server-uuid.json"
-            Just d -> resolveFile' d
         syncSetMetadataDB <-
           case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
             Nothing -> resolveFile dataDir "sync-metadata.sqlite3"
+            Just d -> resolveFile' d
+        case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
+          Nothing -> pure ()
+          Just _ -> die "The metadata database must not be in the sync contents directory."
+        syncSetUUIDFile <-
+          case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
+            Nothing -> resolveFile dataDir "server-uuid.json"
             Just d -> resolveFile' d
         syncSetBackupDir <- case syncFlagBackupDir <|> envBackupDir <|> cM syncConfBackupDir of
           Nothing -> resolveDir dataDir "conflict-backups"
@@ -98,9 +101,9 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         let syncSetIgnoreFiles =
               fromMaybe IgnoreHiddenFiles $
                 syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
-        case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
-          Nothing -> pure ()
-          Just _ -> die "The metadata database must not be in the sync contents directory."
+        let syncSetEmptyDirs =
+              fromMaybe RemoveEmptyDirs $
+                syncFlagEmptyDirs <|> envEmptyDirs <|> cM syncConfEmptyDirs
         pure $ DispatchSync SyncSettings {..}
   pure $ Instructions d s
   where
@@ -137,6 +140,7 @@ environmentParser =
       <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The path to the uuid file of the server")
       <*> Env.var (fmap Just . Env.str) "METADATA_DATABASE" (mE <> Env.help "The path to the database of metadata")
       <*> Env.var (fmap Just . ignoreFilesReader) "IGNORE_FILES" (mE <> Env.help "Which files to ignore")
+      <*> Env.var (fmap Just . emptyDirsReader) "EMPTY_DIRS" (mE <> Env.help "What to do with empty directories after syncing")
       <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
       <*> Env.var (fmap (Just . mkPassword) . Env.str) "PASSWORD" (mE <> Env.help "The password to sync with")
       <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
@@ -149,6 +153,11 @@ environmentParser =
         "no" -> pure IgnoreNothing
         "hidden" -> pure IgnoreHiddenFiles
         _ -> Left $ Env.UnreadError $ "Unknown 'IgnoreFiles' value: " <> s
+    emptyDirsReader s =
+      case s of
+        "remove" -> pure RemoveEmptyDirs
+        "keep" -> pure KeepEmptyDirs
+        _ -> Left $ Env.UnreadError $ "Unknown 'EmptyDirs' value: " <> s
     usernameReader s =
       case parseUsername (T.pack s) of
         Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
@@ -236,6 +245,7 @@ parseCommandSync = info parser modifier
                       ]
                   )
                 <*> parseIgnoreFilesFlag
+                <*> parseEmptyDirsFlag
                 <*> option
                   (Just <$> str)
                   (mconcat [long "backup-dir", help "The directory to store backups in when a sync conflict happens", value Nothing])
@@ -243,9 +253,39 @@ parseCommandSync = info parser modifier
 
 parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)
 parseIgnoreFilesFlag =
-  flag' (Just IgnoreNothing) (mconcat [long "ignore-nothing", help "Do not ignore hidden files"])
-    <|> flag' (Just IgnoreHiddenFiles) (mconcat [long "ignore-hidden-files", help "Ignore hidden files"])
-    <|> pure Nothing
+  optional $
+    flag'
+      IgnoreNothing
+      ( mconcat
+          [ long "ignore-nothing",
+            help "Do not ignore hidden files"
+          ]
+      )
+      <|> flag'
+        IgnoreHiddenFiles
+        ( mconcat
+            [ long "ignore-hidden-files",
+              help "Ignore hidden files"
+            ]
+        )
+
+parseEmptyDirsFlag :: Parser (Maybe EmptyDirs)
+parseEmptyDirsFlag =
+  optional $
+    flag'
+      RemoveEmptyDirs
+      ( mconcat
+          [ long "remove-empty-dirs",
+            help "Remove empty directories after syncing"
+          ]
+      )
+      <|> flag'
+        KeepEmptyDirs
+        ( mconcat
+            [ long "keep-empty-dirs",
+              help "Keep empty directories after syncing"
+            ]
+        )
 
 parseFlags :: Parser Flags
 parseFlags =
