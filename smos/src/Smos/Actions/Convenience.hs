@@ -18,6 +18,7 @@ module Smos.Actions.Convenience
 where
 
 import Control.Monad.Catch
+import Control.Monad.Logger
 import qualified Data.ByteString as SB
 import qualified Data.Map as M
 import Data.Maybe
@@ -181,7 +182,15 @@ convArchiveFile =
           Nothing -> pure Nothing
           Just sfec -> do
             dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-            let runArchiveM = liftIO . flip runReaderT (Archive.Settings {Archive.setDirectorySettings = dc})
+            let runArchiveM =
+                  liftIO
+                    . flip
+                      runReaderT
+                      ( Archive.Settings
+                          { Archive.setDirectorySettings = dc,
+                            Archive.setLogLevel = LevelError
+                          }
+                      )
             let sourceFile = smosFileEditorPath sfec
             mdf <- runArchiveM $ (Just <$> determineToFile sourceFile) `catch` (\(_ :: NotInWorkflowDir) -> pure Nothing)
             case mdf of

@@ -10,14 +10,10 @@ module Smos.Query.OptParse
   )
 where
 
-import Control.Arrow
 import Data.Foldable
-import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
-import Data.Time hiding (parseTime)
 import Data.Version
 import qualified Env
 import Options.Applicative as OptParse
@@ -27,11 +23,8 @@ import Smos.Data
 import Smos.Query.OptParse.Types
 import Smos.Report.Archive
 import Smos.Report.Config
-import Smos.Report.Filter
 import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
-import Smos.Report.Projection
-import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
@@ -307,10 +300,10 @@ parseCommandEntry = info parser modifier
     parser =
       CommandEntry
         <$> ( EntryFlags
-                <$> parseFilterArgsRel
-                <*> parseProjectionArgs
-                <*> parseSorterArgs
-                <*> parseHideArchiveFlag
+                <$> Report.parseFilterArgsRel
+                <*> Report.parseProjectionArgs
+                <*> Report.parseSorterArgs
+                <*> Report.parseHideArchiveFlag
                 <*> parseOutputFormat
             )
 
@@ -334,12 +327,12 @@ parseCommandWork = info parser modifier
     parser =
       CommandWork
         <$> ( WorkFlags
-                <$> parseContextNameArg
-                <*> parseTimeFilterArg
-                <*> parseFilterOptionsRel
-                <*> parseProjectionArgs
-                <*> parseSorterArgs
-                <*> parseHideArchiveFlag
+                <$> Report.parseContextNameArg
+                <*> Report.parseTimeFilterArg
+                <*> Report.parseFilterOptionsRel
+                <*> Report.parseProjectionArgs
+                <*> Report.parseSorterArgs
+                <*> Report.parseHideArchiveFlag
                 <*> parseWorkWaitingThresholdFlag
                 <*> parseWorkStuckThresholdFlag
             )
@@ -373,8 +366,8 @@ parseCommandWaiting = info parser modifier
     parser =
       CommandWaiting
         <$> ( WaitingFlags
-                <$> parseFilterArgsRel
-                <*> parseHideArchiveFlag
+                <$> Report.parseFilterArgsRel
+                <*> Report.parseHideArchiveFlag
                 <*> parseWaitingThresholdFlag
             )
 
@@ -393,7 +386,12 @@ parseCommandNext :: ParserInfo Command
 parseCommandNext = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the next actions"
-    parser = CommandNext <$> (NextFlags <$> parseFilterArgsRel <*> parseHideArchiveFlag)
+    parser =
+      CommandNext
+        <$> ( NextFlags
+                <$> Report.parseFilterArgsRel
+                <*> Report.parseHideArchiveFlag
+            )
 
 parseCommandClock :: ParserInfo Command
 parseCommandClock = info parser modifier
@@ -402,13 +400,13 @@ parseCommandClock = info parser modifier
     parser =
       CommandClock
         <$> ( ClockFlags
-                <$> parseFilterArgsRel
-                <*> parsePeriod
-                <*> parseTimeBlock
+                <$> Report.parseFilterArgsRel
+                <*> Report.parsePeriod
+                <*> Report.parseTimeBlock
                 <*> parseOutputFormat
                 <*> parseClockFormatFlags
                 <*> parseClockReportStyle
-                <*> parseHideArchiveFlag
+                <*> Report.parseHideArchiveFlag
             )
 
 parseClockFormatFlags :: Parser (Maybe ClockFormatFlags)
@@ -444,22 +442,34 @@ parseCommandAgenda = info parser modifier
     modifier = fullDesc <> progDesc "Print the agenda"
     parser =
       CommandAgenda
-        <$> ( AgendaFlags <$> parseFilterArgsRel <*> parseHistoricityFlag <*> parseTimeBlock
-                <*> parseHideArchiveFlag
-                <*> parsePeriod
+        <$> ( AgendaFlags
+                <$> Report.parseFilterArgsRel
+                <*> Report.parseHistoricityFlag
+                <*> Report.parseTimeBlock
+                <*> Report.parseHideArchiveFlag
+                <*> Report.parsePeriod
             )
 
 parseCommandProjects :: ParserInfo Command
 parseCommandProjects = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the projects overview"
-    parser = CommandProjects <$> (ProjectsFlags <$> parseProjectFilterArgs)
+    parser =
+      CommandProjects
+        <$> ( ProjectsFlags
+                <$> Report.parseProjectFilterArgs
+            )
 
 parseCommandStuck :: ParserInfo Command
 parseCommandStuck = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the stuck projects overview"
-    parser = CommandStuck <$> (StuckFlags <$> parseProjectFilterArgs <*> parseStuckThresholdFlag)
+    parser =
+      CommandStuck
+        <$> ( StuckFlags
+                <$> Report.parseProjectFilterArgs
+                <*> parseStuckThresholdFlag
+            )
 
 parseStuckThresholdFlag :: Parser (Maybe Time)
 parseStuckThresholdFlag =
@@ -478,167 +488,43 @@ parseCommandLog = info parser modifier
     modifier = fullDesc <> progDesc "Print a log of what has happened."
     parser =
       CommandLog
-        <$> (LogFlags <$> parseFilterArgsRel <*> parsePeriod <*> parseTimeBlock <*> parseHideArchiveFlag)
+        <$> ( LogFlags
+                <$> Report.parseFilterArgsRel
+                <*> Report.parsePeriod
+                <*> Report.parseTimeBlock
+                <*> Report.parseHideArchiveFlag
+            )
 
 parseCommandStats :: ParserInfo Command
 parseCommandStats = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
-    parser = CommandStats <$> (StatsFlags <$> parsePeriod)
+    parser =
+      CommandStats
+        <$> ( StatsFlags
+                <$> Report.parsePeriod
+            )
 
 parseCommandTags :: ParserInfo Command
 parseCommandTags = info parser modifier
   where
     modifier = fullDesc <> progDesc "Print all the tags that are in use"
-    parser = CommandTags <$> (TagsFlags <$> parseFilterArgsRel)
+    parser =
+      CommandTags
+        <$> ( TagsFlags
+                <$> Report.parseFilterArgsRel
+            )
 
 parseFlags :: Parser Flags
 parseFlags = Flags <$> Report.parseFlags
 
-parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
-parseHistoricityFlag =
-  optional (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future"))
-
-parseHideArchiveFlag :: Parser (Maybe HideArchive)
-parseHideArchiveFlag =
-  optional
-    ( flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])
-        <|> flag'
-          Don'tHideArchive
-          (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])
-    )
-
-parseContextNameArg :: Parser (Maybe ContextName)
-parseContextNameArg =
-  optional $ argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
-
-parseTimeFilterArg :: Parser (Maybe Time)
-parseTimeFilterArg =
-  optional $
-    argument
-      (eitherReader (parseTime . T.pack))
-      (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
-
-parseFilterOptionsRel :: Parser (Maybe EntryFilter)
-parseFilterOptionsRel =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( option
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-          (mconcat [short 'f', long "filter", metavar "FILTER", help "A filter to filter entries by"])
-      )
-
-parseFilterArgsRel :: Parser (Maybe EntryFilter)
-parseFilterArgsRel =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to filter entries by"])
-      )
-
-parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
-parseProjectFilterArgs =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to filter projects by"])
-      )
-
-parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
-parseProjectionArgs =
-  NE.nonEmpty . catMaybes
-    <$> many
-      ( option
-          (Just <$> eitherReader (parseProjection . T.pack))
-          ( mconcat
-              [ long "add-column",
-                long "project",
-                metavar "PROJECTION",
-                help "A projection to project entries onto fields"
-              ]
-          )
-      )
-
-parseSorterArgs :: Parser (Maybe Sorter)
-parseSorterArgs =
-  fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes
-    <$> many
-      ( option
-          (Just <$> eitherReader (parseSorter . T.pack))
-          (mconcat [long "sort", metavar "SORTER", help "A sorter to sort entries by"])
-      )
-
-parseTimeBlock :: Parser (Maybe TimeBlock)
-parseTimeBlock =
-  optional
-    ( choices
-        [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"],
-          flag' WeekBlock $ mconcat [long "week-block", help "blocks of one week"],
-          flag' MonthBlock $ mconcat [long "month-block", help "blocks of one month"],
-          flag' YearBlock $ mconcat [long "year-block", help "blocks of one year"],
-          flag' OneBlock $ mconcat [long "one-block", help "a single block"]
-        ]
-    )
-
-parsePeriod :: Parser (Maybe Period)
-parsePeriod =
-  parseBeginEnd
-    <|> optional
-      ( choices
-          [ flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
-            flag' Today (mconcat [long "today", help "today"]),
-            flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
-            flag' LastWeek (mconcat [long "last-week", help "last week"]),
-            flag' ThisWeek (mconcat [long "this-week", help "this week"]),
-            flag' NextWeek (mconcat [long "next-week", help "next week"]),
-            flag' LastMonth (mconcat [long "last-month", help "last month"]),
-            flag' ThisMonth (mconcat [long "this-month", help "this month"]),
-            flag' NextMonth (mconcat [long "next-month", help "next month"]),
-            flag' LastYear (mconcat [long "last-year", help "last year"]),
-            flag' ThisYear (mconcat [long "this-year", help "this year"]),
-            flag' NextYear (mconcat [long "next-year", help "next year"]),
-            flag' AllTime (mconcat [long "all-time", help "all time"])
-          ]
-      )
-  where
-    parseBeginEnd :: Parser (Maybe Period)
-    parseBeginEnd =
-      ( \mb me ->
-          case (mb, me) of
-            (Nothing, Nothing) -> Nothing
-            (Just begin, Nothing) -> Just (BeginOnly begin)
-            (Nothing, Just end) -> Just (EndOnly end)
-            (Just begin, Just end) -> Just (BeginEnd begin end)
-      )
-        <$> option
-          (Just <$> maybeReader parseLocalBegin)
-          (mconcat [value Nothing, long "begin", metavar "LOCALTIME", help "start time (inclusive)"])
-        <*> option
-          (Just <$> maybeReader parseLocalEnd)
-          (mconcat [value Nothing, long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
-    parseLocalBegin :: String -> Maybe LocalTime
-    parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
-    parseLocalEnd :: String -> Maybe LocalTime
-    parseLocalEnd s =
-      (LocalTime <$> (addDays 1 <$> parseLocalDay s) <*> pure midnight) <|> parseExactly s
-    parseExactly :: String -> Maybe LocalTime
-    parseExactly s =
-      parseTimeM True defaultTimeLocale "%F %R" s <|> parseTimeM True defaultTimeLocale "%F %T" s
-    parseLocalDay :: String -> Maybe Day
-    parseLocalDay = parseTimeM True defaultTimeLocale "%F"
-
 parseOutputFormat :: Parser (Maybe OutputFormat)
 parseOutputFormat =
   optional
-    ( choices
+    ( asum
         [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"],
           flag' OutputYaml $ mconcat [long "yaml", help "Yaml"],
           flag' OutputJSON $ mconcat [long "json", help "single-line JSON"],
           flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
         ]
     )
-
-choices :: [Parser a] -> Parser a
-choices = asum

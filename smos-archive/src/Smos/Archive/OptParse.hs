@@ -7,6 +7,9 @@ module Smos.Archive.OptParse
   )
 where
 
+import Control.Arrow (left)
+import Control.Monad.Logger
+import Data.Maybe
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -17,6 +20,7 @@ import Smos.Archive.OptParse.Types
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
+import Smos.Report.Period
 import qualified System.Environment as System
 
 getInstructions :: IO Instructions
@@ -27,8 +31,7 @@ getInstructions = do
   combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfig f e =
-  fmap Configuration <$> Report.getConfiguration f e
+getConfig = Report.getConfiguration
 
 combineToInstructions ::
   Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
@@ -37,6 +40,12 @@ combineToInstructions c Flags {..} Environment {..} mc = do
     CommandFile filepath -> do
       file <- resolveFile' filepath
       pure $ DispatchFile file
+    CommandExport ExportFlags {..} -> do
+      exportSetExportDir <- resolveDir' exportFlagExportDir
+      let exportSetFilter = exportFlagFilter
+      let exportSetPeriod = fromMaybe AllTime exportFlagPeriod
+      let exportSetAlsoDeleteOriginals = fromMaybe False exportFlagAlsoDeleteOriginals
+      pure $ DispatchExport ExportSettings {..}
   settings <- do
     setDirectorySettings <-
       Report.combineToDirectoryConfig
@@ -44,6 +53,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         flagDirectoryFlags
         envDirectoryEnvironment
         (confDirectoryConfiguration <$> mc)
+    let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
     pure $ Settings {..}
   pure $ Instructions dispatch settings
 
@@ -83,21 +93,69 @@ parseCommand :: Parser Command
 parseCommand =
   hsubparser
     ( mconcat
-        [ command "file" parseCommandArchiveFile
+        [ command "file" parseCommandFile,
+          command "export" parseCommandExport
         ]
     )
-    <|> infoParser parseCommandArchiveFile
+    <|> infoParser parseCommandFile
 
-parseCommandArchiveFile :: ParserInfo Command
-parseCommandArchiveFile = info parser modifier
+parseCommandFile :: ParserInfo Command
+parseCommandFile = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Select entries based on a given filter"
+    modifier = fullDesc <> progDesc "Archive a single file"
     parser =
       CommandFile
-        <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH", action "file"])
+        <$> strArgument
+          ( mconcat
+              [ help "The file to archive",
+                metavar "FILEPATH",
+                action "file"
+              ]
+          )
+
+parseCommandExport :: ParserInfo Command
+parseCommandExport = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Export (a portion of) an archive"
+    parser =
+      CommandExport
+        <$> ( ExportFlags
+                <$> strArgument
+                  ( mconcat
+                      [ help "The directory to export the archive to",
+                        metavar "FILEPATH",
+                        action "directory"
+                      ]
+                  )
+                <*> Report.parseFileFilterArgs
+                <*> Report.parsePeriod
+                <*> optional
+                  ( switch
+                      ( mconcat
+                          [ help "Also delete the originals from the archive",
+                            long "also-delete-originals"
+                          ]
+                      )
+                  )
+            )
 
 parseFlags :: Parser Flags
-parseFlags = Flags <$> Report.parseDirectoryFlags
+parseFlags =
+  Flags
+    <$> Report.parseDirectoryFlags
+    <*> optional
+      ( option
+          (eitherReader parseLogLevel)
+          ( mconcat
+              [ long "log-level",
+                help $
+                  unwords
+                    [ "The log level to use, options:",
+                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                    ]
+              ]
+          )
+      )
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -106,7 +164,13 @@ prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Envi
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
 environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
-environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.directoryEnvironmentParser
+environmentParser =
+  Report.envWithConfigFileParser $
+    Environment
+      <$> Report.directoryEnvironmentParser
+      <*> Env.var (fmap Just . (left Env.UnreadError . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
+  where
+    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

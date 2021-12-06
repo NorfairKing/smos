@@ -21,6 +21,11 @@ import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 
+streamSmosArchiveFiles :: MonadIO m => DirectoryConfig -> ConduitT i (Path Rel File) m ()
+streamSmosArchiveFiles dc = do
+  ad <- liftIO $ resolveDirArchiveDir dc
+  sourceFilesInNonHiddenDirsRecursivelyRel ad .| filterSmosFilesRel
+
 streamSmosProjectsFiles :: MonadIO m => DirectoryConfig -> ConduitT i (Path Rel File) m ()
 streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc

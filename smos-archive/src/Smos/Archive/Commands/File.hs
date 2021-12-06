@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -8,6 +9,7 @@ module Smos.Archive.Commands.File
     determineToFile,
     NotInWorkflowDir (..),
     destinationFile,
+    archiveTimeFormat,
     checkFromFile,
     ArchiveCheckResult (..),
     dealWithArchiveCheckResult,
@@ -25,6 +27,7 @@ import Data.Time
 import Data.Tree
 import Path
 import Path.IO
+import Smos.Archive.Env
 import Smos.Archive.OptParse
 import Smos.Archive.Prompt
 import Smos.Data
@@ -32,19 +35,19 @@ import Smos.Report.Config
 import System.Exit
 import qualified System.FilePath as FP
 
-smosArchiveFile :: Path Abs File -> ReaderT Settings IO ()
+smosArchiveFile :: Path Abs File -> A ()
 smosArchiveFile from = do
   to <- determineToFile from
   liftIO $ do
     sf <- checkFromFile from >>= dealWithArchiveCheckResult from
     moveToArchive from to sf >>= dealWithArchiveMoveResult
 
-determineToFile :: Path Abs File -> ReaderT Settings IO (Path Abs File)
+determineToFile :: (MonadIO m, MonadReader Settings m) => Path Abs File -> m (Path Abs File)
 determineToFile file = do
   workflowDir <- asks (resolveDirWorkflowDir . setDirectorySettings) >>= liftIO
   archiveDir <- asks (resolveDirArchiveDir . setDirectorySettings) >>= liftIO
   lt <- liftIO getLocalTime
-  destinationFile lt workflowDir archiveDir file
+  liftIO $ destinationFile lt workflowDir archiveDir file
 
 destinationFile ::
   MonadThrow m =>
@@ -63,10 +66,13 @@ destinationFile lt workflowDir archiveDir file = do
     Just rf -> do
       let mext = fileExtension rf :: Maybe String
       let withoutExt = FP.dropExtensions (fromRelFile rf)
-      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale "%F_%H%M%S" lt
+      let newRelFile = withoutExt ++ "_" ++ formatTime defaultTimeLocale archiveTimeFormat lt
       arf' <- parseRelFile newRelFile
       arf'' <- maybe (pure arf') (`replaceExtension` arf') mext
       pure $ archiveDir </> arf''
+
+archiveTimeFormat :: String
+archiveTimeFormat = "%F_%H%M%S"
 
 data NotInWorkflowDir = NotInWorkflowDir (Path Abs Dir) (Path Abs File)
   deriving (Show, Eq)

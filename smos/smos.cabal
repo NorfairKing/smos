@@ -141,6 +141,7 @@ library
     , fuzzy-time
     , megaparsec
     , microlens
+    , monad-logger
     , mtl
     , optparse-applicative
     , path

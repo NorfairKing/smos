@@ -14,10 +14,14 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+    - autodocodec
+    - bytestring
+    - conduit
     - containers
     - envparse
     - exceptions
     - filepath
+    - monad-logger
     - mtl
     - optparse-applicative
     - path
@@ -25,9 +29,10 @@ library:
     - smos-data
     - smos-data
     - smos-report
+    - text
     - time
+    - unliftio
     - validity
-    - autodocodec
 
 executables:
   smos-archive:
@@ -47,12 +52,18 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - bytestring
     - containers
+    - dirforest
     - genvalidity-sydtest
-    - sydtest
+    - monad-logger
+    - mtl
+    - path
+    - path-io
     - smos-archive
     - smos-data
     - smos-data-gen
+    - smos-report
+    - smos-report-gen
+    - sydtest
     - time
-    - path
-    - path-io

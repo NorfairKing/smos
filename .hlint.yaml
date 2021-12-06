@@ -23,6 +23,8 @@
 - ignore:
     name: "Use ++"
 - ignore:
+    name: "Use &&"
+- ignore:
     name: "Use ||"
     within:
       - "Smos.Draw.drawEntry"
