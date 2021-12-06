@@ -8,7 +8,7 @@ import qualified Smos.Report.OptParse.Types as Report
 data Arguments = Arguments !Command !(Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
-data Command = CommandArchiveFile !FilePath
+data Command = CommandFile !FilePath
   deriving (Show, Eq)
 
 data Flags = Flags
@@ -33,7 +33,7 @@ data Instructions = Instructions !Dispatch !Settings
   deriving (Show, Eq)
 
 data Dispatch
-  = DispatchArchiveFile !(Path Abs File)
+  = DispatchFile !(Path Abs File)
   deriving (Show, Eq)
 
 data Settings = Settings

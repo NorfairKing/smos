@@ -21,7 +21,7 @@ import GHC.Generics (Generic)
 import Lens.Micro
 import Path
 import Path.IO
-import Smos.Archive as Archive
+import Smos.Archive.Commands.File as Archive
 import Smos.Data
 import Smos.Undo
 

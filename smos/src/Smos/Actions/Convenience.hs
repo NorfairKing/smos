@@ -32,7 +32,8 @@ import Smos.Actions.Entry
 import Smos.Actions.File
 import Smos.Actions.Forest
 import Smos.Actions.Utils
-import Smos.Archive
+import Smos.Archive.Commands.File
+import Smos.Archive.OptParse.Types as Archive
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.Config
@@ -180,7 +181,7 @@ convArchiveFile =
           Nothing -> pure Nothing
           Just sfec -> do
             dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-            let runArchiveM = liftIO . flip runReaderT dc
+            let runArchiveM = liftIO . flip runReaderT (Archive.Settings {Archive.setDirectorySettings = dc})
             let sourceFile = smosFileEditorPath sfec
             mdf <- runArchiveM $ (Just <$> determineToFile sourceFile) `catch` (\(_ :: NotInWorkflowDir) -> pure Nothing)
             case mdf of

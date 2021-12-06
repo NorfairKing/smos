@@ -12,6 +12,7 @@ pkgs.haskell.lib.buildStackProject {
     git
     haskellPackages.autorecorder
     haskellPackages.autoexporter
+    haskellPackages.hpack
     killall
     niv
     sass

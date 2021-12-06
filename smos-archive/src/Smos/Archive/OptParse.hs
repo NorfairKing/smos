@@ -34,9 +34,9 @@ combineToInstructions ::
   Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions c Flags {..} Environment {..} mc = do
   dispatch <- case c of
-    CommandArchiveFile filepath -> do
+    CommandFile filepath -> do
       file <- resolveFile' filepath
-      pure $ DispatchArchiveFile file
+      pure $ DispatchFile file
   settings <- do
     setDirectorySettings <-
       Report.combineToDirectoryConfig
@@ -93,7 +93,7 @@ parseCommandArchiveFile = info parser modifier
   where
     modifier = fullDesc <> progDesc "Select entries based on a given filter"
     parser =
-      CommandArchiveFile
+      CommandFile
         <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH", action "file"])
 
 parseFlags :: Parser Flags

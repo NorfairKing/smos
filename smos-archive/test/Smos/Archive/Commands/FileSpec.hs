@@ -1,13 +1,13 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Smos.ArchiveSpec
+module Smos.Archive.Commands.FileSpec
   ( spec,
   )
 where
 
 import Data.Time
 import Path
-import Smos.Archive
+import Smos.Archive.Commands.File
 import Smos.Data.Gen ()
 import Test.Syd
 import Test.Syd.Validity
