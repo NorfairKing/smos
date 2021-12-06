@@ -1,6 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Archive
   ( smosArchive,
@@ -35,10 +34,11 @@ import qualified System.FilePath as FP
 
 smosArchive :: IO ()
 smosArchive = do
-  Settings {..} <- getSettings
-  runReaderT (archive setFile) setDirectorySettings
+  Instructions dispatch settings <- getInstructions
+  case dispatch of
+    DispatchArchiveFile file -> runReaderT (archive file) settings
 
-type Q a = ReaderT DirectoryConfig IO a
+type Q a = ReaderT Settings IO a
 
 archive :: Path Abs File -> Q ()
 archive from = do
@@ -49,8 +49,8 @@ archive from = do
 
 determineToFile :: Path Abs File -> Q (Path Abs File)
 determineToFile file = do
-  workflowDir <- asks resolveDirWorkflowDir >>= liftIO
-  archiveDir <- asks resolveDirArchiveDir >>= liftIO
+  workflowDir <- asks (resolveDirWorkflowDir . setDirectorySettings) >>= liftIO
+  archiveDir <- asks (resolveDirArchiveDir . setDirectorySettings) >>= liftIO
   lt <- liftIO getLocalTime
   destinationFile lt workflowDir archiveDir file
 

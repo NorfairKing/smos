@@ -6,6 +6,7 @@
 * `smos`: `convUrlWaitingForReview`, a convenience function for waiting for review at a given url.
 * `smos-sync-client`: Now removes empty directories after syncing, by default.
   See [its documentation](/smos-sync-client) for information about how to turn this off.
+* `smos-archive`: Can now also take commands. The original use of `smos-archive <file>` still works, but can now also be invoked as `smos-archive file <file>`.
 
 ### Changed
 

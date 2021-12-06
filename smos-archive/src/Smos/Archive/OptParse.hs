@@ -19,36 +19,42 @@ import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
 
-getSettings :: IO Settings
-getSettings = do
-  flags <- getFlags
+getInstructions :: IO Instructions
+getInstructions = do
+  Arguments c flags <- getArguments
   env <- getEnvironment
-  config <- getConfig flags env
-  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  config <- getConfiguration flags env
+  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
 
 getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfig f e =
   fmap Configuration <$> Report.getConfiguration f e
 
-deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
-deriveSettings Flags {..} Environment {..} mc = do
-  setFile <- resolveFile' flagFile
-  setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
-      flagDirectoryFlags
-      envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
-  pure Settings {..}
+combineToInstructions ::
+  Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
+combineToInstructions c Flags {..} Environment {..} mc = do
+  dispatch <- case c of
+    CommandArchiveFile filepath -> do
+      file <- resolveFile' filepath
+      pure $ DispatchArchiveFile file
+  settings <- do
+    setDirectorySettings <-
+      Report.combineToDirectoryConfig
+        Report.defaultDirectoryConfig
+        flagDirectoryFlags
+        envDirectoryEnvironment
+        (confDirectoryConfiguration <$> mc)
+    pure $ Settings {..}
+  pure $ Instructions dispatch settings
 
-getFlags :: IO (Report.FlagsWithConfigFile Flags)
-getFlags = do
+getArguments :: IO Arguments
+getArguments = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
-runArgumentsParser = execParserPure prefs_ flagsParser
+runArgumentsParser :: [String] -> ParserResult Arguments
+runArgumentsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       defaultPrefs
@@ -56,8 +62,8 @@ runArgumentsParser = execParserPure prefs_ flagsParser
           prefShowHelpOnEmpty = True
         }
 
-flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
-flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
+argParser :: ParserInfo Arguments
+argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
     description :: Doc
@@ -70,10 +76,28 @@ flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
           ]
             ++ readWriteDataVersionsHelpMessage
 
+parseArgs :: Parser Arguments
+parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
+
+parseCommand :: Parser Command
+parseCommand =
+  hsubparser
+    ( mconcat
+        [ command "file" parseCommandArchiveFile
+        ]
+    )
+    <|> infoParser parseCommandArchiveFile
+
+parseCommandArchiveFile :: ParserInfo Command
+parseCommandArchiveFile = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Select entries based on a given filter"
+    parser =
+      CommandArchiveFile
+        <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH", action "file"])
+
 parseFlags :: Parser Flags
-parseFlags =
-  Flags <$> strArgument (mconcat [help "The file to archive", metavar "FILEPATH", action "file"])
-    <*> Report.parseDirectoryFlags
+parseFlags = Flags <$> Report.parseDirectoryFlags
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -83,3 +107,6 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
 environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.directoryEnvironmentParser
+
+getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
+getConfiguration = Report.getConfiguration
