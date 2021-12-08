@@ -31,7 +31,6 @@ jobs:
       with:
         name: smos
     - run: nix-shell shell.nix --command "echo 'nix-entered succesfully'"
-    - run: nix-shell scripts/niv-update-pr.nix --command "echo 'nix-entered succesfully'"
 
   dynamic:
     name: Normal build ${{ matrix.os }}
