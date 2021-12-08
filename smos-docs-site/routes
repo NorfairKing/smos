@@ -19,6 +19,7 @@
 /smos-single SmosSingleR GET
 
 /smos-archive SmosArchiveR GET
+/smos-archive/#Text SmosArchiveCommandR GET
 
 /smos-notify SmosNotifyR GET
 

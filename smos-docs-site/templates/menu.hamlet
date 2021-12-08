@@ -121,6 +121,13 @@
     <li>
       <a href=@{SmosArchiveR}>
         The Smos Archiving Tool
+      <ul>
+        <li>
+          <a href=@{SmosArchiveCommandR "file"}>
+            File
+        <li>
+          <a href=@{SmosArchiveCommandR "export"}>
+            Export
 
     <li>
       <a href=@{SmosSingleR}>

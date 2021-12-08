@@ -65,6 +65,8 @@ extra-source-files:
     content/pages/related-projects.markdown
     content/pages/smos-api.markdown
     content/pages/smos-archive.markdown
+    content/pages/smos-archive/export.markdown
+    content/pages/smos-archive/file.markdown
     content/pages/smos-calendar-import.markdown
     content/pages/smos-calendar-import/nixos.markdown
     content/pages/smos-file.markdown

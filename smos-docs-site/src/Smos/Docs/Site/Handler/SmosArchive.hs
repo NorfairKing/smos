@@ -5,9 +5,12 @@
 
 module Smos.Docs.Site.Handler.SmosArchive
   ( getSmosArchiveR,
+    getSmosArchiveCommandR,
   )
 where
 
+import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
@@ -23,6 +26,18 @@ getSmosArchiveR = do
   defaultLayout $ do
     setSmosTitle "smos-archive"
     setDescription "Documentation for the Smos Archiving tool"
+    $(widgetFile "args")
+
+getSmosArchiveCommandR :: Text -> Handler Html
+getSmosArchiveCommandR cmd = do
+  DocPage {..} <- lookupPage' ["smos-archive", cmd]
+  let argsHelpText = getHelpPageOf [T.unpack cmd]
+      envHelpText = "This command does not use any extra environment variables." :: String
+      confHelpText = case cmd of
+        _ -> "This command admits no extra configuration." :: Text
+  defaultLayout $ do
+    setSmosTitle $ toHtml docPageTitle
+    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-archive tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

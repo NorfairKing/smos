@@ -17,6 +17,8 @@
 - ignore:
     name: "Redundant do"
 - ignore:
+    name: "Redundant case"
+- ignore:
     name: "Redundant <$>"
 - ignore:
     name: "Use <=<"
