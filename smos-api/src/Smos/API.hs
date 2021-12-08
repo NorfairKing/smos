@@ -56,7 +56,7 @@ import Smos.Report.Agenda
 import Smos.Report.Next
 
 apiVersion :: Version
-apiVersion = version 0 2 2 [] []
+apiVersion = version 0 2 1 [] []
 
 smosAPI :: Proxy SmosAPI
 smosAPI = Proxy
@@ -167,12 +167,12 @@ instance HasCodec Register where
     object "Register" $
       Register
         <$> parseAlternative
-          (requiredField "username" "username")
           (requiredField "registerUsername" "legacy key")
+          (requiredField "username" "username")
           .= registerUsername
         <*> parseAlternative
-          (requiredField "password" "password")
           (requiredField "registerPassword" "legacy key")
+          (requiredField "password" "password")
           .= registerPassword
 
 type PostLogin =
@@ -195,8 +195,8 @@ instance HasCodec Login where
   codec =
     object "Login" $
       Login
-        <$> parseAlternative (requiredField "username" "username") (requiredField "loginUsername" "legacy key") .= loginUsername
-        <*> parseAlternative (requiredField "password" "password") (requiredField "loginPassword" "legacy key") .= loginPassword
+        <$> parseAlternative (requiredField "loginUsername" "legacy key") (requiredField "username" "username") .= loginUsername
+        <*> parseAlternative (requiredField "loginPassword" "legacy key") (requiredField "password" "password") .= loginPassword
 
 type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> PostNoContent '[JSON] NoContent
 
