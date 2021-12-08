@@ -21,7 +21,6 @@ packages:
 - smos-server
 - smos-server-gen
 - smos-client
-- smos-shell
 - smos-sync-client
 - smos-sync-client-gen
 - smos-web-style
@@ -212,9 +211,6 @@ extra-deps:
   commit: f91fdbc2ac74cf8d005f536cfbbf9b4385cbbba6
 - github: NorfairKing/yesod-autoreload
   commit: 27d83b79893bb535c1a339db29a57c2ef0772305
-
-- github: NorfairKing/haskeline
-  commit: 7c6491c55741608255c2681702381ce488692d15
 
 - github: NorfairKing/template-haskell-reload
   commit: 6f8627b45ae63f64ad0a47d1130630aa2e24470d

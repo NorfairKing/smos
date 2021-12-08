@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 
@@ -33,8 +33,6 @@ extra-source-files:
     templates/navbar.julius
     templates/playground.hamlet
     templates/playground.lucius
-    templates/reports.hamlet
-    templates/reports.lucius
     templates/stripe-form.hamlet
     templates/stripe-form.julius
     templates/terminal.hamlet
@@ -69,7 +67,6 @@ library
       Smos.Web.Server.Handler.Import
       Smos.Web.Server.Handler.Playground
       Smos.Web.Server.Handler.Reload
-      Smos.Web.Server.Handler.Reports
       Smos.Web.Server.Handler.TUI
       Smos.Web.Server.OptParse
       Smos.Web.Server.OptParse.Types
@@ -116,7 +113,6 @@ library
     , shakespeare
     , smos
     , smos-client
-    , smos-shell
     , smos-sync-client
     , smos-web-style
     , stm

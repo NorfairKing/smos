@@ -48,7 +48,6 @@ library:
   - shakespeare
   - smos
   - smos-client
-  - smos-shell
   - smos-sync-client
   - smos-web-style
   - stm

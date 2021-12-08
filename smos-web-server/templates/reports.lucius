@@ -1,7 +1,0 @@
-#terminal {
-    display: block;
-    position: absolute;
-    height: calc(100% - 3.25rem);
-    width: 100%;
-}
-

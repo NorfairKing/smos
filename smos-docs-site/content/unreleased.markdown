@@ -25,3 +25,6 @@
 ### Removed
 
 * The static builds. Even if anyone were to use them, and I don't think anyone did, I don't think they actually worked because of the way terminfo is dealt with.
+* The `smos-shell` libary and executable, as well as the reports in the browser.
+  These reports were not configurable, and no one was using them.
+  People would switch to the CLI, or use the interactive reports, before they would ever use the web reports.

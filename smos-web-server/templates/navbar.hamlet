@@ -16,9 +16,6 @@
         <a .navbar-item href=@{TUIR ["example.smos"]}>
           Editor
 
-        <a .navbar-item href=@{ReportsR}>
-          Reports
-
         <a .navbar-item href=@{BackupsR}>
           Backups
 

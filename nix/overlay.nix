@@ -253,7 +253,6 @@ in
       "smos-client" = smosPkg "smos-client";
       "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
-      "smos-shell" = smosPkg "smos-shell";
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       inherit smos-web-style;
@@ -288,6 +287,22 @@ in
     (final.nixosOptionsDoc {
       options = eval.options;
     }).optionsJSON;
+
+
+  # This can be deleted as soon as the following is in our nixpkgs:
+  # https://github.com/NixOS/nixpkgs/pull/100838
+  stripe-cli =
+    final.stdenv.mkDerivation {
+      name = "stripe-cli";
+      src = builtins.fetchurl {
+        url = "https://github.com/stripe/stripe-cli/releases/download/v1.5.12/stripe_1.5.12_linux_x86_64.tar.gz";
+        sha256 = "sha256:077fx35phm2bjr147ycz77p76l3mx9vhaa1mx15kznw9y8jn6s14";
+      };
+      buildCommand = ''
+        mkdir -p $out/bin
+        tar xvzf $src --directory $out/bin
+      '';
+    };
 
   haskellPackages =
     previous.haskellPackages.override (
@@ -355,16 +370,6 @@ in
                     }
                   )
                   { };
-                haskeline = dontCheck (
-                  self.callCabal2nix "haskeline"
-                    (
-                      builtins.fetchGit {
-                        url = "https://github.com/NorfairKing/haskeline";
-                        rev = "7c6491c55741608255c2681702381ce488692d15";
-                      }
-                    )
-                    { }
-                );
                 template-haskell-reload = self.callCabal2nix "template-haskell-reload"
                   (
                     sources.template-haskell-reload

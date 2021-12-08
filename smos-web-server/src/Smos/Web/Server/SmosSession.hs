@@ -14,9 +14,9 @@ import Smos.Client hiding (Header)
 import Smos.Config
 import Smos.Default
 import Smos.Instance
-import Smos.Shell.Instance
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
+import Smos.Terminal
 import Smos.Types
 import Smos.Web.Server.Foundation
 import UnliftIO hiding (Handler)
@@ -71,24 +71,6 @@ reportConfigFor workflowDir =
   defaultReportConfig
     { smosReportConfigDirectoryConfig = directoryConfigFor workflowDir
     }
-
-withSmosShellSession ::
-  (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
-  Username ->
-  Token ->
-  (TerminalHandle -> m a) ->
-  m a
-withSmosShellSession userName token func =
-  withReadiedDir userName token $ \workflowDir -> withSmosShellSessionIn workflowDir func
-
-withSmosShellSessionIn ::
-  MonadUnliftIO m =>
-  Path Abs Dir ->
-  (TerminalHandle -> m a) ->
-  m a
-withSmosShellSessionIn workflowDir func = do
-  let directoryConfig = directoryConfigFor workflowDir
-  withSmosShellInstance directoryConfig func
 
 directoryConfigFor ::
   Path Abs Dir -> DirectoryConfig
