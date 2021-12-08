@@ -15,7 +15,6 @@ in
   tools = with pre-commit-hooks; [
     pre-commit
     hlint
-    hpack
     nixpkgs-fmt
     ormolu
   ];
