@@ -20,6 +20,7 @@
   Before, smos would go to the last deepest entry as a proxy for the "current" entry for a project.
   After this change, smos goes to the first, deepest, not-done entry.
   Any entirely-done subforests will also be collapsed on the way there.
+* Reduced the closure size of the `smosRelease` derivation from `4.9G` to `160M`.
 
 ### Removed
 

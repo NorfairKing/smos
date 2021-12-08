@@ -41,6 +41,7 @@ in
             ];
             doBenchmark = true;
             enableLibraryProfiling = false;
+            enableExecutableProfiling = false;
             # Turn off test suites on macos because they generate random
             # filepaths and that fails for some reason that I cannot investigate
             # because I don't own any apple products.
@@ -66,11 +67,9 @@ in
           linkcheck = (import sources.linkcheck).linkcheck;
           seocheck = (import sources.seocheck).seocheck;
         in
-        final.stdenv.mkDerivation {
-          name = "${exeName}-linkchecked";
-          buildCommand = ''
-            mkdir -p $out
-            ${final.xorg.lndir}/bin/lndir -silent ${pkg} $out
+        overrideCabal pkg (old: {
+          postInstall = ''
+            ${old.postInstall or ""}
 
             $out/bin/${exeName} serve &
             sleep 1
@@ -78,7 +77,7 @@ in
             ${seocheck}/bin/seocheck http://localhost:8000
             ${final.killall}/bin/killall ${exeName}
           '';
-        };
+        });
       withStaticResources = pkg: resources: overrideCabal pkg (
         old:
         {
@@ -269,16 +268,8 @@ in
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";
-      paths = final.lib.attrValues final.smosPackages;
+      paths = builtins.map final.haskell.lib.justStaticExecutables (final.lib.attrValues final.smosPackages);
     };
-
-  smosReleaseZip = final.stdenv.mkDerivation {
-    name = "smos-release.zip";
-    buildCommand = ''
-      cd ${final.smosRelease}
-      ${final.pkgs.zip}/bin/zip -r $out bin share/{zsh,bash-completion,mime,fish,applications}
-    '';
-  };
 
   moduleDocs =
     let
@@ -295,26 +286,8 @@ in
       };
     in
     (final.nixosOptionsDoc {
-      # options = filterRelevantOptions eval.options;
       options = eval.options;
     }).optionsJSON;
-
-
-  # This can be deleted as soon as the following is in our nixpkgs:
-  # https://github.com/NixOS/nixpkgs/pull/100838
-  stripe-cli =
-    final.stdenv.mkDerivation {
-      name = "stripe-cli";
-      src = builtins.fetchurl {
-        url = "https://github.com/stripe/stripe-cli/releases/download/v1.5.12/stripe_1.5.12_linux_x86_64.tar.gz";
-        sha256 = "sha256:077fx35phm2bjr147ycz77p76l3mx9vhaa1mx15kznw9y8jn6s14";
-      };
-      buildCommand = ''
-        mkdir -p $out/bin
-        tar xvzf $src --directory $out/bin
-      '';
-    };
-
 
   haskellPackages =
     previous.haskellPackages.override (
