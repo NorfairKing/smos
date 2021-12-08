@@ -22,5 +22,4 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Merge `staging` into `release`.
 1. Run the release script to create the appropriate tags
 1. Make a GitHub release with the contents of the changelog.
-1. Upload the release-zip with static binaries to the artefacts of the GitHub release
 1. Double-check that `development`, `testing`, `staging` and `release` now all point to the same version.
