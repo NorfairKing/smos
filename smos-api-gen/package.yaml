@@ -1,5 +1,5 @@
 name: smos-api-gen
-version: 0.2.1
+version: 0.3.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -15,7 +15,7 @@ library:
   ghc-options: -Wall
   dependencies:
     - QuickCheck
-    - genvalidity
+    - genvalidity >=1.0
     - genvalidity-bytestring
     - genvalidity-mergeful
     - genvalidity-path

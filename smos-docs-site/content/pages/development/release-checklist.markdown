@@ -9,7 +9,7 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Update the version number of the data format if the data format has been changed.
 1. Update the version number of the API if the API has been changed.
 1. Add new release section in the changelog.
-1. Run `scripts/gen-changelog-release-section.hs` to add all the version numbers to the changelog.
+1. Run `stack runhaskell scripts/gen-changelog-release-section.hs` to add all the version numbers to the changelog.
 1. Make sure that CI passes.
 1. Make a release candidate commit.
 1. Merge `development` into `testing`.

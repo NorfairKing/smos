@@ -1,11 +1,11 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 
 name:           smos-api-gen
-version:        0.2.1
+version:        0.3.0
 category:       Smos
 homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
@@ -26,7 +26,7 @@ library
   build-depends:
       QuickCheck
     , base
-    , genvalidity
+    , genvalidity >=1.0
     , genvalidity-bytestring
     , genvalidity-mergeful
     , genvalidity-path

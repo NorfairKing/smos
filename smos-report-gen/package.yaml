@@ -1,5 +1,5 @@
 name: smos-report-gen
-version: 0.2.0
+version: 0.3.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -21,7 +21,7 @@ library:
   - cursor-gen
   - deepseq
   - dirforest
-  - genvalidity
+  - genvalidity >=1.0
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-dirforest

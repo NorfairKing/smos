@@ -1,5 +1,5 @@
 name: smos-cursor-gen
-version: 0.1.1
+version: 0.2.0
 github: "NorfairKing/smos"
 author: "Tom Sydney Kerckhove"
 maintainer: "sydcs-syd.eu"
@@ -18,7 +18,7 @@ library:
   - cursor-dirforest-gen
   - cursor-fuzzy-time-gen
   - cursor-gen
-  - genvalidity
+  - genvalidity >=1.0
   - genvalidity-path
   - genvalidity-text
   - smos-cursor

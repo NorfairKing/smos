@@ -1,5 +1,5 @@
 name: smos-data-gen
-version: 0.1.2
+version: 0.2.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -20,7 +20,7 @@ library:
   dependencies:
   - QuickCheck
   - containers
-  - genvalidity
+  - genvalidity >=1.0
   - genvalidity-containers
   - genvalidity-text
   - genvalidity-time
