@@ -619,17 +619,17 @@ instance Ord StateHistoryEntry where
 
 instance HasCodec StateHistoryEntry where
   codec =
-    parseAlternatives
+    parseAlternative
       ( object "StateHistoryEntry" $
           StateHistoryEntry
             <$> requiredField "state" "new state" .= stateHistoryEntryNewState
             <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
       )
-      [ object "StateHistoryEntry (legacy)" $
+      ( object "StateHistoryEntry (legacy)" $
           StateHistoryEntry
             <$> requiredField "new-state" "new state" .= stateHistoryEntryNewState
             <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
-      ]
+      )
 
 newtype Tag = Tag
   { tagText :: Text
