@@ -3,9 +3,7 @@ version: 0.0.1
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2020 Tom Sydney Kerckhove'
 license: MIT
-homepage: https://github.com/NorfairKing/smos
 
 extra-source-files:
 - style/mybulma.scss

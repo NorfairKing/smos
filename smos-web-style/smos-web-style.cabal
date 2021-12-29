@@ -1,16 +1,14 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.5.
 --
 -- see: https://github.com/sol/hpack
 
 name:           smos-web-style
 version:        0.0.1
 category:       Smos
-homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2020 Tom Sydney Kerckhove
 license:        MIT
 build-type:     Simple
 extra-source-files:

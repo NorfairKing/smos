@@ -10,9 +10,6 @@ homepage:       https://github.com/NorfairKing/smos#readme
 bug-reports:    https://github.com/NorfairKing/smos/issues
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2018-2021 Tom Sydney Kerckhove
-license:        MIT
-license-file:   LICENSE
 build-type:     Simple
 
 source-repository head

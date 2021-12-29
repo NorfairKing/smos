@@ -7,12 +7,9 @@ cabal-version: 1.12
 name:           smos-sync-client-gen
 version:        0.3.0
 category:       Smos
-homepage:       https://github.com/NorfairKing/smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
-copyright:      Copyright: (c) 2019-2021 Tom Sydney Kerckhove
 license:        MIT
-license-file:   LICENSE
 build-type:     Simple
 
 library

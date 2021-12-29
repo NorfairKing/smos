@@ -3,9 +3,7 @@ version: 0.7.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2020-2021 Tom Sydney Kerckhove'
 license: MIT
-homepage: https://github.com/NorfairKing/smos
 
 extra-source-files:
 - routes.txt

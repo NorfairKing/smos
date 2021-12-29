@@ -1,10 +1,9 @@
 name: smos-docs-site
 version: 0.0.0
-github: "NorfairKing/smos"
+github: NorfairKing/smos
 license: MIT
-author: "Tom Sydney Kerckhove"
-maintainer: "syd@cs-syd.eu"
-copyright: "2018-2020 Tom Sydney Kerckhove"
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
 
 extra-source-files:
 - routes

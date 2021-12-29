@@ -3,9 +3,7 @@ version: 0.1.2
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
-copyright: ! 'Copyright: (c) 2018-2020 Tom Sydney Kerckhove'
 license: MIT
-homepage: https://github.com/NorfairKing/smos
 
 dependencies:
 - base >=4.9 && <=5

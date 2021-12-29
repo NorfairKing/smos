@@ -1,9 +1,8 @@
 name: smos-cursor-gen
 version: 0.2.0
-github: "NorfairKing/smos"
-author: "Tom Sydney Kerckhove"
-maintainer: "sydcs-syd.eu"
-copyright: "Copyright: (c) 2018-2020 Tom Sydney Kerckhove"
+github: NorfairKing/smos
+author: Tom Sydney Kerckhove
+maintainer: sydcs-syd.eu
 
 dependencies:
 - base >= 4.7 && < 5
