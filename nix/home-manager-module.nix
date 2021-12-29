@@ -15,10 +15,10 @@ in
       programs.smos =
         {
           enable = mkEnableOption "Smos cli and syncing";
-          smosPackages =
+          smosReleasePackages =
             mkOption {
               description = "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
-              default = (import ./pkgs.nix { }).smosPackages;
+              default = (import ./pkgs.nix { }).smosReleasePackages;
             };
           config =
             mkOption {
@@ -258,7 +258,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "sync-smos-service-ExecStart"
                   ''
-                    exec ${cfg.smosPackages.smos-sync-client}/bin/smos-sync-client sync
+                    exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
                   ''}";
               Type = "oneshot";
             };
@@ -300,7 +300,7 @@ in
               ExecStart =
                 "${pkgs.writeShellScript "calendar-smos-service-ExecStart"
                   ''
-                    exec ${cfg.smosPackages.smos-calendar-import}/bin/smos-calendar-import
+                    exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
                   ''}";
               Type = "oneshot";
             };
@@ -341,8 +341,8 @@ in
                 "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
                   ''
                     set -e
-                    ${cfg.smosPackages.smos-scheduler}/bin/smos-scheduler check
-                    exec ${cfg.smosPackages.smos-scheduler}/bin/smos-scheduler schedule
+                    ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check
+                    exec ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler schedule
                   ''}";
               Type = "oneshot";
             };
@@ -379,7 +379,7 @@ in
                   ''
                     set -e
                     export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
-                    exec ${cfg.smosPackages.smos-notify}/bin/smos-notify
+                    exec ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify
                   ''}";
               Type = "oneshot";
             };
@@ -451,7 +451,7 @@ in
             "${notifySmosName}" = notifySmosTimer;
           }
         );
-      packages = with cfg.smosPackages;
+      packages = with cfg.smosReleasePackages;
         [
           smos
           smos-archive

@@ -51,7 +51,7 @@ in
                   (builtins.readDir castsDir)
               )
           );
-      castDerivation = name: final.mkCastDerivationFunction { pkgs = final // final.smosPackages; } {
+      castDerivation = name: final.mkCastDerivationFunction { pkgs = final // final.smosReleasePackages; } {
         inherit name;
         src = ../smos-docs-site/content/casts + "/${name}.yaml";
         default-rows = 30;
@@ -265,10 +265,12 @@ in
       inherit smos-docs-site;
     };
 
+  smosReleasePackages = mapAttrs (_: pkg: final.haskell.lib.justStaticExecutables pkg) final.smosPackages;
+
   smosRelease =
     final.symlinkJoin {
       name = "smos-release";
-      paths = builtins.map final.haskell.lib.justStaticExecutables (final.lib.attrValues final.smosPackages);
+      paths = final.lib.attrValues final.smosReleasePackages;
     };
 
   moduleDocs =
@@ -279,7 +281,7 @@ in
           (import ./nixos-module.nix {
             inherit sources;
             pkgs = final;
-            inherit (final) smosPackages;
+            inherit (final) smosReleasePackages;
             envname = "production";
           })
         ];

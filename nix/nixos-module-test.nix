@@ -1,6 +1,6 @@
 { sources ? import ./sources.nix
 , pkgs ? import ./pkgs.nix { inherit sources; }
-, smosPackages ? pkgs.smosPackages
+, smosReleasePackages ? pkgs.smosReleasePackages
 }:
 let
   # See this for more info:
@@ -8,7 +8,7 @@ let
   smos-production = import ./nixos-module.nix {
     inherit sources;
     inherit pkgs;
-    inherit smosPackages;
+    inherit smosReleasePackages;
     envname = "production";
   };
   home-manager = import (
@@ -105,7 +105,7 @@ let
       home.stateVersion = "20.09";
       programs.smos = {
         enable = true;
-        inherit smosPackages;
+        inherit smosReleasePackages;
       };
     };
 

@@ -1,7 +1,7 @@
 { envname
 , sources ? import ./sources.nix
 , pkgs ? import ./pkgs.nix { inherit sources; }
-, smosPackages ? pkgs.smosPackages
+, smosReleasePackages ? pkgs.smosReleasePackages
 }:
 
 { lib, pkgs, config, ... }:
@@ -74,11 +74,10 @@ in
                       default = null;
                       description = "The Google search console verification code";
                     };
-                  pkg =
-                    mkOption {
-                      default = smosPackages.smos-docs-site;
-                      description = "The docs site package";
-                    };
+                  pkg = mkOption {
+                    default = smosReleasePackages.smos-docs-site;
+                    description = "The docs site package";
+                  };
                 };
             });
         };
@@ -164,11 +163,10 @@ in
                   auto-backup = mkLooperOption "auto-backup";
                   backup-garbage-collector = mkLooperOption "backup-garbage-collector";
                   file-migrator = mkLooperOption "file-migrator";
-                  pkg =
-                    mkOption {
-                      default = smosPackages.smos-server;
-                      description = "The docs server package";
-                    };
+                  pkg = mkOption {
+                    default = smosReleasePackages.smos-server;
+                    description = "The docs server package";
+                  };
                   monetisation =
                     mkOption {
                       default = null;
@@ -272,11 +270,10 @@ in
                       default = null;
                       description = "The Google search console verification code";
                     };
-                  pkg =
-                    mkOption {
-                      default = smosPackages.smos-web-server;
-                      description = "The web server package";
-                    };
+                  pkg = mkOption {
+                    default = smosReleasePackages.smos-web-server;
+                    description = "The web server package";
+                  };
                 };
             });
         };

@@ -1,18 +1,18 @@
 { sources ? import ./sources.nix
 , pkgs ? import ./pkgs.nix { inherit sources; }
-, smosPackages ? pkgs.smosPackages
+, smosReleasePackages ? pkgs.smosReleasePackages
 }:
 let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
   smos-testing = import ./nixos-module.nix {
     inherit sources;
-    inherit smosPackages;
+    inherit smosReleasePackages;
     envname = "testing";
   };
   smos-end-to-end-testing = import ./end-to-end-test-nixos-module.nix {
     inherit sources;
-    inherit smosPackages;
+    inherit smosReleasePackages;
     envname = "testing";
   };
 
@@ -23,7 +23,7 @@ let
 in
 pkgs.nixosTest (
   { lib, pkgs, ... }: {
-    name = "smos-module-test";
+    name = "smos-end-to-end-test";
     nodes = {
       server = {
         imports = [
