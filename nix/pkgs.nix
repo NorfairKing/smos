@@ -30,9 +30,6 @@ let
             inherit sources;
           })
         ];
-        config = {
-          allowUnfree = true;
-        };
       }
     );
 in
