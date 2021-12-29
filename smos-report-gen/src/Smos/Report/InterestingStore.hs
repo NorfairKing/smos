@@ -48,7 +48,7 @@ instance GenValid InterestingStore where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance Validity InterestingStore where
-  validate is@InterestingStore {..} =
+  validate is =
     mconcat
       [ genericValidate is,
         declare "The files all fit in one dirforest without insertion errors" $ isRight $ interestingStoreSafeSmosFileDF is

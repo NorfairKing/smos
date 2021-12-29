@@ -11,13 +11,15 @@ import Data.GenValidity.Criterion
 import Data.Map (Map)
 import Data.Set (Set)
 import Path
+import Path.IO
 import Smos.Data
 import Smos.Data.Gen ()
 
 main :: IO ()
-main =
+main = do
+  here <- getCurrentDir
   Criterion.defaultMain
-    [ bench "readSmosFile" $ nfIO $ readSmosFile [relfile|test_resources/golden/single-complex-entry.smos|],
+    [ bench "readSmosFile" $ nfIO $ readSmosFile $ here </> [relfile|test_resources/golden/single-complex-entry.smos|],
       bgroup
         "generators"
         [ genValidBench @Header,

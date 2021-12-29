@@ -168,9 +168,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . (left Env.UnreadError . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
-  where
-    mE = Env.def Nothing <> Env.keep
+      <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

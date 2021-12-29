@@ -79,8 +79,6 @@ pkgs.nixosTest (
       };
     };
     testScript = ''
-      from shlex import quote
-
       server.start()
       client.start()
       server.wait_for_unit("multi-user.target")

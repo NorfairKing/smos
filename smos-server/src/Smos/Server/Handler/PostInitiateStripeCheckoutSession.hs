@@ -66,11 +66,10 @@ servePostInitiateStripeCheckoutSession ac iscs = do
                     postCheckoutSessionsRequestBodyLineItems'Price = Just monetisationSetStripePrice
                   }
               ]
-            methodTypes = [PostCheckoutSessionsRequestBodyPaymentMethodTypes'EnumCard]
             successUrl = initiateStripeCheckoutSessionSuccessUrl iscs
             cancelUrl = initiateStripeCheckoutSessionCanceledUrl iscs
         let request =
-              (mkPostCheckoutSessionsRequestBody cancelUrl methodTypes successUrl)
+              (mkPostCheckoutSessionsRequestBody cancelUrl successUrl)
                 { postCheckoutSessionsRequestBodyCustomer = Just $ stripeCustomerCustomer stripeCustomer,
                   postCheckoutSessionsRequestBodyClientReferenceId = Just $ usernameText username,
                   postCheckoutSessionsRequestBodyLineItems = Just lineItems,

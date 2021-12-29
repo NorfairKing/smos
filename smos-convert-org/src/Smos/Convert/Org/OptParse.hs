@@ -18,14 +18,10 @@ import System.Environment
 getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
-  config <- getConfig flags
-  deriveSettings flags config
+  deriveSettings flags
 
-getConfig :: Flags -> IO Configuration
-getConfig Flags {..} = pure Configuration
-
-deriveSettings :: Flags -> Configuration -> IO Settings
-deriveSettings Flags {..} Configuration = do
+deriveSettings :: Flags -> IO Settings
+deriveSettings Flags {..} = do
   setFromFile <- resolveFile' flagFromFile
   setToFile <- mapM resolveFile' flagToFile
   pure Settings {..}

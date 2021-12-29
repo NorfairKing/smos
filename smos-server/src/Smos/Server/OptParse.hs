@@ -34,7 +34,7 @@ getInstructions = do
   combineToInstructions args env config
 
 combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments c Flags {..}) Environment {..} mc =
+combineToInstructions (Arguments c _) Environment {..} mc =
   Instructions <$> getDispatch <*> getSettings
   where
     getDispatch =
@@ -103,29 +103,27 @@ environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
   Env.prefixed "SMOS_SERVER_" $
     Environment
-      <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "Config file")
-      <*> Env.var (fmap Just . (left Env.UnreadError . parseLogLevel)) "LOG_LEVEL" (mE <> Env.help "The minimal severity of log messages")
-      <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The file to store the server uuid in")
-      <*> Env.var (fmap Just . Env.str) "DATABASE_FILE" (mE <> Env.help "The file to store the server database in")
-      <*> Env.var (fmap Just . Env.str) "SIGNING_KEY_FILE" (mE <> Env.help "The file to store the JWT signing key in")
-      <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
-      <*> Env.var (fmap Just . Env.auto) "MAX_BACKUPS_PER_USER" (mE <> Env.help "The maximum number of backups per user")
-      <*> Env.var (fmap Just . Env.auto) "MAX_BACKUP_SIZE_PER_USER" (mE <> Env.help "The maximum number of bytes that backups can take up per user")
-      <*> Env.var (fmap (Just . (fromIntegral :: Int -> NominalDiffTime)) . Env.auto) "BACKUP_INTERVAL" (mE <> Env.help "The interval between automatic backups (seconds)")
+      <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "Config file"))
+      <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+      <*> optional (Env.var Env.str "UUID_FILE" (Env.help "The file to store the server uuid in"))
+      <*> optional (Env.var Env.str "DATABASE_FILE" (Env.help "The file to store the server database in"))
+      <*> optional (Env.var Env.str "SIGNING_KEY_FILE" (Env.help "The file to store the JWT signing key in"))
+      <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
+      <*> optional (Env.var Env.auto "MAX_BACKUPS_PER_USER" (Env.help "The maximum number of backups per user"))
+      <*> optional (Env.var Env.auto "MAX_BACKUP_SIZE_PER_USER" (Env.help "The maximum number of bytes that backups can take up per user"))
+      <*> optional (Env.var (fmap (fromIntegral :: Int -> NominalDiffTime) . Env.auto) "BACKUP_INTERVAL" (Env.help "The interval between automatic backups (seconds)"))
       <*> looperEnvironmentParser "AUTO_BACKUP"
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "FILE_MIGRATOR"
-      <*> Env.var (fmap Just . (left Env.UnreadError . parseUsernameWithError . T.pack)) "ADMIN" (mE <> Env.help "The user that will have admin rights")
+      <*> optional (Env.var (left Env.UnreadError . parseUsernameWithError . T.pack) "ADMIN" (Env.help "The user that will have admin rights"))
       <*> monetisationEnvironmentParser
-  where
-    mE = Env.def Nothing <> Env.keep
 
 monetisationEnvironmentParser :: Env.Parser Env.Error MonetisationEnvironment
 monetisationEnvironmentParser =
   MonetisationEnvironment
-    <$> Env.var (fmap Just . Env.str) "STRIPE_SECRET_KEY" (mE <> Env.help "The stripe api secret key")
-    <*> Env.var (fmap Just . Env.str) "STRIPE_PUBLISHABLE_KEY" (mE <> Env.help "The stripe api publishable key")
-    <*> Env.var (fmap Just . Env.str) "STRIPE_PRICE" (mE <> Env.help "The stripe price id")
+    <$> optional (Env.var Env.str "STRIPE_SECRET_KEY" (Env.help "The stripe api secret key"))
+    <*> optional (Env.var Env.str "STRIPE_PUBLISHABLE_KEY" (Env.help "The stripe api publishable key"))
+    <*> optional (Env.var Env.str "STRIPE_PRICE" (Env.help "The stripe price id"))
     <*> Env.var
       ( left Env.UnreadError
           . fmap S.fromList
@@ -134,9 +132,7 @@ monetisationEnvironmentParser =
           . T.pack
       )
       "FREELOADERS"
-      (Env.def S.empty <> Env.keep <> Env.help "The usernames of users that will not have to pay, comma separated")
-  where
-    mE = Env.def Nothing <> Env.keep
+      (Env.def S.empty <> Env.help "The usernames of users that will not have to pay, comma separated")
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =

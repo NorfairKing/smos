@@ -75,5 +75,6 @@ benchmarks:
     - genvalidity-containers
     - genvalidity-criterion
     - path
+    - path-io
     - smos-data
     - smos-data-gen

@@ -149,7 +149,10 @@ instance HasCodec Monetisation where
         <*> requiredField "currency" "currency of the price" .= monetisationStripePriceCurrency
         <*> requiredField "price-per-year" "price per year, in minimal quantisations" .= monetisationStripePricePerYear
 
-type PostRegister = "register" :> ReqBody '[JSON] Register :> PostNoContent '[JSON] NoContent
+-- We cannot use PostNoContent because of this issue:
+-- https://github.com/haskell-servant/servant-auth/issues/177
+-- The suggested workaround there also doesn't seem to work .. (?)
+type PostRegister = "register" :> ReqBody '[JSON] Register :> Verb 'POST 204 '[JSON] NoContent
 
 data Register = Register
   { registerUsername :: Username,
@@ -178,7 +181,7 @@ instance HasCodec Register where
 type PostLogin =
   "login"
     :> ReqBody '[JSON] Login
-    :> PostNoContent '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
+    :> Verb 'POST 204 '[JSON] (Headers '[Header "Set-Cookie" T.Text] NoContent)
 
 data Login = Login
   { loginUsername :: Username,
@@ -204,7 +207,7 @@ instance HasCodec Login where
           (requiredField "loginPassword" "legacy key")
           .= loginPassword
 
-type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> PostNoContent '[JSON] NoContent
+type PostStripeHook = "stripe" :> ReqBody '[JSON] JSON.Value :> Verb 'POST 204 '[JSON] NoContent
 
 type GetUserPermissions = "user" :> "permissions" :> Get '[JSON] UserPermissions
 
@@ -307,7 +310,7 @@ instance HasCodec InitiatedCheckoutSession where
         <$> requiredField "session" "session identifier" .= initiatedCheckoutSessionId
         <*> optionalField "customer" "customer identifier" .= initiatedCheckoutSessionCustomerId
 
-type DeleteUser = "user" :> DeleteNoContent '[JSON] NoContent
+type DeleteUser = "user" :> Verb 'DELETE 204 '[JSON] NoContent
 
 type PostSync = "sync" :> ReqBody '[JSON] SyncRequest :> Post '[JSON] SyncResponse
 
@@ -339,9 +342,9 @@ type PostBackup = "backup" :> Post '[JSON] BackupUUID
 
 type GetBackup = "backup" :> Capture "backup" BackupUUID :> StreamGet NoFraming OctetStream (SourceIO ByteString)
 
-type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> PutNoContent '[JSON] NoContent
+type PutRestoreBackup = "backup" :> Capture "backup" BackupUUID :> "restore" :> Verb 'PUT 204 '[JSON] NoContent
 
-type DeleteBackup = "backup" :> Capture "backup" BackupUUID :> DeleteNoContent '[JSON] NoContent
+type DeleteBackup = "backup" :> Capture "backup" BackupUUID :> Verb 'DELETE 204 '[JSON] NoContent
 
 data SyncServer
 
@@ -430,7 +433,7 @@ type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
-type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> PutNoContent '[JSON] NoContent
+type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> Verb 'PUT 204 '[JSON] NoContent
 
 type ReportsAPI = ToServantApi ReportRoutes
 
@@ -460,7 +463,7 @@ data AdminRoutes route = AdminRoutes
   }
   deriving (Generic)
 
-type PostMigrateFiles = "migrator-files" :> PostNoContent '[JSON] NoContent
+type PostMigrateFiles = "migrator-files" :> Verb 'POST 204 '[JSON] NoContent
 
 type GetUsers = "users" :> Get '[JSON] [UserInfo]
 
@@ -492,4 +495,4 @@ instance HasCodec UserInfo where
         <*> requiredField "last-use" "last time the user used the API" .= userInfoLastUse
         <*> requiredField "subscribed" "user subscription status" .= userInfoSubscribed
 
-type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> PutNoContent '[JSON] NoContent
+type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> Verb 'PUT 204 '[JSON] NoContent

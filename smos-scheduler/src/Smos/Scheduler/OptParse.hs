@@ -73,9 +73,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . Env.str) "STATE_FILE" (mE <> Env.help "The path to the file in which to store the scheduler state")
-  where
-    mE = Env.def Nothing <> Env.keep
+      <*> optional (Env.var Env.str "STATE_FILE" (Env.help "The path to the file in which to store the scheduler state"))
 
 getArguments :: IO Arguments
 getArguments = do

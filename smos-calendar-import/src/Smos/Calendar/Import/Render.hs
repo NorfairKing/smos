@@ -31,7 +31,7 @@ renderEvents Events {..} =
     toNode a = Node a []
 
 renderEvent :: Header -> Maybe Contents -> Event -> Entry
-renderEvent h mc ev@Event {..} =
+renderEvent h mc ev =
   let ts = renderTimestamps ev
    in (newEntry h) {entryTimestamps = ts, entryContents = mc}
 

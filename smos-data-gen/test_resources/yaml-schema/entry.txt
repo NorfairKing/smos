@@ -1,4 +1,5 @@
 [36mdef: Entry[m
+# [32many of[m
 [ # only a header
   [33m<string>[m
 , # Entry
@@ -12,6 +13,7 @@
     # default: [35m{}[m
     # timestamps
     [37m<key>[m: 
+      # [32many of[m
       [ # %F
         [33m<string>[m
       , # %F %T%Q
@@ -26,14 +28,15 @@
     # default: [35m[][m
     # state history
     # In reverse chronological order
-    - [ # StateHistoryEntry
+    - # [32many of[m
+      [ # StateHistoryEntry
         [37mstate[m: # [31mrequired[m
           # new state
-          [ [33mnull[m
-          , [33m<string>[m
-          ]
+          # [32mor null[m
+          [33m<string>[m
         [37mtime[m: # [31mrequired[m
           # time at which the state change happened
+          # [32many of[m
           [ # %F %H:%M:%S.%q
             [33m<string>[m
           , # Whatever aeson parses, as a fallback
@@ -43,11 +46,11 @@
       , # StateHistoryEntry (legacy)
         [37mnew-state[m: # [31mrequired[m
           # new state
-          [ [33mnull[m
-          , [33m<string>[m
-          ]
+          # [32mor null[m
+          [33m<string>[m
         [37mtimestamp[m: # [31mrequired[m
           # time at which the state change happened
+          # [32many of[m
           [ # %F %H:%M:%S.%q
             [33m<string>[m
           , # Whatever aeson parses, as a fallback
@@ -67,6 +70,7 @@
     - # LogbookEntry
       [37mstart[m: # [31mrequired[m
         # start of the logbook entry
+        # [32many of[m
         [ # %F %H:%M:%S.%q
           [33m<string>[m
         , # Whatever aeson parses, as a fallback
@@ -75,6 +79,7 @@
         ]
       [37mend[m: # [34moptional[m
         # end of the logbook entry
+        # [32many of[m
         [ # %F %H:%M:%S.%q
           [33m<string>[m
         , # Whatever aeson parses, as a fallback

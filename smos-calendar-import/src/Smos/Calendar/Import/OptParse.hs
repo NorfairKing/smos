@@ -102,6 +102,4 @@ environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser =
   Report.envWithConfigFileParser $
     Environment <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . Env.auto) "DEBUG" (mE <> Env.help "Whether to output debug info")
-  where
-    mE = Env.def Nothing <> Env.keep
+      <*> optional (Env.var Env.auto "DEBUG" (Env.help "Whether to output debug info"))

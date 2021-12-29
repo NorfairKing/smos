@@ -125,8 +125,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to store the notification database at")
-      <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "log level")
+      <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to store the notification database at"))
+      <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
   where
-    mE = Env.def Nothing <> Env.keep
     logLevelReader = left Env.UnreadError . parseLogLevel

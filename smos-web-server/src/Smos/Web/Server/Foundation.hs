@@ -307,8 +307,8 @@ instance FromJSON Token where
   parseJSON =
     withText "Token" $ \t ->
       case Base16.decode $ TE.encodeUtf8 t of
-        (h, "") -> pure $ Token h
-        _ -> fail "Invalid token in JSON: could not decode from hex string"
+        Right h -> pure $ Token h
+        Left err -> fail $ "Invalid token in JSON: " <> err
 
 instance ToJSON Token where
   toJSON (Token bs) =

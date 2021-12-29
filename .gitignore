@@ -13,3 +13,4 @@ session.json
 *:Zone.Identifier
 .sass-cache/
 *.css
+stripe-client/

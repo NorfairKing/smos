@@ -232,13 +232,12 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.environmentParser
-      <*> Env.var (fmap Just . ignoreArchiveReader) "IGNORE_ARCHIVE" (mE <> Env.help "whether to ignore the archive")
+      <*> optional (Env.var ignoreArchiveReader "IGNORE_ARCHIVE" (Env.help "whether to ignore the archive"))
   where
     ignoreArchiveReader = \case
       "True" -> Right HideArchive
       "False" -> Right Don'tHideArchive
       _ -> Left $ Env.UnreadError "Must be 'True' or 'False' if set"
-    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

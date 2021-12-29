@@ -942,7 +942,7 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                                   case entryReportCursorSelection timestampsReportCursorEntryReportCursor of
                                     EntryReportSelected -> ("Timestamps Report", timestampsReportMatchers)
                                     EntryReportFilterSelected -> ("Timestamps Report, Search", timestampsReportSearchMatchers)
-                          ReportStuck StuckReportCursor {..} ->
+                          ReportStuck _ ->
                             let StuckReportKeyMap {..} = reportsKeymapStuckReportKeyMap
                                 StuckReportKeyMap _ _ = reportsKeymapStuckReportKeyMap
                              in (\(t, ms) -> (t, ms ++ stuckReportAnyMatchers)) ("Stuck report", stuckReportMatchers)

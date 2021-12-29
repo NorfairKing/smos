@@ -302,7 +302,7 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.environmentParser
-      <*> Env.var (fmap Just . Env.auto) "EXPLAINER_MODE" (Env.def Nothing <> Env.keep <> Env.help "Activate explainer mode to show what is happening")
+      <*> optional (Env.var Env.auto "EXPLAINER_MODE" (Env.help "Activate explainer mode to show what is happening"))
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult

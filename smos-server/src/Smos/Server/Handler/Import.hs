@@ -21,9 +21,9 @@ import Data.Time as X
 import Data.UUID.Typed as X
 import Path as X
 import Path.IO as X hiding (getPermissions)
-import Servant.API as X
+import Servant.API as X hiding (Unique)
 import Servant.Server as X
-import Smos.API as X
+import Smos.API as X hiding (Unique)
 import Smos.Data hiding (parseHeader)
 import Smos.Report.Archive as X
 import Smos.Server.Constants as X

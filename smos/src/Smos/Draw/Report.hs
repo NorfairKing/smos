@@ -131,7 +131,7 @@ drawEntryReportCursorSimple go = drawEntryReportCursor $ \s mnec ->
         wecs
 
 drawEntryReportCursor :: (Select -> Maybe (NonEmptyCursor (EntryReportEntryCursor a)) -> Drawer) -> Select -> EntryReportCursor a -> Drawer
-drawEntryReportCursor func s erc@EntryReportCursor {..} = do
+drawEntryReportCursor func s erc = do
   tableW <- drawEntryReportCursorTable func s erc
   pure $
     vBox

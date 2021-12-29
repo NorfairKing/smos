@@ -80,5 +80,5 @@ runSmosWebServer ServeSettings {..} = do
 -- This also checks whether the smos-server is online.
 withServerVersionCheck :: App -> IO a -> IO a
 withServerVersionCheck app func = do
-  let cenv = ClientEnv (appHttpManager app) (appAPIBaseUrl app) Nothing
+  let cenv = mkClientEnv (appHttpManager app) (appAPIBaseUrl app)
   withClientVersionCheck cenv func

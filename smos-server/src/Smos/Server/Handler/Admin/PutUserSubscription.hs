@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.Admin.PutUserSubscription
   ( servePutUserSubscription,
@@ -18,7 +17,7 @@ servePutUserSubscription ac un end = asAdmin (authNCookieUsername ac) $ do
   mUser <- runDB $ getBy $ UniqueUsername un
   case mUser of
     Nothing -> throwError $ err404 {errBody = "User not found."}
-    Just (Entity uid User {..}) -> do
+    Just (Entity uid _) -> do
       _ <-
         runDB $
           upsertBy

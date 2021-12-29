@@ -7,6 +7,35 @@ let
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
   mergeListRecursively = final.callPackage ./merge-lists-recursively.nix { };
+
+  generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
+  generatedStripe = generateOpenAPIClient {
+    name = "stripe-client";
+    src = sources.stripe-spec + "/openapi/spec3.yaml";
+    moduleName = "StripeClient";
+    extraFlags = [
+      "--property-type-suffix=\"'\""
+      "--convert-to-camel-case"
+    ];
+    schemas = [
+      "event"
+      "checkout.session"
+      "notification_event_data"
+      "invoice"
+      "subscription"
+      "price"
+      "customer"
+    ];
+    operations = [
+      "GetEvents"
+      "GetPricesPrice"
+      "PostCustomers"
+      "PostCheckoutSessions"
+    ];
+  };
+  generatedStripePackage = dontHaddock (disableLibraryProfiling (generatedStripe.package));
+  generatedStripeCode = generatedStripe.code;
+  stripe-client = generatedStripe.package;
 in
 {
   smosCasts =
@@ -53,7 +82,6 @@ in
               "--ghc-options=-Widentities"
               "--ghc-options=-Wredundant-constraints"
               "--ghc-options=-Wcpp-undef"
-              "--ghc-options=-Wcompat"
             ];
           }
         );
@@ -64,8 +92,8 @@ in
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
       withLinksChecked = exeName: pkg:
         let
-          linkcheck = (import sources.linkcheck).linkcheck;
-          seocheck = (import sources.seocheck).seocheck;
+          linkcheck = import sources.linkcheck;
+          seocheck = import sources.seocheck;
         in
         overrideCabal pkg (old: {
           postInstall = ''
@@ -204,32 +232,6 @@ in
           '';
         }
       );
-      generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
-      generatedStripe = generateOpenAPIClient {
-        name = "stripe-client";
-        src = sources.stripe-spec + "/openapi/spec3.yaml";
-        moduleName = "StripeClient";
-        extraFlags = [
-          "--property-type-suffix=\"'\""
-          "--convert-to-camel-case"
-        ];
-        schemas = [
-          "event"
-          "checkout.session"
-          "notification_event_data"
-          "invoice"
-          "subscription"
-          "price"
-          "customer"
-        ];
-        operations = [
-          "GetEvents"
-          "GetPricesPrice"
-          "PostCustomers"
-          "PostCheckoutSessions"
-        ];
-      };
-      stripe-client = ownPkg "stripe-client" generatedStripe.code;
     in
     {
       inherit smos;
@@ -256,7 +258,6 @@ in
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       inherit smos-web-style;
-      inherit stripe-client;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
       "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
@@ -288,21 +289,7 @@ in
       options = eval.options;
     }).optionsJSON;
 
-
-  # This can be deleted as soon as the following is in our nixpkgs:
-  # https://github.com/NixOS/nixpkgs/pull/100838
-  stripe-cli =
-    final.stdenv.mkDerivation {
-      name = "stripe-cli";
-      src = builtins.fetchurl {
-        url = "https://github.com/stripe/stripe-cli/releases/download/v1.5.12/stripe_1.5.12_linux_x86_64.tar.gz";
-        sha256 = "sha256:077fx35phm2bjr147ycz77p76l3mx9vhaa1mx15kznw9y8jn6s14";
-      };
-      buildCommand = ''
-        mkdir -p $out/bin
-        tar xvzf $src --directory $out/bin
-      '';
-    };
+  inherit generatedStripeCode;
 
   haskellPackages =
     previous.haskellPackages.override (
@@ -319,49 +306,16 @@ in
             )
             (
               self: super: with final.haskell.lib;
-              let
-                passwordRepo = builtins.fetchGit {
-                  url = "https://github.com/cdepillabout/password";
-                  rev = "e90b7481af2d63de6b2d9ead3c03ddb798707d22";
-                };
-                passwordPkg = name: self.callCabal2nix name (passwordRepo + "/${name}") { };
-                servantAuthRepo = builtins.fetchGit {
-                  url = "https://github.com/haskell-servant/servant-auth";
-                  rev = "296de3cb69135f83f0f01169fc10f8b3a2539405";
-                };
-                servantAuthPkg = name: self.callCabal2nix name (servantAuthRepo + "/${name}") { };
-                servantAuthPackages = genAttrs [
-                  "servant-auth"
-                  "servant-auth-client"
-                  "servant-auth-server"
-                  "servant-auth-docs"
-                  "servant-auth-swagger"
-                ]
-                  servantAuthPkg;
-              in
-              servantAuthPackages // {
+              {
                 zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
-                password = passwordPkg "password";
-                password-types = passwordPkg "password-types";
-                password-instances = passwordPkg "password-instances";
                 iCalendar = self.callCabal2nix "iCalendar"
                   (
                     builtins.fetchGit {
                       url = "https://github.com/NorfairKing/iCalendar";
-                      rev = "70c924ad6275ba05a514e31af1607a5b175f98ad";
+                      rev = "e08c16dceaab4d15b0f00860512018bc64791f07";
                     }
                   )
                   { };
-                vty = dontCheck (
-                  self.callCabal2nix "vty"
-                    (
-                      builtins.fetchGit {
-                        url = "https://github.com/jtdaugherty/vty";
-                        rev = "6a9c90da0e093cec1d4903924eb0f6a33be489cb";
-                      }
-                    )
-                    { }
-                );
                 ormode-parse = self.callCabal2nix "orgmode-parse"
                   (
                     builtins.fetchGit {
@@ -377,12 +331,11 @@ in
                   )
                   { };
                 yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
-                terminfo = self.callHackage "terminfo" "0.4.1.4" { };
-                envparse = self.callHackage "envparse" "0.4.1" { };
                 # These are turned off for the same reason as the local packages tests
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
                 cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
+                inherit stripe-client;
               } // final.smosPackages
             );
       }

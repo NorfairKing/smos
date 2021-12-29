@@ -26,7 +26,7 @@ getInstructions = do
   combineToInstructions args env config
 
 combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments (CommandServe ServeFlags {..}) Flags {..}) Environment {..} mConf = do
+combineToInstructions (Arguments (CommandServe ServeFlags {..}) _) Environment {..} mConf = do
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
   let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
@@ -48,14 +48,12 @@ prefixedEnvironmentParser =
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
   Environment
-    <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (mE <> Env.help "The config file")
-    <*> Env.var (fmap Just . Env.auto) "PORT" (mE <> Env.help "The port to serve web requests on")
-    <*> Env.var (fmap Just . Env.str) "API_URL" (mE <> Env.help "The url for the api server to refer to")
-    <*> Env.var (fmap Just . Env.str) "WEB_URL" (mE <> Env.help "The url for the web server to refer to")
-    <*> Env.var (fmap Just . Env.str) "GOOGLE_ANALYTICS_TRACKING" (mE <> Env.help "The Google analytics tracking code")
-    <*> Env.var (fmap Just . Env.str) "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (mE <> Env.help "The Google search console verification code")
-  where
-    mE = Env.def Nothing <> Env.keep
+    <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "The config file"))
+    <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
+    <*> optional (Env.var Env.str "API_URL" (Env.help "The url for the api server to refer to"))
+    <*> optional (Env.var Env.str "WEB_URL" (Env.help "The url for the web server to refer to"))
+    <*> optional (Env.var Env.str "GOOGLE_ANALYTICS_TRACKING" (Env.help "The Google analytics tracking code"))
+    <*> optional (Env.var Env.str "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (Env.help "The Google search console verification code"))
 
 getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
 getConfiguration Flags {..} Environment {..} =

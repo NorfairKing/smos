@@ -18,7 +18,7 @@ import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Next
-import Smos.Cursor.Report.Stuck
+-- import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
 import Smos.Cursor.Report.Work
@@ -48,7 +48,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
            in (++ fileAnys) $
                 case editorCursorFileCursor of
                   Nothing -> []
-                  Just sfec@SmosFileEditorCursor {..} ->
+                  Just sfec ->
                     map ((,) SpecificMatcher) $ case smosFileEditorCursorPresent sfec of
                       Nothing -> fileKeyMapEmptyMatchers
                       Just sfc ->
@@ -94,7 +94,7 @@ currentKeyMappings KeyMap {..} EditorCursor {..} =
                             case entryReportCursorSelection timestampsReportCursorEntryReportCursor of
                               EntryReportSelected -> timestampsReportMatchers
                               EntryReportFilterSelected -> timestampsReportSearchMatchers
-                  ReportStuck StuckReportCursor {..} ->
+                  ReportStuck _ ->
                     let StuckReportKeyMap {..} = reportsKeymapStuckReportKeyMap
                         StuckReportKeyMap _ _ = reportsKeymapStuckReportKeyMap
                         stuckReportAnys = map ((,) AnyMatcher) stuckReportAnyMatchers

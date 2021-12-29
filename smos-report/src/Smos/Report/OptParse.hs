@@ -126,15 +126,15 @@ parseFlagsWithConfigFile p =
 
 parseConfigFileFlag :: Parser (Maybe FilePath)
 parseConfigFileFlag =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The config file to use",
-          long "config-file",
-          value Nothing,
-          completer $ bashCompleter "file"
-        ]
+  optional
+    ( strOption
+        ( mconcat
+            [ metavar "FILEPATH",
+              help "The config file to use",
+              long "config-file",
+              completer $ bashCompleter "file"
+            ]
+        )
     )
 
 parseDirectoryFlags :: Parser DirectoryFlags
@@ -145,41 +145,41 @@ parseDirectoryFlags =
 
 parseWorkflowDirFlag :: Parser (Maybe FilePath)
 parseWorkflowDirFlag =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The workflow directory to use",
-          long "workflow-dir",
-          value Nothing,
-          completer $ bashCompleter "directory"
-        ]
+  optional
+    ( strOption
+        ( mconcat
+            [ metavar "FILEPATH",
+              help "The workflow directory to use",
+              long "workflow-dir",
+              completer $ bashCompleter "directory"
+            ]
+        )
     )
 
 parseArchiveDirFlag :: Parser (Maybe FilePath)
 parseArchiveDirFlag =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The archive directory to use",
-          long "archive-dir",
-          value Nothing,
-          completer $ bashCompleter "directory"
-        ]
+  optional
+    ( strOption
+        ( mconcat
+            [ metavar "FILEPATH",
+              help "The archive directory to use",
+              long "archive-dir",
+              completer $ bashCompleter "directory"
+            ]
+        )
     )
 
 parseProjectsDirFlag :: Parser (Maybe FilePath)
 parseProjectsDirFlag =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The projects directory to use",
-          long "projects-dir",
-          value Nothing,
-          completer $ bashCompleter "directory"
-        ]
+  optional
+    ( strOption
+        ( mconcat
+            [ metavar "FILEPATH",
+              help "The projects directory to use",
+              long "projects-dir",
+              completer $ bashCompleter "directory"
+            ]
+        )
     )
 
 parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
@@ -226,15 +226,15 @@ parseFilterArgsRel =
 
 parseArchivedProjectsDirFlag :: Parser (Maybe FilePath)
 parseArchivedProjectsDirFlag =
-  option
-    (Just <$> str)
-    ( mconcat
-        [ metavar "FILEPATH",
-          help "The archived projects directory to use",
-          long "archived-projects-dir",
-          value Nothing,
-          completer $ bashCompleter "directory"
-        ]
+  optional
+    ( strOption
+        ( mconcat
+            [ metavar "FILEPATH",
+              help "The archived projects directory to use",
+              long "archived-projects-dir",
+              completer $ bashCompleter "directory"
+            ]
+        )
     )
 
 parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
@@ -321,12 +321,16 @@ parsePeriod =
             (Nothing, Just end) -> Just (EndOnly end)
             (Just begin, Just end) -> Just (BeginEnd begin end)
       )
-        <$> option
-          (Just <$> maybeReader parseLocalBegin)
-          (mconcat [value Nothing, long "begin", metavar "LOCALTIME", help "start time (inclusive)"])
-        <*> option
-          (Just <$> maybeReader parseLocalEnd)
-          (mconcat [value Nothing, long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
+        <$> optional
+          ( option
+              (maybeReader parseLocalBegin)
+              (mconcat [long "begin", metavar "LOCALTIME", help "start time (inclusive)"])
+          )
+        <*> optional
+          ( option
+              (maybeReader parseLocalEnd)
+              (mconcat [long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
+          )
     parseLocalBegin :: String -> Maybe LocalTime
     parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
     parseLocalEnd :: String -> Maybe LocalTime
@@ -350,17 +354,15 @@ environmentParser = Environment <$> directoryEnvironmentParser
 directoryEnvironmentParser :: Env.Parser Env.Error DirectoryEnvironment
 directoryEnvironmentParser =
   DirectoryEnvironment
-    <$> Env.var (fmap Just . Env.str) "WORKFLOW_DIR" (mE <> Env.help "Workflow directory")
-    <*> Env.var (fmap Just . Env.str) "ARCHIVE_DIR" (mE <> Env.help "Archive directory")
-    <*> Env.var (fmap Just . Env.str) "PROJECTS_DIR" (mE <> Env.help "Projects directory")
-    <*> Env.var (fmap Just . Env.str) "ARCHIVED_PROJECTS_DIR" (mE <> Env.help "Archived projects directory")
-  where
-    mE = Env.def Nothing <> Env.keep
+    <$> optional (Env.var Env.str "WORKFLOW_DIR" (Env.help "Workflow directory"))
+    <*> optional (Env.var Env.str "ARCHIVE_DIR" (Env.help "Archive directory"))
+    <*> optional (Env.var Env.str "PROJECTS_DIR" (Env.help "Projects directory"))
+    <*> optional (Env.var Env.str "ARCHIVED_PROJECTS_DIR" (Env.help "Archived projects directory"))
 
 envWithConfigFileParser :: Env.Parser Env.Error a -> Env.Parser Env.Error (EnvWithConfigFile a)
 envWithConfigFileParser p =
   EnvWithConfigFile
-    <$> Env.var (fmap Just . Env.str) "CONFIG_FILE" (Env.def Nothing <> Env.keep <> Env.help "Workflow directory")
+    <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "Workflow directory"))
     <*> p
 
 defaultConfigFiles :: IO [Path Abs File]

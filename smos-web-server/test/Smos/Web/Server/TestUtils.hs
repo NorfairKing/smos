@@ -36,7 +36,7 @@ webServerSetupFunc :: Http.Manager -> ClientEnv -> SetupFunc (YesodClient App)
 webServerSetupFunc man cenv = webServerSetupFunc' cenv >>= yesodClientSetupFunc man
 
 webServerSetupFunc' :: ClientEnv -> SetupFunc App
-webServerSetupFunc' (ClientEnv man burl _) = do
+webServerSetupFunc' cenv = do
   tdir <- tempDirSetupFunc "smos-web-server-test-data-dir"
   loginVar <- liftIO $ newTVarIO M.empty
   pure
@@ -44,11 +44,11 @@ webServerSetupFunc' (ClientEnv man burl _) = do
       { appLogLevel = LevelWarn,
         appStatic = smosWebServerStatic,
         appStyle = smosWebStyle,
-        appAPIBaseUrl = burl,
+        appAPIBaseUrl = baseUrl cenv,
         appDocsBaseUrl = Nothing,
         appLoginTokens = loginVar,
         appDataDir = tdir,
-        appHttpManager = man,
+        appHttpManager = manager cenv,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
       }

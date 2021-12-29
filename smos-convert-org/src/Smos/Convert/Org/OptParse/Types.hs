@@ -8,10 +8,6 @@ data Flags = Flags
   }
   deriving (Show, Eq)
 
-data Configuration
-  = Configuration
-  deriving (Show, Eq)
-
 data Settings = Settings
   { setFromFile :: Path Abs File,
     setToFile :: Maybe (Path Abs File)

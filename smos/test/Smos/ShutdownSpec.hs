@@ -1,6 +1,5 @@
 module Smos.ShutdownSpec where
 
-import Control.Concurrent.Async (AsyncCancelled (..))
 import Control.Exception
 import Data.GenValidity.Path ()
 import Path

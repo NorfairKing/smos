@@ -1,4 +1,4 @@
-resolver: lts-16.12
+resolver: lts-18.16
 packages:
 - smos
 - smos-data
@@ -28,69 +28,39 @@ packages:
 - smos-notify
 - smos-github
 
-- stripe-api/stripe-client
+- stripe-client
 
 # These are duplicated in nix/overlay.
 ghc-options:
-  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -Wcompat
+  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef
   stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
-- envparse-0.4.1@sha256:989902e6368532548f61de1fa245ad2b39176cddd8743b20071af519a709ce30,2842
-
-- git: https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator.git
-  commit: 04335cd6d0c09a48ef9f283ecb422b9ec61e9037
-  subdirs:
-    - openapi3-code-generator
-
-- git: https://github.com/jtdaugherty/vty.git
-  commit: 6a9c90da0e093cec1d4903924eb0f6a33be489cb
 
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
 
 # Calendar
 - github: NorfairKing/iCalendar
-  commit: 70c924ad6275ba05a514e31af1607a5b175f98ad
+  commit: e08c16dceaab4d15b0f00860512018bc64791f07
 
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
-- github: haskell-servant/servant-auth
-  commit: 296de3cb69135f83f0f01169fc10f8b3a2539405
-  subdirs:
-    - servant-auth
-    - servant-auth-client
-    - servant-auth-docs
-    - servant-auth-swagger
-    - servant-auth-server
-
-# Password
-- github: cdepillabout/password 
-  commit: e90b7481af2d63de6b2d9ead3c03ddb798707d22
-  subdirs:
-    - password
-    - password-types
-    - password-instances
-
-
 - github: NorfairKing/typed-uuid
-  commit: dc5255bd162d92806827803bd5d0e3c9eb4b4e2e
+  commit: 00fbc7e0380ab2ff72e8fd02323e76f13b7d5b59
   subdirs:
   - typed-uuid
   - genvalidity-typed-uuid
 
-- github: GaloisInc/sqlite
-  commit: e93ee84000c1d1eedbc23036c4a20ffd07e3145f
-
 - github: NorfairKing/mergeful
-  commit: 5a81800ab75c08c5cf2781accf74944cfee30762
+  commit: da86a924d6e23cbe07cd0804b45dddb173d743f8
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: e01054970b47d9eaab8b9314a1400c231ac4a960
+  commit: 2013f85daa4c1cffb895b22daa68b773c576cdb9
   subdirs:
     - looper
   
@@ -128,20 +98,20 @@ extra-deps:
     - cursor-brick
 
 - github: NorfairKing/cursor
-  commit: ff27e78281430c298a25a7805c9c61ca1e69f4c5
+  commit: 5f18d58d1b34a752d24a94590c2cd35e8b6d557b
   subdirs:
     - cursor
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: f0cb2ead0985b4394db0627e6befd7ce23c54c22
+  commit: 9880ec062f1166bdac50b8eb59c6dd010bc9af0c
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
 - github: NorfairKing/safe-coloured-text
-  commit: d840dd7b0f13f4d0fd693c1dd93be33f9ee94605
+  commit: f30fe0e4d2a0fa036967ffe17538b60e5f9861f5
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
@@ -150,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: e75c55b920936e344b779093b2a0318fb35d1770
+  commit: 127362d7e48d9b983f61e358966af71003f95026
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -162,7 +132,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 35bc8d45b27e6c21429e4b681b16e46ccd541b3b
+  commit: 466bb2f140e62cae0d4fe3770681c3d74e99cf40
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -208,18 +178,17 @@ extra-deps:
 
  
 - github: NorfairKing/yesod-static-remote
-  commit: f91fdbc2ac74cf8d005f536cfbbf9b4385cbbba6
+  commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
 - github: NorfairKing/yesod-autoreload
-  commit: 27d83b79893bb535c1a339db29a57c2ef0772305
+  commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 
 - github: NorfairKing/template-haskell-reload
   commit: 6f8627b45ae63f64ad0a47d1130630aa2e24470d
   subdirs:
     - template-haskell-reload
 
-- github-0.26@sha256:a9d4046325c3eb28cdc7bef2c3f5bb213328caeae0b7dce6f51de655f0bffaa1,7162
-- binary-instances-1.0.1@sha256:56bb2da1268415901d6ea3f46535b88b89459d7926fbfcca027e25e069ea6f2b,2647
-- time-compat-1.9.5@sha256:f343bc5339a217ecef497e3a730017e15f5c396713fe1d653b8a9e7b1f666988,4932
+
+- github-0.27@sha256:2288b807a4bd97fefeff75487ef5d2ed31f0faa18f306e01e5f5cb498e228208,7033
 
 flags:
   zip:

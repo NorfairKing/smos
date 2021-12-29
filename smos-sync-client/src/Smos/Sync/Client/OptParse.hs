@@ -134,17 +134,17 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> Env.var (fmap Just . logLevelReader) "LOG_LEVEL" (mE <> Env.help "log level")
-      <*> Env.var (fmap Just . Env.str) "SERVER_URL" (mE <> Env.help "The url of the server to sync with")
-      <*> Env.var (fmap Just . Env.str) "CONTENTS_DIR" (mE <> Env.help "The path to the directory to sync")
-      <*> Env.var (fmap Just . Env.str) "UUID_FILE" (mE <> Env.help "The path to the uuid file of the server")
-      <*> Env.var (fmap Just . Env.str) "METADATA_DATABASE" (mE <> Env.help "The path to the database of metadata")
-      <*> Env.var (fmap Just . ignoreFilesReader) "IGNORE_FILES" (mE <> Env.help "Which files to ignore")
-      <*> Env.var (fmap Just . emptyDirsReader) "EMPTY_DIRS" (mE <> Env.help "What to do with empty directories after syncing")
-      <*> Env.var (fmap Just . usernameReader) "USERNAME" (mE <> Env.help "The username to sync with")
-      <*> Env.var (fmap (Just . mkPassword) . Env.str) "PASSWORD" (mE <> Env.help "The password to sync with")
-      <*> Env.var (fmap Just . Env.str) "SESSION_PATH" (mE <> Env.help "The path to the file in which to store the auth session")
-      <*> Env.var (fmap Just . Env.str) "BACKUP_DIR" (mE <> Env.help "The directory to store backups in when a sync conflict happens")
+      <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
+      <*> optional (Env.var Env.str "SERVER_URL" (Env.help "The url of the server to sync with"))
+      <*> optional (Env.var Env.str "CONTENTS_DIR" (Env.help "The path to the directory to sync"))
+      <*> optional (Env.var Env.str "UUID_FILE" (Env.help "The path to the uuid file of the server"))
+      <*> optional (Env.var Env.str "METADATA_DATABASE" (Env.help "The path to the database of metadata"))
+      <*> optional (Env.var ignoreFilesReader "IGNORE_FILES" (Env.help "Which files to ignore"))
+      <*> optional (Env.var emptyDirsReader "EMPTY_DIRS" (Env.help "What to do with empty directories after syncing"))
+      <*> optional (Env.var usernameReader "USERNAME" (Env.help "The username to sync with"))
+      <*> optional (Env.var (fmap mkPassword . Env.str) "PASSWORD" (Env.help "The password to sync with"))
+      <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to the file in which to store the auth session"))
+      <*> optional (Env.var Env.str "BACKUP_DIR" (Env.help "The directory to store backups in when a sync conflict happens"))
   where
     logLevelReader = left Env.UnreadError . parseLogLevel
     ignoreFilesReader s =
@@ -162,7 +162,6 @@ environmentParser =
       case parseUsername (T.pack s) of
         Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
         Just un -> pure un
-    mE = Env.def Nothing <> Env.keep
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration

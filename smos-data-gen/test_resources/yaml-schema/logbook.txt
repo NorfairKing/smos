@@ -3,6 +3,7 @@
 - # LogbookEntry
   [37mstart[m: # [31mrequired[m
     # start of the logbook entry
+    # [32many of[m
     [ # %F %H:%M:%S.%q
       [33m<string>[m
     , # Whatever aeson parses, as a fallback
@@ -11,6 +12,7 @@
     ]
   [37mend[m: # [34moptional[m
     # end of the logbook entry
+    # [32many of[m
     [ # %F %H:%M:%S.%q
       [33m<string>[m
     , # Whatever aeson parses, as a fallback

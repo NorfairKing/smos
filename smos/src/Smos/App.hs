@@ -25,7 +25,7 @@ import System.Exit
 import UnliftIO.Resource
 
 mkSmosApp :: Resource.InternalState -> Path Abs Dir -> SmosConfig -> App SmosState SmosEvent ResourceName
-mkSmosApp res workflowDir sc@SmosConfig {..} =
+mkSmosApp res workflowDir sc =
   App
     { appDraw = smosDraw workflowDir sc,
       appChooseCursor = smosChooseCursor,
