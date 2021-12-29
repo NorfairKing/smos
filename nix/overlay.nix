@@ -87,18 +87,14 @@ in
         generateOptparseApplicativeCompletion exeName (smosPkg name);
       smosPkgWithOwnComp = name: smosPkgWithComp name name;
       withLinksChecked = exeName: pkg:
-        let
-          linkcheck = import sources.linkcheck;
-          seocheck = import sources.seocheck;
-        in
         overrideCabal pkg (old: {
           postInstall = ''
             ${old.postInstall or ""}
 
             $out/bin/${exeName} serve &
             sleep 1
-            ${linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
-            ${seocheck}/bin/seocheck http://localhost:8000
+            ${final.linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
+            ${final.seocheck}/bin/seocheck http://localhost:8000
             ${final.killall}/bin/killall ${exeName}
           '';
         });
