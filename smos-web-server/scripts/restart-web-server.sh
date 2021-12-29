@@ -6,8 +6,8 @@ killall 'smos-web-server' || true
 killall 'smos-server' || true
 
 
-smos-server serve &
+smos-server &
 
 sleep 0.5
 
-smos-web-server serve &
+smos-web-server &

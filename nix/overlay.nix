@@ -91,7 +91,7 @@ in
           postInstall = ''
             ${old.postInstall or ""}
 
-            $out/bin/${exeName} serve &
+            $out/bin/${exeName} &
             sleep 1
             ${final.linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
             ${final.seocheck}/bin/seocheck http://localhost:8000

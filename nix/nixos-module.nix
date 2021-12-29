@@ -304,7 +304,7 @@ in
                 };
               script =
                 ''
-                  ${pkg}/bin/smos-docs-site serve
+                  ${pkg}/bin/smos-docs-site
                 '';
               serviceConfig =
                 {

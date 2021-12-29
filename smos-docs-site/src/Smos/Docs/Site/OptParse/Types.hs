@@ -7,30 +7,15 @@ import Autodocodec
 import Data.Text (Text)
 import GHC.Generics (Generic)
 
-data Arguments
-  = Arguments Command Flags
-  deriving (Show, Eq)
-
-data Instructions
-  = Instructions Dispatch Settings
-
-newtype Command
-  = CommandServe ServeFlags
-  deriving (Show, Eq)
-
-data ServeFlags = ServeFlags
-  { serveFlagPort :: !(Maybe Int),
-    serveFlagAPIServerUrl :: !(Maybe String),
-    serveFlagWebServerUrl :: !(Maybe String),
-    serveFlagGoogleAnalyticsTracking :: !(Maybe String),
-    serveFlagGoogleSearchConsoleVerification :: !(Maybe String)
-  }
-  deriving (Show, Eq)
-
 data Flags = Flags
-  { flagConfigFile :: !(Maybe FilePath)
+  { flagConfigFile :: !(Maybe FilePath),
+    flagPort :: !(Maybe Int),
+    flagAPIServerUrl :: !(Maybe String),
+    flagWebServerUrl :: !(Maybe String),
+    flagGoogleAnalyticsTracking :: !(Maybe String),
+    flagGoogleSearchConsoleVerification :: !(Maybe String)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 data Environment = Environment
   { envConfigFile :: !(Maybe FilePath),
@@ -61,19 +46,11 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "google-analytics-tracking" "The google analytics tracking code" .= confGoogleAnalyticsTracking
         <*> optionalFieldOrNull "google-search-console-verification" "The google search console verification code" .= confGoogleSearchConsoleVerification
 
-newtype Dispatch
-  = DispatchServe ServeSettings
-  deriving (Show, Eq, Generic)
-
-data ServeSettings = ServeSettings
-  { serveSetPort :: !Int,
-    serveSetAPIServerUrl :: !(Maybe Text),
-    serveSetWebServerUrl :: !(Maybe Text),
-    serveSetGoogleAnalyticsTracking :: !(Maybe Text),
-    serveSetGoogleSearchConsoleVerification :: !(Maybe Text)
+data Settings = Settings
+  { settingPort :: !Int,
+    settingAPIServerUrl :: !(Maybe Text),
+    settingWebServerUrl :: !(Maybe Text),
+    settingGoogleAnalyticsTracking :: !(Maybe Text),
+    settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
-  deriving (Show, Eq, Generic)
-
-data Settings
-  = Settings
   deriving (Show, Eq, Generic)

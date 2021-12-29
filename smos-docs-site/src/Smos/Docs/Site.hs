@@ -15,15 +15,15 @@ import Smos.Web.Style
 
 smosDocsSite :: IO ()
 smosDocsSite = do
-  Instructions (DispatchServe ServeSettings {..}) Settings <- getInstructions
+  Settings {..} <- getSettings
   let app =
         App
           { appAssets = assets,
             appCasts = casts,
             appStyle = smosWebStyle,
-            appWebserverUrl = serveSetWebServerUrl,
-            appGoogleAnalyticsTracking = serveSetGoogleAnalyticsTracking,
-            appGoogleSearchConsoleVerification = serveSetGoogleSearchConsoleVerification
+            appWebserverUrl = settingWebServerUrl,
+            appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+            appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
           }
   let defMiddles = defaultMiddlewaresNoLogging
   let extraMiddles =
@@ -33,4 +33,4 @@ smosDocsSite = do
   let middle = extraMiddles . defMiddles
   plainApp <- liftIO $ toWaiAppPlain app
   let application = middle plainApp
-  Warp.run serveSetPort application
+  Warp.run settingPort application
