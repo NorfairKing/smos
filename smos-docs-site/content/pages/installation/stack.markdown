@@ -12,10 +12,9 @@ git clone https://github.com/NorfairKing/smos
 Install prerequisites:
 
 ```
-# Compile the openapi client library generator
-stack install openapi3-code-generator --stack-yaml setup-stack.yaml
-# Generate the stripe client
-./scripts/generate-stripe-api.sh
+# Either run this command to generate the stripe client (requires nix) or
+remove the `stripe-client` line from stack.yaml:
+./scripts/generate-stripe.sh
 # Compile tool
 stack install autoexporter
 ```
@@ -46,7 +45,7 @@ stack install
 #### Stripe client
 
 ```
-/home/user/src/smos/stripe-api/stripe-client/: getDirectoryContents:openDirStream: does not exist (No such file or directory)
+/home/user/src/smos/stripe-client/: getDirectoryContents:openDirStream: does not exist (No such file or directory)
 ```
 
 If you see the above error, you probably skipped the "Generate the stripe client" steps above.
