@@ -26,67 +26,61 @@ import Smos.API
 import Smos.Server.OptParse.Types
 import qualified System.Environment as System
 
-getInstructions :: IO Instructions
-getInstructions = do
-  args@(Arguments _ flags) <- getArguments
+getSettings :: IO Settings
+getSettings = do
+  flags <- getFlags
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions args env config
+  combineToSettings flags env config
 
-combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments c _) Environment {..} mc =
-  Instructions <$> getDispatch <*> getSettings
-  where
-    getDispatch =
-      case c of
-        CommandServe ServeFlags {..} -> do
-          let serveSetLogLevel =
-                fromMaybe LevelWarn $ serveFlagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
-          let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> (mc >>= confPort)
-          serveSetUUIDFile <-
-            case serveFlagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
-              Nothing -> resolveFile' "smos-server-uuid.json"
-              Just fp -> resolveFile' fp
-          serveSetDatabaseFile <-
-            case serveFlagDatabaseFile <|> envDatabaseFile <|> (mc >>= confDatabaseFile) of
-              Nothing -> resolveFile' "smos-server-database.sqlite3"
-              Just fp -> resolveFile' fp
-          serveSetSigningKeyFile <-
-            case serveFlagSigningKeyFile <|> envSigningKeyFile <|> (mc >>= confSigningKeyFile) of
-              Nothing -> resolveFile' "smos-signing-key.json"
-              Just fp -> resolveFile' fp
-          let serveSetMaxBackupsPerUser = serveFlagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
-          let serveSetMaxBackupSizePerUser = serveFlagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
-          let serveSetBackupInterval = fromMaybe nominalDay $ serveFlagBackupInterval <|> envBackupInterval <|> (mc >>= confBackupInterval)
-          let serveSetAutoBackupLooperSettings =
-                deriveLooperSettings
-                  0
-                  (hours 1)
-                  serveFlagAutoBackupLooperFlags
-                  envAutoBackupLooperEnv
-                  (mc >>= confAutoBackupLooperConfiguration)
-          let serveSetBackupGarbageCollectionLooperSettings =
-                deriveLooperSettings
-                  (minutes 1)
-                  (hours 24)
-                  serveFlagBackupGarbageCollectionLooperFlags
-                  envBackupGarbageCollectionLooperEnv
-                  (mc >>= confBackupGarbageCollectionLooperConfiguration)
-          let serveSetFileMigrationLooperSettings =
-                deriveLooperSettings
-                  (minutes 2)
-                  (hours 24)
-                  serveFlagFileMigrationLooperFlags
-                  envFileMigrationLooperEnv
-                  (mc >>= confFileMigrationLooperConfiguration)
-          let serveSetAdmin = serveFlagAdmin <|> envAdmin <|> (mc >>= confAdmin)
-          let serveSetMonetisationSettings =
-                combineToMonetisationSettings
-                  serveFlagMonetisationFlags
-                  envMonetisationEnv
-                  (mc >>= confMonetisationConf)
-          pure $ DispatchServe ServeSettings {..}
-    getSettings = pure Settings
+combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
+combineToSettings Flags {..} Environment {..} mc = do
+  let settingLogLevel =
+        fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
+  let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> (mc >>= confPort)
+  settingUUIDFile <-
+    case flagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
+      Nothing -> resolveFile' "smos-server-uuid.json"
+      Just fp -> resolveFile' fp
+  settingDatabaseFile <-
+    case flagDatabaseFile <|> envDatabaseFile <|> (mc >>= confDatabaseFile) of
+      Nothing -> resolveFile' "smos-server-database.sqlite3"
+      Just fp -> resolveFile' fp
+  settingSigningKeyFile <-
+    case flagSigningKeyFile <|> envSigningKeyFile <|> (mc >>= confSigningKeyFile) of
+      Nothing -> resolveFile' "smos-signing-key.json"
+      Just fp -> resolveFile' fp
+  let settingMaxBackupsPerUser = flagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
+  let settingMaxBackupSizePerUser = flagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
+  let settingBackupInterval = fromMaybe nominalDay $ flagBackupInterval <|> envBackupInterval <|> (mc >>= confBackupInterval)
+  let settingAutoBackupLooperSettings =
+        deriveLooperSettings
+          0
+          (hours 1)
+          flagAutoBackupLooperFlags
+          envAutoBackupLooperEnv
+          (mc >>= confAutoBackupLooperConfiguration)
+  let settingBackupGarbageCollectionLooperSettings =
+        deriveLooperSettings
+          (minutes 1)
+          (hours 24)
+          flagBackupGarbageCollectionLooperFlags
+          envBackupGarbageCollectionLooperEnv
+          (mc >>= confBackupGarbageCollectionLooperConfiguration)
+  let settingFileMigrationLooperSettings =
+        deriveLooperSettings
+          (minutes 2)
+          (hours 24)
+          flagFileMigrationLooperFlags
+          envFileMigrationLooperEnv
+          (mc >>= confFileMigrationLooperConfiguration)
+  let settingAdmin = flagAdmin <|> envAdmin <|> (mc >>= confAdmin)
+  let settingMonetisationSettings =
+        combineToMonetisationSettings
+          flagMonetisationFlags
+          envMonetisationEnv
+          (mc >>= confMonetisationConf)
+  pure Settings {..}
 
 combineToMonetisationSettings :: MonetisationFlags -> MonetisationEnvironment -> Maybe MonetisationConfiguration -> Maybe MonetisationSettings
 combineToMonetisationSettings MonetisationFlags {..} MonetisationEnvironment {..} mc =
@@ -140,14 +134,14 @@ getConfiguration Flags {..} Environment {..} =
     Nothing -> pure Nothing
     Just cf -> resolveFile' cf >>= readYamlConfigFile
 
-getArguments :: IO Arguments
-getArguments = do
+getFlags :: IO Flags
+getFlags = do
   args <- System.getArgs
-  let result = runArgumentsParser args
+  let result = runFlagsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argParser
+runFlagsParser :: [String] -> ParserResult Flags
+runFlagsParser = execParserPure prefs_ flagsParser
   where
     prefs_ =
       defaultPrefs
@@ -155,8 +149,8 @@ runArgumentsParser = execParserPure prefs_ argParser
           prefShowHelpOnEmpty = True
         }
 
-argParser :: ParserInfo Arguments
-argParser = info (helper <*> parseArgs) help_
+flagsParser :: ParserInfo Flags
+flagsParser = info (helper <*> parseFlags) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
     description :: Doc
@@ -170,23 +164,19 @@ argParser = info (helper <*> parseArgs) help_
             "Server API version: " <> Version.toString apiVersion
           ]
 
-parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
-
-parseCommand :: Parser Command
-parseCommand = hsubparser $ mconcat [command "serve" parseCommandServe]
-
-parseCommandServe :: ParserInfo Command
-parseCommandServe = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Serve as the sync server"
-    parser =
-      CommandServe <$> parseServeFlags
-
-parseServeFlags :: Parser ServeFlags
-parseServeFlags =
-  ServeFlags
+parseFlags :: Parser Flags
+parseFlags =
+  Flags
     <$> optional
+      ( strOption
+          ( mconcat
+              [ long "config-file",
+                help "The config file to use",
+                metavar "FILEPATH"
+              ]
+          )
+      )
+    <*> optional
       ( option
           (eitherReader parseLogLevel)
           ( mconcat
@@ -323,16 +313,3 @@ parseMonetisationFlags =
                   )
               )
         )
-
-parseFlags :: Parser Flags
-parseFlags =
-  Flags
-    <$> optional
-      ( strOption
-          ( mconcat
-              [ long "config-file",
-                help "The config file to use",
-                metavar "FILEPATH"
-              ]
-          )
-      )

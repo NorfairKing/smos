@@ -18,31 +18,21 @@ import Path
 import Smos.API
 import Text.Read
 
-data Arguments
-  = Arguments Command Flags
-  deriving (Show, Eq)
-
-data Instructions
-  = Instructions Dispatch Settings
-
-newtype Command
-  = CommandServe ServeFlags
-  deriving (Show, Eq)
-
-data ServeFlags = ServeFlags
-  { serveFlagLogLevel :: !(Maybe LogLevel),
-    serveFlagUUIDFile :: !(Maybe FilePath),
-    serveFlagDatabaseFile :: !(Maybe FilePath),
-    serveFlagSigningKeyFile :: !(Maybe FilePath),
-    serveFlagPort :: !(Maybe Int),
-    serveFlagMaxBackupsPerUser :: !(Maybe Word),
-    serveFlagMaxBackupSizePerUser :: !(Maybe Word64),
-    serveFlagBackupInterval :: !(Maybe NominalDiffTime),
-    serveFlagAutoBackupLooperFlags :: !LooperFlags,
-    serveFlagBackupGarbageCollectionLooperFlags :: !LooperFlags,
-    serveFlagFileMigrationLooperFlags :: !LooperFlags,
-    serveFlagAdmin :: !(Maybe Username),
-    serveFlagMonetisationFlags :: !MonetisationFlags
+data Flags = Flags
+  { flagConfigFile :: !(Maybe FilePath),
+    flagLogLevel :: !(Maybe LogLevel),
+    flagUUIDFile :: !(Maybe FilePath),
+    flagDatabaseFile :: !(Maybe FilePath),
+    flagSigningKeyFile :: !(Maybe FilePath),
+    flagPort :: !(Maybe Int),
+    flagMaxBackupsPerUser :: !(Maybe Word),
+    flagMaxBackupSizePerUser :: !(Maybe Word64),
+    flagBackupInterval :: !(Maybe NominalDiffTime),
+    flagAutoBackupLooperFlags :: !LooperFlags,
+    flagBackupGarbageCollectionLooperFlags :: !LooperFlags,
+    flagFileMigrationLooperFlags :: !LooperFlags,
+    flagAdmin :: !(Maybe Username),
+    flagMonetisationFlags :: !MonetisationFlags
   }
   deriving (Show, Eq, Generic)
 
@@ -51,11 +41,6 @@ data MonetisationFlags = MonetisationFlags
     monetisationFlagStripePublishableKey :: !(Maybe Text),
     monetisationFlagStripePrice :: !(Maybe Text),
     monetisationFlagFreeloaders :: !(Set Username)
-  }
-  deriving (Show, Eq, Generic)
-
-data Flags = Flags
-  { flagConfigFile :: !(Maybe FilePath)
   }
   deriving (Show, Eq, Generic)
 
@@ -180,24 +165,20 @@ instance HasCodec MonetisationConfiguration where
         <*> optionalFieldOrNull "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription" .= monetisationConfStripePrice
         <*> optionalFieldOrNullWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay" .= monetisationConfFreeloaders
 
-newtype Dispatch
-  = DispatchServe ServeSettings
-  deriving (Show, Eq, Generic)
-
-data ServeSettings = ServeSettings
-  { serveSetLogLevel :: !LogLevel,
-    serveSetUUIDFile :: !(Path Abs File),
-    serveSetDatabaseFile :: !(Path Abs File),
-    serveSetSigningKeyFile :: !(Path Abs File),
-    serveSetPort :: !Int,
-    serveSetMaxBackupsPerUser :: !(Maybe Word),
-    serveSetMaxBackupSizePerUser :: !(Maybe Word64),
-    serveSetBackupInterval :: NominalDiffTime,
-    serveSetAutoBackupLooperSettings :: !LooperSettings,
-    serveSetBackupGarbageCollectionLooperSettings :: !LooperSettings,
-    serveSetFileMigrationLooperSettings :: !LooperSettings,
-    serveSetAdmin :: !(Maybe Username),
-    serveSetMonetisationSettings :: !(Maybe MonetisationSettings)
+data Settings = Settings
+  { settingLogLevel :: !LogLevel,
+    settingUUIDFile :: !(Path Abs File),
+    settingDatabaseFile :: !(Path Abs File),
+    settingSigningKeyFile :: !(Path Abs File),
+    settingPort :: !Int,
+    settingMaxBackupsPerUser :: !(Maybe Word),
+    settingMaxBackupSizePerUser :: !(Maybe Word64),
+    settingBackupInterval :: NominalDiffTime,
+    settingAutoBackupLooperSettings :: !LooperSettings,
+    settingBackupGarbageCollectionLooperSettings :: !LooperSettings,
+    settingFileMigrationLooperSettings :: !LooperSettings,
+    settingAdmin :: !(Maybe Username),
+    settingMonetisationSettings :: !(Maybe MonetisationSettings)
   }
   deriving (Show, Eq, Generic)
 
@@ -207,10 +188,6 @@ data MonetisationSettings = MonetisationSettings
     monetisationSetStripePrice :: !Text,
     monetisationSetFreeloaders :: !(Set Username)
   }
-  deriving (Show, Eq, Generic)
-
-data Settings
-  = Settings
   deriving (Show, Eq, Generic)
 
 parseLogLevel :: String -> Either String LogLevel

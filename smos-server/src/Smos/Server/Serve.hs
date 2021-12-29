@@ -19,7 +19,7 @@ import Database.Persist.Sqlite as DB
 import Lens.Micro
 import Looper
 import Network.Wai as Wai
-import Network.Wai.Handler.Warp as Warp
+import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Path
 import Path.IO
@@ -35,17 +35,17 @@ import System.Exit
 import Text.Printf
 import UnliftIO hiding (Handler)
 
-serveSmosServer :: ServeSettings -> IO ()
+serveSmosServer :: Settings -> IO ()
 serveSmosServer ss = do
   pPrint ss
   runSmosServer ss
 
-runSmosServer :: ServeSettings -> IO ()
-runSmosServer ServeSettings {..} = do
-  ensureDir $ parent serveSetDatabaseFile
+runSmosServer :: Settings -> IO ()
+runSmosServer Settings {..} = do
+  ensureDir $ parent settingDatabaseFile
   runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= serveSetLogLevel) $
-      DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile serveSetDatabaseFile) & DB.fkEnabled .~ False) 1 $
+    filterLogger (\_ ll -> ll >= settingLogLevel) $
+      DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile settingDatabaseFile) & DB.fkEnabled .~ False) 1 $
         \pool -> do
           flip DB.runSqlPool pool $ DB.runMigration serverAutoMigration
           let compressionLevel =
@@ -55,8 +55,8 @@ runSmosServer ServeSettings {..} = do
           logFunc <- askLoggerIO
           let runTheServer = do
                 liftIO $ do
-                  uuid <- readServerUUID serveSetUUIDFile
-                  jwtKey <- loadSigningKey serveSetSigningKeyFile
+                  uuid <- readServerUUID settingUUIDFile
+                  jwtKey <- loadSigningKey settingSigningKeyFile
                   priceVar <- newEmptyMVar
                   let env =
                         ServerEnv
@@ -70,24 +70,24 @@ runSmosServer ServeSettings {..} = do
                                 else 10, -- Rather slower
                             serverEnvLogFunc = logFunc,
                             serverEnvCompressionLevel = compressionLevel,
-                            serverEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
-                            serverEnvMaxBackupSizePerUser = serveSetMaxBackupSizePerUser,
-                            serverEnvAdmin = serveSetAdmin,
+                            serverEnvMaxBackupsPerUser = settingMaxBackupsPerUser,
+                            serverEnvMaxBackupSizePerUser = settingMaxBackupSizePerUser,
+                            serverEnvAdmin = settingAdmin,
                             serverEnvPriceCache = priceVar,
-                            serverEnvMonetisationSettings = serveSetMonetisationSettings
+                            serverEnvMonetisationSettings = settingMonetisationSettings
                           }
                   let middles =
                         if development
                           then Wai.logStdoutDev
                           else Wai.logStdout
-                  Warp.run serveSetPort $ middles $ makeSyncApp env
+                  Warp.run settingPort $ middles $ makeSyncApp env
           let runTheLoopers = do
                 let looperEnv =
                       LooperEnv
                         { looperEnvConnection = pool,
                           looperEnvCompressionLevel = compressionLevel,
-                          looperEnvMaxBackupsPerUser = serveSetMaxBackupsPerUser,
-                          looperEnvBackupInterval = serveSetBackupInterval
+                          looperEnvMaxBackupsPerUser = settingMaxBackupsPerUser,
+                          looperEnvBackupInterval = settingBackupInterval
                         }
                     looperRunner LooperDef {..} = do
                       logInfoNS looperDefName "Starting"
@@ -98,8 +98,8 @@ runSmosServer ServeSettings {..} = do
                 flip runReaderT looperEnv $
                   runLoopersIgnoreOverrun
                     looperRunner
-                    [ mkLooperDef "auto-backup" serveSetAutoBackupLooperSettings runAutoBackupLooper,
-                      mkLooperDef "backup-garbage-collector" serveSetBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
+                    [ mkLooperDef "auto-backup" settingAutoBackupLooperSettings runAutoBackupLooper,
+                      mkLooperDef "backup-garbage-collector" settingBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                     ]
           concurrently_ runTheServer runTheLoopers
 

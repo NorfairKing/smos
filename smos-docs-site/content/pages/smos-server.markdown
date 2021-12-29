@@ -16,9 +16,4 @@ stack install smos-server
 
 ### Running
 
-To run the server, run the following command:
-
-``` shell
-$ smos-server serve
-```
-
+To run the server, run the `smos-server` command

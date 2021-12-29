@@ -365,8 +365,7 @@ in
                 ''
                   mkdir -p "${api-server-working-dir}"
                   cd ${api-server-working-dir}
-                  ${pkg}/bin/smos-server \
-                    serve
+                  ${pkg}/bin/smos-server
                 '';
               serviceConfig =
                 {
