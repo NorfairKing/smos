@@ -24,32 +24,32 @@ import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
 
-getInstructions :: IO Instructions
-getInstructions = do
-  args@(Arguments _ flags) <- getArguments
+getSettings :: IO Settings
+getSettings = do
+  flags <- getFlags
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions args env config
+  combineToSettings flags env config
 
-combineToInstructions :: Arguments -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions (Arguments (CommandServe ServeFlags {..}) _) Environment {..} mConf = do
+combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
+combineToSettings Flags {..} Environment {..} mConf = do
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
-  let serveSetLogLevel = fromMaybe LevelInfo $ serveFlagLogLevel <|> envLogLevel <|> mc confLogLevel
-  let serveSetPort = fromMaybe 8000 $ serveFlagPort <|> envPort <|> mc confPort
-  serveSetAPIUrl <- case serveFlagAPIUrl <|> envAPIUrl <|> mc confAPIUrl of
+  let settingLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
+  let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
+  settingAPIUrl <- case flagAPIUrl <|> envAPIUrl <|> mc confAPIUrl of
     Nothing -> die "No API configured."
     Just url -> parseBaseUrl url
-  serveSetWebUrl <- case serveFlagWebUrl <|> envWebUrl <|> mc confWebUrl of
+  settingWebUrl <- case flagWebUrl <|> envWebUrl <|> mc confWebUrl of
     Nothing -> die "No web url configured."
     Just url -> parseBaseUrl url
-  serveSetDocsUrl <- mapM parseBaseUrl $ serveFlagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
-  serveSetDataDir <- case serveFlagDataDir <|> envDataDir <|> mc confDataDir of
+  settingDocsUrl <- mapM parseBaseUrl $ flagDocsUrl <|> envDocsUrl <|> mc confDocsUrl
+  settingDataDir <- case flagDataDir <|> envDataDir <|> mc confDataDir of
     Nothing -> getCurrentDir
     Just dd -> resolveDir' dd
-  let serveSetGoogleAnalyticsTracking = T.pack <$> (serveFlagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking)
-  let serveSetGoogleSearchConsoleVerification = T.pack <$> (serveFlagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification)
-  pure (Instructions (DispatchServe ServeSettings {..}) Settings)
+  let settingGoogleAnalyticsTracking = T.pack <$> (flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking)
+  let settingGoogleSearchConsoleVerification = T.pack <$> (flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification)
+  pure Settings {..}
 
 getEnvironment :: IO Environment
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -79,14 +79,14 @@ getConfiguration Flags {..} Environment {..} =
     Nothing -> pure Nothing
     Just cf -> resolveFile' cf >>= readYamlConfigFile
 
-getArguments :: IO Arguments
-getArguments = do
+getFlags :: IO Flags
+getFlags = do
   args <- System.getArgs
-  let result = runArgumentsParser args
+  let result = runFlagsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argParser
+runFlagsParser :: [String] -> ParserResult Flags
+runFlagsParser = execParserPure prefs_ argParser
   where
     prefs_ =
       defaultPrefs
@@ -94,7 +94,7 @@ runArgumentsParser = execParserPure prefs_ argParser
           prefShowHelpOnEmpty = True
         }
 
-argParser :: ParserInfo Arguments
+argParser :: ParserInfo Flags
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
@@ -110,100 +110,8 @@ argParser = info (helper <*> parseArgs) help_
               clientVersionsHelpMessage
             ]
 
-parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlags
-
-parseCommand :: Parser Command
-parseCommand = hsubparser $ mconcat [command "serve" parseCommandServe]
-
-parseCommandServe :: ParserInfo Command
-parseCommandServe = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Serve as the web server"
-    parser =
-      CommandServe
-        <$> ( ServeFlags
-                <$> optional
-                  ( option
-                      (eitherReader parseLogLevel)
-                      ( mconcat
-                          [ long "web-log-level",
-                            help $
-                              unwords
-                                [ "The log level to use, options:",
-                                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                                ]
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( option
-                      auto
-                      ( mconcat
-                          [ long "web-port",
-                            metavar "PORT",
-                            help "The port to serve web requests on"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "docs-url",
-                            metavar "URL",
-                            help "The url to the docs site to refer to"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "api-url",
-                            metavar "URL",
-                            help "The url for the api to use"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "web-url",
-                            metavar "URL",
-                            help "The url that this web server is served from"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "data-dir",
-                            metavar "FILEPATH",
-                            help "The directory to store workflows during editing"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "google-analytics-tracking",
-                            metavar "CODE",
-                            help "The Google analytics tracking code"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "google-search-console-verification",
-                            metavar "CODE",
-                            help "The Google search console verification code"
-                          ]
-                      )
-                  )
-            )
-
-parseFlags :: Parser Flags
-parseFlags =
+parseArgs :: Parser Flags
+parseArgs =
   Flags
     <$> optional
       ( strOption
@@ -214,3 +122,80 @@ parseFlags =
               ]
           )
       )
+      <*> optional
+        ( option
+            (eitherReader parseLogLevel)
+            ( mconcat
+                [ long "web-log-level",
+                  help $
+                    unwords
+                      [ "The log level to use, options:",
+                        show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                      ]
+                ]
+            )
+        )
+      <*> optional
+        ( option
+            auto
+            ( mconcat
+                [ long "web-port",
+                  metavar "PORT",
+                  help "The port to serve web requests on"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "docs-url",
+                  metavar "URL",
+                  help "The url to the docs site to refer to"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "api-url",
+                  metavar "URL",
+                  help "The url for the api to use"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "web-url",
+                  metavar "URL",
+                  help "The url that this web server is served from"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "data-dir",
+                  metavar "FILEPATH",
+                  help "The directory to store workflows during editing"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "google-analytics-tracking",
+                  metavar "CODE",
+                  help "The Google analytics tracking code"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "google-search-console-verification",
+                  metavar "CODE",
+                  help "The Google search console verification code"
+                ]
+            )
+        )

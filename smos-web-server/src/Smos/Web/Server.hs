@@ -6,8 +6,6 @@ import Text.Show.Pretty
 
 smosWebServer :: IO ()
 smosWebServer = do
-  Instructions dispatch Settings <- getInstructions
-  case dispatch of
-    DispatchServe ss -> do
-      pPrint ss
-      runSmosWebServer ss
+  settings <- getSettings
+  pPrint settings
+  runSmosWebServer settings

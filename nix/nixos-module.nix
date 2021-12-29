@@ -468,8 +468,7 @@ in
                 ''
                   mkdir -p "${web-server-working-dir}"
                   cd ${web-server-working-dir};
-                  ${pkg}/bin/smos-web-server \
-                    serve
+                  ${pkg}/bin/smos-web-server
                 '';
               serviceConfig =
                 {
