@@ -107,7 +107,7 @@ in
                 ''
                   local path="${path}"
                   mkdir --parents $(dirname "''$path")
-                  cp ${resource} "''$path"
+                  ln -s ${resource} "''$path"
                 '';
               copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
             in
@@ -130,7 +130,7 @@ in
           ln -s ${sources.bulma-pricingtable} bulma-pricingtable
     
           # The file we want to compile
-          # We need to copy this so that the relative path within it resolves to here instead of wherever we woudl link it from.
+          # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
           cp $src mybulma.scss
           ${final.sass}/bin/scss \
             --sourcemap=none \
@@ -216,11 +216,11 @@ in
             ${old.postBuild or ""}
             # Set up mime the types
             mkdir -p $out/share/mime/packages
-            cp ${../mime/smos.mime-type} $out/share/mime/packages/smos.xml
+            ln -s ${../mime/smos.mime-type} $out/share/mime/packages/smos.xml
                 
             # Set up the .desktop files
             mkdir -p $out/share/applications
-            cp ${../mime/smos.desktop} $out/share/applications/smos.desktop
+            ln -s ${../mime/smos.desktop} $out/share/applications/smos.desktop
           '';
         }
       );
