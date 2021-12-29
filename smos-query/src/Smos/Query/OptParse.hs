@@ -313,9 +313,14 @@ parseCommandReport = info parser modifier
     parser =
       CommandReport
         <$> ( ReportFlags
-                <$> argument
-                  (Just <$> str)
-                  (mconcat [value Nothing, metavar "REPORT", help "The preconfigured report to run"])
+                <$> optional
+                  ( strArgument
+                      ( mconcat
+                          [ metavar "REPORT",
+                            help "The preconfigured report to run"
+                          ]
+                      )
+                  )
                 <*> parseOutputFormat
             )
 

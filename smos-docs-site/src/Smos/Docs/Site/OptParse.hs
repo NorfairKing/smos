@@ -95,62 +95,63 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe
         <$> ( ServeFlags
-                <$> option
-                  (Just <$> auto)
-                  ( mconcat
-                      [ long "port",
-                        metavar "PORT",
-                        help "The port to serve web requests on",
-                        value Nothing
-                      ]
+                <$> optional
+                  ( option
+                      auto
+                      ( mconcat
+                          [ long "port",
+                            metavar "PORT",
+                            help "The port to serve web requests on"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "api-url",
-                        metavar "URL",
-                        help "The url to the api server to refer to",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "api-url",
+                            metavar "URL",
+                            help "The url to the api server to refer to"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "web-url",
-                        metavar "URL",
-                        help "The url to the web server to refer to",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "web-url",
+                            metavar "URL",
+                            help "The url to the web server to refer to"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "google-analytics-tracking",
-                        metavar "CODE",
-                        help "The Google analytics tracking code",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "google-analytics-tracking",
+                            metavar "CODE",
+                            help "The Google analytics tracking code"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "google-search-console-verification",
-                        metavar "CODE",
-                        help "The Google search console verification code",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "google-search-console-verification",
+                            metavar "CODE",
+                            help "The Google search console verification code"
+                          ]
+                      )
                   )
             )
 
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> option
-      (Just <$> str)
-      ( mconcat
-          [ long "config-file",
-            metavar "FILEPATH",
-            help "The config file",
-            value Nothing
-          ]
+    <$> optional
+      ( strOption
+          ( mconcat
+              [ long "config-file",
+                metavar "FILEPATH",
+                help "The config file"
+              ]
+          )
       )

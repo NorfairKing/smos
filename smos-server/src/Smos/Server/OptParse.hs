@@ -327,6 +327,12 @@ parseMonetisationFlags =
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> option
-      (Just <$> str)
-      (mconcat [long "config-file", help "The config file to use", metavar "FILEPATH", value Nothing])
+    <$> optional
+      ( strOption
+          ( mconcat
+              [ long "config-file",
+                help "The config file to use",
+                metavar "FILEPATH"
+              ]
+          )
+      )

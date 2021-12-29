@@ -123,92 +123,94 @@ parseCommandServe = info parser modifier
     parser =
       CommandServe
         <$> ( ServeFlags
-                <$> option
-                  (Just <$> eitherReader parseLogLevel)
-                  ( mconcat
-                      [ long "web-log-level",
-                        help $
-                          unwords
-                            [ "The log level to use, options:",
-                              show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                            ],
-                        value Nothing
-                      ]
+                <$> optional
+                  ( option
+                      (eitherReader parseLogLevel)
+                      ( mconcat
+                          [ long "web-log-level",
+                            help $
+                              unwords
+                                [ "The log level to use, options:",
+                                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                                ]
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> auto)
-                  ( mconcat
-                      [ long "web-port",
-                        metavar "PORT",
-                        help "The port to serve web requests on",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( option
+                      auto
+                      ( mconcat
+                          [ long "web-port",
+                            metavar "PORT",
+                            help "The port to serve web requests on"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "docs-url",
-                        metavar "URL",
-                        help "The url to the docs site to refer to",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "docs-url",
+                            metavar "URL",
+                            help "The url to the docs site to refer to"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "api-url",
-                        metavar "URL",
-                        help "The url for the api to use",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "api-url",
+                            metavar "URL",
+                            help "The url for the api to use"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "web-url",
-                        metavar "URL",
-                        help "The url that this web server is served from",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "web-url",
+                            metavar "URL",
+                            help "The url that this web server is served from"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "data-dir",
-                        metavar "FILEPATH",
-                        help "The directory to store workflows during editing",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "data-dir",
+                            metavar "FILEPATH",
+                            help "The directory to store workflows during editing"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "google-analytics-tracking",
-                        metavar "CODE",
-                        help "The Google analytics tracking code",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "google-analytics-tracking",
+                            metavar "CODE",
+                            help "The Google analytics tracking code"
+                          ]
+                      )
                   )
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "google-search-console-verification",
-                        metavar "CODE",
-                        help "The Google search console verification code",
-                        value Nothing
-                      ]
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "google-search-console-verification",
+                            metavar "CODE",
+                            help "The Google search console verification code"
+                          ]
+                      )
                   )
             )
 
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> option
-      (Just <$> str)
-      ( mconcat
-          [ long "config-file",
-            metavar "FILEPATH",
-            help "The config file",
-            value Nothing
-          ]
+    <$> optional
+      ( strOption
+          ( mconcat
+              [ long "config-file",
+                metavar "FILEPATH",
+                help "The config file"
+              ]
+          )
       )

@@ -229,25 +229,40 @@ parseCommandSync = info parser modifier
     parser =
       CommandSync
         <$> ( SyncFlags
-                <$> option
-                  (Just <$> str)
-                  (mconcat [long "contents-dir", help "The directory to synchronise", value Nothing])
-                <*> option
-                  (Just <$> str)
-                  (mconcat [long "uuid-file", help "The file to store the server uuid in", value Nothing])
-                <*> option
-                  (Just <$> str)
-                  ( mconcat
-                      [ long "metadata-db",
-                        help "The file to store the synchronisation metadata database in",
-                        value Nothing
-                      ]
+                <$> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "contents-dir",
+                            help "The directory to synchronise"
+                          ]
+                      )
+                  )
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "uuid-file",
+                            help "The file to store the server uuid in"
+                          ]
+                      )
+                  )
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "metadata-db",
+                            help "The file to store the synchronisation metadata database in"
+                          ]
+                      )
                   )
                 <*> parseIgnoreFilesFlag
                 <*> parseEmptyDirsFlag
-                <*> option
-                  (Just <$> str)
-                  (mconcat [long "backup-dir", help "The directory to store backups in when a sync conflict happens", value Nothing])
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ long "backup-dir",
+                            help "The directory to store backups in when a sync conflict happens"
+                          ]
+                      )
+                  )
             )
 
 parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)
@@ -289,40 +304,62 @@ parseEmptyDirsFlag =
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> Report.parseDirectoryFlags
-    <*> option
-      (Just <$> eitherReader parseLogLevel)
-      ( mconcat
-          [ long "log-level",
-            help $
-              unwords
-                [ "The log level to use, options:",
-                  show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                ],
-            value Nothing
-          ]
+    <*> optional
+      ( option
+          (eitherReader parseLogLevel)
+          ( mconcat
+              [ long "log-level",
+                help $
+                  unwords
+                    [ "The log level to use, options:",
+                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                    ]
+              ]
+          )
       )
-    <*> option (Just <$> str) (mconcat [long "server-url", help "The server to sync with", value Nothing])
-    <*> option
-      (Just <$> maybeReader (parseUsername . T.pack))
-      (mconcat [long "username", help "The username to login to the sync server", value Nothing])
-    <*> option
-      (Just . mkPassword <$> str)
-      ( mconcat
-          [ long "password",
-            help $
-              unlines
-                [ "The password to login to the sync server",
-                  "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
-                ],
-            value Nothing
-          ]
+    <*> optional (strOption (mconcat [long "server-url", help "The server to sync with"]))
+    <*> optional
+      ( option
+          (maybeReader (parseUsername . T.pack))
+          (mconcat [long "username", help "The username to login to the sync server"])
       )
-    <*> option
-      (Just <$> str)
-      (mconcat [metavar "DIRECTORY", long "data-dir", help "The directory to store state metadata in (not the contents to be synced)", value Nothing])
-    <*> option
-      (Just <$> str)
-      (mconcat [metavar "DIRECTORY", long "cache-dir", help "The directory to cache state data in", value Nothing])
-    <*> option
-      (Just <$> str)
-      (mconcat [metavar "FILEPATH", long "session-path", help "The path to store the login session", value Nothing])
+    <*> optional
+      ( option
+          (mkPassword <$> str)
+          ( mconcat
+              [ long "password",
+                help $
+                  unlines
+                    [ "The password to login to the sync server",
+                      "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
+                    ]
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ metavar "DIRECTORY",
+                long "data-dir",
+                help "The directory to store state metadata in (not the contents to be synced)"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ metavar "DIRECTORY",
+                long "cache-dir",
+                help "The directory to cache state data in"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ metavar "FILEPATH",
+                long "session-path",
+                help "The path to store the login session"
+              ]
+          )
+      )

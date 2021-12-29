@@ -83,15 +83,20 @@ parseFlags =
       <$> some
         ( strArgument
             ( mconcat
-                [ help
-                    "The task. Pass any number of arguments and they will be interpreted as the task together.",
+                [ help "The task. Pass any number of arguments and they will be interpreted as the task together.",
                   metavar "TASK"
                 ]
             )
         )
-      <*> option
-        (Just <$> str)
-        (mconcat [long "file", help "The file to put the task in", metavar "FILEPATH", value Nothing])
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "file",
+                  help "The file to put the task in",
+                  metavar "FILEPATH"
+                ]
+            )
+        )
       <*> Report.parseDirectoryFlags
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
