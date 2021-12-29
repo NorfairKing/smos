@@ -22,7 +22,7 @@ let
 
 in
 pkgs.nixosTest (
-  { lib, pkgs, ... }: {
+  { ... }: {
     name = "smos-end-to-end-test";
     nodes = {
       server = {

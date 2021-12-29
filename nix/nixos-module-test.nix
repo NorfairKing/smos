@@ -1,4 +1,5 @@
 { sources ? import ./sources.nix
+
 , pkgs ? import ./pkgs.nix { inherit sources; }
 , smosReleasePackages ? pkgs.smosReleasePackages
 }:
@@ -13,101 +14,106 @@ let
   };
   home-manager = import (sources.home-manager + "/nixos/default.nix");
 
+  mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
+
   docs-port = 8001;
   api-port = 8002;
   web-port = 8003;
 
-  testUsers = {
-    "nothing_enabled" = {
-      programs.smos = { };
-    };
-    "backup_enabled" = {
-      programs.smos = {
-        backup.enable = true;
-      };
-    };
-    "sync_enabled" = {
-      programs.smos = {
-        sync = {
-          enable = true;
-          server-url = "apiserver:${builtins.toString api-port}";
-          username = "sync_enabled";
-          password = "testpassword";
-        };
-      };
-    };
-    "scheduler_enabled" = {
-      programs.smos = {
-        scheduler.enable = true;
-      };
-    };
-    "calendar_enabled" = {
-      programs.smos = {
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
-      };
-    };
-    "notify_enabled" = {
-      programs.smos = {
-        notify.enable = true;
-      };
-    };
-    "everything_enabled" = {
-      programs.smos = {
-        backup.enable = true;
-        sync = {
-          enable = true;
-          server-url = "apiserver:${builtins.toString api-port}";
-          username = "everything_enabled";
-          password = "testpassword";
-        };
-        scheduler = {
-          enable = true;
-        };
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
-        notify = {
-          enable = true;
-        };
-      };
+  commonConfig = {
+    imports = [
+      ./home-manager-module.nix
+    ];
+    xdg.enable = true;
+    programs.smos = {
+      enable = true;
+      inherit smosReleasePackages;
     };
   };
+  testUsers = builtins.mapAttrs (name: config: pkgs.lib.recursiveUpdate commonConfig config)
+    {
+      "nothing_enabled" = {
+        programs.smos = { };
+      };
+      "backup_enabled" = {
+        programs.smos = {
+          backup.enable = true;
+        };
+      };
+      "sync_enabled" = {
+        programs.smos = {
+          sync = {
+            enable = true;
+            server-url = "apiserver:${builtins.toString api-port}";
+            username = "sync_enabled";
+            password = "testpassword";
+          };
+        };
+      };
+      "scheduler_enabled" = {
+        programs.smos = {
+          scheduler.enable = true;
+        };
+      };
+      "calendar_enabled" = {
+        programs.smos = {
+          calendar = {
+            enable = true;
+            sources = [
+              {
+                name = "Example";
+                destination = "calendar.smos";
+                source = "${../smos-calendar-import/test_resources/example.ics}";
+              }
+            ];
+          };
+        };
+      };
+      "notify_enabled" = {
+        programs.smos = {
+          notify.enable = true;
+        };
+      };
+      "everything_enabled" = {
+        programs.smos = {
+          backup.enable = true;
+          sync = {
+            enable = true;
+            server-url = "apiserver:${builtins.toString api-port}";
+            username = "everything_enabled";
+            password = "testpassword";
+          };
+          scheduler = {
+            enable = true;
+          };
+          calendar = {
+            enable = true;
+            sources = [
+              {
+                name = "Example";
+                destination = "calendar.smos";
+                source = "${../smos-calendar-import/test_resources/example.ics}";
+              }
+            ];
+          };
+          notify = {
+            enable = true;
+          };
+        };
+      };
+    };
   makeTestUser = _: _: {
     isNormalUser = true;
   };
-  makeTestUserHome = username: userConfig: { pkgs, lib, ... }:
-    lib.recursiveUpdate userConfig {
-      imports = [
-        ./home-manager-module.nix
-      ];
-      home.stateVersion = "20.09";
-      programs.smos = {
-        enable = true;
-        inherit smosReleasePackages;
-      };
-    };
+  makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
 
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.enable or false) ''
 
     # Test that the config file exists.
-    client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
+    out = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
+    print(out)
+
     # Make sure the user can run the smos commands.
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
@@ -117,6 +123,7 @@ let
     client.succeed(su("${username}", "smos-scheduler --help"))
     client.succeed(su("${username}", "smos-sync-client --help"))
     client.succeed(su("${username}", "smos-github --help"))
+
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
 
@@ -153,7 +160,7 @@ let
 
 in
 pkgs.nixosTest (
-  { lib, pkgs, ... }: {
+  { lib, ... }: {
     name = "smos-module-test";
     nodes = {
       apiserver = {

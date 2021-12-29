@@ -479,8 +479,8 @@ in
       systemd.user =
         {
           startServices = true;
-          services = services;
-          timers = timers;
+          inherit services;
+          inherit timers;
         };
       home.packages = packages;
     };

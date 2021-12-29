@@ -6,8 +6,6 @@ with final.lib;
 let
   isMacos = builtins.currentSystem == "x86_64-darwin";
 
-  mergeListRecursively = final.callPackage ./merge-lists-recursively.nix { };
-
   generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
   generatedStripe = generateOpenAPIClient {
     name = "stripe-client";
@@ -33,9 +31,7 @@ let
       "PostCheckoutSessions"
     ];
   };
-  generatedStripePackage = dontHaddock (disableLibraryProfiling (generatedStripe.package));
   generatedStripeCode = generatedStripe.code;
-  stripe-client = generatedStripe.package;
 in
 {
   smosCasts =
@@ -337,7 +333,7 @@ in
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
                 cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
-                inherit stripe-client;
+                stripe-client = generatedStripe.package;
               } // final.smosPackages
             );
       }

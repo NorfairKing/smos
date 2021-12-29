@@ -49,7 +49,6 @@ in
     };
   config =
     let
-      working-dir = "/www/smos/end-to-end-testing/";
       end-to-end-api-server-test-services =
         with cfg.api-server;
         optionalAttrs enable (mergeListRecursively (mapAttrsToList
