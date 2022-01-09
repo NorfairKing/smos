@@ -177,15 +177,18 @@ displayNotification e Notification {..} = do
   dd <- liftIO getDataDir
   let logoFile = dd ++ "/assets/logo.png"
   logDebugN $ T.pack $ unwords ["Displaying", fromAbsFile e, T.unpack notificationSummary]
-  liftIO $
-    callProcess
-      (fromAbsFile e)
-      $ [ "--urgency=critical",
+  let args =
+        [ "--urgency=critical",
           "--app-name=smos",
           "--icon=" ++ logoFile,
+          -- We must use '--' here so that any summary or body beginning with
+          -- '-' chars is not interpreted as a flag.
+          "--",
           T.unpack notificationSummary
         ]
-        ++ maybeToList (T.unpack <$> notificationBody)
+          ++ maybeToList (T.unpack <$> notificationBody)
+  logDebugN $ T.pack $ unwords $ fromAbsFile e : map show args
+  liftIO $ callProcess (fromAbsFile e) args
 
 playDing :: (MonadLogger m, MonadIO m) => Path Abs File -> m ()
 playDing e = do
