@@ -3,42 +3,65 @@ title: Building with stack
 description: Documentation about installing Smos using stack
 ---
 
-To build Smos using [Stack](https://haskellstack.org), first clone the repository:
+It is possible to build smos using [Stack](https://haskellstack.org), but this method is mainly available for development purposes.
+In practice we recommend using Nix for installing Smos.
 
-```
-git clone https://github.com/NorfairKing/smos
-```
 
-Install prerequisites:
+1. Clone the repository:
 
-```
-# Either run this command to generate the stripe client (requires nix) or
-remove the `stripe-client` line from stack.yaml:
-./scripts/generate-stripe.sh
-# Compile tool
-stack install autoexporter
-```
+   ```
+   git clone https://github.com/NorfairKing/smos
+   ```
 
-Now you can install Smos with the default configuration:
+1. Decide whether you want to build the `smos-server` executable.
+   If you just want to use `smos`, `smos-query` and the other command-line executables, the answer will be "no".
+   In that case, you can remove the `stripe-client` line from the `stack.yaml` file and continue to the next step.
 
-```
-stack install smos
-```
+   If you do want to build `smos-server`, then you need to generate the `stripe-client` package.
 
-You probably want to also install related tools:
+   1. If you have nix installed, you can run this command and skip the rest of this step:
 
-```
-stack install smos-query
-stack install smos-archive
-stack install smos-single
-stack install smos-sync-client
-```
+      ```
+      ./scripts/generate-stripe.sh
+      ```
 
-If you just want to make sure to get everything:
+   1. Get the stripe OpenAPI spec.
+      The `nix/sources.json` file specifies the version of `stripe-spec` to use.
+      You will need the `openapi/spec3.yaml` file from that repository.
 
-```
-stack install
-```
+   1. Get the openapi3 client code generator:
+
+      ```
+      stack install openapi3-code-generator --stack-yaml setup-stack.yaml
+      ```
+
+   1. Generate the `stripe-client` library using this command:
+
+      ```
+      ~/.local/bin/openapi3-code-generator-exe --specification /path/to/openapi/spec3.yaml --configuration stripe-client-gen.yaml
+      ```
+
+
+1. Install prerequisites:
+
+   ```
+   stack install autoexporter
+   ```
+
+1. Install Smos with the default configuration:
+
+   ```
+   stack install smos
+   ```
+
+1. You probably want to also install related tools:
+
+   ```
+   stack install smos-query
+   stack install smos-archive
+   stack install smos-single
+   stack install smos-sync-client
+   ```
 
 ### Troubleshooting
 

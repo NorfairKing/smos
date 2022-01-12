@@ -9,27 +9,8 @@ let
   generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
   generatedStripe = generateOpenAPIClient {
     name = "stripe-client";
+    configFile = ../stripe-client-gen.yaml;
     src = sources.stripe-spec + "/openapi/spec3.yaml";
-    moduleName = "StripeClient";
-    extraFlags = [
-      "--property-type-suffix=\"'\""
-      "--convert-to-camel-case"
-    ];
-    schemas = [
-      "event"
-      "checkout.session"
-      "notification_event_data"
-      "invoice"
-      "subscription"
-      "price"
-      "customer"
-    ];
-    operations = [
-      "GetEvents"
-      "GetPricesPrice"
-      "PostCustomers"
-      "PostCheckoutSessions"
-    ];
   };
   generatedStripeCode = generatedStripe.code;
 in

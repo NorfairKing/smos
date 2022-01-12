@@ -32,6 +32,15 @@ jobs:
           stack-version: ${{ matrix.stack }}
 
 
+      - name: Get the stripe spec
+        run: curl https://raw.githubusercontent.com/stripe/openapi/0f89038afd23327b714c5b02812508f7a3cd0a57/openapi/spec3.yaml > spec3.yaml
+
+      - name: Build openapi3-code-generator
+        run: stack install openapi3-code-generator
+
+      - name: Generate Stripe client
+        run: ~/.local/bin/openapi3-code-generator-exe --configuration stripe-client-gen.yaml --specification spec3.yaml
+
       - name: Cache for stack
         uses: actions/cache@v2
         with:
@@ -39,12 +48,6 @@ jobs:
             ~/.stack
             .stack-work
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack
-
-      - name: Build openapi3-code-generator
-        run: stack install openapi3-code-generator --stack-yaml setup-stack.yaml
-
-      - name: Generate Stripe client
-        run: ./scripts/generate-stripe-api.sh
 
       - name: Build autoexporter
         run: |

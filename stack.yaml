@@ -187,6 +187,11 @@ extra-deps:
   subdirs:
     - template-haskell-reload
 
+- github: Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator
+  commit: 84e78c2c89ed7931a345ca4fe540c748c2600389
+  subdirs:
+    - openapi3-code-generator
+
 
 - github-0.27@sha256:2288b807a4bd97fefeff75487ef5d2ed31f0faa18f306e01e5f5cb498e228208,7033
 
