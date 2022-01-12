@@ -2,7 +2,7 @@ resolver: lts-18.16
 packages: []
 extra-deps:
 - github: Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator
-  commit: 84e78c2c89ed7931a345ca4fe540c748c2600389
+  commit: a94443f4354752c0013f5953d8a378c2dc229287
   subdirs:
     - openapi3-code-generator
 
