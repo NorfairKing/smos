@@ -1,4 +1,4 @@
-outputDir: stripe-client2
+outputDir: stripe-client
 packageName: stripe-client
 moduleName: StripeClient
 logLevel: INFO
