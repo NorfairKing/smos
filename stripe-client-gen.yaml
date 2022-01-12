@@ -1,0 +1,20 @@
+outputDir: stripe-client
+packageName: stripe-client
+moduleName: StripeClient
+logLevel: INFO
+force: true
+convertToCamelCase: true
+propertyTypeSuffix: "'"
+operationsToGenerate:
+  - GetEvents
+  - GetPricesPrice
+  - PostCustomers
+  - PostCheckoutSessions
+whiteListedSchemas:
+  - event
+  - checkout.session
+  - notification_event_data
+  - invoice
+  - subscription
+  - price
+  - customer

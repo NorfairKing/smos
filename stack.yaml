@@ -187,7 +187,6 @@ extra-deps:
   subdirs:
     - template-haskell-reload
 
-
 - github-0.27@sha256:2288b807a4bd97fefeff75487ef5d2ed31f0faa18f306e01e5f5cb498e228208,7033
 
 flags:

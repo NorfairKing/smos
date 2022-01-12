@@ -25,12 +25,14 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Get the stripe spec
+        run: curl https://raw.githubusercontent.com/stripe/openapi/0f89038afd23327b714c5b02812508f7a3cd0a57/openapi/spec3.yaml > spec3.yaml
+
       - uses: actions/setup-haskell@v1.1.3
         name: Setup Haskell Stack
         with:
           ghc-version: ${{ matrix.ghc }}
           stack-version: ${{ matrix.stack }}
-
 
       - name: Cache for stack
         uses: actions/cache@v2
@@ -44,7 +46,7 @@ jobs:
         run: stack install openapi3-code-generator --stack-yaml setup-stack.yaml
 
       - name: Generate Stripe client
-        run: ./scripts/generate-stripe-api.sh
+        run: ~/.local/bin/openapi3-code-generator-exe --configuration stripe-client-gen.yaml --specification spec3.yaml
 
       - name: Build autoexporter
         run: |

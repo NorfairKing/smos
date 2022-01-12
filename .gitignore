@@ -5,6 +5,7 @@ result-*
 .pre-commit-config.yaml
 .pre-commit-hooks
 stack.yaml.lock
+setup-stack.yaml.lock
 server.uuid
 session.json
 *.sqlite3
