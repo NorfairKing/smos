@@ -5,6 +5,7 @@ let
   smosPkgs =
     (
       pkgsv {
+        config.allowUnfree = true;
         overlays = [
           (import (sources.sydtest + "/nix/overlay.nix"))
           (import (sources.validity + "/nix/overlay.nix"))
