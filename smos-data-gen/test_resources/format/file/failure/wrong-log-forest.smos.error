@@ -4,8 +4,8 @@ and also as yaml:
 Aeson exception:
 Error in $[0]: 
   Previous branch failure: Error in $.entry.logbook[0].start:   Previous branch failure: Error in $: parsing Text failed, expected String, but encountered Object
-  Previous branch failure: Error in $: Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %T%Q
-  Previous branch failure: Error in $: Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %H:%M:%S.%q
+  Previous branch failure: Error in $:   Previous branch failure: Error in $: Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %H:%M:%S.%q
 Error in $: could not parse date: digit: Failed reading: satisfy
+Failed to parse time value: 2018-11-30 06:3*:48.590857846000+0000 via %F %T%Q
   Previous branch failure: Error in $: parsing Text failed, expected String, but encountered Object
 key "header" not found

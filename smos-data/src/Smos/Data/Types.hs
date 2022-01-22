@@ -132,7 +132,7 @@ oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
 
 currentDataVersion :: Version
-currentDataVersion = version 2 0 0 [] []
+currentDataVersion = version 1 0 0 [] []
 
 newestParsableDataVersion :: Version
 newestParsableDataVersion = version 2 0 0 [] []
@@ -275,8 +275,8 @@ instance HasCodec Entry where
           (\(msh1, msh2) -> fromMaybe emptyStateHistory $ msh1 <|> msh2)
           (\sh -> if nullStateHistory sh then (Nothing, Nothing) else (Just sh, Nothing))
           ( (,)
-              <$> newStateHistoryField .= fst
-              <*> oldStateHistoryField .= snd
+              <$> oldStateHistoryField .= fst
+              <*> newStateHistoryField .= snd
           )
           .= entryStateHistory
       newStateHistoryField = optionalField "history" "state history (future key)"
@@ -686,8 +686,8 @@ instance HasCodec StateHistoryEntry where
             StateHistoryEntry
               <$> requiredField "state" "new state" .= stateHistoryEntryNewState
               <*> parseAlternative
-                (requiredFieldWith "time" impreciseUtctimeCodec "time at which the state change happened (future)")
                 (requiredFieldWith "time" utctimeCodec "time at which the state change happened")
+                (requiredFieldWith "time" impreciseUtctimeCodec "time at which the state change happened (future)")
                 .= stateHistoryEntryTimestamp
         )
         ( object "StateHistoryEntry (legacy)" $
@@ -790,16 +790,16 @@ instance HasCodec Logbook where
             <$> requiredFieldWith
               "start"
               ( parseAlternative
-                  impreciseUtctimeCodec
                   utctimeCodec
+                  (impreciseUtctimeCodec <?> "future format")
               )
               "start of the logbook entry"
               .= fst
             <*> optionalFieldWith
               "end"
               ( parseAlternative
-                  impreciseUtctimeCodec
                   utctimeCodec
+                  (impreciseUtctimeCodec <?> "future format")
               )
               "end of the logbook entry"
               .= snd
