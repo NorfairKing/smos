@@ -88,6 +88,7 @@ module Smos.Data.Types
     timestampLocalTime,
     utctimeFormat,
     utctimeCodec,
+    impreciseUtctimeCodec,
     getLocalTime,
     parseTimeEither,
   )
@@ -131,10 +132,10 @@ oldestParsableDataVersion :: Version
 oldestParsableDataVersion = version 0 0 0 [] []
 
 currentDataVersion :: Version
-currentDataVersion = version 1 0 0 [] []
+currentDataVersion = version 2 0 0 [] []
 
 newestParsableDataVersion :: Version
-newestParsableDataVersion = version 1 0 0 [] []
+newestParsableDataVersion = version 2 0 0 [] []
 
 instance Validity Version where
   validate = trivialValidation
@@ -227,6 +228,13 @@ utctimeCodec =
     [ codec <?> "Whatever aeson parses, as a fallback"
     ]
 
+impreciseUtctimeCodec :: JSONCodec UTCTime
+impreciseUtctimeCodec =
+  dimapCodec
+    (localTimeToUTC utc)
+    (utcToLocalTime utc)
+    localTimeCodec
+
 data Entry = Entry
   { entryHeader :: Header,
     entryContents :: Maybe Contents,
@@ -250,14 +258,31 @@ instance HasCodec Entry where
         eitherCodec (codec <?> "only a header") $
           object "Entry" $
             Entry
-              <$> requiredField "header" "header" .= entryHeader
-              <*> optionalField "contents" "contents" .= entryContents
-              <*> optionalFieldWithOmittedDefault "timestamps" M.empty "timestamps" .= entryTimestamps
-              <*> optionalFieldWithOmittedDefault "properties" M.empty "properties" .= entryProperties
-              <*> optionalFieldWithOmittedDefault "state-history" emptyStateHistory "state history" .= entryStateHistory
-              <*> optionalFieldWithOmittedDefault "tags" S.empty "tags" .= entryTags
-              <*> optionalFieldWithOmittedDefault "logbook" emptyLogbook "logbook" .= entryLogbook
+              <$> headerField
+              <*> contentsField
+              <*> timestampsField
+              <*> propertiesField
+              <*> stateHistoryField
+              <*> tagsField
+              <*> logbookField
     where
+      headerField = requiredField "header" "header" .= entryHeader
+      contentsField = optionalField "contents" "contents" .= entryContents
+      timestampsField = optionalFieldWithOmittedDefault "timestamps" M.empty "timestamps" .= entryTimestamps
+      propertiesField = optionalFieldWithOmittedDefault "properties" M.empty "properties" .= entryProperties
+      stateHistoryField =
+        dimapCodec
+          (\(msh1, msh2) -> fromMaybe emptyStateHistory $ msh1 <|> msh2)
+          (\sh -> if nullStateHistory sh then (Nothing, Nothing) else (Just sh, Nothing))
+          ( (,)
+              <$> newStateHistoryField .= fst
+              <*> oldStateHistoryField .= snd
+          )
+          .= entryStateHistory
+      newStateHistoryField = optionalField "history" "state history (future key)"
+      oldStateHistoryField = optionalField "state-history" "state history"
+      tagsField = optionalFieldWithOmittedDefault "tags" S.empty "tags" .= entryTags
+      logbookField = optionalFieldWithOmittedDefault "logbook" emptyLogbook "logbook" .= entryLogbook
       f = \case
         Left h -> newEntry h
         Right e -> e
@@ -296,12 +321,18 @@ newtype Header = Header
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Header)
 
 instance Validity Header where
-  validate (Header t) = mconcat [delve "headerText" t, decorateList (T.unpack t) validateHeaderChar]
+  validate (Header t) =
+    mconcat
+      [ delve "headerText" t,
+        decorateList (T.unpack t) validateHeaderChar
+      ]
 
 instance NFData Header
 
 instance HasCodec Header where
-  codec = bimapCodec parseHeader headerText codec
+  codec =
+    named "Header" $
+      bimapCodec parseHeader headerText codec
 
 emptyHeader :: Header
 emptyHeader = Header ""
@@ -331,12 +362,17 @@ newtype Contents = Contents
 
 instance Validity Contents where
   validate (Contents t) =
-    mconcat [delve "contentsText" t, decorateList (T.unpack t) validateContentsChar]
+    mconcat
+      [ delve "contentsText" t,
+        decorateList (T.unpack t) validateContentsChar
+      ]
 
 instance NFData Contents
 
 instance HasCodec Contents where
-  codec = bimapCodec parseContents contentsText codec
+  codec =
+    named "Contents" $
+      bimapCodec parseContents contentsText codec
 
 emptyContents :: Contents
 emptyContents = Contents ""
@@ -366,7 +402,10 @@ newtype PropertyName = PropertyName
 
 instance Validity PropertyName where
   validate (PropertyName t) =
-    mconcat [delve "propertyNameText" t, decorateList (T.unpack t) validatePropertyNameChar]
+    mconcat
+      [ delve "propertyNameText" t,
+        decorateList (T.unpack t) validatePropertyNameChar
+      ]
 
 instance NFData PropertyName
 
@@ -374,7 +413,9 @@ instance FromJSONKey PropertyName where
   fromJSONKey = JSON.FromJSONKeyTextParser parseJSONPropertyName
 
 instance HasCodec PropertyName where
-  codec = bimapCodec parsePropertyName propertyNameText codec
+  codec =
+    named "PropertyName" $
+      bimapCodec parsePropertyName propertyNameText codec
 
 parseJSONPropertyName :: MonadFail m => Text -> m PropertyName
 parseJSONPropertyName t =
@@ -415,7 +456,9 @@ instance Validity PropertyValue where
 instance NFData PropertyValue
 
 instance HasCodec PropertyValue where
-  codec = bimapCodec parsePropertyValue propertyValueText codec
+  codec =
+    named "PropertyValue" $
+      bimapCodec parsePropertyValue propertyValueText codec
 
 emptyPropertyValue :: PropertyValue
 emptyPropertyValue = PropertyValue ""
@@ -438,7 +481,10 @@ newtype TimestampName = TimestampName
 
 instance Validity TimestampName where
   validate (TimestampName t) =
-    mconcat [delve "timestampNameText" t, decorateList (T.unpack t) validateTimestampNameChar]
+    mconcat
+      [ delve "timestampNameText" t,
+        decorateList (T.unpack t) validateTimestampNameChar
+      ]
 
 instance NFData TimestampName
 
@@ -446,7 +492,9 @@ instance FromJSONKey TimestampName where
   fromJSONKey = JSON.FromJSONKeyTextParser parseJSONTimestampName
 
 instance HasCodec TimestampName where
-  codec = bimapCodec parseTimestampName timestampNameText codec
+  codec =
+    named "TimestampName" $
+      bimapCodec parseTimestampName timestampNameText codec
 
 parseJSONTimestampName :: MonadFail m => Text -> m TimestampName
 parseJSONTimestampName t =
@@ -480,7 +528,9 @@ instance Validity Timestamp
 instance NFData Timestamp
 
 instance HasCodec Timestamp where
-  codec = dimapCodec f g $ eitherCodec dayCodec localTimeCodec
+  codec =
+    named "Timestamp" $
+      dimapCodec f g $ eitherCodec dayCodec localTimeCodec
     where
       f = \case
         Left d -> TimestampDay d
@@ -561,12 +611,17 @@ newtype TodoState = TodoState
 
 instance Validity TodoState where
   validate (TodoState t) =
-    mconcat [delve "todoStateText" t, decorateList (T.unpack t) validateTodoStateChar]
+    mconcat
+      [ delve "todoStateText" t,
+        decorateList (T.unpack t) validateTodoStateChar
+      ]
 
 instance NFData TodoState
 
 instance HasCodec TodoState where
-  codec = bimapCodec parseTodoState todoStateText codec
+  codec =
+    named "TodoState" $
+      bimapCodec parseTodoState todoStateText codec
 
 todoState :: Text -> Maybe TodoState
 todoState = constructValid . TodoState
@@ -594,7 +649,13 @@ instance Validity StateHistory where
 instance NFData StateHistory
 
 instance HasCodec StateHistory where
-  codec = dimapCodec StateHistory unStateHistory codec <?> "In reverse chronological order"
+  codec =
+    named "StateHistory" $
+      bimapCodec
+        prettyValidate
+        id
+        (dimapCodec StateHistory unStateHistory codec)
+        <?> "In reverse chronological order"
 
 emptyStateHistory :: StateHistory
 emptyStateHistory = StateHistory []
@@ -619,17 +680,21 @@ instance Ord StateHistoryEntry where
 
 instance HasCodec StateHistoryEntry where
   codec =
-    parseAlternative
-      ( object "StateHistoryEntry" $
-          StateHistoryEntry
-            <$> requiredField "state" "new state" .= stateHistoryEntryNewState
-            <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
-      )
-      ( object "StateHistoryEntry (legacy)" $
-          StateHistoryEntry
-            <$> requiredField "new-state" "new state" .= stateHistoryEntryNewState
-            <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
-      )
+    named "StateHistoryEntry" $
+      parseAlternative
+        ( object "StateHistoryEntry" $
+            StateHistoryEntry
+              <$> requiredField "state" "new state" .= stateHistoryEntryNewState
+              <*> parseAlternative
+                (requiredFieldWith "time" impreciseUtctimeCodec "time at which the state change happened (future)")
+                (requiredFieldWith "time" utctimeCodec "time at which the state change happened")
+                .= stateHistoryEntryTimestamp
+        )
+        ( object "StateHistoryEntry (legacy)" $
+            StateHistoryEntry
+              <$> requiredField "new-state" "new state" .= stateHistoryEntryNewState
+              <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+        )
 
 newtype Tag = Tag
   { tagText :: Text
@@ -639,12 +704,18 @@ newtype Tag = Tag
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Tag)
 
 instance Validity Tag where
-  validate (Tag t) = mconcat [delve "tagText" t, decorateList (T.unpack t) validateTagChar]
+  validate (Tag t) =
+    mconcat
+      [ delve "tagText" t,
+        decorateList (T.unpack t) validateTagChar
+      ]
 
 instance NFData Tag
 
 instance HasCodec Tag where
-  codec = bimapCodec parseTag tagText codec
+  codec =
+    named "Tag" $
+      bimapCodec parseTag tagText codec
 
 emptyTag :: Tag
 emptyTag = Tag ""
@@ -705,18 +776,33 @@ instance NFData Logbook
 
 instance HasCodec Logbook where
   codec =
-    bimapCodec prettyValidate id $
-      bimapCodec f g (listCodec tupCodec)
-        <??> [ "Logbook entries, in reverse chronological order.",
-               "Only the first element of this list has an optional 'end'."
-             ]
+    named "Logbook" $
+      bimapCodec prettyValidate id $
+        bimapCodec f g (listCodec tupCodec)
+          <??> [ "Logbook entries, in reverse chronological order.",
+                 "Only the first element of this list has an optional 'end'."
+               ]
     where
       tupCodec :: JSONCodec (UTCTime, Maybe UTCTime)
       tupCodec =
         object "LogbookEntry" $
           (,)
-            <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= fst
-            <*> optionalFieldWith "end" utctimeCodec "end of the logbook entry" .= snd
+            <$> requiredFieldWith
+              "start"
+              ( parseAlternative
+                  impreciseUtctimeCodec
+                  utctimeCodec
+              )
+              "start of the logbook entry"
+              .= fst
+            <*> optionalFieldWith
+              "end"
+              ( parseAlternative
+                  impreciseUtctimeCodec
+                  utctimeCodec
+              )
+              "end of the logbook entry"
+              .= snd
       f es = case NE.nonEmpty es of
         Nothing -> Right $ LogClosed []
         Just ((start, mEnd) :| rest) -> do
@@ -767,11 +853,12 @@ instance NFData LogbookEntry
 
 instance HasCodec LogbookEntry where
   codec =
-    bimapCodec prettyValidate id $
-      object "LogbookEntry" $
-        LogbookEntry
-          <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= logbookEntryStart
-          <*> requiredFieldWith "end" utctimeCodec "end of the logbook entry" .= logbookEntryEnd
+    named "LogbookEntry" $
+      bimapCodec prettyValidate id $
+        object "LogbookEntry" $
+          LogbookEntry
+            <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= logbookEntryStart
+            <*> requiredFieldWith "end" utctimeCodec "end of the logbook entry" .= logbookEntryEnd
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart

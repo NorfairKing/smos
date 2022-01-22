@@ -11,6 +11,7 @@ module Smos.Docs.Site.Handler.Smos
   )
 where
 
+import Autodocodec
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
@@ -18,7 +19,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text.Encoding as TE
 import Data.Time
-import Data.Yaml as Yaml
+import Data.Yaml.Builder as Yaml
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
@@ -44,6 +45,60 @@ getSmosFileR = do
     setTitle "Smos File"
     setDescription "Documentation for the smos file format"
     $(widgetFile "smos-file")
+
+exampleFile :: Versioned SmosFile
+exampleFile =
+  Versioned
+    currentDataVersion
+    $ SmosFile
+      [ Node
+          ( (newEntry "Use Smos")
+              { entryTags = S.singleton "online",
+                entryTimestamps =
+                  M.fromList
+                    [ ("DEADLINE", TimestampDay (fromGregorian 2018 10 30)),
+                      ("SCHEDULED", TimestampDay (fromGregorian 2018 10 21))
+                    ],
+                entryStateHistory =
+                  StateHistory
+                    [ StateHistoryEntry
+                        { stateHistoryEntryNewState = Just "STARTED",
+                          stateHistoryEntryTimestamp = UTCTime (fromGregorian 2020 05 04) 12345
+                        }
+                    ]
+              }
+          )
+          [ Node
+              ( (newEntry "Don't mess it up")
+                  { entryStateHistory =
+                      StateHistory
+                        [ StateHistoryEntry
+                            { stateHistoryEntryNewState = Just "DONE",
+                              stateHistoryEntryTimestamp = UTCTime (fromGregorian 2020 05 04) 12348
+                            },
+                          StateHistoryEntry
+                            { stateHistoryEntryNewState = Just "NEXT",
+                              stateHistoryEntryTimestamp = UTCTime (fromGregorian 2020 05 04) 12347
+                            }
+                        ]
+                  }
+              )
+              [],
+            Node
+              ( (newEntry "Be smart about it")
+                  { entryTags = S.singleton "work",
+                    entryStateHistory =
+                      StateHistory
+                        [ StateHistoryEntry
+                            { stateHistoryEntryNewState = Just "TODO",
+                              stateHistoryEntryTimestamp = UTCTime (fromGregorian 2020 05 04) 12350
+                            }
+                        ]
+                  }
+              )
+              []
+          ]
+      ]
 
 headerDesc :: Text
 headerDesc = yamlDesc @Contents
@@ -119,8 +174,8 @@ exampleLogbook =
 logbookDesc :: Text
 logbookDesc = yamlDesc @Logbook
 
-example :: ToJSON a => a -> Text
-example = TE.decodeUtf8 . Yaml.encode
+example :: HasCodec a => a -> Text
+example = TE.decodeUtf8 . Yaml.toByteString . Autodocodec
 
 exampleEntry :: Entry
 exampleEntry =

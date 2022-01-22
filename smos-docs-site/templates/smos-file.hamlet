@@ -4,7 +4,51 @@
   #{docPageDescription}
 
 <div .content>
-  #{preEscapedToMarkup docPageRendered}
+
+  <p>
+    A Smos file is a YAML document, for example:
+
+  <pre>
+    #{example exampleFile}
+
+  <p>
+    It consists of a versioned forest of entries.
+
+
+  <h3> Versioned forest
+
+  <p>
+    The top-level of a smos file consists of an object with two fields:
+    A `version` value which refers to the data format version.
+    This is used for forward and backward compatibility.
+    The other field is the `value` field which contains a forest of entries.
+
+  <pre>
+    version: 1.0.0
+    value: [...]
+
+  <p>
+    (Version 
+    <code>
+      0.0.0
+    did not have this top-level object and instead only had the contents of `value`.)
+
+
+  <h3> Forest of trees
+
+  <p>
+    A forest is a list of trees.
+    It is parsed as a yaml list.
+
+  <p>
+    A tree is parsed as an entry with a subforest:
+
+  <pre>
+    entry: <entry>
+    forest: <forest>
+
+  <p>
+    If a tree has no subforest, then it can be represented as just an entry.
 
   <h3> Entry
 

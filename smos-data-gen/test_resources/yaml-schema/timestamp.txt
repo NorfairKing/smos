@@ -1,3 +1,4 @@
+[36mdef: Timestamp[m
 # [32many of[m
 [ # %F
   [33m<string>[m

@@ -11,6 +11,15 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    test_resources/destination.txt
+    test_resources/example-export/projects/client/bar_2019-03-24_10:46:51.smos
+    test_resources/example-workflow/archive/projects/client/bar_2019-03-24_10:46:51.smos
+    test_resources/example-workflow/archive/projects/client/quux_2021-03-24_011123.smos
+    test_resources/example-workflow/archive/projects/client/without-time_2021-03-25.smos
+    test_resources/example-workflow/archive/projects/foo_2019-11-12.smos
+    test_resources/example-workflow/projects/client/example.smos
+    test_resources/example-workflow/projects/sample.smos
 
 library
   exposed-modules:

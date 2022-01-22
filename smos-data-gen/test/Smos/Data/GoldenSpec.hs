@@ -60,6 +60,48 @@ spec = do
             ]
         ]
     )
+  goldenFormatsSpec
+    "State history entry"
+    "state-history-entry"
+    ( makeSmosFile
+        [ Node
+            ( (newEntry "started")
+                { entryStateHistory =
+                    StateHistory
+                      [ StateHistoryEntry
+                          { stateHistoryEntryNewState = Just "STARTED",
+                            stateHistoryEntryTimestamp = UTCTime (fromGregorian 2022 01 22) 1234
+                          }
+                      ]
+                }
+            )
+            []
+        ]
+    )
+  goldenFormatsSpec
+    "Logbook entry"
+    "logbook-entry"
+    ( makeSmosFile
+        [ Node
+            ( (newEntry "clocked in")
+                { entryLogbook = LogOpen (UTCTime (fromGregorian 2022 01 22) 1234) []
+                }
+            )
+            [],
+          Node
+            ( (newEntry "clocked out")
+                { entryLogbook =
+                    LogClosed
+                      [ LogbookEntry
+                          { logbookEntryStart = UTCTime (fromGregorian 2022 01 22) 1234,
+                            logbookEntryEnd = UTCTime (fromGregorian 2022 01 22) 1234
+                          }
+                      ]
+                }
+            )
+            []
+        ]
+    )
 
 goldenFormatsSpec ::
   String ->

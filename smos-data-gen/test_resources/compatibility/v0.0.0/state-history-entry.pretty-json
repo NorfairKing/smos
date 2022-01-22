@@ -1,0 +1,11 @@
+[
+    {
+        "header": "started",
+        "state-history": [
+            {
+                "new-state": "STARTED",
+                "timestamp": "2022-01-22 00:20:34.000000000000"
+            }
+        ]
+    }
+]

@@ -1,3 +1,4 @@
+[36mdef: LogbookEntry[m
 # LogbookEntry
 [37mstart[m: # [31mrequired[m
   # start of the logbook entry

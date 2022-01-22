@@ -1,0 +1,14 @@
+- state: STARTED
+  time: 2020-09-22 13:41:43
+- state: FAILED
+  time: 2020-09-22 13:41:42
+- state: DONE
+  time: 2020-09-22 13:41:41
+- state: WAITING
+  time: 2020-09-22 13:41:38
+- state: CANCELLED
+  time: 2020-09-22 13:41:37
+- state: NEXT
+  time: 2020-09-22 13:41:36
+- state: TODO
+  time: 2020-09-22 13:41:36
