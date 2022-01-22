@@ -5,7 +5,8 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
-extra-source-files: test_resources/**/*
+extra-source-files:
+- test_resources/**/*
 
 dependencies:
 - base
