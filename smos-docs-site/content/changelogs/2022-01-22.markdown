@@ -1,0 +1,36 @@
+- <a name="smos-0.4.1">[smos 0.4.1](#smos-0.4.1)
+- <a name="smos-api-0.5.0">[smos-api 0.5.0](#smos-api-0.5.0)
+- <a name="smos-api-gen-0.3.1">[smos-api-gen 0.3.1](#smos-api-gen-0.3.1)
+- <a name="smos-archive-0.3.1">[smos-archive 0.3.1](#smos-archive-0.3.1)
+- <a name="smos-calendar-import-0.4.1">[smos-calendar-import 0.4.1](#smos-calendar-import-0.4.1)
+- <a name="smos-client-0.5.1">[smos-client 0.5.1](#smos-client-0.5.1)
+- <a name="smos-convert-org-0.1.2">[smos-convert-org 0.1.2](#smos-convert-org-0.1.2)
+- <a name="smos-cursor-0.4.1">[smos-cursor 0.4.1](#smos-cursor-0.4.1)
+- <a name="smos-cursor-gen-0.2.1">[smos-cursor-gen 0.2.1](#smos-cursor-gen-0.2.1)
+- <a name="smos-data-0.4.0">[smos-data 0.4.0](#smos-data-0.4.0)
+- <a name="smos-data-gen-0.2.1">[smos-data-gen 0.2.1](#smos-data-gen-0.2.1)
+- <a name="smos-github-0.4.1">[smos-github 0.4.1](#smos-github-0.4.1)
+- <a name="smos-notify-0.2.1">[smos-notify 0.2.1](#smos-notify-0.2.1)
+- <a name="smos-query-0.7.1">[smos-query 0.7.1](#smos-query-0.7.1)
+- <a name="smos-report-0.6.1">[smos-report 0.6.1](#smos-report-0.6.1)
+- <a name="smos-report-gen-0.3.1">[smos-report-gen 0.3.1](#smos-report-gen-0.3.1)
+- <a name="smos-scheduler-0.3.1">[smos-scheduler 0.3.1](#smos-scheduler-0.3.1)
+- <a name="smos-server-0.6.0">[smos-server 0.6.0](#smos-server-0.6.0)
+- <a name="smos-server-gen-0.4.1">[smos-server-gen 0.4.1](#smos-server-gen-0.4.1)
+- <a name="smos-single-0.2.1">[smos-single 0.2.1](#smos-single-0.2.1)
+- <a name="smos-sync-client-0.4.1">[smos-sync-client 0.4.1](#smos-sync-client-0.4.1)
+- <a name="smos-sync-client-gen-0.3.1">[smos-sync-client-gen 0.3.1](#smos-sync-client-gen-0.3.1)
+- <a name="smos-web-server-0.8.0">[smos-web-server 0.8.0](#smos-web-server-0.8.0)
+- <a name="smos-web-style-0.0.2">[smos-web-style 0.0.2](#smos-web-style-0.0.2)
+
+
+### Changed
+
+* Upgraded to `lts-18.16` and the `nixos-21.11` branch of `nixpkgs`.
+* Reduced the closure size of the nixos module and the home manager module.
+* `smos-server`: Simplified to be single-command, so that you don't have to use `serve` anymore.
+* `smos-web-server`: Simplified to be single-command, so that you don't have to use `serve` anymore.
+* `smos-notify`: Fixed a bug where `smos-notify` would fail to send a notification when the notification summary or description started with a `-` character.
+* `smos-data`: Forward-compatibility with data format version 2.0.0.
+* `smos-data`: Clearer data formats with more comprehensive naming.
+* `smos-api`: Upgrade to version `0.3.0` with shorter names for `username` and `password` in the API.
