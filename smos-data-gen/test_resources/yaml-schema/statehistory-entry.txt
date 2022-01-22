@@ -9,6 +9,10 @@
   # [32many of[m
   [ [37mtime[m: # [31mrequired[m
       # time at which the state change happened
+      # %F %T%Q
+      [33m<string>[m
+  , [37mtime[m: # [31mrequired[m
+      # time at which the state change happened (legacy format)
       # [32many of[m
       [ # %F %H:%M:%S.%q
         [33m<string>[m
@@ -16,10 +20,6 @@
         # LocalTime
         [33m<any>[m
       ]
-  , [37mtime[m: # [31mrequired[m
-      # time at which the state change happened (future)
-      # %F %T%Q
-      [33m<string>[m
   ]
 , # StateHistoryEntry (legacy)
   [37mnew-state[m: # [31mrequired[m

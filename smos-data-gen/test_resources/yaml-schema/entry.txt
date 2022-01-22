@@ -29,7 +29,7 @@
       [36mdef: PropertyValue[m
       [33m<string>[m
   [37mstate-history[m: # [34moptional[m
-    # state history
+    # state history (legacy key)
     [36mdef: StateHistory[m
     # In reverse chronological order
     - [36mdef: StateHistoryEntry[m
@@ -43,6 +43,10 @@
         # [32many of[m
         [ [37mtime[m: # [31mrequired[m
             # time at which the state change happened
+            # %F %T%Q
+            [33m<string>[m
+        , [37mtime[m: # [31mrequired[m
+            # time at which the state change happened (legacy format)
             # [32many of[m
             [ # %F %H:%M:%S.%q
               [33m<string>[m
@@ -50,10 +54,6 @@
               # LocalTime
               [33m<any>[m
             ]
-        , [37mtime[m: # [31mrequired[m
-            # time at which the state change happened (future)
-            # %F %T%Q
-            [33m<string>[m
         ]
       , # StateHistoryEntry (legacy)
         [37mnew-state[m: # [31mrequired[m
@@ -71,7 +71,7 @@
           ]
       ]
   [37mhistory[m: # [34moptional[m
-    # state history (future key)
+    # state history
     [36mref: StateHistory[m
   [37mtags[m: # [34moptional[m
     # default: [35m[][m
@@ -88,25 +88,29 @@
       [37mstart[m: # [31mrequired[m
         # start of the logbook entry
         # [32many of[m
-        [ # %F %H:%M:%S.%q
+        [ # %F %T%Q
           [33m<string>[m
-        , # Whatever aeson parses, as a fallback
-          # LocalTime
-          [33m<any>[m
-        , # future format
-          # %F %T%Q
-          [33m<string>[m
+        , # legacy format
+          # [32many of[m
+          [ # %F %H:%M:%S.%q
+            [33m<string>[m
+          , # Whatever aeson parses, as a fallback
+            # LocalTime
+            [33m<any>[m
+          ]
         ]
       [37mend[m: # [34moptional[m
         # end of the logbook entry
         # [32many of[m
-        [ # %F %H:%M:%S.%q
+        [ # %F %T%Q
           [33m<string>[m
-        , # Whatever aeson parses, as a fallback
-          # LocalTime
-          [33m<any>[m
-        , # future format
-          # %F %T%Q
-          [33m<string>[m
+        , # legacy format
+          # [32many of[m
+          [ # %F %H:%M:%S.%q
+            [33m<string>[m
+          , # Whatever aeson parses, as a fallback
+            # LocalTime
+            [33m<any>[m
+          ]
         ]
 ]
