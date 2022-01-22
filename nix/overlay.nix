@@ -48,10 +48,7 @@ in
             doBenchmark = true;
             enableLibraryProfiling = false;
             enableExecutableProfiling = false;
-            # Turn off test suites on macos because they generate random
-            # filepaths and that fails for some reason that I cannot investigate
-            # because I don't own any apple products.
-            doCheck = !isMacos;
+            doCheck = false;
             buildFlags = (old.buildFlags or [ ]) ++ [
               "--ghc-options=-Wincomplete-uni-patterns"
               "--ghc-options=-Wincomplete-record-updates"
@@ -60,6 +57,9 @@ in
               "--ghc-options=-Wredundant-constraints"
               "--ghc-options=-Wcpp-undef"
             ];
+            # Ugly hack because we can't just add flags to the 'test' invocation.
+            # Show test output as we go, instead of all at once afterwards.
+            testTarget = (old.testTarget or "") + " --show-details=direct";
           }
         );
       smosPkg = name: buildStrictly (ownPkg name (final.gitignoreSource (../. + "/${name}")));
@@ -238,7 +238,14 @@ in
       inherit smos-docs-site;
     };
 
-  smosReleasePackages = mapAttrs (_: pkg: final.haskell.lib.justStaticExecutables pkg) final.smosPackages;
+  # Turn off test suites on macos because they generate random
+  # filepaths and that fails for some reason that I cannot investigate
+  # because I don't own any apple products.
+  smosReleasePackages = mapAttrs
+    (_: pkg: final.haskell.lib.justStaticExecutables
+      (if isMacos
+      then pkg else final.haskell.lib.doCheck pkg))
+    final.smosPackages;
 
   smosRelease =
     final.symlinkJoin {
