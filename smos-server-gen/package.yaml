@@ -19,6 +19,10 @@ library:
   - containers
   - deepseq
   - dirforest
+  - genvalidity
+  - genvalidity-persistent
+  - genvalidity-time
+  - genvalidity-typed-uuid
   - http-client
   - http-types
   - mergeful
@@ -58,9 +62,11 @@ tests:
     - containers
     - dirforest
     - genvalidity-bytestring
+    - genvalidity-persistent
     - genvalidity-sydtest
     - http-types
     - mergeful
+    - mtl
     - path
     - path-io
     - persistent
@@ -77,6 +83,7 @@ tests:
     - smos-server
     - smos-server-gen
     - sydtest
+    - sydtest-persistent
     - sydtest-servant
     - text
     - time

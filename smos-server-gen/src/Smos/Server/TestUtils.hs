@@ -55,7 +55,7 @@ serverEnvLooper func = do
         LooperEnv
           { looperEnvConnection = serverEnvConnection,
             looperEnvCompressionLevel = serverEnvCompressionLevel,
-            looperEnvMaxBackupsPerUser = serverEnvMaxBackupsPerUser,
+            looperEnvMaxBackupsPerPeriodPerUser = defaultPeriods,
             looperEnvBackupInterval = nominalDay
           }
   liftIO $ runLoggingT (runReaderT func env) serverEnvLogFunc
@@ -119,7 +119,6 @@ serverEnvSetupFunc pool = liftIO $ do
         serverEnvPasswordDifficulty = 4, -- The lowest (fastest)
         serverEnvCompressionLevel = 1, -- The lowest (fastest)
         serverEnvLogFunc = logFunc,
-        serverEnvMaxBackupsPerUser = Nothing,
         serverEnvMaxBackupSizePerUser = Nothing,
         serverEnvAdmin = Just testAdminUsername,
         serverEnvPriceCache = priceVar,

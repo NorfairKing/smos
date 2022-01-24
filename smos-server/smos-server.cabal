@@ -104,6 +104,8 @@ library
     , typed-uuid
     , unliftio
     , unordered-containers
+    , validity
+    , validity-persistent
     , wai
     , wai-extra
     , warp

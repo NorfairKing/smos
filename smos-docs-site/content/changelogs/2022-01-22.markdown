@@ -34,3 +34,4 @@
 * `smos-data`: Forward-compatibility with data format version 2.0.0.
 * `smos-data`: Clearer data formats with more comprehensive naming.
 * `smos-api`: Upgrade to version `0.3.0` with shorter names for `username` and `password` in the API.
+* `smos-server`: Changed the backup garbage collector to be smarter. It can now save one backup a day for the last 7 days, one backup a week for the last 8 weeks, and 1 backup a month for the last year.

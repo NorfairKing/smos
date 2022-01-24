@@ -77,6 +77,7 @@ data Configuration = Configuration
     confSigningKeyFile :: !(Maybe FilePath),
     confPort :: !(Maybe Int),
     confMaxBackupsPerUser :: !(Maybe Word),
+    confMaxBackupsPerPeriodPerUser :: !(Maybe [(Maybe NominalDiffTime, Word)]),
     confMaxBackupSizePerUser :: !(Maybe Word64),
     confBackupInterval :: !(Maybe NominalDiffTime),
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -118,6 +119,16 @@ configurationObjectCodec =
       "max-backups-per-user"
       "The maximum number of backups per user"
       .= confMaxBackupsPerUser
+    <*> optionalFieldOrNullWith
+      "max-backups-per-user-per-period"
+      ( singleOrListCodec $
+          object "Period" $
+            (,)
+              <$> optionalFieldOrNull "period" "period, in seconds" .= fst
+              <*> requiredField "max-backups" "maximum backups in this period" .= snd
+      )
+      "The maximum number of backups per user per period"
+      .= confMaxBackupsPerPeriodPerUser
     <*> optionalFieldOrNull
       "max-backup-size-per-user"
       "The maximum number of bytes that backups can take up per user"
@@ -171,7 +182,7 @@ data Settings = Settings
     settingDatabaseFile :: !(Path Abs File),
     settingSigningKeyFile :: !(Path Abs File),
     settingPort :: !Int,
-    settingMaxBackupsPerUser :: !(Maybe Word),
+    settingMaxBackupsPerPeriodPerUser :: ![(Maybe NominalDiffTime, Word)],
     settingMaxBackupSizePerUser :: !(Maybe Word64),
     settingBackupInterval :: NominalDiffTime,
     settingAutoBackupLooperSettings :: !LooperSettings,

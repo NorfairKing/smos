@@ -37,6 +37,7 @@ extra-source-files:
 
 library
   exposed-modules:
+      Smos.Server.Gen
       Smos.Server.InterestingStore
       Smos.Server.TestUtils
   other-modules:
@@ -50,6 +51,10 @@ library
     , containers
     , deepseq
     , dirforest
+    , genvalidity
+    , genvalidity-persistent
+    , genvalidity-time
+    , genvalidity-typed-uuid
     , http-client
     , http-types
     , mergeful
@@ -138,9 +143,11 @@ test-suite smos-server-test
     , containers
     , dirforest
     , genvalidity-bytestring
+    , genvalidity-persistent
     , genvalidity-sydtest
     , http-types
     , mergeful
+    , mtl
     , path
     , path-io
     , persistent
@@ -157,6 +164,7 @@ test-suite smos-server-test
     , smos-server
     , smos-server-gen
     , sydtest
+    , sydtest-persistent
     , sydtest-servant
     , text
     , time

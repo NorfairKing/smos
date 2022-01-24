@@ -15,11 +15,6 @@ import Smos.Server.Subscription
 
 servePostBackup :: AuthNCookie -> ServerHandler BackupUUID
 servePostBackup ac = withUserId ac $ \uid -> withSubscription ac $ do
-  maxBackups <- asks serverEnvMaxBackupsPerUser
-  numberOfBackupsThatWeAlreadyHave <- runDB $ count [BackupUser ==. uid]
-  -- Don't let the backup happen if we already have the maximum number of backups for this user.
-  -- The fromIntegral is safe because no one would put in a number between 2^63 and 2^64.
-  when (maybe False ((numberOfBackupsThatWeAlreadyHave >=) . fromIntegral) maxBackups) $ throwError err403 {errBody = "Already made the maximum number of backups."}
   maxBackupSize <- asks serverEnvMaxBackupSizePerUser
   sumOfBackupsThatWeAlreadyHave <- runDB $ foldl' (+) 0 . map (backupSize . entityVal) <$> selectList [BackupUser ==. uid] []
 

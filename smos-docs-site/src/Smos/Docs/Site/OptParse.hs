@@ -29,7 +29,7 @@ combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
-  let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
+  let settingPort = fromMaybe 8080 $ flagPort <|> envPort <|> mc confPort
   let settingAPIServerUrl = T.pack <$> (flagAPIServerUrl <|> envAPIServerUrl <|> mc confAPIServerUrl)
   let settingWebServerUrl = T.pack <$> (flagWebServerUrl <|> envWebServerUrl <|> mc confWebServerUrl)
   let settingGoogleAnalyticsTracking = T.pack <$> (flagGoogleAnalyticsTracking <|> envGoogleAnalyticsTracking <|> mc confGoogleAnalyticsTracking)

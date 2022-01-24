@@ -49,7 +49,7 @@ ensureCasts specFiles = do
           Just autorecorderExecutable -> do
             putStrLn $ "Casting " <> fromAbsFile specFile
             let cmd = fromAbsFile autorecorderExecutable
-            let args = ["record", fromAbsFile specFile, fromAbsFile outputFile, "--progress"]
+            let args = [fromAbsFile specFile, fromAbsFile outputFile, "--progress"]
             putStrLn $ unwords $ cmd : map show args
             runProcess_ $ setStderr inherit $ setStdout inherit $ proc cmd args
             putStrLn $ "Done casting " <> fromAbsFile specFile

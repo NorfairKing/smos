@@ -23,6 +23,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_server
 import Smos.API
+import Smos.Server.Looper.BackupGarbageCollector
 import Smos.Server.OptParse.Types
 import qualified System.Environment as System
 
@@ -51,6 +52,11 @@ combineToSettings Flags {..} Environment {..} mc = do
       Nothing -> resolveFile' "smos-signing-key.json"
       Just fp -> resolveFile' fp
   let settingMaxBackupsPerUser = flagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
+  let settingMaxBackupsPerPeriodPerUser = case mc >>= confMaxBackupsPerPeriodPerUser of
+        Nothing -> case settingMaxBackupsPerUser of
+          Nothing -> defaultPeriods
+          Just maxBackups -> [(Nothing, maxBackups)]
+        Just periods -> periods
   let settingMaxBackupSizePerUser = flagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
   let settingBackupInterval = fromMaybe nominalDay $ flagBackupInterval <|> envBackupInterval <|> (mc >>= confBackupInterval)
   let settingAutoBackupLooperSettings =

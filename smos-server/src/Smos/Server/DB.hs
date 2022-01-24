@@ -24,6 +24,8 @@ import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
 import Data.Text (Text)
 import Data.Time
+import Data.Validity
+import Data.Validity.Persist ()
 import Data.Word
 import Database.Persist
 import Database.Persist.Sql
@@ -108,3 +110,5 @@ BackupFile
     deriving Eq
     deriving Generic
 |]
+
+instance Validity Backup

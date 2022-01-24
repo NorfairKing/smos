@@ -70,7 +70,6 @@ runSmosServer Settings {..} = do
                                 else 10, -- Rather slower
                             serverEnvLogFunc = logFunc,
                             serverEnvCompressionLevel = compressionLevel,
-                            serverEnvMaxBackupsPerUser = settingMaxBackupsPerUser,
                             serverEnvMaxBackupSizePerUser = settingMaxBackupSizePerUser,
                             serverEnvAdmin = settingAdmin,
                             serverEnvPriceCache = priceVar,
@@ -86,7 +85,7 @@ runSmosServer Settings {..} = do
                       LooperEnv
                         { looperEnvConnection = pool,
                           looperEnvCompressionLevel = compressionLevel,
-                          looperEnvMaxBackupsPerUser = settingMaxBackupsPerUser,
+                          looperEnvMaxBackupsPerPeriodPerUser = settingMaxBackupsPerPeriodPerUser,
                           looperEnvBackupInterval = settingBackupInterval
                         }
                     looperRunner LooperDef {..} = do
