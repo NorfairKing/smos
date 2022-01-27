@@ -74,8 +74,8 @@ in
 
             $out/bin/${exeName} &
             sleep 1
-            ${final.linkcheck}/bin/linkcheck http://localhost:8000 --check-fragments
-            ${final.seocheck}/bin/seocheck http://localhost:8000
+            ${final.linkcheck}/bin/linkcheck http://localhost:8080 --check-fragments
+            ${final.seocheck}/bin/seocheck http://localhost:8080
             ${final.killall}/bin/killall ${exeName}
           '';
         });
