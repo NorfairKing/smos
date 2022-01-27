@@ -33,7 +33,7 @@ If the workflow directory is reconfigured, the projects directory will still be 
 ## Reference
 
 A reference directory contains files that you may as reference material in the near future, but do not comprise TODO items.
-These can, be smos files, but do not have to be.
+These can be smos files, but do not have to be.
 
 ## Archive
 
