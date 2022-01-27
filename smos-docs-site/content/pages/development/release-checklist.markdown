@@ -20,6 +20,6 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Deploy to staging.
 1. Wait for end-to-end tests to pass again.
 1. Merge `staging` into `release`.
-1. Run the release script to create the appropriate tags
+1. Run the release script to create the appropriate tags: `stack runhaskell scripts/make-release-tags.hs`.
 1. Make a GitHub release with the contents of the changelog.
 1. Double-check that `development`, `testing`, `staging` and `release` now all point to the same version.
