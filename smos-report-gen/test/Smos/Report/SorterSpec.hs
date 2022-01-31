@@ -27,21 +27,24 @@ spec = do
           forAllValid $ \(rp1, fc1) ->
             forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s (rp1 :: Path Rel File) fc1 (rp2 :: Path Rel File) fc2
   describe "byFileP" $ parsesValidSpec byFileP
+  describe "byStateP" $ parsesValidSpec byStateP
+  describe "byTagP" $ parsesValidSpec byTagP
   describe "byPropertyP" $ parsesValidSpec byPropertyP
   describe "reverseP" $ parsesValidSpec reverseP
   describe "andThenP" $ parsesValidSpec andThenP
   describe "sorterP" $ do
     parsesValidSpec sorterP
     parseJustSpec sorterP "file" ByFile
+    parseJustSpec sorterP "state" ByState
+    parseJustSpec sorterP "tag:home" $ ByTag "home"
     parseJustSpec sorterP "property:effort" $ ByProperty "effort"
     parseJustSpec sorterP "property-as-time:timewindow" $ ByPropertyTime "timewindow"
     parseJustSpec sorterP "reverse:property:effort" $ Reverse (ByProperty "effort")
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
     it "produces valid texts" $ producesValid renderSorter
-    it "renders bys that parse to the same" $
-      forAllValid $
-        \s -> parseJust sorterP (renderSorter s) s
+    it "renders sorters that parse to the same" $
+      forAllValid $ \s -> parseJust sorterP (renderSorter s) s
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
