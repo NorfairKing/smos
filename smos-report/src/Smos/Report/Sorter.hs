@@ -27,6 +27,7 @@ import Text.Megaparsec.Char
 
 data Sorter
   = ByFile
+  | ByState
   | ByTag Tag
   | ByProperty PropertyName
   | ByPropertyTime PropertyName
@@ -59,6 +60,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
     go s ea eb =
       case s of
         ByFile -> compare rpa rpb
+        ByState -> comparing entryState ea eb
         ByTag t -> comparing ((t `elem`) . entryTags) ea eb
         ByPropertyTime pn ->
           comparing (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText)) ea eb
@@ -79,13 +81,23 @@ type P = Parsec Void Text
 
 sorterP :: P Sorter
 sorterP =
-  try byFileP <|> try byTagP <|> try byPropertyAsTimeP <|> try byPropertyP <|> try reverseP
+  try byFileP
+    <|> try byStateP
+    <|> try byTagP
+    <|> try byPropertyAsTimeP
+    <|> try byPropertyP
+    <|> try reverseP
     <|> andThenP
 
 byFileP :: P Sorter
 byFileP = do
   void $ string' "file"
   pure ByFile
+
+byStateP :: P Sorter
+byStateP = do
+  void $ string' "state"
+  pure ByState
 
 byTagP :: P Sorter
 byTagP = do
@@ -130,6 +142,7 @@ renderSorter :: Sorter -> Text
 renderSorter f =
   case f of
     ByFile -> "file"
+    ByState -> "state"
     ByTag t -> "tag:" <> tagText t
     ByProperty pn -> "property:" <> propertyNameText pn
     ByPropertyTime pn -> "property-as-time:" <> propertyNameText pn

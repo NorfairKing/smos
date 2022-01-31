@@ -33,6 +33,8 @@ A sorter is something of the following form:
 
 ``` plain
 file
+state
+tag:<tag>                         -- tag:home
 property:<property-name>          -- property:effort
 property-as-time:<property-name>  -- property-as-time:timewindow
 reverse:<sorter>                  -- reverse:file
